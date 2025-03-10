@@ -13,6 +13,7 @@
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
+//go:generate go run github.com/vektah/dataloaden CustomFieldsLoader int github.com/stashapp/stash/pkg/models.CustomFieldMap
 //go:generate go run github.com/vektah/dataloaden SceneOCountLoader int int
 //go:generate go run github.com/vektah/dataloaden ScenePlayCountLoader int int
 //go:generate go run github.com/vektah/dataloaden SceneOHistoryLoader int []time.Time
@@ -51,13 +52,16 @@ type Loaders struct {
 	ImageFiles   *ImageFileIDsLoader
 	GalleryFiles *GalleryFileIDsLoader
 
-	GalleryByID   *GalleryLoader
-	ImageByID     *ImageLoader
-	PerformerByID *PerformerLoader
-	StudioByID    *StudioLoader
-	TagByID       *TagLoader
-	GroupByID     *GroupLoader
-	FileByID      *FileLoader
+	GalleryByID *GalleryLoader
+	ImageByID   *ImageLoader
+
+	PerformerByID         *PerformerLoader
+	PerformerCustomFields *CustomFieldsLoader
+
+	StudioByID *StudioLoader
+	TagByID    *TagLoader
+	GroupByID  *GroupLoader
+	FileByID   *FileLoader
 }
 
 type Middleware struct {
@@ -87,6 +91,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchPerformers(ctx),
+			},
+			PerformerCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchPerformerCustomFields(ctx),
 			},
 			StudioByID: &StudioLoader{
 				wait:     wait,
@@ -207,6 +216,18 @@ func (m Middleware) fetchPerformers(ctx context.Context) func(keys []int) ([]*mo
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Performer.FindMany(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchPerformerCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Performer.GetCustomFieldsBulk(ctx, keys)
 			return err
 		})
 

@@ -186,7 +186,10 @@
             "show_male_label": "Näita meesnäitlejaid",
             "source": "Allikas",
             "mark_organized_desc": "Märgi stseen koheselt Orgainiseerituks peale Salvesta nupu vajutamist.",
-            "mark_organized_label": "Märgi salvestamisel Organiseerituks"
+            "mark_organized_label": "Märgi salvestamisel Organiseerituks",
+            "errors": {
+                "blacklist_duplicate": "Dubleeritud musta nimekirja ese"
+            }
         },
         "noun_query": "Päring",
         "results": {
@@ -912,7 +915,7 @@
             "marker_image_previews": "Markeri Animeeritud Piltide Eelvaated",
             "marker_image_previews_tooltip": "Looge ka animeeritud (webp) eelvaateid, mis on nõutavad ainult siis, kui Stseeni/Markeri Seina Eelvaate Tüüp on seatud väärtusele Animeeritud Pilt. Sirvimisel kasutavad nad vähem CPUd kui video eelvaated, kuid genereeritakse neile lisaks ja need on suuremad failid.",
             "marker_screenshots": "Markeri Ekraanipildid",
-            "marker_screenshots_tooltip": "Marker staatilised JPG-kujutised, nõutav ainult siis, kui Eelvaate Tüüp on seatud väärtusele Staatiline Pilt.",
+            "marker_screenshots_tooltip": "Markeeri staatilised JPG-kujutised",
             "markers": "Markeri Eelvaated",
             "markers_tooltip": "20-sekundilised videod, mis algavad etteantud ajakoodiga.",
             "override_preview_generation_options": "Eelvaate Genereerimise Valikute Ülekirjutamine",
@@ -1018,7 +1021,13 @@
         "loading_type": "Viga {type} laadimisel",
         "header": "Viga",
         "invalid_javascript_string": "Vigane JavaScripti kood: {error}",
-        "invalid_json_string": "Vigane JSON-string: {error}"
+        "invalid_json_string": "Vigane JSON-string: {error}",
+        "custom_fields": {
+            "duplicate_field": "Välja nimi peab olema unikaalne",
+            "field_name_length": "Välja nimi peab olema lühem kui 65 tähemärki",
+            "field_name_required": "Välja nimi on nõutud",
+            "field_name_whitespace": "Välja nimi ei tohi alata ega lõppeda tühikuga"
+        }
     },
     "ethnicity": "Rahvus",
     "existing_value": "eksisteeriv väärtus",
@@ -1087,7 +1096,8 @@
     "last_played_at": "Viimati Esitatud",
     "library": "Kogu",
     "loading": {
-        "generic": "Laen…"
+        "generic": "Laen…",
+        "plugins": "Pluginate laadimine…"
     },
     "marker_count": "Markerite Arv",
     "markers": "Markerid",
@@ -1223,7 +1233,9 @@
         "errors": {
             "something_went_wrong": "Oi ei! Midagi läks valesti!",
             "something_went_wrong_description": "Kui see näib olevat sisenditega seotud probleem, jätka ja klõpsa nende parandamiseks nuppu Tagasi. Vastasel juhul loo viga meie {githubLink}-s või otsi abi kanalist {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Süsteemi seadistamisel läks midagi valesti. Saime järgmise vea: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Süsteemi seadistamisel läks midagi valesti. Saime järgmise vea: {error}",
+            "unable_to_retrieve_system_status": "Ei saanud süsteemi staatust: {error}",
+            "unexpected_error": "Esines ootamatu tõrge: {error}"
         },
         "folder": {
             "file_path": "Failitee",
@@ -1362,7 +1374,8 @@
         "date_invalid_form": "${path} peab olema AAAA-KK-PP vormis",
         "required": "${path} on nõutud väli",
         "blank": "${path} ei tohi olla tühi",
-        "unique": "${path} peab olema kordumatu"
+        "unique": "${path} peab olema kordumatu",
+        "end_time_before_start_time": "Lõpuaeg peab olema suurem või võrdne algusajaga"
     },
     "videos": "Videod",
     "view_all": "Vaata Kõiki",
@@ -1490,5 +1503,19 @@
     "sub_groups": "Alamgrupid",
     "include_sub_tag_content": "Sisalda alamsiltide sisu",
     "include_sub_studio_content": "Sisalda alamstuudiote sisu",
-    "o_count": "O Arv"
+    "o_count": "O Arv",
+    "include_sub_groups": "Sisalda alam-gruppe",
+    "time_end": "Lõpuaeg",
+    "criterion_modifier_values": {
+        "any": "Kõik",
+        "any_of": "Järgnevast",
+        "none": "Mitte Ükski",
+        "only": "Ainult"
+    },
+    "custom_fields": {
+        "field": "Väli",
+        "title": "Kohandatud Väli",
+        "value": "Väärtus"
+    },
+    "eta": "ETA"
 }

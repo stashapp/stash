@@ -198,6 +198,9 @@ type PerformerFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type PerformerCreateInput struct {
@@ -234,6 +237,8 @@ type PerformerCreateInput struct {
 	HairColor     *string        `json:"hair_color"`
 	Weight        *int           `json:"weight"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 type PerformerUpdateInput struct {
@@ -271,4 +276,6 @@ type PerformerUpdateInput struct {
 	HairColor     *string        `json:"hair_color"`
 	Weight        *int           `json:"weight"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

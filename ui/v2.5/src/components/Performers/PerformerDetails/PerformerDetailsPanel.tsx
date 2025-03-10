@@ -14,6 +14,7 @@ import {
   FormatWeight,
 } from "../PerformerList";
 import { PatchComponent } from "src/patch";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -176,6 +177,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           value={renderStashIDs()}
           fullWidth={fullWidth}
         />
+        {fullWidth && <CustomFields values={performer.custom_fields} />}
       </PerformerDetailGroup>
     );
   });

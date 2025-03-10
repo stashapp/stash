@@ -184,6 +184,7 @@ export const GroupList: React.FC<IGroupList> = ({
         {filter.displayMode === DisplayMode.Grid && (
           <GroupCardGrid
             groups={result.data?.findGroups.groups ?? []}
+            zoomIndex={filter.zoomIndex}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
             fromGroupId={fromGroupId}
@@ -225,6 +226,7 @@ export const GroupList: React.FC<IGroupList> = ({
       selectable={selectable}
     >
       <ItemList
+        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

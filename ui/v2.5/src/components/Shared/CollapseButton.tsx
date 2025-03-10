@@ -8,6 +8,7 @@ import { Button, Collapse } from "react-bootstrap";
 import { Icon } from "./Icon";
 
 interface IProps {
+  className?: string;
   text: React.ReactNode;
 }
 
@@ -17,12 +18,12 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
   const [open, setOpen] = useState(false);
 
   return (
-    <div>
+    <div className={props.className}>
       <Button
         onClick={() => setOpen(!open)}
         className="minimal collapse-button"
       >
-        <Icon icon={open ? faChevronDown : faChevronRight} />
+        <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
         <span>{props.text}</span>
       </Button>
       <Collapse in={open}>
@@ -44,7 +45,7 @@ export const ExpandCollapseButton: React.FC<{
         className="minimal expand-collapse"
         onClick={() => setCollapsed(!collapsed)}
       >
-        <Icon className="fa-fw" icon={buttonIcon} />
+        <Icon icon={buttonIcon} fixedWidth />
       </Button>
     </span>
   );

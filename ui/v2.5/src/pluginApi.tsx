@@ -11,6 +11,7 @@ import * as Bootstrap from "react-bootstrap";
 import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
+import * as ReactSelect from "react-select";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
 import Event from "./hooks/event";
@@ -73,6 +74,7 @@ export const PluginApi = {
     FontAwesomeSolid,
     Mousetrap,
     MousetrapPause,
+    ReactSelect,
   },
   register: {
     // register a route to be added to the main router
@@ -83,6 +85,7 @@ export const PluginApi = {
   loadableComponents: {
     // add components as needed for plugins that provide pages
     SceneCard: () => import("./components/Scenes/SceneCard"),
+    PerformerSelect: () => import("./components/Performers/PerformerSelect"),
   },
   components,
   utils: {

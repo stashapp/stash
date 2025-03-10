@@ -145,6 +145,7 @@
   },
   "actions_name": "Actions",
   "age": "Age",
+  "age_on_date": "{age} at production",
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",
@@ -173,6 +174,9 @@
       "active_instance": "Active stash-box instance:",
       "blacklist_desc": "Blacklist items are excluded from queries. Note that they are regular expressions and also case-insensitive. Certain characters must be escaped with a backslash: {chars_require_escape}",
       "blacklist_label": "Blacklist",
+      "errors": {
+        "blacklist_duplicate": "Duplicate blacklist item"
+      },
       "mark_organized_desc": "Immediately mark the scene as Organized after the Save button is clicked.",
       "mark_organized_label": "Mark as Organized on save",
       "query_mode_auto": "Auto",
@@ -747,6 +751,7 @@
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
+          "show_range_markers": "Show Range Markers",
           "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
@@ -851,6 +856,13 @@
     "only": "Only"
   },
   "custom": "Custom",
+  "custom_fields": {
+    "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}",
+    "criteria_format_string_others": "{criterion} (custom field) {modifierString} {valueString} (+{others} others)",
+    "field": "Field",
+    "title": "Custom Fields",
+    "value": "Value"
+  },
   "date": "Date",
   "date_format": "YYYY-MM-DD",
   "datetime_format": "YYYY-MM-DD HH:MM",
@@ -936,7 +948,7 @@
       "marker_image_previews": "Marker Animated Image Previews",
       "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "marker_screenshots": "Marker Screenshots",
-      "marker_screenshots_tooltip": "Marker static JPG images, only required if Preview Type is set to Static Image.",
+      "marker_screenshots_tooltip": "Marker static JPG images",
       "markers": "Marker Previews",
       "markers_tooltip": "20 second videos which begin at the given timecode.",
       "override_preview_generation_options": "Override Preview Generation Options",
@@ -1033,6 +1045,12 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "custom_fields": {
+      "duplicate_field": "Field name must be unique",
+      "field_name_length": "Field name must fewer than 65 characters",
+      "field_name_required": "Field name is required",
+      "field_name_whitespace": "Field name cannot have leading or trailing whitespace"
+    },
     "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "invalid_javascript_string": "Invalid javascript code: {error}",
@@ -1041,6 +1059,7 @@
     "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
   },
+  "eta": "ETA",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -1119,7 +1138,8 @@
   "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
-    "generic": "Loading…"
+    "generic": "Loading…",
+    "plugins": "Loading plugins…"
   },
   "marker_count": "Marker Count",
   "markers": "Markers",
@@ -1133,7 +1153,7 @@
     "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
-      "age_context": "{age} in this scene"
+      "age_context": "{age} {years_old} at production"
     },
     "phash": "PHash",
     "play_count": "Play Count",
@@ -1144,6 +1164,7 @@
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "name": "Name",
+  "sort_name": "Sort Name",
   "new": "New",
   "none": "None",
   "o_count": "O Count",

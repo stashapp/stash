@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
-import { FormattedNumber, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -25,6 +25,7 @@ import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { View } from "../List/views";
+import { FileSize } from "../Shared/FileSize";
 
 function getItems(result: GQL.FindScenesQueryResult) {
   return result?.data?.findScenes?.scenes ?? [];
@@ -37,7 +38,6 @@ function getCount(result: GQL.FindScenesQueryResult) {
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
   const size = result?.data?.findScenes?.filesize;
-  const filesize = size ? TextUtils.fileSize(size) : undefined;
 
   if (!duration && !size) {
     return;
@@ -54,15 +54,9 @@ function renderMetadataByline(result: GQL.FindScenesQueryResult) {
         </span>
       ) : undefined}
       {separator}
-      {size && filesize ? (
+      {size ? (
         <span className="scenes-size">
-          <FormattedNumber
-            value={filesize.size}
-            maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-              filesize.unit
-            )}
-          />
-          {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+          <FileSize size={size} />
         </span>
       ) : undefined}
       )

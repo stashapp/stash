@@ -54,6 +54,17 @@
       display: none;
     }
   }
+
+  .detail-group .custom-fields .collapse-button {
+    display: table-cell;
+    font-weight: 700;
+    padding-left: 0;
+  }
+
+  .custom-fields .detail-item-title,
+  .custom-fields .detail-item-value {
+    font-family: "Courier New", Courier, monospace;
+  }
   /* stylelint-enable selector-class-pattern */
 }
 

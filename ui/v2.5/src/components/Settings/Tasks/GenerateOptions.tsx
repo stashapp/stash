@@ -110,9 +110,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             }
           />
           <BooleanSetting
-            advanced
             id="marker-screenshot-task"
-            className="sub-setting"
             checked={options.markerScreenshots ?? false}
             disabled={!options.markers}
             headingID="dialogs.scene_gen.marker_screenshots"

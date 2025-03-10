@@ -73,19 +73,23 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = (props: IProps) => {
+export const StudioCard: React.FC<IProps> = ({
+  studio,
+  containerWidth,
+  hideParent,
+  selecting,
+  selected,
+  zoomIndex,
+  onSelectedChanged,
+}) => {
   const [updateStudio] = useStudioUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (
-      !props.containerWidth ||
-      props.zoomIndex === undefined ||
-      ScreenUtils.isMobile()
-    )
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
       return;
 
-    let zoomValue = props.zoomIndex;
+    let zoomValue = zoomIndex;
     console.log(zoomValue);
     let preferredCardWidth: number;
     switch (zoomValue) {
@@ -102,18 +106,18 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
         preferredCardWidth = 560;
     }
     let fittedCardWidth = calculateCardWidth(
-      props.containerWidth,
+      containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [props.containerWidth, props.zoomIndex]);
+  }, [containerWidth, zoomIndex]);
 
   function onToggleFavorite(v: boolean) {
-    if (props.studio.id) {
+    if (studio.id) {
       updateStudio({
         variables: {
           input: {
-            id: props.studio.id,
+            id: studio.id,
             favorite: v,
           },
         },
@@ -122,74 +126,74 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
   }
 
   function maybeRenderScenesPopoverButton() {
-    if (!props.studio.scene_count) return;
+    if (!studio.scene_count) return;
 
     return (
       <PopoverCountButton
         className="scene-count"
         type="scene"
-        count={props.studio.scene_count}
-        url={NavUtils.makeStudioScenesUrl(props.studio)}
+        count={studio.scene_count}
+        url={NavUtils.makeStudioScenesUrl(studio)}
       />
     );
   }
 
   function maybeRenderImagesPopoverButton() {
-    if (!props.studio.image_count) return;
+    if (!studio.image_count) return;
 
     return (
       <PopoverCountButton
         className="image-count"
         type="image"
-        count={props.studio.image_count}
-        url={NavUtils.makeStudioImagesUrl(props.studio)}
+        count={studio.image_count}
+        url={NavUtils.makeStudioImagesUrl(studio)}
       />
     );
   }
 
   function maybeRenderGalleriesPopoverButton() {
-    if (!props.studio.gallery_count) return;
+    if (!studio.gallery_count) return;
 
     return (
       <PopoverCountButton
         className="gallery-count"
         type="gallery"
-        count={props.studio.gallery_count}
-        url={NavUtils.makeStudioGalleriesUrl(props.studio)}
+        count={studio.gallery_count}
+        url={NavUtils.makeStudioGalleriesUrl(studio)}
       />
     );
   }
 
   function maybeRenderGroupsPopoverButton() {
-    if (!props.studio.group_count) return;
+    if (!studio.group_count) return;
 
     return (
       <PopoverCountButton
         className="group-count"
         type="group"
-        count={props.studio.group_count}
-        url={NavUtils.makeStudioGroupsUrl(props.studio)}
+        count={studio.group_count}
+        url={NavUtils.makeStudioGroupsUrl(studio)}
       />
     );
   }
 
   function maybeRenderPerformersPopoverButton() {
-    if (!props.studio.performer_count) return;
+    if (!studio.performer_count) return;
 
     return (
       <PopoverCountButton
         className="performer-count"
         type="performer"
-        count={props.studio.performer_count}
-        url={NavUtils.makeStudioPerformersUrl(props.studio)}
+        count={studio.performer_count}
+        url={NavUtils.makeStudioPerformersUrl(studio)}
       />
     );
   }
 
   function maybeRenderTagPopoverButton() {
-    if (props.studio.tags.length <= 0) return;
+    if (studio.tags.length <= 0) return;
 
-    const popoverContent = props.studio.tags.map((tag) => (
+    const popoverContent = studio.tags.map((tag) => (
       <TagLink key={tag.id} linkType="studio" tag={tag} />
     ));
 
@@ -197,7 +201,7 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal tag-count">
           <Icon icon={faTag} />
-          <span>{props.studio.tags.length}</span>
+          <span>{studio.tags.length}</span>
         </Button>
       </HoverPopover>
     );
@@ -205,12 +209,12 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
 
   function maybeRenderPopoverButtonGroup() {
     if (
-      props.studio.scene_count ||
-      props.studio.image_count ||
-      props.studio.gallery_count ||
-      props.studio.group_count ||
-      props.studio.performer_count ||
-      props.studio.tags.length > 0
+      studio.scene_count ||
+      studio.image_count ||
+      studio.gallery_count ||
+      studio.group_count ||
+      studio.performer_count ||
+      studio.tags.length > 0
     ) {
       return (
         <>
@@ -230,38 +234,38 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
 
   return (
     <GridCard
-      className={`studio-card zoom-${props.zoomIndex}`}
-      url={`/studios/${props.studio.id}`}
+      className={`studio-card zoom-${zoomIndex}`}
+      url={`/studios/${studio.id}`}
       width={cardWidth}
-      title={props.studio.name}
+      title={studio.name}
       linkClassName="studio-card-header"
       image={
         <img
           loading="lazy"
           className="studio-card-image"
-          alt={props.studio.name}
-          src={props.studio.image_path ?? ""}
+          alt={studio.name}
+          src={studio.image_path ?? ""}
         />
       }
       details={
         <div className="studio-card__details">
-          {maybeRenderParent(props.studio, props.hideParent)}
-          {maybeRenderChildren(props.studio)}
-          <RatingBanner rating={props.studio.rating100} />
+          {maybeRenderParent(studio, hideParent)}
+          {maybeRenderChildren(studio)}
+          <RatingBanner rating={studio.rating100} />
         </div>
       }
       overlays={
         <FavoriteIcon
-          favorite={props.studio.favorite}
+          favorite={studio.favorite}
           onToggleFavorite={(v) => onToggleFavorite(v)}
           size="2x"
           className="hide-not-favorite"
         />
       }
       popovers={maybeRenderPopoverButtonGroup()}
-      selected={props.selected}
-      selecting={props.selecting}
-      onSelectedChanged={props.onSelectedChanged}
+      selected={selected}
+      selecting={selecting}
+      onSelectedChanged={onSelectedChanged}
     />
   );
 };

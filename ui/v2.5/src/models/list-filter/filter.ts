@@ -5,19 +5,11 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import {
-  Criterion,
-  CriterionValue,
-  ISavedCriterion,
-} from "./criteria/criterion";
+import { Criterion } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
-import {
-  CriterionType,
-  DisplayMode,
-  SavedObjectFilter,
-  SavedUIOptions,
-} from "./types";
+import { CriterionType, DisplayMode, SavedUIOptions } from "./types";
 import { ListFilterOptions } from "./filter-options";
+import { CustomFieldsCriterion } from "./criteria/custom-fields";
 
 interface IDecodedParams {
   perPage?: number;
@@ -60,7 +52,7 @@ export class ListFilterModel {
   public sortBy?: string;
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
   public zoomIndex: number = 1;
-  public criteria: Array<Criterion<CriterionValue>> = [];
+  public criteria: Array<Criterion> = [];
   public randomSeed = -1;
   private defaultZoomIndex: number = 1;
 
@@ -163,7 +155,7 @@ export class ListFilterModel {
             JSON.parse(jsonString);
 
           const criterion = this.makeCriterion(criterionType);
-          criterion.setFromSavedCriterion(savedCriterion);
+          criterion.fromDecodedParams(savedCriterion);
 
           this.criteria.push(criterion);
         } catch (err) {
@@ -308,7 +300,7 @@ export class ListFilterModel {
     if (objectFilter) {
       for (const [k, v] of Object.entries(objectFilter)) {
         const criterion = this.makeCriterion(k as CriterionType);
-        criterion.setFromSavedCriterion(v as ISavedCriterion<CriterionValue>);
+        criterion.setFromSavedCriterion(v);
         this.criteria.push(criterion);
       }
     }
@@ -339,7 +331,11 @@ export class ListFilterModel {
   // Returns query parameters with necessary parts URL-encoded
   public getEncodedParams(): IEncodedParams {
     const encodedCriteria: string[] = this.criteria.map((criterion) => {
-      let str = ListFilterModel.translateJSON(criterion.toJSON(), false);
+      const queryParams = criterion.toQueryParams();
+      let str = ListFilterModel.translateJSON(
+        JSON.stringify(queryParams),
+        false
+      );
 
       // URL-encode other characters
       str = encodeURI(str);
@@ -446,15 +442,16 @@ export class ListFilterModel {
   public makeFilter() {
     const output: Record<string, unknown> = {};
     for (const c of this.criteria) {
-      output[c.criterionOption.type] = c.toCriterionInput();
+      c.applyToCriterionInput(output);
     }
     return output;
   }
 
+  // TODO - this needs to just use makeFilter, but it needs a migration
   public makeSavedFilter() {
-    const output: SavedObjectFilter = {};
+    const output: Record<string, unknown> = {};
     for (const c of this.criteria) {
-      output[c.criterionOption.type] = c.toSavedCriterion();
+      c.applyToSavedCriterion(output);
     }
     return output;
   }
@@ -485,6 +482,20 @@ export class ListFilterModel {
 
     ret.criteria = newCriteria;
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public removeCustomFieldCriterion(type: CriterionType, index: number) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    if (c instanceof CustomFieldsCriterion) {
+      const newCriteria = c.value.filter((_, i) => i !== index);
+      c.value = newCriteria;
+    }
+
     return ret;
   }
 

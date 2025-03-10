@@ -616,6 +616,7 @@ declare namespace PluginApi {
     const FontAwesomeSolid: typeof import("@fortawesome/free-solid-svg-icons");
     const Intl: typeof import("react-intl");
     const Mousetrap: typeof import("mousetrap");
+    const ReactSelect: typeof import("react-select");
 
     // @ts-expect-error
     import { MousetrapStatic } from "mousetrap";
@@ -688,6 +689,29 @@ declare namespace PluginApi {
     StringListSetting: React.FC<any>;
     ConstantSetting: React.FC<any>;
     SceneFileInfoPanel: React.FC<any>;
+    PerformerPage: React.FC<any>;
+    PerformerAppearsWithPanel: React.FC<any>;
+    PerformerGalleriesPanel: React.FC<any>;
+    PerformerGroupsPanel: React.FC<any>;
+    PerformerScenesPanel: React.FC<any>;
+    PerformerImagesPanel: React.FC<any>;
+    TabTitleCounter: React.FC<any>;
+    PerformerCard: React.FC<any>;
+    "PerformerCard.Popovers": React.FC<any>;
+    "PerformerCard.Details": React.FC<any>;
+    "PerformerCard.Overlays": React.FC<any>;
+    "PerformerCard.Image": React.FC<any>;
+    "PerformerCard.Title": React.FC<any>;
+    "TagCard.Popovers": React.FC<any>;
+    "TagCard.Details": React.FC<any>;
+    "TagCard.Overlays": React.FC<any>;
+    "TagCard.Image": React.FC<any>;
+    "TagCard.Title": React.FC<any>;
+    ScenePage: React.FC<any>;
+    "ScenePage.Tabs": React.FC<any>;
+    "ScenePage.TabContent": React.FC<any>;
+    ScenePlayer: React.FC<any>;
+    FrontPage: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {

@@ -38,33 +38,40 @@ export function maybeRenderShowMoreLess(
 
 interface IDetailItem {
   id?: string | null;
+  label?: React.ReactNode;
   messageId?: string;
   heading?: React.ReactNode;
   value?: React.ReactNode;
+  labelTitle?: string;
   title?: string;
   fullWidth?: boolean;
+  showEmpty?: boolean;
 }
 
 export const DetailItem: React.FC<IDetailItem> = ({
   id,
+  label,
   messageId,
   heading,
   value,
+  labelTitle,
   title,
   fullWidth,
+  showEmpty = false,
 }) => {
-  if (!id || !value || value === "Na") {
+  if (!id || (!showEmpty && (!value || value === "Na"))) {
     return <></>;
   }
 
-  const message = <FormattedMessage id={messageId ?? id} />;
+  const message = label ?? <FormattedMessage id={messageId ?? id} />;
 
   // according to linter rule CSS classes shouldn't use underscores
-  const cssId = id?.replace("_", "-");
+  const sanitisedID = id.replace(/_/g, "-");
+
 
   return (
-    <div className={cx(`detail-item ${cssId}`, { "full-width": fullWidth })}>
-      <span className={`detail-item-title ${cssId}`}>
+    <div className={cx(`detail-item ${sanitisedID}`, { "full-width": fullWidth })}>
+      <span className={`detail-item-title ${sanitisedID}`} title={labelTitle}>
         {heading ? (
           heading
         ) : (
@@ -74,7 +81,7 @@ export const DetailItem: React.FC<IDetailItem> = ({
           </>
         )}
       </span>
-      <span className={`detail-item-value ${cssId}`} title={title}>
+      <span className={`detail-item-value ${sanitisedID}`} title={title}>
         {value}
       </span>
     </div>

@@ -12,7 +12,7 @@ import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
@@ -23,12 +23,13 @@ import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
 import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
+import { PatchComponent } from "src/patch";
 
 export interface IPerformerCardExtraCriteria {
-  scenes?: Criterion<CriterionValue>[];
-  images?: Criterion<CriterionValue>[];
-  galleries?: Criterion<CriterionValue>[];
-  groups?: Criterion<CriterionValue>[];
+  scenes?: ModifierCriterion<CriterionValue>[];
+  images?: ModifierCriterion<CriterionValue>[];
+  galleries?: ModifierCriterion<CriterionValue>[];
+  groups?: ModifierCriterion<CriterionValue>[];
   performer?: ILabeledId;
 }
 
@@ -43,180 +44,116 @@ interface IPerformerCardProps {
   extraCriteria?: IPerformerCardExtraCriteria;
 }
 
-export const PerformerCard: React.FC<IPerformerCardProps> = (
-  props: IPerformerCardProps
-) => {
-  const intl = useIntl();
-  const age = TextUtils.age(
-    props.performer.birthdate,
-    props.ageFromDate ?? props.performer.death_date
-  );
-  const ageL10nId = props.ageFromDate
-    ? "media_info.performer_card.age_context"
-    : "media_info.performer_card.age";
-  const ageL10String = intl.formatMessage({
-    id: "years_old",
-    defaultMessage: "years old",
-  });
-  const ageString = intl.formatMessage(
-    { id: ageL10nId },
-    { age, years_old: ageL10String }
-  );
+const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
+  "PerformerCard.Popovers",
+  ({ performer, extraCriteria }) => {
+    function maybeRenderScenesPopoverButton() {
+      if (!performer.scene_count) return;
 
-  const [updatePerformer] = usePerformerUpdate();
-  const [cardWidth, setCardWidth] = useState<number>();
-
-  useEffect(() => {
-    if (
-      !props.containerWidth ||
-      props.zoomIndex === undefined ||
-      ScreenUtils.isMobile()
-    )
-      return;
-
-    let zoomValue = props.zoomIndex;
-    let preferredCardWidth: number;
-    switch (zoomValue) {
-      case 0:
-        preferredCardWidth = 240;
-        break;
-      case 1:
-        preferredCardWidth = 300;
-        break;
-      case 2:
-        preferredCardWidth = 375;
-        break;
-      case 3:
-        preferredCardWidth = 470;
+      return (
+        <PopoverCountButton
+          className="scene-count"
+          type="scene"
+          count={performer.scene_count}
+          url={NavUtils.makePerformerScenesUrl(
+            performer,
+            extraCriteria?.performer,
+            extraCriteria?.scenes
+          )}
+        />
+      );
     }
-    let fittedCardWidth = calculateCardWidth(
-      props.containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [props.containerWidth, props.zoomIndex]);
 
-  function onToggleFavorite(v: boolean) {
-    if (props.performer.id) {
-      updatePerformer({
-        variables: {
-          input: {
-            id: props.performer.id,
-            favorite: v,
-          },
-        },
-      });
+    function maybeRenderImagesPopoverButton() {
+      if (!performer.image_count) return;
+
+      return (
+        <PopoverCountButton
+          className="image-count"
+          type="image"
+          count={performer.image_count}
+          url={NavUtils.makePerformerImagesUrl(
+            performer,
+            extraCriteria?.performer,
+            extraCriteria?.images
+          )}
+        />
+      );
     }
-  }
 
-  function maybeRenderScenesPopoverButton() {
-    if (!props.performer.scene_count) return;
+    function maybeRenderGalleriesPopoverButton() {
+      if (!performer.gallery_count) return;
 
-    return (
-      <PopoverCountButton
-        className="scene-count"
-        type="scene"
-        count={props.performer.scene_count}
-        url={NavUtils.makePerformerScenesUrl(
-          props.performer,
-          props.extraCriteria?.performer,
-          props.extraCriteria?.scenes
-        )}
-      />
-    );
-  }
+      return (
+        <PopoverCountButton
+          className="gallery-count"
+          type="gallery"
+          count={performer.gallery_count}
+          url={NavUtils.makePerformerGalleriesUrl(
+            performer,
+            extraCriteria?.performer,
+            extraCriteria?.galleries
+          )}
+        />
+      );
+    }
 
-  function maybeRenderImagesPopoverButton() {
-    if (!props.performer.image_count) return;
+    function maybeRenderOCounter() {
+      if (!performer.o_counter) return;
 
-    return (
-      <PopoverCountButton
-        className="image-count"
-        type="image"
-        count={props.performer.image_count}
-        url={NavUtils.makePerformerImagesUrl(
-          props.performer,
-          props.extraCriteria?.performer,
-          props.extraCriteria?.images
-        )}
-      />
-    );
-  }
+      return (
+        <div className="o-counter">
+          <Button className="minimal">
+            <span className="fa-icon">
+              <SweatDrops />
+            </span>
+            <span>{performer.o_counter}</span>
+          </Button>
+        </div>
+      );
+    }
 
-  function maybeRenderGalleriesPopoverButton() {
-    if (!props.performer.gallery_count) return;
+    function maybeRenderTagPopoverButton() {
+      if (performer.tags.length <= 0) return;
 
-    return (
-      <PopoverCountButton
-        className="gallery-count"
-        type="gallery"
-        count={props.performer.gallery_count}
-        url={NavUtils.makePerformerGalleriesUrl(
-          props.performer,
-          props.extraCriteria?.performer,
-          props.extraCriteria?.galleries
-        )}
-      />
-    );
-  }
+      const popoverContent = performer.tags.map((tag) => (
+        <TagLink key={tag.id} linkType="performer" tag={tag} />
+      ));
 
-  function maybeRenderOCounter() {
-    if (!props.performer.o_counter) return;
+      return (
+        <HoverPopover placement="bottom" content={popoverContent}>
+          <Button className="minimal tag-count">
+            <Icon icon={faTag} />
+            <span>{performer.tags.length}</span>
+          </Button>
+        </HoverPopover>
+      );
+    }
 
-    return (
-      <div className="o-counter">
-        <Button className="minimal">
-          <span className="fa-icon">
-            <SweatDrops />
-          </span>
-          <span>{props.performer.o_counter}</span>
-        </Button>
-      </div>
-    );
-  }
+    function maybeRenderGroupsPopoverButton() {
+      if (!performer.group_count) return;
 
-  function maybeRenderTagPopoverButton() {
-    if (props.performer.tags.length <= 0) return;
+      return (
+        <PopoverCountButton
+          className="group-count"
+          type="group"
+          count={performer.group_count}
+          url={NavUtils.makePerformerGroupsUrl(
+            performer,
+            extraCriteria?.performer,
+            extraCriteria?.groups
+          )}
+        />
+      );
+    }
 
-    const popoverContent = props.performer.tags.map((tag) => (
-      <TagLink key={tag.id} linkType="performer" tag={tag} />
-    ));
-
-    return (
-      <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal tag-count">
-          <Icon icon={faTag} />
-          <span>{props.performer.tags.length}</span>
-        </Button>
-      </HoverPopover>
-    );
-  }
-
-  function maybeRenderGroupsPopoverButton() {
-    if (!props.performer.group_count) return;
-
-    return (
-      <PopoverCountButton
-        className="group-count"
-        type="group"
-        count={props.performer.group_count}
-        url={NavUtils.makePerformerGroupsUrl(
-          props.performer,
-          props.extraCriteria?.performer,
-          props.extraCriteria?.groups
-        )}
-      />
-    );
-  }
-
-  function maybeRenderPopoverButtonGroup() {
     if (
-      props.performer.scene_count ||
-      props.performer.image_count ||
-      props.performer.gallery_count ||
-      props.performer.tags.length > 0 ||
-      props.performer.o_counter ||
-      props.performer.group_count
+      performer.scene_count ||
+      performer.image_count ||
+      performer.gallery_count ||
+      performer.tags.length > 0 ||
+      performer.o_counter ||
+      performer.group_count
     ) {
       return (
         <>
@@ -232,85 +169,189 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
         </>
       );
     }
-  }
 
-  function maybeRenderRatingBanner() {
-    if (!props.performer.rating100) {
-      return;
-    }
-    return <RatingBanner rating={props.performer.rating100} />;
+    return null;
   }
+);
 
-  function maybeRenderFlag() {
-    if (props.performer.country) {
-      return (
-        <Link to={NavUtils.makePerformersCountryUrl(props.performer)}>
-          <CountryFlag
-            className="performer-card__country-flag"
-            country={props.performer.country}
-            includeOverlay
-          />
-          <span className="performer-card__country-string">
-            {props.performer.country}
-          </span>
-        </Link>
-      );
-    }
-  }
+const PerformerCardOverlays: React.FC<IPerformerCardProps> = PatchComponent(
+  "PerformerCard.Overlays",
+  ({ performer }) => {
+    const [updatePerformer] = usePerformerUpdate();
 
-  return (
-    <GridCard
-      className={`performer-card zoom-${props.zoomIndex}`}
-      url={`/performers/${props.performer.id}`}
-      width={cardWidth}
-      pretitleIcon={
-        <GenderIcon className="gender-icon" gender={props.performer.gender} />
+    function onToggleFavorite(v: boolean) {
+      if (performer.id) {
+        updatePerformer({
+          variables: {
+            input: {
+              id: performer.id,
+              favorite: v,
+            },
+          },
+        });
       }
-      title={
-        <div>
-          <span className="performer-name">{props.performer.name}</span>
-          {props.performer.disambiguation && (
-            <span className="performer-disambiguation">
-              {` (${props.performer.disambiguation})`}
+    }
+
+    function maybeRenderRatingBanner() {
+      if (!performer.rating100) {
+        return;
+      }
+      return <RatingBanner rating={performer.rating100} />;
+    }
+
+    function maybeRenderFlag() {
+      if (performer.country) {
+        return (
+          <Link to={NavUtils.makePerformersCountryUrl(performer)}>
+            <CountryFlag
+              className="performer-card__country-flag"
+              country={performer.country}
+              includeOverlay
+            />
+            <span className="performer-card__country-string">
+              {performer.country}
             </span>
-          )}
-        </div>
+          </Link>
+        );
       }
-      image={
-        <>
-          <img
-            loading="lazy"
-            className="performer-card-image"
-            alt={props.performer.name ?? ""}
-            src={props.performer.image_path ?? ""}
-          />
-        </>
+    }
+
+    return (
+      <>
+        <FavoriteIcon
+          favorite={performer.favorite}
+          onToggleFavorite={onToggleFavorite}
+          size="2x"
+          className="hide-not-favorite"
+        />
+        {maybeRenderRatingBanner()}
+        {maybeRenderFlag()}
+      </>
+    );
+  }
+);
+
+const PerformerCardDetails: React.FC<IPerformerCardProps> = PatchComponent(
+  "PerformerCard.Details",
+  ({ performer, ageFromDate }) => {
+    const intl = useIntl();
+    const age = TextUtils.age(
+      performer.birthdate,
+      ageFromDate ?? performer.death_date
+    );
+    const ageL10nId = ageFromDate
+      ? "media_info.performer_card.age_context"
+      : "media_info.performer_card.age";
+    const ageL10String = intl.formatMessage({
+      id: "years_old",
+      defaultMessage: "years old",
+    });
+    const ageString = intl.formatMessage(
+      { id: ageL10nId },
+      { age, years_old: ageL10String }
+    );
+
+    return (
+      <>
+        {age !== 0 ? (
+          <div className="performer-card__age">{ageString}</div>
+        ) : (
+          ""
+        )}
+      </>
+    );
+  }
+);
+
+const PerformerCardImage: React.FC<IPerformerCardProps> = PatchComponent(
+  "PerformerCard.Image",
+  ({ performer }) => {
+    return (
+      <>
+        <img
+          loading="lazy"
+          className="performer-card-image"
+          alt={performer.name ?? ""}
+          src={performer.image_path ?? ""}
+        />
+      </>
+    );
+  }
+);
+
+const PerformerCardTitle: React.FC<IPerformerCardProps> = PatchComponent(
+  "PerformerCard.Title",
+  ({ performer }) => {
+    return (
+      <div>
+        <span className="performer-name">{performer.name}</span>
+        {performer.disambiguation && (
+          <span className="performer-disambiguation">
+            {` (${performer.disambiguation})`}
+          </span>
+        )}
+      </div>
+    );
+  }
+);
+
+export const PerformerCard: React.FC<IPerformerCardProps> = PatchComponent(
+  "PerformerCard",
+  (props) => {
+    const {
+      performer,
+      containerWidth,
+      selecting,
+      selected,
+      onSelectedChanged,
+      zoomIndex,
+    } = props;
+
+    const [cardWidth, setCardWidth] = useState<number>();
+
+    useEffect(() => {
+      if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+        return;
+
+      let zoomValue = zoomIndex;
+      let preferredCardWidth: number;
+      switch (zoomValue) {
+        case 0:
+          preferredCardWidth = 240;
+          break;
+        case 1:
+          preferredCardWidth = 300;
+          break;
+        case 2:
+          preferredCardWidth = 375;
+          break;
+        case 3:
+          preferredCardWidth = 470;
       }
-      overlays={
-        <>
-          <FavoriteIcon
-            favorite={props.performer.favorite}
-            onToggleFavorite={onToggleFavorite}
-            size="2x"
-            className="hide-not-favorite"
-          />
-          {maybeRenderRatingBanner()}
-          {maybeRenderFlag()}
-        </>
-      }
-      details={
-        <>
-          {age !== 0 ? (
-            <div className="performer-card__age">{ageString}</div>
-          ) : (
-            ""
-          )}
-        </>
-      }
-      popovers={maybeRenderPopoverButtonGroup()}
-      selected={props.selected}
-      selecting={props.selecting}
-      onSelectedChanged={props.onSelectedChanged}
-    />
-  );
-};
+      let fittedCardWidth = calculateCardWidth(
+        containerWidth,
+        preferredCardWidth!
+      );
+      setCardWidth(fittedCardWidth);
+    }, [containerWidth, zoomIndex]);
+
+    return (
+      <GridCard
+        className={`performer-card zoom-${zoomIndex}`}
+        url={`/performers/${performer.id}`}
+        width={cardWidth}
+        pretitleIcon={
+          <GenderIcon className="gender-icon" gender={performer.gender} />
+        }
+        title={<PerformerCardTitle {...props} />}
+        image={<PerformerCardImage {...props} />}
+        overlays={<PerformerCardOverlays {...props} />}
+        details={<PerformerCardDetails {...props} />}
+        popovers={<PerformerCardPopovers {...props} />}
+        selected={selected}
+        selecting={selecting}
+        onSelectedChanged={onSelectedChanged}
+      />
+    );
+  }
+);

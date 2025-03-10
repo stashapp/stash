@@ -21,6 +21,7 @@ type FinderAliasImageGetter interface {
 func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag) (*jsonschema.Tag, error) {
 	newTagJSON := jsonschema.Tag{
 		Name:          tag.Name,
+		SortName:      tag.SortName,
 		Description:   tag.Description,
 		Favorite:      tag.Favorite,
 		IgnoreAutoTag: tag.IgnoreAutoTag,

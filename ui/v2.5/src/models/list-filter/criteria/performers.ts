@@ -5,7 +5,11 @@ import {
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import { ILabeledId, ILabeledValueListValue } from "../types";
-import { Criterion, CriterionOption, ISavedCriterion } from "./criterion";
+import {
+  ModifierCriterion,
+  ModifierCriterionOption,
+  ISavedCriterion,
+} from "./criterion";
 
 const modifierOptions = [
   CriterionModifier.IncludesAll,
@@ -19,7 +23,7 @@ const defaultModifier = CriterionModifier.IncludesAll;
 
 const inputType = "performers";
 
-export const PerformersCriterionOption = new CriterionOption({
+export const PerformersCriterionOption = new ModifierCriterionOption({
   messageID: "performers",
   type: "performers",
   modifierOptions,
@@ -28,7 +32,7 @@ export const PerformersCriterionOption = new CriterionOption({
   makeCriterion: () => new PerformersCriterion(),
 });
 
-export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
+export class PerformersCriterion extends ModifierCriterion<ILabeledValueListValue> {
   constructor() {
     super(PerformersCriterionOption, { items: [], excluded: [] });
   }
@@ -116,7 +120,10 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
 
   public getLabel(intl: IntlShape): string {
     let id = "criterion_modifier.format_string";
-    let modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let modifierString = ModifierCriterion.getModifierLabel(
+      intl,
+      this.modifier
+    );
     let valueString = "";
     let excludedString = "";
 
@@ -128,7 +135,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
 
       if (this.value.excluded && this.value.excluded.length > 0) {
         if (this.value.items.length === 0) {
-          modifierString = Criterion.getModifierLabel(
+          modifierString = ModifierCriterion.getModifierLabel(
             intl,
             CriterionModifier.Excludes
           );

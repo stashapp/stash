@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { FormattedMessage, FormattedNumber, FormattedTime } from "react-intl";
+import { FormattedMessage, FormattedTime } from "react-intl";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
 import * as GQL from "src/core/generated-graphql";
@@ -8,6 +8,7 @@ import { mutateImageSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { TextField, URLField, URLsField } from "src/utils/field";
+import { FileSize } from "src/components/Shared/FileSize";
 
 interface IFileInfoPanelProps {
   file: GQL.ImageFileDataFragment | GQL.VideoFileDataFragment;
@@ -21,29 +22,6 @@ interface IFileInfoPanelProps {
 const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
-  function renderFileSize() {
-    if (props.file.size === undefined) {
-      return;
-    }
-
-    const { size, unit } = TextUtils.fileSize(props.file.size ?? 0);
-
-    return (
-      <TextField id="filesize">
-        <span className="text-truncate">
-          <FormattedNumber
-            value={size}
-            // eslint-disable-next-line react/style-prop-object
-            style="unit"
-            unit={unit}
-            unitDisplay="narrow"
-            maximumFractionDigits={2}
-          />
-        </span>
-      </TextField>
-    );
-  }
-
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
   return (
@@ -64,7 +42,11 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           value={`file://${props.file.path}`}
           truncate
         />
-        {renderFileSize()}
+        <TextField id="filesize">
+          <span className="text-truncate">
+            <FileSize size={props.file.size} />
+          </span>
+        </TextField>
         <TextField id="file_mod_time">
           <FormattedTime
             dateStyle="medium"

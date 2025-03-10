@@ -2,19 +2,23 @@ import { FormattedMessage } from "react-intl";
 import { Counter } from "../Counter";
 import { useCallback, useEffect } from "react";
 import { useHistory } from "react-router-dom";
+import { PatchComponent } from "src/patch";
 
 export const TabTitleCounter: React.FC<{
   messageID: string;
   count: number;
   abbreviateCounter: boolean;
-}> = ({ messageID, count, abbreviateCounter }) => {
-  return (
-    <>
-      <FormattedMessage id={messageID} />
-      <Counter count={count} abbreviateCounter={abbreviateCounter} hideZero />
-    </>
-  );
-};
+}> = PatchComponent(
+  "TabTitleCounter",
+  ({ messageID, count, abbreviateCounter }) => {
+    return (
+      <>
+        <FormattedMessage id={messageID} />
+        <Counter count={count} abbreviateCounter={abbreviateCounter} hideZero />
+      </>
+    );
+  }
+);
 
 export function useTabKey(props: {
   tabKey: string | undefined;

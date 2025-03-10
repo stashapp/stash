@@ -80,6 +80,7 @@
       font-family: "Courier New", Courier, monospace;
       margin-bottom: 0.5rem;
       margin-top: 0.5rem;
+      overflow-wrap: anywhere;
 
       pre {
         max-height: 250px;
@@ -291,6 +292,11 @@
 
   .job-status {
     width: 100%;
+  }
+
+  .job-description {
+    display: flex;
+    justify-content: space-between;
   }
 
   .stop:not(:disabled),

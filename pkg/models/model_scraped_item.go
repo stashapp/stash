@@ -128,13 +128,15 @@ type ScrapedPerformer struct {
 	Aliases        *string       `json:"aliases"`
 	Tags           []*ScrapedTag `json:"tags"`
 	// This should be a base64 encoded data URL
-	Image        *string  `json:"image"` // deprecated: use Images
-	Images       []string `json:"images"`
-	Details      *string  `json:"details"`
-	DeathDate    *string  `json:"death_date"`
-	HairColor    *string  `json:"hair_color"`
-	Weight       *string  `json:"weight"`
-	RemoteSiteID *string  `json:"remote_site_id"`
+	Image              *string  `json:"image"` // deprecated: use Images
+	Images             []string `json:"images"`
+	Details            *string  `json:"details"`
+	DeathDate          *string  `json:"death_date"`
+	HairColor          *string  `json:"hair_color"`
+	Weight             *string  `json:"weight"`
+	RemoteSiteID       *string  `json:"remote_site_id"`
+	RemoteDeleted      bool     `json:"remote_deleted"`
+	RemoteMergedIntoId *string  `json:"remote_merged_into_id"`
 }
 
 func (ScrapedPerformer) IsScrapedContent() {}

@@ -108,7 +108,13 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 			return err
 		}
 
-		err = qb.Create(ctx, &newPerformer)
+		i := &models.CreatePerformerInput{
+			Performer: &newPerformer,
+			// convert json.Numbers to int/float
+			CustomFields: convertMapJSONNumbers(input.CustomFields),
+		}
+
+		err = qb.Create(ctx, i)
 		if err != nil {
 			return err
 		}
@@ -289,6 +295,11 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+
+	updatedPerformer.CustomFields = input.CustomFields
+	// convert json.Numbers to int/float
+	updatedPerformer.CustomFields.Full = convertMapJSONNumbers(updatedPerformer.CustomFields.Full)
+	updatedPerformer.CustomFields.Partial = convertMapJSONNumbers(updatedPerformer.CustomFields.Partial)
 
 	var imageData []byte
 	imageIncluded := translator.hasField("image")

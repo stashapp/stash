@@ -23,7 +23,7 @@ import Slider from "@ant-design/react-slick";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { ScenePreview } from "../SceneCard";
@@ -110,12 +110,11 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     }
 
     let position = 1;
-    let options = [
+    let options: IDiscoverFilterOption[] = [
       {
         id: position++,
         label: queueLabel,
         type: DiscoverFilterType.Queue,
-        value: {},
       },
     ];
 
@@ -242,7 +241,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   function buildDiscoverQueueFilter(option: IDiscoverFilterOption) {
     const scenefilter = new ListFilterModel(FilterMode.Scenes);
     scenefilter.sortBy = "random";
-    let newCriterion: Criterion<CriterionValue>;
+    let newCriterion: ModifierCriterion<CriterionValue>;
     if (option.type === DiscoverFilterType.Performer) {
       newCriterion = new PerformersCriterion();
     } else {
@@ -264,8 +263,8 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     const sceneQueue = buildDiscoverQueueFilter(option);
     setNewQueue(sceneQueue);
     const query = await queryFindScenes(sceneQueue.query!);
-    const { scenes: newa } = query.data.findScenes;
-    setDiscoverScenes(newa);
+    const { scenes: newScenes } = query.data.findScenes;
+    setDiscoverScenes(newScenes);
   }
 
   function maybeRenderDiscoverQueue() {
