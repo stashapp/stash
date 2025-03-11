@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 export interface IAlertModalProps {
   text: JSX.Element | string;
+  confirmVariant?: string;
   show?: boolean;
   confirmButtonText?: string;
   onConfirm: () => void;
@@ -13,6 +14,7 @@ export interface IAlertModalProps {
 export const AlertModal: React.FC<IAlertModalProps> = ({
   text,
   show,
+  confirmVariant = "danger",
   confirmButtonText,
   onConfirm,
   onCancel,
@@ -21,7 +23,7 @@ export const AlertModal: React.FC<IAlertModalProps> = ({
     <Modal show={show}>
       <Modal.Body>{text}</Modal.Body>
       <Modal.Footer>
-        <Button variant="danger" onClick={() => onConfirm()}>
+        <Button variant={confirmVariant} onClick={() => onConfirm()}>
           {confirmButtonText ?? <FormattedMessage id="actions.confirm" />}
         </Button>
         <Button variant="secondary" onClick={() => onCancel()}>
