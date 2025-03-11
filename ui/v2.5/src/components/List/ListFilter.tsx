@@ -20,7 +20,7 @@ import {
   Overlay,
 } from "react-bootstrap";
 
-import { Icon } from "../Shared/Icon";
+import { Icon, SidebarIcon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -233,6 +233,7 @@ interface IListFilterProps {
   filter: ListFilterModel;
   view?: View;
   openFilterDialog: () => void;
+  onToggleSidebar?: () => void;
 }
 
 export const ListFilter: React.FC<IListFilterProps> = ({
@@ -240,6 +241,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filter,
   openFilterDialog,
   view,
+  onToggleSidebar,
 }) => {
   const filterOptions = filter.options;
 
@@ -318,13 +320,23 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         </div>
 
         <ButtonGroup className="mr-2 mb-2">
-          <SavedFilterDropdown
-            filter={filter}
-            onSetFilter={(f) => {
-              onFilterUpdate(f);
-            }}
-            view={view}
-          />
+          {onToggleSidebar ? (
+            <Button
+              variant="secondary"
+              className="sidebar-button"
+              onClick={onToggleSidebar}
+            >
+              <SidebarIcon />
+            </Button>
+          ) : (
+            <SavedFilterDropdown
+              filter={filter}
+              onSetFilter={(f) => {
+                onFilterUpdate(f);
+              }}
+              view={view}
+            />
+          )}
           <OverlayTrigger
             placement="top"
             overlay={

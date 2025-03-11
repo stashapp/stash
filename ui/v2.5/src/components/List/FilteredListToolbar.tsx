@@ -41,6 +41,7 @@ export interface IFilteredListToolbar {
   onDelete?: () => void;
   operations?: IListFilterOperation[];
   zoomable?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
@@ -53,6 +54,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   onDelete,
   operations,
   zoomable = false,
+  onToggleSidebar,
 }) => {
   const filterOptions = filter.options;
   const { setDisplayMode, setZoom } = useFilterOperations({
@@ -69,6 +71,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
           filter={filter}
           openFilterDialog={() => showEditFilter()}
           view={view}
+          onToggleSidebar={onToggleSidebar}
         />
       )}
       <ListOperationButtons

@@ -430,6 +430,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             );
           }}
           operations={otherOperations}
+          onToggleSidebar={() => setShowSidebar((v) => !v)}
           zoomable
         />
 
