@@ -736,7 +736,7 @@ $sidebar-width: 250px;
 
   .sidebar {
     // TODO - use different colours for sidebar and toolbar
-    // background-color: $textfield-bg;
+    background-color: $body-bg;
     flex: $sidebar-width;
     flex-grow: 0;
     flex-shrink: 0;
@@ -755,6 +755,36 @@ $sidebar-width: 250px;
     padding-left: 15px;
     // max-height: calc(100vh - 4rem);
     // overflow-y: auto;
+  }
+
+  // @include media-breakpoint-down(xs) {
+  //   .sidebar {
+  //     flex-basis: 100%;
+  //   }
+
+  //   .sidebar.hide {
+  //     margin-left: -100%;
+  //   }
+  // }
+
+  @include media-breakpoint-down(md) {
+    .sidebar {
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      position: fixed;
+      margin-top: 4rem;
+      top: 0;
+      width: $sidebar-width;
+      z-index: 100;
+    }
+  }
+
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      margin-bottom: 4rem;
+      margin-top: 0;
+    }
   }
 }
 
