@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, useMemo, useState } from "react";
+import React, { HTMLAttributes, useEffect, useMemo, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -28,6 +28,7 @@ import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faBookmark, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { AlertModal } from "../Shared/Alert";
+import cx from "classnames";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
@@ -467,19 +468,21 @@ interface ISavedFilterItem {
   item: SavedFilterDataFragment;
   onClick: () => void;
   onDelete: () => void;
+  selected?: boolean;
 }
 
 const SavedFilterItem: React.FC<ISavedFilterItem> = ({
   item,
   onClick,
   onDelete,
+  selected = false,
 }) => {
   const intl = useIntl();
 
   return (
     <div className="dropdown-item-container">
       <Dropdown.Item onClick={onClick} title={item.name}>
-        <span>{item.name}</span>
+        <span className={cx({ selected })}>{item.name}</span>
       </Dropdown.Item>
       <ButtonGroup>
         <Button
@@ -506,6 +509,7 @@ const SavedFilters: React.FC<{
   savedFilters: SavedFilterDataFragment[];
   onFilterClicked: (f: SavedFilterDataFragment) => void;
   onDeleteClicked: (f: SavedFilterDataFragment) => void;
+  currentFilterID?: string;
 }> = ({
   error,
   loading,
@@ -513,6 +517,7 @@ const SavedFilters: React.FC<{
   savedFilters,
   onFilterClicked,
   onDeleteClicked,
+  currentFilterID,
 }) => {
   if (error) return <h6 className="text-center">{error}</h6>;
 
@@ -532,6 +537,7 @@ const SavedFilters: React.FC<{
           item={f}
           onClick={() => onFilterClicked(f)}
           onDelete={() => onDeleteClicked(f)}
+          selected={currentFilterID === f.id}
         />
       ))}
     </ul>
@@ -545,6 +551,11 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
 }) => {
   const Toast = useToast();
   const intl = useIntl();
+
+  const [currentSavedFilter, setCurrentSavedFilter] = useState<{
+    id: string;
+    set: boolean;
+  }>();
 
   const { data, error, loading, refetch } = useFindSavedFilters(filter.mode);
 
@@ -569,6 +580,21 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
         !filterName || f.name.toLowerCase().includes(filterName.toLowerCase())
     );
   }, [data?.findSavedFilters, filterName]);
+
+  // handle when filter is changed to de-select the current filter
+  useEffect(() => {
+    // HACK - first change will be from setting the filter
+    // second change is likely from somewhere else
+    setCurrentSavedFilter((v) => {
+      if (!v) return v;
+
+      if (v.set) {
+        setCurrentSavedFilter({ id: v.id, set: false });
+      } else {
+        setCurrentSavedFilter(undefined);
+      }
+    });
+  }, [filter]);
 
   async function onSaveFilter(name: string, id?: string) {
     try {
@@ -672,6 +698,7 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
     // #1507 - reset random seed when loaded
     newFilter.randomSeed = -1;
 
+    setCurrentSavedFilter({ id: f.id, set: true });
     onSetFilter(newFilter);
   }
 
@@ -738,6 +765,7 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
         savedFilters={filteredFilters}
         onFilterClicked={filterClicked}
         onDeleteClicked={setDeletingFilter}
+        currentFilterID={currentSavedFilter?.id}
       />
     </div>
   );

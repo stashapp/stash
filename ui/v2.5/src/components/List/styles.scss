@@ -125,6 +125,10 @@ input[type="range"].zoom-slider {
         background-color: #8a9ba826;
         cursor: pointer;
       }
+
+      .selected {
+        font-weight: bold;
+      }
     }
 
     .btn-group {
