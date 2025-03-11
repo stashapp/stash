@@ -20,13 +20,15 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
 
   return (
     <div className={props.className}>
-      <Button
-        onClick={() => setOpen(!open)}
-        className="minimal collapse-button"
-      >
-        <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
-        <span>{props.text}</span>
-      </Button>
+      <div className="collapse-header">
+        <Button
+          onClick={() => setOpen(!open)}
+          className="minimal collapse-button"
+        >
+          <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
+          <span>{props.text}</span>
+        </Button>
+      </div>
       <Collapse in={open} {...props.collapseProps}>
         <div>{props.children}</div>
       </Collapse>

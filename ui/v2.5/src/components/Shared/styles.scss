@@ -757,3 +757,28 @@ $sidebar-width: 250px;
     // overflow-y: auto;
   }
 }
+
+.sidebar-section {
+  .collapse-header {
+    // background-color: $secondary;
+    border-bottom: 1px solid $secondary;
+
+    padding: 0.25rem;
+
+    .collapse-button {
+      font-weight: bold;
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  .collapse,
+  // include collapsing to allow for the transition
+  .collapsing {
+    padding-top: 0.25rem;
+  }
+}
+
+.sidebar-section:first-child .collapse-header {
+  border-top: 1px solid $secondary;
+}
