@@ -230,6 +230,7 @@ const SidebarContent: React.FC<{
         <SidebarSection
           key={content.messageID}
           text={<FormattedMessage id={content.messageID} />}
+          data-type={content.option.type}
         >
           <content.component
             option={content.option}
