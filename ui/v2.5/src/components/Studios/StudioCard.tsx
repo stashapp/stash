@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
-import {
-  GridCard,
-  calculateCardWidth,
-} from "src/components/Shared/GridCard/GridCard";
+import { GridCard } from "src/components/Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
@@ -13,14 +10,13 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
-import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   hideParent?: boolean;
   selecting?: boolean;
   selected?: boolean;
@@ -75,7 +71,7 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
 
 export const StudioCard: React.FC<IProps> = ({
   studio,
-  containerWidth,
+  cardWidth,
   hideParent,
   selecting,
   selected,
@@ -83,34 +79,6 @@ export const StudioCard: React.FC<IProps> = ({
   onSelectedChanged,
 }) => {
   const [updateStudio] = useStudioUpdate();
-  const [cardWidth, setCardWidth] = useState<number>();
-
-  useEffect(() => {
-    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
-      return;
-
-    let zoomValue = zoomIndex;
-    console.log(zoomValue);
-    let preferredCardWidth: number;
-    switch (zoomValue) {
-      case 0:
-        preferredCardWidth = 280;
-        break;
-      case 1:
-        preferredCardWidth = 340;
-        break;
-      case 2:
-        preferredCardWidth = 420;
-        break;
-      case 3:
-        preferredCardWidth = 560;
-    }
-    let fittedCardWidth = calculateCardWidth(
-      containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [containerWidth, zoomIndex]);
 
   function onToggleFavorite(v: boolean) {
     if (studio.id) {
