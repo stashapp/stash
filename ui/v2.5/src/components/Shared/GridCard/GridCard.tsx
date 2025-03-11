@@ -1,6 +1,7 @@
 import React, {
   MutableRefObject,
   PropsWithChildren,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -77,6 +78,31 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
 
   return [target, dimension];
 };
+
+export function useCardWidth(
+  containerWidth: number,
+  zoomIndex: number,
+  zoomWidths: number[]
+) {
+  return useMemo(() => {
+    if (
+      !containerWidth ||
+      zoomIndex === undefined ||
+      zoomIndex < 0 ||
+      zoomIndex >= zoomWidths.length ||
+      ScreenUtils.isMobile()
+    )
+      return;
+
+    let zoomValue = zoomIndex;
+    const preferredCardWidth = zoomWidths[zoomValue];
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    return fittedCardWidth;
+  }, [containerWidth, zoomIndex, zoomWidths]);
+}
 
 const Checkbox: React.FC<{
   selected?: boolean;
