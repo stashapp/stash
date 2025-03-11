@@ -113,11 +113,18 @@ input[type="range"].zoom-slider {
 
     .dropdown-item {
       align-items: center;
+      color: $text-color;
       display: inline;
       overflow-x: hidden;
       padding-left: 1.25rem;
       padding-right: 0.25rem;
       text-overflow: ellipsis;
+
+      &:focus,
+      &:hover {
+        background-color: #8a9ba826;
+        cursor: pointer;
+      }
     }
 
     .btn-group {
@@ -132,6 +139,26 @@ input[type="range"].zoom-slider {
       color: $danger;
     }
   }
+}
+
+.sidebar-saved-filter-list-container .toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+
+  .btn {
+    font-weight: bold;
+  }
+}
+
+.save-filter-button {
+  color: $text-color;
+}
+
+.saved-filter-overwrite-warning {
+  color: $danger;
+  font-weight: bold;
 }
 
 .edit-filter-dialog .rating-stars {

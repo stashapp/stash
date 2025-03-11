@@ -38,6 +38,7 @@ import { PerformersCriterionOption } from "src/models/list-filter/criteria/perfo
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { TagsQuickFilter } from "../List/Filters/TagsFilter";
+import { SidebarSavedFilterList } from "../List/SavedFilterList";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -207,17 +208,29 @@ const optionContent = [
     option: TagsCriterionOption,
     component: TagsQuickFilter,
   },
-]
+];
 
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
-}> = ({ filter, setFilter }) => {
+  view?: View;
+}> = ({ filter, setFilter, view }) => {
   return (
     <>
-      {/* FIXME - add saved filters control */}
+      <SidebarSection
+        text={<FormattedMessage id="search_filter.saved_filters" />}
+      >
+        <SidebarSavedFilterList
+          filter={filter}
+          onSetFilter={setFilter}
+          view={view}
+        />
+      </SidebarSection>
       {optionContent.map((content) => (
-        <SidebarSection key={content.messageID} text={<FormattedMessage id={content.messageID} />}>
+        <SidebarSection
+          key={content.messageID}
+          text={<FormattedMessage id={content.messageID} />}
+        >
           <content.component
             option={content.option}
             filter={filter}
@@ -422,7 +435,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
         <SidebarPane>
           <Sidebar hide={!showSidebar}>
-            <SidebarContent filter={filter} setFilter={setFilter} />
+            <SidebarContent filter={filter} setFilter={setFilter} view={view} />
           </Sidebar>
           <div>
             <FilterTags
