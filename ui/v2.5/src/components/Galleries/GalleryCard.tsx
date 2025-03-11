@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink, TagLink } from "../Shared/TagLink";
@@ -12,7 +12,6 @@ import NavUtils from "src/utils/navigation";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
-import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
@@ -56,7 +55,7 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
@@ -65,37 +64,6 @@ interface IProps {
 
 export const GalleryCard: React.FC<IProps> = (props) => {
   const history = useHistory();
-  const [cardWidth, setCardWidth] = useState<number>();
-
-  useEffect(() => {
-    if (
-      !props.containerWidth ||
-      props.zoomIndex === undefined ||
-      ScreenUtils.isMobile()
-    )
-      return;
-
-    let zoomValue = props.zoomIndex;
-    let preferredCardWidth: number;
-    switch (zoomValue) {
-      case 0:
-        preferredCardWidth = 280;
-        break;
-      case 1:
-        preferredCardWidth = 340;
-        break;
-      case 2:
-        preferredCardWidth = 480;
-        break;
-      case 3:
-        preferredCardWidth = 640;
-    }
-    let fittedCardWidth = calculateCardWidth(
-      props.containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [props.containerWidth, props.zoomIndex]);
 
   function maybeRenderScenePopoverButton() {
     if (props.gallery.scenes.length === 0) return;
@@ -207,7 +175,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
-      width={cardWidth}
+      width={props.cardWidth}
       title={galleryTitle(props.gallery)}
       linkClassName="gallery-card-header"
       image={
