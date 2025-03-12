@@ -104,8 +104,10 @@ export function prepareQueryString(
   mode: ParseMode,
   blacklist: string[]
 ) {
+  let str = "";
+
   if ((mode === "auto" && scene.date && scene.studio) || mode === "metadata") {
-    let str = [
+    str = [
       scene.date,
       scene.studio?.name ?? "",
       (scene?.performers ?? []).map((p) => p.name).join(" "),
@@ -113,55 +115,45 @@ export function prepareQueryString(
     ]
       .filter((s) => s !== "")
       .join(" ");
+  } else {
+    if (mode === "auto" || mode === "filename") {
+      str = filename;
+    } else if (mode === "path") {
+      str = [...paths, filename].join(" ");
+    } else if (mode === "dir" && paths.length) {
+      str = paths[paths.length - 1];
+    }
+  }
 
-    blacklist.forEach((entry) => {
-      let [pattern, replacement] = entry.split("||");
+  const regexReplacements = new Map<string, string>();
+  const regexs = blacklist
+    .map((entry) => {
+      let [pattern, replacement] = entry.split("||"); // Extract regex and replacement
 
       try {
-        const regex = new RegExp(pattern, "gi");
+        const compiledRegex = new RegExp(pattern, "gi");
 
         if (replacement) {
-          str = str.replace(regex, replacement);
-        } else {
-          str = str.replace(regex, " ");
+          regexReplacements.set(compiledRegex.source, replacement); // Store replacement
         }
-      } catch (err) {
-        console.error(`Invalid regex pattern: ${pattern}`, err);
+
+        return compiledRegex;
+      } catch {
+        return null; // Ignore invalid regex patterns
       }
-    });
+    })
+    .filter((r) => r !== null) as RegExp[];
 
-    return str.replace(/\s+/g, " ").trim();
-  }
-
-  let s = "";
-
-  if (mode === "auto" || mode === "filename") {
-    s = filename;
-  } else if (mode === "path") {
-    s = [...paths, filename].join(" ");
-  } else if (mode === "dir" && paths.length) {
-    s = paths[paths.length - 1];
-  }
-
-  blacklist.forEach((entry) => {
-    let [pattern, replacement] = entry.split("||");
-
-    try {
-      const regex = new RegExp(pattern, "gi");
-
-      if (replacement) {
-        s = s.replace(regex, replacement);
-      } else {
-        s = s.replace(regex, " ");
-      }
-    } catch (err) {
-      console.error(`Invalid regex pattern: ${pattern}`, err);
-    }
+  // Apply regex filtering and replacements
+  regexs.forEach((regex) => {
+    const replacement = regexReplacements.get(regex.source);
+    str = replacement ? str.replace(regex, replacement) : str.replace(regex, " ");
   });
 
-  s = parseDate(s);
-  return s.replace(/\./g, " ").replace(/ +/g, " ").trim();
+  str = parseDate(str);
+  return str.replace(/\s+/g, " ").trim(); // Normalize spaces
 }
+
 
 export const parsePath = (filePath: string) => {
   if (!filePath) {
