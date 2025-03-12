@@ -31,7 +31,7 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
-import { Sidebar, SidebarPane, SidebarSection } from "../Shared/Sidebar";
+import { defaultShowSidebar, Sidebar, SidebarPane, SidebarSection } from "../Shared/Sidebar";
 import { PerformersQuickFilter } from "../List/Filters/PerformersFilter";
 import { StudiosQuickFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -258,7 +258,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
   // States
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(defaultShowSidebar());
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
@@ -436,7 +436,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
         />
 
         <SidebarPane>
-          <Sidebar hide={!showSidebar}>
+          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
             <SidebarContent filter={filter} setFilter={setFilter} view={view} />
           </Sidebar>
           <div>

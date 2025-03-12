@@ -323,7 +323,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           {onToggleSidebar ? (
             <Button
               variant="secondary"
-              className="sidebar-button"
+              // add ignore-sidebar-outside-click to prevent reopening the sidebar
+              className="sidebar-button ignore-sidebar-outside-click"
               onClick={onToggleSidebar}
             >
               <SidebarIcon />

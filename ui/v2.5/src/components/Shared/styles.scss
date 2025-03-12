@@ -744,6 +744,12 @@ $sidebar-width: 250px;
     // overflow-y: auto;
     padding-left: 15px;
     transition: margin-left 0.1s;
+
+    .close-button {
+      color: $danger;
+      display: none;
+      float: right;
+    }
   }
 
   .sidebar.hide {
@@ -771,15 +777,18 @@ $sidebar-width: 250px;
     .sidebar {
       bottom: 0;
       left: 0;
+      margin-top: 4rem;
       overflow-y: auto;
       position: fixed;
-      margin-top: 4rem;
       top: 0;
       width: $sidebar-width;
       z-index: 100;
+
+      .close-button {
+        display: block;
+      }
     }
   }
-
   @include media-breakpoint-down(xs) {
     .sidebar {
       margin-bottom: 4rem;
