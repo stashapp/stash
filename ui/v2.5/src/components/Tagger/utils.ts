@@ -94,7 +94,10 @@ const handleSpecialStrings = (input: string): string => {
 };
 
 function parseDate(input: string): string {
-  return input.replace(/\./g, " ").replace(/ +/g, " ").trim();
+  return input
+    .replace(/\./g, " ")
+    .replace(/ {2,}/g, " ")
+    .trim();
 }
 
 export function prepareQueryString(
@@ -151,7 +154,7 @@ export function prepareQueryString(
   });
 
   str = parseDate(str);
-  return str.replace(/\s+/g, " ").trim(); // Normalize spaces
+  return str;
 }
 
 
