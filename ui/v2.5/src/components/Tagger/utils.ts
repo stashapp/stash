@@ -136,7 +136,7 @@ export function prepareQueryString(
       try {
         const compiledRegex = new RegExp(pattern, "gi");
 
-        if (replacement) {
+        if (replacement  !== undefined ){
           regexReplacements.set(compiledRegex.source, replacement); // Store replacement
         }
 
@@ -150,7 +150,13 @@ export function prepareQueryString(
   // Apply regex filtering and replacements
   regexs.forEach((regex) => {
     const replacement = regexReplacements.get(regex.source);
-    str = replacement ? str.replace(regex, replacement) : str.replace(regex, " ");
+    if (replacement) {
+      str = str.replace(regex, (match:string, ...groups: string[]) => {
+        return replacement.replace(/\\(\d+)/g, (_, groupIndex) => groups[parseInt(groupIndex, 10) - 1] || "");
+      });
+    } else {
+      str = str.replace(regex, "");
+    }
   });
 
   str = parseDate(str);
