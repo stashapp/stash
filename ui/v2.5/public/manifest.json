@@ -1,16 +1,10 @@
 {
-  "short_name": "Stash",
-  "name": "Stash: Porn Organizer",
-  "description": "Stash allows you to organize and view your own collection of adult video and image files. Think of it like a private PornHub site for your personal porn collection. ",
+  "short_name": "Plex Hub",
+  "name": "Plex Hub",
+  "description": "Plex Hub allows you to organize and view your own collection of adult video and image files. Think of it like a private PornHub site for your personal porn collection. ",
   "icons": [
     {
-      "src": "stash_icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "stash_icon.png",
+      "src": "plexhub_icon.png",
       "sizes": "256x256 64x64 32x32 24x24 16x16",
       "type": "image/png",
       "purpose": "maskable any"
@@ -25,6 +19,6 @@
   "start_url": "/",
   "scope": ".",
   "display": "standalone",
-  "theme_color": "#394b59",
-  "background_color": "#202b33"
+  "theme_color": "#141414",
+  "background_color": "#191919"
 }
