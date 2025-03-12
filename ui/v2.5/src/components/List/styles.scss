@@ -421,6 +421,110 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-list-filter ul {
+  list-style-type: none;
+  margin-bottom: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  // to prevent unnecessary vertical scrollbar
+  padding-bottom: 0.15rem;
+  padding-inline-start: 0;
+
+  .modifier-object {
+    font-style: italic;
+
+    .selected-object-label,
+    .unselected-object-label {
+      opacity: 0.6;
+    }
+  }
+
+  .unselected-object {
+    opacity: 0.8;
+  }
+
+  .selected-object,
+  .excluded-object,
+  .unselected-object {
+    cursor: pointer;
+    height: 2em;
+    margin-bottom: 0.25rem;
+
+    a {
+      align-items: center;
+      display: flex;
+      height: 2em;
+      justify-content: space-between;
+      outline: none;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(138, 155, 168, 0.15);
+      }
+
+      .selected-object-label,
+      .excluded-object-label {
+        font-size: 16px;
+      }
+    }
+
+    .include-button {
+      color: $success;
+
+      &.single-value {
+        visibility: hidden;
+      }
+    }
+
+    .exclude-icon {
+      color: $danger;
+
+      &.single-value {
+        visibility: hidden;
+      }
+    }
+
+    .exclude-button {
+      align-items: center;
+      display: flex;
+      margin-left: 0.25rem;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      .exclude-button-text {
+        color: $danger;
+        display: none;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background-color: inherit;
+      }
+
+      &:hover .exclude-button-text,
+      &:focus .exclude-button-text {
+        display: inline;
+      }
+    }
+
+    .object-count {
+      color: $text-muted;
+      font-size: 12px;
+    }
+  }
+
+  .selected-object:hover,
+  .selected-object a:focus-visible,
+  .excluded-object:hover,
+  .excluded-object a:focus-visible {
+    .include-button,
+    .exclude-icon {
+      color: #fff;
+    }
+  }
+}
+
 .tilted {
   transform: rotate(45deg);
 }

@@ -58,17 +58,20 @@ export const SidebarPane: React.FC<PropsWithChildren<{}>> = ({ children }) => {
 export const SidebarSection: React.FC<
   PropsWithChildren<{
     text: React.ReactNode;
+    className?: string;
+    outsideCollapse?: React.ReactNode;
   }>
-> = ({ text, children }) => {
+> = ({ className, text, outsideCollapse, children }) => {
   const collapseProps = {
     mountOnEnter: true,
     unmountOnExit: true,
   };
   return (
     <CollapseButton
-      className="sidebar-section"
+      className={`sidebar-section ${className}`}
       collapseProps={collapseProps}
       text={text}
+      outsideCollapse={outsideCollapse}
     >
       {children}
     </CollapseButton>

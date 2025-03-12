@@ -11,6 +11,7 @@ interface IProps {
   className?: string;
   text: React.ReactNode;
   collapseProps?: Partial<CollapseProps>;
+  outsideCollapse?: React.ReactNode;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
@@ -29,6 +30,7 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
           <span>{props.text}</span>
         </Button>
       </div>
+      {props.outsideCollapse}
       <Collapse in={open} {...props.collapseProps}>
         <div>{props.children}</div>
       </Collapse>

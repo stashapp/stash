@@ -227,17 +227,14 @@ const SidebarContent: React.FC<{
         />
       </SidebarSection>
       {optionContent.map((content) => (
-        <SidebarSection
+        <content.component
           key={content.messageID}
-          text={<FormattedMessage id={content.messageID} />}
+          title={<FormattedMessage id={content.messageID} />}
           data-type={content.option.type}
-        >
-          <content.component
-            option={content.option}
-            filter={filter}
-            setFilter={setFilter}
-          />
-        </SidebarSection>
+          option={content.option}
+          filter={filter}
+          setFilter={setFilter}
+        />
       ))}
     </>
   );
