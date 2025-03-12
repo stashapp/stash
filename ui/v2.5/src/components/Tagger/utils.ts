@@ -3,6 +3,7 @@ import { ParseMode } from "./constants";
 import { queryFindStudio } from "src/core/StashService";
 import { mergeStashIDs } from "src/utils/stashbox";
 
+
 const months = [
   "jan",
   "feb",
@@ -92,6 +93,10 @@ const handleSpecialStrings = (input: string): string => {
   return output.replace(/-/g, " ");
 };
 
+function parseDate(input: string): string {
+  return input.replace(/\./g, " ").replace(/ +/g, " ").trim();
+}
+
 export function prepareQueryString(
   scene: Partial<GQL.SlimSceneDataFragment>,
   paths: string[],
@@ -99,17 +104,6 @@ export function prepareQueryString(
   mode: ParseMode,
   blacklist: string[]
 ) {
-  const regexs = blacklist
-    .map((b) => {
-      try {
-        return new RegExp(b, "gi");
-      } catch {
-        // ignore
-        return null;
-      }
-    })
-    .filter((r) => r !== null) as RegExp[];
-
   if ((mode === "auto" && scene.date && scene.studio) || mode === "metadata") {
     let str = [
       scene.date,
@@ -119,11 +113,26 @@ export function prepareQueryString(
     ]
       .filter((s) => s !== "")
       .join(" ");
-    regexs.forEach((re) => {
-      str = str.replace(re, " ");
+
+    blacklist.forEach((entry) => {
+      let [pattern, replacement] = entry.split("||");
+
+      try {
+        const regex = new RegExp(pattern, "gi");
+
+        if (replacement) {
+          str = str.replace(regex, replacement);
+        } else {
+          str = str.replace(regex, " ");
+        }
+      } catch (err) {
+        console.error(`Invalid regex pattern: ${pattern}`, err);
+      }
     });
-    return str;
+
+    return str.replace(/\s+/g, " ").trim();
   }
+
   let s = "";
 
   if (mode === "auto" || mode === "filename") {
@@ -134,11 +143,24 @@ export function prepareQueryString(
     s = paths[paths.length - 1];
   }
 
-  regexs.forEach((re) => {
-    s = s.replace(re, " ");
+  blacklist.forEach((entry) => {
+    let [pattern, replacement] = entry.split("||");
+
+    try {
+      const regex = new RegExp(pattern, "gi");
+
+      if (replacement) {
+        s = s.replace(regex, replacement);
+      } else {
+        s = s.replace(regex, " ");
+      }
+    } catch (err) {
+      console.error(`Invalid regex pattern: ${pattern}`, err);
+    }
   });
-  s = handleSpecialStrings(s);
-  return s.replace(/\./g, " ").replace(/ +/g, " ");
+
+  s = parseDate(s);
+  return s.replace(/\./g, " ").replace(/ +/g, " ").trim();
 }
 
 export const parsePath = (filePath: string) => {
