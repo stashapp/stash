@@ -6,6 +6,11 @@ import {
 } from "src/core/generated-graphql";
 import { cloneDeep } from "@apollo/client/utilities";
 
+function valueToString(value: unknown[] | undefined | null) {
+  if (!value) return "";
+  return value.map((v) => v as string).join(", ");
+}
+
 export const CustomFieldsCriterionOption = new CriterionOption({
   type: "custom_fields",
   messageID: "custom_fields.title",
@@ -46,7 +51,7 @@ export class CustomFieldsCriterion extends Criterion {
       first.modifier !== CriterionModifier.NotNull &&
       (first.value?.length ?? 0) > 0
     ) {
-      valueString = (first.value![0] as string) ?? "";
+      valueString = valueToString(first.value);
     }
 
     const modifierString = ModifierCriterion.getModifierLabel(
@@ -78,7 +83,7 @@ export class CustomFieldsCriterion extends Criterion {
       v.modifier !== CriterionModifier.NotNull &&
       (v.value?.length ?? 0) > 0
     ) {
-      valueString = (v.value![0] as string) ?? "";
+      valueString = valueToString(v.value);
     }
 
     const modifierString = ModifierCriterion.getModifierLabel(intl, v.modifier);
@@ -86,7 +91,6 @@ export class CustomFieldsCriterion extends Criterion {
       criterion: v.field,
       modifierString,
       valueString,
-      others: "",
     };
 
     return intl.formatMessage(
