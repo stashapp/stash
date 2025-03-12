@@ -66,6 +66,7 @@ export const StudiosQuickFilter: React.FC<{
       setFilter={setFilter}
       option={option}
       useQuery={useStudioQuery}
+      singleValue
     />
   );
 };

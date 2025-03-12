@@ -13,7 +13,9 @@ import {
   ILabeledId,
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
-import { SidebarListFilter } from "./SidebarListFilter";
+import { Option, SidebarListFilter } from "./SidebarListFilter";
+import { CriterionModifier } from "src/core/generated-graphql";
+import { useIntl } from "react-intl";
 
 interface ILabeledIdFilterProps {
   criterion: ModifierCriterion<ILabeledId[]>;
@@ -73,6 +75,52 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   );
 };
 
+type ModifierValue = "any" | "none" | "any_of" | "only";
+
+function getModifierCandidates(props: {
+  modifier: CriterionModifier;
+  defaultModifier: CriterionModifier;
+  hasSelected?: boolean;
+  hasExcluded?: boolean;
+  singleValue?: boolean;
+}) {
+  const { modifier, defaultModifier, hasSelected, hasExcluded, singleValue } =
+    props;
+  const ret: ModifierValue[] = [];
+
+  if (modifier === defaultModifier && !hasSelected && !hasExcluded) {
+    ret.push("any");
+  }
+  if (modifier === defaultModifier && !hasSelected && !hasExcluded) {
+    ret.push("none");
+  }
+  if (!singleValue && modifier === defaultModifier && hasSelected) {
+    ret.push("any_of");
+  }
+  if (
+    !singleValue &&
+    modifier === defaultModifier &&
+    hasSelected &&
+    !hasExcluded
+  ) {
+    ret.push("only");
+  }
+  return ret;
+}
+
+function modifierValueToModifier(key: ModifierValue): CriterionModifier {
+  switch (key) {
+    case "any":
+      return CriterionModifier.NotNull;
+    case "none":
+      return CriterionModifier.IsNull;
+    case "any_of":
+      return CriterionModifier.Includes;
+    case "only":
+      return CriterionModifier.Equals;
+  }
+}
+
 export const LabeledIdQuickFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
@@ -81,9 +129,11 @@ export const LabeledIdQuickFilter: React.FC<{
   useQuery: (q: string) => ILoadResults<ILabeledId[]>;
   singleValue?: boolean;
 }> = ({ title, option, filter, setFilter, useQuery, singleValue }) => {
+  const intl = useIntl();
+
   const [query, setQuery] = useState("");
 
-  const { results } = useCacheResults(useQuery(query));
+  const { results: queryResults } = useCacheResults(useQuery(query));
 
   const criterion = useMemo(() => {
     const ret = filter.criteria.find(
@@ -96,6 +146,14 @@ export const LabeledIdQuickFilter: React.FC<{
     ) as ModifierCriterion<ILabeledValueListValue>;
     return newCriterion;
   }, [filter, option]);
+  const { modifier } = criterion;
+
+  const defaultModifier = useMemo(() => {
+    if (singleValue) {
+      return CriterionModifier.Includes;
+    }
+    return CriterionModifier.IncludesAll;
+  }, [singleValue]);
 
   const setCriterion = useCallback(
     (c: ModifierCriterion<ILabeledValueListValue>) => {
@@ -111,10 +169,18 @@ export const LabeledIdQuickFilter: React.FC<{
   );
 
   const onSelect = useCallback(
-    (v: ILabeledId, exclude: boolean) => {
+    (v: Option, exclude: boolean) => {
+      const newCriterion = criterion.clone();
+
+      if (v.className === "modifier-object") {
+        newCriterion.modifier = modifierValueToModifier(v.id as ModifierValue);
+        setCriterion(newCriterion);
+        return;
+      }
+
       const items = !exclude ? criterion.value.items : criterion.value.excluded;
       const newItems = [...items, v];
-      const newCriterion = criterion.clone();
+
       if (!exclude) {
         newCriterion.value.items = newItems;
       } else {
@@ -126,10 +192,18 @@ export const LabeledIdQuickFilter: React.FC<{
   );
 
   const onUnselect = useCallback(
-    (v: ILabeledId, exclude: boolean) => {
+    (v: Option, exclude: boolean) => {
+      const newCriterion = criterion.clone();
+
+      if (v.className === "modifier-object") {
+        newCriterion.modifier = defaultModifier;
+        setCriterion(newCriterion);
+        return;
+      }
+
       const items = !exclude ? criterion.value.items : criterion.value.excluded;
       const newItems = items.filter((i) => i.id !== v.id);
-      const newCriterion = criterion.clone();
+
       if (!exclude) {
         newCriterion.value.items = newItems;
       } else {
@@ -137,15 +211,36 @@ export const LabeledIdQuickFilter: React.FC<{
       }
       setCriterion(newCriterion);
     },
-    [criterion, setCriterion]
+    [criterion, setCriterion, defaultModifier]
   );
 
+  const selectedModifiers = useMemo(() => {
+    return {
+      any: modifier === CriterionModifier.NotNull,
+      none: modifier === CriterionModifier.IsNull,
+      any_of: !singleValue && modifier === CriterionModifier.Includes,
+      only: !singleValue && modifier === CriterionModifier.Equals,
+    };
+  }, [modifier, singleValue]);
+
   const selected = useMemo(() => {
-    return criterion.value.items.map((s) => ({
-      id: s.id,
-      label: s.label,
-    }));
-  }, [criterion.value.items]);
+    const modifierValues: Option[] = Object.entries(selectedModifiers)
+      .filter((v) => v[1])
+      .map((v) => ({
+        id: v[0],
+        label: `(${intl.formatMessage({
+          id: `criterion_modifier_values.${v[0]}`,
+        })})`,
+        className: "modifier-object",
+      }));
+
+    return modifierValues.concat(
+      criterion.value.items.map((s) => ({
+        id: s.id,
+        label: s.label,
+      }))
+    );
+  }, [intl, selectedModifiers, criterion.value.items]);
 
   const excluded = useMemo(() => {
     return criterion.value.excluded.map((s) => ({
@@ -154,21 +249,58 @@ export const LabeledIdQuickFilter: React.FC<{
     }));
   }, [criterion.value.excluded]);
 
+  const results = useMemo(() => {
+    if (
+      !queryResults ||
+      modifier === CriterionModifier.IsNull ||
+      modifier === CriterionModifier.NotNull
+    ) {
+      return [];
+    }
+
+    return queryResults.filter(
+      (p) =>
+        selected.find((s) => s.id === p.id) === undefined &&
+        excluded.find((s) => s.id === p.id) === undefined
+    );
+  }, [queryResults, modifier, selected, excluded]);
+
+  // const includingOnly = modifier == CriterionModifier.Equals;
+  // const excludingOnly =
+  //   modifier == CriterionModifier.Excludes ||
+  //   modifier == CriterionModifier.NotEquals;
+
   const candidates = useMemo(() => {
-    return (results ?? [])
-      .filter((r) => {
-        return (
-          !selected.some((s) => s.id === r.id) &&
-          !excluded.some((s) => s.id === r.id)
-        );
-      })
-      .map((r) => ({
+    const modifierCandidates: Option[] = getModifierCandidates({
+      modifier,
+      defaultModifier,
+      hasSelected: selected.length > 0,
+      hasExcluded: excluded.length > 0,
+      singleValue,
+    }).map((v) => ({
+      id: v,
+      label: `(${intl.formatMessage({
+        id: `criterion_modifier_values.${v}`,
+      })})`,
+      className: "modifier-object",
+    }));
+
+    return modifierCandidates.concat(
+      (results ?? []).map((r) => ({
         id: r.id,
         label: r.label,
-      }));
-  }, [results, selected, excluded]);
+      }))
+    );
+  }, [
+    defaultModifier,
+    intl,
+    modifier,
+    singleValue,
+    results,
+    selected,
+    excluded,
+  ]);
 
-  // FIXME - implement modifier optoins
   return (
     <SidebarListFilter
       title={title}

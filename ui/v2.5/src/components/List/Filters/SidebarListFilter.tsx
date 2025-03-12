@@ -18,6 +18,7 @@ import ScreenUtils from "src/utils/screen";
 import { SidebarSection } from "src/components/Shared/Sidebar";
 
 interface ISelectedItem {
+  className?: string;
   label: string;
   excluded?: boolean;
   onClick: () => void;
@@ -26,6 +27,7 @@ interface ISelectedItem {
 }
 
 const SelectedItem: React.FC<ISelectedItem> = ({
+  className,
   label,
   excluded = false,
   onClick,
@@ -54,7 +56,11 @@ const SelectedItem: React.FC<ISelectedItem> = ({
   }
 
   return (
-    <li className={cx("selected-object", { "modifier-object": modifier })}>
+    <li
+      className={cx("selected-object", className, {
+        "modifier-object": modifier,
+      })}
+    >
       <a
         onClick={() => onClick()}
         onKeyDown={keyboardClickHandler(onClick)}
@@ -75,6 +81,7 @@ const SelectedItem: React.FC<ISelectedItem> = ({
 };
 
 const CandidateItem: React.FC<{
+  className?: string;
   onSelect: (exclude: boolean) => void;
   label: string;
   canExclude?: boolean;
@@ -86,6 +93,7 @@ const CandidateItem: React.FC<{
   canExclude,
   modifier = false,
   singleValue = false,
+  className,
 }) => {
   const singleValueClass = singleValue ? "single-value" : "";
   const includeIcon = (
@@ -99,7 +107,11 @@ const CandidateItem: React.FC<{
   );
 
   return (
-    <li className={cx("unselected-object", { "modifier-object": modifier })}>
+    <li
+      className={cx("unselected-object", className, {
+        "modifier-object": modifier,
+      })}
+    >
       <a
         onClick={() => onSelect(false)}
         onKeyDown={keyboardClickHandler(() => onSelect(false))}
@@ -133,6 +145,7 @@ const CandidateItem: React.FC<{
 
 export type Option<T = unknown> = {
   id: string;
+  className?: string;
   value?: T;
   label: string;
 };
@@ -151,6 +164,7 @@ export const SelectedList: React.FC<{
       {items.map((p) => (
         <SelectedItem
           key={p.id}
+          className={p.className}
           label={p.label}
           excluded={excluded}
           onClick={() => onUnselect(p)}
@@ -251,6 +265,7 @@ export const CandidateList: React.FC<
         {items.map((p) => (
           <CandidateItem
             key={p.id}
+            className={p.className}
             onSelect={(exclude) => onSelect(p, exclude)}
             label={p.label}
             canExclude={canExclude}
