@@ -158,7 +158,7 @@ export function prepareQueryString(
       str = str.replace(regex, "");
     }
   });
-
+  str = handleSpecialStrings(str);
   str = parseDate(str);
   return str;
 }
