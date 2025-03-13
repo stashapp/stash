@@ -135,7 +135,8 @@
         "add_o": "Afageix O",
         "add_play": "Agregar reproduir",
         "add_to_entity": "Afegir a {entityType}",
-        "create_entity": "Crear {entityType}"
+        "create_entity": "Crear {entityType}",
+        "add_sub_groups": "Afegeix subgrups"
     },
     "appears_with": "Apareix amb",
     "career_length": "Durada de la carrera",
