@@ -1,6 +1,5 @@
 # APPNICENAME=Stash
 # APPDESCRIPTION=An organizer for your porn, written in Go
-version: '3.4'
 services:
   stash:
     image: stashapp/stash:latest
@@ -27,10 +26,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       ## Adjust below paths (the left part) to your liking.
       ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
-      
+      ## The left part is the path on your host, the right part is the path in the stash container.
+
       ## Keep configs, scrapers, and plugins here.
       - ./config:/root/.stash
       ## Point this at your collection.
+      ## The left side is where your collection is on your host, the right side is where it will be in stash.
       - ./data:/data
       ## This is where your stash's metadata lives
       - ./metadata:/metadata
