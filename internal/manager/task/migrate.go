@@ -42,8 +42,8 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 
 	logger.Infof("Migrating database from %d to %d", schemaInfo.CurrentSchemaVersion, schemaInfo.RequiredSchemaVersion)
 
-	// set the number of tasks = required steps + optimise
-	progress.SetTotal(int(schemaInfo.StepsRequired + 1))
+	// set the number of tasks = backup + required steps + optimise
+	progress.SetTotal(int(schemaInfo.StepsRequired + 2))
 
 	database := s.Database
 
@@ -61,8 +61,14 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 		}
 	}
 
-	// perform database backup
-	if err := database.Backup(backupPath); err != nil {
+	progress.ExecuteTask("Backing up database", func() {
+		defer progress.Increment()
+
+		// perform database backup
+		err = database.Backup(backupPath)
+	})
+
+	if err != nil {
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
