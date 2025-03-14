@@ -72,7 +72,12 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
-	if err := s.runMigrations(ctx, progress); err != nil {
+	err = s.runMigrations(ctx, progress)
+	if err == nil {
+		err = s.postMigrate(ctx, progress)
+	}
+
+	if err != nil {
 		errStr := fmt.Sprintf("error performing migration: %s", err)
 
 		// roll back to the backed up version
@@ -150,12 +155,19 @@ func (s *MigrateJob) runMigrations(ctx context.Context, progress *job.Progress) 
 		progress.Increment()
 	}
 
+	return nil
+}
+
+func (s *MigrateJob) postMigrate(ctx context.Context, progress *job.Progress) error {
+	database := s.Database
+
 	// reinitialise the database
 	if err := database.ReInitialise(); err != nil {
 		return fmt.Errorf("error reinitialising database: %s", err)
 	}
 
 	// optimise the database
+	var err error
 	progress.ExecuteTask("Optimising database", func() {
 		err = database.Optimise(ctx)
 	})
