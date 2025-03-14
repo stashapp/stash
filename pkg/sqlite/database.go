@@ -425,6 +425,15 @@ func (db *Database) Optimise(ctx context.Context) error {
 // Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
 func (db *Database) Vacuum(ctx context.Context) error {
 	_, err := db.writeDB.ExecContext(ctx, "VACUUM")
+
+	// toggle journal_mode to flush the wal file
+	if _, err := db.writeDB.Exec("PRAGMA journal_mode=DELETE"); err != nil {
+		return err
+	}
+	if _, err := db.writeDB.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		return err
+	}
+
 	return err
 }
 
