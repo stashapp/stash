@@ -169,7 +169,9 @@ func (s *MigrateJob) postMigrate(ctx context.Context, progress *job.Progress) er
 	// optimise the database
 	var err error
 	progress.ExecuteTask("Optimising database", func() {
-		err = database.Optimise(ctx)
+		// don't use Optimize/vacuum as this adds a significant amount of time
+		// to the migration
+		err = database.Analyze(ctx)
 	})
 
 	if err != nil {
