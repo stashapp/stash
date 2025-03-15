@@ -147,6 +147,7 @@ Returns `void`.
 - `ConstantSetting`
 - `CountrySelect`
 - `DateInput`
+- `ExternalLinkButtons`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryIDSelect`
