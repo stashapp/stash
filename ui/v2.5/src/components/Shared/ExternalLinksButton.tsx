@@ -12,37 +12,40 @@ export const ExternalLinksButton: React.FC<{
   icon?: IconDefinition;
   urls: string[];
   className?: string;
-}> = PatchComponent("ExternalLinksButton", ({ urls, icon = faLink, className = "" }) => {
-  if (!urls.length) {
-    return null;
-  }
+}> = PatchComponent(
+  "ExternalLinksButton",
+  ({ urls, icon = faLink, className = "" }) => {
+    if (!urls.length) {
+      return null;
+    }
 
-  const Menu = () =>
-    ReactDOM.createPortal(
-      <Dropdown.Menu>
-        {urls.map((url) => (
-          <Dropdown.Item
-            key={url}
-            as={ExternalLink}
-            href={TextUtils.sanitiseURL(url)}
-            title={url}
-          >
-            {url}
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Menu>,
-      document.body
+    const Menu = () =>
+      ReactDOM.createPortal(
+        <Dropdown.Menu>
+          {urls.map((url) => (
+            <Dropdown.Item
+              key={url}
+              as={ExternalLink}
+              href={TextUtils.sanitiseURL(url)}
+              title={url}
+            >
+              {url}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>,
+        document.body
+      );
+
+    return (
+      <Dropdown className="external-links-button">
+        <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
+          <Icon icon={icon} />
+        </Dropdown.Toggle>
+        <Menu />
+      </Dropdown>
     );
-
-  return (
-    <Dropdown className="external-links-button">
-      <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
-        <Icon icon={icon} />
-      </Dropdown.Toggle>
-      <Menu />
-    </Dropdown>
-  );
-});
+  }
+);
 
 export const ExternalLinkButtons: React.FC<{ urls: string[] | undefined }> =
   PatchComponent("ExternalLinkButtons", ({ urls }) => {
