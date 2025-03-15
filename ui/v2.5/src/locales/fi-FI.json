@@ -425,7 +425,8 @@
             "search_by_name": "Etsi nimellä",
             "supported_types": "Tuetut tyypit",
             "supported_urls": "URL -osoitteet",
-            "installed_scrapers": "Asennetut kaapijat"
+            "installed_scrapers": "Asennetut kaapijat",
+            "available_scrapers": "Saatavilla olevat kaapijat"
         },
         "stashbox": {
             "add_instance": "Lisää stash-box instanssi",
@@ -1187,5 +1188,6 @@
     "unknown_date": "Tuntematon päivä",
     "type": "Tyyppi",
     "studio_and_parent": "Studio ja vanhempi",
-    "studio_count": "Studion määrä"
+    "studio_count": "Studion määrä",
+    "age_on_date": "{age} tuotannossa"
 }
