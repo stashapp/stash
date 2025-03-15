@@ -11,6 +11,7 @@ import * as Bootstrap from "react-bootstrap";
 import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
+import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
 import * as ReactSelect from "react-select";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
@@ -72,6 +73,7 @@ export const PluginApi = {
     Intl,
     FontAwesomeRegular,
     FontAwesomeSolid,
+    FontAwesomeBrands,
     Mousetrap,
     MousetrapPause,
     ReactSelect,

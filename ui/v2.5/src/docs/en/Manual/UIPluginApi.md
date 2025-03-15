@@ -29,6 +29,7 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `Intl`
 - `FontAwesomeRegular`
 - `FontAwesomeSolid`
+- `FontAwesomeBrands`
 - `Mousetrap`
 - `MousetrapPause`
 - `ReactSelect`

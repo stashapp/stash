@@ -614,6 +614,7 @@ declare namespace PluginApi {
     const Bootstrap: typeof import("react-bootstrap");
     const FontAwesomeRegular: typeof import("@fortawesome/free-regular-svg-icons");
     const FontAwesomeSolid: typeof import("@fortawesome/free-solid-svg-icons");
+    const FontAwesomeBrands: typeof import("@fortawesome/free-solid-svg-icons");
     const Intl: typeof import("react-intl");
     const Mousetrap: typeof import("mousetrap");
     const ReactSelect: typeof import("react-select");
