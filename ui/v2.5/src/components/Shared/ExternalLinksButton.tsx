@@ -12,7 +12,7 @@ export const ExternalLinksButton: React.FC<{
   icon?: IconDefinition;
   urls: string[];
   className?: string;
-}> = ({ urls, icon = faLink, className = "" }) => {
+}> = PatchComponent("ExternalLinksButton", ({ urls, icon = faLink, className = "" }) => {
   if (!urls.length) {
     return null;
   }
@@ -42,7 +42,7 @@ export const ExternalLinksButton: React.FC<{
       <Menu />
     </Dropdown>
   );
-};
+});
 
 export const ExternalLinkButtons: React.FC<{ urls: string[] | undefined }> =
   PatchComponent("ExternalLinkButtons", ({ urls }) => {

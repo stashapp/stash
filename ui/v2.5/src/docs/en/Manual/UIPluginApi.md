@@ -148,6 +148,7 @@ Returns `void`.
 - `CountrySelect`
 - `DateInput`
 - `ExternalLinkButtons`
+- `ExternalLinksButton`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryIDSelect`
