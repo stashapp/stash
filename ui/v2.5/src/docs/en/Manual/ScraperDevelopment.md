@@ -251,7 +251,7 @@ sceneByURL:
 
 ### Stash
 
-A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, and `sceneByFragment` types. This action requires that the top-level `stashServer` field is configured.
+A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, `sceneByName`, `sceneByQueryFragment` and `sceneByFragment`, types. This action requires that the top-level `stashServer` field is configured.
 
 `stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`. Alternatively, the `apiKey` field can be used to authenticate with the remote stash server.
 
@@ -264,6 +264,10 @@ performerByName:
 performerByFragment:
   action: stash
 sceneByFragment:
+  action: stash
+sceneByName:
+  action: stash
+sceneByQueryFragment:
   action: stash
 stashServer:
   apiKey: <api key>
