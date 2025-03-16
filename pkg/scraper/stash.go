@@ -115,8 +115,6 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 		return s.scrapeBySceneFragment(ctx, *input.Scene)
 	}
 
-	if input.Gallery != nil || input.Scene != nil {
-	}
 	return nil, fmt.Errorf("%w: using stash scraper as a fragment scraper", ErrNotSupported)
 }
 
