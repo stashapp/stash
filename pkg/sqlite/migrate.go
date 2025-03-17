@@ -39,6 +39,12 @@ func NewMigrator(db *Database) (*Migrator, error) {
 	m.conn.SetConnMaxIdleTime(dbConnTimeout)
 
 	m.m, err = m.getMigrate()
+
+	// if error encountered, close the connection
+	if err != nil {
+		m.Close()
+	}
+
 	return m, err
 }
 
