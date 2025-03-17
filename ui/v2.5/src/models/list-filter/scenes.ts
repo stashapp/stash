@@ -65,6 +65,10 @@ const sortByOptions = [
       messageID: "group_scene_number",
       value: "group_scene_number",
     },
+    {
+      messageID: "scene_code",
+      value: "code",
+    },
   ]);
 const displayModeOptions = [
   DisplayMode.Grid,
