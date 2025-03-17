@@ -29,6 +29,7 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `Intl`
 - `FontAwesomeRegular`
 - `FontAwesomeSolid`
+- `FontAwesomeBrands`
 - `Mousetrap`
 - `MousetrapPause`
 - `ReactSelect`
@@ -147,6 +148,8 @@ Returns `void`.
 - `ConstantSetting`
 - `CountrySelect`
 - `DateInput`
+- `ExternalLinkButtons`
+- `ExternalLinksButton`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryIDSelect`

@@ -614,6 +614,7 @@ declare namespace PluginApi {
     const Bootstrap: typeof import("react-bootstrap");
     const FontAwesomeRegular: typeof import("@fortawesome/free-regular-svg-icons");
     const FontAwesomeSolid: typeof import("@fortawesome/free-solid-svg-icons");
+    const FontAwesomeBrands: typeof import("@fortawesome/free-brands-svg-icons");
     const Intl: typeof import("react-intl");
     const Mousetrap: typeof import("mousetrap");
     const ReactSelect: typeof import("react-select");
@@ -697,6 +698,8 @@ declare namespace PluginApi {
     PerformerImagesPanel: React.FC<any>;
     TabTitleCounter: React.FC<any>;
     PerformerCard: React.FC<any>;
+    ExternalLinkButtons: React.FC<any>;
+    ExternalLinksButton: React.FC<any>;
     "PerformerCard.Popovers": React.FC<any>;
     "PerformerCard.Details": React.FC<any>;
     "PerformerCard.Overlays": React.FC<any>;
