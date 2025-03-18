@@ -86,6 +86,8 @@ export const PluginApi = {
     // add components as needed for plugins that provide pages
     SceneCard: () => import("./components/Scenes/SceneCard"),
     PerformerSelect: () => import("./components/Performers/PerformerSelect"),
+    TagLink: () => import("./components/Shared/TagLink"),
+    PerformerCard: () => import("./components/Performers/PerformerCard"),
   },
   components,
   utils: {
