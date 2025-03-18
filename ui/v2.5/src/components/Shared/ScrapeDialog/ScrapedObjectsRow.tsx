@@ -9,6 +9,7 @@ import {
 import { TagIDSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
 import { GroupSelect } from "src/components/Groups/GroupSelect";
+import { uniq } from "lodash-es";
 
 interface IScrapedStudioRow {
   title: string;
@@ -270,7 +271,7 @@ export const ScrapedTagsRow: React.FC<
       : scrapeResult.originalValue;
     const value = resultValue ?? [];
 
-    const selectValue = value.map((p) => p.stored_id ?? "");
+    const selectValue = uniq(value.map((p) => p.stored_id ?? ""));
 
     // we need to use TagIDSelect here because we want to use the local name
     // of the tag instead of the name from the source
