@@ -130,6 +130,27 @@ func (m *Migrator) runCustomMigration(ctx context.Context, fn customMigrationFun
 	return nil
 }
 
+func (m *Migrator) PostMigrate(ctx context.Context) error {
+	// optimise the database
+	var err error
+	logger.Info("Running database analyze")
+
+	// don't use Optimize/vacuum as this adds a significant amount of time
+	// to the migration
+	err = analyze(ctx, m.conn)
+
+	if err == nil {
+		logger.Debug("Flushing WAL")
+		err = flushWAL(ctx, m.conn)
+	}
+
+	if err != nil {
+		return fmt.Errorf("error optimising database: %s", err)
+	}
+
+	return nil
+}
+
 func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 	m, err := NewMigrator(db)
 	if err != nil {

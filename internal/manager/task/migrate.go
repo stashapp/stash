@@ -73,9 +73,6 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 	}
 
 	err = s.runMigrations(ctx, progress)
-	if err == nil {
-		err = s.postMigrate(ctx, progress)
-	}
 
 	if err != nil {
 		errStr := fmt.Sprintf("error performing migration: %s", err)
@@ -96,6 +93,11 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 		if err := os.Remove(backupPath); err != nil {
 			logger.Warnf("error removing unwanted database backup (%s): %s", backupPath, err.Error())
 		}
+	}
+
+	// reinitialise the database
+	if err := database.ReInitialise(); err != nil {
+		return fmt.Errorf("error reinitialising database: %s", err)
 	}
 
 	logger.Infof("Database migration complete")
@@ -135,6 +137,8 @@ func (s *MigrateJob) runMigrations(ctx context.Context, progress *job.Progress) 
 
 	defer m.Close()
 
+	logger.Info("Running migrations")
+
 	for {
 		currentSchemaVersion := m.CurrentSchemaVersion()
 		targetSchemaVersion := m.RequiredSchemaVersion()
@@ -155,30 +159,15 @@ func (s *MigrateJob) runMigrations(ctx context.Context, progress *job.Progress) 
 		progress.Increment()
 	}
 
-	return nil
-}
-
-func (s *MigrateJob) postMigrate(ctx context.Context, progress *job.Progress) error {
-	database := s.Database
-
-	// reinitialise the database
-	if err := database.ReInitialise(); err != nil {
-		return fmt.Errorf("error reinitialising database: %s", err)
-	}
-
-	// optimise the database
-	var err error
+	// perform post-migrate analyze using the migrator connection
 	progress.ExecuteTask("Optimising database", func() {
-		// don't use Optimize/vacuum as this adds a significant amount of time
-		// to the migration
-		err = database.Analyze(ctx)
+		err = m.PostMigrate(ctx)
+		progress.Increment()
 	})
 
 	if err != nil {
 		return fmt.Errorf("error optimising database: %s", err)
 	}
-
-	progress.Increment()
 
 	return nil
 }
