@@ -39,6 +39,7 @@ import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios"
 import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { TagsQuickFilter } from "../List/Filters/TagsFilter";
 import { SidebarSavedFilterList } from "../List/SavedFilterList";
+import { SearchTermInput } from "../List/ListFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -217,6 +218,7 @@ const SidebarContent: React.FC<{
 }> = ({ filter, setFilter, view }) => {
   return (
     <>
+      <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
       <SidebarSection
         text={<FormattedMessage id="search_filter.saved_filters" />}
       >

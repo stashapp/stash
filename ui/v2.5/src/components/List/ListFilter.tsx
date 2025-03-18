@@ -316,7 +316,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     return (
       <>
         <div className="mb-2 d-flex">
-          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
+          {!onToggleSidebar && (
+            <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
+          )}
         </div>
 
         <ButtonGroup className="mr-2 mb-2">
