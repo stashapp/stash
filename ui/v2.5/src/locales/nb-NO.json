@@ -145,30 +145,37 @@
     },
     "component_tagger": {
         "config": {
-            "mark_organized_desc": "Umiddelbart marker scenen som Organisert etter at Lagre-knappen er trykket.",
+            "mark_organized_desc": "Marker scenen som Organisert umiddelbart etter klikk på Lagre-knappen.",
             "mark_organized_label": "Merk som Organisert ved lagring",
             "query_mode_auto_desc": "Bruk metadata hvis tilstede, eller filnavn",
             "blacklist_label": "Svarteliste",
             "query_mode_auto": "Auto",
-            "query_mode_dir_desc": "Bruker bare mappen til videofilen",
+            "query_mode_dir_desc": "Bruker kun mappen som inneholder videofilen",
             "query_mode_filename": "Filnavn",
             "query_mode_label": "Forespørselsmodus",
             "active_instance": "Aktiv stash-box instans:",
-            "blacklist_desc": "Svartelisteelementer er ekskludert fra forespørsler. Merk at de er regulære uttrykk og skiller mellom store og små bokstaver. Enkelte tegn må forutgås av en omvendt skråstrek: {chars_require_escape}",
+            "blacklist_desc": "Svartelistede elementer blir ekskludert fra forespørsler. Merk at disse er regulære uttrykk som ikke skiller mellom store og små bokstaver. Enkelte tegn må angis ved hjelp av en omvendt skråstrek: {chars_require_escape}",
             "query_mode_dir": "Mappe",
             "query_mode_filename_desc": "Bruker kun filnavn",
             "query_mode_metadata": "Metadata",
             "query_mode_metadata_desc": "Bruker kun metadata",
-            "query_mode_path": "Filbane",
-            "query_mode_path_desc": "Bruker hele filbanen",
-            "set_cover_desc": "Bytt ut scenens omslag hvis en finnes.",
+            "query_mode_path": "Filsti",
+            "query_mode_path_desc": "Bruker hele filstien",
+            "set_cover_desc": "Bytt ut scenens omslagsbilde hvis det finnes.",
             "source": "Kilde",
-            "set_cover_label": "Velg scene omslag bilde",
-            "set_tag_label": "Velg tagg",
+            "set_cover_label": "Angi omslagsbilde for scenen",
+            "set_tag_label": "Angi tagger",
             "errors": {
-                "blacklist_duplicate": "Dupliser svartelist gjenstand"
+                "blacklist_duplicate": "Dupliser element fra svarteliste"
             },
-            "set_tag_desc": "Legg til tagg til scene, enten ved overskriving eller fusjonering med eksisterende tags i scenen."
+            "set_tag_desc": "Tilknytt tagger til scenen, enten ved å overskrive eller flette med eksisterende tagger på scenen.",
+            "show_male_label": "Vis mannlige utøvere",
+            "show_male_desc": "Angi om mannlige utøvere skal være tilgjengelige for tagging."
+        },
+        "noun_query": "Forespørsel",
+        "results": {
+            "duration_off": "Varighet avviker fra forventet verdi med minst {number}s",
+            "duration_unknown": "Ukjent varighet"
         }
     },
     "config": {
@@ -249,7 +256,7 @@
         "filesystem": "Filsystem"
     },
     "captions": "Undertekster",
-    "career_length": "Karriere Lengde",
+    "career_length": "Karrierelengde",
     "chapters": "Kapitler",
     "circumcised": "Omskåret",
     "between_and": "og",
