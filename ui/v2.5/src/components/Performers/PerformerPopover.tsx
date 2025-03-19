@@ -11,7 +11,9 @@ interface IPeromerPopoverCardProps {
   id: string;
 }
 
-export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({ id }) => {
+export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
+  id,
+}) => {
   const { data, loading, error } = useFindPerformer(id);
 
   if (loading)
