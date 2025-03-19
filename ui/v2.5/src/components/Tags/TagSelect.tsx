@@ -57,6 +57,7 @@ const tagSelectSort = PatchFunction("TagSelect.sort", sortTagsByRelevance);
 export type TagSelectProps = IFilterProps &
   IFilterValueProps<Tag> & {
     hoverPlacement?: Placement;
+    hoverPlacementLabel?: Placement;
     excludeIds?: string[];
   };
 
@@ -151,7 +152,14 @@ const _TagSelect: React.FC<TagSelectProps> = (props) => {
 
     thisOptionProps = {
       ...optionProps,
-      children: object.name,
+      children: (
+        <TagPopover
+          id={object.id}
+          placement={props.hoverPlacementLabel ?? "top"}
+        >
+          <span>{object.name}</span>
+        </TagPopover>
+      ),
     };
 
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
