@@ -720,7 +720,12 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
 
   const _setTimestamp = useRef<(value: number) => void>();
   const initialTimestamp = useMemo(() => {
-    return Number.parseInt(queryParams.get("t") ?? "0", 10);
+    const t = queryParams.get("t");
+    if (!t) return 0;
+
+    const n = Number(t);
+    if (Number.isNaN(n)) return 0;
+    return n;
   }, [queryParams]);
 
   const [queueTotal, setQueueTotal] = useState(0);
