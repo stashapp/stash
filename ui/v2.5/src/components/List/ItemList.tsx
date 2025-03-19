@@ -169,6 +169,63 @@ export const ItemListToolbar = <T extends QueryResult, E extends IHasID>(
   return <Toolbar {...filterListToolbarProps} />;
 };
 
+export const ItemListFilterTags: React.FC = () => {
+  const { filter, setFilter: updateFilter } = useFilter();
+  const { modal, showModal, closeModal } = useModal();
+
+  const showEditFilter = useCallback(
+    (editingCriterion?: string) => {
+      function onApplyEditFilter(f: ListFilterModel) {
+        closeModal();
+        updateFilter(f);
+      }
+
+      showModal(
+        <EditFilterDialog
+          filter={filter}
+          onApply={onApplyEditFilter}
+          onCancel={() => closeModal()}
+          editingCriterion={editingCriterion}
+        />
+      );
+    },
+    [filter, updateFilter, showModal, closeModal]
+  );
+
+  function onRemoveCriterion(removedCriterion: Criterion, valueIndex?: number) {
+    if (valueIndex === undefined) {
+      updateFilter(
+        filter.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    } else {
+      updateFilter(
+        filter.removeCustomFieldCriterion(
+          removedCriterion.criterionOption.type,
+          valueIndex
+        )
+      );
+    }
+  }
+
+  function onClearAllCriteria() {
+    updateFilter(filter.clearCriteria());
+  }
+
+  return (
+    <>
+      {modal}
+      <FilterTags
+        criteria={filter.criteria}
+        onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+        onRemoveCriterion={onRemoveCriterion}
+        onRemoveAll={() => onClearAllCriteria()}
+      />
+    </>
+  );
+};
+
+
+
 export interface IItemListProps<T extends QueryResult> {
   renderContent: (
     result: T,
@@ -262,34 +319,10 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     }
   }, [addKeybinds, result, effectiveFilter, selectedIds]);
 
-  function onRemoveCriterion(removedCriterion: Criterion, valueIndex?: number) {
-    if (valueIndex === undefined) {
-      updateFilter(
-        filter.removeCriterion(removedCriterion.criterionOption.type)
-      );
-    } else {
-      updateFilter(
-        filter.removeCustomFieldCriterion(
-          removedCriterion.criterionOption.type,
-          valueIndex
-        )
-      );
-    }
-  }
-
-  function onClearAllCriteria() {
-    updateFilter(filter.clearCriteria());
-  }
-
   return (
     <div className="item-list-container">
       {providedToolbar}
-      <FilterTags
-        criteria={filter.criteria}
-        onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-        onRemoveCriterion={onRemoveCriterion}
-        onRemoveAll={() => onClearAllCriteria()}
-      />
+      <ItemListFilterTags />
       {modal}
 
       <PagedList
