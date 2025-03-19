@@ -40,6 +40,11 @@ import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { TagsQuickFilter } from "../List/Filters/TagsFilter";
 import { SidebarSavedFilterList } from "../List/SavedFilterList";
 import { SearchTermInput } from "../List/ListFilter";
+import { SidebarIcon } from "../Shared/Icon";
+import { Button, ButtonGroup } from "react-bootstrap";
+import { ListOperationButtons } from "../List/ListOperationButtons";
+import { ListViewOptions } from "../List/ListViewOptions";
+import { useListContext } from "../List/ListProvider";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -215,9 +220,13 @@ const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
-}> = ({ filter, setFilter, view }) => {
+  onClose?: () => void; 
+}> = ({ filter, setFilter, view, onClose }) => {
   return (
     <>
+      <div className="mb-1">
+        <Button onClick={onClose} variant="secondary"><SidebarIcon /></Button>
+      </div>
       <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
       <SidebarSection
         text={<FormattedMessage id="search_filter.saved_filters" />}
@@ -436,7 +445,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
         <SidebarPane>
           <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent filter={filter} setFilter={setFilter} view={view} />
+            <SidebarContent filter={filter} setFilter={setFilter} view={view} onClose={() => setShowSidebar(false)} />
           </Sidebar>
           <div>
             <FilterTags
