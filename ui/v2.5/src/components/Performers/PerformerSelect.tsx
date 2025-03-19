@@ -30,6 +30,8 @@ import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
+import { PerformerPopover } from "./PerformerPopover";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 export type SelectObject = {
   id: string;
@@ -71,7 +73,12 @@ const performerSelectSort = PatchFunction(
 );
 
 const _PerformerSelect: React.FC<
-  IFilterProps & IFilterValueProps<Performer> & { ageFromDate?: string | null }
+  IFilterProps &
+    IFilterValueProps<Performer> & {
+      ageFromDate?: string | null;
+      hoverPlacementLabel?: Placement;
+      hoverPlacementOptions?: Placement;
+    }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
@@ -141,50 +148,55 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="performer-select-option">
-          <span className="performer-select-row">
-            <Link
-              to={`/performers/${object.id}`}
-              target="_blank"
-              className="performer-select-image-link"
-            >
-              <img
-                className="performer-select-image"
-                src={object.image_path ?? ""}
-                loading="lazy"
-              />
-            </Link>
-            <span className="performer-select-details">
-              <TruncatedText
-                className="performer-select-name"
-                text={
-                  <span>
-                    {name}
-                    {alias && (
-                      <span className="performer-select-alias">
-                        &nbsp;({alias})
-                      </span>
-                    )}
+        <PerformerPopover
+          id={object.id}
+          placement={props.hoverPlacementOptions ?? "right"}
+        >
+          <span className="performer-select-option">
+            <span className="performer-select-row">
+              <Link
+                to={`/performers/${object.id}`}
+                target="_blank"
+                className="performer-select-image-link"
+              >
+                <img
+                  className="performer-select-image"
+                  src={object.image_path ?? ""}
+                  loading="lazy"
+                />
+              </Link>
+              <span className="performer-select-details">
+                <TruncatedText
+                  className="performer-select-name"
+                  text={
+                    <span>
+                      {name}
+                      {alias && (
+                        <span className="performer-select-alias">
+                          &nbsp;({alias})
+                        </span>
+                      )}
+                    </span>
+                  }
+                  lineCount={1}
+                />
+
+                {object.disambiguation && (
+                  <span className="performer-select-disambiguation">
+                    {object.disambiguation}
                   </span>
-                }
-                lineCount={1}
-              />
+                )}
 
-              {object.disambiguation && (
-                <span className="performer-select-disambiguation">
-                  {object.disambiguation}
-                </span>
-              )}
-
-              {object.birthdate && (
-                <span className="performer-select-birthdate">
-                  {object.birthdate}
-                  <span className="performer-select-age">{` (${ageString})`}</span>
-                </span>
-              )}
+                {object.birthdate && (
+                  <span className="performer-select-birthdate">
+                    {object.birthdate}
+                    <span className="performer-select-age">{` (${ageString})`}</span>
+                  </span>
+                )}
+              </span>
             </span>
           </span>
-        </span>
+        </PerformerPopover>
       ),
     };
 
@@ -201,12 +213,17 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="performer-select-value">
-          <span>{object.name}</span>
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
-        </span>
+        <PerformerPopover
+          id={object.id}
+          placement={props.hoverPlacementLabel ?? "top"}
+        >
+          <span className="performer-select-value">
+            <span>{object.name}</span>
+            {object.disambiguation && (
+              <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+            )}
+          </span>
+        </PerformerPopover>
       ),
     };
 
