@@ -1056,6 +1056,7 @@ func (qb *SceneStore) QueryCount(ctx context.Context, sceneFilter *models.SceneF
 var sceneSortOptions = sortOptions{
 	"bitrate",
 	"created_at",
+	"code",
 	"date",
 	"file_count",
 	"filesize",

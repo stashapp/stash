@@ -721,7 +721,8 @@
                     "vr_tag": {
                         "description": "Tlačítko VR se zobrazí pouze u scén s tímto tagem.",
                         "heading": "VR Tag"
-                    }
+                    },
+                    "show_range_markers": "Zobrazit značky s rozsahem"
                 }
             },
             "scene_wall": {
@@ -914,7 +915,7 @@
             "override_preview_generation_options": "Přepsat možnosti generování náhledu",
             "override_preview_generation_options_desc": "Přepsat možnosti generování náhledu pro tuto operaci. Výchozí nastavení se nastavuje: Systém -> Generování náhledu.",
             "clip_previews": "Náhledy obrázkových klipů",
-            "marker_screenshots_tooltip": "Označte statické obrázky JPG, je vyžadováno pouze v případě, že je Typ náhledu nastaven na Statický obrázek.",
+            "marker_screenshots_tooltip": "Statické JPG obrázky značek",
             "overwrite": "Přepsat existující soubory"
         },
         "unsaved_changes": "Neuložené změny. Opravdu chcete odejít?",
@@ -1281,7 +1282,7 @@
         "downloaded_from": "Staženo z",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} v této scéně"
+            "age_context": "{age} {years_old} během produkce"
         },
         "play_duration": "Délka přehrávání",
         "stream": "Stream",
@@ -1515,6 +1516,11 @@
     "custom_fields": {
         "title": "Uživatelská pole",
         "value": "Hodnota",
-        "field": "Pole"
-    }
+        "field": "Pole",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (custom field) {modifierString} {valueString} (+{others} další)"
+    },
+    "age_on_date": "{age} během produkce",
+    "sort_name": "Seřadit jména",
+    "eta": "Přibližný čas dokončení"
 }

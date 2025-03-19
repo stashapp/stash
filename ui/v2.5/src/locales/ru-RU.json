@@ -135,7 +135,11 @@
         "copy_to_clipboard": "Скопировать в буфер обмена",
         "disable": "Выключить",
         "remove_date": "Удалить дату",
-        "view_history": "Смотреть просмотренные"
+        "view_history": "Смотреть просмотренные",
+        "reset_cover": "Восстановить обложку по умолчанию",
+        "set_cover": "Установить как обложку",
+        "add_sub_groups": "Добавить подгруппы",
+        "remove_from_containing_group": "Удалить из группы"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -536,7 +540,8 @@
                 "previews_desc": "Превью сцен и изображений",
                 "sprites": "Спрайты Сцен",
                 "transcodes": "Транскоды Сцен"
-            }
+            },
+            "rescan": "Пересканировать файлы"
         },
         "tools": {
             "scene_duplicate_checker": "Проверка сцен на дубликаты",
@@ -792,7 +797,8 @@
         "performers": "{count, plural, one {Актер} other {Актеры}}",
         "scenes": "{count, plural, one {Сцена} other {Сцены}}",
         "studios": "{count, plural, one {Студия} other {Студии}}",
-        "tags": "{count, plural, one {Тег} other {Теги}}"
+        "tags": "{count, plural, one {Тег} other {Теги}}",
+        "groups": "{count, plural, one {Группа} other {Группы}}"
     },
     "country": "Страна",
     "cover_image": "Изображение обложки",
@@ -891,7 +897,7 @@
             "marker_image_previews": "Анимированный предварительный просмотр для маркеров",
             "marker_image_previews_tooltip": "Создавать анимированные (WebP) превью. Только если в качестве типа предпросмотра выбран - Анимированные изображения. WebP использует меньше ресурсов системы во время просмотра, но занимает больше места на диске.",
             "marker_screenshots": "Скриншоты для маркеров",
-            "marker_screenshots_tooltip": "Статические JPG изображения маркеров, необходимы если тип предпросмотра выбран - Статичное изображение.",
+            "marker_screenshots_tooltip": "Статические JPG изображения маркеров",
             "markers": "Превью маркера",
             "markers_tooltip": "20-секундные видео, которые начинаются с заданного тайм-кода.",
             "override_preview_generation_options": "Пользовательские параметры превью видео файлов",
@@ -1077,7 +1083,7 @@
         "interactive_speed": "Интерактивная скорость",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} в этой сцене"
+            "age_context": "{age} {years_old} на момент съемки"
         },
         "phash": "PHash значение",
         "play_count": "Счетчик воспроизведений",
@@ -1337,7 +1343,7 @@
     "view_all": "Показать все",
     "weight": "Вес",
     "weight_kg": "Вес (кг)",
-    "years_old": "Возраст",
+    "years_old": "лет",
     "zip_file_count": "Количество zip-файлов",
     "penis_length_cm": "Длина пениса (см)",
     "studio_tagger": {
@@ -1461,5 +1467,9 @@
         "websocket_connection_failed": "Не удается выполнить соединение websocket: подробности в консоли браузера",
         "websocket_connection_reestablished": "Соединение websocket восстановлено"
     },
-    "o_count": "Количество О"
+    "o_count": "Количество О",
+    "age_on_date": "{age} на момент съемки",
+    "sub_group_count": "Кол-во подгрупп",
+    "sub_group": "Подгруппа",
+    "studio_tags": "Теги студии"
 }

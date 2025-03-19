@@ -73,7 +73,7 @@
         "previous_action": "Atrás",
         "reassign": "Reasignar",
         "refresh": "Actualizar",
-        "reload_plugins": "Recargar plugins",
+        "reload_plugins": "Recargar complementos",
         "reload_scrapers": "Recargar rastreadores",
         "remove": "Borrar",
         "remove_from_gallery": "Eliminar de la galería",
@@ -128,7 +128,7 @@
         "optimise_database": "Optimizar la base de datos",
         "encoding_image": "Codificando imagen…",
         "assign_stashid_to_parent_studio": "Asignar Stash ID al estudio matriz existente y actualizar metadatos",
-        "choose_date": "Elige una fecha",
+        "choose_date": "Elija una fecha",
         "clean_generated": "Limpiar archivos generados",
         "clear_date_data": "Eliminar datos de fecha",
         "copy_to_clipboard": "Copiar al portapapeles",
@@ -136,7 +136,7 @@
         "enable": "Activar",
         "remove_date": "Eliminar fecha",
         "view_history": "Ver historial",
-        "add_sub_groups": "Añadir Subgrupos",
+        "add_sub_groups": "Añadir subgrupos",
         "remove_from_containing_group": "Eliminar del grupo",
         "reset_play_duration": "Reiniciar la duración de la reproducción"
     },
@@ -229,7 +229,7 @@
             "interface": "Diseño",
             "logs": "Registros",
             "metadata_providers": "Proveedores de Metadatos",
-            "plugins": "Plugins",
+            "plugins": "Complementos",
             "scraping": "Rastreo",
             "security": "Seguridad",
             "services": "Servicios",
@@ -396,14 +396,14 @@
             "video_ext_head": "Extensions de vídeo",
             "video_head": "Vídeo",
             "plugins_path": {
-                "description": "Ubicación del directorio de los archivos de configuración de plugins",
-                "heading": "Ruta de plugins"
+                "description": "Ubicación del directorio de los archivos de configuración de complementos",
+                "heading": "Ruta de complementos"
             }
         },
         "library": {
             "exclusions": "Exclusiones",
             "gallery_and_image_options": "Opciones para Imágenes y Galerías",
-            "media_content_extensions": "Extensiónes de Archivo Multimedia"
+            "media_content_extensions": "Extensiones para contenido multimedia"
         },
         "logs": {
             "log_level": "Nivel de registro"
@@ -411,8 +411,8 @@
         "plugins": {
             "hooks": "Hooks",
             "triggers_on": "Se lleva a cabo durante",
-            "installed_plugins": "Plugins instalados",
-            "available_plugins": "Plugins disponibles"
+            "installed_plugins": "Complementos instalados",
+            "available_plugins": "Complementos disponibles"
         },
         "scraping": {
             "entity_metadata": "Metadatos de {entityType}",
@@ -422,7 +422,7 @@
             "scraper": "Rastreador",
             "scrapers": "Rastreadores",
             "search_by_name": "Búsqueda por nombre",
-            "supported_types": "Tipos soportados",
+            "supported_types": "Tipos admitidos",
             "supported_urls": "Direcciones web",
             "available_scrapers": "Rastreadores disponibles",
             "installed_scrapers": "Rastreadores instalados"
@@ -518,7 +518,7 @@
             },
             "migrations": "Migraciones",
             "only_dry_run": "Marca esta casilla para ejecutar en MODO DE SIMULACIÓN. No se eliminará información alguna, solo se mostrarán en el registro las acciones a realizar",
-            "plugin_tasks": "Tareas de plugins",
+            "plugin_tasks": "Tareas de complementos",
             "scan": {
                 "scanning_all_paths": "Escaneando todas las rutas",
                 "scanning_paths": "Escaneando las siguientes rutas"
@@ -539,7 +539,9 @@
             },
             "generate_sprites_during_scan_tooltip": "El conjunto de imágenes que se muestra bajo el reproductor de vídeo para facilitar la navegación.",
             "optimise_database_warning": "Advertencia: mientras se esté ejecutando esta tarea, cualquier operación que modifique la base de datos fallará, y dependiendo del tamaño de su base de datos, podría tardar varios minutos en completarse. También requiere como mínimo tanto espacio libre en disco como grande sea su base de datos, pero se recomienda 1.5 veces más.",
-            "optimise_database": "Intentar mejorar el rendimiento mediante el análisis y posterior reconstrucción del archivo de base de datos completo."
+            "optimise_database": "Intentar mejorar el rendimiento mediante el análisis y posterior reconstrucción del archivo de base de datos completo.",
+            "rescan_tooltip": "Volver a analizar todos los archivos en la ruta. Se usa para forzar la actualización de metadatos y contenidos de archivos ZIP.",
+            "rescan": "Reanalizar archivos"
         },
         "tools": {
             "scene_duplicate_checker": "Comprobación de escenas duplicadas",
@@ -1054,7 +1056,8 @@
     "isMissing": "Falta",
     "library": "Biblioteca",
     "loading": {
-        "generic": "Cargando…"
+        "generic": "Cargando…",
+        "plugins": "Cargando complementos…"
     },
     "marker_count": "Número de marcadores",
     "markers": "Marcadores",
@@ -1330,7 +1333,13 @@
         "something_went_wrong": "Algo salió mal.",
         "loading_type": "Error cargando {type}",
         "invalid_javascript_string": "Código javascript no válido: {error}",
-        "invalid_json_string": "Cadena JSON no válida: {error}"
+        "invalid_json_string": "Cadena JSON no válida: {error}",
+        "custom_fields": {
+            "field_name_required": "Se requiere el nombre del campo",
+            "field_name_whitespace": "El nombre del campo no puede tener espacios al principio o al final",
+            "duplicate_field": "El nombre del campo debe ser único",
+            "field_name_length": "El nombre del campo debe tener menos de 65 caracteres"
+        }
     },
     "file_count": "Conteo de archivos",
     "hasChapters": "Tiene capítulos",
@@ -1474,5 +1483,23 @@
     "group_scene_number": "Número de escena",
     "groups": "Grupos",
     "studio_count": "Recuento de estudios",
-    "studio_tags": "Etiquetas de estudio"
+    "studio_tags": "Etiquetas de estudio",
+    "custom_fields": {
+        "field": "Campo",
+        "value": "Valor",
+        "title": "Campos personalizados"
+    },
+    "sub_group_count": "Recuento de subgrupos",
+    "sub_group_of": "Subgrupo de {parent}",
+    "sub_group": "Subgrupo",
+    "sub_groups": "Subgrupos",
+    "criterion_modifier_values": {
+        "any": "Cualquiera",
+        "any_of": "Cualquiera de",
+        "none": "Ninguno",
+        "only": "Solamente"
+    },
+    "include_sub_group_content": "Incluir contenido de subgrupos",
+    "include_sub_groups": "Incluir subgrupos",
+    "eta": "Tiempo estimado"
 }

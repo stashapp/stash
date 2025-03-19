@@ -102,6 +102,8 @@ Returns a `boolean` which will be `true` if the components are loading.
 
 This namespace contains all of the components that may need to be loaded using the `loadComponents` method. Components are added to this namespace as needed. Please make a development request if a required component is not in this namespace.
 
+This component also includes coarse-grained entries for every lazily loaded import in the stock UI. If a component is not available in `components` when the page loads, it can be loaded using the coarse-grained entry. For example, `PerformerCard` can be loaded using `loadableComponents.Performers`.
+
 ### `patch`
 
 This namespace provides methods to patch components to change their behaviour.

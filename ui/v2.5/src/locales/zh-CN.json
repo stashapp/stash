@@ -737,7 +737,8 @@
                     },
                     "show_ab_loop_controls": "显示 AB 循环控制组件",
                     "disable_mobile_media_auto_rotate": "在移动设备中针对全屏幕媒体禁用自动旋转",
-                    "enable_chromecast": "启用Chromecast"
+                    "enable_chromecast": "启用Chromecast",
+                    "show_range_markers": "展示范围标记"
                 }
             },
             "scene_wall": {
@@ -1115,7 +1116,7 @@
         "interactive_speed": "互动速度",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "短片里面 {age} {years_old}"
+            "age_context": "制作时 {age} {years_old}"
         },
         "phash": "感知码PHash",
         "play_count": "播放量",
@@ -1515,8 +1516,11 @@
     "custom_fields": {
         "field": "字段",
         "title": "自定义字段",
-        "value": "数值"
+        "value": "数值",
+        "criteria_format_string_others": "{criterion} (用户字段) {modifierString} {valueString} (+{others} others)",
+        "criteria_format_string": "{criterion} (用户字段) {modifierString} {valueString}"
     },
     "eta": "预估剩余时间",
-    "sort_name": "排序用名"
+    "sort_name": "排序用名",
+    "age_on_date": "在制作时{age}岁"
 }
