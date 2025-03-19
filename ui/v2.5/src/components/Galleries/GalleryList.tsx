@@ -4,7 +4,12 @@ import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import {
+  ItemList,
+  ItemListContext,
+  ItemListToolbar,
+  showWhenSelected,
+} from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
@@ -195,13 +200,17 @@ export const GalleryList: React.FC<IGalleryList> = ({
       selectable
     >
       <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
+        toolbar={
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderEditDialog={renderEditDialog}
+            renderDeleteDialog={renderDeleteDialog}
+          />
+        }
       />
     </ItemListContext>
   );

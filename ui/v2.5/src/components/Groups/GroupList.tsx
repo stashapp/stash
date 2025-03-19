@@ -11,16 +11,19 @@ import {
   useFindGroups,
   useGroupsDestroy,
 } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import {
+  IItemListToolbar,
+  ItemList,
+  ItemListContext,
+  ItemListToolbar,
+  showWhenSelected,
+} from "../List/ItemList";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { GroupCardGrid } from "./GroupCardGrid";
 import { EditGroupsDialog } from "./EditGroupsDialog";
 import { View } from "../List/views";
-import {
-  IFilteredListToolbar,
-  IItemListOperation,
-} from "../List/FilteredListToolbar";
+import { IItemListOperation } from "../List/FilteredListToolbar";
 
 const GroupExportDialog: React.FC<{
   open?: boolean;
@@ -86,7 +89,9 @@ export const GroupListContext: React.FC<
 interface IGroupList extends IGroupListContext {
   fromGroupId?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
-  renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
+  toolbar?: React.FC<
+    IItemListToolbar<GQL.FindGroupsQueryResult, GQL.GroupDataFragment>
+  >;
   otherOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
 
@@ -98,7 +103,7 @@ export const GroupList: React.FC<IGroupList> = ({
   fromGroupId,
   onMove,
   selectable,
-  renderToolbar,
+  toolbar: Toolbar,
   otherOperations: providedOperations = [],
 }) => {
   const intl = useIntl();
@@ -226,14 +231,18 @@ export const GroupList: React.FC<IGroupList> = ({
       selectable={selectable}
     >
       <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
-        renderToolbar={renderToolbar}
+        toolbar={
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderEditDialog={renderEditDialog}
+            renderDeleteDialog={renderDeleteDialog}
+            toolbar={Toolbar}
+          />
+        }
       />
     </GroupListContext>
   );

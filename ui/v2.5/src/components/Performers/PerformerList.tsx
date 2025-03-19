@@ -9,7 +9,12 @@ import {
   useFindPerformers,
   usePerformersDestroy,
 } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import {
+  ItemList,
+  ItemListContext,
+  ItemListToolbar,
+  showWhenSelected,
+} from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
@@ -329,13 +334,17 @@ export const PerformerList: React.FC<IPerformerList> = ({
       selectable
     >
       <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
+        toolbar={() => (
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderEditDialog={renderEditDialog}
+            renderDeleteDialog={renderDeleteDialog}
+          />
+        )}
       />
     </ItemListContext>
   );

@@ -21,7 +21,7 @@ import {
   useQueryResultContext,
 } from "./ListProvider";
 import { FilterContext, SetFilterURL, useFilter } from "./FilterProvider";
-import { useModal } from "src/hooks/modal";
+import { ModalContext, useModal, useModalContext } from "src/hooks/modal";
 import {
   useDefaultFilter,
   useEnsureValidPage,
@@ -36,19 +36,10 @@ import {
 import { PagedList } from "./PagedList";
 import { ConfigurationContext } from "src/hooks/Config";
 
-interface IItemListProps<T extends QueryResult, E extends IHasID> {
+export interface IItemListToolbar<T extends QueryResult, E extends IHasID> {
   view?: View;
   zoomable?: boolean;
   otherOperations?: IItemListOperation<T>[];
-  renderContent: (
-    result: T,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void,
-    onChangePage: (page: number) => void,
-    pageCount: number
-  ) => React.ReactNode;
-  renderMetadataByline?: (data: T) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
@@ -57,61 +48,28 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
     selected: E[],
     onClose: (confirmed: boolean) => void
   ) => React.ReactNode;
-  addKeybinds?: (
-    result: T,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
-  ) => () => void;
-  renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
+  toolbar?: React.FC<IFilteredListToolbar>;
 }
 
-export const ItemList = <T extends QueryResult, E extends IHasID>(
-  props: IItemListProps<T, E>
+export const ItemListToolbar = <T extends QueryResult, E extends IHasID>(
+  props: IItemListToolbar<T, E>
 ) => {
   const {
     view,
     zoomable,
     otherOperations,
-    renderContent,
     renderEditDialog,
     renderDeleteDialog,
-    renderMetadataByline,
-    addKeybinds,
-    renderToolbar: providedToolbar,
+    toolbar,
   } = props;
 
   const { filter, setFilter: updateFilter } = useFilter();
-  const { effectiveFilter, result, cachedResult, totalCount } =
-    useQueryResultContext<T, E>();
-  const {
-    selectedIds,
-    getSelected,
-    onSelectChange,
-    onSelectAll,
-    onSelectNone,
-  } = useListContext<E>();
+  const { effectiveFilter, result } = useQueryResultContext<T, E>();
+  const { selectedIds, getSelected, onSelectNone } = useListContext<E>();
 
-  // scroll to the top of the page when the page changes
-  useScrollToTopOnPageChange(filter.currentPage, result.loading);
+  const { showModal, closeModal } = useModalContext();
 
-  const { modal, showModal, closeModal } = useModal();
-
-  const metadataByline = useMemo(() => {
-    if (cachedResult.loading) return "";
-
-    return renderMetadataByline?.(cachedResult) ?? "";
-  }, [renderMetadataByline, cachedResult]);
-
-  const pages = Math.ceil(totalCount / filter.itemsPerPage);
-
-  const onChangePage = useCallback(
-    (p: number) => {
-      updateFilter(filter.changePage(p));
-    },
-    [filter, updateFilter]
-  );
-
-  useEnsureValidPage(filter, totalCount, updateFilter);
+  const Toolbar = toolbar ?? FilteredListToolbar;
 
   const showEditFilter = useCallback(
     (editingCriterion?: string) => {
@@ -131,24 +89,6 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     },
     [filter, updateFilter, showModal, closeModal]
   );
-
-  useListKeyboardShortcuts({
-    currentPage: filter.currentPage,
-    onChangePage,
-    onSelectAll,
-    onSelectNone,
-    pages,
-    showEditFilter,
-  });
-
-  useEffect(() => {
-    if (addKeybinds) {
-      const unbindExtras = addKeybinds(result, effectiveFilter, selectedIds);
-      return () => {
-        unbindExtras();
-      };
-    }
-  }, [addKeybinds, result, effectiveFilter, selectedIds]);
 
   const operations = useMemo(() => {
     async function onOperationClicked(o: IItemListOperation<T>) {
@@ -217,6 +157,111 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     result.refetch();
   }
 
+  const filterListToolbarProps = {
+    showEditFilter,
+    view: view,
+    operations: operations,
+    zoomable: zoomable,
+    onEdit: renderEditDialog ? onEdit : undefined,
+    onDelete: renderDeleteDialog ? onDelete : undefined,
+  };
+
+  return <Toolbar {...filterListToolbarProps} />;
+};
+
+export interface IItemListProps<T extends QueryResult> {
+  renderContent: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void,
+    onChangePage: (page: number) => void,
+    pageCount: number
+  ) => React.ReactNode;
+  renderMetadataByline?: (data: T) => React.ReactNode;
+  addKeybinds?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => () => void;
+  toolbar: React.ReactNode;
+}
+
+export const ItemList = <T extends QueryResult, E extends IHasID>(
+  props: IItemListProps<T>
+) => {
+  const {
+    renderContent,
+    renderMetadataByline,
+    addKeybinds,
+    toolbar: providedToolbar,
+  } = props;
+
+  const { filter, setFilter: updateFilter } = useFilter();
+  const { effectiveFilter, result, cachedResult, totalCount } =
+    useQueryResultContext<T, E>();
+  const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
+    useListContext<E>();
+
+  // scroll to the top of the page when the page changes
+  useScrollToTopOnPageChange(filter.currentPage, result.loading);
+
+  const { modal, showModal, closeModal } = useModal();
+
+  const metadataByline = useMemo(() => {
+    if (cachedResult.loading) return "";
+
+    return renderMetadataByline?.(cachedResult) ?? "";
+  }, [renderMetadataByline, cachedResult]);
+
+  const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+  const onChangePage = useCallback(
+    (p: number) => {
+      updateFilter(filter.changePage(p));
+    },
+    [filter, updateFilter]
+  );
+
+  useEnsureValidPage(filter, totalCount, updateFilter);
+
+  const showEditFilter = useCallback(
+    (editingCriterion?: string) => {
+      function onApplyEditFilter(f: ListFilterModel) {
+        closeModal();
+        updateFilter(f);
+      }
+
+      showModal(
+        <EditFilterDialog
+          filter={filter}
+          onApply={onApplyEditFilter}
+          onCancel={() => closeModal()}
+          editingCriterion={editingCriterion}
+        />
+      );
+    },
+    [filter, updateFilter, showModal, closeModal]
+  );
+
+  useListKeyboardShortcuts({
+    currentPage: filter.currentPage,
+    onChangePage,
+    onSelectAll,
+    onSelectNone,
+    pages,
+    showEditFilter,
+  });
+
+  useEffect(() => {
+    if (addKeybinds) {
+      const unbindExtras = addKeybinds(result, effectiveFilter, selectedIds);
+      return () => {
+        unbindExtras();
+      };
+    }
+  }, [addKeybinds, result, effectiveFilter, selectedIds]);
+
   function onRemoveCriterion(removedCriterion: Criterion, valueIndex?: number) {
     if (valueIndex === undefined) {
       updateFilter(
@@ -236,22 +281,9 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     updateFilter(filter.clearCriteria());
   }
 
-  const filterListToolbarProps = {
-    showEditFilter,
-    view: view,
-    operations: operations,
-    zoomable: zoomable,
-    onEdit: renderEditDialog ? onEdit : undefined,
-    onDelete: renderDeleteDialog ? onDelete : undefined,
-  };
-
   return (
     <div className="item-list-container">
-      {providedToolbar ? (
-        providedToolbar(filterListToolbarProps)
-      ) : (
-        <FilteredListToolbar {...filterListToolbarProps} />
-      )}
+      {providedToolbar}
       <FilterTags
         criteria={filter.criteria}
         onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
@@ -348,7 +380,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
         >
           {({ items }) => (
             <ListContext selectable={selectable} items={items}>
-              {children}
+              <ModalContext>{children}</ModalContext>
             </ListContext>
           )}
         </QueryResultContext>

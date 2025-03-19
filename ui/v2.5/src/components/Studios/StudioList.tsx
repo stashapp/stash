@@ -9,7 +9,12 @@ import {
   useFindStudios,
   useStudiosDestroy,
 } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import {
+  ItemList,
+  ItemListContext,
+  ItemListToolbar,
+  showWhenSelected,
+} from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -188,12 +193,16 @@ export const StudioList: React.FC<IStudioList> = ({
       selectable
     >
       <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderDeleteDialog={renderDeleteDialog}
+        toolbar={
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderDeleteDialog={renderDeleteDialog}
+          />
+        }
       />
     </ItemListContext>
   );

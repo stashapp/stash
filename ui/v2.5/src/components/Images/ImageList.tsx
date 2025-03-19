@@ -11,7 +11,12 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindImages, useFindImages } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import {
+  ItemList,
+  ItemListContext,
+  ItemListToolbar,
+  showWhenSelected,
+} from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -416,14 +421,18 @@ export const ImageList: React.FC<IImageList> = ({
       selectable
     >
       <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
         renderMetadataByline={renderMetadataByline}
+        toolbar={
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderEditDialog={renderEditDialog}
+            renderDeleteDialog={renderDeleteDialog}
+          />
+        }
       />
     </ItemListContext>
   );

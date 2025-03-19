@@ -197,7 +197,7 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
         fromGroupId={group.id}
         otherOperations={otherOperations}
         onMove={onMove}
-        renderToolbar={(props) => <Toolbar {...props} />}
+        toolbar={(props) => <Toolbar {...props} />}
       />
     </>
   );

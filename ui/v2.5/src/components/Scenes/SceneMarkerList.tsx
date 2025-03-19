@@ -9,7 +9,7 @@ import {
   useFindSceneMarkers,
 } from "src/core/StashService";
 import NavUtils from "src/utils/navigation";
-import { ItemList, ItemListContext } from "../List/ItemList";
+import { ItemList, ItemListContext, ItemListToolbar } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "../Wall/WallPanel";
@@ -135,12 +135,16 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
       selectable
     >
       <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderDeleteDialog={renderDeleteDialog}
+        toolbar={
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderDeleteDialog={renderDeleteDialog}
+          />
+        }
       />
     </ItemListContext>
   );

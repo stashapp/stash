@@ -3,7 +3,12 @@ import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import {
+  ItemList,
+  ItemListContext,
+  ItemListToolbar,
+  showWhenSelected,
+} from "../List/ItemList";
 import { Button } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -366,13 +371,17 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
       selectable
     >
       <ItemList
-        view={view}
-        zoomable
-        otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
+        toolbar={
+          <ItemListToolbar
+            zoomable
+            view={view}
+            otherOperations={otherOperations}
+            renderEditDialog={renderEditDialog}
+            renderDeleteDialog={renderDeleteDialog}
+          />
+        }
       />
     </ItemListContext>
   );
