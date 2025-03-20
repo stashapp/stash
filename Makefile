@@ -54,7 +54,7 @@ ifndef COMPILER_IMAGE
 endif
 
 .PHONY: release
-release: pre-ui generate ui build-release
+release: pre-ui generate generate-login-locale ui build-release
 
 # targets to set various build flags
 # use combinations on the make command-line to configure a build, e.g.:
@@ -280,6 +280,10 @@ generate-ui:
 .PHONY: generate-backend
 generate-backend: touch-ui
 	go generate ./cmd/stash
+
+.PHONY: generate-login-locale
+generate-login-locale:
+	go generate ./ui
 
 .PHONY: generate-dataloaders
 generate-dataloaders:
