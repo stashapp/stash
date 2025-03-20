@@ -1140,6 +1140,13 @@
     "generic": "Loading…",
     "plugins": "Loading plugins…"
   },
+  "login": {
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "invalid_credentials": "Invalid username or password",
+    "internal_error": "Unexpected internal error. See logs for more details"
+  },
   "marker_count": "Marker Count",
   "markers": "Markers",
   "measurements": "Measurements",

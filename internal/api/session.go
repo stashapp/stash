@@ -72,7 +72,7 @@ func handleLoginLocale(cfg *config.Config) http.HandlerFunc {
 
 		data, err := getLoginLocale(lang)
 		if err != nil {
-			logger.Warnf("Failed to load login locale file for language %s: %v", lang, err)
+			logger.Debugf("Failed to load login locale file for language %s: %v", lang, err)
 			// try again with the default language
 			if lang != defaultLocale {
 				data, err = getLoginLocale(defaultLocale)

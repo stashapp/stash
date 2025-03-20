@@ -13,12 +13,10 @@
     <!-- load locale -->
     <script>
         var localeStrings = {
-            login: {
-                username: "Username",
-                password: "Password",
-                login: "Login",
-                invalid_credentials: "Invalid credentials"
-            }
+            username: "Username",
+            password: "Password",
+            login: "Login",
+            invalid_credentials: "Invalid credentials"
         };
     </script>
     <script src="login/locale"></script>
@@ -38,12 +36,12 @@
                 if (xhr.status == 200) {
                     window.location.replace(returnURL);
                 } else {
-                    document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.login.invalid_credentials;
+                    document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.invalid_credentials;
                 }
             }
         };
         xhr.onerror = function() {
-            document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.login.internal_error;
+            document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.internal_error;
         };
         xhr.send("username=" + username + "&password=" + password + "&returnURL=" + returnURL);
     }
@@ -77,10 +75,10 @@
 </body>
 
 <script>
-    document.getElementById("username-heading").innerText = localeStrings.login.username;
-    document.getElementById("password-heading").innerText = localeStrings.login.password;
-    document.getElementById("username").placeholder = localeStrings.login.username;
-    document.getElementById("password").placeholder = localeStrings.login.password;
-    document.getElementById("login-button").value = localeStrings.login.login;
+    document.getElementById("username-heading").innerText = localeStrings.username;
+    document.getElementById("password-heading").innerText = localeStrings.password;
+    document.getElementById("username").placeholder = localeStrings.username;
+    document.getElementById("password").placeholder = localeStrings.password;
+    document.getElementById("login-button").value = localeStrings.login;
 </script>
 </html>
