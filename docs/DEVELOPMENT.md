@@ -55,6 +55,7 @@ NOTE: The `make` command in OpenBSD will be `gmake`. For example, `make pre-ui` 
 
 * `make pre-ui` - Installs the UI dependencies. This only needs to be run once after cloning the repository, or if the dependencies are updated.
 * `make generate` - Generates Go and UI GraphQL files. Requires `make pre-ui` to have been run.
+* `make generate-login-locale` - Generates the login locale files. Only required if the login locale files have not been generated or the login locale strings have changed.
 * `make generate-stash-box-client` - Generate Go files for the Stash-box client code.
 * `make ui` - Builds the UI. Requires `make pre-ui` to have been run.
 * `make stash` - Builds the `stash` binary (make sure to build the UI as well... see below)
@@ -88,9 +89,10 @@ When building, you can optionally prepend `flags-*` targets to the target list i
 
 1. Run `make pre-ui` to install UI dependencies
 2. Run `make generate` to create generated files
-3. In one terminal, run `make server-start` to run the server code
-4. In a separate terminal, run `make ui-start` to run the UI in development mode
-5. Open the UI in a browser: `http://localhost:3000/`
+3. Run `make generate-login-locale` to create login locale files
+4. In one terminal, run `make server-start` to run the server code
+5. In a separate terminal, run `make ui-start` to run the UI in development mode
+6. Open the UI in a browser: `http://localhost:3000/`
 
 Changes to the UI code can be seen by reloading the browser page.
 
@@ -126,7 +128,7 @@ This project uses a modification of the [CI-GoReleaser](https://github.com/bep/d
 
 To cross-compile the app yourself:
 
-1. Run `make pre-ui`, `make generate` and `make ui` outside the container, to generate files and build the UI.
+1. Run `make pre-ui`, `make generate`, `make generate-login-locale` and `make ui` outside the container, to generate files and build the UI.
 2. Pull the latest compiler image from Docker Hub: `docker pull stashapp/compiler`
 3. Run `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -it stashapp/compiler /bin/bash` to open a shell inside the container.
 4. From inside the container, run `make build-cc-all` to build for all platforms, or run `make build-cc-{platform}` to build for a specific platform (have a look at the `Makefile` for the list of targets).
