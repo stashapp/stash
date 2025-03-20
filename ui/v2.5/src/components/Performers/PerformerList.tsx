@@ -336,7 +336,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
       <ItemList
         addKeybinds={addKeybinds}
         renderContent={renderContent}
-        toolbar={() => (
+        toolbar={
           <ItemListToolbar
             zoomable
             view={view}
@@ -344,7 +344,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
             renderEditDialog={renderEditDialog}
             renderDeleteDialog={renderDeleteDialog}
           />
-        )}
+        }
       />
     </ItemListContext>
   );
