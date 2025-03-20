@@ -10,11 +10,37 @@
     <link rel="stylesheet" href="login/login.css">
     <link rel="stylesheet" href="css">
 </head>
+
+<script>
+    function login() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+        var returnURL = document.getElementById("returnURL").value;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "login", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    window.location.replace(returnURL);
+                } else {
+                    document.getElementsByClassName("login-error")[0].innerHTML = xhr.responseText;
+                }
+            }
+        };
+        xhr.onerror = function() {
+            document.getElementsByClassName("login-error")[0].innerHTML = "An error occurred while trying to login.";
+        };
+        xhr.send("username=" + username + "&password=" + password + "&returnURL=" + returnURL);
+    }
+</script>
+
 <body class="login">
 
     <div class="dialog">
         <div class="card">
-            <form action="login" method="POST">
+            <form action="login" method="POST" onsubmit="event.preventDefault(); login();">
                 <div class="form-group">
                     <label for="username"><h6>Username</h6></label>
                     <input class="text-input form-control" id="username" name="username" type="text" placeholder="Username" />
@@ -27,7 +53,7 @@
                     {{.Error}}
                 </div>
 
-                <input type="hidden" name="returnURL" value="{{.URL}}" />
+                <input type="hidden" id="returnURL" name="returnURL" value="{{.URL}}" />
 
                 <div>
                     <input class="btn btn-primary" type="submit" value="Login">
