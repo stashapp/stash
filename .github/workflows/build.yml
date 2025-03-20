@@ -68,7 +68,7 @@ jobs:
       run: docker exec -t build /bin/bash -c "make pre-ui"
 
     - name: Generate
-      run: docker exec -t build /bin/bash -c "make generate"
+      run: docker exec -t build /bin/bash -c "make generate generate-login-locale"
 
     - name: Validate UI
       # skip UI validation for pull requests if UI is unchanged
