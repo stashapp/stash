@@ -50,15 +50,15 @@ func (s *Tag) LoadChildIDs(ctx context.Context, l TagRelationLoader) error {
 func TagSortFunction(a, b *Tag) int {
 	sortA := a.SortName
 	if sortA == "" {
-		sortA = a.Name
+		sortA = strings.ToLower(a.Name)
 	}
 
 	sortB := b.SortName
 	if sortB == "" {
-		sortB = b.Name
+		sortB = strings.ToLower(b.Name)
 	}
 
-	return strings.Compare(strings.ToLower(sortA), strings.ToLower(sortB))
+	return strings.Compare(sortA, sortB)
 }
 
 type TagPartial struct {
