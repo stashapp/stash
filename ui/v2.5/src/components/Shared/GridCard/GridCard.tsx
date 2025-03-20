@@ -14,6 +14,7 @@ import useResizeObserver from "@react-hook/resize-observer";
 import { Icon } from "../Icon";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
+import { useDebounce } from "src/hooks/debounce";
 
 interface ICardProps {
   className?: string;
@@ -64,7 +65,7 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
     height: 0,
   });
 
-  useResizeObserver(target, (entry) => {
+  const debouncedSetDimension = useDebounce((entry: ResizeObserverEntry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
     let difference = Math.abs(dimension.width - width);
     // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
@@ -74,7 +75,9 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
     if (difference > sensitivityThreshold) {
       setDimension({ width, height });
     }
-  });
+  }, 50);
+
+  useResizeObserver(target, debouncedSetDimension);
 
   return [target, dimension];
 };
