@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -399,6 +400,10 @@ type ScrapedTag struct {
 }
 
 func (ScrapedTag) IsScrapedContent() {}
+
+func ScrapedTagSortFunction(a, b *ScrapedTag) int {
+	return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+}
 
 // A movie from a scraping operation...
 type ScrapedMovie struct {

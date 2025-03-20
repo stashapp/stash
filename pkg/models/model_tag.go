@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"strings"
 	"time"
 )
 
@@ -44,6 +45,20 @@ func (s *Tag) LoadChildIDs(ctx context.Context, l TagRelationLoader) error {
 	return s.ChildIDs.load(func() ([]int, error) {
 		return l.GetChildIDs(ctx, s.ID)
 	})
+}
+
+func TagSortFunction(a, b *Tag) int {
+	sortA := a.SortName
+	if sortA == "" {
+		sortA = a.Name
+	}
+
+	sortB := b.SortName
+	if sortB == "" {
+		sortB = b.Name
+	}
+
+	return strings.Compare(strings.ToLower(sortA), strings.ToLower(sortB))
 }
 
 type TagPartial struct {

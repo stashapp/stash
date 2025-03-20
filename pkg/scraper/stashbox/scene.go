@@ -26,11 +26,9 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*scr
 		return nil, err
 	}
 
-	sceneFragments := scenes.SearchScene
-
 	var ret []*scraper.ScrapedScene
 	var ignoredTags []string
-	for _, s := range sceneFragments {
+	for _, s := range scenes.SearchScene {
 		ss, err := c.sceneFragmentToScrapedScene(ctx, s)
 		if err != nil {
 			return nil, err
@@ -147,7 +145,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 
 		for _, sceneFragments := range scenes.FindScenesBySceneFingerprints {
-			var sceneResults []*scraper.ScrapedScene
+			sceneResults := make([]*scraper.ScrapedScene, 0, len(sceneFragments))
 			for _, scene := range sceneFragments {
 				ss, err := c.sceneFragmentToScrapedScene(ctx, scene)
 				if err != nil {

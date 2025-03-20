@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"slices"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -46,6 +47,8 @@ func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilte
 			return err
 		}
 
+		slices.SortFunc(tags, models.TagSortFunction)
+
 		ret = &FindTagsResultType{
 			Count: total,
 			Tags:  tags,
@@ -62,7 +65,13 @@ func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilte
 func (r *queryResolver) AllTags(ctx context.Context) (ret []*models.Tag, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Tag.All(ctx)
-		return err
+		if err != nil {
+			return err
+		}
+
+		slices.SortFunc(ret, models.TagSortFunction)
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}

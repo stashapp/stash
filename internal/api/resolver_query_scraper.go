@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -194,6 +195,10 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 		}
 	default:
 		return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
+	}
+
+	for i := range ret {
+		slices.SortFunc(ret[i].Tags, models.ScrapedTagSortFunction)
 	}
 
 	return ret, nil
