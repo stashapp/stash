@@ -38,7 +38,9 @@ func ExcludeTagPatterns(patterns []string) ClientOption {
 
 func MaxRequestsPerMinute(n int) ClientOption {
 	return func(c *Client) {
-		c.maxRequestsPerMinute = n
+		if n > 0 {
+			c.maxRequestsPerMinute = n
+		}
 	}
 }
 
@@ -50,7 +52,8 @@ func setApiKeyHeader(apiKey string) clientv2.RequestInterceptor {
 }
 
 func rateLimit(n int) clientv2.RequestInterceptor {
-	limiter := rate.NewLimiter(rate.Limit(n), 1)
+	perSec := float64(n) / 60
+	limiter := rate.NewLimiter(rate.Limit(perSec), 1)
 
 	return func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
 		if err := limiter.Wait(ctx); err != nil {
@@ -67,6 +70,10 @@ func NewClient(box models.StashBox, options ...ClientOption) *Client {
 	ret := &Client{
 		box:                  box,
 		maxRequestsPerMinute: DefaultMaxRequestsPerMinute,
+	}
+
+	if box.MaxRequestsPerMinute > 0 {
+		ret.maxRequestsPerMinute = box.MaxRequestsPerMinute
 	}
 
 	for _, option := range options {
