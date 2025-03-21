@@ -10,6 +10,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/stashbox/graphql"
+
+	"golang.org/x/time/rate"
 )
 
 // DefaultMaxRequestsPerMinute is the default maximum number of requests per minute.
@@ -47,16 +49,22 @@ func setApiKeyHeader(apiKey string) clientv2.RequestInterceptor {
 	}
 }
 
+func rateLimit(n int) clientv2.RequestInterceptor {
+	limiter := rate.NewLimiter(rate.Limit(n), 1)
+
+	return func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+		if err := limiter.Wait(ctx); err != nil {
+			// should only happen if the context is canceled
+			return err
+		}
+
+		return next(ctx, req, gqlInfo, res)
+	}
+}
+
 // NewClient returns a new instance of a stash-box client.
 func NewClient(box models.StashBox, options ...ClientOption) *Client {
-	authHeader := setApiKeyHeader(box.APIKey)
-
-	client := &graphql.Client{
-		Client: clientv2.NewClient(http.DefaultClient, box.Endpoint, nil, authHeader),
-	}
-
 	ret := &Client{
-		client:               client,
 		box:                  box,
 		maxRequestsPerMinute: DefaultMaxRequestsPerMinute,
 	}
@@ -64,6 +72,15 @@ func NewClient(box models.StashBox, options ...ClientOption) *Client {
 	for _, option := range options {
 		option(ret)
 	}
+
+	authHeader := setApiKeyHeader(box.APIKey)
+	limitRequests := rateLimit(ret.maxRequestsPerMinute)
+
+	client := &graphql.Client{
+		Client: clientv2.NewClient(http.DefaultClient, box.Endpoint, nil, authHeader, limitRequests),
+	}
+
+	ret.client = client
 
 	return ret
 }
