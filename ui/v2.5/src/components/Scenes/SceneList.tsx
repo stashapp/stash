@@ -310,6 +310,7 @@ export const SceneList: React.FC<ISceneList> = ({
       if (filter.displayMode === DisplayMode.Wall) {
         return (
           <SceneWallPanel
+            zoomIndex={filter.zoomIndex}
             scenes={result.data.findScenes.scenes}
             sceneQueue={queue}
           />

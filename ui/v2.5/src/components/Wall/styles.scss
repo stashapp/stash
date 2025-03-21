@@ -1,22 +1,75 @@
+@mixin shared-size {
+  @media (max-width: 576px) {
+    max-height: 33 * 0.563vw;
+    max-width: 33%;
+  }
+}
+
+.item-size {
+  &-0 {
+    max-height: 20 * 0.563vw;
+    max-width: 20%;
+
+    @include shared-size;
+  }
+
+  &-1 {
+    max-height: 25 * 0.563vw;
+    max-width: 25%;
+
+    @include shared-size;
+  }
+
+  &-2 {
+    max-height: 33.33 * 0.563vw;
+    max-width: 33.33%;
+
+    @include shared-size;
+  }
+
+  &-3 {
+    max-height: 50 * 0.563vw;
+    max-width: 50%;
+
+    &:hover {
+      .wall-item-container {
+        /* stylelint-disable-next-line */
+        transform: scale(1.9) !important;
+      }
+    }
+
+    @include shared-size;
+  }
+
+  &-4 {
+    max-height: 90 * 0.563vw;
+    max-width: 90%;
+
+    @include shared-size;
+  }
+}
+
 .wall {
   margin: 0 auto;
   max-width: 2250px;
 
   &-item {
-    height: 11.25vw;
+    height: 100%;
     line-height: 0;
-    max-height: 253px;
-    max-width: 450px;
     overflow: visible;
     padding: 0;
     transition: z-index 0.5s 0.5s;
-    width: 20%;
+    width: 100%;
     z-index: 0;
 
     @media (max-width: 576px) {
       height: inherit;
       max-width: 100%;
       min-height: 210px;
+      width: 100%;
+    }
+
+    &-anchor {
       width: 100%;
     }
 
@@ -88,6 +141,11 @@
       transition: all 0.5s 0s;
       width: 100%;
       z-index: 0;
+    }
+
+    &-container.no-transform:hover {
+      /* stylelint-disable-next-line */
+      transform: none !important;
     }
 
     &-container.transform-origin-top-left {
