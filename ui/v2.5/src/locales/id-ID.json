@@ -147,7 +147,13 @@
         "use_default": "Gunakan bawaan",
         "view_random": "Lihat Acak",
         "unset": "Tidak disetel",
-        "view_history": "Lihat histori"
+        "view_history": "Lihat histori",
+        "reset_cover": "Pulihkan Sampul Bawaan",
+        "set_cover": "Atur sebagai Sampul",
+        "reset_resume_time": "Atur ulang waktu lanjut",
+        "reset_play_duration": "Atur ulang durasi putar",
+        "add_sub_groups": "Tambah Subgrup",
+        "remove_from_containing_group": "Hapus dari Grup"
     },
     "circumcised_types": {
         "CUT": "Disunat",
@@ -224,7 +230,10 @@
             "set_tag_desc": "Lampirkan tag ke adegan, baik dengan menimpa atau menggabungkan dengan tag yang sudah ada.",
             "show_male_desc": "Baeralih apakah pemain pria dapat diberi tag.",
             "show_male_label": "Tampilkan pemain pria",
-            "source": "Sumber"
+            "source": "Sumber",
+            "errors": {
+                "blacklist_duplicate": "Duplikat item daftar hitam"
+            }
         },
         "results": {
             "duration_unknown": "Durasi tidak diketahui",
@@ -280,7 +289,8 @@
             "enabled_dlna_temporarily": "DLNA yang diaktifkan sementara",
             "network_interfaces_desc": "Antarmuka untuk mengekspos server DLNA. Daftar kosong menghasilkan berjalannya di semua antarmuka. Dibutuhkan mulai ulang DLNA setelah perubahan.",
             "recent_ip_addresses": "Alamat IP terbaru",
-            "server_display_name": "Nama Tampilan Server"
+            "server_display_name": "Nama Tampilan Server",
+            "server_port_desc": "Port untuk menjalankan server DLNA. Harus memulai ulang DLNA setelah diganti."
         },
         "general": {
             "logging": "Pencatatan",
@@ -359,6 +369,32 @@
             "blobs_path": {
                 "description": "Dimana pada sistem berkas untuk menyimpan data biner. Hanya berlaku saat menggunakan jenis penyimpanan blob Sistem Berkas. PERINGATAN: mengubah ini memerlukan pemindahan data yang ada secara manual.",
                 "heading": "Jalur sistem berkas data biner"
+            },
+            "check_for_insecure_certificates": "Cek untuk sertifikat tidak aman",
+            "cache_location": "Direktori lokasi cache. Harus diisi jika streaming menggunakan HLS (seperti pada perangkat Apple) atau DASH.",
+            "calculate_md5_and_ohash_label": "Kalkulasi MD5 untuk video",
+            "cache_path_head": "Lokasi Cache",
+            "calculate_md5_and_ohash_desc": "Kalkulasi checksum MD5 untuk tambahan oshash. Jika diaktifkan akan memperlambat proses scan awal. Hash penamaan file harus diatur menjadi oshash untuk menonaktifkan kalkulasi MD5.",
+            "check_for_insecure_certificates_desc": "Beberapa situs menggunakan sertifikat ssl yang tidak aman. Jika dinonaktifkan, scraper akan mengabaikan sertifikat yang tidak aman dan akan melanjutkan scraping. Jika anda mendapatkan error saat scraping, nonaktifkan ini.",
+            "chrome_cdp_path": "Lokasi Chrome CDP",
+            "chrome_cdp_path_desc": "Lokasi file eksekutabel Chrome, atau alamat remote (dimulai dengan http:// atau https://, sebagai contoh http://localhost:9222/json/version) sebuah instansi Chrome.",
+            "ffmpeg": {
+                "live_transcode": {
+                    "output_args": {
+                        "desc": "Lanjutan: Argumen tambahan untuk ditambahkan pada ffmpeg sebelum isian output saat mentranscode video secara langsung.",
+                        "heading": "Argumen untuk Output Transcode Langsung pada FFmpeg"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Lanjutan: Argumen tambahan untuk ditambahkann pada ffmpeg sebelum isian saat menghasilkan video.",
+                        "heading": "Argumen Input Transcode FFmpeg"
+                    },
+                    "output_args": {
+                        "desc": "Lanjutan: Argumen tambahan untuk ditambahkan pada ffmpeg sebelum output saat menghasilkan video.",
+                        "heading": "Argumen Output Transcode FFmpeg"
+                    }
+                }
             }
         },
         "library": {
@@ -660,5 +696,6 @@
     "organized": "Terorganisir",
     "orientation": "Orientasi",
     "all": "semua",
-    "ascending": "Urut naik"
+    "ascending": "Urut naik",
+    "age_on_date": "{age} diproduksi"
 }
