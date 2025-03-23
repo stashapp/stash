@@ -92,6 +92,8 @@ func handleLoginPost() http.HandlerFunc {
 		var invalidCredentialsError *session.InvalidCredentialsError
 
 		if errors.As(err, &invalidCredentialsError) {
+			// set response code to 401 Unauthorized
+			w.WriteHeader(http.StatusUnauthorized)
 			// serve login page with an error
 			serveLoginPage(w, r, url, "Username or password is invalid")
 			return
