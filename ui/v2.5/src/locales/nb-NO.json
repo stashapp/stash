@@ -119,7 +119,7 @@
         "cancel": "Avbryt",
         "apply": "Bruk",
         "assign_stashid_to_parent_studio": "Tildel Stash ID til eksisterende foreldre studio og oppdater metadata",
-        "add_to_entity": "Legg til til {entityType}",
+        "add_to_entity": "Legg til {entityType}",
         "add_entity": "Legg til {entityType}",
         "add_manual_date": "Legg til manuell dato",
         "add_directory": "Legg til mappe",
@@ -175,8 +175,22 @@
         "noun_query": "Forespørsel",
         "results": {
             "duration_off": "Varighet avviker fra forventet verdi med minst {number}s",
-            "duration_unknown": "Ukjent varighet"
-        }
+            "duration_unknown": "Ukjent varighet",
+            "phash_matches": "{count} PHash-er stemmer overens",
+            "unnamed": "Uten navn",
+            "hash_matches": "{hash_type} stemmer overens",
+            "match_failed_already_tagged": "Scenen er allerede tagget",
+            "match_failed_no_result": "Ingen resultater funnet",
+            "fp_found": "{fpCount, plural, =0 {Ingen nye fingeravtrykksmatch funnet} other {# nye fingeravtrykksmatch funnet}}",
+            "fp_matches": "Varighet stemmer overens",
+            "fp_matches_multi": "Varighet samsvarer med {matchCount} av {durationsLength} fingeravtrykk",
+            "match_success": "Scenen ble tagget vellykket"
+        },
+        "verb_match_fp": "Match Fingeravtrykk",
+        "verb_matched": "Matchet",
+        "verb_scrape_all": "Skrap alle",
+        "verb_submit_fp": "Send inn {fpCount, plural, one{# Fingeravtrykk} andre{# Fingerprints}}",
+        "verb_toggle_config": "{toggle} {configuration}"
     },
     "config": {
         "dlna": {
@@ -265,5 +279,12 @@
         "UNCUT": "Ikke omskåret"
     },
     "birth_year": "Fødselsår",
-    "all": "alle"
+    "all": "alle",
+    "media_info": {
+        "performer_card": {
+            "age": "{age} {years_old}",
+            "age_context": "{age} {years_old} ved produksjon"
+        }
+    },
+    "age_on_date": "{age} ved produksjon"
 }
