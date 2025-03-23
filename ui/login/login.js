@@ -135,6 +135,7 @@ function localize(language, error = "") {
   if (error != "") {
     document.getElementById("login-error").innerText = translatedText[error];
   }
+  localStorage.setItem("language", language);
 }
 
 // add language options to the select element
