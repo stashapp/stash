@@ -93,7 +93,7 @@ func handleLoginPost() http.HandlerFunc {
 
 		if errors.As(err, &invalidCredentialsError) {
 			// serve login page with an error
-			serveLoginPage(w, r, url, "Username or password is invalid")
+			serveLoginPage(w, r, url, "credentials_error")
 			return
 		}
 

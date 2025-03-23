@@ -14,27 +14,34 @@
 
     <div class="dialog">
         <div class="card">
+            <div style="margin-bottom: 3px; text-align: right;">
+                <select id="language-select" onchange="localize(this.value, '{{.Error}}')"></select>
+            </div>
             <form action="login" method="POST">
                 <div class="form-group">
-                    <label for="username"><h6>Username</h6></label>
+                    <label for="username"><h6 id="username">Username</h6></label>
                     <input class="text-input form-control" id="username" name="username" type="text" placeholder="Username" />
                 </div>
                 <div class="form-group">
-                    <label for="password"><h6>Password</h6></label>
+                    <label for="password"><h6 id="password">Password</h6></label>
                     <input class="text-input form-control" id="password" name="password" type="password" placeholder="Password" />
                 </div>
-                <div class="login-error">
-                    {{.Error}}
+                <div class="login-error" id="login-error">
                 </div>
 
                 <input type="hidden" name="returnURL" value="{{.URL}}" />
 
                 <div>
-                    <input class="btn btn-primary" type="submit" value="Login">
+                    <input class="btn btn-primary" type="submit" value="Login" id="login_button">
                 </div>
             </form>
         </div>
     </div>
-
+    <script src="login/login.js"></script>
+    <script>
+        const language = localStorage.getItem("language") || "en-GB";
+        localize(language, "{{.Error}}");
+    </script>
+    </script>
 </body>
 </html>
