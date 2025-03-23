@@ -718,8 +718,11 @@
                     "disable_mobile_media_auto_rotate": "モバイル機器でフル画面再生時の画面回転を無効化",
                     "enable_chromecast": "クロームキャスト機能の有効化",
                     "vr_tag": {
-                        "heading": "VRタッグ"
-                    }
+                        "heading": "VRタッグ",
+                        "description": "VRボタンはこのタグがついたシーンにのみ表示されます。"
+                    },
+                    "show_ab_loop_controls": "ABループプラグインのコントロールを表示",
+                    "show_range_markers": "範囲マーカーを表示"
                 }
             },
             "scene_wall": {
@@ -1300,5 +1303,8 @@
     "datetime_format": "YYYY-MM-DD HH:MM",
     "criterion_modifier_values": {
         "none": "ない"
+    },
+    "connection_monitor": {
+        "websocket_connection_failed": "WebSocket接続ができません：詳細はブラウザのコンソールを確認してください"
     }
 }
