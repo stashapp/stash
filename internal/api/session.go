@@ -86,7 +86,7 @@ func handleLoginPost() http.HandlerFunc {
 		err := manager.GetInstance().SessionStore.Login(w, r)
 		if err != nil {
 			// always log the error
-			logger.Errorf("Error logging in: %v", err)
+			logger.Errorf("Error logging in: %v from %s", err, r.RemoteAddr)
 		}
 
 		var invalidCredentialsError *session.InvalidCredentialsError
