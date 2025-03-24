@@ -1,7 +1,10 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
-import { useContainerDimensions } from "../Shared/GridCard/GridCard";
+import {
+  useCardWidth,
+  useContainerDimensions,
+} from "../Shared/GridCard/GridCard";
 
 interface IPerformerCardGrid {
   performers: GQL.PerformerDataFragment[];
@@ -11,6 +14,8 @@ interface IPerformerCardGrid {
   extraCriteria?: IPerformerCardExtraCriteria;
 }
 
+const zoomWidths = [240, 300, 375, 470];
+
 export const PerformerCardGrid: React.FC<IPerformerCardGrid> = ({
   performers,
   selectedIds,
@@ -18,13 +23,15 @@ export const PerformerCardGrid: React.FC<IPerformerCardGrid> = ({
   onSelectChange,
   extraCriteria,
 }) => {
-  const [componentRef, { width }] = useContainerDimensions();
+  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {performers.map((p) => (
         <PerformerCard
           key={p.id}
-          containerWidth={width}
+          cardWidth={cardWidth}
           performer={p}
           zoomIndex={zoomIndex}
           selecting={selectedIds.size > 0}

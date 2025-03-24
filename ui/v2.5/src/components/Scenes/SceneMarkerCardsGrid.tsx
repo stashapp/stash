@@ -1,7 +1,10 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneMarkerCard } from "./SceneMarkerCard";
-import { useContainerDimensions } from "../Shared/GridCard/GridCard";
+import {
+  useCardWidth,
+  useContainerDimensions,
+} from "../Shared/GridCard/GridCard";
 
 interface ISceneMarkerCardsGrid {
   markers: GQL.SceneMarkerDataFragment[];
@@ -10,19 +13,23 @@ interface ISceneMarkerCardsGrid {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
+const zoomWidths = [240, 340, 480, 640];
+
 export const SceneMarkerCardsGrid: React.FC<ISceneMarkerCardsGrid> = ({
   markers,
   selectedIds,
   zoomIndex,
   onSelectChange,
 }) => {
-  const [componentRef, { width }] = useContainerDimensions();
+  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {markers.map((marker, index) => (
         <SceneMarkerCard
           key={marker.id}
-          containerWidth={width}
+          cardWidth={cardWidth}
           marker={marker}
           index={index}
           zoomIndex={zoomIndex}
