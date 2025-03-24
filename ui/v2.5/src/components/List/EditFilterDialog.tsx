@@ -488,3 +488,33 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     </>
   );
 };
+
+export function useShowEditFilter(props: {
+  filter: ListFilterModel;
+  setFilter: (f: ListFilterModel) => void;
+  showModal: (content: React.ReactNode) => void;
+  closeModal: () => void;
+}) {
+  const { filter, setFilter, showModal, closeModal } = props;
+
+  const showEditFilter = useCallback(
+    (editingCriterion?: string) => {
+      function onApplyEditFilter(f: ListFilterModel) {
+        closeModal();
+        setFilter(f);
+      }
+
+      showModal(
+        <EditFilterDialog
+          filter={filter}
+          onApply={onApplyEditFilter}
+          onCancel={() => closeModal()}
+          editingCriterion={editingCriterion}
+        />
+      );
+    },
+    [filter, setFilter, showModal, closeModal]
+  );
+
+  return showEditFilter;
+}

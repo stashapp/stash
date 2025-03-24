@@ -487,6 +487,31 @@ export function useQueryResult<
   };
 }
 
+// this hook collects the common logic when closing the edit/delete dialog
+// if applied is true, then the list should be refetched and selection cleared
+export function useCloseEditDelete(props: {
+  onSelectNone: () => void;
+  closeModal: () => void;
+  result: QueryResult;
+}) {
+  const { onSelectNone, closeModal, result } = props;
+
+  const onCloseEditDelete = useCallback(
+    (applied?: boolean) => {
+      closeModal();
+      if (applied) {
+        onSelectNone();
+
+        // refetch
+        result.refetch();
+      }
+    },
+    [onSelectNone, closeModal, result]
+  );
+
+  return onCloseEditDelete;
+}
+
 export function useScrollToTopOnPageChange(
   currentPage: number,
   loading: boolean

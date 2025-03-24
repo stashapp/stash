@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { SceneList } from "src/components/Scenes/SceneList";
+import { FilteredSceneList } from "src/components/Scenes/SceneList";
 import { useTagFilterHook } from "src/core/tags";
 import { View } from "src/components/List/views";
 
@@ -17,7 +17,7 @@ export const TagScenesPanel: React.FC<ITagScenesPanel> = ({
 }) => {
   const filterHook = useTagFilterHook(tag, showSubTagContent);
   return (
-    <SceneList
+    <FilteredSceneList
       filterHook={filterHook}
       alterQuery={active}
       view={View.TagScenes}
