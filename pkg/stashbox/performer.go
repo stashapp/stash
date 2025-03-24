@@ -9,39 +9,31 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/utils"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-// QueryStashBoxPerformer queries stash-box for performers using a query string.
-func (c Client) QueryStashBoxPerformer(ctx context.Context, queryStr string) ([]*StashBoxPerformerQueryResult, error) {
-	performers, err := c.queryStashBoxPerformer(ctx, queryStr)
-
-	res := []*StashBoxPerformerQueryResult{
-		{
-			Query:   queryStr,
-			Results: performers,
-		},
-	}
+// QueryPerformer queries stash-box for performers using a query string.
+func (c Client) QueryPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
+	performers, err := c.queryPerformer(ctx, queryStr)
 
 	// set the deprecated image field
-	for _, p := range res[0].Results {
+	for _, p := range performers {
 		if len(p.Images) > 0 {
 			p.Image = &p.Images[0]
 		}
 	}
 
-	return res, err
+	return performers, err
 }
 
-func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
+func (c Client) queryPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(ctx, queryStr)
 	if err != nil {
 		return nil, err
@@ -67,101 +59,18 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 	return ret, nil
 }
 
-// FindStashBoxPerformersByNames queries stash-box for performers by name
-func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs []string) ([]*StashBoxPerformerQueryResult, error) {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	var performers []*models.Performer
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		qb := r.Performer
-
-		for _, performerID := range ids {
-			performer, err := qb.Find(ctx, performerID)
-			if err != nil {
-				return err
-			}
-
-			if performer == nil {
-				return fmt.Errorf("performer with id %d not found", performerID)
-			}
-
-			if performer.Name != "" {
-				performers = append(performers, performer)
-			}
+// QueryPerformers queries stash-box for performers using a list of names.
+func (c Client) QueryPerformers(ctx context.Context, names []string) ([][]*models.ScrapedPerformer, error) {
+	ret := make([][]*models.ScrapedPerformer, len(names))
+	for i, name := range names {
+		if name != "" {
+			continue
 		}
 
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return c.findStashBoxPerformersByNames(ctx, performers)
-}
-
-func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, performerIDs []string) ([][]*models.ScrapedPerformer, error) {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	var performers []*models.Performer
-
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		qb := r.Performer
-
-		for _, performerID := range ids {
-			performer, err := qb.Find(ctx, performerID)
-			if err != nil {
-				return err
-			}
-
-			if performer == nil {
-				return fmt.Errorf("performer with id %d not found", performerID)
-			}
-
-			if performer.Name != "" {
-				performers = append(performers, performer)
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	results, err := c.findStashBoxPerformersByNames(ctx, performers)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret [][]*models.ScrapedPerformer
-	for _, r := range results {
-		ret = append(ret, r.Results)
-	}
-
-	return ret, nil
-}
-
-func (c Client) findStashBoxPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*StashBoxPerformerQueryResult, error) {
-	var ret []*StashBoxPerformerQueryResult
-	for _, performer := range performers {
-		if performer.Name != "" {
-			performerResults, err := c.queryStashBoxPerformer(ctx, performer.Name)
-			if err != nil {
-				return nil, err
-			}
-
-			result := StashBoxPerformerQueryResult{
-				Query:   strconv.Itoa(performer.ID),
-				Results: performerResults,
-			}
-
-			ret = append(ret, &result)
+		var err error
+		ret[i], err = c.queryPerformer(ctx, name)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -388,7 +297,8 @@ func padFuzzyDate(date *string) *string {
 	return &paddedDate
 }
 
-func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*models.ScrapedPerformer, error) {
+// FindPerformerByID queries stash-box for a performer by ID.
+func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.ScrapedPerformer, error) {
 	performer, err := c.client.FindPerformerByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -400,18 +310,12 @@ func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*mode
 
 	ret := performerFragmentToScrapedPerformer(*performer.FindPerformer)
 
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, r.Performer, ret, &c.box.Endpoint)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
 	return ret, nil
 }
 
-func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*models.ScrapedPerformer, error) {
+// FindPerformerByName queries stash-box for a performer by name.
+// Unlike QueryPerformer, this function will only return a performer if the name matches exactly.
+func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(ctx, name)
 	if err != nil {
 		return nil, err
@@ -424,41 +328,17 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 		}
 	}
 
-	if ret == nil {
-		return nil, nil
-	}
-
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, r.Performer, ret, &c.box.Endpoint)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
 	return ret, nil
 }
 
-func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer) (*string, error) {
+// SubmitPerformerDraft submits a performer draft to stash-box.
+// The performer parameter must have aliases, URLs and stash IDs loaded.
+func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, img []byte) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
-	pqb := c.repository.Performer
 	endpoint := c.box.Endpoint
 
-	if err := performer.LoadAliases(ctx, pqb); err != nil {
-		return nil, err
-	}
-
-	if err := performer.LoadURLs(ctx, pqb); err != nil {
-		return nil, err
-	}
-
-	if err := performer.LoadStashIDs(ctx, pqb); err != nil {
-		return nil, err
-	}
-
-	img, _ := pqb.GetImage(ctx, performer.ID)
-	if img != nil {
+	if len(img) > 0 {
 		image = bytes.NewReader(img)
 	}
 
@@ -524,12 +404,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		draft.Urls = performer.URLs.List()
 	}
 
-	stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)
-	if err != nil {
-		return nil, err
-	}
 	var stashID *string
-	for _, v := range stashIDs {
+	for _, v := range performer.StashIDs.List() {
 		c := v
 		if v.Endpoint == endpoint {
 			stashID = &c.StashID
@@ -540,7 +416,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 
 	var id *string
 	var ret graphql.SubmitPerformerDraft
-	err = c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
+	err := c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
 	id = ret.SubmitPerformerDraft.ID
 
 	return id, err

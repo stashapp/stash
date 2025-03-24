@@ -492,3 +492,88 @@ func (g ScrapedGroup) ScrapedMovie() ScrapedMovie {
 
 	return ret
 }
+
+type ScrapedScene struct {
+	Title    *string  `json:"title"`
+	Code     *string  `json:"code"`
+	Details  *string  `json:"details"`
+	Director *string  `json:"director"`
+	URL      *string  `json:"url"`
+	URLs     []string `json:"urls"`
+	Date     *string  `json:"date"`
+	// This should be a base64 encoded data URL
+	Image        *string                `json:"image"`
+	File         *SceneFileType         `json:"file"`
+	Studio       *ScrapedStudio         `json:"studio"`
+	Tags         []*ScrapedTag          `json:"tags"`
+	Performers   []*ScrapedPerformer    `json:"performers"`
+	Groups       []*ScrapedGroup        `json:"groups"`
+	Movies       []*ScrapedMovie        `json:"movies"`
+	RemoteSiteID *string                `json:"remote_site_id"`
+	Duration     *int                   `json:"duration"`
+	Fingerprints []*StashBoxFingerprint `json:"fingerprints"`
+}
+
+func (ScrapedScene) IsScrapedContent() {}
+
+type ScrapedSceneInput struct {
+	Title        *string  `json:"title"`
+	Code         *string  `json:"code"`
+	Details      *string  `json:"details"`
+	Director     *string  `json:"director"`
+	URL          *string  `json:"url"`
+	URLs         []string `json:"urls"`
+	Date         *string  `json:"date"`
+	RemoteSiteID *string  `json:"remote_site_id"`
+}
+
+type ScrapedImage struct {
+	Title        *string             `json:"title"`
+	Code         *string             `json:"code"`
+	Details      *string             `json:"details"`
+	Photographer *string             `json:"photographer"`
+	URLs         []string            `json:"urls"`
+	Date         *string             `json:"date"`
+	Studio       *ScrapedStudio      `json:"studio"`
+	Tags         []*ScrapedTag       `json:"tags"`
+	Performers   []*ScrapedPerformer `json:"performers"`
+}
+
+func (ScrapedImage) IsScrapedContent() {}
+
+type ScrapedImageInput struct {
+	Title   *string  `json:"title"`
+	Code    *string  `json:"code"`
+	Details *string  `json:"details"`
+	URLs    []string `json:"urls"`
+	Date    *string  `json:"date"`
+}
+
+type ScrapedGallery struct {
+	Title        *string             `json:"title"`
+	Code         *string             `json:"code"`
+	Details      *string             `json:"details"`
+	Photographer *string             `json:"photographer"`
+	URLs         []string            `json:"urls"`
+	Date         *string             `json:"date"`
+	Studio       *ScrapedStudio      `json:"studio"`
+	Tags         []*ScrapedTag       `json:"tags"`
+	Performers   []*ScrapedPerformer `json:"performers"`
+
+	// deprecated
+	URL *string `json:"url"`
+}
+
+func (ScrapedGallery) IsScrapedContent() {}
+
+type ScrapedGalleryInput struct {
+	Title        *string  `json:"title"`
+	Code         *string  `json:"code"`
+	Details      *string  `json:"details"`
+	Photographer *string  `json:"photographer"`
+	URLs         []string `json:"urls"`
+	Date         *string  `json:"date"`
+
+	// deprecated
+	URL *string `json:"url"`
+}

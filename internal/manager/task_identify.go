@@ -9,11 +9,13 @@ import (
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/stashbox"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 var ErrInput = errors.New("invalid request input")
@@ -169,12 +171,20 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 
 		var src identify.ScraperSource
 		if stashBox != nil {
-			stashboxRepository := stashbox.NewRepository(instance.Repository)
+			matcher := match.SceneRelationships{
+				PerformerFinder: instance.Repository.Performer,
+				TagFinder:       instance.Repository.Tag,
+				StudioFinder:    instance.Repository.Studio,
+			}
+
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, stashboxRepository, instance.Config.GetScraperExcludeTagPatterns()),
-					stashBox.Endpoint,
+					Client:                 stashbox.NewClient(*stashBox, instance.Config.GetScraperExcludeTagPatterns()),
+					endpoint:               stashBox.Endpoint,
+					txnManager:             instance.Repository.TxnManager,
+					sceneFingerprintGetter: instance.SceneService,
+					matcher:                matcher,
 				},
 				RemoteSite: stashBox.Endpoint,
 			}
@@ -247,12 +257,40 @@ func resolveStashBox(sb []*models.StashBox, source scraper.Source) (*models.Stas
 type stashboxSource struct {
 	*stashbox.Client
 	endpoint string
+
+	txnManager             models.TxnManager
+	sceneFingerprintGetter sceneFingerprintGetter
+	matcher                match.SceneRelationships
 }
 
-func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
-	results, err := s.FindStashBoxSceneByFingerprints(ctx, sceneID)
+type sceneFingerprintGetter interface {
+	GetScenesFingerprints(ctx context.Context, ids []int) ([]models.Fingerprints, error)
+}
+
+func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error) {
+	var fps []models.Fingerprints
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
+		var err error
+		fps, err = s.sceneFingerprintGetter.GetScenesFingerprints(ctx, []int{sceneID})
+		return err
+	}); err != nil {
+		return nil, fmt.Errorf("error getting scene fingerprints: %w", err)
+	}
+
+	results, err := s.FindSceneByFingerprints(ctx, fps[0])
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
+	}
+
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
+		for _, ret := range results {
+			if err := s.matcher.MatchRelationships(ctx, ret, s.endpoint); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error matching scene relationships: %w", err)
 	}
 
 	if len(results) > 0 {
@@ -271,7 +309,7 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
+func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error) {
 	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
@@ -282,8 +320,8 @@ func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scrape
 		return nil, nil
 	}
 
-	if scene, ok := content.(scraper.ScrapedScene); ok {
-		return []*scraper.ScrapedScene{&scene}, nil
+	if scene, ok := content.(models.ScrapedScene); ok {
+		return []*models.ScrapedScene{&scene}, nil
 	}
 
 	return nil, errors.New("could not convert content to scene")
