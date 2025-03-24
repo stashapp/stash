@@ -194,6 +194,7 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
   const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
 
+  // TODO - this doesn't get updated when items changes
   const selectedIds = useMemo(() => {
     const newSelectedIds = new Set<string>();
     itemsSelected.forEach((item) => {
@@ -303,14 +304,20 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
     setLastClickedId(undefined);
   }
 
+  // TODO - this is for backwards compatibility
   const getSelected = useCallback(() => itemsSelected, [itemsSelected]);
 
+  // convenience state
+  const hasSelection = itemsSelected.length > 0;
+
   return {
+    selectedItems: itemsSelected,
     selectedIds,
     getSelected,
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    hasSelection,
   };
 }
 
