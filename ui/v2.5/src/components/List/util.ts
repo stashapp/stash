@@ -8,6 +8,8 @@ import { IHasID } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
+import * as GQL from "src/core/generated-graphql";
+import { DisplayMode } from "src/models/list-filter/types";
 
 export function useFilterURL(
   filter: ListFilterModel,
@@ -106,6 +108,82 @@ export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
   return { defaultFilter: retFilter, loading };
 }
 
+function useEmptyFilter(props: {
+  filterMode: GQL.FilterMode;
+  defaultSort?: string;
+  config?: GQL.ConfigDataFragment;
+}) {
+  const { filterMode, defaultSort, config } = props;
+
+  const emptyFilter = useMemo(
+    () =>
+      new ListFilterModel(filterMode, config, {
+        defaultSortBy: defaultSort,
+      }),
+    [config, filterMode, defaultSort]
+  );
+
+  return emptyFilter;
+}
+
+export function useFilterState(props: {
+  filterMode: GQL.FilterMode;
+  defaultSort?: string;
+  config?: GQL.ConfigDataFragment;
+  view?: View;
+  useURL?: boolean;
+}) {
+  const { filterMode, defaultSort, config, view, useURL } = props;
+
+  const [filter, setFilterState] = useState<ListFilterModel>(
+    () =>
+      new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
+  );
+
+  const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
+
+  const { defaultFilter, loading } = useDefaultFilter(emptyFilter, view);
+
+  const { setFilter } = useFilterURL(filter, setFilterState, {
+    defaultFilter,
+    active: useURL,
+  });
+
+  return { loading, filter, setFilter };
+}
+
+export function useFilterOperations(props: {
+  filter: ListFilterModel;
+  setFilter: (
+    value: ListFilterModel | ((prevState: ListFilterModel) => ListFilterModel)
+  ) => void;
+}) {
+  const { setFilter } = props;
+
+  const setPage = useCallback(
+    (p: number) => {
+      setFilter((cv) => cv.changePage(p));
+    },
+    [setFilter]
+  );
+
+  const setDisplayMode = useCallback(
+    (displayMode: DisplayMode) => {
+      setFilter((cv) => cv.setDisplayMode(displayMode));
+    },
+    [setFilter]
+  );
+
+  const setZoom = useCallback(
+    (newZoomIndex: number) => {
+      setFilter((cv) => cv.setZoom(newZoomIndex));
+    },
+    [setFilter]
+  );
+
+  return { setPage, setDisplayMode, setZoom };
+}
+
 export function useListKeyboardShortcuts(props: {
   currentPage?: number;
   onChangePage?: (page: number) => void;
@@ -190,7 +268,7 @@ export function useListKeyboardShortcuts(props: {
   }, [onSelectAll, onSelectNone]);
 }
 
-export function useListSelect<T extends { id: string }>(items: T[]) {
+export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
   const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
 
@@ -321,7 +399,9 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
   };
 }
 
-export type IListSelect<T extends IHasID> = ReturnType<typeof useListSelect<T>>;
+export type IListSelect<T extends IHasID = IHasID> = ReturnType<
+  typeof useListSelect<T>
+>;
 
 // returns true if the filter has changed in a way that impacts the total count
 function totalCountImpacted(
@@ -363,6 +443,48 @@ export function useCachedQueryResult<T extends QueryResult>(
   }, [filter, result, lastFilter]);
 
   return cachedResult;
+}
+
+export function useQueryResult<
+  T extends QueryResult,
+  E extends IHasID = IHasID
+>(props: {
+  filter: ListFilterModel;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  useResult: (filter: ListFilterModel) => T;
+  getCount: (data: T) => number;
+  getItems: (data: T) => E[];
+}) {
+  const { filter, filterHook, useResult, getItems, getCount } = props;
+
+  const effectiveFilter = useMemo(() => {
+    if (filterHook) {
+      return filterHook(filter.clone());
+    }
+    return filter;
+  }, [filter, filterHook]);
+
+  const result = useResult(effectiveFilter);
+
+  // use cached query result for pagination and metadata rendering
+  const cachedResult = useCachedQueryResult(effectiveFilter, result);
+
+  const items = useMemo(() => getItems(result), [getItems, result]);
+  const totalCount = useMemo(
+    () => getCount(cachedResult),
+    [getCount, cachedResult]
+  );
+
+  const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+  return {
+    effectiveFilter,
+    result,
+    cachedResult,
+    items,
+    totalCount,
+    pages,
+  };
 }
 
 export function useScrollToTopOnPageChange(
