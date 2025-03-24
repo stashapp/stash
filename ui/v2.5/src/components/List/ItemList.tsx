@@ -83,13 +83,14 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   const { filter, setFilter: updateFilter } = useFilter();
   const { effectiveFilter, result, cachedResult, totalCount } =
     useQueryResultContext<T, E>();
+  const listSelect = useListContext<E>();
   const {
     selectedIds,
     getSelected,
     onSelectChange,
     onSelectAll,
     onSelectNone,
-  } = useListContext<E>();
+  } = listSelect;
 
   // scroll to the top of the page when the page changes
   useScrollToTopOnPageChange(filter.currentPage, result.loading);
@@ -236,7 +237,10 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     updateFilter(filter.clearCriteria());
   }
 
-  const filterListToolbarProps = {
+  const filterListToolbarProps: IFilteredListToolbar = {
+    filter,
+    setFilter: updateFilter,
+    listSelect,
     showEditFilter,
     view: view,
     operations: operations,
