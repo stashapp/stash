@@ -10,7 +10,10 @@ import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { EditFilterDialog } from "src/components/List/EditFilterDialog";
+import {
+  EditFilterDialog,
+  useShowEditFilter,
+} from "src/components/List/EditFilterDialog";
 import { FilterTags } from "./FilterTags";
 import { View } from "./views";
 import { IHasID } from "src/utils/data";
@@ -23,9 +26,15 @@ import {
 import { FilterContext, SetFilterURL, useFilter } from "./FilterProvider";
 import { useModal } from "src/hooks/modal";
 import {
+  IFilterStateHook,
+  IQueryResultHook,
   useDefaultFilter,
   useEnsureValidPage,
+  useFilterOperations,
+  useFilterState,
   useListKeyboardShortcuts,
+  useListSelect,
+  useQueryResult,
   useScrollToTopOnPageChange,
 } from "./util";
 import {
@@ -35,6 +44,72 @@ import {
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
 import { ConfigurationContext } from "src/hooks/Config";
+
+interface IFilteredItemList<T extends QueryResult, E extends IHasID = IHasID> {
+  filterStateProps: IFilterStateHook;
+  queryResultProps: IQueryResultHook<T, E>;
+}
+
+// Provides the common state and behaviour for filtered item list components
+export function useFilteredItemList<
+  T extends QueryResult,
+  E extends IHasID = IHasID
+>(props: IFilteredItemList<T, E>) {
+  const { configuration: config } = useContext(ConfigurationContext);
+
+  // States
+  const filterState = useFilterState({
+    config,
+    ...props.filterStateProps,
+  });
+
+  const { filter, setFilter } = filterState;
+
+  const queryResult = useQueryResult({
+    filter,
+    ...props.queryResultProps,
+  });
+  const { result, items, totalCount, pages } = queryResult;
+
+  const listSelect = useListSelect(items);
+  const { onSelectAll, onSelectNone } = listSelect;
+
+  const modalState = useModal();
+  const { showModal, closeModal } = modalState;
+
+  // Utility hooks
+  const { setPage } = useFilterOperations({ filter, setFilter });
+
+  // scroll to the top of the page when the page changes
+  useScrollToTopOnPageChange(filter.currentPage, result.loading);
+
+  // ensure that the current page is valid
+  useEnsureValidPage(filter, totalCount, setFilter);
+
+  const showEditFilter = useShowEditFilter({
+    showModal,
+    closeModal,
+    filter,
+    setFilter,
+  });
+
+  useListKeyboardShortcuts({
+    currentPage: filter.currentPage,
+    onChangePage: setPage,
+    onSelectAll,
+    onSelectNone,
+    pages,
+    showEditFilter,
+  });
+
+  return {
+    filterState,
+    queryResult,
+    listSelect,
+    modalState,
+    showEditFilter,
+  };
+}
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;

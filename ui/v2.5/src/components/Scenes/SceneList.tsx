@@ -26,20 +26,10 @@ import TextUtils from "src/utils/text";
 import { View } from "../List/views";
 import { FileSize } from "../Shared/FileSize";
 import { PagedList } from "../List/PagedList";
-import { useModal } from "src/hooks/modal";
-import {
-  useCloseEditDelete,
-  useEnsureValidPage,
-  useFilterOperations,
-  useFilterState,
-  useListKeyboardShortcuts,
-  useListSelect,
-  useQueryResult,
-  useScrollToTopOnPageChange,
-} from "../List/util";
-import { useShowEditFilter } from "../List/EditFilterDialog";
+import { useCloseEditDelete, useFilterOperations } from "../List/util";
 import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
+import { useFilteredItemList } from "../List/ItemList";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -206,68 +196,41 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const history = useHistory();
 
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
-  const filterMode = GQL.FilterMode.Scenes;
-
-  const { configuration: config } = useContext(ConfigurationContext);
 
   // States
-  const {
-    filter,
-    setFilter,
-    loading: filterLoading,
-  } = useFilterState({
-    filterMode,
-    defaultSort,
-    config,
-    view,
-    useURL: alterQuery,
-  });
-
-  const { effectiveFilter, result, cachedResult, items, totalCount, pages } =
-    useQueryResult({
-      filter,
-      filterHook,
-      useResult: useFindScenes,
-      getCount: (r) => r.data?.findScenes.count ?? 0,
-      getItems: (r) => r.data?.findScenes.scenes ?? [],
+  const { filterState, queryResult, modalState, listSelect, showEditFilter } =
+    useFilteredItemList({
+      filterStateProps: {
+        filterMode: GQL.FilterMode.Scenes,
+        defaultSort,
+        view,
+        useURL: alterQuery,
+      },
+      queryResultProps: {
+        useResult: useFindScenes,
+        getCount: (r) => r.data?.findScenes.count ?? 0,
+        getItems: (r) => r.data?.findScenes.scenes ?? [],
+        filterHook,
+      },
     });
 
-  const listSelect = useListSelect(items);
+  const { filter, setFilter, loading: filterLoading } = filterState;
+
+  const { effectiveFilter, result, cachedResult, items, totalCount } =
+    queryResult;
+
   const {
     selectedIds,
     selectedItems,
     onSelectChange,
-    onSelectAll,
     onSelectNone,
     hasSelection,
   } = listSelect;
 
-  const { modal, showModal, closeModal } = useModal();
+  const { modal, showModal, closeModal } = modalState;
 
   // Utility hooks
   const { setPage } = useFilterOperations({ filter, setFilter });
-
-  // scroll to the top of the page when the page changes
-  useScrollToTopOnPageChange(filter.currentPage, result.loading);
-
-  // ensure that the current page is valid
-  useEnsureValidPage(filter, totalCount, setFilter);
-
-  const showEditFilter = useShowEditFilter({
-    showModal,
-    closeModal,
-    filter,
-    setFilter,
-  });
-
-  useListKeyboardShortcuts({
-    currentPage: filter.currentPage,
-    onChangePage: setPage,
-    onSelectAll,
-    onSelectNone,
-    pages,
-    showEditFilter,
-  });
 
   useAddKeybinds(filter, totalCount);
 

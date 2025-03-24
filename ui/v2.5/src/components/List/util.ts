@@ -126,13 +126,18 @@ function useEmptyFilter(props: {
   return emptyFilter;
 }
 
-export function useFilterState(props: {
+export interface IFilterStateHook {
   filterMode: GQL.FilterMode;
   defaultSort?: string;
-  config?: GQL.ConfigDataFragment;
   view?: View;
   useURL?: boolean;
-}) {
+}
+
+export function useFilterState(
+  props: IFilterStateHook & {
+    config?: GQL.ConfigDataFragment;
+  }
+) {
   const { filterMode, defaultSort, config, view, useURL } = props;
 
   const [filter, setFilterState] = useState<ListFilterModel>(
@@ -445,16 +450,24 @@ export function useCachedQueryResult<T extends QueryResult>(
   return cachedResult;
 }
 
-export function useQueryResult<
+export interface IQueryResultHook<
   T extends QueryResult,
   E extends IHasID = IHasID
->(props: {
-  filter: ListFilterModel;
+> {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
-}) {
+}
+
+export function useQueryResult<
+  T extends QueryResult,
+  E extends IHasID = IHasID
+>(
+  props: IQueryResultHook<T, E> & {
+    filter: ListFilterModel;
+  }
+) {
   const { filter, filterHook, useResult, getItems, getCount } = props;
 
   const effectiveFilter = useMemo(() => {
