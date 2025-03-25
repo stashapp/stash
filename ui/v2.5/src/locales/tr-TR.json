@@ -985,7 +985,8 @@
     "isMissing": "Eksik",
     "library": "Kütüphane",
     "loading": {
-        "generic": "Yükleniyor…"
+        "generic": "Yükleniyor…",
+        "plugins": "Eklentiler yükleniyor…"
     },
     "marker_count": "İşaretleyici Sayısı",
     "markers": "İşaretleyiciler",
