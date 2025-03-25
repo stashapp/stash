@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -24,6 +25,12 @@ func main() {
 
 	// assume running from ui directory
 	dirFS := os.DirFS(filepath.Join("v2.5", "src", "locales"))
+
+	// ensure the login/locales directory exists
+	if err := fsutil.EnsureDir(filepath.Join("login", "locales")); err != nil {
+		panic(err)
+	}
+
 	fs.WalkDir(dirFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			panic(err)
