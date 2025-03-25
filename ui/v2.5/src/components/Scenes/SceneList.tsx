@@ -229,7 +229,7 @@ const SidebarContent: React.FC<{
 }> = ({ filter, setFilter, view, showEditFilter, onClose }) => {
   return (
     <>
-      <ButtonToolbar className="mb-2 sidebar-toolbar">
+      <ButtonToolbar className="sidebar-toolbar">
         <Button onClick={onClose} variant="secondary">
           <SidebarIcon />
         </Button>

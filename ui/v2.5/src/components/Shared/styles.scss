@@ -793,6 +793,18 @@ $sidebar-width: 250px;
   }
 }
 
+.sidebar-toolbar {
+  // TODO - use different colours for sidebar and toolbar
+  background-color: $body-bg;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  padding-bottom: 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
 .sidebar-section {
   .collapse-header {
     // background-color: $secondary;
