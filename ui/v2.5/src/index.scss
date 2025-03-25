@@ -270,9 +270,10 @@ dd {
   .item-list-container {
     padding-top: 15px;
 
-    @media (max-width: 576px) {
-      overflow-x: hidden;
-    }
+    // this breaks sticky sidebar - need to work out why this is here
+    // @media (max-width: 576px) {
+    //   overflow-x: hidden;
+    // }
   }
 }
 

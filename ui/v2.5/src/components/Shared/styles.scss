@@ -837,18 +837,51 @@ $sticky-header-height: calc(50px + 3.3rem);
   .sidebar {
     // required for sticky to work
     align-self: flex-start;
-    margin-top: 0;
 
     // take a further 15px padding to match the detail body
+    height: calc(100vh - $sticky-header-height - 15px);
+    margin-top: 0;
     max-height: calc(100vh - $sticky-header-height - 15px);
     overflow-y: auto;
     position: sticky;
 
     // sticky detail header is 50px + 3.3rem
-    top: calc(50px + 3.3rem + 15px);
+    top: calc(50px + 3.3rem);
+
+    .sidebar-toolbar {
+      padding-top: 15px;
+    }
   }
 
   .sidebar-pane.hide-sidebar .sidebar {
     left: -$sidebar-width;
+  }
+
+  // on smaller viewports we want the sidebar to overlap content
+  @include media-breakpoint-down(lg) {
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -$sidebar-width;
+    }
+
+    .sidebar-pane > :nth-child(2) {
+      transition: none;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      flex: 100% 0 0;
+      height: calc(100vh - 4rem);
+      max-height: calc(100vh - 4rem);
+      padding-top: 0;
+      top: 0;
+    }
+
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -100%;
+    }
+
+    .sidebar-pane.hide-sidebar .sidebar {
+      display: none;
+    }
   }
 }
