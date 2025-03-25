@@ -52,6 +52,8 @@ import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
+import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -238,6 +240,11 @@ const optionContent: ISidebarContentProps[] = [
     messageID: "rating",
     option: RatingCriterionOption,
     component: SidebarRatingFilter,
+  },
+  {
+    messageID: "organized",
+    option: OrganizedCriterionOption,
+    component: SidebarBooleanFilter,
   },
 ];
 

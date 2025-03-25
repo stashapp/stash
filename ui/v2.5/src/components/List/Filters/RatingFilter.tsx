@@ -201,6 +201,4 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
       <div></div>
     </>
   );
-
-  return <></>;
 };
