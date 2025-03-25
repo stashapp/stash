@@ -30,6 +30,7 @@ import { useCloseEditDelete, useFilterOperations } from "../List/util";
 import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
+import { FilterTags } from "../List/FilterTags";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -230,7 +231,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const { modal, showModal, closeModal } = modalState;
 
   // Utility hooks
-  const { setPage } = useFilterOperations({ filter, setFilter });
+  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+    filter,
+    setFilter,
+  });
 
   useAddKeybinds(filter, totalCount);
 
@@ -366,6 +370,13 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             );
           }}
           operations={otherOperations}
+        />
+
+        <FilterTags
+          criteria={filter.criteria}
+          onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+          onRemoveCriterion={removeCriterion}
+          onRemoveAll={() => clearAllCriteria()}
         />
 
         <PagedList

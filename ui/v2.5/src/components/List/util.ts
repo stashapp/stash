@@ -10,6 +10,7 @@ import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
 import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 
 export function useFilterURL(
   filter: ListFilterModel,
@@ -186,7 +187,26 @@ export function useFilterOperations(props: {
     [setFilter]
   );
 
-  return { setPage, setDisplayMode, setZoom };
+  const removeCriterion = useCallback(
+    (removedCriterion: Criterion) => {
+      setFilter((cv) =>
+        cv.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    },
+    [setFilter]
+  );
+
+  const clearAllCriteria = useCallback(() => {
+    setFilter((cv) => cv.clearCriteria());
+  }, [setFilter]);
+
+  return {
+    setPage,
+    setDisplayMode,
+    setZoom,
+    removeCriterion,
+    clearAllCriteria,
+  };
 }
 
 export function useListKeyboardShortcuts(props: {
