@@ -23,23 +23,23 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent, excludeTa
 		}
 	case models.ScrapedPerformer:
 		return c.postScrapePerformer(ctx, v, excludeTagRE)
-	case *ScrapedScene:
+	case *models.ScrapedScene:
 		if v != nil {
 			return c.postScrapeScene(ctx, *v, excludeTagRE)
 		}
-	case ScrapedScene:
+	case models.ScrapedScene:
 		return c.postScrapeScene(ctx, v, excludeTagRE)
-	case *ScrapedGallery:
+	case *models.ScrapedGallery:
 		if v != nil {
 			return c.postScrapeGallery(ctx, *v, excludeTagRE)
 		}
-	case ScrapedGallery:
+	case models.ScrapedGallery:
 		return c.postScrapeGallery(ctx, v, excludeTagRE)
-	case *ScrapedImage:
+	case *models.ScrapedImage:
 		if v != nil {
 			return c.postScrapeImage(ctx, *v, excludeTagRE)
 		}
-	case ScrapedImage:
+	case models.ScrapedImage:
 		return c.postScrapeImage(ctx, v, excludeTagRE)
 	case *models.ScrapedMovie:
 		if v != nil {
@@ -133,7 +133,7 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, exclu
 		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if m.Studio != nil {
-			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
+			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, ""); err != nil {
 				return err
 			}
 		}
@@ -165,7 +165,7 @@ func (c Cache) postScrapeGroup(ctx context.Context, m models.ScrapedGroup, exclu
 		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if m.Studio != nil {
-			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
+			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, ""); err != nil {
 				return err
 			}
 		}
@@ -201,7 +201,7 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 	return ignoredTags, nil
 }
 
-func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
+func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
 	// set the URL/URLs field
 	if scene.URL == nil && len(scene.URLs) > 0 {
 		scene.URL = &scene.URLs[0]
@@ -227,7 +227,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene, excludeT
 				return err
 			}
 
-			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
+			if err := match.ScrapedPerformer(ctx, pqb, p, ""); err != nil {
 				return err
 			}
 
@@ -277,7 +277,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene, excludeT
 		scene.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if scene.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, scene.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, scene.Studio, "")
 			if err != nil {
 				return err
 			}
@@ -296,7 +296,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene, excludeT
 	return scene, ignoredTags, nil
 }
 
-func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
+func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
 	// set the URL/URLs field
 	if g.URL == nil && len(g.URLs) > 0 {
 		g.URL = &g.URLs[0]
@@ -312,7 +312,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeT
 		sqb := r.StudioFinder
 
 		for _, p := range g.Performers {
-			err := match.ScrapedPerformer(ctx, pqb, p, nil)
+			err := match.ScrapedPerformer(ctx, pqb, p, "")
 			if err != nil {
 				return err
 			}
@@ -325,7 +325,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeT
 		g.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if g.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, g.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, g.Studio, "")
 			if err != nil {
 				return err
 			}
@@ -339,7 +339,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeT
 	return g, ignoredTags, nil
 }
 
-func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
+func (c Cache) postScrapeImage(ctx context.Context, image models.ScrapedImage, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		pqb := r.PerformerFinder
@@ -347,7 +347,7 @@ func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage, excludeT
 		sqb := r.StudioFinder
 
 		for _, p := range image.Performers {
-			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
+			if err := match.ScrapedPerformer(ctx, pqb, p, ""); err != nil {
 				return err
 			}
 		}
@@ -360,7 +360,7 @@ func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage, excludeT
 		image.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if image.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, image.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, image.Studio, "")
 			if err != nil {
 				return err
 			}

@@ -1,7 +1,10 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ImageCard } from "./ImageCard";
-import { useContainerDimensions } from "../Shared/GridCard/GridCard";
+import {
+  useCardWidth,
+  useContainerDimensions,
+} from "../Shared/GridCard/GridCard";
 
 interface IImageCardGrid {
   images: GQL.SlimImageDataFragment[];
@@ -11,6 +14,8 @@ interface IImageCardGrid {
   onPreview: (index: number, ev: React.MouseEvent<Element, MouseEvent>) => void;
 }
 
+const zoomWidths = [280, 340, 480, 640];
+
 export const ImageGridCard: React.FC<IImageCardGrid> = ({
   images,
   selectedIds,
@@ -18,13 +23,15 @@ export const ImageGridCard: React.FC<IImageCardGrid> = ({
   onSelectChange,
   onPreview,
 }) => {
-  const [componentRef, { width }] = useContainerDimensions();
+  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {images.map((image, index) => (
         <ImageCard
           key={image.id}
-          containerWidth={width}
+          cardWidth={cardWidth}
           image={image}
           zoomIndex={zoomIndex}
           selecting={selectedIds.size > 0}

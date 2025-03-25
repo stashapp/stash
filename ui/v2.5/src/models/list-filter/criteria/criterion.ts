@@ -1148,8 +1148,8 @@ export class TimestampCriterion extends ModifierCriterion<ITimestampValue> {
     value: string | ITimestampValue;
     value2?: string;
   }) {
-    this.setFromSavedCriterion(c);
-    // this.value = decodeRangeValue(c);
+    super.setFromSavedCriterion(c);
+    this.value = decodeRangeValue(c);
   }
 
   protected encodeValue(): unknown {

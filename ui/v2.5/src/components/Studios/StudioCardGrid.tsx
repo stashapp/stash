@@ -1,6 +1,9 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { useContainerDimensions } from "../Shared/GridCard/GridCard";
+import {
+  useCardWidth,
+  useContainerDimensions,
+} from "../Shared/GridCard/GridCard";
 import { StudioCard } from "./StudioCard";
 
 interface IStudioCardGrid {
@@ -11,6 +14,8 @@ interface IStudioCardGrid {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
+const zoomWidths = [280, 340, 420, 560];
+
 export const StudioCardGrid: React.FC<IStudioCardGrid> = ({
   studios,
   fromParent,
@@ -18,13 +23,15 @@ export const StudioCardGrid: React.FC<IStudioCardGrid> = ({
   zoomIndex,
   onSelectChange,
 }) => {
-  const [componentRef, { width }] = useContainerDimensions();
+  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {studios.map((studio) => (
         <StudioCard
           key={studio.id}
-          containerWidth={width}
+          cardWidth={cardWidth}
           studio={studio}
           zoomIndex={zoomIndex}
           hideParent={fromParent}

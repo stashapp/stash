@@ -78,31 +78,26 @@ func handleLogin() http.HandlerFunc {
 
 func handleLoginPost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		url := r.FormValue(returnURLParam)
-		if url == "" {
-			url = getProxyPrefix(r) + "/"
-		}
-
 		err := manager.GetInstance().SessionStore.Login(w, r)
 		if err != nil {
 			// always log the error
-			logger.Errorf("Error logging in: %v", err)
+			logger.Errorf("Error logging in: %v from IP: %s", err, r.RemoteAddr)
 		}
 
 		var invalidCredentialsError *session.InvalidCredentialsError
 
 		if errors.As(err, &invalidCredentialsError) {
-			// serve login page with an error
-			serveLoginPage(w, r, url, "Username or password is invalid")
+			http.Error(w, "Username or password is invalid", http.StatusUnauthorized)
 			return
 		}
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			// don't expose the error to the user
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
 			return
 		}
 
-		http.Redirect(w, r, url, http.StatusFound)
+		w.WriteHeader(http.StatusOK)
 	}
 }
 

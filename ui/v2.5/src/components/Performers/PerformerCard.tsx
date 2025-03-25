@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -21,7 +21,6 @@ import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
-import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { PatchComponent } from "src/patch";
 
@@ -35,7 +34,7 @@ export interface IPerformerCardExtraCriteria {
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   ageFromDate?: string;
   selecting?: boolean;
   selected?: boolean;
@@ -300,40 +299,12 @@ export const PerformerCard: React.FC<IPerformerCardProps> = PatchComponent(
   (props) => {
     const {
       performer,
-      containerWidth,
+      cardWidth,
       selecting,
       selected,
       onSelectedChanged,
       zoomIndex,
     } = props;
-
-    const [cardWidth, setCardWidth] = useState<number>();
-
-    useEffect(() => {
-      if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
-        return;
-
-      let zoomValue = zoomIndex;
-      let preferredCardWidth: number;
-      switch (zoomValue) {
-        case 0:
-          preferredCardWidth = 240;
-          break;
-        case 1:
-          preferredCardWidth = 300;
-          break;
-        case 2:
-          preferredCardWidth = 375;
-          break;
-        case 3:
-          preferredCardWidth = 470;
-      }
-      let fittedCardWidth = calculateCardWidth(
-        containerWidth,
-        preferredCardWidth!
-      );
-      setCardWidth(fittedCardWidth);
-    }, [containerWidth, zoomIndex]);
 
     return (
       <GridCard
