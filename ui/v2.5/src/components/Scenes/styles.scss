@@ -901,3 +901,23 @@ input[type="range"].blue-slider {
     word-break: break-all;
   }
 }
+
+.scene-list .filtered-list-toolbar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.scene-list.hide-sidebar .sidebar-toggle-button {
+  transition-delay: 0.1s;
+  transition-duration: 0;
+  transition-property: opacity;
+}
+
+.scene-list:not(.hide-sidebar) .sidebar-toggle-button {
+  opacity: 0;
+}
+
+.sidebar-toolbar {
+  display: flex;
+  justify-content: space-between;
+}

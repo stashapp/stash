@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -31,7 +37,12 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
-import { defaultShowSidebar, Sidebar, SidebarPane, SidebarSection } from "../Shared/Sidebar";
+import {
+  defaultShowSidebar,
+  Sidebar,
+  SidebarPane,
+  SidebarSection,
+} from "../Shared/Sidebar";
 import { PerformersQuickFilter } from "../List/Filters/PerformersFilter";
 import { StudiosQuickFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -41,10 +52,9 @@ import { TagsQuickFilter } from "../List/Filters/TagsFilter";
 import { SidebarSavedFilterList } from "../List/SavedFilterList";
 import { SearchTermInput } from "../List/ListFilter";
 import { SidebarIcon } from "../Shared/Icon";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { ListOperationButtons } from "../List/ListOperationButtons";
-import { ListViewOptions } from "../List/ListViewOptions";
-import { useListContext } from "../List/ListProvider";
+import { Button, ButtonToolbar } from "react-bootstrap";
+import { FilterButton } from "../List/Filters/FilterButton";
+import cx from "classnames";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -220,13 +230,17 @@ const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
-  onClose?: () => void; 
-}> = ({ filter, setFilter, view, onClose }) => {
+  onClose?: () => void;
+  showEditFilter: (editingCriterion?: string) => void;
+}> = ({ filter, setFilter, view, showEditFilter, onClose }) => {
   return (
     <>
-      <div className="mb-1">
-        <Button onClick={onClose} variant="secondary"><SidebarIcon /></Button>
-      </div>
+      <ButtonToolbar className="mb-2 sidebar-toolbar">
+        <Button onClick={onClose} variant="secondary">
+          <SidebarIcon />
+        </Button>
+        <FilterButton onClick={() => showEditFilter()} filter={filter} />
+      </ButtonToolbar>
       <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
       <SidebarSection
         text={<FormattedMessage id="search_filter.saved_filters" />}
@@ -413,41 +427,51 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
   return (
     <TaggerContext>
-      <div className="item-list-container">
+      <div
+        className={cx("item-list-container scene-list", {
+          "hide-sidebar": !showSidebar,
+        })}
+      >
         {modal}
-
-        <FilteredListToolbar
-          filter={filter}
-          setFilter={setFilter}
-          showEditFilter={showEditFilter}
-          view={view}
-          listSelect={listSelect}
-          onEdit={() =>
-            showModal(
-              <EditScenesDialog
-                selected={selectedItems}
-                onClose={onCloseEditDelete}
-              />
-            )
-          }
-          onDelete={() => {
-            showModal(
-              <DeleteScenesDialog
-                selected={selectedItems}
-                onClose={onCloseEditDelete}
-              />
-            );
-          }}
-          operations={otherOperations}
-          onToggleSidebar={() => setShowSidebar((v) => !v)}
-          zoomable
-        />
 
         <SidebarPane>
           <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent filter={filter} setFilter={setFilter} view={view} onClose={() => setShowSidebar(false)} />
+            <SidebarContent
+              filter={filter}
+              setFilter={setFilter}
+              showEditFilter={showEditFilter}
+              view={view}
+              onClose={() => setShowSidebar(false)}
+            />
           </Sidebar>
           <div>
+            <FilteredListToolbar
+              filter={filter}
+              setFilter={setFilter}
+              showEditFilter={showEditFilter}
+              view={view}
+              listSelect={listSelect}
+              onEdit={() =>
+                showModal(
+                  <EditScenesDialog
+                    selected={selectedItems}
+                    onClose={onCloseEditDelete}
+                  />
+                )
+              }
+              onDelete={() => {
+                showModal(
+                  <DeleteScenesDialog
+                    selected={selectedItems}
+                    onClose={onCloseEditDelete}
+                  />
+                );
+              }}
+              operations={otherOperations}
+              onToggleSidebar={() => setShowSidebar((v) => !v)}
+              zoomable
+            />
+
             <FilterTags
               criteria={filter.criteria}
               onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}

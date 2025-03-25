@@ -1,27 +1,24 @@
 import React, { PropsWithChildren } from "react";
 import { CollapseButton } from "./CollapseButton";
-import { Icon } from "./Icon";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "react-bootstrap";
 import { useOnOutsideClick } from "src/hooks/OutsideClick";
 import ScreenUtils, { useMediaQuery } from "src/utils/screen";
 
 const fixedSidebarMediaQuery = "only screen and (max-width: 991px)";
 
-const CloseButton: React.FC<{
-  onClick: () => void;
-}> = ({ onClick }) => {
-  return (
-    <Button
-      variant="minimal"
-      size="lg"
-      className="close-button"
-      onClick={onClick}
-    >
-      <Icon icon={faTimes} />
-    </Button>
-  );
-};
+// const CloseButton: React.FC<{
+//   onClick: () => void;
+// }> = ({ onClick }) => {
+//   return (
+//     <Button
+//       variant="minimal"
+//       size="lg"
+//       className="close-button"
+//       onClick={onClick}
+//     >
+//       <Icon icon={faTimes} />
+//     </Button>
+//   );
+// };
 
 export const Sidebar: React.FC<
   PropsWithChildren<{
@@ -42,7 +39,7 @@ export const Sidebar: React.FC<
 
   return (
     <div ref={ref} className={`sidebar ${hideClass}`}>
-      {onHide && <CloseButton onClick={() => onHide()} />}
+      {/* {onHide && <CloseButton onClick={() => onHide()} />} */}
       {children}
     </div>
   );

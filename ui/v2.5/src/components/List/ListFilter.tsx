@@ -20,7 +20,7 @@ import {
   Overlay,
 } from "react-bootstrap";
 
-import { Icon, SidebarIcon } from "../Shared/Icon";
+import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -233,7 +233,7 @@ interface IListFilterProps {
   filter: ListFilterModel;
   view?: View;
   openFilterDialog: () => void;
-  onToggleSidebar?: () => void;
+  withSidebar?: boolean;
 }
 
 export const ListFilter: React.FC<IListFilterProps> = ({
@@ -241,7 +241,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filter,
   openFilterDialog,
   view,
-  onToggleSidebar,
+  withSidebar,
 }) => {
   const filterOptions = filter.options;
 
@@ -315,23 +315,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     return (
       <>
-        <div className="mb-2 d-flex">
-          {!onToggleSidebar && (
+        {!withSidebar && (
+          <div className="mb-2 d-flex">
             <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-          )}
-        </div>
+          </div>
+        )}
 
-        <ButtonGroup className="mr-2 mb-2">
-          {onToggleSidebar ? (
-            <Button
-              variant="secondary"
-              // add ignore-sidebar-outside-click to prevent reopening the sidebar
-              className="sidebar-button ignore-sidebar-outside-click"
-              onClick={onToggleSidebar}
-            >
-              <SidebarIcon />
-            </Button>
-          ) : (
+        {!withSidebar && (
+          <ButtonGroup className="mr-2 mb-2">
             <SavedFilterDropdown
               filter={filter}
               onSetFilter={(f) => {
@@ -339,18 +330,21 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               }}
               view={view}
             />
-          )}
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="filter-tooltip">
-                <FormattedMessage id="search_filter.name" />
-              </Tooltip>
-            }
-          >
-            <FilterButton onClick={() => openFilterDialog()} filter={filter} />
-          </OverlayTrigger>
-        </ButtonGroup>
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id="filter-tooltip">
+                  <FormattedMessage id="search_filter.name" />
+                </Tooltip>
+              }
+            >
+              <FilterButton
+                onClick={() => openFilterDialog()}
+                filter={filter}
+              />
+            </OverlayTrigger>
+          </ButtonGroup>
+        )}
 
         <Dropdown as={ButtonGroup} className="mr-2 mb-2">
           <InputGroup.Prepend>
