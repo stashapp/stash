@@ -829,3 +829,26 @@ $sidebar-width: 250px;
 .sidebar-section:first-child .collapse-header {
   border-top: 1px solid $secondary;
 }
+
+$sticky-header-height: calc(50px + 3.3rem);
+
+// special case for sidebar in details view
+.detail-body {
+  .sidebar {
+    // required for sticky to work
+    align-self: flex-start;
+    margin-top: 0;
+
+    // take a further 15px padding to match the detail body
+    max-height: calc(100vh - $sticky-header-height - 15px);
+    overflow-y: auto;
+    position: sticky;
+
+    // sticky detail header is 50px + 3.3rem
+    top: calc(50px + 3.3rem + 15px);
+  }
+
+  .sidebar-pane.hide-sidebar .sidebar {
+    left: -$sidebar-width;
+  }
+}
