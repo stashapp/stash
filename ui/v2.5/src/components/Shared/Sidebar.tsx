@@ -1,24 +1,17 @@
-import React, { PropsWithChildren } from "react";
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { CollapseButton } from "./CollapseButton";
 import { useOnOutsideClick } from "src/hooks/OutsideClick";
 import ScreenUtils, { useMediaQuery } from "src/utils/screen";
+import { IViewConfig, useInterfaceLocalForage } from "src/hooks/LocalForage";
+import { View } from "../List/views";
 
 const fixedSidebarMediaQuery = "only screen and (max-width: 991px)";
-
-// const CloseButton: React.FC<{
-//   onClick: () => void;
-// }> = ({ onClick }) => {
-//   return (
-//     <Button
-//       variant="minimal"
-//       size="lg"
-//       className="close-button"
-//       onClick={onClick}
-//     >
-//       <Icon icon={faTimes} />
-//     </Button>
-//   );
-// };
 
 export const Sidebar: React.FC<
   PropsWithChildren<{
@@ -39,7 +32,6 @@ export const Sidebar: React.FC<
 
   return (
     <div ref={ref} className={`sidebar ${hideClass}`}>
-      {/* {onHide && <CloseButton onClick={() => onHide()} />} */}
       {children}
     </div>
   );
@@ -78,4 +70,57 @@ export const SidebarSection: React.FC<
 // show sidebar by default if not on mobile
 export function defaultShowSidebar() {
   return !ScreenUtils.matchesMediaQuery(fixedSidebarMediaQuery);
+}
+
+export function useSidebarState(view?: View) {
+  const [interfaceLocalForage, setInterfaceLocalForage] =
+    useInterfaceLocalForage();
+
+  const { data: interfaceLocalForageData, loading } = interfaceLocalForage;
+
+  const viewConfig: IViewConfig = useMemo(() => {
+    return view ? interfaceLocalForageData?.viewConfig?.[view] || {} : {};
+  }, [view, interfaceLocalForageData]);
+
+  const [showSidebar, setShowSidebar] = useState<boolean>();
+
+  // set initial state once loading is done
+  useEffect(() => {
+    if (showSidebar !== undefined) return;
+
+    if (!view) {
+      setShowSidebar(defaultShowSidebar());
+      return;
+    }
+
+    if (loading) return;
+
+    setShowSidebar(viewConfig.showSidebar ?? defaultShowSidebar());
+  }, [view, loading, showSidebar, viewConfig.showSidebar]);
+
+  const onSetShowSidebar = useCallback(
+    (show: boolean | ((prevState: boolean | undefined) => boolean)) => {
+      const nv = typeof show === "function" ? show(showSidebar) : show;
+      setShowSidebar(nv);
+      if (view === undefined) return;
+
+      setInterfaceLocalForage((prev) => ({
+        ...prev,
+        viewConfig: {
+          ...prev.viewConfig,
+          [view]: {
+            ...viewConfig,
+            showSidebar: nv,
+          },
+        },
+      }));
+    },
+    [showSidebar, setInterfaceLocalForage, view, viewConfig]
+  );
+
+  return {
+    showSidebar: showSidebar ?? defaultShowSidebar(),
+    setShowSidebar: onSetShowSidebar,
+    loading: showSidebar === undefined,
+  };
 }

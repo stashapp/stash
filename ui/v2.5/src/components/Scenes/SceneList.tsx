@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -38,10 +32,10 @@ import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
 import {
-  defaultShowSidebar,
   Sidebar,
   SidebarPane,
   SidebarSection,
+  useSidebarState,
 } from "../Shared/Sidebar";
 import { PerformersQuickFilter } from "../List/Filters/PerformersFilter";
 import { StudiosQuickFilter } from "../List/Filters/StudiosFilter";
@@ -280,7 +274,11 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
   // States
-  const [showSidebar, setShowSidebar] = useState(defaultShowSidebar());
+  const {
+    showSidebar,
+    setShowSidebar,
+    loading: sidebarStateLoading,
+  } = useSidebarState(view);
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
@@ -423,7 +421,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   ];
 
   // render
-  if (filterLoading) return null;
+  if (filterLoading || sidebarStateLoading) return null;
 
   return (
     <TaggerContext>
