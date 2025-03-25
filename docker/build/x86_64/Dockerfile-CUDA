@@ -13,7 +13,7 @@ RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH
 ARG STASH_VERSION
-RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
+RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui-only
 
 # Build Backend
 FROM golang:1.22.8-bullseye AS backend
