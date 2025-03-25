@@ -740,53 +740,49 @@ $sidebar-width: 250px;
     flex: $sidebar-width;
     flex-grow: 0;
     flex-shrink: 0;
-    // max-height: calc(100vh - 4rem);
-    // overflow-y: auto;
     padding-left: 15px;
+    padding-right: 0.5rem;
     transition: margin-left 0.1s;
-
-    .close-button {
-      color: $danger;
-      display: none;
-      float: right;
-    }
   }
 
-  .sidebar.hide {
+  .sidebar {
+    bottom: 0;
+    left: 0;
+    margin-top: 4rem;
+    overflow-y: auto;
+    position: fixed;
+    scrollbar-gutter: stable;
+    top: 0;
+    width: $sidebar-width;
+    z-index: 100;
+  }
+
+  &.hide-sidebar .sidebar {
     margin-left: -$sidebar-width;
   }
 
   > :nth-child(2) {
     flex-grow: 1;
     padding-left: 15px;
-    // max-height: calc(100vh - 4rem);
-    // overflow-y: auto;
   }
 
-  // @include media-breakpoint-down(xs) {
-  //   .sidebar {
-  //     flex-basis: 100%;
-  //   }
+  @include media-breakpoint-up(xl) {
+    transition: margin-left 0.1s;
 
-  //   .sidebar.hide {
-  //     margin-left: -100%;
-  //   }
-  // }
-
-  @include media-breakpoint-down(md) {
-    .sidebar {
-      bottom: 0;
-      left: 0;
-      margin-top: 4rem;
-      overflow-y: auto;
-      position: fixed;
-      top: 0;
-      width: $sidebar-width;
-      z-index: 100;
-
-      .close-button {
-        display: block;
+    &:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: $sidebar-width;
       }
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      padding-top: 1rem;
+      width: 100%;
+    }
+
+    &.hide-sidebar .sidebar {
+      margin-left: -100%;
     }
   }
   @include media-breakpoint-down(xs) {

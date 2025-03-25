@@ -10,8 +10,9 @@ import { useOnOutsideClick } from "src/hooks/OutsideClick";
 import ScreenUtils, { useMediaQuery } from "src/utils/screen";
 import { IViewConfig, useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { View } from "../List/views";
+import cx from "classnames";
 
-const fixedSidebarMediaQuery = "only screen and (max-width: 991px)";
+const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
 
 export const Sidebar: React.FC<
   PropsWithChildren<{
@@ -19,7 +20,6 @@ export const Sidebar: React.FC<
     onHide?: () => void;
   }>
 > = ({ hide, onHide, children }) => {
-  const hideClass = hide ? "hide" : "";
   const ref = React.useRef<HTMLDivElement>(null);
 
   const closeOnOutsideClick = useMediaQuery(fixedSidebarMediaQuery) && !hide;
@@ -31,7 +31,7 @@ export const Sidebar: React.FC<
   );
 
   return (
-    <div ref={ref} className={`sidebar ${hideClass}`}>
+    <div ref={ref} className="sidebar">
       {children}
     </div>
   );
@@ -40,8 +40,16 @@ export const Sidebar: React.FC<
 // SidebarPane is a container for a Sidebar and content.
 // It is expected that the children will be two elements:
 // a Sidebar and a content element.
-export const SidebarPane: React.FC<PropsWithChildren<{}>> = ({ children }) => {
-  return <div className="sidebar-pane">{children}</div>;
+export const SidebarPane: React.FC<
+  PropsWithChildren<{
+    hideSidebar?: boolean;
+  }>
+> = ({ hideSidebar = false, children }) => {
+  return (
+    <div className={cx("sidebar-pane", { "hide-sidebar": hideSidebar })}>
+      {children}
+    </div>
+  );
 };
 
 export const SidebarSection: React.FC<

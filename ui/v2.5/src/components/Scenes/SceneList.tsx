@@ -432,7 +432,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       >
         {modal}
 
-        <SidebarPane>
+        <SidebarPane hideSidebar={!showSidebar}>
           <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
             <SidebarContent
               filter={filter}
