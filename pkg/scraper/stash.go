@@ -170,7 +170,7 @@ func (s *stashScraper) scrapeByPerformerFragment(ctx context.Context, scrapedPer
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeBySceneFragment(ctx context.Context, scrapedScene ScrapedSceneInput) (ScrapedContent, error) {
+func (s *stashScraper) scrapeBySceneFragment(ctx context.Context, scrapedScene models.ScrapedSceneInput) (ScrapedContent, error) {
 	client := s.getStashClient()
 
 	var q struct {
@@ -216,10 +216,10 @@ type scrapedStudioStash struct {
 
 type stashFindSceneNamesResultType struct {
 	Count  int                  `graphql:"count"`
-	Scenes []*ScrapedSceneStash `graphql:"scenes"`
+	Scenes []*scrapedSceneStash `graphql:"scenes"`
 }
 
-func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *ScrapedSceneStash) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*models.ScrapedScene, error) {
 	ret := models.ScrapedScene{}
 	err := copier.Copy(&ret, scene)
 	if err != nil {
@@ -329,7 +329,7 @@ func (f stashVideoFile) SceneFileType() models.SceneFileType {
 	return ret
 }
 
-type ScrapedSceneStash struct {
+type scrapedSceneStash struct {
 	ID         string                   `graphql:"id" json:"id"`
 	Title      *string                  `graphql:"title" json:"title"`
 	Details    *string                  `graphql:"details" json:"details"`
@@ -344,7 +344,7 @@ type ScrapedSceneStash struct {
 func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// query by MD5
 	var q struct {
-		FindScene *ScrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
+		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
 	}
 
 	type SceneHashInput struct {
