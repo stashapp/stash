@@ -54,7 +54,7 @@ ifndef COMPILER_IMAGE
 endif
 
 .PHONY: release
-release: pre-ui generate generate-login-locale ui build-release
+release: pre-ui generate ui build-release
 
 # targets to set various build flags
 # use combinations on the make command-line to configure a build, e.g.:
@@ -355,7 +355,10 @@ ifdef STASH_SOURCEMAPS
 endif
 
 .PHONY: ui
-ui: ui-env
+ui: ui-only generate-login-locale
+
+.PHONY: ui-only
+ui-only: ui-env
 	cd ui/v2.5 && yarn build
 
 .PHONY: zip-ui
