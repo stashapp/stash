@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	verbose := len(os.Args) > 1 && os.Args[1] == "-v"
+
 	fmt.Printf("Generating login locales\n")
 
 	// read all json files in the locales directory
@@ -61,7 +63,9 @@ func main() {
 
 		// create new json file
 		// with only the login part
-		fmt.Printf("Writing %s\n", d.Name())
+		if verbose {
+			fmt.Printf("Writing %s\n", d.Name())
+		}
 
 		f, err := os.Create(filepath.Join("login", "locales", d.Name()))
 		if err != nil {
