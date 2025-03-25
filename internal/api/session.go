@@ -91,7 +91,7 @@ func handleLoginLocale(cfg *config.Config) http.HandlerFunc {
 		// write a script to set the locale string map as a global variable
 		localeScript := fmt.Sprintf("var localeStrings = %s;", data)
 		w.Header().Set("Content-Type", "application/javascript")
-		w.Write([]byte(localeScript))
+		_, _ = w.Write([]byte(localeScript))
 	}
 }
 
