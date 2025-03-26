@@ -728,6 +728,11 @@ input[type="range"].zoom-slider {
 
 .filtered-list-toolbar {
   justify-content: center;
+
+  & > .btn-group {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 .search-term-input {
