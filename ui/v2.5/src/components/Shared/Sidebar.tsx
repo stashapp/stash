@@ -104,7 +104,7 @@ export function useSidebarState(view?: View) {
     if (loading) return;
 
     // only show sidebar by default on large screens
-    setShowSidebar(viewConfig.showSidebar && defaultShowSidebar());
+    setShowSidebar(!!viewConfig.showSidebar && defaultShowSidebar());
   }, [view, loading, showSidebar, viewConfig.showSidebar]);
 
   const onSetShowSidebar = useCallback(
