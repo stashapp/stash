@@ -884,7 +884,6 @@ $sticky-header-height: calc(50px + 3.3rem);
       display: none;
     }
   }
-
   @include media-breakpoint-up(xl) {
     .sidebar-pane:not(.hide-sidebar) {
       > :nth-child(2) {
