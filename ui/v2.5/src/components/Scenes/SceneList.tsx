@@ -370,6 +370,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             );
           }}
           operations={otherOperations}
+          zoomable
         />
 
         <FilterTags
