@@ -735,6 +735,15 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-pane .filtered-list-toolbar {
+  flex-wrap: nowrap;
+
+  & > .btn-group {
+    align-items: baseline;
+    justify-content: end;
+  }
+}
+
 .search-term-input {
   margin-right: 0.5rem;
 }
