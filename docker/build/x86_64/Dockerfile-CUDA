@@ -1,7 +1,7 @@
 # This dockerfile should be built with `make docker-cuda-build` from the stash root.
 
 # Build Frontend
-FROM node:alpine as frontend
+FROM node:20-alpine AS frontend
 RUN apk add --no-cache make git
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
@@ -13,19 +13,22 @@ RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH
 ARG STASH_VERSION
-RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
+RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui-only
 
 # Build Backend
-FROM golang:1.22-bullseye as backend
+FROM golang:1.22.8-bullseye AS backend
 RUN apt update && apt install -y build-essential golang
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
+COPY ./graphql /stash/graphql/
 COPY ./scripts /stash/scripts/
 COPY ./pkg /stash/pkg/
 COPY ./cmd /stash/cmd
 COPY ./internal /stash/internal
+# needed for generate-login-locale
+COPY ./ui /stash/ui/
+RUN make generate-backend generate-login-locale
 COPY --from=frontend /stash /stash/
-RUN make generate-backend
 ARG GITHASH
 ARG STASH_VERSION
 RUN make flags-release flags-pie stash
