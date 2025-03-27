@@ -49,6 +49,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     name
     endpoint
     api_key
+    max_requests_per_minute
   }
   pythonPath
   transcodeInputArgs

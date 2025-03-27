@@ -10,6 +10,8 @@ export interface IStashBoxModal {
   close: (v?: GQL.StashBoxInput) => void;
 }
 
+const defaultMaxRequestsPerMinute = 240;
+
 export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
   const intl = useIntl();
   const endpoint = useRef<HTMLInputElement | null>(null);
@@ -113,6 +115,38 @@ export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
                 {data.validateStashBoxCredentials?.status}
               </b>
             )}
+          </Form.Group>
+
+          <Form.Group id="stashbox-max-requests-per-minute">
+            <h6>
+              {intl.formatMessage({
+                id: "config.stashbox.max_requests_per_minute",
+              })}
+            </h6>
+            <Form.Control
+              placeholder={intl.formatMessage({
+                id: "config.stashbox.max_requests_per_minute",
+              })}
+              className="text-input"
+              value={v?.max_requests_per_minute ?? defaultMaxRequestsPerMinute}
+              isValid={
+                (v?.max_requests_per_minute ?? defaultMaxRequestsPerMinute) >= 0
+              }
+              type="number"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setValue({
+                  ...v!,
+                  max_requests_per_minute: parseInt(e.currentTarget.value),
+                })
+              }
+              ref={apiKey}
+            />
+            <div className="sub-heading">
+              <FormattedMessage
+                id="config.stashbox.max_requests_per_minute_description"
+                values={{ defaultValue: defaultMaxRequestsPerMinute }}
+              />
+            </div>
           </Form.Group>
         </>
       )}
