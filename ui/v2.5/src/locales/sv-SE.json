@@ -447,7 +447,9 @@
             "endpoint": "Adress",
             "graphql_endpoint": "GraphQL-adress",
             "name": "Namn",
-            "title": "Stash-box Adresser"
+            "title": "Stash-box Adresser",
+            "max_requests_per_minute": "Högsta antal förfrågningar per minut",
+            "max_requests_per_minute_description": "Använder standardvärdet {defaultValue} om detta är 0"
         },
         "system": {
             "transcoding": "Omkodning"
@@ -1118,7 +1120,7 @@
         "interactive_speed": "Interaktiv Hastighet",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} i den här scenen"
+            "age_context": "{age} {years_old} vid produktion"
         },
         "phash": "PHash",
         "play_count": "Visningar",
@@ -1516,8 +1518,18 @@
     "custom_fields": {
         "field": "Fält",
         "title": "Skäddarsydda Fält",
-        "value": "Värde"
+        "value": "Värde",
+        "criteria_format_string": "{criterion} (eget fält) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (eget fält) {modifierString} {valueString} (+{others} andra)"
     },
     "eta": "Uppskattad återstående tid",
-    "sort_name": "Sorteringsnamn"
+    "sort_name": "Sorteringsnamn",
+    "login": {
+        "username": "Användarnamn",
+        "password": "Lösenord",
+        "internal_error": "Oväntad internt fel. Se loggen för mer information",
+        "login": "Inlogg",
+        "invalid_credentials": "Ogiltigt användarnamn eller lösenord"
+    },
+    "age_on_date": "{age} vid produktion"
 }
