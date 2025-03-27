@@ -447,7 +447,9 @@
             "endpoint": "Point de terminaison",
             "graphql_endpoint": "Point de terminaison GraphQL",
             "name": "Nom",
-            "title": "Points de terminaison Stash-Box"
+            "title": "Points de terminaison Stash-Box",
+            "max_requests_per_minute": "Requêtes maximales par minute",
+            "max_requests_per_minute_description": "Utiliser la valeur par défaut de {defaultValue} si définie à 0"
         },
         "system": {
             "transcoding": "Transcodage"
@@ -1522,5 +1524,12 @@
     },
     "eta": "TAE",
     "sort_name": "Nom de tri",
-    "age_on_date": "{age} à la production"
+    "age_on_date": "{age} à la production",
+    "login": {
+        "password": "Mot de passe",
+        "invalid_credentials": "Nom d'utilisateur ou mot de passe incorrect",
+        "internal_error": "Erreur interne inattendue. Consulter le journal pour plus de détails",
+        "login": "Identification",
+        "username": "Nom d'utilisateur"
+    }
 }
