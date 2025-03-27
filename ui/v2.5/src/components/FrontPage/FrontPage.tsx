@@ -13,8 +13,9 @@ import {
   getFrontPageContent,
 } from "src/core/config";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { PatchComponent } from "src/patch";
 
-const FrontPage: React.FC = () => {
+const FrontPage: React.FC = PatchComponent("FrontPage", () => {
   const intl = useIntl();
   const Toast = useToast();
 
@@ -81,6 +82,6 @@ const FrontPage: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default FrontPage;

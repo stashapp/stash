@@ -1,6 +1,9 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { useContainerDimensions } from "../Shared/GridCard/GridCard";
+import {
+  useCardWidth,
+  useContainerDimensions,
+} from "../Shared/GridCard/GridCard";
 import { TagCard } from "./TagCard";
 
 interface ITagCardGrid {
@@ -10,19 +13,23 @@ interface ITagCardGrid {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
+const zoomWidths = [280, 340, 480, 640];
+
 export const TagCardGrid: React.FC<ITagCardGrid> = ({
   tags,
   selectedIds,
   zoomIndex,
   onSelectChange,
 }) => {
-  const [componentRef, { width }] = useContainerDimensions();
+  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {tags.map((tag) => (
         <TagCard
           key={tag.id}
-          containerWidth={width}
+          cardWidth={cardWidth}
           tag={tag}
           zoomIndex={zoomIndex}
           selecting={selectedIds.size > 0}

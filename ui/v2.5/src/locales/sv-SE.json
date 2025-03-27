@@ -753,7 +753,8 @@
                     "vr_tag": {
                         "description": "VR-knappen kommer endast visas för scener med denna tagg.",
                         "heading": "VR Tagg"
-                    }
+                    },
+                    "show_range_markers": "Visa Räckviddsmarkörer"
                 }
             },
             "scene_wall": {
@@ -1516,5 +1517,7 @@
         "field": "Fält",
         "title": "Skäddarsydda Fält",
         "value": "Värde"
-    }
+    },
+    "eta": "Uppskattad återstående tid",
+    "sort_name": "Sorteringsnamn"
 }

@@ -430,7 +430,19 @@ func (db *Database) Vacuum(ctx context.Context) error {
 
 // Analyze runs an ANALYZE on the database to improve query performance.
 func (db *Database) Analyze(ctx context.Context) error {
-	_, err := db.writeDB.ExecContext(ctx, "ANALYZE")
+	return analyze(ctx, db.writeDB)
+}
+
+// analyze runs an ANALYZE on the database to improve query performance.
+func analyze(ctx context.Context, db *sqlx.DB) error {
+	_, err := db.ExecContext(ctx, "ANALYZE")
+	return err
+}
+
+// flushWAL flushes the Write-Ahead Log (WAL) to the main database file.
+// It also truncates the WAL file to 0 bytes.
+func flushWAL(ctx context.Context, db *sqlx.DB) error {
+	_, err := db.ExecContext(ctx, "PRAGMA wal_checkpoint(TRUNCATE)")
 	return err
 }
 

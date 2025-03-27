@@ -9,6 +9,7 @@ import {
 import { TagIDSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
 import { GroupSelect } from "src/components/Groups/GroupSelect";
+import { uniq } from "lodash-es";
 
 interface IScrapedStudioRow {
   title: string;
@@ -137,8 +138,8 @@ type IScrapedObjectRowImpl<T> = Omit<
 >;
 
 export const ScrapedPerformersRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedPerformer>
-> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+  IScrapedObjectRowImpl<GQL.ScrapedPerformer> & { ageFromDate?: string | null }
+> = ({ title, result, onChange, newObjects, onCreateNew, ageFromDate }) => {
   const performersCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
@@ -179,6 +180,7 @@ export const ScrapedPerformersRow: React.FC<
           }
         }}
         values={selectValue}
+        ageFromDate={ageFromDate}
       />
     );
   }
@@ -269,7 +271,7 @@ export const ScrapedTagsRow: React.FC<
       : scrapeResult.originalValue;
     const value = resultValue ?? [];
 
-    const selectValue = value.map((p) => p.stored_id ?? "");
+    const selectValue = uniq(value.map((p) => p.stored_id ?? ""));
 
     // we need to use TagIDSelect here because we want to use the local name
     // of the tag instead of the name from the source

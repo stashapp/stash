@@ -51,9 +51,10 @@ type config struct {
 	// Configuration for querying image by an Image fragment
 	ImageByFragment *scraperTypeConfig `yaml:"imageByFragment"`
 
-	// Configuration for querying a movie by a URL
 	// Configuration for querying a movie by a URL - deprecated, use GroupByURL
 	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
+
+	// Configuration for querying a group by a URL
 	GroupByURL []*scrapeByURLConfig `yaml:"groupByURL"`
 
 	// Scraper debugging options

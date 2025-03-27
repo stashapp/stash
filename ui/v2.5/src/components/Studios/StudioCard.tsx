@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
-import {
-  GridCard,
-  calculateCardWidth,
-} from "src/components/Shared/GridCard/GridCard";
+import { GridCard } from "src/components/Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
@@ -13,17 +10,17 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
-import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   hideParent?: boolean;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -74,25 +71,14 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
 
 export const StudioCard: React.FC<IProps> = ({
   studio,
-  containerWidth,
+  cardWidth,
   hideParent,
   selecting,
   selected,
+  zoomIndex,
   onSelectedChanged,
 }) => {
   const [updateStudio] = useStudioUpdate();
-  const [cardWidth, setCardWidth] = useState<number>();
-
-  useEffect(() => {
-    if (!containerWidth || ScreenUtils.isMobile()) return;
-
-    let preferredCardWidth = 340;
-    let fittedCardWidth = calculateCardWidth(
-      containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
 
   function onToggleFavorite(v: boolean) {
     if (studio.id) {
@@ -216,7 +202,7 @@ export const StudioCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="studio-card"
+      className={`studio-card zoom-${zoomIndex}`}
       url={`/studios/${studio.id}`}
       width={cardWidth}
       title={studio.name}

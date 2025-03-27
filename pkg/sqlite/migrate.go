@@ -39,6 +39,12 @@ func NewMigrator(db *Database) (*Migrator, error) {
 	m.conn.SetConnMaxIdleTime(dbConnTimeout)
 
 	m.m, err = m.getMigrate()
+
+	// if error encountered, close the connection
+	if err != nil {
+		m.Close()
+	}
+
 	return m, err
 }
 
@@ -119,6 +125,27 @@ func (m *Migrator) runCustomMigrations(ctx context.Context, fns []customMigratio
 func (m *Migrator) runCustomMigration(ctx context.Context, fn customMigrationFunc) error {
 	if err := fn(ctx, m.conn); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Migrator) PostMigrate(ctx context.Context) error {
+	// optimise the database
+	var err error
+	logger.Info("Running database analyze")
+
+	// don't use Optimize/vacuum as this adds a significant amount of time
+	// to the migration
+	err = analyze(ctx, m.conn)
+
+	if err == nil {
+		logger.Debug("Flushing WAL")
+		err = flushWAL(ctx, m.conn)
+	}
+
+	if err != nil {
+		return fmt.Errorf("error optimising database: %s", err)
 	}
 
 	return nil

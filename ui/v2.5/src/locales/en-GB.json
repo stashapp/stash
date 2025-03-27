@@ -145,6 +145,7 @@
   },
   "actions_name": "Actions",
   "age": "Age",
+  "age_on_date": "{age} at production",
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",
@@ -447,6 +448,8 @@
       "description": "Stash-box facilitates automated tagging of scenes and performers based on fingerprints and filenames.\nEndpoint and API key can be found on your account page on the stash-box instance. Names are required when more than one instance is added.",
       "endpoint": "Endpoint",
       "graphql_endpoint": "GraphQL endpoint",
+      "max_requests_per_minute": "Max requests per minute",
+      "max_requests_per_minute_description": "Uses default value of {defaultValue} if set to 0",
       "name": "Name",
       "title": "Stash-box Endpoints"
     },
@@ -1139,6 +1142,13 @@
     "generic": "Loading…",
     "plugins": "Loading plugins…"
   },
+  "login": {
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "invalid_credentials": "Invalid username or password",
+    "internal_error": "Unexpected internal error. See logs for more details"
+  },
   "marker_count": "Marker Count",
   "markers": "Markers",
   "measurements": "Measurements",
@@ -1151,7 +1161,7 @@
     "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} in this scene"
+      "age_context": "{age} {years_old} at production"
     },
     "phash": "PHash",
     "play_count": "Play Count",

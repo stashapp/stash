@@ -28,7 +28,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
+import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
@@ -374,7 +374,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
                   />
                 )}
                 <span className="name-icons">
-                  <ExternalLinksButton urls={group.urls} />
+                  <ExternalLinkButtons urls={group.urls ?? undefined} />
                 </span>
               </DetailTitle>
 

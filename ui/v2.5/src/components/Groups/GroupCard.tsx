@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink, TagLink } from "../Shared/TagLink";
@@ -9,7 +9,6 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
-import ScreenUtils from "src/utils/screen";
 import { RelatedGroupPopoverButton } from "./RelatedGroupPopover";
 
 const Description: React.FC<{
@@ -37,10 +36,11 @@ const Description: React.FC<{
 
 interface IProps {
   group: GQL.GroupDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   sceneNumber?: number;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
@@ -49,15 +49,14 @@ interface IProps {
 export const GroupCard: React.FC<IProps> = ({
   group,
   sceneNumber,
-  containerWidth,
+  cardWidth,
   selecting,
   selected,
+  zoomIndex,
   onSelectedChanged,
   fromGroupId,
   onMove,
 }) => {
-  const [cardWidth, setCardWidth] = useState<number>();
-
   const groupDescription = useMemo(() => {
     if (!fromGroupId) {
       return undefined;
@@ -69,17 +68,6 @@ export const GroupCard: React.FC<IProps> = ({
 
     return containingGroup?.description ?? undefined;
   }, [fromGroupId, group.containing_groups]);
-
-  useEffect(() => {
-    if (!containerWidth || ScreenUtils.isMobile()) return;
-
-    let preferredCardWidth = 250;
-    let fittedCardWidth = calculateCardWidth(
-      containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
 
   function maybeRenderScenesPopoverButton() {
     if (group.scenes.length === 0) return;
@@ -150,7 +138,7 @@ export const GroupCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="group-card"
+      className={`group-card zoom-${zoomIndex}`}
       objectId={group.id}
       onMove={onMove}
       url={`/groups/${group.id}`}

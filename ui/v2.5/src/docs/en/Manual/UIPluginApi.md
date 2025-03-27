@@ -29,8 +29,10 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `Intl`
 - `FontAwesomeRegular`
 - `FontAwesomeSolid`
+- `FontAwesomeBrands`
 - `Mousetrap`
 - `MousetrapPause`
+- `ReactSelect`
 
 ### `register`
 
@@ -100,6 +102,8 @@ Returns a `boolean` which will be `true` if the components are loading.
 
 This namespace contains all of the components that may need to be loaded using the `loadComponents` method. Components are added to this namespace as needed. Please make a development request if a required component is not in this namespace.
 
+This component also includes coarse-grained entries for every lazily loaded import in the stock UI. If a component is not available in `components` when the page loads, it can be loaded using the coarse-grained entry. For example, `PerformerCard` can be loaded using `loadableComponents.Performers`.
+
 ### `patch`
 
 This namespace provides methods to patch components to change their behaviour.
@@ -146,22 +150,39 @@ Returns `void`.
 - `ConstantSetting`
 - `CountrySelect`
 - `DateInput`
+- `ExternalLinkButtons`
+- `ExternalLinksButton`
 - `FolderSelect`
+- `FrontPage`
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `HoverPopover`
 - `Icon`
 - `ImageDetailPanel`
+- `LoadingIndicator`
 - `ModalSetting`
 - `GroupIDSelect`
 - `GroupSelect`
 - `GroupSelect.sort`
 - `NumberSetting`
+- `PerformerAppearsWithPanel`
+- `PerformerCard`
+- `PerformerCard.Details`
+- `PerformerCard.Image`
+- `PerformerCard.Overlays`
+- `PerformerCard.Popovers`
+- `PerformerCard.Title`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
 - `PerformerIDSelect`
+- `PerformerPage`
 - `PerformerSelect`
 - `PerformerSelect.sort`
+- `PerformerGalleriesPanel`
+- `PerformerGroupsPanel`
+- `PerformerImagesPanel`
+- `PerformerScenesPanel`
 - `PluginRoutes`
 - `SceneCard`
 - `SceneCard.Details`
@@ -169,6 +190,10 @@ Returns `void`.
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
 - `SceneIDSelect`
+- `ScenePage`
+- `ScenePage.Tabs`
+- `ScenePage.TabContent`
+- `ScenePlayer`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
@@ -179,6 +204,15 @@ Returns `void`.
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
+- `TabTitleCounter`
+- `TagCard`
+- `TagCard.Details`
+- `TagCard.Image`
+- `TagCard.Overlays`
+- `TagCard.Popovers`
+- `TagCard.Title`
+- `TagLink`
+- `TabTitleCounter`
 - `TagIDSelect`
 - `TagSelect`
 - `TagSelect.sort`

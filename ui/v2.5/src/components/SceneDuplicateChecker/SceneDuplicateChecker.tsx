@@ -44,6 +44,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "../Scenes/SceneMergeDialog";
 import { objectTitle } from "src/core/files";
+import { FileSize } from "../Shared/FileSize";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -325,19 +326,6 @@ export const SceneDuplicateChecker: React.FC = () => {
     setEditingScenes(true);
     resetCheckboxSelection();
   }
-
-  const renderFilesize = (filesize: number | null | undefined) => {
-    const { size: parsedSize, unit } = TextUtils.fileSize(filesize ?? 0);
-    return (
-      <FormattedNumber
-        value={parsedSize}
-        style="unit"
-        unit={unit}
-        unitDisplay="narrow"
-        maximumFractionDigits={2}
-      />
-    );
-  };
 
   function maybeRenderMissingPhashWarning() {
     const missingPhashes = missingPhash?.findScenes.count ?? 0;
@@ -917,7 +905,9 @@ export const SceneDuplicateChecker: React.FC = () => {
                         {file?.duration &&
                           TextUtils.secondsToTimestamp(file.duration)}
                       </td>
-                      <td>{renderFilesize(file?.size ?? 0)}</td>
+                      <td>
+                        <FileSize size={file?.size ?? 0} />
+                      </td>
                       <td>{`${file?.width ?? 0}x${file?.height ?? 0}`}</td>
                       <td>
                         <FormattedNumber
