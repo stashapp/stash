@@ -446,7 +446,9 @@
             "endpoint": "入口",
             "graphql_endpoint": "GraphQL 入口",
             "name": "名称",
-            "title": "Stash-box 入口"
+            "title": "Stash-box 入口",
+            "max_requests_per_minute": "每分钟最多可发起请求数量",
+            "max_requests_per_minute_description": "使用{defaultValue}的默认数值，当其数值设置为0时"
         },
         "system": {
             "transcoding": "转码"
@@ -1522,5 +1524,12 @@
     },
     "eta": "预估剩余时间",
     "sort_name": "排序用名",
-    "age_on_date": "在制作时{age}岁"
+    "age_on_date": "在制作时{age}岁",
+    "login": {
+        "username": "用户名",
+        "password": "密码",
+        "invalid_credentials": "无效的用户名或密码",
+        "internal_error": "意外的内部错误。有关更多详细信息，请查看日志",
+        "login": "登录"
+    }
 }
