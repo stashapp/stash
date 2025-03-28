@@ -229,7 +229,6 @@ func GetSceneMarkersJSON(ctx context.Context, markerReader models.SceneMarkerFin
 		sceneMarkerJSON := jsonschema.SceneMarker{
 			Title:      sceneMarker.Title,
 			Seconds:    getDecimalString(sceneMarker.Seconds),
-			EndSeconds: "",
 			PrimaryTag: primaryTag.Name,
 			Tags:       getTagNames(sceneMarkerTags),
 			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt},
