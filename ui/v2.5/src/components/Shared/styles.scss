@@ -737,6 +737,7 @@ $sidebar-width: 250px;
   .sidebar {
     // TODO - use different colours for sidebar and toolbar
     background-color: $body-bg;
+    border-right: 1px solid $secondary;
     flex: $sidebar-width;
     flex-grow: 0;
     flex-shrink: 0;
