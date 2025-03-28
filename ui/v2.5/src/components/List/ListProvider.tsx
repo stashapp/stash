@@ -29,22 +29,12 @@ export const ListContext = <T extends IHasID = IHasID>(
 ) => {
   const { selectable = false, items, children } = props;
 
-  const {
-    selectedIds,
-    getSelected,
-    onSelectChange,
-    onSelectAll,
-    onSelectNone,
-  } = useListSelect(items);
+  const listSelect = useListSelect(items);
 
   const state: IListContextState<T> = {
     selectable,
-    selectedIds,
-    getSelected,
-    onSelectChange,
-    onSelectAll,
-    onSelectNone,
     items,
+    ...listSelect,
   };
 
   return (
@@ -74,6 +64,8 @@ const emptyState: IListContextState = {
   onSelectAll: () => {},
   onSelectNone: () => {},
   items: [],
+  hasSelection: false,
+  selectedItems: [],
 };
 
 export function useListContextOptional<T extends IHasID = IHasID>() {
