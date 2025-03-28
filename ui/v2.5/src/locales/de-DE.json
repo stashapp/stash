@@ -446,7 +446,9 @@
             "endpoint": "Endpunkt",
             "graphql_endpoint": "GraphQL-Endpunkt",
             "name": "Name",
-            "title": "Stash-Box-Endpunkte"
+            "title": "Stash-Box-Endpunkte",
+            "max_requests_per_minute": "Max requests pro Minute",
+            "max_requests_per_minute_description": "Verwendet default Wert  {defaultValue} wenn auf 0 gesetzt"
         },
         "system": {
             "transcoding": "Transcodierung"
@@ -737,7 +739,8 @@
                     },
                     "show_ab_loop_controls": "Die Steuerungselemente des AB-Loop-Plugins anzeigen",
                     "disable_mobile_media_auto_rotate": "Deaktiviere das automatische Drehen von Vollbildmedien auf Mobilgeräten",
-                    "enable_chromecast": "Chromecast aktivieren"
+                    "enable_chromecast": "Chromecast aktivieren",
+                    "show_range_markers": "Zeige Range der Markierungen"
                 }
             },
             "scene_wall": {
@@ -1115,7 +1118,7 @@
         "interactive_speed": "Interaktive Geschwindigkeit",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} in dieser Szene"
+            "age_context": "{age} {years_old} bei der Produktion"
         },
         "phash": "PHashwert",
         "play_count": "Anzahl Wiedergaben",
@@ -1484,7 +1487,8 @@
     "custom_fields": {
         "title": "Benutzerdefinierte Felder",
         "value": "Wert",
-        "field": "Feld"
+        "field": "Feld",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}"
     },
     "distance": "Distanz",
     "group_count": "Gruppenanzahl",
@@ -1517,5 +1521,14 @@
     "tag_sub_tag_tooltip": "Hat Untertags",
     "include_sub_groups": "Untergruppen einbeziehen",
     "studio_and_parent": "Studio & Mutterstudio",
-    "eta": "Edited to add"
+    "eta": "Edited to add",
+    "login": {
+        "login": "Login",
+        "internal_error": "Unvorhergesehener interner Fehler. Weitere Details in den Logs",
+        "password": "Passwort",
+        "invalid_credentials": "Ungültiger Nutzername oder Passwort",
+        "username": "Benutzername"
+    },
+    "age_on_date": "bei Produktion",
+    "sort_name": "Namen sortieren"
 }
