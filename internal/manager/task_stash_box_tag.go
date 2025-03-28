@@ -96,7 +96,7 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 
 	r := instance.Repository
 
-	client := stashbox.NewClient(*t.box, instance.Config.GetScraperExcludeTagPatterns())
+	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
 	if t.refresh {
 		var remoteID string
@@ -295,7 +295,7 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 
 	r := instance.Repository
 
-	client := stashbox.NewClient(*t.box, instance.Config.GetScraperExcludeTagPatterns())
+	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
 	if t.refresh {
 		var remoteID string

@@ -9,6 +9,18 @@
     <link rel="shortcut icon" href="data:,">
     <link rel="stylesheet" href="login/login.css">
     <link rel="stylesheet" href="css">
+
+    <!-- load locale -->
+    <script>
+        var localeStrings = {
+            username: "Username",
+            password: "Password",
+            login: "Login",
+            invalid_credentials: "Invalid credentials",
+            internal_error: "Unexpected internal error. See logs for more details"
+        };
+    </script>
+    <script src="login/locale"></script>
 </head>
 
 <script>
@@ -25,28 +37,27 @@
                 if (xhr.status == 200) {
                     window.location.replace(returnURL);
                 } else {
-                    document.getElementsByClassName("login-error")[0].innerHTML = xhr.responseText;
+                    document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.invalid_credentials;
                 }
             }
         };
         xhr.onerror = function() {
-            document.getElementsByClassName("login-error")[0].innerHTML = "An error occurred while trying to login.";
+            document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.internal_error;
         };
         xhr.send("username=" + username + "&password=" + password + "&returnURL=" + returnURL);
     }
 </script>
 
 <body class="login">
-
     <div class="dialog">
         <div class="card">
             <form action="login" method="POST" onsubmit="event.preventDefault(); login();">
                 <div class="form-group">
-                    <label for="username"><h6>Username</h6></label>
+                    <label for="username"><h6 id="username-heading">Username</h6></label>
                     <input class="text-input form-control" id="username" name="username" type="text" placeholder="Username" />
                 </div>
                 <div class="form-group">
-                    <label for="password"><h6>Password</h6></label>
+                    <label for="password"><h6 id="password-heading">Password</h6></label>
                     <input class="text-input form-control" id="password" name="password" type="password" placeholder="Password" />
                 </div>
                 <div class="login-error">
@@ -56,11 +67,19 @@
                 <input type="hidden" id="returnURL" name="returnURL" value="{{.URL}}" />
 
                 <div>
-                    <input class="btn btn-primary" type="submit" value="Login">
+                    <input id="login-button" class="btn btn-primary" type="submit" value="Login">
                 </div>
             </form>
         </div>
     </div>
 
 </body>
+
+<script>
+    document.getElementById("username-heading").innerText = localeStrings.username;
+    document.getElementById("password-heading").innerText = localeStrings.password;
+    document.getElementById("username").placeholder = localeStrings.username;
+    document.getElementById("password").placeholder = localeStrings.password;
+    document.getElementById("login-button").value = localeStrings.login;
+</script>
 </html>

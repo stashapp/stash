@@ -17,7 +17,11 @@ import (
 	"github.com/stashapp/stash/ui"
 )
 
-const returnURLParam = "returnURL"
+const (
+	returnURLParam = "returnURL"
+
+	defaultLocale = "en-GB"
+)
 
 func getLoginPage() []byte {
 	data, err := fs.ReadFile(ui.LoginUIBox, "login.html")
@@ -56,6 +60,47 @@ func serveLoginPage(w http.ResponseWriter, r *http.Request, returnURL string, lo
 	setPageSecurityHeaders(w, r, nil)
 
 	utils.ServeStaticContent(w, r, buffer.Bytes())
+}
+
+func handleLoginLocale(cfg *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// get the locale from the config
+		lang := cfg.GetLanguage()
+		if lang == "" {
+			lang = defaultLocale
+		}
+
+		data, err := getLoginLocale(lang)
+		if err != nil {
+			logger.Debugf("Failed to load login locale file for language %s: %v", lang, err)
+			// try again with the default language
+			if lang != defaultLocale {
+				data, err = getLoginLocale(defaultLocale)
+				if err != nil {
+					logger.Errorf("Failed to load login locale file for default language %s: %v", defaultLocale, err)
+				}
+			}
+
+			// if there's still an error, response with an internal server error
+			if err != nil {
+				http.Error(w, "Failed to load login locale file", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// write a script to set the locale string map as a global variable
+		localeScript := fmt.Sprintf("var localeStrings = %s;", data)
+		w.Header().Set("Content-Type", "application/javascript")
+		_, _ = w.Write([]byte(localeScript))
+	}
+}
+
+func getLoginLocale(lang string) ([]byte, error) {
+	data, err := fs.ReadFile(ui.LoginUIBox, "locales/"+lang+".json")
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func handleLogin() http.HandlerFunc {
