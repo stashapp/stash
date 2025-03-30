@@ -426,9 +426,11 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	prefix := strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "")
+
 	baseUrl := *r.URL
 	baseUrl.RawQuery = ""
-	baseURL := baseUrl.String()
+	baseURL := prefix + baseUrl.String()
 
 	urlQuery := url.Values{}
 	apikey := r.URL.Query().Get(apiKeyParamKey)
@@ -559,9 +561,11 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	mediaDuration := mpd.Duration(time.Duration(probeResult.FileDuration * float64(time.Second)))
 	m := mpd.NewMPD(mpd.DASH_PROFILE_LIVE, mediaDuration.String(), "PT4.0S")
 
+	prefix := strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "")
+
 	baseUrl := r.URL.JoinPath("/")
 	baseUrl.RawQuery = ""
-	m.BaseURL = baseUrl.String()
+	m.BaseURL = prefix + baseUrl.String()
 
 	video, _ := m.AddNewAdaptationSetVideo(MimeWebmVideo, "progressive", true, 1)
 
