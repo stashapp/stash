@@ -60,7 +60,7 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 	return s.scrapeByFragment(ctx, input)
 }
 
-func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*ScrapedScene, error) {
+func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	if g.config.SceneByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -69,7 +69,7 @@ func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
-func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if g.config.GalleryByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -78,7 +78,7 @@ func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *mod
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
-func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*ScrapedImage, error) {
+func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*models.ScrapedImage, error) {
 	if g.config.ImageByFragment == nil {
 		return nil, ErrNotSupported
 	}

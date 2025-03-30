@@ -167,3 +167,13 @@ func ValuesToPtrs[T any](vs []T) []*T {
 	}
 	return ret
 }
+
+// Flatten returns a single slice containing all elements of the provided
+// slice of slices.
+func Flatten[T any](vs [][]T) []T {
+	var ret []T
+	for _, v := range vs {
+		ret = append(ret, v...)
+	}
+	return ret
+}

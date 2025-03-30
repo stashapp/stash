@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink, TagLink } from "../Shared/TagLink";
@@ -9,7 +9,6 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
-import ScreenUtils from "src/utils/screen";
 import { RelatedGroupPopoverButton } from "./RelatedGroupPopover";
 
 const Description: React.FC<{
@@ -37,7 +36,7 @@ const Description: React.FC<{
 
 interface IProps {
   group: GQL.GroupDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   sceneNumber?: number;
   selecting?: boolean;
   selected?: boolean;
@@ -50,7 +49,7 @@ interface IProps {
 export const GroupCard: React.FC<IProps> = ({
   group,
   sceneNumber,
-  containerWidth,
+  cardWidth,
   selecting,
   selected,
   zoomIndex,
@@ -58,8 +57,6 @@ export const GroupCard: React.FC<IProps> = ({
   fromGroupId,
   onMove,
 }) => {
-  const [cardWidth, setCardWidth] = useState<number>();
-
   const groupDescription = useMemo(() => {
     if (!fromGroupId) {
       return undefined;
@@ -71,32 +68,6 @@ export const GroupCard: React.FC<IProps> = ({
 
     return containingGroup?.description ?? undefined;
   }, [fromGroupId, group.containing_groups]);
-
-  useEffect(() => {
-    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
-      return;
-
-    let zoomValue = zoomIndex;
-    let preferredCardWidth: number;
-    switch (zoomValue) {
-      case 0:
-        preferredCardWidth = 210;
-        break;
-      case 1:
-        preferredCardWidth = 250;
-        break;
-      case 2:
-        preferredCardWidth = 300;
-        break;
-      case 3:
-        preferredCardWidth = 375;
-    }
-    let fittedCardWidth = calculateCardWidth(
-      containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [containerWidth, zoomIndex]);
 
   function maybeRenderScenesPopoverButton() {
     if (group.scenes.length === 0) return;

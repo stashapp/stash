@@ -172,7 +172,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty ScrapeCo
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
+func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -231,7 +231,7 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (Scrape
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromImage(image)
 	if s.scraper.QueryURLReplacements != nil {
@@ -255,7 +255,7 @@ func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Imag
 	return scraper.scrapeImage(ctx, q)
 }
 
-func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
