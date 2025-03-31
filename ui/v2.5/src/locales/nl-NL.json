@@ -303,7 +303,7 @@
             "generated_file_naming_hash_head": "Gebruikte hash voor gegenereerde bestandsnamen",
             "generated_files_location": "Bestandspad voor gegenereerde bestanden (scene markers, scene voorbeelden, afbeeldingen, enz.)",
             "generated_path_head": "Pad voor gegenereerde bestanden",
-            "hashing": "Hashing",
+            "hashing": "",
             "image_ext_desc": "Komma gescheiden lijst van bestandsextensies die als afbeeldingen worden gezien.",
             "image_ext_head": "Bestandsextensies afbeeldingen",
             "include_audio_desc": "Voeg audio toe aan gegenereerde voorbeelden.",
@@ -501,7 +501,7 @@
             },
             "funscript_offset": {
                 "description": "Time Offset in milliseconden voor het afspelen van interactieve scripts.",
-                "heading": "Funscript Offset (ms)"
+                "heading": ""
             },
             "handy_connection": {
                 "connect": "Connecteer",
@@ -515,7 +515,7 @@
             },
             "handy_connection_key": {
                 "description": "Handy connection key om te gebruiken voor interactieve scènes. Instellen van deze sleutel staat Stash toe om uw huidige scène-informatie met HandyFeeling.com te delen",
-                "heading": "Handy Connection Key"
+                "heading": ""
             },
             "image_lightbox": {
                 "heading": "Afbeelding Lightbox"
@@ -602,11 +602,11 @@
         "files": "{count, plural, one {Bestand} other {Bestanden}}",
         "galleries": "{count, plural, one {Galerij} other {Galerijen}}",
         "images": "{count, plural, one {Afbeelding} other {Afbeeldingen}}",
-        "markers": "{count, plural, one {Marker} other {Markers}}",
-        "performers": "{count, plural, one {Performer} other {Performers}}",
-        "scenes": "{count, plural, one {Scene} other {Scenes}}",
-        "studios": "{count, plural, one {Studio} other {Studios}}",
-        "tags": "{count, plural, one {Tag} other {Tags}}"
+        "markers": "",
+        "performers": "",
+        "scenes": "",
+        "studios": "",
+        "tags": ""
     },
     "country": "Land",
     "cover_image": "Cover afbeelding",
@@ -707,7 +707,7 @@
             "preview_seg_count_head": "Aantal segmenten in voorbeeld",
             "preview_seg_duration_desc": "Duur van elk voorbeeldsegment, in seconden.",
             "preview_seg_duration_head": "Voorbeeld Segment Duur",
-            "sprites": "Scene Scrubber Sprites",
+            "sprites": "Scène Scrubber Sprites",
             "sprites_tooltip": "De set afbeeldingen die onder de videospeler worden weergegeven voor eenvoudige navigatie.",
             "transcodes": "Transcoderingen",
             "transcodes_tooltip": "MP4-conversies van niet-ondersteunde video-indelingen",
@@ -783,11 +783,11 @@
     "filter_name": "Filter Naam",
     "filters": "Filters",
     "framerate": "Frame snelheid",
-    "frames_per_second": "{value} frames per seconde",
+    "frames_per_second": "{value} fps",
     "front_page": {
         "types": {
             "premade_filter": "Vooraf gemaakte filter",
-            "saved_filter": "Opgeslagen Filter"
+            "saved_filter": "Opgeslagen filter"
         }
     },
     "galleries": "Galerijen",
@@ -798,11 +798,11 @@
         "FEMALE": "Vrouw",
         "INTERSEX": "Intersex",
         "MALE": "Man",
-        "NON_BINARY": "Non-Binar",
+        "NON_BINARY": "Non-binair",
         "TRANSGENDER_FEMALE": "Transgender Vrouw",
         "TRANSGENDER_MALE": "Transgender Man"
     },
-    "hair_color": "Haar kleur",
+    "hair_color": "Haarkleur",
     "handy_connection_status": {
         "connecting": "Verbinden",
         "disconnected": "Verbinding verbroken",
@@ -828,7 +828,8 @@
     "isMissing": "Is Missende",
     "library": "Bibliotheek",
     "loading": {
-        "generic": "Laden…"
+        "generic": "Laden…",
+        "plugins": "Plugins laden…"
     },
     "marker_count": "Marker Aantal",
     "markers": "Markeringen",
@@ -841,13 +842,13 @@
         "interactive_speed": "Interactieve snelheid",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} in deze scène"
+            "age_context": "{age} {years_old} bij productie"
         },
         "phash": "PHash",
         "stream": "Stream",
         "video_codec": "Video Codec"
     },
-    "megabits_per_second": "{value} megabits per seconde",
+    "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
     "name": "Naam",
     "new": "Nieuw",
@@ -996,7 +997,8 @@
     "stats": {
         "image_size": "Afbeelding groote",
         "scenes_duration": "Scene duur",
-        "scenes_size": "Scene groote"
+        "scenes_size": "Scene groote",
+        "scenes_played": "Scènes gespeeld"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
@@ -1048,5 +1050,29 @@
     "circumcised_types": {
         "CUT": "Ja",
         "UNCUT": "Nee"
-    }
+    },
+    "folder": "Folder",
+    "hasChapters": "Heeft hoofdstukken",
+    "image_index": "Afbeelding #",
+    "include_sub_groups": "Inclusief subgroepen",
+    "index_of_total": "{index} van {total}",
+    "orientation": "Oriëntatie",
+    "group": "Groep",
+    "group_count": "Aantal groepen",
+    "height_cm": "Lengte (cm)",
+    "history": "Geschiedenis",
+    "groups": "Groepen",
+    "file_count": "Aantal bestanden",
+    "files_amount": "{value} bestanden",
+    "include_sub_group_content": "Inclusief subgroep inhoud",
+    "login": {
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "login": "Login",
+        "invalid_credentials": "Ongeldige gebruikersnaam of wachtwoord"
+    },
+    "group_scene_number": "Scènenummer",
+    "include_sub_studio_content": "Inclusief substudio inhoud",
+    "last_played_at": "Laatst gespeeld op",
+    "include_sub_tag_content": "Inclusief sub-tag inhoud"
 }
