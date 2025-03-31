@@ -49,7 +49,7 @@ const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
   );
 };
 
-export const TagsQuickFilter: React.FC<{
+export const SidebarTagsFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
   filter: ListFilterModel;

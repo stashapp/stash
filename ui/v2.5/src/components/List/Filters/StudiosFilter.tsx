@@ -53,7 +53,7 @@ const StudiosFilter: React.FC<IStudiosFilter> = ({
   );
 };
 
-export const StudiosQuickFilter: React.FC<{
+export const SidebarStudiosFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
   filter: ListFilterModel;

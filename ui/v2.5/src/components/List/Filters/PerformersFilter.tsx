@@ -52,7 +52,7 @@ const PerformersFilter: React.FC<IPerformersFilter> = ({
   );
 };
 
-export const PerformersQuickFilter: React.FC<{
+export const SidebarPerformersFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
   filter: ListFilterModel;

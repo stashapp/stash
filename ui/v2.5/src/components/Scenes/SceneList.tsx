@@ -37,12 +37,12 @@ import {
   SidebarSection,
   useSidebarState,
 } from "../Shared/Sidebar";
-import { PerformersQuickFilter } from "../List/Filters/PerformersFilter";
-import { StudiosQuickFilter } from "../List/Filters/StudiosFilter";
+import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
+import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
-import { TagsQuickFilter } from "../List/Filters/TagsFilter";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import { SidebarSavedFilterList } from "../List/SavedFilterList";
 import { SearchTermInput } from "../List/ListFilter";
 import { SidebarIcon } from "../Shared/Icon";
@@ -224,17 +224,17 @@ const optionContent: ISidebarContentProps[] = [
   {
     messageID: "studios",
     option: StudiosCriterionOption,
-    component: StudiosQuickFilter,
+    component: SidebarStudiosFilter,
   },
   {
     messageID: "performers",
     option: PerformersCriterionOption,
-    component: PerformersQuickFilter,
+    component: SidebarPerformersFilter,
   },
   {
     messageID: "tags",
     option: TagsCriterionOption,
-    component: TagsQuickFilter,
+    component: SidebarTagsFilter,
   },
   {
     messageID: "rating",
