@@ -857,7 +857,6 @@ CareerLength
 Circumcised
 Country
 DeathDate
-DeathDate
 Details
 Disambiguation
 Ethnicity
