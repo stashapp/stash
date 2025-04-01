@@ -44,6 +44,7 @@ import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { FilteredSidebarHeader } from "../List/Filters/FilterSidebar";
+import { PatchContainerComponent } from "src/patch";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -197,50 +198,9 @@ const SceneList: React.FC<{
   return null;
 };
 
-const ScenesFilterSidebarSections: React.FC<{
-  filter: ListFilterModel;
-  setFilter: (filter: ListFilterModel) => void;
-}> = ({ filter, setFilter }) => {
-  return (
-    <>
-      <SidebarStudiosFilter
-        title={<FormattedMessage id="studios" />}
-        data-type={StudiosCriterionOption.type}
-        option={StudiosCriterionOption}
-        filter={filter}
-        setFilter={setFilter}
-      />
-      <SidebarPerformersFilter
-        title={<FormattedMessage id="performers" />}
-        data-type={PerformersCriterionOption.type}
-        option={PerformersCriterionOption}
-        filter={filter}
-        setFilter={setFilter}
-      />
-      <SidebarTagsFilter
-        title={<FormattedMessage id="tags" />}
-        data-type={TagsCriterionOption.type}
-        option={TagsCriterionOption}
-        filter={filter}
-        setFilter={setFilter}
-      />
-      <SidebarRatingFilter
-        title={<FormattedMessage id="rating" />}
-        data-type={RatingCriterionOption.type}
-        option={RatingCriterionOption}
-        filter={filter}
-        setFilter={setFilter}
-      />
-      <SidebarBooleanFilter
-        title={<FormattedMessage id="organized" />}
-        data-type={OrganizedCriterionOption.type}
-        option={OrganizedCriterionOption}
-        filter={filter}
-        setFilter={setFilter}
-      />
-    </>
-  );
-};
+const ScenesFilterSidebarSections = PatchContainerComponent(
+  "FilteredSceneList.SidebarSections"
+);
 
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
@@ -259,7 +219,43 @@ const SidebarContent: React.FC<{
         view={view}
       />
 
-      <ScenesFilterSidebarSections filter={filter} setFilter={setFilter} />
+      <ScenesFilterSidebarSections>
+        <SidebarStudiosFilter
+          title={<FormattedMessage id="studios" />}
+          data-type={StudiosCriterionOption.type}
+          option={StudiosCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarPerformersFilter
+          title={<FormattedMessage id="performers" />}
+          data-type={PerformersCriterionOption.type}
+          option={PerformersCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarTagsFilter
+          title={<FormattedMessage id="tags" />}
+          data-type={TagsCriterionOption.type}
+          option={TagsCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarRatingFilter
+          title={<FormattedMessage id="rating" />}
+          data-type={RatingCriterionOption.type}
+          option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="organized" />}
+          data-type={OrganizedCriterionOption.type}
+          option={OrganizedCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+      </ScenesFilterSidebarSections>
     </>
   );
 };
