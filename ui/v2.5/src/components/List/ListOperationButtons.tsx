@@ -206,7 +206,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     <>
       {maybeRenderButtons()}
 
-      <ButtonGroup className="mx-2">{renderMore()}</ButtonGroup>
+      <ButtonGroup className="ml-2">{renderMore()}</ButtonGroup>
     </>
   );
 };

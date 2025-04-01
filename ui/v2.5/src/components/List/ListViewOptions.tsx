@@ -110,7 +110,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
 
     return (
-      <ButtonGroup>
+      <ButtonGroup className="ml-2">
         {displayModeOptions.map((option) => (
           <OverlayTrigger
             key={option}

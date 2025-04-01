@@ -729,6 +729,7 @@ input[type="range"].zoom-slider {
   & > .btn-group {
     flex-wrap: wrap;
     justify-content: center;
+    row-gap: 0.5rem;
   }
 }
 
