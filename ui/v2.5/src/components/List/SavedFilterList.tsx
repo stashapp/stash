@@ -685,6 +685,7 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
       Toast.error(err);
     } finally {
       setSaving(false);
+      setSettingDefault(false);
     }
   }
 
