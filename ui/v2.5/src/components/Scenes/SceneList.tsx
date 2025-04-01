@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -31,29 +31,23 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
-import {
-  Sidebar,
-  SidebarPane,
-  SidebarSection,
-  useSidebarState,
-} from "../Shared/Sidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
-import { SidebarSavedFilterList } from "../List/SavedFilterList";
-import { SearchTermInput } from "../List/ListFilter";
-import { SidebarIcon } from "../Shared/Icon";
-import { Button, ButtonToolbar } from "react-bootstrap";
-import { FilterButton } from "../List/Filters/FilterButton";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
-import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import {
+  FilteredSidebarHeader,
+  ISidebarContentProps,
+  SidebarFilterSections,
+} from "../List/Filters/FilterSidebar";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -207,19 +201,6 @@ const SceneList: React.FC<{
   return null;
 };
 
-interface ISidebarFilterProps {
-  title?: React.ReactNode;
-  option: CriterionOption;
-  filter: ListFilterModel;
-  setFilter: (f: ListFilterModel) => void;
-}
-
-interface ISidebarContentProps {
-  messageID: string;
-  option: CriterionOption;
-  component: React.FC<ISidebarFilterProps>;
-}
-
 const optionContent: ISidebarContentProps[] = [
   {
     messageID: "studios",
@@ -257,32 +238,19 @@ const SidebarContent: React.FC<{
 }> = ({ filter, setFilter, view, showEditFilter, onClose }) => {
   return (
     <>
-      <ButtonToolbar className="sidebar-toolbar">
-        <Button onClick={onClose} variant="secondary">
-          <SidebarIcon />
-        </Button>
-        <FilterButton onClick={() => showEditFilter()} filter={filter} />
-      </ButtonToolbar>
-      <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
-      <SidebarSection
-        text={<FormattedMessage id="search_filter.saved_filters" />}
-      >
-        <SidebarSavedFilterList
-          filter={filter}
-          onSetFilter={setFilter}
-          view={view}
-        />
-      </SidebarSection>
-      {optionContent.map((content) => (
-        <content.component
-          key={content.messageID}
-          title={<FormattedMessage id={content.messageID} />}
-          data-type={content.option.type}
-          option={content.option}
-          filter={filter}
-          setFilter={setFilter}
-        />
-      ))}
+      <FilteredSidebarHeader
+        onClose={onClose}
+        showEditFilter={showEditFilter}
+        filter={filter}
+        setFilter={setFilter}
+        view={view}
+      />
+
+      <SidebarFilterSections
+        filter={filter}
+        setFilter={setFilter}
+        sections={optionContent}
+      />
     </>
   );
 };

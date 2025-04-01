@@ -11,7 +11,7 @@ import {
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IListSelect, useFilterOperations } from "./util";
-import { SidebarIcon } from "../Shared/Icon";
+import { SidebarIcon } from "../Shared/Sidebar";
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
