@@ -168,6 +168,11 @@ export const LabeledIdQuickFilter: React.FC<{
     [option.type, setFilter, filter]
   );
 
+  const includingOnly = modifier == CriterionModifier.Equals;
+  const excludingOnly =
+    modifier == CriterionModifier.Excludes ||
+    modifier == CriterionModifier.NotEquals;
+
   const onSelect = useCallback(
     (v: Option, exclude: boolean) => {
       const newCriterion = criterion.clone();
@@ -176,6 +181,11 @@ export const LabeledIdQuickFilter: React.FC<{
         newCriterion.modifier = modifierValueToModifier(v.id as ModifierValue);
         setCriterion(newCriterion);
         return;
+      }
+
+      // if only exclude is allowed, then add to excluded
+      if (excludingOnly) {
+        exclude = true;
       }
 
       const items = !exclude ? criterion.value.items : criterion.value.excluded;
@@ -188,7 +198,7 @@ export const LabeledIdQuickFilter: React.FC<{
       }
       setCriterion(newCriterion);
     },
-    [criterion, setCriterion]
+    [excludingOnly, criterion, setCriterion]
   );
 
   const onUnselect = useCallback(
@@ -265,11 +275,6 @@ export const LabeledIdQuickFilter: React.FC<{
     );
   }, [queryResults, modifier, selected, excluded]);
 
-  // const includingOnly = modifier == CriterionModifier.Equals;
-  // const excludingOnly =
-  //   modifier == CriterionModifier.Excludes ||
-  //   modifier == CriterionModifier.NotEquals;
-
   const candidates = useMemo(() => {
     const modifierCandidates: Option[] = getModifierCandidates({
       modifier,
@@ -310,7 +315,7 @@ export const LabeledIdQuickFilter: React.FC<{
       onUnselect={onUnselect}
       selected={selected}
       excluded={excluded}
-      canExclude
+      canExclude={!includingOnly}
       query={query}
       setQuery={setQuery}
       singleValue={singleValue}

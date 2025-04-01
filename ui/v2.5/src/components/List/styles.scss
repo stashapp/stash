@@ -481,10 +481,6 @@ input[type="range"].zoom-slider {
 
     .exclude-icon {
       color: $danger;
-
-      &.single-value {
-        visibility: hidden;
-      }
     }
 
     .exclude-button {
