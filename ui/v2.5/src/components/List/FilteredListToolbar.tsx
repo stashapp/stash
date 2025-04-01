@@ -69,7 +69,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
       {onToggleSidebar && (
         <ButtonGroup>
           <Button
-            className="sidebar-toggle-button mb-2"
+            className="sidebar-toggle-button"
             onClick={onToggleSidebar}
             variant="secondary"
           >

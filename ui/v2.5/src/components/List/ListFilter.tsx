@@ -316,13 +316,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     return (
       <>
         {!withSidebar && (
-          <div className="mb-2 d-flex">
+          <div className="d-flex">
             <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
           </div>
         )}
 
         {!withSidebar && (
-          <ButtonGroup className="mr-2 mb-2">
+          <ButtonGroup className="mr-2">
             <SavedFilterDropdown
               filter={filter}
               onSetFilter={(f) => {
@@ -346,7 +346,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </ButtonGroup>
         )}
 
-        <Dropdown as={ButtonGroup} className="mr-2 mb-2">
+        <Dropdown as={ButtonGroup} className="mr-2">
           <InputGroup.Prepend>
             <Dropdown.Toggle variant="secondary">
               {currentSortBy

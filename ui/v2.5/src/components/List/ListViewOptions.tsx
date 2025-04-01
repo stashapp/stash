@@ -110,7 +110,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
 
     return (
-      <ButtonGroup className="mb-2">
+      <ButtonGroup>
         {displayModeOptions.map((option) => (
           <OverlayTrigger
             key={option}
@@ -140,7 +140,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   function maybeRenderZoom() {
     if (onSetZoom && displayMode === DisplayMode.Grid) {
       return (
-        <div className="ml-2 mb-2 d-none d-sm-inline-flex">
+        <div className="ml-2 d-none d-sm-inline-flex">
           <Form.Control
             className="zoom-slider ml-1"
             type="range"
