@@ -62,6 +62,8 @@ export const SidebarTagsFilter: React.FC<{
       setFilter={setFilter}
       option={option}
       useQuery={useTagQuery}
+      hierarchical
+      includeSubMessageID="sub_tags"
     />
   );
 };

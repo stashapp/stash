@@ -67,6 +67,8 @@ export const SidebarStudiosFilter: React.FC<{
       option={option}
       useQuery={useStudioQuery}
       singleValue
+      hierarchical
+      includeSubMessageID="subsidiary_studios"
     />
   );
 };

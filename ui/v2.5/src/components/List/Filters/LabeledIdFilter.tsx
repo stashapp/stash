@@ -10,6 +10,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
+  IHierarchicalLabelValue,
   ILabeledId,
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
@@ -75,7 +76,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   );
 };
 
-type ModifierValue = "any" | "none" | "any_of" | "only";
+type ModifierValue = "any" | "none" | "any_of" | "only" | "include_subs";
 
 function getModifierCandidates(props: {
   modifier: CriterionModifier;
@@ -83,9 +84,16 @@ function getModifierCandidates(props: {
   hasSelected?: boolean;
   hasExcluded?: boolean;
   singleValue?: boolean;
+  hierarchical?: boolean;
 }) {
-  const { modifier, defaultModifier, hasSelected, hasExcluded, singleValue } =
-    props;
+  const {
+    modifier,
+    defaultModifier,
+    hasSelected,
+    hasExcluded,
+    singleValue,
+    hierarchical,
+  } = props;
   const ret: ModifierValue[] = [];
 
   if (modifier === defaultModifier && !hasSelected && !hasExcluded) {
@@ -96,6 +104,13 @@ function getModifierCandidates(props: {
   }
   if (!singleValue && modifier === defaultModifier && hasSelected) {
     ret.push("any_of");
+  }
+  if (
+    hierarchical &&
+    modifier === defaultModifier &&
+    (hasSelected || hasExcluded)
+  ) {
+    ret.push("include_subs");
   }
   if (
     !singleValue &&
@@ -119,6 +134,8 @@ function modifierValueToModifier(key: ModifierValue): CriterionModifier {
     case "only":
       return CriterionModifier.Equals;
   }
+
+  throw new Error("Invalid modifier value");
 }
 
 export const SidebarLabeledIdFilter: React.FC<{
@@ -128,7 +145,18 @@ export const SidebarLabeledIdFilter: React.FC<{
   setFilter: (f: ListFilterModel) => void;
   useQuery: (q: string) => ILoadResults<ILabeledId[]>;
   singleValue?: boolean;
-}> = ({ title, option, filter, setFilter, useQuery, singleValue }) => {
+  hierarchical?: boolean;
+  includeSubMessageID?: string;
+}> = ({
+  title,
+  option,
+  filter,
+  setFilter,
+  useQuery,
+  singleValue,
+  hierarchical,
+  includeSubMessageID,
+}) => {
   const intl = useIntl();
 
   const [query, setQuery] = useState("");
@@ -175,9 +203,16 @@ export const SidebarLabeledIdFilter: React.FC<{
 
   const onSelect = useCallback(
     (v: Option, exclude: boolean) => {
-      const newCriterion = criterion.clone();
+      const newCriterion: ModifierCriterion<ILabeledValueListValue> =
+        criterion.clone();
 
       if (v.className === "modifier-object") {
+        if (v.id === "include_subs") {
+          (newCriterion.value as IHierarchicalLabelValue).depth = -1;
+          setCriterion(newCriterion);
+          return;
+        }
+
         newCriterion.modifier = modifierValueToModifier(v.id as ModifierValue);
         setCriterion(newCriterion);
         return;
@@ -206,6 +241,11 @@ export const SidebarLabeledIdFilter: React.FC<{
       const newCriterion = criterion.clone();
 
       if (v.className === "modifier-object") {
+        if (v.id === "include_subs") {
+          newCriterion.value.depth = 0;
+          setCriterion(newCriterion);
+          return;
+        }
         newCriterion.modifier = defaultModifier;
         setCriterion(newCriterion);
         return;
@@ -230,19 +270,30 @@ export const SidebarLabeledIdFilter: React.FC<{
       none: modifier === CriterionModifier.IsNull,
       any_of: !singleValue && modifier === CriterionModifier.Includes,
       only: !singleValue && modifier === CriterionModifier.Equals,
+      include_subs:
+        hierarchical &&
+        modifier === defaultModifier &&
+        (criterion.value as IHierarchicalLabelValue).depth === -1,
     };
-  }, [modifier, singleValue]);
+  }, [modifier, singleValue, criterion.value, defaultModifier, hierarchical]);
 
   const selected = useMemo(() => {
     const modifierValues: Option[] = Object.entries(selectedModifiers)
       .filter((v) => v[1])
-      .map((v) => ({
-        id: v[0],
-        label: `(${intl.formatMessage({
-          id: `criterion_modifier_values.${v[0]}`,
-        })})`,
-        className: "modifier-object",
-      }));
+      .map((v) => {
+        const messageID =
+          v[0] === "include_subs"
+            ? includeSubMessageID
+            : `criterion_modifier_values.${v[0]}`;
+
+        return {
+          id: v[0],
+          label: `(${intl.formatMessage({
+            id: messageID,
+          })})`,
+          className: "modifier-object",
+        };
+      });
 
     return modifierValues.concat(
       criterion.value.items.map((s) => ({
@@ -250,7 +301,7 @@ export const SidebarLabeledIdFilter: React.FC<{
         label: s.label,
       }))
     );
-  }, [intl, selectedModifiers, criterion.value.items]);
+  }, [intl, selectedModifiers, criterion.value.items, includeSubMessageID]);
 
   const excluded = useMemo(() => {
     return criterion.value.excluded.map((s) => ({
@@ -276,20 +327,31 @@ export const SidebarLabeledIdFilter: React.FC<{
   }, [queryResults, modifier, selected, excluded]);
 
   const candidates = useMemo(() => {
+    const hierarchicalCandidate =
+      hierarchical && (criterion.value as IHierarchicalLabelValue).depth !== -1;
+
     const modifierCandidates: Option[] = getModifierCandidates({
       modifier,
       defaultModifier,
       hasSelected: selected.length > 0,
       hasExcluded: excluded.length > 0,
       singleValue,
-    }).map((v) => ({
-      id: v,
-      label: `(${intl.formatMessage({
-        id: `criterion_modifier_values.${v}`,
-      })})`,
-      className: "modifier-object",
-      canExclude: false,
-    }));
+      hierarchical: hierarchicalCandidate,
+    }).map((v) => {
+      const messageID =
+        v === "include_subs"
+          ? includeSubMessageID
+          : `criterion_modifier_values.${v}`;
+
+      return {
+        id: v,
+        label: `(${intl.formatMessage({
+          id: messageID,
+        })})`,
+        className: "modifier-object",
+        canExclude: false,
+      };
+    });
 
     return modifierCandidates.concat(
       (results ?? []).map((r) => ({
@@ -305,6 +367,9 @@ export const SidebarLabeledIdFilter: React.FC<{
     results,
     selected,
     excluded,
+    criterion.value,
+    hierarchical,
+    includeSubMessageID,
   ]);
 
   return (
