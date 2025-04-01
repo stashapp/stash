@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -43,11 +43,7 @@ import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
-import {
-  FilteredSidebarHeader,
-  ISidebarContentProps,
-  SidebarFilterSections,
-} from "../List/Filters/FilterSidebar";
+import { FilteredSidebarHeader } from "../List/Filters/FilterSidebar";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -201,33 +197,50 @@ const SceneList: React.FC<{
   return null;
 };
 
-const optionContent: ISidebarContentProps[] = [
-  {
-    messageID: "studios",
-    option: StudiosCriterionOption,
-    component: SidebarStudiosFilter,
-  },
-  {
-    messageID: "performers",
-    option: PerformersCriterionOption,
-    component: SidebarPerformersFilter,
-  },
-  {
-    messageID: "tags",
-    option: TagsCriterionOption,
-    component: SidebarTagsFilter,
-  },
-  {
-    messageID: "rating",
-    option: RatingCriterionOption,
-    component: SidebarRatingFilter,
-  },
-  {
-    messageID: "organized",
-    option: OrganizedCriterionOption,
-    component: SidebarBooleanFilter,
-  },
-];
+const ScenesFilterSidebarSections: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+}> = ({ filter, setFilter }) => {
+  return (
+    <>
+      <SidebarStudiosFilter
+        title={<FormattedMessage id="studios" />}
+        data-type={StudiosCriterionOption.type}
+        option={StudiosCriterionOption}
+        filter={filter}
+        setFilter={setFilter}
+      />
+      <SidebarPerformersFilter
+        title={<FormattedMessage id="performers" />}
+        data-type={PerformersCriterionOption.type}
+        option={PerformersCriterionOption}
+        filter={filter}
+        setFilter={setFilter}
+      />
+      <SidebarTagsFilter
+        title={<FormattedMessage id="tags" />}
+        data-type={TagsCriterionOption.type}
+        option={TagsCriterionOption}
+        filter={filter}
+        setFilter={setFilter}
+      />
+      <SidebarRatingFilter
+        title={<FormattedMessage id="rating" />}
+        data-type={RatingCriterionOption.type}
+        option={RatingCriterionOption}
+        filter={filter}
+        setFilter={setFilter}
+      />
+      <SidebarBooleanFilter
+        title={<FormattedMessage id="organized" />}
+        data-type={OrganizedCriterionOption.type}
+        option={OrganizedCriterionOption}
+        filter={filter}
+        setFilter={setFilter}
+      />
+    </>
+  );
+};
 
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
@@ -246,11 +259,7 @@ const SidebarContent: React.FC<{
         view={view}
       />
 
-      <SidebarFilterSections
-        filter={filter}
-        setFilter={setFilter}
-        sections={optionContent}
-      />
+      <ScenesFilterSidebarSections filter={filter} setFilter={setFilter} />
     </>
   );
 };
