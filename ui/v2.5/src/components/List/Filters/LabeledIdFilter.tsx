@@ -283,6 +283,7 @@ export const LabeledIdQuickFilter: React.FC<{
         id: `criterion_modifier_values.${v}`,
       })})`,
       className: "modifier-object",
+      canExclude: false,
     }));
 
     return modifierCandidates.concat(

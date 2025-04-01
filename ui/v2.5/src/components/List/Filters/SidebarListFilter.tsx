@@ -148,6 +148,7 @@ export type Option<T = unknown> = {
   className?: string;
   value?: T;
   label: string;
+  canExclude?: boolean; // defaults to true
 };
 
 export const SelectedList: React.FC<{
@@ -268,7 +269,7 @@ export const CandidateList: React.FC<
             className={p.className}
             onSelect={(exclude) => onSelect(p, exclude)}
             label={p.label}
-            canExclude={canExclude}
+            canExclude={canExclude && (p.canExclude ?? true)}
             singleValue={singleValue}
           />
         ))}
