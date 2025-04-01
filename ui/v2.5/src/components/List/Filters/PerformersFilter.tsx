@@ -5,7 +5,7 @@ import { ObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
-import { LabeledIdQuickFilter } from "./LabeledIdFilter";
+import { SidebarLabeledIdFilter } from "./LabeledIdFilter";
 
 interface IPerformersFilter {
   criterion: PerformersCriterion;
@@ -59,7 +59,7 @@ export const SidebarPerformersFilter: React.FC<{
   setFilter: (f: ListFilterModel) => void;
 }> = ({ title, option, filter, setFilter }) => {
   return (
-    <LabeledIdQuickFilter
+    <SidebarLabeledIdFilter
       title={title}
       filter={filter}
       setFilter={setFilter}

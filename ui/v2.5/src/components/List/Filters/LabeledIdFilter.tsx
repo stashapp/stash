@@ -121,7 +121,7 @@ function modifierValueToModifier(key: ModifierValue): CriterionModifier {
   }
 }
 
-export const LabeledIdQuickFilter: React.FC<{
+export const SidebarLabeledIdFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
   filter: ListFilterModel;

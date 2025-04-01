@@ -5,7 +5,7 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { LabeledIdQuickFilter } from "./LabeledIdFilter";
+import { SidebarLabeledIdFilter } from "./LabeledIdFilter";
 
 interface ITagsFilter {
   criterion: StudiosCriterion;
@@ -56,7 +56,7 @@ export const SidebarTagsFilter: React.FC<{
   setFilter: (f: ListFilterModel) => void;
 }> = ({ title, option, filter, setFilter }) => {
   return (
-    <LabeledIdQuickFilter
+    <SidebarLabeledIdFilter
       title={title}
       filter={filter}
       setFilter={setFilter}
