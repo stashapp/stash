@@ -59,7 +59,7 @@ export const SidebarSection: React.FC<
     className?: string;
     outsideCollapse?: React.ReactNode;
   }>
-> = ({ className, text, outsideCollapse, children }) => {
+> = ({ className = "", text, outsideCollapse, children }) => {
   const collapseProps = {
     mountOnEnter: true,
     unmountOnExit: true,
