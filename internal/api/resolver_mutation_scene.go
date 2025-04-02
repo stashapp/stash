@@ -694,6 +694,13 @@ func validateSceneMarkerEndSeconds(seconds, endSeconds float64) error {
 	return nil
 }
 
+func float64OrZero(f *float64) float64 {
+	if f == nil {
+		return 0
+	}
+	return *f
+}
+
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	markerID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -784,7 +791,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		}
 
 		// remove the marker preview if the scene changed or if the timestamp was changed
-		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds || existingMarker.EndSeconds != newMarker.EndSeconds {
+		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds || float64OrZero(existingMarker.EndSeconds) != float64OrZero(newMarker.EndSeconds) {
 			seconds := int(existingMarker.Seconds)
 			if err := fileDeleter.MarkMarkerFiles(existingScene, seconds); err != nil {
 				return err
