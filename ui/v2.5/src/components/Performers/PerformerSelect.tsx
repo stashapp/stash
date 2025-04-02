@@ -148,55 +148,50 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <PerformerPopover
-          id={object.id}
-          placement={props.hoverPlacementOptions ?? "right"}
-        >
-          <span className="performer-select-option">
-            <span className="performer-select-row">
-              <Link
-                to={`/performers/${object.id}`}
-                target="_blank"
-                className="performer-select-image-link"
-              >
-                <img
-                  className="performer-select-image"
-                  src={object.image_path ?? ""}
-                  loading="lazy"
-                />
-              </Link>
-              <span className="performer-select-details">
-                <TruncatedText
-                  className="performer-select-name"
-                  text={
-                    <span>
-                      {name}
-                      {alias && (
-                        <span className="performer-select-alias">
-                          &nbsp;({alias})
-                        </span>
-                      )}
-                    </span>
-                  }
-                  lineCount={1}
-                />
-
-                {object.disambiguation && (
-                  <span className="performer-select-disambiguation">
-                    {object.disambiguation}
+        <span className="performer-select-option">
+          <span className="performer-select-row">
+            <Link
+              to={`/performers/${object.id}`}
+              target="_blank"
+              className="performer-select-image-link"
+            >
+              <img
+                className="performer-select-image"
+                src={object.image_path ?? ""}
+                loading="lazy"
+              />
+            </Link>
+            <span className="performer-select-details">
+              <TruncatedText
+                className="performer-select-name"
+                text={
+                  <span>
+                    {name}
+                    {alias && (
+                      <span className="performer-select-alias">
+                        &nbsp;({alias})
+                      </span>
+                    )}
                   </span>
-                )}
+                }
+                lineCount={1}
+              />
 
-                {object.birthdate && (
-                  <span className="performer-select-birthdate">
-                    {object.birthdate}
-                    <span className="performer-select-age">{` (${ageString})`}</span>
-                  </span>
-                )}
-              </span>
+              {object.disambiguation && (
+                <span className="performer-select-disambiguation">
+                  {object.disambiguation}
+                </span>
+              )}
+
+              {object.birthdate && (
+                <span className="performer-select-birthdate">
+                  {object.birthdate}
+                  <span className="performer-select-age">{` (${ageString})`}</span>
+                </span>
+              )}
             </span>
           </span>
-        </PerformerPopover>
+        </span>
       ),
     };
 
