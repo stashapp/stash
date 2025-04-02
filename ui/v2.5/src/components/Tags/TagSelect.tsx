@@ -36,7 +36,10 @@ export type SelectObject = {
   title?: string | null;
 };
 
-export type Tag = Pick<GQL.Tag, "id" | "name" | "aliases" | "image_path">;
+export type Tag = Pick<
+  GQL.Tag,
+  "id" | "name" | "sort_name" | "aliases" | "image_path"
+>;
 type Option = SelectOption<Tag>;
 
 type FindTagsResult = Awaited<
@@ -293,7 +296,20 @@ const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
 
     const load = async () => {
       const items = await loadObjectsByID(ids);
-      setValues(items);
+
+      // #4684 - sort items by sort name/name
+      const sortedItems = [...items];
+      sortedItems.sort((a, b) => {
+        const aName = a.sort_name || a.name;
+        const bName = b.sort_name || b.name;
+
+        if (aName && bName) {
+          return aName.localeCompare(bName);
+        }
+        return 0;
+      });
+
+      setValues(sortedItems);
     };
 
     load();

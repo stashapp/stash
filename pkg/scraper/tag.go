@@ -32,6 +32,8 @@ func FilterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (new
 		return tags, nil
 	}
 
+	newTags = make([]*models.ScrapedTag, 0, len(tags))
+
 	for _, t := range tags {
 		ignore := false
 		for _, reg := range excludeRegexps {
