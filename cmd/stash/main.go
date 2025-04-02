@@ -152,6 +152,9 @@ func recoverPanic() {
 func exitError(err error) {
 	exitCode = 1
 	logger.Error(err)
+	// #5784 - log to stdout as well as the logger
+	// this does mean that it will log twice if the logger is set to stdout
+	fmt.Println(err)
 	if desktop.IsDesktop() {
 		desktop.FatalError(err)
 	}
