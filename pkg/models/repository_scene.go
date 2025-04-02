@@ -10,6 +10,9 @@ type SceneGetter interface {
 	// TODO - rename this to Find and remove existing method
 	FindMany(ctx context.Context, ids []int) ([]*Scene, error)
 	Find(ctx context.Context, id int) (*Scene, error)
+	// FindByIDs works the same way as FindMany, but it ignores any scenes not found
+	// Scenes are not guaranteed to be in the same order as the input
+	FindByIDs(ctx context.Context, ids []int) ([]*Scene, error)
 }
 
 // SceneFinder provides methods to find scenes.
