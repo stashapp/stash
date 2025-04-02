@@ -1,5 +1,4 @@
 import videojs, { VideoJsPlayer } from "video.js";
-import "./markers.css";
 import CryptoJS from "crypto-js";
 
 export interface IMarker {
@@ -67,14 +66,16 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       dot?: HTMLDivElement;
       range?: HTMLDivElement;
     } = {};
-    const seekBar = this.player.el().querySelector(".vjs-progress-control");
+    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
 
     markerSet.dot = videojs.dom.createEl("div") as HTMLDivElement;
-    markerSet.dot.className = "vjs-marker-dot";
+    markerSet.dot.className = "vjs-marker";
     if (duration) {
+      // marker is 6px wide - adjust by 3px to align to center not left side
       markerSet.dot.style.left = `calc(${
         (marker.seconds / duration) * 100
       }% - 3px)`;
+      markerSet.dot.style.visibility = "visible";
     }
 
     // Add event listeners to dot
