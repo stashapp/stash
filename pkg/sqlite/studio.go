@@ -586,6 +586,7 @@ var studioSortOptions = sortOptions{
 	"scenes_count",
 	"random",
 	"rating",
+	"tag_count",
 	"updated_at",
 }
 

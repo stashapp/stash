@@ -1,14 +1,13 @@
 import { PatchComponent } from "src/patch";
 import { Button, ButtonGroup } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { FormattedMessage } from "react-intl";
 import { TruncatedText } from "../Shared/TruncatedText";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
-import ScreenUtils from "src/utils/screen";
 import { Icon } from "../Shared/Icon";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -16,7 +15,7 @@ import { useTagUpdate } from "src/core/StashService";
 
 interface IProps {
   tag: GQL.TagDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   zoomIndex: number;
   selecting?: boolean;
   selected?: boolean;
@@ -234,40 +233,8 @@ const TagCardTitle: React.FC<IProps> = PatchComponent(
 );
 
 export const TagCard: React.FC<IProps> = PatchComponent("TagCard", (props) => {
-  const {
-    tag,
-    containerWidth,
-    zoomIndex,
-    selecting,
-    selected,
-    onSelectedChanged,
-  } = props;
-  const [cardWidth, setCardWidth] = useState<number>();
-  useEffect(() => {
-    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
-      return;
-
-    let zoomValue = zoomIndex;
-    let preferredCardWidth: number;
-    switch (zoomValue) {
-      case 0:
-        preferredCardWidth = 280;
-        break;
-      case 1:
-        preferredCardWidth = 340;
-        break;
-      case 2:
-        preferredCardWidth = 480;
-        break;
-      case 3:
-        preferredCardWidth = 640;
-    }
-    let fittedCardWidth = calculateCardWidth(
-      containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [containerWidth, zoomIndex]);
+  const { tag, cardWidth, zoomIndex, selecting, selected, onSelectedChanged } =
+    props;
 
   return (
     <GridCard

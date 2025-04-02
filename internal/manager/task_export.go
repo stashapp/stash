@@ -1042,22 +1042,42 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
 	logger.Info("[tags] exporting")
 	startTime := time.Now()
 
-	jobCh := make(chan *models.Tag, workers*2) // make a buffered channel to feed workers
-
-	for w := 0; w < workers; w++ { // create export Tag workers
-		tagsWg.Add(1)
-		go t.exportTag(ctx, &tagsWg, jobCh)
+	tagIdx := 0
+	if t.tags != nil {
+		tagIdx = len(t.tags.IDs)
 	}
 
-	for i, tag := range tags {
-		index := i + 1
-		logger.Progressf("[tags] %d of %d", index, len(tags))
+	for {
+		jobCh := make(chan *models.Tag, workers*2) // make a buffered channel to feed workers
 
-		jobCh <- tag // feed workers
+		for w := 0; w < workers; w++ { // create export Tag workers
+			tagsWg.Add(1)
+			go t.exportTag(ctx, &tagsWg, jobCh)
+		}
+
+		for i, tag := range tags {
+			index := i + 1 + tagIdx
+			logger.Progressf("[tags] %d of %d", index, len(tags)+tagIdx)
+
+			jobCh <- tag // feed workers
+		}
+
+		close(jobCh)
+		tagsWg.Wait()
+
+		// if more tags were added, we need to export those too
+		if t.tags == nil || len(t.tags.IDs) == tagIdx {
+			break
+		}
+
+		newTags, err := reader.FindMany(ctx, t.tags.IDs[tagIdx:])
+		if err != nil {
+			logger.Errorf("[tags] failed to fetch tags: %v", err)
+		}
+
+		tags = newTags
+		tagIdx = len(t.tags.IDs)
 	}
-
-	close(jobCh)
-	tagsWg.Wait()
 
 	logger.Infof("[tags] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
@@ -1073,6 +1093,15 @@ func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan 
 		if err != nil {
 			logger.Errorf("[tags] <%s> error getting tag JSON: %v", thisTag.Name, err)
 			continue
+		}
+
+		if t.includeDependencies {
+			tagIDs, err := tag.GetDependentTagIDs(ctx, tagReader, thisTag)
+			if err != nil {
+				logger.Errorf("[tags] <%s> error getting dependent tags: %v", thisTag.Name, err)
+				continue
+			}
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
 		}
 
 		fn := newTagJSON.Filename()

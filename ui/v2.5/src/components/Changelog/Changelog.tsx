@@ -68,7 +68,7 @@ const Changelog: React.FC = () => {
   // after new release:
   // add entry to releases, using the current* fields
   // then update the current fields.
-  const currentVersion = stashVersion || "v0.28.0";
+  const currentVersion = stashVersion || "v0.28.1";
   const currentDate = buildDate;
   const currentPage = V0280;
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/mock"
 )
@@ -125,7 +124,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: "endpoint",
 				},
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Studio: tt.result,
 				},
 			}
@@ -315,7 +314,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["performers"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Performers: tt.scraped,
 				},
 			}
@@ -507,7 +506,7 @@ func Test_sceneRelationships_tags(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["tags"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Tags: tt.scraped,
 				},
 			}
@@ -727,7 +726,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: tt.endpoint,
 				},
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					RemoteSiteID: tt.remoteSiteID,
 				},
 			}
@@ -827,7 +826,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				ID: tt.sceneID,
 			}
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Image: tt.image,
 				},
 			}

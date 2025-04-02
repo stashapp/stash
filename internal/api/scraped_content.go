@@ -9,8 +9,8 @@ import (
 
 // marshalScrapedScenes converts ScrapedContent into ScrapedScene. If conversion fails, an
 // error is returned to the caller.
-func marshalScrapedScenes(content []scraper.ScrapedContent) ([]*scraper.ScrapedScene, error) {
-	var ret []*scraper.ScrapedScene
+func marshalScrapedScenes(content []scraper.ScrapedContent) ([]*models.ScrapedScene, error) {
+	var ret []*models.ScrapedScene
 	for _, c := range content {
 		if c == nil {
 			// graphql schema requires scenes to be non-nil
@@ -18,9 +18,9 @@ func marshalScrapedScenes(content []scraper.ScrapedContent) ([]*scraper.ScrapedS
 		}
 
 		switch s := c.(type) {
-		case *scraper.ScrapedScene:
+		case *models.ScrapedScene:
 			ret = append(ret, s)
-		case scraper.ScrapedScene:
+		case models.ScrapedScene:
 			ret = append(ret, &s)
 		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedScene", models.ErrConversion)
@@ -55,8 +55,8 @@ func marshalScrapedPerformers(content []scraper.ScrapedContent) ([]*models.Scrap
 
 // marshalScrapedGalleries converts ScrapedContent into ScrapedGallery. If
 // conversion fails, an error is returned.
-func marshalScrapedGalleries(content []scraper.ScrapedContent) ([]*scraper.ScrapedGallery, error) {
-	var ret []*scraper.ScrapedGallery
+func marshalScrapedGalleries(content []scraper.ScrapedContent) ([]*models.ScrapedGallery, error) {
+	var ret []*models.ScrapedGallery
 	for _, c := range content {
 		if c == nil {
 			// graphql schema requires galleries to be non-nil
@@ -64,9 +64,9 @@ func marshalScrapedGalleries(content []scraper.ScrapedContent) ([]*scraper.Scrap
 		}
 
 		switch g := c.(type) {
-		case *scraper.ScrapedGallery:
+		case *models.ScrapedGallery:
 			ret = append(ret, g)
-		case scraper.ScrapedGallery:
+		case models.ScrapedGallery:
 			ret = append(ret, &g)
 		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedGallery", models.ErrConversion)
@@ -76,8 +76,8 @@ func marshalScrapedGalleries(content []scraper.ScrapedContent) ([]*scraper.Scrap
 	return ret, nil
 }
 
-func marshalScrapedImages(content []scraper.ScrapedContent) ([]*scraper.ScrapedImage, error) {
-	var ret []*scraper.ScrapedImage
+func marshalScrapedImages(content []scraper.ScrapedContent) ([]*models.ScrapedImage, error) {
+	var ret []*models.ScrapedImage
 	for _, c := range content {
 		if c == nil {
 			// graphql schema requires images to be non-nil
@@ -85,9 +85,9 @@ func marshalScrapedImages(content []scraper.ScrapedContent) ([]*scraper.ScrapedI
 		}
 
 		switch g := c.(type) {
-		case *scraper.ScrapedImage:
+		case *models.ScrapedImage:
 			ret = append(ret, g)
-		case scraper.ScrapedImage:
+		case models.ScrapedImage:
 			ret = append(ret, &g)
 		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedImage", models.ErrConversion)
@@ -131,7 +131,7 @@ func marshalScrapedPerformer(content scraper.ScrapedContent) (*models.ScrapedPer
 }
 
 // marshalScrapedScene will marshal a single scraped scene
-func marshalScrapedScene(content scraper.ScrapedContent) (*scraper.ScrapedScene, error) {
+func marshalScrapedScene(content scraper.ScrapedContent) (*models.ScrapedScene, error) {
 	s, err := marshalScrapedScenes([]scraper.ScrapedContent{content})
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func marshalScrapedScene(content scraper.ScrapedContent) (*scraper.ScrapedScene,
 }
 
 // marshalScrapedGallery will marshal a single scraped gallery
-func marshalScrapedGallery(content scraper.ScrapedContent) (*scraper.ScrapedGallery, error) {
+func marshalScrapedGallery(content scraper.ScrapedContent) (*models.ScrapedGallery, error) {
 	g, err := marshalScrapedGalleries([]scraper.ScrapedContent{content})
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func marshalScrapedGallery(content scraper.ScrapedContent) (*scraper.ScrapedGall
 }
 
 // marshalScrapedImage will marshal a single scraped image
-func marshalScrapedImage(content scraper.ScrapedContent) (*scraper.ScrapedImage, error) {
+func marshalScrapedImage(content scraper.ScrapedContent) (*models.ScrapedImage, error) {
 	g, err := marshalScrapedImages([]scraper.ScrapedContent{content})
 	if err != nil {
 		return nil, err
