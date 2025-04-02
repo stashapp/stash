@@ -426,7 +426,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	prefix := strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "")
+	prefix := r.Header.Get("X-Forwarded-Prefix")
 
 	baseUrl := *r.URL
 	baseUrl.RawQuery = ""
@@ -561,7 +561,7 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	mediaDuration := mpd.Duration(time.Duration(probeResult.FileDuration * float64(time.Second)))
 	m := mpd.NewMPD(mpd.DASH_PROFILE_LIVE, mediaDuration.String(), "PT4.0S")
 
-	prefix := strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "")
+	prefix := r.Header.Get("X-Forwarded-Prefix")
 
 	baseUrl := r.URL.JoinPath("/")
 	baseUrl.RawQuery = ""
