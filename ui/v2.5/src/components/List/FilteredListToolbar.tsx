@@ -12,6 +12,7 @@ import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IListSelect, useFilterOperations } from "./util";
 import { SidebarIcon } from "../Shared/Sidebar";
+import { useIntl } from "react-intl";
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
@@ -57,6 +58,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   zoomable = false,
   onToggleSidebar,
 }) => {
+  const intl = useIntl();
   const filterOptions = filter.options;
   const { setDisplayMode, setZoom } = useFilterOperations({
     filter,
@@ -72,6 +74,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
             className="sidebar-toggle-button"
             onClick={onToggleSidebar}
             variant="secondary"
+            title={intl.formatMessage({ id: "actions.sidebar.open" })}
           >
             <SidebarIcon />
           </Button>

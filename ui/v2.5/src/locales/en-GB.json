@@ -124,6 +124,10 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "sidebar": {
+      "close": "Close sidebar",
+      "open": "Open sidebar"
+    },
     "skip": "Skip",
     "split": "Split",
     "stop": "Stop",

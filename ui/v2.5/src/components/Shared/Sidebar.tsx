@@ -12,6 +12,7 @@ import { IViewConfig, useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { View } from "../List/views";
 import cx from "classnames";
 import { Button, ButtonToolbar } from "react-bootstrap";
+import { useIntl } from "react-intl";
 
 const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
 
@@ -116,6 +117,8 @@ SOFTWARE. */}
 export const SidebarToolbar: React.FC<{
   onClose?: () => void;
 }> = ({ onClose, children }) => {
+  const intl = useIntl();
+
   return (
     <ButtonToolbar className="sidebar-toolbar">
       {onClose ? (
@@ -123,6 +126,7 @@ export const SidebarToolbar: React.FC<{
           onClick={onClose}
           className="sidebar-close-button"
           variant="secondary"
+          title={intl.formatMessage({ id: "actions.sidebar.close" })}
         >
           <SidebarIcon />
         </Button>
