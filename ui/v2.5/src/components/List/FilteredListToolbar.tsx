@@ -104,6 +104,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
           onSetZoom={zoomable ? setZoom : undefined}
         />
       </ButtonGroup>
+      <ButtonGroup></ButtonGroup>
     </ButtonToolbar>
   );
 };
