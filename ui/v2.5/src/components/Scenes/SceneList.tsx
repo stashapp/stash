@@ -43,7 +43,10 @@ import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
-import { FilteredSidebarHeader } from "../List/Filters/FilterSidebar";
+import {
+  FilteredSidebarHeader,
+  useFilteredSidebarKeybinds,
+} from "../List/Filters/FilterSidebar";
 import { PatchContainerComponent } from "src/patch";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
@@ -206,12 +209,14 @@ const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
+  sidebarOpen: boolean;
   onClose?: () => void;
   showEditFilter: (editingCriterion?: string) => void;
-}> = ({ filter, setFilter, view, showEditFilter, onClose }) => {
+}> = ({ filter, setFilter, view, showEditFilter, sidebarOpen, onClose }) => {
   return (
     <>
       <FilteredSidebarHeader
+        sidebarOpen={sidebarOpen}
         onClose={onClose}
         showEditFilter={showEditFilter}
         filter={filter}
@@ -319,6 +324,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   });
 
   useAddKeybinds(filter, totalCount);
+  useFilteredSidebarKeybinds({
+    showSidebar,
+    setShowSidebar,
+  });
 
   const onCloseEditDelete = useCloseEditDelete({
     closeModal,
@@ -440,6 +449,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               setFilter={setFilter}
               showEditFilter={showEditFilter}
               view={view}
+              sidebarOpen={showSidebar}
               onClose={() => setShowSidebar(false)}
             />
           </Sidebar>

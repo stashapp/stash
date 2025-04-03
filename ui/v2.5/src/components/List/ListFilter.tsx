@@ -61,11 +61,13 @@ export function useDebouncedSearchInput(
 export const SearchTermInput: React.FC<{
   filter: ListFilterModel;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
-}> = ({ filter, onFilterUpdate }) => {
+  focus?: ReturnType<typeof useFocus>;
+}> = ({ filter, onFilterUpdate, focus: providedFocus }) => {
   const intl = useIntl();
   const [localInput, setLocalInput] = useState(filter.searchTerm);
 
-  const focus = useFocus();
+  const localFocus = useFocus();
+  const focus = providedFocus ?? localFocus;
   const [, setQueryFocus] = focus;
 
   useEffect(() => {
