@@ -441,7 +441,9 @@
             "endpoint": "Lõpp-punkt",
             "graphql_endpoint": "GraphQL lõpp-punkt",
             "name": "Nimi",
-            "title": "Stash-kasti Lõpp-punktid"
+            "title": "Stash-kasti Lõpp-punktid",
+            "max_requests_per_minute": "Maksimaalne arv päringuid minutis",
+            "max_requests_per_minute_description": "Kasutab vaikimisi väärtust {defaultValue}, kui on 0"
         },
         "system": {
             "transcoding": "Ümbertöötlemine"
@@ -732,7 +734,8 @@
                     "vr_tag": {
                         "description": "VR-nupp kuvatakse ainult selle sildiga stseenide puhul.",
                         "heading": "VR Silt"
-                    }
+                    },
+                    "show_range_markers": "Näita Vahemiku Märke"
                 }
             },
             "scene_wall": {
@@ -1047,7 +1050,7 @@
     "filters": "Filtrid",
     "folder": "Kaust",
     "framerate": "Kaadrisagedus",
-    "frames_per_second": "{value} fps",
+    "frames_per_second": "{value} kaadrit sekundis",
     "front_page": {
         "types": {
             "premade_filter": "Eelsätestatud Filter",
@@ -1110,7 +1113,7 @@
         "interactive_speed": "Interaktiivne kiirus",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} selles stseenis {years_old}"
+            "age_context": "{age} {years_old} filmimisel"
         },
         "phash": "PHash",
         "play_count": "Esituste Arv",
@@ -1515,7 +1518,18 @@
     "custom_fields": {
         "field": "Väli",
         "title": "Kohandatud Väli",
-        "value": "Väärtus"
+        "value": "Väärtus",
+        "criteria_format_string_others": "{criterion} (kohandatud väli) {modifierString} {valueString} (+{others} teist)",
+        "criteria_format_string": "{criterion} (kohandatud väli) {modifierString} {valueString}"
     },
-    "eta": "ETA"
+    "eta": "ETA",
+    "login": {
+        "username": "Kasutajanimi",
+        "password": "Parool",
+        "internal_error": "Ootamatu sisemine viga. Vaata logisid rohkemate detailide jaoks",
+        "invalid_credentials": "Vale kasutajanimi või parool",
+        "login": "Logi Sisse"
+    },
+    "age_on_date": "{age} filmimisel",
+    "sort_name": "Sorteeritud Nimi"
 }
