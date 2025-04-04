@@ -111,11 +111,12 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
   private renderRangeMarkers(markers: IMarker[], layer: number) {
     const duration = this.player.duration();
-    const seekBar = this.player.el().querySelector(".vjs-progress-control");
-    if (!seekBar || !duration) return;
+    const parent = this.player.el().querySelector(".vjs-progress-control");
+    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
+    if (!seekBar || !parent || !duration) return;
 
     markers.forEach((marker) => {
-      this.renderRangeMarker(marker, layer, duration, seekBar);
+      this.renderRangeMarker(marker, layer, duration, seekBar, parent);
     });
   }
 
@@ -123,7 +124,8 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     marker: IMarker,
     layer: number,
     duration: number,
-    seekBar: Element
+    seekBar: Element,
+    parent: Element
   ) {
     if (!marker.end_seconds) return;
 
@@ -134,16 +136,18 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const rangeDiv = videojs.dom.createEl("div") as HTMLDivElement;
     rangeDiv.className = "vjs-marker-range";
 
-    const startPercent = (marker.seconds / duration) * 100;
-    const endPercent = (marker.end_seconds / duration) * 100;
-    let width = endPercent - startPercent;
-    // Ensure the width is at least 8px
-    const minWidth = (10 / seekBar.clientWidth) * 100; // Convert 8px to percentage
-    if (width < minWidth) {
-      width = minWidth;
-    }
-    rangeDiv.style.left = `${startPercent}%`;
-    rangeDiv.style.width = `${width}%`;
+    // start/end percent is relative to the parent element, which is the vjs-progress-control
+    // vjs-progress-control has 15px margins on each side
+    const left = seekBar.clientWidth * (marker.seconds / duration) + 15;
+
+    // minimum width of 8px
+    const width = Math.max(
+      seekBar.clientWidth * ((marker.end_seconds - marker.seconds) / duration),
+      8
+    );
+
+    rangeDiv.style.left = `${left}px`;
+    rangeDiv.style.width = `${width}px`;
     rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
     rangeDiv.style.display = "none"; // Initially hidden
 
@@ -172,7 +176,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       this.hideMarkerTooltip();
       markerSet.range?.toggleAttribute("marker-tooltip-shown", false);
     });
-    seekBar.appendChild(rangeDiv);
+    parent.appendChild(rangeDiv);
     this.markers.push(marker);
     this.markerDivs.push(markerSet);
   }
