@@ -139,7 +139,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     // start/end percent is relative to the parent element, which is the vjs-progress-control
     // vjs-progress-control has 15px margins on each side
     const left = seekBar.clientWidth * (marker.seconds / duration) + 15;
-    
+
     // minimum width of 8px
     const width = Math.max(
       seekBar.clientWidth * ((marker.end_seconds - marker.seconds) / duration),
