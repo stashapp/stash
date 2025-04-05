@@ -139,7 +139,7 @@
         "reset_cover": "Obnovit výchozí obal",
         "add_sub_groups": "Přidat podskupinu",
         "set_cover": "Nastavit jako obal",
-        "remove_from_containing_group": "Odebrat ze skupiny",
+        "remove_from_containing_group": "Odstranit ze skupiny",
         "reset_resume_time": "Obnovit čas pokračování",
         "reset_play_duration": "Obnovit dobu přehrávání"
     },
@@ -435,7 +435,9 @@
             "endpoint": "Koncový bod",
             "graphql_endpoint": "Koncový bod GraphQL",
             "name": "Název",
-            "title": "Stash-box Endpointy"
+            "title": "Stash-box Endpointy",
+            "max_requests_per_minute": "Maximální počet dotazů za minutu",
+            "max_requests_per_minute_description": "Používá základní hodnotu {defaultValue} pokud je nastaven na 0"
         },
         "system": {
             "transcoding": "Překódování"
@@ -1522,5 +1524,12 @@
     },
     "age_on_date": "{age} během produkce",
     "sort_name": "Seřadit jména",
-    "eta": "Přibližný čas dokončení"
+    "eta": "Přibližný čas dokončení",
+    "login": {
+        "password": "Heslo",
+        "invalid_credentials": "Neplatné uživatelské jméno nebo heslo",
+        "login": "Přihlášení",
+        "username": "Uživatelské jméno",
+        "internal_error": "Neočekávaná interní chyba. Podívej se do logu pro více detailů"
+    }
 }
