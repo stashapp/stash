@@ -12,15 +12,8 @@ import Mousetrap from "mousetrap";
 
 export const FilteredSidebarToolbar: React.FC<{
   onClose?: () => void;
-  showEditFilter: () => void;
-  filter: ListFilterModel;
-}> = ({ onClose, showEditFilter, filter, children }) => {
-  return (
-    <SidebarToolbar onClose={onClose}>
-      {children}
-      <FilterButton onClick={() => showEditFilter()} filter={filter} />
-    </SidebarToolbar>
-  );
+}> = ({ onClose, children }) => {
+  return <SidebarToolbar onClose={onClose}>{children}</SidebarToolbar>;
 };
 
 export const FilteredSidebarHeader: React.FC<{
@@ -44,16 +37,15 @@ export const FilteredSidebarHeader: React.FC<{
 
   return (
     <>
-      <FilteredSidebarToolbar
-        onClose={onClose}
-        showEditFilter={showEditFilter}
-        filter={filter}
-      />
-      <SearchTermInput
-        filter={filter}
-        onFilterUpdate={setFilter}
-        focus={focus}
-      />
+      <FilteredSidebarToolbar onClose={onClose} />
+      <div className="sidebar-search-container">
+        <SearchTermInput
+          filter={filter}
+          onFilterUpdate={setFilter}
+          focus={focus}
+        />
+        <FilterButton onClick={() => showEditFilter()} filter={filter} />
+      </div>
       <SidebarSection
         text={<FormattedMessage id="search_filter.saved_filters" />}
       >

@@ -776,6 +776,23 @@ input[type="range"].zoom-slider {
   margin-left: -15px;
 }
 
-.sidebar .search-term-input {
-  margin-right: 0;
+.sidebar {
+  .sidebar-search-container {
+    display: flex;
+  }
+
+  .search-term-input {
+    flex-grow: 1;
+    margin-right: 0.25rem;
+
+    .clearable-text-field {
+      height: 100%;
+    }
+  }
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar .search-term-input {
+    margin-right: 0.5rem;
+  }
 }
