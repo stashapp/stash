@@ -818,9 +818,10 @@ $sidebar-width: 250px;
 }
 
 .sidebar-section {
+  border-bottom: 1px solid $secondary;
+
   .collapse-header {
     // background-color: $secondary;
-    border-bottom: 1px solid $secondary;
 
     padding: 0.25rem;
 
