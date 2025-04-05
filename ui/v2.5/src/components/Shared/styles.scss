@@ -742,7 +742,6 @@ $sidebar-width: 250px;
     flex-grow: 0;
     flex-shrink: 0;
     padding-left: 15px;
-    padding-right: 0.5rem;
     transition: margin-left 0.1s;
   }
 
@@ -764,7 +763,13 @@ $sidebar-width: 250px;
 
   > :nth-child(2) {
     flex-grow: 1;
-    padding-left: 15px;
+    padding-left: 0.5rem;
+  }
+
+  &.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 15px;
+    }
   }
 
   @include media-breakpoint-up(xl) {
