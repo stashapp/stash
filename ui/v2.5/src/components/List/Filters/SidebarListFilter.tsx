@@ -17,6 +17,7 @@ import cx from "classnames";
 import ScreenUtils from "src/utils/screen";
 import { SidebarSection } from "src/components/Shared/Sidebar";
 import { TruncatedInlineText } from "src/components/Shared/TruncatedText";
+import { ILoadResults } from "src/hooks/data";
 
 interface ISelectedItem {
   className?: string;
@@ -239,7 +240,7 @@ interface IQueryableProps {
 
 export const CandidateList: React.FC<
   {
-    items: Option[];
+    useQuery: (q: string) => ILoadResults<Option[]>;
     onSelect: (item: Option, exclude: boolean) => void;
     canExclude?: boolean;
     singleValue?: boolean;
@@ -248,13 +249,16 @@ export const CandidateList: React.FC<
   inputFocus,
   query,
   setQuery,
-  items,
   onSelect,
   canExclude,
   singleValue,
+  useQuery,
 }) => {
   const showQueryField =
     inputFocus !== undefined && query !== undefined && setQuery !== undefined;
+
+  // TODO - handle loading
+  const { results: items } = useQuery(query ?? "");
 
   return (
     <div className="queryable-candidate-list">
@@ -285,13 +289,13 @@ export const SidebarListFilter: React.FC<{
   title: React.ReactNode;
   selected: Option[];
   excluded?: Option[];
-  candidates: Option[];
   singleValue?: boolean;
   onSelect: (item: Option, exclude: boolean) => void;
   onUnselect: (item: Option, exclude: boolean) => void;
   canExclude?: boolean;
   query?: string;
   setQuery?: (query: string) => void;
+  useQuery: (q: string) => ILoadResults<Option[]>;
   preSelected?: React.ReactNode;
   postSelected?: React.ReactNode;
   preCandidates?: React.ReactNode;
@@ -300,12 +304,12 @@ export const SidebarListFilter: React.FC<{
   title,
   selected,
   excluded,
-  candidates,
   onSelect,
   onUnselect,
   canExclude,
   query,
   setQuery,
+  useQuery,
   singleValue = false,
   preCandidates,
   postCandidates,
@@ -364,12 +368,12 @@ export const SidebarListFilter: React.FC<{
     >
       {preCandidates ? <div className="extra">{preCandidates}</div> : null}
       <CandidateList
-        items={candidates}
         onSelect={selectHook}
         canExclude={canExclude}
         inputFocus={inputFocus}
         query={query}
         setQuery={setQuery}
+        useQuery={useQuery}
         singleValue={singleValue}
       />
       {postCandidates ? <div className="extra">{postCandidates}</div> : null}

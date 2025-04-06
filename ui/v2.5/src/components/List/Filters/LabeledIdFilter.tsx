@@ -138,6 +138,27 @@ function modifierValueToModifier(key: ModifierValue): CriterionModifier {
   throw new Error("Invalid modifier value");
 }
 
+function hookUseQuery(props: {
+  useQuery: (q: string) => ILoadResults<ILabeledId[]>;
+  postHook: (r: ILabeledId[] | undefined) => Option[];
+}) {
+  return (q: string) => {
+    const { useQuery, postHook } = props;
+
+    const cacheResults = useCacheResults(useQuery(q));
+    const { results: queryResults } = cacheResults;
+
+    const candidates = useMemo(() => {
+      return postHook(queryResults);
+    }, [queryResults, postHook]);
+
+    return {
+      ...cacheResults,
+      results: candidates,
+    };
+  };
+}
+
 export const SidebarLabeledIdFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
@@ -160,8 +181,6 @@ export const SidebarLabeledIdFilter: React.FC<{
   const intl = useIntl();
 
   const [query, setQuery] = useState("");
-
-  const { results: queryResults } = useCacheResults(useQuery(query));
 
   const criterion = useMemo(() => {
     const ret = filter.criteria.find(
@@ -310,72 +329,86 @@ export const SidebarLabeledIdFilter: React.FC<{
     }));
   }, [criterion.value.excluded]);
 
-  const results = useMemo(() => {
-    if (
-      !queryResults ||
-      modifier === CriterionModifier.IsNull ||
-      modifier === CriterionModifier.NotNull
-    ) {
-      return [];
-    }
+  const filterResults = useCallback(
+    (queryResults: ILabeledId[] | undefined) => {
+      if (
+        !queryResults ||
+        modifier === CriterionModifier.IsNull ||
+        modifier === CriterionModifier.NotNull
+      ) {
+        return [];
+      }
 
-    return queryResults.filter(
-      (p) =>
-        selected.find((s) => s.id === p.id) === undefined &&
-        excluded.find((s) => s.id === p.id) === undefined
-    );
-  }, [queryResults, modifier, selected, excluded]);
+      return queryResults.filter(
+        (p) =>
+          selected.find((s) => s.id === p.id) === undefined &&
+          excluded.find((s) => s.id === p.id) === undefined
+      );
+    },
+    [modifier, selected, excluded]
+  );
 
-  const candidates = useMemo(() => {
-    const hierarchicalCandidate =
-      hierarchical && (criterion.value as IHierarchicalLabelValue).depth !== -1;
+  const queryResultsPostHook = useCallback(
+    (queryResults: ILabeledId[] | undefined) => {
+      const hierarchicalCandidate =
+        hierarchical &&
+        (criterion.value as IHierarchicalLabelValue).depth !== -1;
 
-    const modifierCandidates: Option[] = getModifierCandidates({
-      modifier,
+      const modifierCandidates: Option[] = getModifierCandidates({
+        modifier,
+        defaultModifier,
+        hasSelected: selected.length > 0,
+        hasExcluded: excluded.length > 0,
+        singleValue,
+        hierarchical: hierarchicalCandidate,
+      }).map((v) => {
+        const messageID =
+          v === "include_subs"
+            ? includeSubMessageID
+            : `criterion_modifier_values.${v}`;
+
+        return {
+          id: v,
+          label: `(${intl.formatMessage({
+            id: messageID,
+          })})`,
+          className: "modifier-object",
+          canExclude: false,
+        };
+      });
+
+      const results = filterResults(queryResults);
+
+      return modifierCandidates.concat(
+        (results ?? []).map((r) => ({
+          id: r.id,
+          label: r.label,
+        }))
+      );
+    },
+    [
+      filterResults,
       defaultModifier,
-      hasSelected: selected.length > 0,
-      hasExcluded: excluded.length > 0,
+      intl,
+      modifier,
       singleValue,
-      hierarchical: hierarchicalCandidate,
-    }).map((v) => {
-      const messageID =
-        v === "include_subs"
-          ? includeSubMessageID
-          : `criterion_modifier_values.${v}`;
+      selected,
+      excluded,
+      criterion.value,
+      hierarchical,
+      includeSubMessageID,
+    ]
+  );
 
-      return {
-        id: v,
-        label: `(${intl.formatMessage({
-          id: messageID,
-        })})`,
-        className: "modifier-object",
-        canExclude: false,
-      };
-    });
-
-    return modifierCandidates.concat(
-      (results ?? []).map((r) => ({
-        id: r.id,
-        label: r.label,
-      }))
-    );
-  }, [
-    defaultModifier,
-    intl,
-    modifier,
-    singleValue,
-    results,
-    selected,
-    excluded,
-    criterion.value,
-    hierarchical,
-    includeSubMessageID,
-  ]);
+  const useQueryHooked = hookUseQuery({
+    postHook: queryResultsPostHook,
+    useQuery: useQuery,
+  });
 
   return (
     <SidebarListFilter
       title={title}
-      candidates={candidates}
+      useQuery={useQueryHooked}
       onSelect={onSelect}
       onUnselect={onUnselect}
       selected={selected}

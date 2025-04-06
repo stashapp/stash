@@ -15,7 +15,11 @@ import {
 import { ConfigurationContext } from "src/hooks/Config";
 import { RatingCriterion } from "src/models/list-filter/criteria/rating";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { Option, SidebarListFilter } from "./SidebarListFilter";
+import {
+  Option,
+  SidebarListFilter,
+  useStaticResults,
+} from "./SidebarListFilter";
 
 interface IRatingFilterProps {
   criterion: ModifierCriterion<INumberValue>;
@@ -123,6 +127,8 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
     return [anyOption, noneOption];
   }, [anyOption, noneOption]);
 
+  const useQuery = useStaticResults(options);
+
   const criteria = filter.criteriaFor(option.type) as RatingCriterion[];
   const criterion = criteria.length > 0 ? criteria[0] : null;
 
@@ -190,7 +196,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
     <>
       <SidebarListFilter
         title={title}
-        candidates={options}
+        useQuery={useQuery}
         onSelect={onSelect}
         onUnselect={onUnselect}
         selected={selected}
