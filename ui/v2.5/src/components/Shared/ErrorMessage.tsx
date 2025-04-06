@@ -1,4 +1,5 @@
 import React, { ReactNode } from "react";
+import { Alert } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 
 interface IProps {
@@ -10,10 +11,11 @@ export const ErrorMessage: React.FC<IProps> = (props) => {
   const { error, message = <FormattedMessage id="errors.header" /> } = props;
 
   return (
-    <div className="row ErrorMessage">
-      <h2 className="ErrorMessage-content">
-        {message}: {error}
-      </h2>
+    <div className="ErrorMessage-container">
+      <Alert variant="danger" className="ErrorMessage">
+        <Alert.Heading className="ErrorMessage-header">{message}</Alert.Heading>
+        <div className="ErrorMessage-content code">{error}</div>
+      </Alert>
     </div>
   );
 };

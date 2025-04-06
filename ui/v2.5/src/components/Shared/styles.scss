@@ -213,13 +213,22 @@ button.collapse-button {
   text-align: center;
 }
 
-.ErrorMessage {
-  align-items: center;
-  height: 20rem;
+.ErrorMessage-container {
+  display: flex;
   justify-content: center;
+  width: 100%;
+}
 
-  &-content {
-    display: inline-block;
+.ErrorMessage {
+  background-color: initial;
+  border-color: $danger;
+  color: $text-color;
+  margin: 1rem;
+  text-align: left;
+  width: 500px;
+
+  @include media-breakpoint-down(xs) {
+    width: 100%;
   }
 }
 
