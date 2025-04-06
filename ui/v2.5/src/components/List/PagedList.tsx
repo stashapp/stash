@@ -3,6 +3,8 @@ import { QueryResult } from "@apollo/client";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Pagination, PaginationIndex } from "./Pagination";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ErrorMessage } from "../Shared/ErrorMessage";
+import { FormattedMessage } from "react-intl";
 
 export const PagedList: React.FC<
   PropsWithChildren<{
@@ -65,7 +67,17 @@ export const PagedList: React.FC<
       return <LoadingIndicator />;
     }
     if (result.error) {
-      return <h1>{result.error.message}</h1>;
+      return (
+        <ErrorMessage
+          message={
+            <FormattedMessage
+              id="errors.loading_type"
+              values={{ type: "items" }}
+            />
+          }
+          error={result.error.message}
+        />
+      );
     }
 
     return (
