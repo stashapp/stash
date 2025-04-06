@@ -1,6 +1,6 @@
 import React, { ReactNode, useMemo } from "react";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
-import { useFindPerformersQuery } from "src/core/generated-graphql";
+import { useFindPerformersForSelectQuery } from "src/core/generated-graphql";
 import { ObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -13,7 +13,7 @@ interface IPerformersFilter {
 }
 
 function usePerformerQuery(query: string) {
-  const { data, loading } = useFindPerformersQuery({
+  const { data, loading } = useFindPerformersForSelectQuery({
     variables: {
       filter: {
         q: query,

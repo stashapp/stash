@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import { useFindTagsQuery } from "src/core/generated-graphql";
+import { useFindTagsForSelectQuery } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
@@ -13,7 +13,7 @@ interface ITagsFilter {
 }
 
 function useTagQuery(query: string) {
-  const { data, loading } = useFindTagsQuery({
+  const { data, loading } = useFindTagsForSelectQuery({
     variables: {
       filter: {
         q: query,

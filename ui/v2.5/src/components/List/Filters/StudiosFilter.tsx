@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import { useFindStudiosQuery } from "src/core/generated-graphql";
+import { useFindStudiosForSelectQuery } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
@@ -13,7 +13,7 @@ interface IStudiosFilter {
 }
 
 function useStudioQuery(query: string) {
-  const { data, loading } = useFindStudiosQuery({
+  const { data, loading } = useFindStudiosForSelectQuery({
     variables: {
       filter: {
         q: query,
