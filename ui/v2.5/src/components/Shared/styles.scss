@@ -220,6 +220,13 @@ button.collapse-button {
 }
 
 .ErrorMessage {
+  .fa-icon {
+    color: $warning;
+    font-size: 1.5em;
+    margin-right: 0.3em;
+    vertical-align: middle;
+  }
+
   background-color: initial;
   border-color: $danger;
   color: $text-color;
