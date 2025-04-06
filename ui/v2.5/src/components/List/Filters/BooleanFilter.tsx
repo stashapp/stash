@@ -128,7 +128,6 @@ export const SidebarBooleanFilter: React.FC<ISidebarFilter> = ({
         selected={selected}
         singleValue
       />
-      <div></div>
     </>
   );
 };
