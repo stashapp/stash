@@ -526,6 +526,15 @@ input[type="range"].zoom-slider {
       color: #fff;
     }
   }
+
+  .selected-object,
+  .unselected-object {
+    .label-group {
+      align-items: center;
+      display: flex;
+      overflow: hidden;
+    }
+  }
 }
 
 .sidebar-list-filter > .extra {

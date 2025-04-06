@@ -16,6 +16,7 @@ import useFocus from "src/utils/focus";
 import cx from "classnames";
 import ScreenUtils from "src/utils/screen";
 import { SidebarSection } from "src/components/Shared/Sidebar";
+import { TruncatedInlineText } from "src/components/Shared/TruncatedText";
 
 interface ISelectedItem {
   className?: string;
@@ -70,11 +71,10 @@ const SelectedItem: React.FC<ISelectedItem> = ({
         onBlur={() => onMouseOut()}
         tabIndex={0}
       >
-        <div>
+        <div className="label-group">
           <Icon className={`fa-fw ${iconClassName}`} icon={icon} />
-          <span className={spanClassName}>{label}</span>
+          <TruncatedInlineText className={spanClassName} text={label} />
         </div>
-        <div></div>
       </a>
     </li>
   );
@@ -117,9 +117,12 @@ const CandidateItem: React.FC<{
         onKeyDown={keyboardClickHandler(() => onSelect(false))}
         tabIndex={0}
       >
-        <div>
+        <div className="label-group">
           {includeIcon}
-          <span className="unselected-object-label">{label}</span>
+          <TruncatedInlineText
+            className="unselected-object-label"
+            text={label}
+          />
         </div>
         <div>
           {/* TODO item count */}

@@ -303,6 +303,12 @@ button.collapse-button {
   .file-info-panel a > & {
     word-break: break-all;
   }
+
+  &.inline {
+    display: inline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .RatingStars {
