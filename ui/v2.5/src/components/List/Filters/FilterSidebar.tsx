@@ -47,6 +47,7 @@ export const FilteredSidebarHeader: React.FC<{
         <FilterButton onClick={() => showEditFilter()} filter={filter} />
       </div>
       <SidebarSection
+        className="sidebar-saved-filters"
         text={<FormattedMessage id="search_filter.saved_filters" />}
       >
         <SidebarSavedFilterList
