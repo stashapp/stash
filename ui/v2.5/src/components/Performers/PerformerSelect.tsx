@@ -30,6 +30,8 @@ import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
+import { PerformerPopover } from "./PerformerPopover";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 export type SelectObject = {
   id: string;
@@ -71,7 +73,12 @@ const performerSelectSort = PatchFunction(
 );
 
 const _PerformerSelect: React.FC<
-  IFilterProps & IFilterValueProps<Performer> & { ageFromDate?: string | null }
+  IFilterProps &
+    IFilterValueProps<Performer> & {
+      ageFromDate?: string | null;
+      hoverPlacementLabel?: Placement;
+      hoverPlacementOptions?: Placement;
+    }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
@@ -201,12 +208,17 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="performer-select-value">
-          <span>{object.name}</span>
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
-        </span>
+        <PerformerPopover
+          id={object.id}
+          placement={props.hoverPlacementLabel ?? "top"}
+        >
+          <span className="performer-select-value">
+            <span>{object.name}</span>
+            {object.disambiguation && (
+              <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+            )}
+          </span>
+        </PerformerPopover>
       ),
     };
 

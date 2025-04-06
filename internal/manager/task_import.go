@@ -709,6 +709,11 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				return err
 			}
 
+			// skip importing markers if the scene was not created
+			if sceneImporter.ID == 0 {
+				return nil
+			}
+
 			// import the scene markers
 			for _, m := range sceneJSON.Markers {
 				markerImporter := &scene.MarkerImporter{

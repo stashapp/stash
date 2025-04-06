@@ -29,7 +29,7 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 	var scenes []*models.Scene
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		scenes, err = r.sceneService.FindMany(ctx, ids, scene.LoadStashIDs, scene.LoadFiles)
+		scenes, err = r.sceneService.FindByIDs(ctx, ids, scene.LoadStashIDs, scene.LoadFiles)
 		return err
 	}); err != nil {
 		return false, err

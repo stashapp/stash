@@ -266,6 +266,16 @@ $sceneTabWidth: 450px;
     }
   }
 
+  .vjs-marker-range {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 2px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 8px;
+    position: absolute;
+    transform: translateY(-28px);
+    transition: none;
+  }
+
   .vjs-marker-tooltip {
     background-color: #fff;
     background-color: rgba(255, 255, 255, 0.8);

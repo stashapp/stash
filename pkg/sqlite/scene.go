@@ -493,8 +493,11 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 	return ret, err
 }
 
-func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
-	scenes := make([]*models.Scene, len(ids))
+// FindByIDs finds multiple scenes by their IDs.
+// No check is made to see if the scenes exist, and the order of the returned scenes
+// is not guaranteed to be the same as the order of the input IDs.
+func (qb *SceneStore) FindByIDs(ctx context.Context, ids []int) ([]*models.Scene, error) {
+	scenes := make([]*models.Scene, 0, len(ids))
 
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
@@ -504,14 +507,27 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 			return err
 		}
 
-		for _, s := range unsorted {
-			i := slices.Index(ids, s.ID)
-			scenes[i] = s
-		}
+		scenes = append(scenes, unsorted...)
 
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	return scenes, nil
+}
+
+func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
+	scenes := make([]*models.Scene, len(ids))
+
+	unsorted, err := qb.FindByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range unsorted {
+		i := slices.Index(ids, s.ID)
+		scenes[i] = s
 	}
 
 	for i := range scenes {
