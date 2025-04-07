@@ -928,7 +928,7 @@ input[type="range"].blue-slider {
     }
 
     &:hover {
-      .GalleryWallCard-title {
+      .scene-wall-item-title {
         text-decoration: underline;
       }
     }
@@ -946,5 +946,9 @@ input[type="range"].blue-slider {
     a {
       text-decoration: none;
     }
+  }
+
+  &.show-title &-footer {
+    opacity: 1;
   }
 }

@@ -18,6 +18,7 @@ import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
 import { useIntl } from "react-intl";
+import cx from "classnames";
 
 interface IScenePhoto {
   scene: GQL.SlimSceneDataFragment;
@@ -29,6 +30,12 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
   props: RenderImageProps<IScenePhoto>
 ) => {
   const intl = useIntl();
+
+  const { configuration } = useContext(ConfigurationContext);
+  const playSound = configuration?.interface.soundOnPreview ?? false;
+  const showTitle = configuration?.interface.wallShowTitle ?? false;
+
+  const [active, setActive] = useState(false);
 
   type style = Record<string, string | number | undefined>;
   var imgStyle: style = {
@@ -61,14 +68,14 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
 
   return (
     <div
-      className="scene-wall-item"
+      className={cx("scene-wall-item", { "show-title": showTitle })}
       role="button"
       style={{ width: props.photo.width, height: props.photo.height }}
     >
       <ImagePreview
         loading="lazy"
         loop={video}
-        muted={video}
+        muted={!video || !playSound || !active}
         autoPlay={video}
         key={props.photo.key}
         style={imgStyle}
@@ -76,6 +83,8 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
         width={props.photo.width}
         height={props.photo.height}
         alt={props.photo.alt}
+        onMouseEnter={() => setActive(true)}
+        onMouseLeave={() => setActive(false)}
         onClick={handleClick}
         onError={() => {
           props.photo.onError?.(props.photo);
@@ -110,8 +119,9 @@ const SceneGallery = Gallery as unknown as GalleryI<IScenePhoto>;
 
 const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
   const history = useHistory();
-  const { configuration } = useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui;
+
+  const margin = 3;
+  const direction = "row";
 
   const [erroredImgs, setErroredImgs] = useState<string[]>([]);
 
@@ -160,15 +170,19 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
     return Math.round(columnCount);
   }
 
+  const renderImage = useCallback((props: RenderImageProps<IScenePhoto>) => {
+    return <SceneWallItem {...props} />;
+  }, []);
+
   return (
     <div>
       {photos.length ? (
         <SceneGallery
           photos={photos}
-          renderImage={SceneWallItem}
+          renderImage={renderImage}
           onClick={onClick}
-          margin={uiConfig?.imageWallOptions?.margin!}
-          direction={uiConfig?.imageWallOptions?.direction!}
+          margin={margin}
+          direction={direction}
           columns={columns}
         />
       ) : null}
