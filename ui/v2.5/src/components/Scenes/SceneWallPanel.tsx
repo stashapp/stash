@@ -68,7 +68,7 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
 
   return (
     <div
-      className={cx("scene-wall-item", { "show-title": showTitle })}
+      className={cx("wall-item", { "show-title": showTitle })}
       role="button"
       style={{ width: props.photo.width, height: props.photo.height }}
     >
@@ -91,13 +91,13 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
         }}
       />
       <div className="lineargradient">
-        <footer className="scene-wall-item-footer">
+        <footer className="wall-item-footer">
           <Link to={props.photo.link} onClick={(e) => e.stopPropagation()}>
             {title && (
               <TruncatedText
                 text={title}
                 lineCount={1}
-                className="scene-wall-item-title"
+                className="wall-item-title"
               />
             )}
             <TruncatedText text={performers.join(", ")} />
@@ -175,7 +175,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
   }, []);
 
   return (
-    <div>
+    <div className="scene-wall">
       {photos.length ? (
         <SceneGallery
           photos={photos}
