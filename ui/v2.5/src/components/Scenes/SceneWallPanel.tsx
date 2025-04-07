@@ -1,0 +1,190 @@
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import * as GQL from "src/core/generated-graphql";
+import { SceneQueue } from "src/models/sceneQueue";
+import Gallery, {
+  GalleryI,
+  PhotoProps,
+  RenderImageProps,
+} from "react-photo-gallery";
+import { ConfigurationContext } from "src/hooks/Config";
+import { objectTitle } from "src/core/files";
+import { Link, useHistory } from "react-router-dom";
+import { TruncatedText } from "../Shared/TruncatedText";
+import TextUtils from "src/utils/text";
+import { useIntl } from "react-intl";
+
+interface IScenePhoto {
+  scene: GQL.SlimSceneDataFragment;
+  link: string;
+  onError?: (photo: PhotoProps<IScenePhoto>) => void;
+}
+
+export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
+  props: RenderImageProps<IScenePhoto>
+) => {
+  const intl = useIntl();
+
+  type style = Record<string, string | number | undefined>;
+  var imgStyle: style = {
+    margin: props.margin,
+    display: "block",
+  };
+
+  if (props.direction === "column") {
+    imgStyle.position = "absolute";
+    imgStyle.left = props.left;
+    imgStyle.top = props.top;
+  }
+
+  var handleClick = function handleClick(event: React.MouseEvent) {
+    if (props.onClick) {
+      props.onClick(event, { index: props.index });
+    }
+  };
+
+  const video = props.photo.src.includes("preview");
+  const ImagePreview = video ? "video" : "img";
+
+  const { scene } = props.photo;
+  const title = objectTitle(scene);
+  const performerNames = scene.performers.map((p) => p.name);
+  const performers =
+    performerNames.length >= 2
+      ? [...performerNames.slice(0, -2), performerNames.slice(-2).join(" & ")]
+      : performerNames;
+
+  return (
+    <div
+      className="scene-wall-item"
+      role="button"
+      style={{ width: props.photo.width, height: props.photo.height }}
+    >
+      <ImagePreview
+        loading="lazy"
+        loop={video}
+        muted={video}
+        autoPlay={video}
+        key={props.photo.key}
+        style={imgStyle}
+        src={props.photo.src}
+        width={props.photo.width}
+        height={props.photo.height}
+        alt={props.photo.alt}
+        onClick={handleClick}
+        onError={() => {
+          props.photo.onError?.(props.photo);
+        }}
+      />
+      <div className="lineargradient">
+        <footer className="scene-wall-item-footer">
+          <Link to={props.photo.link} onClick={(e) => e.stopPropagation()}>
+            {title && (
+              <TruncatedText
+                text={title}
+                lineCount={1}
+                className="scene-wall-item-title"
+              />
+            )}
+            <TruncatedText text={performers.join(", ")} />
+            <div>{scene.date && TextUtils.formatDate(intl, scene.date)}</div>
+          </Link>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+interface ISceneWallProps {
+  scenes: GQL.SlimSceneDataFragment[];
+  sceneQueue?: SceneQueue;
+}
+
+// HACK: typescript doesn't allow Gallery to accept a parameter for some reason
+const SceneGallery = Gallery as unknown as GalleryI<IScenePhoto>;
+
+const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
+  const history = useHistory();
+  const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+
+  const [erroredImgs, setErroredImgs] = useState<string[]>([]);
+
+  const handleError = useCallback((photo: PhotoProps<IScenePhoto>) => {
+    setErroredImgs((prev) => [...prev, photo.src]);
+  }, []);
+
+  useEffect(() => {
+    setErroredImgs([]);
+  }, [scenes]);
+
+  const photos: PhotoProps<IScenePhoto>[] = useMemo(() => {
+    return scenes.map((s, index) => {
+      const { width = 1280, height = 720 } = s.files[0];
+
+      return {
+        scene: s,
+        src:
+          s.paths.preview && !erroredImgs.includes(s.paths.preview)
+            ? s.paths.preview!
+            : s.paths.screenshot!,
+        link: sceneQueue
+          ? sceneQueue.makeLink(s.id, { sceneIndex: index })
+          : `/scenes/${s.id}`,
+        width,
+        height,
+        tabIndex: index,
+        key: s.id,
+        loading: "lazy",
+        className: "gallery-image",
+        alt: objectTitle(s),
+        onError: handleError,
+      };
+    });
+  }, [scenes, sceneQueue, erroredImgs, handleError]);
+
+  const onClick = useCallback(
+    (event, { index }) => {
+      history.push(photos[index].link);
+    },
+    [history, photos]
+  );
+
+  function columns(containerWidth: number) {
+    let preferredSize = 300;
+    let columnCount = containerWidth / preferredSize;
+    return Math.round(columnCount);
+  }
+
+  return (
+    <div className="gallery">
+      {photos.length ? (
+        <SceneGallery
+          photos={photos}
+          renderImage={SceneWallItem}
+          onClick={onClick}
+          margin={uiConfig?.imageWallOptions?.margin!}
+          direction={uiConfig?.imageWallOptions?.direction!}
+          columns={columns}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+interface ISceneWallPanelProps {
+  scenes: GQL.SlimSceneDataFragment[];
+  sceneQueue?: SceneQueue;
+}
+
+export const SceneWallPanel: React.FC<ISceneWallPanelProps> = ({
+  scenes,
+  sceneQueue,
+}) => {
+  return <SceneWall scenes={scenes} sceneQueue={sceneQueue} />;
+};

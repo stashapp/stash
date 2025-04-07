@@ -901,3 +901,50 @@ input[type="range"].blue-slider {
     word-break: break-all;
   }
 }
+
+.scene-wall-item {
+  .lineargradient {
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    bottom: 100px;
+    height: 100px;
+    position: relative;
+  }
+
+  &-title {
+    font-weight: bold;
+  }
+
+  &-footer {
+    bottom: 20px;
+    padding: 0 1rem;
+    position: absolute;
+    text-shadow: 1px 1px 3px black;
+    transition: 0s opacity;
+    width: 100%;
+    z-index: 2;
+
+    @media (min-width: 768px) {
+      opacity: 0;
+    }
+
+    &:hover {
+      .GalleryWallCard-title {
+        text-decoration: underline;
+      }
+    }
+
+    a {
+      color: white;
+    }
+  }
+
+  &:hover &-footer {
+    opacity: 1;
+    transition: 1s opacity;
+    transition-delay: 500ms;
+
+    a {
+      text-decoration: none;
+    }
+  }
+}
