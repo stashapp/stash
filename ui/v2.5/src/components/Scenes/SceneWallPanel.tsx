@@ -131,6 +131,8 @@ interface ISceneWallProps {
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
 const SceneGallery = Gallery as unknown as GalleryI<IScenePhoto>;
 
+const defaultTargetRowHeight = 250;
+
 const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
   const history = useHistory();
 
@@ -198,6 +200,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
           margin={margin}
           direction={direction}
           columns={columns}
+          targetRowHeight={defaultTargetRowHeight}
         />
       ) : null}
     </div>

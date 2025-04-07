@@ -152,6 +152,8 @@ function getDimensions(file?: IFile) {
   };
 }
 
+const defaultTargetRowHeight = 250;
+
 const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
   const history = useHistory();
 
@@ -214,6 +216,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
           margin={margin}
           direction={direction}
           columns={columns}
+          targetRowHeight={defaultTargetRowHeight}
         />
       ) : null}
     </div>
