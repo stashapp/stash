@@ -38,15 +38,15 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
   const [active, setActive] = useState(false);
 
   type style = Record<string, string | number | undefined>;
-  var imgStyle: style = {
+  var divStyle: style = {
     margin: props.margin,
     display: "block",
   };
 
   if (props.direction === "column") {
-    imgStyle.position = "absolute";
-    imgStyle.left = props.left;
-    imgStyle.top = props.top;
+    divStyle.position = "absolute";
+    divStyle.left = props.left;
+    divStyle.top = props.top;
   }
 
   var handleClick = function handleClick(event: React.MouseEvent) {
@@ -70,7 +70,11 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
     <div
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
-      style={{ width: props.photo.width, height: props.photo.height }}
+      style={{
+        ...divStyle,
+        width: props.photo.width,
+        height: props.photo.height,
+      }}
     >
       <ImagePreview
         loading="lazy"
@@ -78,7 +82,6 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
         muted={!video || !playSound || !active}
         autoPlay={video}
         key={props.photo.key}
-        style={imgStyle}
         src={props.photo.src}
         width={props.photo.width}
         height={props.photo.height}
@@ -109,6 +112,17 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
   );
 };
 
+function getDimensions(s: GQL.SlimSceneDataFragment) {
+  const defaults = { width: 1280, height: 720 };
+
+  if (!s.files.length) return defaults;
+
+  return {
+    width: s.files[0].width || defaults.width,
+    height: s.files[0].height || defaults.height,
+  };
+}
+
 interface ISceneWallProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
@@ -135,7 +149,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
 
   const photos: PhotoProps<IScenePhoto>[] = useMemo(() => {
     return scenes.map((s, index) => {
-      const { width = 1280, height = 720 } = s.files[0];
+      const { width, height } = getDimensions(s);
 
       return {
         scene: s,

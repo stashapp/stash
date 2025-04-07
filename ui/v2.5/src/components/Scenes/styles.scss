@@ -905,11 +905,14 @@ input[type="range"].blue-slider {
 .scene-wall,
 .marker-wall {
   .wall-item {
+    position: relative;
+
     .lineargradient {
       background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
-      bottom: 100px;
+      bottom: 0;
       height: 100px;
-      position: relative;
+      position: absolute;
+      width: 100%;
     }
 
     &-title {

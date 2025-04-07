@@ -49,15 +49,15 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
   const [active, setActive] = useState(false);
 
   type style = Record<string, string | number | undefined>;
-  var imgStyle: style = {
+  var divStyle: style = {
     margin: props.margin,
     display: "block",
   };
 
   if (props.direction === "column") {
-    imgStyle.position = "absolute";
-    imgStyle.left = props.left;
-    imgStyle.top = props.top;
+    divStyle.position = "absolute";
+    divStyle.left = props.left;
+    divStyle.top = props.top;
   }
 
   var handleClick = function handleClick(event: React.MouseEvent) {
@@ -77,7 +77,11 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
     <div
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
-      style={{ width: props.photo.width, height: props.photo.height }}
+      style={{
+        ...divStyle,
+        width: props.photo.width,
+        height: props.photo.height,
+      }}
     >
       <ImagePreview
         loading="lazy"
@@ -85,7 +89,6 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
         muted={!video || !playSound || !active}
         autoPlay={video}
         key={props.photo.key}
-        style={imgStyle}
         src={props.photo.src}
         width={props.photo.width}
         height={props.photo.height}
@@ -133,6 +136,22 @@ function getFirstValidSrc(srcSet: string[], invalidSrcSet: string[]) {
   );
 }
 
+interface IFile {
+  width: number;
+  height: number;
+}
+
+function getDimensions(file?: IFile) {
+  const defaults = { width: 1280, height: 720 };
+
+  if (!file) return defaults;
+
+  return {
+    width: file.width || defaults.width,
+    height: file.height || defaults.height,
+  };
+}
+
 const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
   const history = useHistory();
 
@@ -151,7 +170,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
 
   const photos: PhotoProps<IMarkerPhoto>[] = useMemo(() => {
     return markers.map((m, index) => {
-      const { width = 1280, height = 720 } = m.scene.files[0];
+      const { width = 1280, height = 720 } = getDimensions(m.scene.files[0]);
 
       return {
         marker: m,
