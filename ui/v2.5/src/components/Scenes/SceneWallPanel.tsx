@@ -141,7 +141,6 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
         tabIndex: index,
         key: s.id,
         loading: "lazy",
-        className: "gallery-image",
         alt: objectTitle(s),
         onError: handleError,
       };
@@ -162,7 +161,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
   }
 
   return (
-    <div className="gallery">
+    <div>
       {photos.length ? (
         <SceneGallery
           photos={photos}
