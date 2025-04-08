@@ -757,7 +757,7 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
       </div>
 
       <FormControl
-        className="bg-secondary text-white border-secondary"
+        className="bg-secondary text-white border-secondary saved-filter-search-input"
         placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
         value={filterName}
         onChange={(e) => setFilterName(e.target.value)}
