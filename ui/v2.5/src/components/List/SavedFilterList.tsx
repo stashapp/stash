@@ -481,9 +481,10 @@ const SavedFilterItem: React.FC<ISavedFilterItem> = ({
     <li className="saved-filter-item">
       <a onClick={onClick}>
         <div className="label-group">
-          {/* HACK - this is here to be consistent with other sidebar lists */}
-          <div className="fa-fw fa-icon" />
-          <TruncatedInlineText className={cx({ selected })} text={item.name} />
+          <TruncatedInlineText
+            className={cx("no-icon-margin", { selected })}
+            text={item.name}
+          />
         </div>
         <div>
           <Button

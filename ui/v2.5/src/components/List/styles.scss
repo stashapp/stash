@@ -477,6 +477,12 @@ input[type="range"].zoom-slider {
   }
 }
 
+// used to align list text without icons to those that do
+.sidebar .no-icon-margin {
+  // icon width is 17.5px + 5.6px margin each side
+  margin-left: 28.7px;
+}
+
 .sidebar-list-filter .clearable-input-group {
   margin-bottom: 0.5rem;
 }

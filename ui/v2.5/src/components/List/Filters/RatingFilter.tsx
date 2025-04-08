@@ -177,14 +177,16 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
   }
 
   const ratingStars = (
-    <RatingStars
-      value={ratingValue}
-      onSetRating={onRatingValueChange}
-      precision={
-        ratingSystemOptions.starPrecision ?? defaultRatingStarPrecision
-      }
-      orMore
-    />
+    <div className="no-icon-margin">
+      <RatingStars
+        value={ratingValue}
+        onSetRating={onRatingValueChange}
+        precision={
+          ratingSystemOptions.starPrecision ?? defaultRatingStarPrecision
+        }
+        orMore
+      />
+    </div>
   );
   return (
     <>
