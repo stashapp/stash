@@ -29,6 +29,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faBookmark, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { AlertModal } from "../Shared/Alert";
 import cx from "classnames";
+import { TruncatedInlineText } from "../Shared/TruncatedText";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
@@ -477,25 +478,29 @@ const SavedFilterItem: React.FC<ISavedFilterItem> = ({
   const intl = useIntl();
 
   return (
-    <div className="dropdown-item-container">
-      <Dropdown.Item onClick={onClick} title={item.name}>
-        <span className={cx({ selected })}>{item.name}</span>
-      </Dropdown.Item>
-      <ButtonGroup>
-        <Button
-          className="delete-button"
-          variant="minimal"
-          size="sm"
-          title={intl.formatMessage({ id: "actions.delete" })}
-          onClick={(e) => {
-            onDelete();
-            e.stopPropagation();
-          }}
-        >
-          <Icon icon={faTimes} />
-        </Button>
-      </ButtonGroup>
-    </div>
+    <li className="saved-filter-item">
+      <a onClick={onClick}>
+        <div className="label-group">
+          {/* HACK - this is here to be consistent with other sidebar lists */}
+          <div className="fa-fw fa-icon" />
+          <TruncatedInlineText className={cx({ selected })} text={item.name} />
+        </div>
+        <div>
+          <Button
+            className="delete-button"
+            variant="minimal"
+            size="sm"
+            title={intl.formatMessage({ id: "actions.delete" })}
+            onClick={(e) => {
+              onDelete();
+              e.stopPropagation();
+            }}
+          >
+            <Icon fixedWidth icon={faTimes} />
+          </Button>
+        </div>
+      </a>
+    </li>
   );
 };
 

@@ -125,10 +125,6 @@ input[type="range"].zoom-slider {
         background-color: #8a9ba826;
         cursor: pointer;
       }
-
-      .selected {
-        font-weight: bold;
-      }
     }
 
     .btn-group {
@@ -153,6 +149,56 @@ input[type="range"].zoom-slider {
 
   .btn {
     font-weight: bold;
+  }
+}
+
+.sidebar-saved-filter-list-container {
+  .label-group {
+    align-items: center;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .saved-filter-item {
+    cursor: pointer;
+    height: 2em;
+    margin-bottom: 0.25rem;
+
+    a {
+      align-items: center;
+      display: flex;
+      height: 2em;
+      justify-content: space-between;
+      outline: none;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(138, 155, 168, 0.15);
+      }
+
+      .selected-object-label,
+      .excluded-object-label {
+        font-size: 16px;
+      }
+    }
+
+    .label-group {
+      align-items: center;
+      display: flex;
+      overflow: hidden;
+
+      .selected {
+        font-weight: bold;
+      }
+
+      .fa-icon {
+        flex-shrink: 0;
+      }
+    }
+
+    .delete-button {
+      color: $danger;
+    }
   }
 }
 
