@@ -109,18 +109,15 @@ export const SaveFilterDialog: React.FC<{
         )}
       </Modal.Body>
       <Modal.Footer>
-        <div></div>
-        <div>
-          <Button
-            variant="primary"
-            onClick={() => onClose(filterName, overwritingFilter?.id)}
-          >
-            {intl.formatMessage({ id: "actions.save" })}
-          </Button>
-          <Button variant="secondary" onClick={() => onClose()}>
-            {intl.formatMessage({ id: "actions.cancel" })}
-          </Button>
-        </div>
+        <Button variant="secondary" onClick={() => onClose()}>
+          {intl.formatMessage({ id: "actions.cancel" })}
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => onClose(filterName, overwritingFilter?.id)}
+        >
+          {intl.formatMessage({ id: "actions.save" })}
+        </Button>
       </Modal.Footer>
     </Modal>
   );
