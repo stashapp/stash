@@ -156,6 +156,13 @@ input[type="range"].zoom-slider {
   }
 }
 
+.save-filter-dialog {
+  .existing-filter-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}
+
 .save-filter-button {
   color: $text-color;
 }
