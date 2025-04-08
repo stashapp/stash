@@ -5,7 +5,8 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarLabeledIdFilter } from "./LabeledIdFilter";
+import { useLabeledIdFilterState } from "./LabeledIdFilter";
+import { SidebarListFilter } from "./SidebarListFilter";
 
 interface ITagsFilter {
   criterion: StudiosCriterion;
@@ -55,17 +56,16 @@ export const SidebarTagsFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
 }> = ({ title, option, filter, setFilter }) => {
-  return (
-    <SidebarLabeledIdFilter
-      title={title}
-      filter={filter}
-      setFilter={setFilter}
-      option={option}
-      useQuery={useTagQuery}
-      hierarchical
-      includeSubMessageID="sub_tags"
-    />
-  );
+  const state = useLabeledIdFilterState({
+    filter,
+    setFilter,
+    option,
+    useQuery: useTagQuery,
+    hierarchical: true,
+    includeSubMessageID: "sub_tags",
+  });
+
+  return <SidebarListFilter {...state} title={title} />;
 };
 
 export default TagsFilter;

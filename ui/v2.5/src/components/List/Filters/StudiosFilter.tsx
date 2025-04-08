@@ -5,7 +5,8 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarLabeledIdFilter } from "./LabeledIdFilter";
+import { useLabeledIdFilterState } from "./LabeledIdFilter";
+import { SidebarListFilter } from "./SidebarListFilter";
 
 interface IStudiosFilter {
   criterion: StudiosCriterion;
@@ -59,18 +60,17 @@ export const SidebarStudiosFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
 }> = ({ title, option, filter, setFilter }) => {
-  return (
-    <SidebarLabeledIdFilter
-      title={title}
-      filter={filter}
-      setFilter={setFilter}
-      option={option}
-      useQuery={useStudioQuery}
-      singleValue
-      hierarchical
-      includeSubMessageID="subsidiary_studios"
-    />
-  );
+  const state = useLabeledIdFilterState({
+    filter,
+    setFilter,
+    option,
+    useQuery: useStudioQuery,
+    singleValue: true,
+    hierarchical: true,
+    includeSubMessageID: "subsidiary_studios",
+  });
+
+  return <SidebarListFilter {...state} title={title} />;
 };
 
 export default StudiosFilter;

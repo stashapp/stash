@@ -7,11 +7,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import {
-  Option,
-  SidebarListFilter,
-  useStaticResults,
-} from "./SidebarListFilter";
+import { Option, SidebarListFilter } from "./SidebarListFilter";
 
 interface IBooleanFilter {
   criterion: BooleanCriterion;
@@ -110,8 +106,6 @@ export const SidebarBooleanFilter: React.FC<ISidebarFilter> = ({
     return [trueOption, falseOption].filter((o) => !selected.includes(o));
   }, [selected, trueOption, falseOption]);
 
-  const useQuery = useStaticResults(options);
-
   function onSelect(item: Option) {
     const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
 
@@ -128,7 +122,7 @@ export const SidebarBooleanFilter: React.FC<ISidebarFilter> = ({
     <>
       <SidebarListFilter
         title={title}
-        useQuery={useQuery}
+        candidates={options}
         onSelect={onSelect}
         onUnselect={onUnselect}
         selected={selected}

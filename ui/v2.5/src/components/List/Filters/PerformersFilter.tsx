@@ -5,7 +5,8 @@ import { ObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
-import { SidebarLabeledIdFilter } from "./LabeledIdFilter";
+import { useLabeledIdFilterState } from "./LabeledIdFilter";
+import { SidebarListFilter } from "./SidebarListFilter";
 
 interface IPerformersFilter {
   criterion: PerformersCriterion;
@@ -58,15 +59,14 @@ export const SidebarPerformersFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
 }> = ({ title, option, filter, setFilter }) => {
-  return (
-    <SidebarLabeledIdFilter
-      title={title}
-      filter={filter}
-      setFilter={setFilter}
-      option={option}
-      useQuery={usePerformerQuery}
-    />
-  );
+  const state = useLabeledIdFilterState({
+    filter,
+    setFilter,
+    option,
+    useQuery: usePerformerQuery,
+  });
+
+  return <SidebarListFilter {...state} title={title} />;
 };
 
 export default PerformersFilter;

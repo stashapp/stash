@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 import { FilterSelect, SelectObject } from "src/components/Shared/Select";
 import { objectTitle } from "src/core/files";
@@ -14,7 +14,7 @@ import {
   ILabeledId,
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
-import { Option, SidebarListFilter } from "./SidebarListFilter";
+import { Option } from "./SidebarListFilter";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
@@ -78,7 +78,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
 
 type ModifierValue = "any" | "none" | "any_of" | "only" | "include_subs";
 
-function getModifierCandidates(props: {
+export function getModifierCandidates(props: {
   modifier: CriterionModifier;
   defaultModifier: CriterionModifier;
   hasSelected?: boolean;
@@ -123,7 +123,7 @@ function getModifierCandidates(props: {
   return ret;
 }
 
-function modifierValueToModifier(key: ModifierValue): CriterionModifier {
+export function modifierValueToModifier(key: ModifierValue): CriterionModifier {
   switch (key) {
     case "any":
       return CriterionModifier.NotNull;
@@ -138,82 +138,78 @@ function modifierValueToModifier(key: ModifierValue): CriterionModifier {
   throw new Error("Invalid modifier value");
 }
 
-function hookUseQuery(props: {
-  useQuery: (q: string) => ILoadResults<ILabeledId[]>;
-  postHook: (r: ILabeledId[] | undefined) => Option[];
-}) {
-  return (q: string) => {
-    const { useQuery, postHook } = props;
-
-    const cacheResults = useCacheResults(useQuery(q));
-    const { results: queryResults } = cacheResults;
-
-    const candidates = useMemo(() => {
-      return postHook(queryResults);
-    }, [queryResults, postHook]);
-
-    return {
-      ...cacheResults,
-      results: candidates,
-    };
-  };
+function getDefaultModifier(singleValue: boolean) {
+  if (singleValue) {
+    return CriterionModifier.Includes;
+  }
+  return CriterionModifier.IncludesAll;
 }
 
-export const SidebarLabeledIdFilter: React.FC<{
-  title?: ReactNode;
-  option: CriterionOption;
-  filter: ListFilterModel;
-  setFilter: (f: ListFilterModel) => void;
-  useQuery: (q: string) => ILoadResults<ILabeledId[]>;
+export function useSelectionState(props: {
+  criterion: ModifierCriterion<ILabeledValueListValue>;
+  setCriterion: (c: ModifierCriterion<ILabeledValueListValue>) => void;
   singleValue?: boolean;
   hierarchical?: boolean;
   includeSubMessageID?: string;
-}> = ({
-  title,
-  option,
-  filter,
-  setFilter,
-  useQuery,
-  singleValue,
-  hierarchical,
-  includeSubMessageID,
-}) => {
+}) {
   const intl = useIntl();
 
-  const [query, setQuery] = useState("");
-
-  const criterion = useMemo(() => {
-    const ret = filter.criteria.find(
-      (c) => c.criterionOption.type === option.type
-    );
-    if (ret) return ret as ModifierCriterion<ILabeledValueListValue>;
-
-    const newCriterion = filter.makeCriterion(
-      option.type
-    ) as ModifierCriterion<ILabeledValueListValue>;
-    return newCriterion;
-  }, [filter, option]);
+  const {
+    criterion,
+    setCriterion,
+    singleValue = false,
+    hierarchical = false,
+    includeSubMessageID,
+  } = props;
   const { modifier } = criterion;
 
-  const defaultModifier = useMemo(() => {
-    if (singleValue) {
-      return CriterionModifier.Includes;
-    }
-    return CriterionModifier.IncludesAll;
-  }, [singleValue]);
+  const defaultModifier = getDefaultModifier(singleValue);
 
-  const setCriterion = useCallback(
-    (c: ModifierCriterion<ILabeledValueListValue>) => {
-      const newCriteria = filter.criteria.filter(
-        (cc) => cc.criterionOption.type !== option.type
-      );
+  const selectedModifiers = useMemo(() => {
+    return {
+      any: modifier === CriterionModifier.NotNull,
+      none: modifier === CriterionModifier.IsNull,
+      any_of: !singleValue && modifier === CriterionModifier.Includes,
+      only: !singleValue && modifier === CriterionModifier.Equals,
+      include_subs:
+        hierarchical &&
+        modifier === defaultModifier &&
+        (criterion.value as IHierarchicalLabelValue).depth === -1,
+    };
+  }, [modifier, singleValue, criterion.value, defaultModifier, hierarchical]);
 
-      if (c.isValid()) newCriteria.push(c);
+  const selected = useMemo(() => {
+    const modifierValues: Option[] = Object.entries(selectedModifiers)
+      .filter((v) => v[1])
+      .map((v) => {
+        const messageID =
+          v[0] === "include_subs"
+            ? includeSubMessageID
+            : `criterion_modifier_values.${v[0]}`;
 
-      setFilter(filter.setCriteria(newCriteria));
-    },
-    [option.type, setFilter, filter]
-  );
+        return {
+          id: v[0],
+          label: `(${intl.formatMessage({
+            id: messageID,
+          })})`,
+          className: "modifier-object",
+        };
+      });
+
+    return modifierValues.concat(
+      criterion.value.items.map((s) => ({
+        id: s.id,
+        label: s.label,
+      }))
+    );
+  }, [intl, selectedModifiers, criterion.value.items, includeSubMessageID]);
+
+  const excluded = useMemo(() => {
+    return criterion.value.excluded.map((s) => ({
+      id: s.id,
+      label: s.label,
+    }));
+  }, [criterion.value.excluded]);
 
   const includingOnly = modifier == CriterionModifier.Equals;
   const excludingOnly =
@@ -283,140 +279,192 @@ export const SidebarLabeledIdFilter: React.FC<{
     [criterion, setCriterion, defaultModifier]
   );
 
-  const selectedModifiers = useMemo(() => {
-    return {
-      any: modifier === CriterionModifier.NotNull,
-      none: modifier === CriterionModifier.IsNull,
-      any_of: !singleValue && modifier === CriterionModifier.Includes,
-      only: !singleValue && modifier === CriterionModifier.Equals,
-      include_subs:
-        hierarchical &&
-        modifier === defaultModifier &&
-        (criterion.value as IHierarchicalLabelValue).depth === -1,
-    };
-  }, [modifier, singleValue, criterion.value, defaultModifier, hierarchical]);
+  return { selected, excluded, onSelect, onUnselect, includingOnly };
+}
 
-  const selected = useMemo(() => {
-    const modifierValues: Option[] = Object.entries(selectedModifiers)
-      .filter((v) => v[1])
-      .map((v) => {
-        const messageID =
-          v[0] === "include_subs"
-            ? includeSubMessageID
-            : `criterion_modifier_values.${v[0]}`;
+export function useCriterion(
+  option: CriterionOption,
+  filter: ListFilterModel,
+  setFilter: (f: ListFilterModel) => void
+) {
+  const criterion = useMemo(() => {
+    const ret = filter.criteria.find(
+      (c) => c.criterionOption.type === option.type
+    );
+    if (ret) return ret as ModifierCriterion<ILabeledValueListValue>;
 
-        return {
-          id: v[0],
-          label: `(${intl.formatMessage({
-            id: messageID,
-          })})`,
-          className: "modifier-object",
-        };
-      });
+    const newCriterion = filter.makeCriterion(
+      option.type
+    ) as ModifierCriterion<ILabeledValueListValue>;
+    return newCriterion;
+  }, [filter, option]);
 
-    return modifierValues.concat(
-      criterion.value.items.map((s) => ({
-        id: s.id,
-        label: s.label,
+  const setCriterion = useCallback(
+    (c: ModifierCriterion<ILabeledValueListValue>) => {
+      const newCriteria = filter.criteria.filter(
+        (cc) => cc.criterionOption.type !== option.type
+      );
+
+      if (c.isValid()) newCriteria.push(c);
+
+      setFilter(filter.setCriteria(newCriteria));
+    },
+    [option.type, setFilter, filter]
+  );
+
+  return { criterion, setCriterion };
+}
+
+export function useQueryState(
+  useQuery: (q: string, skip: boolean) => ILoadResults<ILabeledId[]>
+) {
+  const [query, setQuery] = useState("");
+  // const [skip, setSkip] = useState(true);
+  const { results: queryResults } = useCacheResults(useQuery(query, false));
+
+  return { query, setQuery, queryResults };
+}
+
+export function useCandidates(props: {
+  criterion: ModifierCriterion<ILabeledValueListValue>;
+  queryResults: ILabeledId[] | undefined;
+  selected: Option[];
+  excluded: Option[];
+  hierarchical?: boolean;
+  singleValue?: boolean;
+  includeSubMessageID?: string;
+}) {
+  const intl = useIntl();
+
+  const {
+    criterion,
+    queryResults,
+    selected,
+    excluded,
+    hierarchical = false,
+    singleValue = false,
+    includeSubMessageID,
+  } = props;
+  const { modifier } = criterion;
+
+  const results = useMemo(() => {
+    if (
+      !queryResults ||
+      modifier === CriterionModifier.IsNull ||
+      modifier === CriterionModifier.NotNull
+    ) {
+      return [];
+    }
+
+    return queryResults.filter(
+      (p) =>
+        selected.find((s) => s.id === p.id) === undefined &&
+        excluded.find((s) => s.id === p.id) === undefined
+    );
+  }, [queryResults, modifier, selected, excluded]);
+
+  const defaultModifier = getDefaultModifier(singleValue);
+
+  const candidates = useMemo(() => {
+    const hierarchicalCandidate =
+      hierarchical && (criterion.value as IHierarchicalLabelValue).depth !== -1;
+
+    const modifierCandidates: Option[] = getModifierCandidates({
+      modifier,
+      defaultModifier,
+      hasSelected: selected.length > 0,
+      hasExcluded: excluded.length > 0,
+      singleValue,
+      hierarchical: hierarchicalCandidate,
+    }).map((v) => {
+      const messageID =
+        v === "include_subs"
+          ? includeSubMessageID
+          : `criterion_modifier_values.${v}`;
+
+      return {
+        id: v,
+        label: `(${intl.formatMessage({
+          id: messageID,
+        })})`,
+        className: "modifier-object",
+        canExclude: false,
+      };
+    });
+
+    return modifierCandidates.concat(
+      (results ?? []).map((r) => ({
+        id: r.id,
+        label: r.label,
       }))
     );
-  }, [intl, selectedModifiers, criterion.value.items, includeSubMessageID]);
+  }, [
+    defaultModifier,
+    intl,
+    modifier,
+    singleValue,
+    results,
+    selected,
+    excluded,
+    criterion.value,
+    hierarchical,
+    includeSubMessageID,
+  ]);
 
-  const excluded = useMemo(() => {
-    return criterion.value.excluded.map((s) => ({
-      id: s.id,
-      label: s.label,
-    }));
-  }, [criterion.value.excluded]);
+  return candidates;
+}
 
-  const filterResults = useCallback(
-    (queryResults: ILabeledId[] | undefined) => {
-      if (
-        !queryResults ||
-        modifier === CriterionModifier.IsNull ||
-        modifier === CriterionModifier.NotNull
-      ) {
-        return [];
-      }
+export function useLabeledIdFilterState(props: {
+  option: CriterionOption;
+  filter: ListFilterModel;
+  setFilter: (f: ListFilterModel) => void;
+  useQuery: (q: string, skip: boolean) => ILoadResults<ILabeledId[]>;
+  singleValue?: boolean;
+  hierarchical?: boolean;
+  includeSubMessageID?: string;
+}) {
+  const {
+    option,
+    filter,
+    setFilter,
+    useQuery,
+    singleValue = false,
+    hierarchical = false,
+    includeSubMessageID,
+  } = props;
 
-      return queryResults.filter(
-        (p) =>
-          selected.find((s) => s.id === p.id) === undefined &&
-          excluded.find((s) => s.id === p.id) === undefined
-      );
-    },
-    [modifier, selected, excluded]
-  );
+  const { query, setQuery, queryResults } = useQueryState(useQuery);
 
-  const queryResultsPostHook = useCallback(
-    (queryResults: ILabeledId[] | undefined) => {
-      const hierarchicalCandidate =
-        hierarchical &&
-        (criterion.value as IHierarchicalLabelValue).depth !== -1;
+  const { criterion, setCriterion } = useCriterion(option, filter, setFilter);
 
-      const modifierCandidates: Option[] = getModifierCandidates({
-        modifier,
-        defaultModifier,
-        hasSelected: selected.length > 0,
-        hasExcluded: excluded.length > 0,
-        singleValue,
-        hierarchical: hierarchicalCandidate,
-      }).map((v) => {
-        const messageID =
-          v === "include_subs"
-            ? includeSubMessageID
-            : `criterion_modifier_values.${v}`;
-
-        return {
-          id: v,
-          label: `(${intl.formatMessage({
-            id: messageID,
-          })})`,
-          className: "modifier-object",
-          canExclude: false,
-        };
-      });
-
-      const results = filterResults(queryResults);
-
-      return modifierCandidates.concat(
-        (results ?? []).map((r) => ({
-          id: r.id,
-          label: r.label,
-        }))
-      );
-    },
-    [
-      filterResults,
-      defaultModifier,
-      intl,
-      modifier,
+  const { selected, excluded, onSelect, onUnselect, includingOnly } =
+    useSelectionState({
+      criterion,
+      setCriterion,
       singleValue,
-      selected,
-      excluded,
-      criterion.value,
       hierarchical,
       includeSubMessageID,
-    ]
-  );
+    });
 
-  const useQueryHooked = hookUseQuery({
-    postHook: queryResultsPostHook,
-    useQuery: useQuery,
+  const candidates = useCandidates({
+    criterion,
+    queryResults,
+    selected,
+    excluded,
+    hierarchical,
+    singleValue,
+    includeSubMessageID,
   });
 
-  return (
-    <SidebarListFilter
-      title={title}
-      useQuery={useQueryHooked}
-      onSelect={onSelect}
-      onUnselect={onUnselect}
-      selected={selected}
-      excluded={excluded}
-      canExclude={!includingOnly}
-      query={query}
-      setQuery={setQuery}
-      singleValue={singleValue}
-    />
-  );
-};
+  return {
+    candidates,
+    onSelect,
+    onUnselect,
+    selected,
+    excluded,
+    canExclude: !includingOnly,
+    query,
+    setQuery,
+    singleValue,
+  };
+}
