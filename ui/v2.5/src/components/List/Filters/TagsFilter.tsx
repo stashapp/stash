@@ -13,7 +13,7 @@ interface ITagsFilter {
   setCriterion: (c: StudiosCriterion) => void;
 }
 
-function useTagQuery(query: string) {
+function useTagQuery(query: string, skip?: boolean) {
   const { data, loading } = useFindTagsForSelectQuery({
     variables: {
       filter: {
@@ -21,6 +21,7 @@ function useTagQuery(query: string) {
         per_page: 200,
       },
     },
+    skip,
   });
 
   const results = useMemo(() => {

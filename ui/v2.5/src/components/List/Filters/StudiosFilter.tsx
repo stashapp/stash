@@ -13,7 +13,7 @@ interface IStudiosFilter {
   setCriterion: (c: StudiosCriterion) => void;
 }
 
-function useStudioQuery(query: string) {
+function useStudioQuery(query: string, skip?: boolean) {
   const { data, loading } = useFindStudiosForSelectQuery({
     variables: {
       filter: {
@@ -21,6 +21,7 @@ function useStudioQuery(query: string) {
         per_page: 200,
       },
     },
+    skip,
   });
 
   const results = useMemo(() => {

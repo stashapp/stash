@@ -178,27 +178,6 @@ export const SelectedList: React.FC<{
   );
 };
 
-// FIXME remove
-// export const CandidateList: React.FC<{
-//   items: Option[];
-//   onSelect: (item: Option, exclude: boolean) => void;
-//   canExclude?: boolean;
-// }> = ({ items, onSelect, canExclude }) => {
-//   return (
-//     <ul className="candidate-list">
-//       {items.map((p) => (
-//         <CandidateItem
-//           key={p.id}
-//           onSelect={(exclude) => onSelect(p, exclude)}
-//           label={p.label}
-//           canExclude={canExclude}
-//           // singleValue={singleValue}
-//         />
-//       ))}
-//     </ul>
-//   );
-// }
-
 const QueryField: React.FC<{
   focus: ReturnType<typeof useFocus>;
   value: string;
@@ -296,6 +275,7 @@ export const SidebarListFilter: React.FC<{
   postSelected?: React.ReactNode;
   preCandidates?: React.ReactNode;
   postCandidates?: React.ReactNode;
+  onOpen?: () => void;
 }> = ({
   title,
   selected,
@@ -311,6 +291,7 @@ export const SidebarListFilter: React.FC<{
   postCandidates,
   preSelected,
   postSelected,
+  onOpen,
 }) => {
   // TODO - sort items?
 
@@ -361,6 +342,7 @@ export const SidebarListFilter: React.FC<{
           {postSelected ? <div className="extra">{postSelected}</div> : null}
         </>
       }
+      onOpen={onOpen}
     >
       {preCandidates ? <div className="extra">{preCandidates}</div> : null}
       <CandidateList

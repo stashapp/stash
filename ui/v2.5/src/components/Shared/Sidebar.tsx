@@ -11,7 +11,7 @@ import ScreenUtils, { useMediaQuery } from "src/utils/screen";
 import { IViewConfig, useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { View } from "../List/views";
 import cx from "classnames";
-import { Button, ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonToolbar, CollapseProps } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
 const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
@@ -59,9 +59,10 @@ export const SidebarSection: React.FC<
     text: React.ReactNode;
     className?: string;
     outsideCollapse?: React.ReactNode;
+    onOpen?: () => void;
   }>
-> = ({ className = "", text, outsideCollapse, children }) => {
-  const collapseProps = {
+> = ({ className = "", text, outsideCollapse, onOpen, children }) => {
+  const collapseProps: Partial<CollapseProps> = {
     mountOnEnter: true,
     unmountOnExit: true,
   };
@@ -71,6 +72,7 @@ export const SidebarSection: React.FC<
       collapseProps={collapseProps}
       text={text}
       outsideCollapse={outsideCollapse}
+      onOpen={onOpen}
     >
       {children}
     </CollapseButton>

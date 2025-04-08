@@ -316,11 +316,11 @@ export function useCriterion(
 }
 
 export function useQueryState(
-  useQuery: (q: string, skip: boolean) => ILoadResults<ILabeledId[]>
+  useQuery: (q: string, skip: boolean) => ILoadResults<ILabeledId[]>,
+  skip: boolean
 ) {
   const [query, setQuery] = useState("");
-  // const [skip, setSkip] = useState(true);
-  const { results: queryResults } = useCacheResults(useQuery(query, false));
+  const { results: queryResults } = useCacheResults(useQuery(query, skip));
 
   return { query, setQuery, queryResults };
 }
@@ -433,7 +433,10 @@ export function useLabeledIdFilterState(props: {
     includeSubMessageID,
   } = props;
 
-  const { query, setQuery, queryResults } = useQueryState(useQuery);
+  // defer querying until the user opens the filter
+  const [skip, setSkip] = useState(true);
+
+  const { query, setQuery, queryResults } = useQueryState(useQuery, skip);
 
   const { criterion, setCriterion } = useCriterion(option, filter, setFilter);
 
@@ -456,6 +459,10 @@ export function useLabeledIdFilterState(props: {
     includeSubMessageID,
   });
 
+  const onOpen = useCallback(() => {
+    setSkip(false);
+  }, []);
+
   return {
     candidates,
     onSelect,
@@ -466,5 +473,6 @@ export function useLabeledIdFilterState(props: {
     query,
     setQuery,
     singleValue,
+    onOpen,
   };
 }

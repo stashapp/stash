@@ -13,7 +13,7 @@ interface IPerformersFilter {
   setCriterion: (c: PerformersCriterion) => void;
 }
 
-function usePerformerQuery(query: string) {
+function usePerformerQuery(query: string, skip?: boolean) {
   const { data, loading } = useFindPerformersForSelectQuery({
     variables: {
       filter: {
@@ -21,6 +21,7 @@ function usePerformerQuery(query: string) {
         per_page: 200,
       },
     },
+    skip,
   });
 
   const results = useMemo(() => {

@@ -12,6 +12,7 @@ interface IProps {
   text: React.ReactNode;
   collapseProps?: Partial<CollapseProps>;
   outsideCollapse?: React.ReactNode;
+  onOpen?: () => void;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
@@ -19,11 +20,19 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
 ) => {
   const [open, setOpen] = useState(false);
 
+  function toggleOpen() {
+    const nv = !open;
+    setOpen(nv);
+    if (props.onOpen && nv) {
+      props.onOpen();
+    }
+  }
+
   return (
     <div className={props.className}>
       <div className="collapse-header">
         <Button
-          onClick={() => setOpen(!open)}
+          onClick={() => toggleOpen()}
           className="minimal collapse-button"
         >
           <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
