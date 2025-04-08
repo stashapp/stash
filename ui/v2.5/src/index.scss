@@ -1,3 +1,9 @@
+// variables required by other scss files
+
+// this is calculated from the existing height
+// TODO: we should set this explicitly in the navbar
+$navbar-height: 48.75px;
+
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";

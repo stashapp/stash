@@ -789,7 +789,6 @@ $sidebar-width: 250px;
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      padding-top: 1rem;
       width: 100%;
     }
 
@@ -799,14 +798,8 @@ $sidebar-width: 250px;
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      margin-bottom: 4rem;
+      margin-bottom: $navbar-height;
       margin-top: 0;
-    }
-
-    // increase font size on smaller devices
-    .sidebar,
-    .sidebar .btn {
-      font-size: 1.2em;
     }
   }
 }
@@ -821,6 +814,12 @@ $sidebar-width: 250px;
   position: sticky;
   top: 0;
   z-index: 101;
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar-toolbar {
+    padding-top: 1rem;
+  }
 }
 
 .sidebar-section {
