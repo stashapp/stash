@@ -191,7 +191,10 @@
             "show_male_label": "남성 배우 보여주기",
             "source": "출처",
             "mark_organized_desc": "저장 버튼을 클릭하면 곧바로 영상을 '정리됨' 상태로 만듭니다.",
-            "mark_organized_label": "저장 시 '정리됨' 상태로 만들기"
+            "mark_organized_label": "저장 시 '정리됨' 상태로 만들기",
+            "errors": {
+                "blacklist_duplicate": "블랙리스트 항목이 중복되었습니다"
+            }
         },
         "noun_query": "쿼리",
         "results": {
@@ -443,7 +446,9 @@
             "endpoint": "엔드포인트",
             "graphql_endpoint": "GraphQL 엔드포인트",
             "name": "이름",
-            "title": "Stash-box 엔드포인트"
+            "title": "Stash-box 엔드포인트",
+            "max_requests_per_minute": "분당 최대 요청 수",
+            "max_requests_per_minute_description": "0으로 설정할 경우 기본값({defaultValue})을 사용합니다"
         },
         "system": {
             "transcoding": "트랜스코딩"
@@ -726,7 +731,7 @@
                         "description": "비디오가 끝나면 대기열에 있는 다음 영상을 재생합니다",
                         "heading": "플레이리스트 이어보기"
                     },
-                    "show_scrubber": "스크러버 보이기",
+                    "show_scrubber": "스크러버 표시",
                     "track_activity": "영상 재생 기록 활성화",
                     "vr_tag": {
                         "description": "VR 버튼은 이 태그를 가진 영상에서만 보여질 것입니다.",
@@ -734,7 +739,8 @@
                     },
                     "enable_chromecast": "크롬캐스트 활성화",
                     "disable_mobile_media_auto_rotate": "모바일 환경에서 전체화면 시 자동 방향 회전 비활성화",
-                    "show_ab_loop_controls": "구간반복 기능 활성화"
+                    "show_ab_loop_controls": "구간반복 기능 활성화",
+                    "show_range_markers": "범위 마커 표시"
                 }
             },
             "scene_wall": {
@@ -834,7 +840,7 @@
         "not_null": "값 존재함",
         "format_string_excludes": "{criterion} {modifierString} {valueString} ({excludedString} 제외)",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} ({excludedString} 제외) (+{depth, plural, =-1 {all} other {{depth}}})",
-        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})"
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}}수준)"
     },
     "custom": "커스텀",
     "date": "날짜",
@@ -910,7 +916,7 @@
             "marker_image_previews": "마커 움직이는 이미지 미리보기",
             "marker_image_previews_tooltip": "애니메이션(webp) 미리보기도 생성합니다. 영상/마커 월 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 생성되기 때문에 파일 크기가 커집니다.",
             "marker_screenshots": "마커 스크린샷",
-            "marker_screenshots_tooltip": "마커 JPG 이미지. 미리보기 유형이 이미지로 설정된 경우에만 필요합니다.",
+            "marker_screenshots_tooltip": "마커 고정 JPG 이미지",
             "markers": "마커 미리보기",
             "markers_tooltip": "주어진 시간 코드에서 시작하는 20초 짜리 비디오입니다.",
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
@@ -1023,7 +1029,13 @@
         "header": "오류",
         "loading_type": "{type}을(를) 로딩하는 중 오류가 발생했습니다",
         "invalid_javascript_string": "유효하지 않은 자바스크립트 코드입니다: {error}",
-        "invalid_json_string": "유효하지 않은 JSON 문자열입니다: {error}"
+        "invalid_json_string": "유효하지 않은 JSON 문자열입니다: {error}",
+        "custom_fields": {
+            "field_name_required": "항목 이름이 필요합니다",
+            "field_name_whitespace": "항목 이름의 전후에 공백이 없어야 합니다",
+            "duplicate_field": "항목 이름은 중복될 수 없습니다",
+            "field_name_length": "항목 이름의 글자 수는 65글자보다 작아야 합니다"
+        }
     },
     "ethnicity": "인종",
     "existing_value": "존재하는 값",
@@ -1092,7 +1104,8 @@
     "last_played_at": "마지막 재생 날짜",
     "library": "라이브러리",
     "loading": {
-        "generic": "로드 중…"
+        "generic": "로드 중…",
+        "plugins": "플러그인 로딩 중…"
     },
     "marker_count": "마커 개수",
     "markers": "마커",
@@ -1105,11 +1118,11 @@
         "interactive_speed": "인터랙티브 속도",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "작품에서 {age} {years_old}"
+            "age_context": "제작 당시 {age} {years_old}"
         },
         "phash": "PHash",
-        "play_count": "재생 횟수",
-        "play_duration": "재생 길이",
+        "play_count": "재생된 횟수",
+        "play_duration": "재생된 길이",
         "stream": "스트림",
         "video_codec": "비디오 코덱",
         "o_count": "싼 횟수"
@@ -1495,5 +1508,28 @@
     "include_sub_studio_content": "서브스튜디오 컨텐츠 포함",
     "include_sub_tag_content": "서브태그 컨텐츠 포함",
     "time_end": "종료 시간",
-    "include_sub_groups": "서브그룹 포함"
+    "include_sub_groups": "서브그룹 포함",
+    "custom_fields": {
+        "value": "값",
+        "field": "항목",
+        "title": "커스텀 항목",
+        "criteria_format_string": "{criterion} (커스텀 항목) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (커스텀 항목) {modifierString} {valueString} (+{others} 기타)"
+    },
+    "login": {
+        "password": "비밀번호",
+        "invalid_credentials": "유효하지 않은 사용자 이름 또는 비밀번호입니다",
+        "login": "로그인",
+        "internal_error": "예상치 못한 내부 에러입니다. 로그에서 세부 사항을 확인하세요",
+        "username": "사용자 이름"
+    },
+    "age_on_date": "제작 당시 {age}살",
+    "sort_name": "이름 (sort name)",
+    "criterion_modifier_values": {
+        "none": "값 없음",
+        "only": "해당 값만 존재",
+        "any": "값 존재",
+        "any_of": "해당 값 중 일부 포함"
+    },
+    "eta": "예상 소요 시간"
 }
