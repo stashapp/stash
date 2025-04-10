@@ -1,44 +1,90 @@
 import React, { ReactNode, useMemo } from "react";
-import { useFindTagsForSelectQuery } from "src/core/generated-graphql";
+import {
+  CriterionModifier,
+  TagDataFragment,
+  TagFilterType,
+  useFindTagsForSelectQuery,
+} from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
-import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { useLabeledIdFilterState } from "./LabeledIdFilter";
+import {
+  makeQueryVariables,
+  setObjectFilter,
+  useLabeledIdFilterState,
+} from "./LabeledIdFilter";
 import { SidebarListFilter } from "./SidebarListFilter";
+import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 
 interface ITagsFilter {
-  criterion: StudiosCriterion;
-  setCriterion: (c: StudiosCriterion) => void;
+  criterion: TagsCriterion;
+  setCriterion: (c: TagsCriterion) => void;
 }
 
-function useTagQuery(query: string, skip?: boolean) {
+interface IHasModifier {
+  modifier: CriterionModifier;
+}
+
+function queryVariables(query: string, f?: ListFilterModel) {
+  const tagFilter: TagFilterType = {};
+
+  if (f) {
+    const filterOutput = f.makeFilter();
+
+    // if tag modifier is includes, take it out of the filter
+    if (
+      (filterOutput.tags as IHasModifier)?.modifier ===
+      CriterionModifier.Includes
+    ) {
+      delete filterOutput.tags;
+
+      // TODO - look for same in AND?
+    }
+
+    setObjectFilter(tagFilter, f.mode, filterOutput);
+  }
+
+  return makeQueryVariables(query, { tag_filter: tagFilter });
+}
+
+function sortResults(
+  query: string,
+  tags: Pick<TagDataFragment, "id" | "name" | "aliases">[]
+) {
+  return sortByRelevance(
+    query,
+    tags ?? [],
+    (t) => t.name,
+    (t) => t.aliases
+  ).map((p) => {
+    return {
+      id: p.id,
+      label: p.name,
+    };
+  });
+}
+
+function useTagQueryFilter(
+  query: string,
+  filter?: ListFilterModel,
+  skip?: boolean
+) {
   const { data, loading } = useFindTagsForSelectQuery({
-    variables: {
-      filter: {
-        q: query,
-        per_page: 200,
-      },
-    },
+    variables: queryVariables(query, filter),
     skip,
   });
 
-  const results = useMemo(() => {
-    return sortByRelevance(
-      query,
-      data?.findTags.tags ?? [],
-      (t) => t.name,
-      (t) => t.aliases
-    ).map((p) => {
-      return {
-        id: p.id,
-        label: p.name,
-      };
-    });
-  }, [data, query]);
+  const results = useMemo(
+    () => sortResults(query, data?.findTags.tags ?? []),
+    [data, query]
+  );
 
   return { results, loading };
+}
+
+function useTagQuery(query: string, skip?: boolean) {
+  return useTagQueryFilter(query, undefined, skip);
 }
 
 const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
@@ -61,7 +107,7 @@ export const SidebarTagsFilter: React.FC<{
     filter,
     setFilter,
     option,
-    useQuery: useTagQuery,
+    useQuery: useTagQueryFilter,
     hierarchical: true,
     includeSubMessageID: "sub_tags",
   });
