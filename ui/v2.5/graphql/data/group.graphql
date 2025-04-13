@@ -30,6 +30,7 @@ fragment GroupData on Group {
   scene_count_all: scene_count(depth: -1)
   sub_group_count
   sub_group_count_all: sub_group_count(depth: -1)
+  o_counter
 
   scenes {
     id
