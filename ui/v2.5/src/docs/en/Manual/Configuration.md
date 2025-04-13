@@ -128,9 +128,11 @@ The logout button is situated in the upper-right part of the screen when you are
 ### Recovering from a forgotten username or password
 
 Stash saves login credentials in the config.yml file. You must reset both login and password if you have forgotten your password by doing the following:
+
 * Close your Stash process
 * Open the `config.yml` file found in your Stash directory with a text editor
-* Delete the `login` and `password` lines from the file and save
+* Delete the `username` and `password` lines from the file and save
+
 Stash authentication should now be reset with no authentication credentials.
 
 ## Advanced configuration options

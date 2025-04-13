@@ -196,9 +196,12 @@ type PerformerFragment struct {
 	Aliases         []string                    "json:\"aliases\" graphql:\"aliases\""
 	Gender          *GenderEnum                 "json:\"gender,omitempty\" graphql:\"gender\""
 	MergedIds       []string                    "json:\"merged_ids\" graphql:\"merged_ids\""
+	Deleted         bool                        "json:\"deleted\" graphql:\"deleted\""
+	MergedIntoID    *string                     "json:\"merged_into_id,omitempty\" graphql:\"merged_into_id\""
 	Urls            []*URLFragment              "json:\"urls\" graphql:\"urls\""
 	Images          []*ImageFragment            "json:\"images\" graphql:\"images\""
 	BirthDate       *string                     "json:\"birth_date,omitempty\" graphql:\"birth_date\""
+	DeathDate       *string                     "json:\"death_date,omitempty\" graphql:\"death_date\""
 	Ethnicity       *EthnicityEnum              "json:\"ethnicity,omitempty\" graphql:\"ethnicity\""
 	Country         *string                     "json:\"country,omitempty\" graphql:\"country\""
 	EyeColor        *EyeColorEnum               "json:\"eye_color,omitempty\" graphql:\"eye_color\""
@@ -248,6 +251,18 @@ func (t *PerformerFragment) GetMergedIds() []string {
 	}
 	return t.MergedIds
 }
+func (t *PerformerFragment) GetDeleted() bool {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Deleted
+}
+func (t *PerformerFragment) GetMergedIntoID() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.MergedIntoID
+}
 func (t *PerformerFragment) GetUrls() []*URLFragment {
 	if t == nil {
 		t = &PerformerFragment{}
@@ -265,6 +280,12 @@ func (t *PerformerFragment) GetBirthDate() *string {
 		t = &PerformerFragment{}
 	}
 	return t.BirthDate
+}
+func (t *PerformerFragment) GetDeathDate() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.DeathDate
 }
 func (t *PerformerFragment) GetEthnicity() *EthnicityEnum {
 	if t == nil {
@@ -853,6 +874,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -860,6 +883,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -985,6 +1009,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -992,6 +1018,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1117,6 +1144,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1124,6 +1153,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1249,6 +1279,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1256,6 +1288,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1320,6 +1353,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1327,6 +1362,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1396,6 +1432,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1403,6 +1441,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1533,6 +1572,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1540,6 +1581,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color

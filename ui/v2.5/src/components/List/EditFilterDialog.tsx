@@ -10,7 +10,6 @@ import React, {
 import { Accordion, Button, Card, Form, Modal } from "react-bootstrap";
 import cx from "classnames";
 import {
-  CriterionValue,
   Criterion,
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
@@ -38,8 +37,8 @@ import ScreenUtils from "src/utils/screen";
 
 interface ICriterionList {
   criteria: string[];
-  currentCriterion?: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  currentCriterion?: Criterion;
+  setCriterion: (c: Criterion) => void;
   criterionOptions: CriterionOption[];
   pinnedCriterionOptions: CriterionOption[];
   selected?: CriterionOption;
@@ -228,7 +227,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
     cloneDeep(filter)
   );
-  const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
+  const [criterion, setCriterion] = useState<Criterion>();
 
   const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
 
@@ -364,7 +363,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     }
   }
 
-  function replaceCriterion(c: Criterion<CriterionValue>) {
+  function replaceCriterion(c: Criterion) {
     const newFilter = cloneDeep(currentFilter);
 
     if (!c.isValid()) {
@@ -397,18 +396,26 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     setCriterion(c);
   }
 
-  function removeCriterion(c: Criterion<CriterionValue>) {
-    const newFilter = cloneDeep(currentFilter);
+  function removeCriterion(c: Criterion, valueIndex?: number) {
+    if (valueIndex !== undefined) {
+      setCurrentFilter(
+        currentFilter.removeCustomFieldCriterion(
+          c.criterionOption.type,
+          valueIndex
+        )
+      );
+    } else {
+      const newFilter = cloneDeep(currentFilter);
+      const newCriteria = criteria.filter((cc) => {
+        return cc.getId() !== c.getId();
+      });
 
-    const newCriteria = criteria.filter((cc) => {
-      return cc.getId() !== c.getId();
-    });
+      newFilter.criteria = newCriteria;
 
-    newFilter.criteria = newCriteria;
-
-    setCurrentFilter(newFilter);
-    if (criterion?.getId() === c.getId()) {
-      optionSelected(undefined);
+      setCurrentFilter(newFilter);
+      if (criterion?.getId() === c.getId()) {
+        optionSelected(undefined);
+      }
     }
   }
 
@@ -462,7 +469,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
                 <FilterTags
                   criteria={criteria}
                   onEditCriterion={(c) => optionSelected(c.criterionOption)}
-                  onRemoveCriterion={(c) => removeCriterion(c)}
+                  onRemoveCriterion={removeCriterion}
                   onRemoveAll={() => onClearAll()}
                 />
               </div>
@@ -481,3 +488,33 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     </>
   );
 };
+
+export function useShowEditFilter(props: {
+  filter: ListFilterModel;
+  setFilter: (f: ListFilterModel) => void;
+  showModal: (content: React.ReactNode) => void;
+  closeModal: () => void;
+}) {
+  const { filter, setFilter, showModal, closeModal } = props;
+
+  const showEditFilter = useCallback(
+    (editingCriterion?: string) => {
+      function onApplyEditFilter(f: ListFilterModel) {
+        closeModal();
+        setFilter(f);
+      }
+
+      showModal(
+        <EditFilterDialog
+          filter={filter}
+          onApply={onApplyEditFilter}
+          onCancel={() => closeModal()}
+          editingCriterion={editingCriterion}
+        />
+      );
+    },
+    [filter, setFilter, showModal, closeModal]
+  );
+
+  return showEditFilter;
+}

@@ -25,7 +25,7 @@ import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { imagePath, imageTitle } from "src/core/files";
 import { isVideo } from "src/utils/visualFile";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -79,7 +79,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     }
 
     await mutateMetadataScan({
-      paths: [objectPath(image)],
+      paths: [imagePath(image)],
       rescan: true,
     });
 
@@ -274,11 +274,11 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   });
 
   const file = useMemo(
-    () => (image.files.length > 0 ? image.files[0] : undefined),
+    () => (image.visual_files.length > 0 ? image.visual_files[0] : undefined),
     [image]
   );
 
-  const title = objectTitle(image);
+  const title = imageTitle(image);
   const ImageView =
     image.visual_files.length > 0 && isVideo(image.visual_files[0])
       ? "video"

@@ -10,10 +10,6 @@ fragment SlimImageData on Image {
   organized
   o_counter
 
-  files {
-    ...ImageFileData
-  }
-
   paths {
     thumbnail
     preview

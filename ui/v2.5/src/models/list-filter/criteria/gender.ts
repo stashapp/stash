@@ -5,12 +5,12 @@ import {
 } from "src/core/generated-graphql";
 import { genderStrings, stringToGender } from "src/utils/gender";
 import {
-  CriterionOption,
+  ModifierCriterionOption,
   ISavedCriterion,
   MultiStringCriterion,
 } from "./criterion";
 
-export const GenderCriterionOption = new CriterionOption({
+export const GenderCriterionOption = new ModifierCriterionOption({
   messageID: "gender",
   type: "gender",
   options: genderStrings,

@@ -5,9 +5,13 @@ import {
   StashIdCriterionInput,
 } from "src/core/generated-graphql";
 import { IStashIDValue } from "../types";
-import { Criterion, CriterionOption } from "./criterion";
+import {
+  ISavedCriterion,
+  ModifierCriterion,
+  ModifierCriterionOption,
+} from "./criterion";
 
-export const StashIDCriterionOption = new CriterionOption({
+export const StashIDCriterionOption = new ModifierCriterionOption({
   messageID: "stash_id",
   type: "stash_id_endpoint",
   modifierOptions: [
@@ -19,7 +23,7 @@ export const StashIDCriterionOption = new CriterionOption({
   makeCriterion: () => new StashIDCriterion(),
 });
 
-export class StashIDCriterion extends Criterion<IStashIDValue> {
+export class StashIDCriterion extends ModifierCriterion<IStashIDValue> {
   constructor() {
     super(StashIDCriterionOption, {
       endpoint: "",
@@ -56,7 +60,10 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
   }
 
   public getLabel(intl: IntlShape): string {
-    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    const modifierString = ModifierCriterion.getModifierLabel(
+      intl,
+      this.modifier
+    );
     let valueString = "";
 
     if (
@@ -87,7 +94,29 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     return ret;
   }
 
-  public toJSON() {
+  public setFromSavedCriterion(
+    criterion: StashIdCriterionInput | ISavedCriterion<StashIdCriterionInput>
+  ) {
+    super.setFromSavedCriterion(criterion);
+
+    // const asStashIDValue = criterion as StashIdCriterionInput;
+    // const asSavedCriterion =
+    //   criterion as ISavedCriterion<StashIdCriterionInput>;
+    // if (asStashIDValue.endpoint || asStashIDValue.stash_id) {
+    //   this.value = {
+    //     endpoint: asStashIDValue.endpoint ?? "",
+    //     stashID: asStashIDValue.stash_id ?? "",
+    //   };
+    // } else if (asSavedCriterion.value) {
+    //   this.value = {
+    //     endpoint: asSavedCriterion.value.endpoint ?? "",
+    //     stashID: asSavedCriterion.value.stash_id ?? "",
+    //   };
+    // }
+  }
+
+  public toQueryParams(): Record<string, unknown> {
+    super.toQueryParams();
     let encodedCriterion;
     if (
       (this.modifier === CriterionModifier.IsNull ||
@@ -105,7 +134,7 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
         modifier: this.modifier,
       };
     }
-    return JSON.stringify(encodedCriterion);
+    return encodedCriterion;
   }
 
   public isValid(): boolean {

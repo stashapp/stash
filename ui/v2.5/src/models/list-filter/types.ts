@@ -39,11 +39,14 @@ export interface IHierarchicalLabelValue {
   depth: number;
 }
 
-export interface INumberValue {
-  value: number | undefined;
-  value2: number | undefined;
+export interface IRangeValue<V> {
+  value: V | undefined;
+  value2: V | undefined;
 }
 
+export type INumberValue = IRangeValue<number>;
+export type IDateValue = IRangeValue<string>;
+export type ITimestampValue = IRangeValue<string>;
 export interface IPHashDuplicationValue {
   duplicated: boolean;
   distance?: number; // currently not implemented
@@ -52,16 +55,6 @@ export interface IPHashDuplicationValue {
 export interface IStashIDValue {
   endpoint: string;
   stashID: string;
-}
-
-export interface IDateValue {
-  value: string;
-  value2: string | undefined;
-}
-
-export interface ITimestampValue {
-  value: string;
-  value2: string | undefined;
 }
 
 export interface IPhashDistanceValue {
@@ -220,4 +213,5 @@ export type CriterionType =
   | "photographer"
   | "disambiguation"
   | "has_chapters"
-  | "sort_name";
+  | "sort_name"
+  | "custom_fields";

@@ -9,7 +9,6 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"golang.org/x/text/collate"
 )
 
@@ -241,7 +240,7 @@ func makeConfigUIResult() map[string]interface{} {
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input config.StashBoxInput) (*StashBoxValidationResult, error) {
 	box := models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}
-	client := stashbox.NewClient(box, r.stashboxRepository())
+	client := r.newStashBoxClient(box)
 
 	user, err := client.GetUser(ctx)
 

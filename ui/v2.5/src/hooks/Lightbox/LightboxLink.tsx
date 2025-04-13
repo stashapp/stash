@@ -6,16 +6,17 @@ import { Button } from "react-bootstrap";
 export const LightboxLink: React.FC<
   PropsWithChildren<{ images?: ILightboxImage[] | undefined; index?: number }>
 > = ({ images, index, children }) => {
-  const showLightbox = useLightbox({
-    images,
-  });
+  const showLightbox = useLightbox();
 
   if (!images || images.length === 0) {
     return <>{children}</>;
   }
 
   return (
-    <Button variant="link" onClick={() => showLightbox(index)}>
+    <Button
+      variant="link"
+      onClick={() => showLightbox({ images, initialIndex: index })}
+    >
       {children}
     </Button>
   );

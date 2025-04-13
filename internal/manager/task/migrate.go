@@ -42,8 +42,8 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 
 	logger.Infof("Migrating database from %d to %d", schemaInfo.CurrentSchemaVersion, schemaInfo.RequiredSchemaVersion)
 
-	// set the number of tasks = required steps + optimise
-	progress.SetTotal(int(schemaInfo.StepsRequired + 1))
+	// set the number of tasks = backup + required steps + optimise
+	progress.SetTotal(int(schemaInfo.StepsRequired + 2))
 
 	database := s.Database
 
@@ -61,12 +61,20 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 		}
 	}
 
-	// perform database backup
-	if err := database.Backup(backupPath); err != nil {
+	progress.ExecuteTask("Backing up database", func() {
+		defer progress.Increment()
+
+		// perform database backup
+		err = database.Backup(backupPath)
+	})
+
+	if err != nil {
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
-	if err := s.runMigrations(ctx, progress); err != nil {
+	err = s.runMigrations(ctx, progress)
+
+	if err != nil {
 		errStr := fmt.Sprintf("error performing migration: %s", err)
 
 		// roll back to the backed up version
@@ -85,6 +93,11 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 		if err := os.Remove(backupPath); err != nil {
 			logger.Warnf("error removing unwanted database backup (%s): %s", backupPath, err.Error())
 		}
+	}
+
+	// reinitialise the database
+	if err := database.ReInitialise(); err != nil {
+		return fmt.Errorf("error reinitialising database: %s", err)
 	}
 
 	logger.Infof("Database migration complete")
@@ -124,6 +137,8 @@ func (s *MigrateJob) runMigrations(ctx context.Context, progress *job.Progress) 
 
 	defer m.Close()
 
+	logger.Info("Running migrations")
+
 	for {
 		currentSchemaVersion := m.CurrentSchemaVersion()
 		targetSchemaVersion := m.RequiredSchemaVersion()
@@ -144,21 +159,15 @@ func (s *MigrateJob) runMigrations(ctx context.Context, progress *job.Progress) 
 		progress.Increment()
 	}
 
-	// reinitialise the database
-	if err := database.ReInitialise(); err != nil {
-		return fmt.Errorf("error reinitialising database: %s", err)
-	}
-
-	// optimise the database
+	// perform post-migrate analyze using the migrator connection
 	progress.ExecuteTask("Optimising database", func() {
-		err = database.Optimise(ctx)
+		err = m.PostMigrate(ctx)
+		progress.Increment()
 	})
 
 	if err != nil {
 		return fmt.Errorf("error optimising database: %s", err)
 	}
-
-	progress.Increment()
 
 	return nil
 }

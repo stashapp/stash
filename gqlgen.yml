@@ -17,7 +17,7 @@ autobind:
   - github.com/stashapp/stash/pkg/scraper
   - github.com/stashapp/stash/internal/identify
   - github.com/stashapp/stash/internal/dlna
-  - github.com/stashapp/stash/pkg/scraper/stashbox
+  - github.com/stashapp/stash/pkg/stashbox
 
 models:
   # Scalars
@@ -35,12 +35,6 @@ models:
     model: github.com/stashapp/stash/internal/api.BoolMap
   PluginConfigMap:
     model: github.com/stashapp/stash/internal/api.PluginConfigMap
-  # define to force resolvers
-  Image:
-    model: github.com/stashapp/stash/pkg/models.Image
-    fields:
-      title:
-        resolver: true
   VideoFile:
     fields:
       # override float fields - #1572

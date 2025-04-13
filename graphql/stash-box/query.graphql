@@ -49,6 +49,8 @@ fragment PerformerFragment on Performer {
   aliases
   gender
   merged_ids
+  deleted
+  merged_into_id
   urls {
     ...URLFragment
   }
@@ -56,6 +58,7 @@ fragment PerformerFragment on Performer {
     ...ImageFragment
   }
   birth_date
+  death_date
   ethnicity
   country
   eye_color

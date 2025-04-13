@@ -2,19 +2,19 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { FilterSelect, SelectObject } from "src/components/Shared/Select";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 import { IHierarchicalLabelValue } from "src/models/list-filter/types";
 import { NumberField } from "src/utils/form";
 
 interface IHierarchicalLabelValueFilterProps {
-  criterion: Criterion<IHierarchicalLabelValue>;
+  criterion: ModifierCriterion<IHierarchicalLabelValue>;
   onValueChanged: (value: IHierarchicalLabelValue) => void;
 }
 
 export const HierarchicalLabelValueFilter: React.FC<
   IHierarchicalLabelValueFilterProps
 > = ({ criterion, onValueChanged }) => {
-  const { criterionOption } = criterion;
+  const criterionOption = criterion.modifierCriterionOption();
   const { type, inputType } = criterionOption;
 
   const intl = useIntl();

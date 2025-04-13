@@ -12,10 +12,6 @@ fragment ImageData on Image {
   created_at
   updated_at
 
-  files {
-    ...ImageFileData
-  }
-
   paths {
     thumbnail
     preview

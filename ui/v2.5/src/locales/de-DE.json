@@ -129,7 +129,7 @@
         "choose_date": "Datum auswählen",
         "clean_generated": "Generierte Dateien aufräumen",
         "create_parent_studio": "Übergeordnetes Studio erstellen",
-        "add_manual_date": "Manuelles Datum hinzufügen",
+        "add_manual_date": "Datum manuell hinzufügen",
         "copy_to_clipboard": "In die Zwischenablage kopieren",
         "view_history": "Verlauf anzeigen",
         "add_o": "O hinzufügen",
@@ -1516,5 +1516,6 @@
     "history": "Verlauf",
     "tag_sub_tag_tooltip": "Hat Untertags",
     "include_sub_groups": "Untergruppen einbeziehen",
-    "studio_and_parent": "Studio & Mutterstudio"
+    "studio_and_parent": "Studio & Mutterstudio",
+    "eta": "Edited to add"
 }

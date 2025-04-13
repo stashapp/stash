@@ -562,7 +562,7 @@ func (qb *TagStore) All(ctx context.Context) ([]*models.Tag, error) {
 	table := qb.table()
 
 	return qb.getMany(ctx, qb.selectDataset().Order(
-		table.Col("name").Asc(),
+		goqu.L("COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI").Asc(),
 		table.Col(idColumn).Asc(),
 	))
 }

@@ -54,7 +54,7 @@ type stashFindPerformerNamePerformer struct {
 func (p stashFindPerformerNamePerformer) toPerformer() *models.ScrapedPerformer {
 	return &models.ScrapedPerformer{
 		Name: &p.Name,
-		// put id into the URL field
+		// HACK - put id into the URL field
 		URL: &p.ID,
 	}
 }
@@ -107,16 +107,18 @@ func (s *stashScraper) imageGetter() imageGetter {
 }
 
 func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
-	if input.Gallery != nil || input.Scene != nil {
-		return nil, fmt.Errorf("%w: using stash scraper as a fragment scraper", ErrNotSupported)
+	if input.Performer != nil {
+		return s.scrapeByPerformerFragment(ctx, *input.Performer)
 	}
 
-	if input.Performer == nil {
-		return nil, fmt.Errorf("%w: the given performer is nil", ErrNotSupported)
+	if input.Scene != nil {
+		return s.scrapeBySceneFragment(ctx, *input.Scene)
 	}
 
-	scrapedPerformer := input.Performer
+	return nil, fmt.Errorf("%w: using stash scraper as a fragment scraper", ErrNotSupported)
+}
 
+func (s *stashScraper) scrapeByPerformerFragment(ctx context.Context, scrapedPerformer ScrapedPerformerInput) (ScrapedContent, error) {
 	client := s.getStashClient()
 
 	var q struct {
@@ -168,6 +170,45 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 	return &ret, nil
 }
 
+func (s *stashScraper) scrapeBySceneFragment(ctx context.Context, scrapedScene models.ScrapedSceneInput) (ScrapedContent, error) {
+	client := s.getStashClient()
+
+	var q struct {
+		FindScene *scrapedSceneStash `graphql:"findScene(id: $f)"`
+	}
+
+	sceneID := scrapedScene.URLs[0]
+
+	// get the id from the URL field
+	vars := map[string]interface{}{
+		"f": graphql.ID(sceneID),
+	}
+
+	err := client.Query(ctx, &q, vars)
+	if err != nil {
+		return nil, convertGraphqlError(err)
+	}
+
+	if q.FindScene == nil {
+		return nil, nil
+	}
+
+	// need to copy back to a scraped scene
+	ret, err := s.scrapedStashSceneToScrapedScene(ctx, q.FindScene)
+	if err != nil {
+		return nil, err
+	}
+
+	// get the scene image directly
+	ig := s.imageGetter()
+	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, q.FindScene.ID, ig)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 type scrapedStudioStash struct {
 	Name string  `graphql:"name" json:"name"`
 	URL  *string `graphql:"url" json:"url"`
@@ -178,8 +219,8 @@ type stashFindSceneNamesResultType struct {
 	Scenes []*scrapedSceneStash `graphql:"scenes"`
 }
 
-func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*ScrapedScene, error) {
-	ret := ScrapedScene{}
+func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*models.ScrapedScene, error) {
+	ret := models.ScrapedScene{}
 	err := copier.Copy(&ret, scene)
 	if err != nil {
 		return nil, err
@@ -232,6 +273,10 @@ func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 			if err != nil {
 				return nil, err
 			}
+
+			// HACK - put id into the URL field
+			// put id into the URL field
+			converted.URLs = []string{scene.ID}
 			ret = append(ret, converted)
 		}
 
@@ -296,7 +341,7 @@ type scrapedSceneStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// query by MD5
 	var q struct {
 		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
@@ -334,7 +379,7 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		return nil, err
 	}
 
-	// get the performer image directly
+	// get the scene image directly
 	ig := s.imageGetter()
 	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, q.FindScene.ID, ig)
 	if err != nil {
@@ -356,7 +401,7 @@ type scrapedGalleryStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	var q struct {
 		FindGallery *scrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
 	}
@@ -380,7 +425,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 
 	// need to copy back to a scraped scene
-	ret := ScrapedGallery{}
+	ret := models.ScrapedGallery{}
 	if err := copier.Copy(&ret, q.FindGallery); err != nil {
 		return nil, err
 	}
@@ -388,6 +433,33 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	return &ret, nil
 }
 
+func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
+	return nil, ErrNotSupported
+}
+
 func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentType) (ScrapedContent, error) {
 	return nil, ErrNotSupported
+}
+
+func imageToUpdateInput(gallery *models.Image) models.ImageUpdateInput {
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
+		}
+
+		return nil
+	}
+
+	// fallback to file basename if title is empty
+	title := gallery.GetTitle()
+	urls := gallery.URLs.List()
+
+	return models.ImageUpdateInput{
+		ID:      strconv.Itoa(gallery.ID),
+		Title:   &title,
+		Details: &gallery.Details,
+		Urls:    urls,
+		Date:    dateToStringPtr(gallery.Date),
+	}
 }

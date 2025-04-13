@@ -55,7 +55,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
       if (result.data?.tagsMerge) {
         Toast.success(intl.formatMessage({ id: "toast.merged_tags" }));
         onClose();
-        history.push(`/tags/${destination}`);
+        history.replace(`/tags/${destination}`);
       }
     } catch (e) {
       Toast.error(e);

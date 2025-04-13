@@ -121,12 +121,14 @@ func Test_PerformerStore_Create(t *testing.T) {
 					Aliases:        models.NewRelatedStrings(aliases),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
-							StashID:  stashID1,
-							Endpoint: endpoint1,
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
 						},
 						{
-							StashID:  stashID2,
-							Endpoint: endpoint2,
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
 						},
 					}),
 					CreatedAt: createdAt,
@@ -283,12 +285,14 @@ func Test_PerformerStore_Update(t *testing.T) {
 					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
-							StashID:  stashID1,
-							Endpoint: endpoint1,
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
 						},
 						{
-							StashID:  stashID2,
-							Endpoint: endpoint2,
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
 						},
 					}),
 					CreatedAt: createdAt,
@@ -518,12 +522,14 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				StashIDs: &models.UpdateStashIDs{
 					StashIDs: []models.StashID{
 						{
-							StashID:  stashID1,
-							Endpoint: endpoint1,
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
 						},
 						{
-							StashID:  stashID2,
-							Endpoint: endpoint2,
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
 						},
 					},
 					Mode: models.RelationshipUpdateModeSet,
@@ -560,12 +566,14 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				CreatedAt: createdAt,
@@ -2075,8 +2083,9 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	const stashIDStr = "stashID"
 	const endpoint = "endpoint"
 	stashID := models.StashID{
-		StashID:  stashIDStr,
-		Endpoint: endpoint,
+		StashID:   stashIDStr,
+		Endpoint:  endpoint,
+		UpdatedAt: epochTime,
 	}
 
 	qb := db.Performer

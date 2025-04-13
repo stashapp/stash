@@ -51,7 +51,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       .defined()
       .test(
         "is-greater-than-seconds",
-        intl.formatMessage({ id: "end_time_before_start_time" }),
+        intl.formatMessage({ id: "validation.end_time_before_start_time" }),
         function (value) {
           return value === null || value >= this.parent.seconds;
         }

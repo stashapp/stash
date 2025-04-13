@@ -1,13 +1,6 @@
 import React from "react";
-import { HoverPopover } from "./components/Shared/HoverPopover";
-import { TagLink } from "./components/Shared/TagLink";
-import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
-export const components: Record<string, Function> = {
-  HoverPopover,
-  TagLink,
-  LoadingIndicator,
-};
+export let components: Record<string, Function> = {};
 
 const beforeFns: Record<string, Function[]> = {};
 const insteadFns: Record<string, Function[]> = {};
@@ -118,10 +111,12 @@ export function PatchComponent<T>(
 }
 
 // patches a component and registers it in the pluginapi components object
-export function PatchContainerComponent(
+export function PatchContainerComponent<T = {}>(
   component: string
-): React.FC<React.PropsWithChildren<{}>> {
-  const fn = (props: React.PropsWithChildren<{}>) => {
+): React.FC<React.PropsWithChildren<T>> {
+  const fn: React.FC<React.PropsWithChildren<T>> = (
+    props: React.PropsWithChildren<T>
+  ) => {
     return <>{props.children}</>;
   };
 
