@@ -179,7 +179,10 @@
             "show_male_label": "Mannen tonen",
             "source": "Bron",
             "mark_organized_label": "Markeren als geordend na opslaan",
-            "mark_organized_desc": "Markeer een scène als geordend na klikken op opslaan."
+            "mark_organized_desc": "Markeer een scène als geordend na klikken op opslaan.",
+            "errors": {
+                "blacklist_duplicate": "Dubbel zwarte lijst item"
+            }
         },
         "noun_query": "Zoekvraag",
         "results": {
@@ -1074,5 +1077,6 @@
     "group_scene_number": "Scènenummer",
     "include_sub_studio_content": "Inclusief substudio inhoud",
     "last_played_at": "Laatst gespeeld op",
-    "include_sub_tag_content": "Inclusief sub-tag inhoud"
+    "include_sub_tag_content": "Inclusief sub-tag inhoud",
+    "age_on_date": "{age} tijdens productie"
 }
