@@ -378,6 +378,11 @@ func (c config) matchesURL(url string, ty ScrapeContentType) bool {
 			}
 		}
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
+		for _, scraper := range c.GroupByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
 		for _, scraper := range c.MovieByURL {
 			if scraper.matchesURL(url) {
 				return true
