@@ -370,7 +370,7 @@ performer:
           }
 ```
 
-We use [`goja` javascript engine](https://github.com/dop251/goja) is missing a few built-in methods and may not be consistent with other modern javascript implementations.
+We use [`goja` javascript engine](https://github.com/dop251/goja) which is missing a few built-in methods and may not be consistent with other modern javascript implementations.
 
 * `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
 * `lbToKg`: converts a string containing lbs to kg.
