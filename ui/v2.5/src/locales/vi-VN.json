@@ -155,7 +155,7 @@
     "between_and": "và",
     "birth_year": "Năm sinh",
     "birthdate": "Ngày sinh",
-    "bitrate": "Bit Rate",
+    "bitrate": "Tốc độ bit",
     "blobs_storage_type": {
         "database": "Cơ sở dữ liệu",
         "filesystem": "Files hệ thống"
@@ -176,7 +176,137 @@
             "active_instance": "Phiên bản stash-box đang hoạt động:",
             "mark_organized_label": "Đánh dấu là Đã tổ chức khi lưu.",
             "query_mode_auto": "Tự động",
-            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp."
-        }
+            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp.",
+            "query_mode_filename": "Tên tệp tin",
+            "query_mode_filename_desc": "Chỉ được dùng tên tệp tin",
+            "query_mode_label": "Chế độ truy vấn",
+            "query_mode_path": "Đường dẫn",
+            "query_mode_path_desc": "Dùng toàn bộ đường dẫn tệp tin",
+            "set_cover_desc": "Thay thế bìa nền nếu đã được tìm thấy.",
+            "set_cover_label": "Đặt ảnh bìa nền",
+            "set_tag_label": "Đặt các thẻ",
+            "query_mode_dir_desc": "Chỉ được dùng thư mục cha của file video",
+            "set_tag_desc": "Đính kèm các thẻ vào cảnh, bằng cách ghi đè hoặc ghép với các thẻ có sẵn trên cảnh.",
+            "source": "Nguồn",
+            "errors": {
+                "blacklist_duplicate": "Các mục bị trùng lặp trong danh sách đen"
+            },
+            "query_mode_dir": "Danh sách"
+        },
+        "noun_query": "Truy vấn",
+        "results": {
+            "duration_unknown": "Thời gian không xác định",
+            "fp_matches": "Thời lượng tương ứng",
+            "fp_matches_multi": "Thời lượng khớp {matchCount}/{durationsLength} dấu vân tay",
+            "hash_matches": "Khớp với {hash_type}",
+            "match_failed_already_tagged": "Phân cảnh đã được gắn thẻ",
+            "match_failed_no_result": "Không có kết quả được tìm thấy",
+            "match_success": "Phân cảnh đã được gán thẻ thành công",
+            "phash_matches": "Khớp với {count} PHashes",
+            "duration_off": "Thời gian tắt ít nhất cũng cần {number} giây",
+            "fp_found": "{fpCount, plural, =0 {Không có dấu vết trùng khớp mới được tìm thấy} other {# dấu vết trùng khớp mới đã được tìm thấy}}",
+            "unnamed": "Chưa được đặt tên"
+        },
+        "verb_match_fp": "Các dấu vân tay trùng khớp",
+        "verb_matched": "Trùng khớp",
+        "verb_scrape_all": "Loại bỏ tất cả",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} phân cảnh không trùng khớp",
+        "verb_submit_fp": "Gửi {fpCount, plural, one{# Dấu vân tay} other{# Các dấu vân tay}}"
+    },
+    "config": {
+        "about": {
+            "new_version_notice": "[MỚI]",
+            "build_hash": "Mã băm bản xây dựng:",
+            "check_for_new_version": "Kiểm tra bản mới",
+            "latest_version": "Bản mới nhất",
+            "latest_version_build_hash": "Mã băm bản dựng mới nhất:",
+            "release_date": "Ngày phát hành:",
+            "stash_discord": "Tham gia vào kênh {url} của chúng tôi",
+            "stash_open_collective": "Giúp đỡ chúng tôi qua {url}",
+            "version": "Phiên bản"
+        },
+        "application_paths": {
+            "heading": "Đường dẫn tới ứng dụng"
+        },
+        "categories": {
+            "about": "Về",
+            "changelog": "Nhật ký thay đổi",
+            "interface": "Giao diện",
+            "logs": "Tập nhật ký",
+            "plugins": "Các phần bổ trợ",
+            "security": "Bảo mật",
+            "services": "Các dịch vụ",
+            "system": "Hệ thống",
+            "tasks": "Các công việc",
+            "tools": "Các công cụ",
+            "metadata_providers": "Các bên cung cấp thông tin dữ liệu"
+        },
+        "dlna": {
+            "allow_temp_ip": "Cho phép {tempIP}",
+            "allowed_ip_addresses": "Các địa chỉ IP được cho phép",
+            "default_ip_whitelist": "Danh sách các IP mặc định được cho phép",
+            "disabled_dlna_temporarily": "Vô hiệu DLNA tạm thời",
+            "disallowed_ip": "Các IP bị cấm",
+            "enabled_by_default": "Mặc định được kích hoạt",
+            "enabled_dlna_temporarily": "Kích hoạt DLNA tạm thời",
+            "network_interfaces": "Các giao diện",
+            "recent_ip_addresses": "Các địa chỉ IP gần đây",
+            "server_display_name": "Tên hiển thị của máy chủ",
+            "server_display_name_desc": "Tên hiển thị cho máy chủ DLNA. Mặc định là {server_name} nếu để trống.",
+            "server_port": "Cổng máy chủ",
+            "server_port_desc": "Cổng cho máy chủ DLNA dùng. Yêu cầu khởi động lại DLNA sau khi sửa đổi.",
+            "successfully_cancelled_temporary_behaviour": "Hủy bỏ hành vi tạm thời thành công",
+            "until_restart": "cho tới lúc khởi động lại",
+            "video_sort_order": "Thứ tự sắp xếp video mặc định",
+            "video_sort_order_desc": "Thứ tự sắp xếp các video mặc định.",
+            "allowed_ip_temporarily": "Các địa chỉ IP được cho phép tạm thời",
+            "default_ip_whitelist_desc": "Các địa chỉ IP mặc định được phép sử dụng DLNA. Dùng {wildcard} để cho phép tất cả các địa chỉ IP.",
+            "network_interfaces_desc": "Các giao diện để hiển thị máy chủ DLNA. Danh sách trống nghĩa là chạy trên mọi máy chủ. Yêu cần khởi động lại DLNA sau khi sửa đổi."
+        },
+        "general": {
+            "auth": {
+                "api_key": "Khóa API",
+                "authentication": "Xác thực",
+                "clear_api_key": "Xóa khóa API",
+                "credentials": {
+                    "heading": "Các thông tin xác thực"
+                },
+                "generate_api_key": "Tạo khóa API",
+                "log_file": "File nhật ký",
+                "log_file_desc": "Đường dẫn tới file lưu nhật ký. Để trống để vô hiệu lưu nhật ký vào file. Yêu cầu khởi động lại.",
+                "log_http": "Nhật ký truy cập HTTP",
+                "log_to_terminal": "Xuất nhật ký lên terminal",
+                "maximum_session_age": "Thời gian phiên tối đa",
+                "maximum_session_age_desc": "Thời gian chờ tối đa trước khi phiên đăng nhập hết hạn, tính bằng giây. Yêu cầu khởi động lại.",
+                "password": "Mật khẩu",
+                "password_desc": "Mật khẩu để truy cập Stash. Để trống để tắt xác thực người dùng",
+                "stash-box_integration": "Tích hợp Stash-box",
+                "username": "Tên người dùng",
+                "username_desc": "Tên người dùng để truy cập Stash. Để trống để tắt xác thực người dùng",
+                "log_http_desc": "Xuất nhật ký truy cập HTTP lên terminal. Yêu cầu khởi động lại.",
+                "api_key_desc": "Khóa API cho các hệ thống ngoài. Chỉ yêu cầu khóa khi tên người dùng / mật khẩu được thiết lập. Tên người dùng phải được lưu trước khi tạo khóa API.",
+                "log_to_terminal_desc": "Đẩy nhật ký lên terminal bên cạnh việc lưu vào file. Luôn bật nếu đang vô hiệu lưu vào file. Yêu cầu khởi động lại."
+            },
+            "backup_directory_path": {
+                "heading": "Đường dẫn tới thư mục sao lưu",
+                "description": "Vị trí thư mục để sao lưu file dữ liệu SQLite"
+            },
+            "blobs_path": {
+                "heading": "Đường dẫn tới hệ thống tập tin dữ liệu binary",
+                "description": "Chỗ nào trong hệ thống file để lưu dữ liệu binary. Chỉ áp dụng cho lựa chọn lưu trữ blob trong hệ thống tệp tin. CẢNH BÁO: thay đổi cài đặt này yêu cầu di chuyển thủ công các dữ liệu hiện tại."
+            },
+            "blobs_storage": {
+                "heading": "Loại lưu trữ dữ liệu binary",
+                "description": "Chỗ nào để lưu trữ dữ liệu binary như bìa phân cảnh, người biểu diễn, studio và các nhãn ảnh. Sau khi thay đổi giá trị này, dữ liệu hiện tại phải được chuyển đổi bằng cách sử dụng các tác vụ Chuyển Đổi Các Blob. Xem trang Các Tác Vụ để chuyển đổi."
+            },
+            "cache_location": "Vị trí thư mục cache. Yêu cầu dùng nếu đang truyền trực tiếp sử dụng HLS (như trên thiết bị Apple) hoặc DASH.",
+            "cache_path_head": "Đường dẫn cache",
+            "calculate_md5_and_ohash_desc": "Tính toán hàm băm MD5 bên cạnh oshash. Bật lên sẽ làm quá trình quét ban đầu diễn ra chậm hơn. Hàm băm tên file phải đặt về oshash để vô hiệu MD5.",
+            "calculate_md5_and_ohash_label": "Tính toán MD5 cho các video",
+            "check_for_insecure_certificates": "Kiểm tra các chứng chỉ không an toàn",
+            "check_for_insecure_certificates_desc": "Một số trang sử dụng chứng chỉ ssl không an toàn. Nếu bỏ tick, bộ thu thập sẽ bỏ qua quy trình kiểm tra tính an toàn của chứng chỉ và sẽ thu thập toàn bộ các trang đó. Nếu bạn gặp vấn đề về chứng chỉ khi thu thập dữ liệu thì hãy bỏ tick."
+        },
+        "advanced_mode": "Chế độ nâng cao"
     }
 }
