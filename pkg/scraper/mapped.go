@@ -851,7 +851,10 @@ type mappedScraper struct {
 	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
 	Image     *mappedImageScraperConfig     `yaml:"image"`
 	Performer *mappedPerformerScraperConfig `yaml:"performer"`
-	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
+	Group     *mappedMovieScraperConfig     `yaml:"group"`
+
+	// deprecated
+	Movie *mappedMovieScraperConfig `yaml:"movie"`
 }
 
 type mappedResult map[string]interface{}
@@ -1247,24 +1250,29 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
-	var ret models.ScrapedMovie
+func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.ScrapedGroup, error) {
+	var ret models.ScrapedGroup
 
-	movieScraperConfig := s.Movie
-	if movieScraperConfig == nil {
+	// try group scraper first, falling back to movie
+	groupScraperConfig := s.Group
+
+	if groupScraperConfig == nil {
+		groupScraperConfig = s.Movie
+	}
+	if groupScraperConfig == nil {
 		return nil, nil
 	}
 
-	movieMap := movieScraperConfig.mappedConfig
+	groupMap := groupScraperConfig.mappedConfig
 
-	movieStudioMap := movieScraperConfig.Studio
-	movieTagsMap := movieScraperConfig.Tags
+	groupStudioMap := groupScraperConfig.Studio
+	groupTagsMap := groupScraperConfig.Tags
 
-	results := movieMap.process(ctx, q, s.Common, urlsIsMulti)
+	results := groupMap.process(ctx, q, s.Common, urlsIsMulti)
 
-	if movieStudioMap != nil {
-		logger.Debug(`Processing movie studio:`)
-		studioResults := movieStudioMap.process(ctx, q, s.Common, nil)
+	if groupStudioMap != nil {
+		logger.Debug(`Processing group studio:`)
+		studioResults := groupStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
@@ -1274,9 +1282,9 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 	}
 
 	// now apply the tags
-	if movieTagsMap != nil {
-		logger.Debug(`Processing movie tags:`)
-		tagResults := movieTagsMap.process(ctx, q, s.Common, nil)
+	if groupTagsMap != nil {
+		logger.Debug(`Processing group tags:`)
+		tagResults := groupTagsMap.process(ctx, q, s.Common, nil)
 
 		for _, p := range tagResults {
 			tag := &models.ScrapedTag{}

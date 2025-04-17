@@ -234,6 +234,7 @@ The above configuration would scrape from the value of `queryURL`, replacing `{f
 ### scrapeXPath and scrapeJson use with `<scene|performer|gallery|group>ByURL`
 
 For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
+
 * `{url}` - the url of the scene/performer/gallery
 
 ```yaml
@@ -253,7 +254,9 @@ sceneByURL:
 
 A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, `sceneByName`, `sceneByQueryFragment` and `sceneByFragment`, types. This action requires that the top-level `stashServer` field is configured.
 
-`stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`. Alternatively, the `apiKey` field can be used to authenticate with the remote stash server.
+- `stashServer` contains a single `url` field for the remote stash server. 
+- The username and password can be embedded in this string using `username:password@host`. 
+- Alternatively, the `apiKey` field can be used to authenticate with the remote stash server.
 
 An example stash scrape configuration is below:
 
@@ -352,6 +355,7 @@ scene:
 ### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
+
 * `javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. If an error occurs while compiling or running the script, then the original value is returned.
 Example:
 ```yaml
@@ -365,11 +369,12 @@ performer:
             return value[0].toUpperCase() + value.substring(1)
           }
 ```
-Note that the `otto` javascript engine is missing a few built-in methods and may not be consistent with other modern javascript implementations.
+
+We use [`goja` javascript engine](https://github.com/dop251/goja) which is missing a few built-in methods and may not be consistent with other modern javascript implementations.
+
 * `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
 * `lbToKg`: converts a string containing lbs to kg.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
-
 Example:
 ```yaml
 performer:
@@ -388,8 +393,11 @@ performer:
     postProcess:
       - lbToKg: true
 ```
-Gets the contents of the selected div element, and sets the returned value to `Female` if the scraped value is `F`; `Male` if the scraped value is `M`.
-Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
+Gets the contents of the selected div element, and sets the returned value to:
+    - `Female` if the scraped value is `F`;
+    - `Male` if the scraped value is `M`.
+
+    Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
 
 * `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them. 
 Unix timestamps (example: 1660169451) can also be parsed by selecting `unix` as the date format.
@@ -414,7 +422,6 @@ Date:
 ```
 
 * `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
-
 Example:
 ```yaml
 CareerLength: 
@@ -429,9 +436,9 @@ Replaces `2001 to 2003` with `2001-2003`.
 * `subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606)
 
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
+
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
 * `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
-
 Example:
 ```yaml
 Tags:

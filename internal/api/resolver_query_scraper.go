@@ -101,12 +101,12 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 }
 
 func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models.ScrapedGroup, error) {
-	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeMovie)
+	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := marshalScrapedMovie(content)
+	ret, err := marshalScrapedGroup(content)
 	if err != nil {
 		return nil, err
 	}
