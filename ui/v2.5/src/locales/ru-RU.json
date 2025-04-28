@@ -435,7 +435,8 @@
             "endpoint": "Конечная точка",
             "graphql_endpoint": "Конечная точка GraphQL",
             "name": "Имя",
-            "title": "Конечные точки Stash-box"
+            "title": "Конечные точки Stash-box",
+            "max_requests_per_minute": "Максимальное количество запросов в минуту"
         },
         "system": {
             "transcoding": "Транскодирование"
