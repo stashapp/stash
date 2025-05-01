@@ -156,7 +156,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.push("/images");
+      history.goBack();
     }
   }
 
