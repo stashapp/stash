@@ -2,6 +2,10 @@
 
 Scrapers can be contributed to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls).
 
+## XPath scraper templates
+
+The most basic XPath scraper templates are available on [CommunityScrapers repository](https://github.com/stashapp/CommunityScrapers/tree/master/templates).
+
 ## Scraper configuration file format
 
 ```yaml
@@ -799,83 +803,120 @@ driver:
 ```
 
 ## Object fields
+
+### Gallery
+
+```
+Code
+Date
+Details
+Performers (see Performer fields)
+Photographer
+Rating
+Studio (see Studio Fields)
+Tags (see Tag fields)
+Title
+URLs
+```
+
+> **Important**: `Title` field is required. 
+
+### Group
+
+```
+Aliases
+BackImage
+Date
+Director
+Duration
+FrontImage
+Name
+Rating
+Studio (see Studio Fields)
+Synopsis
+Tags (see Tag fields)
+URLs
+```
+
+> **Important**: `Name` field is required. 
+
+### Image
+
+```
+Code
+Date
+Details
+Performers (see Performer fields)
+Photographer
+Rating
+Studio (see Studio Fields)
+Tags (see Tag fields)
+Title
+URLs
+```
+
 ### Performer
 
 ```
-Name
-Gender
-URL
-Twitter
-Instagram
-Birthdate
-DeathDate
-Ethnicity
-Country
-HairColor
-EyeColor
-Height
-Weight
-Measurements
-FakeTits
-CareerLength
-Tattoos
-Piercings
 Aliases
-Tags (see Tag fields)
-Image
+Birthdate
+CareerLength
+Circumcised
+Country
+DeathDate
 Details
+Disambiguation
+Ethnicity
+EyeColor
+FakeTits
+Gender
+HairColor
+Height
+Measurements
+Name
+PenisLength
+Piercings
+Tags (see Tag fields)
+Tattoos
+URLs
+Weight
 ```
 
-*Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+> **Important**: `Name` field is required. 
+
+> **Note:**  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
 ### Scene
+
 ```
-Title
-Details
 Code
-Director
-URL
 Date
-Image
-Studio (see Studio Fields)
+Details
+Director
 Groups (see Group Fields)
+Image
+Performers (see Performer fields)
+Studio (see Studio Fields)
 Tags (see Tag fields)
-Performers (list of Performer fields)
+Title
+URLs
 ```
+
+> **Important**: `Title` field is required only if fileless.
+
 ### Studio
+
 ```
 Name
 URL
 ```
+
+> **Important**: `Name` field is required. 
 
 ### Tag
+
 ```
 Name
 ```
 
-### Group
-```
-Name
-Aliases
-Duration
-Date
-Rating
-Director
-Studio
-Synopsis
-URL
-FrontImage
-BackImage
-```
-
-### Gallery
-```
-Title
-Details
-URL
-Date
-Rating
-Studio (see Studio Fields)
-Tags (see Tag fields)
-Performers (list of Performer fields)
-```
+> **Important**: `Name` field is required. 
