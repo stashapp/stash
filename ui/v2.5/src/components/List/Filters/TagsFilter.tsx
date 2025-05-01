@@ -1,22 +1,27 @@
-import React, { useMemo } from "react";
-import { useFindTagsQuery } from "src/core/generated-graphql";
+import React, { ReactNode, useMemo } from "react";
+import { useFindTagsForSelectQuery } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
+import { CriterionOption } from "src/models/list-filter/criteria/criterion";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { useLabeledIdFilterState } from "./LabeledIdFilter";
+import { SidebarListFilter } from "./SidebarListFilter";
 
 interface ITagsFilter {
   criterion: StudiosCriterion;
   setCriterion: (c: StudiosCriterion) => void;
 }
 
-function useTagQuery(query: string) {
-  const { data, loading } = useFindTagsQuery({
+function useTagQuery(query: string, skip?: boolean) {
+  const { data, loading } = useFindTagsForSelectQuery({
     variables: {
       filter: {
         q: query,
         per_page: 200,
       },
     },
+    skip,
   });
 
   const results = useMemo(() => {
@@ -44,6 +49,24 @@ const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
       useResults={useTagQuery}
     />
   );
+};
+
+export const SidebarTagsFilter: React.FC<{
+  title?: ReactNode;
+  option: CriterionOption;
+  filter: ListFilterModel;
+  setFilter: (f: ListFilterModel) => void;
+}> = ({ title, option, filter, setFilter }) => {
+  const state = useLabeledIdFilterState({
+    filter,
+    setFilter,
+    option,
+    useQuery: useTagQuery,
+    hierarchical: true,
+    includeSubMessageID: "sub_tags",
+  });
+
+  return <SidebarListFilter {...state} title={title} />;
 };
 
 export default TagsFilter;

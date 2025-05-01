@@ -61,11 +61,13 @@ export function useDebouncedSearchInput(
 export const SearchTermInput: React.FC<{
   filter: ListFilterModel;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
-}> = ({ filter, onFilterUpdate }) => {
+  focus?: ReturnType<typeof useFocus>;
+}> = ({ filter, onFilterUpdate, focus: providedFocus }) => {
   const intl = useIntl();
   const [localInput, setLocalInput] = useState(filter.searchTerm);
 
-  const focus = useFocus();
+  const localFocus = useFocus();
+  const focus = providedFocus ?? localFocus;
   const [, setQueryFocus] = focus;
 
   useEffect(() => {
@@ -233,6 +235,7 @@ interface IListFilterProps {
   filter: ListFilterModel;
   view?: View;
   openFilterDialog: () => void;
+  withSidebar?: boolean;
 }
 
 export const ListFilter: React.FC<IListFilterProps> = ({
@@ -240,6 +243,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filter,
   openFilterDialog,
   view,
+  withSidebar,
 }) => {
   const filterOptions = filter.options;
 
@@ -313,31 +317,38 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     return (
       <>
-        <div className="mb-2 d-flex">
-          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-        </div>
+        {!withSidebar && (
+          <div className="d-flex">
+            <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
+          </div>
+        )}
 
-        <ButtonGroup className="mr-2 mb-2">
-          <SavedFilterDropdown
-            filter={filter}
-            onSetFilter={(f) => {
-              onFilterUpdate(f);
-            }}
-            view={view}
-          />
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="filter-tooltip">
-                <FormattedMessage id="search_filter.name" />
-              </Tooltip>
-            }
-          >
-            <FilterButton onClick={() => openFilterDialog()} filter={filter} />
-          </OverlayTrigger>
-        </ButtonGroup>
+        {!withSidebar && (
+          <ButtonGroup className="mr-2">
+            <SavedFilterDropdown
+              filter={filter}
+              onSetFilter={(f) => {
+                onFilterUpdate(f);
+              }}
+              view={view}
+            />
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id="filter-tooltip">
+                  <FormattedMessage id="search_filter.name" />
+                </Tooltip>
+              }
+            >
+              <FilterButton
+                onClick={() => openFilterDialog()}
+                filter={filter}
+              />
+            </OverlayTrigger>
+          </ButtonGroup>
+        )}
 
-        <Dropdown as={ButtonGroup} className="mr-2 mb-2">
+        <Dropdown as={ButtonGroup} className="mr-2">
           <InputGroup.Prepend>
             <Dropdown.Toggle variant="secondary">
               {currentSortBy
