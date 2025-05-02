@@ -125,3 +125,17 @@ input FileSetFingerprintsInput {
   "only supplied fingerprint types will be modified"
   fingerprints: [SetFingerprintsInput!]!
 }
+
+type FindFilesResultType {
+  count: Int!
+  
+  "Total megapixels of any image files"
+  megapixels: Float!
+  "Total duration in seconds of any video files"
+  duration: Float!
+
+  "Total file size in bytes"
+  size: Int!
+
+  files: [BaseFile!]!
+}

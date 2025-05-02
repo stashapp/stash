@@ -901,11 +901,40 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 		aggregateQuery.addColumn("COUNT(temp.id) as total")
 	}
 
+	if options.TotalDuration {
+		query.addJoins(
+			join{
+				table:    videoFileTable,
+				onClause: "files.id = video_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(video_files.duration, 0) as duration")
+		aggregateQuery.addColumn("SUM(temp.duration) as duration")
+	}
+	if options.Megapixels {
+		query.addJoins(
+			join{
+				table:    imageFileTable,
+				onClause: "files.id = image_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
+	}
+
+	if options.TotalSize {
+		query.addColumn("COALESCE(files.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
+
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
 
 	out := struct {
-		Total int
+		Total      int
+		Duration   float64
+		Megapixels float64
+		Size       int64
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -913,6 +942,9 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 
 	ret := models.NewFileQueryResult(qb)
 	ret.Count = out.Total
+	ret.Megapixels = out.Megapixels
+	ret.TotalDuration = out.Duration
+	ret.TotalSize = out.Size
 
 	return ret, nil
 }

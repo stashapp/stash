@@ -200,3 +200,29 @@ type CustomFieldCriterionInput struct {
 	Value    []any             `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type FingerprintFilterInput struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+	// Hamming distance - defaults to 0
+	Distance *int `json:"distance,omitempty"`
+}
+
+type VideoFileFilterInput struct {
+	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
+	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
+	Framerate   *IntCriterionInput         `json:"framerate,omitempty"`
+	Bitrate     *IntCriterionInput         `json:"bitrate,omitempty"`
+	VideoCodec  *StringCriterionInput      `json:"video_codec,omitempty"`
+	AudioCodec  *StringCriterionInput      `json:"audio_codec,omitempty"`
+	// in seconds
+	Duration         *IntCriterionInput    `json:"duration,omitempty"`
+	Captions         *StringCriterionInput `json:"captions,omitempty"`
+	Interactive      *bool                 `json:"interactive,omitempty"`
+	InteractiveSpeed *IntCriterionInput    `json:"interactive_speed,omitempty"`
+}
+
+type ImageFileFilterType struct {
+	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
+	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
+}
