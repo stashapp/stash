@@ -34,6 +34,24 @@ interface BaseFile {
   updated_at: Time!
 }
 
+type File implements BaseFile {
+  id: ID!
+  path: String!
+  basename: String!
+
+  parent_folder_id: ID!
+  zip_file_id: ID
+
+  mod_time: Time!
+  size: Int64!
+
+  fingerprint(type: String!): String
+  fingerprints: [Fingerprint!]!
+
+  created_at: Time!
+  updated_at: Time!
+}
+
 type VideoFile implements BaseFile {
   id: ID!
   path: String!

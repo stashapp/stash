@@ -275,6 +275,43 @@ func (r fileQueryRows) resolve() []models.File {
 	return ret
 }
 
+type fileRepositoryType struct {
+	repository
+	scenes    joinRepository
+	images    joinRepository
+	galleries joinRepository
+}
+
+var (
+	fileRepository = fileRepositoryType{
+		repository: repository{
+			tableName: sceneTable,
+			idColumn:  idColumn,
+		},
+		scenes: joinRepository{
+			repository: repository{
+				tableName: scenesFilesTable,
+				idColumn:  fileIDColumn,
+			},
+			fkColumn: sceneIDColumn,
+		},
+		images: joinRepository{
+			repository: repository{
+				tableName: imagesFilesTable,
+				idColumn:  fileIDColumn,
+			},
+			fkColumn: imageIDColumn,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: galleriesFilesTable,
+				idColumn:  fileIDColumn,
+			},
+			fkColumn: galleryIDColumn,
+		},
+	}
+)
+
 type FileStore struct {
 	repository
 
@@ -830,9 +867,11 @@ func (qb *FileStore) makeFilter(ctx context.Context, fileFilter *models.FileFilt
 		query.not(qb.makeFilter(ctx, fileFilter.Not))
 	}
 
-	query.handleCriterion(ctx, pathCriterionHandler(fileFilter.Path, "folders.path", "files.basename", nil))
+	filter := filterBuilderFromHandler(ctx, &fileFilterHandler{
+		fileFilter: fileFilter,
+	})
 
-	return query
+	return filter
 }
 
 func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error) {
@@ -898,7 +937,7 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
 	if options.TotalDuration {
@@ -909,7 +948,7 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 			},
 		)
 		query.addColumn("COALESCE(video_files.duration, 0) as duration")
-		aggregateQuery.addColumn("SUM(temp.duration) as duration")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.duration), 0) as duration")
 	}
 	if options.Megapixels {
 		query.addJoins(
@@ -924,7 +963,7 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 
 	if options.TotalSize {
 		query.addColumn("COALESCE(files.size, 0) as size")
-		aggregateQuery.addColumn("SUM(temp.size) as size")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
 	}
 
 	const includeSortPagination = false

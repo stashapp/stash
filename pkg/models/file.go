@@ -16,9 +16,7 @@ type FileQueryOptions struct {
 }
 
 type FileFilterType struct {
-	And *FileFilterType `json:"AND"`
-	Or  *FileFilterType `json:"OR"`
-	Not *FileFilterType `json:"NOT"`
+	OperatorFilter[FileFilterType]
 
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
@@ -30,7 +28,7 @@ type FileFilterType struct {
 	Duplicated      *PHashDuplicationCriterionInput  `json:"duplicated"`
 	Hashes          []*FingerprintFilterInput        `json:"hashes"`
 	VideoFileFilter *VideoFileFilterInput            `json:"video_file_filter"`
-	ImageFileFilter *ImageFileFilterType             `json:"image_file_filter"`
+	ImageFileFilter *ImageFileFilterInput            `json:"image_file_filter"`
 	SceneCount      *IntCriterionInput               `json:"scene_count"`
 	ImageCount      *IntCriterionInput               `json:"image_count"`
 	GalleryCount    *IntCriterionInput               `json:"gallery_count"`

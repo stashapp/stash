@@ -28,3 +28,12 @@ func (r *videoFileResolver) Fingerprint(ctx context.Context, obj *VideoFile, typ
 	}
 	return nil, nil
 }
+
+func (r *fileResolver) Fingerprint(ctx context.Context, obj *File, type_ string) (*string, error) {
+	fp := obj.BaseFile.Fingerprints.For(type_)
+	if fp != nil {
+		v := fp.Value()
+		return &v, nil
+	}
+	return nil, nil
+}

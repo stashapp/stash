@@ -702,7 +702,7 @@ input FileFilterType {
   hashes: [FingerprintFilterInput!]
 
   video_file_filter: VideoFileFilterInput
-  image_file_filter: ImageFileFilterType
+  image_file_filter: ImageFileFilterInput
   
   scene_count: IntCriterionInput
   image_count: IntCriterionInput
@@ -738,7 +738,7 @@ input VideoFileFilterInput {
   interactive_speed: IntCriterionInput
 }
 
-input ImageFileFilterType {
+input ImageFileFilterInput {
   resolution: ResolutionCriterionInput
   orientation: OrientationCriterionInput
 }

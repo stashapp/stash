@@ -222,7 +222,7 @@ type VideoFileFilterInput struct {
 	InteractiveSpeed *IntCriterionInput    `json:"interactive_speed,omitempty"`
 }
 
-type ImageFileFilterType struct {
+type ImageFileFilterInput struct {
 	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
 	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
 }
