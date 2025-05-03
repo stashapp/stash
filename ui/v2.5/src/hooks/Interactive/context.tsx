@@ -104,7 +104,9 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     }
 
     if (config?.serverOffset) {
-      interactive.setServerTimeOffset(config.serverOffset);
+      await interactive.settings({
+        estimatedServerTimeOffset: config.serverOffset,
+      });
       setState(ConnectionState.Connecting);
       try {
         await interactive.connect();
@@ -138,13 +140,17 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     const oldKey = interactive.handyKey;
 
-    interactive.handyKey = handyKey ?? "";
-    interactive.scriptOffset = scriptOffset;
-    interactive.useStashHostedFunscript = useStashHostedFunscript;
-
-    if (oldKey !== interactive.handyKey && interactive.handyKey) {
-      initialise();
-    }
+    interactive
+      .settings({
+        connectionKey: handyKey ?? "",
+        offset: scriptOffset,
+        useStashHostedFunscript,
+      })
+      .then(() => {
+        if (oldKey !== interactive.handyKey && interactive.handyKey) {
+          initialise();
+        }
+      });
   }, [
     handyKey,
     scriptOffset,
