@@ -865,7 +865,8 @@
                 "label": "スクロールモード",
                 "pan_y": "Yにパン",
                 "zoom": "拡大"
-            }
+            },
+            "page_header": "ページ {page} / {total}"
         },
         "merge": {
             "destination": "宛先",
@@ -914,7 +915,10 @@
             "transcodes": "トランスコード",
             "transcodes_tooltip": "サポートされていない動画フォーマットをMP4に変換します",
             "video_previews": "プレビュー",
-            "video_previews_tooltip": "シーンにマウスカーソルを置いた時に再生されるビデオプレビュー"
+            "video_previews_tooltip": "シーンにマウスカーソルを置いた時に再生されるビデオプレビュー",
+            "clip_previews": "画像のプレビュー",
+            "covers": "シーンカバー",
+            "image_thumbnails": "サムネ画像"
         },
         "scenes_found": "{count}シーンが見つかりました",
         "scrape_entity_query": "{entity_type}スクレイプクエリ",
@@ -922,7 +926,9 @@
         "scrape_results_existing": "存在します",
         "scrape_results_scraped": "スクレイプ済み",
         "set_image_url_title": "画像URL",
-        "unsaved_changes": "変更が保存されていません。本当に移動してよろしいですか？"
+        "unsaved_changes": "変更が保存されていません。本当に移動してよろしいですか？",
+        "clear_play_history_confirm": "再生履歴を本当に削除しますか？",
+        "performers_found": "{count}人の出演者が見つかりました"
     },
     "dimensions": "寸法",
     "director": "監督",
@@ -1302,9 +1308,17 @@
     "date_format": "YYYY -MM-DD",
     "datetime_format": "YYYY-MM-DD HH:MM",
     "criterion_modifier_values": {
-        "none": "ない"
+        "none": "ない",
+        "only": "のみ"
     },
     "connection_monitor": {
         "websocket_connection_failed": "WebSocket接続ができません：詳細はブラウザのコンソールを確認してください"
-    }
+    },
+    "custom_fields": {
+        "field": "フィールド",
+        "title": "カスタムフィールド",
+        "value": "値"
+    },
+    "distance": "距離",
+    "age_on_date": "撮影時の年齢 {age}歳"
 }
