@@ -2,6 +2,10 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { ConfigurationContext } from "../Config";
 import { useLocalForage } from "../LocalForage";
 import { Interactive as InteractiveAPI } from "./interactive";
+import InteractiveUtils, {
+  IInteractiveClient,
+  IInteractiveClientProvider,
+} from "./utils";
 
 export enum ConnectionState {
   Missing,
@@ -34,7 +38,7 @@ export function connectionStateLabel(s: ConnectionState) {
 }
 
 export interface IState {
-  interactive: InteractiveAPI;
+  interactive: IInteractiveClient;
   state: ConnectionState;
   serverOffset: number;
   initialised: boolean;
@@ -69,6 +73,13 @@ interface IInteractiveState {
   lastSyncTime: number;
 }
 
+export const defaultInteractiveClientProvider: IInteractiveClientProvider = (
+  handyKey: string,
+  serverOffset: number
+): IInteractiveClient => {
+  return new InteractiveAPI(handyKey, serverOffset);
+};
+
 export const InteractiveProvider: React.FC = ({ children }) => {
   const [{ data: config }, setConfig] = useLocalForage<IInteractiveState>(
     LOCAL_FORAGE_KEY,
@@ -85,7 +96,13 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   const [scriptOffset, setScriptOffset] = useState<number>(0);
   const [useStashHostedFunscript, setUseStashHostedFunscript] =
     useState<boolean>(false);
-  const [interactive] = useState<InteractiveAPI>(new InteractiveAPI("", 0));
+  // fetch client provider from PluginApi if not found use default provider
+  const interactiveClientProvider =
+    InteractiveUtils.interactiveClientProvider ??
+    defaultInteractiveClientProvider;
+  const [interactive] = useState<IInteractiveClient>(
+    interactiveClientProvider("", 0, defaultInteractiveClientProvider)
+  );
 
   const [initialised, setInitialised] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -104,7 +121,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     }
 
     if (config?.serverOffset) {
-      await interactive.settings({
+      await interactive.configure({
         estimatedServerTimeOffset: config.serverOffset,
       });
       setState(ConnectionState.Connecting);
@@ -141,7 +158,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     const oldKey = interactive.handyKey;
 
     interactive
-      .settings({
+      .configure({
         connectionKey: handyKey ?? "",
         offset: scriptOffset,
         useStashHostedFunscript,
@@ -177,7 +194,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
   const uploadScript = useCallback(
     async (funscriptPath: string) => {
-      interactive.pause();
+      await interactive.pause();
       if (
         !interactive.handyKey ||
         !funscriptPath ||
