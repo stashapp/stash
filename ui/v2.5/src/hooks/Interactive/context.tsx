@@ -73,11 +73,11 @@ interface IInteractiveState {
   lastSyncTime: number;
 }
 
-export const defaultInteractiveClientProvider: IInteractiveClientProvider = (
-  handyKey: string,
-  serverOffset: number
-): IInteractiveClient => {
-  return new InteractiveAPI(handyKey, serverOffset);
+export const defaultInteractiveClientProvider: IInteractiveClientProvider = ({
+  handyKey,
+  scriptOffset,
+}): IInteractiveClient => {
+  return new InteractiveAPI(handyKey, scriptOffset);
 };
 
 export const InteractiveProvider: React.FC = ({ children }) => {
@@ -96,13 +96,22 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   const [scriptOffset, setScriptOffset] = useState<number>(0);
   const [useStashHostedFunscript, setUseStashHostedFunscript] =
     useState<boolean>(false);
+
+  const resolveInteractiveClient = useCallback(() => {
+    const interactiveClientProvider =
+      InteractiveUtils.interactiveClientProvider ??
+      defaultInteractiveClientProvider;
+
+    return interactiveClientProvider({
+      handyKey: "",
+      scriptOffset: 0,
+      defaultClientProvider: defaultInteractiveClientProvider,
+      stashConfig,
+    });
+  }, [stashConfig]);
+
   // fetch client provider from PluginApi if not found use default provider
-  const interactiveClientProvider =
-    InteractiveUtils.interactiveClientProvider ??
-    defaultInteractiveClientProvider;
-  const [interactive] = useState<IInteractiveClient>(
-    interactiveClientProvider("", 0, defaultInteractiveClientProvider)
-  );
+  const [interactive] = useState(resolveInteractiveClient);
 
   const [initialised, setInitialised] = useState(false);
   const [error, setError] = useState<string | undefined>();
