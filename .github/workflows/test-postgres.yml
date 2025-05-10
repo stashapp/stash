@@ -1,0 +1,57 @@
+name: Test Postgres
+
+on:
+  push:
+    branches: [ postgres-support-3 ]
+  pull_request:
+  release:
+    types: [ published ]
+
+jobs:
+  test-postgres:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --name postgres-db
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - name: Build project
+      run: make release
+
+    - name: Install plperl in postgres container
+      run: |
+        docker exec postgres-db apt-get update
+        docker exec postgres-db apt-get install -y postgresql-plperl-17
+
+    - name: Test
+      env:
+        PGSQL_TEST: 'postgresql://username:password@localhost:5432/testdb'
+      run: go test -tags "db_integration" ./...

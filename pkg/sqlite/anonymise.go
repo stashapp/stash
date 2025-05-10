@@ -40,6 +40,28 @@ func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
 	return &Anonymiser{Database: newDB}, nil
 }
 
+type ForeignAnonymiser interface {
+	FetchAll(ctx context.Context) error
+	GetSqliteDatabase() *Database
+}
+
+func PassAnonymiser(sourceDB ForeignAnonymiser) (*Anonymiser, error) {
+	db := sourceDB.GetSqliteDatabase()
+
+	db.writeDB.Close()
+
+	db.writeDB, _ = db.open(true, true)
+	db.writeDB.SetMaxOpenConns(1)
+	db.writeDB.SetMaxIdleConns(10)
+	db.writeDB.SetConnMaxIdleTime(dbConnTimeout)
+
+	if err := sourceDB.FetchAll(context.Background()); err != nil {
+		return nil, fmt.Errorf("fetching postgres: %w", err)
+	}
+
+	return &Anonymiser{Database: db}, nil
+}
+
 func (db *Anonymiser) Anonymise(ctx context.Context) error {
 	if err := func() error {
 		defer db.Close()

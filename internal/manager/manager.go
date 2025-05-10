@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
@@ -26,7 +27,6 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/sqlite"
 
 	// register custom migrations
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
@@ -60,7 +60,7 @@ type Manager struct {
 
 	DLNAService *dlna.Service
 
-	Database   *sqlite.Database
+	Database   database.Database
 	Repository models.Repository
 
 	SceneService   SceneService
@@ -85,7 +85,7 @@ func (s *Manager) SetBlobStoreOptions() {
 	blobsPath := s.Config.GetBlobsPath()
 	extraBlobsPaths := s.Config.GetExtraBlobsPaths()
 
-	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
+	s.Database.SetBlobStoreOptions(database.BlobStoreOptions{
 		UseFilesystem:      storageType == config.BlobStorageTypeFilesystem,
 		UseDatabase:        storageType == config.BlobStorageTypeDatabase,
 		Path:               blobsPath,

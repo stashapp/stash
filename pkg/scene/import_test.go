@@ -42,6 +42,11 @@ var (
 
 var testCtx = context.Background()
 
+func getUUID(_ string) string {
+	// TODO: Encode input string
+	return "00000000-0000-0000-0000-000000000000"
+}
+
 func TestImporterPreImport(t *testing.T) {
 	var (
 		title     = "title"
@@ -49,7 +54,7 @@ func TestImporterPreImport(t *testing.T) {
 		details   = "details"
 		director  = "director"
 		endpoint1 = "endpoint1"
-		stashID1  = "stashID1"
+		stashID1  = getUUID("stashID1")
 		endpoint2 = "endpoint2"
 		stashID2  = "stashID2"
 		url1      = "url1"

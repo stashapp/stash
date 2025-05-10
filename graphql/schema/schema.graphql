@@ -265,6 +265,9 @@ type Query {
 
   # Get everything with minimal metadata
 
+  "Returns the database type."
+  getDatabaseBackend: SQLDatabaseType!
+
   # Version
   version: Version!
 

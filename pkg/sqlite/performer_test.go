@@ -24,22 +24,22 @@ var testCustomFields = map[string]interface{}{
 
 func loadPerformerRelationships(ctx context.Context, expected models.Performer, actual *models.Performer) error {
 	if expected.Aliases.Loaded() {
-		if err := actual.LoadAliases(ctx, db.Performer); err != nil {
+		if err := actual.LoadAliases(ctx, db.Performer()); err != nil {
 			return err
 		}
 	}
 	if expected.URLs.Loaded() {
-		if err := actual.LoadURLs(ctx, db.Performer); err != nil {
+		if err := actual.LoadURLs(ctx, db.Performer()); err != nil {
 			return err
 		}
 	}
 	if expected.TagIDs.Loaded() {
-		if err := actual.LoadTagIDs(ctx, db.Performer); err != nil {
+		if err := actual.LoadTagIDs(ctx, db.Performer()); err != nil {
 			return err
 		}
 	}
 	if expected.StashIDs.Loaded() {
-		if err := actual.LoadStashIDs(ctx, db.Performer); err != nil {
+		if err := actual.LoadStashIDs(ctx, db.Performer()); err != nil {
 			return err
 		}
 	}
@@ -150,7 +150,7 @@ func Test_PerformerStore_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Performer
+	qb := db.Performer()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -360,7 +360,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Performer
+	qb := db.Performer()
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -606,7 +606,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Performer
+		qb := db.Performer()
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -691,7 +691,7 @@ func Test_PerformerStore_UpdatePartialCustomFields(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Performer
+		qb := db.Performer()
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -719,7 +719,7 @@ func Test_PerformerStore_UpdatePartialCustomFields(t *testing.T) {
 
 func TestPerformerFindBySceneID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		pqb := db.Performer
+		pqb := db.Performer()
 		sceneID := sceneIDs[sceneIdxWithPerformer]
 
 		performers, err := pqb.FindBySceneID(ctx, sceneID)
@@ -750,7 +750,7 @@ func TestPerformerFindBySceneID(t *testing.T) {
 
 func TestPerformerFindByImageID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		pqb := db.Performer
+		pqb := db.Performer()
 		imageID := imageIDs[imageIdxWithPerformer]
 
 		performers, err := pqb.FindByImageID(ctx, imageID)
@@ -781,7 +781,7 @@ func TestPerformerFindByImageID(t *testing.T) {
 
 func TestPerformerFindByGalleryID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		pqb := db.Performer
+		pqb := db.Performer()
 		galleryID := galleryIDs[galleryIdxWithPerformer]
 
 		performers, err := pqb.FindByGalleryID(ctx, galleryID)
@@ -822,7 +822,7 @@ func TestPerformerFindByNames(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		var names []string
 
-		pqb := db.Performer
+		pqb := db.Performer()
 
 		names = append(names, performerNames[performerIdxWithScene]) // find performers by names
 
@@ -1037,7 +1037,7 @@ func TestPerformerIllegalQuery(t *testing.T) {
 		},
 	}
 
-	sqb := db.Performer
+	sqb := db.Performer()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1166,7 +1166,7 @@ func TestPerformerQuery(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			performers, _, err := db.Performer.Query(ctx, tt.filter, tt.findFilter)
+			performers, _, err := db.Performer().Query(ctx, tt.filter, tt.findFilter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1402,7 +1402,7 @@ func TestPerformerQueryCustomFields(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			performers, _, err := db.Performer.Query(ctx, tt.filter, nil)
+			performers, _, err := db.Performer().Query(ctx, tt.filter, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1485,7 +1485,7 @@ func TestPerformerQueryPenisLength(t *testing.T) {
 				},
 			}
 
-			performers, _, err := db.Performer.Query(ctx, filter, nil)
+			performers, _, err := db.Performer().Query(ctx, filter, nil)
 			if err != nil {
 				t.Errorf("PerformerStore.Query() error = %v", err)
 				return
@@ -1525,7 +1525,7 @@ func verifyFloat(t *testing.T, value *float64, criterion models.FloatCriterionIn
 
 func TestPerformerQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Performer
+		tqb := db.Performer()
 
 		name := performerNames[performerIdx1WithScene] // find a performer by name
 
@@ -1545,7 +1545,7 @@ func TestPerformerQueryForAutoTag(t *testing.T) {
 
 func TestPerformerUpdatePerformerImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Performer
+		qb := db.Performer()
 
 		// create performer to test against
 		const name = "TestPerformerUpdatePerformerImage"
@@ -1584,7 +1584,7 @@ func TestPerformerQueryAge(t *testing.T) {
 
 func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Performer
+		qb := db.Performer()
 		performerFilter := models.PerformerFilterType{
 			Age: &ageCriterion,
 		}
@@ -1639,7 +1639,7 @@ func TestPerformerQueryCareerLength(t *testing.T) {
 
 func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Performer
+		qb := db.Performer()
 		performerFilter := models.PerformerFilterType{
 			CareerLength: &criterion,
 		}
@@ -1709,7 +1709,7 @@ func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verif
 		performers := queryPerformers(ctx, t, &filter, nil)
 
 		for _, performer := range performers {
-			if err := performer.LoadURLs(ctx, db.Performer); err != nil {
+			if err := performer.LoadURLs(ctx, db.Performer()); err != nil {
 				t.Errorf("Error loading url relationships: %v", err)
 			}
 		}
@@ -1727,7 +1727,7 @@ func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verif
 
 func queryPerformers(ctx context.Context, t *testing.T, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
 	t.Helper()
-	performers, _, err := db.Performer.Query(ctx, performerFilter, findFilter)
+	performers, _, err := db.Performer().Query(ctx, performerFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying performers: %s", err.Error())
 	}
@@ -1809,7 +1809,7 @@ func TestPerformerQueryTagCount(t *testing.T) {
 
 func verifyPerformersTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Performer
+		sqb := db.Performer()
 		performerFilter := models.PerformerFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -1858,7 +1858,7 @@ func verifyPerformersSceneCount(t *testing.T, sceneCountCriterion models.IntCrit
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
-			ids, err := db.Scene.FindByPerformerID(ctx, performer.ID)
+			ids, err := db.Scene().FindByPerformerID(ctx, performer.ID)
 			if err != nil {
 				return err
 			}
@@ -1900,7 +1900,7 @@ func verifyPerformersImageCount(t *testing.T, imageCountCriterion models.IntCrit
 		for _, performer := range performers {
 			pp := 0
 
-			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
+			result, err := db.Image().Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -1955,7 +1955,7 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 		for _, performer := range performers {
 			pp := 0
 
-			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+			_, count, err := db.Gallery().Query(ctx, &models.GalleryFilterType{
 				Performers: &models.MultiCriterionInput{
 					Value:    []string{strconv.Itoa(performer.ID)},
 					Modifier: models.CriterionModifierIncludes,
@@ -2053,7 +2053,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 
 func TestPerformerStashIDs(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Performer
+		qb := db.Performer()
 
 		// create scene to test against
 		const name = "TestPerformerStashIDs"
@@ -2088,7 +2088,7 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 		UpdatedAt: epochTime,
 	}
 
-	qb := db.Performer
+	qb := db.Performer()
 
 	// update stash ids and ensure was updated
 	var err error
@@ -2198,7 +2198,7 @@ func TestPerformerQueryIsMissingImage(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 
 		for _, performer := range performers {
-			img, err := db.Performer.GetImage(ctx, performer.ID)
+			img, err := db.Performer().GetImage(ctx, performer.ID)
 			if err != nil {
 				t.Errorf("error getting performer image: %s", err.Error())
 			}
@@ -2216,7 +2216,7 @@ func TestPerformerQueryIsMissingAlias(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 
 		for _, performer := range performers {
-			a, err := db.Performer.GetAliases(ctx, performer.ID)
+			a, err := db.Performer().GetAliases(ctx, performer.ID)
 			if err != nil {
 				t.Errorf("error getting performer aliases: %s", err.Error())
 			}
@@ -2237,7 +2237,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		// just ensure it queries without error
-		performers, _, err := db.Performer.Query(ctx, nil, findFilter)
+		performers, _, err := db.Performer().Query(ctx, nil, findFilter)
 		if err != nil {
 			t.Errorf("Error querying performers: %s", err.Error())
 		}
@@ -2252,7 +2252,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
 
-		performers, _, err = db.Performer.Query(ctx, nil, findFilter)
+		performers, _, err = db.Performer().Query(ctx, nil, findFilter)
 		if err != nil {
 			t.Errorf("Error querying performers: %s", err.Error())
 		}
@@ -2268,7 +2268,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 func TestPerformerCountByTagID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Performer
+		sqb := db.Performer()
 		count, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithPerformer])
 
 		if err != nil {
@@ -2291,7 +2291,7 @@ func TestPerformerCountByTagID(t *testing.T) {
 
 func TestPerformerCount(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Performer
+		sqb := db.Performer()
 		count, err := sqb.Count(ctx)
 
 		if err != nil {
@@ -2306,7 +2306,7 @@ func TestPerformerCount(t *testing.T) {
 
 func TestPerformerAll(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Performer
+		sqb := db.Performer()
 		all, err := sqb.All(ctx)
 
 		if err != nil {
@@ -2355,7 +2355,7 @@ func TestPerformerStore_FindByStashID(t *testing.T) {
 		},
 	}
 
-	qb := db.Performer
+	qb := db.Performer()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2406,7 +2406,7 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 		},
 	}
 
-	qb := db.Performer
+	qb := db.Performer()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {

@@ -11,7 +11,9 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/postgres"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -33,20 +35,34 @@ var existingStudioID int
 
 const expectedMatchTitle = "expected match"
 
-var db *sqlite.Database
+var db database.Database
 var r models.Repository
 
-func testTeardown(databaseFile string) {
-	err := db.Close()
-
+func testTeardown(db database.Database) {
+	err := db.Remove()
 	if err != nil {
 		panic(err)
 	}
+}
 
-	err = os.Remove(databaseFile)
-	if err != nil {
-		panic(err)
+func getNewDB(databaseFile string) database.Database {
+	if dbUrl, valid := os.LookupEnv("PGSQL_TEST"); valid {
+		fmt.Printf("Postgres backend for tests detected\n")
+		db = postgres.NewDatabase()
+
+		if err := db.Open(dbUrl); err != nil {
+			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		}
+		return db
 	}
+
+	fmt.Printf("SQLite backend for tests detected\n")
+	db = sqlite.NewDatabase()
+
+	if err := db.Open(databaseFile); err != nil {
+		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+	}
+	return db
 }
 
 func runTests(m *testing.M) int {
@@ -58,15 +74,12 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = sqlite.NewDatabase()
-	if err := db.Open(databaseFile); err != nil {
-		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
-	}
+	db = getNewDB(databaseFile)
 
 	r = db.Repository()
 
 	// defer close and delete the database
-	defer testTeardown(databaseFile)
+	defer testTeardown(db)
 
 	err = populateDB()
 	if err != nil {

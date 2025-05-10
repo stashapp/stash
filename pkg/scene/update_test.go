@@ -107,7 +107,7 @@ func TestUpdater_Update(t *testing.T) {
 
 	performerIDs := []int{performerID}
 	tagIDs := []int{tagID}
-	stashID := "stashID"
+	stashID := getUUID("stashID")
 	endpoint := "endpoint"
 
 	title := "title"
@@ -235,7 +235,7 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	performerIDStrs := intslice.IntSliceToStringSlice(performerIDs)
 	tagIDs := []int{tagID}
 	tagIDStrs := intslice.IntSliceToStringSlice(tagIDs)
-	stashID := "stashID"
+	stashID := getUUID("stashID")
 	endpoint := "endpoint"
 	updatedAt := time.Now()
 	stashIDs := []models.StashID{

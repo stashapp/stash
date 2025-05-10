@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
@@ -637,20 +638,30 @@ func runWithRollbackTxn(t *testing.T, name string, f func(t *testing.T, ctx cont
 	})
 }
 
-func testTeardown(databaseFile string) {
-	err := db.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.Remove(databaseFile)
+func testTeardown(db database.Database) {
+	err := db.Remove()
 	if err != nil {
 		panic(err)
 	}
 }
 
+func getNewDB(databaseFile string) {
+	fmt.Printf("SQLite backend for tests detected\n")
+	db = sqlite.NewDatabase()
+
+	if err := db.Open(databaseFile); err != nil {
+		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+	}
+}
+
 func runTests(m *testing.M) int {
+	// create the database file
+	_, valid := os.LookupEnv("PGSQL_TEST")
+	if valid {
+		// If the flag is set, exit gracefully by not running the tests
+		os.Exit(0)
+	}
+
 	// create the database file
 	f, err := os.CreateTemp("", "*.sqlite")
 	if err != nil {
@@ -659,18 +670,14 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = sqlite.NewDatabase()
-	db.SetBlobStoreOptions(sqlite.BlobStoreOptions{
+	getNewDB(databaseFile)
+	db.SetBlobStoreOptions(database.BlobStoreOptions{
 		UseDatabase: true,
 		// don't use filesystem
 	})
 
-	if err := db.Open(databaseFile); err != nil {
-		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
-	}
-
 	// defer close and delete the database
-	defer testTeardown(databaseFile)
+	defer testTeardown(db)
 
 	err = populateDB()
 	if err != nil {
@@ -695,11 +702,11 @@ func populateDB() error {
 			return fmt.Errorf("linking folders to zip files: %w", err)
 		}
 
-		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
+		if err := createTags(ctx, db.Tag(), tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
 		}
 
-		if err := createGroups(ctx, db.Group, groupsNameCase, groupsNameNoCase); err != nil {
+		if err := createGroups(ctx, db.Group(), groupsNameCase, groupsNameNoCase); err != nil {
 			return fmt.Errorf("error creating groups: %s", err.Error())
 		}
 
@@ -723,15 +730,15 @@ func populateDB() error {
 			return fmt.Errorf("error creating images: %s", err.Error())
 		}
 
-		if err := addTagImage(ctx, db.Tag, tagIdxWithCoverImage); err != nil {
+		if err := addTagImage(ctx, db.Tag(), tagIdxWithCoverImage); err != nil {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
-		if err := createSavedFilters(ctx, db.SavedFilter, totalSavedFilters); err != nil {
+		if err := createSavedFilters(ctx, db.SavedFilter(), totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkGroupStudios(ctx, db.Group); err != nil {
+		if err := linkGroupStudios(ctx, db.Group()); err != nil {
 			return fmt.Errorf("error linking group studios: %s", err.Error())
 		}
 
@@ -739,21 +746,21 @@ func populateDB() error {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
-		if err := linkTagsParent(ctx, db.Tag); err != nil {
+		if err := linkTagsParent(ctx, db.Tag()); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
-		if err := linkGroupsParent(ctx, db.Group); err != nil {
+		if err := linkGroupsParent(ctx, db.Group()); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
 		for _, ms := range markerSpecs {
-			if err := createMarker(ctx, db.SceneMarker, ms); err != nil {
+			if err := createMarker(ctx, db.SceneMarker(), ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
 			}
 		}
 		for _, cs := range chapterSpecs {
-			if err := createChapter(ctx, db.GalleryChapter, cs); err != nil {
+			if err := createChapter(ctx, db.GalleryChapter(), cs); err != nil {
 				return fmt.Errorf("error creating gallery chapter: %s", err.Error())
 			}
 		}
@@ -800,7 +807,7 @@ func makeFolder(i int) models.Folder {
 }
 
 func createFolders(ctx context.Context) error {
-	qb := db.Folder
+	qb := db.Folder()
 
 	for i := 0; i < totalFolders; i++ {
 		folder := makeFolder(i)
@@ -924,7 +931,7 @@ func makeFile(i int) models.File {
 }
 
 func createFiles(ctx context.Context) error {
-	qb := db.File
+	qb := db.File()
 
 	for i := 0; i < totalFiles; i++ {
 		file := makeFile(i)
@@ -1174,8 +1181,8 @@ func makeScene(i int) *models.Scene {
 }
 
 func createScenes(ctx context.Context, n int) error {
-	sqb := db.Scene
-	fqb := db.File
+	sqb := db.Scene()
+	fqb := db.File()
 
 	for i := 0; i < n; i++ {
 		f := makeSceneFile(i)
@@ -1263,8 +1270,8 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.Image
-	fqb := db.File
+	qb := db.Image()
+	fqb := db.File()
 
 	for i := 0; i < n; i++ {
 		f := makeImageFile(i)
@@ -1360,8 +1367,8 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.Gallery
-	fqb := db.File
+	gqb := db.Gallery()
+	fqb := db.File()
 
 	for i := 0; i < n; i++ {
 		var fileIDs []models.FileID
@@ -1564,7 +1571,7 @@ func getPerformerCustomFields(index int) map[string]interface{} {
 
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
-	pqb := db.Performer
+	pqb := db.Performer()
 
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
@@ -1738,7 +1745,7 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
+func createStudio(ctx context.Context, sqb database.StudioStore, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
 		Name: name,
 	}
@@ -1755,7 +1762,7 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio) error {
+func createStudioFromModel(ctx context.Context, sqb database.StudioStore, studio *models.Studio) error {
 	err := sqb.Create(ctx, studio)
 
 	if err != nil {
@@ -1790,7 +1797,7 @@ func getStudioStringList(index int, field string) []string {
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(ctx context.Context, n int, o int) error {
-	sqb := db.Studio
+	sqb := db.Studio()
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1969,7 +1976,7 @@ func linkGroupStudios(ctx context.Context, mqb models.GroupWriter) error {
 }
 
 func linkStudiosParent(ctx context.Context) error {
-	qb := db.Studio
+	qb := db.Studio()
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
 		input := &models.StudioPartial{
 			ID:       studioIDs[childIndex],
