@@ -191,7 +191,11 @@
             "errors": {
                 "blacklist_duplicate": "Các mục bị trùng lặp trong danh sách đen"
             },
-            "query_mode_dir": "Danh sách"
+            "query_mode_dir": "Danh sách",
+            "show_male_desc": "Bật/tắt tùy chọn cho phép gắn thẻ các diễn viên nam.",
+            "show_male_label": "Xem danh sách diễn viên nam",
+            "query_mode_metadata_desc": "Chỉ dùng dữ liệu mô tả",
+            "query_mode_metadata": "Dữ liệu mô tả"
         },
         "noun_query": "Truy vấn",
         "results": {
@@ -224,7 +228,10 @@
             "release_date": "Ngày phát hành:",
             "stash_discord": "Tham gia vào kênh {url} của chúng tôi",
             "stash_open_collective": "Giúp đỡ chúng tôi qua {url}",
-            "version": "Phiên bản"
+            "version": "Phiên bản",
+            "build_time": "thời điểm tạo:",
+            "stash_wiki": "Trang {url} của Stash",
+            "stash_home": "Trang chủ Stash tại {url}"
         },
         "application_paths": {
             "heading": "Đường dẫn tới ứng dụng"
@@ -240,7 +247,8 @@
             "system": "Hệ thống",
             "tasks": "Các công việc",
             "tools": "Các công cụ",
-            "metadata_providers": "Các bên cung cấp thông tin dữ liệu"
+            "metadata_providers": "Các bên cung cấp thông tin dữ liệu",
+            "scraping": "Đang quét dữ liệu"
         },
         "dlna": {
             "allow_temp_ip": "Cho phép {tempIP}",
@@ -270,7 +278,8 @@
                 "authentication": "Xác thực",
                 "clear_api_key": "Xóa khóa API",
                 "credentials": {
-                    "heading": "Các thông tin xác thực"
+                    "heading": "Các thông tin xác thực",
+                    "description": "Tài khoản/mật khẩu dùng để kiểm soát quyền truy cập Stash."
                 },
                 "generate_api_key": "Tạo khóa API",
                 "log_file": "File nhật ký",
@@ -305,8 +314,189 @@
             "calculate_md5_and_ohash_desc": "Tính toán hàm băm MD5 bên cạnh oshash. Bật lên sẽ làm quá trình quét ban đầu diễn ra chậm hơn. Hàm băm tên file phải đặt về oshash để vô hiệu MD5.",
             "calculate_md5_and_ohash_label": "Tính toán MD5 cho các video",
             "check_for_insecure_certificates": "Kiểm tra các chứng chỉ không an toàn",
-            "check_for_insecure_certificates_desc": "Một số trang sử dụng chứng chỉ ssl không an toàn. Nếu bỏ tick, bộ thu thập sẽ bỏ qua quy trình kiểm tra tính an toàn của chứng chỉ và sẽ thu thập toàn bộ các trang đó. Nếu bạn gặp vấn đề về chứng chỉ khi thu thập dữ liệu thì hãy bỏ tick."
+            "check_for_insecure_certificates_desc": "Một số trang sử dụng chứng chỉ ssl không an toàn. Nếu bỏ tick, bộ thu thập sẽ bỏ qua quy trình kiểm tra tính an toàn của chứng chỉ và sẽ thu thập toàn bộ các trang đó. Nếu bạn gặp vấn đề về chứng chỉ khi thu thập dữ liệu thì hãy bỏ tick.",
+            "create_galleries_from_folders_desc": "Nếu bật, các thư mục chứa ảnh sẽ mặc định được tạo thành thư viện. Tạo một tệp có tên .forcegallery hoặc .nogallery trong thư mục để ép buộc hoặc ngăn việc tạo thư viện.",
+            "create_galleries_from_folders_label": "Tạo thư viện ảnh từ các thư mục chứa hình ảnh",
+            "database": "Cơ sở dữ liệu",
+            "db_path_head": "Vị trí tệp cơ sở dữ liệu",
+            "directory_locations_to_your_content": "Vị trí thư mục chứa nội dung của bạn",
+            "excluded_image_gallery_patterns_head": "Các mẫu tên ảnh/thư viện cần loại trừ",
+            "excluded_video_patterns_desc": "Biểu thức chính quy (regex) của các tệp video hoặc đường dẫn cần loại trừ khỏi quá trình Quét và thêm vào mục Dọn dẹp",
+            "excluded_video_patterns_head": "Các mẫu tên video cần loại trừ",
+            "ffmpeg": {
+                "download_ffmpeg": {
+                    "heading": "Tải xuống FFmpeg",
+                    "description": "Tải FFmpeg vào thư mục cấu hình và xóa đường dẫn ffmpeg và ffprobe hiện tại để sử dụng từ thư mục cấu hình."
+                },
+                "ffmpeg_path": {
+                    "heading": "Đường dẫn tệp thực thi FFmpeg",
+                    "description": "Đường dẫn đến tệp thực thi ffmpeg (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffmpeg từ biến môi trường $PATH, thư mục cấu hình hoặc từ $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Đường dẫn đến tệp thực thi ffprobe (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffprobe từ biến môi trường $PATH, thư mục cấu hình hoặc từ $HOME/.stash",
+                    "heading": "Đường dẫn tệp thực thi FFprobe"
+                },
+                "hardware_acceleration": {
+                    "desc": "Sử dụng phần cứng hiện có để mã hóa video trong quá trình chuyển mã trực tiếp.",
+                    "heading": "Mã hóa phần cứng bằng FFmpeg"
+                },
+                "live_transcode": {
+                    "output_args": {
+                        "heading": "Tham số đầu ra cho chuyển mã trực tiếp bằng FFmpeg",
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu ra khi chuyển mã video trực tiếp."
+                    },
+                    "input_args": {
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu vào khi chuyển mã video trực tiếp.",
+                        "heading": "Tham số đầu vào cho chuyển mã trực tiếp bằng FFmpeg"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu vào khi tạo video.",
+                        "heading": "Tham số đầu vào khi chuyển mã bằng FFmpeg"
+                    },
+                    "output_args": {
+                        "heading": "Tham số đầu ra khi chuyển mã bằng FFmpeg",
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu ra khi tạo video."
+                    }
+                }
+            },
+            "funscript_heatmap_draw_range": "Bao gồm khoảng giá trị trong các bản đồ nhiệt được tạo ra",
+            "gallery_cover_regex_desc": "Biểu thức chính quy dùng để nhận diện ảnh bìa của thư viện",
+            "gallery_cover_regex_label": "Mẫu tên file ảnh dùng làm bìa thư viện",
+            "gallery_ext_desc": "Danh sách phần mở rộng tệp (file extensions), phân cách bằng dấu phẩy, sẽ được nhận diện là tệp thư viện dạng nén (zip).",
+            "gallery_ext_head": "Phần mở rộng tệp thư viện nén",
+            "generated_file_naming_hash_head": "Mã băm dùng để đặt tên cho các tệp được tạo ra",
+            "generated_files_location": "Vị trí thư mục lưu trữ các tệp được tạo (dấu cảnh, ảnh xem trước cảnh, ảnh sprite, v.v.)",
+            "generated_path_head": "Thư mục lưu trữ các tệp sinh ra tự động",
+            "hashing": "Băm (tạo mã băm)",
+            "heatmap_generation": "Tạo bản đồ nhiệt từ Funscript",
+            "image_ext_desc": "Danh sách phần mở rộng tệp được nhận diện là hình ảnh, ngăn cách bằng dấu phẩy.",
+            "image_ext_head": "Đuôi file ảnh",
+            "include_audio_desc": "Bao gồm luồng âm thanh khi tạo bản xem trước.",
+            "include_audio_head": "Bao gồm âm thanh",
+            "maximum_streaming_transcode_size_head": "Kích thước tối đa cho các luồng video đã chuyển mã",
+            "maximum_transcode_size_desc": "Kích thước tối đa cho các video chuyển mã được tạo ra",
+            "maximum_transcode_size_head": "Kích thước chuyển mã tối đa",
+            "metadata_path": {
+                "heading": "Vị trí thư mục chứa siêu dữ liệu",
+                "description": "Vị trí thư mục được sử dụng khi thực hiện xuất hoặc nhập toàn bộ dữ liệu"
+            },
+            "number_of_parallel_task_for_scan_generation_head": "Số lượng tác vụ song song cho quá trình quét/tạo dữ liệu",
+            "parallel_scan_head": "Quét/Tạo dữ liệu song song",
+            "plugins_path": {
+                "description": "Vị trí thư mục chứa các tệp cấu hình plugin",
+                "heading": "Đường dẫn plugins"
+            },
+            "preview_generation": "Tạo bản xem trước",
+            "python_path": {
+                "description": "Đường dẫn đến tệp thực thi Python (không chỉ là thư mục). Được sử dụng cho các trình quét (scraper) và plugin viết bằng script. Nếu để trống, hệ thống sẽ tự tìm Python từ môi trường.",
+                "heading": "Đường dẫn tệp thực thi Python"
+            },
+            "scrapers_path": {
+                "description": "Vị trí thư mục chứa các tệp cấu hình của trình quét (scraper)",
+                "heading": "Đường dẫn đến thư mục chứa các scraper"
+            },
+            "scraping": "Thu thập dữ liệu từ website",
+            "video_ext_desc": "Danh sách phần mở rộng tệp sẽ được nhận diện là video, phân cách bằng dấu phẩy.",
+            "video_ext_head": "Định dạng của video",
+            "video_head": "Video",
+            "chrome_cdp_path": "Đường dẫn giao thức CDP của Chrome",
+            "chrome_cdp_path_desc": "Đường dẫn đến tệp thực thi của Chrome, hoặc một địa chỉ từ xa (bắt đầu bằng http:// hoặc https://, ví dụ http://localhost:9222/json/version) trỏ đến một phiên bản Chrome đang chạy.",
+            "excluded_image_gallery_patterns_desc": "Biểu thức chính quy (regex) của tệp ảnh và thư mục thư viện cần loại trừ khỏi quá trình Quét và thêm vào mục Dọn dẹp",
+            "funscript_heatmap_draw_range_desc": "Vẽ phạm vi chuyển động trên trục y của bản đồ nhiệt được tạo. Các bản đồ nhiệt hiện có sẽ cần được tạo lại sau khi thay đổi tùy chọn này.",
+            "generated_file_naming_hash_desc": "Sử dụng MD5 hoặc oshash để đặt tên cho các tệp được tạo. Việc thay đổi tùy chọn này yêu cầu tất cả các cảnh (scenes) phải có giá trị MD5/oshash tương ứng. Sau khi thay đổi, các tệp đã tạo trước đó sẽ cần được di chuyển hoặc tạo lại. Vui lòng xem trang Nhiệm vụ (Tasks) để thực hiện di chuyển.",
+            "maximum_streaming_transcode_size_desc": "Kích thước tối đa cho các luồng video đã chuyển mã",
+            "number_of_parallel_task_for_scan_generation_desc": "Đặt giá trị là 0 để hệ thống tự động phát hiện. Cảnh báo: chạy nhiều tác vụ hơn mức cần thiết để sử dụng 100% CPU sẽ làm giảm hiệu suất và có thể gây ra các sự cố khác.",
+            "scraper_user_agent": "User Agent cho trình quét (scraper)",
+            "scraper_user_agent_desc": "Chuỗi User-Agent được sử dụng trong các yêu cầu HTTP khi quét dữ liệu (scrape)",
+            "sqlite_location": "Vị trí tệp cơ sở dữ liệu SQLite (cần khởi động lại). CẢNH BÁO: Lưu cơ sở dữ liệu trên một hệ thống khác với nơi chạy Stash server (ví dụ: qua mạng) là không được hỗ trợ!",
+            "logging": "Ghi nhật ký"
         },
-        "advanced_mode": "Chế độ nâng cao"
-    }
+        "advanced_mode": "Chế độ nâng cao",
+        "stashbox": {
+            "name": "Tên",
+            "title": "Các điểm cuối Stash-box",
+            "add_instance": "Thêm một phiên bản Stash-box",
+            "api_key": "API key",
+            "endpoint": "Điểm cuối (Endpoint)",
+            "graphql_endpoint": "Điểm cuối GraphQL",
+            "description": "Stash-box hỗ trợ gán tag tự động cho cảnh và diễn viên dựa trên dấu vân tay (fingerprints) và tên tệp.\nEndpoint và API key có thể được tìm thấy trong trang tài khoản của bạn trên instance stash-box. Tên định danh là bắt buộc nếu bạn thêm nhiều hơn một instance.",
+            "max_requests_per_minute": "Số lượng yêu cầu tối đa mỗi phút",
+            "max_requests_per_minute_description": "Sử dụng giá trị mặc định là {defaultValue} nếu đặt là 0"
+        },
+        "system": {
+            "transcoding": "Chuyển đổi định dạng video"
+        },
+        "tasks": {
+            "added_job_to_queue": "Đã thêm {operation_name} vào hàng đợi công việc",
+            "anonymising_database": "Đang ẩn danh cơ sở dữ liệu",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Tự động gắn tag cho tất cả các đường dẫn",
+                "auto_tagging_paths": "Đang tự động gắn tag cho các đường dẫn sau"
+            },
+            "backing_up_database": "Sao lưu dữ liệu",
+            "backup_and_download": "Thực hiện sao lưu cơ sở dữ liệu và tải xuống tệp kết quả.",
+            "backup_database": "Thực hiện sao lưu cơ sở dữ liệu vào thư mục sao lưu (backups), với định dạng tên tệp là {filename_format}.",
+            "cleanup_desc": "Kiểm tra các tệp bị thiếu và xóa chúng khỏi cơ sở dữ liệu. Đây là hành động có tính phá hủy.",
+            "clean_generated": {
+                "blob_files": "Tệp nhị phân (blob)",
+                "description": "Xóa các tệp đã được tạo nhưng không còn bản ghi tương ứng trong cơ sở dữ liệu.",
+                "image_thumbnails": "Ảnh thu nhỏ",
+                "markers": "Ảnh xem trước điểm đánh dấu",
+                "previews": "Clip xem trước của Scene",
+                "previews_desc": "Ảnh và đoạn xem trước cảnh quay",
+                "sprites": "Bản ghép khung hình của Scene",
+                "transcodes": "Bản video đã chuyển mã của Scene",
+                "image_thumbnails_desc": "Ảnh thu nhỏ và đoạn xem trước"
+            },
+            "data_management": "Quản lý dữ liệu",
+            "dont_include_file_extension_as_part_of_the_title": "Không bao gồm phần đuôi tệp (file extension) trong tiêu đề.",
+            "empty_queue": "Hiện không có tác vụ nào đang chạy.",
+            "generate": {
+                "generating_from_paths": "Đang tạo dữ liệu cho các cảnh từ những đường dẫn sau",
+                "generating_scenes": "Đang tạo dữ liệu cho {num} {scene}"
+            },
+            "generate_clip_previews_during_scan": "Tạo bản xem trước cho các đoạn ảnh clip",
+            "generate_desc": "Tạo các tệp hỗ trợ bao gồm ảnh, sprite, video, vtt và các tệp khác.",
+            "generate_phashes_during_scan": "Tạo mã băm theo đặc điểm hình ảnh",
+            "generate_previews_during_scan": "Tạo ảnh xem trước động",
+            "anonymise_and_download": "Tạo một bản sao ẩn danh của cơ sở dữ liệu và tải xuống tệp kết quả.",
+            "generate_previews_during_scan_tooltip": "Cũng tạo các ảnh xem trước động (định dạng WebP), chỉ cần thiết khi kiểu xem trước Cảnh/Dấu mốc (Scene/Marker Wall Preview Type) được đặt thành Ảnh động. Khi duyệt nội dung, ảnh WebP tiêu tốn ít CPU hơn so với video preview, nhưng sẽ được tạo thêm bên cạnh video và có kích thước tệp lớn hơn.",
+            "anonymise_database": "Tạo một bản sao của cơ sở dữ liệu trong thư mục sao lưu (backups), đồng thời ẩn danh toàn bộ dữ liệu nhạy cảm. Bản sao này có thể được cung cấp cho người khác để hỗ trợ khắc phục sự cố và gỡ lỗi. Cơ sở dữ liệu gốc sẽ không bị thay đổi. Tệp cơ sở dữ liệu ẩn danh sẽ sử dụng định dạng tên file là {filename_format}.",
+            "generate_phashes_during_scan_tooltip": "Dùng để loại bỏ trùng lặp và nhận diện Scene.",
+            "defaults_set": "Giá trị mặc định đã được thiết lập và sẽ được sử dụng khi nhấn nút {action} trên trang Tác vụ (Tasks).",
+            "export_to_json": "Xuất nội dung cơ sở dữ liệu sang định dạng JSON trong thư mục metadata.",
+            "auto_tag_based_on_filenames": "Tự động gắn tag cho nội dung dựa trên đường dẫn tệp.",
+            "auto_tagging": "Gắn tag tự động"
+        },
+        "library": {
+            "exclusions": "Danh sách loại trừ",
+            "gallery_and_image_options": "Tùy chọn Thư viện và Hình ảnh",
+            "media_content_extensions": "Phần mở rộng của nội dung đa phương tiện"
+        },
+        "logs": {
+            "log_level": "Cấp độ ghi nhật ký"
+        },
+        "plugins": {
+            "available_plugins": "Plugin khả dụng",
+            "hooks": "Cơ chế kích hoạt tự động",
+            "installed_plugins": "Cài đặt plugin",
+            "triggers_on": "Kích hoạt khi"
+        },
+        "scraping": {
+            "available_scrapers": "Scraper khả dụng",
+            "entity_scrapers": "Thông tin mô tả cho {entityType}",
+            "excluded_tag_patterns_head": "Mẫu tag bị loại trừ",
+            "installed_scrapers": "Các trình quét đã cài đặt",
+            "scraper": "Trình quét dữ liệu tự động",
+            "scrapers": "Các trình quét dữ liệu",
+            "search_by_name": "Tìm kiếm theo tên",
+            "supported_types": "Các loại được hỗ trợ",
+            "supported_urls": "URLs",
+            "entity_metadata": "Siêu dữ liệu {entityType}",
+            "excluded_tag_patterns_desc": "Biểu thức chính quy của tên tag cần loại trừ khỏi kết quả quét dữ liệu"
+        }
+    },
+    "age_on_date": "{age} tại thời điểm sản xuất"
 }
