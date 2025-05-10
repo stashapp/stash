@@ -11,6 +11,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
@@ -24,18 +25,6 @@ const (
 	blobChecksumColumn = "checksum"
 )
 
-type BlobStoreOptions struct {
-	// UseFilesystem should be true if blob data should be stored in the filesystem
-	UseFilesystem bool
-	// UseDatabase should be true if blob data should be stored in the database
-	UseDatabase bool
-	// Path is the filesystem path to use for storing blobs
-	Path string
-	// SupplementaryPaths are alternative filesystem paths that will be used to find blobs
-	// No changes will be made to these filesystems
-	SupplementaryPaths []string
-}
-
 type BlobStore struct {
 	repository
 
@@ -44,10 +33,10 @@ type BlobStore struct {
 	fsStore *blob.FilesystemStore
 	// supplementary stores
 	otherStores []blob.FilesystemReader
-	options     BlobStoreOptions
+	options     database.BlobStoreOptions
 }
 
-func NewBlobStore(options BlobStoreOptions) *BlobStore {
+func NewBlobStore(options database.BlobStoreOptions) *BlobStore {
 	fs := &file.OsFS{}
 
 	ret := &BlobStore{

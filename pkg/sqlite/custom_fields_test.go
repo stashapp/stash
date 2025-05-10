@@ -181,7 +181,7 @@ func TestSetCustomFields(t *testing.T) {
 	}
 
 	// use performer custom fields store
-	store := db.Performer
+	store := db.Performer()
 	id := performerIDs[performerIdx]
 
 	for _, tt := range tests {

@@ -18,7 +18,7 @@ import (
 
 func TestStudioFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		name := studioNames[studioIdxWithScene] // find a studio by name
 
@@ -70,7 +70,7 @@ func TestStudioQueryNameOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
@@ -111,7 +111,7 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
@@ -155,7 +155,7 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
@@ -192,7 +192,7 @@ func TestStudioIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		_, _, err := sqb.Query(ctx, studioFilter, nil)
 		assert.NotNil(err)
@@ -218,7 +218,7 @@ func TestStudioQueryIgnoreAutoTag(t *testing.T) {
 			IgnoreAutoTag: &ignoreAutoTag,
 		}
 
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
@@ -233,7 +233,7 @@ func TestStudioQueryIgnoreAutoTag(t *testing.T) {
 
 func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Studio
+		tqb := db.Studio()
 
 		name := studioNames[studioIdxWithGroup] // find a studio by name
 
@@ -261,7 +261,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 
 func TestStudioQueryParent(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		studioCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
@@ -311,18 +311,18 @@ func TestStudioDestroyParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio(), parentName, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
 		parentID := createdParent.ID
-		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
+		createdChild, err := createStudio(ctx, db.Studio(), childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
 
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		// destroy the parent
 		err = sqb.Destroy(ctx, createdParent.ID)
@@ -344,7 +344,7 @@ func TestStudioDestroyParent(t *testing.T) {
 
 func TestStudioFindChildren(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		studios, err := sqb.FindChildren(ctx, studioIDs[studioIdxWithChildStudio])
 
@@ -373,18 +373,18 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio(), parentName, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
 		parentID := createdParent.ID
-		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
+		createdChild, err := createStudio(ctx, db.Studio(), childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
 
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		// clear the parent id from the child
 		input := models.StudioPartial{
@@ -410,11 +410,11 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 func TestStudioUpdateStudioImage(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Studio
+		qb := db.Studio()
 
 		// create studio to test against
 		const name = "TestStudioUpdateStudioImage"
-		created, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio(), name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
@@ -446,7 +446,7 @@ func TestStudioQuerySceneCount(t *testing.T) {
 
 func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		studioFilter := models.StudioFilterType{
 			SceneCount: &sceneCountCriterion,
 		}
@@ -455,7 +455,7 @@ func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriteri
 		assert.Greater(t, len(studios), 0)
 
 		for _, studio := range studios {
-			sceneCount, err := db.Scene.CountByStudioID(ctx, studio.ID)
+			sceneCount, err := db.Scene().CountByStudioID(ctx, studio.ID)
 			if err != nil {
 				return err
 			}
@@ -487,7 +487,7 @@ func TestStudioQueryImageCount(t *testing.T) {
 
 func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		studioFilter := models.StudioFilterType{
 			ImageCount: &imageCountCriterion,
 		}
@@ -498,7 +498,7 @@ func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriteri
 		for _, studio := range studios {
 			pp := 0
 
-			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
+			result, err := db.Image().Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -543,7 +543,7 @@ func TestStudioQueryGalleryCount(t *testing.T) {
 
 func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		studioFilter := models.StudioFilterType{
 			GalleryCount: &galleryCountCriterion,
 		}
@@ -554,7 +554,7 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 		for _, studio := range studios {
 			pp := 0
 
-			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+			_, count, err := db.Gallery().Query(ctx, &models.GalleryFilterType{
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
@@ -574,11 +574,11 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 
 func TestStudioStashIDs(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Studio
+		qb := db.Studio()
 
 		// create studio to test against
 		const name = "TestStudioStashIDs"
-		created, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio(), name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
@@ -600,7 +600,7 @@ func TestStudioStashIDs(t *testing.T) {
 }
 
 func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
-	qb := db.Studio
+	qb := db.Studio()
 
 	if err := s.LoadStashIDs(ctx, qb); err != nil {
 		t.Error(err.Error())
@@ -732,7 +732,7 @@ func TestStudioQueryRating(t *testing.T) {
 
 func queryStudios(ctx context.Context, t *testing.T, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
 	t.Helper()
-	studios, _, err := db.Studio.Query(ctx, studioFilter, findFilter)
+	studios, _, err := db.Studio().Query(ctx, studioFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying studio: %s", err.Error())
 	}
@@ -814,7 +814,7 @@ func TestStudioQueryTagCount(t *testing.T) {
 
 func verifyStudiosTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		studioFilter := models.StudioFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -837,7 +837,7 @@ func verifyStudiosTagCount(t *testing.T, tagCountCriterion models.IntCriterionIn
 func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(ctx context.Context, s *models.Studio)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := db.Studio
+		sqb := db.Studio()
 
 		studios := queryStudio(ctx, t, sqb, &filter, nil)
 
@@ -854,7 +854,7 @@ func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn fu
 
 func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		studioFilter := models.StudioFilterType{
 			Rating100: &ratingCriterion,
 		}
@@ -875,7 +875,7 @@ func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput)
 
 func TestStudioQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		isMissing := "rating"
 		studioFilter := models.StudioFilterType{
 			IsMissing: &isMissing,
@@ -951,7 +951,7 @@ func TestStudioQueryAlias(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, studio *models.Studio) {
 		t.Helper()
-		aliases, err := db.Studio.GetAliases(ctx, studio.ID)
+		aliases, err := db.Studio().GetAliases(ctx, studio.ID)
 		if err != nil {
 			t.Errorf("Error querying studios: %s", err.Error())
 		}
@@ -986,11 +986,11 @@ func TestStudioQueryAlias(t *testing.T) {
 
 func TestStudioAlias(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Studio
+		qb := db.Studio()
 
 		// create studio to test against
 		const name = "TestStudioAlias"
-		created, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio(), name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
@@ -1012,7 +1012,7 @@ func TestStudioAlias(t *testing.T) {
 }
 
 func testStudioAlias(ctx context.Context, t *testing.T, s *models.Studio) {
-	qb := db.Studio
+	qb := db.Studio()
 	if err := s.LoadAliases(ctx, qb); err != nil {
 		t.Error(err.Error())
 		return
@@ -1134,7 +1134,7 @@ func TestStudioQueryFast(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Studio
+		sqb := db.Studio()
 		for _, f := range filters {
 			for _, ff := range findFilters {
 				_, _, err := sqb.Query(ctx, &f, &ff)

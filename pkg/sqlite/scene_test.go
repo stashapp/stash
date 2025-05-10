@@ -22,38 +22,38 @@ import (
 
 func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *models.Scene) error {
 	if expected.URLs.Loaded() {
-		if err := actual.LoadURLs(ctx, db.Scene); err != nil {
+		if err := actual.LoadURLs(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
 
 	if expected.GalleryIDs.Loaded() {
-		if err := actual.LoadGalleryIDs(ctx, db.Scene); err != nil {
+		if err := actual.LoadGalleryIDs(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
 	if expected.TagIDs.Loaded() {
-		if err := actual.LoadTagIDs(ctx, db.Scene); err != nil {
+		if err := actual.LoadTagIDs(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
 	if expected.PerformerIDs.Loaded() {
-		if err := actual.LoadPerformerIDs(ctx, db.Scene); err != nil {
+		if err := actual.LoadPerformerIDs(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
 	if expected.Groups.Loaded() {
-		if err := actual.LoadGroups(ctx, db.Scene); err != nil {
+		if err := actual.LoadGroups(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
 	if expected.StashIDs.Loaded() {
-		if err := actual.LoadStashIDs(ctx, db.Scene); err != nil {
+		if err := actual.LoadStashIDs(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
 	if expected.Files.Loaded() {
-		if err := actual.LoadFiles(ctx, db.Scene); err != nil {
+		if err := actual.LoadFiles(ctx, db.Scene()); err != nil {
 			return err
 		}
 	}
@@ -237,7 +237,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -472,7 +472,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -685,7 +685,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Scene
+		qb := db.Scene()
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -1227,7 +1227,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		qb := db.Scene
+		qb := db.Scene()
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -1303,7 +1303,7 @@ func Test_sceneQueryBuilder_AddO(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1340,7 +1340,7 @@ func Test_sceneQueryBuilder_DeleteO(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1377,7 +1377,7 @@ func Test_sceneQueryBuilder_ResetO(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1415,7 +1415,7 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1487,7 +1487,7 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1558,7 +1558,7 @@ func Test_sceneQueryBuilder_FindMany(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1628,7 +1628,7 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1698,7 +1698,7 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1769,7 +1769,7 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1811,7 +1811,7 @@ func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1835,7 +1835,7 @@ func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
 
 func TestSceneCountByPerformerID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		count, err := sqb.CountByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
 		if err != nil {
@@ -1886,7 +1886,7 @@ func Test_sceneStore_FindByFileID(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1932,7 +1932,7 @@ func Test_sceneStore_CountByFileID(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1959,7 +1959,7 @@ func Test_sceneStore_CountMissingChecksum(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1986,7 +1986,7 @@ func Test_sceneStore_CountMissingOshash(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2004,7 +2004,7 @@ func Test_sceneStore_CountMissingOshash(t *testing.T) {
 
 func TestSceneWall(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		const sceneIdx = 2
 		wallQuery := getSceneStringValue(sceneIdx, "Details")
@@ -2041,7 +2041,7 @@ func TestSceneQueryQ(t *testing.T) {
 	q := getSceneStringValue(sceneIdx, titleField)
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		sceneQueryQ(ctx, t, sqb, q, sceneIdx)
 
@@ -2279,7 +2279,7 @@ func TestSceneQuery(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+			results, err := db.Scene().Query(ctx, models.SceneQueryOptions{
 				SceneFilter: tt.filter,
 				QueryOptions: models.QueryOptions{
 					FindFilter: tt.findFilter,
@@ -2392,7 +2392,7 @@ func TestSceneQueryPath(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2491,7 +2491,7 @@ func TestSceneQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
@@ -2526,7 +2526,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
@@ -2565,7 +2565,7 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
@@ -2598,7 +2598,7 @@ func TestSceneIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		queryOptions := models.SceneQueryOptions{
 			SceneFilter: sceneFilter,
@@ -2625,7 +2625,7 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 	t.Helper()
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		scenes := queryScene(ctx, t, sqb, &filter, nil)
 
@@ -2648,7 +2648,7 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			Path: &pathCriterion,
 		}
@@ -2757,7 +2757,7 @@ func TestSceneQueryRating100(t *testing.T) {
 
 func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			Rating100: &ratingCriterion,
 		}
@@ -2816,7 +2816,7 @@ func TestSceneQueryOCounter(t *testing.T) {
 
 func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			OCounter: &oCounterCriterion,
 		}
@@ -2881,7 +2881,7 @@ func TestSceneQueryDuration(t *testing.T) {
 
 func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			Duration: &durationCriterion,
 		}
@@ -2889,7 +2889,7 @@ func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInp
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			if err := scene.LoadPrimaryFile(ctx, db.File); err != nil {
+			if err := scene.LoadPrimaryFile(ctx, db.File()); err != nil {
 				t.Errorf("Error querying scene files: %v", err)
 				return nil
 			}
@@ -2953,7 +2953,7 @@ func TestSceneQueryResolution(t *testing.T) {
 
 func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -2964,7 +2964,7 @@ func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			if err := scene.LoadPrimaryFile(ctx, db.File); err != nil {
+			if err := scene.LoadPrimaryFile(ctx, db.File()); err != nil {
 				t.Errorf("Error querying scene files: %v", err)
 				return nil
 			}
@@ -3016,7 +3016,7 @@ func TestAllResolutionsHaveResolutionRange(t *testing.T) {
 
 func TestSceneQueryResolutionModifiers(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Scene
+		qb := db.Scene()
 		sceneNoResolution, _ := createScene(ctx, 0, 0)
 		firstScene540P, _ := createScene(ctx, 960, 540)
 		secondScene540P, _ := createScene(ctx, 1280, 719)
@@ -3077,13 +3077,13 @@ func createScene(ctx context.Context, width int, height int) (*models.Scene, err
 		Height: height,
 	}
 
-	if err := db.File.Create(ctx, sceneFile); err != nil {
+	if err := db.File().Create(ctx, sceneFile); err != nil {
 		return nil, err
 	}
 
 	scene := &models.Scene{}
 
-	if err := db.Scene.Create(ctx, scene, []models.FileID{sceneFile.ID}); err != nil {
+	if err := db.Scene().Create(ctx, scene, []models.FileID{sceneFile.ID}); err != nil {
 		return nil, err
 	}
 
@@ -3092,7 +3092,7 @@ func createScene(ctx context.Context, width int, height int) (*models.Scene, err
 
 func TestSceneQueryHasMarkers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		hasMarkers := "true"
 		sceneFilter := models.SceneFilterType{
 			HasMarkers: &hasMarkers,
@@ -3128,7 +3128,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 
 func TestSceneQueryIsMissingGallery(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "galleries"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3157,7 +3157,7 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 
 func TestSceneQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "studio"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3186,7 +3186,7 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 
 func TestSceneQueryIsMissingMovies(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "movie"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3215,7 +3215,7 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 
 func TestSceneQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "performers"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3246,7 +3246,7 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 
 func TestSceneQueryIsMissingDate(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "date"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3268,7 +3268,7 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 func TestSceneQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "tags"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3294,7 +3294,7 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 
 func TestSceneQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "rating"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3315,7 +3315,7 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 
 func TestSceneQueryIsMissingPhash(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		isMissing := "phash"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -3446,7 +3446,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+			results, err := db.Scene().Query(ctx, models.SceneQueryOptions{
 				SceneFilter: &models.SceneFilterType{
 					Performers: &tt.filter,
 				},
@@ -3582,7 +3582,7 @@ func TestSceneQueryTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+			results, err := db.Scene().Query(ctx, models.SceneQueryOptions{
 				SceneFilter: &models.SceneFilterType{
 					Tags: &tt.filter,
 				},
@@ -3779,7 +3779,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+			results, err := db.Scene().Query(ctx, models.SceneQueryOptions{
 				SceneFilter: tt.filter,
 				QueryOptions: models.QueryOptions{
 					FindFilter: tt.findFilter,
@@ -3873,7 +3873,7 @@ func TestSceneQueryStudio(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -3899,7 +3899,7 @@ func TestSceneQueryStudio(t *testing.T) {
 
 func TestSceneQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -4028,7 +4028,7 @@ func TestSceneGroups(t *testing.T) {
 				findFilter.Q = &tt.q
 			}
 
-			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+			results, err := db.Scene().Query(ctx, models.SceneQueryOptions{
 				SceneFilter: sceneFilter,
 				QueryOptions: models.QueryOptions{
 					FindFilter: findFilter,
@@ -4053,7 +4053,7 @@ func TestSceneGroups(t *testing.T) {
 
 func TestSceneQueryMovies(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		movieCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(groupIDs[groupIdxWithScene]),
@@ -4093,7 +4093,7 @@ func TestSceneQueryMovies(t *testing.T) {
 
 func TestSceneQueryPhashDuplicated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		duplicated := true
 		phashCriterion := models.PHashDuplicationCriterionInput{
 			Duplicated: &duplicated,
@@ -4211,7 +4211,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -4263,7 +4263,7 @@ func TestSceneQueryPagination(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
 
 		assert.Len(t, scenes, 1)
@@ -4311,7 +4311,7 @@ func TestSceneQueryTagCount(t *testing.T) {
 
 func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -4352,7 +4352,7 @@ func TestSceneQueryPerformerCount(t *testing.T) {
 
 func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 		sceneFilter := models.SceneFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -4375,7 +4375,7 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 
 func TestFindByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		scenes, err := sqb.FindByGroupID(ctx, groupIDs[groupIdxWithScene])
 
@@ -4400,7 +4400,7 @@ func TestFindByMovieID(t *testing.T) {
 
 func TestFindByPerformerID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
+		sqb := db.Scene()
 
 		scenes, err := sqb.FindByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
@@ -4425,7 +4425,7 @@ func TestFindByPerformerID(t *testing.T) {
 
 func TestSceneUpdateSceneCover(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Scene
+		qb := db.Scene()
 
 		sceneID := sceneIDs[sceneIdxWithGallery]
 
@@ -4437,7 +4437,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 func TestSceneStashIDs(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Scene
+		qb := db.Scene()
 
 		// create scene to test against
 		const name = "TestSceneStashIDs"
@@ -4472,7 +4472,7 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 		UpdatedAt: epochTime,
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	// update stash ids and ensure was updated
 	var err error
@@ -4514,7 +4514,7 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 
 func TestSceneQueryQTrim(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Scene
+		qb := db.Scene()
 
 		expectedID := sceneIDs[sceneIdxWithSpacedName]
 
@@ -4556,7 +4556,7 @@ func TestSceneQueryQTrim(t *testing.T) {
 }
 
 func TestSceneStore_All(t *testing.T) {
-	qb := db.Scene
+	qb := db.Scene()
 
 	withRollbackTxn(func(ctx context.Context) error {
 		got, err := qb.All(ctx)
@@ -4573,7 +4573,7 @@ func TestSceneStore_All(t *testing.T) {
 }
 
 func TestSceneStore_FindDuplicates(t *testing.T) {
-	qb := db.Scene
+	qb := db.Scene()
 
 	withRollbackTxn(func(ctx context.Context) error {
 		distance := 0
@@ -4627,7 +4627,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -4663,7 +4663,7 @@ func TestSceneStore_AddView(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -4754,7 +4754,7 @@ func TestSceneStore_SaveActivity(t *testing.T) {
 		},
 	}
 
-	qb := db.Scene
+	qb := db.Scene()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -4806,7 +4806,7 @@ func TestSceneStore_SaveActivity(t *testing.T) {
 // TODO - this should be in history_test and generalised
 func TestSceneStore_CountAllViews(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Scene
+		qb := db.Scene()
 
 		sceneID := sceneIDs[sceneIdx1WithPerformer]
 
@@ -4839,7 +4839,7 @@ func TestSceneStore_CountAllViews(t *testing.T) {
 
 func TestSceneStore_CountUniqueViews(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Scene
+		qb := db.Scene()
 
 		sceneID := sceneIDs[sceneIdx1WithPerformer]
 

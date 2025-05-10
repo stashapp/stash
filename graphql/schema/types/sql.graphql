@@ -18,3 +18,8 @@ type SQLExecResult {
   """
   last_insert_id: Int64
 }
+
+enum SQLDatabaseType {
+  SQLITE
+  POSTGRES
+}

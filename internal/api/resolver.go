@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
@@ -356,6 +357,18 @@ func (r *mutationResolver) QuerySQL(ctx context.Context, sql string, args []inte
 		Columns: cols,
 		Rows:    rows,
 	}, nil
+}
+
+func (r *queryResolver) GetDatabaseBackend(context.Context) (SQLDatabaseType, error) {
+	db := manager.GetInstance().Database
+	switch db.DatabaseBackend() {
+	case database.PostgresBackend:
+		return SQLDatabaseTypePostgres, nil
+	case database.SqliteBackend:
+		return SQLDatabaseTypeSQLIte, nil
+	}
+
+	return "", errors.New("unknown database type")
 }
 
 // Get scene marker tags which show up under the video.

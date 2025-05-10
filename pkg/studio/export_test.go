@@ -40,9 +40,14 @@ var parentStudio models.Studio = models.Studio{
 
 var imageBytes = []byte("imageBytes")
 
+func getUUID(_ string) string {
+	// TODO: Encode input string
+	return "00000000-0000-0000-0000-000000000000"
+}
+
 var aliases = []string{"alias"}
 var stashID = models.StashID{
-	StashID:  "StashID",
+	StashID:  getUUID("StashID"),
 	Endpoint: "Endpoint",
 }
 var stashIDs = []models.StashID{
