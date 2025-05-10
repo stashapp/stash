@@ -118,6 +118,10 @@ func (ff FindFilterType) IsGetAll() bool {
 	return ff.PerPage != nil && *ff.PerPage < 0
 }
 
+func (ff FindFilterType) IsCounting() bool {
+	return ff.PerPage != nil && *ff.PerPage == 0
+}
+
 // BatchFindFilter returns a FindFilterType suitable for batch finding
 // using the provided batch size.
 func BatchFindFilter(batchSize int) *FindFilterType {

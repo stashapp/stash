@@ -21,22 +21,22 @@ import (
 
 func loadGroupRelationships(ctx context.Context, expected models.Group, actual *models.Group) error {
 	if expected.URLs.Loaded() {
-		if err := actual.LoadURLs(ctx, db.Group); err != nil {
+		if err := actual.LoadURLs(ctx, db.Group()); err != nil {
 			return err
 		}
 	}
 	if expected.TagIDs.Loaded() {
-		if err := actual.LoadTagIDs(ctx, db.Group); err != nil {
+		if err := actual.LoadTagIDs(ctx, db.Group()); err != nil {
 			return err
 		}
 	}
 	if expected.ContainingGroups.Loaded() {
-		if err := actual.LoadContainingGroupIDs(ctx, db.Group); err != nil {
+		if err := actual.LoadContainingGroupIDs(ctx, db.Group()); err != nil {
 			return err
 		}
 	}
 	if expected.SubGroups.Loaded() {
-		if err := actual.LoadSubGroupIDs(ctx, db.Group); err != nil {
+		if err := actual.LoadSubGroupIDs(ctx, db.Group()); err != nil {
 			return err
 		}
 	}
@@ -115,7 +115,7 @@ func Test_GroupStore_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -277,7 +277,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -527,7 +527,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Group
+		qb := db.Group()
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -568,7 +568,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 
 func TestGroupFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.Group
+		mqb := db.Group()
 
 		name := groupNames[groupIdxWithScene] // find a group by name
 
@@ -601,7 +601,7 @@ func TestGroupFindByNames(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		var names []string
 
-		mqb := db.Group
+		mqb := db.Group()
 
 		names = append(names, groupNames[groupIdxWithScene]) // find groups by names
 
@@ -675,7 +675,7 @@ func TestGroupQuery(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Group.Query(ctx, tt.filter, tt.findFilter)
+			results, _, err := db.Group().Query(ctx, tt.filter, tt.findFilter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GroupQueryBuilder.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -697,7 +697,7 @@ func TestGroupQuery(t *testing.T) {
 
 func TestGroupQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.Group
+		mqb := db.Group()
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGroup]),
@@ -788,7 +788,7 @@ func TestGroupQueryURL(t *testing.T) {
 
 func TestGroupQueryURLExcludes(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
-		mqb := db.Group
+		mqb := db.Group()
 
 		// create group with two URLs
 		group := models.Group{
@@ -839,7 +839,7 @@ func TestGroupQueryURLExcludes(t *testing.T) {
 func verifyGroupQuery(t *testing.T, filter models.GroupFilterType, verifyFn func(s *models.Group)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := db.Group
+		sqb := db.Group()
 
 		groups := queryGroups(ctx, t, &filter, nil)
 
@@ -861,7 +861,7 @@ func verifyGroupQuery(t *testing.T, filter models.GroupFilterType, verifyFn func
 }
 
 func queryGroups(ctx context.Context, t *testing.T, groupFilter *models.GroupFilterType, findFilter *models.FindFilterType) []*models.Group {
-	sqb := db.Group
+	sqb := db.Group()
 	groups, _, err := sqb.Query(ctx, groupFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying group: %s", err.Error())
@@ -946,7 +946,7 @@ func TestGroupQueryTagCount(t *testing.T) {
 
 func verifyGroupsTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Group
+		sqb := db.Group()
 		groupFilter := models.GroupFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -1011,12 +1011,12 @@ func TestGroupQuerySortOrderIndex(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		// just ensure there are no errors
-		_, _, err := db.Group.Query(ctx, &groupFilter, &findFilter)
+		_, _, err := db.Group().Query(ctx, &groupFilter, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying group: %s", err.Error())
 		}
 
-		_, _, err = db.Group.Query(ctx, nil, &findFilter)
+		_, _, err = db.Group().Query(ctx, nil, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying group: %s", err.Error())
 		}
@@ -1027,7 +1027,7 @@ func TestGroupQuerySortOrderIndex(t *testing.T) {
 
 func TestGroupUpdateFrontImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Group
+		qb := db.Group()
 
 		// create group to test against
 		const name = "TestGroupUpdateGroupImages"
@@ -1047,7 +1047,7 @@ func TestGroupUpdateFrontImage(t *testing.T) {
 
 func TestGroupUpdateBackImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Group
+		qb := db.Group()
 
 		// create group to test against
 		const name = "TestGroupUpdateGroupImages"
@@ -1142,7 +1142,7 @@ func TestGroupQueryContainingGroups(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		valueIDs := indexesToIDs(groupIDs, tt.c.valueIdxs)
@@ -1255,7 +1255,7 @@ func TestGroupQuerySubGroups(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		valueIDs := indexesToIDs(groupIDs, tt.c.valueIdxs)
@@ -1331,7 +1331,7 @@ func TestGroupQueryContainingGroupCount(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		expectedIDs := indexesToIDs(groupIDs, tt.expectedIdxs)
@@ -1402,7 +1402,7 @@ func TestGroupQuerySubGroupCount(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		expectedIDs := indexesToIDs(groupIDs, tt.expectedIdxs)
@@ -1460,7 +1460,7 @@ func TestGroupFindInAncestors(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		ancestorIDs := indexesToIDs(groupIDs, tt.ancestorIdxs)
@@ -1556,7 +1556,7 @@ func TestGroupReorderSubGroups(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1666,7 +1666,7 @@ func TestGroupAddSubGroups(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1781,7 +1781,7 @@ func TestGroupRemoveSubGroups(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1869,7 +1869,7 @@ func TestGroupFindSubGroupIDs(t *testing.T) {
 		},
 	}
 
-	qb := db.Group
+	qb := db.Group()
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
