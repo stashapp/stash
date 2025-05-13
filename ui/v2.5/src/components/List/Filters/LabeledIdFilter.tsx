@@ -472,7 +472,6 @@ export function useLabeledIdFilterState(props: {
     canExclude: !includingOnly,
     query,
     setQuery,
-    singleValue,
     onOpen,
   };
 }
