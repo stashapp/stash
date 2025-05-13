@@ -915,4 +915,5 @@ input[type="range"].blue-slider {
 
 .scene-list:not(.hide-sidebar) .sidebar-toggle-button {
   opacity: 0;
+  pointer-events: none;
 }
