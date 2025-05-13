@@ -40,6 +40,9 @@ input[type="range"].zoom-slider {
   max-width: 60px;
   padding-left: 0;
   padding-right: 0;
+
+  // width is set to 100% by default, but in a flex container, it gets a very small width
+  width: unset;
 }
 
 .query-text-field-group {

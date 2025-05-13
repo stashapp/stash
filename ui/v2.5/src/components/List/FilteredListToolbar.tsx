@@ -69,45 +69,51 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   return (
     <ButtonToolbar className="filtered-list-toolbar">
       {onToggleSidebar && (
-        <ButtonGroup>
-          <Button
-            className="sidebar-toggle-button"
-            onClick={onToggleSidebar}
-            variant="secondary"
-            title={intl.formatMessage({ id: "actions.sidebar.open" })}
-          >
-            <SidebarIcon />
-          </Button>
-        </ButtonGroup>
+        <div>
+          <ButtonGroup>
+            <Button
+              className="sidebar-toggle-button"
+              onClick={onToggleSidebar}
+              variant="secondary"
+              title={intl.formatMessage({ id: "actions.sidebar.open" })}
+            >
+              <SidebarIcon />
+            </Button>
+          </ButtonGroup>
+        </div>
       )}
 
-      <ButtonGroup>
-        {showEditFilter && (
-          <ListFilter
-            onFilterUpdate={setFilter}
-            filter={filter}
-            openFilterDialog={() => showEditFilter()}
-            view={view}
-            withSidebar={!!onToggleSidebar}
+      <div>
+        <ButtonGroup>
+          {showEditFilter && (
+            <ListFilter
+              onFilterUpdate={setFilter}
+              filter={filter}
+              openFilterDialog={() => showEditFilter()}
+              view={view}
+              withSidebar={!!onToggleSidebar}
+            />
+          )}
+          <ListOperationButtons
+            onSelectAll={onSelectAll}
+            onSelectNone={onSelectNone}
+            otherOperations={operations}
+            itemsSelected={selectedIds.size > 0}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
-        )}
-        <ListOperationButtons
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          otherOperations={operations}
-          itemsSelected={selectedIds.size > 0}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-        <ListViewOptions
-          displayMode={filter.displayMode}
-          displayModeOptions={filterOptions.displayModeOptions}
-          onSetDisplayMode={setDisplayMode}
-          zoomIndex={zoomable ? filter.zoomIndex : undefined}
-          onSetZoom={zoomable ? setZoom : undefined}
-        />
-      </ButtonGroup>
-      <ButtonGroup></ButtonGroup>
+          <ListViewOptions
+            displayMode={filter.displayMode}
+            displayModeOptions={filterOptions.displayModeOptions}
+            onSetDisplayMode={setDisplayMode}
+            zoomIndex={zoomable ? filter.zoomIndex : undefined}
+            onSetZoom={zoomable ? setZoom : undefined}
+          />
+        </ButtonGroup>
+      </div>
+      <div>
+        <ButtonGroup></ButtonGroup>
+      </div>
     </ButtonToolbar>
   );
 };

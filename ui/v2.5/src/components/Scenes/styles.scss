@@ -904,7 +904,23 @@ input[type="range"].blue-slider {
 
 .scene-list .filtered-list-toolbar {
   display: flex;
-  justify-content: space-between;
+
+  & > div {
+    display: flex;
+    flex: 1;
+
+    &:first-child {
+      justify-content: flex-start;
+    }
+
+    &:nth-child(2) {
+      justify-content: center;
+    }
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
 }
 
 .scene-list.hide-sidebar .sidebar-toggle-button {
