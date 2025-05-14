@@ -7,6 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
+import { StashIDPill } from "src/components/Shared/StashID";
 import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
@@ -186,13 +187,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
       const stashLinks = scene.stash_ids.map((stashID) => {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <ExternalLink
-            key={`${stashID.endpoint}${stashID.stash_id}`}
-            className="small d-block"
-            href={`${base}scenes/${stashID.stash_id}`}
-          >
-            {stashID.stash_id}
-          </ExternalLink>
+          <div><StashIDPill stashID={stashID} linkType="scenes" /></div>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );
