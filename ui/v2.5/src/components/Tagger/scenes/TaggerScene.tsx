@@ -19,7 +19,6 @@ import {
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { ConfigurationContext } from "src/hooks/Config";
 import { SceneQueue } from "src/models/sceneQueue";
 
