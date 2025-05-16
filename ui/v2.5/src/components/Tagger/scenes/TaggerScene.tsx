@@ -186,7 +186,9 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
       const stashLinks = scene.stash_ids.map((stashID) => {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <div><StashIDPill stashID={stashID} linkType="scenes" /></div>
+          <div>
+            <StashIDPill stashID={stashID} linkType="scenes" />
+          </div>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );
