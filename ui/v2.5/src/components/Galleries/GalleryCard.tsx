@@ -65,7 +65,7 @@ interface IGalleryCardProps {
 
 const GalleryCardPopovers = PatchComponent(
   "GalleryCard.Popovers",
-  (props:IGalleryCardProps) => {
+  (props: IGalleryCardProps) => {
     function maybeRenderScenePopoverButton() {
       if (props.gallery.scenes.length === 0) return;
 
@@ -195,9 +195,9 @@ const GalleryCardDetails = PatchComponent(
 const GalleryCardOverlays = PatchComponent(
   "GalleryCard.Overlays",
   (props: IGalleryCardProps) => {
-    return <StudioOverlay studio={props.gallery.studio} />
+    return <StudioOverlay studio={props.gallery.studio} />;
   }
-)
+);
 
 const GalleryCardImage = PatchComponent(
   "GalleryCard.Image",
@@ -214,7 +214,7 @@ const GalleryCardImage = PatchComponent(
         />
         <RatingBanner rating={props.gallery.rating100} />
       </>
-    )
+    );
   }
 );
 
