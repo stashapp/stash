@@ -715,6 +715,11 @@ declare namespace PluginApi {
     "ScenePage.TabContent": React.FC<any>;
     ScenePlayer: React.FC<any>;
     FrontPage: React.FC<any>;
+    GalleryCard: React.FC<any>;
+    "GalleryCard.Details": React.FC<any>;
+    "GalleryCard.Image": React.FC<any>;
+    "GalleryCard.Overlays": React.FC<any>;
+    "GalleryCard.Popovers": React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
