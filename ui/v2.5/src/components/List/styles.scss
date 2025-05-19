@@ -851,8 +851,7 @@ input[type="range"].zoom-slider {
 }
 
 .item-list-container .sidebar-pane {
-  // offset the fluid container margin
-  margin-left: -15px;
+  width: 100%;
 }
 
 .sidebar {

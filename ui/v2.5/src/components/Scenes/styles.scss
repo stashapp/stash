@@ -904,6 +904,8 @@ input[type="range"].blue-slider {
 
 .scene-list .filtered-list-toolbar {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 1rem;
 
   & > div {
     display: flex;

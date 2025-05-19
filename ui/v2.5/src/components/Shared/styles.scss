@@ -774,7 +774,7 @@ $sidebar-width: 250px;
 
   &.hide-sidebar {
     > :nth-child(2) {
-      padding-left: 15px;
+      padding-left: 0;
     }
   }
 
@@ -783,7 +783,7 @@ $sidebar-width: 250px;
 
     &:not(.hide-sidebar) {
       > :nth-child(2) {
-        margin-left: $sidebar-width;
+        margin-left: calc($sidebar-width - 15px);
       }
     }
   }
@@ -795,8 +795,14 @@ $sidebar-width: 250px;
     &.hide-sidebar .sidebar {
       margin-left: -100%;
     }
+
+    &.hide-sidebar > :nth-child(2) {
+      width: 100%;
+    }
   }
   @include media-breakpoint-down(xs) {
+    display: block;
+
     .sidebar {
       margin-bottom: $navbar-height;
       margin-top: 0;
@@ -861,6 +867,7 @@ $sticky-header-height: calc(50px + 3.3rem);
     margin-top: -15px;
     max-height: calc(100vh - $sticky-header-height - 15px);
     overflow-y: auto;
+    padding-left: 0;
     position: sticky;
 
     // sticky detail header is 50px + 3.3rem
@@ -873,6 +880,7 @@ $sticky-header-height: calc(50px + 3.3rem);
 
   .sidebar-pane.hide-sidebar .sidebar {
     left: -$sidebar-width;
+    margin-left: calc(-15px - $sidebar-width);
   }
 
   // on smaller viewports we want the sidebar to overlap content
@@ -906,6 +914,12 @@ $sticky-header-height: calc(50px + 3.3rem);
     .sidebar-pane:not(.hide-sidebar) {
       > :nth-child(2) {
         margin-left: 0;
+      }
+    }
+
+    .sidebar-pane.hide-sidebar {
+      > :nth-child(2) {
+        padding-left: 15px;
       }
     }
   }
