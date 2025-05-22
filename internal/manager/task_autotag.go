@@ -51,11 +51,15 @@ func (j *autoTagJob) isFileBasedAutoTag(input AutoTagMetadataInput) bool {
 }
 
 func (j *autoTagJob) autoTagFiles(ctx context.Context, progress *job.Progress, paths []string, performers, studios, tags bool) {
+	// 날짜 옵션 확인
+	dates := len(j.input.Dates) > 0 && j.input.Dates[0] == "*"
+	
 	t := autoTagFilesTask{
 		paths:      paths,
 		performers: performers,
 		studios:    studios,
 		tags:       tags,
+		dates:      dates,
 		progress:   progress,
 		repository: j.repository,
 		cache:      &j.cache,
@@ -416,6 +420,7 @@ type autoTagFilesTask struct {
 	performers bool
 	studios    bool
 	tags       bool
+	dates      bool
 
 	progress   *job.Progress
 	repository models.Repository
@@ -580,6 +585,7 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context) {
 				performers: t.performers,
 				studios:    t.studios,
 				tags:       t.tags,
+				dates:      t.dates,
 				cache:      t.cache,
 			}
 
@@ -759,6 +765,7 @@ type autoTagSceneTask struct {
 	performers bool
 	studios    bool
 	tags       bool
+	dates      bool
 
 	cache *match.Cache
 }
@@ -785,6 +792,13 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		if t.tags {
 			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache); err != nil {
 				return fmt.Errorf("tagging scene tags for %s: %v", t.scene.DisplayName(), err)
+			}
+		}
+
+		// 파일명에서 날짜 추출 및 설정 (dates 옵션이 활성화된 경우에만)
+		if t.dates {
+			if err := autotag.SceneDate(ctx, t.scene, r.Scene); err != nil {
+				return fmt.Errorf("extracting date from filename for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 

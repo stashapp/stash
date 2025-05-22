@@ -30,7 +30,7 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
-  const { performers, studios, tags } = options;
+  const { performers, studios, tags, dates } = options;
   const wildcard = ["*"];
 
   function set(v?: boolean) {
@@ -63,6 +63,13 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
         checked={!!tags?.length}
         headingID="tags"
         onChange={(v) => setOptions({ tags: set(v) })}
+      />
+      <BooleanSetting
+        id="autotag-dates"
+        checked={!!dates?.length}
+        headingID="dates"
+        subHeadingID="config.tasks.extract_dates_from_filenames"
+        onChange={(v) => setOptions({ dates: set(v) })}
       />
     </>
   );

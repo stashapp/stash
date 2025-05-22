@@ -270,6 +270,8 @@ type AutoTagMetadataInput struct {
 	Studios []string `json:"studios"`
 	// IDs of tags to tag files with, or "*" for all
 	Tags []string `json:"tags"`
+	// Extract dates from filenames, "*" to enable
+	Dates []string `json:"dates"`
 }
 
 func (s *Manager) AutoTag(ctx context.Context, input AutoTagMetadataInput) int {
