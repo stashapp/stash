@@ -10,31 +10,31 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// 다양한 날짜 패턴을 인식하는 정규식들
+// Regular expressions to recognize various date patterns
 var datePatterns = []*regexp.Regexp{
-	// YYYY-MM-DD 형식 (2020-11-12)
+	// YYYY-MM-DD format (2020-11-12)
 	regexp.MustCompile(`(\d{4})-(\d{1,2})-(\d{1,2})`),
-	// YYYYMMDD 형식 (20201112)
+	// YYYYMMDD format (20201112)
 	regexp.MustCompile(`(\d{4})(\d{2})(\d{2})`),
-	// DD.MM.YYYY 형식 (12.11.2020)
+	// DD.MM.YYYY format (12.11.2020)
 	regexp.MustCompile(`(\d{1,2})\.(\d{1,2})\.(\d{4})`),
 }
 
-// ExtractDateFromPath는 파일 경로에서 날짜를 추출합니다.
+// extracts a date from a file path.
 func ExtractDateFromPath(path string) *time.Time {
-	// 파일명만 추출
+	// Extract filename only
 	filename := filepath.Base(path)
 	
-	// 각 패턴에 대해 시도
+	// Attempt each pattern
 	for i, pattern := range datePatterns {
 		matches := pattern.FindStringSubmatch(filename)
 		if len(matches) >= 4 {
 			var year, month, day int
 			var err error
 			
-			// 패턴에 따라 날짜 파싱 로직 구현
+			// Implement date parsing logic based on the pattern
 			switch i {
-			case 0, 1: // YYYY-MM-DD 또는 YYYYMMDD
+			case 0, 1: // YYYY-MM-DD or YYYYMMDD
 				year, err = strconv.Atoi(matches[1])
 				if err != nil {
 					continue
@@ -62,12 +62,12 @@ func ExtractDateFromPath(path string) *time.Time {
 				}
 			}
 			
-			// 날짜 유효성 검사
+			// Validate the date
 			if year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31 {
 				continue
 			}
 			
-			// 날짜 객체 생성
+			// Create date object
 			date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 			return &date
 		}
@@ -76,27 +76,27 @@ func ExtractDateFromPath(path string) *time.Time {
 	return nil
 }
 
-// SceneDate는 장면의 파일 경로에서 날짜를 추출하여 설정합니다.
+// extracts and sets the date from a scene's file path.
 func SceneDate(ctx context.Context, s *models.Scene, rw models.SceneUpdater) error {
-	// 이미 날짜가 설정되어 있으면 건너뜀
+	// Skip if the date is already set
 	if s.Date != nil {
 		return nil
 	}
 	
-	// 파일 경로에서 날짜 추출
+	// Extract date from file path
 	date := ExtractDateFromPath(s.Path)
 	if date == nil {
-		return nil // 날짜를 찾지 못함
+		return nil // Date not found
 	}
 	
-	// 장면 객체 업데이트
+	// Update scene object
 	partial := models.NewScenePartial()
 	
-	// time.Time을 models.Date로 변환
+	// Convert time.Time to models.Date
 	dateModel := models.Date{Time: *date}
 	partial.Date = models.NewOptionalDate(dateModel)
 	
-	// 데이터베이스 업데이트
+	// Update the database
 	_, err := rw.UpdatePartial(ctx, s.ID, partial)
 	return err
 }

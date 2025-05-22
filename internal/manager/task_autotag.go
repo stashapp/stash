@@ -51,7 +51,7 @@ func (j *autoTagJob) isFileBasedAutoTag(input AutoTagMetadataInput) bool {
 }
 
 func (j *autoTagJob) autoTagFiles(ctx context.Context, progress *job.Progress, paths []string, performers, studios, tags bool) {
-	// 날짜 옵션 확인
+	// Check date options
 	dates := len(j.input.Dates) > 0 && j.input.Dates[0] == "*"
 	
 	t := autoTagFilesTask{
@@ -795,7 +795,7 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 			}
 		}
 
-		// 파일명에서 날짜 추출 및 설정 (dates 옵션이 활성화된 경우에만)
+		// Extract and set the date from the filename (only if the 'dates' option is enabled)
 		if t.dates {
 			if err := autotag.SceneDate(ctx, t.scene, r.Scene); err != nil {
 				return fmt.Errorf("extracting date from filename for %s: %v", t.scene.DisplayName(), err)
