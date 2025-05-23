@@ -31,7 +31,8 @@ func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) error 
 	input := j.input
 	if j.isFileBasedAutoTag(input) {
 		// doing file-based auto-tag
-		j.autoTagFiles(ctx, progress, input.Paths, len(input.Performers) > 0, len(input.Studios) > 0, len(input.Tags) > 0)
+		// Calculate dates boolean here
+		j.autoTagFiles(ctx, progress, input.Paths, len(input.Performers) > 0, len(input.Studios) > 0, len(input.Tags) > 0, len(input.Dates) > 0)
 	} else {
 		// doing specific performer/studio/tag auto-tag
 		j.autoTagSpecific(ctx, progress)
@@ -50,16 +51,14 @@ func (j *autoTagJob) isFileBasedAutoTag(input AutoTagMetadataInput) bool {
 	return (len(performerIds) == 0 || performerIds[0] == wildcard) && (len(studioIds) == 0 || studioIds[0] == wildcard) && (len(tagIds) == 0 || tagIds[0] == wildcard)
 }
 
-func (j *autoTagJob) autoTagFiles(ctx context.Context, progress *job.Progress, paths []string, performers, studios, tags bool) {
-	// Check date options
-	dates := len(j.input.Dates) > 0 && j.input.Dates[0] == "*"
-	
+// Add dates bool parameter to autoTagFiles signature
+func (j *autoTagJob) autoTagFiles(ctx context.Context, progress *job.Progress, paths []string, performers, studios, tags, dates bool) {
 	t := autoTagFilesTask{
 		paths:      paths,
 		performers: performers,
 		studios:    studios,
 		tags:       tags,
-		dates:      dates,
+		dates:      dates, // Use the passed dates parameter
 		progress:   progress,
 		repository: j.repository,
 		cache:      &j.cache,
@@ -420,7 +419,7 @@ type autoTagFilesTask struct {
 	performers bool
 	studios    bool
 	tags       bool
-	dates      bool
+	dates      bool // Keep dates field to pass to autoTagSceneTask
 
 	progress   *job.Progress
 	repository models.Repository
@@ -585,7 +584,7 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context) {
 				performers: t.performers,
 				studios:    t.studios,
 				tags:       t.tags,
-				dates:      t.dates,
+				dates:      t.dates, // Pass the dates value from autoTagFilesTask
 				cache:      t.cache,
 			}
 
