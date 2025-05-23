@@ -89,6 +89,14 @@ func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAuto
 	return ret, nil
 }
 
+func autotagMatchDate(path string) *string {
+	if d := match.PathToDate(path); d != nil {
+		dateStr := d.Format("2006-01-02")
+		return &dateStr
+	}
+	return nil
+}
+
 func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	var ret *models.ScrapedScene
 	const trimExt = false
@@ -114,11 +122,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 
-		var dateStrPtr *string
-		if d := match.PathToDate(path); d != nil {
-			dateStr := d.Format("2006-01-02")
-			dateStrPtr = &dateStr
-		}
+		dateStrPtr := autotagMatchDate(path)
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 || dateStrPtr != nil {
 			ret = &models.ScrapedScene{
@@ -166,11 +170,14 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
 
-		if len(performers) > 0 || studio != nil || len(tags) > 0 {
+		dateStrPtr := autotagMatchDate(path)
+
+		if len(performers) > 0 || studio != nil || len(tags) > 0 || dateStrPtr != nil {
 			ret = &models.ScrapedGallery{
 				Performers: performers,
 				Studio:     studio,
 				Tags:       tags,
+				Date:       dateStrPtr,
 			}
 		}
 

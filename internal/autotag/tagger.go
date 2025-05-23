@@ -161,3 +161,20 @@ func (t *tagger) tagGalleries(ctx context.Context, paths []string, galleryReader
 		return nil
 	})
 }
+
+func (t *tagger) tagDates(ctx context.Context, addFunc func(dateStr string) (bool, error)) error {
+	if t.Path == "" {
+		return nil
+	}
+	if d := match.PathToDate(t.Path); d != nil {
+		dateStr := d.Format("2006-01-02")
+		added, err := addFunc(dateStr)
+		if err != nil {
+			return t.addError("date", dateStr, err)
+		}
+		if added {
+			t.addLog("date", dateStr)
+		}
+	}
+	return nil
+}

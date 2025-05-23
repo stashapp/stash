@@ -3,6 +3,7 @@ package autotag
 import (
 	"context"
 	"slices"
+	"time"
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
@@ -91,5 +92,24 @@ func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagRead
 		}
 
 		return true, nil
+	})
+}
+
+// ImageDate extracts a date from the image path and sets it to image.Date if not already set.
+func ImageDate(ctx context.Context, img *models.Image, rw models.ImageUpdater) error {
+	t := getImageFileTagger(img, nil)
+	return t.tagDates(ctx, func(dateStr string) (bool, error) {
+		if img.Date != nil {
+			return false, nil
+		}
+		t, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return false, err
+		}
+		dateModel := models.Date{Time: t}
+		partial := models.NewImagePartial()
+		partial.Date = models.NewOptionalDate(dateModel)
+		_, err = rw.UpdatePartial(ctx, img.ID, partial)
+		return err == nil, err
 	})
 }

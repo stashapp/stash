@@ -648,6 +648,7 @@ func (t *autoTagFilesTask) processImages(ctx context.Context) {
 				performers: t.performers,
 				studios:    t.studios,
 				tags:       t.tags,
+				dates:      t.dates,
 				cache:      t.cache,
 			}
 
@@ -711,6 +712,7 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context) {
 				performers: t.performers,
 				studios:    t.studios,
 				tags:       t.tags,
+				dates:      t.dates,
 				cache:      t.cache,
 			}
 
@@ -816,6 +818,7 @@ type autoTagImageTask struct {
 	performers bool
 	studios    bool
 	tags       bool
+	dates      bool
 
 	cache *match.Cache
 }
@@ -840,6 +843,13 @@ func (t *autoTagImageTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 			}
 		}
 
+		// Extract and set the date from the filename (only if the 'dates' option is enabled)
+		if t.dates {
+			if err := autotag.ImageDate(ctx, t.image, r.Image); err != nil {
+				return fmt.Errorf("extracting date from filename for %s: %v", t.image.DisplayName(), err)
+			}
+		}
+
 		return nil
 	}); err != nil {
 		if !job.IsCancelled(ctx) {
@@ -855,6 +865,7 @@ type autoTagGalleryTask struct {
 	performers bool
 	studios    bool
 	tags       bool
+	dates      bool
 
 	cache *match.Cache
 }
@@ -876,6 +887,13 @@ func (t *autoTagGalleryTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		if t.tags {
 			if err := autotag.GalleryTags(ctx, t.gallery, r.Gallery, r.Tag, t.cache); err != nil {
 				return fmt.Errorf("tagging gallery tags for %s: %v", t.gallery.DisplayName(), err)
+			}
+		}
+
+		// Extract and set the date from the filename (only if the 'dates' option is enabled)
+		if t.dates {
+			if err := autotag.GalleryDate(ctx, t.gallery, r.Gallery); err != nil {
+				return fmt.Errorf("extracting date from filename for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 

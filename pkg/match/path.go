@@ -283,7 +283,8 @@ func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQuerye
 }
 
 func PathToDate(path string) *time.Time {
-	filename := filepath.Base(path)
+	// Search for a date in all components of the path (including parent folders and archive names)
+	components := strings.Split(path, string(filepath.Separator))
 	datePatterns := []*regexp.Regexp{
 		// YYYY-MM-DD format (2020-11-12)
 		regexp.MustCompile(`(\d{4})-(\d{1,2})-(\d{1,2})`),
@@ -293,44 +294,46 @@ func PathToDate(path string) *time.Time {
 		regexp.MustCompile(`(\d{1,2})\.(\d{1,2})\.(\d{4})`),
 	}
 
-	for i, pattern := range datePatterns {
-		matches := pattern.FindStringSubmatch(filename)
-		if len(matches) >= 4 {
-			var year, month, day int
-			var err error
-			switch i {
-			case 0, 1: // YYYY-MM-DD or YYYYMMDD
-				year, err = strconv.Atoi(matches[1])
-				if err != nil {
+	for _, comp := range components {
+		for i, pattern := range datePatterns {
+			matches := pattern.FindStringSubmatch(comp)
+			if len(matches) >= 4 {
+				var year, month, day int
+				var err error
+				switch i {
+				case 0, 1: // YYYY-MM-DD or YYYYMMDD
+					year, err = strconv.Atoi(matches[1])
+					if err != nil {
+						continue
+					}
+					month, err = strconv.Atoi(matches[2])
+					if err != nil {
+						continue
+					}
+					day, err = strconv.Atoi(matches[3])
+					if err != nil {
+						continue
+					}
+				case 2: // DD.MM.YYYY
+					day, err = strconv.Atoi(matches[1])
+					if err != nil {
+						continue
+					}
+					month, err = strconv.Atoi(matches[2])
+					if err != nil {
+						continue
+					}
+					year, err = strconv.Atoi(matches[3])
+					if err != nil {
+						continue
+					}
+				}
+				if year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31 {
 					continue
 				}
-				month, err = strconv.Atoi(matches[2])
-				if err != nil {
-					continue
-				}
-				day, err = strconv.Atoi(matches[3])
-				if err != nil {
-					continue
-				}
-			case 2: // DD.MM.YYYY
-				day, err = strconv.Atoi(matches[1])
-				if err != nil {
-					continue
-				}
-				month, err = strconv.Atoi(matches[2])
-				if err != nil {
-					continue
-				}
-				year, err = strconv.Atoi(matches[3])
-				if err != nil {
-					continue
-				}
+				date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+				return &date
 			}
-			if year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31 {
-				continue
-			}
-			date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-			return &date
 		}
 	}
 	return nil
