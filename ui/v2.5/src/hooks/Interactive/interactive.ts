@@ -5,6 +5,7 @@ import {
   CsvUploadResponse,
   HandyFirmwareStatus,
 } from "thehandy/lib/types";
+import { IDeviceSettings } from "./utils";
 
 interface IFunscript {
   actions: Array<IAction>;
@@ -108,6 +109,13 @@ export class Interactive {
     this._playing = false;
   }
 
+  get connected() {
+    return this._connected;
+  }
+  get playing() {
+    return this._playing;
+  }
+
   async connect() {
     const connected = await this._handy.getConnected();
     if (!connected) {
@@ -178,6 +186,15 @@ export class Interactive {
 
   setServerTimeOffset(offset: number) {
     this._handy.estimatedServerTimeOffset = offset;
+  }
+
+  async configure(config: Partial<IDeviceSettings>) {
+    this._scriptOffset = config.scriptOffset ?? this._scriptOffset;
+    this.handyKey = config.connectionKey ?? this.handyKey;
+    this._handy.estimatedServerTimeOffset =
+      config.estimatedServerTimeOffset ?? this._handy.estimatedServerTimeOffset;
+    this.useStashHostedFunscript =
+      config.useStashHostedFunscript ?? this.useStashHostedFunscript;
   }
 
   async play(position: number) {
