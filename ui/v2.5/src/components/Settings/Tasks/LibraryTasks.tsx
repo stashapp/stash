@@ -68,7 +68,6 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
         id="autotag-dates"
         checked={!!dates?.length}
         headingID="dates"
-        subHeadingID="config.tasks.extract_dates_from_filenames"
         onChange={(v) => setOptions({ dates: set(v) })}
       />
     </>
