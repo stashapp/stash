@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -278,6 +280,60 @@ func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQuerye
 	}
 
 	return ret, nil
+}
+
+func PathToDate(path string) *time.Time {
+	filename := filepath.Base(path)
+	datePatterns := []*regexp.Regexp{
+		// YYYY-MM-DD format (2020-11-12)
+		regexp.MustCompile(`(\d{4})-(\d{1,2})-(\d{1,2})`),
+		// YYYYMMDD format (20201112)
+		regexp.MustCompile(`(\d{4})(\d{2})(\d{2})`),
+		// DD.MM.YYYY format (12.11.2020)
+		regexp.MustCompile(`(\d{1,2})\.(\d{1,2})\.(\d{4})`),
+	}
+
+	for i, pattern := range datePatterns {
+		matches := pattern.FindStringSubmatch(filename)
+		if len(matches) >= 4 {
+			var year, month, day int
+			var err error
+			switch i {
+			case 0, 1: // YYYY-MM-DD or YYYYMMDD
+				year, err = strconv.Atoi(matches[1])
+				if err != nil {
+					continue
+				}
+				month, err = strconv.Atoi(matches[2])
+				if err != nil {
+					continue
+				}
+				day, err = strconv.Atoi(matches[3])
+				if err != nil {
+					continue
+				}
+			case 2: // DD.MM.YYYY
+				day, err = strconv.Atoi(matches[1])
+				if err != nil {
+					continue
+				}
+				month, err = strconv.Atoi(matches[2])
+				if err != nil {
+					continue
+				}
+				year, err = strconv.Atoi(matches[3])
+				if err != nil {
+					continue
+				}
+			}
+			if year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31 {
+				continue
+			}
+			date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+			return &date
+		}
+	}
+	return nil
 }
 
 func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReader models.SceneQueryer, fn func(ctx context.Context, scene *models.Scene) error) error {
