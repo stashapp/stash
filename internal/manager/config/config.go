@@ -1534,7 +1534,7 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://docs.stashapp.cc/faq/setup/#protecting-against-accidental-exposure-to-the-internet
+// See https://discourse.stashapp.cc/t/-/1658
 func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }
