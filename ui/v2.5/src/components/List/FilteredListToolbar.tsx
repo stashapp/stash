@@ -8,9 +8,11 @@ import {
   IListFilterOperation,
   ListOperationButtons,
 } from "./ListOperationButtons";
-import { ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IListSelect, useFilterOperations } from "./util";
+import { SidebarIcon } from "../Shared/Sidebar";
+import { useIntl } from "react-intl";
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
@@ -41,6 +43,7 @@ export interface IFilteredListToolbar {
   onDelete?: () => void;
   operations?: IListFilterOperation[];
   zoomable?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
@@ -53,7 +56,9 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   onDelete,
   operations,
   zoomable = false,
+  onToggleSidebar,
 }) => {
+  const intl = useIntl();
   const filterOptions = filter.options;
   const { setDisplayMode, setZoom } = useFilterOperations({
     filter,
@@ -63,29 +68,52 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
 
   return (
     <ButtonToolbar className="filtered-list-toolbar">
-      {showEditFilter && (
-        <ListFilter
-          onFilterUpdate={setFilter}
-          filter={filter}
-          openFilterDialog={() => showEditFilter()}
-          view={view}
-        />
+      {onToggleSidebar && (
+        <div>
+          <ButtonGroup>
+            <Button
+              className="sidebar-toggle-button"
+              onClick={onToggleSidebar}
+              variant="secondary"
+              title={intl.formatMessage({ id: "actions.sidebar.open" })}
+            >
+              <SidebarIcon />
+            </Button>
+          </ButtonGroup>
+        </div>
       )}
-      <ListOperationButtons
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        otherOperations={operations}
-        itemsSelected={selectedIds.size > 0}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-      <ListViewOptions
-        displayMode={filter.displayMode}
-        displayModeOptions={filterOptions.displayModeOptions}
-        onSetDisplayMode={setDisplayMode}
-        zoomIndex={zoomable ? filter.zoomIndex : undefined}
-        onSetZoom={zoomable ? setZoom : undefined}
-      />
+
+      <div>
+        <ButtonGroup>
+          {showEditFilter && (
+            <ListFilter
+              onFilterUpdate={setFilter}
+              filter={filter}
+              openFilterDialog={() => showEditFilter()}
+              view={view}
+              withSidebar={!!onToggleSidebar}
+            />
+          )}
+          <ListOperationButtons
+            onSelectAll={onSelectAll}
+            onSelectNone={onSelectNone}
+            otherOperations={operations}
+            itemsSelected={selectedIds.size > 0}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+          <ListViewOptions
+            displayMode={filter.displayMode}
+            displayModeOptions={filterOptions.displayModeOptions}
+            onSetDisplayMode={setDisplayMode}
+            zoomIndex={zoomable ? filter.zoomIndex : undefined}
+            onSetZoom={zoomable ? setZoom : undefined}
+          />
+        </ButtonGroup>
+      </div>
+      <div>
+        <ButtonGroup></ButtonGroup>
+      </div>
     </ButtonToolbar>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -31,6 +31,23 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
+import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
+import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
+import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
+import cx from "classnames";
+import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
+import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import {
+  FilteredSidebarHeader,
+  useFilteredSidebarKeybinds,
+} from "../List/Filters/FilterSidebar";
+import { PatchContainerComponent } from "src/patch";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -184,6 +201,70 @@ const SceneList: React.FC<{
   return null;
 };
 
+const ScenesFilterSidebarSections = PatchContainerComponent(
+  "FilteredSceneList.SidebarSections"
+);
+
+const SidebarContent: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+  view?: View;
+  sidebarOpen: boolean;
+  onClose?: () => void;
+  showEditFilter: (editingCriterion?: string) => void;
+}> = ({ filter, setFilter, view, showEditFilter, sidebarOpen, onClose }) => {
+  return (
+    <>
+      <FilteredSidebarHeader
+        sidebarOpen={sidebarOpen}
+        onClose={onClose}
+        showEditFilter={showEditFilter}
+        filter={filter}
+        setFilter={setFilter}
+        view={view}
+      />
+
+      <ScenesFilterSidebarSections>
+        <SidebarStudiosFilter
+          title={<FormattedMessage id="studios" />}
+          data-type={StudiosCriterionOption.type}
+          option={StudiosCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarPerformersFilter
+          title={<FormattedMessage id="performers" />}
+          data-type={PerformersCriterionOption.type}
+          option={PerformersCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarTagsFilter
+          title={<FormattedMessage id="tags" />}
+          data-type={TagsCriterionOption.type}
+          option={TagsCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarRatingFilter
+          title={<FormattedMessage id="rating" />}
+          data-type={RatingCriterionOption.type}
+          option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="organized" />}
+          data-type={OrganizedCriterionOption.type}
+          option={OrganizedCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+      </ScenesFilterSidebarSections>
+    </>
+  );
+};
+
 interface IFilteredScenes {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
@@ -199,6 +280,12 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
   // States
+  const {
+    showSidebar,
+    setShowSidebar,
+    loading: sidebarStateLoading,
+  } = useSidebarState(view);
+
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
       filterStateProps: {
@@ -237,6 +324,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   });
 
   useAddKeybinds(filter, totalCount);
+  useFilteredSidebarKeybinds({
+    showSidebar,
+    setShowSidebar,
+  });
 
   const onCloseEditDelete = useCloseEditDelete({
     closeModal,
@@ -340,62 +431,81 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   ];
 
   // render
-  if (filterLoading) return null;
+  if (filterLoading || sidebarStateLoading) return null;
 
   return (
     <TaggerContext>
-      <div className="item-list-container">
+      <div
+        className={cx("item-list-container scene-list", {
+          "hide-sidebar": !showSidebar,
+        })}
+      >
         {modal}
 
-        <FilteredListToolbar
-          filter={filter}
-          setFilter={setFilter}
-          showEditFilter={showEditFilter}
-          view={view}
-          listSelect={listSelect}
-          onEdit={() =>
-            showModal(
-              <EditScenesDialog
-                selected={selectedItems}
-                onClose={onCloseEditDelete}
-              />
-            )
-          }
-          onDelete={() => {
-            showModal(
-              <DeleteScenesDialog
-                selected={selectedItems}
-                onClose={onCloseEditDelete}
-              />
-            );
-          }}
-          operations={otherOperations}
-          zoomable
-        />
+        <SidebarPane hideSidebar={!showSidebar}>
+          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+            <SidebarContent
+              filter={filter}
+              setFilter={setFilter}
+              showEditFilter={showEditFilter}
+              view={view}
+              sidebarOpen={showSidebar}
+              onClose={() => setShowSidebar(false)}
+            />
+          </Sidebar>
+          <div>
+            <FilteredListToolbar
+              filter={filter}
+              setFilter={setFilter}
+              showEditFilter={showEditFilter}
+              view={view}
+              listSelect={listSelect}
+              onEdit={() =>
+                showModal(
+                  <EditScenesDialog
+                    selected={selectedItems}
+                    onClose={onCloseEditDelete}
+                  />
+                )
+              }
+              onDelete={() => {
+                showModal(
+                  <DeleteScenesDialog
+                    selected={selectedItems}
+                    onClose={onCloseEditDelete}
+                  />
+                );
+              }}
+              operations={otherOperations}
+              onToggleSidebar={() => setShowSidebar((v) => !v)}
+              zoomable
+            />
 
-        <FilterTags
-          criteria={filter.criteria}
-          onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-          onRemoveCriterion={removeCriterion}
-          onRemoveAll={() => clearAllCriteria()}
-        />
+            <FilterTags
+              criteria={filter.criteria}
+              onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+              onRemoveCriterion={removeCriterion}
+              onRemoveAll={() => clearAllCriteria()}
+            />
 
-        <PagedList
-          result={result}
-          cachedResult={cachedResult}
-          filter={filter}
-          totalCount={totalCount}
-          onChangePage={setPage}
-          metadataByline={metadataByline}
-        >
-          <SceneList
-            filter={effectiveFilter}
-            scenes={items}
-            selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-            fromGroupId={fromGroupId}
-          />
-        </PagedList>
+            <PagedList
+              result={result}
+              cachedResult={cachedResult}
+              filter={filter}
+              totalCount={totalCount}
+              onChangePage={setPage}
+              metadataByline={metadataByline}
+            >
+              <SceneList
+                filter={effectiveFilter}
+                scenes={items}
+                selectedIds={selectedIds}
+                onSelectChange={onSelectChange}
+                fromGroupId={fromGroupId}
+              />
+            </PagedList>
+          </div>
+        </SidebarPane>
       </div>
     </TaggerContext>
   );
