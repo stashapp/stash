@@ -375,10 +375,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       await deleteStudio();
     } catch (e) {
       Toast.error(e);
+      return;
     }
 
-    // redirect to studios page
-    history.push(`/studios`);
+    history.goBack();
   }
 
   function renderDeleteAlert() {
