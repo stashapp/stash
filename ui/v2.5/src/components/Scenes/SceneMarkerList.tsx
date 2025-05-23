@@ -12,7 +12,7 @@ import NavUtils from "src/utils/navigation";
 import { ItemList, ItemListContext } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { MarkerWallPanel } from "../Wall/WallPanel";
+import { MarkerWallPanel } from "./SceneMarkerWallPanel";
 import { View } from "../List/views";
 import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
 import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
