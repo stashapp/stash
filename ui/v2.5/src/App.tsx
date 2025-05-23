@@ -6,7 +6,7 @@ import {
   useLocation,
   useRouteMatch,
 } from "react-router-dom";
-import { IntlProvider, CustomFormats } from "react-intl";
+import { IntlProvider, CustomFormats, FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
@@ -49,6 +49,7 @@ import { ConnectionMonitor } from "./ConnectionMonitor";
 import { PatchFunction } from "./patch";
 
 import moment from "moment/min/moment-with-locales";
+import { ErrorMessage } from "./components/Shared/ErrorMessage";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -101,6 +102,14 @@ const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
     return <>{props.children}</>;
   }
 ) as React.FC;
+
+const MainContainer: React.FC = ({ children }) => {
+  return (
+    <div className={`main container-fluid ${appleRendering ? "apple" : ""}`}>
+      {children}
+    </div>
+  );
+};
 
 function translateLanguageLocale(l: string) {
   // intl doesn't support all locales, so we need to map some to supported ones
@@ -287,14 +296,40 @@ export const App: React.FC = () => {
 
   const titleProps = makeTitleProps();
 
+  if (!messages) {
+    return null;
+  }
+
+  if (config.error) {
+    return (
+      <IntlProvider
+        locale={intlLanguage}
+        messages={messages}
+        formats={intlFormats}
+      >
+        <MainContainer>
+          <ErrorMessage
+            message={
+              <FormattedMessage
+                id="errors.loading_type"
+                values={{ type: "configuration" }}
+              />
+            }
+            error={config.error.message}
+          />
+        </MainContainer>
+      </IntlProvider>
+    );
+  }
+
   return (
     <ErrorBoundary>
-      {messages ? (
-        <IntlProvider
-          locale={intlLanguage}
-          messages={messages}
-          formats={intlFormats}
-        >
+      <IntlProvider
+        locale={intlLanguage}
+        messages={messages}
+        formats={intlFormats}
+      >
+        <ToastProvider>
           <PluginsLoader>
             <AppContainer>
               <ConfigurationProvider
@@ -302,31 +337,23 @@ export const App: React.FC = () => {
                 loading={config.loading}
               >
                 {maybeRenderReleaseNotes()}
-                <ToastProvider>
-                  <ConnectionMonitor />
-                  <Suspense fallback={<LoadingIndicator />}>
-                    <LightboxProvider>
-                      <ManualProvider>
-                        <InteractiveProvider>
-                          <Helmet {...titleProps} />
-                          {maybeRenderNavbar()}
-                          <div
-                            className={`main container-fluid ${
-                              appleRendering ? "apple" : ""
-                            }`}
-                          >
-                            {renderContent()}
-                          </div>
-                        </InteractiveProvider>
-                      </ManualProvider>
-                    </LightboxProvider>
-                  </Suspense>
-                </ToastProvider>
+                <ConnectionMonitor />
+                <Suspense fallback={<LoadingIndicator />}>
+                  <LightboxProvider>
+                    <ManualProvider>
+                      <InteractiveProvider>
+                        <Helmet {...titleProps} />
+                        {maybeRenderNavbar()}
+                        <MainContainer>{renderContent()}</MainContainer>
+                      </InteractiveProvider>
+                    </ManualProvider>
+                  </LightboxProvider>
+                </Suspense>
               </ConfigurationProvider>
             </AppContainer>
           </PluginsLoader>
-        </IntlProvider>
-      ) : null}
+        </ToastProvider>
+      </IntlProvider>
     </ErrorBoundary>
   );
 };
