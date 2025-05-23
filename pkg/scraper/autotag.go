@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/autotag" // Import the autotag package
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -114,11 +115,26 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 
-		if len(performers) > 0 || studio != nil || len(tags) > 0 {
+		// Extract date from file path using the custom function
+		extractedDate := autotag.ExtractDateFromPath(path)
+		var dateString string
+		if extractedDate != nil {
+			dateString = extractedDate.Format("2006-01-02") // Format date as YYYY-MM-DD
+		}
+
+		 // Prepare date pointer for the struct
+		var datePtr *string
+		if dateString != "" {
+			datePtr = &dateString // Get pointer to the string if not empty
+		}
+
+		// Include date in the scraped scene if found
+		if len(performers) > 0 || studio != nil || len(tags) > 0 || datePtr != nil { // Check datePtr instead of dateString
 			ret = &models.ScrapedScene{
 				Performers: performers,
 				Studio:     studio,
 				Tags:       tags,
+				Date:       datePtr, // Assign the date pointer
 			}
 		}
 
