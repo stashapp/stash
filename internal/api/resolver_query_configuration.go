@@ -249,18 +249,19 @@ func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input c
 	if valid {
 		status = fmt.Sprintf("Successfully authenticated as %s", user.Me.Name)
 	} else {
+		errorStr := strings.ToLower(err.Error())
 		switch {
-		case strings.Contains(strings.ToLower(err.Error()), "doctype"):
+		case strings.Contains(errorStr, "doctype"):
 			// Index file returned rather than graphql
 			status = "Invalid endpoint"
-		case strings.Contains(err.Error(), "request failed"):
+		case strings.Contains(errorStr, "request failed"):
 			status = "No response from server"
-		case strings.HasPrefix(err.Error(), "invalid character") ||
-			strings.HasPrefix(err.Error(), "illegal base64 data") ||
-			err.Error() == "unexpected end of JSON input" ||
-			err.Error() == "token contains an invalid number of segments":
+		case strings.Contains(errorStr, "invalid character") ||
+			strings.Contains(errorStr, "illegal base64 data") ||
+			strings.Contains(errorStr, "unexpected end of json input") ||
+			strings.Contains(errorStr, "token contains an invalid number of segments"):
 			status = "Malformed API key."
-		case err.Error() == "" || err.Error() == "signature is invalid":
+		case strings.Contains(errorStr, "signature is invalid"):
 			status = "Invalid or expired API key."
 		default:
 			status = fmt.Sprintf("Unknown error: %s", err)
