@@ -207,7 +207,7 @@ func Initialize() (*Server, error) {
 	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
 		setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 		endpoint := getProxyPrefix(r) + gqlEndpoint
-		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
+		gqlPlayground.Handler("GraphQL playground", endpoint, gqlPlayground.WithGraphiqlEnablePluginExplorer(true))(w, r)
 	})
 
 	r.Mount("/performer", server.getPerformerRoutes())
