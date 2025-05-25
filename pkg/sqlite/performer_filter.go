@@ -436,9 +436,21 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 				var conditions []string
 				for _, c := range formatMaps {
 					f.addLeftJoin(c["joinTable"].(string), "", fmt.Sprintf("%s.performer_id = performers.id", c["joinTable"]))
-					f.addLeftJoin(c["primaryTable"].(string), "", fmt.Sprintf("%s.%s = %s.id", c["joinTable"], c["primaryFK"], c["primaryTable"]))
 
-					conditions = append(conditions, fmt.Sprintf("%s.studio_id IS NULL", c["primaryTable"]))
+					switch c["primaryTable"] {
+					case sceneTable:
+						// For scenes, join with studios_scenes table
+						f.addLeftJoin("studios_scenes", "", fmt.Sprintf("%s.%s = studios_scenes.scene_id", c["joinTable"], c["primaryFK"]))
+						conditions = append(conditions, "studios_scenes.studio_id IS NULL")
+					case imageTable:
+						// For images, join with studios_images table
+						f.addLeftJoin("studios_images", "", fmt.Sprintf("%s.%s = studios_images.image_id", c["joinTable"], c["primaryFK"]))
+						conditions = append(conditions, "studios_images.studio_id IS NULL")
+					case galleryTable:
+						// For galleries, join with studios_galleries table
+						f.addLeftJoin("studios_galleries", "", fmt.Sprintf("%s.%s = studios_galleries.gallery_id", c["joinTable"], c["primaryFK"]))
+						conditions = append(conditions, "studios_galleries.studio_id IS NULL")
+					}
 				}
 
 				f.addWhere(fmt.Sprintf("%s (%s)", notClause, strings.Join(conditions, " AND ")))
@@ -452,7 +464,7 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 			var clauseCondition string
 
 			switch studios.Modifier {
-			case models.CriterionModifierIncludes:
+			case models.CriterionModifierIncludes, models.CriterionModifierIncludesAll:
 				// return performers who appear in scenes/images/galleries with any of the given studios
 				clauseCondition = "NOT"
 			case models.CriterionModifierExcludes:
@@ -470,13 +482,28 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 			}
 			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
-			templStr := `SELECT performer_id FROM {primaryTable}
-	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
-
 			var unions []string
 			for _, c := range formatMaps {
-				unions = append(unions, utils.StrFormat(templStr, c))
+				switch c["primaryTable"] {
+				case sceneTable:
+					// For scenes, use the studios_scenes join table
+					sceneTemplStr := `SELECT performer_id FROM performers_scenes
+	INNER JOIN studios_scenes ON performers_scenes.scene_id = studios_scenes.scene_id
+	INNER JOIN studio ON studios_scenes.studio_id = studio.item_id`
+					unions = append(unions, sceneTemplStr)
+				case imageTable:
+					// For images, use the studios_images join table
+					imageTemplStr := `SELECT performer_id FROM performers_images
+	INNER JOIN studios_images ON performers_images.image_id = studios_images.image_id
+	INNER JOIN studio ON studios_images.studio_id = studio.item_id`
+					unions = append(unions, imageTemplStr)
+				case galleryTable:
+					// For galleries, use the studios_galleries join table
+					galleryTemplStr := `SELECT performer_id FROM performers_galleries
+	INNER JOIN studios_galleries ON performers_galleries.gallery_id = studios_galleries.gallery_id
+	INNER JOIN studio ON studios_galleries.studio_id = studio.item_id`
+					unions = append(unions, galleryTemplStr)
+				}
 			}
 
 			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))

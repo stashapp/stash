@@ -34,9 +34,9 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	newGroup.StudioID, err = translator.intPtrFromString(input.StudioID)
+	newGroup.StudioIDs, err = translator.relatedIds(input.StudioIds)
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	newGroup.TagIDs, err = translator.relatedIds(input.TagIds)
@@ -124,9 +124,9 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 		err = fmt.Errorf("converting date: %w", err)
 		return
 	}
-	updatedGroup.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedGroup.StudioIDs, err = translator.updateIds(input.StudioIds, "studio_ids")
 	if err != nil {
-		err = fmt.Errorf("converting studio id: %w", err)
+		err = fmt.Errorf("converting studio ids: %w", err)
 		return
 	}
 
@@ -219,9 +219,9 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
 
-	updatedGroup.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedGroup.StudioIDs, err = translator.updateIdsBulk(input.StudioIds, "studio_ids")
 	if err != nil {
-		err = fmt.Errorf("converting studio id: %w", err)
+		err = fmt.Errorf("converting studio ids: %w", err)
 		return
 	}
 

@@ -91,7 +91,7 @@ fragment ScrapedGroupData on ScrapedGroup {
   front_image
   back_image
 
-  studio {
+  studios {
     ...ScrapedGroupStudioData
   }
   tags {
@@ -112,7 +112,7 @@ fragment ScrapedSceneGroupData on ScrapedGroup {
   front_image
   back_image
 
-  studio {
+  studios {
     ...ScrapedGroupStudioData
   }
   tags {
@@ -161,7 +161,7 @@ fragment ScrapedSceneData on ScrapedScene {
     bitrate
   }
 
-  studio {
+  studios {
     ...ScrapedSceneStudioData
   }
 
@@ -192,7 +192,7 @@ fragment ScrapedGalleryData on ScrapedGallery {
   photographer
   date
 
-  studio {
+  studios {
     ...ScrapedSceneStudioData
   }
 
@@ -213,7 +213,7 @@ fragment ScrapedImageData on ScrapedImage {
   urls
   date
 
-  studio {
+  studios {
     ...ScrapedSceneStudioData
   }
 
@@ -254,7 +254,7 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
     duration
   }
 
-  studio {
+  studios {
     ...ScrapedSceneStudioData
   }
 

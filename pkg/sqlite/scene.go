@@ -29,6 +29,7 @@ const (
 	performersScenesTable = "performers_scenes"
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
+	scenesStudiosTable    = "studios_scenes"
 	groupsScenesTable     = "groups_scenes"
 	scenesURLsTable       = "scene_urls"
 	sceneURLColumn        = "url"
@@ -85,7 +86,6 @@ type sceneRow struct {
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
-	StudioID     null.Int  `db:"studio_id,omitempty"`
 	CreatedAt    Timestamp `db:"created_at"`
 	UpdatedAt    Timestamp `db:"updated_at"`
 	ResumeTime   float64   `db:"resume_time"`
@@ -104,7 +104,6 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
-	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 	r.ResumeTime = o.ResumeTime
@@ -130,7 +129,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		OSHash:        r.PrimaryFileOshash.String,
@@ -162,7 +160,6 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
-	r.setNullInt("studio_id", o.StudioID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setFloat64("resume_time", o.ResumeTime)
@@ -174,6 +171,7 @@ type sceneRepositoryType struct {
 	galleries  joinRepository
 	tags       joinRepository
 	performers joinRepository
+	studios    joinRepository
 	groups     repository
 
 	files filesRepository
@@ -209,6 +207,13 @@ var (
 				idColumn:  sceneIDColumn,
 			},
 			fkColumn: performerIDColumn,
+		},
+		studios: joinRepository{
+			repository: repository{
+				tableName: scenesStudiosTable,
+				idColumn:  sceneIDColumn,
+			},
+			fkColumn: studioIDColumn,
 		},
 		groups: repository{
 			tableName: groupsScenesTable,
@@ -332,6 +337,12 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
+	if newObject.StudioIDs.Loaded() {
+		if err := scenesStudiosTableMgr.insertJoins(ctx, id, newObject.StudioIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.GalleryIDs.Loaded() {
 		if err := scenesGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
 			return err
@@ -390,6 +401,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+	if partial.StudioIDs != nil {
+		if err := scenesStudiosTableMgr.modifyJoins(ctx, id, partial.StudioIDs.IDs, partial.StudioIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.GalleryIDs != nil {
 		if err := scenesGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
 			return nil, err
@@ -436,6 +452,12 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 
 	if updatedObject.TagIDs.Loaded() {
 		if err := scenesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.StudioIDs.Loaded() {
+		if err := scenesStudiosTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StudioIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -870,9 +892,9 @@ func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
 
 // TODO - currently only used by unit test
 func (qb *SceneStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
-	table := qb.table()
+	scenesStudios := scenesStudiosJoinTable
 
-	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
+	q := dialect.Select(goqu.COUNT(goqu.DISTINCT("scene_id"))).From(scenesStudios).Where(scenesStudios.Col(studioIDColumn).Eq(studioID))
 	return count(ctx, q)
 }
 
@@ -1331,6 +1353,10 @@ func (qb *SceneStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error
 
 func (qb *SceneStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
 	return sceneRepository.tags.getIDs(ctx, id)
+}
+
+func (qb *SceneStore) GetStudioIDs(ctx context.Context, id int) ([]int, error) {
+	return sceneRepository.studios.getIDs(ctx, id)
 }
 
 func (qb *SceneStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {

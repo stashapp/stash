@@ -74,6 +74,7 @@ type ImageReader interface {
 	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader
+	StudioIDLoader
 	FileLoader
 
 	GalleryCoverFinder

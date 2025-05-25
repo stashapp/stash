@@ -27,7 +27,7 @@ type Group struct {
 	FrontImage string                `json:"front_image,omitempty"`
 	BackImage  string                `json:"back_image,omitempty"`
 	URLs       []string              `json:"urls,omitempty"`
-	Studio     string                `json:"studio,omitempty"`
+	Studios    []string              `json:"studios,omitempty"`
 	Tags       []string              `json:"tags,omitempty"`
 	SubGroups  []SubGroupDescription `json:"sub_groups,omitempty"`
 	CreatedAt  json.JSONTime         `json:"created_at,omitempty"`

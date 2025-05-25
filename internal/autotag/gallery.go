@@ -24,6 +24,12 @@ type GalleryTagUpdater interface {
 	models.GalleryUpdater
 }
 
+type GalleryStudioUpdater interface {
+	models.GalleryQueryer
+	models.StudioIDLoader
+	models.GalleryUpdater
+}
+
 func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	var path string
 	if s.Path != "" {
@@ -65,15 +71,8 @@ func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerform
 	})
 }
 
-// GalleryStudios tags the provided gallery with the first studio whose name matches the gallery's path.
-//
-// Gallerys will not be tagged if studio is already set.
-func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
-	if s.StudioID != nil {
-		// don't modify
-		return nil
-	}
-
+// GalleryStudios tags the provided gallery with studios whose names match the gallery's path.
+func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryStudioUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {

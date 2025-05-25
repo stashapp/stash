@@ -37,6 +37,11 @@ func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actu
 			return err
 		}
 	}
+	if expected.StudioIDs.Loaded() {
+		if err := actual.LoadStudioIDs(ctx, db.Gallery); err != nil {
+			return err
+		}
+	}
 	if expected.Files.Loaded() {
 		if err := actual.LoadFiles(ctx, db.Gallery); err != nil {
 			return err
@@ -86,7 +91,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Photographer: photographer,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
@@ -106,7 +111,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Photographer: photographer,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				Files: models.NewRelatedFiles([]models.File{
 					galleryFile,
 				}),
@@ -121,7 +126,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		{
 			"invalid studio id",
 			models.Gallery{
-				StudioID: &invalidID,
+				StudioIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -242,7 +247,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				Photographer: photographer,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFileWithID(galleryIdxWithScene),
 				}),
@@ -312,7 +317,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID:        galleryIDs[galleryIdxWithImage],
 				Organized: true,
-				StudioID:  &invalidID,
+				StudioIDs: models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -405,7 +410,7 @@ func clearGalleryPartial() models.GalleryPartial {
 		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
-		StudioID:     models.OptionalInt{Set: true, Null: true},
+		StudioIDs:    &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 	}
@@ -447,7 +452,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithGallery]),
+				StudioIDs: &models.UpdateIDs{IDs: []int{studioIDs[studioIdxWithGallery]}, Mode: models.RelationshipUpdateModeSet},
 				CreatedAt: models.NewOptionalTime(createdAt),
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 
@@ -474,7 +479,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithGallery],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithGallery]}),
 				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),

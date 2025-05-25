@@ -68,7 +68,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [studio, setStudio] = useState<Studio | null>(null);
+  const [studios, setStudios] = useState<Studio[]>([]);
 
   const Scrapers = useListSceneScrapers();
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
@@ -100,8 +100,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [scene.groups]);
 
   useEffect(() => {
-    setStudio(scene.studio ?? null);
-  }, [scene.studio]);
+    setStudios(scene.studios ?? []);
+  }, [scene.studios]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
@@ -115,7 +115,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     date: yupDateString(intl),
     director: yup.string().ensure(),
     gallery_ids: yup.array(yup.string().required()).defined(),
-    studio_id: yup.string().required().nullable(),
+    studio_ids: yup.array(yup.string().required()).defined(),
     performer_ids: yup.array(yup.string().required()).defined(),
     groups: yup
       .array(
@@ -139,7 +139,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       date: scene.date ?? "",
       director: scene.director ?? "",
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
-      studio_id: scene.studio?.id ?? null,
+      studio_ids: (scene.studios ?? []).map((s) => s.id),
       performer_ids: (scene.performers ?? []).map((p) => p.id),
       groups: (scene.groups ?? []).map((m) => {
         return { group_id: m.group.id, scene_index: m.scene_index ?? null };
@@ -206,9 +206,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function onSetStudio(item: Studio | null) {
-    setStudio(item);
-    formik.setFieldValue("studio_id", item ? item.id : null);
+  function onSetStudios(items: Studio[]) {
+    setStudios(items);
+    formik.setFieldValue(
+      "studio_ids",
+      items.map((item) => item.id)
+    );
   }
 
   useEffect(() => {
@@ -375,7 +378,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <SceneScrapeDialog
         scene={currentScene}
-        sceneStudio={studio}
+        sceneStudios={studios.filter((s) =>
+          formik.values.studio_ids.includes(s.id)
+        )}
         sceneTags={tags}
         scenePerformers={performers}
         sceneGroups={groups}
@@ -448,12 +453,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", updatedScene.urls);
     }
 
-    if (updatedScene.studio && updatedScene.studio.stored_id) {
-      onSetStudio({
-        id: updatedScene.studio.stored_id,
-        name: updatedScene.studio.name ?? "",
-        aliases: [],
-      });
+    if (updatedScene.studios && updatedScene.studios.length > 0) {
+      const validStudios = updatedScene.studios.filter((s) => s.stored_id);
+      if (validStudios.length > 0) {
+        onSetStudios(
+          validStudios.map((s) => ({
+            id: s.stored_id!,
+            name: s.name ?? "",
+            aliases: [],
+          }))
+        );
+      }
     }
 
     if (updatedScene.performers && updatedScene.performers.length > 0) {
@@ -616,12 +626,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
-        values={studio ? [studio] : []}
+        onSelect={(items) => onSetStudios(items)}
+        values={studios
+          .filter((s) => formik.values.studio_ids.includes(s.id))
+          .map((s) => s)}
+        isMulti
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField("studio_ids", title, control);
   }
 
   function renderPerformersField() {

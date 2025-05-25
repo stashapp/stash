@@ -40,6 +40,11 @@ func loadGroupRelationships(ctx context.Context, expected models.Group, actual *
 			return err
 		}
 	}
+	if expected.StudioIDs.Loaded() {
+		if err := actual.LoadStudioIDs(ctx, db.Group); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -68,15 +73,15 @@ func Test_GroupStore_Create(t *testing.T) {
 		{
 			"full",
 			models.Group{
-				Name:     name,
-				Duration: &duration,
-				Date:     &date,
-				Rating:   &rating,
-				StudioID: &studioIDs[studioIdxWithGroup],
-				Director: director,
-				Synopsis: synopsis,
-				URLs:     models.NewRelatedStrings([]string{url}),
-				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				Name:      name,
+				Duration:  &duration,
+				Date:      &date,
+				Rating:    &rating,
+				StudioIDs: models.NewRelatedIDs([]int{studioIDs[studioIdxWithGroup]}),
+				Director:  director,
+				Synopsis:  synopsis,
+				URLs:      models.NewRelatedStrings([]string{url}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
 				}),
@@ -190,16 +195,16 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			models.Group{
-				ID:       groupIDs[groupIdxWithTag],
-				Name:     name,
-				Duration: &duration,
-				Date:     &date,
-				Rating:   &rating,
-				StudioID: &studioIDs[studioIdxWithGroup],
-				Director: director,
-				Synopsis: synopsis,
-				URLs:     models.NewRelatedStrings([]string{url}),
-				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				ID:        groupIDs[groupIdxWithTag],
+				Name:      name,
+				Duration:  &duration,
+				Date:      &date,
+				Rating:    &rating,
+				StudioIDs: models.NewRelatedIDs([]int{studioIDs[studioIdxWithGroup]}),
+				Director:  director,
+				Synopsis:  synopsis,
+				URLs:      models.NewRelatedStrings([]string{url}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
 				}),
@@ -242,9 +247,9 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid studio id",
 			models.Group{
-				ID:       groupIDs[groupIdxWithScene],
-				Name:     name,
-				StudioID: &invalidID,
+				ID:        groupIDs[groupIdxWithScene],
+				Name:      name,
+				StudioIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -318,7 +323,7 @@ var clearGroupPartial = models.GroupPartial{
 	URLs:             &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 	Date:             models.OptionalDate{Set: true, Null: true},
 	Rating:           models.OptionalInt{Set: true, Null: true},
-	StudioID:         models.OptionalInt{Set: true, Null: true},
+	StudioIDs:        &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 	TagIDs:           &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 	ContainingGroups: &models.UpdateGroupDescriptions{Mode: models.RelationshipUpdateModeSet},
 	SubGroups:        &models.UpdateGroupDescriptions{Mode: models.RelationshipUpdateModeSet},
@@ -372,7 +377,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      models.NewOptionalDate(date),
 				Duration:  models.NewOptionalInt(duration),
 				Rating:    models.NewOptionalInt(rating),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithGroup]),
+				StudioIDs: &models.UpdateIDs{IDs: []int{studioIDs[studioIdxWithGroup]}, Mode: models.RelationshipUpdateModeSet},
 				CreatedAt: models.NewOptionalTime(createdAt),
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 				TagIDs: &models.UpdateIDs{
@@ -404,7 +409,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      &date,
 				Duration:  &duration,
 				Rating:    &rating,
-				StudioID:  &studioIDs[studioIdxWithGroup],
+				StudioIDs: models.NewRelatedIDs([]int{studioIDs[studioIdxWithGroup]}),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),

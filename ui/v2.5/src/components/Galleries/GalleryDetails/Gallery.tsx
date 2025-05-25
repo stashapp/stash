@@ -388,19 +388,23 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div>
           <div className="gallery-header-container">
-            {gallery.studio && (
+            {gallery.studios && gallery.studios.length > 0 && (
               <h1 className="text-center gallery-studio-image">
-                <Link to={`/studios/${gallery.studio.id}`}>
-                  <img
-                    src={gallery.studio.image_path ?? ""}
-                    alt={`${gallery.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
+                {gallery.studios.map((studio) => (
+                  <Link key={studio.id} to={`/studios/${studio.id}`}>
+                    <img
+                      src={studio.image_path ?? ""}
+                      alt={`${studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                ))}
               </h1>
             )}
             <h3
-              className={cx("gallery-header", { "no-studio": !gallery.studio })}
+              className={cx("gallery-header", {
+                "no-studio": !gallery.studios || gallery.studios.length === 0,
+              })}
             >
               <TruncatedText lineCount={2} text={title} />
             </h3>

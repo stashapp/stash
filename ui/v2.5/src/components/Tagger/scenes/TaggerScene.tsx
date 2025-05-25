@@ -37,8 +37,13 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
           <div className="col col-lg-6">
             <h4>{objectTitle(scene)}</h4>
             <h5>
-              {scene.studio?.name}
-              {scene.studio?.name && scene.date && ` • `}
+              {scene.studios && scene.studios.length > 0
+                ? scene.studios
+                    .map((studio) => studio.name)
+                    .filter(Boolean)
+                    .join(", ")
+                : ""}
+              {scene.studios && scene.studios.length > 0 && scene.date && ` • `}
               {scene.date}
             </h5>
             <TruncatedText text={scene.details ?? ""} lineCount={3} />

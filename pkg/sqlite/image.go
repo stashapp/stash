@@ -27,6 +27,7 @@ const (
 	imagesFilesTable      = "images_files"
 	imagesURLsTable       = "image_urls"
 	imageURLColumn        = "url"
+	imagesStudiosTable    = "studios_images"
 )
 
 type imageRow struct {
@@ -40,7 +41,6 @@ type imageRow struct {
 	Photographer zero.String `db:"photographer"`
 	Organized    bool        `db:"organized"`
 	OCounter     int         `db:"o_counter"`
-	StudioID     null.Int    `db:"studio_id,omitempty"`
 	CreatedAt    Timestamp   `db:"created_at"`
 	UpdatedAt    Timestamp   `db:"updated_at"`
 }
@@ -55,7 +55,6 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
-	r.StudioID = intFromPtr(i.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: i.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: i.UpdatedAt}
 }
@@ -79,7 +78,6 @@ func (r *imageQueryRow) resolve() *models.Image {
 		Photographer: r.Photographer.String,
 		Organized:    r.Organized,
 		OCounter:     r.OCounter,
-		StudioID:     nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
@@ -108,7 +106,6 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
-	r.setNullInt("studio_id", i.StudioID)
 	r.setTimestamp("created_at", i.CreatedAt)
 	r.setTimestamp("updated_at", i.UpdatedAt)
 }
@@ -118,6 +115,7 @@ type imageRepositoryType struct {
 	performers joinRepository
 	galleries  joinRepository
 	tags       joinRepository
+	studios    joinRepository
 	files      filesRepository
 }
 
@@ -178,6 +176,14 @@ var (
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
 			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+		},
+
+		studios: joinRepository{
+			repository: repository{
+				tableName: imagesStudiosTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn: studioIDColumn,
 		},
 	}
 )
@@ -274,6 +280,12 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 		}
 	}
 
+	if newObject.StudioIDs.Loaded() {
+		if err := imagesStudiosTableMgr.insertJoins(ctx, id, newObject.StudioIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
@@ -321,6 +333,12 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if partial.StudioIDs != nil {
+		if err := imagesStudiosTableMgr.modifyJoins(ctx, id, partial.StudioIDs.IDs, partial.StudioIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if partial.PrimaryFileID != nil {
 		if err := imagesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
 			return nil, err
@@ -358,6 +376,12 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 
 	if updatedObject.GalleryIDs.Loaded() {
 		if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.StudioIDs.Loaded() {
+		if err := imagesStudiosTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StudioIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -1048,4 +1072,8 @@ func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int)
 
 func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {
 	return imagesURLsTableMgr.get(ctx, imageID)
+}
+
+func (qb *ImageStore) GetStudioIDs(ctx context.Context, imageID int) ([]int, error) {
+	return imageRepository.studios.getIDs(ctx, imageID)
 }

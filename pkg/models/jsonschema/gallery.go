@@ -29,7 +29,7 @@ type Gallery struct {
 	Rating       int              `json:"rating,omitempty"`
 	Organized    bool             `json:"organized,omitempty"`
 	Chapters     []GalleryChapter `json:"chapters,omitempty"`
-	Studio       string           `json:"studio,omitempty"`
+	Studios      []string         `json:"studios,omitempty"`
 	Performers   []string         `json:"performers,omitempty"`
 	Tags         []string         `json:"tags,omitempty"`
 	CreatedAt    json.JSONTime    `json:"created_at,omitempty"`

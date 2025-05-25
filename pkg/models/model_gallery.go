@@ -16,9 +16,9 @@ type Gallery struct {
 	Details      string `json:"details"`
 	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
-	Rating    *int `json:"rating"`
-	Organized bool `json:"organized"`
-	StudioID  *int `json:"studio_id"`
+	Rating    *int       `json:"rating"`
+	Organized bool       `json:"organized"`
+	StudioIDs RelatedIDs `json:"studio_ids"`
 
 	// transient - not persisted
 	Files RelatedFiles
@@ -61,7 +61,6 @@ type GalleryPartial struct {
 	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
 	Organized OptionalBool
-	StudioID  OptionalInt
 	// FileModTime OptionalTime
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
@@ -69,6 +68,7 @@ type GalleryPartial struct {
 	SceneIDs      *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
+	StudioIDs     *UpdateIDs
 	PrimaryFileID *FileID
 }
 
@@ -130,6 +130,12 @@ func (g *Gallery) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) err
 func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	return g.TagIDs.load(func() ([]int, error) {
 		return l.GetTagIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadStudioIDs(ctx context.Context, l StudioIDLoader) error {
+	return g.StudioIDs.load(func() ([]int, error) {
+		return l.GetStudioIDs(ctx, g.ID)
 	})
 }
 

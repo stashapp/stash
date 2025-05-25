@@ -32,7 +32,7 @@ import {
 import {
   ScrapedGroupsRow,
   ScrapedPerformersRow,
-  ScrapedStudioRow,
+  ScrapedStudiosRow,
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
@@ -107,9 +107,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     };
   }
 
-  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
-    new ScrapeResult<GQL.ScrapedStudio>(
-      dest.studio ? idToStoredID(dest.studio) : undefined
+  const [studios, setStudios] = useState<ScrapeResult<GQL.ScrapedStudio[]>>(
+    new ScrapeResult<GQL.ScrapedStudio[]>(
+      dest.studios ? dest.studios.map(idToStoredID) : []
     )
   );
 
@@ -217,18 +217,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
     );
 
-    const foundStudio = sources.find((s) => s.studio)?.studio;
-
-    setStudio(
-      new ScrapeResult<GQL.ScrapedStudio>(
-        dest.studio ? idToStoredID(dest.studio) : undefined,
-        foundStudio
-          ? {
-              stored_id: foundStudio.id,
-              name: foundStudio.name,
-            }
-          : undefined,
-        !dest.studio
+    setStudios(
+      new ScrapeResult<GQL.ScrapedStudio[]>(
+        dest.studios ? dest.studios.map(idToStoredID) : [],
+        uniqIDStoredIDs(
+          all.map((s) => (s.studios ? s.studios.map(idToStoredID) : [])).flat()
+        ),
+        !dest.studios || dest.studios.length === 0
       )
     );
 
@@ -329,7 +324,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       rating,
       oCounter,
       galleries,
-      studio,
+      studios,
       performers,
       groups,
       tags,
@@ -346,7 +341,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     rating,
     oCounter,
     galleries,
-    studio,
+    studios,
     performers,
     groups,
     tags,
@@ -498,10 +493,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           )}
           onChange={(value) => setGalleries(value)}
         />
-        <ScrapedStudioRow
+        <ScrapedStudiosRow
           title={intl.formatMessage({ id: "studios" })}
-          result={studio}
-          onChange={(value) => setStudio(value)}
+          result={studios}
+          onChange={(value) => setStudios(value)}
         />
         <ScrapedPerformersRow
           title={intl.formatMessage({ id: "performers" })}
@@ -584,7 +579,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         play_count: playCount.getNewValue(),
         play_duration: playDuration.getNewValue(),
         gallery_ids: galleries.getNewValue(),
-        studio_id: studio.getNewValue()?.stored_id,
+        studio_ids: studios.getNewValue()?.map((s) => s.stored_id!),
         performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
         groups: groups.getNewValue()?.map((m) => {
           // find the equivalent group in the original scenes

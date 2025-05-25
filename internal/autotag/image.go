@@ -24,13 +24,20 @@ type ImageTagUpdater interface {
 	models.ImageUpdater
 }
 
+type ImageStudioUpdater interface {
+	models.ImageQueryer
+	models.StudioIDLoader
+	models.ImageUpdater
+}
+
 func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 	return tagger{
-		ID:    s.ID,
-		Type:  "image",
-		Name:  s.DisplayName(),
-		Path:  s.Path,
-		cache: cache,
+		ID:      s.ID,
+		Type:    "image",
+		Name:    s.DisplayName(),
+		Path:    s.Path,
+		trimExt: true, // trim extension for image files
+		cache:   cache,
 	}
 }
 
@@ -56,15 +63,8 @@ func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpda
 	})
 }
 
-// ImageStudios tags the provided image with the first studio whose name matches the image's path.
-//
-// Images will not be tagged if studio is already set.
-func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
-	if s.StudioID != nil {
-		// don't modify
-		return nil
-	}
-
+// ImageStudios tags the provided image with studios whose names match the image's path.
+func ImageStudios(ctx context.Context, s *models.Image, rw ImageStudioUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {

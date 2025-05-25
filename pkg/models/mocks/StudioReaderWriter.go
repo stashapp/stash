@@ -154,15 +154,15 @@ func (_m *StudioReaderWriter) FindByName(ctx context.Context, name string, nocas
 }
 
 // FindBySceneID provides a mock function with given fields: ctx, sceneID
-func (_m *StudioReaderWriter) FindBySceneID(ctx context.Context, sceneID int) (*models.Studio, error) {
+func (_m *StudioReaderWriter) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Studio, error) {
 	ret := _m.Called(ctx, sceneID)
 
-	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Studio); ok {
+	var r0 []*models.Studio
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Studio); ok {
 		r0 = rf(ctx, sceneID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Studio)
+			r0 = ret.Get(0).([]*models.Studio)
 		}
 	}
 
@@ -284,6 +284,29 @@ func (_m *StudioReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAliasesBatch provides a mock function with given fields: ctx, ids
+func (_m *StudioReaderWriter) GetAliasesBatch(ctx context.Context, ids []int) (map[int][]string, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 map[int][]string
+	if rf, ok := ret.Get(0).(func(context.Context, []int) map[int][]string); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[int][]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}

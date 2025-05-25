@@ -49,7 +49,7 @@ fragment SceneData on Scene {
     ...SlimGalleryData
   }
 
-  studio {
+  studios {
     ...SlimStudioData
   }
 
@@ -86,7 +86,7 @@ fragment SelectSceneData on Scene {
   title
   date
   code
-  studio {
+  studios {
     name
   }
   files {

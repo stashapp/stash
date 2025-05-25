@@ -93,6 +93,16 @@ func AddTag(ctx context.Context, qb models.SceneUpdater, o *models.Scene, tagID 
 	return err
 }
 
+func AddStudio(ctx context.Context, qb models.SceneUpdater, o *models.Scene, studioID int) error {
+	scenePartial := models.NewScenePartial()
+	scenePartial.StudioIDs = &models.UpdateIDs{
+		IDs:  []int{studioID},
+		Mode: models.RelationshipUpdateModeAdd,
+	}
+	_, err := qb.UpdatePartial(ctx, o.ID, scenePartial)
+	return err
+}
+
 func AddGallery(ctx context.Context, qb models.SceneUpdater, o *models.Scene, galleryID int) error {
 	scenePartial := models.NewScenePartial()
 	scenePartial.TagIDs = &models.UpdateIDs{

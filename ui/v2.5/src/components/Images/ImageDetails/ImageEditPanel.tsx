@@ -57,7 +57,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
-  const [studio, setStudio] = useState<Studio | null>(null);
+  const [studios, setStudios] = useState<Studio[]>([]);
 
   const isNew = image.id === undefined;
 
@@ -83,7 +83,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     details: yup.string().ensure(),
     photographer: yup.string().ensure(),
     gallery_ids: yup.array(yup.string().required()).defined(),
-    studio_id: yup.string().required().nullable(),
+    studio_ids: yup.array(yup.string().required()).defined(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -96,7 +96,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     details: image.details ?? "",
     photographer: image.photographer ?? "",
     gallery_ids: (image.galleries ?? []).map((g) => g.id),
-    studio_id: image.studio?.id ?? null,
+    studio_ids: (image.studios ?? []).map((s) => s.id),
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
   };
@@ -131,9 +131,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function onSetStudio(item: Studio | null) {
-    setStudio(item);
-    formik.setFieldValue("studio_id", item ? item.id : null);
+  function onSetStudios(items: Studio[]) {
+    setStudios(items);
+    formik.setFieldValue(
+      "studio_ids",
+      items.map((s) => s.id)
+    );
   }
 
   useEffect(() => {
@@ -141,8 +144,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   }, [image.performers]);
 
   useEffect(() => {
-    setStudio(image.studio ?? null);
-  }, [image.studio]);
+    setStudios(image.studios ?? []);
+  }, [image.studios]);
 
   useEffect(() => {
     if (isVisible) {
@@ -233,12 +236,22 @@ export const ImageEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", imageData.urls);
     }
 
-    if (imageData.studio?.stored_id) {
-      onSetStudio({
-        id: imageData.studio.stored_id,
-        name: imageData.studio.name ?? "",
-        aliases: [],
+    if (imageData.studios?.length) {
+      const idStudios = imageData.studios.filter((s) => {
+        return s.stored_id !== undefined && s.stored_id !== null;
       });
+
+      if (idStudios.length > 0) {
+        onSetStudios(
+          idStudios.map((s) => {
+            return {
+              id: s.stored_id!,
+              name: s.name ?? "",
+              aliases: [],
+            };
+          })
+        );
+      }
     }
 
     if (imageData.performers?.length) {
@@ -337,16 +350,17 @@ export const ImageEditPanel: React.FC<IProps> = ({
     return renderField("gallery_ids", title, control);
   }
 
-  function renderStudioField() {
-    const title = intl.formatMessage({ id: "studio" });
+  function renderStudiosField() {
+    const title = intl.formatMessage({ id: "studios" });
     const control = (
       <StudioSelect
-        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
-        values={studio ? [studio] : []}
+        onSelect={(items) => onSetStudios(items)}
+        values={studios}
+        isMulti
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField("studio_ids", title, control);
   }
 
   function renderPerformersField() {
@@ -405,7 +419,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     return (
       <ImageScrapeDialog
         image={currentImage}
-        imageStudio={studio}
+        imageStudios={studios}
         imageTags={tags}
         imagePerformers={performers}
         scraped={scrapedImage}
@@ -467,7 +481,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             {renderInputField("photographer")}
 
             {renderGalleriesField()}
-            {renderStudioField()}
+            {renderStudiosField()}
             {renderPerformersField()}
             {renderTagsField()}
           </Col>

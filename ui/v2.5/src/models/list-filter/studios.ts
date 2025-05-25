@@ -9,7 +9,10 @@ import { FavoriteStudioCriterionOption } from "./criteria/favorite";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
-import { ParentStudiosCriterionOption } from "./criteria/studios";
+import {
+  ParentStudiosCriterionOption,
+  StudiosCriterionOption,
+} from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
@@ -41,6 +44,7 @@ const criterionOptions = [
   FavoriteStudioCriterionOption,
   createMandatoryStringCriterionOption("name"),
   createStringCriterionOption("details"),
+  StudiosCriterionOption,
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
   TagsCriterionOption,

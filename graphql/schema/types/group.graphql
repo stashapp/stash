@@ -13,7 +13,7 @@ type Group {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  studio: Studio
+  studios: [Studio!]!
   director: String
   synopsis: String
   urls: [String!]!
@@ -44,7 +44,7 @@ input GroupCreateInput {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: [ID!]
   director: String
   synopsis: String
   urls: [String!]
@@ -67,7 +67,7 @@ input GroupUpdateInput {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: [ID!]
   director: String
   synopsis: String
   urls: [String!]
@@ -92,7 +92,7 @@ input BulkGroupUpdateInput {
   ids: [ID!]
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: BulkUpdateIds
   director: String
   urls: BulkUpdateStrings
   tag_ids: BulkUpdateIds

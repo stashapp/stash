@@ -27,7 +27,7 @@ fragment SlimImageData on Image {
     }
   }
 
-  studio {
+  studios {
     id
     name
     image_path

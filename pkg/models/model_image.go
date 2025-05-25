@@ -19,7 +19,6 @@ type Image struct {
 	Rating    *int           `json:"rating"`
 	Organized bool           `json:"organized"`
 	OCounter  int            `json:"o_counter"`
-	StudioID  *int           `json:"studio_id"`
 	URLs      RelatedStrings `json:"urls"`
 	Date      *Date          `json:"date"`
 
@@ -37,6 +36,7 @@ type Image struct {
 	GalleryIDs   RelatedIDs `json:"gallery_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
 	PerformerIDs RelatedIDs `json:"performer_ids"`
+	StudioIDs    RelatedIDs `json:"studio_ids"`
 }
 
 func NewImage() Image {
@@ -58,13 +58,13 @@ type ImagePartial struct {
 	Photographer OptionalString
 	Organized    OptionalBool
 	OCounter     OptionalInt
-	StudioID     OptionalInt
 	CreatedAt    OptionalTime
 	UpdatedAt    OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
+	StudioIDs     *UpdateIDs
 	PrimaryFileID *FileID
 }
 
@@ -121,6 +121,12 @@ func (i *Image) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error
 func (i *Image) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	return i.TagIDs.load(func() ([]int, error) {
 		return l.GetTagIDs(ctx, i.ID)
+	})
+}
+
+func (i *Image) LoadStudioIDs(ctx context.Context, l StudioIDLoader) error {
+	return i.StudioIDs.load(func() ([]int, error) {
+		return l.GetStudioIDs(ctx, i.ID)
 	})
 }
 

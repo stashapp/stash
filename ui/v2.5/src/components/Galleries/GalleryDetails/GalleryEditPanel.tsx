@@ -50,7 +50,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const [scenes, setScenes] = useState<Scene[]>([]);
 
   const [performers, setPerformers] = useState<Performer[]>([]);
-  const [studio, setStudio] = useState<Studio | null>(null);
+  const [studios, setStudios] = useState<Studio[]>([]);
 
   const isNew = gallery.id === undefined;
 
@@ -71,7 +71,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
     photographer: yup.string().ensure(),
-    studio_id: yup.string().required().nullable(),
+    studio_ids: yup.array(yup.string().required()).defined(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
     scene_ids: yup.array(yup.string().required()).defined(),
@@ -84,7 +84,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     urls: gallery?.urls ?? [],
     date: gallery?.date ?? "",
     photographer: gallery?.photographer ?? "",
-    studio_id: gallery?.studio?.id ?? null,
+    studio_ids: (gallery?.studios ?? []).map((s) => s.id),
     performer_ids: (gallery?.performers ?? []).map((p) => p.id),
     tag_ids: (gallery?.tags ?? []).map((t) => t.id),
     scene_ids: (gallery?.scenes ?? []).map((s) => s.id),
@@ -121,9 +121,12 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function onSetStudio(item: Studio | null) {
-    setStudio(item);
-    formik.setFieldValue("studio_id", item ? item.id : null);
+  function onSetStudios(items: Studio[]) {
+    setStudios(items);
+    formik.setFieldValue(
+      "studio_ids",
+      items.map((s) => s.id)
+    );
   }
 
   useEffect(() => {
@@ -131,8 +134,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   }, [gallery.performers]);
 
   useEffect(() => {
-    setStudio(gallery.studio ?? null);
-  }, [gallery.studio]);
+    setStudios(gallery.studios ?? []);
+  }, [gallery.studios]);
 
   useEffect(() => {
     setScenes(gallery.scenes ?? []);
@@ -222,7 +225,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return (
       <GalleryScrapeDialog
         gallery={currentGallery}
-        galleryStudio={studio}
+        galleryStudios={studios}
         galleryTags={tags}
         galleryPerformers={performers}
         scraped={scrapedGallery}
@@ -266,12 +269,17 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", galleryData.urls);
     }
 
-    if (galleryData.studio?.stored_id) {
-      onSetStudio({
-        id: galleryData.studio.stored_id,
-        name: galleryData.studio.name ?? "",
-        aliases: [],
-      });
+    if (galleryData.studios && galleryData.studios.length > 0) {
+      const validStudios = galleryData.studios.filter((s) => s.stored_id);
+      if (validStudios.length > 0) {
+        onSetStudios(
+          validStudios.map((s) => ({
+            id: s.stored_id!,
+            name: s.name ?? "",
+            aliases: [],
+          }))
+        );
+      }
     }
 
     if (galleryData.performers?.length) {
@@ -351,16 +359,17 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return renderField("scene_ids", title, control);
   }
 
-  function renderStudioField() {
-    const title = intl.formatMessage({ id: "studio" });
+  function renderStudiosField() {
+    const title = intl.formatMessage({ id: "studios" });
     const control = (
       <StudioSelect
-        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
-        values={studio ? [studio] : []}
+        onSelect={(items) => onSetStudios(items)}
+        values={studios}
+        isMulti
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField("studio_ids", title, control);
   }
 
   function renderPerformersField() {
@@ -457,7 +466,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             {renderInputField("photographer")}
 
             {renderScenesField()}
-            {renderStudioField()}
+            {renderStudiosField()}
             {renderPerformersField()}
             {renderTagsField()}
           </Col>

@@ -110,10 +110,16 @@ export function prepareQueryString(
     })
     .filter((r) => r !== null) as RegExp[];
 
-  if ((mode === "auto" && scene.date && scene.studio) || mode === "metadata") {
+  if (
+    (mode === "auto" &&
+      scene.date &&
+      scene.studios &&
+      scene.studios.length > 0) ||
+    mode === "metadata"
+  ) {
     let str = [
       scene.date,
-      scene.studio?.name ?? "",
+      (scene.studios ?? []).map((s) => s.name).join(" "),
       (scene?.performers ?? []).map((p) => p.name).join(" "),
       scene?.title ? scene.title.replace(/[^a-zA-Z0-9 ]+/g, "") : "",
     ]

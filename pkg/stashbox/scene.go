@@ -192,11 +192,11 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	}
 
 	if s.Studio != nil {
-		var err error
-		ss.Studio, err = c.resolveStudio(ctx, s.Studio)
+		studio, err := c.resolveStudio(ctx, s.Studio)
 		if err != nil {
 			return nil, err
 		}
+		ss.Studios = append(ss.Studios, studio)
 	}
 
 	for _, p := range s.Performers {

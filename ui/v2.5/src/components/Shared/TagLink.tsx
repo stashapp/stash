@@ -227,6 +227,33 @@ export const GalleryLink: React.FC<IGalleryLinkProps> = ({
   );
 };
 
+interface IStudioLinkProps {
+  studio: INamedObject;
+  linkType?: "details";
+  className?: string;
+}
+
+export const StudioLink: React.FC<IStudioLinkProps> = ({
+  studio,
+  linkType = "details",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "details":
+        return `/studios/${studio.id}`;
+    }
+  }, [studio, linkType]);
+
+  const title = studio.name || "";
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
 interface ITagLinkProps {
   tag: INamedObject;
   linkType?:

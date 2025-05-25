@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import isEqual from "lodash-es/isEqual";
 import { useBulkGalleryUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
@@ -15,7 +14,7 @@ import {
   getAggregateInputValue,
   getAggregatePerformerIds,
   getAggregateRating,
-  getAggregateStudioId,
+  getAggregateStudioIds,
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
@@ -31,7 +30,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   const intl = useIntl();
   const Toast = useToast();
   const [rating100, setRating] = useState<number>();
-  const [studioId, setStudioId] = useState<string>();
+  const [studioIds, setStudioIds] = useState<string[]>();
+  const [existingStudioIds, setExistingStudioIds] = useState<string[]>();
+  const [studioMode, setStudioMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
@@ -53,7 +56,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   function getGalleryInput(): GQL.BulkGalleryUpdateInput {
     // need to determine what we are actually setting on each gallery
     const aggregateRating = getAggregateRating(props.selected);
-    const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregateStudioIds = getAggregateStudioIds(props.selected);
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
 
@@ -64,9 +67,10 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     };
 
     galleryInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
-    galleryInput.studio_id = getAggregateInputValue(
-      studioId,
-      aggregateStudioId
+    galleryInput.studio_ids = getAggregateInputIDs(
+      studioMode,
+      studioIds,
+      aggregateStudioIds
     );
 
     galleryInput.performer_ids = getAggregateInputIDs(
@@ -113,7 +117,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     const state = props.selected;
     let updateRating: number | undefined;
-    let updateStudioID: string | undefined;
+    let updateStudioIDs: string[] = [];
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let updateOrganized: boolean | undefined;
@@ -121,7 +125,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
 
     state.forEach((gallery: GQL.SlimGalleryDataFragment) => {
       const galleryRating = gallery.rating100;
-      const GalleriestudioID = gallery?.studio?.id;
+      const galleryStudioIDs = (gallery.studios ?? []).map((s) => s.id).sort();
       const galleryPerformerIDs = (gallery.performers ?? [])
         .map((p) => p.id)
         .sort();
@@ -129,7 +133,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
 
       if (first) {
         updateRating = galleryRating ?? undefined;
-        updateStudioID = GalleriestudioID;
+        updateStudioIDs = galleryStudioIDs;
         updatePerformerIds = galleryPerformerIDs;
         updateTagIds = galleryTagIDs;
         updateOrganized = gallery.organized;
@@ -138,8 +142,8 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         if (galleryRating !== updateRating) {
           updateRating = undefined;
         }
-        if (GalleriestudioID !== updateStudioID) {
-          updateStudioID = undefined;
+        if (!isEqual(galleryStudioIDs, updateStudioIDs)) {
+          updateStudioIDs = [];
         }
         if (!isEqual(galleryPerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
@@ -154,7 +158,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     });
 
     setRating(updateRating);
-    setStudioId(updateStudioID);
+    setExistingStudioIds(updateStudioIDs);
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
 
@@ -168,7 +172,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   }, [organized, checkboxRef]);
 
   function renderMultiSelect(
-    type: "performers" | "tags",
+    type: "performers" | "tags" | "studios",
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
@@ -181,6 +185,10 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       case "tags":
         mode = tagMode;
         existingIds = existingTagIds;
+        break;
+      case "studios":
+        mode = studioMode;
+        existingIds = existingStudioIds;
         break;
     }
 
@@ -196,6 +204,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             case "tags":
               setTagIds(itemIDs);
               break;
+            case "studios":
+              setStudioIds(itemIDs);
+              break;
           }
         }}
         onSetMode={(newMode) => {
@@ -205,6 +216,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               break;
             case "tags":
               setTagMode(newMode);
+              break;
+            case "studios":
+              setStudioMode(newMode);
               break;
           }
         }}
@@ -263,20 +277,12 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               />
             </Col>
           </Form.Group>
-          <Form.Group controlId="studio" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "studio" }),
-            })}
-            <Col xs={9}>
-              <StudioSelect
-                onSelect={(items) =>
-                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                }
-                ids={studioId ? [studioId] : []}
-                isDisabled={isUpdating}
-                menuPortalTarget={document.body}
-              />
-            </Col>
+
+          <Form.Group controlId="studios">
+            <Form.Label>
+              <FormattedMessage id="studios" />
+            </Form.Label>
+            {renderMultiSelect("studios", studioIds)}
           </Form.Group>
 
           <Form.Group controlId="performers">

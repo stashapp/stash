@@ -816,6 +816,48 @@ func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]st
 	return performersAliasesTableMgr.get(ctx, performerID)
 }
 
+// GetAliasesBatch returns aliases for multiple performers in a single query
+func (qb *PerformerStore) GetAliasesBatch(ctx context.Context, ids []int) (map[int][]string, error) {
+	ret := make(map[int][]string)
+
+	for _, id := range ids {
+		ret[id] = []string{}
+	}
+
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
+	table := performersAliasesTable
+
+	q := dialect.From(table).Select(
+		table+".performer_id",
+		table+".alias",
+	).Where(
+		goqu.Ex{
+			"performer_id": ids,
+		},
+	)
+
+	const single = false
+	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var performerID int
+		var alias string
+		if err := rows.Scan(&performerID, &alias); err != nil {
+			return err
+		}
+
+		ret[performerID] = append(ret[performerID], alias)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (qb *PerformerStore) GetURLs(ctx context.Context, performerID int) ([]string, error) {
 	return performersURLsTableMgr.get(ctx, performerID)
 }

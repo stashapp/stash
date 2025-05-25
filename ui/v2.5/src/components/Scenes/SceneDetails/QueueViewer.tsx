@@ -96,7 +96,14 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             </div>
             <div className="queue-scene-details">
               <span className="queue-scene-title">{objectTitle(scene)}</span>
-              <span className="queue-scene-studio">{scene?.studio?.name}</span>
+              <span className="queue-scene-studio">
+                {scene?.studios && scene.studios.length > 0
+                  ? scene.studios
+                      .map((studio) => studio.name)
+                      .filter(Boolean)
+                      .join(", ")
+                  : ""}
+              </span>
               <span className="queue-scene-performers">
                 {scene?.performers
                   ?.map(function (performer) {

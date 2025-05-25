@@ -69,6 +69,7 @@ type GalleryReader interface {
 	SceneIDLoader
 	PerformerIDLoader
 	TagIDLoader
+	StudioIDLoader
 	FileLoader
 
 	All(ctx context.Context) ([]*Gallery, error)

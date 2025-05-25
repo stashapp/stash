@@ -3,9 +3,8 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
-import { Link } from "react-router-dom";
 import { DirectorLink } from "src/components/Shared/Link";
-import { GroupLink, TagLink } from "src/components/Shared/TagLink";
+import { GroupLink, TagLink, StudioLink } from "src/components/Shared/TagLink";
 
 interface IGroupDescription {
   group: GQL.SlimGroupDataFragment;
@@ -54,6 +53,19 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
     );
   }
 
+  function renderStudiosField() {
+    if (!group.studios.length) {
+      return;
+    }
+    return (
+      <>
+        {(group.studios ?? []).map((studio) => (
+          <StudioLink key={studio.id} studio={studio} linkType="details" />
+        ))}
+      </>
+    );
+  }
+
   return (
     <div className="detail-group">
       <DetailItem
@@ -69,16 +81,8 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         fullWidth={fullWidth}
       />
       <DetailItem
-        id="studio"
-        value={
-          group.studio?.id ? (
-            <Link to={`/studios/${group.studio?.id}`}>
-              {group.studio?.name}
-            </Link>
-          ) : (
-            ""
-          )
-        }
+        id="studios"
+        value={renderStudiosField()}
         fullWidth={fullWidth}
       />
       <DetailItem
@@ -118,10 +122,17 @@ export const CompressedGroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         <a className="group-name" onClick={() => scrollToTop()}>
           {group.name}
         </a>
-        {group?.studio?.name ? (
+        {group?.studios?.length > 0 ? (
           <>
             <span className="detail-divider">/</span>
-            <span className="group-studio">{group?.studio?.name}</span>
+            <span className="group-studio">
+              {group.studios.map((studio, index) => (
+                <span key={studio.id}>
+                  {studio.name}
+                  {index < group.studios.length - 1 && ", "}
+                </span>
+              ))}
+            </span>
           </>
         ) : (
           ""

@@ -13,7 +13,9 @@ export const scrapedGroupToCreateInput = (toCreate: GQL.ScrapedGroup) => {
     director: toCreate.director,
     // #788 - convert duration and rating to the correct type
     duration: TextUtils.timestampToSeconds(toCreate.duration),
-    studio_id: toCreate.studio?.stored_id,
+    studio_ids: toCreate.studios
+      ?.filter((s) => s.stored_id)
+      .map((s) => s.stored_id!),
     rating100: parseInt(toCreate.rating ?? "0", 10) * 20,
   };
 

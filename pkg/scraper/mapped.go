@@ -1025,7 +1025,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 			studio := &models.ScrapedStudio{}
 			// when doing a `search` scrape get the related studio
 			studioResults[resultIndex].apply(studio)
-			ret.Studio = studio
+			ret.Studios = append(ret.Studios, studio)
 		}
 	}
 
@@ -1034,7 +1034,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 		ret.Movies = processRelationships[models.ScrapedMovie](ctx, s, sceneMoviesMap, q)
 	}
 
-	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0
+	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || len(ret.Studios) > 0 || len(ret.Movies) > 0
 }
 
 func (s mappedScraper) processPerformers(ctx context.Context, performersMap mappedPerformerScraperConfig, q mappedQuery) []*models.ScrapedPerformer {
@@ -1171,12 +1171,12 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*models.
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
 			studioResults[0].apply(studio)
-			ret.Studio = studio
+			ret.Studios = append(ret.Studios, studio)
 		}
 	}
 
 	// if no basic fields are populated, and no relationships, then return nil
-	if len(results) == 0 && len(ret.Performers) == 0 && len(ret.Tags) == 0 && ret.Studio == nil {
+	if len(results) == 0 && len(ret.Performers) == 0 && len(ret.Tags) == 0 && len(ret.Studios) == 0 {
 		return nil, nil
 	}
 
@@ -1234,12 +1234,12 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
 			studioResults[0].apply(studio)
-			ret.Studio = studio
+			ret.Studios = append(ret.Studios, studio)
 		}
 	}
 
 	// if no basic fields are populated, and no relationships, then return nil
-	if len(results) == 0 && len(ret.Performers) == 0 && len(ret.Tags) == 0 && ret.Studio == nil {
+	if len(results) == 0 && len(ret.Performers) == 0 && len(ret.Tags) == 0 && len(ret.Studios) == 0 {
 		return nil, nil
 	}
 
@@ -1277,7 +1277,7 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
 			studioResults[0].apply(studio)
-			ret.Studio = studio
+			ret.Studios = append(ret.Studios, studio)
 		}
 	}
 
@@ -1293,7 +1293,7 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 		}
 	}
 
-	if len(results) == 0 && ret.Studio == nil && len(ret.Tags) == 0 {
+	if len(results) == 0 && len(ret.Studios) == 0 && len(ret.Tags) == 0 {
 		return nil, nil
 	}
 

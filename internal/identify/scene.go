@@ -17,12 +17,14 @@ import (
 
 type SceneCoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	models.StudioIDLoader
 }
 
 type SceneReaderUpdater interface {
 	SceneCoverGetter
 	models.SceneUpdater
 	models.PerformerIDLoader
+	models.StudioIDLoader
 	models.TagIDLoader
 	models.StashIDLoader
 	models.URLLoader
@@ -39,34 +41,60 @@ type sceneRelationships struct {
 	skipSingleNamePerformers bool
 }
 
-func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
-	existingID := g.scene.StudioID
+func (g sceneRelationships) studio(ctx context.Context) ([]int, error) {
 	fieldStrategy := g.fieldOptions["studio"]
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
 
-	scraped := g.result.result.Studio
+	scraped := g.result.result.Studios
 	endpoint := g.result.source.RemoteSite
 
-	if scraped == nil || !shouldSetSingleValueField(fieldStrategy, existingID != nil) {
+	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
 		return nil, nil
 	}
 
-	if scraped.StoredID != nil {
-		// existing studio, just set it
-		studioID, err := strconv.Atoi(*scraped.StoredID)
-		if err != nil {
-			return nil, fmt.Errorf("error converting studio ID %s: %w", *scraped.StoredID, err)
-		}
-
-		// only return value if different to current
-		if existingID == nil || *existingID != studioID {
-			return &studioID, nil
-		}
-	} else if createMissing {
-		return createMissingStudio(ctx, endpoint, g.studioReaderWriter, scraped)
+	strategy := FieldStrategyMerge
+	if fieldStrategy != nil {
+		strategy = fieldStrategy.Strategy
 	}
 
-	return nil, nil
+	var studioIDs []int
+	if err := g.scene.LoadStudioIDs(ctx, g.sceneReader); err != nil {
+		return nil, err
+	}
+	originalStudioIDs := g.scene.StudioIDs.List()
+
+	if strategy == FieldStrategyMerge {
+		// add to existing
+		studioIDs = originalStudioIDs
+	}
+
+	// Process all studios from the scraped result
+	for _, studio := range scraped {
+		if studio.StoredID != nil {
+			// existing studio, just add it
+			studioID, err := strconv.Atoi(*studio.StoredID)
+			if err != nil {
+				return nil, fmt.Errorf("error converting studio ID %s: %w", *studio.StoredID, err)
+			}
+
+			studioIDs = sliceutil.AppendUnique(studioIDs, studioID)
+		} else if createMissing {
+			studioID, err := createMissingStudio(ctx, endpoint, g.studioReaderWriter, studio)
+			if err != nil {
+				return nil, err
+			}
+			if studioID != nil {
+				studioIDs = sliceutil.AppendUnique(studioIDs, *studioID)
+			}
+		}
+	}
+
+	// don't return if nothing was added
+	if sliceutil.SliceSame(originalStudioIDs, studioIDs) {
+		return nil, nil
+	}
+
+	return studioIDs, nil
 }
 
 func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]int, error) {

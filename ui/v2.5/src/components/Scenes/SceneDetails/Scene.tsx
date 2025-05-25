@@ -587,18 +587,28 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       >
         <div>
           <div className="scene-header-container">
-            {scene.studio && (
+            {scene.studios && scene.studios.length > 0 && (
               <h1 className="text-center scene-studio-image">
-                <Link to={`/studios/${scene.studio.id}`}>
-                  <img
-                    src={scene.studio.image_path ?? ""}
-                    alt={`${scene.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
+                {scene.studios.map((studio) => (
+                  <Link
+                    key={studio.id}
+                    to={`/studios/${studio.id}`}
+                    className="studio-link"
+                  >
+                    <img
+                      src={studio.image_path ?? ""}
+                      alt={`${studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                ))}
               </h1>
             )}
-            <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
+            <h3
+              className={cx("scene-header", {
+                "no-studio": !scene.studios || scene.studios.length === 0,
+              })}
+            >
               <TruncatedText lineCount={2} text={title} />
             </h3>
           </div>

@@ -18,7 +18,7 @@ type Image {
   visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
   galleries: [Gallery!]!
-  studio: Studio
+  studios: [Studio!]!
   tags: [Tag!]!
   performers: [Performer!]!
 }
@@ -50,7 +50,7 @@ input ImageUpdateInput {
   details: String
   photographer: String
 
-  studio_id: ID
+  studio_ids: [ID!]
   performer_ids: [ID!]
   tag_ids: [ID!]
   gallery_ids: [ID!]
@@ -72,7 +72,7 @@ input BulkImageUpdateInput {
   details: String
   photographer: String
 
-  studio_id: ID
+  studio_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
   gallery_ids: BulkUpdateIds

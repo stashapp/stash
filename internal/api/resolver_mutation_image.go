@@ -118,9 +118,9 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input models.ImageUp
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedImage.StudioIDs, err = translator.updateIds(input.StudioIds, "studio_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	updatedImage.URLs = translator.optionalURLs(input.Urls, input.URL)
@@ -217,9 +217,9 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedImage.StudioIDs, err = translator.updateIdsBulk(input.StudioIds, "studio_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	updatedImage.URLs = translator.optionalURLsBulk(input.Urls, input.URL)

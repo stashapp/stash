@@ -205,7 +205,7 @@ type sceneHolder struct {
 	dd         string
 	performers []string
 	groups     []string
-	studio     string
+	studios    []string
 	tags       []string
 }
 
@@ -338,7 +338,8 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		// add performer to list
 		h.performers = append(h.performers, value.(string))
 	case "studio":
-		h.studio = value.(string)
+		// add studio to list
+		h.studios = append(h.studios, value.(string))
 	case "movie":
 		h.groups = append(h.groups, value.(string))
 	case "tag":
@@ -654,13 +655,18 @@ func (p *FilenameParser) setTags(ctx context.Context, qb models.TagQueryer, h sc
 	}
 }
 
-func (p *FilenameParser) setStudio(ctx context.Context, qb models.StudioQueryer, h sceneHolder, result *models.SceneParserResult) {
-	// query for each performer
-	if h.studio != "" {
-		studio := p.queryStudio(ctx, qb, h.studio)
-		if studio != nil {
-			studioID := strconv.Itoa(studio.ID)
-			result.StudioID = &studioID
+func (p *FilenameParser) setStudios(ctx context.Context, qb models.StudioQueryer, h sceneHolder, result *models.SceneParserResult) {
+	// query for each studio
+	studiosSet := make(map[int]bool)
+	for _, studioName := range h.studios {
+		if studioName != "" {
+			studio := p.queryStudio(ctx, qb, studioName)
+			if studio != nil {
+				if _, found := studiosSet[studio.ID]; !found {
+					result.StudioIds = append(result.StudioIds, strconv.Itoa(studio.ID))
+					studiosSet[studio.ID] = true
+				}
+			}
 		}
 	}
 }
@@ -712,7 +718,9 @@ func (p *FilenameParser) setParserResult(ctx context.Context, h sceneHolder, res
 	if len(h.tags) > 0 {
 		p.setTags(ctx, r.Tag, h, result)
 	}
-	p.setStudio(ctx, r.Studio, h, result)
+	if len(h.studios) > 0 {
+		p.setStudios(ctx, r.Studio, h, result)
+	}
 
 	if len(h.groups) > 0 {
 		p.setGroups(ctx, r.Group, h, result)

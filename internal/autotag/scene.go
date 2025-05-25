@@ -12,6 +12,7 @@ import (
 type SceneFinderUpdater interface {
 	models.SceneQueryer
 	models.SceneUpdater
+	models.StudioIDLoader
 }
 
 type ScenePerformerUpdater interface {
@@ -26,11 +27,12 @@ type SceneTagUpdater interface {
 
 func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 	return tagger{
-		ID:    s.ID,
-		Type:  "scene",
-		Name:  s.DisplayName(),
-		Path:  s.Path,
-		cache: cache,
+		ID:      s.ID,
+		Type:    "scene",
+		Name:    s.DisplayName(),
+		Path:    s.Path,
+		trimExt: true, // trim extension for scene files
+		cache:   cache,
 	}
 }
 
@@ -56,19 +58,25 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 	})
 }
 
-// SceneStudios tags the provided scene with the first studio whose name matches the scene's path.
-//
-// Scenes will not be tagged if studio is already set.
+// SceneStudios tags the provided scene with studios whose names match the scene's path.
 func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
-	if s.StudioID != nil {
-		// don't modify
-		return nil
-	}
-
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
-		return addSceneStudio(ctx, rw, s, otherID)
+		if err := s.LoadStudioIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.StudioIDs.List()
+
+		if slices.Contains(existing, otherID) {
+			return false, nil
+		}
+
+		if err := scene.AddStudio(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
 

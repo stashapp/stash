@@ -128,7 +128,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioGallery(studioID int) models.Gallery {
 	return models.Gallery{
-		StudioID: &studioID,
+		StudioIDs: models.NewRelatedIDs([]int{studioID}),
 	}
 }
 
@@ -169,7 +169,7 @@ func TestGetStudioName(t *testing.T) {
 
 	for i, s := range getStudioScenarios {
 		gallery := s.input
-		json, err := GetStudioName(testCtx, db.Studio, &gallery)
+		json, err := GetStudioNames(testCtx, db.Studio, &gallery)
 
 		switch {
 		case !s.err && err != nil:
@@ -177,7 +177,12 @@ func TestGetStudioName(t *testing.T) {
 		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
 		default:
-			assert.Equal(t, s.expected, json, "[%d]", i)
+			// Convert expected string to slice for comparison
+			var expected []string
+			if s.expected != "" {
+				expected = []string{s.expected}
+			}
+			assert.Equal(t, expected, json, "[%d]", i)
 		}
 	}
 

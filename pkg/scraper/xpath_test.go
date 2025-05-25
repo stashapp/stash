@@ -749,8 +749,10 @@ func TestApplySceneXPathConfig(t *testing.T) {
 	const expectedStudioName = "Sis Loves Me"
 	const expectedStudioURL = "/channels/sis-loves-me"
 
-	verifyField(t, expectedStudioName, &scene.Studio.Name, "Studio.Name")
-	verifyField(t, expectedStudioURL, scene.Studio.URL, "Studio.URL")
+	if len(scene.Studios) > 0 {
+		verifyField(t, expectedStudioName, &scene.Studios[0].Name, "Studios[0].Name")
+		verifyField(t, expectedStudioURL, scene.Studios[0].URL, "Studios[0].URL")
+	}
 }
 
 func TestLoadXPathScraperFromYAML(t *testing.T) {

@@ -126,15 +126,18 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, exclu
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		tqb := r.TagFinder
+
 		tags, err := postProcessTags(ctx, tqb, m.Tags)
 		if err != nil {
 			return err
 		}
 		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
-		if m.Studio != nil {
-			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, ""); err != nil {
-				return err
+		for _, studio := range m.Studios {
+			if studio != nil {
+				if err := match.ScrapedStudio(ctx, r.StudioFinder, studio, ""); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -158,15 +161,18 @@ func (c Cache) postScrapeGroup(ctx context.Context, m models.ScrapedGroup, exclu
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		tqb := r.TagFinder
+
 		tags, err := postProcessTags(ctx, tqb, m.Tags)
 		if err != nil {
 			return err
 		}
 		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
-		if m.Studio != nil {
-			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, ""); err != nil {
-				return err
+		for _, studio := range m.Studios {
+			if studio != nil {
+				if err := match.ScrapedStudio(ctx, r.StudioFinder, studio, ""); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -256,6 +262,15 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene, e
 			}
 		}
 
+		for _, p := range scene.Studios {
+			if p != nil {
+				err := match.ScrapedStudio(ctx, sqb, p, "")
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		// HACK - if movies was returned but not groups, add the groups from the movies
 		// if groups was returned but not movies, add the movies from the groups for backward compatibility
 		if len(scene.Movies) > 0 && len(scene.Groups) == 0 {
@@ -275,13 +290,6 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene, e
 			return err
 		}
 		scene.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
-
-		if scene.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, scene.Studio, "")
-			if err != nil {
-				return err
-			}
-		}
 
 		return nil
 	}); err != nil {
@@ -324,10 +332,12 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery, e
 		}
 		g.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
-		if g.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, g.Studio, "")
-			if err != nil {
-				return err
+		for _, studio := range g.Studios {
+			if studio != nil {
+				err := match.ScrapedStudio(ctx, sqb, studio, "")
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -359,10 +369,12 @@ func (c Cache) postScrapeImage(ctx context.Context, image models.ScrapedImage, e
 
 		image.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
-		if image.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, image.Studio, "")
-			if err != nil {
-				return err
+		for _, studio := range image.Studios {
+			if studio != nil {
+				err := match.ScrapedStudio(ctx, sqb, studio, "")
+				if err != nil {
+					return err
+				}
 			}
 		}
 

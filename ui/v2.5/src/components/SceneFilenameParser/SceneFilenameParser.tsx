@@ -33,7 +33,7 @@ const initialShowFieldsState = new Map<string, boolean>([
   ["Rating", true],
   ["Performers", true],
   ["Tags", true],
-  ["Studio", true],
+  ["Studios", true],
 ]);
 
 export const SceneFilenameParser: React.FC = () => {
@@ -87,7 +87,7 @@ export const SceneFilenameParser: React.FC = () => {
       ["Rating", ratingSet],
       ["Performers", performerSet],
       ["Tags", tagSet],
-      ["Studio", studioSet],
+      ["Studios", studioSet],
     ]);
 
     setShowFields(newShowFields);
@@ -220,7 +220,7 @@ export const SceneFilenameParser: React.FC = () => {
       return !r.tags.isSet;
     });
     const newAllStudioSet = !parserResult.some((r) => {
-      return !r.studio.isSet;
+      return !r.studios.isSet;
     });
 
     setAllTitleSet(newAllTitleSet);
@@ -290,7 +290,7 @@ export const SceneFilenameParser: React.FC = () => {
     const newResult = [...parserResult];
 
     newResult.forEach((r) => {
-      r.studio.isSet = selected;
+      r.studios.isSet = selected;
     });
 
     setParserResult(newResult);
@@ -372,7 +372,7 @@ export const SceneFilenameParser: React.FC = () => {
                   onSelectAllTagSet
                 )}
                 {renderHeader(
-                  intl.formatMessage({ id: "studio" }),
+                  intl.formatMessage({ id: "studios" }),
                   allStudioSet,
                   onSelectAllStudioSet
                 )}

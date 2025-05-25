@@ -22,29 +22,6 @@ export function getAggregateRating(state: IHasRating[]) {
   return ret;
 }
 
-interface IHasStudio {
-  studio?: GQL.Maybe<IHasID> | undefined;
-}
-
-export function getAggregateStudioId(state: IHasStudio[]) {
-  let ret: string | undefined;
-  let first = true;
-
-  state.forEach((o) => {
-    if (first) {
-      ret = o?.studio?.id;
-      first = false;
-    } else {
-      const studio = o?.studio?.id;
-      if (ret !== studio) {
-        ret = undefined;
-      }
-    }
-  });
-
-  return ret;
-}
-
 export function getAggregateIds<T>(
   sortedLists: T[][],
   isEqualFn: (a: T[], b: T[]) => boolean = isEqual
@@ -64,6 +41,11 @@ export function getAggregateIds<T>(
   });
 
   return ret;
+}
+
+export function getAggregateStudioIds(state: { studios: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.studios.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
 }
 
 export function getAggregateGalleryIds(state: { galleries: IHasID[] }[]) {

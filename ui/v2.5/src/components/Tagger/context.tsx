@@ -676,19 +676,20 @@ export const TaggerContext: React.FC = ({ children }) => {
       if (studioID === undefined) return undefined;
 
       const newSearchResults = mapResults((r) => {
-        if (!r.studio) {
+        if (!r.studios || r.studios.length === 0) {
           return r;
         }
 
         return {
           ...r,
-          studio:
-            r.studio.name === studio.name
+          studios: r.studios.map((s) =>
+            s.name === studio.name
               ? {
-                  ...r.studio,
+                  ...s,
                   stored_id: studioID,
                 }
-              : r.studio,
+              : s
+          ),
         };
       });
 
@@ -727,19 +728,20 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       if (stashID) {
         const newSearchResults = mapResults((r) => {
-          if (!r.studio) {
+          if (!r.studios || r.studios.length === 0) {
             return r;
           }
 
           return {
             ...r,
-            studio:
+            studios: r.studios.map((s) =>
               r.remote_site_id === stashID
                 ? {
-                    ...r.studio,
+                    ...s,
                     stored_id: studioID,
                   }
-                : r.studio,
+                : s
+            ),
           };
         });
 
@@ -792,19 +794,20 @@ export const TaggerContext: React.FC = ({ children }) => {
         });
 
         const newSearchResults = mapResults((r) => {
-          if (!r.studio) {
+          if (!r.studios || r.studios.length === 0) {
             return r;
           }
 
           return {
             ...r,
-            studio:
-              r.studio.remote_site_id === studio.remote_site_id
+            studios: r.studios.map((s) =>
+              s.remote_site_id === studio.remote_site_id
                 ? {
-                    ...r.studio,
+                    ...s,
                     stored_id: studioID,
                   }
-                : r.studio,
+                : s
+            ),
           };
         });
 

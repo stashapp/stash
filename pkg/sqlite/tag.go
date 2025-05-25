@@ -761,6 +761,48 @@ func (qb *TagStore) GetAliases(ctx context.Context, tagID int) ([]string, error)
 	return tagRepository.aliases.get(ctx, tagID)
 }
 
+// GetAliasesBatch returns aliases for multiple tags in a single query
+func (qb *TagStore) GetAliasesBatch(ctx context.Context, ids []int) (map[int][]string, error) {
+	ret := make(map[int][]string)
+
+	for _, id := range ids {
+		ret[id] = []string{}
+	}
+
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
+	table := tagAliasesTable
+
+	q := dialect.From(table).Select(
+		table+".tag_id",
+		table+".alias",
+	).Where(
+		goqu.Ex{
+			"tag_id": ids,
+		},
+	)
+
+	const single = false
+	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var tagID int
+		var alias string
+		if err := rows.Scan(&tagID, &alias); err != nil {
+			return err
+		}
+
+		ret[tagID] = append(ret[tagID], alias)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (qb *TagStore) UpdateAliases(ctx context.Context, tagID int, aliases []string) error {
 	return tagRepository.aliases.replace(ctx, tagID, aliases)
 }

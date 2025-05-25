@@ -10,7 +10,7 @@ fragment SelectGroupData on Group {
   name
   aliases
   date
-  studio {
+  studios {
     name
   }
   front_image_path

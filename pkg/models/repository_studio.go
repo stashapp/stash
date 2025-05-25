@@ -13,7 +13,7 @@ type StudioGetter interface {
 type StudioFinder interface {
 	StudioGetter
 	FindChildren(ctx context.Context, id int) ([]*Studio, error)
-	FindBySceneID(ctx context.Context, sceneID int) (*Studio, error)
+	FindBySceneID(ctx context.Context, sceneID int) ([]*Studio, error)
 	FindByStashID(ctx context.Context, stashID StashID) ([]*Studio, error)
 	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Studio, error)
 	FindByName(ctx context.Context, name string, nocase bool) (*Studio, error)

@@ -7,7 +7,7 @@ type Movie {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  studio: Studio
+  studios: [Studio!]!
   director: String
   synopsis: String
   url: String @deprecated(reason: "Use urls")
@@ -30,7 +30,7 @@ input MovieCreateInput {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: [ID!]
   director: String
   synopsis: String
   url: String @deprecated(reason: "Use urls")
@@ -50,7 +50,7 @@ input MovieUpdateInput {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: [ID!]
   director: String
   synopsis: String
   url: String @deprecated(reason: "Use urls")
@@ -67,7 +67,7 @@ input BulkMovieUpdateInput {
   ids: [ID!]
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: BulkUpdateIds
   director: String
   urls: BulkUpdateStrings
   tag_ids: BulkUpdateIds

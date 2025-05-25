@@ -175,12 +175,18 @@ func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret [
 	return ret, firstError(errs)
 }
 
-func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *models.Studio, err error) {
-	if obj.StudioID == nil {
-		return nil, nil
+func (r *sceneResolver) Studios(ctx context.Context, obj *models.Scene) (ret []*models.Studio, err error) {
+	if !obj.StudioIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadStudioIDs(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
+	var errs []error
+	ret, errs = loaders.From(ctx).StudioByID.LoadAll(obj.StudioIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {

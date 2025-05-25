@@ -42,6 +42,11 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 			return err
 		}
 	}
+	if expected.StudioIDs.Loaded() {
+		if err := actual.LoadStudioIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
 	if expected.Groups.Loaded() {
 		if err := actual.LoadGroups(ctx, db.Scene); err != nil {
 			return err
@@ -115,7 +120,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
@@ -159,7 +164,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Date:      &date,
 				Rating:    &rating,
 				Organized: true,
-				StudioID:  &studioIDs[studioIdxWithScene],
+				StudioIDs: models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					videoFile.(*models.VideoFile),
 				}),
@@ -198,7 +203,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"invalid studio id",
 			models.Scene{
-				StudioID: &invalidID,
+				StudioIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -348,7 +353,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
@@ -428,8 +433,8 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid studio id",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithGallery],
-				StudioID: &invalidID,
+				ID:        sceneIDs[sceneIdxWithGallery],
+				StudioIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -513,7 +518,7 @@ func clearScenePartial() models.ScenePartial {
 		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
-		StudioID:     models.OptionalInt{Set: true, Null: true},
+		StudioIDs:    &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -565,7 +570,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithScene]),
+				StudioIDs: &models.UpdateIDs{IDs: []int{studioIDs[studioIdxWithScene]}, Mode: models.RelationshipUpdateModeSet},
 				CreatedAt: models.NewOptionalTime(createdAt),
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 				GalleryIDs: &models.UpdateIDs{
@@ -624,7 +629,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
+				StudioIDs:    models.NewRelatedIDs([]int{studioIDs[studioIdxWithScene]}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),

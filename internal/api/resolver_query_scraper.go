@@ -122,7 +122,6 @@ func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models
 		Director:   ret.Director,
 		URLs:       ret.URLs,
 		Synopsis:   ret.Synopsis,
-		Studio:     ret.Studio,
 		Tags:       ret.Tags,
 		FrontImage: ret.FrontImage,
 		BackImage:  ret.BackImage,
@@ -335,7 +334,7 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		if len(ret) > 0 {
 			if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 				for _, studio := range ret {
-					if err := match.ScrapedStudioHierarchy(ctx, r.repository.Studio, studio, *source.StashBoxEndpoint); err != nil {
+					if err := match.ScrapedStudio(ctx, r.repository.Studio, studio, *source.StashBoxEndpoint); err != nil {
 						return err
 					}
 				}

@@ -51,21 +51,22 @@ func autotagMatchPerformers(ctx context.Context, path string, performerReader mo
 	return ret, nil
 }
 
-func autotagMatchStudio(ctx context.Context, path string, studioReader models.StudioAutoTagQueryer, trimExt bool) (*models.ScrapedStudio, error) {
-	studio, err := match.PathToStudio(ctx, path, studioReader, nil, trimExt)
+func autotagMatchStudios(ctx context.Context, path string, studioReader models.StudioAutoTagQueryer, trimExt bool) ([]*models.ScrapedStudio, error) {
+	studios, err := match.PathToStudios(ctx, path, studioReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching studios: %w", err)
 	}
 
-	if studio != nil {
+	var ret []*models.ScrapedStudio
+	for _, studio := range studios {
 		id := strconv.Itoa(studio.ID)
-		return &models.ScrapedStudio{
+		ret = append(ret, &models.ScrapedStudio{
 			Name:     studio.Name,
 			StoredID: &id,
-		}, nil
+		})
 	}
 
-	return nil, nil
+	return ret, nil
 }
 
 func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAutoTagQueryer, trimExt bool) ([]*models.ScrapedTag, error) {
@@ -104,7 +105,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
-		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
+		studios, err := autotagMatchStudios(ctx, path, s.studioReader, trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
@@ -114,10 +115,10 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 
-		if len(performers) > 0 || studio != nil || len(tags) > 0 {
+		if len(performers) > 0 || len(studios) > 0 || len(tags) > 0 {
 			ret = &models.ScrapedScene{
 				Performers: performers,
-				Studio:     studio,
+				Studios:    studios,
 				Tags:       tags,
 			}
 		}
@@ -149,7 +150,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
-		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
+		studios, err := autotagMatchStudios(ctx, path, s.studioReader, trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
@@ -159,10 +160,10 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
 
-		if len(performers) > 0 || studio != nil || len(tags) > 0 {
+		if len(performers) > 0 || len(studios) > 0 || len(tags) > 0 {
 			ret = &models.ScrapedGallery{
 				Performers: performers,
-				Studio:     studio,
+				Studios:    studios,
 				Tags:       tags,
 			}
 		}

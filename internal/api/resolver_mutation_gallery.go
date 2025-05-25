@@ -55,9 +55,9 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	newGallery.StudioID, err = translator.intPtrFromString(input.StudioID)
+	newGallery.StudioIDs, err = translator.relatedIds(input.StudioIds)
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	newGallery.PerformerIDs, err = translator.relatedIds(input.PerformerIds)
@@ -195,9 +195,9 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedGallery.StudioIDs, err = translator.updateIds(input.StudioIds, "studio_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	updatedGallery.URLs = translator.optionalURLs(input.Urls, input.URL)
@@ -273,9 +273,9 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedGallery.StudioIDs, err = translator.updateIdsBulk(input.StudioIds, "studio_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	updatedGallery.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")

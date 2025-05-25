@@ -24,6 +24,7 @@ const (
 	galleriesTagsTable       = "galleries_tags"
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
+	galleriesStudiosTable    = "studios_galleries"
 	galleryIDColumn          = "gallery_id"
 	galleriesURLsTable       = "gallery_urls"
 	galleriesURLColumn       = "url"
@@ -39,7 +40,6 @@ type galleryRow struct {
 	// expressed as 1-100
 	Rating    null.Int  `db:"rating"`
 	Organized bool      `db:"organized"`
-	StudioID  null.Int  `db:"studio_id,omitempty"`
 	FolderID  null.Int  `db:"folder_id,omitempty"`
 	CreatedAt Timestamp `db:"created_at"`
 	UpdatedAt Timestamp `db:"updated_at"`
@@ -54,7 +54,6 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
-	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -79,7 +78,6 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		Photographer:  r.Photographer.String,
 		Rating:        nullIntPtr(r.Rating),
 		Organized:     r.Organized,
-		StudioID:      nullIntPtr(r.StudioID),
 		FolderID:      nullIntFolderIDPtr(r.FolderID),
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		CreatedAt:     r.CreatedAt.Timestamp,
@@ -107,7 +105,6 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
-	r.setNullInt("studio_id", o.StudioID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
@@ -118,6 +115,7 @@ type galleryRepositoryType struct {
 	images     joinRepository
 	tags       joinRepository
 	scenes     joinRepository
+	studios    joinRepository
 	files      filesRepository
 }
 
@@ -170,6 +168,13 @@ var (
 				idColumn:  galleryIDColumn,
 			},
 			fkColumn: sceneIDColumn,
+		},
+		studios: joinRepository{
+			repository: repository{
+				tableName: galleriesStudiosTable,
+				idColumn:  galleryIDColumn,
+			},
+			fkColumn: studioIDColumn,
 		},
 		files: filesRepository{
 			repository: repository{
@@ -266,6 +271,11 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 			return err
 		}
 	}
+	if newObject.StudioIDs.Loaded() {
+		if err := galleriesStudiosTableMgr.insertJoins(ctx, id, newObject.StudioIDs.List()); err != nil {
+			return err
+		}
+	}
 
 	updated, err := qb.find(ctx, id)
 	if err != nil {
@@ -302,6 +312,11 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 	}
 	if updatedObject.SceneIDs.Loaded() {
 		if err := galleriesScenesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.SceneIDs.List()); err != nil {
+			return err
+		}
+	}
+	if updatedObject.StudioIDs.Loaded() {
+		if err := galleriesStudiosTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StudioIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -352,6 +367,11 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 	}
 	if partial.SceneIDs != nil {
 		if err := galleriesScenesTableMgr.modifyJoins(ctx, id, partial.SceneIDs.IDs, partial.SceneIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.StudioIDs != nil {
+		if err := galleriesStudiosTableMgr.modifyJoins(ctx, id, partial.StudioIDs.IDs, partial.StudioIDs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -900,4 +920,8 @@ func (qb *GalleryStore) ResetCover(ctx context.Context, galleryID int) error {
 
 func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {
 	return galleryRepository.scenes.getIDs(ctx, id)
+}
+
+func (qb *GalleryStore) GetStudioIDs(ctx context.Context, id int) ([]int, error) {
+	return galleryRepository.studios.getIDs(ctx, id)
 }

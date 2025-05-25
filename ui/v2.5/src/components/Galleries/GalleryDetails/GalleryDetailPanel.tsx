@@ -72,8 +72,9 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     );
   }
 
-  // filename should use entire row if there is no studio
-  const galleryDetailsWidth = gallery.studio ? "col-9" : "col-12";
+  // filename should use entire row if there are no studios
+  const galleryDetailsWidth =
+    gallery.studios && gallery.studios.length > 0 ? "col-9" : "col-12";
 
   return (
     <>

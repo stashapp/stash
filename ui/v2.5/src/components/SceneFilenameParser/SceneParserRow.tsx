@@ -25,7 +25,7 @@ class ParserResult<T> {
   }
 
   public setValue(value?: T) {
-    if (value) {
+    if (value !== undefined) {
       this.value = value;
       this.isSet = !isEqual(this.value, this.originalValue);
     }
@@ -39,7 +39,7 @@ export class SceneParserResult {
   public date: ParserResult<string> = new ParserResult<string>();
   public rating: ParserResult<number> = new ParserResult<number>();
 
-  public studio: ParserResult<string> = new ParserResult<string>();
+  public studios: ParserResult<string[]> = new ParserResult<string[]>();
   public tags: ParserResult<string[]> = new ParserResult<string[]>();
   public performers: ParserResult<string[]> = new ParserResult<string[]>();
 
@@ -57,7 +57,7 @@ export class SceneParserResult {
     this.rating.setOriginalValue(this.scene.rating100 ?? undefined);
     this.performers.setOriginalValue(this.scene.performers.map((p) => p.id));
     this.tags.setOriginalValue(this.scene.tags.map((t) => t.id));
-    this.studio.setOriginalValue(this.scene.studio?.id);
+    this.studios.setOriginalValue(this.scene.studios.map((s) => s.id));
 
     this.title.setValue(result.title ?? undefined);
     this.date.setValue(result.date ?? undefined);
@@ -65,7 +65,7 @@ export class SceneParserResult {
 
     this.performers.setValue(result.performer_ids ?? undefined);
     this.tags.setValue(result.tag_ids ?? undefined);
-    this.studio.setValue(result.studio_id ?? undefined);
+    this.studios.setValue(result.studio_ids ?? undefined);
   }
 
   // returns true if any of its fields have set == true
@@ -75,7 +75,7 @@ export class SceneParserResult {
       this.date.isSet ||
       this.rating.isSet ||
       this.performers.isSet ||
-      this.studio.isSet ||
+      this.studios.isSet ||
       this.tags.isSet
     );
   }
@@ -86,7 +86,7 @@ export class SceneParserResult {
       rating: this.rating.isSet ? this.rating.value : undefined,
       title: this.title.isSet ? this.title.value : undefined,
       date: this.date.isSet ? this.date.value : undefined,
-      studio_id: this.studio.isSet ? this.studio.value : undefined,
+      studio_ids: this.studios.isSet ? this.studios.value : undefined,
       performer_ids: this.performers.isSet ? this.performers.value : undefined,
       tag_ids: this.tags.isSet ? this.tags.value : undefined,
     };
@@ -282,17 +282,16 @@ function SceneParserTagField(props: ISceneParserFieldProps<string[]>) {
   );
 }
 
-function SceneParserStudioField(props: ISceneParserFieldProps<string>) {
-  function maybeValueChanged(value: string) {
+function SceneParserStudiosField(props: ISceneParserFieldProps<string[]>) {
+  function maybeValueChanged(value: string[]) {
     if (value !== props.parserResult.value) {
       props.onValueChanged(value);
     }
   }
 
-  const originalStudio = props.originalParserResult?.originalValue
-    ? [props.originalParserResult?.originalValue]
-    : [];
-  const newStudio = props.parserResult.value ? [props.parserResult.value] : [];
+  const originalStudios = (props.originalParserResult?.originalValue ??
+    []) as string[];
+  const newStudios = props.parserResult.value ?? [];
 
   return (
     <>
@@ -308,16 +307,18 @@ function SceneParserStudioField(props: ISceneParserFieldProps<string>) {
         <Form.Group className={props.className}>
           <StudioSelect
             isDisabled
-            ids={originalStudio}
-            className="parser-field-studio-select"
+            isMulti
+            ids={originalStudios}
+            className="parser-field-studios-select"
           />
           <StudioSelect
-            className="parser-field-studio-select"
+            className="parser-field-studios-select"
+            isMulti
             isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
-              maybeValueChanged(items[0].id);
+              maybeValueChanged(items.map((i) => i.id));
             }}
-            ids={newStudio}
+            ids={newStudios}
           />
         </Form.Group>
       </td>
@@ -369,9 +370,9 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
     props.onChange(newResult);
   }
 
-  function onStudioIdChanged(set: boolean, value: string) {
+  function onStudiosChanged(set: boolean, value: string[]) {
     const newResult = clone(props.scene);
-    newResult.studio = changeParser(newResult.studio, set, value);
+    newResult.studios = changeParser(newResult.studios, set, value);
     props.onChange(newResult);
   }
 
@@ -447,17 +448,17 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
           }
         />
       )}
-      {props.showFields.get("Studio") && (
-        <SceneParserStudioField
-          key="studio"
-          className="parser-field-studio"
-          parserResult={props.scene.studio}
-          originalParserResult={props.scene.studio}
+      {props.showFields.get("Studios") && (
+        <SceneParserStudiosField
+          key="studios"
+          className="parser-field-studios"
+          parserResult={props.scene.studios}
+          originalParserResult={props.scene.studios}
           onSetChanged={(set) =>
-            onStudioIdChanged(set, props.scene.studio.value ?? "")
+            onStudiosChanged(set, props.scene.studios.value ?? [])
           }
           onValueChanged={(value) =>
-            onStudioIdChanged(props.scene.studio.isSet, value)
+            onStudiosChanged(props.scene.studios.isSet, value)
           }
         />
       )}

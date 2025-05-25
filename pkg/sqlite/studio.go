@@ -26,6 +26,9 @@ const (
 	studioNameColumn      = "name"
 	studioImageBlobColumn = "image_blob"
 	studiosTagsTable      = "studios_tags"
+	studiosScenesTable    = "studios_scenes"
+	studiosImagesTable    = "studios_images"
+	studiosGalleriesTable = "studios_galleries"
 )
 
 type studioRow struct {
@@ -394,18 +397,18 @@ func (qb *StudioStore) FindChildren(ctx context.Context, id int) ([]*models.Stud
 	return ret, nil
 }
 
-func (qb *StudioStore) FindBySceneID(ctx context.Context, sceneID int) (*models.Studio, error) {
-	// SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1
+func (qb *StudioStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Studio, error) {
+	// SELECT studios.* FROM studios JOIN studios_scenes ON studios.id = studios_scenes.studio_id WHERE studios_scenes.scene_id = ?
 	table := qb.table()
-	scenes := sceneTableMgr.table
+	scenesStudios := scenesStudiosJoinTable
 	sq := qb.selectDataset().Join(
-		scenes, goqu.On(table.Col(idColumn), scenes.Col(studioIDColumn)),
+		scenesStudios, goqu.On(table.Col(idColumn), scenesStudios.Col(studioIDColumn)),
 	).Where(
-		scenes.Col(idColumn),
-	).Limit(1)
-	ret, err := qb.get(ctx, sq)
+		scenesStudios.Col(sceneIDColumn).Eq(sceneID),
+	)
+	ret, err := qb.getMany(ctx, sq)
 
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil {
 		return nil, err
 	}
 
@@ -611,11 +614,11 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 	case "tag_count":
 		sortQuery += getCountSort(studioTable, studiosTagsTable, studioIDColumn, direction)
 	case "scenes_count":
-		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
+		sortQuery += getCountSort(studioTable, studiosScenesTable, studioIDColumn, direction)
 	case "images_count":
-		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
+		sortQuery += getCountSort(studioTable, studiosImagesTable, studioIDColumn, direction)
 	case "galleries_count":
-		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
+		sortQuery += getCountSort(studioTable, studiosGalleriesTable, studioIDColumn, direction)
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
 	default:
@@ -649,4 +652,46 @@ func (qb *StudioStore) GetStashIDs(ctx context.Context, studioID int) ([]models.
 
 func (qb *StudioStore) GetAliases(ctx context.Context, studioID int) ([]string, error) {
 	return studiosAliasesTableMgr.get(ctx, studioID)
+}
+
+// GetAliasesBatch returns aliases for multiple studios in a single query
+func (qb *StudioStore) GetAliasesBatch(ctx context.Context, ids []int) (map[int][]string, error) {
+	ret := make(map[int][]string)
+
+	for _, id := range ids {
+		ret[id] = []string{}
+	}
+
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
+	table := studioAliasesTable
+
+	q := dialect.From(table).Select(
+		table+".studio_id",
+		table+".alias",
+	).Where(
+		goqu.Ex{
+			"studio_id": ids,
+		},
+	)
+
+	const single = false
+	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var studioID int
+		var alias string
+		if err := rows.Scan(&studioID, &alias); err != nil {
+			return err
+		}
+
+		ret[studioID] = append(ret[studioID], alias)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

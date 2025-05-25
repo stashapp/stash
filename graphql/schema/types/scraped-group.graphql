@@ -10,7 +10,7 @@ type ScrapedMovie {
   url: String @deprecated(reason: "use urls")
   urls: [String!]
   synopsis: String
-  studio: ScrapedStudio
+  studios: [ScrapedStudio!]
   tags: [ScrapedTag!]
 
   "This should be a base64 encoded data URL"
@@ -43,7 +43,7 @@ type ScrapedGroup {
   director: String
   urls: [String!]
   synopsis: String
-  studio: ScrapedStudio
+  studios: [ScrapedStudio!]
   tags: [ScrapedTag!]
 
   "This should be a base64 encoded data URL"

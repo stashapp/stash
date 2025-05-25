@@ -134,6 +134,9 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	if aliasName == "" {
 		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
+		db.Studio.On("GetAliasesBatch", mock.Anything, mock.Anything).Return(map[int][]string{
+			studioID: {},
+		}, nil).Maybe()
 	} else {
 		onNameQuery.Return(mocks.SceneQueryResult(nil, 0), nil).Once()
 
@@ -147,14 +150,23 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 		db.Scene.On("Query", mock.Anything, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
+
+		db.Studio.On("GetAliasesBatch", mock.Anything, mock.Anything).Return(map[int][]string{
+			studioID: {aliasName},
+		}, nil).Maybe()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
 
+		db.Scene.On("GetStudioIDs", mock.Anything, sceneID).Return([]int{}, nil).Maybe()
+
 		matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
 			expected := models.ScenePartial{
-				StudioID: models.NewOptionalInt(studioID),
+				StudioIDs: &models.UpdateIDs{
+					IDs:  []int{studioID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
 			}
 
 			return scenePartialsEqual(got, expected)
@@ -237,6 +249,9 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	onNameQuery := db.Image.On("Query", mock.Anything, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
+		db.Studio.On("GetAliasesBatch", mock.Anything, mock.Anything).Return(map[int][]string{
+			studioID: {},
+		}, nil).Maybe()
 	} else {
 		onNameQuery.Return(mocks.ImageQueryResult(nil, 0), nil).Once()
 
@@ -250,14 +265,23 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 		db.Image.On("Query", mock.Anything, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
+
+		db.Studio.On("GetAliasesBatch", mock.Anything, mock.Anything).Return(map[int][]string{
+			studioID: {aliasName},
+		}, nil).Maybe()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
 
+		db.Image.On("GetStudioIDs", mock.Anything, imageID).Return([]int{}, nil).Maybe()
+
 		matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
 			expected := models.ImagePartial{
-				StudioID: models.NewOptionalInt(studioID),
+				StudioIDs: &models.UpdateIDs{
+					IDs:  []int{studioID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
 			}
 
 			return imagePartialsEqual(got, expected)
@@ -341,6 +365,9 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	onNameQuery := db.Gallery.On("Query", mock.Anything, expectedGalleryFilter, expectedFindFilter)
 	if aliasName == "" {
 		onNameQuery.Return(galleries, len(galleries), nil).Once()
+		db.Studio.On("GetAliasesBatch", mock.Anything, mock.Anything).Return(map[int][]string{
+			studioID: {},
+		}, nil).Maybe()
 	} else {
 		onNameQuery.Return(nil, 0, nil).Once()
 
@@ -353,14 +380,23 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 		}
 
 		db.Gallery.On("Query", mock.Anything, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+
+		db.Studio.On("GetAliasesBatch", mock.Anything, mock.Anything).Return(map[int][]string{
+			studioID: {aliasName},
+		}, nil).Maybe()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
 
+		db.Gallery.On("GetStudioIDs", mock.Anything, galleryID).Return([]int{}, nil).Maybe()
+
 		matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
 			expected := models.GalleryPartial{
-				StudioID: models.NewOptionalInt(studioID),
+				StudioIDs: &models.UpdateIDs{
+					IDs:  []int{studioID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
 			}
 
 			return galleryPartialsEqual(got, expected)
