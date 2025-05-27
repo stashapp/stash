@@ -3,6 +3,7 @@ package autotag
 import (
 	"context"
 	"slices"
+	"time"
 
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -91,5 +92,24 @@ func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagRead
 		}
 
 		return true, nil
+	})
+}
+
+// SceneDate extracts a date from the scene path and sets it to scene.Date if not already set.
+func SceneDate(ctx context.Context, s *models.Scene, rw models.SceneUpdater) error {
+	t := getSceneFileTagger(s, nil)
+	return t.tagDates(ctx, func(dateStr string) (bool, error) {
+		if s.Date != nil {
+			return false, nil
+		}
+		tm, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return false, err
+		}
+		dateModel := models.Date{Time: tm}
+		partial := models.NewScenePartial()
+		partial.Date = models.NewOptionalDate(dateModel)
+		_, err = rw.UpdatePartial(ctx, s.ID, partial)
+		return err == nil, err
 	})
 }

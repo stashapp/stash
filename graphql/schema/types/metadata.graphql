@@ -157,6 +157,10 @@ input AutoTagMetadataInput {
   IDs of tags to tag files with, or "*" for all
   """
   tags: [String!]
+  """
+  Extract dates from filenames, "*" to enable
+  """
+  dates: [String!]
 }
 
 type AutoTagMetadataOptions {
