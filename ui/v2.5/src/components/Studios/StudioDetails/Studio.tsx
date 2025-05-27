@@ -286,10 +286,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   const showAllCounts = uiConfig?.showChildStudioContent;
 
-  // make array of url so that it doesn't re-render on every change
+  // make array of urls so that it doesn't re-render on every change
   const urls = useMemo(() => {
-    return studio?.url ? [studio.url] : [];
-  }, [studio.url]);
+    return studio?.urls ?? [];
+  }, [studio?.urls]);
 
   const studioImage = useMemo(() => {
     const existingPath = studio.image_path;

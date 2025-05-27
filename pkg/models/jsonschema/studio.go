@@ -13,6 +13,7 @@ import (
 type Studio struct {
 	Name          string           `json:"name,omitempty"`
 	URL           string           `json:"url,omitempty"`
+	URLs          []string         `json:"urls,omitempty"`
 	ParentStudio  string           `json:"parent_studio,omitempty"`
 	Image         string           `json:"image,omitempty"`
 	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`

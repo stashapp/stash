@@ -33,7 +33,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio := models.NewStudio()
 
 	newStudio.Name = input.Name
-	newStudio.URL = translator.string(input.URL)
+	newStudio.URLs = models.NewRelatedStrings(input.Urls)
 	newStudio.Rating = input.Rating100
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
@@ -106,7 +106,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	updatedStudio.ID = studioID
 	updatedStudio.Name = translator.optionalString(input.Name, "name")
-	updatedStudio.URL = translator.optionalString(input.URL, "url")
+	updatedStudio.URLs = translator.updateStrings(input.Urls, "urls")
 	updatedStudio.Details = translator.optionalString(input.Details, "details")
 	updatedStudio.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedStudio.Favorite = translator.optionalBool(input.Favorite, "favorite")

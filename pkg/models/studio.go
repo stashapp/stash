@@ -47,9 +47,10 @@ type StudioFilterType struct {
 }
 
 type StudioCreateInput struct {
-	Name     string  `json:"name"`
-	URL      *string `json:"url"`
-	ParentID *string `json:"parent_id"`
+	Name     string   `json:"name"`
+	URL      *string  `json:"url"`
+	Urls     []string `json:"urls"`
+	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
 	Image         *string        `json:"image"`
 	StashIds      []StashIDInput `json:"stash_ids"`
@@ -62,10 +63,11 @@ type StudioCreateInput struct {
 }
 
 type StudioUpdateInput struct {
-	ID       string  `json:"id"`
-	Name     *string `json:"name"`
-	URL      *string `json:"url"`
-	ParentID *string `json:"parent_id"`
+	ID       string   `json:"id"`
+	Name     *string  `json:"name"`
+	URL      *string  `json:"url"`
+	Urls     []string `json:"urls"`
+	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
 	Image         *string        `json:"image"`
 	StashIds      []StashIDInput `json:"stash_ids"`

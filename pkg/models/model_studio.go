@@ -6,12 +6,13 @@ import (
 )
 
 type Studio struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	URL       string    `json:"url"`
-	ParentID  *int      `json:"parent_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int            `json:"id"`
+	Name      string         `json:"name"`
+	URL       string         `json:"url"`
+	URLs      RelatedStrings `json:"urls"`
+	ParentID  *int           `json:"parent_id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 	// Rating expressed in 1-100 scale
 	Rating        *int   `json:"rating"`
 	Favorite      bool   `json:"favorite"`
@@ -36,6 +37,7 @@ type StudioPartial struct {
 	ID       int
 	Name     OptionalString
 	URL      OptionalString
+	URLs     *UpdateStrings
 	ParentID OptionalInt
 	// Rating expressed in 1-100 scale
 	Rating        OptionalInt
@@ -57,6 +59,12 @@ func NewStudioPartial() StudioPartial {
 	}
 }
 
+func (s *Studio) LoadURLs(ctx context.Context, l URLLoader) error {
+	return s.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, s.ID)
+	})
+}
+
 func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
 	return s.Aliases.load(func() ([]string, error) {
 		return l.GetAliases(ctx, s.ID)
@@ -75,7 +83,11 @@ func (s *Studio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
 	})
 }
 
-func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error {
+func (s *Studio) LoadRelationships(ctx context.Context, l StudioReader) error {
+	if err := s.LoadURLs(ctx, l); err != nil {
+		return err
+	}
+
 	if err := s.LoadAliases(ctx, l); err != nil {
 		return err
 	}

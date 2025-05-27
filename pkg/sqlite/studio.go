@@ -26,6 +26,8 @@ const (
 	studioNameColumn      = "name"
 	studioImageBlobColumn = "image_blob"
 	studiosTagsTable      = "studios_tags"
+	studiosURLsTable      = "studio_urls"
+	studioURLColumn       = "url"
 )
 
 type studioRow struct {
@@ -180,6 +182,13 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		return err
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := studiosURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.Aliases.Loaded() {
 		if err := studio.EnsureAliasesUnique(ctx, id, newObject.Aliases.List(), qb); err != nil {
 			return err
@@ -224,6 +233,12 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		}
 	}
 
+	if input.URLs != nil {
+		if err := studiosURLsTableMgr.modifyJoins(ctx, input.ID, input.URLs.Values, input.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if input.Aliases != nil {
 		if err := studio.EnsureAliasesUnique(ctx, input.ID, input.Aliases.Values, qb); err != nil {
 			return nil, err
@@ -254,6 +269,12 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := studiosURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
 	}
 
 	if updatedObject.Aliases.Loaded() {
@@ -649,4 +670,8 @@ func (qb *StudioStore) GetStashIDs(ctx context.Context, studioID int) ([]models.
 
 func (qb *StudioStore) GetAliases(ctx context.Context, studioID int) ([]string, error) {
 	return studiosAliasesTableMgr.get(ctx, studioID)
+}
+
+func (qb *StudioStore) GetURLs(ctx context.Context, studioID int) ([]string, error) {
+	return studiosURLsTableMgr.get(ctx, studioID)
 }
