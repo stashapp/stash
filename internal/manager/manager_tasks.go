@@ -85,6 +85,9 @@ type ScanMetadataInput struct {
 
 	config.ScanMetadataOptions `mapstructure:",squash"`
 
+	// Auto-tag options for new files during scan
+	AutoTagOptions *AutoTagMetadataInput `json:"autoTagOptions"`
+
 	// Filter options for the scan
 	Filter *ScanMetaDataFilterInput `json:"filter"`
 }
@@ -124,6 +127,7 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		scanner:       scanner,
 		input:         input,
 		subscriptions: s.scanSubs,
+		repository:    s.Repository,
 	}
 
 	return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil

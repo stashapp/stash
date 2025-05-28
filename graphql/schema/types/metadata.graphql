@@ -91,6 +91,10 @@ input ScanMetadataInput {
   scanGenerateThumbnails: Boolean
   "Generate image clip previews during scan"
   scanGenerateClipPreviews: Boolean
+  "Auto-tag new files during scan"
+  autoTagNewFiles: Boolean
+  "Auto-tag options for new files during scan"
+  autoTagOptions: AutoTagMetadataInput
 
   "Filter options for the scan"
   filter: ScanMetaDataFilterInput
@@ -113,6 +117,8 @@ type ScanMetadataOptions {
   scanGenerateThumbnails: Boolean!
   "Generate image clip previews during scan"
   scanGenerateClipPreviews: Boolean!
+  "Auto-tag new files during scan"
+  autoTagNewFiles: Boolean!
 }
 
 input CleanMetadataInput {

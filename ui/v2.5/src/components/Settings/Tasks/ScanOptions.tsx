@@ -20,6 +20,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     scanGenerateThumbnails,
     scanGenerateClipPreviews,
     rescan,
+    autoTagNewFiles,
   } = options;
 
   function setOptions(input: Partial<GQL.ScanMetadataInput>) {
@@ -84,6 +85,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         tooltipID="config.tasks.rescan_tooltip"
         checked={rescan ?? false}
         onChange={(v) => setOptions({ rescan: v })}
+      />
+      <BooleanSetting
+        id="auto-tag-new-files"
+        headingID="config.tasks.auto_tag_new_files_during_scan"
+        checked={autoTagNewFiles ?? false}
+        onChange={(v) => setOptions({ autoTagNewFiles: v })}
       />
     </>
   );

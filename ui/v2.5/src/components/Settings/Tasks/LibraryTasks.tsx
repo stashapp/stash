@@ -90,6 +90,7 @@ export const LibraryTasks: React.FC = () => {
       scanGeneratePhashes: false,
       scanGenerateThumbnails: false,
       scanGenerateClipPreviews: false,
+      autoTagNewFiles: false,
     };
   }
 
@@ -231,10 +232,14 @@ export const LibraryTasks: React.FC = () => {
 
   async function runScan(paths?: string[]) {
     try {
-      await mutateMetadataScan({
-        ...scanOptions,
-        paths,
-      });
+      const scanRequest = { ...scanOptions, paths };
+      
+      // Dynamically include autoTagOptions if autoTagNewFiles is enabled.
+      if (scanOptions.autoTagNewFiles) {
+        Object.assign(scanRequest, { autoTagOptions });
+      }
+
+      await mutateMetadataScan(scanRequest);
 
       Toast.success(
         intl.formatMessage(
