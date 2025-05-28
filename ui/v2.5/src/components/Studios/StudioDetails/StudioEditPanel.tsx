@@ -14,7 +14,11 @@ import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
-import { yupFormikValidate, yupUniqueAliases, yupUniqueStringList } from "src/utils/yup";
+import {
+  yupFormikValidate,
+  yupUniqueAliases,
+  yupUniqueStringList,
+} from "src/utils/yup";
 import { Studio, StudioSelect } from "../StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 
