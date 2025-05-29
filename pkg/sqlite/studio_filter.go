@@ -55,7 +55,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 	return compoundHandler{
 		stringCriterionHandler(studioFilter.Name, studioTable+".name"),
 		stringCriterionHandler(studioFilter.Details, studioTable+".details"),
-		stringCriterionHandler(studioFilter.URL, studioTable+".url"),
+		qb.urlsCriterionHandler(studioFilter.URL),
 		intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil),
 		boolCriterionHandler(studioFilter.Favorite, studioTable+".favorite", nil),
 		boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil),
@@ -226,4 +226,18 @@ func (qb *studioFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMul
 	}
 
 	return h.handler(tags)
+}
+
+func (qb *studioFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		primaryFK:    studioIDColumn,
+		joinTable:    studiosURLsTable,
+		stringColumn: "url",
+		addJoinTable: func(f *filterBuilder) {
+			studiosURLsTableMgr.join(f, "", "studios.id")
+		},
+	}
+
+	return h.handler(url)
 }
