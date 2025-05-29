@@ -33,7 +33,6 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newGroup := models.NewGroup()
 
 	newGroup.Name = input.Name
-	newGroup.Aliases = translator.string(input.Aliases)
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
 	newGroup.Director = translator.string(input.Director)
@@ -53,6 +52,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newGroup.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	if input.Aliases != nil {
+		newGroup.Aliases = models.NewRelatedStrings([]string{*input.Aliases})
 	}
 
 	if input.Urls != nil {
@@ -132,7 +135,6 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedGroup := models.NewGroupPartial()
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
-	updatedGroup.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
@@ -153,6 +155,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	}
 
 	updatedGroup.URLs = translator.optionalURLs(input.Urls, input.URL)
+	updatedGroup.Aliases = translator.optionalAliases(input.Aliases, "aliases")
 
 	var frontimageData []byte
 	frontImageIncluded := translator.hasField("front_image")

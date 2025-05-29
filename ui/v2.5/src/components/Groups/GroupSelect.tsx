@@ -47,7 +47,7 @@ function sortGroupsByRelevance(input: string, groups: FindGroupsResult) {
     input,
     groups,
     (m) => m.name,
-    (m) => (m.aliases ? [m.aliases] : [])
+    (m) => m.aliases ?? []
   );
 }
 
@@ -111,7 +111,10 @@ export const GroupSelect: React.FC<
     const { inputValue } = optionProps.selectProps;
     let alias: string | undefined = "";
     if (!title.toLowerCase().includes(inputValue.toLowerCase())) {
-      alias = object.aliases || undefined;
+      const matchingAlias = object.aliases?.find(a => 
+        a.toLowerCase().includes(inputValue.toLowerCase())
+      );
+      alias = matchingAlias;
     }
 
     thisOptionProps = {
@@ -216,7 +219,7 @@ export const GroupSelect: React.FC<
       options.some((o) => {
         return (
           o.name.toLowerCase() === inputValue.toLowerCase() ||
-          o.aliases?.toLowerCase() === inputValue.toLowerCase()
+          (o.aliases && o.aliases.some(alias => alias.toLowerCase() === inputValue.toLowerCase()))
         );
       })
     ) {

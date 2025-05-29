@@ -22,6 +22,37 @@ func (r *groupResolver) Rating100(ctx context.Context, obj *models.Group) (*int,
 	return obj.Rating, nil
 }
 
+// Movie resolver - returns single alias as *string
+func (r *movieResolver) Aliases(ctx context.Context, obj *models.Group) (*string, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAliases(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	aliases := obj.Aliases.List()
+	if len(aliases) == 0 {
+		return nil, nil
+	}
+
+	return &aliases[0], nil
+}
+
+// Group resolver - returns all aliases as []string
+func (r *groupResolver) Aliases(ctx context.Context, obj *models.Group) ([]string, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAliases(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.Aliases.List(), nil
+}
+
 func (r *groupResolver) URL(ctx context.Context, obj *models.Group) (*string, error) {
 	if !obj.URLs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {

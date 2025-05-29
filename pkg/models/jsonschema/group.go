@@ -18,7 +18,7 @@ type SubGroupDescription struct {
 
 type Group struct {
 	Name       string                `json:"name,omitempty"`
-	Aliases    string                `json:"aliases,omitempty"`
+	Aliases    []string              `json:"aliases,omitempty"`
 	Duration   int                   `json:"duration,omitempty"`
 	Date       string                `json:"date,omitempty"`
 	Rating     int                   `json:"rating,omitempty"`

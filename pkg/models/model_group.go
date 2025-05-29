@@ -6,11 +6,11 @@ import (
 )
 
 type Group struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Aliases  string `json:"aliases"`
-	Duration *int   `json:"duration"`
-	Date     *Date  `json:"date"`
+	ID       int            `json:"id"`
+	Name     string         `json:"name"`
+	Aliases  RelatedStrings `json:"aliases"`
+	Duration *int           `json:"duration"`
+	Date     *Date          `json:"date"`
 	// Rating expressed in 1-100 scale
 	Rating    *int      `json:"rating"`
 	StudioID  *int      `json:"studio_id"`
@@ -32,6 +32,12 @@ func NewGroup() Group {
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
+}
+
+func (m *Group) LoadAliases(ctx context.Context, l AliasLoader) error {
+	return m.Aliases.load(func() ([]string, error) {
+		return l.GetAliases(ctx, m.ID)
+	})
 }
 
 func (m *Group) LoadURLs(ctx context.Context, l URLLoader) error {
@@ -60,7 +66,7 @@ func (m *Group) LoadSubGroupIDs(ctx context.Context, l SubGroupLoader) error {
 
 type GroupPartial struct {
 	Name     OptionalString
-	Aliases  OptionalString
+	Aliases  *UpdateStrings
 	Duration OptionalInt
 	Date     OptionalDate
 	// Rating expressed in 1-100 scale

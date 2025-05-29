@@ -29,12 +29,13 @@ const (
 	groupURLColumn = "url"
 
 	groupRelationsTable = "groups_relations"
+
+	groupsAliasesTable = "groups_aliases"
 )
 
 type groupRow struct {
 	ID       int         `db:"id" goqu:"skipinsert"`
 	Name     zero.String `db:"name"`
-	Aliases  zero.String `db:"aliases"`
 	Duration null.Int    `db:"duration"`
 	Date     NullDate    `db:"date"`
 	// expressed as 1-100
@@ -53,7 +54,6 @@ type groupRow struct {
 func (r *groupRow) fromGroup(o models.Group) {
 	r.ID = o.ID
 	r.Name = zero.StringFrom(o.Name)
-	r.Aliases = zero.StringFrom(o.Aliases)
 	r.Duration = intFromPtr(o.Duration)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
@@ -68,7 +68,6 @@ func (r *groupRow) resolve() *models.Group {
 	ret := &models.Group{
 		ID:        r.ID,
 		Name:      r.Name.String,
-		Aliases:   r.Aliases.String,
 		Duration:  nullIntPtr(r.Duration),
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
@@ -88,7 +87,6 @@ type groupRowRecord struct {
 
 func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 	r.setNullString("name", o.Name)
-	r.setNullString("aliases", o.Aliases)
 	r.setNullInt("duration", o.Duration)
 	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
@@ -178,6 +176,13 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 		}
 	}
 
+	// Save aliases to the new aliases table
+	if newObject.Aliases.Loaded() {
+		if err := groupsAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
 	if err := qb.tagRelationshipStore.createRelationships(ctx, id, newObject.TagIDs); err != nil {
 		return err
 	}
@@ -221,6 +226,13 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	// Update aliases in the new aliases table
+	if partial.Aliases != nil {
+		if err := groupsAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := qb.tagRelationshipStore.modifyRelationships(ctx, id, partial.TagIDs); err != nil {
 		return nil, err
 	}
@@ -246,6 +258,13 @@ func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) e
 
 	if updatedObject.URLs.Loaded() {
 		if err := groupsURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
+	// Update aliases in the new aliases table
+	if updatedObject.Aliases.Loaded() {
+		if err := groupsAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
 			return err
 		}
 	}
@@ -430,7 +449,8 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 	distinctIDs(&query, groupTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"groups.name", "groups.aliases"}
+		query.join(groupsAliasesTable, "", "groups_aliases.group_id = groups.id")
+		searchColumns := []string{"groups.name", "groups_aliases.alias"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -629,6 +649,11 @@ WHERE groups.studio_id = ?
 
 func (qb *GroupStore) GetURLs(ctx context.Context, groupID int) ([]string, error) {
 	return groupsURLsTableMgr.get(ctx, groupID)
+}
+
+// Add a new function to get aliases
+func (qb *GroupStore) GetAliases(ctx context.Context, groupID int) ([]string, error) {
+	return groupsAliasesTableMgr.get(ctx, groupID)
 }
 
 // FindSubGroupIDs returns a list of group IDs where a group in the ids list is a sub-group of the parent group

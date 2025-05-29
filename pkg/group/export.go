@@ -20,7 +20,7 @@ type ImageGetter interface {
 func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioGetter, movie *models.Group) (*jsonschema.Group, error) {
 	newMovieJSON := jsonschema.Group{
 		Name:      movie.Name,
-		Aliases:   movie.Aliases,
+		Aliases:   movie.Aliases.List(),
 		Director:  movie.Director,
 		Synopsis:  movie.Synopsis,
 		URLs:      movie.URLs.List(),

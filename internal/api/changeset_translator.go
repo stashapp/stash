@@ -293,6 +293,19 @@ func (t changesetTranslator) optionalURLs(value []string, legacyValue *string) *
 	return nil
 }
 
+func (t changesetTranslator) optionalAliases(value *string, field string) *models.UpdateStrings {
+	if !t.hasField(field) {
+		return nil
+	}
+
+	var valueSlice []string
+	if value != nil {
+		valueSlice = []string{*value}
+	}
+
+	return t.updateStrings(valueSlice, field)
+}
+
 func (t changesetTranslator) optionalURLsBulk(value *BulkUpdateStrings, legacyValue *string) *models.UpdateStrings {
 	const (
 		legacyField = "url"
