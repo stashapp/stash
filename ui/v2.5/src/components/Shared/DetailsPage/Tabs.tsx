@@ -1,7 +1,7 @@
 import { FormattedMessage } from "react-intl";
 import { Counter } from "../Counter";
 import { useCallback, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { PatchComponent } from "src/patch";
 
 export const TabTitleCounter: React.FC<{
@@ -29,6 +29,7 @@ export function useTabKey(props: {
   const { tabKey, validTabs, defaultTabKey, baseURL } = props;
 
   const history = useHistory();
+  const location = useLocation();
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
@@ -36,10 +37,19 @@ export function useTabKey(props: {
       if (newTabKey === tabKey) return;
 
       if (validTabs.includes(newTabKey)) {
-        history.replace(`${baseURL}/${newTabKey}`);
+        const params = new URLSearchParams(location.search);
+        const returnTo = params.get("returnTo");
+        const newSearch = returnTo
+          ? `?returnTo=${encodeURIComponent(returnTo)}`
+          : "";
+
+        history.replace({
+          pathname: `${baseURL}/${newTabKey}`,
+          search: newSearch,
+        });
       }
     },
-    [defaultTabKey, validTabs, tabKey, history, baseURL]
+    [defaultTabKey, validTabs, tabKey, history, baseURL, location.search]
   );
 
   useEffect(() => {

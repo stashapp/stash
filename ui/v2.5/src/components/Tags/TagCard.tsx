@@ -1,7 +1,8 @@
 import { PatchComponent } from "src/patch";
 import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { withReturnTo } from "src/utils/urlParams";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { FormattedMessage } from "react-intl";
@@ -235,11 +236,12 @@ const TagCardTitle: React.FC<IProps> = PatchComponent(
 export const TagCard: React.FC<IProps> = PatchComponent("TagCard", (props) => {
   const { tag, cardWidth, zoomIndex, selecting, selected, onSelectedChanged } =
     props;
+  const location = useLocation();
 
   return (
     <GridCard
       className={`tag-card zoom-${zoomIndex}`}
-      url={`/tags/${tag.id}`}
+      url={withReturnTo(`/tags/${tag.id}`, location.pathname + location.search)}
       width={cardWidth}
       title={<TagCardTitle {...props} />}
       linkClassName="tag-card-header"

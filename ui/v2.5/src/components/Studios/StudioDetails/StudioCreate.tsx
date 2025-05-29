@@ -31,7 +31,7 @@ const StudioCreate: React.FC = () => {
       variables: { input },
     });
     if (result.data?.studioCreate?.id) {
-      history.push(`/studios/${result.data.studioCreate.id}`);
+      history.replace(`/studios/${result.data.studioCreate.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

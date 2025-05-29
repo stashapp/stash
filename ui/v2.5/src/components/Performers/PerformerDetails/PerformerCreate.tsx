@@ -28,7 +28,7 @@ const PerformerCreate: React.FC = () => {
       variables: { input },
     });
     if (result.data?.performerCreate) {
-      history.push(`/performers/${result.data.performerCreate.id}`);
+      history.replace(`/performers/${result.data.performerCreate.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

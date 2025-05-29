@@ -1,6 +1,11 @@
 import { Tabs, Tab, Form } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
-import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
+import {
+  useHistory,
+  Redirect,
+  RouteComponentProps,
+  useLocation,
+} from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -47,6 +52,7 @@ import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { getReturnTo } from "src/utils/urlParams";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -261,6 +267,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+  const location = useLocation();
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -274,7 +281,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const loadStickyHeader = useLoadStickyHeader();
 
   // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState(window.location.hash === "#edit");
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing studio state
@@ -336,6 +343,19 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     };
   });
 
+  useEffect(() => {
+    const unlisten = history.listen((locationObj) => {
+      setIsEditing(locationObj.hash === "#edit");
+    });
+
+    // Initial check in case the page is loaded with #edit hash
+    setIsEditing(window.location.hash === "#edit");
+
+    return () => {
+      unlisten();
+    };
+  }, [history]); // Depend on history object
+
   useRatingKeybinds(
     true,
     configuration?.ui.ratingSystemOptions?.type,
@@ -351,7 +371,8 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
         },
       },
     });
-    toggleEditing(false);
+    setIsEditing(false);
+    history.goBack();
     Toast.success(
       intl.formatMessage(
         { id: "toast.updated_entity" },
@@ -373,12 +394,27 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   async function onDelete() {
     try {
       await deleteStudio();
+
+      // Use the centralized utility to get the returnTo parameter
+      const returnTo = getReturnTo(location.search);
+
+      // Navigate to the studios list page using the returnTo parameter or default
+      if (returnTo) {
+        history.push(returnTo);
+      } else {
+        history.push("/studios");
+      }
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.deleted_entity" },
+          { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+        )
+      );
     } catch (e) {
       Toast.error(e);
       return;
     }
-
-    history.goBack();
   }
 
   function renderDeleteAlert() {
@@ -408,10 +444,13 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   }
 
   function toggleEditing(value?: boolean) {
-    if (value !== undefined) {
-      setIsEditing(value);
+    const shouldEdit = value ?? !isEditing;
+    if (shouldEdit) {
+      history.push({ hash: "#edit" });
+      setIsEditing(true);
     } else {
-      setIsEditing((e) => !e);
+      history.replace({ hash: "" });
+      setIsEditing(false);
     }
     setImage(undefined);
   }
@@ -561,6 +600,7 @@ const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
         to={{
           ...location,
           pathname: `/studios/${id}`,
+          search: location.search,
         }}
       />
     );

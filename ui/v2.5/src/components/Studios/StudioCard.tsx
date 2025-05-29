@@ -1,8 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { GridCard } from "src/components/Shared/GridCard/GridCard";
+import { withReturnTo } from "src/utils/urlParams";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
@@ -79,6 +80,7 @@ export const StudioCard: React.FC<IProps> = ({
   onSelectedChanged,
 }) => {
   const [updateStudio] = useStudioUpdate();
+  const location = useLocation();
 
   function onToggleFavorite(v: boolean) {
     if (studio.id) {
@@ -203,7 +205,10 @@ export const StudioCard: React.FC<IProps> = ({
   return (
     <GridCard
       className={`studio-card zoom-${zoomIndex}`}
-      url={`/studios/${studio.id}`}
+      url={withReturnTo(
+        `/studios/${studio.id}`,
+        location.pathname + location.search
+      )}
       width={cardWidth}
       title={studio.name}
       linkClassName="studio-card-header"

@@ -5,7 +5,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { Button } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindTags,
@@ -26,6 +26,7 @@ import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
 import { View } from "../List/views";
+import { withReturnTo } from "src/utils/urlParams";
 
 function getItems(result: GQL.FindTagsQueryResult) {
   return result?.data?.findTags?.tags ?? [];
@@ -59,6 +60,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
 
   const intl = useIntl();
   const history = useHistory();
+  const location = useLocation();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
@@ -219,7 +221,14 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
         const tagElements = result.data.findTags.tags.map((tag) => {
           return (
             <div key={tag.id} className="tag-list-row row">
-              <Link to={`/tags/${tag.id}`}>{tag.name}</Link>
+              <Link
+                to={withReturnTo(
+                  `/tags/${tag.id}`,
+                  location.pathname + location.search
+                )}
+              >
+                {tag.name}
+              </Link>
 
               <div className="ml-auto">
                 <Button
@@ -231,7 +240,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagScenesUrl(tag)}
+                    to={withReturnTo(
+                      `/scenes?${
+                        NavUtils.makeTagScenesUrl(tag).split("?")[1] ?? ""
+                      }`,
+                      location.pathname + location.search
+                    )}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage
@@ -245,7 +259,10 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagImagesUrl(tag)}
+                    to={withReturnTo(
+                      NavUtils.makeTagImagesUrl(tag),
+                      location.pathname + location.search
+                    )}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage
@@ -259,7 +276,10 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagGalleriesUrl(tag)}
+                    to={withReturnTo(
+                      NavUtils.makeTagGalleriesUrl(tag),
+                      location.pathname + location.search
+                    )}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage
@@ -273,7 +293,10 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagSceneMarkersUrl(tag)}
+                    to={withReturnTo(
+                      NavUtils.makeTagSceneMarkersUrl(tag),
+                      location.pathname + location.search
+                    )}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage

@@ -1497,6 +1497,7 @@
     "created_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "deleted_entity": "Deleted {entity}",
     "generating_screenshot": "Generating screenshot…",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
     "merged_scenes": "Merged scenes",
