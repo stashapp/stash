@@ -1699,6 +1699,19 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
+func getStudioNullStringPtr(index int, field string) *string {
+	return getStringPtrFromNullString(getPrefixedNullStringValue("studio", index, field))
+}
+
+func getStudioEmptyString(index int, field string) string {
+	v := getStudioNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
+}
+
 func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
 		Name: name,
@@ -1751,7 +1764,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
 			Name:          name,
-			URL:           getStudioStringValue(index, urlField),
+			URLs:          models.NewRelatedStrings([]string{getStudioEmptyString(i, urlField)}),
 			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 			TagIDs:        models.NewRelatedIDs(tids),
