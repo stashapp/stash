@@ -111,7 +111,7 @@ export const GroupSelect: React.FC<
     const { inputValue } = optionProps.selectProps;
     let alias: string | undefined = "";
     if (!title.toLowerCase().includes(inputValue.toLowerCase())) {
-      const matchingAlias = object.aliases?.find(a => 
+      const matchingAlias = object.aliases?.find((a) =>
         a.toLowerCase().includes(inputValue.toLowerCase())
       );
       alias = matchingAlias;
@@ -219,7 +219,10 @@ export const GroupSelect: React.FC<
       options.some((o) => {
         return (
           o.name.toLowerCase() === inputValue.toLowerCase() ||
-          (o.aliases && o.aliases.some(alias => alias.toLowerCase() === inputValue.toLowerCase()))
+          (o.aliases &&
+            o.aliases.some(
+              (alias) => alias.toLowerCase() === inputValue.toLowerCase()
+            ))
         );
       })
     ) {

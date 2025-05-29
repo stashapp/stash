@@ -25,6 +25,11 @@ func loadGroupRelationships(ctx context.Context, expected models.Group, actual *
 			return err
 		}
 	}
+	if expected.Aliases.Loaded() {
+		if err := actual.LoadAliases(ctx, db.Group); err != nil {
+			return err
+		}
+	}
 	if expected.TagIDs.Loaded() {
 		if err := actual.LoadTagIDs(ctx, db.Group); err != nil {
 			return err
@@ -48,7 +53,7 @@ func Test_GroupStore_Create(t *testing.T) {
 	var (
 		name                       = "name"
 		url                        = "url"
-		aliases                    = "alias1, alias2"
+		aliases                    = []string{"alias1", "alias2"}
 		director                   = "director"
 		rating                     = 60
 		duration                   = 34
@@ -83,7 +88,7 @@ func Test_GroupStore_Create(t *testing.T) {
 				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithStudio], Description: subGroupDescription},
 				}),
-				Aliases:   aliases,
+				Aliases:   models.NewRelatedStrings(aliases),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -170,7 +175,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 	var (
 		name                       = "name"
 		url                        = "url"
-		aliases                    = "alias1, alias2"
+		aliases                    = []string{"alias1", "alias2"}
 		director                   = "director"
 		rating                     = 60
 		duration                   = 34
@@ -206,7 +211,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithStudio], Description: subGroupDescription},
 				}),
-				Aliases:   aliases,
+				Aliases:   models.NewRelatedStrings(aliases),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -311,7 +316,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 
 var clearGroupPartial = models.GroupPartial{
 	// leave mandatory fields
-	Aliases:          models.OptionalString{Set: true, Null: true},
+	Aliases:          &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 	Synopsis:         models.OptionalString{Set: true, Null: true},
 	Director:         models.OptionalString{Set: true, Null: true},
 	Duration:         models.OptionalInt{Set: true, Null: true},
@@ -328,6 +333,7 @@ func emptyGroup(idx int) models.Group {
 	return models.Group{
 		ID:               groupIDs[idx],
 		Name:             groupNames[idx],
+		Aliases:          models.NewRelatedStrings([]string{}),
 		TagIDs:           models.NewRelatedIDs([]int{}),
 		ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
 		SubGroups:        models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
@@ -338,7 +344,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		name                       = "name"
 		url                        = "url"
-		aliases                    = "alias1, alias2"
+		aliases                    = []string{"alias1", "alias2"}
 		director                   = "director"
 		rating                     = 60
 		duration                   = 34
@@ -364,7 +370,10 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				Name:     models.NewOptionalString(name),
 				Director: models.NewOptionalString(director),
 				Synopsis: models.NewOptionalString(synopsis),
-				Aliases:  models.NewOptionalString(aliases),
+				Aliases: &models.UpdateStrings{
+					Values: aliases,
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				URLs: &models.UpdateStrings{
 					Values: []string{url},
 					Mode:   models.RelationshipUpdateModeSet,
@@ -399,7 +408,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				Name:      name,
 				Director:  director,
 				Synopsis:  synopsis,
-				Aliases:   aliases,
+				Aliases:   models.NewRelatedStrings(aliases),
 				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Duration:  &duration,

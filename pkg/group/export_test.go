@@ -29,7 +29,8 @@ const (
 )
 
 const movieName = "testMovie"
-const movieAliases = "aliases"
+
+var movieAliases = []string{"aliases", "alias2"}
 
 var (
 	date       = "2001-01-01"
@@ -66,7 +67,7 @@ func createFullMovie(id int, studioID int) models.Group {
 	return models.Group{
 		ID:        id,
 		Name:      movieName,
-		Aliases:   movieAliases,
+		Aliases:   models.NewRelatedStrings(movieAliases),
 		Date:      &dateObj,
 		Rating:    &rating,
 		Duration:  &duration,
@@ -83,6 +84,7 @@ func createEmptyMovie(id int) models.Group {
 	return models.Group{
 		ID:        id,
 		URLs:      models.NewRelatedStrings([]string{}),
+		Aliases:   models.NewRelatedStrings([]string{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -112,7 +114,8 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Group
 
 func createEmptyJSONMovie() *jsonschema.Group {
 	return &jsonschema.Group{
-		URLs: []string{},
+		URLs:    []string{},
+		Aliases: []string{},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

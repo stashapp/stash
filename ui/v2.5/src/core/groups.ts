@@ -5,7 +5,12 @@ export const scrapedGroupToCreateInput = (toCreate: GQL.ScrapedGroup) => {
   const input: GQL.GroupCreateInput = {
     name: toCreate.name ?? "",
     urls: toCreate.urls,
-    aliases: toCreate.aliases,
+    aliases: toCreate.aliases
+      ? toCreate.aliases
+          .split(",")
+          .map((a) => a.trim())
+          .filter((a) => a)
+      : undefined,
     front_image: toCreate.front_image,
     back_image: toCreate.back_image,
     synopsis: toCreate.synopsis,
