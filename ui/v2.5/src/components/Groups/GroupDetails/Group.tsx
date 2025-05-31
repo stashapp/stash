@@ -56,7 +56,11 @@ const GroupTabs: React.FC<{
   group: GQL.GroupDataFragment;
   abbreviateCounter: boolean;
 }> = ({ tabKey, group, abbreviateCounter }) => {
-  const { scene_count: sceneCount, performer_count: performerCount, sub_group_count: groupCount } = group;
+  const {
+    scene_count: sceneCount,
+    performer_count: performerCount,
+    sub_group_count: groupCount,
+  } = group;
 
   const populatedDefaultTab = useMemo(() => {
     if (sceneCount == 0) {

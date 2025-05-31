@@ -1,6 +1,9 @@
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { GroupsCriterion, GroupsCriterionOption } from "src/models/list-filter/criteria/groups";
+import {
+  GroupsCriterion,
+  GroupsCriterionOption,
+} from "src/models/list-filter/criteria/groups";
 import { ListFilterModel } from "src/models/list-filter/filter";
 
 export const useGroupFilterHook = (

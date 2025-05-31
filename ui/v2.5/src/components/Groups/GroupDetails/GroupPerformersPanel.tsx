@@ -24,4 +24,4 @@ export const GroupPerformersPanel: React.FC<IGroupPerformersPanel> = ({
       view={View.GroupPerformers}
     />
   );
-}; 
+};
