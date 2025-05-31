@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
-	"github.com/stashapp/stash/pkg/scene"
+	scenepkg "github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -309,6 +309,34 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
+	// If Primary File was changed, update the scene's hash to match the new primary file's hash
+	if updatedScene.PrimaryFileID != nil {
+		// Load files for the updated scene to get the new primary file
+		if err := scene.LoadFiles(ctx, r.repository.Scene); err != nil {
+			logger.Errorf("Error loading files for scene %d after primary file update: %v", sceneID, err)
+		} else if scene.Files.Loaded() && len(scene.Files.List()) > 0 {
+			primaryFile := scene.Files.Primary()
+
+			if primaryFile != nil {
+				hashAlgorithm := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+				// Use the GetHash function from pkg/scene
+				newHash := scenepkg.GetHash(primaryFile, hashAlgorithm)
+
+				// Only update hash if it's not empty and different from current scene hash
+				if newHash != "" && newHash != scene.GetHash(hashAlgorithm) {
+					// Update the scene object's hash fields
+					scene.Checksum = newHash
+					scene.OSHash = newHash
+
+					// Use the SceneUpdater's Update method to save the hash changes
+					if err := qb.Update(ctx, scene); err != nil {
+						logger.Errorf("Failed to update scene %d hash after primary file change: %v", sceneID, err)
+					}
+				}
+			}
+		}
+	}
+
 	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
 		return nil, err
 	}
@@ -430,7 +458,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	var s *models.Scene
-	fileDeleter := &scene.FileDeleter{
+	fileDeleter := &scenepkg.FileDeleter{
 		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
@@ -483,7 +511,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 	var scenes []*models.Scene
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
-	fileDeleter := &scene.FileDeleter{
+	fileDeleter := &scenepkg.FileDeleter{
 		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
@@ -593,7 +621,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	mgr := manager.GetInstance()
-	fileDeleter := &scene.FileDeleter{
+	fileDeleter := &scenepkg.FileDeleter{
 		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
@@ -601,7 +629,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 
 	var ret *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, fileDeleter, scene.MergeOptions{
+		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, fileDeleter, scenepkg.MergeOptions{
 			ScenePartial:       *values,
 			IncludePlayHistory: utils.IsTrue(input.PlayHistory),
 			IncludeOHistory:    utils.IsTrue(input.OHistory),
@@ -737,7 +765,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 
 	mgr := manager.GetInstance()
 
-	fileDeleter := &scene.FileDeleter{
+	fileDeleter := &scenepkg.FileDeleter{
 		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
@@ -833,7 +861,7 @@ func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []
 	var markers []*models.SceneMarker
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
-	fileDeleter := &scene.FileDeleter{
+	fileDeleter := &scenepkg.FileDeleter{
 		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
@@ -866,7 +894,7 @@ func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []
 
 			markers = append(markers, marker)
 
-			if err := scene.DestroyMarker(ctx, s, marker, qb, fileDeleter); err != nil {
+			if err := scenepkg.DestroyMarker(ctx, s, marker, qb, fileDeleter); err != nil {
 				return err
 			}
 		}
