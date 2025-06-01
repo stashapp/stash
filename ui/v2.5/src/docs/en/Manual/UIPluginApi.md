@@ -149,7 +149,9 @@ Returns `void`.
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
+- `CustomFieldInput`
 - `DateInput`
+- `DetailImage`
 - `ExternalLinkButtons`
 - `ExternalLinksButton`
 - `FolderSelect`
@@ -157,9 +159,12 @@ Returns `void`.
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `HeaderImage`
 - `HoverPopover`
 - `Icon`
 - `ImageDetailPanel`
+- `ImageInput`
+- `LightboxLink`
 - `LoadingIndicator`
 - `ModalSetting`
 - `GroupIDSelect`
@@ -181,6 +186,7 @@ Returns `void`.
 - `PerformerSelect.sort`
 - `PerformerGalleriesPanel`
 - `PerformerGroupsPanel`
+- `PerformerHeaderImage`
 - `PerformerImagesPanel`
 - `PerformerScenesPanel`
 - `PluginRoutes`

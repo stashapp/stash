@@ -694,12 +694,18 @@ declare namespace PluginApi {
     PerformerAppearsWithPanel: React.FC<any>;
     PerformerGalleriesPanel: React.FC<any>;
     PerformerGroupsPanel: React.FC<any>;
+    PerformerHeaderImage: React.FC<any>;
     PerformerScenesPanel: React.FC<any>;
     PerformerImagesPanel: React.FC<any>;
     TabTitleCounter: React.FC<any>;
     PerformerCard: React.FC<any>;
     ExternalLinkButtons: React.FC<any>;
     ExternalLinksButton: React.FC<any>;
+    CustomFieldInput: React.FC<any>;
+    ImageInput: React.FC<any>;
+    DetailImage: React.FC<any>;
+    HeaderImage: React.FC<any>;
+    LightboxLink: React.FC<any>;
     "PerformerCard.Popovers": React.FC<any>;
     "PerformerCard.Details": React.FC<any>;
     "PerformerCard.Overlays": React.FC<any>;
