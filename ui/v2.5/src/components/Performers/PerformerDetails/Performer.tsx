@@ -46,6 +46,7 @@ import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 import { PatchComponent } from "src/patch";
+import { ILightboxImage } from "src/hooks/Lightbox/types";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -205,7 +206,7 @@ interface IPerformerHeaderImageProps {
   activeImage: string | null | undefined;
   collapsed: boolean;
   encodingImage: boolean;
-  lightboxImages: any;
+  lightboxImages: ILightboxImage[];
   performer: GQL.PerformerDataFragment;
 }
 
