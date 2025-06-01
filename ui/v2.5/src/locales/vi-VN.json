@@ -468,7 +468,69 @@
             "defaults_set": "Giá trị mặc định đã được thiết lập và sẽ được sử dụng khi nhấn nút {action} trên trang Tác vụ (Tasks).",
             "export_to_json": "Xuất nội dung cơ sở dữ liệu sang định dạng JSON trong thư mục metadata.",
             "auto_tag_based_on_filenames": "Tự động gắn tag cho nội dung dựa trên đường dẫn tệp.",
-            "auto_tagging": "Gắn tag tự động"
+            "auto_tagging": "Gắn tag tự động",
+            "generate_sprites_during_scan": "Tạo ảnh xem trước cho thanh tua",
+            "generate_sprites_during_scan_tooltip": "Tập hợp hình ảnh được hiển thị bên dưới trình phát video để hỗ trợ điều hướng dễ dàng.",
+            "generate_thumbnails_during_scan": "Tạo ảnh thu nhỏ cho các hình ảnh",
+            "generate_video_covers_during_scan": "Tạo ảnh bìa cho từng cảnh quay",
+            "generate_video_previews_during_scan": "Tạo đoạn xem trước video",
+            "generate_video_previews_during_scan_tooltip": "Tạo video xem trước phát tự động khi rê chuột lên cảnh quay",
+            "generated_content": "Nội dung được tạo tự động",
+            "identify": {
+                "and_create_missing": "và tạo các mục còn thiếu",
+                "create_missing": "Tạo phần bị thiếu",
+                "default_options": "Tùy Chọn Mặc Định",
+                "description": "Tự động điền thông tin cảnh quay từ stash-box và các nguồn dữ liệu quét.",
+                "heading": "Nhận diện",
+                "identifying_from_paths": "Đang nhận diện các cảnh quay từ các đường dẫn sau",
+                "identifying_scenes": "Đang nhận diện {num} {scene}",
+                "include_male_performers": "Bao gồm diễn viên nam",
+                "set_cover_images": "Thiết lập ảnh bìa",
+                "set_organized": "Đánh dấu đã sắp xếp",
+                "skip_multiple_matches_tooltip": "Nếu tùy chọn này không được bật và có nhiều kết quả được trả về, một kết quả sẽ được chọn ngẫu nhiên để khớp",
+                "skip_single_name_performers_tooltip": "Nếu tùy chọn này không được bật, các diễn viên có tên chung chung như Samantha hoặc Olga vẫn sẽ được gán khớp",
+                "source": "Nguồn",
+                "source_options": "Tùy chọn cho {source}",
+                "sources": "Các nguồn",
+                "strategy": "Chiến lược",
+                "tag_skipped_matches": "Gắn thẻ cho các kết quả bị bỏ qua bằng",
+                "tag_skipped_performer_tooltip": "Tạo một thẻ như 'Nhận diện: Diễn viên một tên' để bạn có thể lọc trong chế độ xem Scene Tagger và tự chọn cách xử lý các diễn viên này",
+                "tag_skipped_performers": "Gắn thẻ cho các diễn viên bị bỏ qua bằng",
+                "field_options": "Tùy chọn trường dữ liệu",
+                "skip_single_name_performers": "Bỏ qua các diễn viên chỉ có một tên mà không có thông tin phân biệt rõ ràng",
+                "field_behaviour": "{strategy} {field}",
+                "field": "Trường dữ liệu",
+                "tag_skipped_matches_tooltip": "Tạo một thẻ như 'Nhận diện: Nhiều kết quả khớp' để bạn có thể lọc trong chế độ xem Scene Tagger và tự chọn kết quả đúng bằng tay",
+                "explicit_set_description": "Các thiết lập dưới đây sẽ áp dụng trừ khi có thiết lập riêng từ từng nguồn.",
+                "skip_multiple_matches": "Bỏ qua nếu tìm thấy nhiều kết quả trùng khớp"
+            },
+            "incremental_import": "Chỉ nhập những dữ liệu còn thiếu từ tệp ZIP được cung cấp.",
+            "job_queue": "Hàng đợi tác vụ",
+            "maintenance": "Công cụ bảo trì hệ thống",
+            "migrate_blobs": {
+                "delete_old": "Xóa dữ liệu không còn sử dụng",
+                "description": "Di chuyển dữ liệu blob sang hệ thống lưu trữ blob hiện tại. Quá trình di chuyển này nên được thực hiện sau khi thay đổi hệ thống lưu trữ. Có thể chọn xóa dữ liệu cũ sau khi hoàn tất di chuyển."
+            },
+            "migrate_scene_screenshots": {
+                "delete_files": "Xóa các tệp ảnh chụp màn hình",
+                "overwrite_existing": "Ghi đè các blob hiện có bằng dữ liệu ảnh chụp màn hình",
+                "description": "Di chuyển ảnh chụp cảnh quay sang hệ thống lưu trữ blob mới. Quá trình này nên được thực hiện sau khi nâng cấp hệ thống hiện tại lên phiên bản 0.20. Có thể tùy chọn xóa các ảnh chụp cũ sau khi di chuyển."
+            },
+            "migrations": "Chuyển đổi dữ liệu",
+            "only_dry_run": "Chỉ thực hiện chạy thử. Không xóa bất kỳ dữ liệu nào",
+            "optimise_database": "Cố gắng cải thiện hiệu suất bằng cách phân tích và sau đó tái tạo lại toàn bộ tệp cơ sở dữ liệu.",
+            "plugin_tasks": "Các tác vụ của tiện ích mở rộng",
+            "rescan": "Quét lại tất cả các tệp",
+            "rescan_tooltip": "Quét lại mọi tệp trong đường dẫn. Dùng để buộc cập nhật metadata của tệp và quét lại các tệp ZIP.",
+            "scan": {
+                "scanning_all_paths": "Đang quét tất cả các đường dẫn",
+                "scanning_paths": "Đang quét các đường dẫn sau"
+            },
+            "scan_for_content_desc": "Quét nội dung mới và thêm vào cơ sở dữ liệu.",
+            "set_name_date_details_from_metadata_if_present": "Thiết lập tên, ngày và thông tin chi tiết từ metadata được nhúng trong tệp",
+            "migrate_hash_files": "Được sử dụng sau khi thay đổi mã hash đặt tên tệp để đổi tên các tệp đã tạo sang định dạng hash mới.",
+            "import_from_exported_json": "Nhập dữ liệu từ tệp JSON đã xuất trong thư mục metadata. Hành động này sẽ xóa toàn bộ cơ sở dữ liệu hiện tại.",
+            "optimise_database_warning": "Cảnh báo: trong khi tác vụ này đang chạy, mọi thao tác có thay đổi cơ sở dữ liệu sẽ bị lỗi. Tùy vào kích thước cơ sở dữ liệu, quá trình này có thể mất vài phút để hoàn tất. Ngoài ra, bạn cần ít nhất dung lượng ổ đĩa trống tương đương với kích thước cơ sở dữ liệu, nhưng khuyến nghị là 1.5 lần để đảm bảo an toàn."
         },
         "library": {
             "exclusions": "Danh sách loại trừ",
@@ -496,7 +558,367 @@
             "supported_urls": "URLs",
             "entity_metadata": "Siêu dữ liệu {entityType}",
             "excluded_tag_patterns_desc": "Biểu thức chính quy của tên tag cần loại trừ khỏi kết quả quét dữ liệu"
+        },
+        "tools": {
+            "scene_duplicate_checker": "Kiểm Tra Cảnh Quay Bị Trùng",
+            "scene_filename_parser": {
+                "add_field": "Thêm trường dữ liệu",
+                "capitalize_title": "Tự động viết hoa chữ cái đầu của mỗi từ trong tiêu đề",
+                "display_fields": "Hiển thị các trường dữ liệu",
+                "escape_chars": "Sử dụng \\ để thoát các ký tự đặc biệt",
+                "filename": "Tên tệp",
+                "filename_pattern": "Mẫu tên tệp",
+                "ignore_organized": "Bỏ qua các cảnh đã được sắp xếp",
+                "ignored_words": "Từ bị bỏ qua",
+                "matches_with": "Khớp với {i}",
+                "title": "Trình phân tích tên tệp cảnh quay",
+                "whitespace_chars": "Ký tự khoảng trắng",
+                "select_parser_recipe": "Chọn công thức phân tích",
+                "whitespace_chars_desc": "Các ký tự này sẽ được thay thế bằng khoảng trắng trong tiêu đề"
+            },
+            "scene_tools": "Công cụ xử lý cảnh quay"
+        },
+        "ui": {
+            "abbreviate_counters": {
+                "description": "Rút gọn số đếm trong giao diện thẻ và trang chi tiết, ví dụ '1831' sẽ được định dạng thành '1.8K'.",
+                "heading": "Rút gọn số đếm"
+            },
+            "basic_settings": "Cài đặt cơ bản",
+            "custom_css": {
+                "heading": "CSS tùy chỉnh",
+                "option_label": "Đã bật CSS tùy chỉnh",
+                "description": "Trang cần được tải lại để các thay đổi có hiệu lực. Không có gì đảm bảo rằng CSS tùy chỉnh sẽ tương thích với các phiên bản Stash trong tương lai."
+            },
+            "custom_javascript": {
+                "description": "Hãy tải lại trang để áp dụng thay đổi. JavaScript tùy chỉnh có thể không tương thích với các bản cập nhật sau này.",
+                "option_label": "Đã bật JavaScript tùy chỉnh",
+                "heading": "JavaScript tùy chỉnh"
+            },
+            "custom_locales": {
+                "heading": "Bản địa hóa tùy chỉnh",
+                "option_label": "Đã bật bản địa hóa tùy chỉnh",
+                "description": "Ghi đè các chuỗi ngôn ngữ riêng lẻ. Xem danh sách chính tại https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. Trang cần được tải lại để các thay đổi có hiệu lực."
+            },
+            "delete_options": {
+                "description": "Thiết lập mặc định cho thao tác xóa ảnh, gallery và cảnh.",
+                "heading": "Tùy chọn xóa",
+                "options": {
+                    "delete_file": "Xóa tệp theo mặc định",
+                    "delete_generated_supporting_files": "Xóa các tệp hỗ trợ đã tạo theo mặc định"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Tích hợp Desktop",
+                "notifications_enabled": "Cho phép Thông báo",
+                "send_desktop_notifications_for_events": "Gửi thông báo trên màn hình máy tính cho các sự kiện",
+                "skip_opening_browser": "Bỏ qua việc mở trình duyệt",
+                "skip_opening_browser_on_startup": "Bỏ qua việc tự động mở trình duyệt khi khởi động"
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "Khi được bật, tùy chọn này sẽ hiển thị chi tiết mở rộng trong khi vẫn duy trì giao diện gọn gàng",
+                    "heading": "Thu gọn chi tiết mở rộng"
+                },
+                "enable_background_image": {
+                    "description": "Hiển thị ảnh nền trên trang chi tiết.",
+                    "heading": "Bật ảnh nền"
+                },
+                "heading": "Trang Chi tiết",
+                "show_all_details": {
+                    "heading": "Hiển thị tất cả chi tiết",
+                    "description": "Khi được bật, tất cả các chi tiết nội dung sẽ được hiển thị theo mặc định và mỗi mục chi tiết sẽ nằm gọn trong một cột duy nhất"
+                }
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "Xóa bỏ khả năng tạo đối tượng mới từ các bộ chọn thả xuống",
+                    "heading": "Tắt chức năng tạo mới từ danh sách thả xuống"
+                },
+                "heading": "Chỉnh sửa",
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Độ chính xác của sao đánh giá",
+                        "options": {
+                            "full": "Đầy",
+                            "half": "Một nữa",
+                            "quarter": "1/4",
+                            "tenth": "1/10"
+                        }
+                    },
+                    "type": {
+                        "label": "Loại Hệ thống Đánh giá",
+                        "options": {
+                            "decimal": "Thập phân",
+                            "stars": "Sao"
+                        }
+                    }
+                },
+                "max_options_shown": {
+                    "label": "Số lượng mục tối đa hiển thị trong danh sách thả xuống"
+                }
+            },
+            "funscript_offset": {
+                "description": "Độ lệch thời gian tính bằng mili giây cho việc phát lại các kịch bản tương tác.",
+                "heading": "Độ lệch Funscript (ms)"
+            },
+            "handy_connection": {
+                "connect": "Kết nối",
+                "status": {
+                    "heading": "Trạng thái Kết nối Handy"
+                },
+                "sync": "Đồng bộ hóa",
+                "server_offset": {
+                    "heading": "Độ lệch Máy chủ"
+                }
+            },
+            "handy_connection_key": {
+                "heading": "Khóa Kết nối Handy",
+                "description": "Khóa kết nối Handy để sử dụng cho các cảnh tương tác. Việc thiết lập khóa này sẽ cho phép Stash chia sẻ thông tin cảnh hiện tại của bạn với handyfeeling.com"
+            },
+            "image_lightbox": {
+                "heading": "Hộp đèn ảnh"
+            },
+            "image_wall": {
+                "direction": "Phương hướng",
+                "heading": "Tường ảnh",
+                "margin": "Khoảng lề (pixel)"
+            },
+            "images": {
+                "heading": "Hình ảnh",
+                "options": {
+                    "create_image_clips_from_videos": {
+                        "heading": "Quét các Phần mở rộng Video dưới dạng Clip hình ảnh",
+                        "description": "Khi một thư viện bị tắt Video, các Tệp video (các tệp có phần mở rộng là Video Extension) sẽ được quét dưới dạng Clip hình ảnh."
+                    },
+                    "write_image_thumbnails": {
+                        "description": "Ghi hình thu nhỏ của ảnh ra đĩa khi chúng được tạo tự động",
+                        "heading": "Ghi hình thu nhỏ của ảnh"
+                    }
+                }
+            },
+            "interactive_options": "Tùy chọn Tương tác",
+            "menu_items": {
+                "description": "Hiển thị hoặc ẩn các loại nội dung khác nhau trên thanh điều hướng",
+                "heading": "Mục Menu"
+            },
+            "minimum_play_percent": {
+                "description": "Phần trăm thời lượng cảnh phải được phát trước khi số lượt phát của nó được tăng lên.",
+                "heading": "Phần trăm Phát tối thiểu"
+            },
+            "scene_player": {
+                "options": {
+                    "enable_chromecast": "Bật Chromecast",
+                    "show_ab_loop_controls": "Hiển thị điều khiển plugin Vòng lặp AB",
+                    "show_scrubber": "Hiển thị Thanh điều khiển",
+                    "vr_tag": {
+                        "description": "Nút VR sẽ chỉ hiển thị cho các cảnh có gắn thẻ này.",
+                        "heading": "Thẻ VR"
+                    },
+                    "show_range_markers": "Hiện thị phạm vị của điểm đánh dấu",
+                    "track_activity": "Bật lịch sử phát cảnh quay",
+                    "auto_start_video_on_play_selected": {
+                        "description": "Tự động phát video cảnh quay khi phát từ hàng chờ, hoặc phát các cảnh được chọn hoặc ngẫu nhiên từ trang Cảnh Quay",
+                        "heading": "Tự động phát video khi phát các mục đã chọn"
+                    },
+                    "continue_playlist_default": {
+                        "description": "Phát cảnh tiếp theo trong hàng chờ khi video kết thúc",
+                        "heading": "Tiếp tục danh sách phát theo mặc định"
+                    },
+                    "disable_mobile_media_auto_rotate": "Tắt tự động xoay phương tiện toàn màn hình trên thiết bị Di động",
+                    "always_start_from_beginning": "Luôn phát video từ đầu",
+                    "auto_start_video": "Tự động phát video"
+                },
+                "heading": "Trình phát Cảnh Quay"
+            },
+            "scene_wall": {
+                "options": {
+                    "toggle_sound": "Bật âm thanh",
+                    "display_title": "Hiển thị tiêu đề và thẻ"
+                },
+                "heading": "Tường Cảnh Quay / Điểm Đánh Dấu"
+            },
+            "scroll_attempts_before_change": {
+                "heading": "Số lần thử cuộn trước khi chuyển đổi",
+                "description": "Số lần thử cuộn trước khi chuyển sang mục tiếp theo/trước đó. Chỉ áp dụng cho chế độ cuộn Pan Y."
+            },
+            "show_tag_card_on_hover": {
+                "description": "Hiển thị thẻ thông tin thẻ khi di chuột qua các huy hiệu thẻ",
+                "heading": "Chú giải công cụ thẻ thông tin"
+            },
+            "slideshow_delay": {
+                "heading": "Độ trễ Trình chiếu (giây)",
+                "description": "Trình chiếu có sẵn trong các thư viện ảnh khi ở chế độ xem dạng tường"
+            },
+            "studio_panel": {
+                "heading": "Chế độ xem Studio",
+                "options": {
+                    "show_child_studio_content": {
+                        "description": "Trong chế độ xem Studio, hãy hiển thị cả nội dung từ các studio phụ",
+                        "heading": "Hiển thị nội dung của các studio phụ"
+                    }
+                }
+            },
+            "tag_panel": {
+                "heading": "Chế độ xem Thẻ",
+                "options": {
+                    "show_child_tagged_content": {
+                        "heading": "Hiển thị nội dung của thẻ phụ",
+                        "description": "Trong chế độ xem thẻ, hãy hiển thị cả nội dung từ các thẻ phụ"
+                    }
+                }
+            },
+            "title": "Giao diện Người dùng",
+            "use_stash_hosted_funscript": {
+                "heading": "Phục vụ/Truyền funscript trực tiếp",
+                "description": "Khi được bật, funscript sẽ được phục vụ trực tiếp từ Stash đến thiết bị Handy của bạn mà không sử dụng máy chủ Handy của bên thứ ba. Yêu cầu Stash phải truy cập được từ thiết bị Handy của bạn và cần tạo khóa API nếu Stash có cấu hình thông tin xác thực."
+            },
+            "max_loop_duration": {
+                "heading": "Thời lượng lặp tối đa",
+                "description": "Thời lượng cảnh tối đa (tính bằng giây) mà trình phát cảnh sẽ lặp lại video - 0 để tắt"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "Đường dẫn tùy chỉnh cho ảnh mặc định của người biểu diễn. Để trống để sử dụng các mặc định có sẵn",
+                        "heading": "Đường dẫn Ảnh Người biểu diễn Tùy chỉnh"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "Tùy chọn mặc định là xem trước video (mp4). Để giảm sử dụng CPU khi duyệt, bạn có thể dùng xem trước ảnh động (webp). Tuy nhiên, chúng phải được tạo ra ngoài các bản xem trước video và có kích thước tệp lớn hơn.",
+                "heading": "Kiểu Xem trước",
+                "options": {
+                    "animated": "Ảnh động",
+                    "static": "Ảnh tĩnh",
+                    "video": "Video"
+                }
+            },
+            "scene_list": {
+                "heading": "Chế độ xem dạng lưới",
+                "options": {
+                    "show_studio_as_text": "Hiển thị lớp phủ studio dưới dạng văn bản"
+                }
+            },
+            "language": {
+                "heading": "Ngôn ngữ"
+            }
         }
     },
-    "age_on_date": "{age} tại thời điểm sản xuất"
+    "age_on_date": "{age} tại thời điểm sản xuất",
+    "description": "Mô Tả",
+    "custom_fields": {
+        "title": "Tùy Chỉnh Trường (dữ liệu)",
+        "criteria_format_string": "{Tiêu chí} (trường tùy chỉnh) {Điều kiện} {Giá trị}",
+        "value": "Giá trị",
+        "criteria_format_string_others": "{Tiêu chí} (trường tùy chỉnh) {Điều kiện} {Giá trị} (+{số lượng khác} mục khác)",
+        "field": "Trường (dữ liệu)"
+    },
+    "dialogs": {
+        "delete_entity_title": "{count, plural, one {Xóa {singularEntity}} other {Xóa {pluralEntity}}}",
+        "delete_galleries_extra": "...cộng với bất kỳ tệp ảnh nào không được đính kèm vào bất kỳ thư viện ảnh nào khác.",
+        "delete_object_title": "Xóa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "lightbox": {
+            "scale_up": {
+                "description": "Phóng lớn ảnh nhỏ để lấp đầy màn hình",
+                "label": "Phóng lớn để vừa"
+            },
+            "delay": "Độ Trễ (Giây)",
+            "display_mode": {
+                "fit_horizontally": "Căn chỉnh vừa theo chiều ngang",
+                "fit_to_screen": "Vừa màn hình",
+                "label": "Chế độ hiển thị",
+                "original": "Bản gốc"
+            },
+            "options": "Tùy Chọn",
+            "page_header": "Trang {page} / {total}",
+            "reset_zoom_on_nav": "Đặt lại mức thu phóng khi đổi ảnh",
+            "scroll_mode": {
+                "description": "Giữ phím Shift để tạm thời dùng chế độ khác."
+            }
+        },
+        "clear_o_history_confirm": "Bạn có chắc chắn muốn xóa lịch sử O không?",
+        "clear_play_history_confirm": "Bạn có chắc muốn xóa lịch sử phát không?",
+        "create_new_entity": "Tạo mới {entity}",
+        "delete_entity_simple_desc": "{count, plural, one {Bạn có chắc chắn muốn xóa {singularEntity} này không?} other {Bạn có chắc chắn muốn xóa {pluralEntity} này không?}}",
+        "delete_gallery_files": "Xóa thư mục/tệp zip thư viện ảnh và bất kỳ ảnh nào không được đính kèm vào thư viện ảnh khác.",
+        "delete_object_desc": "Bạn có chắc muốn xóa {count, plural, one {{singularEntity} này} other {{pluralEntity} này} } không?",
+        "dont_show_until_updated": "Không hiển thị cho đến bản cập nhật tiếp theo",
+        "export_include_related_objects": "Bao gồm các đối tượng liên quan khi xuất",
+        "export_title": "Xuất (dữ liệu)",
+        "imagewall": {
+            "direction": {
+                "column": "Cột",
+                "description": "Bố cục dựa trên cột hoặc hàng.",
+                "row": "Hàng"
+            },
+            "margin_desc": "Số lượng pixel lề xung quanh mỗi ảnh."
+        },
+        "edit_entity_title": "Chỉnh sửa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "delete_alert": "Các {count, plural, one {{singularEntity}} other {{pluralEntity}}} sau đây sẽ bị xóa vĩnh viễn:",
+        "delete_confirm": "Bạn có chắc chắn muốn xóa {entityName} không?",
+        "delete_entity_desc": "{count, plural, one {Bạn có chắc chắn muốn xóa {singularEntity} này không? Trừ khi tệp cũng bị xóa, {singularEntity} này sẽ được thêm lại khi quá trình quét được thực hiện.} other {Bạn có chắc chắn muốn xóa {pluralEntity} này không? Trừ khi các tệp cũng bị xóa, {pluralEntity} này sẽ được thêm lại khi quá trình quét được thực hiện.}}",
+        "delete_object_overflow": "...và {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} khác."
+    },
+    "configuration": "Cấu Hình",
+    "connection_monitor": {
+        "websocket_connection_failed": "Không thể tạo kết nối websocket: xem bảng điều khiển trình duyệt để biết chi tiết",
+        "websocket_connection_reestablished": "Kết nối Websocket đã được thiết lập lại"
+    },
+    "containing_group": "Nhóm chứa",
+    "containing_groups": "Các Nhóm chứa",
+    "countables": {
+        "files": "{count, plural, one {Tệp} other {Các tệp}}",
+        "groups": "{count, plural, one {Nhóm} other {Các nhóm}}",
+        "images": "{count, plural, one {Ảnh} other {Các ảnh}}",
+        "markers": "{count, plural, one {Dấu} other {Các dấu}}",
+        "scenes": "{count, plural, one {Cảnh} other {Các cảnh}}",
+        "studios": "{count, plural, one {Studio} other {Các studio}}",
+        "tags": "{count, plural, one {Thẻ} other {Các thẻ}}",
+        "performers": "{count, plural, one {Người biểu diễn} other {Các người biểu diễn}}",
+        "galleries": "{count, plural, one {Thư viện ảnh} other {Các thư viện ảnh}}"
+    },
+    "country": "Quốc Gia",
+    "cover_image": "Ảnh Bìa",
+    "created_at": "Thời gian tạo",
+    "criterion": {
+        "greater_than": "Lớn hơn",
+        "less_than": "Nhỏ hơn",
+        "value": "Giá trị"
+    },
+    "criterion_modifier": {
+        "between": "Giữa",
+        "equals": "Là",
+        "format_string": "{criterion} {modifierString} {valueString}",
+        "format_string_excludes": "{Tiêu chí} {Điều kiện} {Giá trị} (loại trừ {Ngoại lệ})",
+        "format_string_excludes_depth": "{Tiêu chí} {Điều kiện} {Giá trị} (loại trừ {Ngoại lệ}) (+{depth, plural, =-1 {tất cả} other {{depth}}})",
+        "greater_than": "lớn hơn",
+        "includes": "Bao gồm",
+        "includes_all": "Bao gồm tất cả",
+        "is_null": "rỗng",
+        "less_than": "nhỏ hơn",
+        "matches_regex": "Khớp biểu thức chính quy",
+        "not_between": "không nằm giữa",
+        "not_equals": "không phải",
+        "not_null": "không rỗng",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+        "not_matches_regex": "Không khớp biểu thức chính quy",
+        "excludes": "Không bao gồm"
+    },
+    "death_date": "Ngày Mất",
+    "death_year": "Năm Mất",
+    "descending": "Giảm dần",
+    "details": "Thông tin chi tiết",
+    "developmentVersion": "Phiên bản Phát triển",
+    "criterion_modifier_values": {
+        "any_of": "bất kỳ nào trong số",
+        "none": "không gì cả",
+        "only": "Duy nhất",
+        "any": "bất kỳ"
+    },
+    "custom": "Tùy chỉnh",
+    "date": "Ngày",
+    "date_format": "YYYY-MM-DD",
+    "containing_group_count": "Số lượng Nhóm chứa",
+    "detail": "Chi tiết",
+    "datetime_format": "YYYY-MM-DD HH:MM"
 }
