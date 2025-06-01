@@ -233,7 +233,7 @@ export const LibraryTasks: React.FC = () => {
   async function runScan(paths?: string[]) {
     try {
       const scanRequest = { ...scanOptions, paths };
-      
+
       // Dynamically include autoTagOptions if autoTagNewFiles is enabled.
       if (scanOptions.autoTagNewFiles) {
         Object.assign(scanRequest, { autoTagOptions });
