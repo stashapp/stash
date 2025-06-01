@@ -12,6 +12,7 @@ import {
 import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import NavUtils from "src/utils/navigation";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
@@ -21,6 +22,7 @@ import { EditPerformersDialog } from "./EditPerformersDialog";
 import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import TextUtils from "src/utils/text";
 import { PerformerCardGrid } from "./PerformerCardGrid";
+import { PerformerMergeModal } from "./PerformerMergeDialog";
 import { View } from "../List/views";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
@@ -169,6 +171,9 @@ export const PerformerList: React.FC<IPerformerList> = ({
 }) => {
   const intl = useIntl();
   const history = useHistory();
+  const [mergePerformers, setMergePerformers] = useState<
+    GQL.SelectPerformerDataFragment[] | undefined
+  >(undefined);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
@@ -178,6 +183,11 @@ export const PerformerList: React.FC<IPerformerList> = ({
     {
       text: intl.formatMessage({ id: "actions.open_random" }),
       onClick: openRandom,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+      onClick: merge,
+      isDisplayed: showWhenSelected,
     },
     {
       text: intl.formatMessage({ id: "actions.export" }),
@@ -221,6 +231,18 @@ export const PerformerList: React.FC<IPerformerList> = ({
     }
   }
 
+  async function merge(
+    result: GQL.FindPerformersQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    const selected =
+      result.data?.findPerformers.performers.filter((p) =>
+        selectedIds.has(p.id)
+      ) ?? [];
+    setMergePerformers(selected);
+  }
+
   async function onExport() {
     setIsExportAll(false);
     setIsExportDialogOpen(true);
@@ -237,6 +259,23 @@ export const PerformerList: React.FC<IPerformerList> = ({
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
   ) {
+    function renderMergeDialog() {
+      if (mergePerformers) {
+        return (
+          <PerformerMergeModal
+            performers={mergePerformers}
+            onClose={(mergedID?: string) => {
+              setMergePerformers(undefined);
+              if (mergedID) {
+                history.push(NavUtils.makePerformerScenesUrl({ id: mergedID }));
+              }
+            }}
+            show
+          />
+        );
+      }
+    }
+
     function maybeRenderPerformerExportDialog() {
       if (isExportDialogOpen) {
         return (
@@ -287,6 +326,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
     return (
       <>
+        {renderMergeDialog()}
         {maybeRenderPerformerExportDialog()}
         {renderPerformers()}
       </>

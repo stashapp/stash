@@ -49,7 +49,7 @@ type PerformerCreator interface {
 // PerformerUpdater provides methods to update performers.
 type PerformerUpdater interface {
 	Update(ctx context.Context, updatedPerformer *UpdatePerformerInput) error
-	UpdatePartial(ctx context.Context, id int, updatedPerformer PerformerPartial) (*Performer, error)
+	UpdatePartial(ctx context.Context, id int, updatedPerformer *PerformerPartial) (*Performer, error)
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 }
 
@@ -92,6 +92,8 @@ type PerformerWriter interface {
 	PerformerCreator
 	PerformerUpdater
 	PerformerDestroyer
+
+	Merge(ctx context.Context, source []int, destination int) error
 }
 
 // PerformerReaderWriter provides all performer methods.

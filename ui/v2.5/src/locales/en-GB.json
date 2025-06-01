@@ -1515,6 +1515,7 @@
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
+    "merged_performers": "Merged performers",
     "merged_scenes": "Merged scenes",
     "merged_tags": "Merged tags",
     "reassign_past_tense": "File reassigned",

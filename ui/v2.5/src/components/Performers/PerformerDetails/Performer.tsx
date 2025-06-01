@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Tabs, Tab, Col, Row } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -28,6 +28,7 @@ import { PerformerGroupsPanel } from "./PerformerGroupsPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
+import { PerformerMergeModal } from "../PerformerMergeDialog";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -248,6 +249,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
 
     const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isMerging, setIsMerging] = useState<boolean>(false);
     const [image, setImage] = useState<string | null>();
     const [encodingImage, setEncodingImage] = useState<boolean>(false);
     const loadStickyHeader = useLoadStickyHeader();
@@ -281,6 +283,26 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
       } catch (e) {
         Toast.error(e);
       }
+    }
+
+    function renderMergeButton() {
+      return (
+        <Button variant="secondary" onClick={() => setIsMerging(true)}>
+          <FormattedMessage id="actions.merge" />
+          ...
+        </Button>
+      );
+    }
+
+    function renderMergeDialog() {
+      if (!performer.id) return;
+      return (
+        <PerformerMergeModal
+          show={isMerging}
+          onClose={() => setIsMerging(false)}
+          performers={[performer]}
+        />
+      );
     }
 
     useRatingKeybinds(
@@ -462,9 +484,12 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
                         onImageChange={() => {}}
                         classNames="mb-2"
                         customButtons={
-                          <div>
-                            <PerformerSubmitButton performer={performer} />
-                          </div>
+                          <>
+                            {renderMergeButton()}
+                            <div>
+                              <PerformerSubmitButton performer={performer} />
+                            </div>
+                          </>
                         }
                       ></DetailsEditNavbar>
                     </Row>
@@ -492,6 +517,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
             </div>
           </div>
         </div>
+        {renderMergeDialog()}
       </div>
     );
   }

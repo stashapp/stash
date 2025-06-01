@@ -66,7 +66,7 @@ func ValidateCreate(ctx context.Context, performer models.Performer, qb models.P
 	return nil
 }
 
-func ValidateUpdate(ctx context.Context, id int, partial models.PerformerPartial, qb models.PerformerReader) error {
+func ValidateUpdate(ctx context.Context, id int, partial *models.PerformerPartial, qb models.PerformerReader) error {
 	existing, err := qb.Find(ctx, id)
 	if err != nil {
 		return err

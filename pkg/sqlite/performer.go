@@ -138,7 +138,7 @@ type performerRowRecord struct {
 	updateRecord
 }
 
-func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
+func (r *performerRowRecord) fromPartial(o *models.PerformerPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
@@ -302,7 +302,7 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.CreatePe
 	return nil
 }
 
-func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial models.PerformerPartial) (*models.Performer, error) {
+func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial *models.PerformerPartial) (*models.Performer, error) {
 	r := performerRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
@@ -863,4 +863,57 @@ func (qb *PerformerStore) FindByStashIDStatus(ctx context.Context, hasStashID bo
 	}
 
 	return ret, nil
+}
+
+func (qb *PerformerStore) Merge(ctx context.Context, source []int, destination int) error {
+	if len(source) == 0 {
+		return nil
+	}
+
+	inBinding := getInBinding(len(source))
+
+	args := []interface{}{destination}
+	srcArgs := make([]interface{}, len(source))
+	for i, id := range source {
+		if id == destination {
+			return errors.New("cannot merge where source == destination")
+		}
+		srcArgs[i] = id
+	}
+
+	args = append(args, srcArgs...)
+
+	performerTables := map[string]string{
+		performersScenesTable:    sceneIDColumn,
+		performersGalleriesTable: galleryIDColumn,
+		performersImagesTable:    imageIDColumn,
+		performersTagsTable:      tagIDColumn,
+	}
+
+	args = append(args, destination)
+	for table, idColumn := range performerTables {
+		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
+SET performer_id = ?
+WHERE performer_id IN `+inBinding+`
+AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.performer_id = ?)`,
+			args...,
+		)
+		if err != nil {
+			return err
+		}
+
+		// delete source performer ids from the table where they couldn't be set
+		if _, err := dbWrapper.Exec(ctx, `DELETE FROM `+table+` WHERE performer_id IN `+inBinding, srcArgs...); err != nil {
+			return err
+		}
+	}
+
+	for _, id := range source {
+		err := qb.Destroy(ctx, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
