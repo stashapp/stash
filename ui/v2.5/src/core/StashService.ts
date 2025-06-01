@@ -419,6 +419,12 @@ export const useFindTag = (id: string) => {
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
+export const queryFindTag = (id: string) =>
+  client.query<GQL.FindTagQuery>({
+    query: GQL.FindTagDocument,
+    variables: { id },
+  });
+
 export const useFindTags = (filter?: ListFilterModel) =>
   GQL.useFindTagsQuery({
     skip: filter === undefined,

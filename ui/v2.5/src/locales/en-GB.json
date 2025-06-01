@@ -71,8 +71,6 @@
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
-    "merge_from": "Merge from",
-    "merge_into": "Merge into",
     "migrate_blobs": "Migrate Blobs",
     "migrate_scene_screenshots": "Migrate Scene Screenshots",
     "next_action": "Next",
@@ -926,10 +924,6 @@
     "merge": {
       "destination": "Destination",
       "empty_results": "Destination field values will be unchanged.",
-      "source": "Source"
-    },
-    "merge_tags": {
-      "destination": "Destination",
       "source": "Source"
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
