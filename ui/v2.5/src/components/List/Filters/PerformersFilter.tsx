@@ -1,22 +1,27 @@
-import React, { useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
-import { useFindPerformersQuery } from "src/core/generated-graphql";
+import { useFindPerformersForSelectQuery } from "src/core/generated-graphql";
 import { ObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { CriterionOption } from "src/models/list-filter/criteria/criterion";
+import { useLabeledIdFilterState } from "./LabeledIdFilter";
+import { SidebarListFilter } from "./SidebarListFilter";
 
 interface IPerformersFilter {
   criterion: PerformersCriterion;
   setCriterion: (c: PerformersCriterion) => void;
 }
 
-function usePerformerQuery(query: string) {
-  const { data, loading } = useFindPerformersQuery({
+function usePerformerQuery(query: string, skip?: boolean) {
+  const { data, loading } = useFindPerformersForSelectQuery({
     variables: {
       filter: {
         q: query,
         per_page: 200,
       },
     },
+    skip,
   });
 
   const results = useMemo(() => {
@@ -47,6 +52,22 @@ const PerformersFilter: React.FC<IPerformersFilter> = ({
       useResults={usePerformerQuery}
     />
   );
+};
+
+export const SidebarPerformersFilter: React.FC<{
+  title?: ReactNode;
+  option: CriterionOption;
+  filter: ListFilterModel;
+  setFilter: (f: ListFilterModel) => void;
+}> = ({ title, option, filter, setFilter }) => {
+  const state = useLabeledIdFilterState({
+    filter,
+    setFilter,
+    option,
+    useQuery: usePerformerQuery,
+  });
+
+  return <SidebarListFilter {...state} title={title} />;
 };
 
 export default PerformersFilter;

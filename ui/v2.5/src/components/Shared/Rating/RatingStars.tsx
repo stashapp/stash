@@ -18,6 +18,7 @@ export interface IRatingStarsProps {
   disabled?: boolean;
   precision: RatingStarPrecision;
   valueRequired?: boolean;
+  orMore?: boolean;
 }
 
 export const RatingStars: React.FC<IRatingStarsProps> = (
@@ -233,9 +234,12 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       return;
     }
 
+    const suffix = props.orMore ? "+" : "";
+
     return (
       <span className="star-rating-number">
         {ratingFraction.rating + ratingFraction.fraction}
+        {suffix}
       </span>
     );
   };
