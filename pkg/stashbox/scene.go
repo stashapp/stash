@@ -287,9 +287,9 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	if scene.Director != "" {
 		draft.Director = &scene.Director
 	}
-	draft.URLs = make([]*string, len(scene.URLs.List()))
-	for i := range scene.URLs.List() {
-		draft.URLs[i] = &scene.URLs.List()[i]
+	draft.Urls = make([]string, len(scene.URLs.List()))
+	for i, v := range scene.URLs.List() {
+		draft.Urls[i] = v
 	}
 
 	if scene.Date != nil {
