@@ -182,7 +182,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	if len(s.Images) > 0 {
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
-		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
+		ss.Image = getFirstImage(ctx, c.httpClient, s.Images)
 	}
 
 	ss.URLs = make([]string, len(s.Urls))

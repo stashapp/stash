@@ -154,6 +154,11 @@ Returns `void`.
 - `ExternalLinksButton`
 - `FolderSelect`
 - `FrontPage`
+- `GalleryCard`
+- `GalleryCard.Details`
+- `GalleryCard.Image`
+- `GalleryCard.Overlays`
+- `GalleryCard.Popovers`
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`

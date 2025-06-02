@@ -298,10 +298,10 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
         await deletePerformer({ variables: { id: performer.id } });
       } catch (e) {
         Toast.error(e);
+        return;
       }
 
-      // redirect to performers page
-      history.push("/performers");
+      history.goBack();
     }
 
     function toggleEditing(value?: boolean) {

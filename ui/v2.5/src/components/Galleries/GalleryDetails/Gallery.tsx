@@ -167,7 +167,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.push("/galleries");
+      history.goBack();
     }
   }
 
