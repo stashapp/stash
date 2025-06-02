@@ -7,6 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
+import { StashIDPill } from "src/components/Shared/StashID";
 import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
@@ -18,7 +19,6 @@ import {
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { ConfigurationContext } from "src/hooks/Config";
 import { SceneQueue } from "src/models/sceneQueue";
 
@@ -83,6 +83,27 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
       </Button>
     </div>
   );
+};
+
+type StashID = Pick<GQL.StashId, "endpoint" | "stash_id">;
+
+const StashIDs: React.FC<{ stashIDs: StashID[] }> = ({ stashIDs }) => {
+  if (!stashIDs.length) {
+    return null;
+  }
+
+  const stashLinks = stashIDs.map((stashID) => {
+    const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+    const link = base ? (
+      <StashIDPill stashID={stashID} linkType="scenes" />
+    ) : (
+      <span className="small">{stashID.stash_id}</span>
+    );
+
+    return <div key={stashID.stash_id}>{link}</div>;
+  });
+
+  return <div className="mt-2 sub-content text-right">{stashLinks}</div>;
 };
 
 interface ITaggerScene {
@@ -181,28 +202,6 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
     );
   }
 
-  function maybeRenderStashLinks() {
-    if (scene.stash_ids.length > 0) {
-      const stashLinks = scene.stash_ids.map((stashID) => {
-        const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-        const link = base ? (
-          <ExternalLink
-            key={`${stashID.endpoint}${stashID.stash_id}`}
-            className="small d-block"
-            href={`${base}scenes/${stashID.stash_id}`}
-          >
-            {stashID.stash_id}
-          </ExternalLink>
-        ) : (
-          <div className="small">{stashID.stash_id}</div>
-        );
-
-        return link;
-      });
-      return <div className="mt-2 sub-content text-right">{stashLinks}</div>;
-    }
-  }
-
   function onSpriteClick(ev: React.MouseEvent<HTMLElement>) {
     ev.preventDefault();
     showLightboxImage(scene.paths.sprite ?? "");
@@ -276,7 +275,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
           {errorMessage ? (
             <div className="text-danger font-weight-bold">{errorMessage}</div>
           ) : undefined}
-          {maybeRenderStashLinks()}
+          <StashIDs stashIDs={scene.stash_ids} />
         </div>
         <TaggerSceneDetails scene={scene} />
       </div>

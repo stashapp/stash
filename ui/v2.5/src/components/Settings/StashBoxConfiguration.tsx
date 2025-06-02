@@ -139,7 +139,6 @@ export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
                   max_requests_per_minute: parseInt(e.currentTarget.value),
                 })
               }
-              ref={apiKey}
             />
             <div className="sub-heading">
               <FormattedMessage
