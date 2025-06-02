@@ -17,7 +17,7 @@ import { SettingsContext } from "../Settings/context";
 interface ISceneGenerateDialog {
   selectedIds?: string[];
   onClose: () => void;
-  type: "scene"; // TODO - add image generate
+  type: "scene" | "marker"; // TODO - add image generate
 }
 
 export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
@@ -28,6 +28,22 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   const { configuration } = React.useContext(ConfigurationContext);
 
   function getDefaultOptions(): GQL.GenerateMetadataInput {
+    if (type === "marker") {
+      return {
+        sprites: false,
+        phashes: false,
+        previews: false,
+        markers: true,
+        markerImagePreviews: true,
+        markerScreenshots: true,
+        previewOptions: {
+          previewSegments: 0,
+          previewSegmentDuration: 0,
+          previewPreset: GQL.PreviewPreset.Slow,
+        },
+      };
+    }
+
     return {
       sprites: true,
       phashes: true,
@@ -53,6 +69,12 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
 
   useEffect(() => {
     if (configRead) {
+      return;
+    }
+
+    // For marker type, don't apply configuration defaults - use marker-specific defaults only
+    if (type === "marker") {
+      setConfigRead(true);
       return;
     }
 
@@ -86,7 +108,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
       }));
       setConfigRead(true);
     }
-  }, [configuration, configRead]);
+  }, [configuration, configRead, type]);
 
   const selectionStatus = useMemo(() => {
     if (selectedIds) {
@@ -98,7 +120,10 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
               num: selectedIds.length,
               scene: intl.formatMessage(
                 {
-                  id: "countables.scenes",
+                  id:
+                    type === "marker"
+                      ? "countables.scenes"
+                      : "countables.scenes",
                 },
                 {
                   count: selectedIds.length,
@@ -135,14 +160,16 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         <div>{message}</div>
       </Form.Group>
     );
-  }, [selectedIds, intl]);
+  }, [selectedIds, intl, type]);
 
   async function onGenerate() {
     try {
-      await mutateMetadataGenerate({
+      const generateInput: GQL.GenerateMetadataInput = {
         ...options,
         sceneIDs: selectedIds,
-      });
+      };
+
+      await mutateMetadataGenerate(generateInput);
       Toast.success(
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },

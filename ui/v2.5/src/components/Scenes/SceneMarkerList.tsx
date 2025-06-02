@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
@@ -16,6 +16,7 @@ import { MarkerWallPanel } from "./SceneMarkerWallPanel";
 import { View } from "../List/views";
 import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
 import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
+import { GenerateDialog } from "../Dialogs/GenerateDialog";
 
 function getItems(result: GQL.FindSceneMarkersQueryResult) {
   return result?.data?.findSceneMarkers?.scene_markers ?? [];
@@ -39,6 +40,8 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 }) => {
   const intl = useIntl();
   const history = useHistory();
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [selectedSceneIds, setSelectedSceneIds] = useState<string[]>([]);
 
   const filterMode = GQL.FilterMode.SceneMarkers;
 
@@ -46,6 +49,25 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
+      onClick: async (
+        result: GQL.FindSceneMarkersQueryResult,
+        filter: ListFilterModel,
+        selectedIds: Set<string>
+      ) => {
+        // Extract scene IDs from selected markers
+        const markers = result?.data?.findSceneMarkers?.scene_markers ?? [];
+        const selectedMarkerIds = Array.from(selectedIds.values());
+        const sceneIds = markers
+          .filter((marker) => selectedMarkerIds.includes(marker.id))
+          .map((marker) => marker.scene.id)
+          .filter((id, index, array) => array.indexOf(id) === index); // Remove duplicates
+
+        setSelectedSceneIds(sceneIds);
+        setShowGenerateDialog(true);
+      },
     },
   ];
 
@@ -124,25 +146,34 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   }
 
   return (
-    <ItemListContext
-      filterMode={filterMode}
-      useResult={useFindSceneMarkers}
-      getItems={getItems}
-      getCount={getCount}
-      alterQuery={alterQuery}
-      filterHook={filterHook}
-      view={view}
-      selectable
-    >
-      <ItemList
-        zoomable
+    <>
+      {showGenerateDialog && (
+        <GenerateDialog
+          type="marker"
+          selectedIds={selectedSceneIds}
+          onClose={() => setShowGenerateDialog(false)}
+        />
+      )}
+      <ItemListContext
+        filterMode={filterMode}
+        useResult={useFindSceneMarkers}
+        getItems={getItems}
+        getCount={getCount}
+        alterQuery={alterQuery}
+        filterHook={filterHook}
         view={view}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        renderContent={renderContent}
-        renderDeleteDialog={renderDeleteDialog}
-      />
-    </ItemListContext>
+        selectable
+      >
+        <ItemList
+          zoomable
+          view={view}
+          otherOperations={otherOperations}
+          addKeybinds={addKeybinds}
+          renderContent={renderContent}
+          renderDeleteDialog={renderDeleteDialog}
+        />
+      </ItemListContext>
+    </>
   );
 };
 

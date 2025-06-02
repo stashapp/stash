@@ -7,7 +7,7 @@ import {
 } from "../GeneratePreviewOptions";
 
 interface IGenerateOptions {
-  type?: "scene" | "image";
+  type?: "scene" | "image" | "marker";
   selection?: boolean;
   options: GQL.GenerateMetadataInput;
   setOptions: (s: GQL.GenerateMetadataInput) => void;
@@ -28,9 +28,43 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
 
   const showSceneOptions = !type || type === "scene";
   const showImageOptions = !type || type === "image";
+  const showMarkerOptions = type === "marker";
 
   return (
     <>
+      {showMarkerOptions && (
+        <>
+          <BooleanSetting
+            id="marker-task"
+            checked={options.markers ?? false}
+            headingID="dialogs.scene_gen.markers"
+            tooltipID="dialogs.scene_gen.markers_tooltip"
+            onChange={(v) => setOptions({ markers: v })}
+          />
+          <BooleanSetting
+            advanced
+            id="marker-image-preview-task"
+            className="sub-setting"
+            checked={options.markerImagePreviews ?? false}
+            disabled={!options.markers}
+            headingID="dialogs.scene_gen.marker_image_previews"
+            tooltipID="dialogs.scene_gen.marker_image_previews_tooltip"
+            onChange={(v) =>
+              setOptions({
+                markerImagePreviews: v,
+              })
+            }
+          />
+          <BooleanSetting
+            id="marker-screenshot-task"
+            checked={options.markerScreenshots ?? false}
+            disabled={!options.markers}
+            headingID="dialogs.scene_gen.marker_screenshots"
+            tooltipID="dialogs.scene_gen.marker_screenshots_tooltip"
+            onChange={(v) => setOptions({ markerScreenshots: v })}
+          />
+        </>
+      )}
       {showSceneOptions && (
         <>
           <BooleanSetting
