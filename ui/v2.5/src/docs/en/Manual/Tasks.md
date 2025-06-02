@@ -22,6 +22,7 @@ The scan task accepts the following options:
 | Generate thumbnails for images | Generates thumbnails for image files. | 
 | Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
 | Rescan | By default, Stash will only rescan existing files if the file's modified date has been updated since its previous scan. Stash will rescan files in the path when this option is enabled, regardless of the file modification time. Only required Stash needs to recalculate video/image metadata, or to rescan gallery zips. |
+| Auto tag new files | Auto-tag new files immediately after scan completion. |
 
 ## Auto Tagging
 See the [Auto Tagging](/help/AutoTagging.md) page.
