@@ -561,7 +561,7 @@ input[type="range"].blue-slider {
 }
 
 .scene-markers-panel {
-  .wall-item {
+  .wall .wall-item {
     height: inherit;
     min-height: 14rem;
     width: calc(100% - 2rem);
@@ -899,5 +899,62 @@ input[type="range"].blue-slider {
     font-weight: bold;
     width: 100%;
     word-break: break-all;
+  }
+}
+
+.scene-wall,
+.marker-wall {
+  .wall-item {
+    position: relative;
+
+    .lineargradient {
+      background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+      bottom: 0;
+      height: 100px;
+      position: absolute;
+      width: 100%;
+    }
+
+    &-title {
+      font-weight: bold;
+    }
+
+    &-footer {
+      bottom: 20px;
+      padding: 0 1rem;
+      position: absolute;
+      text-shadow: 1px 1px 3px black;
+      transition: 0s opacity;
+      width: 100%;
+      z-index: 2;
+
+      @media (min-width: 768px) {
+        opacity: 0;
+      }
+
+      &:hover {
+        .wall-item-title {
+          text-decoration: underline;
+        }
+      }
+
+      a {
+        color: white;
+      }
+    }
+
+    &:hover .wall-item-footer {
+      opacity: 1;
+      transition: 1s opacity;
+      transition-delay: 500ms;
+
+      a {
+        text-decoration: none;
+      }
+    }
+
+    &.show-title .wall-item-footer {
+      opacity: 1;
+    }
   }
 }
