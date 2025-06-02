@@ -417,10 +417,10 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       });
     } catch (e) {
       Toast.error(e);
+      return;
     }
 
-    // redirect to tags page
-    history.push(`/tags`);
+    history.goBack();
   }
 
   function renderDeleteAlert() {
