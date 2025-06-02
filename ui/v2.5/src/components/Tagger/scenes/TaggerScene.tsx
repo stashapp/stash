@@ -85,6 +85,27 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
   );
 };
 
+type StashID = Pick<GQL.StashId, "endpoint" | "stash_id">;
+
+const StashIDs: React.FC<{ stashIDs: StashID[] }> = ({ stashIDs }) => {
+  if (!stashIDs.length) {
+    return null;
+  }
+
+  const stashLinks = stashIDs.map((stashID) => {
+    const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+    const link = base ? (
+      <StashIDPill stashID={stashID} linkType="scenes" />
+    ) : (
+      <span className="small">{stashID.stash_id}</span>
+    );
+
+    return <div key={stashID.stash_id}>{link}</div>;
+  });
+
+  return <div className="mt-2 sub-content text-right">{stashLinks}</div>;
+};
+
 interface ITaggerScene {
   scene: GQL.SlimSceneDataFragment;
   url: string;
@@ -181,24 +202,6 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
     );
   }
 
-  function maybeRenderStashLinks() {
-    if (scene.stash_ids.length > 0) {
-      const stashLinks = scene.stash_ids.map((stashID) => {
-        const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-        const link = base ? (
-          <div>
-            <StashIDPill stashID={stashID} linkType="scenes" />
-          </div>
-        ) : (
-          <div className="small">{stashID.stash_id}</div>
-        );
-
-        return link;
-      });
-      return <div className="mt-2 sub-content text-right">{stashLinks}</div>;
-    }
-  }
-
   function onSpriteClick(ev: React.MouseEvent<HTMLElement>) {
     ev.preventDefault();
     showLightboxImage(scene.paths.sprite ?? "");
@@ -272,7 +275,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
           {errorMessage ? (
             <div className="text-danger font-weight-bold">{errorMessage}</div>
           ) : undefined}
-          {maybeRenderStashLinks()}
+          <StashIDs stashIDs={scene.stash_ids} />
         </div>
         <TaggerSceneDetails scene={scene} />
       </div>
