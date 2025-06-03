@@ -28,6 +28,8 @@ fragment GroupData on Group {
   back_image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
+  performer_count
+  performer_count_all: performer_count(depth: -1)
   sub_group_count
   sub_group_count_all: sub_group_count(depth: -1)
 
