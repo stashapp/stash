@@ -85,6 +85,8 @@ const TagTabs: React.FC<{
   const [showAllDetails, setShowAllDetails] = useState<boolean>(
     showAllCounts && tag.children.length > 0
   );
+  const [showPerformerScenes, setShowPerformerScenes] =
+    useState<boolean>(false);
 
   const sceneCount =
     (showAllDetails ? tag.scene_count_all : tag.scene_count) ?? 0;
@@ -154,6 +156,20 @@ const TagTabs: React.FC<{
       </div>
     );
   }, [showAllDetails, tag.children.length]);
+
+  const performerContentSwitch = useMemo(() => {
+    const performerScenesSwitch = (
+      <Form.Check
+        id="showPerformerScenes"
+        checked={showPerformerScenes}
+        onChange={() => setShowPerformerScenes(!showPerformerScenes)}
+        type="switch"
+        label={<FormattedMessage id="show_performer_scenes" />}
+      />
+    );
+
+    return <div className="item-list-header">{performerScenesSwitch}</div>;
+  }, [showPerformerScenes]);
 
   return (
     <Tabs
@@ -259,10 +275,12 @@ const TagTabs: React.FC<{
         }
       >
         {contentSwitch}
+        {performerContentSwitch}
         <TagPerformersPanel
           active={tabKey === "performers"}
           tag={tag}
           showSubTagContent={showAllDetails}
+          showPerformerScenes={showPerformerScenes}
         />
       </Tab>
       <Tab
