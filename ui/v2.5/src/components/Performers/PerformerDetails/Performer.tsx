@@ -46,6 +46,7 @@ import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 import { PatchComponent } from "src/patch";
+import { ILightboxImage } from "src/hooks/Lightbox/types";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -200,6 +201,34 @@ const PerformerTabs: React.FC<{
     </Tabs>
   );
 };
+
+interface IPerformerHeaderImageProps {
+  activeImage: string | null | undefined;
+  collapsed: boolean;
+  encodingImage: boolean;
+  lightboxImages: ILightboxImage[];
+  performer: GQL.PerformerDataFragment;
+}
+
+const PerformerHeaderImage: React.FC<IPerformerHeaderImageProps> =
+  PatchComponent(
+    "PerformerHeaderImage",
+    ({ encodingImage, activeImage, lightboxImages, performer }) => {
+      return (
+        <HeaderImage encodingImage={encodingImage}>
+          {!!activeImage && (
+            <LightboxLink images={lightboxImages}>
+              <DetailImage
+                className="performer"
+                src={activeImage}
+                alt={performer.name}
+              />
+            </LightboxLink>
+          )}
+        </HeaderImage>
+      );
+    }
+  );
 
 const PerformerPage: React.FC<IProps> = PatchComponent(
   "PerformerPage",
@@ -364,18 +393,13 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
             show={enableBackgroundImage && !isEditing}
           />
           <div className="detail-container">
-            <HeaderImage encodingImage={encodingImage}>
-              {!!activeImage && (
-                <LightboxLink images={lightboxImages}>
-                  <DetailImage
-                    className="performer"
-                    src={activeImage}
-                    alt={performer.name}
-                  />
-                </LightboxLink>
-              )}
-            </HeaderImage>
-
+            <PerformerHeaderImage
+              activeImage={activeImage}
+              collapsed={collapsed}
+              encodingImage={encodingImage}
+              lightboxImages={lightboxImages}
+              performer={performer}
+            />
             <div className="row">
               <div className="performer-head col">
                 <DetailTitle
