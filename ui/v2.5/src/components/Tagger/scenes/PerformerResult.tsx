@@ -165,6 +165,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
 
   const selectedSource = !selectedID ? "skip" : "existing";
 
+  const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
+    return stashboxPerformerPrefix && id
+      ? `${stashboxPerformerPrefix}${id}`
+      : undefined;
+  };
+
   return (
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
@@ -172,7 +178,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <b className="ml-2">
           <PerformerLink
             performer={performer}
-            url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
+            url={safeBuildPerformerScraperLink(performer.remote_site_id)}
           />
         </b>
       </div>
