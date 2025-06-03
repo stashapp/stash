@@ -109,7 +109,12 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 
 		assert.Len(t, studios, 1)
 		assert.Equal(t, studioName, studios[0].Name)
-		assert.Equal(t, studioUrl, studios[0].URL)
+
+		// Load URLs and check if it contains the expected URL
+		assert.NoError(t, studios[0].LoadURLs(ctx, sqb))
+		urls := studios[0].URLs.List()
+		assert.Greater(t, len(urls), 0, "Studio should have at least one URL")
+		assert.Contains(t, urls, studioUrl, "Expected URL should be in the URLs list")
 
 		return nil
 	})
@@ -146,8 +151,14 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 
 		for _, studio := range studios {
 			verifyString(t, studio.Name, nameCriterion)
+
+			// Load URLs and verify that none of them match the excluded URL
+			assert.NoError(t, studio.LoadURLs(ctx, sqb))
+			urls := studio.URLs.List()
 			urlCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyString(t, studio.URL, urlCriterion)
+			for _, url := range urls {
+				verifyString(t, url, urlCriterion)
+			}
 		}
 
 		return nil
@@ -659,7 +670,13 @@ func TestStudioQueryURL(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, g *models.Studio) {
 		t.Helper()
-		verifyString(t, g.URL, urlCriterion)
+		urls := g.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifyStudioQuery(t, filter, verifyFn)
@@ -817,6 +834,12 @@ func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn fu
 		sqb := db.Studio
 
 		studios := queryStudio(ctx, t, sqb, &filter, nil)
+
+		for _, studio := range studios {
+			if err := studio.LoadURLs(ctx, sqb); err != nil {
+				t.Errorf("Error loading studio relationships: %v", err)
+			}
+		}
 
 		// assume it should find at least one
 		assert.Greater(t, len(studios), 0)
