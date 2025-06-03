@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -288,11 +287,11 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	if scene.Director != "" {
 		draft.Director = &scene.Director
 	}
-	// TODO - draft does not accept multiple URLs. Use single URL for now.
-	if len(scene.URLs.List()) > 0 {
-		url := strings.TrimSpace(scene.URLs.List()[0])
-		draft.URL = &url
+	draft.Urls = make([]string, len(scene.URLs.List()))
+	for i, v := range scene.URLs.List() {
+		draft.Urls[i] = v
 	}
+
 	if scene.Date != nil {
 		v := scene.Date.String()
 		draft.Date = &v
