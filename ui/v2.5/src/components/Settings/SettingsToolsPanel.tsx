@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Setting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
 import { PatchContainerComponent } from "src/patch";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 const SettingsToolsSection = PatchContainerComponent("SettingsToolsSection");
 
@@ -12,6 +13,15 @@ export const SettingsToolsPanel: React.FC = () => {
   return (
     <SettingSection headingID="config.tools.scene_tools">
       <SettingsToolsSection>
+        <Setting
+          heading={
+            <ExternalLink href="/playground">
+              <Button>
+                <FormattedMessage id="config.tools.graphql_playground" />
+              </Button>
+            </ExternalLink>
+          }
+        />
         <Setting
           heading={
             <Link to="/sceneFilenameParser">
