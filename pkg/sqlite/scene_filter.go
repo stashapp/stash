@@ -58,6 +58,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(sceneFilter.ID, "scenes.id", nil),
 		pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable),
 		qb.fileCountCriterionHandler(sceneFilter.FileCount),
+		qb.performerGenderCriterionHandler(sceneFilter.PerformerGender),
 		stringCriterionHandler(sceneFilter.Title, "scenes.title"),
 		stringCriterionHandler(sceneFilter.Code, "scenes.code"),
 		stringCriterionHandler(sceneFilter.Details, "scenes.details"),
@@ -303,6 +304,21 @@ func (qb *sceneFilterHandler) hasMarkersCriterionHandler(hasMarkers *string) cri
 			} else {
 				f.addWhere("scene_markers.id IS NULL")
 			}
+		}
+	}
+}
+
+func (qb *sceneFilterHandler) performerGenderCriterionHandler(genderFilter *models.GenderCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if genderFilter != nil {
+			f.addInnerJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+			f.addInnerJoin("performers", "", "performers_scenes.performer_id = performers.id")
+
+			// Apply the gender filter
+			stringCriterionHandler(&models.StringCriterionInput{
+				Value:    string(genderFilter.Value),
+				Modifier: genderFilter.Modifier,
+			}, "performers.gender")(ctx, f)
 		}
 	}
 }
