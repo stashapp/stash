@@ -1,11 +1,11 @@
 module github.com/stashapp/stash
 
-go 1.23.9
+go 1.24.3
 
 require (
 	github.com/99designs/gqlgen v0.17.73
 	github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
-	github.com/Yamashou/gqlgenc v0.25.3
+	github.com/Yamashou/gqlgenc v0.32.1
 	github.com/anacrolix/dms v1.2.2
 	github.com/antchfx/htmlquery v1.3.0
 	github.com/asticode/go-astisub v0.25.1
@@ -78,6 +78,7 @@ require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.3.0 // indirect
+	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
