@@ -611,7 +611,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			got, err := qb.UpdatePartial(ctx, tt.id, &tt.partial)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -696,7 +696,7 @@ func Test_PerformerStore_UpdatePartialCustomFields(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			_, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			_, err := qb.UpdatePartial(ctx, tt.id, &tt.partial)
 			if err != nil {
 				t.Errorf("PerformerStore.UpdatePartial() error = %v", err)
 				return
@@ -2092,7 +2092,7 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 
 	// update stash ids and ensure was updated
 	var err error
-	s, err = qb.UpdatePartial(ctx, s.ID, models.PerformerPartial{
+	s, err = qb.UpdatePartial(ctx, s.ID, &models.PerformerPartial{
 		StashIDs: &models.UpdateStashIDs{
 			StashIDs: []models.StashID{stashID},
 			Mode:     models.RelationshipUpdateModeSet,
@@ -2110,7 +2110,7 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
 
 	// remove stash ids and ensure was updated
-	s, err = qb.UpdatePartial(ctx, s.ID, models.PerformerPartial{
+	s, err = qb.UpdatePartial(ctx, s.ID, &models.PerformerPartial{
 		StashIDs: &models.UpdateStashIDs{
 			StashIDs: []models.StashID{stashID},
 			Mode:     models.RelationshipUpdateModeRemove,

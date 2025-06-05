@@ -730,6 +730,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
         sources={loadedSources}
         dest={loadedDest!}
         onClose={(values) => {
+          setSecondStep(false);
           if (values) {
             onMerge(values);
           } else {
