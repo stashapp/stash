@@ -24,4 +24,7 @@ export const _BackgroundImage: React.FC<{
   return null;
 };
 
-export const BackgroundImage = PatchComponent("BackgroundImage", _BackgroundImage);
+export const BackgroundImage = PatchComponent(
+  "BackgroundImage",
+  _BackgroundImage
+);
