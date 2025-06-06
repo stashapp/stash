@@ -729,6 +729,7 @@ declare namespace PluginApi {
     TruncatedText: React.FC<any>;
     SweatDrops: React.FC<any>;
     AlertModal: React.FC<any>;
+    BackgroundImage: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {

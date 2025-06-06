@@ -1,6 +1,7 @@
 import React from "react";
+import { PatchComponent } from "src/patch";
 
-export const BackgroundImage: React.FC<{
+export const _BackgroundImage: React.FC<{
   imagePath: string | undefined;
   show: boolean;
   alt?: string;
@@ -22,3 +23,5 @@ export const BackgroundImage: React.FC<{
 
   return null;
 };
+
+export const BackgroundImage = PatchComponent("BackgroundImage", _BackgroundImage);
