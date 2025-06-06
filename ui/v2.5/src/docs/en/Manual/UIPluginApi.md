@@ -195,6 +195,9 @@ Returns `void`.
 - `PerformerImagesPanel`
 - `PerformerScenesPanel`
 - `PluginRoutes`
+- `RatingNumber`
+- `RatingStars`
+- `RatingSystem`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
