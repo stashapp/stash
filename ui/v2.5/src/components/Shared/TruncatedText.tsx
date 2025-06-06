@@ -3,6 +3,7 @@ import { Overlay, Tooltip } from "react-bootstrap";
 import { Placement } from "react-bootstrap/Overlay";
 import cx from "classnames";
 import { useDebounce } from "src/hooks/debounce";
+import { PatchComponent } from "src/patch";
 
 const CLASSNAME = "TruncatedText";
 const CLASSNAME_TOOLTIP = `${CLASSNAME}-tooltip`;
@@ -15,7 +16,7 @@ interface ITruncatedTextProps {
   className?: string;
 }
 
-export const TruncatedText: React.FC<ITruncatedTextProps> = ({
+export const _TruncatedText: React.FC<ITruncatedTextProps> = ({
   text,
   className,
   lineCount = 1,
@@ -66,3 +67,5 @@ export const TruncatedText: React.FC<ITruncatedTextProps> = ({
     </div>
   );
 };
+
+export const TruncatedText = PatchComponent("TruncatedText", _TruncatedText);

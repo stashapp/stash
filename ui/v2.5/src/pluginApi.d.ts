@@ -726,6 +726,9 @@ declare namespace PluginApi {
     "GalleryCard.Image": React.FC<any>;
     "GalleryCard.Overlays": React.FC<any>;
     "GalleryCard.Popovers": React.FC<any>;
+    TruncatedText: React.FC<any>;
+    SweatDrops: React.FC<any>;
+    AlertModal: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
