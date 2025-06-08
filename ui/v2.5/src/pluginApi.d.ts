@@ -701,6 +701,7 @@ declare namespace PluginApi {
     PerformerCard: React.FC<any>;
     ExternalLinkButtons: React.FC<any>;
     ExternalLinksButton: React.FC<any>;
+    CustomFields: React.FC<any>;
     CustomFieldInput: React.FC<any>;
     ImageInput: React.FC<any>;
     DetailImage: React.FC<any>;
