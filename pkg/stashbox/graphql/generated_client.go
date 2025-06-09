@@ -4,7 +4,6 @@ package graphql
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/Yamashou/gqlgenc/clientv2"
 )
@@ -28,7 +27,7 @@ type Client struct {
 	Client *clientv2.Client
 }
 
-func NewClient(cli *http.Client, baseURL string, options *clientv2.Options, interceptors ...clientv2.RequestInterceptor) StashBoxGraphQLClient {
+func NewClient(cli clientv2.HttpClient, baseURL string, options *clientv2.Options, interceptors ...clientv2.RequestInterceptor) StashBoxGraphQLClient {
 	return &Client{Client: clientv2.NewClient(cli, baseURL, options, interceptors...)}
 }
 
@@ -493,147 +492,147 @@ func (t *SceneFragment) GetFingerprints() []*FingerprintFragment {
 }
 
 type StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
 	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
 }
 
-func (t *StudioFragment_Parent) GetName() string {
-	if t == nil {
-		t = &StudioFragment_Parent{}
-	}
-	return t.Name
-}
 func (t *StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type SceneFragment_Studio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+func (t *StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &SceneFragment_Studio_StudioFragment_Parent{}
+		t = &StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type SceneFragment_Studio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+func (t *SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
+		t = &SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
+		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
+		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
-
-type FindStudio_FindStudio_StudioFragment_Parent struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
-}
-
-func (t *FindStudio_FindStudio_StudioFragment_Parent) GetName() string {
+func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
-		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
 }
+
+type FindStudio_FindStudio_StudioFragment_Parent struct {
+	ID   string "json:\"id\" graphql:\"id\""
+	Name string "json:\"name\" graphql:\"name\""
+}
+
 func (t *FindStudio_FindStudio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindStudio_FindStudio_StudioFragment_Parent{}
 	}
 	return t.ID
+}
+func (t *FindStudio_FindStudio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+	}
+	return t.Name
 }
 
 type Me_Me struct {

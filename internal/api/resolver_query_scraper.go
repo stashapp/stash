@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/match"
@@ -100,12 +101,12 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 }
 
 func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models.ScrapedGroup, error) {
-	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeMovie)
+	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeGroup)
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := marshalScrapedMovie(content)
+	ret, err := marshalScrapedGroup(content)
 	if err != nil {
 		return nil, err
 	}
@@ -205,6 +206,10 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 		}
 	default:
 		return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
+	}
+
+	for i := range ret {
+		slices.SortFunc(ret[i].Tags, models.ScrapedTagSortFunction)
 	}
 
 	return ret, nil

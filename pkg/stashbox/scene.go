@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -183,7 +182,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	if len(s.Images) > 0 {
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
-		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
+		ss.Image = getFirstImage(ctx, c.httpClient, s.Images)
 	}
 
 	ss.URLs = make([]string, len(s.Urls))
@@ -288,11 +287,11 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	if scene.Director != "" {
 		draft.Director = &scene.Director
 	}
-	// TODO - draft does not accept multiple URLs. Use single URL for now.
-	if len(scene.URLs.List()) > 0 {
-		url := strings.TrimSpace(scene.URLs.List()[0])
-		draft.URL = &url
+	draft.Urls = make([]string, len(scene.URLs.List()))
+	for i, v := range scene.URLs.List() {
+		draft.Urls[i] = v
 	}
+
 	if scene.Date != nil {
 		v := scene.Date.String()
 		draft.Date = &v
