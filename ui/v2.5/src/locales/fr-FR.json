@@ -1116,7 +1116,7 @@
         "audio_codec": "Codec audio",
         "checksum": "Somme de contrôle",
         "downloaded_from": "Téléchargé depuis",
-        "hash": "Hachage",
+        "hash": "Empreinte",
         "interactive_speed": "Vitesse interactive",
         "performer_card": {
             "age": "{age} {years_old}",
