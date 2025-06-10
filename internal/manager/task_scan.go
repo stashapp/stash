@@ -237,6 +237,19 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 			if err := video.CleanCaptions(ctx, videoFile, f.txnManager, f.CaptionUpdater); err != nil {
 				logger.Errorf("Error cleaning captions: %v", err)
 			}
+
+			// Extract embedded subtitles
+			scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, videoFile.Base().ID)
+			if err == nil && len(scenes) > 0 {
+				taskSubtitles := &ExtractEmbeddedSubtitlesTask{
+					repository:          GetInstance().Repository,
+					Scene:               *scenes[0],
+					fileNamingAlgorithm: f.videoFileNamingAlgorithm,
+					Overwrite:           true,
+					VideoFile:           videoFile,
+				}
+				taskSubtitles.Start(ctx)
+			}
 		}
 	}
 
@@ -568,6 +581,26 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *mode
 			taskCover.Start(ctx)
 			progress.Increment()
 		})
+	}
+
+	// Extract embedded subtitles
+	progress.AddTotal(1)
+	subtitlesFn := func(ctx context.Context) {
+		taskSubtitles := &ExtractEmbeddedSubtitlesTask{
+			repository:          mgr.Repository,
+			Scene:               *s,
+			Overwrite:           overwrite,
+			fileNamingAlgorithm: g.fileNamingAlgorithm,
+			VideoFile:           f,
+		}
+		taskSubtitles.Start(ctx)
+		progress.Increment()
+	}
+
+	if g.sequentialScanning {
+		subtitlesFn(ctx)
+	} else {
+		g.taskQueue.Add(fmt.Sprintf("Extracting embedded subtitles for %s", path), subtitlesFn)
 	}
 
 	return nil

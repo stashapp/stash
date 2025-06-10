@@ -1,6 +1,7 @@
 package video
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -9,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/asticode/go-astisub"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -188,4 +191,120 @@ func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager,
 	}
 
 	return nil
+}
+
+// ExtractEmbeddedSubtitles extracts embedded subtitles from a video file and saves them to the specified directory
+// Returns a list of paths to the extracted subtitle files
+func ExtractEmbeddedSubtitles(ctx context.Context, videoFile *models.VideoFile, generatedPath string, ffmpegPath string, ffprobePath string, sceneHash string) ([]*models.VideoCaption, error) {
+	// Create the ffprobe instance
+	probe := ffmpeg.NewFFProbe(ffprobePath)
+	if probe == nil {
+		return nil, errors.New("failed to create FFProbe instance")
+	}
+
+	// Get video file information
+	videoInfo, err := probe.NewVideoFile(videoFile.Path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get video info: %w", err)
+	}
+
+	fileHash := sceneHash
+	logger.Debugf("Using scene hash for subtitles: %s", fileHash)
+
+	// Create FFMpeg encoder
+	encoder := ffmpeg.NewEncoder(ffmpegPath)
+	if encoder == nil {
+		return nil, errors.New("failed to create FFMpeg encoder")
+	}
+
+	// Extract each subtitle track
+	var extractedCaptions []*models.VideoCaption
+
+	// Process subtitle streams directly without intermediate struct
+	for _, stream := range videoInfo.JSON.Streams {
+		if stream.CodecType != "subtitle" {
+			continue
+		}
+
+		// Skip non-SRT compatible subtitle formats
+		codecName := strings.ToLower(stream.CodecName)
+		if codecName != "subrip" && codecName != "srt" && codecName != "mov_text" && codecName != "text" {
+			logger.Debugf("Skipping unsupported subtitle format: %s", codecName)
+			continue
+		}
+
+		// Default to srt format for extraction
+		outputFormat := "srt"
+
+		// Determine output filename
+		lang := stream.Tags.Language
+		if lang == "" {
+			lang = LangUnknown
+		}
+
+		// Create a unique output filename
+		outputFilename := ""
+		if lang == LangUnknown {
+			// For unknown language, use stream index in both filename and language code
+			lang = fmt.Sprintf("%s_%d", lang, stream.Index)
+			outputFilename = fmt.Sprintf("%s.%s.%s", fileHash, lang, outputFormat)
+		} else {
+			// Check if we already have a caption with this language code
+			langExists := false
+			for _, existingCaption := range extractedCaptions {
+				if existingCaption.LanguageCode == lang {
+					langExists = true
+					break
+				}
+			}
+
+			// If language code already exists, append stream index to make it unique
+			if langExists {
+				lang = fmt.Sprintf("%s_%d", lang, stream.Index)
+			}
+			outputFilename = fmt.Sprintf("%s.%s.%s", fileHash, lang, outputFormat)
+		}
+
+		// Create subdirectory for this video's subtitles
+		subDir := filepath.Join(generatedPath, "subtitles", fileHash)
+		logger.Debugf("Creating subtitles directory at: %s", subDir)
+
+		if err := fsutil.EnsureDirAll(subDir); err != nil {
+			return nil, fmt.Errorf("failed to create subtitle directory: %w", err)
+		}
+
+		outputPath := filepath.Join(subDir, outputFilename)
+
+		// Build FFmpeg command to extract subtitle
+		args := []string{
+			"-nostdin",
+			"-y",
+			"-i", videoFile.Path,
+			"-map", fmt.Sprintf("0:%d", stream.Index),
+			"-c:s", outputFormat,
+			outputPath,
+		}
+
+		// Execute FFmpeg command
+		cmd := encoder.Command(ctx, args)
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+
+		if err := cmd.Run(); err != nil {
+			logger.Errorf("Failed to extract subtitle stream %d: %v\n%s", stream.Index, err, stderr.String())
+			continue
+		}
+
+		// Create VideoCaption object for the extracted subtitle
+		caption := &models.VideoCaption{
+			LanguageCode: lang,
+			Filename:     outputFilename, // Store just the filename, not the full path
+			CaptionType:  outputFormat,
+		}
+
+		extractedCaptions = append(extractedCaptions, caption)
+		logger.Infof("Extracted subtitle track %d to %s", stream.Index, outputPath)
+	}
+
+	return extractedCaptions, nil
 }

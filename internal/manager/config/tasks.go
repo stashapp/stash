@@ -17,6 +17,8 @@ type ScanMetadataOptions struct {
 	ScanGenerateThumbnails bool `json:"scanGenerateThumbnails"`
 	// Generate image thumbnails during scan
 	ScanGenerateClipPreviews bool `json:"scanGenerateClipPreviews"`
+	// Extract embedded subtitles during scan
+	ScanExtractEmbeddedSubtitles bool `json:"scanExtractEmbeddedSubtitles"`
 }
 
 type AutoTagMetadataOptions struct {

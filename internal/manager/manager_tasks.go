@@ -87,6 +87,9 @@ type ScanMetadataInput struct {
 
 	// Filter options for the scan
 	Filter *ScanMetaDataFilterInput `json:"filter"`
+
+	// Extract embedded subtitles
+	ScanExtractEmbeddedSubtitles bool `json:"scanExtractEmbeddedSubtitles"`
 }
 
 // Filter options for meta data scannning
