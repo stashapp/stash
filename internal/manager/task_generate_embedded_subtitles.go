@@ -94,7 +94,3 @@ func (t *ExtractEmbeddedSubtitlesTask) Start(ctx context.Context) {
 
 	logger.Infof("Successfully extracted and associated %d subtitle tracks from %s", len(extractedCaptions), videoFile.Path)
 }
-
-func (t *ExtractEmbeddedSubtitlesTask) required() bool {
-	return true
-}
