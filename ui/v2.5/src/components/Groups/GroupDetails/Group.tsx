@@ -273,10 +273,10 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
       await deleteGroup();
     } catch (e) {
       Toast.error(e);
+      return;
     }
 
-    // redirect to groups page
-    history.push(`/groups`);
+    history.goBack();
   }
 
   function toggleEditing(value?: boolean) {

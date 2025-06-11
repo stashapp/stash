@@ -39,6 +39,12 @@ export const ClearableInput: React.FC<IClearableInput> = ({
     setQueryFocus();
   }
 
+  function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") {
+      queryRef.current?.blur();
+    }
+  }
+
   return (
     <div className={cx("clearable-input-group", className)}>
       <FormControl
@@ -46,6 +52,7 @@ export const ClearableInput: React.FC<IClearableInput> = ({
         placeholder={placeholder}
         value={value}
         onInput={onChangeQuery}
+        onKeyDown={onInputKeyDown}
         className="clearable-text-field"
       />
       {queryClearShowing && (

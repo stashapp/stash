@@ -2061,14 +2061,34 @@ export const useTagsMerge = () =>
     },
   });
 
-export const useSaveFilter = () =>
-  GQL.useSaveFilterMutation({
+export const useSaveFilter = () => {
+  const [saveFilterMutation] = GQL.useSaveFilterMutation({
     update(cache, result) {
       if (!result.data?.saveFilter) return;
 
       evictQueries(cache, [GQL.FindSavedFiltersDocument]);
     },
   });
+
+  function saveFilter(filter: ListFilterModel, name: string, id?: string) {
+    const filterCopy = filter.clone();
+
+    return saveFilterMutation({
+      variables: {
+        input: {
+          id,
+          mode: filter.mode,
+          name,
+          find_filter: filterCopy.makeFindFilter(),
+          object_filter: filterCopy.makeSavedFilter(),
+          ui_options: filterCopy.makeSavedUIOptions(),
+        },
+      },
+    });
+  }
+
+  return saveFilter;
+};
 
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({

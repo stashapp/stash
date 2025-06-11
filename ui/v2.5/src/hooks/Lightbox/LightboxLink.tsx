@@ -2,10 +2,11 @@ import { PropsWithChildren } from "react";
 import { useLightbox } from "./hooks";
 import { ILightboxImage } from "./types";
 import { Button } from "react-bootstrap";
+import { PatchComponent } from "src/patch";
 
 export const LightboxLink: React.FC<
   PropsWithChildren<{ images?: ILightboxImage[] | undefined; index?: number }>
-> = ({ images, index, children }) => {
+> = PatchComponent("LightboxLink", ({ images, index, children }) => {
   const showLightbox = useLightbox();
 
   if (!images || images.length === 0) {
@@ -20,4 +21,4 @@ export const LightboxLink: React.FC<
       {children}
     </Button>
   );
-};
+});
