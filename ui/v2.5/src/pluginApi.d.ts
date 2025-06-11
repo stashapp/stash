@@ -701,6 +701,7 @@ declare namespace PluginApi {
     PerformerCard: React.FC<any>;
     ExternalLinkButtons: React.FC<any>;
     ExternalLinksButton: React.FC<any>;
+    CustomFields: React.FC<any>;
     CustomFieldInput: React.FC<any>;
     ImageInput: React.FC<any>;
     DetailImage: React.FC<any>;
@@ -730,6 +731,9 @@ declare namespace PluginApi {
     SweatDrops: React.FC<any>;
     AlertModal: React.FC<any>;
     BackgroundImage: React.FC<any>;
+    RatingNumber: React.FC<any>;
+    RatingStars: React.FC<any>;
+    RatingSystem: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {

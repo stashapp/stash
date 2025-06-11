@@ -54,23 +54,28 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
   );
 };
 
-export const CustomFields: React.FC<ICustomFields> = ({ values }) => {
-  const intl = useIntl();
-  if (Object.keys(values).length === 0) {
-    return null;
-  }
+export const CustomFields: React.FC<ICustomFields> = PatchComponent(
+  "CustomFields",
+  ({ values }) => {
+    const intl = useIntl();
+    if (Object.keys(values).length === 0) {
+      return null;
+    }
 
-  return (
-    // according to linter rule CSS classes shouldn't use underscores
-    <div className="custom-fields">
-      <CollapseButton text={intl.formatMessage({ id: "custom_fields.title" })}>
-        {Object.entries(values).map(([key, value]) => (
-          <CustomField key={key} field={key} value={value} />
-        ))}
-      </CollapseButton>
-    </div>
-  );
-};
+    return (
+      // according to linter rule CSS classes shouldn't use underscores
+      <div className="custom-fields">
+        <CollapseButton
+          text={intl.formatMessage({ id: "custom_fields.title" })}
+        >
+          {Object.entries(values).map(([key, value]) => (
+            <CustomField key={key} field={key} value={value} />
+          ))}
+        </CollapseButton>
+      </div>
+    );
+  }
+);
 
 function isNumeric(v: string) {
   return /^-?(?:0|(?:[1-9][0-9]*))(?:\.[0-9]+)?$/.test(v);
