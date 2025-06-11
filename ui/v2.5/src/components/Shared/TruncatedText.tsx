@@ -66,3 +66,53 @@ export const TruncatedText: React.FC<ITruncatedTextProps> = ({
     </div>
   );
 };
+
+export const TruncatedInlineText: React.FC<ITruncatedTextProps> = ({
+  text,
+  className,
+  placement = "bottom",
+  delay = 1000,
+}) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const target = useRef(null);
+
+  const startShowingTooltip = useDebounce(() => setShowTooltip(true), delay);
+
+  if (!text) return <></>;
+
+  const handleFocus = (element: HTMLElement) => {
+    // Check if visible size is smaller than the content size
+    if (
+      element.offsetWidth < element.scrollWidth ||
+      element.offsetHeight + 10 < element.scrollHeight
+    )
+      startShowingTooltip();
+  };
+
+  const handleBlur = () => {
+    startShowingTooltip.cancel();
+    setShowTooltip(false);
+  };
+
+  const overlay = (
+    <Overlay target={target.current} show={showTooltip} placement={placement}>
+      <Tooltip id={CLASSNAME} className={CLASSNAME_TOOLTIP}>
+        {text}
+      </Tooltip>
+    </Overlay>
+  );
+
+  return (
+    <span
+      className={cx(CLASSNAME, "inline", className)}
+      ref={target}
+      onMouseEnter={(e) => handleFocus(e.currentTarget)}
+      onFocus={(e) => handleFocus(e.currentTarget)}
+      onMouseLeave={handleBlur}
+      onBlur={handleBlur}
+    >
+      {text}
+      {overlay}
+    </span>
+  );
+};

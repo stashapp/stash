@@ -902,6 +902,40 @@ input[type="range"].blue-slider {
   }
 }
 
+.scene-list .filtered-list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 1rem;
+
+  & > div {
+    display: flex;
+    flex: 1;
+
+    &:first-child {
+      justify-content: flex-start;
+    }
+
+    &:nth-child(2) {
+      justify-content: center;
+    }
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.scene-list.hide-sidebar .sidebar-toggle-button {
+  transition-delay: 0.1s;
+  transition-duration: 0;
+  transition-property: opacity;
+}
+
+.scene-list:not(.hide-sidebar) .sidebar-toggle-button {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .scene-wall,
 .marker-wall {
   .wall-item {

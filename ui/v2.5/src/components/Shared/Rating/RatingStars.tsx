@@ -19,6 +19,7 @@ export interface IRatingStarsProps {
   disabled?: boolean;
   precision: RatingStarPrecision;
   valueRequired?: boolean;
+  orMore?: boolean;
 }
 
 export const RatingStars = PatchComponent(
@@ -199,6 +200,8 @@ export const RatingStars = PatchComponent(
       return `star-fill-${w}`;
     }
 
+    const suffix = props.orMore ? "+" : "";
+
     const renderRatingButton = (thisStar: number) => {
       const ratingFraction = getCurrentSelectedRating();
 
@@ -237,6 +240,7 @@ export const RatingStars = PatchComponent(
       return (
         <span className="star-rating-number">
           {ratingFraction.rating + ratingFraction.fraction}
+          {suffix}
         </span>
       );
     };
