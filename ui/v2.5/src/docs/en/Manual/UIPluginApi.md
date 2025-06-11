@@ -149,6 +149,7 @@ Returns `void`.
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
+- `CustomFields`
 - `CustomFieldInput`
 - `DateInput`
 - `DetailImage`
