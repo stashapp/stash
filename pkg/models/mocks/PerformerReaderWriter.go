@@ -473,6 +473,20 @@ func (_m *PerformerReaderWriter) HasImage(ctx context.Context, performerID int) 
 	return r0, r1
 }
 
+// Merge provides a mock function with given fields: ctx, source, destination
+func (_m *PerformerReaderWriter) Merge(ctx context.Context, source []int, destination int) error {
+	ret := _m.Called(ctx, source, destination)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []int, int) error); ok {
+		r0 = rf(ctx, source, destination)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Query provides a mock function with given fields: ctx, performerFilter, findFilter
 func (_m *PerformerReaderWriter) Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	ret := _m.Called(ctx, performerFilter, findFilter)
@@ -576,11 +590,11 @@ func (_m *PerformerReaderWriter) UpdateImage(ctx context.Context, performerID in
 }
 
 // UpdatePartial provides a mock function with given fields: ctx, id, updatedPerformer
-func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, updatedPerformer models.PerformerPartial) (*models.Performer, error) {
+func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, updatedPerformer *models.PerformerPartial) (*models.Performer, error) {
 	ret := _m.Called(ctx, id, updatedPerformer)
 
 	var r0 *models.Performer
-	if rf, ok := ret.Get(0).(func(context.Context, int, models.PerformerPartial) *models.Performer); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, *models.PerformerPartial) *models.Performer); ok {
 		r0 = rf(ctx, id, updatedPerformer)
 	} else {
 		if ret.Get(0) != nil {
@@ -589,7 +603,7 @@ func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, upda
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, models.PerformerPartial) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int, *models.PerformerPartial) error); ok {
 		r1 = rf(ctx, id, updatedPerformer)
 	} else {
 		r1 = ret.Error(1)
