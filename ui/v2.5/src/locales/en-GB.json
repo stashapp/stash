@@ -124,6 +124,10 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "sidebar": {
+      "close": "Close sidebar",
+      "open": "Open sidebar"
+    },
     "skip": "Skip",
     "split": "Split",
     "stop": "Stop",
@@ -932,7 +936,7 @@
       "destination": "Destination",
       "source": "Source"
     },
-    "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
     "reassign_files": {
@@ -982,6 +986,7 @@
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
+    "set_default_filter_confirm": "Are you sure you want to set this filter as the default?",
     "set_image_url_title": "Image URL",
     "unsaved_changes": "Unsaved changes. Are you sure you want to leave?"
   },

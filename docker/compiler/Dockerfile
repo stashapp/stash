@@ -1,4 +1,4 @@
-FROM golang:1.22.8
+FROM golang:1.24.3
 
 LABEL maintainer="https://discord.gg/2TsNFKt"
 

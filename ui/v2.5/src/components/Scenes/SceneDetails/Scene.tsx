@@ -996,7 +996,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     ) {
       loadScene(queueScenes[currentQueueIndex + 1].id);
     } else {
-      history.push("/scenes");
+      history.goBack();
     }
   }
 

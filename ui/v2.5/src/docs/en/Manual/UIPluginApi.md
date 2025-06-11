@@ -143,23 +143,36 @@ Returns `void`.
 
 #### Patchable components and functions
 
+- `AlertModal`
 - `App`
+- `BackgroundImage`
 - `BooleanSetting`
 - `ChangeButtonSetting`
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
+- `CustomFields`
+- `CustomFieldInput`
 - `DateInput`
+- `DetailImage`
 - `ExternalLinkButtons`
 - `ExternalLinksButton`
 - `FolderSelect`
 - `FrontPage`
+- `GalleryCard`
+- `GalleryCard.Details`
+- `GalleryCard.Image`
+- `GalleryCard.Overlays`
+- `GalleryCard.Popovers`
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `HeaderImage`
 - `HoverPopover`
 - `Icon`
 - `ImageDetailPanel`
+- `ImageInput`
+- `LightboxLink`
 - `LoadingIndicator`
 - `ModalSetting`
 - `GroupIDSelect`
@@ -181,9 +194,13 @@ Returns `void`.
 - `PerformerSelect.sort`
 - `PerformerGalleriesPanel`
 - `PerformerGroupsPanel`
+- `PerformerHeaderImage`
 - `PerformerImagesPanel`
 - `PerformerScenesPanel`
 - `PluginRoutes`
+- `RatingNumber`
+- `RatingStars`
+- `RatingSystem`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
@@ -204,6 +221,7 @@ Returns `void`.
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
+- `SweatDrops`
 - `TabTitleCounter`
 - `TagCard`
 - `TagCard.Details`
@@ -216,6 +234,7 @@ Returns `void`.
 - `TagIDSelect`
 - `TagSelect`
 - `TagSelect.sort`
+- `TruncatedText`
 - `PluginSettings`
 - `Setting`
 - `SettingGroup`

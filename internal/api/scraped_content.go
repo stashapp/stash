@@ -113,7 +113,30 @@ func marshalScrapedMovies(content []scraper.ScrapedContent) ([]*models.ScrapedMo
 		case models.ScrapedMovie:
 			ret = append(ret, &m)
 		default:
-			return nil, fmt.Errorf("%w: cannot turn ScrapedConetnt into ScrapedMovie", models.ErrConversion)
+			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedMovie", models.ErrConversion)
+		}
+	}
+
+	return ret, nil
+}
+
+// marshalScrapedMovies converts ScrapedContent into ScrapedMovie. If conversion
+// fails, an error is returned.
+func marshalScrapedGroups(content []scraper.ScrapedContent) ([]*models.ScrapedGroup, error) {
+	var ret []*models.ScrapedGroup
+	for _, c := range content {
+		if c == nil {
+			// graphql schema requires groups to be non-nil
+			continue
+		}
+
+		switch m := c.(type) {
+		case *models.ScrapedGroup:
+			ret = append(ret, m)
+		case models.ScrapedGroup:
+			ret = append(ret, &m)
+		default:
+			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedGroup", models.ErrConversion)
 		}
 	}
 
@@ -163,6 +186,16 @@ func marshalScrapedImage(content scraper.ScrapedContent) (*models.ScrapedImage, 
 // marshalScrapedMovie will marshal a single scraped movie
 func marshalScrapedMovie(content scraper.ScrapedContent) (*models.ScrapedMovie, error) {
 	m, err := marshalScrapedMovies([]scraper.ScrapedContent{content})
+	if err != nil {
+		return nil, err
+	}
+
+	return m[0], nil
+}
+
+// marshalScrapedMovie will marshal a single scraped movie
+func marshalScrapedGroup(content scraper.ScrapedContent) (*models.ScrapedGroup, error) {
+	m, err := marshalScrapedGroups([]scraper.ScrapedContent{content})
 	if err != nil {
 		return nil, err
 	}

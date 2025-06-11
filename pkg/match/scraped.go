@@ -30,7 +30,7 @@ type SceneRelationships struct {
 func (r SceneRelationships) MatchRelationships(ctx context.Context, s *models.ScrapedScene, endpoint string) error {
 	thisStudio := s.Studio
 	for thisStudio != nil {
-		if err := ScrapedStudio(ctx, r.StudioFinder, s.Studio, endpoint); err != nil {
+		if err := ScrapedStudio(ctx, r.StudioFinder, thisStudio, endpoint); err != nil {
 			return err
 		}
 
