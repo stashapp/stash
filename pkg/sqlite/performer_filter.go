@@ -155,6 +155,8 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 
 		qb.studiosCriterionHandler(filter.Studios),
 
+		qb.groupsCriterionHandler(filter.Groups),
+
 		qb.appearsWithCriterionHandler(filter.Performers),
 
 		qb.tagCountCriterionHandler(filter.TagCount),
@@ -483,6 +485,119 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 
 			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
 			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
+		}
+	}
+}
+
+func (qb *performerFilterHandler) groupsCriterionHandler(groups *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if groups != nil {
+			if groups.Modifier == models.CriterionModifierIsNull || groups.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if groups.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addLeftJoin(performersScenesTable, "", "performers_scenes.performer_id = performers.id")
+				f.addLeftJoin(groupsScenesTable, "", "performers_scenes.scene_id = groups_scenes.scene_id")
+
+				f.addWhere(fmt.Sprintf("%s groups_scenes.group_id IS NULL", notClause))
+				return
+			}
+
+			if len(groups.Value) == 0 {
+				return
+			}
+
+			var clauseCondition string
+
+			switch groups.Modifier {
+			case models.CriterionModifierIncludes:
+				// return performers who appear in scenes with any of the given groups
+				clauseCondition = "NOT"
+			case models.CriterionModifierExcludes:
+				// exclude performers who appear in scenes with any of the given groups
+				clauseCondition = ""
+			default:
+				return
+			}
+
+			const derivedPerformerGroupTable = "performer_group"
+
+			// Simplified approach: direct group-scene-performer relationship without hierarchy
+			var args []interface{}
+			for _, val := range groups.Value {
+				args = append(args, val)
+			}
+
+			// If depth is specified and not 0, we need hierarchy, otherwise use simple approach
+			depthVal := 0
+			if groups.Depth != nil {
+				depthVal = *groups.Depth
+			}
+
+			if depthVal == 0 {
+				// Simple case: no hierarchy, direct group relationship
+				f.addWith(fmt.Sprintf("group_values(id) AS (VALUES %s)", strings.Repeat("(?),", len(groups.Value)-1)+"(?)"), args...)
+
+				templStr := `SELECT performer_id FROM {joinTable}
+	INNER JOIN {primaryTable} ON {joinTable}.scene_id = {primaryTable}.scene_id
+	INNER JOIN group_values ON {primaryTable}.{groupFK} = group_values.id`
+
+				formatMaps := []utils.StrFormatMap{
+					{
+						"primaryTable": groupsScenesTable,
+						"joinTable":    performersScenesTable,
+						"primaryFK":    sceneIDColumn,
+						"groupFK":      groupIDColumn,
+					},
+				}
+
+				var unions []string
+				for _, c := range formatMaps {
+					unions = append(unions, utils.StrFormat(templStr, c))
+				}
+
+				f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerGroupTable, strings.Join(unions, " UNION ")))
+			} else {
+				// Complex case: with hierarchy
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				// Build recursive CTE for group hierarchy
+				hierarchyQuery := fmt.Sprintf(`group_hierarchy AS (
+SELECT sub_id AS root_id, sub_id AS item_id, 0 AS depth FROM groups_relations WHERE sub_id IN%s
+UNION
+SELECT root_id, sub_id, depth + 1 FROM groups_relations INNER JOIN group_hierarchy ON item_id = containing_id %s
+)`, getInBinding(len(groups.Value)), depthCondition)
+
+				f.addRecursiveWith(hierarchyQuery, args...)
+
+				templStr := `SELECT performer_id FROM {joinTable}
+	INNER JOIN {primaryTable} ON {joinTable}.scene_id = {primaryTable}.scene_id
+	INNER JOIN group_hierarchy ON {primaryTable}.{groupFK} = group_hierarchy.item_id`
+
+				formatMaps := []utils.StrFormatMap{
+					{
+						"primaryTable": groupsScenesTable,
+						"joinTable":    performersScenesTable,
+						"primaryFK":    sceneIDColumn,
+						"groupFK":      groupIDColumn,
+					},
+				}
+
+				var unions []string
+				for _, c := range formatMaps {
+					unions = append(unions, utils.StrFormat(templStr, c))
+				}
+
+				f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerGroupTable, strings.Join(unions, " UNION ")))
+			}
+
+			f.addLeftJoin(derivedPerformerGroupTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerGroupTable))
+			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerGroupTable, clauseCondition))
 		}
 	}
 }
