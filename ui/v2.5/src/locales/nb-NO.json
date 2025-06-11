@@ -141,7 +141,11 @@
         "rename_gen_files": "Gi nytt navn til genererte filer",
         "selective_auto_tag": "Selektiv Automatisk Tagging",
         "set_image": "Velg bilde…",
-        "selective_clean": "Selektiv Rens"
+        "selective_clean": "Selektiv Rens",
+        "sidebar": {
+            "close": "lukk sidebar",
+            "open": "åpne sidebar"
+        }
     },
     "component_tagger": {
         "config": {
@@ -190,7 +194,7 @@
         "verb_matched": "Matchet",
         "verb_scrape_all": "Skrap alle",
         "verb_submit_fp": "Send inn {fpCount, plural, one{# Fingeravtrykk} andre{# Fingerprints}}",
-        "verb_toggle_config": "{toggle} {configuration}"
+        "verb_toggle_config": "{veksle} {konfigurasjon}"
     },
     "config": {
         "dlna": {
@@ -206,7 +210,12 @@
             "allow_temp_ip": "Tillatt {tempIP}",
             "allowed_ip_addresses": "Tillatt IP adresser",
             "server_port": "Serverport",
-            "server_display_name": "Server Visningsnavn"
+            "server_display_name": "Server Visningsnavn",
+            "server_display_name_desc": "Visningsnavn for DLNA-serveren. Standard til {server_navn} hvis tom.",
+            "server_port_desc": "Port for å kjøre DLNA-serveren på. Krever omstart av DLNA etter endring.",
+            "until_restart": "frem til omstart",
+            "network_interfaces_desc": "Grensesnitt for å eksponere DLNA-server på. En tom liste resulterer i å kjøre på alle grensesnitt. Krever omstart av DLNA etter endring.",
+            "successfully_cancelled_temporary_behaviour": "Vellykket kansellert midlertidig oppførsel"
         },
         "about": {
             "stash_open_collective": "Støtt oss gjennom {url}",
@@ -217,7 +226,9 @@
             "check_for_new_version": "Sjekk for ny versjon",
             "latest_version": "Siste versjon",
             "latest_version_build_hash": "Siste Versjon Build Hash:",
-            "build_time": "Kompileringstid:"
+            "build_time": "Kompileringstid:",
+            "stash_wiki": "stash {url} side",
+            "build_hash": "bygg hash:"
         },
         "advanced_mode": "Avansert Modus",
         "categories": {
@@ -253,6 +264,9 @@
                 }
             },
             "database": "Database"
+        },
+        "application_paths": {
+            "heading": "applikasjon baner"
         }
     },
     "appears_with": "Opptrer med",
