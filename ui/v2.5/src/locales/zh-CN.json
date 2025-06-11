@@ -141,7 +141,11 @@
         "reset_play_duration": "重置播放时长",
         "reset_resume_time": "重置恢复时间",
         "add_sub_groups": "添加子集合",
-        "remove_from_containing_group": "从集合中移除"
+        "remove_from_containing_group": "从集合中移除",
+        "sidebar": {
+            "close": "关闭侧边栏",
+            "open": "打开侧边栏"
+        }
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -960,7 +964,9 @@
         "unsaved_changes": "更改未保存，确定离开吗？",
         "performers_found": "找到{count} 个演员",
         "clear_o_history_confirm": "真的确定要清空高潮记录吗?",
-        "clear_play_history_confirm": "真的确定要清空播放历史?"
+        "clear_play_history_confirm": "真的确定要清空播放历史?",
+        "set_default_filter_confirm": "你确定要设置这个过滤器为默认吗？",
+        "overwrite_filter_warning": "已保存的过滤器 \"{entityName}\" 将被覆盖。"
     },
     "dimensions": "大小",
     "director": "导演",
