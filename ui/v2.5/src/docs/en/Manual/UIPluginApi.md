@@ -149,6 +149,7 @@ Returns `void`.
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
+- `CustomFields`
 - `CustomFieldInput`
 - `DateInput`
 - `DetailImage`
@@ -195,6 +196,9 @@ Returns `void`.
 - `PerformerImagesPanel`
 - `PerformerScenesPanel`
 - `PluginRoutes`
+- `RatingNumber`
+- `RatingStars`
+- `RatingSystem`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
