@@ -4,25 +4,31 @@ import { PatchComponent } from "src/patch";
 
 export interface IAlertModalProps {
   text: JSX.Element | string;
+  confirmVariant?: string;
   show?: boolean;
   confirmButtonText?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export const AlertModal = PatchComponent(
+export const AlertModal: React.FC<IAlertModalProps> = PatchComponent(
   "AlertModal",
-  (props: IAlertModalProps) => {
+  ({
+    text,
+    show,
+    confirmVariant = "danger",
+    confirmButtonText,
+    onConfirm,
+    onCancel,
+  }) => {
     return (
-      <Modal show={props.show}>
-        <Modal.Body>{props.text}</Modal.Body>
+      <Modal show={show}>
+        <Modal.Body>{text}</Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={() => props.onConfirm()}>
-            {props.confirmButtonText ?? (
-              <FormattedMessage id="actions.confirm" />
-            )}
+          <Button variant={confirmVariant} onClick={() => onConfirm()}>
+            {confirmButtonText ?? <FormattedMessage id="actions.confirm" />}
           </Button>
-          <Button variant="secondary" onClick={() => props.onCancel()}>
+          <Button variant="secondary" onClick={() => onCancel()}>
             <FormattedMessage id="actions.cancel" />
           </Button>
         </Modal.Footer>
