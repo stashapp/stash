@@ -1,7 +1,7 @@
 import React from "react";
 import { PatchComponent } from "src/patch";
 
-const _SweatDrops: React.FC = () => (
+export const SweatDrops: React.FC = PatchComponent("SweatDrops", () => (
   <span>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -21,6 +21,4 @@ const _SweatDrops: React.FC = () => (
       <rect x="0" y="0" width="36" height="36" fill="rgba(0, 0, 0, 0)" />
     </svg>
   </span>
-);
-
-export const SweatDrops = PatchComponent("SweatDrops", _SweatDrops);
+));

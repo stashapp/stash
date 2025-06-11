@@ -1,11 +1,11 @@
 import React from "react";
 import { PatchComponent } from "src/patch";
 
-export const _BackgroundImage: React.FC<{
+export const BackgroundImage: React.FC<{
   imagePath: string | undefined;
   show: boolean;
   alt?: string;
-}> = ({ imagePath, show, alt }) => {
+}> = PatchComponent("BackgroundImage", ({ imagePath, show, alt }) => {
   if (imagePath && show) {
     const imageURL = new URL(imagePath);
     let isDefaultImage = imageURL.searchParams.get("default");
@@ -22,9 +22,4 @@ export const _BackgroundImage: React.FC<{
   }
 
   return null;
-};
-
-export const BackgroundImage = PatchComponent(
-  "BackgroundImage",
-  _BackgroundImage
-);
+});
