@@ -134,6 +134,12 @@ const StudioResult: React.FC<IStudioResultProps> = ({
 
   const selectedSource = !selectedID ? "skip" : "existing";
 
+  const safeBuildStudioScraperLink = (id: string | null | undefined) => {
+    return stashboxStudioPrefix && id
+      ? `${stashboxStudioPrefix}${id}`
+      : undefined;
+  };
+
   return (
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
@@ -141,7 +147,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
         <b className="ml-2">
           <StudioLink
             studio={studio}
-            url={`${stashboxStudioPrefix}${studio.remote_site_id}`}
+            url={safeBuildStudioScraperLink(studio.remote_site_id)}
           />
         </b>
       </div>
