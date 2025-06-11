@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PatchFunction } from "./patch";
 import { usePlugins } from "./core/StashService";
 import { useMemoOnce } from "./hooks/state";
@@ -7,6 +7,7 @@ import useScript, { useCSS } from "./hooks/useScript";
 import { PluginsQuery } from "./core/generated-graphql";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 import { FormattedMessage } from "react-intl";
+import { useToast } from "./hooks/Toast";
 
 type PluginList = NonNullable<Required<PluginsQuery["plugins"]>>;
 
@@ -102,15 +103,25 @@ function useLoadPlugins() {
   );
   useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
 
-  return !pluginsLoading && !!pluginJavascripts && pluginJavascriptLoaded;
+  return {
+    loading: !pluginsLoading && !!pluginJavascripts && pluginJavascriptLoaded,
+    error: pluginsError,
+  };
 }
 
 export const PluginsLoader: React.FC<React.PropsWithChildren<{}>> = ({
   children,
 }) => {
-  const loaded = useLoadPlugins();
+  const Toast = useToast();
+  const { loading: loaded, error } = useLoadPlugins();
 
-  if (!loaded)
+  useEffect(() => {
+    if (error) {
+      Toast.error(`Error loading plugins: ${error.message}`);
+    }
+  }, [Toast, error]);
+
+  if (!loaded && !error)
     return (
       <LoadingIndicator message={<FormattedMessage id="loading.plugins" />} />
     );
