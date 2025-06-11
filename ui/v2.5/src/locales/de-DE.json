@@ -908,7 +908,6 @@
             "destination": "Ziel",
             "source": "Quelle"
         },
-        "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
         "reassign_entity_title": "{count, plural, one {Weise {singularEntity} neu zu} other {Weise {pluralEntity} neu zu}}}",
         "reassign_files": {
             "destination": "Neu zuweisen an"

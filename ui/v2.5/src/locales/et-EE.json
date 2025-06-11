@@ -903,7 +903,6 @@
             "destination": "Sihtkoht",
             "source": "Allikas"
         },
-        "overwrite_filter_confirm": "Oled kindel, et tahad üle kirjutada juba eksisteerivat päringut {entityName}?",
         "reassign_entity_title": "{count, plural, one {Määra Ümber {singularEntity}} other {Määra Ümber {pluralEntity}-d/id}}",
         "reassign_files": {
             "destination": "Määra Ümber"

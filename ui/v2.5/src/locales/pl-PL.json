@@ -832,7 +832,6 @@
             "destination": "Cel",
             "source": "Źródło"
         },
-        "overwrite_filter_confirm": "Czy na pewno chcesz nadpisać istniejące zapisane zapytanie {entityName}?",
         "reassign_entity_title": "Przypisz {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "reassign_files": {
             "destination": "Przypisz ponownie do"

@@ -909,7 +909,6 @@
             "destination": "Destination",
             "source": "Source"
         },
-        "overwrite_filter_confirm": "Êtes-vous sûr de vouloir remplacer la requête sauvegardée existante {entityName} ?",
         "performers_found": "{count} performeurs trouvés",
         "reassign_entity_title": "{count, plural, one {Réaffecté {singularEntity}} other {Réaffectés {pluralEntity}}}",
         "reassign_files": {

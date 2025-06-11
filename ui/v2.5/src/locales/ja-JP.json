@@ -877,7 +877,6 @@
             "destination": "場所",
             "source": "ソース"
         },
-        "overwrite_filter_confirm": "本当に保存されているクエリ「{entityName}」を上書きしてもよろしいですか？",
         "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",
         "reassign_files": {
             "destination": "次に再割り当て:"

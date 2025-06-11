@@ -253,7 +253,6 @@
     "created_at": "Creat La",
     "dialogs": {
         "delete_confirm": "Ești sigur ca vrei să ștergi {entityName}?",
-        "overwrite_filter_confirm": "Sunteți sigur că doriți să suprascrieți interogarea salvată existentă {entityName}?",
         "scene_gen": {
             "force_transcodes_tooltip": "În mod implicit, transcodurile sunt generate numai atunci când fișierul video nu este acceptat în browser. Atunci când este activată, transcodurile vor fi generate chiar și atunci când fișierul video pare a fi acceptat în browser.",
             "image_previews": "Imagini animate de previzualizare",

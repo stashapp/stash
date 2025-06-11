@@ -884,7 +884,6 @@
             "destination": "Назначение",
             "source": "Источник"
         },
-        "overwrite_filter_confirm": "Вы уверены, что хотите перезаписать существующий сохраненный запрос {entityName}?",
         "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",
         "reassign_files": {
             "destination": "Переназначить на"

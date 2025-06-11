@@ -744,7 +744,6 @@
             "destination": "Destinazione",
             "source": "Origine"
         },
-        "overwrite_filter_confirm": "Sei sicuro di voler sovrascrivere le esistenti query salvate {entityName}?",
         "reassign_entity_title": "{count, plural, one {Riassegna {singularEntity}} other {Riassegna {pluralEntity}}}",
         "reassign_files": {
             "destination": "Riassegna a"

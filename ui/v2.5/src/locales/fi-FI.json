@@ -784,7 +784,6 @@
             "destination": "Kohde",
             "source": "Lähde"
         },
-        "overwrite_filter_confirm": "Haluatko varmasti ylikirjoittaa jo olemassaolevan {entityName}?",
         "scene_gen": {
             "force_transcodes": "Pakota transkoodaus",
             "force_transcodes_tooltip": "Oletuksena transkoodaus tehdään vain, mikäli selain ei tue videotiedostoa. Jos tämä valinta on päällä, transkoodaus tehdään vaikka selain näyttäisi tukevan videotiedostoa.",

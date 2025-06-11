@@ -889,7 +889,6 @@
             "destination": "目的地",
             "source": "來源"
         },
-        "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
         "reassign_entity_title": "{count, plural, one {重新指定{singularEntity}}}",
         "reassign_files": {
             "destination": "重新指定至"

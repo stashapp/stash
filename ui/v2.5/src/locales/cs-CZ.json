@@ -880,7 +880,6 @@
             "destination": "Cíl",
             "source": "Zdroj"
         },
-        "overwrite_filter_confirm": "JSte si jisti, že chcete přepsat aktuálně uložený dotaz {entityName}?",
         "scene_gen": {
             "force_transcodes": "Vynutit generování Transkódu",
             "force_transcodes_tooltip": "Ve výchozím nastavení, transkódy jsou generovány pouze tehdy, když video soubor není podporován prohlížečem. V případě aktivování, transkódy budou generovány i v ostatních případech.",

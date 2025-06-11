@@ -909,7 +909,6 @@
             "destination": "Mål",
             "source": "Källa"
         },
-        "overwrite_filter_confirm": "Är du säker på att du vill skriva över existerande sökning {entityName}?",
         "performers_found": "{count} stjärnor hittade",
         "reassign_entity_title": "{count, plural, one {Omplacera {singularEntity}} other {Omplacera {pluralEntity}}}",
         "reassign_files": {

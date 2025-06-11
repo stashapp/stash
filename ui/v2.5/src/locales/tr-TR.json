@@ -834,7 +834,6 @@
             "destination": "Hedef Noktası",
             "source": "Kaynak"
         },
-        "overwrite_filter_confirm": "Kayıtlı {entityName} sorgusunun üzerine yazmak istediğinizden emin misiniz?",
         "scene_gen": {
             "force_transcodes": "Dönüştürülmüş video oluşturmayı zorla",
             "force_transcodes_tooltip": "Varsayılan olarak, video yalnızca video dosyası tarayıcı tarafından desteklenmediğinde dönüştürülür. Etkinleştirildiğinde, video dosyası tarayıcı tarafından destekleniyorsa bile video dönüştürülür.",

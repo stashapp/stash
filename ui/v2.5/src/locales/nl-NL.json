@@ -681,7 +681,6 @@
             "destination": "Bestemming",
             "source": "Afkomst"
         },
-        "overwrite_filter_confirm": "Weet u zeker dat u de bestaande opgeslagen zoekopdracht {entityName} wilt overschrijven?",
         "scene_gen": {
             "force_transcodes": "Genereren van transcode forceren",
             "force_transcodes_tooltip": "Standaard worden transcodes alleen gegenereerd als het videobestand niet wordt ondersteund in de browser. Indien ingeschakeld, worden transcodes gegenereerd, zelfs als het videobestand in de browser lijkt te worden ondersteund.",

@@ -903,7 +903,6 @@
             "destination": "다른 태그와 합쳐질 태그",
             "source": "다른 태그로 합쳐질 태그"
         },
-        "overwrite_filter_confirm": "정말 원래 저장되어 있었던 쿼리 {entityName}을 덮어쓰시겠습니까?",
         "reassign_entity_title": "{count, plural, one {{singularEntity} 재할당} other {{pluralEntity} 재할당}}",
         "scene_gen": {
             "clip_previews": "이미지 클립 미리보기",

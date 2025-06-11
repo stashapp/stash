@@ -908,7 +908,6 @@
             "destination": "目标",
             "source": "源"
         },
-        "overwrite_filter_confirm": "确定要覆盖现有的已保存查询 {entityName} 吗？",
         "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} 其它 {Reassign {pluralEntity}}}",
         "reassign_files": {
             "destination": "重新指定至"
