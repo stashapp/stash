@@ -143,7 +143,9 @@ Returns `void`.
 
 #### Patchable components and functions
 
+- `AlertModal`
 - `App`
+- `BackgroundImage`
 - `BooleanSetting`
 - `ChangeButtonSetting`
 - `CompressedPerformerDetailsPanel`
@@ -219,6 +221,7 @@ Returns `void`.
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
+- `SweatDrops`
 - `TabTitleCounter`
 - `TagCard`
 - `TagCard.Details`
@@ -231,6 +234,7 @@ Returns `void`.
 - `TagIDSelect`
 - `TagSelect`
 - `TagSelect.sort`
+- `TruncatedText`
 - `PluginSettings`
 - `Setting`
 - `SettingGroup`
