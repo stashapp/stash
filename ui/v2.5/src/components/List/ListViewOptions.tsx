@@ -108,7 +108,10 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         className="display-mode-select"
         ref={overlayTarget}
         variant="secondary"
-        // title={getLabel(displayMode)}
+        title={intl.formatMessage(
+          { id: "display_mode.label_current" },
+          { current: getLabel(displayMode) }
+        )}
         onClick={() => setShowOptions(!showOptions)}
       >
         <Icon icon={getIcon(displayMode)} />
