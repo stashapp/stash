@@ -73,12 +73,20 @@
       background-color: $body-bg;
     }
 
+    &:focus::-webkit-slider-runnable-track {
+      background-color: lighten($body-bg, 5%);
+    }
+
     &::-moz-range-thumb {
       background-color: $primary;
     }
 
     &::-moz-range-track {
       background-color: $body-bg;
+    }
+
+    &:focus::-moz-range-track {
+      background-color: lighten($body-bg, 5%);
     }
   }
 }
