@@ -38,6 +38,10 @@
   padding-left: 0.375rem;
   padding-right: 0.375rem;
   text-wrap: nowrap;
+
+  > svg:first-child {
+    margin-right: 0;
+  }
 }
 
 .display-mode-menu {
