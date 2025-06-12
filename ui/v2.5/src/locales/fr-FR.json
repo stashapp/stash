@@ -141,7 +141,11 @@
         "reset_resume_time": "Réinitialiser le temps de reprise",
         "set_cover": "Définir comme vignette",
         "remove_from_containing_group": "Supprimer du groupe",
-        "add_sub_groups": "Ajouter des groupes affiliés"
+        "add_sub_groups": "Ajouter des groupes affiliés",
+        "sidebar": {
+            "close": "Fermer la barre latérale",
+            "open": "Ouvrir la barre latérale"
+        }
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -961,7 +965,9 @@
         "set_image_url_title": "URL de l'image",
         "unsaved_changes": "Modifications non sauvegardées. Vous êtes sûr de vouloir quitter ?",
         "clear_o_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique des O ?",
-        "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?"
+        "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?",
+        "overwrite_filter_warning": "Le filtre enregistré \"{entityName}\" sera remplacé.",
+        "set_default_filter_confirm": "Êtes-vous sûr de vouloir définir ce filtre par défaut ?"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
