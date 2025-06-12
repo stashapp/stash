@@ -103,7 +103,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   }
 
   return (
-    <div>
+    <>
       <Button
         className="display-mode-select"
         ref={overlayTarget}
@@ -153,6 +153,6 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
           </div>
         )}
       </Overlay>
-    </div>
+    </>
   );
 };
