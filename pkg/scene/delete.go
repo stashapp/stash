@@ -37,6 +37,14 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		}
 	}
 
+	subtitlesFolder := filepath.Join(d.Paths.Generated.Subtitles, sceneHash)
+	exists, _ = fsutil.DirExists(subtitlesFolder)
+	if exists {
+		if err := d.Dirs([]string{subtitlesFolder}); err != nil {
+			return err
+		}
+	}
+
 	var files []string
 
 	streamPreviewPath := d.Paths.Scene.GetVideoPreviewPath(sceneHash)

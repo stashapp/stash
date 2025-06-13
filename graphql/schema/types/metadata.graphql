@@ -91,6 +91,8 @@ input ScanMetadataInput {
   scanGenerateThumbnails: Boolean
   "Generate image clip previews during scan"
   scanGenerateClipPreviews: Boolean
+  "Extract embedded subtitles during scan"
+  scanExtractEmbeddedSubtitles: Boolean
 
   "Filter options for the scan"
   filter: ScanMetaDataFilterInput
@@ -113,6 +115,8 @@ type ScanMetadataOptions {
   scanGenerateThumbnails: Boolean!
   "Generate image clip previews during scan"
   scanGenerateClipPreviews: Boolean!
+  "Extract embedded subtitles during scan"
+  scanExtractEmbeddedSubtitles: Boolean!
 }
 
 input CleanMetadataInput {

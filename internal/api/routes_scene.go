@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -422,12 +423,28 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		return
 	}
 
+	config := config.GetInstance()
+	generatedPath := config.GetGeneratedPath()
+
 	for _, caption := range captions {
 		if lang != caption.LanguageCode || ext != caption.CaptionType {
 			continue
 		}
 
-		sub, err := video.ReadSubs(caption.Path(s.Path))
+		var captionPath string
+
+		// Try path based on hash
+		sceneHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+		possiblePath := filepath.Join(generatedPath, "subtitles", sceneHash, caption.Filename)
+
+		exists, _ := fsutil.FileExists(possiblePath)
+		if exists {
+			captionPath = possiblePath
+		} else {
+			captionPath = caption.Path(s.Path)
+		}
+
+		sub, err := video.ReadSubs(captionPath)
 		if err != nil {
 			logger.Warnf("error while reading subs: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
