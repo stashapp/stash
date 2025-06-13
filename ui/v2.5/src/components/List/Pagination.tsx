@@ -13,12 +13,19 @@ import useFocus from "src/utils/focus";
 import { Icon } from "../Shared/Icon";
 import { faCheck, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { useStopWheelScroll } from "src/utils/form";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 const PageCount: React.FC<{
   totalPages: number;
   currentPage: number;
   onChangePage: (page: number) => void;
-}> = ({ totalPages, currentPage, onChangePage }) => {
+  pagePopupPlacement?: Placement;
+}> = ({
+  totalPages,
+  currentPage,
+  onChangePage,
+  pagePopupPlacement = "bottom",
+}) => {
   const intl = useIntl();
   const currentPageCtrl = useRef(null);
   const [pageInput, pageFocus] = useFocus();
@@ -94,7 +101,7 @@ const PageCount: React.FC<{
       <Overlay
         target={currentPageCtrl.current}
         show={showSelectPage}
-        placement="bottom"
+        placement={pagePopupPlacement}
         rootClose
         onHide={() => setShowSelectPage(false)}
       >
@@ -138,9 +145,11 @@ interface IPaginationProps {
   totalItems: number;
   metadataByline?: React.ReactNode;
   onChangePage: (page: number) => void;
+  pagePopupPlacement?: Placement;
 }
 
 interface IPaginationIndexProps {
+  loading?: boolean;
   itemsPerPage: number;
   currentPage: number;
   totalItems: number;
@@ -154,6 +163,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
   currentPage,
   totalItems,
   onChangePage,
+  pagePopupPlacement,
 }) => {
   const intl = useIntl();
   const totalPages = useMemo(
@@ -168,6 +178,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
           totalPages={totalPages}
           currentPage={currentPage}
           onChangePage={onChangePage}
+          pagePopupPlacement={pagePopupPlacement}
         />
       );
 
@@ -183,7 +194,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
         <FormattedNumber value={page} />
       </Button>
     ));
-  }, [totalPages, currentPage, onChangePage]);
+  }, [totalPages, currentPage, onChangePage, pagePopupPlacement]);
 
   if (totalPages <= 1) return <div />;
 
@@ -227,12 +238,15 @@ export const Pagination: React.FC<IPaginationProps> = ({
 };
 
 export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
+  loading,
   itemsPerPage,
   currentPage,
   totalItems,
   metadataByline,
 }) => {
   const intl = useIntl();
+
+  if (loading) return null;
 
   // Build the pagination index string
   const firstItemCount: number = Math.min(
