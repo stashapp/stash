@@ -51,12 +51,18 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   overflow-x: hidden;
-  padding: 4rem 0 0 0;
+  padding: $navbar-height 0 0 0;
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 1rem 0 5rem;
+      padding: 1rem 0 $navbar-height;
     }
+  }
+}
+
+.main {
+  @include media-breakpoint-up(sm) {
+    padding-top: 0.5rem;
   }
 }
 
