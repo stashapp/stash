@@ -3,6 +3,7 @@ package autotag
 import (
 	"context"
 	"slices"
+	"time"
 
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
@@ -100,5 +101,24 @@ func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, t
 		}
 
 		return true, nil
+	})
+}
+
+// GalleryDate extracts a date from the gallery path and sets it to gallery.Date if not already set.
+func GalleryDate(ctx context.Context, g *models.Gallery, rw models.GalleryUpdater) error {
+	t := getGalleryFileTagger(g, nil)
+	return t.tagDates(ctx, func(dateStr string) (bool, error) {
+		if g.Date != nil {
+			return false, nil
+		}
+		tm, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return false, err
+		}
+		dateModel := models.Date{Time: tm}
+		partial := models.NewGalleryPartial()
+		partial.Date = models.NewOptionalDate(dateModel)
+		_, err = rw.UpdatePartial(ctx, g.ID, partial)
+		return err == nil, err
 	})
 }
