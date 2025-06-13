@@ -10,6 +10,7 @@ import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RelatedGroupPopoverButton } from "./RelatedGroupPopover";
+import { withReturnTo } from "src/utils/urlParams";
 
 const Description: React.FC<{
   sceneNumber?: number;
@@ -141,7 +142,10 @@ export const GroupCard: React.FC<IProps> = ({
       className={`group-card zoom-${zoomIndex}`}
       objectId={group.id}
       onMove={onMove}
-      url={`/groups/${group.id}`}
+      url={withReturnTo(
+        `/groups/${group.id}`,
+        location.pathname + location.search
+      )}
       width={cardWidth}
       title={group.name}
       linkClassName="group-card-header"

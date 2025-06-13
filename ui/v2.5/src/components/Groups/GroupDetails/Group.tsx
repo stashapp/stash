@@ -9,7 +9,12 @@ import {
   useGroupUpdate,
   useGroupDestroy,
 } from "src/core/StashService";
-import { useHistory, RouteComponentProps, Redirect } from "react-router-dom";
+import {
+  useHistory,
+  RouteComponentProps,
+  Redirect,
+  useLocation,
+} from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -43,6 +48,7 @@ import { Button, Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
 import { GroupPerformersPanel } from "./GroupPerformersPanel";
 import { Icon } from "src/components/Shared/Icon";
+import { getReturnTo } from "src/utils/urlParams";
 
 const validTabs = ["default", "scenes", "performers", "subgroups"] as const;
 type TabKey = (typeof validTabs)[number];
@@ -143,6 +149,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const intl = useIntl();
   const history = useHistory();
   const Toast = useToast();
+  const location = useLocation();
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -158,7 +165,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const loadStickyHeader = useLoadStickyHeader();
 
   // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState(window.location.hash === "#edit");
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing group state
@@ -244,6 +251,19 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
     };
   });
 
+  useEffect(() => {
+    const unlisten = history.listen((locationObj) => {
+      setIsEditing(locationObj.hash === "#edit");
+    });
+
+    // Initial check in case the page is loaded with #edit hash
+    setIsEditing(window.location.hash === "#edit");
+
+    return () => {
+      unlisten();
+    };
+  }, [history]); // Depend on history object
+
   useRatingKeybinds(
     true,
     configuration?.ui.ratingSystemOptions?.type,
@@ -259,7 +279,8 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
         },
       },
     });
-    toggleEditing(false);
+    setIsEditing(false);
+    history.goBack();
     Toast.success(
       intl.formatMessage(
         { id: "toast.updated_entity" },
@@ -271,19 +292,37 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   async function onDelete() {
     try {
       await deleteGroup();
+
+      // Use the centralized utility to get the returnTo parameter
+      const returnTo = getReturnTo(location.search);
+
+      // Navigate to the groups list page using the returnTo parameter or default
+      if (returnTo) {
+        history.push(returnTo);
+      } else {
+        history.push("/groups");
+      }
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.deleted_entity" },
+          { entity: intl.formatMessage({ id: "group" }).toLocaleLowerCase() }
+        )
+      );
     } catch (e) {
       Toast.error(e);
       return;
     }
-
-    history.goBack();
   }
 
   function toggleEditing(value?: boolean) {
-    if (value !== undefined) {
-      setIsEditing(value);
+    const shouldEdit = value ?? !isEditing;
+    if (shouldEdit) {
+      history.push({ hash: "#edit" });
+      setIsEditing(true);
     } else {
-      setIsEditing((e) => !e);
+      history.replace({ hash: "" });
+      setIsEditing(false);
     }
     setFrontImage(undefined);
     setBackImage(undefined);
@@ -476,6 +515,7 @@ const GroupLoader: React.FC<RouteComponentProps<IGroupParams>> = ({
         to={{
           ...location,
           pathname: `/groups/${id}`,
+          search: location.search,
         }}
       />
     );

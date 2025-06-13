@@ -1,4 +1,10 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
@@ -11,59 +17,107 @@ import { usePrevious } from "src/hooks/state";
 import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { preserveNonFilterParams, hasFilterParams } from "src/utils/urlParams";
 
 export function useFilterURL(
   filter: ListFilterModel,
   setFilter: React.Dispatch<React.SetStateAction<ListFilterModel>>,
-  options?: {
-    defaultFilter?: ListFilterModel;
-    active?: boolean;
-  }
+  optionsOrActive:
+    | boolean
+    | { defaultFilter?: ListFilterModel; active?: boolean } = true
 ) {
-  const { defaultFilter, active = true } = options ?? {};
-
   const history = useHistory();
   const location = useLocation();
 
+  // Support both the new boolean signature and the legacy options object.
+  let active: boolean;
+  let defaultFilter: ListFilterModel | undefined;
+
+  if (typeof optionsOrActive === "boolean") {
+    active = optionsOrActive;
+  } else {
+    active = optionsOrActive.active ?? true;
+    defaultFilter = optionsOrActive.defaultFilter;
+  }
+
   // when the filter changes, update the URL
   const updateFilter = useCallback(
-    (
-      value: ListFilterModel | ((prevState: ListFilterModel) => ListFilterModel)
-    ) => {
+    (value: ListFilterModel | ((prev: ListFilterModel) => ListFilterModel)) => {
       const newFilter = isFunction(value) ? value(filter) : value;
 
       if (active) {
         const newParams = newFilter.makeQueryParameters();
-        history.replace({ ...history.location, search: newParams });
+        const preservedParams = preserveNonFilterParams(
+          newParams,
+          location.search
+        );
+
+        // Check if the new filter represents a page change (currentPage > 1)
+        // This assumes makeQueryParameters includes 'p=' when currentPage > 1
+        if (
+          newFilter.currentPage > 1 &&
+          newFilter.currentPage !== filter.currentPage
+        ) {
+          history.push({ ...history.location, search: preservedParams });
+        } else {
+          // Only update URL if it's actually different from current URL
+          // This prevents adding default parameters when filter is initialized
+          if (preservedParams !== location.search) {
+            history.replace({ ...history.location, search: preservedParams });
+          }
+        }
       } else {
         // set the filter without updating the URL
         setFilter(newFilter);
       }
     },
-    [history, active, setFilter, filter]
+    [history, active, setFilter, filter, location.search]
   );
 
   // This hook runs on every page location change (ie navigation),
-  // and updates the filter accordingly.
+  // including when the user presses the back button
+  // It needs to sync up filter with the URL
   useEffect(() => {
-    // don't apply if active is false
-    if (!active) return;
+    // if another component has modified the filter then don't update from URL
+    if (!active) {
+      return;
+    }
 
-    // re-init to load default filter on empty new query params
-    if (!location.search) {
-      if (defaultFilter) updateFilter(defaultFilter.clone());
+    // If there is no query string and a defaultFilter is provided, apply it.
+    if (!location.search && defaultFilter) {
+      updateFilter(defaultFilter.clone());
       return;
     }
 
     // the query has changed, update filter if necessary
-    setFilter((prevFilter) => {
+    setFilter((prevFilter: ListFilterModel) => {
       let newFilter = prevFilter.empty();
-      newFilter.configureFromQueryString(location.search);
+
+      // Check if URL contains any filter parameters (except returnTo)
+      const hasFilterParamsInUrl = hasFilterParams(location.search);
+
+      if (hasFilterParamsInUrl) {
+        newFilter.configureFromQueryString(location.search);
+      } else {
+        // If no filter params in URL (except returnTo), preserve previous sort settings
+        newFilter.sortBy = prevFilter.sortBy;
+        newFilter.sortDirection = prevFilter.sortDirection;
+      }
+
       if (!isEqual(newFilter, prevFilter)) {
         // filter may have changed if random seed was set, update the URL
         const newParams = newFilter.makeQueryParameters();
-        if (newParams !== location.search) {
-          history.replace({ ...history.location, search: newParams });
+
+        // Only update URL if the new params would actually change the current URL
+        // This prevents unnecessary addition of default parameters
+        if (newParams !== location.search.replace(/^\?/, "")) {
+          const preservedParams = preserveNonFilterParams(
+            newParams,
+            location.search
+          );
+          if (preservedParams !== location.search) {
+            history.replace({ ...history.location, search: preservedParams });
+          }
         }
 
         return newFilter;
@@ -71,14 +125,7 @@ export function useFilterURL(
         return prevFilter;
       }
     });
-  }, [
-    active,
-    location.search,
-    defaultFilter,
-    setFilter,
-    updateFilter,
-    history,
-  ]);
+  }, [location, setFilter, updateFilter, history, active, defaultFilter]);
 
   return { setFilter: updateFilter };
 }
@@ -148,12 +195,9 @@ export function useFilterState(
 
   const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
 
-  const { defaultFilter, loading } = useDefaultFilter(emptyFilter, view);
+  const { loading } = useDefaultFilter(emptyFilter, view);
 
-  const { setFilter } = useFilterURL(filter, setFilterState, {
-    defaultFilter,
-    active: useURL,
-  });
+  const { setFilter } = useFilterURL(filter, setFilterState, useURL);
 
   return { loading, filter, setFilter };
 }

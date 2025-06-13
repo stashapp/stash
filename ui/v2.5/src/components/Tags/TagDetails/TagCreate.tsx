@@ -39,7 +39,7 @@ const TagCreate: React.FC = () => {
         parents: created.parents,
         children: created.children,
       });
-      history.push(`/tags/${created.id}`);
+      history.replace(`/tags/${created.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

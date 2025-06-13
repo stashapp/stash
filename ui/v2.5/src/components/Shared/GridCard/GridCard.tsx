@@ -21,7 +21,7 @@ interface ICardProps {
   linkClassName?: string;
   thumbnailSectionClassName?: string;
   width?: number;
-  url: string;
+  url: string | { pathname: string; search: string };
   pretitleIcon?: JSX.Element;
   title: JSX.Element | string;
   image: JSX.Element;

@@ -1,6 +1,11 @@
 import { Tabs, Tab, Dropdown, Form } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
-import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
+import {
+  useHistory,
+  Redirect,
+  RouteComponentProps,
+  useLocation,
+} from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -290,6 +295,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+  const location = useLocation();
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -303,7 +309,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const loadStickyHeader = useLoadStickyHeader();
 
   // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState(window.location.hash === "#edit");
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
 
@@ -365,6 +371,18 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     };
   });
 
+  useEffect(() => {
+    const unlisten = history.listen((locationObj) => {
+      setIsEditing(locationObj.hash === "#edit");
+    });
+    // Initial check in case the page is loaded with #edit hash
+    setIsEditing(window.location.hash === "#edit");
+
+    return () => {
+      unlisten();
+    };
+  }, [history]); // Depend on history object
+
   async function onSave(input: GQL.TagCreateInput) {
     const oldRelations = {
       parents: tag.parents ?? [],
@@ -379,7 +397,8 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       },
     });
     if (result.data?.tagUpdate) {
-      toggleEditing(false);
+      setIsEditing(false);
+      history.goBack();
       const updated = result.data.tagUpdate;
       tagRelationHook(updated, oldRelations, {
         parents: updated.parents,
@@ -411,16 +430,34 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         children: tag.children ?? [],
       };
       await deleteTag();
+
+      // Read query parameters from the current location
+      const returnUrl = location.search;
+      const params = new URLSearchParams(returnUrl);
+      const returnTo = params.get("returnTo");
+
+      // Navigate to the tags list page, preserving query parameters if they exist
+      if (returnTo) {
+        history.push(decodeURIComponent(returnTo));
+      } else {
+        history.push("/tags");
+      }
+
       tagRelationHook(tag as GQL.TagDataFragment, oldRelations, {
         parents: [],
         children: [],
       });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.deleted_entity" },
+          { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+        )
+      );
     } catch (e) {
       Toast.error(e);
       return;
     }
-
-    history.goBack();
   }
 
   function renderDeleteAlert() {
@@ -450,10 +487,13 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   }
 
   function toggleEditing(value?: boolean) {
-    if (value !== undefined) {
-      setIsEditing(value);
+    const shouldEdit = value ?? !isEditing;
+    if (shouldEdit) {
+      history.push({ hash: "#edit" });
+      setIsEditing(true);
     } else {
-      setIsEditing((e) => !e);
+      history.replace({ hash: "" });
+      setIsEditing(false);
     }
     setImage(undefined);
   }
@@ -620,6 +660,7 @@ const TagLoader: React.FC<RouteComponentProps<ITagParams>> = ({
         to={{
           ...location,
           pathname: `/tags/${id}`,
+          search: location.search,
         }}
       />
     );

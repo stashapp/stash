@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Tabs, Tab, Col, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
+import {
+  useHistory,
+  Redirect,
+  RouteComponentProps,
+  useLocation,
+} from "react-router-dom";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -47,6 +52,7 @@ import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 import { PatchComponent } from "src/patch";
 import { ILightboxImage } from "src/hooks/Lightbox/types";
+import { getReturnTo } from "src/utils/urlParams";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -236,6 +242,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
     const Toast = useToast();
     const history = useHistory();
     const intl = useIntl();
+    const location = useLocation();
 
     // Configuration settings
     const { configuration } = React.useContext(ConfigurationContext);
@@ -247,7 +254,9 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
     const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
     const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState(
+      window.location.hash === "#edit"
+    );
     const [image, setImage] = useState<string | null>();
     const [encodingImage, setEncodingImage] = useState<boolean>(false);
     const loadStickyHeader = useLoadStickyHeader();
@@ -302,6 +311,19 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
       };
     });
 
+    useEffect(() => {
+      const unlisten = history.listen((locationObj) => {
+        setIsEditing(locationObj.hash === "#edit");
+      });
+
+      // Initial check in case the page is loaded with #edit hash
+      setIsEditing(window.location.hash === "#edit");
+
+      return () => {
+        unlisten();
+      };
+    }, [history]); // Depend on history object
+
     async function onSave(input: GQL.PerformerCreateInput) {
       await updatePerformer({
         variables: {
@@ -311,7 +333,8 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
           },
         },
       });
-      toggleEditing(false);
+      setIsEditing(false);
+      history.goBack();
       Toast.success(
         intl.formatMessage(
           { id: "toast.updated_entity" },
@@ -325,19 +348,41 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
     async function onDelete() {
       try {
         await deletePerformer({ variables: { id: performer.id } });
+
+        // Use the centralized utility to get the returnTo parameter
+        const returnTo = getReturnTo(location.search);
+
+        // Navigate to the performers list page using the returnTo parameter or default
+        if (returnTo) {
+          history.push(returnTo);
+        } else {
+          history.push("/performers");
+        }
+
+        Toast.success(
+          intl.formatMessage(
+            { id: "toast.deleted_entity" },
+            {
+              entity: intl
+                .formatMessage({ id: "performer" })
+                .toLocaleLowerCase(),
+            }
+          )
+        );
       } catch (e) {
         Toast.error(e);
         return;
       }
-
-      history.goBack();
     }
 
     function toggleEditing(value?: boolean) {
-      if (value !== undefined) {
-        setIsEditing(value);
+      const shouldEdit = value ?? !isEditing;
+      if (shouldEdit) {
+        history.push({ hash: "#edit" });
+        setIsEditing(true);
       } else {
-        setIsEditing((e) => !e);
+        history.replace({ hash: "" });
+        setIsEditing(false);
       }
       setImage(undefined);
     }
@@ -517,6 +562,7 @@ const PerformerLoader: React.FC<RouteComponentProps<IPerformerParams>> = ({
         to={{
           ...location,
           pathname: `/performers/${id}`,
+          search: location.search,
         }}
       />
     );

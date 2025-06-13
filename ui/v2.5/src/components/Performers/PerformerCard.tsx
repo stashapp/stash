@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
@@ -23,6 +23,7 @@ import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { PatchComponent } from "src/patch";
+import { withReturnTo } from "src/utils/urlParams";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: ModifierCriterion<CriterionValue>[];
@@ -305,11 +306,15 @@ export const PerformerCard: React.FC<IPerformerCardProps> = PatchComponent(
       onSelectedChanged,
       zoomIndex,
     } = props;
+    const location = useLocation();
 
     return (
       <GridCard
         className={`performer-card zoom-${zoomIndex}`}
-        url={`/performers/${performer.id}`}
+        url={withReturnTo(
+          `/performers/${performer.id}`,
+          location.pathname + location.search
+        )}
         width={cardWidth}
         pretitleIcon={
           <GenderIcon className="gender-icon" gender={performer.gender} />

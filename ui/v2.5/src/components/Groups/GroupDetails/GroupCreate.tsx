@@ -30,7 +30,7 @@ const GroupCreate: React.FC = () => {
       variables: { input },
     });
     if (result.data?.groupCreate?.id) {
-      history.push(`/groups/${result.data.groupCreate.id}`);
+      history.replace(`/groups/${result.data.groupCreate.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },
