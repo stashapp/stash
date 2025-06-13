@@ -996,6 +996,7 @@
   "discover": "Discover",
   "display_mode": {
     "grid": "Grid",
+    "label_current": "Display Mode: {current}",
     "list": "List",
     "tagger": "Tagger",
     "unknown": "Unknown",

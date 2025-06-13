@@ -15,7 +15,13 @@ import {
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
 import { Option } from "./SidebarListFilter";
-import { CriterionModifier } from "src/core/generated-graphql";
+import {
+  CriterionModifier,
+  FilterMode,
+  InputMaybe,
+  IntCriterionInput,
+  SceneFilterType,
+} from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
 interface ILabeledIdFilterProps {
@@ -316,11 +322,18 @@ export function useCriterion(
 }
 
 export function useQueryState(
-  useQuery: (q: string, skip: boolean) => ILoadResults<ILabeledId[]>,
+  useQuery: (
+    q: string,
+    filter: ListFilterModel,
+    skip: boolean
+  ) => ILoadResults<ILabeledId[]>,
+  filter: ListFilterModel,
   skip: boolean
 ) {
   const [query, setQuery] = useState("");
-  const { results: queryResults } = useCacheResults(useQuery(query, skip));
+  const { results: queryResults } = useCacheResults(
+    useQuery(query, filter, skip)
+  );
 
   return { query, setQuery, queryResults };
 }
@@ -418,7 +431,11 @@ export function useLabeledIdFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
-  useQuery: (q: string, skip: boolean) => ILoadResults<ILabeledId[]>;
+  useQuery: (
+    q: string,
+    filter: ListFilterModel,
+    skip: boolean
+  ) => ILoadResults<ILabeledId[]>;
   singleValue?: boolean;
   hierarchical?: boolean;
   includeSubMessageID?: string;
@@ -436,7 +453,11 @@ export function useLabeledIdFilterState(props: {
   // defer querying until the user opens the filter
   const [skip, setSkip] = useState(true);
 
-  const { query, setQuery, queryResults } = useQueryState(useQuery, skip);
+  const { query, setQuery, queryResults } = useQueryState(
+    useQuery,
+    filter,
+    skip
+  );
 
   const { criterion, setCriterion } = useCriterion(option, filter, setFilter);
 
@@ -474,4 +495,40 @@ export function useLabeledIdFilterState(props: {
     setQuery,
     onOpen,
   };
+}
+
+export function makeQueryVariables(query: string, extraProps: {}) {
+  return {
+    filter: {
+      q: query,
+      per_page: 200,
+    },
+    ...extraProps,
+  };
+}
+
+interface IFilterType {
+  scenes_filter?: InputMaybe<SceneFilterType>;
+  scene_count?: InputMaybe<IntCriterionInput>;
+}
+
+export function setObjectFilter(
+  out: IFilterType,
+  mode: FilterMode,
+  relatedFilterOutput: SceneFilterType
+) {
+  const empty = Object.keys(relatedFilterOutput).length === 0;
+
+  switch (mode) {
+    case FilterMode.Scenes:
+      // if empty, only get objects with scenes
+      if (empty) {
+        out.scene_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.scenes_filter = relatedFilterOutput;
+      break;
+  }
 }
