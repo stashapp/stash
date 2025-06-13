@@ -22,7 +22,6 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	newGroup := models.NewGroup()
 
 	newGroup.Name = input.Name
-	newGroup.Aliases = translator.string(input.Aliases)
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
 	newGroup.Director = translator.string(input.Director)
@@ -56,6 +55,10 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 
 	if input.Urls != nil {
 		newGroup.URLs = models.NewRelatedStrings(input.Urls)
+	}
+
+	if input.Aliases != nil {
+		newGroup.Aliases = models.NewRelatedStrings(input.Aliases)
 	}
 
 	return &newGroup, nil
@@ -113,7 +116,7 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 	updatedGroup := models.NewGroupPartial()
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
-	updatedGroup.Aliases = translator.optionalString(input.Aliases, "aliases")
+	updatedGroup.Aliases = translator.updateStrings(input.Aliases, "aliases")
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")

@@ -221,7 +221,13 @@ export const ScrapedGroupsRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const aliases: string = "";
+      // Convert ScrapedGroup's single aliases string to Group's aliases array
+      const aliases: string[] = p.aliases
+        ? p.aliases
+            .split(",")
+            .map((a) => a.trim())
+            .filter((a) => a)
+        : [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
@@ -236,8 +242,16 @@ export const ScrapedGroupsRow: React.FC<
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            // map the id back to stored_id
-            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
+            // map the id back to stored_id and convert aliases array back to comma-separated string
+            onChangeFn(
+              items.map((p) => ({
+                ...p,
+                stored_id: p.id,
+                aliases: Array.isArray(p.aliases)
+                  ? p.aliases.join(", ")
+                  : p.aliases,
+              }))
+            );
           }
         }}
         values={selectValue}

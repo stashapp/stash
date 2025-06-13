@@ -1161,6 +1161,10 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 	tagReader := r.Tag
 
 	for m := range jobChan {
+		if err := m.LoadAliases(ctx, r.Group); err != nil {
+			logger.Errorf("[groups] <%s> error getting group aliases: %v", m.Name, err)
+			continue
+		}
 		if err := m.LoadURLs(ctx, r.Group); err != nil {
 			logger.Errorf("[groups] <%s> error getting group urls: %v", m.Name, err)
 			continue
