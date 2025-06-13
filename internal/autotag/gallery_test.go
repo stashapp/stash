@@ -107,9 +107,14 @@ func TestGalleryStudios(t *testing.T) {
 
 	doTest := func(db *mocks.Database, test pathTestTable) {
 		if test.Matches {
+			db.Gallery.On("GetStudioIDs", mock.Anything, galleryID).Return([]int{}, nil).Maybe()
+
 			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
 				expected := models.GalleryPartial{
-					StudioID: models.NewOptionalInt(studioID),
+					StudioIDs: &models.UpdateIDs{
+						IDs:  []int{studioID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
 				}
 
 				return galleryPartialsEqual(got, expected)
@@ -132,7 +137,10 @@ func TestGalleryStudios(t *testing.T) {
 
 		db.Studio.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
 		db.Studio.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
-		db.Studio.On("GetAliases", testCtx, mock.Anything).Return([]string{}, nil).Maybe()
+		db.Studio.On("GetAliasesBatch", testCtx, mock.Anything).Return(map[int][]string{
+			studioID:         {},
+			reversedStudioID: {},
+		}, nil).Once()
 
 		doTest(db, test)
 	}
@@ -146,10 +154,10 @@ func TestGalleryStudios(t *testing.T) {
 
 		db.Studio.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
 		db.Studio.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
-		db.Studio.On("GetAliases", testCtx, studioID).Return([]string{
-			studioName,
+		db.Studio.On("GetAliasesBatch", testCtx, mock.Anything).Return(map[int][]string{
+			studioID:         {studioName},
+			reversedStudioID: {},
 		}, nil).Once()
-		db.Studio.On("GetAliases", testCtx, reversedStudioID).Return([]string{}, nil).Once()
 
 		doTest(db, test)
 	}

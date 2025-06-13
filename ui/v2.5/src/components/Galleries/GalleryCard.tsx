@@ -12,7 +12,7 @@ import NavUtils from "src/utils/navigation";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
-import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { StudiosOverlay } from "../Shared/GridCard/StudiosOverlay";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
 import { useHistory } from "react-router-dom";
@@ -195,7 +195,7 @@ const GalleryCardDetails = PatchComponent(
 const GalleryCardOverlays = PatchComponent(
   "GalleryCard.Overlays",
   (props: IGalleryCardProps) => {
-    return <StudioOverlay studio={props.gallery.studio} />;
+    return <StudiosOverlay studios={props.gallery.studios} />;
   }
 );
 

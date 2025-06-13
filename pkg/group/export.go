@@ -11,13 +11,34 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// GetStudioNames returns the names of studios associated with the group.
+func GetStudioNames(ctx context.Context, studioReader models.StudioGetter, studioIDLoader models.StudioIDLoader, group *models.Group) ([]string, error) {
+	if err := group.LoadStudioIDs(ctx, studioIDLoader); err != nil {
+		return nil, fmt.Errorf("error loading studio IDs: %v", err)
+	}
+
+	var names []string
+	for _, studioID := range group.StudioIDs.List() {
+		studio, err := studioReader.Find(ctx, studioID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting studio: %v", err)
+		}
+
+		if studio != nil {
+			names = append(names, studio.Name)
+		}
+	}
+
+	return names, nil
+}
+
 type ImageGetter interface {
 	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
 	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
 }
 
 // ToJSON converts a Movie into its JSON equivalent.
-func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioGetter, movie *models.Group) (*jsonschema.Group, error) {
+func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioGetter, studioIDLoader models.StudioIDLoader, movie *models.Group) (*jsonschema.Group, error) {
 	newMovieJSON := jsonschema.Group{
 		Name:      movie.Name,
 		Aliases:   movie.Aliases,
@@ -38,16 +59,11 @@ func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioG
 		newMovieJSON.Duration = *movie.Duration
 	}
 
-	if movie.StudioID != nil {
-		studio, err := studioReader.Find(ctx, *movie.StudioID)
-		if err != nil {
-			return nil, fmt.Errorf("error getting movie studio: %v", err)
-		}
-
-		if studio != nil {
-			newMovieJSON.Studio = studio.Name
-		}
+	studioNames, err := GetStudioNames(ctx, studioReader, studioIDLoader, movie)
+	if err != nil {
+		return nil, fmt.Errorf("error getting movie studio names: %v", err)
 	}
+	newMovieJSON.Studios = studioNames
 
 	frontImage, err := reader.GetFrontImage(ctx, movie.ID)
 	if err != nil {

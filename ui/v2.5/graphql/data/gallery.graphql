@@ -26,7 +26,7 @@ fragment GalleryData on Gallery {
   chapters {
     ...GalleryChapterData
   }
-  studio {
+  studios {
     ...SlimStudioData
   }
   tags {
@@ -46,7 +46,7 @@ fragment SelectGalleryData on Gallery {
   title
   date
   code
-  studio {
+  studios {
     name
   }
   cover {

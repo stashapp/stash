@@ -23,7 +23,8 @@ const (
 	groupFrontImageBlobColumn = "front_image_blob"
 	groupBackImageBlobColumn  = "back_image_blob"
 
-	groupsTagsTable = "groups_tags"
+	groupsTagsTable    = "groups_tags"
+	groupsStudiosTable = "studios_groups"
 
 	groupURLsTable = "group_urls"
 	groupURLColumn = "url"
@@ -39,7 +40,6 @@ type groupRow struct {
 	Date     NullDate    `db:"date"`
 	// expressed as 1-100
 	Rating      null.Int    `db:"rating"`
-	StudioID    null.Int    `db:"studio_id,omitempty"`
 	Director    zero.String `db:"director"`
 	Description zero.String `db:"description"`
 	CreatedAt   Timestamp   `db:"created_at"`
@@ -57,7 +57,6 @@ func (r *groupRow) fromGroup(o models.Group) {
 	r.Duration = intFromPtr(o.Duration)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
-	r.StudioID = intFromPtr(o.StudioID)
 	r.Director = zero.StringFrom(o.Director)
 	r.Description = zero.StringFrom(o.Synopsis)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -72,7 +71,6 @@ func (r *groupRow) resolve() *models.Group {
 		Duration:  nullIntPtr(r.Duration),
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
-		StudioID:  nullIntPtr(r.StudioID),
 		Director:  r.Director.String,
 		Synopsis:  r.Description.String,
 		CreatedAt: r.CreatedAt.Timestamp,
@@ -92,7 +90,6 @@ func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 	r.setNullInt("duration", o.Duration)
 	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
-	r.setNullInt("studio_id", o.StudioID)
 	r.setNullString("director", o.Director)
 	r.setNullString("description", o.Synopsis)
 	r.setTimestamp("created_at", o.CreatedAt)
@@ -101,8 +98,9 @@ func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 
 type groupRepositoryType struct {
 	repository
-	scenes repository
-	tags   joinRepository
+	scenes  repository
+	tags    joinRepository
+	studios joinRepository
 }
 
 var (
@@ -123,6 +121,13 @@ var (
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
 			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+		},
+		studios: joinRepository{
+			repository: repository{
+				tableName: groupsStudiosTable,
+				idColumn:  groupIDColumn,
+			},
+			fkColumn: studioIDColumn,
 		},
 	}
 )
@@ -182,6 +187,12 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 		return err
 	}
 
+	if newObject.StudioIDs.Loaded() {
+		if err := groupsStudiosTableMgr.insertJoins(ctx, id, newObject.StudioIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	if err := qb.groupRelationshipStore.createContainingRelationships(ctx, id, newObject.ContainingGroups); err != nil {
 		return err
 	}
@@ -225,6 +236,12 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 		return nil, err
 	}
 
+	if partial.StudioIDs != nil {
+		if err := groupsStudiosTableMgr.modifyJoins(ctx, id, partial.StudioIDs.IDs, partial.StudioIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := qb.groupRelationshipStore.modifyContainingRelationships(ctx, id, partial.ContainingGroups); err != nil {
 		return nil, err
 	}
@@ -252,6 +269,12 @@ func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) e
 
 	if err := qb.tagRelationshipStore.replaceRelationships(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
 		return err
+	}
+
+	if updatedObject.StudioIDs.Loaded() {
+		if err := groupsStudiosTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StudioIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	if err := qb.groupRelationshipStore.replaceContainingRelationships(ctx, updatedObject.ID, updatedObject.ContainingGroups); err != nil {
@@ -612,7 +635,8 @@ WHERE performers_scenes.performer_id = ?
 func (qb *GroupStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Group, error) {
 	query := `SELECT groups.*
 FROM groups
-WHERE groups.studio_id = ?
+INNER JOIN studios_groups ON groups.id = studios_groups.group_id
+WHERE studios_groups.studio_id = ?
 `
 	args := []interface{}{studioID}
 	return qb.queryGroups(ctx, query, args)
@@ -621,7 +645,8 @@ WHERE groups.studio_id = ?
 func (qb *GroupStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	query := `SELECT COUNT(1) AS count
 FROM groups
-WHERE groups.studio_id = ?
+INNER JOIN studios_groups ON groups.id = studios_groups.group_id
+WHERE studios_groups.studio_id = ?
 `
 	args := []interface{}{studioID}
 	return groupRepository.runCountQuery(ctx, query, args)
@@ -700,4 +725,8 @@ func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, id
 	}
 
 	return ret, nil
+}
+
+func (qb *GroupStore) GetStudioIDs(ctx context.Context, groupID int) ([]int, error) {
+	return groupRepository.studios.getIDs(ctx, groupID)
 }

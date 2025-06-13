@@ -128,31 +128,45 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 }
 
 func (i *Importer) populateStudio(ctx context.Context) error {
-	if i.Input.Studio != "" {
-		studio, err := i.StudioWriter.FindByName(ctx, i.Input.Studio, false)
+	if len(i.Input.Studios) > 0 {
+		return i.populateStudios(ctx, i.Input.Studios)
+	}
+
+	return nil
+}
+
+func (i *Importer) populateStudios(ctx context.Context, studioNames []string) error {
+	var studioIDs []int
+
+	for _, studioName := range studioNames {
+		studio, err := i.StudioWriter.FindByName(ctx, studioName, false)
 		if err != nil {
 			return fmt.Errorf("error finding studio by name: %v", err)
 		}
 
 		if studio == nil {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("image studio '%s' not found", i.Input.Studio)
+				return fmt.Errorf("image studio '%s' not found", studioName)
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore {
-				return nil
+				continue
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				studioID, err := i.createStudio(ctx, i.Input.Studio)
+				studioID, err := i.createStudio(ctx, studioName)
 				if err != nil {
 					return err
 				}
-				i.image.StudioID = &studioID
+				studioIDs = append(studioIDs, studioID)
 			}
 		} else {
-			i.image.StudioID = &studio.ID
+			studioIDs = append(studioIDs, studio.ID)
 		}
+	}
+
+	if len(studioIDs) > 0 {
+		i.image.StudioIDs = models.NewRelatedIDs(studioIDs)
 	}
 
 	return nil

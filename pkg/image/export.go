@@ -40,21 +40,26 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	return &newImageJSON
 }
 
-// GetStudioName returns the name of the provided image's studio. It returns an
-// empty string if there is no studio assigned to the image.
-func GetStudioName(ctx context.Context, reader models.StudioGetter, image *models.Image) (string, error) {
-	if image.StudioID != nil {
-		studio, err := reader.Find(ctx, *image.StudioID)
+// GetStudioNames returns the names of the provided image's studios.
+func GetStudioNames(ctx context.Context, reader models.StudioGetter, image *models.Image) ([]string, error) {
+	studioIDs := image.StudioIDs.List()
+	if len(studioIDs) == 0 {
+		return nil, nil
+	}
+
+	var studioNames []string
+	for _, studioID := range studioIDs {
+		studio, err := reader.Find(ctx, studioID)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		if studio != nil {
-			return studio.Name, nil
+		if studio != nil && studio.Name != "" {
+			studioNames = append(studioNames, studio.Name)
 		}
 	}
 
-	return "", nil
+	return studioNames, nil
 }
 
 // GetGalleryChecksum returns the checksum of the provided image. It returns an

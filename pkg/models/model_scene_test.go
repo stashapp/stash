@@ -47,7 +47,10 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 				Date:      NewOptionalDate(dateObj),
 				Rating:    NewOptionalInt(rating100),
 				Organized: NewOptionalBool(organized),
-				StudioID:  NewOptionalInt(studioID),
+				StudioIDs: &UpdateIDs{
+					IDs:  []int{studioID},
+					Mode: RelationshipUpdateModeSet,
+				},
 			},
 			SceneUpdateInput{
 				ID:        idStr,
@@ -59,7 +62,7 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 				Date:      &date,
 				Rating100: &rating100,
 				Organized: &organized,
-				StudioID:  &studioIDStr,
+				StudioIds: []string{studioIDStr},
 			},
 		},
 		{

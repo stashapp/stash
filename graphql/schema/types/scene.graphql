@@ -72,7 +72,7 @@ type Scene {
   paths: ScenePathsType! # Resolver
   scene_markers: [SceneMarker!]!
   galleries: [Gallery!]!
-  studio: Studio
+  studios: [Studio!]!
   groups: [SceneGroup!]!
   movies: [SceneMovie!]! @deprecated(reason: "Use groups")
   tags: [Tag!]!
@@ -104,7 +104,7 @@ input SceneCreateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
-  studio_id: ID
+  studio_ids: [ID!]
   gallery_ids: [ID!]
   performer_ids: [ID!]
   groups: [SceneGroupInput!]
@@ -137,7 +137,7 @@ input SceneUpdateInput {
   o_counter: Int
     @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
   organized: Boolean
-  studio_id: ID
+  studio_ids: [ID!]
   gallery_ids: [ID!]
   performer_ids: [ID!]
   groups: [SceneGroupInput!]
@@ -184,7 +184,7 @@ input BulkSceneUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
-  studio_id: ID
+  studio_ids: BulkUpdateIds
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
@@ -237,7 +237,7 @@ type SceneParserResult {
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
-  studio_id: ID
+  studio_ids: [ID!]
   gallery_ids: [ID!]
   performer_ids: [ID!]
   movies: [SceneMovieID!]

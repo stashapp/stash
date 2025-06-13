@@ -20,7 +20,7 @@ fragment SlimGalleryData on Gallery {
     title
     image_index
   }
-  studio {
+  studios {
     id
     name
     image_path

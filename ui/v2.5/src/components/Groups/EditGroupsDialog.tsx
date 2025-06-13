@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useBulkGroupUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
-import { StudioSelect } from "../Shared/Select";
 import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
@@ -13,7 +12,7 @@ import {
   getAggregateInputIDs,
   getAggregateInputValue,
   getAggregateRating,
-  getAggregateStudioId,
+  getAggregateStudioIds,
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
@@ -73,7 +72,11 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
   const intl = useIntl();
   const Toast = useToast();
   const [rating100, setRating] = useState<number | undefined>();
-  const [studioId, setStudioId] = useState<string | undefined>();
+  const [studioIds, setStudioIds] = useState<string[]>();
+  const [studioMode, setStudioMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
+  const [existingStudioIds, setExistingStudioIds] = useState<string[]>();
   const [director, setDirector] = useState<string | undefined>();
 
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
@@ -94,7 +97,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
 
   function getGroupInput(): GQL.BulkGroupUpdateInput {
     const aggregateRating = getAggregateRating(props.selected);
-    const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregateStudioIds = getAggregateStudioIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
     const aggregateGroups = getAggregateContainingGroups(props.selected);
 
@@ -104,7 +107,11 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     };
 
     groupInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
-    groupInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
+    groupInput.studio_ids = getAggregateInputIDs(
+      studioMode,
+      studioIds,
+      aggregateStudioIds
+    );
     groupInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
 
     groupInput.containing_groups = getAggregateContainingGroupInput(
@@ -138,7 +145,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     const state = props.selected;
     let updateRating: number | undefined;
-    let updateStudioId: string | undefined;
+    let updateStudioIds: string[] = [];
     let updateTagIds: string[] = [];
     let updateContainingGroupIds: IRelatedGroupEntry[] = [];
     let updateDirector: string | undefined;
@@ -146,6 +153,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
 
     state.forEach((group: GQL.GroupDataFragment) => {
       const groupTagIDs = (group.tags ?? []).map((p) => p.id).sort();
+      const groupStudioIDs = (group.studios ?? []).map((s) => s.id).sort();
       const groupContainingGroupIDs = (group.containing_groups ?? []).sort(
         (a, b) => a.group.id.localeCompare(b.group.id)
       );
@@ -153,7 +161,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
       if (first) {
         first = false;
         updateRating = group.rating100 ?? undefined;
-        updateStudioId = group.studio?.id ?? undefined;
+        updateStudioIds = groupStudioIDs;
         updateTagIds = groupTagIDs;
         updateContainingGroupIds = groupContainingGroupIDs;
         updateDirector = group.director ?? undefined;
@@ -161,8 +169,8 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
         if (group.rating100 !== updateRating) {
           updateRating = undefined;
         }
-        if (group.studio?.id !== updateStudioId) {
-          updateStudioId = undefined;
+        if (!isEqual(groupStudioIDs, updateStudioIds)) {
+          updateStudioIds = [];
         }
         if (group.director !== updateDirector) {
           updateDirector = undefined;
@@ -177,7 +185,8 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     });
 
     setRating(updateRating);
-    setStudioId(updateStudioId);
+    setStudioIds(updateStudioIds);
+    setExistingStudioIds(updateStudioIds);
     setExistingTagIds(updateTagIds);
     setExistingContainingGroups(updateContainingGroupIds);
     setDirector(updateDirector);
@@ -218,15 +227,17 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
           </Form.Group>
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "studio" }),
+              title: intl.formatMessage({ id: "studios" }),
             })}
             <Col xs={9}>
-              <StudioSelect
-                onSelect={(items) =>
-                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                }
-                ids={studioId ? [studioId] : []}
-                isDisabled={isUpdating}
+              <MultiSet
+                type="studios"
+                disabled={isUpdating}
+                onUpdate={(itemIDs) => setStudioIds(itemIDs)}
+                onSetMode={(newMode) => setStudioMode(newMode)}
+                existingIds={existingStudioIds ?? []}
+                ids={studioIds ?? []}
+                mode={studioMode}
                 menuPortalTarget={document.body}
               />
             </Col>

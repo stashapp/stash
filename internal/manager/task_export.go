@@ -514,11 +514,12 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 			t.exportFile(f)
 		}
 
-		newSceneJSON.Studio, err = scene.GetStudioName(ctx, studioReader, s)
+		studioNames, err := scene.GetStudioNames(ctx, studioReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene studio name: %v", sceneHash, err)
+			logger.Errorf("[scenes] <%s> error getting scene studio names: %v", sceneHash, err)
 			continue
 		}
+		newSceneJSON.Studios = studioNames
 
 		galleries, err := galleryReader.FindBySceneID(ctx, s.ID)
 		if err != nil {
@@ -565,8 +566,9 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		if t.includeDependencies {
-			if s.StudioID != nil {
-				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
+			// Load studio IDs and add them to dependencies
+			if err := s.LoadStudioIDs(ctx, sceneReader); err == nil {
+				t.studios.IDs = sliceutil.AppendUniques(t.studios.IDs, s.StudioIDs.List())
 			}
 
 			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
@@ -673,11 +675,12 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		var err error
-		newImageJSON.Studio, err = image.GetStudioName(ctx, studioReader, s)
+		studioNames, err := image.GetStudioNames(ctx, studioReader, s)
 		if err != nil {
-			logger.Errorf("[images] <%s> error getting image studio name: %v", imageHash, err)
+			logger.Errorf("[images] <%s> error getting image studio names: %v", imageHash, err)
 			continue
 		}
+		newImageJSON.Studios = studioNames
 
 		imageGalleries, err := galleryReader.FindByImageID(ctx, s.ID)
 		if err != nil {
@@ -711,10 +714,9 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 		newImageJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			if s.StudioID != nil {
-				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
+			if err := s.LoadStudioIDs(ctx, r.Image); err == nil {
+				t.studios.IDs = sliceutil.AppendUniques(t.studios.IDs, s.StudioIDs.List())
 			}
-
 			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
 			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
 			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
@@ -819,11 +821,12 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 			t.exportFolder(*folder)
 		}
 
-		newGalleryJSON.Studio, err = gallery.GetStudioName(ctx, studioReader, g)
+		studioNames, err := gallery.GetStudioNames(ctx, studioReader, g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery studio name: %v", g.DisplayName(), err)
+			logger.Errorf("[galleries] <%s> error getting gallery studio names: %v", g.DisplayName(), err)
 			continue
 		}
+		newGalleryJSON.Studios = studioNames
 
 		performers, err := performerReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
@@ -848,10 +851,9 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 		newGalleryJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			if g.StudioID != nil {
-				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *g.StudioID)
+			if err := g.LoadStudioIDs(ctx, r.Gallery); err == nil {
+				t.studios.IDs = sliceutil.AppendUniques(t.studios.IDs, g.StudioIDs.List())
 			}
-
 			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
 			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
@@ -1170,7 +1172,7 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 			continue
 		}
 
-		newGroupJSON, err := group.ToJSON(ctx, groupReader, studioReader, m)
+		newGroupJSON, err := group.ToJSON(ctx, groupReader, studioReader, r.Group, m)
 
 		if err != nil {
 			logger.Errorf("[groups] <%s> error getting tag JSON: %v", m.Name, err)
@@ -1205,8 +1207,8 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		if t.includeDependencies {
-			if m.StudioID != nil {
-				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *m.StudioID)
+			if err := m.LoadStudioIDs(ctx, r.Group); err == nil {
+				t.studios.IDs = sliceutil.AppendUniques(t.studios.IDs, m.StudioIDs.List())
 			}
 		}
 

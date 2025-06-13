@@ -35,7 +35,7 @@ import {
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Scene = Pick<GQL.Scene, "id" | "title" | "date" | "code"> & {
-  studio?: Pick<GQL.Studio, "name"> | null;
+  studios?: Pick<GQL.Studio, "name">[] | null;
   files?: Pick<GQL.VideoFile, "path">[];
   paths?: Pick<GQL.ScenePathsType, "screenshot">;
 };
@@ -134,9 +134,11 @@ const _SceneSelect: React.FC<
                 lineCount={1}
               />
 
-              {object.studio?.name && (
+              {object.studios && object.studios.length > 0 && (
                 <span className="scene-select-studio">
-                  {object.studio?.name}
+                  {object.studios
+                    .map((studio: Pick<GQL.Studio, "name">) => studio.name)
+                    .join(", ")}
                 </span>
               )}
 

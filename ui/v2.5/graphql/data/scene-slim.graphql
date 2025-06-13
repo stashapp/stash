@@ -52,7 +52,7 @@ fragment SlimSceneData on Scene {
     title
   }
 
-  studio {
+  studios {
     id
     name
     image_path

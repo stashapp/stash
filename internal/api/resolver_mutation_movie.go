@@ -45,9 +45,9 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	newGroup.StudioID, err = translator.intPtrFromString(input.StudioID)
+	newGroup.StudioIDs, err = translator.relatedIds(input.StudioIds)
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	newGroup.TagIDs, err = translator.relatedIds(input.TagIds)
@@ -142,9 +142,9 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedGroup.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedGroup.StudioIDs, err = translator.updateIds(input.StudioIds, "studio_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	updatedGroup.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
@@ -221,9 +221,9 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
 
-	updatedGroup.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedGroup.StudioIDs, err = translator.updateIdsBulk(input.StudioIds, "studio_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, fmt.Errorf("converting studio ids: %w", err)
 	}
 
 	updatedGroup.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")

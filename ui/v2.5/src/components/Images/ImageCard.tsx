@@ -17,7 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { imageTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
-import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { StudiosOverlay } from "../Shared/GridCard/StudiosOverlay";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -194,7 +194,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
           />
         </div>
       }
-      overlays={<StudioOverlay studio={props.image.studio} />}
+      overlays={<StudiosOverlay studios={props.image.studios} />}
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}
       selecting={props.selecting}

@@ -1119,9 +1119,14 @@ func makeScene(i int) *models.Scene {
 		URLs: models.NewRelatedStrings([]string{
 			getSceneEmptyString(i, urlField),
 		}),
-		Rating:       getIntPtr(rating),
-		Date:         getObjectDate(i),
-		StudioID:     studioID,
+		Rating: getIntPtr(rating),
+		Date:   getObjectDate(i),
+		StudioIDs: models.NewRelatedIDs(func() []int {
+			if studioID == nil {
+				return []int{}
+			}
+			return []int{*studioID}
+		}()),
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
@@ -1215,8 +1220,13 @@ func makeImage(i int) *models.Image {
 		URLs: models.NewRelatedStrings([]string{
 			getImageEmptyString(i, urlField),
 		}),
-		OCounter:     getOCounter(i),
-		StudioID:     studioID,
+		OCounter: getOCounter(i),
+		StudioIDs: models.NewRelatedIDs(func() []int {
+			if studioID == nil {
+				return []int{}
+			}
+			return []int{*studioID}
+		}()),
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
@@ -1306,9 +1316,14 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		URLs: models.NewRelatedStrings([]string{
 			getGalleryEmptyString(i, urlField),
 		}),
-		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDate(i),
-		StudioID:     studioID,
+		Rating: getIntPtr(getRating(i)),
+		Date:   getObjectDate(i),
+		StudioIDs: models.NewRelatedIDs(func() []int {
+			if studioID == nil {
+				return []int{}
+			}
+			return []int{*studioID}
+		}()),
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
 	}
@@ -1903,7 +1918,7 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 func linkGroupStudios(ctx context.Context, mqb models.GroupWriter) error {
 	return doLinks(groupStudioLinks, func(groupIndex, studioIndex int) error {
 		group := models.GroupPartial{
-			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),
+			StudioIDs: &models.UpdateIDs{IDs: []int{studioIDs[studioIndex]}, Mode: models.RelationshipUpdateModeSet},
 		}
 		_, err := mqb.UpdatePartial(ctx, groupIDs[groupIndex], group)
 

@@ -69,7 +69,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		floatIntCriterionHandler(groupFilter.Duration, "groups.duration", nil),
 		qb.missingCriterionHandler(groupFilter.IsMissing),
 		qb.urlsCriterionHandler(groupFilter.URL),
-		studioCriterionHandler(groupTable, groupFilter.Studios),
+		qb.studiosCriterionHandler(groupFilter.Studios),
 		qb.performersCriterionHandler(groupFilter.Performers),
 		qb.tagsCriterionHandler(groupFilter.Tags),
 		qb.tagCountCriterionHandler(groupFilter.TagCount),
@@ -91,9 +91,12 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
-			relatedIDCol:   "groups.studio_id",
+			relatedIDCol:   "studios_groups.studio_id",
 			relatedRepo:    studioRepository.repository,
 			relatedHandler: &studioFilterHandler{groupFilter.StudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				groupRepository.studios.innerJoin(f, "", "groups.id")
+			},
 		},
 	}
 }
@@ -200,4 +203,21 @@ func (qb *groupFilterHandler) tagCountCriterionHandler(count *models.IntCriterio
 	}
 
 	return h.handler(count)
+}
+
+func (qb *groupFilterHandler) studiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: groupTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+
+		relationsTable: "", // studios don't have a separate relations table, they use parent_id directly
+		parentFK:       "parent_id",
+		childFK:        "child_id",
+		joinAs:         "studios_groups",
+		joinTable:      groupsStudiosTable,
+		primaryFK:      groupIDColumn,
+	}
+
+	return h.handler(studios)
 }

@@ -36,7 +36,7 @@ import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Gallery = Pick<GQL.Gallery, "id" | "title" | "date" | "code"> & {
-  studio?: Pick<GQL.Studio, "name"> | null;
+  studios?: Pick<GQL.Studio, "name">[] | null;
   files: Pick<GQL.GalleryFile, "path">[];
   folder?: Pick<GQL.Folder, "path"> | null;
   cover?: Pick<GQL.Image, "paths"> | null;
@@ -147,9 +147,11 @@ const _GallerySelect: React.FC<
                 lineCount={1}
               />
 
-              {object.studio?.name && (
+              {object.studios && object.studios.length > 0 && (
                 <span className="gallery-select-studio">
-                  {object.studio?.name}
+                  {object.studios
+                    .map((studio: Pick<GQL.Studio, "name">) => studio.name)
+                    .join(", ")}
                 </span>
               )}
 

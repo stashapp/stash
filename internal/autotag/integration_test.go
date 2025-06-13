@@ -177,9 +177,9 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore
 	}
 
 	s := &models.Scene{
-		Title:    expectedMatchTitle,
-		Code:     existingStudioSceneName,
-		StudioID: &existingStudioID,
+		Title:     expectedMatchTitle,
+		Code:      existingStudioSceneName,
+		StudioIDs: models.NewRelatedIDs([]int{existingStudioID}),
 	}
 	if err := createScene(ctx, sqb, s, f); err != nil {
 		return err
@@ -319,8 +319,8 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore m
 	}
 
 	s := &models.Image{
-		Title:    existingStudioImageName,
-		StudioID: &existingStudioID,
+		Title:     existingStudioImageName,
+		StudioIDs: models.NewRelatedIDs([]int{existingStudioID}),
 	}
 	if err := createImage(ctx, w, s, f); err != nil {
 		return err
@@ -424,8 +424,8 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 	}
 
 	s := &models.Gallery{
-		Title:    existingStudioGalleryName,
-		StudioID: &existingStudioID,
+		Title:     existingStudioGalleryName,
+		StudioIDs: models.NewRelatedIDs([]int{existingStudioID}),
 	}
 	if err := createGallery(ctx, w, s, f); err != nil {
 		return err
@@ -625,20 +625,33 @@ func TestParseStudioScenes(t *testing.T) {
 		for _, scene := range scenes {
 			// check for existing studio id scene first
 			if scene.Code == existingStudioSceneName {
-				if scene.StudioID == nil || *scene.StudioID != existingStudioID {
+				if err := scene.LoadStudioIDs(ctx, r.Scene); err != nil {
+					t.Error(err.Error())
+				}
+				studioIDs := scene.StudioIDs.List()
+				if len(studioIDs) == 0 || studioIDs[0] != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
 				}
 			} else {
 				// title is only set on scenes where we expect studio to be set
 				if scene.Title == expectedMatchTitle {
-					if scene.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path)
+					if err := scene.LoadStudioIDs(ctx, r.Scene); err != nil {
+						t.Error(err.Error())
 					}
-
-				} else if scene.Title != expectedMatchTitle && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+					studioIDs := scene.StudioIDs.List()
+					if len(studioIDs) == 0 {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
+					} else if len(studioIDs) > 0 && studioIDs[0] != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", studioIDs[0], scene.Path)
+					}
+				} else if scene.Title != expectedMatchTitle {
+					if err := scene.LoadStudioIDs(ctx, r.Scene); err != nil {
+						t.Error(err.Error())
+					}
+					studioIDs := scene.StudioIDs.List()
+					if len(studioIDs) > 0 && studioIDs[0] == studios[1].ID {
+						t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+					}
 				}
 			}
 		}
@@ -796,20 +809,33 @@ func TestParseStudioImages(t *testing.T) {
 		for _, image := range images {
 			// check for existing studio id image first
 			if image.Title == existingStudioImageName {
-				if *image.StudioID != existingStudioID {
+				if err := image.LoadStudioIDs(ctx, r.Image); err != nil {
+					t.Error(err.Error())
+				}
+				studioIDs := image.StudioIDs.List()
+				if len(studioIDs) == 0 || studioIDs[0] != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for image with existing studio ID")
 				}
 			} else {
 				// title is only set on images where we expect studio to be set
 				if image.Title == expectedMatchTitle {
-					if image.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
-					} else if *image.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path)
+					if err := image.LoadStudioIDs(ctx, r.Image); err != nil {
+						t.Error(err.Error())
 					}
-
-				} else if image.Title != expectedMatchTitle && image.StudioID != nil && *image.StudioID == studios[1].ID {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
+					studioIDs := image.StudioIDs.List()
+					if len(studioIDs) == 0 {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
+					} else if studioIDs[0] != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", studioIDs[0], image.Path)
+					}
+				} else if image.Title != expectedMatchTitle {
+					if err := image.LoadStudioIDs(ctx, r.Image); err != nil {
+						t.Error(err.Error())
+					}
+					studioIDs := image.StudioIDs.List()
+					if len(studioIDs) > 0 && studioIDs[0] == studios[1].ID {
+						t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
+					}
 				}
 			}
 		}
@@ -968,20 +994,33 @@ func TestParseStudioGalleries(t *testing.T) {
 		for _, gallery := range galleries {
 			// check for existing studio id gallery first
 			if gallery.Title == existingStudioGalleryName {
-				if *gallery.StudioID != existingStudioID {
+				if err := gallery.LoadStudioIDs(ctx, r.Gallery); err != nil {
+					t.Error(err.Error())
+				}
+				studioIDs := gallery.StudioIDs.List()
+				if len(studioIDs) == 0 || studioIDs[0] != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for gallery with existing studio ID")
 				}
 			} else {
 				// title is only set on galleries where we expect studio to be set
 				if gallery.Title == expectedMatchTitle {
-					if gallery.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path)
-					} else if *gallery.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", *gallery.StudioID, gallery.Path)
+					if err := gallery.LoadStudioIDs(ctx, r.Gallery); err != nil {
+						t.Error(err.Error())
 					}
-
-				} else if gallery.Title != expectedMatchTitle && (gallery.StudioID != nil && *gallery.StudioID == studios[1].ID) {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path)
+					studioIDs := gallery.StudioIDs.List()
+					if len(studioIDs) == 0 {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path)
+					} else if len(studioIDs) > 0 && studioIDs[0] != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", studioIDs[0], gallery.Path)
+					}
+				} else if gallery.Title != expectedMatchTitle {
+					if err := gallery.LoadStudioIDs(ctx, r.Gallery); err != nil {
+						t.Error(err.Error())
+					}
+					studioIDs := gallery.StudioIDs.List()
+					if len(studioIDs) > 0 && studioIDs[0] == studios[1].ID {
+						t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path)
+					}
 				}
 			}
 		}

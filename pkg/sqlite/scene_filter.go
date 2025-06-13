@@ -146,7 +146,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.tagCountCriterionHandler(sceneFilter.TagCount),
 		qb.performersCriterionHandler(sceneFilter.Performers),
 		qb.performerCountCriterionHandler(sceneFilter.PerformerCount),
-		studioCriterionHandler(sceneTable, sceneFilter.Studios),
+		qb.studiosCriterionHandler(sceneFilter.Studios),
 
 		qb.groupsCriterionHandler(sceneFilter.Groups),
 		qb.moviesCriterionHandler(sceneFilter.Movies),
@@ -179,9 +179,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
-			relatedIDCol:   "scenes.studio_id",
+			relatedIDCol:   "studios_scenes.studio_id",
 			relatedRepo:    studioRepository.repository,
 			relatedHandler: &studioFilterHandler{sceneFilter.StudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				sceneRepository.studios.innerJoin(f, "studios_scenes", "scenes.id")
+			},
 		},
 
 		&relatedFilterHandler{
@@ -318,7 +321,8 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				sceneRepository.galleries.join(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")
 			case "studio":
-				f.addWhere("scenes.studio_id IS NULL")
+				sceneRepository.studios.join(f, "studios_join", "scenes.id")
+				f.addWhere("studios_join.scene_id IS NULL")
 			case "movie":
 				sceneRepository.groups.join(f, "groups_join", "scenes.id")
 				f.addWhere("groups_join.scene_id IS NULL")
@@ -565,4 +569,27 @@ func (qb *sceneFilterHandler) phashDistanceCriterionHandler(phashDistance *model
 			}
 		}
 	}
+}
+
+func (qb *sceneFilterHandler) studiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	if studios != nil && studios.Modifier == models.CriterionModifierNotEquals {
+		criterionCopy := *studios
+		criterionCopy.Modifier = models.CriterionModifierExcludes
+		studios = &criterionCopy
+	}
+
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+
+		relationsTable: "", // studios don't have a separate relations table, they use parent_id directly
+		parentFK:       "parent_id",
+		childFK:        "child_id",
+		joinAs:         "studios_scenes",
+		joinTable:      scenesStudiosTable,
+		primaryFK:      sceneIDColumn,
+	}
+
+	return h.handler(studios)
 }

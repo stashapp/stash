@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import isEqual from "lodash-es/isEqual";
 import { useBulkImageUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { StudioSelect } from "src/components/Shared/Select";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
@@ -16,7 +15,7 @@ import {
   getAggregateInputValue,
   getAggregatePerformerIds,
   getAggregateRating,
-  getAggregateStudioId,
+  getAggregateStudioIds,
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
@@ -32,7 +31,11 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   const intl = useIntl();
   const Toast = useToast();
   const [rating100, setRating] = useState<number>();
-  const [studioId, setStudioId] = useState<string>();
+  const [studioIds, setStudioIds] = useState<string[]>();
+  const [studioMode, setStudioMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
+  const [existingStudioIds, setExistingStudioIds] = useState<string[]>();
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
@@ -62,7 +65,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   function getImageInput(): GQL.BulkImageUpdateInput {
     // need to determine what we are actually setting on each image
     const aggregateRating = getAggregateRating(props.selected);
-    const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregateStudioIds = getAggregateStudioIds(props.selected);
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
     const aggregateGalleryIds = getAggregateGalleryIds(props.selected);
@@ -74,7 +77,11 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     };
 
     imageInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
-    imageInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
+    imageInput.studio_ids = getAggregateInputIDs(
+      studioMode,
+      studioIds,
+      aggregateStudioIds
+    );
 
     imageInput.performer_ids = getAggregateInputIDs(
       performerMode,
@@ -119,7 +126,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     const state = props.selected;
     let updateRating: number | undefined;
-    let updateStudioID: string | undefined;
+    let updateStudioIDs: string[] = [];
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let updateGalleryIds: string[] = [];
@@ -128,7 +135,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 
     state.forEach((image: GQL.SlimImageDataFragment) => {
       const imageRating = image.rating100;
-      const imageStudioID = image?.studio?.id;
+      const imageStudioIDs = (image.studios ?? []).map((s) => s.id);
       const imagePerformerIDs = (image.performers ?? [])
         .map((p) => p.id)
         .sort();
@@ -137,7 +144,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 
       if (first) {
         updateRating = imageRating ?? undefined;
-        updateStudioID = imageStudioID;
+        updateStudioIDs = imageStudioIDs;
         updatePerformerIds = imagePerformerIDs;
         updateTagIds = imageTagIDs;
         updateGalleryIds = imageGalleryIDs;
@@ -147,8 +154,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         if (imageRating !== updateRating) {
           updateRating = undefined;
         }
-        if (imageStudioID !== updateStudioID) {
-          updateStudioID = undefined;
+        if (!isEqual(imageStudioIDs, updateStudioIDs)) {
+          updateStudioIDs = [];
         }
         if (!isEqual(imagePerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
@@ -166,7 +173,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     });
 
     setRating(updateRating);
-    setStudioId(updateStudioID);
+    setStudioIds(updateStudioIDs);
+    setExistingStudioIds(updateStudioIDs);
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
     setExistingGalleryIds(updateGalleryIds);
@@ -226,20 +234,20 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               />
             </Col>
           </Form.Group>
-          <Form.Group controlId="studio" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "studio" }),
-            })}
-            <Col xs={9}>
-              <StudioSelect
-                onSelect={(items) =>
-                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                }
-                ids={studioId ? [studioId] : []}
-                isDisabled={isUpdating}
-                menuPortalTarget={document.body}
-              />
-            </Col>
+          <Form.Group controlId="studios">
+            <Form.Label>
+              <FormattedMessage id="studios" />
+            </Form.Label>
+            <MultiSet
+              type="studios"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setStudioIds(itemIDs)}
+              onSetMode={(newMode) => setStudioMode(newMode)}
+              existingIds={existingStudioIds ?? []}
+              ids={studioIds ?? []}
+              mode={studioMode}
+              menuPortalTarget={document.body}
+            />
           </Form.Group>
 
           <Form.Group controlId="performers">

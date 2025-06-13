@@ -300,18 +300,24 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       <div className="image-tabs order-xl-first order-last">
         <div>
           <div className="image-header-container">
-            {image.studio && (
+            {image.studios && image.studios.length > 0 && (
               <h1 className="text-center image-studio-image">
-                <Link to={`/studios/${image.studio.id}`}>
-                  <img
-                    src={image.studio.image_path ?? ""}
-                    alt={`${image.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
+                {image.studios.map((studio) => (
+                  <Link key={studio.id} to={`/studios/${studio.id}`}>
+                    <img
+                      src={studio.image_path ?? ""}
+                      alt={`${studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                ))}
               </h1>
             )}
-            <h3 className={cx("image-header", { "no-studio": !image.studio })}>
+            <h3
+              className={cx("image-header", {
+                "no-studio": !image.studios || image.studios.length === 0,
+              })}
+            >
               <TruncatedText lineCount={2} text={title} />
             </h3>
           </div>

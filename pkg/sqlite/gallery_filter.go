@@ -95,7 +95,7 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		qb.performerCountCriterionHandler(filter.PerformerCount),
 		qb.scenesCriterionHandler(filter.Scenes),
 		qb.hasChaptersCriterionHandler(filter.HasChapters),
-		studioCriterionHandler(galleryTable, filter.Studios),
+		qb.studiosCriterionHandler(filter.Studios),
 		qb.performerTagsCriterionHandler(filter.PerformerTags),
 		qb.averageResolutionCriterionHandler(filter.AverageResolution),
 		qb.imageCountCriterionHandler(filter.ImageCount),
@@ -133,9 +133,12 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
-			relatedIDCol:   "galleries.studio_id",
+			relatedIDCol:   "studios_galleries.studio_id",
 			relatedRepo:    studioRepository.repository,
 			relatedHandler: &studioFilterHandler{filter.StudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.studios.innerJoin(f, "", "galleries.id")
+			},
 		},
 
 		&relatedFilterHandler{
@@ -262,7 +265,8 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
 				f.addWhere("scenes_join.gallery_id IS NULL")
 			case "studio":
-				f.addWhere("galleries.studio_id IS NULL")
+				galleryRepository.studios.join(f, "studios_join", "galleries.id")
+				f.addWhere("studios_join.gallery_id IS NULL")
 			case "performers":
 				galleryRepository.performers.join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
@@ -431,4 +435,28 @@ func (qb *galleryFilterHandler) averageResolutionCriterionHandler(resolution *mo
 			}
 		}
 	}
+}
+
+func (qb *galleryFilterHandler) studiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	// Treat NOT_EQUALS the same as EXCLUDES for studios. Other hierarchical filters remain unchanged.
+	if studios != nil && studios.Modifier == models.CriterionModifierNotEquals {
+		criterionCopy := *studios
+		criterionCopy.Modifier = models.CriterionModifierExcludes
+		studios = &criterionCopy
+	}
+
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+
+		relationsTable: "", // studios don't have a separate relations table, they use parent_id directly
+		parentFK:       "parent_id",
+		childFK:        "child_id",
+		joinAs:         "studios_galleries",
+		joinTable:      galleriesStudiosTable,
+		primaryFK:      galleryIDColumn,
+	}
+
+	return h.handler(studios)
 }

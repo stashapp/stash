@@ -195,13 +195,16 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	setOrganized := utils.IsTrue(options.SetOrganized)
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio(ctx)
+	studioIDs, err := rel.studio(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio: %w", err)
 	}
 
-	if studioID != nil {
-		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+	if studioIDs != nil {
+		ret.Partial.StudioIDs = &models.UpdateIDs{
+			IDs:  studioIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
 	}
 
 	includeMalePerformers := true
@@ -277,6 +280,9 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, resu
 			return err
 		}
 		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if err := s.LoadStudioIDs(ctx, t.SceneReaderUpdater); err != nil {
 			return err
 		}
 		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {

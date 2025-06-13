@@ -566,41 +566,6 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 	}
 }
 
-func studioCriterionHandler(primaryTable string, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if studios == nil {
-			return
-		}
-
-		studiosCopy := *studios
-		switch studiosCopy.Modifier {
-		case models.CriterionModifierEquals:
-			studiosCopy.Modifier = models.CriterionModifierIncludesAll
-		case models.CriterionModifierNotEquals:
-			studiosCopy.Modifier = models.CriterionModifierExcludes
-		}
-
-		hh := hierarchicalMultiCriterionHandlerBuilder{
-			primaryTable: primaryTable,
-			foreignTable: studioTable,
-			foreignFK:    studioIDColumn,
-			parentFK:     "parent_id",
-		}
-
-		hh.handler(&studiosCopy)(ctx, f)
-	}
-}
-
-type hierarchicalMultiCriterionHandlerBuilder struct {
-	primaryTable string
-	foreignTable string
-	foreignFK    string
-
-	parentFK       string
-	childFK        string
-	relationsTable string
-}
-
 func getHierarchicalValues(ctx context.Context, values []string, table, relationsTable, parentFK string, childFK string, depth *int) (string, error) {
 	var args []interface{}
 
@@ -707,72 +672,6 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion models.Hierarch
 		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
 	case models.CriterionModifierExcludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NULL", table, idColumn))
-	}
-}
-
-func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if c != nil {
-			// make a copy so we don't modify the original
-			criterion := *c
-
-			// don't support equals/not equals
-			if criterion.Modifier == models.CriterionModifierEquals || criterion.Modifier == models.CriterionModifierNotEquals {
-				f.setError(fmt.Errorf("modifier %s is not supported for hierarchical multi criterion", criterion.Modifier))
-				return
-			}
-
-			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if criterion.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
-					"table":  m.primaryTable,
-					"column": m.foreignFK,
-					"not":    notClause,
-				}))
-				return
-			}
-
-			if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
-				return
-			}
-
-			// combine excludes if excludes modifier is selected
-			if criterion.Modifier == models.CriterionModifierExcludes {
-				criterion.Modifier = models.CriterionModifierIncludesAll
-				criterion.Excludes = append(criterion.Excludes, criterion.Value...)
-				criterion.Value = nil
-			}
-
-			if len(criterion.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
-				if err != nil {
-					f.setError(err)
-					return
-				}
-
-				switch criterion.Modifier {
-				case models.CriterionModifierIncludes:
-					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
-				case models.CriterionModifierIncludesAll:
-					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
-					f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
-				}
-			}
-
-			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
-				if err != nil {
-					f.setError(err)
-					return
-				}
-
-				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
-			}
-		}
 	}
 }
 

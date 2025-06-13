@@ -279,8 +279,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     return performers.map((p) => p.stored_id ?? undefined);
   }, [performers]);
 
-  const getInitialStudio = useCallback(() => {
-    return scene.studio?.stored_id ?? stashScene.studio?.id;
+  const getInitialStudios = useCallback(() => {
+    const sceneStudios =
+      scene.studios?.filter((s) => s.stored_id).map((s) => s.stored_id!) || [];
+    const stashStudios = stashScene.studios?.map((s) => s.id) || [];
+    return [...new Set([...sceneStudios, ...stashStudios])];
   }, [stashScene, scene]);
 
   const [loading, setLoading] = useState(false);
@@ -296,9 +299,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     getInitialPerformers()
   );
 
-  const [studioID, setStudioID] = useState<string | undefined>(
-    getInitialStudio()
-  );
+  const [studioIDs, setStudioIDs] = useState<string[]>(getInitialStudios());
 
   useEffect(() => {
     setInitialTagIDs(getInitialTags());
@@ -309,8 +310,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   }, [getInitialPerformers]);
 
   useEffect(() => {
-    setStudioID(getInitialStudio());
-  }, [getInitialStudio]);
+    setStudioIDs(getInitialStudios());
+  }, [getInitialStudios]);
 
   useEffect(() => {
     async function doResolveScene() {
@@ -386,7 +387,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       performer_ids: uniq(
         stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
       ),
-      studio_id: studioID,
+      studio_ids: studioIDs,
       cover_image: resolveField("cover_image", undefined, imgData),
       tag_ids: tagIDs,
       stash_ids: stashScene.stash_ids ?? [],
@@ -477,7 +478,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     date: "date",
     url: "url",
     details: "details",
-    studio: "studio",
+    studios: "studios",
     stash_ids: "stash_ids",
     code: "code",
     director: "director",
@@ -537,10 +538,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   };
 
   function renderStudioDate() {
+    const studioNames =
+      stashScene.studios && stashScene.studios.length > 0
+        ? stashScene.studios
+            .map((studio) => studio.name)
+            .filter(Boolean)
+            .join(", ")
+        : "";
+
     const text =
-      scene.studio && scene.date
-        ? `${scene.studio.name} • ${scene.date}`
-        : `${scene.studio?.name ?? scene.date ?? ""}`;
+      studioNames && stashScene.date
+        ? `${studioNames} • ${stashScene.date}`
+        : `${studioNames || stashScene.date || ""}`;
 
     if (text) {
       return <h5>{text}</h5>;
@@ -658,21 +667,35 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   };
 
   const maybeRenderStudioField = () => {
-    if (scene.studio) {
+    if (scene.studios && scene.studios.length > 0) {
       return (
         <div className="mt-2">
-          <StudioResult
-            studio={scene.studio}
-            selectedID={studioID}
-            setSelectedID={(id) => setStudioID(id)}
-            onCreate={() => showStudioModal(scene.studio!)}
-            endpoint={
-              currentSource?.sourceInput.stash_box_endpoint ?? undefined
-            }
-            onLink={async () => {
-              await linkStudio(scene.studio!, studioID!);
-            }}
-          />
+          {scene.studios.map((studio, studioIndex) => (
+            <StudioResult
+              key={studio.name || studioIndex}
+              studio={studio}
+              selectedID={studioIDs[studioIndex]}
+              setSelectedID={(id) => {
+                const newStudioIDs = [...studioIDs];
+                if (id) {
+                  newStudioIDs[studioIndex] = id;
+                } else {
+                  newStudioIDs.splice(studioIndex, 1);
+                }
+                setStudioIDs(newStudioIDs);
+              }}
+              onCreate={() => showStudioModal(studio)}
+              endpoint={
+                currentSource?.sourceInput.stash_box_endpoint ?? undefined
+              }
+              onLink={async () => {
+                const selectedID = studioIDs[index];
+                if (selectedID) {
+                  await linkStudio(studio, selectedID);
+                }
+              }}
+            />
+          ))}
         </div>
       );
     }

@@ -26,6 +26,10 @@ type TagIDLoader interface {
 	GetTagIDs(ctx context.Context, relatedID int) ([]int, error)
 }
 
+type StudioIDLoader interface {
+	GetStudioIDs(ctx context.Context, relatedID int) ([]int, error)
+}
+
 type TagRelationLoader interface {
 	GetParentIDs(ctx context.Context, relatedID int) ([]int, error)
 	GetChildIDs(ctx context.Context, relatedID int) ([]int, error)
@@ -61,6 +65,7 @@ type FileLoader interface {
 
 type AliasLoader interface {
 	GetAliases(ctx context.Context, relatedID int) ([]string, error)
+	GetAliasesBatch(ctx context.Context, ids []int) (map[int][]string, error)
 }
 
 type URLLoader interface {

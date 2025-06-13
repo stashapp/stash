@@ -108,14 +108,20 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
   );
 
   const StudioCell = (gallery: GQL.SlimGalleryDataFragment) => {
-    if (gallery.studio) {
+    if (gallery.studios && gallery.studios.length > 0) {
       return (
-        <Link
-          to={NavUtils.makeStudioGalleriesUrl(gallery.studio)}
-          title={gallery.studio.name}
-        >
-          <span className="ellips-data">{gallery.studio.name}</span>
-        </Link>
+        <ul className="comma-list overflowable">
+          {gallery.studios.map((studio) => (
+            <li key={studio.id}>
+              <Link
+                to={NavUtils.makeStudioGalleriesUrl(studio)}
+                title={studio.name}
+              >
+                <span className="ellips-data">{studio.name}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       );
     }
   };

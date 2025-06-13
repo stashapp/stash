@@ -22,7 +22,7 @@ fragment ImageData on Image {
     ...GalleryData
   }
 
-  studio {
+  studios {
     ...SlimStudioData
   }
 

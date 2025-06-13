@@ -10,10 +10,10 @@ import (
 )
 
 type Image struct {
-	Title  string `json:"title,omitempty"`
-	Code   string `json:"code,omitempty"`
-	Studio string `json:"studio,omitempty"`
-	Rating int    `json:"rating,omitempty"`
+	Title   string   `json:"title,omitempty"`
+	Code    string   `json:"code,omitempty"`
+	Studios []string `json:"studios,omitempty"`
+	Rating  int      `json:"rating,omitempty"`
 
 	// deprecated - for import only
 	URL string `json:"url,omitempty"`

@@ -56,6 +56,7 @@ type SceneUpdater interface {
 	Update(ctx context.Context, updatedScene *Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene ScenePartial) (*Scene, error)
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
+	StudioIDLoader
 }
 
 // SceneDestroyer provides methods to destroy scenes.
@@ -99,6 +100,7 @@ type SceneReader interface {
 	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader
+	StudioIDLoader
 	SceneGroupLoader
 	StashIDLoader
 	VideoFileLoader

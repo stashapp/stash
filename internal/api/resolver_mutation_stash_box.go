@@ -116,14 +116,20 @@ func (r *mutationResolver) makeSceneDraft(ctx context.Context, s *models.Scene, 
 	pqb := r.repository.Performer
 	sqb := r.repository.Studio
 
-	if s.StudioID != nil {
+	if err := s.LoadStudioIDs(ctx, r.repository.Scene); err != nil {
+		return nil, err
+	}
+
+	if s.StudioIDs.Loaded() && len(s.StudioIDs.List()) > 0 {
+		// For stash box submission, use the first studio
+		studioID := s.StudioIDs.List()[0]
 		var err error
-		draft.Studio, err = sqb.Find(ctx, *s.StudioID)
+		draft.Studio, err = sqb.Find(ctx, studioID)
 		if err != nil {
 			return nil, err
 		}
 		if draft.Studio == nil {
-			return nil, fmt.Errorf("studio with id %d not found", *s.StudioID)
+			return nil, fmt.Errorf("studio with id %d not found", studioID)
 		}
 
 		if err := draft.Studio.LoadStashIDs(ctx, r.repository.Studio); err != nil {

@@ -90,8 +90,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = PatchComponent(
       );
     }
 
-    // filename should use entire row if there is no studio
-    const imageDetailsWidth = props.image.studio ? "col-9" : "col-12";
+    // filename should use entire row if there are no studios
+    const imageDetailsWidth =
+      props.image.studios && props.image.studios.length > 0
+        ? "col-9"
+        : "col-12";
 
     return (
       <>

@@ -8,11 +8,12 @@ import {
 
 const modifierOptions = [
   CriterionModifier.Includes,
+  CriterionModifier.IncludesAll,
   CriterionModifier.IsNull,
   CriterionModifier.NotNull,
 ];
 
-const defaultModifier = CriterionModifier.Includes;
+const defaultModifier = CriterionModifier.IncludesAll;
 const inputType = "studios";
 
 export const StudiosCriterionOption = new ModifierCriterionOption({

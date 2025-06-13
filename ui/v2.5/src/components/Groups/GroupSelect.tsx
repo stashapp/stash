@@ -34,7 +34,7 @@ export type Group = Pick<
   GQL.Group,
   "id" | "name" | "date" | "front_image_path" | "aliases"
 > & {
-  studio?: Pick<GQL.Studio, "name"> | null;
+  studios?: Pick<GQL.Studio, "name">[] | null;
 };
 type Option = SelectOption<Group>;
 
@@ -141,9 +141,11 @@ export const GroupSelect: React.FC<
                 lineCount={1}
               />
 
-              {object.studio?.name && (
+              {object.studios && object.studios.length > 0 && (
                 <span className="group-select-studio">
-                  {object.studio?.name}
+                  {object.studios
+                    .map((studio: Pick<GQL.Studio, "name">) => studio.name)
+                    .join(", ")}
                 </span>
               )}
 

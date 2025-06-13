@@ -95,21 +95,27 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, scene *models.Scene) 
 	return &newSceneJSON, nil
 }
 
-// GetStudioName returns the name of the provided scene's studio. It returns an
-// empty string if there is no studio assigned to the scene.
-func GetStudioName(ctx context.Context, reader models.StudioGetter, scene *models.Scene) (string, error) {
-	if scene.StudioID != nil {
-		studio, err := reader.Find(ctx, *scene.StudioID)
+// GetStudioNames returns the names of the provided scene's studios.
+func GetStudioNames(ctx context.Context, reader models.StudioGetter, scene *models.Scene) ([]string, error) {
+	// Assume studio IDs are already loaded
+	studioIDs := scene.StudioIDs.List()
+	if len(studioIDs) == 0 {
+		return nil, nil
+	}
+
+	var studioNames []string
+	for _, studioID := range studioIDs {
+		studio, err := reader.Find(ctx, studioID)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		if studio != nil {
-			return studio.Name, nil
+		if studio != nil && studio.Name != "" {
+			studioNames = append(studioNames, studio.Name)
 		}
 	}
 
-	return "", nil
+	return studioNames, nil
 }
 
 // GetTagNames returns a slice of tag names corresponding to the provided

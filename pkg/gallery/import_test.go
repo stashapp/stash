@@ -67,6 +67,7 @@ func TestImporterPreImport(t *testing.T) {
 		Rating:       &rating,
 		Organized:    organized,
 		URLs:         models.NewRelatedStrings([]string{url}),
+		StudioIDs:    models.NewRelatedIDs([]int{}),
 		Files:        models.NewRelatedFiles([]models.File{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -83,7 +84,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 	i := Importer{
 		StudioWriter: db.Studio,
 		Input: jsonschema.Gallery{
-			Studio: existingStudioName,
+			Studios: []string{existingStudioName},
 		},
 	}
 
@@ -94,9 +95,9 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingStudioID, *i.gallery.StudioID)
+	assert.Equal(t, []int{existingStudioID}, i.gallery.StudioIDs.List())
 
-	i.Input.Studio = existingStudioErr
+	i.Input.Studios = []string{existingStudioErr}
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
@@ -109,7 +110,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i := Importer{
 		StudioWriter: db.Studio,
 		Input: jsonschema.Gallery{
-			Studio: missingStudioName,
+			Studios: []string{missingStudioName},
 		},
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
@@ -130,7 +131,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingStudioID, *i.gallery.StudioID)
+	assert.Equal(t, []int{existingStudioID}, i.gallery.StudioIDs.List())
 
 	db.AssertExpectations(t)
 }
@@ -141,7 +142,7 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 	i := Importer{
 		StudioWriter: db.Studio,
 		Input: jsonschema.Gallery{
-			Studio: missingStudioName,
+			Studios: []string{missingStudioName},
 		},
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}

@@ -4,7 +4,7 @@ import { INamedObject } from "src/utils/navigation";
 
 export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
   performers?: INamedObject[] | null;
-  studio?: INamedObject | null;
+  studios?: INamedObject[] | null;
 };
 
 export interface IPlaySceneOptions {

@@ -43,21 +43,27 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	return &newGalleryJSON, nil
 }
 
-// GetStudioName returns the name of the provided gallery's studio. It returns an
-// empty string if there is no studio assigned to the gallery.
-func GetStudioName(ctx context.Context, reader models.StudioGetter, gallery *models.Gallery) (string, error) {
-	if gallery.StudioID != nil {
-		studio, err := reader.Find(ctx, *gallery.StudioID)
+// GetStudioNames returns the names of the provided gallery's studios.
+func GetStudioNames(ctx context.Context, reader models.StudioGetter, gallery *models.Gallery) ([]string, error) {
+	// Assume studio IDs are already loaded
+	studioIDs := gallery.StudioIDs.List()
+	if len(studioIDs) == 0 {
+		return nil, nil
+	}
+
+	var studioNames []string
+	for _, studioID := range studioIDs {
+		studio, err := reader.Find(ctx, studioID)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		if studio != nil {
-			return studio.Name, nil
+		if studio != nil && studio.Name != "" {
+			studioNames = append(studioNames, studio.Name)
 		}
 	}
 
-	return "", nil
+	return studioNames, nil
 }
 
 // GetGalleryChaptersJSON returns a slice of GalleryChapter JSON representation

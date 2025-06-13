@@ -84,7 +84,7 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		qb.galleriesCriterionHandler(imageFilter.Galleries),
 		qb.performersCriterionHandler(imageFilter.Performers),
 		qb.performerCountCriterionHandler(imageFilter.PerformerCount),
-		studioCriterionHandler(imageTable, imageFilter.Studios),
+		qb.studiosCriterionHandler(imageFilter.Studios),
 		qb.performerTagsCriterionHandler(imageFilter.PerformerTags),
 		qb.performerFavoriteCriterionHandler(imageFilter.PerformerFavorite),
 		qb.performerAgeCriterionHandler(imageFilter.PerformerAge),
@@ -110,9 +110,12 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
-			relatedIDCol:   "images.studio_id",
+			relatedIDCol:   "studios_images.studio_id",
 			relatedRepo:    studioRepository.repository,
 			relatedHandler: &studioFilterHandler{imageFilter.StudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				imageRepository.studios.innerJoin(f, "", "images.id")
+			},
 		},
 
 		&relatedFilterHandler{
@@ -141,7 +144,8 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "studio":
-				f.addWhere("images.studio_id IS NULL")
+				imageRepository.studios.join(f, "studios_join", "images.id")
+				f.addWhere("studios_join.image_id IS NULL")
 			case "performers":
 				imageRepository.performers.join(f, "performers_join", "images.id")
 				f.addWhere("performers_join.image_id IS NULL")
@@ -289,4 +293,28 @@ func (qb *imageFilterHandler) performerTagsCriterionHandler(tags *models.Hierarc
 		joinTable:      performersImagesTable,
 		joinPrimaryKey: imageIDColumn,
 	}
+}
+
+func (qb *imageFilterHandler) studiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	// Convert NOT_EQUALS to EXCLUDES for studios to reuse existing handler logic
+	if studios != nil && studios.Modifier == models.CriterionModifierNotEquals {
+		criterionCopy := *studios
+		criterionCopy.Modifier = models.CriterionModifierExcludes
+		studios = &criterionCopy
+	}
+
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+
+		relationsTable: "", // studios don't have a separate relations table, they use parent_id directly
+		parentFK:       "parent_id",
+		childFK:        "child_id",
+		joinAs:         "studios_images",
+		joinTable:      imagesStudiosTable,
+		primaryFK:      imageIDColumn,
+	}
+
+	return h.handler(studios)
 }

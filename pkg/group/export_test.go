@@ -1,6 +1,7 @@
 package group
 
 import (
+	"context"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -12,6 +13,17 @@ import (
 	"testing"
 	"time"
 )
+
+// StudioReaderWriterIDLoader is a wrapper that implements the StudioIDLoader interface
+type StudioReaderWriterIDLoader struct {
+	*mocks.StudioReaderWriter
+}
+
+// GetStudioIDs implements the StudioIDLoader interface
+func (s StudioReaderWriterIDLoader) GetStudioIDs(ctx context.Context, relatedID int) ([]int, error) {
+	// This method is not called in tests, so we simply return an empty slice
+	return []int{}, nil
+}
 
 const (
 	movieID              = 1
@@ -73,7 +85,7 @@ func createFullMovie(id int, studioID int) models.Group {
 		Director:  director,
 		Synopsis:  synopsis,
 		URLs:      models.NewRelatedStrings([]string{url}),
-		StudioID:  &studioID,
+		StudioIDs: models.NewRelatedIDs([]int{studioID}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -89,6 +101,10 @@ func createEmptyMovie(id int) models.Group {
 }
 
 func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Group {
+	var studios []string
+	if studio != "" {
+		studios = []string{studio}
+	}
 	return &jsonschema.Group{
 		Name:       movieName,
 		Aliases:    movieAliases,
@@ -98,7 +114,7 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Group
 		Director:   director,
 		Synopsis:   synopsis,
 		URLs:       []string{url},
-		Studio:     studio,
+		Studios:    studios,
 		FrontImage: frontImage,
 		BackImage:  backImage,
 		CreatedAt: json.JSONTime{
@@ -193,9 +209,12 @@ func TestToJSON(t *testing.T) {
 	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil)
 	db.Studio.On("Find", testCtx, errStudioID).Return(nil, studioErr)
 
+	// Create a wrapper that implements the StudioIDLoader interface
+	studioIDLoader := StudioReaderWriterIDLoader{db.Studio}
+
 	for i, s := range scenarios {
 		movie := s.movie
-		json, err := ToJSON(testCtx, db.Group, db.Studio, &movie)
+		json, err := ToJSON(testCtx, db.Group, db.Studio, studioIDLoader, &movie)
 
 		switch {
 		case !s.err && err != nil:

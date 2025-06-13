@@ -19,7 +19,6 @@ type Scene struct {
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
-	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
 	Files         RelatedVideoFiles
@@ -41,6 +40,7 @@ type Scene struct {
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
+	StudioIDs    RelatedIDs      `json:"studio_ids"`
 	Groups       RelatedGroups   `json:"groups"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
 }
@@ -64,7 +64,6 @@ type ScenePartial struct {
 	// Rating expressed in 1-100 scale
 	Rating       OptionalInt
 	Organized    OptionalBool
-	StudioID     OptionalInt
 	CreatedAt    OptionalTime
 	UpdatedAt    OptionalTime
 	ResumeTime   OptionalFloat64
@@ -74,6 +73,7 @@ type ScenePartial struct {
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
+	StudioIDs     *UpdateIDs
 	GroupIDs      *UpdateGroupIDs
 	StashIDs      *UpdateStashIDs
 	PrimaryFileID *FileID
@@ -139,6 +139,12 @@ func (s *Scene) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
+func (s *Scene) LoadStudioIDs(ctx context.Context, l StudioIDLoader) error {
+	return s.StudioIDs.load(func() ([]int, error) {
+		return l.GetStudioIDs(ctx, s.ID)
+	})
+}
+
 func (s *Scene) LoadGroups(ctx context.Context, l SceneGroupLoader) error {
 	return s.Groups.load(func() ([]GroupsScenes, error) {
 		return l.GetGroups(ctx, s.ID)
@@ -165,6 +171,10 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 	}
 
 	if err := s.LoadTagIDs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadStudioIDs(ctx, l); err != nil {
 		return err
 	}
 
@@ -207,9 +217,9 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		Date:         dateStr,
 		Rating100:    s.Rating.Ptr(),
 		Organized:    s.Organized.Ptr(),
-		StudioID:     s.StudioID.StringPtr(),
 		GalleryIds:   s.GalleryIDs.IDStrings(),
 		PerformerIds: s.PerformerIDs.IDStrings(),
+		StudioIds:    s.StudioIDs.IDStrings(),
 		Movies:       s.GroupIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
 		StashIds:     stashIDs.ToStashIDInputs(),

@@ -11,6 +11,30 @@ import { StudioSelect } from "src/components/Studios/StudioSelect";
 import { GroupSelect } from "src/components/Groups/GroupSelect";
 import { uniq } from "lodash-es";
 
+function getObjectName<T extends { name: string }>(value: T) {
+  return value.name;
+}
+
+// Define interfaces first
+interface IScrapedObjectsRow<T> {
+  title: string;
+  result: ScrapeResult<T[]>;
+  onChange: (value: ScrapeResult<T[]>) => void;
+  newObjects?: T[];
+  onCreateNew?: (value: T) => void;
+  renderObjects: (
+    result: ScrapeResult<T[]>,
+    isNew?: boolean,
+    onChange?: (value: T[]) => void
+  ) => JSX.Element;
+  getName: (value: T) => string;
+}
+
+type IScrapedObjectRowImpl<T> = Omit<
+  IScrapedObjectsRow<T>,
+  "renderObjects" | "getName"
+>;
+
 interface IScrapedStudioRow {
   title: string;
   result: ObjectScrapeResult<GQL.ScrapedStudio>;
@@ -19,10 +43,39 @@ interface IScrapedStudioRow {
   onCreateNew?: (value: GQL.ScrapedStudio) => void;
 }
 
-function getObjectName<T extends { name: string }>(value: T) {
-  return value.name;
-}
+// Define ScrapedObjectsRow first since it's used by other components
+export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
+  const {
+    title,
+    result,
+    onChange,
+    newObjects,
+    onCreateNew,
+    renderObjects,
+    getName,
+  } = props;
 
+  return (
+    <ScrapeDialogRow
+      title={title}
+      result={result}
+      renderOriginalField={() => renderObjects(result)}
+      renderNewField={() =>
+        renderObjects(result, true, (value) =>
+          onChange(result.cloneWithValue(value))
+        )
+      }
+      onChange={onChange}
+      newValues={newObjects}
+      onCreateNew={(i) => {
+        if (onCreateNew) onCreateNew(newObjects![i]);
+      }}
+      getName={getName}
+    />
+  );
+};
+
+// Then define other components that use ScrapedObjectsRow
 export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   title,
   result,
@@ -87,55 +140,65 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   );
 };
 
-interface IScrapedObjectsRow<T> {
-  title: string;
-  result: ScrapeResult<T[]>;
-  onChange: (value: ScrapeResult<T[]>) => void;
-  newObjects?: T[];
-  onCreateNew?: (value: T) => void;
-  renderObjects: (
-    result: ScrapeResult<T[]>,
-    isNew?: boolean,
-    onChange?: (value: T[]) => void
-  ) => JSX.Element;
-  getName: (value: T) => string;
-}
+export const ScrapedStudiosRow: React.FC<
+  IScrapedObjectRowImpl<GQL.ScrapedStudio>
+> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+  const studiosCopy = useMemo(() => {
+    return (
+      newObjects?.map((p) => {
+        const name: string = p.name ?? "";
+        return { ...p, name };
+      }) ?? []
+    );
+  }, [newObjects]);
 
-export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
-  const {
-    title,
-    result,
-    onChange,
-    newObjects,
-    onCreateNew,
-    renderObjects,
-    getName,
-  } = props;
+  function renderScrapedStudios(
+    scrapeResult: ScrapeResult<GQL.ScrapedStudio[]>,
+    isNew?: boolean,
+    onChangeFn?: (value: GQL.ScrapedStudio[]) => void
+  ) {
+    const resultValue = isNew
+      ? scrapeResult.newValue
+      : scrapeResult.originalValue;
+    const value = resultValue ?? [];
+
+    const selectValue = value.map((p) => {
+      const aliases: string[] = [];
+      return {
+        id: p.stored_id ?? "",
+        name: p.name ?? "",
+        aliases,
+      };
+    });
+
+    return (
+      <StudioSelect
+        isMulti
+        className="form-control react-select"
+        isDisabled={!isNew}
+        onSelect={(items) => {
+          if (onChangeFn) {
+            // map the id back to stored_id
+            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
+          }
+        }}
+        values={selectValue}
+      />
+    );
+  }
 
   return (
-    <ScrapeDialogRow
+    <ScrapedObjectsRow<GQL.ScrapedStudio>
       title={title}
       result={result}
-      renderOriginalField={() => renderObjects(result)}
-      renderNewField={() =>
-        renderObjects(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      renderObjects={renderScrapedStudios}
       onChange={onChange}
-      newValues={newObjects}
-      onCreateNew={(i) => {
-        if (onCreateNew) onCreateNew(newObjects![i]);
-      }}
-      getName={getName}
+      newObjects={studiosCopy}
+      onCreateNew={onCreateNew}
+      getName={(value) => value.name ?? ""}
     />
   );
 };
-
-type IScrapedObjectRowImpl<T> = Omit<
-  IScrapedObjectsRow<T>,
-  "renderObjects" | "getName"
->;
 
 export const ScrapedPerformersRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedPerformer> & { ageFromDate?: string | null }

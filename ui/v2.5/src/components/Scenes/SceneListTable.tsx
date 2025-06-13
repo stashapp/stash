@@ -113,14 +113,20 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   );
 
   const StudioCell = (scene: GQL.SlimSceneDataFragment) => {
-    if (scene.studio) {
+    if (scene.studios && scene.studios.length > 0) {
       return (
-        <Link
-          to={NavUtils.makeStudioScenesUrl(scene.studio)}
-          title={scene.studio.name}
-        >
-          <span className="ellips-data">{scene.studio.name}</span>
-        </Link>
+        <ul className="comma-list overflowable">
+          {scene.studios.map((studio) => (
+            <li key={studio.id}>
+              <Link
+                to={NavUtils.makeStudioScenesUrl(studio)}
+                title={studio.name}
+              >
+                <span className="ellips-data">{studio.name}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       );
     }
   };

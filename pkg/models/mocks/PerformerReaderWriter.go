@@ -314,6 +314,29 @@ func (_m *PerformerReaderWriter) GetAliases(ctx context.Context, relatedID int) 
 	return r0, r1
 }
 
+// GetAliasesBatch provides a mock function with given fields: ctx, ids
+func (_m *PerformerReaderWriter) GetAliasesBatch(ctx context.Context, ids []int) (map[int][]string, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 map[int][]string
+	if rf, ok := ret.Get(0).(func(context.Context, []int) map[int][]string); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[int][]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCustomFields provides a mock function with given fields: ctx, id
 func (_m *PerformerReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
 	ret := _m.Called(ctx, id)

@@ -193,10 +193,8 @@ func getStudios(ctx context.Context, words []string, reader models.StudioAutoTag
 	return append(studios, swStudios...), nil
 }
 
-// PathToStudio returns the Studio that matches the given path.
-// Where multiple matching studios are found, the one that matches the latest
-// position in the path is returned.
-func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQueryer, cache *Cache, trimExt bool) (*models.Studio, error) {
+// PathToStudios returns all studios whose names match the given path.
+func PathToStudios(ctx context.Context, path string, reader models.StudioAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Studio, error) {
 	words := getPathWords(path, trimExt)
 	candidates, err := getStudios(ctx, words, reader, cache)
 
@@ -204,26 +202,53 @@ func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQ
 		return nil, err
 	}
 
-	var ret *models.Studio
-	index := -1
+	// Collect all studio IDs
+	var studioIDs []int
 	for _, c := range candidates {
-		matchIndex := nameMatchesPath(c.Name, path)
-		if matchIndex != -1 && matchIndex > index {
-			ret = c
-			index = matchIndex
-		}
+		studioIDs = append(studioIDs, c.ID)
+	}
 
-		aliases, err := reader.GetAliases(ctx, c.ID)
+	// Preload all aliases data in a single batch
+	var allAliases map[int][]string
+	if len(studioIDs) > 0 {
+		allAliases, err = reader.GetAliasesBatch(ctx, studioIDs)
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		allAliases = make(map[int][]string)
+	}
 
+	// Create a map for faster lookups
+	studioMatches := make(map[int]bool, len(candidates))
+
+	// First check all studio names - this is faster than checking aliases
+	for _, c := range candidates {
+		if nameMatchesPath(c.Name, path) != -1 {
+			studioMatches[c.ID] = true
+		}
+	}
+
+	// Only check aliases for studios that didn't match by name
+	for _, c := range candidates {
+		if studioMatches[c.ID] {
+			continue
+		}
+
+		aliases := allAliases[c.ID]
 		for _, alias := range aliases {
-			matchIndex = nameMatchesPath(alias, path)
-			if matchIndex != -1 && matchIndex > index {
-				ret = c
-				index = matchIndex
+			if nameMatchesPath(alias, path) != -1 {
+				studioMatches[c.ID] = true
+				break
 			}
+		}
+	}
+
+	// Build result list from matches
+	var ret []*models.Studio
+	for _, c := range candidates {
+		if studioMatches[c.ID] {
+			ret = append(ret, c)
 		}
 	}
 

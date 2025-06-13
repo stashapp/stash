@@ -73,12 +73,12 @@ func (t *tagger) tagPerformers(ctx context.Context, performerReader models.Perfo
 }
 
 func (t *tagger) tagStudios(ctx context.Context, studioReader models.StudioAutoTagQueryer, addFunc addLinkFunc) error {
-	studio, err := match.PathToStudio(ctx, t.Path, studioReader, t.cache, t.trimExt)
+	studios, err := match.PathToStudios(ctx, t.Path, studioReader, t.cache, t.trimExt)
 	if err != nil {
 		return err
 	}
 
-	if studio != nil {
+	for _, studio := range studios {
 		added, err := addFunc(t.ID, studio.ID)
 
 		if err != nil {

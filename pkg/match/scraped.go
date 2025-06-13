@@ -28,13 +28,11 @@ type SceneRelationships struct {
 
 // MatchRelationships accepts a scraped scene and attempts to match its relationships to existing stash models.
 func (r SceneRelationships) MatchRelationships(ctx context.Context, s *models.ScrapedScene, endpoint string) error {
-	thisStudio := s.Studio
-	for thisStudio != nil {
-		if err := ScrapedStudio(ctx, r.StudioFinder, thisStudio, endpoint); err != nil {
+	for _, studio := range s.Studios {
+		err := ScrapedStudio(ctx, r.StudioFinder, studio, endpoint)
+		if err != nil {
 			return err
 		}
-
-		thisStudio = thisStudio.Parent
 	}
 
 	for _, p := range s.Performers {
@@ -107,6 +105,7 @@ type StudioFinder interface {
 
 // ScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
+// It also processes parent studios recursively.
 func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio, stashBoxEndpoint string) error {
 	if s.StoredID != nil {
 		return nil
@@ -149,20 +148,13 @@ func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio
 
 	id := strconv.Itoa(st.ID)
 	s.StoredID = &id
+
+	// Process parent studio recursively
+	if s.Parent != nil {
+		return ScrapedStudio(ctx, qb, s.Parent, stashBoxEndpoint)
+	}
+
 	return nil
-}
-
-// ScrapedStudioHierarchy executes ScrapedStudio for the provided studio and its parents recursively.
-func ScrapedStudioHierarchy(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio, stashBoxEndpoint string) error {
-	if err := ScrapedStudio(ctx, qb, s, stashBoxEndpoint); err != nil {
-		return err
-	}
-
-	if s.Parent == nil {
-		return nil
-	}
-
-	return ScrapedStudioHierarchy(ctx, qb, s.Parent, stashBoxEndpoint)
 }
 
 // ScrapedGroup matches the provided movie with the movies

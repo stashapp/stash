@@ -61,7 +61,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   const Scrapers = useListGroupScrapers();
   const [scrapedGroup, setScrapedGroup] = useState<GQL.ScrapedGroup>();
 
-  const [studio, setStudio] = useState<Studio | null>(null);
+  const [studios, setStudios] = useState<Studio[]>([]);
   const [containingGroups, setContainingGroups] = useState<Group[]>([]);
 
   const schema = yup.object({
@@ -69,7 +69,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     aliases: yup.string().ensure(),
     duration: yup.number().integer().min(0).nullable().defined(),
     date: yupDateString(intl),
-    studio_id: yup.string().required().nullable(),
+    studio_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
     containing_groups: yup
       .array(
@@ -91,7 +91,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     aliases: group?.aliases ?? "",
     duration: group?.duration ?? null,
     date: group?.date ?? "",
-    studio_id: group?.studio?.id ?? null,
+    studio_ids: (group?.studios ?? []).map((s) => s.id),
     tag_ids: (group?.tags ?? []).map((t) => t.id),
     containing_groups: (group?.containing_groups ?? []).map((m) => {
       return { group_id: m.group.id, description: m.description ?? "" };
@@ -126,14 +126,17 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       .filter((m) => m.group !== undefined) as IRelatedGroupEntry[];
   }, [formik.values.containing_groups, containingGroups]);
 
-  function onSetStudio(item: Studio | null) {
-    setStudio(item);
-    formik.setFieldValue("studio_id", item ? item.id : null);
+  function onSetStudios(items: Studio[]) {
+    setStudios(items);
+    formik.setFieldValue(
+      "studio_ids",
+      items.map((s) => s.id)
+    );
   }
 
   useEffect(() => {
-    setStudio(group.studio ?? null);
-  }, [group.studio]);
+    setStudios(group.studios ?? []);
+  }, [group.studios]);
 
   useEffect(() => {
     setContainingGroups(group.containing_groups?.map((m) => m.group) ?? []);
@@ -179,12 +182,14 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       formik.setFieldValue("date", state.date);
     }
 
-    if (state.studio && state.studio.stored_id) {
-      onSetStudio({
-        id: state.studio.stored_id,
-        name: state.studio.name ?? "",
+    if (state.studios?.length) {
+      // Convert ScrapedStudio[] to Studio[] by mapping each item
+      const studioItems: Studio[] = state.studios.map((s) => ({
+        id: s.stored_id || "",
+        name: s.name || "",
         aliases: [],
-      });
+      }));
+      onSetStudios(studioItems);
     }
 
     if (state.director) {
@@ -268,7 +273,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     return (
       <GroupScrapeDialog
         group={currentGroup}
-        groupStudio={studio}
+        groupStudios={studios}
         groupTags={tags}
         scraped={scrapedGroup}
         onClose={(m) => {
@@ -382,12 +387,13 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
-        values={studio ? [studio] : []}
+        onSelect={(items) => onSetStudios(items)}
+        values={studios}
+        isMulti
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField("studio_ids", title, control);
   }
 
   function renderTagsField() {

@@ -70,8 +70,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     );
   }
 
-  // filename should use entire row if there is no studio
-  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+  // filename should use entire row if there are no studios
+  const sceneDetailsWidth = props.scene.studios.length > 0 ? "col-9" : "col-12";
 
   return (
     <>

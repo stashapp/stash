@@ -36,17 +36,21 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		fieldOptions:       make(map[string]*FieldOptions),
 	}
 
+	db.Scene.On("GetStudioIDs", mock.Anything, mock.Anything).Return([]int{}, nil).Maybe()
+
 	tests := []struct {
 		name         string
 		scene        *models.Scene
 		fieldOptions *FieldOptions
 		result       *models.ScrapedStudio
-		want         *int
+		want         []int
 		wantErr      bool
 	}{
 		{
 			"nil studio",
-			&models.Scene{},
+			&models.Scene{
+				StudioIDs: models.NewRelatedIDs([]int{}),
+			},
 			defaultOptions,
 			nil,
 			nil,
@@ -54,7 +58,9 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		},
 		{
 			"ignore",
-			&models.Scene{},
+			&models.Scene{
+				StudioIDs: models.NewRelatedIDs([]int{}),
+			},
 			&FieldOptions{
 				Strategy: FieldStrategyIgnore,
 			},
@@ -66,7 +72,9 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		},
 		{
 			"invalid stored id",
-			&models.Scene{},
+			&models.Scene{
+				StudioIDs: models.NewRelatedIDs([]int{}),
+			},
 			defaultOptions,
 			&models.ScrapedStudio{
 				StoredID: &invalidStoredID,
@@ -77,7 +85,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		{
 			"same stored id",
 			&models.Scene{
-				StudioID: &validStoredIDInt,
+				StudioIDs: models.NewRelatedIDs([]int{validStoredIDInt}),
 			},
 			defaultOptions,
 			&models.ScrapedStudio{
@@ -88,17 +96,21 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		},
 		{
 			"different stored id",
-			&models.Scene{},
+			&models.Scene{
+				StudioIDs: models.NewRelatedIDs([]int{}),
+			},
 			defaultOptions,
 			&models.ScrapedStudio{
 				StoredID: &validStoredID,
 			},
-			&validStoredIDInt,
+			[]int{validStoredIDInt},
 			false,
 		},
 		{
 			"no create missing",
-			&models.Scene{},
+			&models.Scene{
+				StudioIDs: models.NewRelatedIDs([]int{}),
+			},
 			defaultOptions,
 			&models.ScrapedStudio{},
 			nil,
@@ -106,13 +118,15 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		},
 		{
 			"create missing",
-			&models.Scene{},
+			&models.Scene{
+				StudioIDs: models.NewRelatedIDs([]int{}),
+			},
 			&FieldOptions{
 				Strategy:      FieldStrategyMerge,
 				CreateMissing: &createMissing,
 			},
 			&models.ScrapedStudio{RemoteSiteID: &remoteSiteID},
-			&validStoredIDInt,
+			[]int{validStoredIDInt},
 			false,
 		},
 	}
@@ -120,13 +134,24 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["studio"] = tt.fieldOptions
-			tr.result = &scrapeResult{
-				source: ScraperSource{
-					RemoteSite: "endpoint",
-				},
-				result: &models.ScrapedScene{
-					Studio: tt.result,
-				},
+			if tt.result == nil {
+				tr.result = &scrapeResult{
+					source: ScraperSource{
+						RemoteSite: "endpoint",
+					},
+					result: &models.ScrapedScene{
+						Studios: []*models.ScrapedStudio{},
+					},
+				}
+			} else {
+				tr.result = &scrapeResult{
+					source: ScraperSource{
+						RemoteSite: "endpoint",
+					},
+					result: &models.ScrapedScene{
+						Studios: []*models.ScrapedStudio{tt.result},
+					},
+				}
 			}
 
 			got, err := tr.studio(testCtx)

@@ -27,7 +27,7 @@ import {
 import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/patch";
-import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { StudiosOverlay } from "../Shared/GridCard/StudiosOverlay";
 import { GroupTag } from "../Groups/GroupTag";
 import { FileSize } from "../Shared/FileSize";
 
@@ -345,7 +345,7 @@ const SceneCardDetails = PatchComponent(
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
-    return <StudioOverlay studio={props.scene.studio} />;
+    return <StudiosOverlay studios={props.scene.studios} />;
   }
 );
 

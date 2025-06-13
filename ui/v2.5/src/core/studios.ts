@@ -14,9 +14,24 @@ export const useStudioFilterHook = (
     }) as StudiosCriterion | undefined;
 
     if (studioCriterion) {
-      // we should be showing studio only. Remove other values
-      studioCriterion.value.items = [studioValue];
-      studioCriterion.modifier = GQL.CriterionModifier.Includes;
+      if (
+        studioCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
+        studioCriterion.modifier === GQL.CriterionModifier.Includes
+      ) {
+        // add the studio if not present
+        if (
+          !studioCriterion.value.items.find((p) => {
+            return p.id === studio.id;
+          })
+        ) {
+          studioCriterion.value.items.push(studioValue);
+        }
+      } else {
+        // overwrite
+        studioCriterion.value.items = [studioValue];
+      }
+
+      studioCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       studioCriterion = new StudiosCriterion();
       studioCriterion.value = {
@@ -24,7 +39,7 @@ export const useStudioFilterHook = (
         excluded: [],
         depth: showChildStudioContent ? -1 : 0,
       };
-      studioCriterion.modifier = GQL.CriterionModifier.Includes;
+      studioCriterion.modifier = GQL.CriterionModifier.IncludesAll;
       filter.criteria.push(studioCriterion);
     }
 

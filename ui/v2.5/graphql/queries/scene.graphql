@@ -69,7 +69,7 @@ query ParseSceneFilenames(
       url
       date
       rating
-      studio_id
+      studio_ids
       gallery_ids
       movies {
         movie_id

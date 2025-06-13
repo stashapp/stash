@@ -110,6 +110,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	db.Scene.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
+	db.Scene.On("GetStudioIDs", mock.Anything, mock.Anything).Return([]int{}, nil)
 	db.Scene.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
 	}), mock.Anything).Return(nil, errors.New("update error"))
@@ -230,6 +231,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 		DefaultOptions:     defaultOptions,
 	}
 
+	db.Scene.On("GetStudioIDs", mock.Anything, mock.Anything).Return([]int{}, nil)
 	type args struct {
 		scene  *models.Scene
 		result *scrapeResult
