@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"path/filepath"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -32,6 +33,11 @@ type ScanJob struct {
 	scanner       scanner
 	input         ScanMetadataInput
 	subscriptions *subscriptionManager
+	repository    models.Repository
+
+	// Collect new file paths for auto-tagging after scan completion
+	newFilePaths []string
+	mu           sync.Mutex
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
@@ -63,7 +69,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 		minModTime = *j.input.Filter.MinModTime
 	}
 
-	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
+	j.scanner.Scan(ctx, getScanHandlers(j, taskQueue, progress), file.ScanOptions{
 		Paths:                  paths,
 		ScanFilters:            []file.PathFilter{newScanFilter(c, repo, minModTime)},
 		ZipFileExtensions:      cfg.GetGalleryExtensions(),
@@ -81,6 +87,18 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+	// Start auto-tag job for new files if enabled
+	if j.input.AutoTagNewFiles && j.input.AutoTagOptions != nil && len(j.newFilePaths) > 0 {
+		// Create auto-tag input with collected new file paths
+		autoTagInput := *j.input.AutoTagOptions
+		autoTagInput.Paths = j.newFilePaths
+
+		// Get manager instance and start auto-tag job
+		mgr := GetInstance()
+		jobID := mgr.AutoTag(ctx, autoTagInput)
+		logger.Infof("Started AutoTag job with ID: %d", jobID)
+	}
 
 	j.subscriptions.notify()
 	return nil
@@ -353,28 +371,36 @@ func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
 }
 
-func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
+func getScanHandlers(j *ScanJob, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
 	mgr := GetInstance()
 	c := mgr.Config
 	r := mgr.Repository
 	pluginCache := mgr.PluginCache
 
-	return []file.Handler{
+	// Create auto-tag wrapper if needed
+	var autoTagWrapper file.Handler
+	if j.input.AutoTagNewFiles && j.input.AutoTagOptions != nil {
+		autoTagWrapper = &autoTagHandler{
+			scanJob: j,
+		}
+	}
+
+	handlers := []file.Handler{
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(imageFileFilter),
 			Handler: &image.ScanHandler{
 				CreatorUpdater: r.Image,
 				GalleryFinder:  r.Gallery,
 				ScanGenerator: &imageGenerators{
-					input:              options,
+					input:              j.input,
 					taskQueue:          taskQueue,
 					progress:           progress,
 					paths:              mgr.Paths,
 					sequentialScanning: c.GetSequentialScanning(),
 				},
 				ScanConfig: &scanConfig{
-					isGenerateThumbnails:       options.ScanGenerateThumbnails,
-					isGenerateClipPreviews:     options.ScanGenerateClipPreviews,
+					isGenerateThumbnails:       j.input.ScanGenerateThumbnails,
+					isGenerateClipPreviews:     j.input.ScanGenerateClipPreviews,
 					createGalleriesFromFolders: c.GetCreateGalleriesFromFolders(),
 				},
 				PluginCache: pluginCache,
@@ -397,7 +423,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				CaptionUpdater: r.File,
 				PluginCache:    pluginCache,
 				ScanGenerator: &sceneGenerators{
-					input:               options,
+					input:               j.input,
 					taskQueue:           taskQueue,
 					progress:            progress,
 					paths:               mgr.Paths,
@@ -409,6 +435,13 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 			},
 		},
 	}
+
+	// Add auto-tag wrapper if enabled
+	if autoTagWrapper != nil {
+		handlers = append(handlers, autoTagWrapper)
+	}
+
+	return handlers
 }
 
 type imageGenerators struct {
@@ -568,6 +601,41 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *mode
 			taskCover.Start(ctx)
 			progress.Increment()
 		})
+	}
+
+	return nil
+}
+
+func (j *ScanJob) executeAutoTagForFile(ctx context.Context, f models.File, autoTagOptions AutoTagMetadataInput) error {
+	// Collect the directory path (not file path) for auto-tagging after scan completion
+	dirPath := filepath.Dir(f.Base().Path)
+
+	j.mu.Lock()
+	// Avoid duplicate directory paths
+	found := false
+	for _, existing := range j.newFilePaths {
+		if existing == dirPath {
+			found = true
+			break
+		}
+	}
+	if !found {
+		j.newFilePaths = append(j.newFilePaths, dirPath)
+	}
+	j.mu.Unlock()
+
+	return nil
+}
+
+// autoTagHandler wraps the scan process to execute auto-tag for new files
+type autoTagHandler struct {
+	scanJob *ScanJob
+}
+
+func (h *autoTagHandler) Handle(ctx context.Context, f models.File, oldFile models.File) error {
+	// Auto-tag new files if enabled
+	if oldFile == nil && h.scanJob.input.AutoTagNewFiles && h.scanJob.input.AutoTagOptions != nil {
+		return h.scanJob.executeAutoTagForFile(ctx, f, *h.scanJob.input.AutoTagOptions)
 	}
 
 	return nil
