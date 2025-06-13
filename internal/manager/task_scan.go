@@ -245,7 +245,6 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 					repository:          GetInstance().Repository,
 					Scene:               *scenes[0],
 					fileNamingAlgorithm: f.videoFileNamingAlgorithm,
-					Overwrite:           true,
 					VideoFile:           videoFile,
 				}
 				taskSubtitles.Start(ctx)
@@ -589,7 +588,6 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *mode
 		taskSubtitles := &ExtractEmbeddedSubtitlesTask{
 			repository:          mgr.Repository,
 			Scene:               *s,
-			Overwrite:           overwrite,
 			fileNamingAlgorithm: g.fileNamingAlgorithm,
 			VideoFile:           f,
 		}

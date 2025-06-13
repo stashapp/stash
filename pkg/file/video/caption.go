@@ -236,34 +236,28 @@ func ExtractEmbeddedSubtitles(ctx context.Context, videoFile *models.VideoFile, 
 		// Default to srt format for extraction
 		outputFormat := "srt"
 
-		// Determine output filename
+		// Determine language code and ensure uniqueness
 		lang := stream.Tags.Language
 		if lang == "" {
 			lang = LangUnknown
 		}
 
-		// Create a unique output filename
-		outputFilename := ""
-		if lang == LangUnknown {
-			// For unknown language, use stream index in both filename and language code
-			lang = fmt.Sprintf("%s_%d", lang, stream.Index)
-			outputFilename = fmt.Sprintf("%s.%s.%s", fileHash, lang, outputFormat)
-		} else {
-			// Check if we already have a caption with this language code
-			langExists := false
-			for _, existingCaption := range extractedCaptions {
-				if existingCaption.LanguageCode == lang {
-					langExists = true
-					break
-				}
+		// Check if this lang already exists among extracted captions
+		langExists := false
+		for _, existingCaption := range extractedCaptions {
+			if existingCaption.LanguageCode == lang {
+				langExists = true
+				break
 			}
-
-			// If language code already exists, append stream index to make it unique
-			if langExists {
-				lang = fmt.Sprintf("%s_%d", lang, stream.Index)
-			}
-			outputFilename = fmt.Sprintf("%s.%s.%s", fileHash, lang, outputFormat)
 		}
+
+		// Append stream index when language is unknown or already used
+		if lang == LangUnknown || langExists {
+			lang = fmt.Sprintf("%s_%d", lang, stream.Index)
+		}
+
+		// Build output filename once
+		outputFilename := fmt.Sprintf("%s.%s.%s", fileHash, lang, outputFormat)
 
 		// Create subdirectory for this video's subtitles
 		subDir := filepath.Join(generatedPath, "subtitles", fileHash)

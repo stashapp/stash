@@ -14,7 +14,6 @@ type ExtractEmbeddedSubtitlesTask struct {
 	repository          models.Repository
 	Scene               models.Scene
 	fileNamingAlgorithm models.HashAlgorithm
-	Overwrite           bool
 	VideoFile           *models.VideoFile
 }
 
