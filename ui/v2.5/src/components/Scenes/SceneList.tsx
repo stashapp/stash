@@ -25,7 +25,7 @@ import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { View } from "../List/views";
 import { FileSize } from "../Shared/FileSize";
-import { PagedList } from "../List/PagedList";
+import { LoadedContent } from "../List/PagedList";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
 import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
@@ -48,6 +48,7 @@ import {
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
 import { PatchContainerComponent } from "src/patch";
+import { Pagination, PaginationIndex } from "../List/Pagination";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -488,14 +489,15 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               onRemoveAll={() => clearAllCriteria()}
             />
 
-            <PagedList
-              result={result}
-              cachedResult={cachedResult}
-              filter={filter}
-              totalCount={totalCount}
-              onChangePage={setPage}
+            <PaginationIndex
+              loading={cachedResult.loading}
+              itemsPerPage={filter.itemsPerPage}
+              currentPage={filter.currentPage}
+              totalItems={totalCount}
               metadataByline={metadataByline}
-            >
+            />
+
+            <LoadedContent loading={result.loading} error={result.error}>
               <SceneList
                 filter={effectiveFilter}
                 scenes={items}
@@ -503,7 +505,20 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 onSelectChange={onSelectChange}
                 fromGroupId={fromGroupId}
               />
-            </PagedList>
+            </LoadedContent>
+
+            {totalCount > filter.itemsPerPage && (
+              <div className="pagination-footer">
+                <Pagination
+                  itemsPerPage={filter.itemsPerPage}
+                  currentPage={filter.currentPage}
+                  totalItems={totalCount}
+                  metadataByline={metadataByline}
+                  onChangePage={setPage}
+                  pagePopupPlacement="top"
+                />
+              </div>
+            )}
           </div>
         </SidebarPane>
       </div>

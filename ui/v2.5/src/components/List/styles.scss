@@ -942,3 +942,19 @@ input[type="range"].zoom-slider {
     margin-right: 0.5rem;
   }
 }
+
+.pagination-footer {
+  background-color: $body-bg;
+  bottom: $navbar-height;
+  padding: 0.5rem 1rem;
+  position: sticky;
+  z-index: 10;
+
+  @include media-breakpoint-up(sm) {
+    bottom: 0;
+  }
+
+  .pagination {
+    margin-bottom: 0;
+  }
+}
