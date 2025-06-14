@@ -977,7 +977,8 @@
         "list": "Liste",
         "tagger": "Étiqueteuse",
         "unknown": "Inconnu",
-        "wall": "Mur"
+        "wall": "Mur",
+        "label_current": "Mode d'affichage : {current}"
     },
     "donate": "Faire un don",
     "dupe_check": {
