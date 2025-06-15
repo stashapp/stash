@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -41,4 +42,16 @@ func basenameFn(str string) (string, error) {
 
 func titleCaseFn(str string) string {
 	return cases.Title(language.Und, cases.NoLower).String(str)
+}
+
+func trimTextFn(str string) string {
+	return strings.TrimSpace(str)
+}
+
+func generateRandomUUIDFn() (string, error) {
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+	return uuid.String(), nil
 }

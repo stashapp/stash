@@ -31,6 +31,8 @@ func (d *CustomSQLiteDriver) Open(dsn string) (driver.Conn, error) {
 				"basename":          basenameFn,
 				"phash_distance":    phashDistanceFn,
 				"title_case":        titleCaseFn,
+				"trim":              trimTextFn,
+				"uuid4":             generateRandomUUIDFn,
 			}
 
 			for name, fn := range funcs {
