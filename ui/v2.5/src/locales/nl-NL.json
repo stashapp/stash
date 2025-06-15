@@ -141,7 +141,11 @@
         "make_primary": "Als primair aanduiden",
         "reload": "Herladen",
         "copy_to_clipboard": "Kopiëren naar klembord",
-        "swap": "Omwisselen"
+        "swap": "Omwisselen",
+        "sidebar": {
+            "close": "Sluit zijbalk",
+            "open": "Open zijbalk"
+        }
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -349,8 +353,21 @@
                     "heading": "Download FFmpeg"
                 },
                 "hardware_acceleration": {
-                    "heading": "FFmpeg hardwarecodering"
+                    "heading": "FFmpeg hardwarecodering",
+                    "desc": "Gebruikt beschikbare hardware om video te coderen voor live transcodering."
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg uitvoerbaar pad"
+                },
+                "ffprobe_path": {
+                    "heading": "FFprobe uitvoerbaar pad"
                 }
+            },
+            "blobs_storage": {
+                "heading": "Type binaire gegevensopslag"
+            },
+            "blobs_path": {
+                "description": "Locatie in het bestandssysteem waar binaire gegevens worden opgeslagen. Alleen van toepassing bij gebruik van het Bestandssysteem blob-opslagtype. WAARSCHUWING: om dit te wijzigen, moeten bestaande gegevens handmatig worden verplaatst."
             }
         },
         "library": {
@@ -363,7 +380,9 @@
         },
         "plugins": {
             "hooks": "Triggers",
-            "triggers_on": "Reageert op"
+            "triggers_on": "Reageert op",
+            "available_plugins": "Beschikbare Plugins",
+            "installed_plugins": "Geïnstalleerde Plugins"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadata",
@@ -722,7 +741,12 @@
         "scrape_results_existing": "Bestaande",
         "scrape_results_scraped": "Geschraapt",
         "set_image_url_title": "Afbeelding URL",
-        "unsaved_changes": "Niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je wilt vertrekken?"
+        "unsaved_changes": "Niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je wilt vertrekken?",
+        "merge": {
+            "destination": "Bestemming",
+            "source": "Bron"
+        },
+        "performers_found": "{count} artiesten gevonden"
     },
     "dimensions": "Dimensies",
     "director": "Regisseur",
@@ -1077,5 +1101,22 @@
     "include_sub_studio_content": "Inclusief substudio inhoud",
     "last_played_at": "Laatst gespeeld op",
     "include_sub_tag_content": "Inclusief sub-tag inhoud",
-    "age_on_date": "{age} tijdens productie"
+    "age_on_date": "{age} tijdens productie",
+    "studio_tagger": {
+        "query_all_studios_in_the_database": "Alle studio's in de database",
+        "current_page": "Huidige pagina",
+        "status_tagging_job_queued": "Status: Tagging-taak in de wachtrij",
+        "config": {
+            "no_instances_found": "Geen gevallen gevonden",
+            "these_fields_will_not_be_changed_when_updating_studios": "Deze velden worden niet gewijzigd bij het updaten van studio's."
+        },
+        "failed_to_save_studio": "Opslaan van studio “{studio}” mislukt",
+        "name_already_exists": "Naam bestaat reeds",
+        "network_error": "Netwerkfout",
+        "no_results_found": "Geen resultaten gevonden.",
+        "number_of_studios_will_be_processed": "{studio_count} studio's worden verwerkt",
+        "refresh_tagged_studios": "Vernieuwen getagde studio's",
+        "refreshing_will_update_the_data": "Vernieuwen zal de gegevens van alle getagde studio's van de stash-box bijwerken.",
+        "create_or_tag_parent_studios": "Maak ontbrekende of label bestaande moederstudio's"
+    }
 }
