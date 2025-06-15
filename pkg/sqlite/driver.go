@@ -27,6 +27,9 @@ func (d *CustomSQLiteDriver) Open(dsn string) (driver.Conn, error) {
 		ConnectHook: func(conn *sqlite3.SQLiteConn) error {
 			funcs := map[string]interface{}{
 				"regexp":            regexFn,
+				"regexp_substr":     regexpSubstrFn,
+				"regexp_capture":    regexpCaptureFn,
+				"regexp_replace":    regexpReplaceFn,
 				"durationToTinyInt": durationToTinyIntFn,
 				"basename":          basenameFn,
 				"phash_distance":    phashDistanceFn,
