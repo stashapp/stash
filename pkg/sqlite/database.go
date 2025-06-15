@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -236,24 +237,38 @@ func (db *Database) Close() error {
 
 func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+	dsn, err := url.Parse("file:" + db.dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("url.Parse(): %w", err)
+	}
+	opts := dsn.Query()
+	opts.Set("_journal", "WAL")
+	opts.Set("_sync", "NORMAL")
+
+	// Set busy timeout to 5 seconds to avoid lock contentions
+	// See: https://litestream.io/tips/#busy-timeout
+	opts.Set("_busy_timeout", "5000")
+
 	if !disableForeignKeys {
-		url += "&_fk=true"
+		opts.Set("_fk", "true")
 	}
 
 	if writable {
-		url += "&_txlock=immediate"
+		opts.Set("_txlock", "immediate")
 	} else {
-		url += "&mode=ro"
+		opts.Set("mode", "ro")
 	}
 
 	// #5155 - set the cache size if the environment variable is set
 	// default is -2000 which is 2MB
 	if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
-		url += "&_cache_size=" + cacheSize
+		opts.Set("_cache_size", cacheSize)
 	}
 
-	conn, err := sqlx.Open(sqlite3Driver, url)
+	// Update DSN after setting connection options
+	dsn.RawQuery = opts.Encode()
+
+	conn, err := sqlx.Open(sqlite3Driver, dsn.String())
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
