@@ -4,6 +4,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func durationToTinyIntFn(str string) (int64, error) {
@@ -34,4 +37,8 @@ func durationToTinyIntFn(str string) (int64, error) {
 
 func basenameFn(str string) (string, error) {
 	return filepath.Base(str), nil
+}
+
+func titleCaseFn(str string) string {
+	return cases.Title(language.Und, cases.NoLower).String(str)
 }
