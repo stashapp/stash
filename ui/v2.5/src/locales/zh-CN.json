@@ -976,7 +976,8 @@
         "list": "列表显示",
         "tagger": "标签工具",
         "unknown": "未知",
-        "wall": "预览墙"
+        "wall": "预览墙",
+        "label_current": "显示模式: {current}"
     },
     "donate": "赞助",
     "dupe_check": {
