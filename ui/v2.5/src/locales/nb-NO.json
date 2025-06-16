@@ -280,7 +280,7 @@
                     "heading": "Last ned FFmpeg"
                 },
                 "hardware_acceleration": {
-                    "heading": "FFmpeg maskinvare encoding"
+                    "heading": "Maskinvareakselerert koding med FFmpeg"
                 }
             },
             "database": "Database",
@@ -289,12 +289,24 @@
                 "description": "Mappeplassering for sikkerhetskopier av SQLite-databasefilen"
             },
             "blobs_storage": {
-                "description": "Hvor binærdata som scenecovers, bilder av skuespillere, studioer og tagger skal lagres. Etter at denne verdien endres, må eksisterende data migreres ved hjelp av oppgaven “Migrer blobs”. Se oppgavesiden for migrering."
+                "description": "Hvor binærdata som scenecovers, bilder av skuespillere, studioer og tagger skal lagres. Etter at denne verdien endres, må eksisterende data migreres ved hjelp av oppgaven “Migrer blobs”. Se oppgavesiden for migrering.",
+                "heading": "Lagringstype for binærdata"
             },
             "blobs_path": {
                 "description": "Hvor i filsystemet binærdata skal lagres. Gjelder kun når filsystem er valgt som lagringstype for blob-data. ADVARSEL: Endring av dette krever at eksisterende data flyttes manuelt.",
                 "heading": "Sti for lagring av binærdata"
-            }
+            },
+            "cache_path_head": "Sti til hurtigbuffer",
+            "chrome_cdp_path": "Sti til Chrome CDP",
+            "cache_location": "Mappeplassering for hurtigbufferen. Påkrevd ved strømming med HLS (f.eks. på Apple-enheter) eller DASH.",
+            "calculate_md5_and_ohash_desc": "Beregn MD5-sjekksum i tillegg til oshash. Å aktivere dette vil gjøre innledende skanninger tregere. Filnavn-hash må være satt til oshash for å deaktivere MD5-beregning.",
+            "calculate_md5_and_ohash_label": "Beregn MD5 for videoer",
+            "check_for_insecure_certificates": "Sjekk etter usikre sertifikater",
+            "check_for_insecure_certificates_desc": "Noen nettsteder bruker usikre SSL-sertifikater. Når dette er avhuket, hopper skraperen over kontrollen av sertifikater og tillater skraping av slike nettsteder. Hvis du får en sertifikatfeil under skraping, fjern avhukingen her.",
+            "chrome_cdp_path_desc": "Filsti til Chrome-kjørbar fil, eller en ekstern adresse (som begynner med http:// eller https://, for eksempel http://localhost:9222/json/version) til en Chrome-instans.",
+            "create_galleries_from_folders_desc": "Hvis aktivert, opprettes gallerier automatisk fra mapper som inneholder bilder. Opprett en fil kalt .forcegallery eller .nogallery i en mappe for å henholdsvis tvinge eller hindre dette.",
+            "create_galleries_from_folders_label": "Lag gallerier automatisk fra bildemapper",
+            "directory_locations_to_your_content": "Stier til innholdskataloger"
         },
         "application_paths": {
             "heading": "applikasjon baner"
