@@ -141,7 +141,11 @@
         "reset_play_duration": "재생 시간 초기화",
         "reset_resume_time": "마지막 재생 위치 초기화",
         "add_sub_groups": "서브그룹 추가",
-        "remove_from_containing_group": "그룹에서 제거"
+        "remove_from_containing_group": "그룹에서 제거",
+        "sidebar": {
+            "close": "사이드바 닫기",
+            "open": "사이드바 열기"
+        }
     },
     "actions_name": "액션",
     "age": "나이",
@@ -960,7 +964,9 @@
         },
         "reassign_files": {
             "destination": "~으로 재지정"
-        }
+        },
+        "overwrite_filter_warning": "저장된 필터 \"{entityName}\"은 덮어쓰기될 것입니다.",
+        "set_default_filter_confirm": "정말로 이 필터를 기본값으로 설정하시겠습니까?"
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -970,7 +976,8 @@
         "list": "목록",
         "tagger": "태거",
         "unknown": "알 수 없음",
-        "wall": "월 모드"
+        "wall": "월 모드",
+        "label_current": "디스플레이 모드: {current}"
     },
     "donate": "후원",
     "dupe_check": {
