@@ -194,7 +194,8 @@
         "verb_matched": "Matchet",
         "verb_scrape_all": "Skrap alle",
         "verb_submit_fp": "Send inn {fpCount, plural, one{# Fingeravtrykk} andre{# Fingerprints}}",
-        "verb_toggle_config": "{veksle} {konfigurasjon}"
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} vis scener uten treff"
     },
     "config": {
         "dlna": {
@@ -215,7 +216,9 @@
             "server_port_desc": "Port for å kjøre DLNA-serveren på. Krever omstart av DLNA etter endring.",
             "until_restart": "frem til omstart",
             "network_interfaces_desc": "Grensesnitt for å eksponere DLNA-server på. En tom liste resulterer i å kjøre på alle grensesnitt. Krever omstart av DLNA etter endring.",
-            "successfully_cancelled_temporary_behaviour": "Vellykket kansellert midlertidig oppførsel"
+            "successfully_cancelled_temporary_behaviour": "Vellykket kansellert midlertidig oppførsel",
+            "video_sort_order_desc": "Rekkefølgen som videoer sorteres etter som standard.",
+            "video_sort_order": "Standard videosortering"
         },
         "about": {
             "stash_open_collective": "Støtt oss gjennom {url}",
@@ -228,7 +231,8 @@
             "latest_version_build_hash": "Siste Versjon Build Hash:",
             "build_time": "Kompileringstid:",
             "stash_wiki": "stash {url} side",
-            "build_hash": "bygg hash:"
+            "build_hash": "bygg hash:",
+            "stash_home": "Stash-startside på {url}"
         },
         "advanced_mode": "Avansert Modus",
         "categories": {
@@ -252,7 +256,23 @@
                 "log_file": "Log-fil",
                 "generate_api_key": "Generer API-nøkkel",
                 "log_to_terminal": "Log til terminal",
-                "password": "Passord"
+                "password": "Passord",
+                "log_http_desc": "Logger HTTP-tilgang til terminalen. Krever omstart.",
+                "authentication": "Autentisering",
+                "clear_api_key": "Fjern API-nøkkel",
+                "credentials": {
+                    "description": "Brukernavn og passord for å sikre tilgang til Stash.",
+                    "heading": "Påloggingsinformasjon"
+                },
+                "log_file_desc": "Sti til filen hvor logg skal lagres. La feltet stå tomt for å deaktivere fillogging. Krever omstart.",
+                "log_http": "Logg HTTP-tilgang",
+                "log_to_terminal_desc": "Logger til terminalen i tillegg til en fil. Er alltid aktivert hvis fillogging er deaktivert. Krever omstart.",
+                "maximum_session_age": "Maksimal levetid for økt",
+                "maximum_session_age_desc": "Maksimal inaktiv tid før en innloggingsøkt utløper, i sekunder. Krever omstart.",
+                "password_desc": "Passord for å få tilgang til Stash. La stå tomt for å deaktivere brukergodkjenning",
+                "stash-box_integration": "ntegrasjon med Stash-box",
+                "username_desc": "Brukernavn for å få tilgang til Stash. La stå tomt for å deaktivere brukergodkjenning",
+                "api_key_desc": "API-nøkkel for eksterne systemer. Kun nødvendig når brukernavn/passord er konfigurert. Brukernavn må lagres før API-nøkkel kan genereres."
             },
             "db_path_head": "Database filbane",
             "ffmpeg": {
@@ -263,7 +283,18 @@
                     "heading": "FFmpeg maskinvare encoding"
                 }
             },
-            "database": "Database"
+            "database": "Database",
+            "backup_directory_path": {
+                "heading": "Sti til sikkerhetskopimappe",
+                "description": "Mappeplassering for sikkerhetskopier av SQLite-databasefilen"
+            },
+            "blobs_storage": {
+                "description": "Hvor binærdata som scenecovers, bilder av skuespillere, studioer og tagger skal lagres. Etter at denne verdien endres, må eksisterende data migreres ved hjelp av oppgaven “Migrer blobs”. Se oppgavesiden for migrering."
+            },
+            "blobs_path": {
+                "description": "Hvor i filsystemet binærdata skal lagres. Gjelder kun når filsystem er valgt som lagringstype for blob-data. ADVARSEL: Endring av dette krever at eksisterende data flyttes manuelt.",
+                "heading": "Sti for lagring av binærdata"
+            }
         },
         "application_paths": {
             "heading": "applikasjon baner"
