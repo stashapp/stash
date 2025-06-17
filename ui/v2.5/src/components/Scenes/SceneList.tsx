@@ -419,6 +419,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     );
   }
 
+  function onCreateNew() {
+    history.push("/scenes/new");
+  }
+
   const otherOperations: IListFilterOperation[] = [
     {
       text: intl.formatMessage({ id: "actions.play_selected" }),
@@ -503,15 +507,15 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               <div>
                 <ButtonGroup>
                   {!!items.length && (
-                    <Button 
-                      variant="secondary" 
-                      onClick={() => onPlay()} 
+                    <Button
+                      variant="secondary"
+                      onClick={() => onPlay()}
                       title={intl.formatMessage({ id: "actions.play" })}
                     >
                       <Icon icon={faPlay} />
                     </Button>
                   )}
-                  <Button variant="secondary">
+                  <Button variant="secondary" onClick={() => onCreateNew()}>
                     <Icon icon={faPlus} />
                   </Button>
                   <Button variant="secondary">
