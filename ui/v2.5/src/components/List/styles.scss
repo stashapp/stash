@@ -871,6 +871,14 @@ input[type="range"].zoom-slider {
     flex-wrap: wrap;
     justify-content: center;
     row-gap: 0.5rem;
+
+    &:first-child {
+      justify-content: flex-start;
+    }
+
+    &:last-child {
+      justify-content: flex-end;
+    }
   }
 
   .btn.display-mode-select {

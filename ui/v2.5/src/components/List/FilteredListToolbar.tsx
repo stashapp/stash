@@ -68,8 +68,8 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
 
   return (
     <ButtonToolbar className="filtered-list-toolbar">
-      {onToggleSidebar && (
-        <div>
+      <ButtonGroup>
+        {onToggleSidebar && (
           <ButtonGroup>
             <Button
               className="sidebar-toggle-button"
@@ -80,28 +80,28 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
               <SidebarIcon />
             </Button>
           </ButtonGroup>
-        </div>
-      )}
+        )}
+      </ButtonGroup>
 
-      <div>
-        <ButtonGroup>
-          {showEditFilter && (
-            <ListFilter
-              onFilterUpdate={setFilter}
-              filter={filter}
-              openFilterDialog={() => showEditFilter()}
-              view={view}
-              withSidebar={!!onToggleSidebar}
-            />
-          )}
-          <ListOperationButtons
-            onSelectAll={onSelectAll}
-            onSelectNone={onSelectNone}
-            otherOperations={operations}
-            itemsSelected={selectedIds.size > 0}
-            onEdit={onEdit}
-            onDelete={onDelete}
+      <ButtonGroup>
+        {showEditFilter && (
+          <ListFilter
+            onFilterUpdate={setFilter}
+            filter={filter}
+            openFilterDialog={() => showEditFilter()}
+            view={view}
+            withSidebar={!!onToggleSidebar}
           />
+        )}
+        <ListOperationButtons
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
+          otherOperations={operations}
+          itemsSelected={selectedIds.size > 0}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+        <ButtonGroup>
           <ListViewOptions
             displayMode={filter.displayMode}
             displayModeOptions={filterOptions.displayModeOptions}
@@ -110,10 +110,8 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
             onSetZoom={zoomable ? setZoom : undefined}
           />
         </ButtonGroup>
-      </div>
-      <div>
-        <ButtonGroup></ButtonGroup>
-      </div>
+      </ButtonGroup>
+      <ButtonGroup></ButtonGroup>
     </ButtonToolbar>
   );
 };
