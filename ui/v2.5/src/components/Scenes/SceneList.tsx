@@ -288,6 +288,102 @@ const SidebarContent: React.FC<{
   );
 };
 
+interface IOperations {
+  text: string;
+  onClick: () => void;
+  isDisplayed?: () => boolean;
+}
+
+const ListToolbarContent: React.FC<{
+  criteriaCount: number;
+  items: GQL.SlimSceneDataFragment[];
+  queue: SceneQueue;
+  selectedIds: Set<string>;
+  operations: IOperations[];
+  onToggleSidebar: () => void;
+  onFilterButtonClick: () => void;
+}> = ({
+  criteriaCount,
+  items,
+  selectedIds,
+  queue,
+  operations,
+  onToggleSidebar,
+  onFilterButtonClick,
+}) => {
+  const intl = useIntl();
+  const history = useHistory();
+
+  const playSelected = usePlaySelected(selectedIds);
+  const playFirst = usePlayFirst();
+
+  function onCreateNew() {
+    history.push("/scenes/new");
+  }
+
+  function onPlay() {
+    if (items.length === 0) {
+      return;
+    }
+
+    // if there are selected items, play those
+    if (selectedIds.size > 0) {
+      playSelected();
+      return;
+    }
+
+    // otherwise, play the first item in the list
+    const sceneID = items[0].id;
+    playFirst(queue, sceneID, 0);
+  }
+
+  return (
+    <>
+      <div>
+        <FilterButton
+          onClick={() => onFilterButtonClick()}
+          count={criteriaCount}
+        />
+      </div>
+      <div>
+        <ButtonGroup>
+          {!!items.length && (
+            <Button
+              variant="secondary"
+              onClick={() => onPlay()}
+              title={intl.formatMessage({ id: "actions.play" })}
+            >
+              <Icon icon={faPlay} />
+            </Button>
+          )}
+          <Button variant="secondary" onClick={() => onCreateNew()}>
+            <Icon icon={faPlus} />
+          </Button>
+          <OperationDropdown>
+            {operations.map((o) => {
+              if (o.isDisplayed && !o.isDisplayed()) {
+                return null;
+              }
+
+              return (
+                <OperationDropdownItem
+                  key={o.text}
+                  onClick={o.onClick}
+                  text={o.text}
+                />
+              );
+            })}
+          </OperationDropdown>
+
+          <Button variant="secondary" onClick={() => onToggleSidebar()}>
+            <SidebarIcon />
+          </Button>
+        </ButtonGroup>
+      </div>
+    </>
+  );
+};
+
 interface IFilteredScenes {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
@@ -366,25 +462,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
   const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
 
-  const playSelected = usePlaySelected(selectedIds);
   const playRandom = usePlayRandom(filter, totalCount);
-  const playFirst = usePlayFirst();
-
-  function onPlay() {
-    if (items.length === 0) {
-      return;
-    }
-
-    // if there are selected items, play those
-    if (selectedIds.size > 0) {
-      playSelected();
-      return;
-    }
-
-    // otherwise, play the first item in the list
-    const sceneID = items[0].id;
-    playFirst(queue, sceneID, 0);
-  }
 
   function onExport(all: boolean) {
     showModal(
@@ -420,10 +498,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
         show
       />
     );
-  }
-
-  function onCreateNew() {
-    history.push("/scenes/new");
   }
 
   const otherOperations = [
@@ -496,50 +570,15 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
           </Sidebar>
           <div>
             <ButtonToolbar className="scene-list-toolbar">
-              <div>
-                <FilterButton
-                  onClick={() => showEditFilter()}
-                  count={filter.count()}
-                />
-              </div>
-              <div>
-                <ButtonGroup>
-                  {!!items.length && (
-                    <Button
-                      variant="secondary"
-                      onClick={() => onPlay()}
-                      title={intl.formatMessage({ id: "actions.play" })}
-                    >
-                      <Icon icon={faPlay} />
-                    </Button>
-                  )}
-                  <Button variant="secondary" onClick={() => onCreateNew()}>
-                    <Icon icon={faPlus} />
-                  </Button>
-                  <OperationDropdown>
-                    {otherOperations.map((o) => {
-                      if (o.isDisplayed && !o.isDisplayed()) {
-                        return null;
-                      }
-
-                      return (
-                        <OperationDropdownItem
-                          key={o.text}
-                          onClick={o.onClick}
-                          text={o.text}
-                        />
-                      );
-                    })}
-                  </OperationDropdown>
-
-                  <Button
-                    variant="secondary"
-                    onClick={() => setShowSidebar(!showSidebar)}
-                  >
-                    <SidebarIcon />
-                  </Button>
-                </ButtonGroup>
-              </div>
+              <ListToolbarContent
+                criteriaCount={filter.count()}
+                items={items}
+                queue={queue}
+                selectedIds={selectedIds}
+                operations={otherOperations}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onFilterButtonClick={() => showEditFilter()}
+              />
             </ButtonToolbar>
 
             <FilterTags
