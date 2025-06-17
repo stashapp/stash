@@ -1003,3 +1003,54 @@ input[type="range"].blue-slider {
     }
   }
 }
+
+.scene-list-toolbar {
+  align-items: center;
+  background-color: $body-bg;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  // offset the main padding
+  margin-top: -0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  position: sticky;
+  top: $navbar-height;
+  z-index: 10;
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
+
+  .slick-slider {
+    width: 50vw;
+  }
+
+  > div {
+    align-items: center;
+    display: flex;
+    justify-content: flex-start;
+
+    &:last-child {
+      flex-shrink: 0;
+      margin-left: 1rem;
+      justify-content: flex-end;
+    }
+  }
+
+  .filter-tags {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    margin-left: 0.5rem;
+
+    @include media-breakpoint-down(xs) {
+      display: none;
+    }
+
+    .tag-item {
+      white-space: nowrap;
+    }
+  }
+}

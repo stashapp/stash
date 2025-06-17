@@ -19,7 +19,7 @@ import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisH, faPlay, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
@@ -31,7 +31,12 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarIcon,
+  SidebarPane,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -49,6 +54,9 @@ import {
 } from "../List/Filters/FilterSidebar";
 import { PatchContainerComponent } from "src/patch";
 import { Pagination, PaginationIndex } from "../List/Pagination";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
+import { FilterButton } from "../List/Filters/FilterButton";
+import { Icon } from "../Shared/Icon";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -455,32 +463,27 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             />
           </Sidebar>
           <div>
-            <FilteredListToolbar
-              filter={filter}
-              setFilter={setFilter}
-              showEditFilter={showEditFilter}
-              view={view}
-              listSelect={listSelect}
-              onEdit={() =>
-                showModal(
-                  <EditScenesDialog
-                    selected={selectedItems}
-                    onClose={onCloseEditDelete}
-                  />
-                )
-              }
-              onDelete={() => {
-                showModal(
-                  <DeleteScenesDialog
-                    selected={selectedItems}
-                    onClose={onCloseEditDelete}
-                  />
-                );
-              }}
-              operations={otherOperations}
-              onToggleSidebar={() => setShowSidebar((v) => !v)}
-              zoomable
-            />
+            <ButtonToolbar className="scene-list-toolbar">
+              <div>
+                <FilterButton onClick={() => showEditFilter()} />
+              </div>
+              <div>
+                <ButtonGroup>
+                  <Button>
+                    <Icon icon={faPlay} />
+                  </Button>
+                  <Button variant="secondary">
+                    <Icon icon={faPlus} />
+                  </Button>
+                  <Button variant="secondary">
+                    <Icon icon={faEllipsisH} />
+                  </Button>
+                  <Button variant="secondary">
+                    <SidebarIcon />
+                  </Button>
+                </ButtonGroup>
+              </div>
+            </ButtonToolbar>
 
             <FilterTags
               criteria={filter.criteria}

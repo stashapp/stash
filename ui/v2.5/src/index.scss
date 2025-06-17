@@ -55,7 +55,7 @@ body {
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 1rem 0 $navbar-height;
+      padding: 0.5rem 0 $navbar-height;
     }
   }
 }
@@ -692,8 +692,7 @@ div.dropdown-menu {
 
   .badge {
     margin: unset;
-    // stylelint-disable declaration-no-important
-    white-space: normal !important;
+    white-space: normal;
   }
 }
 
@@ -1014,6 +1013,7 @@ div.dropdown-menu {
 }
 
 .top-nav {
+  height: $navbar-height;
   justify-content: start;
   padding: 0.25rem 1rem;
 
