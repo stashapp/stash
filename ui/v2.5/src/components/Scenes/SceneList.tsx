@@ -19,7 +19,13 @@ import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
-import { faPlay, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPencil,
+  faPlay,
+  faPlus,
+  faTimes,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
@@ -302,6 +308,10 @@ const ListToolbarContent: React.FC<{
   operations: IOperations[];
   onToggleSidebar: () => void;
   onFilterButtonClick: () => void;
+  onSelectAll: () => void;
+  onSelectNone: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }> = ({
   criteriaCount,
   items,
@@ -310,12 +320,18 @@ const ListToolbarContent: React.FC<{
   operations,
   onToggleSidebar,
   onFilterButtonClick,
+  onSelectAll,
+  onSelectNone,
+  onEdit,
+  onDelete,
 }) => {
   const intl = useIntl();
   const history = useHistory();
 
   const playSelected = usePlaySelected(selectedIds);
   const playFirst = usePlayFirst();
+
+  const hasSelection = selectedIds.size > 0;
 
   function onCreateNew() {
     history.push("/scenes/new");
@@ -327,7 +343,7 @@ const ListToolbarContent: React.FC<{
     }
 
     // if there are selected items, play those
-    if (selectedIds.size > 0) {
+    if (hasSelection) {
       playSelected();
       return;
     }
@@ -339,12 +355,30 @@ const ListToolbarContent: React.FC<{
 
   return (
     <>
-      <div>
-        <FilterButton
-          onClick={() => onFilterButtonClick()}
-          count={criteriaCount}
-        />
-      </div>
+      {!hasSelection && (
+        <div>
+          <FilterButton
+            onClick={() => onFilterButtonClick()}
+            count={criteriaCount}
+          />
+        </div>
+      )}
+      {hasSelection && (
+        <div className="selected-items-info">
+          <Button
+            variant="secondary"
+            className="minimal"
+            onClick={() => onSelectNone()}
+            title={intl.formatMessage({ id: "actions.clear_selection" })}
+          >
+            <Icon icon={faTimes} />
+          </Button>
+          <span>{selectedIds.size} selected</span>
+          <Button variant="link" onClick={() => onSelectAll()}>
+            <FormattedMessage id="actions.select_all" />
+          </Button>
+        </div>
+      )}
       <div>
         <ButtonGroup>
           {!!items.length && (
@@ -356,9 +390,27 @@ const ListToolbarContent: React.FC<{
               <Icon icon={faPlay} />
             </Button>
           )}
-          <Button variant="secondary" onClick={() => onCreateNew()}>
-            <Icon icon={faPlus} />
-          </Button>
+          {!hasSelection && (
+            <Button variant="secondary" onClick={() => onCreateNew()}>
+              <Icon icon={faPlus} />
+            </Button>
+          )}
+
+          {hasSelection && (
+            <>
+              <Button variant="secondary" onClick={() => onEdit()}>
+                <Icon icon={faPencil} />
+              </Button>
+              <Button
+                variant="danger"
+                className="btn-danger-minimal"
+                onClick={() => onDelete()}
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            </>
+          )}
+
           <OperationDropdown>
             {operations.map((o) => {
               if (o.isDisplayed && !o.isDisplayed()) {
@@ -430,6 +482,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     selectedIds,
     selectedItems,
     onSelectChange,
+    onSelectAll,
     onSelectNone,
     hasSelection,
   } = listSelect;
@@ -496,6 +549,21 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
           }
         }}
         show
+      />
+    );
+  }
+
+  function onEdit() {
+    showModal(
+      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
+    );
+  }
+
+  function onDelete() {
+    showModal(
+      <DeleteScenesDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
       />
     );
   }
@@ -578,6 +646,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 operations={otherOperations}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onFilterButtonClick={() => showEditFilter()}
+                onSelectAll={() => onSelectAll()}
+                onSelectNone={() => onSelectNone()}
+                onEdit={onEdit}
+                onDelete={onDelete}
               />
             </ButtonToolbar>
 

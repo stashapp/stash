@@ -1013,8 +1013,8 @@ input[type="range"].blue-slider {
   margin-bottom: 0.5rem;
   // offset the main padding
   margin-top: -0.5rem;
-  padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
   position: sticky;
   top: $navbar-height;
   z-index: 10;
@@ -1023,8 +1023,8 @@ input[type="range"].blue-slider {
     top: 0;
   }
 
-  .slick-slider {
-    width: 50vw;
+  .selected-items-info .btn {
+    margin-right: 0.5rem;
   }
 
   > div {
@@ -1034,8 +1034,8 @@ input[type="range"].blue-slider {
 
     &:last-child {
       flex-shrink: 0;
-      margin-left: 1rem;
       justify-content: flex-end;
+      margin-left: 1rem;
     }
   }
 
