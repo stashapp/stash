@@ -1,10 +1,36 @@
 import React, { PropsWithChildren, useMemo } from "react";
-import { QueryResult } from "@apollo/client";
+import { ApolloError, QueryResult } from "@apollo/client";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Pagination, PaginationIndex } from "./Pagination";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ErrorMessage } from "../Shared/ErrorMessage";
 import { FormattedMessage } from "react-intl";
+
+export const LoadedContent: React.FC<
+  PropsWithChildren<{
+    loading?: boolean;
+    error?: ApolloError;
+  }>
+> = ({ loading, error, children }) => {
+  if (loading) {
+    return <LoadingIndicator />;
+  }
+  if (error) {
+    return (
+      <ErrorMessage
+        message={
+          <FormattedMessage
+            id="errors.loading_type"
+            values={{ type: "items" }}
+          />
+        }
+        error={error.message}
+      />
+    );
+  }
+
+  return <>{children}</>;
+};
 
 export const PagedList: React.FC<
   PropsWithChildren<{
@@ -63,25 +89,8 @@ export const PagedList: React.FC<
   ]);
 
   const content = useMemo(() => {
-    if (result.loading) {
-      return <LoadingIndicator />;
-    }
-    if (result.error) {
-      return (
-        <ErrorMessage
-          message={
-            <FormattedMessage
-              id="errors.loading_type"
-              values={{ type: "items" }}
-            />
-          }
-          error={result.error.message}
-        />
-      );
-    }
-
     return (
-      <>
+      <LoadedContent loading={result.loading} error={result.error}>
         {children}
         {!!pages && (
           <>
@@ -89,7 +98,7 @@ export const PagedList: React.FC<
             {pagination}
           </>
         )}
-      </>
+      </LoadedContent>
     );
   }, [
     result.loading,
