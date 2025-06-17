@@ -33,6 +33,17 @@ export const OperationDropdown: React.FC<PropsWithChildren<{}>> = ({
   );
 };
 
+export const OperationDropdownItem: React.FC<{
+  text: string;
+  onClick: () => void;
+}> = ({ text, onClick }) => {
+  return (
+    <Dropdown.Item className="bg-secondary text-white" onClick={onClick}>
+      {text}
+    </Dropdown.Item>
+  );
+};
+
 export interface IListFilterOperation {
   text: string;
   onClick: () => void;

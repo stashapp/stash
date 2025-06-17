@@ -19,7 +19,7 @@ import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
-import { faEllipsisH, faPlay, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlay, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
@@ -27,7 +27,10 @@ import { View } from "../List/views";
 import { FileSize } from "../Shared/FileSize";
 import { LoadedContent } from "../List/PagedList";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
-import { IListFilterOperation } from "../List/ListOperationButtons";
+import {
+  OperationDropdown,
+  OperationDropdownItem,
+} from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
 import {
@@ -423,16 +426,11 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     history.push("/scenes/new");
   }
 
-  const otherOperations: IListFilterOperation[] = [
-    {
-      text: intl.formatMessage({ id: "actions.play_selected" }),
-      onClick: playSelected,
-      isDisplayed: () => hasSelection,
-      icon: faPlay,
-    },
+  const otherOperations = [
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
+      isDisplayed: () => totalCount > 1,
     },
     {
       text: `${intl.formatMessage({ id: "actions.generate" })}…`,
@@ -518,9 +516,22 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                   <Button variant="secondary" onClick={() => onCreateNew()}>
                     <Icon icon={faPlus} />
                   </Button>
-                  <Button variant="secondary">
-                    <Icon icon={faEllipsisH} />
-                  </Button>
+                  <OperationDropdown>
+                    {otherOperations.map((o) => {
+                      if (o.isDisplayed && !o.isDisplayed()) {
+                        return null;
+                      }
+
+                      return (
+                        <OperationDropdownItem
+                          key={o.text}
+                          onClick={o.onClick}
+                          text={o.text}
+                        />
+                      );
+                    })}
+                  </OperationDropdown>
+
                   <Button
                     variant="secondary"
                     onClick={() => setShowSidebar(!showSidebar)}
