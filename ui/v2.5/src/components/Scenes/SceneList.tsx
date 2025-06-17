@@ -28,7 +28,6 @@ import { FileSize } from "../Shared/FileSize";
 import { LoadedContent } from "../List/PagedList";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
 import { IListFilterOperation } from "../List/ListOperationButtons";
-import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
 import {
@@ -472,16 +471,16 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               </div>
               <div>
                 <ButtonGroup>
-                  <Button>
+                  {!!items.length && <Button variant="secondary">
                     <Icon icon={faPlay} />
-                  </Button>
+                  </Button>}
                   <Button variant="secondary">
                     <Icon icon={faPlus} />
                   </Button>
                   <Button variant="secondary">
                     <Icon icon={faEllipsisH} />
                   </Button>
-                  <Button variant="secondary">
+                  <Button variant="secondary" onClick={() => setShowSidebar(!showSidebar)}>
                     <SidebarIcon />
                   </Button>
                 </ButtonGroup>
