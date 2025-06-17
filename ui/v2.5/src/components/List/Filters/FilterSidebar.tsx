@@ -44,7 +44,7 @@ export const FilteredSidebarHeader: React.FC<{
           onFilterUpdate={setFilter}
           focus={focus}
         />
-        <FilterButton onClick={() => showEditFilter()} filter={filter} />
+        <FilterButton onClick={() => showEditFilter()} count={filter.count()} />
       </div>
       <SidebarSection
         className="sidebar-saved-filters"

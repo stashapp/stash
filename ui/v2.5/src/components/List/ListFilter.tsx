@@ -342,7 +342,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             >
               <FilterButton
                 onClick={() => openFilterDialog()}
-                filter={filter}
+                count={filter.count()}
               />
             </OverlayTrigger>
           </ButtonGroup>

@@ -465,7 +465,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
           <div>
             <ButtonToolbar className="scene-list-toolbar">
               <div>
-                <FilterButton onClick={() => showEditFilter()} />
+                <FilterButton
+                  onClick={() => showEditFilter()}
+                  count={filter.count()}
+                />
               </div>
               <div>
                 <ButtonGroup>
