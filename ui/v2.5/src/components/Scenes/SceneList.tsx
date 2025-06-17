@@ -89,33 +89,51 @@ function renderMetadataByline(result: GQL.FindScenesQueryResult) {
 function usePlayScene() {
   const history = useHistory();
 
+  const { configuration: config } = useContext(ConfigurationContext);
+  const cont = config?.interface.continuePlaylistDefault ?? false;
+  const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
+
   const playScene = useCallback(
-    (queue: SceneQueue, sceneID: string, options: IPlaySceneOptions) => {
-      history.push(queue.makeLink(sceneID, options));
+    (queue: SceneQueue, sceneID: string, options?: IPlaySceneOptions) => {
+      history.push(
+        queue.makeLink(sceneID, { autoPlay, continue: cont, ...options })
+      );
     },
-    [history]
+    [history, cont, autoPlay]
   );
 
   return playScene;
 }
 
 function usePlaySelected(selectedIds: Set<string>) {
-  const { configuration: config } = useContext(ConfigurationContext);
   const playScene = usePlayScene();
 
   const playSelected = useCallback(() => {
     // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
-    const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
-    playScene(queue, sceneIDs[0], { autoPlay });
-  }, [selectedIds, config?.interface.autostartVideoOnPlaySelected, playScene]);
+
+    playScene(queue, sceneIDs[0]);
+  }, [selectedIds, playScene]);
 
   return playSelected;
 }
 
+function usePlayFirst() {
+  const playScene = usePlayScene();
+
+  const playFirst = useCallback(
+    (queue: SceneQueue, sceneID: string, index: number) => {
+      // populate queue and go to first scene
+      playScene(queue, sceneID, { sceneIndex: index });
+    },
+    [playScene]
+  );
+
+  return playFirst;
+}
+
 function usePlayRandom(filter: ListFilterModel, count: number) {
-  const { configuration: config } = useContext(ConfigurationContext);
   const playScene = usePlayScene();
 
   const playRandom = useCallback(async () => {
@@ -137,15 +155,9 @@ function usePlayRandom(filter: ListFilterModel, count: number) {
     if (scene) {
       // navigate to the image player page
       const queue = SceneQueue.fromListFilterModel(filterCopy);
-      const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
-      playScene(queue, scene.id, { sceneIndex: index, autoPlay });
+      playScene(queue, scene.id, { sceneIndex: index });
     }
-  }, [
-    filter,
-    count,
-    config?.interface.autostartVideoOnPlaySelected,
-    playScene,
-  ]);
+  }, [filter, count, playScene]);
 
   return playRandom;
 }
@@ -349,8 +361,27 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     return renderMetadataByline(cachedResult) ?? "";
   }, [cachedResult]);
 
+  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
+
   const playSelected = usePlaySelected(selectedIds);
   const playRandom = usePlayRandom(filter, totalCount);
+  const playFirst = usePlayFirst();
+
+  function onPlay() {
+    if (items.length === 0) {
+      return;
+    }
+
+    // if there are selected items, play those
+    if (selectedIds.size > 0) {
+      playSelected();
+      return;
+    }
+
+    // otherwise, play the first item in the list
+    const sceneID = items[0].id;
+    playFirst(queue, sceneID, 0);
+  }
 
   function onExport(all: boolean) {
     showModal(
@@ -471,16 +502,25 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               </div>
               <div>
                 <ButtonGroup>
-                  {!!items.length && <Button variant="secondary">
-                    <Icon icon={faPlay} />
-                  </Button>}
+                  {!!items.length && (
+                    <Button 
+                      variant="secondary" 
+                      onClick={() => onPlay()} 
+                      title={intl.formatMessage({ id: "actions.play" })}
+                    >
+                      <Icon icon={faPlay} />
+                    </Button>
+                  )}
                   <Button variant="secondary">
                     <Icon icon={faPlus} />
                   </Button>
                   <Button variant="secondary">
                     <Icon icon={faEllipsisH} />
                   </Button>
-                  <Button variant="secondary" onClick={() => setShowSidebar(!showSidebar)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowSidebar(!showSidebar)}
+                  >
                     <SidebarIcon />
                   </Button>
                 </ButtonGroup>
