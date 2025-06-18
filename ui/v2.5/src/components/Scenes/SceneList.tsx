@@ -446,7 +446,11 @@ const ListToolbarContent: React.FC<{
             })}
           </OperationDropdown>
 
-          <Button className="toggle-sidebar-button" variant="secondary" onClick={() => onToggleSidebar()}>
+          <Button
+            className="toggle-sidebar-button"
+            variant="secondary"
+            onClick={() => onToggleSidebar()}
+          >
             <SidebarIcon />
           </Button>
         </ButtonGroup>
@@ -708,7 +712,11 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             />
           </Sidebar>
           <div>
-            <ButtonToolbar className={cx("scene-list-toolbar", { "has-selection": hasSelection })}>
+            <ButtonToolbar
+              className={cx("scene-list-toolbar", {
+                "has-selection": hasSelection,
+              })}
+            >
               <ListToolbarContent
                 criteriaCount={filter.count()}
                 items={items}
