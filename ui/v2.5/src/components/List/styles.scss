@@ -412,6 +412,12 @@ input[type="range"].zoom-slider {
   }
 }
 
+.filter-tags {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
 .filter-tags .clear-all-button {
   color: $text-color;
   // to match filter pills

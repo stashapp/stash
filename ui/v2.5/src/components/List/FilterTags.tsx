@@ -106,7 +106,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   }
 
   return (
-    <div className="d-flex justify-content-center mb-2 wrap-tags filter-tags">
+    <div className="wrap-tags filter-tags">
       {criteria.map(renderFilterTags)}
       {criteria.length >= 3 && (
         <Button
