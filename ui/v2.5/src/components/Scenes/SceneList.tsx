@@ -65,6 +65,8 @@ import { Pagination, PaginationIndex } from "../List/Pagination";
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
+import { ListViewOptions } from "../List/ListViewOptions";
+import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -453,6 +455,57 @@ const ListToolbarContent: React.FC<{
   );
 };
 
+const ListResultsHeader: React.FC<{
+  loading: boolean;
+  filter: ListFilterModel;
+  totalCount: number;
+  metadataByline?: React.ReactNode;
+  onChangeFilter: (filter: ListFilterModel) => void;
+}> = ({ loading, filter, totalCount, metadataByline, onChangeFilter }) => {
+  return (
+    <ButtonToolbar className="scene-list-header">
+      <div>
+        <PaginationIndex
+          loading={loading}
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          metadataByline={metadataByline}
+        />
+      </div>
+      <div>
+        <SortBySelect
+          options={filter.options.sortByOptions}
+          sortBy={filter.sortBy}
+          sortDirection={filter.sortDirection}
+          onChangeSortBy={(s) =>
+            onChangeFilter(filter.setSortBy(s ?? undefined))
+          }
+          onChangeSortDirection={() =>
+            onChangeFilter(filter.toggleSortDirection())
+          }
+          onReshuffleRandomSort={() =>
+            onChangeFilter(filter.reshuffleRandomSort())
+          }
+        />
+        <PageSizeSelector
+          pageSize={filter.itemsPerPage}
+          setPageSize={(s) => onChangeFilter(filter.setPageSize(s))}
+        />
+        <ListViewOptions
+          displayMode={filter.displayMode}
+          zoomIndex={filter.zoomIndex}
+          displayModeOptions={filter.options.displayModeOptions}
+          onSetDisplayMode={(mode) =>
+            onChangeFilter(filter.setDisplayMode(mode))
+          }
+          onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
+        />
+      </div>
+    </ButtonToolbar>
+  );
+};
+
 interface IFilteredScenes {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
@@ -525,9 +578,9 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   });
 
   const metadataByline = useMemo(() => {
-    if (cachedResult.loading) return "";
+    if (cachedResult.loading) return null;
 
-    return renderMetadataByline(cachedResult) ?? "";
+    return renderMetadataByline(cachedResult) ?? null;
   }, [cachedResult]);
 
   const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
@@ -671,19 +724,19 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               />
             </ButtonToolbar>
 
+            <ListResultsHeader
+              loading={cachedResult.loading}
+              filter={filter}
+              totalCount={totalCount}
+              metadataByline={metadataByline}
+              onChangeFilter={(newFilter) => setFilter(newFilter)}
+            />
+
             <FilterTags
               criteria={filter.criteria}
               onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
               onRemoveCriterion={removeCriterion}
               onRemoveAll={() => clearAllCriteria()}
-            />
-
-            <PaginationIndex
-              loading={cachedResult.loading}
-              itemsPerPage={filter.itemsPerPage}
-              currentPage={filter.currentPage}
-              totalItems={totalCount}
-              metadataByline={metadataByline}
             />
 
             <LoadedContent loading={result.loading} error={result.error}>

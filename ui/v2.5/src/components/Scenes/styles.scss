@@ -1004,13 +1004,29 @@ input[type="range"].blue-slider {
   }
 }
 
-.scene-list-toolbar {
+.scene-list-toolbar,
+.scene-list-header {
   align-items: center;
   background-color: $body-bg;
   display: flex;
-  flex-wrap: nowrap;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+
+  > div {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+
+    &:last-child {
+      flex-shrink: 0;
+      justify-content: flex-end;
+      margin-left: auto;
+    }
+  }
+}
+
+.scene-list-toolbar {
+  flex-wrap: nowrap;
   // offset the main padding
   margin-top: -0.5rem;
   padding-bottom: 0.5rem;
@@ -1027,18 +1043,6 @@ input[type="range"].blue-slider {
     margin-right: 0.5rem;
   }
 
-  > div {
-    align-items: center;
-    display: flex;
-    justify-content: flex-start;
-
-    &:last-child {
-      flex-shrink: 0;
-      justify-content: flex-end;
-      margin-left: 1rem;
-    }
-  }
-
   .filter-tags {
     flex-wrap: nowrap;
     justify-content: flex-start;
@@ -1052,5 +1056,14 @@ input[type="range"].blue-slider {
     .tag-item {
       white-space: nowrap;
     }
+  }
+}
+
+.scene-list-header {
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  .paginationIndex {
+    margin: 0;
   }
 }
