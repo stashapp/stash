@@ -36,6 +36,7 @@ import { useDebounce } from "src/hooks/debounce";
 import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { useStopWheelScroll } from "src/utils/form";
+import { ISortByOption } from "src/models/list-filter/filter-options";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
@@ -230,6 +231,92 @@ export const PageSizeSelector: React.FC<{
   );
 };
 
+export const SortBySelect: React.FC<{
+  sortBy: string | undefined;
+  sortDirection: SortDirectionEnum;
+  options: ISortByOption[];
+  onChangeSortBy: (eventKey: string | null) => void;
+  onChangeSortDirection: () => void;
+  onReshuffleRandomSort: () => void;
+}> = ({
+  sortBy,
+  sortDirection,
+  options,
+  onChangeSortBy,
+  onChangeSortDirection,
+  onReshuffleRandomSort,
+}) => {
+  const intl = useIntl();
+
+  const currentSortBy = options.find((o) => o.value === sortBy);
+
+  function renderSortByOptions() {
+    return options
+      .map((o) => {
+        return {
+          message: intl.formatMessage({ id: o.messageID }),
+          value: o.value,
+        };
+      })
+      .sort((a, b) => a.message.localeCompare(b.message))
+      .map((option) => (
+        <Dropdown.Item
+          onSelect={onChangeSortBy}
+          key={option.value}
+          className="bg-secondary text-white"
+          eventKey={option.value}
+        >
+          {option.message}
+        </Dropdown.Item>
+      ));
+  }
+
+  return (
+    <Dropdown as={ButtonGroup} className="mr-2">
+      <InputGroup.Prepend>
+        <Dropdown.Toggle variant="secondary">
+          {currentSortBy
+            ? intl.formatMessage({ id: currentSortBy.messageID })
+            : ""}
+        </Dropdown.Toggle>
+      </InputGroup.Prepend>
+      <Dropdown.Menu className="bg-secondary text-white">
+        {renderSortByOptions()}
+      </Dropdown.Menu>
+      <OverlayTrigger
+        overlay={
+          <Tooltip id="sort-direction-tooltip">
+            {sortDirection === SortDirectionEnum.Asc
+              ? intl.formatMessage({ id: "ascending" })
+              : intl.formatMessage({ id: "descending" })}
+          </Tooltip>
+        }
+      >
+        <Button variant="secondary" onClick={onChangeSortDirection}>
+          <Icon
+            icon={
+              sortDirection === SortDirectionEnum.Asc ? faCaretUp : faCaretDown
+            }
+          />
+        </Button>
+      </OverlayTrigger>
+      {sortBy === "random" && (
+        <OverlayTrigger
+          overlay={
+            <Tooltip id="sort-reshuffle-tooltip">
+              {intl.formatMessage({ id: "actions.reshuffle" })}
+            </Tooltip>
+          }
+        >
+          <Button variant="secondary" onClick={onReshuffleRandomSort}>
+            <Icon icon={faRandom} />
+          </Button>
+        </OverlayTrigger>
+      )}
+    </Dropdown>
+  );
+};
+
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
@@ -246,8 +333,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   withSidebar,
 }) => {
   const filterOptions = filter.options;
-
-  const intl = useIntl();
 
   useEffect(() => {
     Mousetrap.bind("r", () => onReshuffleRandomSort());
@@ -289,32 +374,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     onFilterUpdate(newFilter);
   }
 
-  function renderSortByOptions() {
-    return filterOptions.sortByOptions
-      .map((o) => {
-        return {
-          message: intl.formatMessage({ id: o.messageID }),
-          value: o.value,
-        };
-      })
-      .sort((a, b) => a.message.localeCompare(b.message))
-      .map((option) => (
-        <Dropdown.Item
-          onSelect={onChangeSortBy}
-          key={option.value}
-          className="bg-secondary text-white"
-          eventKey={option.value}
-        >
-          {option.message}
-        </Dropdown.Item>
-      ));
-  }
-
   function render() {
-    const currentSortBy = filterOptions.sortByOptions.find(
-      (o) => o.value === filter.sortBy
-    );
-
     return (
       <>
         {!withSidebar && (
@@ -348,50 +408,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </ButtonGroup>
         )}
 
-        <Dropdown as={ButtonGroup} className="mr-2">
-          <InputGroup.Prepend>
-            <Dropdown.Toggle variant="secondary">
-              {currentSortBy
-                ? intl.formatMessage({ id: currentSortBy.messageID })
-                : ""}
-            </Dropdown.Toggle>
-          </InputGroup.Prepend>
-          <Dropdown.Menu className="bg-secondary text-white">
-            {renderSortByOptions()}
-          </Dropdown.Menu>
-          <OverlayTrigger
-            overlay={
-              <Tooltip id="sort-direction-tooltip">
-                {filter.sortDirection === SortDirectionEnum.Asc
-                  ? intl.formatMessage({ id: "ascending" })
-                  : intl.formatMessage({ id: "descending" })}
-              </Tooltip>
-            }
-          >
-            <Button variant="secondary" onClick={onChangeSortDirection}>
-              <Icon
-                icon={
-                  filter.sortDirection === SortDirectionEnum.Asc
-                    ? faCaretUp
-                    : faCaretDown
-                }
-              />
-            </Button>
-          </OverlayTrigger>
-          {filter.sortBy === "random" && (
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="sort-reshuffle-tooltip">
-                  {intl.formatMessage({ id: "actions.reshuffle" })}
-                </Tooltip>
-              }
-            >
-              <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                <Icon icon={faRandom} />
-              </Button>
-            </OverlayTrigger>
-          )}
-        </Dropdown>
+        <SortBySelect
+          sortBy={filter.sortBy}
+          sortDirection={filter.sortDirection}
+          options={filterOptions.sortByOptions}
+          onChangeSortBy={onChangeSortBy}
+          onChangeSortDirection={onChangeSortDirection}
+          onReshuffleRandomSort={onReshuffleRandomSort}
+        />
 
         <PageSizeSelector
           pageSize={filter.itemsPerPage}
