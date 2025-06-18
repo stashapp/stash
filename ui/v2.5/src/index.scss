@@ -1013,7 +1013,6 @@ div.dropdown-menu {
 }
 
 .top-nav {
-  height: $navbar-height;
   justify-content: start;
   padding: 0.25rem 1rem;
 
@@ -1024,6 +1023,9 @@ div.dropdown-menu {
       bottom: 0;
       top: auto;
     }
+  }
+  @include media-breakpoint-up(xl) {
+    height: $navbar-height;
   }
 
   .navbar-toggler {
