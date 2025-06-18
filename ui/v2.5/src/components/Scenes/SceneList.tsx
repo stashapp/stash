@@ -241,12 +241,23 @@ const SidebarContent: React.FC<{
   sidebarOpen: boolean;
   onClose?: () => void;
   showEditFilter: (editingCriterion?: string) => void;
-}> = ({ filter, setFilter, view, showEditFilter, sidebarOpen, onClose }) => {
+  count?: number;
+}> = ({
+  filter,
+  setFilter,
+  view,
+  showEditFilter,
+  sidebarOpen,
+  onClose,
+  count,
+}) => {
+  const showResultsId =
+    count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
   return (
     <>
       <FilteredSidebarHeader
         sidebarOpen={sidebarOpen}
-        onClose={onClose}
         showEditFilter={showEditFilter}
         filter={filter}
         setFilter={setFilter}
@@ -290,6 +301,12 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
         />
       </ScenesFilterSidebarSections>
+
+      <div className="sidebar-footer">
+        <Button className="sidebar-close-button" onClick={onClose}>
+          <FormattedMessage id={showResultsId} values={{ count }} />
+        </Button>
+      </div>
     </>
   );
 };
@@ -634,6 +651,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               view={view}
               sidebarOpen={showSidebar}
               onClose={() => setShowSidebar(false)}
+              count={cachedResult.loading ? undefined : totalCount}
             />
           </Sidebar>
           <div>

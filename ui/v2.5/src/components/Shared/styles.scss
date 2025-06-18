@@ -770,8 +770,9 @@ $sidebar-width: 250px;
   .sidebar {
     bottom: 0;
     left: 0;
-    margin-top: 4rem;
+    margin-top: $navbar-height;
     overflow-y: auto;
+    padding-top: 0.5rem;
     position: fixed;
     scrollbar-gutter: stable;
     top: 0;

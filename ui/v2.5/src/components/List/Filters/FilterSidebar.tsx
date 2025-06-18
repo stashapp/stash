@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { SidebarSection, SidebarToolbar } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterButton } from "./FilterButton";
 import { SearchTermInput } from "../ListFilter";
@@ -10,20 +10,13 @@ import useFocus from "src/utils/focus";
 import ScreenUtils from "src/utils/screen";
 import Mousetrap from "mousetrap";
 
-export const FilteredSidebarToolbar: React.FC<{
-  onClose?: () => void;
-}> = ({ onClose, children }) => {
-  return <SidebarToolbar onClose={onClose}>{children}</SidebarToolbar>;
-};
-
 export const FilteredSidebarHeader: React.FC<{
   sidebarOpen: boolean;
-  onClose?: () => void;
   showEditFilter: () => void;
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
-}> = ({ sidebarOpen, onClose, showEditFilter, filter, setFilter, view }) => {
+}> = ({ sidebarOpen, showEditFilter, filter, setFilter, view }) => {
   const focus = useFocus();
   const [, setFocus] = focus;
 
@@ -37,7 +30,6 @@ export const FilteredSidebarHeader: React.FC<{
 
   return (
     <>
-      <FilteredSidebarToolbar onClose={onClose} />
       <div className="sidebar-search-container">
         <SearchTermInput
           filter={filter}
