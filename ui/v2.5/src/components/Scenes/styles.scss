@@ -1026,7 +1026,7 @@ input[type="range"].blue-slider {
 }
 
 .scene-list-toolbar {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   // offset the main padding
   margin-top: -0.5rem;
   padding-bottom: 0.5rem;
