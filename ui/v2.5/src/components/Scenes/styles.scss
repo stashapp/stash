@@ -1053,3 +1053,11 @@ input[type="range"].blue-slider {
     margin: 0;
   }
 }
+
+.detail-body .scene-list-toolbar {
+  top: calc($sticky-detail-header-height + $navbar-height);
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
+}

@@ -1,8 +1,9 @@
 // variables required by other scss files
 
 // this is calculated from the existing height
-// TODO: we should set this explicitly in the navbar
 $navbar-height: 48.75px;
+
+$sticky-detail-header-height: 50px;
 
 @import "styles/theme";
 @import "styles/range";
@@ -85,10 +86,10 @@ dd {
 
 .sticky.detail-header {
   display: block;
-  min-height: 50px;
+  min-height: $sticky-detail-header-height;
   padding: unset;
   position: fixed;
-  top: 3.3rem;
+  top: $navbar-height;
   z-index: 10;
 
   @media (max-width: 576px) {
