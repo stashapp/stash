@@ -232,6 +232,7 @@ export const PageSizeSelector: React.FC<{
 };
 
 export const SortBySelect: React.FC<{
+  className?: string;
   sortBy: string | undefined;
   sortDirection: SortDirectionEnum;
   options: ISortByOption[];
@@ -239,6 +240,7 @@ export const SortBySelect: React.FC<{
   onChangeSortDirection: () => void;
   onReshuffleRandomSort: () => void;
 }> = ({
+  className,
   sortBy,
   sortDirection,
   options,
@@ -272,7 +274,7 @@ export const SortBySelect: React.FC<{
   }
 
   return (
-    <Dropdown as={ButtonGroup} className="mr-2">
+    <Dropdown as={ButtonGroup} className={className}>
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy
@@ -409,6 +411,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         )}
 
         <SortBySelect
+          className="mr-2"
           sortBy={filter.sortBy}
           sortDirection={filter.sortDirection}
           options={filterOptions.sortByOptions}
