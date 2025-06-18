@@ -1042,21 +1042,6 @@ input[type="range"].blue-slider {
   .selected-items-info .btn {
     margin-right: 0.5rem;
   }
-
-  .filter-tags {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    margin-bottom: 0;
-    margin-left: 0.5rem;
-
-    @include media-breakpoint-down(xs) {
-      display: none;
-    }
-
-    .tag-item {
-      white-space: nowrap;
-    }
-  }
 }
 
 .scene-list-header {
