@@ -145,6 +145,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
                     key={option}
                     active={displayMode === option}
                     onClick={() => {
+                      setShowOptions(false);
                       onSetDisplayMode(option);
                     }}
                   >
