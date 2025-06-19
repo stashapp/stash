@@ -10,7 +10,7 @@ type Folder {
   parent_folder_id: ID @deprecated(reason: "Use parent_folder instead")
   zip_file_id: ID @deprecated(reason: "Use zip_file instead")
 
-  parent_folder: Folder!
+  parent_folder: Folder
   zip_file: BasicFile
 
   mod_time: Time!
@@ -175,4 +175,9 @@ type FindFilesResultType {
   size: Int!
 
   files: [BaseFile!]!
+}
+
+type FindFoldersResultType {
+  count: Int!
+  folders: [Folder!]!
 }

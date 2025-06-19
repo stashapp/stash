@@ -578,6 +578,22 @@ func indexToID(ids []int, idx int) int {
 	return ids[idx]
 }
 
+func indexesToIDPtrs[T any](ids []T, indexes []int) []*T {
+	ret := make([]*T, len(indexes))
+	for i, idx := range indexes {
+		ret[i] = indexToIDPtr(ids, idx)
+	}
+
+	return ret
+}
+
+func indexToIDPtr[T any](ids []T, idx int) *T {
+	if idx < 0 {
+		return nil
+	}
+	return &ids[idx]
+}
+
 func indexFromID(ids []int, id int) int {
 	for i, v := range ids {
 		if v == id {
