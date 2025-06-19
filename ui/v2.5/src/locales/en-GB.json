@@ -129,7 +129,8 @@
     "show_count_results": "Show {count} results",
     "sidebar": {
       "close": "Close sidebar",
-      "open": "Open sidebar"
+      "open": "Open sidebar",
+      "toggle": "Toggle sidebar"
     },
     "skip": "Skip",
     "split": "Split",

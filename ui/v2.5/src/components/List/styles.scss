@@ -938,19 +938,19 @@ input[type="range"].zoom-slider {
   .sidebar-search-container {
     display: flex;
     margin-bottom: 0.5rem;
-
-    .filter-button {
-      display: none;
-    }
   }
 
   .search-term-input {
     flex-grow: 1;
-    margin-right: 0.25rem;
+    margin-right: 0;
 
     .clearable-text-field {
       height: 100%;
     }
+  }
+
+  .edit-filter-button {
+    width: 100%;
   }
 
   .sidebar-footer {
@@ -970,14 +970,6 @@ input[type="range"].zoom-slider {
 @include media-breakpoint-down(xs) {
   .sidebar .sidebar-search-container {
     margin-top: 0.25rem;
-
-    .filter-button {
-      display: block;
-    }
-  }
-
-  .sidebar .search-term-input {
-    margin-right: 0.5rem;
   }
 }
 

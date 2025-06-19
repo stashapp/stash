@@ -39,12 +39,7 @@ import {
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
-import {
-  Sidebar,
-  SidebarIcon,
-  SidebarPane,
-  useSidebarState,
-} from "../Shared/Sidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -326,7 +321,6 @@ const ListToolbarContent: React.FC<{
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
-  onFilterButtonClick: () => void;
   onSelectAll: () => void;
   onSelectNone: () => void;
   onEdit: () => void;
@@ -338,7 +332,6 @@ const ListToolbarContent: React.FC<{
   queue,
   operations,
   onToggleSidebar,
-  onFilterButtonClick,
   onSelectAll,
   onSelectNone,
   onEdit,
@@ -377,8 +370,9 @@ const ListToolbarContent: React.FC<{
       {!hasSelection && (
         <div>
           <FilterButton
-            onClick={() => onFilterButtonClick()}
+            onClick={() => onToggleSidebar()}
             count={criteriaCount}
+            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
           />
         </div>
       )}
@@ -388,7 +382,7 @@ const ListToolbarContent: React.FC<{
             variant="secondary"
             className="minimal"
             onClick={() => onSelectNone()}
-            title={intl.formatMessage({ id: "actions.clear_selection" })}
+            title={intl.formatMessage({ id: "actions.select_none" })}
           >
             <Icon icon={faTimes} />
           </Button>
@@ -446,13 +440,13 @@ const ListToolbarContent: React.FC<{
             })}
           </OperationDropdown>
 
-          <Button
+          {/* <Button
             className="toggle-sidebar-button"
             variant="secondary"
             onClick={() => onToggleSidebar()}
           >
             <SidebarIcon />
-          </Button>
+          </Button> */}
         </ButtonGroup>
       </div>
     </>
@@ -724,7 +718,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 selectedIds={selectedIds}
                 operations={otherOperations}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onFilterButtonClick={() => showEditFilter()}
                 onSelectAll={() => onSelectAll()}
                 onSelectNone={() => onSelectNone()}
                 onEdit={onEdit}
