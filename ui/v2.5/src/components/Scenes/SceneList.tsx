@@ -439,14 +439,6 @@ const ListToolbarContent: React.FC<{
               );
             })}
           </OperationDropdown>
-
-          {/* <Button
-            className="toggle-sidebar-button"
-            variant="secondary"
-            onClick={() => onToggleSidebar()}
-          >
-            <SidebarIcon />
-          </Button> */}
         </ButtonGroup>
       </div>
     </>
