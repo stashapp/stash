@@ -929,7 +929,7 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 }
 
 func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.FileQueryOptions, query queryBuilder) (*models.FileQueryResult, error) {
-	if !options.Count {
+	if !options.Count && !options.TotalDuration && !options.Megapixels && !options.TotalSize {
 		// nothing to do - return empty result
 		return models.NewFileQueryResult(qb), nil
 	}
