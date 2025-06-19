@@ -41,7 +41,7 @@ func convertBaseFile(f models.File) BaseFile {
 	case *models.ImageFile:
 		return &ImageFile{ImageFile: f}
 	case *models.BaseFile:
-		return &File{BaseFile: f}
+		return &BasicFile{BaseFile: f}
 	default:
 		panic("unknown file type")
 	}
@@ -87,14 +87,14 @@ func (f *ImageFile) Fingerprints() []models.Fingerprint {
 	return f.ImageFile.Fingerprints
 }
 
-type File struct {
+type BasicFile struct {
 	*models.BaseFile
 }
 
-func (File) IsBaseFile() {}
+func (BasicFile) IsBaseFile() {}
 
-func (File) IsVisualFile() {}
+func (BasicFile) IsVisualFile() {}
 
-func (f *File) Fingerprints() []models.Fingerprint {
+func (f *BasicFile) Fingerprints() []models.Fingerprint {
 	return f.BaseFile.Fingerprints
 }

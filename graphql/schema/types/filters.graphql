@@ -696,14 +696,14 @@ input FileFilterType {
   mod_time: TimestampCriterionInput
 
   "Filter files that have an exact match available"
-  duplicated: PHashDuplicationCriterionInput  
+  duplicated: PHashDuplicationCriterionInput
 
   "find files based on hash"
   hashes: [FingerprintFilterInput!]
 
   video_file_filter: VideoFileFilterInput
   image_file_filter: ImageFileFilterInput
-  
+
   scene_count: IntCriterionInput
   image_count: IntCriterionInput
   gallery_count: IntCriterionInput
@@ -728,12 +728,12 @@ input VideoFileFilterInput {
   bitrate: IntCriterionInput
   video_codec: StringCriterionInput
   audio_codec: StringCriterionInput
-  
+
   "in seconds"
   duration: IntCriterionInput
 
   captions: StringCriterionInput
-  
+
   interactive: Boolean
   interactive_speed: IntCriterionInput
 }

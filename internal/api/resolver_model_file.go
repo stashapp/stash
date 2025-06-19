@@ -28,7 +28,7 @@ func (r *videoFileResolver) Fingerprint(ctx context.Context, obj *VideoFile, typ
 	return fingerprintResolver(obj.VideoFile.Fingerprints, type_)
 }
 
-func (r *fileResolver) Fingerprint(ctx context.Context, obj *File, type_ string) (*string, error) {
+func (r *basicFileResolver) Fingerprint(ctx context.Context, obj *BasicFile, type_ string) (*string, error) {
 	return fingerprintResolver(obj.BaseFile.Fingerprints, type_)
 }
 
@@ -44,11 +44,11 @@ func (r *videoFileResolver) ParentFolder(ctx context.Context, obj *VideoFile) (*
 	return loaders.From(ctx).FolderByID.Load(obj.ParentFolderID)
 }
 
-func (r *fileResolver) ParentFolder(ctx context.Context, obj *File) (*models.Folder, error) {
+func (r *basicFileResolver) ParentFolder(ctx context.Context, obj *BasicFile) (*models.Folder, error) {
 	return loaders.From(ctx).FolderByID.Load(obj.ParentFolderID)
 }
 
-func zipFileResolver(ctx context.Context, zipFileID *models.FileID) (*File, error) {
+func zipFileResolver(ctx context.Context, zipFileID *models.FileID) (*BasicFile, error) {
 	if zipFileID == nil {
 		return nil, nil
 	}
@@ -58,23 +58,23 @@ func zipFileResolver(ctx context.Context, zipFileID *models.FileID) (*File, erro
 		return nil, err
 	}
 
-	return &File{
+	return &BasicFile{
 		BaseFile: f.Base(),
 	}, nil
 }
 
-func (r *galleryFileResolver) ZipFile(ctx context.Context, obj *GalleryFile) (*File, error) {
+func (r *galleryFileResolver) ZipFile(ctx context.Context, obj *GalleryFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
 
-func (r *imageFileResolver) ZipFile(ctx context.Context, obj *ImageFile) (*File, error) {
+func (r *imageFileResolver) ZipFile(ctx context.Context, obj *ImageFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
 
-func (r *videoFileResolver) ZipFile(ctx context.Context, obj *VideoFile) (*File, error) {
+func (r *videoFileResolver) ZipFile(ctx context.Context, obj *VideoFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
 
-func (r *fileResolver) ZipFile(ctx context.Context, obj *File) (*File, error) {
+func (r *basicFileResolver) ZipFile(ctx context.Context, obj *BasicFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }

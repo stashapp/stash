@@ -15,6 +15,6 @@ func (r *folderResolver) ParentFolder(ctx context.Context, obj *models.Folder) (
 	return loaders.From(ctx).FolderByID.Load(*obj.ParentFolderID)
 }
 
-func (r *folderResolver) ZipFile(ctx context.Context, obj *models.Folder) (*File, error) {
+func (r *folderResolver) ZipFile(ctx context.Context, obj *models.Folder) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
