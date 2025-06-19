@@ -1043,9 +1043,22 @@ input[type="range"].blue-slider {
     margin-right: 0.5rem;
   }
 
-  // on mobile, hide sidebar toggle button when something is selected
+  // hide drop down menu items for play and create new
+  // when the buttons are visible
+  @include media-breakpoint-up(sm) {
+    .scene-list-operations {
+      .play-item,
+      .create-new-item {
+        display: none;
+      }
+    }
+  }
+
+  // hide play and create new buttons on xs screens
+  // show these in the drop down menu instead
   @include media-breakpoint-down(xs) {
-    &.has-selection .toggle-sidebar-button {
+    .play-button,
+    .create-new-button {
       display: none;
     }
   }

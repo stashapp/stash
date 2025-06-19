@@ -312,12 +312,12 @@ interface IOperations {
   text: string;
   onClick: () => void;
   isDisplayed?: () => boolean;
+  className?: string;
 }
 
 const ListToolbarContent: React.FC<{
   criteriaCount: number;
   items: GQL.SlimSceneDataFragment[];
-  queue: SceneQueue;
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
@@ -325,45 +325,24 @@ const ListToolbarContent: React.FC<{
   onSelectNone: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onPlay: () => void;
+  onCreateNew: () => void;
 }> = ({
   criteriaCount,
   items,
   selectedIds,
-  queue,
   operations,
   onToggleSidebar,
   onSelectAll,
   onSelectNone,
   onEdit,
   onDelete,
+  onPlay,
+  onCreateNew,
 }) => {
   const intl = useIntl();
-  const history = useHistory();
-
-  const playSelected = usePlaySelected(selectedIds);
-  const playFirst = usePlayFirst();
 
   const hasSelection = selectedIds.size > 0;
-
-  function onCreateNew() {
-    history.push("/scenes/new");
-  }
-
-  function onPlay() {
-    if (items.length === 0) {
-      return;
-    }
-
-    // if there are selected items, play those
-    if (hasSelection) {
-      playSelected();
-      return;
-    }
-
-    // otherwise, play the first item in the list
-    const sceneID = items[0].id;
-    playFirst(queue, sceneID, 0);
-  }
 
   return (
     <>
@@ -396,6 +375,7 @@ const ListToolbarContent: React.FC<{
         <ButtonGroup>
           {!!items.length && (
             <Button
+              className="play-button"
               variant="secondary"
               onClick={() => onPlay()}
               title={intl.formatMessage({ id: "actions.play" })}
@@ -404,7 +384,15 @@ const ListToolbarContent: React.FC<{
             </Button>
           )}
           {!hasSelection && (
-            <Button variant="secondary" onClick={() => onCreateNew()}>
+            <Button
+              className="create-new-button"
+              variant="secondary"
+              onClick={() => onCreateNew()}
+              title={intl.formatMessage(
+                { id: "actions.create_entity" },
+                { entityType: intl.formatMessage({ id: "scene" }) }
+              )}
+            >
               <Icon icon={faPlus} />
             </Button>
           )}
@@ -424,7 +412,7 @@ const ListToolbarContent: React.FC<{
             </>
           )}
 
-          <OperationDropdown>
+          <OperationDropdown className="scene-list-operations">
             {operations.map((o) => {
               if (o.isDisplayed && !o.isDisplayed()) {
                 return null;
@@ -435,6 +423,7 @@ const ListToolbarContent: React.FC<{
                   key={o.text}
                   onClick={o.onClick}
                   text={o.text}
+                  className={o.className}
                 />
               );
             })}
@@ -576,6 +565,28 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
 
   const playRandom = usePlayRandom(filter, totalCount);
+  const playSelected = usePlaySelected(selectedIds);
+  const playFirst = usePlayFirst();
+
+  function onCreateNew() {
+    history.push("/scenes/new");
+  }
+
+  function onPlay() {
+    if (items.length === 0) {
+      return;
+    }
+
+    // if there are selected items, play those
+    if (hasSelection) {
+      playSelected();
+      return;
+    }
+
+    // otherwise, play the first item in the list
+    const sceneID = items[0].id;
+    playFirst(queue, sceneID, 0);
+  }
 
   function onExport(all: boolean) {
     showModal(
@@ -629,6 +640,21 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   }
 
   const otherOperations = [
+    {
+      text: intl.formatMessage({ id: "actions.play" }),
+      onClick: () => onPlay(),
+      isDisplayed: () => items.length > 0,
+      className: "play-item",
+    },
+    {
+      text: intl.formatMessage(
+        { id: "actions.create_entity" },
+        { entityType: intl.formatMessage({ id: "scene" }) }
+      ),
+      onClick: () => onCreateNew(),
+      isDisplayed: () => !hasSelection,
+      className: "create-new-item",
+    },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
@@ -706,7 +732,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               <ListToolbarContent
                 criteriaCount={filter.count()}
                 items={items}
-                queue={queue}
                 selectedIds={selectedIds}
                 operations={otherOperations}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
@@ -714,6 +739,8 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 onSelectNone={() => onSelectNone()}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onCreateNew={onCreateNew}
+                onPlay={onPlay}
               />
             </ButtonToolbar>
 
