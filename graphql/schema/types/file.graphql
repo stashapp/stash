@@ -21,8 +21,11 @@ interface BaseFile {
   path: String!
   basename: String!
 
-  parent_folder_id: ID!
-  zip_file_id: ID
+  parent_folder_id: ID! @deprecated(reason: "Use parent_folder instead")
+  zip_file_id: ID @deprecated(reason: "Use zip_file instead")
+
+  parent_folder: Folder!
+  zip_file: File
 
   mod_time: Time!
   size: Int64!
@@ -39,8 +42,11 @@ type File implements BaseFile {
   path: String!
   basename: String!
 
-  parent_folder_id: ID!
-  zip_file_id: ID
+  parent_folder_id: ID! @deprecated(reason: "Use parent_folder instead")
+  zip_file_id: ID @deprecated(reason: "Use zip_file instead")
+
+  parent_folder: Folder!
+  zip_file: File
 
   mod_time: Time!
   size: Int64!
@@ -57,8 +63,11 @@ type VideoFile implements BaseFile {
   path: String!
   basename: String!
 
-  parent_folder_id: ID!
-  zip_file_id: ID
+  parent_folder_id: ID! @deprecated(reason: "Use parent_folder instead")
+  zip_file_id: ID @deprecated(reason: "Use zip_file instead")
+
+  parent_folder: Folder!
+  zip_file: File
 
   mod_time: Time!
   size: Int64!
@@ -84,8 +93,11 @@ type ImageFile implements BaseFile {
   path: String!
   basename: String!
 
-  parent_folder_id: ID!
-  zip_file_id: ID
+  parent_folder_id: ID! @deprecated(reason: "Use parent_folder instead")
+  zip_file_id: ID @deprecated(reason: "Use zip_file instead")
+
+  parent_folder: Folder!
+  zip_file: File
 
   mod_time: Time!
   size: Int64!
@@ -107,8 +119,11 @@ type GalleryFile implements BaseFile {
   path: String!
   basename: String!
 
-  parent_folder_id: ID!
-  zip_file_id: ID
+  parent_folder_id: ID! @deprecated(reason: "Use parent_folder instead")
+  zip_file_id: ID @deprecated(reason: "Use zip_file instead")
+
+  parent_folder: Folder!
+  zip_file: File
 
   mod_time: Time!
   size: Int64!

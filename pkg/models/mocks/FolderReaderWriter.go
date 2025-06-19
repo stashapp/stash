@@ -178,6 +178,29 @@ func (_m *FolderReaderWriter) FindByZipFileID(ctx context.Context, zipFileID mod
 	return r0, r1
 }
 
+// FindMany provides a mock function with given fields: ctx, id
+func (_m *FolderReaderWriter) FindMany(ctx context.Context, id []models.FolderID) ([]*models.Folder, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 []*models.Folder
+	if rf, ok := ret.Get(0).(func(context.Context, []models.FolderID) []*models.Folder); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Folder)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.FolderID) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, f
 func (_m *FolderReaderWriter) Update(ctx context.Context, f *models.Folder) error {
 	ret := _m.Called(ctx, f)
