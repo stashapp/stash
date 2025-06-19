@@ -7,8 +7,11 @@ type Folder {
   id: ID!
   path: String!
 
-  parent_folder_id: ID
-  zip_file_id: ID
+  parent_folder_id: ID @deprecated(reason: "Use parent_folder instead")
+  zip_file_id: ID @deprecated(reason: "Use zip_file instead")
+
+  parent_folder: Folder!
+  zip_file: File
 
   mod_time: Time!
 

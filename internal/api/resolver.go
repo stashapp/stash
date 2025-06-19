@@ -98,6 +98,9 @@ func (r *Resolver) ImageFile() ImageFileResolver {
 func (r *Resolver) File() FileResolver {
 	return &fileResolver{r}
 }
+func (r *Resolver) Folder() FolderResolver {
+	return &folderResolver{r}
+}
 func (r *Resolver) SavedFilter() SavedFilterResolver {
 	return &savedFilterResolver{r}
 }
@@ -129,6 +132,7 @@ type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
 type imageFileResolver struct{ *Resolver }
 type fileResolver struct{ *Resolver }
+type folderResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
 type pluginResolver struct{ *Resolver }
 type configResultResolver struct{ *Resolver }
