@@ -1059,6 +1059,17 @@ input[type="range"].blue-slider {
   .paginationIndex {
     margin: 0;
   }
+
+  // center the header on smaller screens
+  @include media-breakpoint-down(sm) {
+    & > div,
+    & > div:last-child {
+      flex-basis: 100%;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
 }
 
 .detail-body .scene-list-toolbar {
