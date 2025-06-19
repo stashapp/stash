@@ -15,14 +15,17 @@ import {
   faPencilAlt,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 
-export const OperationDropdown: React.FC<PropsWithChildren<{}>> = ({
-  children,
-}) => {
+export const OperationDropdown: React.FC<
+  PropsWithChildren<{
+    className?: string;
+  }>
+> = ({ className, children }) => {
   if (!children) return null;
 
   return (
-    <Dropdown as={ButtonGroup}>
+    <Dropdown className={className} as={ButtonGroup}>
       <Dropdown.Toggle variant="secondary" id="more-menu">
         <Icon icon={faEllipsisH} />
       </Dropdown.Toggle>
@@ -36,9 +39,13 @@ export const OperationDropdown: React.FC<PropsWithChildren<{}>> = ({
 export const OperationDropdownItem: React.FC<{
   text: string;
   onClick: () => void;
-}> = ({ text, onClick }) => {
+  className?: string;
+}> = ({ text, onClick, className }) => {
   return (
-    <Dropdown.Item className="bg-secondary text-white" onClick={onClick}>
+    <Dropdown.Item
+      className={cx("bg-secondary text-white", className)}
+      onClick={onClick}
+    >
       {text}
     </Dropdown.Item>
   );
