@@ -133,6 +133,9 @@ type ScanOptions struct {
 	// HandlerRequiredFilters are used to determine if an unchanged file needs to be handled
 	HandlerRequiredFilters []Filter
 
+	// DurationFilter will not scan videos below a given duration if not nil
+	DurationFilter *float64
+
 	ParallelTasks int
 
 	// When true files in path will be rescanned even if they haven't changed
@@ -723,6 +726,21 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (models.File, error
 
 	baseFile.ParentFolderID = *parentFolderID
 
+	file, err := s.fireDecorators(ctx, f.fs, baseFile)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.options.DurationFilter != nil {
+		videoFile, ok := file.(*models.VideoFile)
+		if ok {
+			if videoFile.Duration <= *s.options.DurationFilter {
+				logger.Infof("%s skipping due to min duration filter", path)
+				return nil, nil
+			}
+		}
+	}
+
 	const useExisting = false
 	fp, err := s.calculateFingerprints(f.fs, baseFile, path, useExisting)
 	if err != nil {
@@ -730,11 +748,6 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (models.File, error
 	}
 
 	baseFile.SetFingerprints(fp)
-
-	file, err := s.fireDecorators(ctx, f.fs, baseFile)
-	if err != nil {
-		return nil, err
-	}
 
 	// determine if the file is renamed from an existing file in the store
 	// do this after decoration so that missing fields can be populated
@@ -1034,15 +1047,30 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	oldBase := *base
 
+	base.ModTime = fileModTime
+	base.Size = f.Size
+	base.UpdatedAt = time.Now()
+
+	existing, err := s.fireDecorators(ctx, f.fs, existing)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.options.DurationFilter != nil {
+		videoFile, ok := existing.(*models.VideoFile)
+		if ok {
+			if videoFile.Duration <= *s.options.DurationFilter {
+				logger.Infof("%s skipping due to min duration filter", path)
+				return nil, nil
+			}
+		}
+	}
+
 	if !updated && forceRescan {
 		logger.Infof("rescanning %s", path)
 	} else {
 		logger.Infof("%s has been updated: rescanning", path)
 	}
-
-	base.ModTime = fileModTime
-	base.Size = f.Size
-	base.UpdatedAt = time.Now()
 
 	// calculate and update fingerprints for the file
 	const useExisting = false
@@ -1053,11 +1081,6 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	s.removeOutdatedFingerprints(existing, fp)
 	existing.SetFingerprints(fp)
-
-	existing, err = s.fireDecorators(ctx, f.fs, existing)
-	if err != nil {
-		return nil, err
-	}
 
 	// queue file for update
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
@@ -1107,6 +1130,20 @@ func (s *scanJob) removeOutdatedFingerprints(existing models.File, fp models.Fin
 // returns a file only if it was updated
 func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing models.File) (models.File, error) {
 	var err error
+
+	existing, err = s.fireDecorators(ctx, f.fs, existing)
+	if err != nil {
+		return nil, err
+	}
+	if s.options.DurationFilter != nil {
+		videoFile, ok := existing.(*models.VideoFile)
+		if ok {
+			if videoFile.Duration <= *s.options.DurationFilter {
+				logger.Infof("%s skipping due to min duration filter", f.Path)
+				return nil, nil
+			}
+		}
+	}
 
 	isMissingMetdata := s.isMissingMetadata(ctx, f, existing)
 	// set missing information
