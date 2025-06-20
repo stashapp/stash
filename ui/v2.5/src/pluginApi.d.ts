@@ -1046,6 +1046,16 @@ declare namespace PluginApi {
       uploadScript: (funscriptPath: string) => Promise<void>;
       sync: () => Promise<void>;
     };
+
+    function useLightbox(): {
+      state: any;
+      chapters: any;
+    };
+
+    function useGalleryLightbox(): {
+      id: string;
+      chapters: any;
+    };
   }
   namespace patch {
     function before(target: PatchableComponentNames, fn: Function): void;
