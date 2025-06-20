@@ -38,7 +38,7 @@ func regexFn(re, s string) (bool, error) {
 }
 
 // Returns a substring of the source string that matches the pattern.
-func regexpSubstrFn(re, s string) (string, error) {
+func regexpSubstrFn(src, re string) (string, error) {
 	compiled, ok := regexCache.Get(re)
 	if !ok {
 		var err error
@@ -48,7 +48,7 @@ func regexpSubstrFn(re, s string) (string, error) {
 		}
 		regexCache.Add(re, compiled)
 	}
-	return compiled.FindString(s), nil
+	return compiled.FindString(src), nil
 }
 
 // Finds a substring of the source string that matches the pattern and returns
