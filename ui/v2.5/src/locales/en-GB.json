@@ -562,6 +562,7 @@
     },
     "tools": {
       "graphql_playground": "GraphQL playground",
+      "heading": "Tools",
       "scene_duplicate_checker": "Scene Duplicate Checker",
       "scene_filename_parser": {
         "add_field": "Add Field",
