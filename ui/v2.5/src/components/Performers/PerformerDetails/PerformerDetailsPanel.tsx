@@ -29,7 +29,7 @@ const PerformerDetailGroup: React.FC<PropsWithChildren<IPerformerDetails>> =
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
   PatchComponent("PerformerDetailsPanel", (props) => {
-    const { performer, fullWidth } = props;
+    const { performer, fullWidth, collapsed } = props;
 
     // Network state
     const intl = useIntl();
@@ -177,7 +177,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           value={renderStashIDs()}
           fullWidth={fullWidth}
         />
-        {fullWidth && <CustomFields values={performer.custom_fields} />}
+        {(fullWidth || !collapsed) && (
+          <CustomFields values={performer.custom_fields} />
+        )}
       </PerformerDetailGroup>
     );
   });
