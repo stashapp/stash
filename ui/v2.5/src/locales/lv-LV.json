@@ -64,13 +64,13 @@
         "add_sub_groups": "Pievienot apakšgrupas",
         "from_file": "No Faila…",
         "from_url": "No URL…",
-        "disallow": "Neatļaut",
+        "disallow": "Aizliegt",
         "download": "Lejupielādēt",
         "download_anonymised": "Lejupielādēt anonīmi",
         "download_backup": "Lejupielādēt Dublējumu",
         "edit": "Rediģēt",
         "edit_entity": "Rediģēt {entityType}",
-        "enable": "Iepējot",
+        "enable": "Iespējot",
         "encoding_image": "Konstruē bildi…",
         "export_all": "Eksportēt visu…",
         "find": "Atrast",
@@ -80,7 +80,7 @@
         "hide_configuration": "Paslēpt Konfigurāciju",
         "identify": "Identificēt",
         "ignore": "Ignorēt",
-        "import": "Importēt…",
+        "import": "Ievietot…",
         "hide": "Paslēpt",
         "make_primary": "Padarīt primāro",
         "merge_from": "Apvienot no",
@@ -100,7 +100,7 @@
         "reload_plugins": "Pārlādēt spraudņus",
         "refresh": "Atsvaidzināt",
         "disable": "Atspējot",
-        "export": "Eksportēt",
+        "export": "Izgūt",
         "logout": "Izrakstīties",
         "full_export": "Pilns Eksports",
         "full_import": "Pilns Imports",
@@ -108,7 +108,17 @@
         "generate_thumb_from_current": "Ģenerēt sīktēlu no pašreizējā",
         "import_from_file": "Importēt no faila",
         "merge": "Apvienot",
-        "migrate_scene_screenshots": "Migrēt Video Ekrānšāviņus"
+        "migrate_scene_screenshots": "Migrēt Video Ekrānšāviņus",
+        "save": "Saglabāt",
+        "search": "Meklēt",
+        "skip": "Izlaist",
+        "split": "Sadalīt",
+        "stop": "Apturēt",
+        "submit": "Iesniegt",
+        "remove": "Noņemt",
+        "rescan": "Skenēt pa jaunu",
+        "scan": "Skenēt",
+        "show": "Rādīt"
     },
     "unknown_date": "Nezināms datums",
     "twitter": "Twitter",
@@ -117,5 +127,54 @@
     "zip_file_count": "Zip Failu Skaits",
     "weight_kg": "Svars (kg)",
     "weight": "Svars",
-    "years_old": "Gadus vecs"
+    "years_old": "Gadus vecs",
+    "component_tagger": {
+        "config": {
+            "query_mode_filename": "Datnes nosaukums",
+            "blacklist_label": "Melnais saraksts",
+            "query_mode_dir": "Mape",
+            "query_mode_metadata": "Metadati"
+        }
+    },
+    "actions_name": "Darbības",
+    "age": "Vecums",
+    "aliases": "Aizstājvārdi",
+    "all": "visi",
+    "ascending": "Augošā secībā",
+    "between_and": "un",
+    "birthdate": "Dzimšanas datums",
+    "blobs_storage_type": {
+        "filesystem": "Datņsistēma",
+        "database": "Datubāze"
+    },
+    "captions": "Subtitri",
+    "chapters": "Nodaļas",
+    "config": {
+        "categories": {
+            "security": "Drošība",
+            "tools": "Rīki",
+            "changelog": "Izmaiņu žurnāls",
+            "plugins": "Spraudņi"
+        },
+        "general": {
+            "plugins_path": {
+                "description": "Ceļš uz spraudņu konfigurācijas mapi",
+                "heading": "Spraudņu mape"
+            }
+        },
+        "plugins": {
+            "available_plugins": "Pieejamie spraudņi",
+            "installed_plugins": "Uzstādītie spraudņi"
+        },
+        "tasks": {
+            "cleanup_desc": "Meklēt trūkstošos failus un noņemt tos no datubāzes. Šī darbība ir neatgriezeniska."
+        },
+        "about": {
+            "check_for_new_version": "Pārbaudīt, vai pieejama jauna versija"
+        }
+    },
+    "donate": "Ziedot",
+    "package_manager": {
+        "check_for_updates": "Pārbaudīt, vai pieejami atjauninājumi"
+    }
 }
