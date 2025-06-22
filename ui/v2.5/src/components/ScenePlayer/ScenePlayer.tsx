@@ -116,6 +116,24 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     return;
   }
 
+  const speedStep = 0.25;
+  const minSpeed = 0.25;
+  const maxSpeed = 2;
+
+  if (event.shiftKey && event.which === 188 /* comma */) {
+    const currentRate = player.playbackRate();
+    const newRate = Math.max(minSpeed, currentRate - speedStep);
+    player.playbackRate(newRate);
+    return;
+  }
+
+  if (event.shiftKey && event.which === 190 /* period */) {
+    const currentRate = player.playbackRate();
+    const newRate = Math.min(maxSpeed, currentRate + speedStep);
+    player.playbackRate(newRate);
+    return;
+  }
+
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
   }
