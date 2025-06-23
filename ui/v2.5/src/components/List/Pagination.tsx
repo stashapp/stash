@@ -14,6 +14,7 @@ import { Icon } from "../Shared/Icon";
 import { faCheck, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { useStopWheelScroll } from "src/utils/form";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { PatchComponent } from "src/patch";
 
 const PageCount: React.FC<{
   totalPages: number;
@@ -158,114 +159,114 @@ interface IPaginationIndexProps {
 
 const minPagesForCompact = 4;
 
-export const Pagination: React.FC<IPaginationProps> = ({
-  itemsPerPage,
-  currentPage,
-  totalItems,
-  onChangePage,
-  pagePopupPlacement,
-}) => {
-  const intl = useIntl();
-  const totalPages = useMemo(
-    () => Math.ceil(totalItems / itemsPerPage),
-    [totalItems, itemsPerPage]
-  );
+export const Pagination: React.FC<IPaginationProps> = PatchComponent(
+  "Pagination",
+  ({
+    itemsPerPage,
+    currentPage,
+    totalItems,
+    onChangePage,
+    pagePopupPlacement,
+  }) => {
+    const intl = useIntl();
+    const totalPages = useMemo(
+      () => Math.ceil(totalItems / itemsPerPage),
+      [totalItems, itemsPerPage]
+    );
 
-  const pageButtons = useMemo(() => {
-    if (totalPages >= minPagesForCompact)
-      return (
-        <PageCount
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onChangePage={onChangePage}
-          pagePopupPlacement={pagePopupPlacement}
-        />
-      );
+    const pageButtons = useMemo(() => {
+      if (totalPages >= minPagesForCompact)
+        return (
+          <PageCount
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onChangePage={onChangePage}
+            pagePopupPlacement={pagePopupPlacement}
+          />
+        );
 
-    const pages = [...Array(totalPages).keys()].map((i) => i + 1);
+      const pages = [...Array(totalPages).keys()].map((i) => i + 1);
 
-    return pages.map((page: number) => (
-      <Button
-        variant="secondary"
-        key={page}
-        active={currentPage === page}
-        onClick={() => onChangePage(page)}
-      >
-        <FormattedNumber value={page} />
-      </Button>
-    ));
-  }, [totalPages, currentPage, onChangePage, pagePopupPlacement]);
+      return pages.map((page: number) => (
+        <Button
+          variant="secondary"
+          key={page}
+          active={currentPage === page}
+          onClick={() => onChangePage(page)}
+        >
+          <FormattedNumber value={page} />
+        </Button>
+      ));
+    }, [totalPages, currentPage, onChangePage, pagePopupPlacement]);
 
-  if (totalPages <= 1) return <div />;
+    if (totalPages <= 1) return <div />;
 
-  return (
-    <ButtonGroup className="pagination">
-      <Button
-        variant="secondary"
-        disabled={currentPage === 1}
-        onClick={() => onChangePage(1)}
-        title={intl.formatMessage({ id: "pagination.first" })}
-      >
-        <span>«</span>
-      </Button>
-      <Button
-        variant="secondary"
-        disabled={currentPage === 1}
-        onClick={() => onChangePage(currentPage - 1)}
-        title={intl.formatMessage({ id: "pagination.previous" })}
-      >
-        &lt;
-      </Button>
-      {pageButtons}
-      <Button
-        variant="secondary"
-        disabled={currentPage === totalPages}
-        onClick={() => onChangePage(currentPage + 1)}
-        title={intl.formatMessage({ id: "pagination.next" })}
-      >
-        &gt;
-      </Button>
-      <Button
-        variant="secondary"
-        disabled={currentPage === totalPages}
-        onClick={() => onChangePage(totalPages)}
-        title={intl.formatMessage({ id: "pagination.last" })}
-      >
-        <span>»</span>
-      </Button>
-    </ButtonGroup>
-  );
-};
+    return (
+      <ButtonGroup className="pagination">
+        <Button
+          variant="secondary"
+          disabled={currentPage === 1}
+          onClick={() => onChangePage(1)}
+          title={intl.formatMessage({ id: "pagination.first" })}
+        >
+          <span>«</span>
+        </Button>
+        <Button
+          variant="secondary"
+          disabled={currentPage === 1}
+          onClick={() => onChangePage(currentPage - 1)}
+          title={intl.formatMessage({ id: "pagination.previous" })}
+        >
+          &lt;
+        </Button>
+        {pageButtons}
+        <Button
+          variant="secondary"
+          disabled={currentPage === totalPages}
+          onClick={() => onChangePage(currentPage + 1)}
+          title={intl.formatMessage({ id: "pagination.next" })}
+        >
+          &gt;
+        </Button>
+        <Button
+          variant="secondary"
+          disabled={currentPage === totalPages}
+          onClick={() => onChangePage(totalPages)}
+          title={intl.formatMessage({ id: "pagination.last" })}
+        >
+          <span>»</span>
+        </Button>
+      </ButtonGroup>
+    );
+  }
+);
 
-export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
-  loading,
-  itemsPerPage,
-  currentPage,
-  totalItems,
-  metadataByline,
-}) => {
-  const intl = useIntl();
+export const PaginationIndex: React.FC<IPaginationIndexProps> = PatchComponent(
+  "PaginationIndex",
+  ({ loading, itemsPerPage, currentPage, totalItems, metadataByline }) => {
+    const intl = useIntl();
 
-  if (loading) return null;
+    if (loading) return null;
 
-  // Build the pagination index string
-  const firstItemCount: number = Math.min(
-    (currentPage - 1) * itemsPerPage + 1,
-    totalItems
-  );
-  const lastItemCount: number = Math.min(
-    firstItemCount + (itemsPerPage - 1),
-    totalItems
-  );
-  const indexText: string = `${intl.formatNumber(
-    firstItemCount
-  )}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
+    // Build the pagination index string
+    const firstItemCount: number = Math.min(
+      (currentPage - 1) * itemsPerPage + 1,
+      totalItems
+    );
+    const lastItemCount: number = Math.min(
+      firstItemCount + (itemsPerPage - 1),
+      totalItems
+    );
+    const indexText: string = `${intl.formatNumber(
+      firstItemCount
+    )}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
-  return (
-    <span className="filter-container text-muted paginationIndex center-text">
-      {indexText}
-      <br />
-      {metadataByline}
-    </span>
-  );
-};
+    return (
+      <span className="filter-container text-muted paginationIndex center-text">
+        {indexText}
+        <br />
+        {metadataByline}
+      </span>
+    );
+  }
+);
