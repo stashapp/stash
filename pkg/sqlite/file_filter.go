@@ -220,6 +220,7 @@ func (qb *videoFileFilterHandler) handle(ctx context.Context, f *filterBuilder) 
 func (qb *videoFileFilterHandler) criterionHandler() criterionHandler {
 	videoFileFilter := qb.filter
 	return compoundHandler{
+		joinedStringCriterionHandler(videoFileFilter.Format, "video_files.format", qb.addVideoFilesTable),
 		floatIntCriterionHandler(videoFileFilter.Duration, "video_files.duration", qb.addVideoFilesTable),
 		resolutionCriterionHandler(videoFileFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable),
 		orientationCriterionHandler(videoFileFilter.Orientation, "video_files.height", "video_files.width", qb.addVideoFilesTable),
@@ -290,6 +291,7 @@ func (qb *imageFileFilterHandler) handle(ctx context.Context, f *filterBuilder) 
 func (qb *imageFileFilterHandler) criterionHandler() criterionHandler {
 	ff := qb.filter
 	return compoundHandler{
+		joinedStringCriterionHandler(ff.Format, "image_files.format", qb.addImageFilesTable),
 		resolutionCriterionHandler(ff.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable),
 		orientationCriterionHandler(ff.Orientation, "image_files.height", "image_files.width", qb.addImageFilesTable),
 	}

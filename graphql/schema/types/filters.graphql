@@ -726,6 +726,7 @@ input VideoFileFilterInput {
   orientation: OrientationCriterionInput
   framerate: IntCriterionInput
   bitrate: IntCriterionInput
+  format: StringCriterionInput
   video_codec: StringCriterionInput
   audio_codec: StringCriterionInput
 
@@ -739,6 +740,7 @@ input VideoFileFilterInput {
 }
 
 input ImageFileFilterInput {
+  format: StringCriterionInput
   resolution: ResolutionCriterionInput
   orientation: OrientationCriterionInput
 }

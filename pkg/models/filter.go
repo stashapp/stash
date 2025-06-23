@@ -209,6 +209,7 @@ type FingerprintFilterInput struct {
 }
 
 type VideoFileFilterInput struct {
+	Format      *StringCriterionInput      `json:"format,omitempty"`
 	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
 	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
 	Framerate   *IntCriterionInput         `json:"framerate,omitempty"`
@@ -223,6 +224,7 @@ type VideoFileFilterInput struct {
 }
 
 type ImageFileFilterInput struct {
+	Format      *StringCriterionInput      `json:"format,omitempty"`
 	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
 	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
 }
