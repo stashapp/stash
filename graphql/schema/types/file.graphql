@@ -108,6 +108,7 @@ type ImageFile implements BaseFile {
   fingerprint(type: String!): String
   fingerprints: [Fingerprint!]!
 
+  format: String!
   width: Int!
   height: Int!
 
