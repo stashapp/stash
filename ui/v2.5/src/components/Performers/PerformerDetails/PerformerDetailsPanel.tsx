@@ -94,7 +94,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           }
           fullWidth={fullWidth}
         />
-        <DetailItem id="death_date" value={performer.death_date} />
+        <DetailItem
+          id="death_date"
+          value={performer.death_date}
+          fullWidth={fullWidth}
+        />
         {performer.country ? (
           <DetailItem
             id="country"
