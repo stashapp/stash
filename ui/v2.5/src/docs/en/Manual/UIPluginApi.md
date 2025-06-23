@@ -181,6 +181,8 @@ Returns `void`.
 - `GroupSelect`
 - `GroupSelect.sort`
 - `NumberSetting`
+- `Pagination`
+- `PaginationIndex`
 - `PerformerAppearsWithPanel`
 - `PerformerCard`
 - `PerformerCard.Details`
