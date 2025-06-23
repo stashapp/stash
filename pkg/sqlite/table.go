@@ -167,7 +167,9 @@ func (t *joinTable) invert() *joinTable {
 			table:    t.table.table,
 			idColumn: t.fkColumn,
 		},
-		fkColumn: t.table.idColumn,
+		fkColumn:     t.table.idColumn,
+		foreignTable: t.foreignTable,
+		orderBy:      t.orderBy,
 	}
 }
 
@@ -273,19 +275,21 @@ type stashIDTable struct {
 }
 
 type stashIDRow struct {
-	StashID  null.String `db:"stash_id"`
-	Endpoint null.String `db:"endpoint"`
+	StashID   null.String `db:"stash_id"`
+	Endpoint  null.String `db:"endpoint"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 }
 
 func (r *stashIDRow) resolve() models.StashID {
 	return models.StashID{
-		StashID:  r.StashID.String,
-		Endpoint: r.Endpoint.String,
+		StashID:   r.StashID.String,
+		Endpoint:  r.Endpoint.String,
+		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
 }
 
 func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error) {
-	q := dialect.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("endpoint", "stash_id", "updated_at").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []models.StashID
@@ -305,9 +309,17 @@ func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error
 	return ret, nil
 }
 
+var epochTime = time.Unix(0, 0).UTC()
+
 func (t *stashIDTable) insertJoin(ctx context.Context, id int, v models.StashID) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id").Vals(
-		goqu.Vals{id, v.Endpoint, v.StashID},
+	// #5563 - it's possible that zero-value updated at timestamps are provided via import
+	// replace them with the epoch time
+	if v.UpdatedAt.IsZero() {
+		v.UpdatedAt = epochTime
+	}
+
+	var q = dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id", "updated_at").Vals(
+		goqu.Vals{id, v.Endpoint, v.StashID, v.UpdatedAt},
 	)
 	ret, err := exec(ctx, q)
 	if err != nil {

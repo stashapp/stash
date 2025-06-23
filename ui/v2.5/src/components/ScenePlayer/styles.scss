@@ -183,6 +183,7 @@ $sceneTabWidth: 450px;
     pointer-events: none;
     position: absolute;
     transition: opacity 0.2s;
+    z-index: 100;
   }
 
   .vjs-big-play-button,
@@ -263,6 +264,16 @@ $sceneTabWidth: 450px;
       cursor: pointer;
       transform: scale(1.3, 1.3);
     }
+  }
+
+  .vjs-marker-range {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 2px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 8px;
+    position: absolute;
+    transform: translateY(-28px);
+    transition: none;
   }
 
   .vjs-marker-tooltip {

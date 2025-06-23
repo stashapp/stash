@@ -8,6 +8,9 @@ import { IHasID } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
+import * as GQL from "src/core/generated-graphql";
+import { DisplayMode } from "src/models/list-filter/types";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 
 export function useFilterURL(
   filter: ListFilterModel,
@@ -57,12 +60,25 @@ export function useFilterURL(
       let newFilter = prevFilter.empty();
       newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
+        // filter may have changed if random seed was set, update the URL
+        const newParams = newFilter.makeQueryParameters();
+        if (newParams !== location.search) {
+          history.replace({ ...history.location, search: newParams });
+        }
+
         return newFilter;
       } else {
         return prevFilter;
       }
     });
-  }, [active, location.search, defaultFilter, setFilter, updateFilter]);
+  }, [
+    active,
+    location.search,
+    defaultFilter,
+    setFilter,
+    updateFilter,
+    history,
+  ]);
 
   return { setFilter: updateFilter };
 }
@@ -91,6 +107,106 @@ export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
   const retFilter = loading ? undefined : defaultFilter ?? emptyFilter;
 
   return { defaultFilter: retFilter, loading };
+}
+
+function useEmptyFilter(props: {
+  filterMode: GQL.FilterMode;
+  defaultSort?: string;
+  config?: GQL.ConfigDataFragment;
+}) {
+  const { filterMode, defaultSort, config } = props;
+
+  const emptyFilter = useMemo(
+    () =>
+      new ListFilterModel(filterMode, config, {
+        defaultSortBy: defaultSort,
+      }),
+    [config, filterMode, defaultSort]
+  );
+
+  return emptyFilter;
+}
+
+export interface IFilterStateHook {
+  filterMode: GQL.FilterMode;
+  defaultSort?: string;
+  view?: View;
+  useURL?: boolean;
+}
+
+export function useFilterState(
+  props: IFilterStateHook & {
+    config?: GQL.ConfigDataFragment;
+  }
+) {
+  const { filterMode, defaultSort, config, view, useURL } = props;
+
+  const [filter, setFilterState] = useState<ListFilterModel>(
+    () =>
+      new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
+  );
+
+  const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
+
+  const { defaultFilter, loading } = useDefaultFilter(emptyFilter, view);
+
+  const { setFilter } = useFilterURL(filter, setFilterState, {
+    defaultFilter,
+    active: useURL,
+  });
+
+  return { loading, filter, setFilter };
+}
+
+export function useFilterOperations(props: {
+  filter: ListFilterModel;
+  setFilter: (
+    value: ListFilterModel | ((prevState: ListFilterModel) => ListFilterModel)
+  ) => void;
+}) {
+  const { setFilter } = props;
+
+  const setPage = useCallback(
+    (p: number) => {
+      setFilter((cv) => cv.changePage(p));
+    },
+    [setFilter]
+  );
+
+  const setDisplayMode = useCallback(
+    (displayMode: DisplayMode) => {
+      setFilter((cv) => cv.setDisplayMode(displayMode));
+    },
+    [setFilter]
+  );
+
+  const setZoom = useCallback(
+    (newZoomIndex: number) => {
+      setFilter((cv) => cv.setZoom(newZoomIndex));
+    },
+    [setFilter]
+  );
+
+  const removeCriterion = useCallback(
+    (removedCriterion: Criterion) => {
+      setFilter((cv) =>
+        cv.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    },
+    [setFilter]
+  );
+
+  const clearAllCriteria = useCallback(() => {
+    setFilter((cv) => cv.clearCriteria());
+  }, [setFilter]);
+
+  return {
+    setPage,
+    setDisplayMode,
+    setZoom,
+    removeCriterion,
+    clearAllCriteria,
+  };
 }
 
 export function useListKeyboardShortcuts(props: {
@@ -177,40 +293,62 @@ export function useListKeyboardShortcuts(props: {
   }, [onSelectAll, onSelectNone]);
 }
 
-export function useListSelect<T extends { id: string }>(items: T[]) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
+  const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
 
-  const prevItems = usePrevious(items);
-
-  useEffect(() => {
-    if (prevItems === items) {
-      return;
-    }
-
-    // filter out any selectedIds that are no longer in the list
+  // TODO - this doesn't get updated when items changes
+  const selectedIds = useMemo(() => {
     const newSelectedIds = new Set<string>();
-
-    selectedIds.forEach((id) => {
-      if (items.some((item) => item.id === id)) {
-        newSelectedIds.add(id);
-      }
+    itemsSelected.forEach((item) => {
+      newSelectedIds.add(item.id);
     });
 
-    setSelectedIds(newSelectedIds);
-  }, [prevItems, items, selectedIds]);
+    return newSelectedIds;
+  }, [itemsSelected]);
+
+  // const prevItems = usePrevious(items);
+
+  // #5341 - HACK/TODO: this is a regression of previous behaviour. I don't like the idea
+  // of keeping selected items that are no longer in the list, since its not
+  // clear to the user that the item is still selected, but there is now an expectation of
+  // this behaviour.
+  // useEffect(() => {
+  //   if (prevItems === items) {
+  //     return;
+  //   }
+
+  //   // filter out any selectedIds that are no longer in the list
+  //   const newSelectedIds = new Set<string>();
+
+  //   selectedIds.forEach((id) => {
+  //     if (items.some((item) => item.id === id)) {
+  //       newSelectedIds.add(id);
+  //     }
+  //   });
+
+  //   setSelectedIds(newSelectedIds);
+  // }, [prevItems, items, selectedIds]);
 
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
 
-    const newSelectedIds = new Set(selectedIds);
-    if (selected) {
-      newSelectedIds.add(id);
-    } else {
-      newSelectedIds.delete(id);
-    }
+    setItemsSelected((prevSelected) => {
+      if (selected) {
+        // prevent duplicates
+        if (prevSelected.some((v) => v.id === id)) {
+          return prevSelected;
+        }
 
-    setSelectedIds(newSelectedIds);
+        const item = items.find((i) => i.id === id);
+        if (item) {
+          return [...prevSelected, item];
+        }
+        return prevSelected;
+      } else {
+        return prevSelected.filter((item) => item.id !== id);
+      }
+    });
   }
 
   function selectRange(startIndex: number, endIndex: number) {
@@ -223,13 +361,12 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
     }
 
     const subset = items.slice(start, end + 1);
-    const newSelectedIds = new Set<string>();
 
-    subset.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
+    // prevent duplicates
+    const toAdd = subset.filter((item) => !selectedIds.has(item.id));
 
-    setSelectedIds(newSelectedIds);
+    const newSelected = itemsSelected.concat(toAdd);
+    setItemsSelected(newSelected);
   }
 
   function multiSelect(id: string) {
@@ -258,43 +395,38 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
   }
 
   function onSelectAll() {
-    const newSelectedIds = new Set<string>();
-    items.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
-
-    setSelectedIds(newSelectedIds);
+    // #5341 - HACK/TODO: maintaining legacy behaviour of replacing selected items with
+    // all items on the current page. To be consistent with the existing behaviour, it
+    // should probably _add_ all items on the current page to the selected items.
+    setItemsSelected([...items]);
     setLastClickedId(undefined);
   }
 
   function onSelectNone() {
-    const newSelectedIds = new Set<string>();
-    setSelectedIds(newSelectedIds);
+    setItemsSelected([]);
     setLastClickedId(undefined);
   }
 
-  const getSelected = useMemo(() => {
-    let cached: T[] | undefined;
-    return () => {
-      if (cached) {
-        return cached;
-      }
+  // TODO - this is for backwards compatibility
+  const getSelected = useCallback(() => itemsSelected, [itemsSelected]);
 
-      cached = items.filter((value) => selectedIds.has(value.id));
-      return cached;
-    };
-  }, [items, selectedIds]);
+  // convenience state
+  const hasSelection = itemsSelected.length > 0;
 
   return {
+    selectedItems: itemsSelected,
     selectedIds,
     getSelected,
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    hasSelection,
   };
 }
 
-export type IListSelect<T extends IHasID> = ReturnType<typeof useListSelect<T>>;
+export type IListSelect<T extends IHasID = IHasID> = ReturnType<
+  typeof useListSelect<T>
+>;
 
 // returns true if the filter has changed in a way that impacts the total count
 function totalCountImpacted(
@@ -338,6 +470,81 @@ export function useCachedQueryResult<T extends QueryResult>(
   return cachedResult;
 }
 
+export interface IQueryResultHook<
+  T extends QueryResult,
+  E extends IHasID = IHasID
+> {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  useResult: (filter: ListFilterModel) => T;
+  getCount: (data: T) => number;
+  getItems: (data: T) => E[];
+}
+
+export function useQueryResult<
+  T extends QueryResult,
+  E extends IHasID = IHasID
+>(
+  props: IQueryResultHook<T, E> & {
+    filter: ListFilterModel;
+  }
+) {
+  const { filter, filterHook, useResult, getItems, getCount } = props;
+
+  const effectiveFilter = useMemo(() => {
+    if (filterHook) {
+      return filterHook(filter.clone());
+    }
+    return filter;
+  }, [filter, filterHook]);
+
+  const result = useResult(effectiveFilter);
+
+  // use cached query result for pagination and metadata rendering
+  const cachedResult = useCachedQueryResult(effectiveFilter, result);
+
+  const items = useMemo(() => getItems(result), [getItems, result]);
+  const totalCount = useMemo(
+    () => getCount(cachedResult),
+    [getCount, cachedResult]
+  );
+
+  const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+  return {
+    effectiveFilter,
+    result,
+    cachedResult,
+    items,
+    totalCount,
+    pages,
+  };
+}
+
+// this hook collects the common logic when closing the edit/delete dialog
+// if applied is true, then the list should be refetched and selection cleared
+export function useCloseEditDelete(props: {
+  onSelectNone: () => void;
+  closeModal: () => void;
+  result: QueryResult;
+}) {
+  const { onSelectNone, closeModal, result } = props;
+
+  const onCloseEditDelete = useCallback(
+    (applied?: boolean) => {
+      closeModal();
+      if (applied) {
+        onSelectNone();
+
+        // refetch
+        result.refetch();
+      }
+    },
+    [onSelectNone, closeModal, result]
+  );
+
+  return onCloseEditDelete;
+}
+
 export function useScrollToTopOnPageChange(
   currentPage: number,
   loading: boolean
@@ -372,7 +579,7 @@ export function useEnsureValidPage(
     const totalPages = Math.ceil(totalCount / filter.itemsPerPage);
 
     if (totalPages > 0 && filter.currentPage > totalPages) {
-      setFilter((prevFilter) => prevFilter.changePage(1));
+      setFilter((prevFilter) => prevFilter.changePage(totalPages));
     }
   }, [filter, totalCount, setFilter]);
 }

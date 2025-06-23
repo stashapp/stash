@@ -21,14 +21,14 @@ import {
   GroupDetailsPanel,
 } from "./GroupDetailsPanel";
 import { GroupEditPanel } from "./GroupEditPanel";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faRefresh, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
+import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
@@ -39,10 +39,12 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
-import { Tab, Tabs } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
+import { GroupPerformersPanel } from "./GroupPerformersPanel";
+import { Icon } from "src/components/Shared/Icon";
 
-const validTabs = ["default", "scenes", "subgroups"] as const;
+const validTabs = ["default", "scenes", "performers", "subgroups"] as const;
 type TabKey = (typeof validTabs)[number];
 
 function isTabKey(tab: string): tab is TabKey {
@@ -54,15 +56,23 @@ const GroupTabs: React.FC<{
   group: GQL.GroupDataFragment;
   abbreviateCounter: boolean;
 }> = ({ tabKey, group, abbreviateCounter }) => {
-  const { scene_count: sceneCount, sub_group_count: groupCount } = group;
+  const {
+    scene_count: sceneCount,
+    performer_count: performerCount,
+    sub_group_count: groupCount,
+  } = group;
 
   const populatedDefaultTab = useMemo(() => {
-    if (sceneCount == 0 && groupCount !== 0) {
-      return "subgroups";
+    if (sceneCount == 0) {
+      if (performerCount != 0) {
+        return "performers";
+      } else if (groupCount !== 0) {
+        return "subgroups";
+      }
     }
 
     return "scenes";
-  }, [sceneCount, groupCount]);
+  }, [sceneCount, performerCount, groupCount]);
 
   const { setTabKey } = useTabKey({
     tabKey,
@@ -90,6 +100,18 @@ const GroupTabs: React.FC<{
         }
       >
         <GroupScenesPanel active={tabKey === "scenes"} group={group} />
+      </Tab>
+      <Tab
+        eventKey="performers"
+        title={
+          <TabTitleCounter
+            messageID="performers"
+            count={performerCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <GroupPerformersPanel active={tabKey === "performers"} group={group} />
       </Tab>
       <Tab
         eventKey="subgroups"
@@ -129,6 +151,8 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+
+  const [focusedOnFront, setFocusedOnFront] = useState<boolean>(true);
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const loadStickyHeader = useLoadStickyHeader();
@@ -249,10 +273,10 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
       await deleteGroup();
     } catch (e) {
       Toast.error(e);
+      return;
     }
 
-    // redirect to groups page
-    history.push(`/groups`);
+    history.goBack();
   }
 
   function toggleEditing(value?: boolean) {
@@ -328,7 +352,13 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
             <div className="group-images">
               {!!activeFrontImage && (
                 <LightboxLink images={lightboxImages}>
-                  <DetailImage alt="Front Cover" src={activeFrontImage} />
+                  <DetailImage
+                    className={`front-cover ${
+                      focusedOnFront ? "active" : "inactive"
+                    }`}
+                    alt="Front Cover"
+                    src={activeFrontImage}
+                  />
                 </LightboxLink>
               )}
               {!!activeBackImage && (
@@ -336,8 +366,22 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
                   images={lightboxImages}
                   index={lightboxImages.length - 1}
                 >
-                  <DetailImage alt="Back Cover" src={activeBackImage} />
+                  <DetailImage
+                    className={`back-cover ${
+                      !focusedOnFront ? "active" : "inactive"
+                    }`}
+                    alt="Back Cover"
+                    src={activeBackImage}
+                  />
                 </LightboxLink>
+              )}
+              {!!(activeFrontImage && activeBackImage) && (
+                <Button
+                  className="flip"
+                  onClick={() => setFocusedOnFront(!focusedOnFront)}
+                >
+                  <Icon icon={faRefresh} />
+                </Button>
               )}
             </div>
           </HeaderImage>
@@ -351,7 +395,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
                   />
                 )}
                 <span className="name-icons">
-                  <ExternalLinksButton urls={group.urls} />
+                  <ExternalLinkButtons urls={group.urls ?? undefined} />
                 </span>
               </DetailTitle>
 

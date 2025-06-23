@@ -1,6 +1,7 @@
 import React, {
   MutableRefObject,
   PropsWithChildren,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,6 +14,7 @@ import useResizeObserver from "@react-hook/resize-observer";
 import { Icon } from "../Icon";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
+import { useDebounce } from "src/hooks/debounce";
 
 interface ICardProps {
   className?: string;
@@ -63,7 +65,7 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
     height: 0,
   });
 
-  useResizeObserver(target, (entry) => {
+  const debouncedSetDimension = useDebounce((entry: ResizeObserverEntry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
     let difference = Math.abs(dimension.width - width);
     // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
@@ -73,10 +75,37 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
     if (difference > sensitivityThreshold) {
       setDimension({ width, height });
     }
-  });
+  }, 50);
+
+  useResizeObserver(target, debouncedSetDimension);
 
   return [target, dimension];
 };
+
+export function useCardWidth(
+  containerWidth: number,
+  zoomIndex: number,
+  zoomWidths: number[]
+) {
+  return useMemo(() => {
+    if (
+      !containerWidth ||
+      zoomIndex === undefined ||
+      zoomIndex < 0 ||
+      zoomIndex >= zoomWidths.length ||
+      ScreenUtils.isMobile()
+    )
+      return;
+
+    let zoomValue = zoomIndex;
+    const preferredCardWidth = zoomWidths[zoomValue];
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    return fittedCardWidth;
+  }, [containerWidth, zoomIndex, zoomWidths]);
+}
 
 const Checkbox: React.FC<{
   selected?: boolean;
@@ -154,6 +183,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     if (props.selecting) {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
+      event.stopPropagation();
     }
   }
 

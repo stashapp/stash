@@ -29,8 +29,10 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `Intl`
 - `FontAwesomeRegular`
 - `FontAwesomeSolid`
+- `FontAwesomeBrands`
 - `Mousetrap`
 - `MousetrapPause`
+- `ReactSelect`
 
 ### `register`
 
@@ -81,6 +83,8 @@ Returns a `Promise<void>` that resolves when all of the components have been loa
 ### `hooks`
 
 This namespace provides access to the following core utility hooks:
+- `useGalleryLightbox`
+- `useLightbox`
 - `useSpriteInfo`
 - `useToast`
 
@@ -99,6 +103,8 @@ Returns a `boolean` which will be `true` if the components are loading.
 ### `loadableComponents`
 
 This namespace contains all of the components that may need to be loaded using the `loadComponents` method. Components are added to this namespace as needed. Please make a development request if a required component is not in this namespace.
+
+This component also includes coarse-grained entries for every lazily loaded import in the stock UI. If a component is not available in `components` when the page loads, it can be loaded using the coarse-grained entry. For example, `PerformerCard` can be loaded using `loadableComponents.Performers`.
 
 ### `patch`
 
@@ -139,36 +145,74 @@ Returns `void`.
 
 #### Patchable components and functions
 
+- `AlertModal`
 - `App`
+- `BackgroundImage`
 - `BooleanSetting`
 - `ChangeButtonSetting`
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
+- `CustomFields`
+- `CustomFieldInput`
 - `DateInput`
+- `DetailImage`
+- `ExternalLinkButtons`
+- `ExternalLinksButton`
 - `FolderSelect`
+- `FrontPage`
+- `GalleryCard`
+- `GalleryCard.Details`
+- `GalleryCard.Image`
+- `GalleryCard.Overlays`
+- `GalleryCard.Popovers`
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `HeaderImage`
+- `HoverPopover`
 - `Icon`
 - `ImageDetailPanel`
+- `ImageInput`
+- `LightboxLink`
+- `LoadingIndicator`
 - `ModalSetting`
 - `GroupIDSelect`
 - `GroupSelect`
 - `GroupSelect.sort`
 - `NumberSetting`
+- `PerformerAppearsWithPanel`
+- `PerformerCard`
+- `PerformerCard.Details`
+- `PerformerCard.Image`
+- `PerformerCard.Overlays`
+- `PerformerCard.Popovers`
+- `PerformerCard.Title`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
 - `PerformerIDSelect`
+- `PerformerPage`
 - `PerformerSelect`
 - `PerformerSelect.sort`
+- `PerformerGalleriesPanel`
+- `PerformerGroupsPanel`
+- `PerformerHeaderImage`
+- `PerformerImagesPanel`
+- `PerformerScenesPanel`
 - `PluginRoutes`
+- `RatingNumber`
+- `RatingStars`
+- `RatingSystem`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
 - `SceneIDSelect`
+- `ScenePage`
+- `ScenePage.Tabs`
+- `ScenePage.TabContent`
+- `ScenePlayer`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
@@ -179,9 +223,20 @@ Returns `void`.
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
+- `SweatDrops`
+- `TabTitleCounter`
+- `TagCard`
+- `TagCard.Details`
+- `TagCard.Image`
+- `TagCard.Overlays`
+- `TagCard.Popovers`
+- `TagCard.Title`
+- `TagLink`
+- `TabTitleCounter`
 - `TagIDSelect`
 - `TagSelect`
 - `TagSelect.sort`
+- `TruncatedText`
 - `PluginSettings`
 - `Setting`
 - `SettingGroup`

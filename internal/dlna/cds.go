@@ -30,6 +30,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -40,7 +41,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 var pageSize = 100
@@ -521,7 +521,7 @@ func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilter
 }
 
 func getPageFromID(paths []string) *int {
-	i := sliceutil.Index(paths, "page")
+	i := slices.Index(paths, "page")
 	if i == -1 || i+1 >= len(paths) {
 		return nil
 	}

@@ -8,7 +8,10 @@ import {
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
-import { GroupsCriterionOption } from "./criteria/groups";
+import {
+  GroupsCriterionOption,
+  LegacyMoviesCriterionOption,
+} from "./criteria/groups";
 import { GalleriesCriterionOption } from "./criteria/galleries";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
@@ -62,6 +65,10 @@ const sortByOptions = [
       messageID: "group_scene_number",
       value: "group_scene_number",
     },
+    {
+      messageID: "scene_code",
+      value: "code",
+    },
   ]);
 const displayModeOptions = [
   DisplayMode.Grid,
@@ -106,6 +113,7 @@ const criterionOptions = [
   // StudioTagsCriterionOption,
   StudiosCriterionOption,
   GroupsCriterionOption,
+  LegacyMoviesCriterionOption,
   GalleriesCriterionOption,
   createStringCriterionOption("url"),
   StashIDCriterionOption,

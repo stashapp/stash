@@ -198,11 +198,13 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
     // stashid handling code
     const remoteSiteID = studio.remote_site_id;
+    const timeNow = new Date().toISOString();
     if (remoteSiteID && endpoint) {
       studioData.stash_ids = [
         {
           endpoint,
           stash_id: remoteSiteID,
+          updated_at: timeNow,
         },
       ];
     }
@@ -230,6 +232,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
           {
             endpoint,
             stash_id: parentRemoteSiteID,
+            updated_at: timeNow,
           },
         ];
       }

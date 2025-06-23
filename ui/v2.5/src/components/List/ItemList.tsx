@@ -1,18 +1,19 @@
 import React, {
   PropsWithChildren,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
-import {
-  Criterion,
-  CriterionValue,
-} from "src/models/list-filter/criteria/criterion";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { EditFilterDialog } from "src/components/List/EditFilterDialog";
+import {
+  EditFilterDialog,
+  useShowEditFilter,
+} from "src/components/List/EditFilterDialog";
 import { FilterTags } from "./FilterTags";
 import { View } from "./views";
 import { IHasID } from "src/utils/data";
@@ -25,9 +26,15 @@ import {
 import { FilterContext, SetFilterURL, useFilter } from "./FilterProvider";
 import { useModal } from "src/hooks/modal";
 import {
+  IFilterStateHook,
+  IQueryResultHook,
   useDefaultFilter,
   useEnsureValidPage,
+  useFilterOperations,
+  useFilterState,
   useListKeyboardShortcuts,
+  useListSelect,
+  useQueryResult,
   useScrollToTopOnPageChange,
 } from "./util";
 import {
@@ -36,6 +43,73 @@ import {
   IItemListOperation,
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
+import { ConfigurationContext } from "src/hooks/Config";
+
+interface IFilteredItemList<T extends QueryResult, E extends IHasID = IHasID> {
+  filterStateProps: IFilterStateHook;
+  queryResultProps: IQueryResultHook<T, E>;
+}
+
+// Provides the common state and behaviour for filtered item list components
+export function useFilteredItemList<
+  T extends QueryResult,
+  E extends IHasID = IHasID
+>(props: IFilteredItemList<T, E>) {
+  const { configuration: config } = useContext(ConfigurationContext);
+
+  // States
+  const filterState = useFilterState({
+    config,
+    ...props.filterStateProps,
+  });
+
+  const { filter, setFilter } = filterState;
+
+  const queryResult = useQueryResult({
+    filter,
+    ...props.queryResultProps,
+  });
+  const { result, items, totalCount, pages } = queryResult;
+
+  const listSelect = useListSelect(items);
+  const { onSelectAll, onSelectNone } = listSelect;
+
+  const modalState = useModal();
+  const { showModal, closeModal } = modalState;
+
+  // Utility hooks
+  const { setPage } = useFilterOperations({ filter, setFilter });
+
+  // scroll to the top of the page when the page changes
+  useScrollToTopOnPageChange(filter.currentPage, result.loading);
+
+  // ensure that the current page is valid
+  useEnsureValidPage(filter, totalCount, setFilter);
+
+  const showEditFilter = useShowEditFilter({
+    showModal,
+    closeModal,
+    filter,
+    setFilter,
+  });
+
+  useListKeyboardShortcuts({
+    currentPage: filter.currentPage,
+    onChangePage: setPage,
+    onSelectAll,
+    onSelectNone,
+    pages,
+    showEditFilter,
+  });
+
+  return {
+    filterState,
+    queryResult,
+    listSelect,
+    modalState,
+    showEditFilter,
+  };
+}
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
@@ -84,13 +158,14 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   const { filter, setFilter: updateFilter } = useFilter();
   const { effectiveFilter, result, cachedResult, totalCount } =
     useQueryResultContext<T, E>();
+  const listSelect = useListContext<E>();
   const {
     selectedIds,
     getSelected,
     onSelectChange,
     onSelectAll,
     onSelectNone,
-  } = useListContext<E>();
+  } = listSelect;
 
   // scroll to the top of the page when the page changes
   useScrollToTopOnPageChange(filter.currentPage, result.loading);
@@ -218,15 +293,29 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     result.refetch();
   }
 
-  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
-    updateFilter(filter.removeCriterion(removedCriterion.criterionOption.type));
+  function onRemoveCriterion(removedCriterion: Criterion, valueIndex?: number) {
+    if (valueIndex === undefined) {
+      updateFilter(
+        filter.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    } else {
+      updateFilter(
+        filter.removeCustomFieldCriterion(
+          removedCriterion.criterionOption.type,
+          valueIndex
+        )
+      );
+    }
   }
 
   function onClearAllCriteria() {
     updateFilter(filter.clearCriteria());
   }
 
-  const filterListToolbarProps = {
+  const filterListToolbarProps: IFilteredListToolbar = {
+    filter,
+    setFilter: updateFilter,
+    listSelect,
     showEditFilter,
     view: view,
     operations: operations,
@@ -304,18 +393,20 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
     children,
   } = props;
 
+  const { configuration: config } = useContext(ConfigurationContext);
+
   const emptyFilter = useMemo(
     () =>
       providedDefaultFilter?.clone() ??
-      new ListFilterModel(filterMode, undefined, {
+      new ListFilterModel(filterMode, config, {
         defaultSortBy: defaultSort,
       }),
-    [filterMode, defaultSort, providedDefaultFilter]
+    [config, filterMode, defaultSort, providedDefaultFilter]
   );
 
   const [filter, setFilterState] = useState<ListFilterModel>(
     () =>
-      new ListFilterModel(filterMode, undefined, { defaultSortBy: defaultSort })
+      new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
   );
 
   const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(

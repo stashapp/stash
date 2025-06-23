@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -1605,7 +1606,7 @@ func TestGroupReorderSubGroups(t *testing.T) {
 
 			// get ids of groups
 			newIDs := sliceutil.Map(gd, func(gd models.GroupIDDescription) int { return gd.GroupID })
-			newIdxs := sliceutil.Map(newIDs, func(id int) int { return sliceutil.Index(idxToId, id) })
+			newIdxs := sliceutil.Map(newIDs, func(id int) int { return slices.Index(idxToId, id) })
 
 			assert.ElementsMatch(t, tt.expectedIdxs, newIdxs)
 		})
@@ -1733,7 +1734,7 @@ func TestGroupAddSubGroups(t *testing.T) {
 
 			// get ids of groups
 			newIDs := sliceutil.Map(gd, func(gd models.GroupIDDescription) int { return gd.GroupID })
-			newIdxs := sliceutil.Map(newIDs, func(id int) int { return sliceutil.Index(idxToId, id) })
+			newIdxs := sliceutil.Map(newIDs, func(id int) int { return slices.Index(idxToId, id) })
 
 			assert.ElementsMatch(t, tt.expectedIdxs, newIdxs)
 		})
@@ -1828,7 +1829,7 @@ func TestGroupRemoveSubGroups(t *testing.T) {
 
 			// get ids of groups
 			newIDs := sliceutil.Map(gd, func(gd models.GroupIDDescription) int { return gd.GroupID })
-			newIdxs := sliceutil.Map(newIDs, func(id int) int { return sliceutil.Index(idxToId, id) })
+			newIdxs := sliceutil.Map(newIDs, func(id int) int { return slices.Index(idxToId, id) })
 
 			assert.ElementsMatch(t, tt.expectedIdxs, newIdxs)
 		})
@@ -1883,7 +1884,7 @@ func TestGroupFindSubGroupIDs(t *testing.T) {
 			}
 
 			// get ids of groups
-			foundIdxs := sliceutil.Map(found, func(id int) int { return sliceutil.Index(groupIDs, id) })
+			foundIdxs := sliceutil.Map(found, func(id int) int { return slices.Index(groupIDs, id) })
 
 			assert.ElementsMatch(t, tt.expectedIdxs, foundIdxs)
 		})

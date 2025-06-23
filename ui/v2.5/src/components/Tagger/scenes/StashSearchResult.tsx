@@ -413,6 +413,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             return {
               endpoint: s.endpoint,
               stash_id: s.stash_id,
+              updated_at: s.updated_at,
             };
           })
           .filter(
@@ -421,6 +422,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         {
           endpoint: currentSource.sourceInput.stash_box_endpoint,
           stash_id: scene.remote_site_id,
+          updated_at: new Date().toISOString(),
         },
       ];
     } else {
@@ -699,6 +701,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 currentSource?.sourceInput.stash_box_endpoint ?? undefined
               }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
+              ageFromDate={
+                !scene.date || excludedFields.date
+                  ? stashScene.date
+                  : scene.date
+              }
             />
           ))}
         </Form.Group>

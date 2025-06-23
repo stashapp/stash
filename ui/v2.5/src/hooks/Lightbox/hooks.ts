@@ -4,7 +4,7 @@ import { IState, useLightboxContext } from "./context";
 import { IChapter } from "./types";
 
 export const useLightbox = (
-  state: Partial<Omit<IState, "isVisible">>,
+  state: Partial<Omit<IState, "isVisible">> = {},
   chapters: IChapter[] = []
 ) => {
   const { setLightboxState } = useLightboxContext();
@@ -33,14 +33,13 @@ export const useLightbox = (
   ]);
 
   const show = useCallback(
-    (index?: number, slideshowEnabled = false) => {
+    (props: Partial<IState>) => {
       setLightboxState({
-        initialIndex: index,
+        ...props,
         isVisible: true,
-        slideshowEnabled,
-        page: state.page,
-        pages: state.pages,
-        pageSize: state.pageSize,
+        page: props.page ?? state.page,
+        pages: props.pages ?? state.pages,
+        pageSize: props.pageSize ?? state.pageSize,
         chapters: chapters,
       });
     },
@@ -139,6 +138,7 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
       });
     else {
       setLightboxState({
+        images: [],
         isLoading: true,
         isVisible: true,
         initialIndex: index,

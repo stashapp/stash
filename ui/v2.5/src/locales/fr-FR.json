@@ -2,7 +2,7 @@
     "actions": {
         "add": "Ajouter",
         "add_directory": "Ajouter un répertoire",
-        "add_entity": "Ajouter {entityType}",
+        "add_entity": "Ajout de {entityType}",
         "add_to_entity": "Ajouter à {entityType}",
         "allow": "Autoriser",
         "allow_temporarily": "Autoriser temporairement",
@@ -192,7 +192,10 @@
             "set_tag_label": "Définir les étiquettes",
             "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
             "show_male_label": "Montrer les performeurs masculins",
-            "source": "Source"
+            "source": "Source",
+            "errors": {
+                "blacklist_duplicate": "Élément de liste noire en double"
+            }
         },
         "noun_query": "Requête",
         "results": {
@@ -750,7 +753,8 @@
                     "vr_tag": {
                         "description": "Le bouton VR est uniquement affiché pour les scènes comportant cette étiquette.",
                         "heading": "Étiquette VR"
-                    }
+                    },
+                    "show_range_markers": "Afficher les marqueurs prolongés"
                 }
             },
             "scene_wall": {
@@ -920,7 +924,7 @@
             "marker_image_previews": "Aperçus animés des marqueurs",
             "marker_image_previews_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
             "marker_screenshots": "Captures d'écran des marqueurs",
-            "marker_screenshots_tooltip": "Images JPG statiques des marqueurs, requis uniquement si le mode d'aperçu est défini sur Image statique.",
+            "marker_screenshots_tooltip": "Images JPG statiques des marqueurs",
             "markers": "Aperçus des marqueurs",
             "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
@@ -1024,7 +1028,13 @@
         "something_went_wrong": "Quelque chose n'a pas fonctionné.",
         "header": "Erreur",
         "invalid_javascript_string": "Code javascript invalide : {error}",
-        "invalid_json_string": "Chaine JSON invalide : {error}"
+        "invalid_json_string": "Chaine JSON invalide : {error}",
+        "custom_fields": {
+            "duplicate_field": "Le nom du champ doit être unique",
+            "field_name_whitespace": "Le nom du champ ne doit pas contenir d'espace en début ou en fin de ligne",
+            "field_name_length": "Le nom du champ doit comporter moins de 65 caractères",
+            "field_name_required": "Le nom du champ est requis"
+        }
     },
     "ethnicity": "Ethnicité",
     "existing_value": "valeur existante",
@@ -1094,7 +1104,8 @@
     "last_played_at": "Dernière lecture le",
     "library": "Bibliothèque",
     "loading": {
-        "generic": "Chargement…"
+        "generic": "Chargement…",
+        "plugins": "Chargement des plugins…"
     },
     "marker_count": "Nombre de marqueurs",
     "markers": "Marqueurs",
@@ -1107,7 +1118,7 @@
         "interactive_speed": "Vitesse interactive",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} dans cette scène"
+            "age_context": "{age} {years_old} à la production"
         },
         "phash": "Empreinte",
         "play_count": "Compteur de lecture",
@@ -1234,7 +1245,9 @@
         "errors": {
             "something_went_wrong": "Oh non ! Quelque chose a mal tourné !",
             "something_went_wrong_description": "Si cela ressemble à un problème avec vos saisies, continuez et cliquez sur retour pour les corriger. Sinon, créez un bogue sur {githubLink} ou demandez de l'aide sur {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Un problème est survenu lors de la configuration de votre système. Voici l'erreur que nous avons reçue : {error}"
+            "something_went_wrong_while_setting_up_your_system": "Un problème est survenu lors de la configuration de votre système. Voici l'erreur que nous avons reçue : {error}",
+            "unexpected_error": "Une erreur inattendue s'est produite : {error}",
+            "unable_to_retrieve_system_status": "Impossible de récupérer l'état du système : {error}"
         },
         "folder": {
             "file_path": "Chemin de fichier",
@@ -1413,7 +1426,8 @@
         "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
         "required": "${path} est un champ requis",
         "blank": "${path} ne doit pas être vide",
-        "unique": "${path} doit être unique"
+        "unique": "${path} doit être unique",
+        "end_time_before_start_time": "L'heure de fin doit être supérieure ou égale à l'heure de début"
     },
     "video_codec": "Codec vidéo",
     "videos": "Vidéos",
@@ -1490,5 +1504,23 @@
     "sub_groups": "Groupes affiliés",
     "sub_group_of": "Groupe affilié de {parent}",
     "sub_group": "Groupe affilié",
-    "sub_group_count": "Nombre de groupes affiliés"
+    "sub_group_count": "Nombre de groupes affiliés",
+    "include_sub_groups": "Inclure les groupes affiliés",
+    "criterion_modifier_values": {
+        "none": "Aucun",
+        "only": "Uniquement",
+        "any_of": "Tous les",
+        "any": "Tous"
+    },
+    "time_end": "Heure de fin",
+    "custom_fields": {
+        "field": "Champ",
+        "title": "Champs personnalisés",
+        "value": "Valeur",
+        "criteria_format_string_others": "{criterion} (champ personnalisé) {modifierString} {valueString} (+{others} autres)",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}"
+    },
+    "eta": "TAE",
+    "sort_name": "Nom de tri",
+    "age_on_date": "{age} à la production"
 }

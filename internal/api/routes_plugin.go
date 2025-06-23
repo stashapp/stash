@@ -20,6 +20,7 @@ func (rs pluginRoutes) Routes() chi.Router {
 
 	r.Route("/{pluginId}", func(r chi.Router) {
 		r.Use(rs.PluginCtx)
+		r.Get("/assets", rs.Assets)
 		r.Get("/assets/*", rs.Assets)
 		r.Get("/javascript", rs.Javascript)
 		r.Get("/css", rs.CSS)

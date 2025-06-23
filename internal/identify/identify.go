@@ -7,12 +7,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -31,7 +31,7 @@ func (e *MultipleMatchesFoundError) Error() string {
 }
 
 type SceneScraper interface {
-	ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error)
+	ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error)
 }
 
 type SceneUpdatePostHookExecutor interface {
@@ -95,7 +95,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, scene *models.Scene) err
 }
 
 type scrapeResult struct {
-	result *scraper.ScrapedScene
+	result *models.ScrapedScene
 	source ScraperSource
 }
 
@@ -244,7 +244,18 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	stashIDs, err := rel.stashIDs(ctx)
+	// SetCoverImage defaults to true if unset
+	if options.SetCoverImage == nil || *options.SetCoverImage {
+		ret.CoverImage, err = rel.cover(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// if anything changed, also update the updated at time on the applicable stash id
+	changed := !ret.IsEmpty()
+
+	stashIDs, err := rel.stashIDs(ctx, changed)
 	if err != nil {
 		return nil, err
 	}
@@ -252,14 +263,6 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ret.Partial.StashIDs = &models.UpdateStashIDs{
 			StashIDs: stashIDs,
 			Mode:     models.RelationshipUpdateModeSet,
-		}
-	}
-
-	// SetCoverImage defaults to true if unset
-	if options.SetCoverImage == nil || *options.SetCoverImage {
-		ret.CoverImage, err = rel.cover(ctx)
-		if err != nil {
-			return nil, err
 		}
 	}
 
@@ -333,7 +336,7 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, ta
 		}
 		existing := s.TagIDs.List()
 
-		if sliceutil.Contains(existing, tagID) {
+		if slices.Contains(existing, tagID) {
 			// skip if the scene was already tagged
 			return nil
 		}
@@ -370,7 +373,7 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	return ret
 }
 
-func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
+func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{}
 
 	if scraped.Title != nil && (scene.Title != *scraped.Title) {

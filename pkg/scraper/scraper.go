@@ -36,6 +36,7 @@ const (
 	ScrapeContentTypeGroup     ScrapeContentType = "GROUP"
 	ScrapeContentTypePerformer ScrapeContentType = "PERFORMER"
 	ScrapeContentTypeScene     ScrapeContentType = "SCENE"
+	ScrapeContentTypeImage     ScrapeContentType = "IMAGE"
 )
 
 var AllScrapeContentType = []ScrapeContentType{
@@ -44,11 +45,12 @@ var AllScrapeContentType = []ScrapeContentType{
 	ScrapeContentTypeGroup,
 	ScrapeContentTypePerformer,
 	ScrapeContentTypeScene,
+	ScrapeContentTypeImage,
 }
 
 func (e ScrapeContentType) IsValid() bool {
 	switch e {
-	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypeGroup, ScrapeContentTypePerformer, ScrapeContentTypeScene:
+	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypeGroup, ScrapeContentTypePerformer, ScrapeContentTypeScene, ScrapeContentTypeImage:
 		return true
 	}
 	return false
@@ -84,6 +86,8 @@ type Scraper struct {
 	Scene *ScraperSpec `json:"scene"`
 	// Details for gallery scraper
 	Gallery *ScraperSpec `json:"gallery"`
+	// Details for image scraper
+	Image *ScraperSpec `json:"image"`
 	// Details for movie scraper
 	Group *ScraperSpec `json:"group"`
 	// Details for movie scraper
@@ -159,8 +163,9 @@ var (
 // set to nil.
 type Input struct {
 	Performer *ScrapedPerformerInput
-	Scene     *ScrapedSceneInput
-	Gallery   *ScrapedGalleryInput
+	Scene     *models.ScrapedSceneInput
+	Gallery   *models.ScrapedGalleryInput
+	Image     *models.ScrapedImageInput
 }
 
 // populateURL populates the URL field of the input based on the
@@ -222,7 +227,15 @@ type fragmentScraper interface {
 type sceneScraper interface {
 	scraper
 
-	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*ScrapedScene, error)
+	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
+}
+
+// imageScraper is a scraper which supports image scrapes with
+// image data as the input.
+type imageScraper interface {
+	scraper
+
+	viaImage(ctx context.Context, client *http.Client, image *models.Image) (*models.ScrapedImage, error)
 }
 
 // galleryScraper is a scraper which supports gallery scrapes with
@@ -230,5 +243,5 @@ type sceneScraper interface {
 type galleryScraper interface {
 	scraper
 
-	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error)
+	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
 }

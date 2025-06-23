@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/stashbox"
 )
 
 func (r *Resolver) newStashBoxClient(box models.StashBox) *stashbox.Client {
-	return stashbox.NewClient(box, r.stashboxRepository())
+	return stashbox.NewClient(box, stashbox.ExcludeTagPatterns(manager.GetInstance().Config.GetScraperExcludeTagPatterns()))
 }
 
 func resolveStashBoxFn(indexField, endpointField string) func(index *int, endpoint *string) (*models.StashBox, error) {

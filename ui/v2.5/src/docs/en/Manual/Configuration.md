@@ -111,6 +111,8 @@ Some scrapers require a Chrome instance to function correctly. If left empty, st
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
+> **Important**: As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
+
 ## Authentication
 
 By default, stash is not configured with any sort of password protection. To enable password protection, both `Username` and `Password` must be populated. Note that when entering a new username and password where none was set previously, the system will immediately request these credentials to log you in.
@@ -128,9 +130,11 @@ The logout button is situated in the upper-right part of the screen when you are
 ### Recovering from a forgotten username or password
 
 Stash saves login credentials in the config.yml file. You must reset both login and password if you have forgotten your password by doing the following:
+
 * Close your Stash process
 * Open the `config.yml` file found in your Stash directory with a text editor
-* Delete the `login` and `password` lines from the file and save
+* Delete the `username` and `password` lines from the file and save
+
 Stash authentication should now be reset with no authentication credentials.
 
 ## Advanced configuration options
@@ -145,7 +149,7 @@ These options are typically not exposed in the UI and must be changed manually i
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
 | `theme_color` | Sets the `theme-color` property in the UI. |
 | `gallery_cover_regex` | The regex responsible for selecting images as gallery covers |
-| `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services Example: https://user:password@my.proxy:8080 |
+| `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services. Example: https://user:password@my.proxy:8080. Note: SOCKS5 proxies are unsupported. |
 | `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 | `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
 

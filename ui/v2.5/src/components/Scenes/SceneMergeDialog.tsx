@@ -507,6 +507,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
+          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         <ScrapedGroupsRow
           title={intl.formatMessage({ id: "groups" })}
@@ -771,6 +772,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
                 isMulti
                 onSelect={(items) => setSourceScenes(items)}
                 values={sourceScenes}
+                menuPortalTarget={document.body}
               />
             </Col>
           </Form.Group>
@@ -803,6 +805,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
               <SceneSelect
                 onSelect={(items) => setDestScene(items)}
                 values={destScene}
+                menuPortalTarget={document.body}
               />
             </Col>
           </Form.Group>

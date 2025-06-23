@@ -4,6 +4,8 @@ type TagFilterType struct {
 	OperatorFilter[TagFilterType]
 	// Filter by tag name
 	Name *StringCriterionInput `json:"name"`
+	// Filter by tag sort_name
+	SortName *StringCriterionInput `json:"sort_name"`
 	// Filter by tag aliases
 	Aliases *StringCriterionInput `json:"aliases"`
 	// Filter by tag favorites

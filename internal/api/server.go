@@ -27,6 +27,7 @@ import (
 	"github.com/go-chi/httplog"
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
+	"github.com/vektah/gqlparser/v2/ast"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
@@ -40,10 +41,11 @@ import (
 )
 
 const (
-	loginEndpoint      = "/login"
-	logoutEndpoint     = "/logout"
-	gqlEndpoint        = "/graphql"
-	playgroundEndpoint = "/playground"
+	loginEndpoint       = "/login"
+	loginLocaleEndpoint = loginEndpoint + "/locale"
+	logoutEndpoint      = "/logout"
+	gqlEndpoint         = "/graphql"
+	playgroundEndpoint  = "/playground"
 )
 
 type Server struct {
@@ -185,7 +187,7 @@ func Initialize() (*Server, error) {
 		MaxUploadSize: cfg.GetMaxUploadSize(),
 	})
 
-	gqlSrv.SetQueryCache(gqlLru.New(1000))
+	gqlSrv.SetQueryCache(gqlLru.New[*ast.QueryDocument](1000))
 	gqlSrv.Use(gqlExtension.Introspection{})
 
 	gqlSrv.SetErrorPresenter(gqlErrorHandler)
@@ -205,7 +207,7 @@ func Initialize() (*Server, error) {
 	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
 		setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 		endpoint := getProxyPrefix(r) + gqlEndpoint
-		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
+		gqlPlayground.Handler("GraphQL playground", endpoint, gqlPlayground.WithGraphiqlEnablePluginExplorer(true))(w, r)
 	})
 
 	r.Mount("/performer", server.getPerformerRoutes())
@@ -227,6 +229,7 @@ func Initialize() (*Server, error) {
 	r.Get(loginEndpoint, handleLogin())
 	r.Post(loginEndpoint, handleLoginPost())
 	r.Get(logoutEndpoint, handleLogout())
+	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndpoint)
 		w.Header().Set("Cache-Control", "no-cache")

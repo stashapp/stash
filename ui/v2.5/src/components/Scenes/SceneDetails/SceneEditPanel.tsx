@@ -508,6 +508,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             return {
               endpoint,
               stash_id: updatedScene.remote_site_id,
+              updated_at: new Date().toISOString(),
             };
           }
 
@@ -521,6 +522,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           formik.values.stash_ids.concat({
             endpoint,
             stash_id: updatedScene.remote_site_id,
+            updated_at: new Date().toISOString(),
           })
         );
       }
@@ -623,9 +625,22 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderPerformersField() {
+    const date = (() => {
+      try {
+        return schema.validateSyncAt("date", formik.values);
+      } catch (e) {
+        return undefined;
+      }
+    })();
+
     const title = intl.formatMessage({ id: "performers" });
     const control = (
-      <PerformerSelect isMulti onSelect={onSetPerformers} values={performers} />
+      <PerformerSelect
+        isMulti
+        onSelect={onSetPerformers}
+        values={performers}
+        ageFromDate={date}
+      />
     );
 
     return renderField("performer_ids", title, control, fullWidthProps);

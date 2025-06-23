@@ -32,6 +32,7 @@ var (
 	performersURLsJoinTable     = goqu.T(performerURLsTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
 	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
+	performersCustomFieldsTable = goqu.T("performer_custom_fields")
 
 	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
 	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
@@ -73,7 +74,9 @@ var (
 			table:    imagesTagsJoinTable,
 			idColumn: imagesTagsJoinTable.Col(imageIDColumn),
 		},
-		fkColumn: imagesTagsJoinTable.Col(tagIDColumn),
+		fkColumn:     imagesTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	imagesPerformersTableMgr = &joinTable{
@@ -111,7 +114,9 @@ var (
 			table:    galleriesTagsJoinTable,
 			idColumn: galleriesTagsJoinTable.Col(galleryIDColumn),
 		},
-		fkColumn: galleriesTagsJoinTable.Col(tagIDColumn),
+		fkColumn:     galleriesTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	galleriesPerformersTableMgr = &joinTable{
@@ -167,7 +172,9 @@ var (
 			table:    scenesTagsJoinTable,
 			idColumn: scenesTagsJoinTable.Col(sceneIDColumn),
 		},
-		fkColumn: scenesTagsJoinTable.Col(tagIDColumn),
+		fkColumn:     scenesTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	scenesPerformersTableMgr = &joinTable{
@@ -273,7 +280,9 @@ var (
 			table:    performersTagsJoinTable,
 			idColumn: performersTagsJoinTable.Col(performerIDColumn),
 		},
-		fkColumn: performersTagsJoinTable.Col(tagIDColumn),
+		fkColumn:     performersTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	performersStashIDsTableMgr = &stashIDTable{
@@ -303,7 +312,9 @@ var (
 			table:    studiosTagsJoinTable,
 			idColumn: studiosTagsJoinTable.Col(studioIDColumn),
 		},
-		fkColumn: studiosTagsJoinTable.Col(tagIDColumn),
+		fkColumn:     studiosTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	studiosStashIDsTableMgr = &stashIDTable{
@@ -333,7 +344,9 @@ var (
 			table:    tagRelationsJoinTable,
 			idColumn: tagRelationsJoinTable.Col(tagChildIDColumn),
 		},
-		fkColumn: tagRelationsJoinTable.Col(tagParentIDColumn),
+		fkColumn:     tagRelationsJoinTable.Col(tagParentIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	tagsChildTagsTableMgr = *tagsParentTagsTableMgr.invert()
@@ -360,7 +373,7 @@ var (
 		},
 		fkColumn:     groupsTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      tagTableMgr.table.Col("name").Asc(),
+		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
 	}
 
 	groupRelationshipTableMgr = &table{

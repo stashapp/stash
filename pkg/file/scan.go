@@ -1100,7 +1100,8 @@ func (s *scanJob) removeOutdatedFingerprints(existing models.File, fp models.Fin
 
 	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
 	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
-	existing.Base().Fingerprints.Remove(models.FingerprintTypeMD5)
+	b := existing.Base()
+	b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypeMD5)
 }
 
 // returns a file only if it was updated

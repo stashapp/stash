@@ -17,6 +17,8 @@ import { ListFilterOptions } from "./filter-options";
 import { CriterionType, DisplayMode } from "./types";
 import { CountryCriterionOption } from "./criteria/country";
 import { RatingCriterionOption } from "./criteria/rating";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { GroupsCriterionOption } from "./criteria/groups";
 
 const defaultSortBy = "name";
 const sortByOptions = [
@@ -89,6 +91,7 @@ const criterionOptions = [
   CircumcisedCriterionOption,
   PerformerIsMissingCriterionOption,
   TagsCriterionOption,
+  GroupsCriterionOption,
   StudiosCriterionOption,
   StashIDCriterionOption,
   createStringCriterionOption("url"),
@@ -108,6 +111,7 @@ const criterionOptions = [
   createDateCriterionOption("death_date"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 export const PerformerListFilterOptions = new ListFilterOptions(
   defaultSortBy,

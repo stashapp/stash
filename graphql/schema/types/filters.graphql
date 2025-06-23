@@ -91,6 +91,12 @@ input StashIDCriterionInput {
   modifier: CriterionModifier!
 }
 
+input CustomFieldCriterionInput {
+  field: String!
+  value: [Any!]
+  modifier: CriterionModifier!
+}
+
 input PerformerFilterType {
   AND: PerformerFilterType
   OR: PerformerFilterType
@@ -162,6 +168,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   "Filter by studios where performer appears in scene/image/gallery"
   studios: HierarchicalMultiCriterionInput
+  "Filter by groups where performer appears in scene"
+  groups: HierarchicalMultiCriterionInput
   "Filter by performers where performer appears with another performer in scene/image/gallery"
   performers: MultiCriterionInput
   "Filter by autotag ignore value"
@@ -182,6 +190,8 @@ input PerformerFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input SceneMarkerFilterType {
@@ -193,6 +203,8 @@ input SceneMarkerFilterType {
   performers: MultiCriterionInput
   "Filter to only include scene markers from these scenes"
   scenes: MultiCriterionInput
+  "Filter by duration (in seconds)"
+  duration: FloatCriterionInput
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -531,6 +543,9 @@ input TagFilterType {
 
   "Filter by tag name"
   name: StringCriterionInput
+
+  "Filter by tag sort_name"
+  sort_name: StringCriterionInput
 
   "Filter by tag aliases"
   aliases: StringCriterionInput

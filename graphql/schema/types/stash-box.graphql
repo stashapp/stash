@@ -2,22 +2,27 @@ type StashBox {
   endpoint: String!
   api_key: String!
   name: String!
+  max_requests_per_minute: Int!
 }
 
 input StashBoxInput {
   endpoint: String!
   api_key: String!
   name: String!
+  # defaults to 240
+  max_requests_per_minute: Int
 }
 
 type StashID {
   endpoint: String!
   stash_id: String!
+  updated_at: Time!
 }
 
 input StashIDInput {
   endpoint: String!
   stash_id: String!
+  updated_at: Time
 }
 
 input StashBoxFingerprintSubmissionInput {

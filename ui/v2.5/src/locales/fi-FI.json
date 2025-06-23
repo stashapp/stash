@@ -133,7 +133,15 @@
         "add_o": "Lisää O",
         "add_manual_date": "Lisää päivämäärä käsin",
         "add_play": "Lisää toistokerta",
-        "view_history": "Näytä historia"
+        "view_history": "Näytä historia",
+        "reset_cover": "Palauta oletuskansi",
+        "set_cover": "Aseta kanneksi",
+        "reset_resume_time": "Nollaa jatkamisaika",
+        "remove_from_containing_group": "Poista ryhmästä",
+        "add_sub_groups": "Lisää aliryhmiä",
+        "migrate_blobs": "Siirrä blobit",
+        "migrate_scene_screenshots": "Siirrä kohtauksen kuvakaappaukset",
+        "reset_play_duration": "Nollaa toiston kesto"
     },
     "actions_name": "Toiminnot",
     "age": "Ikä",
@@ -183,7 +191,10 @@
             "show_male_label": "Näytä miesesiintyjät",
             "source": "Lähde",
             "mark_organized_label": "Merkitse järjestetyksi kun tallennetaan",
-            "mark_organized_desc": "Merkitsee kohtauksen järjestellyksi hetki kun Tallenna -painiketta on painettu."
+            "mark_organized_desc": "Merkitsee kohtauksen järjestellyksi hetki kun Tallenna -painiketta on painettu.",
+            "errors": {
+                "blacklist_duplicate": "Monista musta lista -kohde"
+            }
         },
         "noun_query": "Haku",
         "results": {
@@ -257,7 +268,8 @@
             "video_sort_order": "Videoiden oletusjärjestys",
             "video_sort_order_desc": "Videoiden oletusjärjestys.",
             "server_port": "Palvelimen portti",
-            "server_port_desc": "Portti, jota DLNA palvelin kuuntelee. DLNA palvelin pitää käynnistää uudelleen muuttamisen jälkeen."
+            "server_port_desc": "Portti, jota DLNA palvelin kuuntelee. DLNA palvelin pitää käynnistää uudelleen muuttamisen jälkeen.",
+            "successfully_cancelled_temporary_behaviour": "Väliaikainen toiminta peruutettiin onnistuneesti"
         },
         "general": {
             "auth": {
@@ -330,7 +342,8 @@
             "parallel_scan_head": "Rinnakkainen skannaus ja generointi",
             "preview_generation": "Esikatselun generointi",
             "python_path": {
-                "heading": "Pythonin polku"
+                "heading": "Pythonin polku",
+                "description": "Polku python-suoritettavaan (ei vain kansioon). Käytetään skriptien kaavinta ja laajennuksia varten. Jos tyhjä, python ratkaistaan ympäristöstä"
             },
             "scraper_user_agent": "Kaapijan käyttäjäagentti",
             "scraper_user_agent_desc": "Käyttäjäagenttikenttä, jota kaavittaessa käytetään http pyynnöissä",
@@ -345,12 +358,54 @@
             "video_head": "Video",
             "ffmpeg": {
                 "hardware_acceleration": {
-                    "heading": "FFmpeg laitteistokoodaus"
+                    "heading": "FFmpeg laitteistokoodaus",
+                    "desc": "Käyttää saatavilla olevaa laitteistoa videon koodaamiseen reaaliaikaista transkoodausta varten."
                 },
                 "download_ffmpeg": {
-                    "heading": "Lataa FFmpeg"
+                    "heading": "Lataa FFmpeg",
+                    "description": "Lataa FFmpegin asetushakemistoon ja tyhjentää ffmpeg- ja ffprobe-polut määrityshakemistosta ratkaistavaksi."
+                },
+                "transcode": {
+                    "output_args": {
+                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen tuloskenttää videota luotaessa."
+                    },
+                    "input_args": {
+                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen syöttökenttää videota luotaessa."
+                    }
+                },
+                "ffmpeg_path": {
+                    "description": "Polku ffmpeg-suoritettavaan (ei vain kansioon). Jos se on tyhjä, ffmpeg ratkaistaan ympäristöstä $PATH:n, asetushakemiston tai $HOME/.stash kautta",
+                    "heading": "FFmpeg-suoritettavan polku"
+                },
+                "ffprobe_path": {
+                    "description": "Polku ffprobe-suoritettavaan(ei vain kansioon). Jos se on tyhjä, ffprobe ratkaistaan ympäristöstä $PATH:n, asetushakemiston tai $HOME/.stash kautta",
+                    "heading": "FFprobe-suoritettavan polku"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen syöttökenttää, kun videota muutetaan livenä."
+                    },
+                    "output_args": {
+                        "desc": "Edistynyt: Lisäargumentit, jotka siirretään ffmpegille ennen lähtökenttää, kun videota muutetaan livenä."
+                    }
                 }
-            }
+            },
+            "blobs_path": {
+                "heading": "Binaaridatan tiedostojärjestelmän polku",
+                "description": "Mihin tiedostojärjestelmässä binaaridataa tallennetaan. Käytettävissä vain käytettäessä tiedostojärjestelmän blob-tallennustyyppiä. Varoitus: tämän muuttaminen edellyttää olemassa olevien tietojen manuaalista siirtämistä."
+            },
+            "plugins_path": {
+                "heading": "Liitännäisten polku",
+                "description": "Liitännäisten määritystiedostojen sijainti hakemistossa"
+            },
+            "blobs_storage": {
+                "description": "Mihin tallentaa binaaridataa, kuten kohtauksen kansia, esiintyjä-, studio- ja tagikuvia. Tämän arvon muuttamisen jälkeen olemassa olevat tiedot on siirrettävä käyttämällä Migrate Blobs -tehtäviä. Katso Tehtävät-sivulta siirtyminen.",
+                "heading": "Binääritietojen tallennustyyppi"
+            },
+            "funscript_heatmap_draw_range_desc": "Piirrä liikealue generoidun lämpökartan y-akselille. Olemassa olevat lämpökartat on luotava uudelleen vaihtamisen jälkeen.",
+            "funscript_heatmap_draw_range": "Sisällytä alue luotuihin lämpökarttoihin",
+            "gallery_cover_regex_desc": "Regexp käytetään kuvaamaan gallerian kansikuvaa",
+            "gallery_cover_regex_label": "Gallerian kansikuvio"
         },
         "library": {
             "exclusions": "Poisjättäminen",
@@ -370,7 +425,8 @@
             "search_by_name": "Etsi nimellä",
             "supported_types": "Tuetut tyypit",
             "supported_urls": "URL -osoitteet",
-            "installed_scrapers": "Asennetut kaapijat"
+            "installed_scrapers": "Asennetut kaapijat",
+            "available_scrapers": "Saatavilla olevat kaapijat"
         },
         "stashbox": {
             "add_instance": "Lisää stash-box instanssi",
@@ -433,7 +489,9 @@
                 "source": "Lähde",
                 "source_options": "{source} asetukset",
                 "sources": "Lähteet",
-                "strategy": "Strategia"
+                "strategy": "Strategia",
+                "skip_multiple_matches": "Ohita vastaavat, joilla on useampi kuin yksi tulos",
+                "skip_multiple_matches_tooltip": "Jos tämä ei ole otettu käyttöön ja palautetaan useampi kuin yksi tulos, yksi valitaan satunnaisesti vastaamaan"
             },
             "import_from_exported_json": "Tuo viedystä JSON -tiedoista, jotka ovat samassa kansiossa kuin metadata. Pyyhkii olemassaolevan tietokannan.",
             "incremental_import": "Lisäävä tuonti valitusta zip -tiedostosta.",
@@ -455,8 +513,15 @@
             "clean_generated": {
                 "markers": "Merkkien esikatselut",
                 "previews": "Kohtauksien esikatselut",
-                "previews_desc": "Kohtauksien esikatselut ja pienoiskuvat"
-            }
+                "previews_desc": "Kohtauksien esikatselut ja pienoiskuvat",
+                "blob_files": "Blob-tiedostot",
+                "description": "Poistaa luodut tiedostot ilman vastaavaa tietokantatietuetta.",
+                "image_thumbnails": "Kuvien pikkukuvat"
+            },
+            "anonymising_database": "Anonymisoidaan tietokantaa",
+            "anonymise_database": "Tekee kopion tietokannasta varmuuskopioiden hakemistoon anonymisoimalla kaikki arkaluontoiset tiedot. Tämä voidaan sitten tarjota muille vianmääritys- ja viankorjaustarkoituksiin. Alkuperäistä tietokantaa ei ole muokattu. Anonymisoitu tietokanta käyttää tiedostonimimuotoa {filename_format}.",
+            "generate_sprites_during_scan_tooltip": "Videosoittimen alla näkyvät kuvat navigoinnin helpottamiseksi.",
+            "generate_video_covers_during_scan": "Luo kohtausten kannet"
         },
         "tools": {
             "scene_duplicate_checker": "Kohtauksien kaksoiskappaleiden tarkistus",
@@ -626,7 +691,9 @@
         },
         "advanced_mode": "Edistynyt tila",
         "plugins": {
-            "installed_plugins": "Asennetut lisäosat"
+            "installed_plugins": "Asennetut lisäosat",
+            "available_plugins": "Saatavilla olevat liitännäiset",
+            "hooks": "Koukut"
         }
     },
     "configuration": "Konfiguraatio",
@@ -1044,7 +1111,11 @@
     "stats": {
         "image_size": "Kuvien koko",
         "scenes_duration": "Kohtausten kesto",
-        "scenes_size": "Kohtausten koko"
+        "scenes_size": "Kohtausten koko",
+        "scenes_played": "Toistetut kohtaukset",
+        "total_play_duration": "Toiston kokonaiskesto",
+        "total_o_count": "O-luku yhteensä",
+        "total_play_count": "Toistomäärä yhteensä"
     },
     "status": "Tila: {statusText}",
     "studio": "Studio",
@@ -1103,7 +1174,11 @@
         "studio_selection": "Studion valinta",
         "update_studios": "Päivitä studiot",
         "update_studio": "Päivitä studio",
-        "untagged_studios": "Studiot ilman tunnisteita"
+        "untagged_studios": "Studiot ilman tunnisteita",
+        "add_new_studios": "Lisää uusia studioita",
+        "any_names_entered_will_be_queried": "Kaikki syötetyt nimet kysytään Stash-Box-etäilmentymästä ja lisätään, jos ne löytyvät. Vain tarkat vastaavuudet katsotaan osuviksi.",
+        "batch_update_studios": "Erä Päivitä studioita",
+        "batch_add_studios": "Erä Lisää studioita"
     },
     "studio_tags": "Studion tunnisteet",
     "tag_sub_tag_tooltip": "On alitunnisteita",
@@ -1111,5 +1186,8 @@
     "time": "Aika",
     "urls": "URLit",
     "unknown_date": "Tuntematon päivä",
-    "type": "Tyyppi"
+    "type": "Tyyppi",
+    "studio_and_parent": "Studio ja vanhempi",
+    "studio_count": "Studion määrä",
+    "age_on_date": "{age} tuotannossa"
 }

@@ -33,8 +33,8 @@ func FromString(s string, sep string) []string {
 // Unique returns a slice containing only unique values from the provided slice.
 // The comparison is case-insensitive.
 func UniqueFold(s []string) []string {
-	seen := make(map[string]struct{})
-	var ret []string
+	seen := make(map[string]struct{}, len(s))
+	ret := make([]string, 0, len(s))
 	for _, v := range s {
 		if _, exists := seen[strings.ToLower(v)]; exists {
 			continue

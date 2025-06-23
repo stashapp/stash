@@ -1499,6 +1499,24 @@ export const useSceneMarkerDestroy = () =>
     },
   });
 
+export const useSceneMarkersDestroy = (
+  input: GQL.SceneMarkersDestroyMutationVariables
+) =>
+  GQL.useSceneMarkersDestroyMutation({
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.sceneMarkersDestroy) return;
+
+      for (const id of input.ids) {
+        const obj = { __typename: "SceneMarker", id };
+        cache.evict({ id: cache.identify(obj) });
+      }
+
+      evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
+      evictQueries(cache, sceneMarkerMutationImpactedQueries);
+    },
+  });
+
 const galleryMutationImpactedTypeFields = {
   Scene: ["galleries"],
   Performer: ["gallery_count", "performer_count"],
@@ -2043,14 +2061,34 @@ export const useTagsMerge = () =>
     },
   });
 
-export const useSaveFilter = () =>
-  GQL.useSaveFilterMutation({
+export const useSaveFilter = () => {
+  const [saveFilterMutation] = GQL.useSaveFilterMutation({
     update(cache, result) {
       if (!result.data?.saveFilter) return;
 
       evictQueries(cache, [GQL.FindSavedFiltersDocument]);
     },
   });
+
+  function saveFilter(filter: ListFilterModel, name: string, id?: string) {
+    const filterCopy = filter.clone();
+
+    return saveFilterMutation({
+      variables: {
+        input: {
+          id,
+          mode: filter.mode,
+          name,
+          find_filter: filterCopy.makeFindFilter(),
+          object_filter: filterCopy.makeSavedFilter(),
+          ui_options: filterCopy.makeSavedUIOptions(),
+        },
+      },
+    });
+  }
+
+  return saveFilter;
+};
 
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({
@@ -2273,6 +2311,8 @@ export const queryScrapeGroupURL = (url: string) =>
 
 export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
 
+export const useListImageScrapers = () => GQL.useListImageScrapersQuery();
+
 export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
   client.query<GQL.ScrapeSingleGalleryQuery>({
     query: GQL.ScrapeSingleGalleryDocument,
@@ -2290,6 +2330,27 @@ export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
 export const queryScrapeGalleryURL = (url: string) =>
   client.query<GQL.ScrapeGalleryUrlQuery>({
     query: GQL.ScrapeGalleryUrlDocument,
+    variables: { url },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeImage = (scraperId: string, imageId: string) =>
+  client.query<GQL.ScrapeSingleImageQuery>({
+    query: GQL.ScrapeSingleImageDocument,
+    variables: {
+      source: {
+        scraper_id: scraperId,
+      },
+      input: {
+        image_id: imageId,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeImageURL = (url: string) =>
+  client.query<GQL.ScrapeImageUrlQuery>({
+    query: GQL.ScrapeImageUrlDocument,
     variables: { url },
     fetchPolicy: "network-only",
   });
@@ -2365,6 +2426,7 @@ export const scraperMutationImpactedQueries = [
   GQL.ListGroupScrapersDocument,
   GQL.ListPerformerScrapersDocument,
   GQL.ListSceneScrapersDocument,
+  GQL.ListImageScrapersDocument,
   GQL.InstalledScraperPackagesDocument,
   GQL.InstalledScraperPackagesStatusDocument,
 ];

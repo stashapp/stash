@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -13,9 +13,9 @@ import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import {
   faBox,
   faCopy,
@@ -27,9 +27,9 @@ import {
 import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/patch";
-import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
+import { FileSize } from "../Shared/FileSize";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -93,7 +93,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
-  containerWidth?: number;
+  width?: number;
   previewHeight?: number;
   index?: number;
   queue?: SceneQueue;
@@ -362,21 +362,11 @@ const SceneCardImage = PatchComponent(
     );
 
     function maybeRenderSceneSpecsOverlay() {
-      let sizeObj = null;
-      if (file?.size) {
-        sizeObj = TextUtils.fileSize(file.size);
-      }
       return (
         <div className="scene-specs-overlay">
-          {sizeObj != null ? (
+          {file?.size !== undefined ? (
             <span className="overlay-filesize extra-scene-info">
-              <FormattedNumber
-                value={sizeObj.size}
-                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                  sizeObj.unit
-                )}
-              />
-              {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+              <FileSize size={file.size} />
             </span>
           ) : (
             ""
@@ -448,7 +438,6 @@ export const SceneCard = PatchComponent(
   "SceneCard",
   (props: ISceneCardProps) => {
     const { configuration } = React.useContext(ConfigurationContext);
-    const [cardWidth, setCardWidth] = useState<number>();
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
@@ -471,36 +460,6 @@ export const SceneCard = PatchComponent(
       return "";
     }
 
-    useEffect(() => {
-      if (
-        !props.containerWidth ||
-        props.zoomIndex === undefined ||
-        ScreenUtils.isMobile()
-      )
-        return;
-
-      let zoomValue = props.zoomIndex;
-      let preferredCardWidth: number;
-      switch (zoomValue) {
-        case 0:
-          preferredCardWidth = 240;
-          break;
-        case 1:
-          preferredCardWidth = 340; // this value is intentionally higher than 320
-          break;
-        case 2:
-          preferredCardWidth = 480;
-          break;
-        case 3:
-          preferredCardWidth = 640;
-      }
-      let fittedCardWidth = calculateCardWidth(
-        props.containerWidth,
-        preferredCardWidth!
-      );
-      setCardWidth(fittedCardWidth);
-    }, [props, props.containerWidth, props.zoomIndex]);
-
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
     const sceneLink = props.queue
@@ -515,7 +474,7 @@ export const SceneCard = PatchComponent(
         className={`scene-card ${zoomIndex()} ${filelessClass()}`}
         url={sceneLink}
         title={objectTitle(props.scene)}
-        width={cardWidth}
+        width={props.width}
         linkClassName="scene-card-link"
         thumbnailSectionClassName="video-section"
         resumeTime={props.scene.resume_time ?? undefined}

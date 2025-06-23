@@ -23,6 +23,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/savedfilter"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -176,6 +177,7 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		t.ExportPerformers(ctx, workerCount)
 		t.ExportStudios(ctx, workerCount)
 		t.ExportTags(ctx, workerCount)
+		t.ExportSavedFilters(ctx, workerCount)
 
 		return nil
 	})
@@ -1040,22 +1042,42 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
 	logger.Info("[tags] exporting")
 	startTime := time.Now()
 
-	jobCh := make(chan *models.Tag, workers*2) // make a buffered channel to feed workers
-
-	for w := 0; w < workers; w++ { // create export Tag workers
-		tagsWg.Add(1)
-		go t.exportTag(ctx, &tagsWg, jobCh)
+	tagIdx := 0
+	if t.tags != nil {
+		tagIdx = len(t.tags.IDs)
 	}
 
-	for i, tag := range tags {
-		index := i + 1
-		logger.Progressf("[tags] %d of %d", index, len(tags))
+	for {
+		jobCh := make(chan *models.Tag, workers*2) // make a buffered channel to feed workers
 
-		jobCh <- tag // feed workers
+		for w := 0; w < workers; w++ { // create export Tag workers
+			tagsWg.Add(1)
+			go t.exportTag(ctx, &tagsWg, jobCh)
+		}
+
+		for i, tag := range tags {
+			index := i + 1 + tagIdx
+			logger.Progressf("[tags] %d of %d", index, len(tags)+tagIdx)
+
+			jobCh <- tag // feed workers
+		}
+
+		close(jobCh)
+		tagsWg.Wait()
+
+		// if more tags were added, we need to export those too
+		if t.tags == nil || len(t.tags.IDs) == tagIdx {
+			break
+		}
+
+		newTags, err := reader.FindMany(ctx, t.tags.IDs[tagIdx:])
+		if err != nil {
+			logger.Errorf("[tags] failed to fetch tags: %v", err)
+		}
+
+		tags = newTags
+		tagIdx = len(t.tags.IDs)
 	}
-
-	close(jobCh)
-	tagsWg.Wait()
 
 	logger.Infof("[tags] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
@@ -1071,6 +1093,15 @@ func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan 
 		if err != nil {
 			logger.Errorf("[tags] <%s> error getting tag JSON: %v", thisTag.Name, err)
 			continue
+		}
+
+		if t.includeDependencies {
+			tagIDs, err := tag.GetDependentTagIDs(ctx, tagReader, thisTag)
+			if err != nil {
+				logger.Errorf("[tags] <%s> error getting dependent tags: %v", thisTag.Name, err)
+				continue
+			}
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
 		}
 
 		fn := newTagJSON.Filename()
@@ -1183,6 +1214,65 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if err := t.json.saveGroup(fn, newGroupJSON); err != nil {
 			logger.Errorf("[groups] <%s> failed to save json: %v", m.Name, err)
+		}
+	}
+}
+
+func (t *ExportTask) ExportSavedFilters(ctx context.Context, workers int) {
+	// don't export saved filters unless we're doing a full export
+	if !t.full {
+		return
+	}
+
+	var wg sync.WaitGroup
+
+	reader := t.repository.SavedFilter
+	var filters []*models.SavedFilter
+	var err error
+	filters, err = reader.All(ctx)
+
+	if err != nil {
+		logger.Errorf("[saved filters] failed to fetch saved filters: %v", err)
+	}
+
+	logger.Info("[saved filters] exporting")
+	startTime := time.Now()
+
+	jobCh := make(chan *models.SavedFilter, workers*2) // make a buffered channel to feed workers
+
+	for w := 0; w < workers; w++ { // create export Saved Filter workers
+		wg.Add(1)
+		go t.exportSavedFilter(ctx, &wg, jobCh)
+	}
+
+	for i, savedFilter := range filters {
+		index := i + 1
+		logger.Progressf("[saved filters] %d of %d", index, len(filters))
+
+		jobCh <- savedFilter // feed workers
+	}
+
+	close(jobCh)
+	wg.Wait()
+
+	logger.Infof("[saved filters] export complete in %s. %d workers used.", time.Since(startTime), workers)
+}
+
+func (t *ExportTask) exportSavedFilter(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.SavedFilter) {
+	defer wg.Done()
+
+	for thisFilter := range jobChan {
+		newJSON, err := savedfilter.ToJSON(ctx, thisFilter)
+
+		if err != nil {
+			logger.Errorf("[saved filter] <%s> error getting saved filter JSON: %v", thisFilter.Name, err)
+			continue
+		}
+
+		fn := newJSON.Filename()
+
+		if err := t.json.saveSavedFilter(fn, newJSON); err != nil {
+			logger.Errorf("[saved filter] <%s> failed to save json: %v", fn, err)
 		}
 	}
 }

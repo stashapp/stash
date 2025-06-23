@@ -39,6 +39,7 @@ var (
 		"external_host": ExternalHost,
 		"generated":     Generated,
 		"metadata":      Metadata,
+		"blobs":         BlobsPath,
 		"cache":         Cache,
 		"stash":         Stash,
 		"ui":            UILocation,

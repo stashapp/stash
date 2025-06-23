@@ -1,21 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Mousetrap from "mousetrap";
-import {
-  Button,
-  ButtonGroup,
-  Form,
-  OverlayTrigger,
-  Tooltip,
-} from "react-bootstrap";
+import { Button, Dropdown, Overlay, Popover } from "react-bootstrap";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import {
+  faChevronDown,
   faList,
   faSquare,
   faTags,
   faThLarge,
 } from "@fortawesome/free-solid-svg-icons";
+import { ZoomSelect } from "./ZoomSlider";
 
 interface IListViewOptionsProps {
   zoomIndex?: number;
@@ -23,6 +19,38 @@ interface IListViewOptionsProps {
   displayMode: DisplayMode;
   onSetDisplayMode: (m: DisplayMode) => void;
   displayModeOptions: DisplayMode[];
+}
+
+function getIcon(option: DisplayMode) {
+  switch (option) {
+    case DisplayMode.Grid:
+      return faThLarge;
+    case DisplayMode.List:
+      return faList;
+    case DisplayMode.Wall:
+      return faSquare;
+    case DisplayMode.Tagger:
+      return faTags;
+  }
+}
+
+function getLabelId(option: DisplayMode) {
+  let displayModeId = "unknown";
+  switch (option) {
+    case DisplayMode.Grid:
+      displayModeId = "grid";
+      break;
+    case DisplayMode.List:
+      displayModeId = "list";
+      break;
+    case DisplayMode.Wall:
+      displayModeId = "wall";
+      break;
+    case DisplayMode.Tagger:
+      displayModeId = "tagger";
+      break;
+  }
+  return `display_mode.${displayModeId}`;
 }
 
 export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
@@ -36,6 +64,9 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   const maxZoom = 3;
 
   const intl = useIntl();
+
+  const overlayTarget = useRef(null);
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     Mousetrap.bind("v g", () => {
@@ -53,82 +84,16 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         onSetDisplayMode(DisplayMode.Wall);
       }
     });
-    Mousetrap.bind("+", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex < maxZoom) {
-        onSetZoom(zoomIndex + 1);
-      }
-    });
-    Mousetrap.bind("-", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex > minZoom) {
-        onSetZoom(zoomIndex - 1);
-      }
-    });
 
     return () => {
       Mousetrap.unbind("v g");
       Mousetrap.unbind("v l");
       Mousetrap.unbind("v w");
-      Mousetrap.unbind("+");
-      Mousetrap.unbind("-");
     };
   });
 
-  function maybeRenderDisplayModeOptions() {
-    function getIcon(option: DisplayMode) {
-      switch (option) {
-        case DisplayMode.Grid:
-          return faThLarge;
-        case DisplayMode.List:
-          return faList;
-        case DisplayMode.Wall:
-          return faSquare;
-        case DisplayMode.Tagger:
-          return faTags;
-      }
-    }
-    function getLabel(option: DisplayMode) {
-      let displayModeId = "unknown";
-      switch (option) {
-        case DisplayMode.Grid:
-          displayModeId = "grid";
-          break;
-        case DisplayMode.List:
-          displayModeId = "list";
-          break;
-        case DisplayMode.Wall:
-          displayModeId = "wall";
-          break;
-        case DisplayMode.Tagger:
-          displayModeId = "tagger";
-          break;
-      }
-      return intl.formatMessage({ id: `display_mode.${displayModeId}` });
-    }
-
-    if (displayModeOptions.length < 2) {
-      return;
-    }
-
-    return (
-      <ButtonGroup className="mb-2">
-        {displayModeOptions.map((option) => (
-          <OverlayTrigger
-            key={option}
-            overlay={
-              <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
-            }
-          >
-            <Button
-              variant="secondary"
-              active={displayMode === option}
-              onClick={() => onSetDisplayMode(option)}
-            >
-              <Icon icon={getIcon(option)} />
-            </Button>
-          </OverlayTrigger>
-        ))}
-      </ButtonGroup>
-    );
+  function getLabel(option: DisplayMode) {
+    return intl.formatMessage({ id: getLabelId(option) });
   }
 
   function onChangeZoom(v: number) {
@@ -137,29 +102,61 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
   }
 
-  function maybeRenderZoom() {
-    if (onSetZoom && displayMode === DisplayMode.Grid) {
-      return (
-        <div className="ml-2 mb-2 d-none d-sm-inline-flex">
-          <Form.Control
-            className="zoom-slider ml-1"
-            type="range"
-            min={minZoom}
-            max={maxZoom}
-            value={zoomIndex}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </div>
-      );
-    }
-  }
-
   return (
     <>
-      {maybeRenderDisplayModeOptions()}
-      {maybeRenderZoom()}
+      <Button
+        className="display-mode-select"
+        ref={overlayTarget}
+        variant="secondary"
+        title={intl.formatMessage(
+          { id: "display_mode.label_current" },
+          { current: getLabel(displayMode) }
+        )}
+        onClick={() => setShowOptions(!showOptions)}
+      >
+        <Icon icon={getIcon(displayMode)} />
+        <Icon size="xs" icon={faChevronDown} />
+      </Button>
+      <Overlay
+        target={overlayTarget.current}
+        show={showOptions}
+        placement="bottom"
+        rootClose
+        onHide={() => setShowOptions(false)}
+      >
+        {({ placement, arrowProps, show: _show, ...props }) => (
+          <div className="popover" {...props} style={{ ...props.style }}>
+            <Popover.Content className="display-mode-popover">
+              <div className="display-mode-menu">
+                {onSetZoom &&
+                zoomIndex !== undefined &&
+                displayMode === DisplayMode.Grid ? (
+                  <div className="zoom-slider-container">
+                    <ZoomSelect
+                      minZoom={minZoom}
+                      maxZoom={maxZoom}
+                      zoomIndex={zoomIndex}
+                      onChangeZoom={onChangeZoom}
+                    />
+                  </div>
+                ) : null}
+                {displayModeOptions.map((option) => (
+                  <Dropdown.Item
+                    key={option}
+                    active={displayMode === option}
+                    onClick={() => {
+                      setShowOptions(false);
+                      onSetDisplayMode(option);
+                    }}
+                  >
+                    <Icon icon={getIcon(option)} /> {getLabel(option)}
+                  </Dropdown.Item>
+                ))}
+              </div>
+            </Popover.Content>
+          </div>
+        )}
+      </Overlay>
     </>
   );
 };

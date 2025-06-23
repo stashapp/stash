@@ -284,7 +284,7 @@ const (
 
 // slice default values
 var (
-	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
@@ -1105,9 +1105,10 @@ func stashBoxValidate(str string) bool {
 }
 
 type StashBoxInput struct {
-	Endpoint string `json:"endpoint"`
-	APIKey   string `json:"api_key"`
-	Name     string `json:"name"`
+	Endpoint             string `json:"endpoint"`
+	APIKey               string `json:"api_key"`
+	Name                 string `json:"name"`
+	MaxRequestsPerMinute int    `json:"max_requests_per_minute"`
 }
 
 func (i *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
@@ -1533,7 +1534,7 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet
+// See https://discourse.stashapp.cc/t/-/1658
 func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }

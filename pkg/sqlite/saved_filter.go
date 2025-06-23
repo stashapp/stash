@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -165,7 +165,7 @@ func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFo
 	}
 
 	for _, s := range unsorted {
-		i := sliceutil.Index(ids, s.ID)
+		i := slices.Index(ids, s.ID)
 		ret[i] = s
 	}
 

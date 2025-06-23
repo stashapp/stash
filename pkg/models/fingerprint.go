@@ -26,18 +26,47 @@ func (f *Fingerprint) Value() string {
 	}
 }
 
+// String returns the string representation of the Fingerprint.
+// It will return an empty string if the Fingerprint is not a string.
+func (f Fingerprint) String() string {
+	s, _ := f.Fingerprint.(string)
+	return s
+}
+
+// Int64 returns the int64 representation of the Fingerprint.
+// It will return 0 if the Fingerprint is not an int64.
+func (f Fingerprint) Int64() int64 {
+	v, _ := f.Fingerprint.(int64)
+	return v
+}
+
 type Fingerprints []Fingerprint
 
-func (f *Fingerprints) Remove(type_ string) {
+func (f Fingerprints) Remove(type_ string) Fingerprints {
 	var ret Fingerprints
 
-	for _, ff := range *f {
+	for _, ff := range f {
 		if ff.Type != type_ {
 			ret = append(ret, ff)
 		}
 	}
 
-	*f = ret
+	return ret
+}
+
+func (f Fingerprints) Filter(types ...string) Fingerprints {
+	var ret Fingerprints
+
+	for _, ff := range f {
+		for _, t := range types {
+			if ff.Type == t {
+				ret = append(ret, ff)
+				break
+			}
+		}
+	}
+
+	return ret
 }
 
 // Equals returns true if the contents of this slice are equal to those in the other slice.
@@ -87,33 +116,27 @@ func (f Fingerprints) For(type_ string) *Fingerprint {
 }
 
 func (f Fingerprints) Get(type_ string) interface{} {
-	for _, fp := range f {
-		if fp.Type == type_ {
-			return fp.Fingerprint
-		}
+	fp := f.For(type_)
+	if fp == nil {
+		return nil
 	}
-
-	return nil
+	return fp.Fingerprint
 }
 
 func (f Fingerprints) GetString(type_ string) string {
-	fp := f.Get(type_)
-	if fp != nil {
-		s, _ := fp.(string)
-		return s
+	fp := f.For(type_)
+	if fp == nil {
+		return ""
 	}
-
-	return ""
+	return fp.String()
 }
 
 func (f Fingerprints) GetInt64(type_ string) int64 {
-	fp := f.Get(type_)
+	fp := f.For(type_)
 	if fp != nil {
-		v, _ := fp.(int64)
-		return v
+		return 0
 	}
-
-	return 0
+	return fp.Int64()
 }
 
 // AppendUnique appends a fingerprint to the list if a Fingerprint of the same type does not already exist in the list. If one does, then it is updated with o's Fingerprint value.

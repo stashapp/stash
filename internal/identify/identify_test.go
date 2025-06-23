@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"slices"
 	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -19,11 +18,11 @@ var testCtx = context.Background()
 
 type mockSceneScraper struct {
 	errIDs  []int
-	results map[int][]*scraper.ScrapedScene
+	results map[int][]*models.ScrapedScene
 }
 
-func (s mockSceneScraper) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
-	if sliceutil.Contains(s.errIDs, sceneID) {
+func (s mockSceneScraper) ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error) {
+	if slices.Contains(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
 	return s.results[sceneID], nil
@@ -70,7 +69,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID1},
-				results: map[int][]*scraper.ScrapedScene{
+				results: map[int][]*models.ScrapedScene{
 					found1ID: {{
 						Title: &scrapedTitle,
 					}},
@@ -80,7 +79,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID2},
-				results: map[int][]*scraper.ScrapedScene{
+				results: map[int][]*models.ScrapedScene{
 					found2ID: {{
 						Title: &scrapedTitle,
 					}},
@@ -250,7 +249,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 					StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 				},
 				&scrapeResult{
-					result: &scraper.ScrapedScene{},
+					result: &models.ScrapedScene{},
 					source: ScraperSource{
 						Options: defaultOptions,
 					},
@@ -386,14 +385,14 @@ func Test_getScenePartial(t *testing.T) {
 		Mode:   models.RelationshipUpdateModeSet,
 	}
 
-	scrapedScene := &scraper.ScrapedScene{
+	scrapedScene := &models.ScrapedScene{
 		Title:   &scrapedTitle,
 		Date:    &scrapedDate,
 		Details: &scrapedDetails,
 		URLs:    []string{scrapedURL},
 	}
 
-	scrapedUnchangedScene := &scraper.ScrapedScene{
+	scrapedUnchangedScene := &models.ScrapedScene{
 		Title:   &originalTitle,
 		Date:    &originalDate,
 		Details: &originalDetails,
@@ -423,7 +422,7 @@ func Test_getScenePartial(t *testing.T) {
 
 	type args struct {
 		scene        *models.Scene
-		scraped      *scraper.ScrapedScene
+		scraped      *models.ScrapedScene
 		fieldOptions map[string]*FieldOptions
 		setOrganized bool
 	}
