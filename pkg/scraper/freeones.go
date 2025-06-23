@@ -108,7 +108,11 @@ xPathScrapers:
       Image:
         selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
-        fixed: "Female"
+        selector: //h1/*[1]/*[1]/text()Add commentMore actions
+        postProcess:
+          - replace:
+            - regex: .+ identifies as (.+)
+              with: $1
       DeathDate:
         selector: //div[contains(text(),'Passed away on')]
         postProcess:
@@ -124,7 +128,7 @@ xPathScrapers:
             - regex: \skg
               with: ""
 
-# Last Updated January 2, 2024
+# Last Updated June 22, 2025
 `
 
 func getFreeonesScraper(globalConfig GlobalConfig) scraper {
