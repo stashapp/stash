@@ -88,7 +88,8 @@
         "submit_update": "Trimite actualizare",
         "tasks": {
             "clean_confirm_message": "Ești sigur că vrei să cureți? Acest lucru va șterge informațiile din baza de date și conținutul generat pentru toate scenele și galeriile care nu se mai găsesc în sistemul de fișiere.",
-            "import_warning": "Ești sigur că vrei să imporți? Asta va șterge baza de date si va reimporta din metadatele tale exporatate."
+            "import_warning": "Ești sigur că vrei să imporți? Asta va șterge baza de date si va reimporta din metadatele tale exporatate.",
+            "dry_mode_selected": "\"Modul uscat\" selectat. Nu se va șterge nimic, doar se va loga."
         },
         "temp_disable": "Dezactivează temporar…",
         "temp_enable": "Activează temporar…",
@@ -131,7 +132,18 @@
         "reshuffle": "Reamestecă",
         "scrape_query": "Extrage date",
         "scrape_scene_fragment": "Extrage fragment cu fragment",
-        "scrape_with": "Extrage cu…"
+        "scrape_with": "Extrage cu…",
+        "selective_clean": "Curățare selectivă",
+        "selective_scan": "Scanare selectivă",
+        "set_cover": "Setează ca fundal",
+        "swap": "Schimbă",
+        "unset": "Nesetat",
+        "view_history": "Vezi istoric",
+        "sidebar": {
+            "close": "Închide bara laterală",
+            "open": "Deschide bara laterală"
+        },
+        "split": "Împarte"
     },
     "actions_name": "Acțiuni",
     "age": "Vârstă",
@@ -162,16 +174,27 @@
             "set_tag_label": "Setați etichete",
             "show_male_desc": "Comutați dacă interpreții de sex masculin vor fi disponibili pentru etichetare.",
             "show_male_label": "Arată interpreți de sex masculin",
-            "source": "Sursă"
+            "source": "Sursă",
+            "query_mode_metadata": "Date meta",
+            "mark_organized_label": "Marchează ca Organizat la salvare",
+            "errors": {
+                "blacklist_duplicate": "Lucru de pe lista neagră duplicat"
+            },
+            "mark_organized_desc": "Marchează scena ca Organizată imediat după ce butonul de Salvare este apăsat.",
+            "query_mode_label": "Mod de căutare",
+            "blacklist_desc": "Lucrurile din lista neagră sunt excluse din căutări. De reținut, căutările sunt expresii si diferențiază între litere mari și mici. Înaintea anumitor caractere, trebuie pus caracterul backslash: {chars_require_escape}"
         },
         "results": {
             "duration_unknown": "Durată necunoscută",
             "match_failed_already_tagged": "Scena este deja etichetată",
             "match_failed_no_result": "Nu s-au găsit rezultate",
             "match_success": "Scena a fost etichetată cu succes",
-            "unnamed": "Fără denumire"
+            "unnamed": "Fără denumire",
+            "fp_matches": "Durația este aceeași",
+            "duration_off": "Durația diferă cu cel puțin {number}s"
         },
-        "verb_toggle_config": "{toggle} {configuration}"
+        "verb_toggle_config": "{toggle} {configuration}",
+        "noun_query": "Căutare"
     },
     "config": {
         "about": {
@@ -494,5 +517,21 @@
     "view_all": "Vezi Toate",
     "weight": "Greutate",
     "years_old": "ani",
-    "containing_group": "Grup aparținător"
+    "containing_group": "Grup aparținător",
+    "aliases": "Porecle",
+    "appears_with": "Apare cu",
+    "audio_codec": "Codec Audio",
+    "between_and": "și",
+    "blobs_storage_type": {
+        "database": "Bază de date",
+        "filesystem": "Sistem de fișiere"
+    },
+    "captions": "Subtitrări",
+    "chapters": "Capitole",
+    "circumcised_types": {
+        "CUT": "Circumcis",
+        "UNCUT": "Necircumcis"
+    },
+    "circumcised": "Circumcizie",
+    "age_on_date": "{age} la producție"
 }
