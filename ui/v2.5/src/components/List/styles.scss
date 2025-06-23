@@ -952,7 +952,7 @@ input[type="range"].zoom-slider {
 }
 
 .pagination-footer {
-  background-color: $body-bg;
+  background-color: transparent;
   bottom: $navbar-height;
   padding: 0.5rem 1rem;
   position: sticky;
@@ -964,5 +964,10 @@ input[type="range"].zoom-slider {
 
   .pagination {
     margin-bottom: 0;
+
+    .btn:disabled {
+      color: #888;
+      opacity: 1;
+    }
   }
 }
