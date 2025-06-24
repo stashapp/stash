@@ -691,6 +691,7 @@ input FileFilterType {
   dir: StringCriterionInput
 
   parent_folder: HierarchicalMultiCriterionInput
+  zip_file: MultiCriterionInput
 
   "Filter by modification time"
   mod_time: TimestampCriterionInput
@@ -729,6 +730,7 @@ input FolderFilterType {
   path: StringCriterionInput
 
   parent_folder: HierarchicalMultiCriterionInput
+  zip_file: MultiCriterionInput
 
   "Filter by modification time"
   mod_time: TimestampCriterionInput

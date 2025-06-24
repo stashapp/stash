@@ -46,6 +46,19 @@ func TestFolderQuery(t *testing.T) {
 			includeIdxs: []int{folderIdxWithParentFolder},
 			excludeIdxs: []int{folderIdxWithSubFolder, folderIdxInZip},
 		},
+		{
+			name: "zip file",
+			filter: &models.FolderFilterType{
+				ZipFile: &models.MultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(int(fileIDs[fileIdxZip])),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			includeIdxs: []int{folderIdxInZip},
+			excludeIdxs: []int{folderIdxForObjectFiles},
+		},
 		// TODO - add more tests for other folder filters
 	}
 

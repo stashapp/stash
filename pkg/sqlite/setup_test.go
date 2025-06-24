@@ -691,7 +691,9 @@ func populateDB() error {
 			return fmt.Errorf("creating files: %w", err)
 		}
 
-		// TODO - link folders to zip files
+		if err := linkFoldersToZip(ctx); err != nil {
+			return fmt.Errorf("linking folders to zip files: %w", err)
+		}
 
 		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
@@ -809,6 +811,27 @@ func createFolders(ctx context.Context) error {
 
 		folderIDs = append(folderIDs, folder.ID)
 		folderPaths = append(folderPaths, folder.Path)
+	}
+
+	return nil
+}
+
+func linkFoldersToZip(ctx context.Context) error {
+	// link folders to zip files
+	for folderIdx, fileIdx := range folderZipFiles {
+		folderID := folderIDs[folderIdx]
+		fileID := fileIDs[fileIdx]
+
+		f, err := db.Folder.Find(ctx, folderID)
+		if err != nil {
+			return fmt.Errorf("Error finding folder [%d] to link to zip file [%d]", folderID, fileID)
+		}
+
+		f.ZipFileID = &fileID
+
+		if err := db.Folder.Update(ctx, f); err != nil {
+			return fmt.Errorf("Error linking folder [%d] to zip file [%d]: %s", folderIdx, fileIdx, err.Error())
+		}
 	}
 
 	return nil

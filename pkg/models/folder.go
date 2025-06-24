@@ -23,6 +23,7 @@ type FolderFilterType struct {
 	// Filter by parent directory path
 	Dir          *StringCriterionInput            `json:"dir,omitempty"`
 	ParentFolder *HierarchicalMultiCriterionInput `json:"parent_folder,omitempty"`
+	ZipFile      *MultiCriterionInput             `json:"zip_file,omitempty"`
 	// Filter by modification time
 	ModTime      *TimestampCriterionInput `json:"mod_time,omitempty"`
 	GalleryCount *IntCriterionInput       `json:"gallery_count,omitempty"`

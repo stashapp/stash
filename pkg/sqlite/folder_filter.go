@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -57,6 +58,7 @@ func (qb *folderFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{folderFilter.ModTime, "folders.mod_time", nil},
 
 		qb.parentFolderCriterionHandler(folderFilter.ParentFolder),
+		qb.zipFileCriterionHandler(folderFilter.ZipFile),
 
 		qb.galleryCountCriterionHandler(folderFilter.GalleryCount),
 
@@ -71,6 +73,43 @@ func (qb *folderFilterHandler) criterionHandler() criterionHandler {
 				folderRepository.galleries.innerJoin(f, "", "folders.id")
 			},
 		},
+	}
+}
+
+func (qb *folderFilterHandler) zipFileCriterionHandler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if criterion != nil {
+			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if criterion.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addWhere(fmt.Sprintf("folders.zip_file_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(criterion.Value) == 0 {
+				return
+			}
+
+			var args []interface{}
+			for _, tagID := range criterion.Value {
+				args = append(args, tagID)
+			}
+
+			whereClause := ""
+			havingClause := ""
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
+				whereClause = "folders.zip_file_id IN " + getInBinding(len(criterion.Value))
+			case models.CriterionModifierExcludes:
+				whereClause = "folders.zip_file_id NOT IN " + getInBinding(len(criterion.Value))
+			}
+
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
 	}
 }
 
