@@ -977,9 +977,9 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 	}
 
 	if performerImagesMap != nil {
-		imageResults := performerImagesMap.process(ctx, q, s.Common)
+		imageResults := performerImagesMap.process(ctx, q, s.Common, nil)
 		for _, p := range imageResults {
-			ret.Images = append(ret.Images, p["URL"])
+			ret.Images = append(ret.Images, p["URL"].(string))
 		}
 	}
 
