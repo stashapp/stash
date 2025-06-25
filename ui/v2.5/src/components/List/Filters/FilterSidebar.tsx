@@ -1,29 +1,22 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { SidebarSection, SidebarToolbar } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterButton } from "./FilterButton";
 import { SearchTermInput } from "../ListFilter";
 import { SidebarSavedFilterList } from "../SavedFilterList";
 import { View } from "../views";
 import useFocus from "src/utils/focus";
 import ScreenUtils from "src/utils/screen";
 import Mousetrap from "mousetrap";
-
-export const FilteredSidebarToolbar: React.FC<{
-  onClose?: () => void;
-}> = ({ onClose, children }) => {
-  return <SidebarToolbar onClose={onClose}>{children}</SidebarToolbar>;
-};
+import { Button } from "react-bootstrap";
 
 export const FilteredSidebarHeader: React.FC<{
   sidebarOpen: boolean;
-  onClose?: () => void;
   showEditFilter: () => void;
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
-}> = ({ sidebarOpen, onClose, showEditFilter, filter, setFilter, view }) => {
+}> = ({ sidebarOpen, showEditFilter, filter, setFilter, view }) => {
   const focus = useFocus();
   const [, setFocus] = focus;
 
@@ -37,15 +30,24 @@ export const FilteredSidebarHeader: React.FC<{
 
   return (
     <>
-      <FilteredSidebarToolbar onClose={onClose} />
       <div className="sidebar-search-container">
         <SearchTermInput
           filter={filter}
           onFilterUpdate={setFilter}
           focus={focus}
         />
-        <FilterButton onClick={() => showEditFilter()} filter={filter} />
       </div>
+
+      <div>
+        <Button
+          className="edit-filter-button"
+          size="sm"
+          onClick={() => showEditFilter()}
+        >
+          <FormattedMessage id="search_filter.edit_filter" />
+        </Button>
+      </div>
+
       <SidebarSection
         className="sidebar-saved-filters"
         text={<FormattedMessage id="search_filter.saved_filters" />}

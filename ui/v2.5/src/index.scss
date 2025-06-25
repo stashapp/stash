@@ -1,8 +1,9 @@
 // variables required by other scss files
 
 // this is calculated from the existing height
-// TODO: we should set this explicitly in the navbar
 $navbar-height: 48.75px;
+
+$sticky-detail-header-height: 50px;
 
 @import "styles/theme";
 @import "styles/range";
@@ -55,7 +56,7 @@ body {
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 1rem 0 $navbar-height;
+      padding: 0.5rem 0 $navbar-height;
     }
   }
 }
@@ -85,10 +86,10 @@ dd {
 
 .sticky.detail-header {
   display: block;
-  min-height: 50px;
+  min-height: $sticky-detail-header-height;
   padding: unset;
   position: fixed;
-  top: 3.3rem;
+  top: $navbar-height;
   z-index: 10;
 
   @media (max-width: 576px) {
@@ -692,8 +693,7 @@ div.dropdown-menu {
 
   .badge {
     margin: unset;
-    // stylelint-disable declaration-no-important
-    white-space: normal !important;
+    white-space: normal;
   }
 }
 
@@ -1024,6 +1024,9 @@ div.dropdown-menu {
       bottom: 0;
       top: auto;
     }
+  }
+  @include media-breakpoint-up(xl) {
+    height: $navbar-height;
   }
 
   .navbar-toggler {
