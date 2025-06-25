@@ -91,7 +91,7 @@ type folderRepositoryType struct {
 }
 
 var (
-	folderRepository = studioRepositoryType{
+	folderRepository = folderRepositoryType{
 		repository: repository{
 			tableName: folderTable,
 			idColumn:  idColumn,
@@ -530,12 +530,12 @@ func (qb *FolderStore) setQuerySort(query *queryBuilder, findFilter *models.Find
 	sort := findFilter.GetSort("path")
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
-	if err := fileSortOptions.validateSort(sort); err != nil {
+	if err := folderSortOptions.validateSort(sort); err != nil {
 		return err
 	}
 
 	direction := findFilter.GetDirection()
-	query.sortAndPagination += getSort(sort, direction, "files")
+	query.sortAndPagination += getSort(sort, direction, "folders")
 
 	return nil
 }
