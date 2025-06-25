@@ -1020,13 +1020,13 @@ input[type="range"].blue-slider {
     &:last-child {
       flex-shrink: 0;
       justify-content: flex-end;
-      margin-left: auto;
     }
   }
 }
 
 .scene-list-toolbar {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  gap: 1rem;
   // offset the main padding
   margin-top: -0.5rem;
   padding-bottom: 0.5rem;
@@ -1060,6 +1060,25 @@ input[type="range"].blue-slider {
     .play-button,
     .create-new-button {
       display: none;
+    }
+  }
+
+  > div:first-child {
+    overflow-x: hidden;
+  }
+
+  .filter-tags {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    width: calc(100% - 35px - 0.5rem);
+
+    @include media-breakpoint-down(xs) {
+      scrollbar-width: none;
+    }
+
+    .tag-item {
+      white-space: nowrap;
     }
   }
 }
