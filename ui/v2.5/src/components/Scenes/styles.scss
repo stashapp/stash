@@ -1074,7 +1074,8 @@ input[type="range"].blue-slider {
     width: calc(100% - 35px - 0.5rem);
 
     @include media-breakpoint-down(xs) {
-      scrollbar-width: none;
+      overflow-x: auto;
+      scrollbar-width: thin;
     }
 
     .tag-item {
