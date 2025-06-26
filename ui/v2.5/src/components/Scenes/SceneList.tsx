@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -69,7 +63,6 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
-import { useInView } from "react-intersection-observer";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -520,8 +513,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
-  const filterTagsRef = useRef<HTMLDivElement>();
-
   // States
   const {
     showSidebar,
@@ -590,20 +581,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const playRandom = usePlayRandom(filter, totalCount);
   const playSelected = usePlaySelected(selectedIds);
   const playFirst = usePlayFirst();
-
-  // add class if the filter tags are out of view
-  const { ref: inViewRef, inView: filterTagsInView } = useInView({
-    initialInView: true,
-  });
-  const setRefs = useCallback(
-    (node) => {
-      // Ref's from useRef needs to have the node assigned to `current`
-      filterTagsRef.current = node;
-      // Callback refs, like the one from `useInView`, is a function that takes the node as an argument
-      inViewRef(node);
-    },
-    [inViewRef]
-  );
 
   function onCreateNew() {
     history.push("/scenes/new");
@@ -764,7 +741,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             <ButtonToolbar
               className={cx("scene-list-toolbar", {
                 "has-selection": hasSelection,
-                "hide-filter-tags": filterTagsInView,
               })}
             >
               <ListToolbarContent
@@ -794,7 +770,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             />
 
             <FilterTags
-              inViewRef={setRefs}
               criteria={filter.criteria}
               onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
               onRemoveCriterion={removeCriterion}

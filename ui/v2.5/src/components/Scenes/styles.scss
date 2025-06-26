@@ -1073,8 +1073,6 @@ input[type="range"].blue-slider {
     flex-wrap: nowrap;
     justify-content: flex-start;
     margin-bottom: 0;
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out;
     width: calc(100% - 35px - 0.5rem);
 
     @include media-breakpoint-down(xs) {
@@ -1084,13 +1082,6 @@ input[type="range"].blue-slider {
 
     .tag-item {
       white-space: nowrap;
-    }
-  }
-
-  &.hide-filter-tags {
-    .filter-tags {
-      opacity: 0;
-      pointer-events: none;
     }
   }
 }
