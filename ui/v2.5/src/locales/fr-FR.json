@@ -144,8 +144,12 @@
         "add_sub_groups": "Ajouter des groupes affiliés",
         "sidebar": {
             "close": "Fermer la barre latérale",
-            "open": "Ouvrir la barre latérale"
-        }
+            "open": "Ouvrir la barre latérale",
+            "toggle": "Barre latérale"
+        },
+        "show_count_results": "Afficher {count} résultats",
+        "show_results": "Afficher les résultats",
+        "play": "Lecture"
     },
     "actions_name": "Actions",
     "age": "Âge",
