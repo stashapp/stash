@@ -211,6 +211,7 @@ Returns `void`.
 - `SceneCard.Image`
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
+- `SceneFileInfoPanel`
 - `SceneIDSelect`
 - `ScenePage`
 - `ScenePage.TabContent`
