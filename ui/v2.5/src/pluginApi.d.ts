@@ -692,6 +692,8 @@ declare namespace PluginApi {
       "PerformerCard.Overlays": React.FC<any>;
       "PerformerCard.Popovers": React.FC<any>;
       "PerformerCard.Title": React.FC<any>;
+      PerformerDetailsPanel: React.FC<any>;
+      "PerformerDetailsPanel.DetailGroup": React.FC<any>;
       PerformerGalleriesPanel: React.FC<any>;
       PerformerGroupsPanel: React.FC<any>;
       PerformerHeaderImage: React.FC<any>;
