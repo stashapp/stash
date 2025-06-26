@@ -1064,10 +1064,12 @@ input[type="range"].blue-slider {
   }
 
   > div:first-child {
+    flex-grow: 1;
     overflow-x: hidden;
   }
 
   .filter-tags {
+    flex-grow: 1;
     flex-wrap: nowrap;
     justify-content: flex-start;
     margin-bottom: 0;

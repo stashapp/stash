@@ -2,6 +2,7 @@ import React, {
   PropsWithChildren,
   useEffect,
   useLayoutEffect,
+  useReducer,
   useRef,
 } from "react";
 import { Badge, BadgeProps, Button, Overlay, Tooltip } from "react-bootstrap";
@@ -11,7 +12,7 @@ import { Icon } from "../Shared/Icon";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { BsPrefixProps, ReplaceProps } from "react-bootstrap/esm/helpers";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
-import { useCompare } from "src/hooks/state";
+import { useDebounce } from "src/hooks/debounce";
 
 type TagItemProps = PropsWithChildren<
   ReplaceProps<"span", BsPrefixProps<"span"> & BadgeProps>
@@ -109,12 +110,23 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   truncateOnOverflow = false,
 }) => {
   const intl = useIntl();
-  const criteriaChanged = useCompare(criteria);
   const ref = useRef<HTMLDivElement>(null);
 
   const [cutoff, setCutoff] = React.useState<number | undefined>();
   const elementGap = 10; // Adjust this value based on your CSS gap or margin
   const moreTagWidth = 80; // reserve space for the "more" tag
+
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const debounceResetCutoff = useDebounce(
+    () => {
+      setCutoff(undefined);
+      // setting cutoff won't trigger a re-render if it's already undefined
+      // so we force a re-render to recalculate the cutoff
+      forceUpdate();
+    },
+    100 // Adjust the debounce delay as needed
+  );
 
   // trigger recalculation of cutoff when control resizes
   useEffect(() => {
@@ -123,7 +135,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     }
 
     const resizeObserver = new ResizeObserver(() => {
-      setCutoff(undefined);
+      debounceResetCutoff();
     });
 
     const { current } = ref;
@@ -132,11 +144,12 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [truncateOnOverflow]);
+  }, [truncateOnOverflow, debounceResetCutoff]);
 
+  // we need to check this on every render, and the call to setCutoff _should_ be safe
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   useLayoutEffect(() => {
-    // if criteria changed, set the cutoff to undefined to recalculate it
-    if (!truncateOnOverflow || criteriaChanged) {
+    if (!truncateOnOverflow) {
       setCutoff(undefined);
       return;
     }
@@ -264,7 +277,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     const hiddenCriteria = filterTags.slice(cutoff);
 
     return (
-      <div className={className}>
+      <div className={className} ref={ref}>
         {visibleCriteria}
         <MoreFilterTags tags={hiddenCriteria} />
         {criteria.length >= 3 && (
