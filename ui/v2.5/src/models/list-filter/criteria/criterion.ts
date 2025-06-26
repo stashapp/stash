@@ -526,13 +526,12 @@ export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarch
 
 export class StringCriterionOption extends ModifierCriterionOption {
   constructor(
-    messageID: string,
-    value: CriterionType,
-    makeCriterion?: () => ModifierCriterion<CriterionValue>
+    options: Partial<
+      Omit<IModifierCriterionOptionParams, "messageID" | "type">
+    > &
+      Pick<IModifierCriterionOptionParams, "messageID" | "type">
   ) {
     super({
-      messageID,
-      type: value,
       modifierOptions: [
         CriterionModifier.Equals,
         CriterionModifier.NotEquals,
@@ -545,9 +544,8 @@ export class StringCriterionOption extends ModifierCriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "text",
-      makeCriterion: makeCriterion
-        ? makeCriterion
-        : () => new StringCriterion(this),
+      makeCriterion: () => new StringCriterion(this),
+      ...options,
     });
   }
 }
@@ -556,7 +554,7 @@ export function createStringCriterionOption(
   type: CriterionType,
   messageID?: string
 ) {
-  return new StringCriterionOption(messageID ?? type, type);
+  return new StringCriterionOption({ messageID: messageID ?? type, type });
 }
 
 export class MandatoryStringCriterionOption extends ModifierCriterionOption {
