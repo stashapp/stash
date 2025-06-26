@@ -1,5 +1,6 @@
 import React, {
   PropsWithChildren,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useReducer,
@@ -95,6 +96,7 @@ const MoreFilterTags: React.FC<{
 };
 
 interface IFilterTagsProps {
+  inViewRef?: (node?: Element | null) => void;
   criteria: Criterion[];
   onEditCriterion: (c: Criterion) => void;
   onRemoveCriterion: (c: Criterion, valueIndex?: number) => void;
@@ -103,6 +105,7 @@ interface IFilterTagsProps {
 }
 
 export const FilterTags: React.FC<IFilterTagsProps> = ({
+  inViewRef,
   criteria,
   onEditCriterion,
   onRemoveCriterion,
@@ -110,13 +113,23 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   truncateOnOverflow = false,
 }) => {
   const intl = useIntl();
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>();
 
   const [cutoff, setCutoff] = React.useState<number | undefined>();
   const elementGap = 10; // Adjust this value based on your CSS gap or margin
   const moreTagWidth = 80; // reserve space for the "more" tag
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const setRefs = useCallback(
+    (node) => {
+      // Ref's from useRef needs to have the node assigned to `current`
+      ref.current = node;
+      // Callback refs, like the one from `useInView`, is a function that takes the node as an argument
+      if (inViewRef) inViewRef(node);
+    },
+    [inViewRef]
+  );
 
   const debounceResetCutoff = useDebounce(
     () => {
@@ -277,7 +290,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     const hiddenCriteria = filterTags.slice(cutoff);
 
     return (
-      <div className={className} ref={ref}>
+      <div className={className} ref={setRefs}>
         {visibleCriteria}
         <MoreFilterTags tags={hiddenCriteria} />
         {criteria.length >= 3 && (
@@ -294,7 +307,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   }
 
   return (
-    <div className={className} ref={ref}>
+    <div className={className} ref={setRefs}>
       {filterTags}
       {criteria.length >= 3 && (
         <Button
