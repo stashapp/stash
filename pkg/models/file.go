@@ -24,6 +24,7 @@ type FileFilterType struct {
 	Basename        *StringCriterionInput            `json:"basename"`
 	Dir             *StringCriterionInput            `json:"dir"`
 	ParentFolder    *HierarchicalMultiCriterionInput `json:"parent_folder"`
+	ZipFile         *MultiCriterionInput             `json:"zip_file"`
 	ModTime         *TimestampCriterionInput         `json:"mod_time"`
 	Duplicated      *PHashDuplicationCriterionInput  `json:"duplicated"`
 	Hashes          []*FingerprintFilterInput        `json:"hashes"`

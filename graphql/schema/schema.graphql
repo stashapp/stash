@@ -16,6 +16,16 @@ type Query {
     ids: [ID!]
   ): FindFilesResultType!
 
+  "Find a file by its id or path"
+  findFolder(id: ID, path: String): Folder!
+
+  "Queries for Files"
+  findFolders(
+    folder_filter: FolderFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindFoldersResultType!
+
   "Find a scene by ID or Checksum"
   findScene(id: ID, checksum: String): Scene
   findSceneByHash(input: SceneHashInput!): Scene

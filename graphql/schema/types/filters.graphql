@@ -691,6 +691,7 @@ input FileFilterType {
   dir: StringCriterionInput
 
   parent_folder: HierarchicalMultiCriterionInput
+  zip_file: MultiCriterionInput
 
   "Filter by modification time"
   mod_time: TimestampCriterionInput
@@ -712,6 +713,32 @@ input FileFilterType {
   scenes_filter: SceneFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
+
+  "Filter by creation time"
+  created_at: TimestampCriterionInput
+  "Filter by last update time"
+  updated_at: TimestampCriterionInput
+}
+
+input FolderFilterType {
+  AND: FolderFilterType
+  OR: FolderFilterType
+  NOT: FolderFilterType
+
+  path: StringCriterionInput
+
+  parent_folder: HierarchicalMultiCriterionInput
+  zip_file: MultiCriterionInput
+
+  "Filter by modification time"
+  mod_time: TimestampCriterionInput
+
+  gallery_count: IntCriterionInput
+
+  "Filter by files that meet this criteria"
+  files_filter: FileFilterType
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
 
