@@ -63,6 +63,7 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
+import ScreenUtils from "src/utils/screen";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -350,6 +351,7 @@ const ListToolbarContent: React.FC<{
   const intl = useIntl();
 
   const hasSelection = selectedIds.size > 0;
+  const isMobile = ScreenUtils.isMobile();
 
   return (
     <>
@@ -365,6 +367,7 @@ const ListToolbarContent: React.FC<{
             onEditCriterion={onEditCriterion}
             onRemoveCriterion={onRemoveCriterion}
             onRemoveAll={onRemoveAllCriterion}
+            truncateOnOverflow={!isMobile}
           />
         </div>
       )}
