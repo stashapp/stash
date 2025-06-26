@@ -141,7 +141,14 @@
         "set_cover": "カバーをセット",
         "view_history": "履歴を表示する",
         "reset_resume_time": "再開時間をリセットする",
-        "reset_cover": "標準カバーに復元"
+        "reset_cover": "標準カバーに復元",
+        "sidebar": {
+            "close": "サイドバーを閉じる",
+            "open": "サイドバーを開く",
+            "toggle": "サイドバーを切り替え"
+        },
+        "play": "再生",
+        "show_results": "結果を表示"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -435,7 +442,8 @@
             "endpoint": "エンドポイント",
             "graphql_endpoint": "GraphQL エンドポイント",
             "name": "名前",
-            "title": "Stash-box エンドポイント"
+            "title": "Stash-box エンドポイント",
+            "max_requests_per_minute": "1分あたりの最大リクエスト数"
         },
         "system": {
             "transcoding": "トランスコード"
