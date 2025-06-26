@@ -769,13 +769,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               onChangeFilter={(newFilter) => setFilter(newFilter)}
             />
 
-            <FilterTags
-              criteria={filter.criteria}
-              onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-              onRemoveCriterion={removeCriterion}
-              onRemoveAll={() => clearAllCriteria()}
-            />
-
             <LoadedContent loading={result.loading} error={result.error}>
               <SceneList
                 filter={effectiveFilter}
