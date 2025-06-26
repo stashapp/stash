@@ -179,6 +179,8 @@ Returns `void`.
 - `ImageInput`
 - `LightboxLink`
 - `LoadingIndicator`
+- `MainNavBar.MenuItems`
+- `MainNavBar.UtilityItems`
 - `ModalSetting`
 - `NumberSetting`
 - `Pagination`
