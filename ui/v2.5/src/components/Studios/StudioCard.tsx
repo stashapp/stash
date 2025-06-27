@@ -220,6 +220,10 @@ export const StudioCard: React.FC<IProps> = ({
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
+          <div className="studio-o-counter">
+            <FormattedMessage id="o_counter" defaultMessage="O Counter" />: {studio.o_counter}
+          </div>
+        </div>
         </div>
       }
       overlays={
