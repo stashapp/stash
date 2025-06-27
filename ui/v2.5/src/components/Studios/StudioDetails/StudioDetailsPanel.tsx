@@ -69,6 +69,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         fullWidth={fullWidth}
       />
     </div>
+    <DetailItem id="o_counter" value={studio.o_counter} fullWidth={fullWidth} />
   );
 };
 
