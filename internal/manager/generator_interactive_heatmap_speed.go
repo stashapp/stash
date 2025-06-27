@@ -40,7 +40,7 @@ type Script struct {
 // Action is a move at a specific time.
 type Action struct {
 	// At time in milliseconds the action should fire.
-	At int64 `json:"at"`
+	At float64 `json:"at"`
 	// Pos is the place in percent to move to.
 	Pos int `json:"pos"`
 
@@ -109,8 +109,8 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneD
 	// trim actions with negative timestamps to avoid index range errors when generating heatmap
 	// #3181 - also trim actions that occur after the scene duration
 	loggedBadTimestamp := false
-	sceneDurationMilli := int64(sceneDuration * 1000)
-	isValid := func(x int64) bool {
+	sceneDurationMilli := sceneDuration * 1000
+	isValid := func(x float64) bool {
 		return x >= 0 && x < sceneDurationMilli
 	}
 
@@ -132,7 +132,7 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneD
 
 func (funscript *Script) UpdateIntensityAndSpeed() {
 
-	var t1, t2 int64
+	var t1, t2 float64
 	var p1, p2 int
 	var intensity float64
 	for i := range funscript.Actions {
@@ -241,13 +241,13 @@ func (gt GradientTable) GetYRange(t float64) [2]float64 {
 
 func (funscript Script) getGradientTable(numSegments int, sceneDurationMilli int64) GradientTable {
 	const windowSize = 15
-	const backfillThreshold = 500
+	const backfillThreshold = float64(500)
 
 	segments := make([]struct {
 		count     int
 		intensity int
 		yRange    [2]float64
-		at        int64
+		at        float64
 	}, numSegments)
 	gradient := make(GradientTable, numSegments)
 	posList := []int{}
@@ -297,7 +297,7 @@ func (funscript Script) getGradientTable(numSegments int, sceneDurationMilli int
 
 	// Fill in gaps in segments
 	for i := 0; i < numSegments; i++ {
-		segmentTS := (maxts / int64(numSegments)) * int64(i)
+		segmentTS := float64((maxts / int64(numSegments)) * int64(i))
 
 		// Empty segment - fill it with the previous up to backfillThreshold ms
 		if segments[i].count == 0 {
