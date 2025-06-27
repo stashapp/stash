@@ -28,7 +28,8 @@ type InteractiveHeatmapSpeedGenerator struct {
 
 type Script struct {
 	// Version of Launchscript
-	Version string `json:"version"`
+	// #5600 - ignore version, don't validate type
+	Version json.RawMessage `json:"version"`
 	// Inverted causes up and down movement to be flipped.
 	Inverted bool `json:"inverted,omitempty"`
 	// Range is the percentage of a full stroke to use.
