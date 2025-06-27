@@ -407,7 +407,8 @@ func ConvertFunscriptToCSV(funscriptPath string) ([]byte, error) {
 			pos = convertRange(pos, 0, funscript.Range, 0, 100)
 		}
 
-		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", action.At, pos))
+		// I don't know whether the csv format requires int or float, so for now we'll use int
+		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", int(math.Round(action.At)), pos))
 	}
 	return buffer.Bytes(), nil
 }
