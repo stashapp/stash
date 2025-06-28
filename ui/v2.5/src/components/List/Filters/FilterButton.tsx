@@ -1,28 +1,32 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Badge, Button } from "react-bootstrap";
-import { ListFilterModel } from "src/models/list-filter/filter";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/Shared/Icon";
 import { useIntl } from "react-intl";
 
 interface IFilterButtonProps {
-  filter: ListFilterModel;
+  count?: number;
   onClick: () => void;
+  title?: string;
 }
 
 export const FilterButton: React.FC<IFilterButtonProps> = ({
-  filter,
+  count = 0,
   onClick,
+  title,
 }) => {
   const intl = useIntl();
-  const count = useMemo(() => filter.count(), [filter]);
+
+  if (!title) {
+    title = intl.formatMessage({ id: "search_filter.edit_filter" });
+  }
 
   return (
     <Button
       variant="secondary"
       className="filter-button"
       onClick={onClick}
-      title={intl.formatMessage({ id: "search_filter.edit_filter" })}
+      title={title}
     >
       <Icon icon={faFilter} />
       {count ? (

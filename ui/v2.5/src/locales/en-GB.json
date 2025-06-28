@@ -81,6 +81,7 @@
     "open_random": "Open Random",
     "optimise_database": "Optimise Database",
     "overwrite": "Overwrite",
+    "play": "Play",
     "play_random": "Play Random",
     "play_selected": "Play selected",
     "preview": "Preview",
@@ -124,9 +125,12 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "show_results": "Show results",
+    "show_count_results": "Show {count} results",
     "sidebar": {
       "close": "Close sidebar",
-      "open": "Open sidebar"
+      "open": "Open sidebar",
+      "toggle": "Toggle sidebar"
     },
     "skip": "Skip",
     "split": "Split",
@@ -1312,7 +1316,8 @@
     "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
-    "update_filter": "Update Filter"
+    "update_filter": "Update Filter",
+    "more_filter_criteria": "+{count} more"
   },
   "second": "Second",
   "seconds": "Seconds",

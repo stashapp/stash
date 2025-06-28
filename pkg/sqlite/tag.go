@@ -607,7 +607,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
-		searchColumns := []string{"tags.name", "tag_aliases.alias"}
+		searchColumns := []string{"tags.name", "tag_aliases.alias", "tags.sort_name"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

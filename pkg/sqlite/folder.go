@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -223,6 +224,52 @@ func (qb *FolderStore) Find(ctx context.Context, id models.FolderID) (*models.Fo
 	}
 
 	return ret, nil
+}
+
+// FindByIDs finds multiple folders by their IDs.
+// No check is made to see if the folders exist, and the order of the returned folders
+// is not guaranteed to be the same as the order of the input IDs.
+func (qb *FolderStore) FindByIDs(ctx context.Context, ids []models.FolderID) ([]*models.Folder, error) {
+	folders := make([]*models.Folder, 0, len(ids))
+
+	table := qb.table()
+	if err := batchExec(ids, defaultBatchSize, func(batch []models.FolderID) error {
+		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		folders = append(folders, unsorted...)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return folders, nil
+}
+
+func (qb *FolderStore) FindMany(ctx context.Context, ids []models.FolderID) ([]*models.Folder, error) {
+	folders := make([]*models.Folder, len(ids))
+
+	unsorted, err := qb.FindByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range unsorted {
+		i := slices.Index(ids, s.ID)
+		folders[i] = s
+	}
+
+	for i := range folders {
+		if folders[i] == nil {
+			return nil, fmt.Errorf("folder with id %d not found", ids[i])
+		}
+	}
+
+	return folders, nil
 }
 
 func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*models.Folder, error) {

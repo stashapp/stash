@@ -83,6 +83,8 @@ Returns a `Promise<void>` that resolves when all of the components have been loa
 ### `hooks`
 
 This namespace provides access to the following core utility hooks:
+- `useGalleryLightbox`
+- `useLightbox`
 - `useSpriteInfo`
 - `useToast`
 
@@ -179,6 +181,8 @@ Returns `void`.
 - `GroupSelect`
 - `GroupSelect.sort`
 - `NumberSetting`
+- `Pagination`
+- `PaginationIndex`
 - `PerformerAppearsWithPanel`
 - `PerformerCard`
 - `PerformerCard.Details`

@@ -5,6 +5,7 @@ import "context"
 // FolderGetter provides methods to get folders by ID.
 type FolderGetter interface {
 	Find(ctx context.Context, id FolderID) (*Folder, error)
+	FindMany(ctx context.Context, id []FolderID) ([]*Folder, error)
 }
 
 // FolderFinder provides methods to find folders.

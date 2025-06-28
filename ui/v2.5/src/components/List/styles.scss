@@ -412,11 +412,22 @@ input[type="range"].zoom-slider {
   }
 }
 
-.filter-tags .clear-all-button {
-  color: $text-color;
-  // to match filter pills
-  line-height: 16px;
-  padding: 0;
+.filter-tags {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  .more-tags {
+    background-color: transparent;
+    color: #fff;
+  }
+
+  .clear-all-button {
+    color: $text-color;
+    // to match filter pills
+    line-height: 16px;
+    padding: 0;
+  }
 }
 
 .filter-button {
@@ -871,6 +882,14 @@ input[type="range"].zoom-slider {
     flex-wrap: wrap;
     justify-content: center;
     row-gap: 0.5rem;
+
+    &:first-child {
+      justify-content: flex-start;
+    }
+
+    &:last-child {
+      justify-content: flex-end;
+    }
   }
 
   .btn.display-mode-select {
@@ -921,24 +940,69 @@ input[type="range"].zoom-slider {
 }
 
 .sidebar {
+  // make controls slightly larger on mobile
+  @include media-breakpoint-down(xs) {
+    .btn,
+    .form-control {
+      font-size: 1.25rem;
+    }
+  }
+
   .sidebar-search-container {
     display: flex;
     margin-bottom: 0.5rem;
-    margin-top: 0.25rem;
   }
 
   .search-term-input {
     flex-grow: 1;
-    margin-right: 0.25rem;
+    margin-right: 0;
 
     .clearable-text-field {
       height: 100%;
     }
   }
+
+  .edit-filter-button {
+    width: 100%;
+  }
+
+  .sidebar-footer {
+    background-color: $body-bg;
+    bottom: 0;
+    display: none;
+    padding: 0.5rem;
+    position: sticky;
+
+    @include media-breakpoint-down(xs) {
+      display: flex;
+      justify-content: center;
+    }
+  }
 }
 
 @include media-breakpoint-down(xs) {
-  .sidebar .search-term-input {
-    margin-right: 0.5rem;
+  .sidebar .sidebar-search-container {
+    margin-top: 0.25rem;
+  }
+}
+
+.pagination-footer {
+  background-color: transparent;
+  bottom: $navbar-height;
+  padding: 0.5rem 1rem;
+  position: sticky;
+  z-index: 10;
+
+  @include media-breakpoint-up(sm) {
+    bottom: 0;
+  }
+
+  .pagination {
+    margin-bottom: 0;
+
+    .btn:disabled {
+      color: #888;
+      opacity: 1;
+    }
   }
 }
