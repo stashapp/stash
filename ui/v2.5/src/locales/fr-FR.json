@@ -583,7 +583,9 @@
                 "whitespace_chars": "Caractères d'espacement",
                 "whitespace_chars_desc": "Ces caractères seront remplacés par un espace dans le titre"
             },
-            "scene_tools": "Outils de scène"
+            "scene_tools": "Outils de scène",
+            "heading": "Outils",
+            "graphql_playground": "Implémentation GraphQL"
         },
         "ui": {
             "abbreviate_counters": {
