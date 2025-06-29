@@ -466,7 +466,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       setScraper(undefined);
     } else {
       setScrapedPerformer(result);
-      updateStashIDs(performerResult.remote_site_id);
     }
   }
 
