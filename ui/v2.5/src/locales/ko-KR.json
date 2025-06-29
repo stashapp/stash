@@ -144,8 +144,12 @@
         "remove_from_containing_group": "그룹에서 제거",
         "sidebar": {
             "close": "사이드바 닫기",
-            "open": "사이드바 열기"
-        }
+            "open": "사이드바 열기",
+            "toggle": "사이드바 토글"
+        },
+        "play": "재생",
+        "show_results": "결과 표시",
+        "show_count_results": "{count}개 결과 표시"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -578,7 +582,9 @@
                 "whitespace_chars": "공백 문자",
                 "whitespace_chars_desc": "이 문자들은 제목에서 공백으로 대체됩니다"
             },
-            "scene_tools": "영상 도구"
+            "scene_tools": "영상 도구",
+            "heading": "도구",
+            "graphql_playground": "GraphQL 플레이그라운드"
         },
         "ui": {
             "abbreviate_counters": {
