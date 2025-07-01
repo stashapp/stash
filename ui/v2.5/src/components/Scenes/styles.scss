@@ -1064,8 +1064,15 @@ input[type="range"].blue-slider {
   }
 
   > div:first-child {
+    border: 1px solid $secondary;
+    border-radius: 0.25rem;
     flex-grow: 1;
     overflow-x: hidden;
+
+    .filter-button {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+    }
   }
 
   .filter-tags {
