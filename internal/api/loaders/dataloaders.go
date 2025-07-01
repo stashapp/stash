@@ -32,7 +32,34 @@ import (
 
 // Work around bug in dataloaden https://github.com/vektah/dataloaden/issues/54
 type Time struct {
-    time.Time
+	time.Time
+}
+
+// Helper functions for time conversion
+func timeToTime(t *time.Time) *Time {
+	if t == nil {
+		return nil
+	}
+	return &Time{*t}
+}
+
+func timesToTimes(times []*time.Time) []*Time {
+	result := make([]*Time, len(times))
+	for i, t := range times {
+		result[i] = timeToTime(t)
+	}
+	return result
+}
+
+func timeSlicesToTimeSlices(timeSlices [][]time.Time) [][]Time {
+	result := make([][]Time, len(timeSlices))
+	for i, slice := range timeSlices {
+		result[i] = make([]Time, len(slice))
+		for j, t := range slice {
+			result[i][j] = Time{t}
+		}
+	}
+	return result
 }
 
 type contextKey struct{ name string }
@@ -357,35 +384,44 @@ func (m Middleware) fetchScenesPlayCount(ctx context.Context) func(keys []int) (
 	}
 }
 
-func (m Middleware) fetchScenesOHistory(ctx context.Context) func(keys []int) ([][]time.Time, []error) {
-	return func(keys []int) (ret [][]time.Time, errs []error) {
+func (m Middleware) fetchScenesOHistory(ctx context.Context) func(keys []int) ([][]Time, []error) {
+	return func(keys []int) (ret [][]Time, errs []error) {
+		var timeRet [][]time.Time
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
-			ret, err = m.Repository.Scene.GetManyODates(ctx, keys)
+			timeRet, err = m.Repository.Scene.GetManyODates(ctx, keys)
 			return err
 		})
+
+		ret = timeSlicesToTimeSlices(timeRet)
 		return ret, toErrorSlice(err)
 	}
 }
 
-func (m Middleware) fetchScenesPlayHistory(ctx context.Context) func(keys []int) ([][]time.Time, []error) {
-	return func(keys []int) (ret [][]time.Time, errs []error) {
+func (m Middleware) fetchScenesPlayHistory(ctx context.Context) func(keys []int) ([][]Time, []error) {
+	return func(keys []int) (ret [][]Time, errs []error) {
+		var timeRet [][]time.Time
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
-			ret, err = m.Repository.Scene.GetManyViewDates(ctx, keys)
+			timeRet, err = m.Repository.Scene.GetManyViewDates(ctx, keys)
 			return err
 		})
+
+		ret = timeSlicesToTimeSlices(timeRet)
 		return ret, toErrorSlice(err)
 	}
 }
 
-func (m Middleware) fetchScenesLastPlayed(ctx context.Context) func(keys []int) ([]*time.Time, []error) {
-	return func(keys []int) (ret []*time.Time, errs []error) {
+func (m Middleware) fetchScenesLastPlayed(ctx context.Context) func(keys []int) ([]*Time, []error) {
+	return func(keys []int) (ret []*Time, errs []error) {
+		var timeRet []*time.Time
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
-			ret, err = m.Repository.Scene.GetManyLastViewed(ctx, keys)
+			timeRet, err = m.Repository.Scene.GetManyLastViewed(ctx, keys)
 			return err
 		})
+
+		ret = timesToTimes(timeRet)
 		return ret, toErrorSlice(err)
 	}
 }
