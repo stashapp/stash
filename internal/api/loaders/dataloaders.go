@@ -17,9 +17,9 @@
 //go:generate go run github.com/vektah/dataloaden CustomFieldsLoader int github.com/stashapp/stash/pkg/models.CustomFieldMap
 //go:generate go run github.com/vektah/dataloaden SceneOCountLoader int int
 //go:generate go run github.com/vektah/dataloaden ScenePlayCountLoader int int
-//go:generate go run github.com/vektah/dataloaden SceneOHistoryLoader int []time.Time
-//go:generate go run github.com/vektah/dataloaden ScenePlayHistoryLoader int []time.Time
-//go:generate go run github.com/vektah/dataloaden SceneLastPlayedLoader int *time.Time
+//go:generate go run github.com/vektah/dataloaden SceneOHistoryLoader int []Time
+//go:generate go run github.com/vektah/dataloaden ScenePlayHistoryLoader int []Time
+//go:generate go run github.com/vektah/dataloaden SceneLastPlayedLoader int *Time
 package loaders
 
 import (
@@ -29,6 +29,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 )
+
+// Work around bug in dataloaden https://github.com/vektah/dataloaden/issues/54
+type Time struct {
+    time.Time
+}
 
 type contextKey struct{ name string }
 
