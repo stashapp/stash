@@ -247,8 +247,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
-    Mousetrap.bind("c c", () => onGenerateScreenshot(getPlayerPosition()));
-    Mousetrap.bind("c d", () => onGenerateScreenshot());
+    Mousetrap.bind("c c", () => { onGenerateScreenshot(getPlayerPosition()); });
+    Mousetrap.bind("c d", () => { onGenerateScreenshot(); });
 
     return () => {
       Mousetrap.unbind("a");
