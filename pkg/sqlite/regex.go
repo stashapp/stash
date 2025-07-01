@@ -64,10 +64,11 @@ func regexpCaptureFn(src, re string, n int) (string, error) {
 		}
 		regexCache.Add(re, compiled)
 	}
-	if n == 0 {
-		return compiled.FindString(src), nil
+	matches := compiled.FindStringSubmatch(src)
+	if len(matches) > n {
+		return matches[n], nil
 	}
-	return compiled.FindAllString(src, 0)[n+1], nil
+	return "", nil
 }
 
 // Replaces all matching substrings with the replacement string.
