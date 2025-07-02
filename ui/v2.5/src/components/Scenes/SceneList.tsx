@@ -769,7 +769,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => clearAllCriteria()}
+                onRemoveAllCriterion={() => clearAllCriteria(true)}
                 onEditSearchTerm={() => {
                   setShowSidebar(true);
                   setSearchFocus(true);
