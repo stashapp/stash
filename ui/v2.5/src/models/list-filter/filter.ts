@@ -476,9 +476,11 @@ export class ListFilterModel {
     return this.setCriteria(criteria);
   }
 
-  public clearCriteria() {
+  public clearCriteria(clearSearchTerm = false) {
     const ret = this.clone();
-    ret.searchTerm = "";
+    if (clearSearchTerm) {
+      ret.searchTerm = "";
+    }
     ret.criteria = [];
     ret.currentPage = 1;
     return ret;
