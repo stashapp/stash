@@ -1020,13 +1020,13 @@ input[type="range"].blue-slider {
     &:last-child {
       flex-shrink: 0;
       justify-content: flex-end;
-      margin-left: auto;
     }
   }
 }
 
 .scene-list-toolbar {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  gap: 1rem;
   // offset the main padding
   margin-top: -0.5rem;
   padding-bottom: 0.5rem;
@@ -1062,6 +1062,35 @@ input[type="range"].blue-slider {
       display: none;
     }
   }
+
+  > div:first-child {
+    border: 1px solid $secondary;
+    border-radius: 0.25rem;
+    flex-grow: 1;
+    overflow-x: hidden;
+
+    .filter-button {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  .filter-tags {
+    flex-grow: 1;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    width: calc(100% - 35px - 0.5rem);
+
+    @include media-breakpoint-down(xs) {
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .tag-item {
+      white-space: nowrap;
+    }
+  }
 }
 
 .scene-list-header {
@@ -1091,4 +1120,10 @@ input[type="range"].blue-slider {
   @include media-breakpoint-down(xs) {
     top: 0;
   }
+}
+
+#more-criteria-popover {
+  box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
+  max-width: 400px;
+  padding: 0.25rem;
 }

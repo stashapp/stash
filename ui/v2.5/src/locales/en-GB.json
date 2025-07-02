@@ -1317,7 +1317,8 @@
     "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
-    "update_filter": "Update Filter"
+    "update_filter": "Update Filter",
+    "more_filter_criteria": "+{count} more"
   },
   "second": "Second",
   "seconds": "Seconds",
