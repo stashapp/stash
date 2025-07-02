@@ -1122,6 +1122,8 @@ input[type="range"].blue-slider {
   }
 }
 
-#more-criteria-tooltip .tooltip-inner {
+#more-criteria-popover {
+  box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
   max-width: 400px;
+  padding: 0.25rem;
 }

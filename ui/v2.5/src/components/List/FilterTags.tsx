@@ -5,7 +5,7 @@ import React, {
   useReducer,
   useRef,
 } from "react";
-import { Badge, BadgeProps, Button, Overlay, Tooltip } from "react-bootstrap";
+import { Badge, BadgeProps, Button, Overlay, Popover } from "react-bootstrap";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
@@ -69,14 +69,15 @@ const MoreFilterTags: React.FC<{
   return (
     <>
       <Overlay target={target.current} placement="bottom" show={showTooltip}>
-        <Tooltip
-          id="more-criteria-tooltip"
+        <Popover
+          id="more-criteria-popover"
+          className="hover-popover-content"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onClick={handleMouseLeave}
         >
           {tags}
-        </Tooltip>
+        </Popover>
       </Overlay>
       <Badge
         ref={target}
