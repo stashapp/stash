@@ -478,8 +478,16 @@ export class ListFilterModel {
 
   public clearCriteria() {
     const ret = this.clone();
+    ret.searchTerm = "";
     ret.criteria = [];
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public clearSearchTerm() {
+    const ret = this.clone();
+    ret.searchTerm = "";
+    ret.currentPage = 1; // reset to first page
     return ret;
   }
 
