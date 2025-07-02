@@ -63,6 +63,7 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
+import useFocus from "src/utils/focus";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -240,6 +241,7 @@ const SidebarContent: React.FC<{
   onClose?: () => void;
   showEditFilter: (editingCriterion?: string) => void;
   count?: number;
+  focus?: ReturnType<typeof useFocus>;
 }> = ({
   filter,
   setFilter,
@@ -248,6 +250,7 @@ const SidebarContent: React.FC<{
   sidebarOpen,
   onClose,
   count,
+  focus,
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
@@ -260,6 +263,7 @@ const SidebarContent: React.FC<{
         filter={filter}
         setFilter={setFilter}
         view={view}
+        focus={focus}
       />
 
       <ScenesFilterSidebarSections>
@@ -317,6 +321,7 @@ interface IOperations {
 }
 
 const ListToolbarContent: React.FC<{
+  searchTerm: string;
   criteria: Criterion[];
   items: GQL.SlimSceneDataFragment[];
   selectedIds: Set<string>;
@@ -325,6 +330,8 @@ const ListToolbarContent: React.FC<{
   onEditCriterion: (c: Criterion) => void;
   onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
   onRemoveAllCriterion: () => void;
+  onEditSearchTerm: () => void;
+  onRemoveSearchTerm: () => void;
   onSelectAll: () => void;
   onSelectNone: () => void;
   onEdit: () => void;
@@ -332,6 +339,7 @@ const ListToolbarContent: React.FC<{
   onPlay: () => void;
   onCreateNew: () => void;
 }> = ({
+  searchTerm,
   criteria,
   items,
   selectedIds,
@@ -340,6 +348,8 @@ const ListToolbarContent: React.FC<{
   onEditCriterion,
   onRemoveCriterion,
   onRemoveAllCriterion,
+  onEditSearchTerm,
+  onRemoveSearchTerm,
   onSelectAll,
   onSelectNone,
   onEdit,
@@ -361,10 +371,13 @@ const ListToolbarContent: React.FC<{
             title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
           />
           <FilterTags
+            searchTerm={searchTerm}
             criteria={criteria}
             onEditCriterion={onEditCriterion}
             onRemoveCriterion={onRemoveCriterion}
             onRemoveAll={onRemoveAllCriterion}
+            onEditSearchTerm={onEditSearchTerm}
+            onRemoveSearchTerm={onRemoveSearchTerm}
             truncateOnOverflow
           />
         </div>
@@ -510,6 +523,9 @@ interface IFilteredScenes {
 export const FilteredSceneList = (props: IFilteredScenes) => {
   const intl = useIntl();
   const history = useHistory();
+
+  const searchFocus = useFocus();
+  const [, setSearchFocus] = searchFocus;
 
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
@@ -735,6 +751,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               sidebarOpen={showSidebar}
               onClose={() => setShowSidebar(false)}
               count={cachedResult.loading ? undefined : totalCount}
+              focus={searchFocus}
             />
           </Sidebar>
           <div>
@@ -744,6 +761,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               })}
             >
               <ListToolbarContent
+                searchTerm={filter.searchTerm}
                 criteria={filter.criteria}
                 items={items}
                 selectedIds={selectedIds}
@@ -752,6 +770,11 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
                 onRemoveAllCriterion={() => clearAllCriteria()}
+                onEditSearchTerm={() => {
+                  setShowSidebar(true);
+                  setSearchFocus(true);
+                }}
+                onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
                 onSelectAll={() => onSelectAll()}
                 onSelectNone={() => onSelectNone()}
                 onEdit={onEdit}
