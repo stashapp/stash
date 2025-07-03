@@ -463,10 +463,29 @@ export class ListFilterModel {
     };
   }
 
+  public criteriaFor(type: CriterionType) {
+    return this.criteria.filter((c) => c.criterionOption.type === type);
+  }
+
+  public replaceCriteria(type: CriterionType, newCriteria: Criterion[]) {
+    const criteria = [
+      ...this.criteria.filter((c) => c.criterionOption.type !== type),
+      ...newCriteria,
+    ];
+
+    return this.setCriteria(criteria);
+  }
+
   public clearCriteria() {
     const ret = this.clone();
     ret.criteria = [];
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public setCriteria(criteria: Criterion[]) {
+    const ret = this.clone();
+    ret.criteria = criteria;
     return ret;
   }
 
@@ -502,6 +521,34 @@ export class ListFilterModel {
   public setPageSize(pageSize: number) {
     const ret = this.clone();
     ret.itemsPerPage = pageSize;
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public setSortBy(sortBy: string | undefined) {
+    const ret = this.clone();
+    ret.sortBy = sortBy;
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public toggleSortDirection() {
+    const ret = this.clone();
+
+    if (ret.sortDirection === SortDirectionEnum.Asc) {
+      ret.sortDirection = SortDirectionEnum.Desc;
+    } else {
+      ret.sortDirection = SortDirectionEnum.Asc;
+    }
+
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public reshuffleRandomSort() {
+    const ret = this.clone();
+    ret.currentPage = 1;
+    ret.randomSeed = -1;
     return ret;
   }
 

@@ -20,6 +20,7 @@ import { after, before, components, instead, RegisterComponent } from "./patch";
 import { useSettings } from "./components/Settings/context";
 import { useInteractive } from "./hooks/Interactive/context";
 import InteractiveUtils from "./hooks/Interactive/utils";
+import { useLightbox, useGalleryLightbox } from "./hooks/Lightbox/hooks";
 
 // due to code splitting, some components may not have been loaded when a plugin
 // page is loaded. This function will load all components passed to it.
@@ -163,6 +164,8 @@ export const PluginApi = {
     useToast,
     useSettings,
     useInteractive,
+    useLightbox,
+    useGalleryLightbox,
   },
   patch: {
     // intercept the arguments of supported functions

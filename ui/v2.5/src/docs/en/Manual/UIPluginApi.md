@@ -149,6 +149,8 @@ InteractiveUtils.interactiveClientProvider = (
 ### `hooks`
 
 This namespace provides access to the following core utility hooks:
+- `useGalleryLightbox`
+- `useLightbox`
 - `useSpriteInfo`
 - `useToast`
 
@@ -209,13 +211,16 @@ Returns `void`.
 
 #### Patchable components and functions
 
+- `AlertModal`
 - `App`
+- `BackgroundImage`
 - `BooleanSetting`
 - `ChangeButtonSetting`
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
 - `CustomFieldInput`
+- `CustomFields`
 - `DateInput`
 - `DetailImage`
 - `ExternalLinkButtons`
@@ -230,6 +235,9 @@ Returns `void`.
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `GroupIDSelect`
+- `GroupSelect`
+- `GroupSelect.sort`
 - `HeaderImage`
 - `HoverPopover`
 - `Icon`
@@ -237,11 +245,12 @@ Returns `void`.
 - `ImageInput`
 - `LightboxLink`
 - `LoadingIndicator`
+- `MainNavBar.MenuItems`
+- `MainNavBar.UtilityItems`
 - `ModalSetting`
-- `GroupIDSelect`
-- `GroupSelect`
-- `GroupSelect.sort`
 - `NumberSetting`
+- `Pagination`
+- `PaginationIndex`
 - `PerformerAppearsWithPanel`
 - `PerformerCard`
 - `PerformerCard.Details`
@@ -251,36 +260,43 @@ Returns `void`.
 - `PerformerCard.Title`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
-- `PerformerIDSelect`
-- `PerformerPage`
-- `PerformerSelect`
-- `PerformerSelect.sort`
 - `PerformerGalleriesPanel`
 - `PerformerGroupsPanel`
 - `PerformerHeaderImage`
+- `PerformerIDSelect`
 - `PerformerImagesPanel`
+- `PerformerPage`
 - `PerformerScenesPanel`
+- `PerformerSelect`
+- `PerformerSelect.sort`
 - `PluginRoutes`
+- `PluginSettings`
+- `RatingNumber`
+- `RatingStars`
+- `RatingSystem`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
+- `SceneFileInfoPanel`
 - `SceneIDSelect`
 - `ScenePage`
-- `ScenePage.Tabs`
 - `ScenePage.TabContent`
+- `ScenePage.Tabs`
 - `ScenePlayer`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
 - `Setting`
+- `SettingGroup`
 - `SettingModal`
-- `StringSetting`
 - `StringListSetting`
+- `StringSetting`
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
+- `SweatDrops`
 - `TabTitleCounter`
 - `TagCard`
 - `TagCard.Details`
@@ -288,14 +304,11 @@ Returns `void`.
 - `TagCard.Overlays`
 - `TagCard.Popovers`
 - `TagCard.Title`
-- `TagLink`
-- `TabTitleCounter`
 - `TagIDSelect`
+- `TagLink`
 - `TagSelect`
 - `TagSelect.sort`
-- `PluginSettings`
-- `Setting`
-- `SettingGroup`
+- `TruncatedText`
 
 ### `PluginApi.Event`
 
