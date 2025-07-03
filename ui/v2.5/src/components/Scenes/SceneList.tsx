@@ -564,6 +564,25 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     setShowSidebar,
   });
 
+  useEffect(() => {
+    Mousetrap.bind("e", () => {
+      if (hasSelection) {
+        onEdit?.();
+      }
+    });
+
+    Mousetrap.bind("d d", () => {
+      if (hasSelection) {
+        onDelete?.();
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
   const onCloseEditDelete = useCloseEditDelete({
     closeModal,
     onSelectNone,
