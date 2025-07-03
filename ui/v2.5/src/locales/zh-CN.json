@@ -144,8 +144,12 @@
         "remove_from_containing_group": "从集合中移除",
         "sidebar": {
             "close": "关闭侧边栏",
-            "open": "打开侧边栏"
-        }
+            "open": "打开侧边栏",
+            "toggle": "切换侧边栏"
+        },
+        "play": "播放",
+        "show_results": "显示结果",
+        "show_count_results": "显示{count}个结果"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -578,7 +582,9 @@
                 "whitespace_chars": "空白字符",
                 "whitespace_chars_desc": "这些字符在标题中会替换为空白字符"
             },
-            "scene_tools": "短片工具"
+            "scene_tools": "短片工具",
+            "heading": "工具",
+            "graphql_playground": "GraphQL试验场"
         },
         "ui": {
             "abbreviate_counters": {
@@ -1224,7 +1230,8 @@
         "edit_filter": "编辑筛选器",
         "name": "过滤",
         "saved_filters": "保存过滤器",
-        "update_filter": "更新过滤器"
+        "update_filter": "更新过滤器",
+        "more_filter_criteria": "+{count}个更多"
     },
     "second": "秒",
     "seconds": "秒",
