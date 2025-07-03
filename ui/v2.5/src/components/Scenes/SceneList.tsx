@@ -670,6 +670,16 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       className: "create-new-item",
     },
     {
+      text: intl.formatMessage({ id: "actions.select_all" }),
+      onClick: () => onSelectAll(),
+      isDisplayed: () => totalCount > 0,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.select_none" }),
+      onClick: () => onSelectNone(),
+      isDisplayed: () => hasSelection,
+    },
+    {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
       isDisplayed: () => totalCount > 1,
