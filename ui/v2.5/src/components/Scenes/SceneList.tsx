@@ -254,6 +254,8 @@ const SidebarContent: React.FC<{
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
+  const hideStudios = view === View.StudioScenes;
+
   return (
     <>
       <FilteredSidebarHeader
@@ -265,14 +267,16 @@ const SidebarContent: React.FC<{
       />
 
       <ScenesFilterSidebarSections>
-        <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          data-type={StudiosCriterionOption.type}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
+        {!hideStudios && (
+          <SidebarStudiosFilter
+            title={<FormattedMessage id="studios" />}
+            data-type={StudiosCriterionOption.type}
+            option={StudiosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+        )}
         <SidebarPerformersFilter
           title={<FormattedMessage id="performers" />}
           data-type={PerformersCriterionOption.type}
