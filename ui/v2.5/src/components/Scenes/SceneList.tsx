@@ -235,6 +235,7 @@ const ScenesFilterSidebarSections = PatchContainerComponent(
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   sidebarOpen: boolean;
   onClose?: () => void;
@@ -243,6 +244,7 @@ const SidebarContent: React.FC<{
 }> = ({
   filter,
   setFilter,
+  filterHook,
   view,
   showEditFilter,
   sidebarOpen,
@@ -269,6 +271,7 @@ const SidebarContent: React.FC<{
           option={StudiosCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarPerformersFilter
           title={<FormattedMessage id="performers" />}
@@ -276,6 +279,7 @@ const SidebarContent: React.FC<{
           option={PerformersCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
@@ -283,6 +287,7 @@ const SidebarContent: React.FC<{
           option={TagsCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
@@ -730,6 +735,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             <SidebarContent
               filter={filter}
               setFilter={setFilter}
+              filterHook={filterHook}
               showEditFilter={showEditFilter}
               view={view}
               sidebarOpen={showSidebar}
