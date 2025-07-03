@@ -1236,7 +1236,8 @@
         "edit_filter": "Modifier le filtre",
         "name": "Filtre",
         "saved_filters": "Filtres sauvegardés",
-        "update_filter": "Filtre actualisé"
+        "update_filter": "Filtre actualisé",
+        "more_filter_criteria": "+{count} de plus"
     },
     "second": "Deuxième",
     "seconds": "Secondes",
