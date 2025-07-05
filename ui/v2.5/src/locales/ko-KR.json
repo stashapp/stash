@@ -1233,7 +1233,8 @@
         "edit_filter": "필터 수정",
         "name": "필터",
         "saved_filters": "저장된 필터",
-        "update_filter": "필터 업데이트"
+        "update_filter": "필터 업데이트",
+        "more_filter_criteria": "외 {count} 개"
     },
     "second": "초",
     "seconds": "초",
