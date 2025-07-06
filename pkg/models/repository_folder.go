@@ -17,6 +17,10 @@ type FolderFinder interface {
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
 }
 
+type FolderQueryer interface {
+	Query(ctx context.Context, options FolderQueryOptions) (*FolderQueryResult, error)
+}
+
 type FolderCounter interface {
 	CountAllInPaths(ctx context.Context, p []string) (int, error)
 }
@@ -48,6 +52,7 @@ type FolderFinderDestroyer interface {
 // FolderReader provides all methods to read folders.
 type FolderReader interface {
 	FolderFinder
+	FolderQueryer
 	FolderCounter
 }
 

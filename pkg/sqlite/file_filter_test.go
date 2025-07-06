@@ -18,7 +18,7 @@ func TestFileQuery(t *testing.T) {
 		findFilter  *models.FindFilterType
 		filter      *models.FileFilterType
 		includeIdxs []int
-		includeIDs  []int
+		includeIDs  []models.FileID
 		excludeIdxs []int
 		wantErr     bool
 	}{
@@ -52,7 +52,7 @@ func TestFileQuery(t *testing.T) {
 					Modifier: models.CriterionModifierIncludes,
 				},
 			},
-			includeIDs:  []int{int(sceneFileIDs[sceneIdxWithGroup])},
+			includeIDs:  []models.FileID{sceneFileIDs[sceneIdxWithGroup]},
 			excludeIdxs: []int{fileIdxStartImageFiles},
 		},
 		{
@@ -65,7 +65,20 @@ func TestFileQuery(t *testing.T) {
 					Modifier: models.CriterionModifierIncludes,
 				},
 			},
-			includeIDs:  []int{int(sceneFileIDs[sceneIdxWithGroup])},
+			includeIDs:  []models.FileID{sceneFileIDs[sceneIdxWithGroup]},
+			excludeIdxs: []int{fileIdxStartImageFiles},
+		},
+		{
+			name: "zip file",
+			filter: &models.FileFilterType{
+				ZipFile: &models.MultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(int(fileIDs[fileIdxZip])),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			includeIDs:  []models.FileID{fileIDs[fileIdxInZip]},
 			excludeIdxs: []int{fileIdxStartImageFiles},
 		},
 		// TODO - add more tests for other file filters
@@ -86,15 +99,18 @@ func TestFileQuery(t *testing.T) {
 				return
 			}
 
-			include := indexesToIDs(sceneIDs, tt.includeIdxs)
-			include = append(include, tt.includeIDs...)
-			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+			include := indexesToIDPtrs(fileIDs, tt.includeIdxs)
+			for _, id := range tt.includeIDs {
+				v := id
+				include = append(include, &v)
+			}
+			exclude := indexesToIDPtrs(fileIDs, tt.excludeIdxs)
 
 			for _, i := range include {
-				assert.Contains(results.IDs, models.FileID(i))
+				assert.Contains(results.IDs, models.FileID(*i))
 			}
 			for _, e := range exclude {
-				assert.NotContains(results.IDs, models.FileID(e))
+				assert.NotContains(results.IDs, models.FileID(*e))
 			}
 		})
 	}

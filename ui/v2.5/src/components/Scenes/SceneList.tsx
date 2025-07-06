@@ -564,6 +564,25 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     setShowSidebar,
   });
 
+  useEffect(() => {
+    Mousetrap.bind("e", () => {
+      if (hasSelection) {
+        onEdit?.();
+      }
+    });
+
+    Mousetrap.bind("d d", () => {
+      if (hasSelection) {
+        onDelete?.();
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
   const onCloseEditDelete = useCloseEditDelete({
     closeModal,
     onSelectNone,
@@ -668,6 +687,16 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       onClick: () => onCreateNew(),
       isDisplayed: () => !hasSelection,
       className: "create-new-item",
+    },
+    {
+      text: intl.formatMessage({ id: "actions.select_all" }),
+      onClick: () => onSelectAll(),
+      isDisplayed: () => totalCount > 0,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.select_none" }),
+      onClick: () => onSelectNone(),
+      isDisplayed: () => hasSelection,
     },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),

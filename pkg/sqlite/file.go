@@ -321,7 +321,7 @@ type FileStore struct {
 func NewFileStore() *FileStore {
 	return &FileStore{
 		repository: repository{
-			tableName: sceneTable,
+			tableName: fileTable,
 			idColumn:  idColumn,
 		},
 

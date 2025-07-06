@@ -3,11 +3,11 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { getCountryByISO } from "src/utils/country";
 import { StringCriterion, StringCriterionOption } from "./criterion";
 
-export const CountryCriterionOption = new StringCriterionOption(
-  "country",
-  "country",
-  () => new CountryCriterion()
-);
+export const CountryCriterionOption = new StringCriterionOption({
+  messageID: "country",
+  type: "country",
+  makeCriterion: () => new CountryCriterion(),
+});
 
 export class CountryCriterion extends StringCriterion {
   constructor() {

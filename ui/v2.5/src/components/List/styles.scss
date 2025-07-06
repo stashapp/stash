@@ -989,12 +989,18 @@ input[type="range"].zoom-slider {
 .pagination-footer {
   background-color: transparent;
   bottom: $navbar-height;
-  padding: 0.5rem 1rem;
+  margin: auto;
+  padding: 0.5rem 1rem 0.75rem;
   position: sticky;
+  width: fit-content;
   z-index: 10;
 
   @include media-breakpoint-up(sm) {
     bottom: 0;
+  }
+
+  .pagination.btn-group {
+    box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
   }
 
   .pagination {
