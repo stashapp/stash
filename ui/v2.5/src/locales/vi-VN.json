@@ -134,14 +134,22 @@
             "clean_confirm_message": "Bạn có chắc chắn muốn làm sạch không? Thao tác này sẽ xóa thông tin cơ sở dữ liệu và nội dung đã tạo cho tất cả các cảnh và bộ sưu tập không còn tồn tại trong hệ thống tệp.",
             "import_warning": "Bạn có chắc chắn muốn nhập không? Thao tác này sẽ xóa cơ sở dữ liệu và nhập lại từ siêu dữ liệu đã xuất của bạn."
         },
-        "temp_disable": "Tạm thời vô hiệu hóa…",
-        "temp_enable": "Tạm thời kích hoạt…",
+        "temp_disable": "Vô hiệu hóa tạm thời…",
+        "temp_enable": "Kích hoạt tạm thời…",
         "unset": "Bỏ thiết lập",
-        "use_default": "Dùng mặc định",
+        "use_default": "Dùng thiết lập mặc định",
         "view_history": "Xem lịch sử",
         "view_random": "Xem ngẫu nhiên",
         "set_front_image": "Ảnh trước…",
-        "select_entity": "Chọn {entityType}"
+        "select_entity": "Chọn {entityType}",
+        "play": "Phát",
+        "show_results": "Hiển thị kết quả",
+        "show_count_results": "Hiển thị {count} kết quả",
+        "sidebar": {
+            "toggle": "Bật thanh bên",
+            "open": "Mở thanh bên",
+            "close": "Đóng thanh bên"
+        }
     },
     "actions_name": "Hành động",
     "age": "Tuổi",
@@ -155,37 +163,37 @@
     "between_and": "và",
     "birth_year": "Năm sinh",
     "birthdate": "Ngày sinh",
-    "bitrate": "Tốc độ bit",
+    "bitrate": "Bit Rate",
     "blobs_storage_type": {
         "database": "Cơ sở dữ liệu",
-        "filesystem": "Files hệ thống"
+        "filesystem": "Tập tin hệ thống"
     },
     "captions": "Tiêu đề",
     "career_length": "Tuổi nghề",
-    "chapters": "Chapters",
+    "chapters": "Chương",
     "circumcised_types": {
         "CUT": "Cắt",
         "UNCUT": "Không cắt"
     },
-    "circumcised": "Cắt bao quy đầu",
+    "circumcised": "Đã cắt bao quy đầu",
     "component_tagger": {
         "config": {
             "blacklist_desc": "Các mục trong danh sách đen sẽ bị loại trừ khỏi các truy vấn. Lưu ý rằng chúng là các biểu thức chính quy và không phân biệt chữ hoa chữ thường. Một số ký tự cần phải được thoát bằng dấu gạch chéo ngược: {chars_require_escape}",
             "blacklist_label": "Danh sách đen",
-            "mark_organized_desc": "Ngay lập tức đánh dấu cảnh là Đã tổ chức sau khi nhấn nút Lưu.",
+            "mark_organized_desc": "Ngay lập tức đánh dấu cảnh là Đã sắp xếp sau khi nhấn nút Lưu.",
             "active_instance": "Phiên bản stash-box đang hoạt động:",
-            "mark_organized_label": "Đánh dấu là Đã tổ chức khi lưu.",
+            "mark_organized_label": "Đánh dấu là Đã sắp xếp khi lưu.",
             "query_mode_auto": "Tự động",
-            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp.",
+            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp",
             "query_mode_filename": "Tên tệp tin",
-            "query_mode_filename_desc": "Chỉ được dùng tên tệp tin",
+            "query_mode_filename_desc": "Chỉ dùng tên tệp tin",
             "query_mode_label": "Chế độ truy vấn",
             "query_mode_path": "Đường dẫn",
             "query_mode_path_desc": "Dùng toàn bộ đường dẫn tệp tin",
             "set_cover_desc": "Thay thế bìa nền nếu đã được tìm thấy.",
             "set_cover_label": "Đặt ảnh bìa nền",
             "set_tag_label": "Đặt các thẻ",
-            "query_mode_dir_desc": "Chỉ được dùng thư mục cha của file video",
+            "query_mode_dir_desc": "Chỉ dùng thư mục chính của file video",
             "set_tag_desc": "Đính kèm các thẻ vào cảnh, bằng cách ghi đè hoặc ghép với các thẻ có sẵn trên cảnh.",
             "source": "Nguồn",
             "errors": {
@@ -207,7 +215,7 @@
             "match_failed_no_result": "Không có kết quả được tìm thấy",
             "match_success": "Phân cảnh đã được gán thẻ thành công",
             "phash_matches": "Khớp với {count} PHashes",
-            "duration_off": "Thời gian tắt ít nhất cũng cần {number} giây",
+            "duration_off": "Thời gian tắt ít nhất {number} giây",
             "fp_found": "{fpCount, plural, =0 {Không có dấu vết trùng khớp mới được tìm thấy} other {# dấu vết trùng khớp mới đã được tìm thấy}}",
             "unnamed": "Chưa được đặt tên"
         },
@@ -216,20 +224,20 @@
         "verb_scrape_all": "Loại bỏ tất cả",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} phân cảnh không trùng khớp",
-        "verb_submit_fp": "Gửi {fpCount, plural, one{# Dấu vân tay} other{# Các dấu vân tay}}"
+        "verb_submit_fp": "Gửi {fpCount, plural, one{# Fingerprint} other{# Fingerprint}}"
     },
     "config": {
         "about": {
             "new_version_notice": "[MỚI]",
             "build_hash": "Mã băm bản xây dựng:",
-            "check_for_new_version": "Kiểm tra bản mới",
-            "latest_version": "Bản mới nhất",
-            "latest_version_build_hash": "Mã băm bản dựng mới nhất:",
+            "check_for_new_version": "Kiểm tra phiên bản mới",
+            "latest_version": "Phiên bản mới nhất",
+            "latest_version_build_hash": "Mã bản dựng mới nhất:",
             "release_date": "Ngày phát hành:",
             "stash_discord": "Tham gia vào kênh {url} của chúng tôi",
             "stash_open_collective": "Giúp đỡ chúng tôi qua {url}",
             "version": "Phiên bản",
-            "build_time": "thời điểm tạo:",
+            "build_time": "Thời điểm tạo:",
             "stash_wiki": "Trang {url} của Stash",
             "stash_home": "Trang chủ Stash tại {url}"
         },
@@ -329,12 +337,12 @@
                     "description": "Tải FFmpeg vào thư mục cấu hình và xóa đường dẫn ffmpeg và ffprobe hiện tại để sử dụng từ thư mục cấu hình."
                 },
                 "ffmpeg_path": {
-                    "heading": "Đường dẫn tệp thực thi FFmpeg",
-                    "description": "Đường dẫn đến tệp thực thi ffmpeg (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffmpeg từ biến môi trường $PATH, thư mục cấu hình hoặc từ $HOME/.stash"
+                    "heading": "Đường dẫn tệp FFmpeg",
+                    "description": "Đường dẫn đến tệp ffmpeg (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffmpeg từ biến môi trường $PATH, thư mục cấu hình, hoặc từ $HOME/.stash"
                 },
                 "ffprobe_path": {
-                    "description": "Đường dẫn đến tệp thực thi ffprobe (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffprobe từ biến môi trường $PATH, thư mục cấu hình hoặc từ $HOME/.stash",
-                    "heading": "Đường dẫn tệp thực thi FFprobe"
+                    "description": "Đường dẫn đến tệp ffprobe (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffprobe từ biến môi trường $PATH, thư mục cấu hình hoặc từ $HOME/.stash",
+                    "heading": "Đường dẫn tệp FFprobe"
                 },
                 "hardware_acceleration": {
                     "desc": "Sử dụng phần cứng hiện có để mã hóa video trong quá trình chuyển mã trực tiếp.",
@@ -390,7 +398,7 @@
             },
             "preview_generation": "Tạo bản xem trước",
             "python_path": {
-                "description": "Đường dẫn đến tệp thực thi Python (không chỉ là thư mục). Được sử dụng cho các trình quét (scraper) và plugin viết bằng script. Nếu để trống, hệ thống sẽ tự tìm Python từ môi trường.",
+                "description": "Đường dẫn đến tệp Python (không chỉ là thư mục). Được sử dụng cho các trình quét (scraper) và plugin viết bằng script. Nếu để trống, hệ thống sẽ tự tìm Python từ môi trường",
                 "heading": "Đường dẫn tệp thực thi Python"
             },
             "scrapers_path": {
@@ -421,7 +429,7 @@
             "api_key": "API key",
             "endpoint": "Điểm cuối (Endpoint)",
             "graphql_endpoint": "Điểm cuối GraphQL",
-            "description": "Stash-box hỗ trợ gán tag tự động cho cảnh và diễn viên dựa trên dấu vân tay (fingerprints) và tên tệp.\nEndpoint và API key có thể được tìm thấy trong trang tài khoản của bạn trên instance stash-box. Tên định danh là bắt buộc nếu bạn thêm nhiều hơn một instance.",
+            "description": "Stash-box hỗ trợ gán tag tự động cho cảnh và diễn viên dựa trên dấu vân tay (fingerprints) và tên tệp.\nEndpoint và khóa API có thể được tìm thấy trong trang tài khoản của bạn trên phiên hoạt động của stash-box. Tên định danh là bắt buộc nếu bạn thêm nhiều hơn một phiên hoạt động.",
             "max_requests_per_minute": "Số lượng yêu cầu tối đa mỗi phút",
             "max_requests_per_minute_description": "Sử dụng giá trị mặc định là {defaultValue} nếu đặt là 0"
         },
@@ -437,21 +445,21 @@
             },
             "backing_up_database": "Sao lưu dữ liệu",
             "backup_and_download": "Thực hiện sao lưu cơ sở dữ liệu và tải xuống tệp kết quả.",
-            "backup_database": "Thực hiện sao lưu cơ sở dữ liệu vào thư mục sao lưu (backups), với định dạng tên tệp là {filename_format}.",
+            "backup_database": "Thực hiện sao lưu cơ sở dữ liệu vào thư mục sao lưu (backups), với định dạng tên tệp là {filename_format}",
             "cleanup_desc": "Kiểm tra các tệp bị thiếu và xóa chúng khỏi cơ sở dữ liệu. Đây là hành động có tính phá hủy.",
             "clean_generated": {
                 "blob_files": "Tệp nhị phân (blob)",
                 "description": "Xóa các tệp đã được tạo nhưng không còn bản ghi tương ứng trong cơ sở dữ liệu.",
                 "image_thumbnails": "Ảnh thu nhỏ",
-                "markers": "Ảnh xem trước điểm đánh dấu",
-                "previews": "Clip xem trước của Scene",
-                "previews_desc": "Ảnh và đoạn xem trước cảnh quay",
-                "sprites": "Bản ghép khung hình của Scene",
-                "transcodes": "Bản video đã chuyển mã của Scene",
+                "markers": "Xem trước điểm đánh dấu",
+                "previews": "Xem trước của cảnh",
+                "previews_desc": "Ảnh và đoạn xem trước cảnh",
+                "sprites": "Bản ghép khung hình của cảnh",
+                "transcodes": "Bản video đã chuyển mã của cảnh",
                 "image_thumbnails_desc": "Ảnh thu nhỏ và đoạn xem trước"
             },
             "data_management": "Quản lý dữ liệu",
-            "dont_include_file_extension_as_part_of_the_title": "Không bao gồm phần đuôi tệp (file extension) trong tiêu đề.",
+            "dont_include_file_extension_as_part_of_the_title": "Không bao gồm phần đuôi tệp trong tiêu đề",
             "empty_queue": "Hiện không có tác vụ nào đang chạy.",
             "generate": {
                 "generating_from_paths": "Đang tạo dữ liệu cho các cảnh từ những đường dẫn sau",
@@ -560,7 +568,7 @@
             "excluded_tag_patterns_desc": "Biểu thức chính quy của tên tag cần loại trừ khỏi kết quả quét dữ liệu"
         },
         "tools": {
-            "scene_duplicate_checker": "Kiểm Tra Cảnh Quay Bị Trùng",
+            "scene_duplicate_checker": "Kiểm tra cảnh quay bị trùng",
             "scene_filename_parser": {
                 "add_field": "Thêm trường dữ liệu",
                 "capitalize_title": "Tự động viết hoa chữ cái đầu của mỗi từ trong tiêu đề",
@@ -576,7 +584,9 @@
                 "select_parser_recipe": "Chọn công thức phân tích",
                 "whitespace_chars_desc": "Các ký tự này sẽ được thay thế bằng khoảng trắng trong tiêu đề"
             },
-            "scene_tools": "Công cụ xử lý cảnh quay"
+            "scene_tools": "Công cụ xử lý cảnh quay",
+            "graphql_playground": "Công cụ GraphGL",
+            "heading": "Công cụ"
         },
         "ui": {
             "abbreviate_counters": {
@@ -728,7 +738,7 @@
                     "always_start_from_beginning": "Luôn phát video từ đầu",
                     "auto_start_video": "Tự động phát video"
                 },
-                "heading": "Trình phát Cảnh Quay"
+                "heading": "Trình phát cảnh quay"
             },
             "scene_wall": {
                 "options": {
@@ -833,7 +843,10 @@
             "page_header": "Trang {page} / {total}",
             "reset_zoom_on_nav": "Đặt lại mức thu phóng khi đổi ảnh",
             "scroll_mode": {
-                "description": "Giữ phím Shift để tạm thời dùng chế độ khác."
+                "description": "Giữ phím Shift để tạm thời dùng chế độ khác.",
+                "pan_y": "Pan (chiều) Y",
+                "label": "Chế độ cuộn",
+                "zoom": "Phóng"
             }
         },
         "clear_o_history_confirm": "Bạn có chắc chắn muốn xóa lịch sử O không?",
@@ -857,7 +870,51 @@
         "delete_alert": "Các {count, plural, one {{singularEntity}} other {{pluralEntity}}} sau đây sẽ bị xóa vĩnh viễn:",
         "delete_confirm": "Bạn có chắc chắn muốn xóa {entityName} không?",
         "delete_entity_desc": "{count, plural, one {Bạn có chắc chắn muốn xóa {singularEntity} này không? Trừ khi tệp cũng bị xóa, {singularEntity} này sẽ được thêm lại khi quá trình quét được thực hiện.} other {Bạn có chắc chắn muốn xóa {pluralEntity} này không? Trừ khi các tệp cũng bị xóa, {pluralEntity} này sẽ được thêm lại khi quá trình quét được thực hiện.}}",
-        "delete_object_overflow": "...và {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} khác."
+        "delete_object_overflow": "...và {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} khác.",
+        "overwrite_filter_warning": "Bộ lọc đã lưu \"{entityName}\" sẽ bị ghi đè.",
+        "scene_gen": {
+            "clip_previews": "Xem trước Hình ảnh từ Clip",
+            "marker_screenshots": "Ảnh màn hình Điểm đánh dấu",
+            "marker_screenshots_tooltip": "Điểm đánh dấu ảnh tĩnh JPG",
+            "overwrite": "Ghi đè các tệp tin có sẫn",
+            "phash": "Băm (hash) nhận thức",
+            "preview_generation_options": "Lựa chọn Tạo ra Bản xem trước",
+            "covers": "Bìa cảnh quay",
+            "force_transcodes": "Ép chuyển mã",
+            "image_previews": "Xem trước Hình ảnh Động",
+            "image_thumbnails": "Hình thu nhỏ của Ảnh",
+            "interactive_heatmap_speed": "Tạo bản đồ nhiệt và tốc độ cho các cảnh tương tác",
+            "marker_image_previews": "Xem trước Điểm đánh dấu Ảnh động",
+            "marker_image_previews_tooltip": "Ngoài ra sẽ tạo nên những hình xem trước động (webp), chỉ bắt buộc khi Loại Cảnh/Dấu Tường Xem Trước được thành Ảnh Động. Khi lướt nó sử dụng ít CPU hơn video xem trước, nhưng khi tạo nên thì đi kèm với chúng và là những file lớn hơn.",
+            "markers": "Xem trước Điểm đánh dấu",
+            "markers_tooltip": "Video 20 giây bắt đầu tại điểm thời gian đã cho sẫn.",
+            "override_preview_generation_options": "Ghi đè các lựa chọn tạo ra Bản xem trước",
+            "phash_tooltip": "Cho việc khử trùng lặp và phát hiện cảnh quay",
+            "preview_exclude_end_time_desc": "Bỏ qua x giây cuối cùng từ các bản xem trước cảnh. Đây có thể là một giá trị bằng giây, hoặc phần trăm (ví dụ 2%) của tổng thời gian cảnh quay.",
+            "preview_exclude_start_time_head": "Bỏ qua thời gian bắt đầu",
+            "preview_options": "Lựa chọn Bản xem trước",
+            "preview_preset_desc": "Phần cài đặt trước điều chỉnh kích thước, chất lượng và thời gian mã hóa của bản xem trước. Các cài đặt trước vượt quá việc \"chậm\" có hiệu năng giảm dần và không được khuyến khích.",
+            "preview_preset_head": "Xem trước phần cài đặt trước cho việc mã hóa",
+            "preview_exclude_end_time_head": "Bỏ qua thời gian kết thúc",
+            "force_transcodes_tooltip": "Mặc định, việc chuyển mã sẽ được tạo ra khi file video không được hỗ trợ trong trình duyệt. Khi kích hoạt, việc chuyển mã sẽ bắt đầu kể cả khi file video có vẻ được hỗ trợ bởi trình duyệt.",
+            "image_previews_tooltip": "Ngoài ra sẽ tạo nên những hình xem trước động (webp), chỉ bắt buộc khi Loại Cảnh/Dấu Tường Xem Trước được thành Ảnh Động. Khi lướt nó sử dụng ít CPU hơn video xem trước, nhưng khi tạo nên thì đi kèm với chúng và là những file lớn hơn.",
+            "preview_exclude_start_time_desc": "Bỏ qua x giây đầu tiên từ các bản xem trước cảnh. Đây có thể là một giá trị bằng giây, hoặc phần trăm (ví dụ 2%) của tổng thời gian cảnh quay.",
+            "override_preview_generation_options_desc": "Ghi đè các lựa chọn tạo ra Bản xem trước cho hành động này. Những thiết lập mặc định được đặt trong Hệ thống -> Tạo ra Bản xem trước."
+        },
+        "merge": {
+            "destination": "Đích đến",
+            "source": "Nguồn",
+            "empty_results": "Giá trị điền vào mục Đích đến sẽ không bị thay đổi."
+        },
+        "merge_tags": {
+            "destination": "Đích đến",
+            "source": "Nguồn"
+        },
+        "performers_found": "Đã tìm thấy {count} diễn viên",
+        "reassign_entity_title": "{count, plural, one {Chỉnh lại {singularEntity}} other {Chỉnh lại {pluralEntity}}}",
+        "reassign_files": {
+            "destination": "Chỉnh lại đến"
+        }
     },
     "configuration": "Cấu Hình",
     "connection_monitor": {
