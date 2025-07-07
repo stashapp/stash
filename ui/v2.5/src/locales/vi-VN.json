@@ -899,7 +899,12 @@
             "force_transcodes_tooltip": "Mặc định, việc chuyển mã sẽ được tạo ra khi file video không được hỗ trợ trong trình duyệt. Khi kích hoạt, việc chuyển mã sẽ bắt đầu kể cả khi file video có vẻ được hỗ trợ bởi trình duyệt.",
             "image_previews_tooltip": "Ngoài ra sẽ tạo nên những hình xem trước động (webp), chỉ bắt buộc khi Loại Cảnh/Dấu Tường Xem Trước được thành Ảnh Động. Khi lướt nó sử dụng ít CPU hơn video xem trước, nhưng khi tạo nên thì đi kèm với chúng và là những file lớn hơn.",
             "preview_exclude_start_time_desc": "Bỏ qua x giây đầu tiên từ các bản xem trước cảnh. Đây có thể là một giá trị bằng giây, hoặc phần trăm (ví dụ 2%) của tổng thời gian cảnh quay.",
-            "override_preview_generation_options_desc": "Ghi đè các lựa chọn tạo ra Bản xem trước cho hành động này. Những thiết lập mặc định được đặt trong Hệ thống -> Tạo ra Bản xem trước."
+            "override_preview_generation_options_desc": "Ghi đè các lựa chọn tạo ra Bản xem trước cho hành động này. Những thiết lập mặc định được đặt trong Hệ thống -> Tạo ra Bản xem trước.",
+            "preview_seg_count_desc": "Số lượng phân đoạn trong các file bản xem trước.",
+            "preview_seg_count_head": "Số lượng phân đoạn trong bản xem trước",
+            "preview_seg_duration_desc": "Độ dài của mỗi đoạn xem trước, tính theo giây.",
+            "preview_seg_duration_head": "Độ dài đoạn xem trước",
+            "sprites": "Sprites của Phần tìm Phân cảnh"
         },
         "merge": {
             "destination": "Đích đến",
