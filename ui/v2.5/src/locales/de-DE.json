@@ -2,7 +2,7 @@
     "actions": {
         "add": "Hinzufügen",
         "add_directory": "Ordner hinzufügen",
-        "add_entity": "Füge {entityType} hinzu",
+        "add_entity": "Füge {Entity} hinzu",
         "add_to_entity": "Hinzufügen zu {entityType}",
         "allow": "Erlauben",
         "allow_temporarily": "Vorübergehend erlauben",
@@ -141,7 +141,8 @@
         "remove_from_containing_group": "Von Gruppe entfernen",
         "reset_play_duration": "Spieldauer zurücksetzten",
         "reset_resume_time": "Fortschritt zurücksetzten",
-        "add_sub_groups": "Untergruppen hinzufügen"
+        "add_sub_groups": "Untergruppen hinzufügen",
+        "play": "Abspielen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
