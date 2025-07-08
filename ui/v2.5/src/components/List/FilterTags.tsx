@@ -9,31 +9,37 @@ import { Badge, BadgeProps, Button, Overlay, Popover } from "react-bootstrap";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { BsPrefixProps, ReplaceProps } from "react-bootstrap/esm/helpers";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
 import { useDebounce } from "src/hooks/debounce";
+import cx from "classnames";
 
 type TagItemProps = PropsWithChildren<
   ReplaceProps<"span", BsPrefixProps<"span"> & BadgeProps>
 >;
 
 export const TagItem: React.FC<TagItemProps> = (props) => {
-  const { children } = props;
+  const { className, children, ...others } = props;
   return (
-    <Badge className="tag-item" variant="secondary" {...props}>
+    <Badge
+      className={cx("tag-item", className)}
+      variant="secondary"
+      {...others}
+    >
       {children}
     </Badge>
   );
 };
 
 export const FilterTag: React.FC<{
+  className?: string;
   label: React.ReactNode;
   onClick: React.MouseEventHandler<HTMLSpanElement>;
   onRemove: React.MouseEventHandler<HTMLElement>;
-}> = ({ label, onClick, onRemove }) => {
+}> = ({ className, label, onClick, onRemove }) => {
   return (
-    <TagItem onClick={onClick}>
+    <TagItem className={className} onClick={onClick}>
       {label}
       <Button
         variant="secondary"
@@ -96,18 +102,24 @@ const MoreFilterTags: React.FC<{
 };
 
 interface IFilterTagsProps {
+  searchTerm?: string;
   criteria: Criterion[];
+  onEditSearchTerm?: () => void;
   onEditCriterion: (c: Criterion) => void;
   onRemoveCriterion: (c: Criterion, valueIndex?: number) => void;
   onRemoveAll: () => void;
+  onRemoveSearchTerm?: () => void;
   truncateOnOverflow?: boolean;
 }
 
 export const FilterTags: React.FC<IFilterTagsProps> = ({
+  searchTerm,
   criteria,
   onEditCriterion,
   onRemoveCriterion,
   onRemoveAll,
+  onEditSearchTerm,
+  onRemoveSearchTerm,
   truncateOnOverflow = false,
 }) => {
   const intl = useIntl();
@@ -265,7 +277,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     );
   }
 
-  if (criteria.length === 0) {
+  if (criteria.length === 0 && !searchTerm) {
     return null;
   }
 
@@ -273,31 +285,31 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
 
   const filterTags = criteria.map((c) => getFilterTags(c)).flat();
 
-  if (cutoff && filterTags.length > cutoff) {
-    const visibleCriteria = filterTags.slice(0, cutoff);
-    const hiddenCriteria = filterTags.slice(cutoff);
-
-    return (
-      <div className={className} ref={ref}>
-        {visibleCriteria}
-        <MoreFilterTags tags={hiddenCriteria} />
-        {criteria.length >= 3 && (
-          <Button
-            variant="minimal"
-            className="clear-all-button"
-            onClick={() => onRemoveAll()}
-          >
-            <FormattedMessage id="actions.clear" />
-          </Button>
-        )}
-      </div>
+  if (searchTerm && searchTerm.length > 0) {
+    filterTags.unshift(
+      <FilterTag
+        key="search-term"
+        className="search-term-filter-tag"
+        label={
+          <span className="search-term">
+            <Icon icon={faMagnifyingGlass} />
+            {searchTerm}
+          </span>
+        }
+        onClick={() => onEditSearchTerm?.()}
+        onRemove={() => onRemoveSearchTerm?.()}
+      />
     );
   }
 
+  const visibleCriteria = cutoff ? filterTags.slice(0, cutoff) : filterTags;
+  const hiddenCriteria = cutoff ? filterTags.slice(cutoff) : [];
+
   return (
     <div className={className} ref={ref}>
-      {filterTags}
-      {criteria.length >= 3 && (
+      {visibleCriteria}
+      <MoreFilterTags tags={hiddenCriteria} />
+      {filterTags.length >= 3 && (
         <Button
           variant="minimal"
           className="clear-all-button"
