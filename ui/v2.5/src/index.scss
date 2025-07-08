@@ -698,8 +698,10 @@ div.dropdown-menu {
 }
 
 .tag-item {
+  align-items: center;
   background-color: $muted-gray;
   color: $dark-text;
+  display: flex;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -710,17 +712,20 @@ div.dropdown-menu {
     cursor: pointer;
   }
 
+  .search-term svg {
+    margin-left: 0;
+  }
+
   .btn {
     background: none;
     border: none;
     bottom: 2px;
     color: $dark-text;
     font-size: 12px;
-    line-height: 1rem;
+    line-height: 16px;
     margin-right: -0.5rem;
     opacity: 0.5;
     padding: 0 0.5rem;
-    position: relative;
 
     &:active,
     &:hover {
