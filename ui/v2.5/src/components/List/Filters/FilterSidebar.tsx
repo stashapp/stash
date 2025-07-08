@@ -16,17 +16,8 @@ export const FilteredSidebarHeader: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
-  focus?: ReturnType<typeof useFocus>;
-}> = ({
-  sidebarOpen,
-  showEditFilter,
-  filter,
-  setFilter,
-  view,
-  focus: providedFocus,
-}) => {
-  const localFocus = useFocus();
-  const focus = providedFocus ?? localFocus;
+}> = ({ sidebarOpen, showEditFilter, filter, setFilter, view }) => {
+  const focus = useFocus();
   const [, setFocus] = focus;
 
   // Set the focus on the input field when the sidebar is opened
