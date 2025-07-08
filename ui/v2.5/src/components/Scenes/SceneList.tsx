@@ -235,6 +235,7 @@ const ScenesFilterSidebarSections = PatchContainerComponent(
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   sidebarOpen: boolean;
   onClose?: () => void;
@@ -243,6 +244,7 @@ const SidebarContent: React.FC<{
 }> = ({
   filter,
   setFilter,
+  filterHook,
   view,
   showEditFilter,
   sidebarOpen,
@@ -251,6 +253,8 @@ const SidebarContent: React.FC<{
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
+  const hideStudios = view === View.StudioScenes;
 
   return (
     <>
@@ -263,19 +267,23 @@ const SidebarContent: React.FC<{
       />
 
       <ScenesFilterSidebarSections>
-        <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          data-type={StudiosCriterionOption.type}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        {!hideStudios && (
+          <SidebarStudiosFilter
+            title={<FormattedMessage id="studios" />}
+            data-type={StudiosCriterionOption.type}
+            option={StudiosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+        )}
         <SidebarPerformersFilter
           title={<FormattedMessage id="performers" />}
           data-type={PerformersCriterionOption.type}
           option={PerformersCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
@@ -283,6 +291,7 @@ const SidebarContent: React.FC<{
           option={TagsCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
@@ -759,6 +768,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             <SidebarContent
               filter={filter}
               setFilter={setFilter}
+              filterHook={filterHook}
               showEditFilter={showEditFilter}
               view={view}
               sidebarOpen={showSidebar}

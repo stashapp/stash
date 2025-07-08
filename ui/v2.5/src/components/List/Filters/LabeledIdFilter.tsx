@@ -321,18 +321,24 @@ export function useCriterion(
   return { criterion, setCriterion };
 }
 
+export interface IUseQueryHookProps {
+  q: string;
+  filter?: ListFilterModel;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  skip: boolean;
+}
+
 export function useQueryState(
-  useQuery: (
-    q: string,
-    filter: ListFilterModel,
-    skip: boolean
-  ) => ILoadResults<ILabeledId[]>,
+  useQuery: (props: IUseQueryHookProps) => ILoadResults<ILabeledId[]>,
   filter: ListFilterModel,
-  skip: boolean
+  skip: boolean,
+  options?: {
+    filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  }
 ) {
   const [query, setQuery] = useState("");
   const { results: queryResults } = useCacheResults(
-    useQuery(query, filter, skip)
+    useQuery({ q: query, filter, filterHook: options?.filterHook, skip })
   );
 
   return { query, setQuery, queryResults };
@@ -431,11 +437,8 @@ export function useLabeledIdFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
-  useQuery: (
-    q: string,
-    filter: ListFilterModel,
-    skip: boolean
-  ) => ILoadResults<ILabeledId[]>;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  useQuery: (props: IUseQueryHookProps) => ILoadResults<ILabeledId[]>;
   singleValue?: boolean;
   hierarchical?: boolean;
   includeSubMessageID?: string;
@@ -444,6 +447,7 @@ export function useLabeledIdFilterState(props: {
     option,
     filter,
     setFilter,
+    filterHook,
     useQuery,
     singleValue = false,
     hierarchical = false,
@@ -456,7 +460,8 @@ export function useLabeledIdFilterState(props: {
   const { query, setQuery, queryResults } = useQueryState(
     useQuery,
     filter,
-    skip
+    skip,
+    { filterHook }
   );
 
   const { criterion, setCriterion } = useCriterion(option, filter, setFilter);
