@@ -139,7 +139,16 @@
         "add_manual_date": "Elle tarih ekle",
         "reset_resume_time": "Devam etme süresini sıfırla",
         "split": "Ayır",
-        "swap": "Değiştir"
+        "swap": "Değiştir",
+        "encoding_image": "Resim kodlanıyor…",
+        "sidebar": {
+            "close": "Kenar çubuğunu kapat",
+            "open": "Kenar çubuğunu aç",
+            "toggle": "Kenar çubuğunu aç/kapat"
+        },
+        "play": "Oynat",
+        "show_results": "Sonuçları göster",
+        "show_count_results": "{count} sonucu göster"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -230,7 +239,7 @@
             "system": "Sistem",
             "tasks": "Görevler",
             "tools": "Araçlar",
-            "changelog": "Sürüm Notları"
+            "changelog": "Değişiklik Günlüğü"
         },
         "dlna": {
             "allow_temp_ip": "{tempIP} IP adresine izin ver",
@@ -325,7 +334,7 @@
                 "heading": "Veri Toplayıcı Yolu"
             },
             "scraping": "Veri Toplama",
-            "sqlite_location": "SQLite veritabanı için dizin konumu (değiştirirseniz yeniden başlatma gerekir)",
+            "sqlite_location": "SQLite veritabanı için dosya konumu (yeniden başlatma gerektirir). UYARI: Veritabanını, Stash sunucusunun çalıştığı sistemden farklı bir sistemde (yani ağ üzerinden) depolamak desteklenmemektedir!",
             "video_ext_desc": "Video olarak işlem görecek dosya uzantı listesi (virgülle ayrılmış).",
             "video_ext_head": "Video Uzantıları",
             "video_head": "Video",
@@ -389,7 +398,8 @@
                 "heading": "Python Yürütülebilir Yolu",
                 "description": "Python yürütülebilir dosyasının yolu (yalnızca klasörün değil). Komut dosyası veri kazıyıcılar ve eklentiler için kullanılır. Boşsa, python ortamdan çözümlenecektir"
             },
-            "heatmap_generation": "Funscript Isı Haritası Oluşturma"
+            "heatmap_generation": "Funscript Isı Haritası Oluşturma",
+            "funscript_heatmap_draw_range_desc": "Oluşturulan ısı haritasının y ekseninde hareket aralığını çizin. Değişiklik yapıldıktan sonra mevcut ısı haritalarının yeniden oluşturulması gerekecektir."
         },
         "library": {
             "exclusions": "Dışta Tutulanlar",
@@ -426,7 +436,8 @@
             "graphql_endpoint": "GraphQL bağlantı noktası",
             "name": "Ad",
             "title": "Stash-box Bağlantı Noktaları",
-            "max_requests_per_minute": "Dakika başına maksimum istek"
+            "max_requests_per_minute": "Dakika başına maksimum istek",
+            "max_requests_per_minute_description": "0 olarak ayarlanırsa, varsayılan değer olan {defaultValue} kullanılır"
         },
         "system": {
             "transcoding": "Video Dönüştürme"
@@ -519,7 +530,8 @@
             "anonymise_and_download": "Veritabanının anonimleştirilmiş bir kopyasını oluşturur ve elde edilen dosyayı indirir.",
             "anonymise_database": "Tüm hassas verileri anonimleştirerek veritabanının bir kopyasını yedekler dizinine alır. Bu daha sonra sorun giderme ve hata ayıklama amacıyla başkalarına sağlanabilir. Orijinal veritabanı değiştirilmez. Anonimleştirilmiş veritabanı {filename_format} dosya adı biçimini kullanır.",
             "migrate_scene_screenshots": {
-                "delete_files": "Ekran görüntülerini sil"
+                "delete_files": "Ekran görüntülerini sil",
+                "overwrite_existing": "Mevcut blob'ları ekran görüntüsü verileriyle üzerine yaz"
             },
             "rescan_tooltip": "Yoldaki her dosyayı yeniden tarayın. Dosya üstverilerini güncellemeyi zorlamak ve zip dosyalarını yeniden taramak için kullanılır.",
             "generate_clip_previews_during_scan": "Resim klipleri için önizlemeler oluştur"
@@ -541,7 +553,9 @@
                 "whitespace_chars": "Boşluk karakterleri",
                 "whitespace_chars_desc": "Bu karakterler başlıkta boşluk karakteri ile değiştirilecektir"
             },
-            "scene_tools": "Sahne Araçları"
+            "scene_tools": "Sahne Araçları",
+            "graphql_playground": "GraphQL oyun alanı",
+            "heading": "Araçlar"
         },
         "ui": {
             "basic_settings": "Temel Seçenekler",
@@ -584,7 +598,7 @@
                             "half": "Yarım",
                             "quarter": "Çeyrek",
                             "tenth": "Onda bir",
-                            "full": "Dolu"
+                            "full": "Tam"
                         },
                         "label": "Derecelendirme Yıldızı Hassasiyeti"
                     }
@@ -609,7 +623,8 @@
                         "heading": "Resim önizlemelerini kaydet"
                     },
                     "create_image_clips_from_videos": {
-                        "heading": "Video Uzantılarını Resim Klibi Olarak Tara"
+                        "heading": "Video Uzantılarını Resim Klibi Olarak Tara",
+                        "description": "Bir kütüphanede videolar devre dışı bırakıldığında, video dosyaları (video uzantısı ile biten dosyalar) Resim Klibi olarak taranacaktır."
                     }
                 }
             },
@@ -649,7 +664,7 @@
                 }
             },
             "scene_player": {
-                "heading": "Sahne Oynatıcısı",
+                "heading": "Sahne Oynatıcı",
                 "options": {
                     "auto_start_video": "Videoları otomatik başlat",
                     "auto_start_video_on_play_selected": {
@@ -669,7 +684,8 @@
                     "enable_chromecast": "Chromecast'i Etkinleştir",
                     "show_ab_loop_controls": "AB Loop eklenti kontrollerini göster",
                     "show_scrubber": "Video İlerleme Çubuğunu Göster",
-                    "disable_mobile_media_auto_rotate": "Mobil cihazlarda tam ekran medyanın otomatik döndürülmesini devre dışı bırak"
+                    "disable_mobile_media_auto_rotate": "Mobil cihazlarda tam ekran medyanın otomatik döndürülmesini devre dışı bırak",
+                    "show_range_markers": "Zaman İşaretleyicilerini Göster"
                 }
             },
             "scene_wall": {
@@ -693,6 +709,10 @@
                 "show_all_details": {
                     "heading": "Tüm ayrıntıları göster",
                     "description": "Etkinleştirildiğinde, varsayılan olarak tüm içerik ayrıntıları gösterilecek ve her ayrıntı öğesi tek bir sütuna sığacak"
+                },
+                "compact_expanded_details": {
+                    "heading": "Kompakt genişletilmiş ayrıntılar",
+                    "description": "Bu seçenek etkinleştirildiğinde, kompakt görünüm korunurken genişletilmiş ayrıntılar gösterilir"
                 }
             },
             "custom_javascript": {
@@ -740,10 +760,20 @@
                 "connect": "Bağlan",
                 "status": {
                     "heading": "Handy Bağlantı Durumu"
-                }
+                },
+                "server_offset": {
+                    "heading": "Sunucu Zaman Farkı"
+                },
+                "sync": "Senkronize et"
             },
             "use_stash_hosted_funscript": {
                 "heading": "Funscript'leri doğrudan sun"
+            },
+            "show_tag_card_on_hover": {
+                "heading": "Etiket kartı araç ipuçları"
+            },
+            "scroll_attempts_before_change": {
+                "heading": "Geçiş Öncesi Kaydırma Denemeleri"
             }
         },
         "advanced_mode": "Gelişmiş Mod"
@@ -843,7 +873,7 @@
             "marker_image_previews": "İşaretleyici Hareketli Resim Önizlemeleri",
             "marker_image_previews_tooltip": "Hareketli Yer İmi WebP önizlemeleri, Önizleme Türü sadece Hareketli Resim olarak seçilmişse gereklidir.",
             "marker_screenshots": "İşaretleyici Ekran Görüntüleri",
-            "marker_screenshots_tooltip": "Yer İmi hareketsiz JPG resimleri, Önizleme Türü sadece Hareketsiz Resim olarak seçilmişse gereklidir.",
+            "marker_screenshots_tooltip": "Yer İmi hareketsiz JPG resimleri",
             "markers": "İşaretleyici Önizlemeleri",
             "markers_tooltip": "Belirlenen zamandan itibaren başlayan 20 saniyelik videolar.",
             "overwrite": "Varolan oluşturulmuş dosyaların üzerine yaz",
@@ -900,7 +930,8 @@
         "reassign_files": {
             "destination": "Şuraya yeniden ata"
         },
-        "reassign_entity_title": "{count, plural, one {Yeniden ata {singularEntity}} other {Yeniden ata {pluralEntity}}}"
+        "reassign_entity_title": "{count, plural, one {Yeniden ata {singularEntity}} other {Yeniden ata {pluralEntity}}}",
+        "set_default_filter_confirm": "Bu filtreyi varsayılan olarak ayarlamak istediğinize emin misiniz?"
     },
     "dimensions": "Boyutlar",
     "director": "Yönetmen",
@@ -909,7 +940,8 @@
         "list": "Liste",
         "tagger": "Etiketleyici",
         "unknown": "Bilinmeyen",
-        "wall": "Duvar"
+        "wall": "Duvar",
+        "label_current": "Görüntüleme Modu: {current}"
     },
     "donate": "Bağış Yap",
     "dupe_check": {
@@ -1192,7 +1224,8 @@
         "started_importing": "İçe aktarma başladı",
         "updated_entity": "{entity} güncellendi",
         "merged_scenes": "Birleştirilmiş sahneler",
-        "reassign_past_tense": "Dosya yeniden atandı"
+        "reassign_past_tense": "Dosya yeniden atandı",
+        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} kaldırıldı"
     },
     "total": "Toplam",
     "true": "Doğru",
@@ -1243,7 +1276,8 @@
         "status_tagging_job_queued": "Durum: Etiketleme işi sıraya alındı",
         "any_names_entered_will_be_queried": "Girilen tüm isimler karşıdaki Stash-Box oturumundan sorgulanacak ve bulunursa eklenecektir. Yalnızca tam eşleşmeler bir eşleşme olarak kabul edilecektir.",
         "refreshing_will_update_the_data": "Yenileme işlemi stash-box oturumundaki tüm etiketli stüdyoların verilerini güncelleyecektir.",
-        "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir."
+        "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir.",
+        "studio_names_separated_by_comma": "Virgülle ayrılmış stüdyo adları"
     },
     "blobs_storage_type": {
         "database": "Veritabanı",
@@ -1410,7 +1444,8 @@
     "last_played_at": "Son Oynatma Tarihi",
     "criterion_modifier_values": {
         "only": "Sadece",
-        "none": "Hiçbiri"
+        "none": "Hiçbiri",
+        "any_of": "Herhangi biri"
     },
     "history": "Geçmiş",
     "existing_value": "mevcut değer",
@@ -1460,5 +1495,7 @@
         "username": "Kullanıcı Adı",
         "invalid_credentials": "Geçersiz kullanıcı adı veya şifre"
     },
-    "age_on_date": "Videoda {age} yaşında"
+    "age_on_date": "Videoda {age} yaşında",
+    "time": "Başlangıç Zamanı",
+    "disambiguation": "Ad Ayrımı"
 }
