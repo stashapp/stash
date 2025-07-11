@@ -788,6 +788,14 @@ $sidebar-width: 250px;
     margin-left: -$sidebar-width;
   }
 
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
+  }
+
   > :nth-child(2) {
     flex-grow: 1;
     padding-left: 0.5rem;

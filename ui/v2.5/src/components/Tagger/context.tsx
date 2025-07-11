@@ -680,15 +680,28 @@ export const TaggerContext: React.FC = ({ children }) => {
           return r;
         }
 
+        let resultStudio = r.studio;
+        if (resultStudio.name === studio.name) {
+          resultStudio = {
+            ...resultStudio,
+            stored_id: studioID,
+          };
+        }
+
+        // #5821 - set the stored_id of the parent studio if it matches too
+        if (resultStudio.parent?.name === studio.name) {
+          resultStudio = {
+            ...resultStudio,
+            parent: {
+              ...resultStudio.parent,
+              stored_id: studioID,
+            },
+          };
+        }
+
         return {
           ...r,
-          studio:
-            r.studio.name === studio.name
-              ? {
-                  ...r.studio,
-                  stored_id: studioID,
-                }
-              : r.studio,
+          studio: resultStudio,
         };
       });
 

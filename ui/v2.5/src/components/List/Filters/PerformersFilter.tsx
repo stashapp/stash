@@ -12,6 +12,7 @@ import { sortByRelevance } from "src/utils/query";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import {
+  IUseQueryHookProps,
   makeQueryVariables,
   setObjectFilter,
   useLabeledIdFilterState,
@@ -69,13 +70,12 @@ function sortResults(
   });
 }
 
-function usePerformerQueryFilter(
-  query: string,
-  f?: ListFilterModel,
-  skip?: boolean
-) {
+function usePerformerQueryFilter(props: IUseQueryHookProps) {
+  const { q: query, filter: f, skip, filterHook } = props;
+  const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
+
   const { data, loading } = useFindPerformersForSelectQuery({
-    variables: queryVariables(query, f),
+    variables: queryVariables(query, appliedFilter),
     skip,
   });
 
@@ -88,7 +88,7 @@ function usePerformerQueryFilter(
 }
 
 function usePerformerQuery(query: string, skip?: boolean) {
-  return usePerformerQueryFilter(query, undefined, skip);
+  return usePerformerQueryFilter({ q: query, skip: !!skip });
 }
 
 const PerformersFilter: React.FC<IPerformersFilter> = ({
@@ -109,10 +109,12 @@ export const SidebarPerformersFilter: React.FC<{
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
-}> = ({ title, option, filter, setFilter }) => {
+  filterHook?: (f: ListFilterModel) => ListFilterModel;
+}> = ({ title, option, filter, setFilter, filterHook }) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
+    filterHook,
     option,
     useQuery: usePerformerQueryFilter,
   });

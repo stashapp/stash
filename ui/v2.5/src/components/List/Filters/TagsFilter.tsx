@@ -10,6 +10,7 @@ import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
+  IUseQueryHookProps,
   makeQueryVariables,
   setObjectFilter,
   useLabeledIdFilterState,
@@ -65,13 +66,12 @@ function sortResults(
   });
 }
 
-function useTagQueryFilter(
-  query: string,
-  filter?: ListFilterModel,
-  skip?: boolean
-) {
+function useTagQueryFilter(props: IUseQueryHookProps) {
+  const { q: query, filter: f, skip, filterHook } = props;
+  const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
+
   const { data, loading } = useFindTagsForSelectQuery({
-    variables: queryVariables(query, filter),
+    variables: queryVariables(query, appliedFilter),
     skip,
   });
 
@@ -84,7 +84,7 @@ function useTagQueryFilter(
 }
 
 function useTagQuery(query: string, skip?: boolean) {
-  return useTagQueryFilter(query, undefined, skip);
+  return useTagQueryFilter({ q: query, skip: !!skip });
 }
 
 const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
@@ -102,10 +102,12 @@ export const SidebarTagsFilter: React.FC<{
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
-}> = ({ title, option, filter, setFilter }) => {
+  filterHook?: (f: ListFilterModel) => ListFilterModel;
+}> = ({ title, option, filter, setFilter, filterHook }) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
+    filterHook,
     option,
     useQuery: useTagQueryFilter,
     hierarchical: true,
