@@ -144,8 +144,12 @@
         "selective_clean": "Selektiv Fjerning",
         "sidebar": {
             "close": "lukk sidebar",
-            "open": "åpne sidebar"
-        }
+            "open": "åpne sidebar",
+            "toggle": "Endre sidepanelet"
+        },
+        "show_results": "Vis resultater",
+        "show_count_results": "Vis {count} resultater",
+        "play": "Spill av"
     },
     "component_tagger": {
         "config": {
@@ -277,10 +281,14 @@
             "db_path_head": "Database filbane",
             "ffmpeg": {
                 "download_ffmpeg": {
-                    "heading": "Last ned FFmpeg"
+                    "heading": "Last ned FFmpeg",
+                    "description": "Laster ned FFmpeg til konfigurasjonsmappen og tilbakestiller ffmpeg- og ffprobe-banene til å bruke konfigurasjonsmappen i stedet."
                 },
                 "hardware_acceleration": {
                     "heading": "Maskinvareakselerert koding med FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "Bane til ffmpeg-programmet (ikke bare mappen). Hvis den er tom, vil ffmpeg bli funnet fra miljøet via $PATH, konfigurasjonsmappen eller fra $HOME/.stash"
                 }
             },
             "database": "Database",
@@ -306,7 +314,11 @@
             "chrome_cdp_path_desc": "Filsti til Chrome-kjørbar fil, eller en ekstern adresse (som begynner med http:// eller https://, for eksempel http://localhost:9222/json/version) til en Chrome-instans.",
             "create_galleries_from_folders_desc": "Hvis aktivert, opprettes gallerier automatisk fra mapper som inneholder bilder. Opprett en fil kalt .forcegallery eller .nogallery i en mappe for å henholdsvis tvinge eller hindre dette.",
             "create_galleries_from_folders_label": "Lag gallerier automatisk fra bildemapper",
-            "directory_locations_to_your_content": "Stier til innholdskataloger"
+            "directory_locations_to_your_content": "Stier til innholdskataloger",
+            "excluded_image_gallery_patterns_desc": "Regexps av bilde og galleri filer/filbaner å utelukke fra Scan og legge til Clean",
+            "excluded_video_patterns_desc": "Regexps av video filer/filbaner å utelukke fra Scan og legge til Clean",
+            "excluded_image_gallery_patterns_head": "Utelukkede Bilde-/Gallerimønstre",
+            "excluded_video_patterns_head": "Utelukkede Videomønstre"
         },
         "application_paths": {
             "heading": "applikasjon baner"
