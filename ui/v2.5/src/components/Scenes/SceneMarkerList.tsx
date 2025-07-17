@@ -95,7 +95,10 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 
     if (filter.displayMode === DisplayMode.Wall) {
       return (
-        <MarkerWallPanel markers={result.data.findSceneMarkers.scene_markers} />
+        <MarkerWallPanel
+          markers={result.data.findSceneMarkers.scene_markers}
+          zoomIndex={filter.zoomIndex}
+        />
       );
     }
 
