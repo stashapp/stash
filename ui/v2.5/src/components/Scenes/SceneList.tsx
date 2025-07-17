@@ -219,7 +219,13 @@ const SceneList: React.FC<{
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {
-    return <SceneWallPanel scenes={scenes} sceneQueue={queue} />;
+    return (
+      <SceneWallPanel
+        scenes={scenes}
+        sceneQueue={queue}
+        zoomIndex={filter.zoomIndex}
+      />
+    );
   }
   if (filter.displayMode === DisplayMode.Tagger) {
     return <Tagger scenes={scenes} queue={queue} />;
