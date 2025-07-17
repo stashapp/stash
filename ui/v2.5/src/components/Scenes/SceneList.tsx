@@ -23,6 +23,7 @@ import {
   faPencil,
   faPlay,
   faPlus,
+  faSliders,
   faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -322,7 +323,7 @@ const ListToolbarContent: React.FC<{
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
-  onEditCriterion: (c: Criterion) => void;
+  onEditCriterion: (c?: Criterion) => void;
   onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
   onRemoveAllCriterion: () => void;
   onSelectAll: () => void;
@@ -354,9 +355,9 @@ const ListToolbarContent: React.FC<{
   return (
     <>
       {!hasSelection && (
-        <div>
+        <div className="filter-toolbar">
           <FilterButton
-            onClick={() => onToggleSidebar()}
+            onClick={() => onEditCriterion()}
             count={criteria.length}
             title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
           />
@@ -367,6 +368,9 @@ const ListToolbarContent: React.FC<{
             onRemoveAll={onRemoveAllCriterion}
             truncateOnOverflow
           />
+          <Button className="minimal sidebar-toggle-button" variant="secondary" onClick={() => onToggleSidebar()}>
+            <Icon icon={faSliders} />
+          </Button>
         </div>
       )}
       {hasSelection && (
@@ -749,7 +753,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 selectedIds={selectedIds}
                 operations={otherOperations}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
                 onRemoveAllCriterion={() => clearAllCriteria()}
                 onSelectAll={() => onSelectAll()}

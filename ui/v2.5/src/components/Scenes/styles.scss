@@ -942,11 +942,6 @@ input[type="range"].blue-slider {
   transition-property: opacity;
 }
 
-.scene-list:not(.hide-sidebar) .sidebar-toggle-button {
-  opacity: 0;
-  pointer-events: none;
-}
-
 .scene-wall,
 .marker-wall {
   .wall-item {
@@ -1063,7 +1058,7 @@ input[type="range"].blue-slider {
     }
   }
 
-  > div:first-child {
+  > div.filter-toolbar {
     border: 1px solid $secondary;
     border-radius: 0.25rem;
     flex-grow: 1;
@@ -1072,6 +1067,10 @@ input[type="range"].blue-slider {
     .filter-button {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0;
+    }
+
+    .sidebar-toggle-button {
+      margin-left: auto;
     }
   }
 
