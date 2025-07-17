@@ -130,7 +130,8 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
               <div className="display-mode-menu">
                 {onSetZoom &&
                 zoomIndex !== undefined &&
-                displayMode === DisplayMode.Grid ? (
+                (displayMode === DisplayMode.Grid ||
+                  displayMode === DisplayMode.Wall) ? (
                   <div className="zoom-slider-container">
                     <ZoomSelect
                       minZoom={minZoom}
