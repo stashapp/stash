@@ -144,8 +144,12 @@
         "reset_play_duration": "Obnovit dobu přehrávání",
         "sidebar": {
             "close": "Zavřít postranní panel",
-            "open": "Zobrazit postranní panel"
-        }
+            "open": "Zobrazit postranní panel",
+            "toggle": "Boční panel"
+        },
+        "play": "Přehrát",
+        "show_results": "Zobrazit výsledky",
+        "show_count_results": "Zobrazit {count} výsledků"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -567,7 +571,9 @@
                 "whitespace_chars": "Whitespace znaky",
                 "whitespace_chars_desc": "Tyto znaky v názvu budou nahrazeny prázdným znakem (mezerou)"
             },
-            "scene_tools": "Nástroje pro scény"
+            "scene_tools": "Nástroje pro scény",
+            "graphql_playground": "GraphQL hřiště",
+            "heading": "Nástroje"
         },
         "ui": {
             "abbreviate_counters": {
@@ -716,7 +722,7 @@
                         "heading": "Automaticky spustit video při přehrávání vybraného"
                     },
                     "continue_playlist_default": {
-                        "description": "Přehrát následující scénu na seznamu při skončení vida",
+                        "description": "Přehrát následující scénu na seznamu při skončení videa",
                         "heading": "(Výchozí nastavení) Pokračovat v playlistu"
                     },
                     "show_scrubber": "Zobrazit Scrubber",
@@ -1323,7 +1329,8 @@
         "saved_filters": "Uložené filtry",
         "update_filter": "Aktualizovat filtr",
         "edit_filter": "Upravit filtr",
-        "name": "Filtr"
+        "name": "Filtr",
+        "more_filter_criteria": "+{count} navíc"
     },
     "ethnicity": "Etnická příslušnost",
     "existing_value": "Existujicí hodnota",
