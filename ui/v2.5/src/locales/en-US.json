@@ -141,7 +141,15 @@
         "create_marker": "Create Marker",
         "create_parent_studio": "Create parent studio",
         "add_to_entity": "Add to {entityType}",
-        "allow_temporarily": "Allow temporarily"
+        "allow_temporarily": "Allow temporarily",
+        "play": "Play",
+        "show_results": "Show results",
+        "sidebar": {
+            "toggle": "Toggle sidebar",
+            "close": "Close sidebar",
+            "open": "Open sidebar"
+        },
+        "show_count_results": "Show {count} results"
     },
     "config": {
         "tools": {
@@ -193,7 +201,7 @@
                     },
                     "output_args": {
                         "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video.",
-                        "heading": "FFmpeg live transcode output arguments"
+                        "heading": "FFmpeg Live Transcode Output Args"
                     }
                 },
                 "download_ffmpeg": {
@@ -219,7 +227,7 @@
                     }
                 }
             },
-            "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning: running too many tasks in parallel may decrease performance and cause issues.",
+            "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning: running more tasks than is required to achieve 100% cpu utilization will decrease performance and potentially cause other issues.",
             "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
             "blobs_path": {
                 "description": "Where in the filesystem to store binary data. Applicable only when using the Filesystem blob storage type. WARNING: changing this requires manually moving existing data.",
@@ -263,7 +271,7 @@
             "gallery_cover_regex_desc": "Regular expression used to identify an image as gallery cover",
             "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
             "generated_file_naming_hash_head": "Generated file naming hash",
-            "generated_path_head": "Generated path",
+            "generated_path_head": "Generated Path",
             "heatmap_generation": "Funscript heatmap generation",
             "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
             "image_ext_head": "Image extensions",
@@ -274,7 +282,17 @@
             "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
             "maximum_transcode_size_desc": "Maximum size for generated transcodes",
             "maximum_transcode_size_head": "Maximum transcode size",
-            "parallel_scan_head": "Parallel Scan/Generation"
+            "parallel_scan_head": "Parallel Scan/Generation",
+            "python_path": {
+                "heading": "Python Executable Path",
+                "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, python will be resolved from the environment"
+            },
+            "plugins_path": {
+                "description": "Directory location of plugin configuration files",
+                "heading": "Plugins Path"
+            },
+            "preview_generation": "Preview Generation",
+            "scraper_user_agent": "Scraper User Agent"
         },
         "categories": {
             "scraping": "Scraping",
