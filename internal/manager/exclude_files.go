@@ -60,7 +60,7 @@ func generateRegexps(patterns []string) []*regexp.Regexp {
 	var fileRegexps []*regexp.Regexp
 
 	for _, pattern := range patterns {
-		if pattern == " " {
+		if pattern == "" || pattern == " " {
 			logger.Warnf("Skipping empty exclude pattern")
 			continue
 		}
