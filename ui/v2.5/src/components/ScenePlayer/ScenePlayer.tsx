@@ -124,11 +124,11 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   if (skipButtons) {
     // handle multimedia keys
     switch (event.key) {
-      case 'MediaTrackNext':
+      case "MediaTrackNext":
         if (!skipButtons.onNext) return;
         skipButtons.onNext();
         break;
-      case 'MediaTrackPrevious':
+      case "MediaTrackPrevious":
         if (!skipButtons.onPrevious) return;
         skipButtons.onPrevious();
         break;
