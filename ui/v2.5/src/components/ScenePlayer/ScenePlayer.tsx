@@ -120,6 +120,22 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     return;
   }
 
+  const skipButtons = player.skipButtons();
+  if (skipButtons) {
+    // handle multimedia keys
+    switch (event.key) {
+      case 'MediaTrackNext':
+        if (!skipButtons.onNext) return;
+        skipButtons.onNext();
+        break;
+      case 'MediaTrackPrevious':
+        if (!skipButtons.onPrevious) return;
+        skipButtons.onPrevious();
+        break;
+      // MediaPlayPause handled by videojs
+    }
+  }
+
   switch (event.which) {
     case 32: // space
     case 13: // enter
