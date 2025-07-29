@@ -1236,7 +1236,8 @@
         "edit_filter": "Ändra Filter",
         "name": "Filter",
         "saved_filters": "Sparade filter",
-        "update_filter": "Uppdatera filter"
+        "update_filter": "Uppdatera filter",
+        "more_filter_criteria": "+{count} fler"
     },
     "second": "Sekund",
     "seconds": "Sekunder",
