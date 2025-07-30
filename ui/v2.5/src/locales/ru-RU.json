@@ -139,7 +139,17 @@
         "reset_cover": "Восстановить обложку по умолчанию",
         "set_cover": "Установить как обложку",
         "add_sub_groups": "Добавить подгруппы",
-        "remove_from_containing_group": "Удалить из группы"
+        "remove_from_containing_group": "Удалить из группы",
+        "reset_play_duration": "Сбросить время воспроизведения",
+        "reset_resume_time": "Сбросить точку продолжения",
+        "show_results": "Показать результаты",
+        "sidebar": {
+            "toggle": "Показать/скрыть боковую панель",
+            "open": "Открыть панель",
+            "close": "Закрыть панель"
+        },
+        "show_count_results": "Показать {count} результат(ов)",
+        "play": "Воспроизвести"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -183,7 +193,10 @@
             "show_male_label": "Показывать актеров мужского пола",
             "source": "Источник",
             "mark_organized_label": "Отметить как Организованную при сохранении",
-            "mark_organized_desc": "Сразу же отметить сцену как Организованную после нажатия кнопки Сохранить."
+            "mark_organized_desc": "Сразу же отметить сцену как Организованную после нажатия кнопки Сохранить.",
+            "errors": {
+                "blacklist_duplicate": "Дублировать элемент чёрного списка"
+            }
         },
         "noun_query": "Запрос",
         "results": {
@@ -436,7 +449,8 @@
             "graphql_endpoint": "Конечная точка GraphQL",
             "name": "Имя",
             "title": "Конечные точки Stash-box",
-            "max_requests_per_minute": "Максимальное количество запросов в минуту"
+            "max_requests_per_minute": "Максимальное количество запросов в минуту",
+            "max_requests_per_minute_description": "Использует значение по умолчанию {defaultValue}, если задано 0"
         },
         "system": {
             "transcoding": "Транскодирование"
@@ -542,7 +556,8 @@
                 "sprites": "Спрайты Сцен",
                 "transcodes": "Транскоды Сцен"
             },
-            "rescan": "Пересканировать файлы"
+            "rescan": "Пересканировать файлы",
+            "rescan_tooltip": "Повторно просканировать все файлы в пути. Используется для обновления метаданных и сканирования ZIP-файлов."
         },
         "tools": {
             "scene_duplicate_checker": "Проверка сцен на дубликаты",
@@ -561,7 +576,9 @@
                 "whitespace_chars": "Символы пробелов",
                 "whitespace_chars_desc": "Эти символы будут заменены пробелами в названии"
             },
-            "scene_tools": "Инструменты видео"
+            "scene_tools": "Инструменты видео",
+            "graphql_playground": "Песочница GraphQL",
+            "heading": "Инструменты"
         },
         "ui": {
             "abbreviate_counters": {
@@ -721,7 +738,8 @@
                         "description": "Кнопка VR будет показана только для сцен с данным тегом.",
                         "heading": "Тег VR"
                     },
-                    "disable_mobile_media_auto_rotate": "Отключить автоповорот в полноэкранном режиме на мобильных устройствах"
+                    "disable_mobile_media_auto_rotate": "Отключить автоповорот в полноэкранном режиме на мобильных устройствах",
+                    "show_range_markers": "Показать маркеры диапазона"
                 }
             },
             "scene_wall": {
@@ -944,7 +962,9 @@
         },
         "clear_play_history_confirm": "Вы уверены, что хотите удалить историю просмотра?",
         "performers_found": "{count} исполнителей найдено",
-        "clear_o_history_confirm": "Вы уверены, что хотите очистить историю О?"
+        "clear_o_history_confirm": "Вы уверены, что хотите очистить историю О?",
+        "overwrite_filter_warning": "Сохранённый фильтр «{entityName}» будет перезаписан.",
+        "set_default_filter_confirm": "Вы уверены, что хотите установить этот фильтр по умолчанию?"
     },
     "dimensions": "Размер",
     "director": "Режиссер",
@@ -954,7 +974,8 @@
         "list": "Список",
         "tagger": "Теггер",
         "unknown": "Неизвестный",
-        "wall": "Стена"
+        "wall": "Стена",
+        "label_current": "Режим отображения: {current}"
     },
     "donate": "Пожертвование",
     "dupe_check": {
@@ -1432,7 +1453,14 @@
         "image_index_greater_than_zero": "Индекс изображения должен быть больше 0",
         "header": "Ошибка",
         "loading_type": "Ошибка загрузки {type}",
-        "something_went_wrong": "Что-то пошло по пизде."
+        "something_went_wrong": "Что-то пошло по пизде.",
+        "custom_fields": {
+            "field_name_length": "Имя поля должно содержать меньше 65 символов",
+            "field_name_required": "Имя поля обязательно",
+            "field_name_whitespace": "Имя поля не должно начинаться или заканчиваться пробелом",
+            "duplicate_field": "Имя поля должно быть уникальным"
+        },
+        "invalid_javascript_string": "Недопустимый код JavaScript: {error}"
     },
     "date_format": "ГГГГ-ММ-ДД",
     "datetime_format": "ГГГГ-ММ-ДД ЧЧ:ММ",
@@ -1471,5 +1499,21 @@
     "age_on_date": "{age} на момент съемки",
     "sub_group_count": "Кол-во подгрупп",
     "sub_group": "Подгруппа",
-    "studio_tags": "Теги студии"
+    "studio_tags": "Теги студии",
+    "criterion_modifier_values": {
+        "any": "Любой",
+        "any_of": "Любой из",
+        "none": "Отсутствует",
+        "only": "Только"
+    },
+    "containing_groups": "Группы, в которые входит объект",
+    "custom_fields": {
+        "criteria_format_string": "criterion} (пользовательское поле) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (пользовательское поле) {modifierString} {valueString} (и ещё {others})",
+        "field": "Поле",
+        "title": "Настраиваемые поля",
+        "value": "Значение"
+    },
+    "containing_group": "Содержащая группа",
+    "containing_group_count": "Количество содержащих групп"
 }
