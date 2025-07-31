@@ -128,7 +128,7 @@
         "assign_stashid_to_parent_studio": "Присвоить Stash ID для текущей родительской студии и обновить метаданные",
         "add_manual_date": "Добавить дату вручную",
         "add_o": "Добавить О",
-        "add_play": "Добавить проигрывание",
+        "add_play": "Добавить воспроизведение",
         "choose_date": "Выбрать дату",
         "clean_generated": "Очистить сгенерированные файлы",
         "clear_date_data": "Очистить информацию о дате",
@@ -712,7 +712,7 @@
                 }
             },
             "scene_list": {
-                "heading": "Сетка",
+                "heading": "Сеточный вид",
                 "options": {
                     "show_studio_as_text": "Отображать названия студии как текст"
                 }
@@ -1091,7 +1091,8 @@
     "last_played_at": "Воспроизводился в последний раз",
     "library": "Библиотека",
     "loading": {
-        "generic": "Загрузка…"
+        "generic": "Загрузка…",
+        "plugins": "Загрузка плагинов…"
     },
     "marker_count": "Количество маркеров",
     "markers": "Маркеры",
@@ -1125,7 +1126,8 @@
         "first": "Первая",
         "last": "Последняя",
         "next": "Следующая",
-        "previous": "Предыдущий"
+        "previous": "Предыдущий",
+        "current_total": "{current} из {total}"
     },
     "parent_of": "Родитель {children}",
     "parent_studios": "Родительские студии",
@@ -1203,7 +1205,8 @@
         "name": "Фильтр",
         "saved_filters": "Сохраненные фильтры",
         "update_filter": "Обновить фильтр",
-        "edit_filter": "Изменить фильтр"
+        "edit_filter": "Изменить фильтр",
+        "more_filter_criteria": "+ещё {count}"
     },
     "seconds": "Секунды",
     "settings": "Настройки",
@@ -1225,7 +1228,9 @@
         "errors": {
             "something_went_wrong": "О, нет! Что-то пошло не так!",
             "something_went_wrong_description": "Если это похоже на проблему с вашими входными данными, нажмите «Назад», чтобы исправить их. В противном случае сообщите об ошибке на {githubLink} или обратитесь за помощью в {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Что-то пошло не так при настройке вашей системы. Мы получили следующую ошибку: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Что-то пошло не так при настройке вашей системы. Мы получили следующую ошибку: {error}",
+            "unexpected_error": "Произошла непредвиденная ошибка: {error}",
+            "unable_to_retrieve_system_status": "Не удалось получить статус системы: {error}"
         },
         "folder": {
             "file_path": "Путь файла",
@@ -1460,7 +1465,8 @@
             "field_name_whitespace": "Имя поля не должно начинаться или заканчиваться пробелом",
             "duplicate_field": "Имя поля должно быть уникальным"
         },
-        "invalid_javascript_string": "Недопустимый код JavaScript: {error}"
+        "invalid_javascript_string": "Недопустимый код JavaScript: {error}",
+        "invalid_json_string": "Недопустимая JSON-строка: {error}"
     },
     "date_format": "ГГГГ-ММ-ДД",
     "datetime_format": "ГГГГ-ММ-ДД ЧЧ:ММ",
@@ -1479,7 +1485,8 @@
         "date_invalid_form": "${path} должен быть в формате ГГГГ-ММ-ДД",
         "blank": "${path} не должен быть пустым",
         "required": "${path} обязательное поле",
-        "unique": "${path} должен быть уникальным"
+        "unique": "${path} должен быть уникальным",
+        "end_time_before_start_time": "Время окончания должно быть больше или равно времени начала"
     },
     "unknown_date": "Неизвестная дата",
     "urls": "URLы",
@@ -1515,5 +1522,27 @@
         "value": "Значение"
     },
     "containing_group": "Содержащая группа",
-    "containing_group_count": "Количество содержащих групп"
+    "containing_group_count": "Количество содержащих групп",
+    "time_end": "Время окончания",
+    "eta": "Ожидаемое время завершения",
+    "login": {
+        "username": "Имя пользователя",
+        "password": "Пароль",
+        "login": "Логин",
+        "internal_error": "Произошла внутренняя ошибка. Подробности смотрите в логах.",
+        "invalid_credentials": "Неверное имя пользователя или пароль"
+    },
+    "groups": "Группы",
+    "include_sub_tag_content": "Учитывать содержимое вложенных тегов",
+    "sort_name": "Сортировать по имени",
+    "include_sub_group_content": "Включать содержимое подгрупп",
+    "include_sub_studio_content": "Включить данные дочерних студий",
+    "group": "Группа",
+    "group_count": "Количество групп",
+    "group_scene_number": "Номер сцены",
+    "include_sub_groups": "Включать подгруппы",
+    "studio_count": "Количество студий",
+    "sub_group_of": "Входит в группу {parent}",
+    "sub_group_order": "Сортировка подгрупп",
+    "sub_groups": "Подгруппы"
 }
