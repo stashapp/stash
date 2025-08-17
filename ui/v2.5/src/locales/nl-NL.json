@@ -144,8 +144,12 @@
         "swap": "Omwisselen",
         "sidebar": {
             "close": "Sluit zijbalk",
-            "open": "Open zijbalk"
-        }
+            "open": "Open zijbalk",
+            "toggle": "Schakelaar Zijbalk"
+        },
+        "show_results": "Resultaat tonen",
+        "show_count_results": "{count} resultaten tonen",
+        "play": "Afspelen"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -310,7 +314,7 @@
             "generated_file_naming_hash_head": "Gebruikte hash voor gegenereerde bestandsnamen",
             "generated_files_location": "Bestandspad voor gegenereerde bestanden (scene markers, scene voorbeelden, afbeeldingen, enz.)",
             "generated_path_head": "Pad voor gegenereerde bestanden",
-            "hashing": "",
+            "hashing": "Hashing",
             "image_ext_desc": "Komma gescheiden lijst van bestandsextensies die als afbeeldingen worden gezien.",
             "image_ext_head": "Bestandsextensies afbeeldingen",
             "include_audio_desc": "Voeg audio toe aan gegenereerde voorbeelden.",
@@ -350,25 +354,59 @@
             "database": "Database",
             "ffmpeg": {
                 "download_ffmpeg": {
-                    "heading": "Download FFmpeg"
+                    "heading": "Download FFmpeg",
+                    "description": "Downloadt FFmpeg naar de configuratiemap en wist de ffmpeg- en ffprobe-paden zodat deze uit de configuratiemap kunnen worden opgehaald."
                 },
                 "hardware_acceleration": {
                     "heading": "FFmpeg hardwarecodering",
                     "desc": "Gebruikt beschikbare hardware om video te coderen voor live transcodering."
                 },
                 "ffmpeg_path": {
-                    "heading": "FFmpeg uitvoerbaar pad"
+                    "heading": "FFmpeg uitvoerbaar pad",
+                    "description": "Pad naar het uitvoerbare bestand van ffmpeg (niet alleen de map). Indien leeg, wordt ffmpeg vanuit de omgeving opgelost via $PATH, de configuratiemap of vanuit $HOME/.stash"
                 },
                 "ffprobe_path": {
-                    "heading": "FFprobe uitvoerbaar pad"
+                    "heading": "FFprobe uitvoerbaar pad",
+                    "description": "Pad naar het uitvoerbare bestand ffprobe (niet alleen de map). Indien leeg, wordt ffprobe vanuit de omgeving opgelost via $PATH, de configuratiemap of vanuit $HOME/.stash"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Geavanceerd: Extra argumenten om door te geven aan ffmpeg vóór het invoerveld bij het live transcoderen van video.",
+                        "heading": "FFmpeg Live Transcode Invoer Argumenten"
+                    },
+                    "output_args": {
+                        "desc": "Geavanceerd: Extra argumenten om door te geven aan ffmpeg vóór het uitvoerveld bij het live transcoderen van video.",
+                        "heading": "FFmpeg Live Transcode Uitvoer Argumenten"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Geavanceerd: Extra argumenten om door te geven aan ffmpeg vóór het invoerveld bij het genereren van video.",
+                        "heading": "FFmpeg Transcode Invoer Argumenten"
+                    },
+                    "output_args": {
+                        "heading": "FFmpeg Transcode Uitvoer Argumenten",
+                        "desc": "Geavanceerd: Extra argumenten die aan ffmpeg moeten worden doorgegeven vóór het uitvoerveld bij het genereren van video."
+                    }
                 }
             },
             "blobs_storage": {
-                "heading": "Type binaire gegevensopslag"
+                "heading": "Type binaire gegevensopslag",
+                "description": "Waar binaire gegevens zoals scènecovers, performer-, studio- en tagafbeeldingen worden opgeslagen. Nadat u deze waarde hebt gewijzigd, moeten de bestaande gegevens worden gemigreerd met behulp van de taken Blobs migreren. Zie de pagina Taken voor meer informatie over migratie."
             },
             "blobs_path": {
-                "description": "Locatie in het bestandssysteem waar binaire gegevens worden opgeslagen. Alleen van toepassing bij gebruik van het Bestandssysteem blob-opslagtype. WAARSCHUWING: om dit te wijzigen, moeten bestaande gegevens handmatig worden verplaatst."
-            }
+                "description": "Locatie in het bestandssysteem waar binaire gegevens worden opgeslagen. Alleen van toepassing bij gebruik van het Bestandssysteem blob-opslagtype. WAARSCHUWING: om dit te wijzigen, moeten bestaande gegevens handmatig worden verplaatst.",
+                "heading": "Pad naar binair gegevensbestandssysteem"
+            },
+            "heatmap_generation": "Funscript Heatmap Generatie",
+            "gallery_cover_regex_desc": "Regexp gebruikt om een afbeelding te identificeren als galerijomslag",
+            "plugins_path": {
+                "description": "Map locatie van plugin-configuratiebestanden",
+                "heading": "Plugin Pad"
+            },
+            "gallery_cover_regex_label": "Galerie omslagpatroon",
+            "funscript_heatmap_draw_range": "Bereik opnemen in gegenereerde heatmaps",
+            "funscript_heatmap_draw_range_desc": "Teken het bewegingsbereik op de y-as van de gegenereerde heatmap. Bestaande heatmaps moeten na wijziging opnieuw worden gegenereerd."
         },
         "library": {
             "exclusions": "Uitzonderingen",
@@ -393,7 +431,9 @@
             "scrapers": "Schrapers",
             "search_by_name": "Zoek op naam",
             "supported_types": "Ondersteunde types",
-            "supported_urls": "URL's"
+            "supported_urls": "URL's",
+            "installed_scrapers": "Geïnstalleerde Schrapers",
+            "available_scrapers": "Beschikbare schrapers"
         },
         "stashbox": {
             "add_instance": "Voeg stash-box instance toe",
@@ -402,7 +442,9 @@
             "endpoint": "Eindpunt",
             "graphql_endpoint": "GraphQL eindpunt",
             "name": "Naam",
-            "title": "Stash-box Eindpunten"
+            "title": "Stash-box Eindpunten",
+            "max_requests_per_minute_description": "Gebruikt de standaardwaarde van {defaultValue} als deze is ingesteld op 0",
+            "max_requests_per_minute": "Max aanvragen per minuut"
         },
         "system": {
             "transcoding": "Transcoderen"
@@ -471,7 +513,22 @@
                 "scanning_paths": "Scannen van de volgende paden"
             },
             "scan_for_content_desc": "Scan naar nieuwe inhoud en voeg deze toe aan de database.",
-            "set_name_date_details_from_metadata_if_present": "Stel de naam, datum, details in vanuit Embedded File Metadata"
+            "set_name_date_details_from_metadata_if_present": "Stel de naam, datum, details in vanuit Embedded File Metadata",
+            "clean_generated": {
+                "blob_files": "Blob bestanden",
+                "image_thumbnails_desc": "Afbeeldingsminiaturen en clips",
+                "markers": "Markeer Voorbeelden",
+                "previews": "Scene Voorbeelden",
+                "sprites": "Scène Sprites",
+                "transcodes": "Scène Transcoderingen",
+                "description": "Verwijdert gegenereerde bestanden zonder bijbehorende database-invoer.",
+                "previews_desc": "Scene voorbeelden en afbeeldingsminiaturen",
+                "image_thumbnails": "Afbeeldingsminiaturen"
+            },
+            "anonymising_database": "Anonimiseer database",
+            "anonymise_database": "Maakt een kopie van de database naar de backups-map, waarbij alle gevoelige gegevens anoniem worden gemaakt. Deze kan vervolgens aan anderen worden verstrekt voor probleemoplossing en debugging. De originele database wordt niet gewijzigd. De geanonimiseerde database gebruikt de bestandsnaamindeling {filename_format}.",
+            "anonymise_and_download": "Maakt een geanonimiseerde kopie van de database en downloadt het resulterende bestand.",
+            "generate_clip_previews_during_scan": "Genereer voorbeelden van Afbeelingsfragmenten"
         },
         "tools": {
             "scene_duplicate_checker": "Scène Duplicator Checker",
