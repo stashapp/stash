@@ -904,7 +904,10 @@
             "preview_seg_count_head": "Số lượng phân đoạn trong bản xem trước",
             "preview_seg_duration_desc": "Độ dài của mỗi đoạn xem trước, tính theo giây.",
             "preview_seg_duration_head": "Độ dài đoạn xem trước",
-            "sprites": "Sprites của Phần tìm Phân cảnh"
+            "sprites": "Sprites của Phần tìm Phân cảnh",
+            "sprites_tooltip": "Danh sách ảnh hiển thị ở dưới video để dễ thao tác",
+            "transcodes": "Giải mã",
+            "video_previews": "Xem trước"
         },
         "merge": {
             "destination": "Đích đến",
