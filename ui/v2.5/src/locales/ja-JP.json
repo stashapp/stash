@@ -148,7 +148,8 @@
             "toggle": "サイドバーを切り替え"
         },
         "play": "再生",
-        "show_results": "結果を表示"
+        "show_results": "結果を表示",
+        "show_count_results": "{count}件の結果を表示"
     },
     "actions_name": "操作",
     "age": "年齢",
