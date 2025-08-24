@@ -285,10 +285,36 @@
                     "description": "Laster ned FFmpeg til konfigurasjonsmappen og tilbakestiller ffmpeg- og ffprobe-banene til å bruke konfigurasjonsmappen i stedet."
                 },
                 "hardware_acceleration": {
-                    "heading": "Maskinvareakselerert koding med FFmpeg"
+                    "heading": "Maskinvareakselerert koding med FFmpeg",
+                    "desc": "Bruker tilgjengelig maskinvare til å kode video for sanntids-transkoding."
                 },
                 "ffmpeg_path": {
-                    "description": "Bane til ffmpeg-programmet (ikke bare mappen). Hvis den er tom, vil ffmpeg bli funnet fra miljøet via $PATH, konfigurasjonsmappen eller fra $HOME/.stash"
+                    "description": "Bane til ffmpeg-programmet (ikke bare mappen). Hvis den er tom, vil ffmpeg bli funnet fra miljøet via $PATH, konfigurasjonsmappen eller fra $HOME/.stash",
+                    "heading": "FFmpeg kjørbar filbane"
+                },
+                "ffprobe_path": {
+                    "heading": "FFmpeg kjørbar filbane",
+                    "description": "Bane til ffprobe-kjørbar fil (ikke bare mappen). Hvis feltet er tomt, vil ffprobe bli hentet fra miljøet via $PATH, konfigurasjonsmappen eller fra $HOME/.stash"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "heading": "FFmpeg sanntids-transkoding inndata-argumenter",
+                        "desc": "Avansert: Ekstra argumenter som sendes til ffmpeg før inndatafeltet ved sanntids-transkoding av video."
+                    },
+                    "output_args": {
+                        "heading": "FFmpeg sanntids-transkoding utdata-argumenter",
+                        "desc": "Avansert: Ekstra argumenter som sendes til ffmpeg før utdatafeltet ved sanntids-transkoding av video."
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Avansert: Ekstra argumenter som sendes til ffmpeg før inndatafeltet ved generering av video.",
+                        "heading": "FFmpeg transkoding inndata-argumenter"
+                    },
+                    "output_args": {
+                        "desc": "Avansert: Ekstra argumenter som sendes til ffmpeg før utdatafeltet ved generering av video.",
+                        "heading": "FFmpeg transkoding utdata-argumenter"
+                    }
                 }
             },
             "database": "Database",
@@ -318,10 +344,449 @@
             "excluded_image_gallery_patterns_desc": "Regexps av bilde og galleri filer/filbaner å utelukke fra Scan og legge til Clean",
             "excluded_video_patterns_desc": "Regexps av video filer/filbaner å utelukke fra Scan og legge til Clean",
             "excluded_image_gallery_patterns_head": "Utelukkede Bilde-/Gallerimønstre",
-            "excluded_video_patterns_head": "Utelukkede Videomønstre"
+            "excluded_video_patterns_head": "Utelukkede Videomønstre",
+            "image_ext_head": "Bilde-filendelser",
+            "plugins_path": {
+                "description": "Mappestedsplassering for plugin-konfigurasjonsfiler",
+                "heading": "Plugin-bane"
+            },
+            "scrapers_path": {
+                "heading": "Scraper-bane",
+                "description": "Mappestedsplassering for scraper-konfigurasjonsfiler"
+            },
+            "scraping": "Scraping",
+            "logging": "Logging",
+            "maximum_transcode_size_head": "Maksimal transkodingsstørrelse",
+            "funscript_heatmap_draw_range": "Inkluder område i genererte varmekart",
+            "funscript_heatmap_draw_range_desc": "Tegn bevegelsesområde på y-aksen i det genererte varmekartet. Eksisterende varmekart må genereres på nytt etter endring.",
+            "generated_file_naming_hash_head": "Hash for generert filnavngivning",
+            "generated_path_head": "Generert bane",
+            "maximum_streaming_transcode_size_head": "Maksimal størrelse for strømmingstranskoding",
+            "maximum_transcode_size_desc": "Maksimal størrelse for genererte transkodinger",
+            "number_of_parallel_task_for_scan_generation_head": "Antall parallelle oppgaver for skanning/generering",
+            "scraper_user_agent_desc": "User-Agent-streng som brukes under HTTP-forespørsler for scraping",
+            "gallery_cover_regex_desc": "Regexp som brukes for å identifisere et bilde som galleriomslag",
+            "include_audio_desc": "Inkluderer lydstrøm ved generering av forhåndsvisninger.",
+            "include_audio_head": "Inkluder lyd",
+            "maximum_streaming_transcode_size_desc": "Maksimal størrelse for transkodede strømmer",
+            "metadata_path": {
+                "heading": "Metadatabane",
+                "description": "Mappestedsplassering som brukes ved full eksport eller import"
+            },
+            "python_path": {
+                "description": "Bane til Python-kjørbar fil (ikke bare mappen). Brukes for skript-skapere og plugins. Hvis tomt, vil Python bli hentet fra miljøet",
+                "heading": "Python kjørbar filbane"
+            },
+            "generated_file_naming_hash_desc": "Bruk MD5 eller oshash for generert filnavngivning. Endring av dette krever at alle scener har den aktuelle MD5/oshash-verdien fylt ut. Etter å ha endret denne verdien, må eksisterende genererte filer migreres eller genereres på nytt. Se Oppgaver-siden for migrering.",
+            "heatmap_generation": "Funscript-varmekartgenerering",
+            "number_of_parallel_task_for_scan_generation_desc": "Sett til 0 for automatisk deteksjon. Advarsel: Å kjøre flere oppgaver enn nødvendig for å oppnå 100 % CPU-utnyttelse vil redusere ytelsen og kan potensielt forårsake andre problemer.",
+            "sqlite_location": "Filplassering for SQLite-databasen (krever omstart). ADVARSEL: Å lagre databasen på et annet system enn der Stash-serveren kjører (f.eks. over nettverket) støttes ikke!",
+            "image_ext_desc": "Kommaseparert liste over filendelser som vil bli identifisert som bilder.",
+            "parallel_scan_head": "Parallell skanning/generering",
+            "video_ext_desc": "Kommaseparert liste over filendelser som vil bli identifisert som videoer.",
+            "gallery_cover_regex_label": "Mønster for galleriomslag",
+            "gallery_ext_desc": "Kommaseparert liste over filendelser som vil bli identifisert som galleri-zip-filer.",
+            "gallery_ext_head": "Galleri-zip-filendelser",
+            "generated_files_location": "Mappestedsplassering for de genererte filene (scene-markører, scene-forhåndsvisninger, sprites, osv.)",
+            "hashing": "Hashing",
+            "preview_generation": "Forhåndsvisningsgenerering",
+            "scraper_user_agent": "Scraper-brukeragent",
+            "video_ext_head": "Video-filendelser",
+            "video_head": "Video"
         },
         "application_paths": {
             "heading": "applikasjon baner"
+        },
+        "tasks": {
+            "plugin_tasks": "Plugin-oppgaver",
+            "generate_thumbnails_during_scan": "Generer miniatyrbilder for bilder",
+            "identify": {
+                "source": "Kilde",
+                "tag_skipped_matches": "Tagg hoppet over treff med",
+                "and_create_missing": "og skape mangler",
+                "create_missing": "Lag mangler",
+                "description": "Angi automatisk scenemetadata ved hjelp av stash-box- og scraper-kilder.",
+                "field": "Felt",
+                "identifying_scenes": "Identifisering av {num} {scene}",
+                "include_male_performers": "Inkluder mannlige utøvere",
+                "set_cover_images": "Sett forsidebilder",
+                "tag_skipped_performers": "Tagg hoppet over utøvere med",
+                "default_options": "Standardalternativer",
+                "set_organized": "Sett organisert flagg",
+                "identifying_from_paths": "Identifisere scener fra følgende stier",
+                "tag_skipped_performer_tooltip": "Opprett en tagg som «Identifiser: Enkeltnavnsutøver» som du kan filtrere etter i scenetaggervisningen, og velg hvordan du vil håndtere disse utøverne",
+                "explicit_set_description": "Følgende alternativer vil bli brukt der de ikke overstyres i de kildespesifikke alternativene.",
+                "field_behaviour": "{strategi} {felt}",
+                "field_options": "Feltalternativer",
+                "heading": "Identifisere",
+                "skip_multiple_matches": "Hopp over treff som har mer enn ett resultat",
+                "skip_multiple_matches_tooltip": "Hvis dette ikke er aktivert og mer enn ett resultat returneres, vil ett bli tilfeldig valgt for å matche",
+                "skip_single_name_performers": "Hopp over utøvere med ett enkelt navn uten entydighet",
+                "skip_single_name_performers_tooltip": "Hvis dette ikke er aktivert, vil utøvere som ofte er generiske, som Samantha eller Olga, bli matchet",
+                "source_options": "{kilde} Alternativer",
+                "sources": "Kilder",
+                "strategy": "Strategi",
+                "tag_skipped_matches_tooltip": "Opprett en tagg som «Identifiser: Flere treff» som du kan filtrere etter i Scene Tagger-visningen og velge riktig treff manuelt"
+            },
+            "rescan": "Skann filer på nytt",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Automatisk tagging av alle stier",
+                "auto_tagging_paths": "Automatisk tagging av følgende stier"
+            },
+            "auto_tag_based_on_filenames": "Automatisk tagging av innhold basert på filstier.",
+            "clean_generated": {
+                "blob_files": "Blob-filer",
+                "description": "Fjerner genererte filer uten en tilhørende databaseoppføring.",
+                "image_thumbnails": "Bildeminiatyrer",
+                "markers": "Markørforhåndsvisninger",
+                "previews": "Sceneforhåndsvisninger",
+                "sprites": "Scenesprites",
+                "transcodes": "Scenetranskodinger",
+                "image_thumbnails_desc": "Bildeminiatyrer og klipp",
+                "previews_desc": "Sceneforhåndsvisninger og miniatyrbilder"
+            },
+            "dont_include_file_extension_as_part_of_the_title": "Ikke inkluder filtypen som en del av tittelen",
+            "generate_video_previews_during_scan": "Generer forhåndsvisninger",
+            "generated_content": "Generert innhold",
+            "import_from_exported_json": "Importer fra eksportert JSON i metadatakatalogen. Sletter den eksisterende databasen.",
+            "incremental_import": "Trinnvis import fra en levert eksport-zip-fil.",
+            "job_queue": "Oppgavekø",
+            "maintenance": "Vedlikehold",
+            "anonymising_database": "Anonymisering av database",
+            "backing_up_database": "Sikkerhetskopiering av database",
+            "generate_video_previews_during_scan_tooltip": "Generer forhåndsvisninger av videoer som spilles av når du holder musepekeren over en scene",
+            "added_job_to_queue": "La til {operation_name} i jobbkøen",
+            "anonymise_and_download": "Lager en anonymisert kopi av databasen og laster ned den resulterende filen.",
+            "anonymise_database": "Lager en kopi av databasen i backup-mappen, og anonymiserer all sensitiv informasjon. Denne kan deretter deles med andre for feilsøking og debugging. Den opprinnelige databasen blir ikke endret. Den anonymiserte databasen bruker filnavnformatet {filename_format}.",
+            "backup_database": "Utfører en sikkerhetskopi av databasen til backup-mappen, med filnavnformatet {filename_format}",
+            "cleanup_desc": "Sjekk etter manglende filer og fjern dem fra databasen. Dette er en destruktiv handling.",
+            "defaults_set": "Standardinnstillinger er satt og vil bli brukt når du klikker på {action}-knappen på Oppgaver-siden.",
+            "migrate_scene_screenshots": {
+                "description": "Migrer skjermbilder av scener til det nye blob-lagringssystemet. Denne migreringen bør kjøres etter at et eksisterende system er migrert til 0.20. Kan eventuelt slette de gamle skjermbildene etter migreringen.",
+                "delete_files": "Slett skjermbildefiler",
+                "overwrite_existing": "Overskriv eksisterende blobs med skjermbildedata"
+            },
+            "data_management": "Databehandling",
+            "generate_previews_during_scan_tooltip": "Generer også animerte (webp) forhåndsvisninger, som bare er nødvendig når Forhåndsvisningstype for scene/markørvegg er satt til Animert bilde. Når du surfer, bruker de mindre CPU enn videoforhåndsvisningene, men genereres i tillegg til dem og er større filer.",
+            "generate_video_covers_during_scan": "Generer sceneomslag",
+            "optimise_database_warning": "Advarsel: Mens denne oppgaven kjører, vil alle operasjoner som endrer databasen mislykkes, og avhengig av databasestørrelsen kan det ta flere minutter å fullføre. Den krever også minst like mye ledig diskplass som databasen er stor, men 1,5 ganger anbefales.",
+            "auto_tagging": "Automatisk tagging",
+            "backup_and_download": "Utfører en sikkerhetskopi av databasen og laster ned den resulterende filen.",
+            "empty_queue": "Ingen oppgaver kjører for øyeblikket.",
+            "export_to_json": "Eksporterer databaseinnholdet til JSON-format i metadata-mappen.",
+            "generate": {
+                "generating_from_paths": "Genererer for scener fra følgende stier",
+                "generating_scenes": "Genererer for {num} {scene}"
+            },
+            "generate_clip_previews_during_scan": "Generer forhåndsvisninger for bildeklipp",
+            "generate_desc": "Generer støttefiler for bilde, sprite, video, vtt og andre filer.",
+            "generate_phashes_during_scan": "perseptuelle",
+            "generate_phashes_during_scan_tooltip": "For deduplisering og sceneidentifikasjon.",
+            "generate_previews_during_scan": "Generer animerte bildeforhåndsvisninger",
+            "generate_sprites_during_scan": "Generer scrubber-sprites",
+            "generate_sprites_during_scan_tooltip": "Bildesettet som vises under videospilleren for enkel navigering.",
+            "migrate_blobs": {
+                "delete_old": "Slett gamle data",
+                "description": "Migrer blober til gjeldende blob-lagringssystem. Denne migreringen bør kjøres etter at blob-lagringssystemet er endret. Kan eventuelt slette gamle data etter migrering."
+            },
+            "migrate_hash_files": "Brukes etter endring av den genererte filnavngivningshashen for å gi eksisterende genererte filer nytt navn til det nye hashformatet.",
+            "migrations": "Migrasjoner",
+            "only_dry_run": "Utfør kun en prøvekjøring. Ikke fjern noe",
+            "optimise_database": "Forsøk å forbedre ytelsen ved å analysere og deretter gjenoppbygge hele databasefilen.",
+            "rescan_tooltip": "Skann alle filer i banen på nytt. Brukes til å tvinge frem oppdatering av filmetadata og skanne zip-filer på nytt.",
+            "scan": {
+                "scanning_all_paths": "Skanner alle stier",
+                "scanning_paths": "Skanner følgende stier"
+            },
+            "scan_for_content_desc": "Skann etter nytt innhold og legg det til i databasen.",
+            "set_name_date_details_from_metadata_if_present": "Angi navn, dato og detaljer fra innebygde filmetadata"
+        },
+        "ui": {
+            "scene_player": {
+                "options": {
+                    "vr_tag": {
+                        "heading": "VR Tag",
+                        "description": "VR-knappen vises bare for scener med denne taggen."
+                    },
+                    "always_start_from_beginning": "Start alltid videoen fra begynnelsen",
+                    "auto_start_video": "Autostart video",
+                    "auto_start_video_on_play_selected": {
+                        "description": "Start scenevideoer automatisk når du spiller av fra køen, eller spiller av valgte eller tilfeldige scener fra scenesiden",
+                        "heading": "Start video automatisk når den valgte videoen spilles av"
+                    },
+                    "continue_playlist_default": {
+                        "description": "Spill av neste scene i køen når videoen er ferdig",
+                        "heading": "Fortsett spilleliste som standard"
+                    },
+                    "disable_mobile_media_auto_rotate": "Deaktiver automatisk rotasjon av fullskjermsmedier på mobil",
+                    "enable_chromecast": "Aktiver Chromecast",
+                    "show_ab_loop_controls": "Vis AB Loop-plugin-kontroller",
+                    "show_scrubber": "Vis Scrubber",
+                    "show_range_markers": "Vis avstandsmarkører",
+                    "track_activity": "Aktiver Scene Play-logg"
+                },
+                "heading": "Scenespiller"
+            },
+            "tag_panel": {
+                "options": {
+                    "show_child_tagged_content": {
+                        "heading": "Vis subtag-innhold",
+                        "description": "I tag-visningen kan du også vise innhold fra undertaggene"
+                    }
+                },
+                "heading": "Tag-visning"
+            },
+            "editing": {
+                "heading": "Redigering",
+                "disable_dropdown_create": {
+                    "heading": "Deaktiver oppretting av rullegardinmenyen",
+                    "description": "Fjern muligheten til å opprette nye objekter fra rullegardinmenyene"
+                },
+                "max_options_shown": {
+                    "label": "Maksimalt antall elementer som skal vises i utvalgte rullegardinmenyer"
+                },
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Rangeringsstjernepresisjon",
+                        "options": {
+                            "full": "Full",
+                            "half": "Halv",
+                            "quarter": "Fjerdedel",
+                            "tenth": "Tiende"
+                        }
+                    },
+                    "type": {
+                        "label": "Rangeringssystemtype",
+                        "options": {
+                            "decimal": "Desimal",
+                            "stars": "Stjerner"
+                        }
+                    }
+                }
+            },
+            "interactive_options": "Interaktive alternativer",
+            "studio_panel": {
+                "options": {
+                    "show_child_studio_content": {
+                        "heading": "Vis innhold fra understudioer",
+                        "description": "I studiovisningen kan du også vise innhold fra understudioene"
+                    }
+                },
+                "heading": "Studio utsikt"
+            },
+            "abbreviate_counters": {
+                "heading": "Forkort tellere",
+                "description": "Forkort tellere i kort- og detaljvisningssider, for eksempel vil «1831» bli formatert til «1,8K»."
+            },
+            "basic_settings": "Grunnleggende innstillinger",
+            "custom_css": {
+                "heading": "Egendefinert CSS",
+                "option_label": "Egendefinert CSS aktivert",
+                "description": "Siden må lastes inn på nytt for at endringene skal tre i kraft. Det er ingen garanti for kompatibilitet mellom tilpasset CSS og fremtidige utgivelser av Stash."
+            },
+            "custom_javascript": {
+                "description": "Siden må lastes inn på nytt for at endringene skal tre i kraft. Det er ingen garanti for kompatibilitet mellom tilpasset Javascript og fremtidige versjoner av Stash.",
+                "heading": "Egendefinert Javascript",
+                "option_label": "Egendefinert Javascript aktivert"
+            },
+            "custom_locales": {
+                "heading": "Tilpasset lokalisering",
+                "option_label": "Egendefinert lokalisering aktivert",
+                "description": "Overstyr individuelle språkstrenger. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for hovedlisten. Siden må lastes inn på nytt for at endringene skal tre i kraft."
+            },
+            "delete_options": {
+                "description": "Standardinnstillinger ved sletting av bilder, gallerier og scener.",
+                "heading": "Slett alternativer",
+                "options": {
+                    "delete_file": "Slett fil som standard",
+                    "delete_generated_supporting_files": "Slett genererte støttefiler som standard"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Desktop-integrasjon",
+                "notifications_enabled": "Aktiver varsler",
+                "send_desktop_notifications_for_events": "Send skrivebordsvarsler for hendelser",
+                "skip_opening_browser": "Hopp over å åpne nettleseren",
+                "skip_opening_browser_on_startup": "Hopp over automatisk åpning av nettleser under oppstart"
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "heading": "Kompakte utvidede detaljer",
+                    "description": "Når dette alternativet er aktivert, vil det presentere utvidede detaljer samtidig som presentasjonen blir kompakt"
+                },
+                "enable_background_image": {
+                    "description": "Vis bakgrunnsbilde på detaljsiden.",
+                    "heading": "Aktiver bakgrunnsbilde"
+                },
+                "heading": "Detaljside",
+                "show_all_details": {
+                    "description": "Når den er aktivert, vises alle innholdsdetaljer som standard, og hvert detaljelement får plass under én kolonne",
+                    "heading": "Vis alle detaljer"
+                }
+            },
+            "funscript_offset": {
+                "heading": "Funksjonsskriptforskyvning (ms)",
+                "description": "Tidsforskyvning i millisekunder for avspilling av interaktive skript."
+            },
+            "handy_connection": {
+                "connect": "Koble til",
+                "server_offset": {
+                    "heading": "Serveroffset"
+                },
+                "status": {
+                    "heading": "Praktisk tilkoblingsstatus"
+                },
+                "sync": "Synkroniser"
+            },
+            "handy_connection_key": {
+                "heading": "Handy tilkoblingsnøkkel",
+                "description": "Praktisk tilkoblingsnøkkel for bruk for interaktive scener. Hvis du angir denne knappen, kan Stash dele informasjon om gjeldende scene med handyfeeling.com"
+            },
+            "image_lightbox": {
+                "heading": "Bilde lysboks"
+            },
+            "image_wall": {
+                "direction": "Retning",
+                "heading": "Bildevegg",
+                "margin": "Margin (piksler)"
+            },
+            "images": {
+                "heading": "Bilder",
+                "options": {
+                    "create_image_clips_from_videos": {
+                        "description": "Når et bibliotek har deaktivert videoer, vil videofiler (filer som slutter på videoendelsen) skannes som bildeklipp.",
+                        "heading": "Skann videoutvidelser som bildeklipp"
+                    },
+                    "write_image_thumbnails": {
+                        "heading": "Skriv miniatyrbilder",
+                        "description": "Skriv miniatyrbilder av bilder til disk når de genereres på farten"
+                    }
+                }
+            },
+            "language": {
+                "heading": "Språk"
+            },
+            "max_loop_duration": {
+                "description": "Maksimal scenevarighet der scenespilleren vil spille av videoen i loop - 0 for å deaktivere",
+                "heading": "Maksimal sløyfevarighet"
+            },
+            "menu_items": {
+                "heading": "Menyelementer",
+                "description": "Vis eller skjul ulike typer innhold på navigasjonslinjen"
+            },
+            "minimum_play_percent": {
+                "description": "Prosentandelen av tiden en scene må spilles av før avspillingstallene økes.",
+                "heading": "Minimum Spilleprosent"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "heading": "Tilpasset utøverbildebane",
+                        "description": "Tilpasset sti for standard utøverbilder. La stå tomt for å bruke innebygde standardinnstillinger"
+                    }
+                }
+            },
+            "preview_type": {
+                "heading": "Forhåndsvisningstype",
+                "options": {
+                    "animated": "Animert bilde",
+                    "static": "Statisk bilde",
+                    "video": "Video"
+                },
+                "description": "Standardalternativet er forhåndsvisninger av videoer (mp4). For mindre CPU-bruk når du surfer, kan du bruke forhåndsvisninger av animerte bilder (webp). Disse må imidlertid genereres i tillegg til forhåndsvisningene av videoer, og de er større filer."
+            },
+            "scene_list": {
+                "heading": "Rutenettvisning",
+                "options": {
+                    "show_studio_as_text": "Vis studiooverlegg som tekst"
+                }
+            },
+            "scene_wall": {
+                "heading": "Scene-/markørvegg",
+                "options": {
+                    "toggle_sound": "Aktiver lyd",
+                    "display_title": "Vis tittel og tagger"
+                }
+            },
+            "scroll_attempts_before_change": {
+                "heading": "Rullforsøk før overgang",
+                "description": "Antall forsøk på å bla før man går til neste/forrige element. Gjelder kun for Pan Y-rullemodus."
+            },
+            "show_tag_card_on_hover": {
+                "description": "Vis tagkort når du holder musepekeren over tag-merkene",
+                "heading": "Verktøytips for tagkort"
+            },
+            "slideshow_delay": {
+                "description": "Lysbildefremvisning er tilgjengelig i gallerier i veggvisningsmodus",
+                "heading": "Forsinkelse av lysbildefremvisning (sekunder)"
+            },
+            "title": "Brukergrensesnitt",
+            "use_stash_hosted_funscript": {
+                "heading": "Server funscripts direkte",
+                "description": "Når dette er aktivert, vil funscripts bli servert direkte fra Stash til Handy-enheten din uten å bruke tredjeparts Handy-serveren. Krever at Stash er tilgjengelig fra Handy-enheten din, og at en API-nøkkel genereres hvis stash har konfigurert legitimasjon."
+            }
+        },
+        "scraping": {
+            "available_scrapers": "Tilgjengelige scrapers",
+            "search_by_name": "Søk etter navn",
+            "supported_types": "Støttede typer",
+            "installed_scrapers": "Installerte scrapers",
+            "scraper": "Skraper",
+            "entity_scrapers": "{entityType} scrapers",
+            "excluded_tag_patterns_desc": "Regulære uttrykk for tag-navn som skal ekskluderes fra scraperesultater",
+            "scrapers": "Skrapere",
+            "entity_metadata": "{entityType} Metadata",
+            "excluded_tag_patterns_head": "Ekskluderte tag-mønstre",
+            "supported_urls": "URLs"
+        },
+        "plugins": {
+            "installed_plugins": "Installerte plugins",
+            "hooks": "Hooks",
+            "triggers_on": "Utløsere aktivert",
+            "available_plugins": "Tilgjengelige plugins"
+        },
+        "library": {
+            "media_content_extensions": "Filendelser for medieinnhold",
+            "gallery_and_image_options": "Galleri- og bildeinnstillinger",
+            "exclusions": "Eksklusjoner"
+        },
+        "tools": {
+            "scene_duplicate_checker": "Sceneduplikatkontrollør",
+            "scene_filename_parser": {
+                "add_field": "Legg til felt",
+                "capitalize_title": "Bruk stor bokstav i tittelen",
+                "display_fields": "Vis felt",
+                "escape_chars": "Bruk \\ for å escape-tegn",
+                "filename": "Filnavn",
+                "ignore_organized": "Ignorer organiserte scener",
+                "ignored_words": "Ignorerte ord",
+                "matches_with": "Samsvarer med {i}",
+                "select_parser_recipe": "Velg parseroppskrift",
+                "title": "Scenefilnavnparser",
+                "whitespace_chars_desc": "Disse tegnene vil bli erstattet med mellomrom i tittelen",
+                "filename_pattern": "Filnavnmønster",
+                "whitespace_chars": "Mellomromstegn"
+            },
+            "graphql_playground": "GraphQL lekeplass",
+            "heading": "Verktøy",
+            "scene_tools": "Sceneverktøy"
+        },
+        "stashbox": {
+            "endpoint": "Endepunkt",
+            "description": "Stash-box muliggjør automatisk tagging av scener og utøvere basert på fingeravtrykk og filnavn.\nEndepunkt og API-nøkkel finnes på kontosiden din på Stash-box-instansen. Navn kreves når mer enn én instans legges til.",
+            "graphql_endpoint": "GraphQL-endepunkt",
+            "name": "Navn",
+            "add_instance": "Legg til Stash-box-instans",
+            "api_key": "API-nøkkel",
+            "max_requests_per_minute": "Maks forespørsler per minutt",
+            "max_requests_per_minute_description": "Bruker standardverdi på {defaultValue} hvis satt til 0",
+            "title": "Stash-box-endepunkter"
+        },
+        "logs": {
+            "log_level": "Loggnivå"
+        },
+        "system": {
+            "transcoding": "Transkoding"
         }
     },
     "appears_with": "Opptrer med",
@@ -351,9 +816,664 @@
     "all": "alt",
     "media_info": {
         "performer_card": {
-            "age": "{age} {years_old}",
+            "age": "{alder} {år_gammel}",
             "age_context": "{age} {years_old} ved produksjon"
+        },
+        "video_codec": "Video Kodek",
+        "audio_codec": "Lydkodek",
+        "checksum": "Sjekksum",
+        "downloaded_from": "Lastet ned fra",
+        "hash": "Hash",
+        "interactive_speed": "Interaktiv hastighet",
+        "o_count": "0 Antall",
+        "phash": "PHash",
+        "play_count": "Avspilt",
+        "play_duration": "Spillevarighet",
+        "stream": "Strøm"
+    },
+    "age_on_date": "{age} ved produksjon",
+    "search_filter": {
+        "update_filter": "Oppdater Filtre",
+        "saved_filters": "Lagrede filter",
+        "edit_filter": "Rediger filter",
+        "name": "Filter",
+        "more_filter_criteria": "+{tell} flere"
+    },
+    "history": "Historie",
+    "play_count": "Antall Avspillinger",
+    "play_history": "Avspillinger",
+    "release_notes": "Utgivelsesnotater",
+    "scene": "Scene",
+    "path": "Sti",
+    "package_manager": {
+        "installed_version": "Installert versjon",
+        "required_by": "Kreves av {pakker}",
+        "add_source": "Legg til kilde",
+        "check_for_updates": "Se etter oppdateringer",
+        "confirm_delete_source": "Er du sikker på at du vil slette kilden {name} ({url})?",
+        "description": "Beskrivelse",
+        "edit_source": "Rediger Kilde",
+        "hide_unselected": "Skjul uvalgt",
+        "latest_version": "Siste versjon",
+        "no_packages": "Ingen pakker funnet",
+        "no_sources": "Ingen kilder er konfigurert",
+        "no_upgradable": "Ingen oppgraderbare pakker funnet",
+        "package": "Pakke",
+        "selected_only": "Kun valgte",
+        "show_all": "Vis alle",
+        "source": {
+            "local_path": {
+                "heading": "Lokal Sti",
+                "description": "Relativ sti til lagringspakker for denne kilden. Merk at endring av dette krever at pakkene flyttes manuelt."
+            },
+            "name": "Navn",
+            "url": "Kilde URL"
+        },
+        "uninstall": "Avinstallere",
+        "unknown": "<ukjent>",
+        "update": "Oppdatere",
+        "version": "Versjon",
+        "install": "Installere",
+        "confirm_uninstall": "Er du sikker på at du vil avinstallere {number} pakker?"
+    },
+    "rating": "Vurdering",
+    "queue": "Kø",
+    "studio_tagger": {
+        "status_tagging_job_queued": "Status: Taggejobb i kø",
+        "batch_update_studios": "Batch Oppdater Studio",
+        "failed_to_save_studio": "Kunne ikke lagre studioet «{studio}»",
+        "add_new_studios": "Legg til nye studioer",
+        "batch_add_studios": "Batch Legg Til Studio",
+        "config": {
+            "edit_excluded_fields": "Rediger ekskluderte felt",
+            "excluded_fields": "Ekskluderte felt:",
+            "no_fields_are_excluded": "Ingen felt er ekskludert",
+            "no_instances_found": "Ingen forekomster funnet",
+            "these_fields_will_not_be_changed_when_updating_studios": "Disse feltene vil ikke bli endret når du oppdaterer studioer.",
+            "active_stash-box_instance": "Aktiv stash-box-instans:",
+            "create_parent_label": "Lag foreldrestudioer",
+            "create_parent_desc": "Opprett manglende foreldrestudioer, eller tagg og oppdater data/bilde for eksisterende foreldrestudioer med nøyaktige navnesamsvar"
+        },
+        "create_or_tag_parent_studios": "Opprett manglende eller tagg eksisterende foreldrestudioer",
+        "current_page": "Gjeldende side",
+        "name_already_exists": "Navnet finnes allerede",
+        "network_error": "Nettverksfeil",
+        "no_results_found": "Ingen resultater funnet.",
+        "number_of_studios_will_be_processed": "{studio_count} studioer vil bli behandlet",
+        "query_all_studios_in_the_database": "Alle studioer i databasen",
+        "refreshing_will_update_the_data": "Oppdatering vil oppdatere dataene til alle taggede studioer fra stash-box-instansen.",
+        "studio_already_tagged": "Studio allerede merket",
+        "studio_names_separated_by_comma": "Studionavn atskilt med komma",
+        "studio_selection": "Studio utvalg",
+        "studio_successfully_tagged": "Studio er tagget",
+        "any_names_entered_will_be_queried": "Alle navn som legges inn vil bli spørt fra den eksterne Stash-Box-instansen og lagt til hvis de blir funnet. Bare eksakte treff vil bli ansett som treff.",
+        "refresh_tagged_studios": "Oppdater taggede studioer",
+        "status_tagging_studios": "Status: Merking av studioer"
+    },
+    "effect_filters": {
+        "blue": "Blå",
+        "name_transforms": "Forvandles",
+        "red": "Rød",
+        "aspect": "Aspekt",
+        "blur": "Uskarphet",
+        "brightness": "Lysstyrke",
+        "contrast": "Kontrast",
+        "gamma": "Gamma",
+        "green": "Grønn",
+        "hue": "Hue",
+        "rotate": "Rotere",
+        "rotate_left_and_scale": "Roter til venstre og skaler",
+        "rotate_right_and_scale": "Roter til høyre og skaler",
+        "saturation": "Metning",
+        "scale": "Skala",
+        "warmth": "Varme",
+        "reset_filters": "Tilbakestill filtre",
+        "reset_transforms": "Tilbakestill Transforms",
+        "name": "Filtre"
+    },
+    "megabits_per_second": "{verdi} mbps",
+    "stats": {
+        "scenes_duration": "Varighet av scener",
+        "image_size": "Bildestørrelse",
+        "total_o_count": "Total O-telling",
+        "scenes_played": "Scener spilt",
+        "scenes_size": "Scenestørrelse",
+        "total_play_count": "Totale Avspillinger",
+        "total_play_duration": "Total Spilletid"
+    },
+    "studio_depth": "Nivåer (tomt for alle)",
+    "custom_fields": {
+        "title": "Egendefinerte felt",
+        "criteria_format_string": "{kriterium} (egendefinert felt) {modifierString} {valueString}",
+        "value": "Verdi",
+        "criteria_format_string_others": "{kriterium} (egendefinert felt) {modifierString} {valueString} (+{andre} andre)",
+        "field": "Felt"
+    },
+    "dialogs": {
+        "scene_gen": {
+            "marker_screenshots": "Marker skjermbilder",
+            "video_previews": "Forhåndsvisninger",
+            "video_previews_tooltip": "Videoforhåndsvisninger som spilles av når du holder musepekeren over en scene",
+            "covers": "Scenebilder",
+            "image_previews": "Forhåndsvisninger av animerte bilder",
+            "image_previews_tooltip": "Generer også animerte (webp) forhåndsvisninger, som bare er nødvendig når Forhåndsvisningstype for scene/markørvegg er satt til Animert bilde. Når du surfer, bruker de mindre CPU enn videoforhåndsvisningene, men genereres i tillegg til dem og er større filer.",
+            "image_thumbnails": "Miniatyrbilder",
+            "interactive_heatmap_speed": "Generer varmekart og hastigheter for interaktive scener",
+            "marker_image_previews": "Forhåndsvisning av animerte bilder for markører",
+            "marker_screenshots_tooltip": "Marker statiske JPG-bilder",
+            "markers": "Marker forhåndsvisning",
+            "markers_tooltip": "20 sekunders videoer som starter på den gitte tidskoden.",
+            "override_preview_generation_options": "Overstyr forhåndsvisningsgenereringsalternativer",
+            "override_preview_generation_options_desc": "Overstyr forhåndsvisningsgenereringsalternativer for denne operasjonen. Standardverdier angis i System -> Forhåndsvisningsgenerering.",
+            "overwrite": "Overskriv eksisterende filer",
+            "phash": "Perseptuelle hasher",
+            "phash_tooltip": "For deduplisering og sceneidentifikasjon",
+            "preview_exclude_end_time_head": "Ekskluder sluttid",
+            "preview_exclude_start_time_desc": "Ekskluder de første x sekundene fra sceneforhåndsvisninger. Dette kan være en verdi i sekunder, eller en prosentandel (f.eks. 2 %) av den totale scenevarigheten.",
+            "preview_exclude_start_time_head": "Ekskluder starttidspunkt",
+            "preview_generation_options": "Forhåndsvisningsgenereringsalternativer",
+            "preview_options": "Forhåndsvisningsalternativer",
+            "preview_preset_head": "Forhåndsinnstilling av koding",
+            "preview_seg_count_desc": "Antall segmenter i forhåndsvisningsfiler.",
+            "preview_seg_count_head": "Antall segmenter i forhåndsvisning",
+            "preview_seg_duration_desc": "Varigheten av hvert forhåndsvisningssegment, i sekunder.",
+            "preview_seg_duration_head": "Forhåndsvis segmentets varighet",
+            "sprites": "Scene Scrubber Sprites",
+            "sprites_tooltip": "Bildesettet som vises under videospilleren for enkel navigering.",
+            "transcodes": "Transkoder",
+            "force_transcodes": "Tving generering av transkode",
+            "marker_image_previews_tooltip": "Generer også animerte (webp) forhåndsvisninger, som bare er nødvendig når Forhåndsvisningstype for scene/markørvegg er satt til Animert bilde. Når du surfer, bruker de mindre CPU enn videoforhåndsvisningene, men genereres i tillegg til dem og er større filer.",
+            "force_transcodes_tooltip": "Som standard genereres transkoder bare når videofilen ikke støttes i nettleseren. Når dette er aktivert, genereres transkoder selv om videofilen ser ut til å være støttet i nettleseren.",
+            "preview_preset_desc": "Forhåndsinnstillingen regulerer størrelse, kvalitet og kodingstid for forhåndsvisningsgenerering. Forhåndsinnstillinger utover «treg» har avtagende avkastning og anbefales ikke.",
+            "preview_exclude_end_time_desc": "Ekskluder de siste x sekundene fra sceneforhåndsvisninger. Dette kan være en verdi i sekunder, eller en prosentandel (f.eks. 2 %) av den totale scenevarigheten.",
+            "clip_previews": "Forhåndsvisninger av bildeklipp",
+            "transcodes_tooltip": "MP4-transkoder vil bli forhåndsgenerert for alt innhold; nyttig for trege CPU-er, men krever mye mer diskplass"
+        },
+        "scenes_found": "{count} scener funnet",
+        "scrape_results_scraped": "Skrapet",
+        "set_image_url_title": "Bilde-URL",
+        "lightbox": {
+            "scroll_mode": {
+                "label": "Rullemodus",
+                "pan_y": "Pan Y",
+                "zoom": "Zoom",
+                "description": "Hold Shift-tasten nede for å midlertidig bruke en annen modus."
+            },
+            "delay": "Forsinkelse (sek)",
+            "display_mode": {
+                "fit_to_screen": "Tilpass til skjermen",
+                "label": "Visningsmodus",
+                "original": "Orginalt",
+                "fit_horizontally": "Passer horisontalt"
+            },
+            "options": "Alternativer",
+            "reset_zoom_on_nav": "Tilbakestill zoomnivå når du bytter bilde",
+            "scale_up": {
+                "description": "Skaler mindre bilder opp for å fylle skjermen",
+                "label": "Skaler opp for å passe"
+            },
+            "page_header": "Side {side} / {totalt}"
+        },
+        "merge": {
+            "empty_results": "Verdiene i destinasjonsfeltet vil forbli uendret.",
+            "destination": "Destinasjon",
+            "source": "Kilde"
+        },
+        "imagewall": {
+            "margin_desc": "Antall margpiksler rundt hvert bilde.",
+            "direction": {
+                "column": "Kolonne",
+                "description": "Kolonne- eller radbasert oppsett.",
+                "row": "Rad"
+            }
+        },
+        "delete_confirm": "Er du sikker på at du vil slette {entityName}?",
+        "clear_o_history_confirm": "Er du sikker på at du vil slette O-historikken?",
+        "clear_play_history_confirm": "Er du sikker på at du vil slette avspillingshistorikken?",
+        "create_new_entity": "Opprett ny {entity}",
+        "delete_entity_simple_desc": "{count, plural, one {Er du sikker på at du vil slette denne {singularEntity}?} other {Er du sikker på at du vil slette disse {pluralEntity}?}}",
+        "delete_entity_title": "{antall, flertall, én {Slett {entallEntitet}} annet {Slett {flertallEntitet}}}",
+        "delete_galleries_extra": "... pluss eventuelle bildefiler som ikke er knyttet til noe annet galleri.",
+        "delete_object_desc": "Er du sikker på at du vil slette {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
+        "delete_object_overflow": "…og {count} other {count, flertall, one {{singularEntity}} other {{pluralEntity}}}.",
+        "delete_object_title": "Slett {count, flertall, én {{singularEntity}} annen {{pluralEntity}}}",
+        "dont_show_until_updated": "Ikke vis før neste oppdatering",
+        "export_include_related_objects": "Inkluder relaterte objekter i eksporten",
+        "export_title": "Eksport",
+        "merge_tags": {
+            "destination": "Destinasjon",
+            "source": "Kilde"
+        },
+        "performers_found": "{count} utøvere funnet",
+        "reassign_entity_title": "{antall, flertall, én {Reassign {singularEntity}} annen {Reassign {pluralEntity}}}",
+        "reassign_files": {
+            "destination": "Tilordne på nytt til"
+        },
+        "scrape_entity_query": "Skrapeforespørsel fra {entity_type}",
+        "scrape_entity_title": "{entity_type} Skrape Resultater",
+        "scrape_results_existing": "Eksisterende",
+        "delete_entity_desc": "{count, plural, one {Er du sikker på at du vil slette denne {singularEntity}? Med mindre filen også slettes, vil denne {singularEntity} bli lagt til på nytt når skanningen utføres.} other {Er du sikker på at du vil slette disse {pluralEntity}? Med mindre filene også slettes, vil disse {pluralEntity} bli lagt til på nytt når skanningen utføres.}}",
+        "delete_gallery_files": "Slett gallerimappen/zip-filen og alle bilder som ikke er knyttet til noe annet galleri.",
+        "edit_entity_title": "Rediger {count, flertall, én {{singularEntity}} annen {{pluralEntity}}}",
+        "delete_alert": "Følgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} vil bli slettet permanent:",
+        "overwrite_filter_warning": "Det lagrede filteret «{entityName}» vil bli overskrevet.",
+        "unsaved_changes": "Ulagrede endringer. Er du sikker på at du vil avslutte?",
+        "set_default_filter_confirm": "Er du sikker på at du vil angi dette filteret som standard?"
+    },
+    "director": "Regissør",
+    "display_mode": {
+        "unknown": "Ukjent",
+        "wall": "Vegg",
+        "tagger": "Tagger",
+        "list": "Liste",
+        "label_current": "Visningsmodus: {gjeldende}",
+        "grid": "Rutenett"
+    },
+    "distance": "Lengde",
+    "dupe_check": {
+        "only_select_matching_codecs": "Velg bare hvis alle kodeker samsvarer i duplikatgruppen",
+        "options": {
+            "exact": "Nøyaktig",
+            "high": "Høy",
+            "low": "Lav",
+            "medium": "Medium"
+        },
+        "search_accuracy_label": "Søkenøyaktighet",
+        "duration_diff": "Maksimal varighetsforskjell",
+        "duration_options": {
+            "equal": "Lik",
+            "any": "Noen"
+        },
+        "select_none": "Velg Ingen",
+        "select_oldest": "Velg den eldste filen i duplikatgruppen",
+        "select_options": "Velg Alternativer…",
+        "select_youngest": "Velg den yngste filen i duplikatgruppen",
+        "title": "Dupliserte scener",
+        "description": "Nivåer under «Nøyaktig» kan ta lengre tid å beregne. Falske positive resultater kan også returneres ved lavere nøyaktighetsnivåer.",
+        "found_sets": "{setCount, flertall, one{# sett med duplikater funnet.} other {# sett med duplikater funnet.}}",
+        "select_all_but_largest_file": "Velg alle filer i hver dupliserte gruppe, unntatt den største filen",
+        "select_all_but_largest_resolution": "Velg alle filer i hver dupliserte gruppe, unntatt filen med høyest oppløsning"
+    },
+    "duplicated_phash": "Duplisert (pHash)",
+    "errors": {
+        "invalid_javascript_string": "Ugyldig javascript-kode: {error}",
+        "custom_fields": {
+            "duplicate_field": "Feltnavnet må være unikt",
+            "field_name_length": "Feltnavnet må inneholde færre enn 65 tegn",
+            "field_name_required": "Feltnavn er obligatorisk",
+            "field_name_whitespace": "Feltnavnet kan ikke ha innledende eller etterfølgende mellomrom"
+        },
+        "header": "Feil",
+        "invalid_json_string": "Ugyldig JSON-streng: {error}",
+        "loading_type": "Feil ved lasting av {type}",
+        "something_went_wrong": "Noe gikk galt.",
+        "image_index_greater_than_zero": "Bildeindeksen må være større enn 0",
+        "lazy_component_error_help": "Hvis du nylig har oppgradert Stash, må du laste inn siden på nytt eller tømme nettleserens hurtigbuffer."
+    },
+    "file_info": "Filinformasjon",
+    "group_scene_number": "Scenenummer",
+    "groups": "Grupper",
+    "image_index": "Bilde #",
+    "last_o_at": "Siste O Kl",
+    "library": "Bibliotek",
+    "penis": "Penis",
+    "part_of": "En del av {forelder}",
+    "performer_tagger": {
+        "batch_update_performers": "Batch Oppdater Skuespillere",
+        "config": {
+            "active_stash-box_instance": "Aktiv stash-box-instans:",
+            "edit_excluded_fields": "Rediger Ekskluderte Felt",
+            "no_fields_are_excluded": "Ingen felt er ekskludert",
+            "no_instances_found": "Ingen forekomster funnet",
+            "excluded_fields": "Ekskluderte felt:",
+            "these_fields_will_not_be_changed_when_updating_performers": "Disse feltene vil ikke bli endret når skuespillerne oppdateres."
+        },
+        "network_error": "Nettverksfeil",
+        "performer_already_tagged": "Skuespilleren er allerede tagget",
+        "number_of_performers_will_be_processed": "{skuespiller_antall} skuespillere vil bli behandlet",
+        "performer_names_separated_by_comma": "Skuespillernavn atskilt med komma",
+        "batch_add_performers": "Batch Legg Til Skuespillere",
+        "current_page": "Gjeldende side",
+        "failed_to_save_performer": "Kunne ikke lagre skuespillere «{skuespiller}»",
+        "name_already_exists": "Navnet finnes allerede",
+        "no_results_found": "Ingen resultater funnet.",
+        "performer_selection": "Utvalg av skuespillere",
+        "performer_successfully_tagged": "Skuespiller er tagget:",
+        "query_all_performers_in_the_database": "Alle skuespillere i databasen",
+        "refresh_tagged_performers": "Oppdater taggede skuespillere",
+        "status_tagging_job_queued": "Status: Taggejobb i kø",
+        "status_tagging_performers": "Status: Tagger skuespillere",
+        "tag_status": "Tagging Status",
+        "to_use_the_performer_tagger": "For å bruke skuespiller-taggeren må en stash-box-instans konfigureres.",
+        "untagged_performers": "Utaggede skuespillere",
+        "update_performer": "Oppdater Skuespiller",
+        "update_performers": "Oppdater Skuespillere",
+        "add_new_performers": "Legg til ny skuespiller",
+        "updating_untagged_performers_description": "Oppdatering av utaggede skuespillere vil forsøke å matche skuespillere som mangler en stashid og oppdatere metadataene.",
+        "refreshing_will_update_the_data": "Oppdatering vil oppdatere dataene til alle taggede skuespillere fra stash-box-instansen.",
+        "any_names_entered_will_be_queried": "Alle navn som legges inn vil bli spørt fra den eksterne Stash-Box-instansen og lagt til hvis de blir funnet. Bare eksakte treff vil bli ansett som treff."
+    },
+    "setup": {
+        "welcome_specific_config": {
+            "next_step": "Når du er klar til å fortsette med å sette opp et nytt system, klikker du på Neste.",
+            "config_path": "Stash vil bruke følgende konfigurasjonsfilsti: <code>{path}</code>",
+            "unable_to_locate_specified_config": "Hvis du leser dette, fant ikke Stash konfigurasjonsfilen som er angitt på kommandolinjen eller i miljøet. Denne veiviseren vil veilede deg gjennom prosessen med å sette opp en ny konfigurasjon."
+        },
+        "paths": {
+            "set_up_your_paths": "Sett opp dine veier",
+            "database_filename_empty_for_default": "databasefilnavn (tomt for standard)",
+            "description": "Deretter må vi finne ut hvor du finner pornosamlingen din, og hvor du skal lagre Stash-databasen, genererte filer og hurtigbufferfiler. Disse innstillingene kan endres senere om nødvendig.",
+            "path_to_generated_directory_empty_for_default": "sti til generert katalog (tom som standard)",
+            "stash_alert": "Ingen bibliotekstier er valgt. Ingen medier kan skannes inn i Stash. Er du sikker?",
+            "store_blobs_in_database": "Lagre blober i databasen",
+            "where_can_stash_store_blobs": "Hvor kan Stash lagre binære databasedata?",
+            "where_can_stash_store_blobs_description_addendum": "Alternativt kan du lagre disse dataene i databasen. <strong>Merk:</strong> Dette vil øke størrelsen på databasefilen din, og det vil øke migreringstiden for databasen.",
+            "where_can_stash_store_cache_files": "Hvor kan Stash lagre hurtigbufferfiler?",
+            "where_can_stash_store_its_database_description": "Stash bruker en SQLite-database for å lagre pornometadataene dine. Som standard opprettes dette som <code>stash-go.sqlite</code> i katalogen som inneholder konfigurasjonsfilen din. Hvis du vil endre dette, må du skrive inn et absolutt eller relativt (til gjeldende arbeidskatalog) filnavn.",
+            "where_can_stash_store_its_database_warning": "ADVARSEL: lagring av databasen på et annet system enn der Stash kjøres fra (f.eks. lagring av databasen på en NAS mens Stash-serveren kjøres på en annen datamaskin) er <strong>ikke støttet</strong>! SQLite er ikke ment for bruk på tvers av et nettverk, og forsøk på å gjøre det kan lett føre til at hele databasen blir ødelagt.",
+            "where_can_stash_store_its_generated_content": "Hvor kan Stash lagre det genererte innholdet?",
+            "where_is_your_porn_located": "Hvor ligger pornoen din?",
+            "where_is_your_porn_located_description": "Legg til kataloger som inneholder pornovideoene og bildene dine. Stash vil bruke disse katalogene til å finne videoer og bilder under skanning.",
+            "path_to_blobs_directory_empty_for_default": "sti til blobs-katalogen (tom som standard)",
+            "where_can_stash_store_its_database": "Hvor kan Stash lagre databasen sin?",
+            "where_can_stash_store_cache_files_description": "For at funksjonalitet som HLS/DASH live-transkoding skal fungere, krever Stash en hurtigbufferkatalog for midlertidige filer. Som standard oppretter Stash en <code>cache</code>-katalog i katalogen som inneholder konfigurasjonsfilen din. Hvis du vil endre dette, må du angi en absolutt eller relativ (til gjeldende arbeidskatalog) sti. Stash oppretter denne katalogen hvis den ikke allerede finnes.",
+            "where_can_stash_store_its_generated_content_description": "For å kunne tilby miniatyrbilder, forhåndsvisninger og sprites genererer Stash bilder og videoer. Dette inkluderer også transkoder for filformater som ikke støttes. Som standard vil Stash opprette en <code>generert</code> katalog i katalogen som inneholder konfigurasjonsfilen din. Hvis du vil endre hvor dette genererte mediet skal lagres, må du angi en absolutt eller relativ (til gjeldende arbeidskatalog) sti. Stash vil opprette denne katalogen hvis den ikke allerede finnes.",
+            "path_to_cache_directory_empty_for_default": "sti til hurtigbufferkatalog (tom som standard)",
+            "where_can_stash_store_blobs_description": "Stash kan lagre binære data som scenecovere, utøver, studio og tag-bilder enten i databasen eller i filsystemet. Som standard lagrer den disse dataene i filsystemet i underkatalogen <code>blobs</code> i katalogen som inneholder konfigurasjonsfilen din. Hvis du vil endre dette, må du angi en absolutt eller relativ (til gjeldende arbeidskatalog) sti. Stash vil opprette denne katalogen hvis den ikke allerede finnes."
+        },
+        "creating": {
+            "creating_your_system": "Oppretter systemet ditt"
+        },
+        "errors": {
+            "something_went_wrong_while_setting_up_your_system": "Noe gikk galt under oppsettet av systemet ditt. Her er feilen vi mottok: {feil}",
+            "unable_to_retrieve_system_status": "Kan ikke hente systemstatus: {feil}",
+            "something_went_wrong": "Å nei! Noe gikk galt!",
+            "unexpected_error": "Det oppsto en uventet feil: {feil}",
+            "something_went_wrong_description": "Hvis dette ser ut som et problem med inndataene dine, kan du klikke tilbake for å fikse dem. Ellers kan du rapportere en feil på {githubLink} eller søke hjelp på {discordLink}."
+        },
+        "folder": {
+            "file_path": "Filbane",
+            "up_dir": "Opp en mappe"
+        },
+        "github_repository": "Github-depot",
+        "migrate": {
+            "migration_failed": "Migrering mislyktes",
+            "migration_irreversible_warning": "Skjemamigreringsprosessen er ikke reversibel. Når migreringen er utført, vil databasen din være inkompatibel med tidligere versjoner av stash.",
+            "migration_notes": "Migrasjonsnotater",
+            "migration_required": "Migrering kreves",
+            "perform_schema_migration": "Utfør skjemamigrering",
+            "backup_database_path_leave_empty_to_disable_backup": "Sti til sikkerhetskopieringsdatabase (la stå tomt for å deaktivere sikkerhetskopiering):",
+            "migration_failed_error": "Følgende feil oppsto under migrering av databasen:",
+            "schema_too_old": "Din nåværende stash-database er skjemaversjon <strong>{databaseSchema}</strong> og må migreres til versjon <strong>{appSchema}</strong>. Denne versjonen av Stash vil ikke fungere uten at databasen migreres. Hvis du ikke ønsker å migrere, må du nedgradere til en versjon som samsvarer med databaseskjemaet ditt.",
+            "backup_recommended": "Det anbefales at du sikkerhetskopierer den eksisterende databasen din før du migrerer. Vi kan gjøre dette for deg ved å lage en kopi av databasen din til <code>{defaultBackupPath}</code>.",
+            "migrating_database": "Migrerer database",
+            "migration_failed_help": "Gjør nødvendige rettelser og prøv på nytt. Ellers kan du melde fra om en feil på {githubLink} eller søke hjelp på {discordLink}."
+        },
+        "confirm": {
+            "almost_ready": "Vi er nesten klare til å fullføre konfigurasjonen. Vennligst bekreft følgende innstillinger. Du kan klikke tilbake for å endre noe som er feil. Hvis alt ser bra ut, klikker du på Bekreft for å opprette systemet ditt.",
+            "blobs_directory": "Binær datakatalog",
+            "blobs_use_database": "<bruker database>",
+            "cache_directory": "Cache-katalog",
+            "configuration_file_location": "konfigurasjonsfilplassering:",
+            "database_file_path": "Banen til databasefilen",
+            "generated_directory": "Generert katalog",
+            "nearly_there": "Nesten der!",
+            "stash_library_directories": "Stash bibliotekkataloger"
+        },
+        "stash_setup_wizard": "Stash Setup Wizard",
+        "success": {
+            "download_ffmpeg": "Last ned ffmpeg",
+            "getting_help": "Får hjelp",
+            "help_links": "Hvis du støter på problemer eller har spørsmål eller forslag, kan du gjerne åpne en sak i {githubLink} eller spørre fellesskapet i {discordLink}.",
+            "next_config_step_one": "Du blir deretter tatt til konfigurasjonssiden. Denne siden lar deg tilpasse hvilke filer som skal inkluderes og ekskluderes, angi et brukernavn og passord for å beskytte systemet ditt, og en hel rekke andre alternativer.",
+            "next_config_step_two": "Når du er fornøyd med disse innstillingene, kan du begynne å skanne innholdet ditt inn i Stash ved å klikke på <code>{localized_task}</code>, deretter <code>{localized_scan}</code>.",
+            "open_collective": "Sjekk ut vår {open_collective_link} for å se hvordan du kan bidra til den fortsatte utviklingen av Stash.",
+            "support_us": "Støtt oss",
+            "thanks_for_trying_stash": "Takk for at du prøvde Stash!",
+            "your_system_has_been_created": "Suksess! Systemet ditt er opprettet!",
+            "in_app_manual_explained": "Du oppfordres til å sjekke ut manualen i appen, som du finner via ikonet øverst til høyre på skjermen. Det ser slik ut: {icon}",
+            "missing_ffmpeg": "Du mangler den nødvendige <code>ffmpeg</code>-binærfilen. Du kan laste den ned automatisk til konfigurasjonskatalogen din ved å merke av i boksen nedenfor. Alternativt kan du oppgi stier til <code>ffmpeg</code>- og <code>ffprobe</code>-binærfilene i systeminnstillingene. Disse binærfilene må være tilstede for at Stash skal fungere.",
+            "welcome_contrib": "Vi tar også imot bidrag i form av kode (feilrettinger, forbedringer og nye funksjoner), testing, feilrapporter, forbedrings- og funksjonsforespørsler og brukerstøtte. Detaljer finner du i bidragsdelen i appens brukerhåndbok."
+        },
+        "welcome": {
+            "in_current_stash_directory": "I katalogen <code>{path}</code>:",
+            "in_the_current_working_directory": "I <code>{path}</code>, arbeidskatalogen, for øyeblikket:",
+            "in_the_current_working_directory_disabled": "I <code>{path}</code>, arbeidskatalogen:",
+            "next_step": "Når alt dette er avklart, og du er klar til å fortsette med å sette opp et nytt system, må du velge hvor du vil lagre konfigurasjonsfilen.",
+            "store_stash_config": "Hvor vil du lagre Stash-konfigurasjonen din?",
+            "unexpected_explained": "Hvis du får denne skjermen uventet, kan du prøve å starte Stash på nytt i riktig arbeidsmappe eller med <code>-c</code>-flagget.",
+            "in_the_current_working_directory_disabled_macos": "Støttes ikke når du kjører <code>Stash.app</code>,<br></br>kjør <code>stash-macos</code> for å sette opp i arbeidskatalogen",
+            "config_path_logic_explained": "Stash prøver først å finne konfigurasjonsfilen sin (<code>config.yml</code>) fra gjeldende arbeidsmappe, og hvis den ikke finner den der, går den tilbake til <code>{fallback_path}</code>. Du kan også få Stash til å lese fra en spesifikk konfigurasjonsfil ved å kjøre den med alternativene <code>-c '<sti til konfigurasjonsfil>'</code> eller <code>--config '<sti til konfigurasjonsfil>'</code>.",
+            "unable_to_locate_config": "Hvis du leser dette, fant ikke Stash en eksisterende konfigurasjon. Denne veiviseren vil veilede deg gjennom prosessen med å sette opp en ny konfigurasjon."
+        },
+        "welcome_to_stash": "Velkommen til Stash"
+    },
+    "stashbox": {
+        "submission_successful": "Innlevering vellykket",
+        "go_review_draft": "Gå til {endpoint_name} for å se gjennom utkastet.",
+        "selected_stash_box": "Valgt Stash-Box-endepunkt",
+        "source": "Stash-Box-kilde",
+        "submission_failed": "Innsending mislyktes",
+        "submit_update": "Finnes allerede i {endpoint_name}"
+    },
+    "performer_image": "Skuespiller Bilde",
+    "countables": {
+        "images": "{antall, flertall, ett {bilde} andre {bilder}}",
+        "files": "{antall, flertall, én {fil} andre {filer}}",
+        "galleries": "{antall, flertall, ett {galleri} andre {gallerier}}",
+        "markers": "{antall, flertall, én {markør} andre {markører}}",
+        "scenes": "{antall, flertall, én {Scene} andre {Scener}}",
+        "studios": "{antall, flertall, ett {studio} andre {studioer}}",
+        "tags": "{antall, flertall, én {Tag} andre {Tags}}",
+        "groups": "{antall, flertall, én {gruppe} andre {grupper}}",
+        "performers": "{antall, flertall, én {utøver} andre {utøvere}}"
+    },
+    "sort_name": "Sorter Navn",
+    "include_sub_studios": "Inkluder datterselskapsstudioer",
+    "include_sub_tag_content": "Inkluder innhold i undertagger",
+    "include_sub_tags": "Inkluder undertagger",
+    "include_sub_studio_content": "Inkluder innhold fra understudioer",
+    "dimensions": "Dimensjoner",
+    "criterion_modifier_values": {
+        "any_of": "noen av",
+        "none": "Ingen",
+        "only": "Bare",
+        "any": "Hvilken som helst"
+    },
+    "configuration": "Konfigurasjon",
+    "connection_monitor": {
+        "websocket_connection_failed": "Klarte ikke å opprette websocket-tilkobling: se nettleserkonsollen for detaljer",
+        "websocket_connection_reestablished": "Websocket-tilkoblingen er gjenopprettet"
+    },
+    "containing_group": "Inneholder gruppe",
+    "containing_group_count": "Inneholder gruppeantall",
+    "containing_groups": "Inneholder grupper",
+    "country": "Land",
+    "cover_image": "Forsidebilde",
+    "created_at": "Opprettet",
+    "criterion": {
+        "greater_than": "Større enn",
+        "less_than": "Mindre enn",
+        "value": "Verdi"
+    },
+    "criterion_modifier": {
+        "between": "mellom",
+        "equals": "Er",
+        "format_string": "{kriterium} {modifikatorString} {verdiString}",
+        "format_string_excludes": "{kriterium} {modifierString} {valueString} (ekskluderer {excludedString})",
+        "format_string_excludes_depth": "{kriterium} {modifierString} {valueString} (ekskluderer {excludedString}) (+{dybde, flertall, =-1 {all} andre {{dybde}}})",
+        "includes": "inkluderer",
+        "includes_all": "inkluderer alle",
+        "is_null": "er null",
+        "less_than": "er mindre enn",
+        "matches_regex": "samsvarer med regulært uttrykk",
+        "not_between": "ikke mellom",
+        "not_equals": "er ikke",
+        "greater_than": "er større enn",
+        "format_string_depth": "{kriterium} {modifierString} {valueString} (+{dybde, flertall, =-1 {all} other {{dybde}}})",
+        "excludes": "ekskluderer",
+        "not_matches_regex": "samsvarer ikke med regex",
+        "not_null": "er ikke null"
+    },
+    "custom": "Tilpasset",
+    "date": "Dato",
+    "date_format": "ÅÅÅÅ-MM-DD",
+    "datetime_format": "ÅÅÅÅ-MM-DD TT:MM",
+    "death_date": "Dødsdato",
+    "death_year": "Dødsår",
+    "descending": "Synkende",
+    "description": "Beskrivelse",
+    "detail": "Detalj",
+    "details": "Detaljer",
+    "developmentVersion": "Utviklingsversjon",
+    "disambiguation": "Presisering",
+    "duration": "Varighet",
+    "ethnicity": "Etnisitet",
+    "existing_value": "eksisterende verdi",
+    "eye_color": "Øyefarge",
+    "fake_tits": "Falske pupper",
+    "false": "Falsk",
+    "favourite": "Favoritt",
+    "file_count": "Antall filer",
+    "file_mod_time": "Filendringstid",
+    "files": "Filer",
+    "files_amount": "{value} filer",
+    "filesize": "Filstørrelse",
+    "filter": "Filter",
+    "filter_name": "Filternavn",
+    "filters": "Filtre",
+    "folder": "Mappe",
+    "framerate": "Bildefrekvens",
+    "frames_per_second": "{verdi} fps",
+    "front_page": {
+        "types": {
+            "saved_filter": "Lagrede filter",
+            "premade_filter": "Forhåndslaget filter"
         }
     },
-    "age_on_date": "{age} ved produksjon"
+    "galleries": "Gallerier",
+    "gallery": "Galleri",
+    "gallery_count": "Antall Galleri",
+    "gender": "Kjønn",
+    "gender_types": {
+        "FEMALE": "Kvinne",
+        "INTERSEX": "Intersex",
+        "MALE": "Mann",
+        "NON_BINARY": "Ikke Binær",
+        "TRANSGENDER_MALE": "Transgender Mann",
+        "TRANSGENDER_FEMALE": "Transgender kvinne"
+    },
+    "group": "Gruppe",
+    "group_count": "Gruppetall",
+    "handy_connection_status": {
+        "connecting": "Kobler til",
+        "disconnected": "Koblet fra",
+        "missing": "Mangler",
+        "ready": "Klar",
+        "syncing": "Synkroniserer med server",
+        "uploading": "Laster opp skript",
+        "error": "Feil ved tilkobling til Handy"
+    },
+    "hasChapters": "Har Kapitler",
+    "hasMarkers": "Har Markører",
+    "height": "Høyde",
+    "height_cm": "Høyde (cm)",
+    "help": "Hjelp",
+    "ignore_auto_tag": "Ignorer Automatisk Tagging",
+    "image": "Bilde",
+    "image_count": "Antall Bilder",
+    "images": "Bilder",
+    "include_parent_tags": "Inkluder overordnede tagger",
+    "include_sub_groups": "Inkluder undergrupper",
+    "index_of_total": "{indeks} av {totalt}",
+    "instagram": "Instagram",
+    "interactive": "Interaktiv",
+    "interactive_speed": "Interaktiv hastighet",
+    "isMissing": "Mangler",
+    "last_played_at": "Sist Spilt",
+    "loading": {
+        "generic": "Laster inn …",
+        "plugins": "Laster inn plugins …"
+    },
+    "login": {
+        "login": "Logg inn",
+        "username": "Brukernavn",
+        "password": "Passord",
+        "invalid_credentials": "Ugyldig brukernavn eller passord",
+        "internal_error": "Uventet intern feil. Se loggene for mer informasjon"
+    },
+    "marker_count": "Antall markører",
+    "markers": "Markører",
+    "measurements": "Mål",
+    "metadata": "Metadata",
+    "name": "Navn",
+    "new": "Ny",
+    "none": "Ingen",
+    "o_counter": "O-Teller",
+    "o_history": "O Historie",
+    "odate_recorded_no": "Ingen O-dato registrert",
+    "operations": "Operasjoner",
+    "organized": "Organisert",
+    "orientation": "Orientering",
+    "pagination": {
+        "current_total": "{nåværende} av {totalt}",
+        "first": "Første",
+        "last": "Siste",
+        "next": "Neste",
+        "previous": "Tilbake"
+    },
+    "parent_of": "Forelder til {barn}",
+    "parent_studio": "Foreldrestudio",
+    "parent_studios": "Foreldrestudio",
+    "parent_tag_count": "Antall foreldremerker",
+    "parent_tags": "Foreldre Tagger",
+    "penis_length_cm": "Penis Lengde (cm)",
+    "perceptual_similarity": "Perseptuell Likhet (pHash)",
+    "performer": "Skuespiller",
+    "performer_age": "Skuespiller Alder",
+    "performer_count": "Skuespiller Antall",
+    "performers": "Skuespillere",
+    "photographer": "Fotograf",
+    "piercings": "Piercinger",
+    "playdate_recorded_no": "Ingen avspillningsdatodato registrert",
+    "plays": "{verdi} avspillinger",
+    "primary_file": "Primær fil",
+    "primary_tag": "Primær Tag",
+    "random": "Tilfeldig",
+    "recently_added_objects": "Nylig lagt til {objekter}",
+    "recently_released_objects": "Nylig utgitte {objekter}",
+    "resolution": "Oppløsning",
+    "resume_time": "Gjenoppta tid",
+    "sceneTagger": "Scene Tagger",
+    "scene_code": "Studio Kode",
+    "scene_count": "Antall Scener",
+    "scene_created_at": "Scene opprettet",
+    "scene_date": "Dato for scenen",
+    "scene_id": "Scene-ID",
+    "scene_tags": "Scene Tagger",
+    "scene_updated_at": "Scene Oppdatert",
+    "scenes": "Scener",
+    "scenes_updated_at": "Scener Oppdatert",
+    "second": "Sekund",
+    "seconds": "Sekunder",
+    "settings": "Innstillinger",
+    "stash_id": "Stash ID",
+    "stash_id_endpoint": "Stash ID-sluttpunkt",
+    "stash_ids": "Stash-ID-er",
+    "statistics": "Statistikk",
+    "status": "Status: {statusTekst}",
+    "studio": "Studio",
+    "studio_and_parent": "Studio og foreldre",
+    "studio_count": "Antall Studio",
+    "donate": "Donere",
+    "file": "fil",
+    "empty_server": "Legg til noen scener på serveren din for å se anbefalinger på denne siden.",
+    "penis_length": "Penis Lengde",
+    "performer_favorite": "Favoritt Skuespiller",
+    "eta": "ETA",
+    "performer_tags": "Skuespiller Tagger",
+    "play_duration": "Spillevarighet",
+    "hair_color": "Hårfarge",
+    "include_sub_group_content": "Inkluder innhold i undergrupper",
+    "o_count": "O Antall"
 }
