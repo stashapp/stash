@@ -93,9 +93,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
     ].concat(
       candidates.findSavedFilters
         .filter((f) => {
-          // markers not currently supported
           return (
-            f.mode !== GQL.FilterMode.SceneMarkers &&
             !existingSavedFilterIDs.includes(f.id)
           );
         })
