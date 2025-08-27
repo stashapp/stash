@@ -368,7 +368,11 @@ const ListToolbarContent: React.FC<{
             onRemoveAll={onRemoveAllCriterion}
             truncateOnOverflow
           />
-          <Button className="minimal sidebar-toggle-button" variant="secondary" onClick={() => onToggleSidebar()}>
+          <Button
+            className="minimal sidebar-toggle-button"
+            variant="secondary"
+            onClick={() => onToggleSidebar()}
+          >
             <Icon icon={faSliders} />
           </Button>
         </div>
@@ -386,6 +390,13 @@ const ListToolbarContent: React.FC<{
           <span>{selectedIds.size} selected</span>
           <Button variant="link" onClick={() => onSelectAll()}>
             <FormattedMessage id="actions.select_all" />
+          </Button>
+          <Button
+            className="minimal sidebar-toggle-button"
+            variant="secondary"
+            onClick={() => onToggleSidebar()}
+          >
+            <Icon icon={faSliders} />
           </Button>
         </div>
       )}

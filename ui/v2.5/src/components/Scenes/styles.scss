@@ -1058,20 +1058,24 @@ input[type="range"].blue-slider {
     }
   }
 
+  .selected-items-info,
+  > div.filter-toolbar {
+    flex-grow: 1;
+    overflow-x: hidden;
+  }
+
   > div.filter-toolbar {
     border: 1px solid $secondary;
     border-radius: 0.25rem;
-    flex-grow: 1;
-    overflow-x: hidden;
 
     .filter-button {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0;
     }
+  }
 
-    .sidebar-toggle-button {
-      margin-left: auto;
-    }
+  .sidebar-toggle-button {
+    margin-left: auto;
   }
 
   .filter-tags {
