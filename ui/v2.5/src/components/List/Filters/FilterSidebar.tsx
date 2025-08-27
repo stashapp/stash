@@ -68,20 +68,6 @@ export function useFilteredSidebarKeybinds(props: {
 }) {
   const { showSidebar, setShowSidebar } = props;
 
-  // Show the sidebar when the user presses the "/" key
-  useEffect(() => {
-    Mousetrap.bind("/", (e) => {
-      if (!showSidebar) {
-        setShowSidebar(true);
-        e.preventDefault();
-      }
-    });
-
-    return () => {
-      Mousetrap.unbind("/");
-    };
-  }, [showSidebar, setShowSidebar]);
-
   // Hide the sidebar when the user presses the "Esc" key
   useEffect(() => {
     Mousetrap.bind("esc", (e) => {
