@@ -1,8 +1,7 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { useFindSceneMarkers } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
-import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";
@@ -41,7 +40,10 @@ export const SceneMarkerRecommendationRow: React.FC<IProps> = (props) => {
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={`_${i}`} className="scene-marker-skeleton skeleton-card"></div>
+              <div
+                key={`_${i}`}
+                className="scene-marker-skeleton skeleton-card"
+              ></div>
             ))
           : result.data?.findSceneMarkers.scene_markers.map((marker, index) => (
               <SceneMarkerCard

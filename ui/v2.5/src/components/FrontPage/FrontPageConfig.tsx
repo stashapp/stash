@@ -93,9 +93,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
     ].concat(
       candidates.findSavedFilters
         .filter((f) => {
-          return (
-            !existingSavedFilterIDs.includes(f.id)
-          );
+          return !existingSavedFilterIDs.includes(f.id);
         })
         .map((f) => {
           return {

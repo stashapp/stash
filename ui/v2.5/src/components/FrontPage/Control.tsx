@@ -91,7 +91,7 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
           isTouch={isTouch}
           filter={filter}
           header={header}
-          />
+        />
       );
     default:
       return <></>;
