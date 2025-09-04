@@ -199,6 +199,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
           onChange={(value) => setPerformers(value)}
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
+          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         {scrapedTagsRow}
         <ScrapedTextAreaRow

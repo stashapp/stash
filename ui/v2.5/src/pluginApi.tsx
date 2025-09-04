@@ -11,12 +11,15 @@ import * as Bootstrap from "react-bootstrap";
 import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
+import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
+import * as ReactSelect from "react-select";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
 import Event from "./hooks/event";
 import { before, instead, after, components, RegisterComponent } from "./patch";
 import { useSettings } from "./components/Settings/context";
 import { useInteractive } from "./hooks/Interactive/context";
+import { useLightbox, useGalleryLightbox } from "./hooks/Lightbox/hooks";
 
 // due to code splitting, some components may not have been loaded when a plugin
 // page is loaded. This function will load all components passed to it.
@@ -71,8 +74,10 @@ export const PluginApi = {
     Intl,
     FontAwesomeRegular,
     FontAwesomeSolid,
+    FontAwesomeBrands,
     Mousetrap,
     MousetrapPause,
+    ReactSelect,
   },
   register: {
     // register a route to be added to the main router
@@ -81,9 +86,69 @@ export const PluginApi = {
     component: RegisterComponent,
   },
   loadableComponents: {
+    // add any lazy loaded imports here - this is coarse-grained and will load all components
+    // in the import
+    Performers: () => import("./components/Performers/Performers"),
+    FrontPage: () => import("./components/FrontPage/FrontPage"),
+    Scenes: () => import("./components/Scenes/Scenes"),
+    Settings: () => import("./components/Settings/Settings"),
+    Stats: () => import("./components/Stats"),
+    Studios: () => import("./components/Studios/Studios"),
+    Galleries: () => import("./components/Galleries/Galleries"),
+    Groups: () => import("./components/Groups/Groups"),
+    Tags: () => import("./components/Tags/Tags"),
+    Images: () => import("./components/Images/Images"),
+
+    SubmitStashBoxDraft: () => import("src/components/Dialogs/SubmitDraft"),
+    GenerateDialog: () => import("./components/Dialogs/GenerateDialog"),
+
+    ScenePlayer: () => import("src/components/ScenePlayer/ScenePlayer"),
+
+    GalleryViewer: () => import("src/components/Galleries/GalleryViewer"),
+
+    DeleteScenesDialog: () => import("./components/Scenes/DeleteScenesDialog"),
+    SceneList: () => import("./components/Scenes/SceneList"),
+    SceneMarkerList: () => import("./components/Scenes/SceneMarkerList"),
+    Scene: () => import("./components/Scenes/SceneDetails/Scene"),
+    SceneCreate: () => import("./components/Scenes/SceneDetails/SceneCreate"),
+
+    ExternalPlayerButton: () =>
+      import("./components/Scenes/SceneDetails/ExternalPlayerButton"),
+    QueueViewer: () => import("./components/Scenes/SceneDetails/QueueViewer"),
+    SceneMarkersPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneMarkersPanel"),
+    SceneFileInfoPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneFileInfoPanel"),
+    SceneDetailPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneDetailPanel"),
+    SceneHistoryPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneHistoryPanel"),
+    SceneGroupPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneGroupPanel"),
+    SceneGalleriesPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneGalleriesPanel"),
+    SceneVideoFilterPanel: () =>
+      import("./components/Scenes/SceneDetails/SceneVideoFilterPanel"),
+    SceneScrapeDialog: () =>
+      import("./components/Scenes/SceneDetails/SceneScrapeDialog"),
+    SceneQueryModal: () =>
+      import("./components/Scenes/SceneDetails/SceneQueryModal"),
+
+    LightboxComponent: () => import("src/hooks/Lightbox/Lightbox"),
+
+    // intentionally omitting these for now
+    // Setup: () => import("./components/Setup/Setup"),
+    // Migrate: () => import("./components/Setup/Migrate"),
+    // SceneFilenameParser: () => import("./components/SceneFilenameParser/SceneFilenameParser"),
+    // SceneDuplicateChecker: () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker"),
+    // Manual: () => import("./Manual"),
+
+    // individual components here
     // add components as needed for plugins that provide pages
     SceneCard: () => import("./components/Scenes/SceneCard"),
     PerformerSelect: () => import("./components/Performers/PerformerSelect"),
+    TagLink: () => import("./components/Shared/TagLink"),
+    PerformerCard: () => import("./components/Performers/PerformerCard"),
   },
   components,
   utils: {
@@ -97,6 +162,8 @@ export const PluginApi = {
     useToast,
     useSettings,
     useInteractive,
+    useLightbox,
+    useGalleryLightbox,
   },
   patch: {
     // intercept the arguments of supported functions

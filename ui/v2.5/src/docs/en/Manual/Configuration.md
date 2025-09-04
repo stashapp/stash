@@ -111,6 +111,8 @@ Some scrapers require a Chrome instance to function correctly. If left empty, st
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
+> **Important**: As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
+
 ## Authentication
 
 By default, stash is not configured with any sort of password protection. To enable password protection, both `Username` and `Password` must be populated. Note that when entering a new username and password where none was set previously, the system will immediately request these credentials to log you in.
@@ -128,9 +130,11 @@ The logout button is situated in the upper-right part of the screen when you are
 ### Recovering from a forgotten username or password
 
 Stash saves login credentials in the config.yml file. You must reset both login and password if you have forgotten your password by doing the following:
+
 * Close your Stash process
 * Open the `config.yml` file found in your Stash directory with a text editor
-* Delete the `login` and `password` lines from the file and save
+* Delete the `username` and `password` lines from the file and save
+
 Stash authentication should now be reset with no authentication credentials.
 
 ## Advanced configuration options

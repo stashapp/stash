@@ -163,9 +163,9 @@ var (
 // set to nil.
 type Input struct {
 	Performer *ScrapedPerformerInput
-	Scene     *ScrapedSceneInput
-	Gallery   *ScrapedGalleryInput
-	Image     *ScrapedImageInput
+	Scene     *models.ScrapedSceneInput
+	Gallery   *models.ScrapedGalleryInput
+	Image     *models.ScrapedImageInput
 }
 
 // populateURL populates the URL field of the input based on the
@@ -227,7 +227,7 @@ type fragmentScraper interface {
 type sceneScraper interface {
 	scraper
 
-	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*ScrapedScene, error)
+	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
 }
 
 // imageScraper is a scraper which supports image scrapes with
@@ -235,7 +235,7 @@ type sceneScraper interface {
 type imageScraper interface {
 	scraper
 
-	viaImage(ctx context.Context, client *http.Client, image *models.Image) (*ScrapedImage, error)
+	viaImage(ctx context.Context, client *http.Client, image *models.Image) (*models.ScrapedImage, error)
 }
 
 // galleryScraper is a scraper which supports gallery scrapes with
@@ -243,5 +243,5 @@ type imageScraper interface {
 type galleryScraper interface {
 	scraper
 
-	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error)
+	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
 }

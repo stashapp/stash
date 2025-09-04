@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
@@ -7,9 +7,8 @@ import { HoverPopover } from "../Shared/HoverPopover";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { GridCard } from "../Shared/GridCard/GridCard";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
-import ScreenUtils from "src/utils/screen";
 import { markerTitle } from "src/core/markers";
 import { Link } from "react-router-dom";
 import { objectTitle } from "src/core/files";
@@ -19,7 +18,7 @@ import { TruncatedText } from "../Shared/TruncatedText";
 
 interface ISceneMarkerCardProps {
   marker: GQL.SceneMarkerDataFragment;
-  containerWidth?: number;
+  cardWidth?: number;
   previewHeight?: number;
   index?: number;
   compact?: boolean;
@@ -154,8 +153,6 @@ const SceneMarkerCardImage = (props: ISceneMarkerCardProps) => {
 };
 
 export const SceneMarkerCard = (props: ISceneMarkerCardProps) => {
-  const [cardWidth, setCardWidth] = useState<number>();
-
   function zoomIndex() {
     if (!props.compact && props.zoomIndex !== undefined) {
       return `zoom-${props.zoomIndex}`;
@@ -164,42 +161,12 @@ export const SceneMarkerCard = (props: ISceneMarkerCardProps) => {
     return "";
   }
 
-  useEffect(() => {
-    if (
-      !props.containerWidth ||
-      props.zoomIndex === undefined ||
-      ScreenUtils.isMobile()
-    )
-      return;
-
-    let zoomValue = props.zoomIndex;
-    let preferredCardWidth: number;
-    switch (zoomValue) {
-      case 0:
-        preferredCardWidth = 240;
-        break;
-      case 1:
-        preferredCardWidth = 340; // this value is intentionally higher than 320
-        break;
-      case 2:
-        preferredCardWidth = 480;
-        break;
-      case 3:
-        preferredCardWidth = 640;
-    }
-    let fittedCardWidth = calculateCardWidth(
-      props.containerWidth,
-      preferredCardWidth!
-    );
-    setCardWidth(fittedCardWidth);
-  }, [props, props.containerWidth, props.zoomIndex]);
-
   return (
     <GridCard
       className={`scene-marker-card ${zoomIndex()}`}
       url={NavUtils.makeSceneMarkerUrl(props.marker)}
       title={markerTitle(props.marker)}
-      width={cardWidth}
+      width={props.cardWidth}
       linkClassName="scene-marker-card-link"
       thumbnailSectionClassName="video-section"
       resumeTime={props.marker.seconds}

@@ -1,6 +1,8 @@
 package fsutil
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -151,7 +153,12 @@ var (
 )
 
 // SanitiseBasename returns a file basename removing any characters that are illegal or problematic to use in the filesystem.
+// It appends a short hash of the original string to ensure uniqueness.
 func SanitiseBasename(v string) string {
+	// Generate a short hash for uniqueness
+	hash := sha1.Sum([]byte(v))
+	shortHash := hex.EncodeToString(hash[:4]) // Use the first 4 bytes of the hash
+
 	v = strings.TrimSpace(v)
 
 	// replace illegal filename characters with -
@@ -163,7 +170,7 @@ func SanitiseBasename(v string) string {
 	// remove multiple hyphens
 	v = multiHyphenRE.ReplaceAllString(v, "-")
 
-	return strings.TrimSpace(v)
+	return strings.TrimSpace(v) + "-" + shortHash
 }
 
 // GetExeName returns the name of the given executable for the current platform.

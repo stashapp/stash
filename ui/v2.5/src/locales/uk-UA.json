@@ -18,7 +18,7 @@
         "clear_image": "Очистити Картинку",
         "close": "Закрити",
         "confirm": "Підтвердити",
-        "continue": "Продовжити",
+        "continue": "Далі",
         "create": "Створити",
         "create_entity": "Створити {entityType}",
         "create_marker": "Створити Маркер",
@@ -28,7 +28,7 @@
         "delete_entity": "Видалити {entityType}",
         "delete_file": "Видалити Файл",
         "delete_file_and_funscript": "Видалити Файл (і фанскрипт)",
-        "delete_generated_supporting_files": "Видалити згенеровані файли підтрикм",
+        "delete_generated_supporting_files": "Видалити згенеровані допоміжні файли",
         "disallow": "Заборонити",
         "download": "Завантажити",
         "download_backup": "Завантажити Резервну Копію",
@@ -104,7 +104,7 @@
         "use_default": "Використовувати за замовчуванням",
         "view_random": "Дивитися випадкове",
         "swap": "Обмін",
-        "add_sub_groups": "Додати суб-групу",
+        "add_sub_groups": "Додати підгрупи",
         "encoding_image": "Кодування зображення…",
         "migrate_scene_screenshots": "Мігрувати скріншоти Сцен",
         "optimise_database": "Оптимізувати Базу даних",
@@ -1416,5 +1416,6 @@
     "primary_file": "Основний файл",
     "plays": "{value} відтворень",
     "subsidiary_studios": "Дочірні студії",
-    "subsidiary_studio_count": "Кількість дочірніх студій"
+    "subsidiary_studio_count": "Кількість дочірніх студій",
+    "age_on_date": "{age} років під час зйомок"
 }

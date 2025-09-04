@@ -5,7 +5,7 @@ type QueryOptions struct {
 	Count      bool
 }
 
-type QueryResult struct {
-	IDs   []int
+type QueryResult[T comparable] struct {
+	IDs   []T
 	Count int
 }

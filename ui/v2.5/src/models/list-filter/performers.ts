@@ -18,6 +18,7 @@ import { CriterionType, DisplayMode } from "./types";
 import { CountryCriterionOption } from "./criteria/country";
 import { RatingCriterionOption } from "./criteria/rating";
 import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { GroupsCriterionOption } from "./criteria/groups";
 
 const defaultSortBy = "name";
 const sortByOptions = [
@@ -90,6 +91,7 @@ const criterionOptions = [
   CircumcisedCriterionOption,
   PerformerIsMissingCriterionOption,
   TagsCriterionOption,
+  GroupsCriterionOption,
   StudiosCriterionOption,
   StashIDCriterionOption,
   createStringCriterionOption("url"),

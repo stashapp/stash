@@ -213,13 +213,29 @@ button.collapse-button {
   text-align: center;
 }
 
-.ErrorMessage {
-  align-items: center;
-  height: 20rem;
+.ErrorMessage-container {
+  display: flex;
   justify-content: center;
+  width: 100%;
+}
 
-  &-content {
-    display: inline-block;
+.ErrorMessage {
+  .fa-icon {
+    color: $warning;
+    font-size: 1.5em;
+    margin-right: 0.3em;
+    vertical-align: middle;
+  }
+
+  background-color: initial;
+  border-color: $danger;
+  color: $text-color;
+  margin: 1rem;
+  text-align: left;
+  width: 500px;
+
+  @include media-breakpoint-down(xs) {
+    width: 100%;
   }
 }
 
@@ -302,6 +318,12 @@ button.collapse-button {
 
   .file-info-panel a > & {
     word-break: break-all;
+  }
+
+  &.inline {
+    display: inline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -688,6 +710,10 @@ button.btn.favorite-button {
   }
 }
 
+.custom-fields {
+  width: 100%;
+}
+
 .custom-fields .detail-item .detail-item-title {
   max-width: 130px;
   overflow: hidden;
@@ -726,5 +752,202 @@ button.btn.favorite-button {
 
   &.custom-fields-new > div:not(:last-child) {
     padding-right: 0;
+  }
+}
+
+$sidebar-width: 250px;
+
+.sidebar-pane {
+  display: flex;
+
+  .sidebar {
+    // TODO - use different colours for sidebar and toolbar
+    background-color: $body-bg;
+    border-right: 1px solid $secondary;
+    flex: $sidebar-width;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-left: 15px;
+    transition: margin-left 0.1s;
+  }
+
+  .sidebar {
+    bottom: 0;
+    left: 0;
+    margin-top: $navbar-height;
+    overflow-y: auto;
+    padding-top: 0.5rem;
+    position: fixed;
+    scrollbar-gutter: stable;
+    top: 0;
+    width: $sidebar-width;
+    z-index: 100;
+  }
+
+  &.hide-sidebar .sidebar {
+    margin-left: -$sidebar-width;
+  }
+
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
+  }
+
+  > :nth-child(2) {
+    flex-grow: 1;
+    padding-left: 0.5rem;
+  }
+
+  &.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 0;
+    }
+  }
+
+  @include media-breakpoint-up(xl) {
+    transition: margin-left 0.1s;
+
+    &:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: calc($sidebar-width - 15px);
+      }
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      width: 100%;
+    }
+
+    &.hide-sidebar .sidebar {
+      margin-left: -100%;
+    }
+
+    &.hide-sidebar > :nth-child(2) {
+      width: 100%;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    display: block;
+
+    .sidebar {
+      margin-bottom: $navbar-height;
+      margin-top: 0;
+    }
+  }
+}
+
+.sidebar-toolbar {
+  // TODO - use different colours for sidebar and toolbar
+  background-color: $body-bg;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar-toolbar {
+    padding-top: 1rem;
+  }
+}
+
+.sidebar-section {
+  border-bottom: 1px solid $secondary;
+
+  .collapse-header {
+    // background-color: $secondary;
+
+    padding: 0.25rem;
+
+    .collapse-button {
+      font-weight: bold;
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  .collapse,
+  // include collapsing to allow for the transition
+  .collapsing {
+    padding-top: 0.25rem;
+  }
+}
+
+.sidebar-section:first-child .collapse-header {
+  border-top: 1px solid $secondary;
+}
+
+$sticky-header-height: calc(50px + 3.3rem);
+
+// special case for sidebar in details view
+.detail-body {
+  .sidebar {
+    // required for sticky to work
+    align-self: flex-start;
+
+    // take a further 15px padding to match the detail body
+    height: calc(100vh - $sticky-header-height - 15px);
+    margin-top: -15px;
+    max-height: calc(100vh - $sticky-header-height - 15px);
+    overflow-y: auto;
+    padding-left: 0;
+    position: sticky;
+
+    top: calc($sticky-detail-header-height + $navbar-height);
+
+    .sidebar-toolbar {
+      padding-top: 15px;
+    }
+  }
+
+  .sidebar-pane.hide-sidebar .sidebar {
+    left: -$sidebar-width;
+    margin-left: calc(-15px - $sidebar-width);
+  }
+
+  // on smaller viewports we want the sidebar to overlap content
+  @include media-breakpoint-down(lg) {
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -$sidebar-width;
+    }
+
+    .sidebar-pane > :nth-child(2) {
+      transition: none;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      flex: 100% 0 0;
+      height: calc(100vh - 4rem);
+      max-height: calc(100vh - 4rem);
+      top: 0;
+    }
+
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -100%;
+    }
+
+    .sidebar-pane.hide-sidebar .sidebar {
+      display: none;
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    .sidebar-pane:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: 0;
+      }
+    }
+
+    .sidebar-pane.hide-sidebar {
+      > :nth-child(2) {
+        padding-left: 15px;
+      }
+    }
   }
 }

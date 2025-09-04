@@ -4,12 +4,33 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/stashbox/graphql"
 )
 
-func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
+func (c Client) resolveStudio(ctx context.Context, s *graphql.StudioFragment) (*models.ScrapedStudio, error) {
+	scraped := studioFragmentToScrapedStudio(*s)
+
+	if s.Parent != nil {
+		parentStudio, err := c.client.FindStudio(ctx, &s.Parent.ID, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if parentStudio.FindStudio == nil {
+			return scraped, nil
+		}
+
+		scraped.Parent, err = c.resolveStudio(ctx, parentStudio.FindStudio)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scraped, nil
+}
+
+func (c Client) FindStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
 	var studio *graphql.FindStudio
 
 	_, err := uuid.Parse(query)
@@ -27,32 +48,8 @@ func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.S
 
 	var ret *models.ScrapedStudio
 	if studio.FindStudio != nil {
-		r := c.repository
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			ret = studioFragmentToScrapedStudio(*studio.FindStudio)
-
-			err = match.ScrapedStudio(ctx, r.Studio, ret, &c.box.Endpoint)
-			if err != nil {
-				return err
-			}
-
-			if studio.FindStudio.Parent != nil {
-				parentStudio, err := c.client.FindStudio(ctx, &studio.FindStudio.Parent.ID, nil)
-				if err != nil {
-					return err
-				}
-
-				if parentStudio.FindStudio != nil {
-					ret.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
-
-					err = match.ScrapedStudio(ctx, r.Studio, ret.Parent, &c.box.Endpoint)
-					if err != nil {
-						return err
-					}
-				}
-			}
-			return nil
-		}); err != nil {
+		ret, err = c.resolveStudio(ctx, studio.FindStudio)
+		if err != nil {
 			return nil, err
 		}
 	}

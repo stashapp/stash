@@ -1105,9 +1105,10 @@ func stashBoxValidate(str string) bool {
 }
 
 type StashBoxInput struct {
-	Endpoint string `json:"endpoint"`
-	APIKey   string `json:"api_key"`
-	Name     string `json:"name"`
+	Endpoint             string `json:"endpoint"`
+	APIKey               string `json:"api_key"`
+	Name                 string `json:"name"`
+	MaxRequestsPerMinute int    `json:"max_requests_per_minute"`
 }
 
 func (i *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
@@ -1533,7 +1534,7 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://docs.stashapp.cc/faq/setup/#protecting-against-accidental-exposure-to-the-internet
+// See https://discourse.stashapp.cc/t/-/1658
 func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }

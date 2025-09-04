@@ -6,6 +6,11 @@ import {
 } from "src/core/generated-graphql";
 import { cloneDeep } from "@apollo/client/utilities";
 
+function valueToString(value: unknown[] | undefined | null) {
+  if (!value) return "";
+  return value.map((v) => v as string).join(", ");
+}
+
 export const CustomFieldsCriterionOption = new CriterionOption({
   type: "custom_fields",
   messageID: "custom_fields.title",
@@ -27,6 +32,10 @@ export class CustomFieldsCriterion extends Criterion {
     input.custom_fields = cloneDeep(this.value);
   }
 
+  public applyToSavedCriterion(input: Record<string, unknown>): void {
+    input.custom_fields = cloneDeep(this.value);
+  }
+
   public getLabel(intl: IntlShape): string {
     // show first criterion
     if (this.value.length === 0) {
@@ -42,7 +51,7 @@ export class CustomFieldsCriterion extends Criterion {
       first.modifier !== CriterionModifier.NotNull &&
       (first.value?.length ?? 0) > 0
     ) {
-      valueString = (first.value![0] as string) ?? "";
+      valueString = valueToString(first.value);
     }
 
     const modifierString = ModifierCriterion.getModifierLabel(
@@ -74,7 +83,7 @@ export class CustomFieldsCriterion extends Criterion {
       v.modifier !== CriterionModifier.NotNull &&
       (v.value?.length ?? 0) > 0
     ) {
-      valueString = (v.value![0] as string) ?? "";
+      valueString = valueToString(v.value);
     }
 
     const modifierString = ModifierCriterion.getModifierLabel(intl, v.modifier);
@@ -82,7 +91,6 @@ export class CustomFieldsCriterion extends Criterion {
       criterion: v.field,
       modifierString,
       valueString,
-      others: "",
     };
 
     return intl.formatMessage(
@@ -91,19 +99,20 @@ export class CustomFieldsCriterion extends Criterion {
     );
   }
 
-  public toJSON(): string {
+  public toQueryParams(): Record<string, unknown> {
     const encodedCriterion = {
       type: this.criterionOption.type,
       value: this.value,
     };
-    return JSON.stringify(encodedCriterion);
+    return encodedCriterion;
   }
 
-  public setFromSavedCriterion(criterion: {
-    type: string;
-    value: CustomFieldCriterionInput[];
-  }): void {
-    const { value } = criterion;
-    this.value = cloneDeep(value);
+  public fromDecodedParams(i: unknown): void {
+    const criterion = i as { value: CustomFieldCriterionInput[] };
+    this.value = cloneDeep(criterion.value);
+  }
+
+  public setFromSavedCriterion(input: CustomFieldCriterionInput[]): void {
+    this.value = cloneDeep(input);
   }
 }

@@ -5,11 +5,7 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import {
-  Criterion,
-  CriterionValue,
-  ISavedCriterion,
-} from "./criteria/criterion";
+import { Criterion } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode, SavedUIOptions } from "./types";
 import { ListFilterOptions } from "./filter-options";
@@ -159,7 +155,7 @@ export class ListFilterModel {
             JSON.parse(jsonString);
 
           const criterion = this.makeCriterion(criterionType);
-          criterion.setFromSavedCriterion(savedCriterion);
+          criterion.fromDecodedParams(savedCriterion);
 
           this.criteria.push(criterion);
         } catch (err) {
@@ -304,7 +300,7 @@ export class ListFilterModel {
     if (objectFilter) {
       for (const [k, v] of Object.entries(objectFilter)) {
         const criterion = this.makeCriterion(k as CriterionType);
-        criterion.setFromSavedCriterion(v as ISavedCriterion<CriterionValue>);
+        criterion.setFromSavedCriterion(v);
         this.criteria.push(criterion);
       }
     }
@@ -335,7 +331,11 @@ export class ListFilterModel {
   // Returns query parameters with necessary parts URL-encoded
   public getEncodedParams(): IEncodedParams {
     const encodedCriteria: string[] = this.criteria.map((criterion) => {
-      let str = ListFilterModel.translateJSON(criterion.toJSON(), false);
+      const queryParams = criterion.toQueryParams();
+      let str = ListFilterModel.translateJSON(
+        JSON.stringify(queryParams),
+        false
+      );
 
       // URL-encode other characters
       str = encodeURI(str);
@@ -447,6 +447,15 @@ export class ListFilterModel {
     return output;
   }
 
+  // TODO - this needs to just use makeFilter, but it needs a migration
+  public makeSavedFilter() {
+    const output: Record<string, unknown> = {};
+    for (const c of this.criteria) {
+      c.applyToSavedCriterion(output);
+    }
+    return output;
+  }
+
   public makeSavedUIOptions(): SavedUIOptions {
     return {
       display_mode: this.displayMode,
@@ -454,10 +463,29 @@ export class ListFilterModel {
     };
   }
 
+  public criteriaFor(type: CriterionType) {
+    return this.criteria.filter((c) => c.criterionOption.type === type);
+  }
+
+  public replaceCriteria(type: CriterionType, newCriteria: Criterion[]) {
+    const criteria = [
+      ...this.criteria.filter((c) => c.criterionOption.type !== type),
+      ...newCriteria,
+    ];
+
+    return this.setCriteria(criteria);
+  }
+
   public clearCriteria() {
     const ret = this.clone();
     ret.criteria = [];
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public setCriteria(criteria: Criterion[]) {
+    const ret = this.clone();
+    ret.criteria = criteria;
     return ret;
   }
 
@@ -493,6 +521,34 @@ export class ListFilterModel {
   public setPageSize(pageSize: number) {
     const ret = this.clone();
     ret.itemsPerPage = pageSize;
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public setSortBy(sortBy: string | undefined) {
+    const ret = this.clone();
+    ret.sortBy = sortBy;
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public toggleSortDirection() {
+    const ret = this.clone();
+
+    if (ret.sortDirection === SortDirectionEnum.Asc) {
+      ret.sortDirection = SortDirectionEnum.Desc;
+    } else {
+      ret.sortDirection = SortDirectionEnum.Asc;
+    }
+
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public reshuffleRandomSort() {
+    const ret = this.clone();
+    ret.currentPage = 1;
+    ret.randomSeed = -1;
     return ret;
   }
 

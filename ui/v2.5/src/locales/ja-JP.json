@@ -716,7 +716,10 @@
                     "show_scrubber": "スクラバーを表示",
                     "track_activity": "アクティビティを追跡",
                     "disable_mobile_media_auto_rotate": "モバイル機器でフル画面再生時の画面回転を無効化",
-                    "enable_chromecast": "クロームキャスト機能の有効化"
+                    "enable_chromecast": "クロームキャスト機能の有効化",
+                    "vr_tag": {
+                        "heading": "VRタッグ"
+                    }
                 }
             },
             "scene_wall": {
@@ -1292,5 +1295,10 @@
     "circumcised_types": {
         "CUT": "切除",
         "UNCUT": "未切除"
+    },
+    "date_format": "YYYY -MM-DD",
+    "datetime_format": "YYYY-MM-DD HH:MM",
+    "criterion_modifier_values": {
+        "none": "ない"
     }
 }

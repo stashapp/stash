@@ -701,6 +701,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 currentSource?.sourceInput.stash_box_endpoint ?? undefined
               }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
+              ageFromDate={
+                !scene.date || excludedFields.date
+                  ? stashScene.date
+                  : scene.date
+              }
             />
           ))}
         </Form.Group>

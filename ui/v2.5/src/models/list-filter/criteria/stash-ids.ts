@@ -5,7 +5,11 @@ import {
   StashIdCriterionInput,
 } from "src/core/generated-graphql";
 import { IStashIDValue } from "../types";
-import { ModifierCriterion, ModifierCriterionOption } from "./criterion";
+import {
+  ISavedCriterion,
+  ModifierCriterion,
+  ModifierCriterionOption,
+} from "./criterion";
 
 export const StashIDCriterionOption = new ModifierCriterionOption({
   messageID: "stash_id",
@@ -90,7 +94,29 @@ export class StashIDCriterion extends ModifierCriterion<IStashIDValue> {
     return ret;
   }
 
-  public toJSON() {
+  public setFromSavedCriterion(
+    criterion: StashIdCriterionInput | ISavedCriterion<StashIdCriterionInput>
+  ) {
+    super.setFromSavedCriterion(criterion);
+
+    // const asStashIDValue = criterion as StashIdCriterionInput;
+    // const asSavedCriterion =
+    //   criterion as ISavedCriterion<StashIdCriterionInput>;
+    // if (asStashIDValue.endpoint || asStashIDValue.stash_id) {
+    //   this.value = {
+    //     endpoint: asStashIDValue.endpoint ?? "",
+    //     stashID: asStashIDValue.stash_id ?? "",
+    //   };
+    // } else if (asSavedCriterion.value) {
+    //   this.value = {
+    //     endpoint: asSavedCriterion.value.endpoint ?? "",
+    //     stashID: asSavedCriterion.value.stash_id ?? "",
+    //   };
+    // }
+  }
+
+  public toQueryParams(): Record<string, unknown> {
+    super.toQueryParams();
     let encodedCriterion;
     if (
       (this.modifier === CriterionModifier.IsNull ||
@@ -108,7 +134,7 @@ export class StashIDCriterion extends ModifierCriterion<IStashIDValue> {
         modifier: this.modifier,
       };
     }
-    return JSON.stringify(encodedCriterion);
+    return encodedCriterion;
   }
 
   public isValid(): boolean {

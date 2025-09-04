@@ -106,7 +106,7 @@ type ImageQueryOptions struct {
 }
 
 type ImageQueryResult struct {
-	QueryResult
+	QueryResult[int]
 	Megapixels float64
 	TotalSize  float64
 

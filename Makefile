@@ -281,6 +281,10 @@ generate-ui: pre-ui
 generate-backend: touch-ui
 	go generate ./cmd/stash
 
+.PHONY: generate-login-locale
+generate-login-locale:
+	go generate ./ui
+
 .PHONY: generate-dataloaders
 generate-dataloaders:
 	go generate ./internal/api/loaders
@@ -351,7 +355,10 @@ ifdef STASH_SOURCEMAPS
 endif
 
 .PHONY: ui
-ui: ui-env generate-ui
+ui: ui-only generate-login-locale
+
+.PHONY: ui-only
+ui-only: ui-env generate-ui
 	cd ui/v2.5 && yarn build
 
 .PHONY: zip-ui

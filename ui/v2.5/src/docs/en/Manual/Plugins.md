@@ -1,6 +1,7 @@
 # Plugins
 
 Stash supports plugins that can do the following:
+
 - perform custom tasks when triggered by the user from the Tasks page
 - perform custom tasks when triggered from specific events
 - add custom CSS to the UI
@@ -14,7 +15,7 @@ Plugin tasks can be implemented using embedded Javascript, or by calling an exte
 
 Plugins can be installed and managed from the `Settings > Plugins` page. 
 
-Scrapers are installed using the `Available Plugins` section. This section allows configuring sources from which to install plugins. The `Community (stable)` source is configured by default. This source contains plugins for the current _stable_ version of stash.
+Plugins are installed using the `Available Plugins` section. This section allows configuring sources from which to install plugins. The `Community (stable)` source is configured by default. This source contains plugins for the current _stable_ version of stash.
 
 These are the plugin sources maintained by the stashapp organisation:
 

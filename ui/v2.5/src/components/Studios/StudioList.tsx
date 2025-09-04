@@ -135,6 +135,7 @@ export const StudioList: React.FC<IStudioList> = ({
         return (
           <StudioCardGrid
             studios={result.data.findStudios.studios}
+            zoomIndex={filter.zoomIndex}
             fromParent={fromParent}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
@@ -187,6 +188,7 @@ export const StudioList: React.FC<IStudioList> = ({
       selectable
     >
       <ItemList
+        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

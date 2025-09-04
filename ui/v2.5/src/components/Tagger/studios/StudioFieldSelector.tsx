@@ -20,7 +20,10 @@ const StudioFieldSelect: React.FC<IProps> = ({
 }) => {
   const intl = useIntl();
   const [excluded, setExcluded] = useState<Record<string, boolean>>(
-    excludedFields.reduce((dict, field) => ({ ...dict, [field]: true }), {})
+    // filter out fields that aren't in STUDIO_FIELDS
+    excludedFields
+      .filter((field) => STUDIO_FIELDS.includes(field))
+      .reduce((dict, field) => ({ ...dict, [field]: true }), {})
   );
 
   const toggleField = (field: string) =>

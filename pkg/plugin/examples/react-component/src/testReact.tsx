@@ -14,7 +14,11 @@ interface IPluginApi {
       Button: React.FC<any>;
       Nav: React.FC<any> & {
         Link: React.FC<any>;
+        Item: React.FC<any>;
       };
+      Tab: React.FC<any> & {
+        Pane: React.FC<any>;
+      }
     },
     FontAwesomeSolid: {
       faEthernet: any;
@@ -45,7 +49,7 @@ interface IPluginApi {
   const React = PluginApi.React;
   const GQL = PluginApi.GQL;
 
-  const { Button } = PluginApi.libraries.Bootstrap;
+  const { Button, Nav, Tab } = PluginApi.libraries.Bootstrap;
   const { faEthernet } = PluginApi.libraries.FontAwesomeSolid;
   const {
     Link,
@@ -144,6 +148,10 @@ interface IPluginApi {
     return <><Overlays />{original({...props})}</>;
   });
 
+  PluginApi.patch.instead("FrontPage", function (props: any, _: any, original: (props: any) => any) {  
+    return <><p>Hello from Test React!</p>{original({...props})}</>;
+  });
+
   const TestPage: React.FC = () => {
     const componentsToLoad = [
       PluginApi.loadableComponents.SceneCard,
@@ -184,7 +192,7 @@ interface IPluginApi {
     );
   };
 
-  PluginApi.register.route("/plugin/test-react", TestPage);
+  PluginApi.register.route("/plugins/test-react", TestPage);
 
   PluginApi.patch.before("SettingsToolsSection", function (props: any) {
     const {
@@ -198,7 +206,7 @@ interface IPluginApi {
             {props.children}
             <Setting
               heading={
-                <Link to="/plugin/test-react">
+                <Link to="/plugins/test-react">
                   <Button>
                     Test page
                   </Button>
@@ -224,7 +232,7 @@ interface IPluginApi {
             <NavLink
               className="nav-utility"
               exact
-              to="/plugin/test-react"
+              to="/plugins/test-react"
             >
               <Button
                 className="minimal d-flex align-items-center h-100"
@@ -237,5 +245,37 @@ interface IPluginApi {
         )
       }
     ]
-  })
+  });
+
+  PluginApi.patch.before("ScenePage.Tabs", function (props: any) {
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <Nav.Item>
+              <Nav.Link eventKey="test-react-tab">
+                Test React tab
+              </Nav.Link>
+            </Nav.Item>
+          </>
+        ),
+      },
+    ];
+  });
+
+  PluginApi.patch.before("ScenePage.TabContent", function (props: any) {
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <Tab.Pane eventKey="test-react-tab">
+              Test React tab content {props.scene.id}
+            </Tab.Pane>
+          </>
+        ),
+      },
+    ];
+  });
 })();

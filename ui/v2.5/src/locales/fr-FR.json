@@ -2,7 +2,7 @@
     "actions": {
         "add": "Ajouter",
         "add_directory": "Ajouter un répertoire",
-        "add_entity": "Ajouter {entityType}",
+        "add_entity": "Ajout de {entityType}",
         "add_to_entity": "Ajouter à {entityType}",
         "allow": "Autoriser",
         "allow_temporarily": "Autoriser temporairement",
@@ -753,7 +753,8 @@
                     "vr_tag": {
                         "description": "Le bouton VR est uniquement affiché pour les scènes comportant cette étiquette.",
                         "heading": "Étiquette VR"
-                    }
+                    },
+                    "show_range_markers": "Afficher les marqueurs prolongés"
                 }
             },
             "scene_wall": {
@@ -1117,7 +1118,7 @@
         "interactive_speed": "Vitesse interactive",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} dans cette scène"
+            "age_context": "{age} {years_old} à la production"
         },
         "phash": "Empreinte",
         "play_count": "Compteur de lecture",
@@ -1515,6 +1516,11 @@
     "custom_fields": {
         "field": "Champ",
         "title": "Champs personnalisés",
-        "value": "Valeur"
-    }
+        "value": "Valeur",
+        "criteria_format_string_others": "{criterion} (champ personnalisé) {modifierString} {valueString} (+{others} autres)",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}"
+    },
+    "eta": "TAE",
+    "sort_name": "Nom de tri",
+    "age_on_date": "{age} à la production"
 }

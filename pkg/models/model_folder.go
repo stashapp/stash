@@ -35,6 +35,14 @@ func (i FolderID) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(i.String()))
 }
 
+func FolderIDsFromInts(ids []int) []FolderID {
+	ret := make([]FolderID, len(ids))
+	for i, id := range ids {
+		ret[i] = FolderID(id)
+	}
+	return ret
+}
+
 // Folder represents a folder in the file system.
 type Folder struct {
 	ID FolderID `json:"id"`

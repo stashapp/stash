@@ -851,7 +851,10 @@ type mappedScraper struct {
 	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
 	Image     *mappedImageScraperConfig     `yaml:"image"`
 	Performer *mappedPerformerScraperConfig `yaml:"performer"`
-	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
+	Group     *mappedMovieScraperConfig     `yaml:"group"`
+
+	// deprecated
+	Movie *mappedMovieScraperConfig `yaml:"movie"`
 }
 
 type mappedResult map[string]interface{}
@@ -997,8 +1000,8 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 	return ret, nil
 }
 
-// processSceneRelationships sets the relationships on the ScrapedScene. It returns true if any relationships were set.
-func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQuery, resultIndex int, ret *ScrapedScene) bool {
+// processSceneRelationships sets the relationships on the models.ScrapedScene. It returns true if any relationships were set.
+func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQuery, resultIndex int, ret *models.ScrapedScene) bool {
 	sceneScraperConfig := s.Scene
 
 	scenePerformersMap := sceneScraperConfig.Performers
@@ -1082,8 +1085,8 @@ func processRelationships[T any](ctx context.Context, s mappedScraper, relations
 	return ret
 }
 
-func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*ScrapedScene, error) {
-	var ret []*ScrapedScene
+func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*models.ScrapedScene, error) {
+	var ret []*models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
 	sceneMap := sceneScraperConfig.mappedConfig
@@ -1097,7 +1100,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 	for i, r := range results {
 		logger.Debug(`Processing scene:`)
 
-		var thisScene ScrapedScene
+		var thisScene models.ScrapedScene
 		r.apply(&thisScene)
 		s.processSceneRelationships(ctx, q, i, &thisScene)
 		ret = append(ret, &thisScene)
@@ -1106,7 +1109,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 	return ret, nil
 }
 
-func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*ScrapedScene, error) {
+func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.ScrapedScene, error) {
 	sceneScraperConfig := s.Scene
 	if sceneScraperConfig == nil {
 		return nil, nil
@@ -1117,7 +1120,7 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(ctx, q, s.Common, urlsIsMulti)
 
-	var ret ScrapedScene
+	var ret models.ScrapedScene
 	if len(results) > 0 {
 		results[0].apply(&ret)
 	}
@@ -1133,8 +1136,8 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	return nil, nil
 }
 
-func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*ScrapedImage, error) {
-	var ret ScrapedImage
+func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*models.ScrapedImage, error) {
+	var ret models.ScrapedImage
 
 	imageScraperConfig := s.Image
 	if imageScraperConfig == nil {
@@ -1184,8 +1187,8 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*Scraped
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*ScrapedGallery, error) {
-	var ret ScrapedGallery
+func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*models.ScrapedGallery, error) {
+	var ret models.ScrapedGallery
 
 	galleryScraperConfig := s.Gallery
 	if galleryScraperConfig == nil {
@@ -1247,24 +1250,29 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*Scrap
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
-	var ret models.ScrapedMovie
+func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.ScrapedGroup, error) {
+	var ret models.ScrapedGroup
 
-	movieScraperConfig := s.Movie
-	if movieScraperConfig == nil {
+	// try group scraper first, falling back to movie
+	groupScraperConfig := s.Group
+
+	if groupScraperConfig == nil {
+		groupScraperConfig = s.Movie
+	}
+	if groupScraperConfig == nil {
 		return nil, nil
 	}
 
-	movieMap := movieScraperConfig.mappedConfig
+	groupMap := groupScraperConfig.mappedConfig
 
-	movieStudioMap := movieScraperConfig.Studio
-	movieTagsMap := movieScraperConfig.Tags
+	groupStudioMap := groupScraperConfig.Studio
+	groupTagsMap := groupScraperConfig.Tags
 
-	results := movieMap.process(ctx, q, s.Common, urlsIsMulti)
+	results := groupMap.process(ctx, q, s.Common, urlsIsMulti)
 
-	if movieStudioMap != nil {
-		logger.Debug(`Processing movie studio:`)
-		studioResults := movieStudioMap.process(ctx, q, s.Common, nil)
+	if groupStudioMap != nil {
+		logger.Debug(`Processing group studio:`)
+		studioResults := groupStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
@@ -1274,9 +1282,9 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 	}
 
 	// now apply the tags
-	if movieTagsMap != nil {
-		logger.Debug(`Processing movie tags:`)
-		tagResults := movieTagsMap.process(ctx, q, s.Common, nil)
+	if groupTagsMap != nil {
+		logger.Debug(`Processing group tags:`)
+		tagResults := groupTagsMap.process(ctx, q, s.Common, nil)
 
 		for _, p := range tagResults {
 			tag := &models.ScrapedTag{}
