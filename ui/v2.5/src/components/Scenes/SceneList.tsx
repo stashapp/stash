@@ -352,6 +352,16 @@ const ListToolbarContent: React.FC<{
 
   const hasSelection = selectedIds.size > 0;
 
+  const sidebarToggle = (
+    <Button
+      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
+      variant="secondary"
+      onClick={() => onToggleSidebar()}
+    >
+      <Icon icon={faSliders} />
+    </Button>
+  );
+
   return (
     <>
       {!hasSelection && (
@@ -368,13 +378,7 @@ const ListToolbarContent: React.FC<{
             onRemoveAll={onRemoveAllCriterion}
             truncateOnOverflow
           />
-          <Button
-            className="minimal sidebar-toggle-button"
-            variant="secondary"
-            onClick={() => onToggleSidebar()}
-          >
-            <Icon icon={faSliders} />
-          </Button>
+          {sidebarToggle}
         </div>
       )}
       {hasSelection && (
@@ -391,13 +395,7 @@ const ListToolbarContent: React.FC<{
           <Button variant="link" onClick={() => onSelectAll()}>
             <FormattedMessage id="actions.select_all" />
           </Button>
-          <Button
-            className="minimal sidebar-toggle-button"
-            variant="secondary"
-            onClick={() => onToggleSidebar()}
-          >
-            <Icon icon={faSliders} />
-          </Button>
+          {sidebarToggle}
         </div>
       )}
       <div>
