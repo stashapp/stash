@@ -6,7 +6,7 @@ interface IFile {
 }
 
 interface IGallery {
-  files: IFile[];
+  files: GQL.Maybe<IFile[]>;
   folder?: GQL.Maybe<IFile>;
 }
 
