@@ -477,12 +477,22 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => onCancel()}>
-            <FormattedMessage id="actions.cancel" />
-          </Button>
-          <Button onClick={() => onApply(currentFilter)}>
-            <FormattedMessage id="actions.apply" />
-          </Button>
+          <div>
+            <Button variant="secondary" onClick={() => {}}>
+              <FormattedMessage id="actions.load" />…
+            </Button>
+            <Button variant="secondary" onClick={() => {}}>
+              <FormattedMessage id="actions.save" />…
+            </Button>
+          </div>
+          <div>
+            <Button variant="secondary" onClick={() => onCancel()}>
+              <FormattedMessage id="actions.cancel" />
+            </Button>
+            <Button onClick={() => onApply(currentFilter)}>
+              <FormattedMessage id="actions.apply" />
+            </Button>
+          </div>
         </Modal.Footer>
       </Modal>
     </>

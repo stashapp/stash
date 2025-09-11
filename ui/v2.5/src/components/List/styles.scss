@@ -312,6 +312,14 @@ input[type="range"].zoom-slider {
     padding-right: 0;
   }
 
+  .modal-footer {
+    justify-content: space-between;
+
+    > div > :not(:first-child) {
+      margin-left: 0.25rem;
+    }
+  }
+
   .filter-tags {
     border-top: 1px solid rgb(16 22 26 / 40%);
     padding: 1rem 1rem 0 1rem;
