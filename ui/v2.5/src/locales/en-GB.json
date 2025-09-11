@@ -1317,6 +1317,7 @@
     "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
+    "search_term": "Search term",
     "update_filter": "Update Filter",
     "more_filter_criteria": "+{count} more"
   },
