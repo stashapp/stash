@@ -357,6 +357,7 @@ const ListToolbarContent: React.FC<{
       className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
       variant="secondary"
       onClick={() => onToggleSidebar()}
+      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
     >
       <Icon icon={faSliders} />
     </Button>
@@ -369,7 +370,6 @@ const ListToolbarContent: React.FC<{
           <FilterButton
             onClick={() => onEditCriterion()}
             count={criteria.length}
-            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
           />
           <FilterTags
             criteria={criteria}
