@@ -23,6 +23,7 @@ import {
   faPencil,
   faPlay,
   faPlus,
+  faSliders,
   faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -54,7 +55,7 @@ import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
-} from "../List/Filters/FilterSidebar";
+} from "../List/Filters/MyFilterSidebar";
 import { PatchContainerComponent } from "src/patch";
 import { Pagination, PaginationIndex } from "../List/Pagination";
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
@@ -229,8 +230,8 @@ const SceneList: React.FC<{
   return null;
 };
 
-const ScenesFilterSidebarSections = PatchContainerComponent(
-  "FilteredSceneList.SidebarSections"
+export const MyScenesFilterSidebarSections = PatchContainerComponent(
+  "MyFilteredSceneList.SidebarSections"
 );
 
 const SidebarContent: React.FC<{
@@ -270,7 +271,7 @@ const SidebarContent: React.FC<{
         focus={focus}
       />
 
-      <ScenesFilterSidebarSections>
+      <MyScenesFilterSidebarSections>
         {!hideStudios && (
           <SidebarStudiosFilter
             title={<FormattedMessage id="studios" />}
@@ -311,7 +312,7 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
-      </ScenesFilterSidebarSections>
+      </MyScenesFilterSidebarSections>
 
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>
@@ -336,7 +337,7 @@ const ListToolbarContent: React.FC<{
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
-  onEditCriterion: (c: Criterion) => void;
+  onEditCriterion: (c?: Criterion) => void;
   onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
   onRemoveAllCriterion: () => void;
   onEditSearchTerm: () => void;
@@ -370,15 +371,22 @@ const ListToolbarContent: React.FC<{
 
   const hasSelection = selectedIds.size > 0;
 
+  const sidebarToggle = (
+    <Button
+      className="sidebar-toggle-button ignore-sidebar-outside-click"
+      variant="secondary"
+      onClick={() => onToggleSidebar()}
+      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+    >
+      <Icon icon={faSliders} />
+    </Button>
+  );
+
   return (
     <>
       {!hasSelection && (
-        <div>
-          <FilterButton
-            onClick={() => onToggleSidebar()}
-            count={criteria.length}
-            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
-          />
+        <div className="my-filter-toolbar">
+          {sidebarToggle}
           <FilterTags
             searchTerm={searchTerm}
             criteria={criteria}
@@ -388,6 +396,11 @@ const ListToolbarContent: React.FC<{
             onEditSearchTerm={onEditSearchTerm}
             onRemoveSearchTerm={onRemoveSearchTerm}
             truncateOnOverflow
+          />
+          <FilterButton
+            onClick={() => onEditCriterion()}
+            count={criteria.length}
+            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
           />
         </div>
       )}
@@ -529,7 +542,7 @@ interface IFilteredScenes {
   fromGroupId?: string;
 }
 
-export const FilteredSceneList = (props: IFilteredScenes) => {
+export const MyFilteredSceneList = (props: IFilteredScenes) => {
   const intl = useIntl();
   const history = useHistory();
 
@@ -806,7 +819,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 selectedIds={selectedIds}
                 operations={otherOperations}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
                 onRemoveAllCriterion={() => clearAllCriteria(true)}
                 onEditSearchTerm={() => {
@@ -860,4 +873,4 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   );
 };
 
-export default FilteredSceneList;
+export default MyFilteredSceneList;

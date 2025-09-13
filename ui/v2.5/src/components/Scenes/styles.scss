@@ -1469,3 +1469,36 @@ input[type="range"].blue-slider {
   max-width: 400px;
   padding: 0.25rem;
 }
+
+.scene-list-toolbar {
+
+  .selected-items-info,
+  > div.my-filter-toolbar {
+    flex-grow: 1;
+    overflow-x: hidden;
+  }
+
+  > div.my-filter-toolbar {
+    border: 1px solid $secondary;
+    border-radius: 0.25rem;
+  }
+
+  div.my-filter-toolbar {
+
+    .sidebar-toggle-button {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+      margin-left: 0;
+    }
+
+    .filter-button {
+      background: none;
+      border: none;
+      border-bottom-right-radius: inherit;
+      border-top-right-radius: inherit;
+      color: #f5f8fa;
+      margin-left: auto;
+      transition: none;
+    }
+  }
+}
