@@ -23,6 +23,7 @@ import {
   faPencil,
   faPlay,
   faPlus,
+  faSliders,
   faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -336,7 +337,7 @@ const ListToolbarContent: React.FC<{
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
-  onEditCriterion: (c: Criterion) => void;
+  onEditCriterion: (c?: Criterion) => void;
   onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
   onRemoveAllCriterion: () => void;
   onEditSearchTerm: () => void;
@@ -370,14 +371,24 @@ const ListToolbarContent: React.FC<{
 
   const hasSelection = selectedIds.size > 0;
 
+  const sidebarToggle = (
+    <Button
+      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
+      variant="secondary"
+      onClick={() => onToggleSidebar()}
+      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+    >
+      <Icon icon={faSliders} />
+    </Button>
+  );
+
   return (
     <>
       {!hasSelection && (
-        <div>
+        <div className="filter-toolbar">
           <FilterButton
-            onClick={() => onToggleSidebar()}
+            onClick={() => onEditCriterion()}
             count={criteria.length}
-            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
           />
           <FilterTags
             searchTerm={searchTerm}
@@ -389,6 +400,7 @@ const ListToolbarContent: React.FC<{
             onRemoveSearchTerm={onRemoveSearchTerm}
             truncateOnOverflow
           />
+          {sidebarToggle}
         </div>
       )}
       {hasSelection && (
@@ -405,6 +417,7 @@ const ListToolbarContent: React.FC<{
           <Button variant="link" onClick={() => onSelectAll()}>
             <FormattedMessage id="actions.select_all" />
           </Button>
+          {sidebarToggle}
         </div>
       )}
       <div>
@@ -806,7 +819,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 selectedIds={selectedIds}
                 operations={otherOperations}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
                 onRemoveAllCriterion={() => clearAllCriteria(true)}
                 onEditSearchTerm={() => {
