@@ -45,7 +45,7 @@ import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
-import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
+import { PerformerTagsCriterionOption, TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
@@ -65,6 +65,8 @@ import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
+import { DuplicatedCriterionOption, PhashCriterionOption } from "src/models/list-filter/criteria/phash";
+import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -291,6 +293,14 @@ const SidebarContent: React.FC<{
           filterHook={filterHook}
         />
         <SidebarTagsFilter
+          title={<FormattedMessage id="performer_tags" />}
+          data-type={PerformerTagsCriterionOption.type}
+          option={PerformerTagsCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
+        <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
           data-type={TagsCriterionOption.type}
           option={TagsCriterionOption}
@@ -302,6 +312,20 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
           option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarPhashFilter
+          title={<FormattedMessage id="media_info.phash" />}
+          data-type={PhashCriterionOption.type}
+          option={PhashCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="duplicated_phash" />}
+          data-type={DuplicatedCriterionOption.type}
+          option={DuplicatedCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />
