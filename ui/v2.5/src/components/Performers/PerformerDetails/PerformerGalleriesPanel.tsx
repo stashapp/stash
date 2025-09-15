@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GalleryList } from "src/components/Galleries/GalleryList";
+import { GalleryList } from "src/components/Galleries/MyGalleryList";
 import { usePerformerFilterHook } from "src/core/performers";
 import { View } from "src/components/List/views";
 import { PatchComponent } from "src/patch";

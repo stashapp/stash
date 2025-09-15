@@ -2,7 +2,10 @@ import React, { useMemo } from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { IPhashDistanceValue } from "../../../models/list-filter/types";
-import { CriterionOption, ModifierCriterion } from "../../../models/list-filter/criteria/criterion";
+import {
+  CriterionOption,
+  ModifierCriterion,
+} from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { NumberField } from "src/utils/form";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -110,7 +113,7 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
 
   const options: Option[] = useMemo(() => {
     return [anyOption, noneOption];
-  }, [anyOption, noneOption])
+  }, [anyOption, noneOption]);
 
   const criteria = filter.criteriaFor(option.type) as PhashCriterion[];
   const criterion = criteria.length > 0 ? criteria[0] : null;
@@ -126,7 +129,6 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
 
     return [];
   }, [anyOption, noneOption, criterion]);
-
 
   function onSelect(item: Option) {
     const newCriterion = criterion ? criterion.clone() : option.makeCriterion();

@@ -855,7 +855,7 @@ input[type="range"].blue-slider {
   }
 
   .queue-scene-title {
-    font-size: 1.0rem;
+    font-size: 1rem;
 
     @media (max-width: 576px) {
       font-size: 1rem;
@@ -919,7 +919,7 @@ input[type="range"].blue-slider {
 
     .scene-specs-overlay {
       opacity: 0;
-      transition: opacity .5s;
+      transition: opacity 0.5s;
     }
   }
 
@@ -1338,7 +1338,11 @@ input[type="range"].blue-slider {
   }
 }
 
+.gallery-list-toolbar,
+.performer-list-toolbar,
 .scene-list-toolbar,
+.performer-list-header,
+.gallery-list-header,
 .scene-list-header {
   align-items: center;
   background-color: $body-bg;
@@ -1358,6 +1362,8 @@ input[type="range"].blue-slider {
   }
 }
 
+.gallery-list-toolbar,
+.performer-list-toolbar,
 .scene-list-toolbar {
   flex-wrap: nowrap;
   gap: 1rem;
@@ -1435,6 +1441,8 @@ input[type="range"].blue-slider {
   }
 }
 
+.gallery-list-header,
+.performer-list-header,
 .scene-list-header {
   flex-wrap: wrap-reverse;
   gap: 0.5rem;
@@ -1456,6 +1464,8 @@ input[type="range"].blue-slider {
   }
 }
 
+.detail-body .gallery-list-toolbar,
+.detail-body .performer-list-toolbar,
 .detail-body .scene-list-toolbar {
   top: calc($sticky-detail-header-height + $navbar-height);
 
@@ -1470,8 +1480,9 @@ input[type="range"].blue-slider {
   padding: 0.25rem;
 }
 
+.gallery-list-toolbar,
+.performer-list-toolbar,
 .scene-list-toolbar {
-
   .selected-items-info,
   > div.my-filter-toolbar {
     flex-grow: 1;
@@ -1484,7 +1495,6 @@ input[type="range"].blue-slider {
   }
 
   div.my-filter-toolbar {
-
     .sidebar-toggle-button {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0;

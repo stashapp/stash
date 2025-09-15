@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
-import { PerformerList } from "src/components/Performers/PerformerList";
+import { PerformerList } from "src/components/Performers/MyPerformerList";
 import { View } from "src/components/List/views";
 
 interface ITagPerformersPanel {

@@ -1,37 +1,19 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindScenes, useFindScenes } from "src/core/StashService";
+import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { Tagger } from "../Tagger/scenes/SceneTagger";
-import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
-import { SceneWallPanel } from "./SceneWallPanel";
-import { SceneListTable } from "./SceneListTable";
-import { EditScenesDialog } from "./EditScenesDialog";
-import { DeleteScenesDialog } from "./DeleteScenesDialog";
-import { GenerateDialog } from "../Dialogs/GenerateDialog";
+import GalleryWallCard from "./GalleryWallCard";
+import { EditGalleriesDialog } from "./EditGalleriesDialog";
+import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
-import { SceneCardsGrid } from "./SceneCardsGrid";
-import { TaggerContext } from "../Tagger/context";
-import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
-import { ConfigurationContext } from "src/hooks/Config";
-import {
-  faPencil,
-  faPlay,
-  faPlus,
-  faSliders,
-  faTimes,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import { SceneMergeModal } from "./SceneMergeDialog";
-import { objectTitle } from "src/core/files";
-import TextUtils from "src/utils/text";
+import { GalleryListTable } from "./GalleryListTable";
+import { GalleryCardGrid } from "./GalleryGridCard";
 import { View } from "../List/views";
-import { FileSize } from "../Shared/FileSize";
 import { LoadedContent } from "../List/PagedList";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
 import {
@@ -41,9 +23,7 @@ import {
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
-import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
-import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import {
   PerformerTagsCriterionOption,
@@ -69,177 +49,114 @@ import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
 import {
-  DuplicatedCriterionOption,
-  PhashCriterionOption,
-} from "src/models/list-filter/criteria/phash";
-import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
+  faPencil,
+  faPlus,
+  faSliders,
+  faTimes,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { TaggerContext } from "../Tagger/context";
+import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
+import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 
-function renderMetadataByline(result: GQL.FindScenesQueryResult) {
-  const duration = result?.data?.findScenes?.duration;
-  const size = result?.data?.findScenes?.filesize;
-
-  if (!duration && !size) {
-    return;
-  }
-
-  const separator = duration && size ? " - " : "";
-
-  return (
-    <span className="scenes-stats">
-      &nbsp;(
-      {duration ? (
-        <span className="scenes-duration">
-          {TextUtils.secondsAsTimeString(duration, 3)}
-        </span>
-      ) : undefined}
-      {separator}
-      {size ? (
-        <span className="scenes-size">
-          <FileSize size={size} />
-        </span>
-      ) : undefined}
-      )
-    </span>
-  );
+function getItems(result: GQL.FindGalleriesQueryResult) {
+  return result?.data?.findGalleries?.galleries ?? [];
 }
 
-function usePlayScene() {
+function getCount(result: GQL.FindGalleriesQueryResult) {
+  return result?.data?.findGalleries?.count ?? 0;
+}
+
+function useViewRandom(
+  result: GQL.FindGalleriesQueryResult,
+  filter: ListFilterModel
+) {
   const history = useHistory();
 
-  const { configuration: config } = useContext(ConfigurationContext);
-  const cont = config?.interface.continuePlaylistDefault ?? false;
-  const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
+  const viewRandom = useCallback(async () => {
+    // query for a random image
+    if (result.data?.findGalleries) {
+      const { count } = result.data.findGalleries;
 
-  const playScene = useCallback(
-    (queue: SceneQueue, sceneID: string, options?: IPlaySceneOptions) => {
-      history.push(
-        queue.makeLink(sceneID, { autoPlay, continue: cont, ...options })
-      );
-    },
-    [history, cont, autoPlay]
-  );
-
-  return playScene;
-}
-
-function usePlaySelected(selectedIds: Set<string>) {
-  const playScene = usePlayScene();
-
-  const playSelected = useCallback(() => {
-    // populate queue and go to first scene
-    const sceneIDs = Array.from(selectedIds.values());
-    const queue = SceneQueue.fromSceneIDList(sceneIDs);
-
-    playScene(queue, sceneIDs[0]);
-  }, [selectedIds, playScene]);
-
-  return playSelected;
-}
-
-function usePlayFirst() {
-  const playScene = usePlayScene();
-
-  const playFirst = useCallback(
-    (queue: SceneQueue, sceneID: string, index: number) => {
-      // populate queue and go to first scene
-      playScene(queue, sceneID, { sceneIndex: index });
-    },
-    [playScene]
-  );
-
-  return playFirst;
-}
-
-function usePlayRandom(filter: ListFilterModel, count: number) {
-  const playScene = usePlayScene();
-
-  const playRandom = useCallback(async () => {
-    // query for a random scene
-    if (count === 0) {
-      return;
+      const index = Math.floor(Math.random() * count);
+      const filterCopy = cloneDeep(filter);
+      filterCopy.itemsPerPage = 1;
+      filterCopy.currentPage = index + 1;
+      const singleResult = await queryFindGalleries(filterCopy);
+      if (singleResult.data.findGalleries.galleries.length === 1) {
+        const { id } = singleResult.data.findGalleries.galleries[0];
+        // navigate to the image player page
+        history.push(`/galleries/${id}`);
+      }
     }
+  }, [result, filter, history]);
 
-    const pages = Math.ceil(count / filter.itemsPerPage);
-    const page = Math.floor(Math.random() * pages) + 1;
-
-    const indexMax = Math.min(filter.itemsPerPage, count);
-    const index = Math.floor(Math.random() * indexMax);
-    const filterCopy = cloneDeep(filter);
-    filterCopy.currentPage = page;
-    filterCopy.sortBy = "random";
-    const queryResults = await queryFindScenes(filterCopy);
-    const scene = queryResults.data.findScenes.scenes[index];
-    if (scene) {
-      // navigate to the image player page
-      const queue = SceneQueue.fromListFilterModel(filterCopy);
-      playScene(queue, scene.id, { sceneIndex: index });
-    }
-  }, [filter, count, playScene]);
-
-  return playRandom;
+  return viewRandom;
 }
 
-function useAddKeybinds(filter: ListFilterModel, count: number) {
-  const playRandom = usePlayRandom(filter, count);
+function useAddKeybinds(
+  result: GQL.FindGalleriesQueryResult,
+  filter: ListFilterModel
+) {
+  const viewRandom = useViewRandom(result, filter);
 
   useEffect(() => {
     Mousetrap.bind("p r", () => {
-      playRandom();
+      viewRandom();
     });
 
     return () => {
       Mousetrap.unbind("p r");
     };
-  }, [playRandom]);
+  }, [viewRandom]);
 }
 
-const SceneList: React.FC<{
-  scenes: GQL.SlimSceneDataFragment[];
+const GalleryListContent: React.FC<{
+  galleries: GQL.SlimGalleryDataFragment[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
-  fromGroupId?: string;
-}> = ({ scenes, filter, selectedIds, onSelectChange, fromGroupId }) => {
-  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
-
-  if (scenes.length === 0) {
+}> = ({ galleries, filter, selectedIds, onSelectChange }) => {
+  if (galleries.length === 0) {
     return null;
   }
 
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <SceneCardsGrid
-        scenes={scenes}
-        queue={queue}
-        zoomIndex={filter.zoomIndex}
+      <GalleryCardGrid
+        galleries={galleries}
         selectedIds={selectedIds}
+        zoomIndex={filter.zoomIndex}
         onSelectChange={onSelectChange}
-        fromGroupId={fromGroupId}
       />
     );
   }
   if (filter.displayMode === DisplayMode.List) {
     return (
-      <SceneListTable
-        scenes={scenes}
-        queue={queue}
+      <GalleryListTable
+        galleries={galleries}
         selectedIds={selectedIds}
         onSelectChange={onSelectChange}
       />
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {
-    return <SceneWallPanel scenes={scenes} sceneQueue={queue} />;
-  }
-  if (filter.displayMode === DisplayMode.Tagger) {
-    return <Tagger scenes={scenes} queue={queue} />;
+    return (
+      <div className="row">
+        <div className="GalleryWall">
+          {galleries.map((gallery) => (
+            <GalleryWallCard key={gallery.id} gallery={gallery} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return null;
 };
 
-export const MyScenesFilterSidebarSections = PatchContainerComponent(
-  "MyFilteredSceneList.SidebarSections"
+export const MyGalleriesFilterSidebarSections = PatchContainerComponent(
+  "MyFilteredGalleryList.SidebarSections"
 );
 
 const SidebarContent: React.FC<{
@@ -266,8 +183,6 @@ const SidebarContent: React.FC<{
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
-  const hideStudios = view === View.StudioScenes;
-
   return (
     <>
       <FilteredSidebarHeader
@@ -279,17 +194,15 @@ const SidebarContent: React.FC<{
         focus={focus}
       />
 
-      <MyScenesFilterSidebarSections>
-        {!hideStudios && (
-          <SidebarStudiosFilter
-            title={<FormattedMessage id="studios" />}
-            data-type={StudiosCriterionOption.type}
-            option={StudiosCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            filterHook={filterHook}
-          />
-        )}
+      <MyGalleriesFilterSidebarSections>
+        <SidebarStudiosFilter
+          title={<FormattedMessage id="studios" />}
+          data-type={StudiosCriterionOption.type}
+          option={StudiosCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
         <SidebarPerformersFilter
           title={<FormattedMessage id="performers" />}
           data-type={PerformersCriterionOption.type}
@@ -321,20 +234,6 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
-        <SidebarPhashFilter
-          title={<FormattedMessage id="media_info.phash" />}
-          data-type={PhashCriterionOption.type}
-          option={PhashCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarBooleanFilter
-          title={<FormattedMessage id="duplicated_phash" />}
-          data-type={DuplicatedCriterionOption.type}
-          option={DuplicatedCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}
@@ -342,7 +241,7 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
-      </MyScenesFilterSidebarSections>
+      </MyGalleriesFilterSidebarSections>
 
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>
@@ -363,7 +262,7 @@ interface IOperations {
 const ListToolbarContent: React.FC<{
   searchTerm: string;
   criteria: Criterion[];
-  items: GQL.SlimSceneDataFragment[];
+  items: GQL.SlimGalleryDataFragment[];
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
@@ -376,7 +275,6 @@ const ListToolbarContent: React.FC<{
   onSelectNone: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onPlay: () => void;
   onCreateNew: () => void;
 }> = ({
   searchTerm,
@@ -394,7 +292,6 @@ const ListToolbarContent: React.FC<{
   onSelectNone,
   onEdit,
   onDelete,
-  onPlay,
   onCreateNew,
 }) => {
   const intl = useIntl();
@@ -452,16 +349,6 @@ const ListToolbarContent: React.FC<{
       )}
       <div>
         <ButtonGroup>
-          {!!items.length && (
-            <Button
-              className="play-button"
-              variant="secondary"
-              onClick={() => onPlay()}
-              title={intl.formatMessage({ id: "actions.play" })}
-            >
-              <Icon icon={faPlay} />
-            </Button>
-          )}
           {!hasSelection && (
             <Button
               className="create-new-button"
@@ -469,7 +356,7 @@ const ListToolbarContent: React.FC<{
               onClick={() => onCreateNew()}
               title={intl.formatMessage(
                 { id: "actions.create_entity" },
-                { entityType: intl.formatMessage({ id: "scene" }) }
+                { entityType: intl.formatMessage({ id: "gallery" }) }
               )}
             >
               <Icon icon={faPlus} />
@@ -491,7 +378,7 @@ const ListToolbarContent: React.FC<{
             </>
           )}
 
-          <OperationDropdown className="scene-list-operations">
+          <OperationDropdown className="gallery-list-operations">
             {operations.map((o) => {
               if (o.isDisplayed && !o.isDisplayed()) {
                 return null;
@@ -517,18 +404,16 @@ const ListResultsHeader: React.FC<{
   loading: boolean;
   filter: ListFilterModel;
   totalCount: number;
-  metadataByline?: React.ReactNode;
   onChangeFilter: (filter: ListFilterModel) => void;
-}> = ({ loading, filter, totalCount, metadataByline, onChangeFilter }) => {
+}> = ({ loading, filter, totalCount, onChangeFilter }) => {
   return (
-    <ButtonToolbar className="scene-list-header">
+    <ButtonToolbar className="gallery-list-header">
       <div>
         <PaginationIndex
           loading={loading}
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
           totalItems={totalCount}
-          metadataByline={metadataByline}
         />
       </div>
       <div>
@@ -564,22 +449,21 @@ const ListResultsHeader: React.FC<{
   );
 };
 
-interface IFilteredScenes {
+interface IFilteredGalleries {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
   view?: View;
   alterQuery?: boolean;
-  fromGroupId?: string;
 }
 
-export const MyFilteredSceneList = (props: IFilteredScenes) => {
+export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
   const intl = useIntl();
   const history = useHistory();
 
   const searchFocus = useFocus();
   const [, setSearchFocus] = searchFocus;
 
-  const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
+  const { filterHook, defaultSort, view, alterQuery } = props;
 
   // States
   const {
@@ -591,15 +475,15 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
       filterStateProps: {
-        filterMode: GQL.FilterMode.Scenes,
+        filterMode: GQL.FilterMode.Galleries,
         defaultSort,
         view,
         useURL: alterQuery,
       },
       queryResultProps: {
-        useResult: useFindScenes,
-        getCount: (r) => r.data?.findScenes.count ?? 0,
-        getItems: (r) => r.data?.findScenes.scenes ?? [],
+        useResult: useFindGalleries,
+        getCount: (r) => r.data?.findGalleries.count ?? 0,
+        getItems: (r) => r.data?.findGalleries.galleries ?? [],
         filterHook,
       },
     });
@@ -626,7 +510,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     setFilter,
   });
 
-  useAddKeybinds(filter, totalCount);
+  useAddKeybinds(result, filter);
   useFilteredSidebarKeybinds({
     showSidebar,
     setShowSidebar,
@@ -657,43 +541,17 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     result,
   });
 
-  const metadataByline = useMemo(() => {
-    if (cachedResult.loading) return null;
-
-    return renderMetadataByline(cachedResult) ?? null;
-  }, [cachedResult]);
-
-  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
-
-  const playRandom = usePlayRandom(filter, totalCount);
-  const playSelected = usePlaySelected(selectedIds);
-  const playFirst = usePlayFirst();
+  const viewRandom = useViewRandom(result, filter);
 
   function onCreateNew() {
-    history.push("/scenes/new");
-  }
-
-  function onPlay() {
-    if (items.length === 0) {
-      return;
-    }
-
-    // if there are selected items, play those
-    if (hasSelection) {
-      playSelected();
-      return;
-    }
-
-    // otherwise, play the first item in the list
-    const sceneID = items[0].id;
-    playFirst(queue, sceneID, 0);
+    history.push("/galleries/new");
   }
 
   function onExport(all: boolean) {
     showModal(
       <ExportDialog
         exportInput={{
-          scenes: {
+          galleries: {
             ids: Array.from(selectedIds.values()),
             all: all,
           },
@@ -703,37 +561,18 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     );
   }
 
-  function onMerge() {
-    const selected =
-      selectedItems.map((s) => {
-        return {
-          id: s.id,
-          title: objectTitle(s),
-        };
-      }) ?? [];
-    showModal(
-      <SceneMergeModal
-        scenes={selected}
-        onClose={(mergedID?: string) => {
-          closeModal();
-          if (mergedID) {
-            history.push(`/scenes/${mergedID}`);
-          }
-        }}
-        show
-      />
-    );
-  }
-
   function onEdit() {
     showModal(
-      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
+      <EditGalleriesDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
+      />
     );
   }
 
   function onDelete() {
     showModal(
-      <DeleteScenesDialog
+      <DeleteGalleriesDialog
         selected={selectedItems}
         onClose={onCloseEditDelete}
       />
@@ -742,15 +581,14 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
 
   const otherOperations = [
     {
-      text: intl.formatMessage({ id: "actions.play" }),
-      onClick: () => onPlay(),
-      isDisplayed: () => items.length > 0,
-      className: "play-item",
+      text: intl.formatMessage({ id: "actions.view_random" }),
+      onClick: viewRandom,
+      isDisplayed: () => totalCount > 1,
     },
     {
       text: intl.formatMessage(
         { id: "actions.create_entity" },
-        { entityType: intl.formatMessage({ id: "scene" }) }
+        { entityType: intl.formatMessage({ id: "gallery" }) }
       ),
       onClick: () => onCreateNew(),
       isDisplayed: () => !hasSelection,
@@ -764,39 +602,6 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     {
       text: intl.formatMessage({ id: "actions.select_none" }),
       onClick: () => onSelectNone(),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.play_random" }),
-      onClick: playRandom,
-      isDisplayed: () => totalCount > 1,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
-      onClick: () =>
-        showModal(
-          <GenerateDialog
-            type="scene"
-            selectedIds={Array.from(selectedIds.values())}
-            onClose={() => closeModal()}
-          />
-        ),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.identify" })}…`,
-      onClick: () =>
-        showModal(
-          <IdentifyDialog
-            selectedIds={Array.from(selectedIds.values())}
-            onClose={() => closeModal()}
-          />
-        ),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
-      onClick: () => onMerge(),
       isDisplayed: () => hasSelection,
     },
     {
@@ -816,7 +621,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   return (
     <TaggerContext>
       <div
-        className={cx("item-list-container scene-list", {
+        className={cx("item-list-container gallery-list", {
           "hide-sidebar": !showSidebar,
         })}
       >
@@ -838,7 +643,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
           </Sidebar>
           <div>
             <ButtonToolbar
-              className={cx("scene-list-toolbar", {
+              className={cx("gallery-list-toolbar", {
                 "has-selection": hasSelection,
               })}
             >
@@ -862,7 +667,6 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onCreateNew={onCreateNew}
-                onPlay={onPlay}
               />
             </ButtonToolbar>
 
@@ -870,17 +674,15 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
               loading={cachedResult.loading}
               filter={filter}
               totalCount={totalCount}
-              metadataByline={metadataByline}
               onChangeFilter={(newFilter) => setFilter(newFilter)}
             />
 
             <LoadedContent loading={result.loading} error={result.error}>
-              <SceneList
+              <GalleryListContent
                 filter={effectiveFilter}
-                scenes={items}
+                galleries={items}
                 selectedIds={selectedIds}
                 onSelectChange={onSelectChange}
-                fromGroupId={fromGroupId}
               />
             </LoadedContent>
 
@@ -890,7 +692,6 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
                   itemsPerPage={filter.itemsPerPage}
                   currentPage={filter.currentPage}
                   totalItems={totalCount}
-                  metadataByline={metadataByline}
                   onChangePage={setPage}
                   pagePopupPlacement="top"
                 />
@@ -903,4 +704,9 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   );
 };
 
-export default MyFilteredSceneList;
+// Keep the old component for backward compatibility
+export const GalleryList: React.FC<IFilteredGalleries> = (props) => {
+  return <MyFilteredGalleryList {...props} />;
+};
+
+export default MyFilteredGalleryList;

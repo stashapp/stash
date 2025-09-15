@@ -4,34 +4,23 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindScenes, useFindScenes } from "src/core/StashService";
+import {
+  queryFindPerformers,
+  useFindPerformers,
+  usePerformersDestroy,
+} from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { Tagger } from "../Tagger/scenes/SceneTagger";
-import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
-import { SceneWallPanel } from "./SceneWallPanel";
-import { SceneListTable } from "./SceneListTable";
-import { EditScenesDialog } from "./EditScenesDialog";
-import { DeleteScenesDialog } from "./DeleteScenesDialog";
-import { GenerateDialog } from "../Dialogs/GenerateDialog";
+import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
-import { SceneCardsGrid } from "./SceneCardsGrid";
-import { TaggerContext } from "../Tagger/context";
-import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
-import { ConfigurationContext } from "src/hooks/Config";
-import {
-  faPencil,
-  faPlay,
-  faPlus,
-  faSliders,
-  faTimes,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import { SceneMergeModal } from "./SceneMergeDialog";
-import { objectTitle } from "src/core/files";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
+import { IPerformerCardExtraCriteria } from "./PerformerCard";
+import { PerformerListTable } from "./PerformerListTable";
+import { EditPerformersDialog } from "./EditPerformersDialog";
+import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import TextUtils from "src/utils/text";
+import { PerformerCardGrid } from "./PerformerCardGrid";
 import { View } from "../List/views";
-import { FileSize } from "../Shared/FileSize";
 import { LoadedContent } from "../List/PagedList";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
 import {
@@ -41,20 +30,9 @@ import {
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
-import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
-import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
-import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
-import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
-import {
-  PerformerTagsCriterionOption,
-  TagsCriterionOption,
-} from "src/models/list-filter/criteria/tags";
-import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
-import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
-import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
@@ -69,92 +47,27 @@ import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
 import {
-  DuplicatedCriterionOption,
-  PhashCriterionOption,
-} from "src/models/list-filter/criteria/phash";
-import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
+  faPencil,
+  faPlus,
+  faSliders,
+  faTimes,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { TaggerContext } from "../Tagger/context";
 
-function renderMetadataByline(result: GQL.FindScenesQueryResult) {
-  const duration = result?.data?.findScenes?.duration;
-  const size = result?.data?.findScenes?.filesize;
-
-  if (!duration && !size) {
-    return;
-  }
-
-  const separator = duration && size ? " - " : "";
-
-  return (
-    <span className="scenes-stats">
-      &nbsp;(
-      {duration ? (
-        <span className="scenes-duration">
-          {TextUtils.secondsAsTimeString(duration, 3)}
-        </span>
-      ) : undefined}
-      {separator}
-      {size ? (
-        <span className="scenes-size">
-          <FileSize size={size} />
-        </span>
-      ) : undefined}
-      )
-    </span>
-  );
+function getItems(result: GQL.FindPerformersQueryResult) {
+  return result?.data?.findPerformers?.performers ?? [];
 }
 
-function usePlayScene() {
+function getCount(result: GQL.FindPerformersQueryResult) {
+  return result?.data?.findPerformers?.count ?? 0;
+}
+
+function useOpenRandom(filter: ListFilterModel, count: number) {
   const history = useHistory();
 
-  const { configuration: config } = useContext(ConfigurationContext);
-  const cont = config?.interface.continuePlaylistDefault ?? false;
-  const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
-
-  const playScene = useCallback(
-    (queue: SceneQueue, sceneID: string, options?: IPlaySceneOptions) => {
-      history.push(
-        queue.makeLink(sceneID, { autoPlay, continue: cont, ...options })
-      );
-    },
-    [history, cont, autoPlay]
-  );
-
-  return playScene;
-}
-
-function usePlaySelected(selectedIds: Set<string>) {
-  const playScene = usePlayScene();
-
-  const playSelected = useCallback(() => {
-    // populate queue and go to first scene
-    const sceneIDs = Array.from(selectedIds.values());
-    const queue = SceneQueue.fromSceneIDList(sceneIDs);
-
-    playScene(queue, sceneIDs[0]);
-  }, [selectedIds, playScene]);
-
-  return playSelected;
-}
-
-function usePlayFirst() {
-  const playScene = usePlayScene();
-
-  const playFirst = useCallback(
-    (queue: SceneQueue, sceneID: string, index: number) => {
-      // populate queue and go to first scene
-      playScene(queue, sceneID, { sceneIndex: index });
-    },
-    [playScene]
-  );
-
-  return playFirst;
-}
-
-function usePlayRandom(filter: ListFilterModel, count: number) {
-  const playScene = usePlayScene();
-
-  const playRandom = useCallback(async () => {
-    // query for a random scene
+  const openRandom = useCallback(async () => {
+    // query for a random performer
     if (count === 0) {
       return;
     }
@@ -167,79 +80,193 @@ function usePlayRandom(filter: ListFilterModel, count: number) {
     const filterCopy = cloneDeep(filter);
     filterCopy.currentPage = page;
     filterCopy.sortBy = "random";
-    const queryResults = await queryFindScenes(filterCopy);
-    const scene = queryResults.data.findScenes.scenes[index];
-    if (scene) {
-      // navigate to the image player page
-      const queue = SceneQueue.fromListFilterModel(filterCopy);
-      playScene(queue, scene.id, { sceneIndex: index });
+    const queryResults = await queryFindPerformers(filterCopy);
+    const performer = queryResults.data.findPerformers.performers[index];
+    if (performer) {
+      history.push(`/performers/${performer.id}`);
     }
-  }, [filter, count, playScene]);
+  }, [filter, count, history]);
 
-  return playRandom;
+  return openRandom;
 }
 
 function useAddKeybinds(filter: ListFilterModel, count: number) {
-  const playRandom = usePlayRandom(filter, count);
+  const openRandom = useOpenRandom(filter, count);
 
   useEffect(() => {
     Mousetrap.bind("p r", () => {
-      playRandom();
+      openRandom();
     });
 
     return () => {
       Mousetrap.unbind("p r");
     };
-  }, [playRandom]);
+  }, [openRandom]);
 }
 
-const SceneList: React.FC<{
-  scenes: GQL.SlimSceneDataFragment[];
+export const FormatHeight = (height?: number | null) => {
+  const intl = useIntl();
+  if (!height) {
+    return "";
+  }
+
+  const [feet, inches] = cmToImperial(height);
+
+  return (
+    <span className="performer-height">
+      <span className="height-metric">
+        {intl.formatNumber(height, {
+          style: "unit",
+          unit: "centimeter",
+          unitDisplay: "short",
+        })}
+      </span>
+      <span className="height-imperial">
+        {intl.formatNumber(feet, {
+          style: "unit",
+          unit: "foot",
+          unitDisplay: "narrow",
+        })}
+        {intl.formatNumber(inches, {
+          style: "unit",
+          unit: "inch",
+          unitDisplay: "narrow",
+        })}
+      </span>
+    </span>
+  );
+};
+
+export const FormatAge = (
+  birthdate?: string | null,
+  deathdate?: string | null
+) => {
+  if (!birthdate) {
+    return "";
+  }
+  const age = TextUtils.age(birthdate, deathdate);
+
+  return (
+    <span className="performer-age">
+      <span className="age">{age}</span>
+      <span className="birthdate"> ({birthdate})</span>
+    </span>
+  );
+};
+
+export const FormatWeight = (weight?: number | null) => {
+  const intl = useIntl();
+  if (!weight) {
+    return "";
+  }
+
+  const lbs = kgToLbs(weight);
+
+  return (
+    <span className="performer-weight">
+      <span className="weight-metric">
+        {intl.formatNumber(weight, {
+          style: "unit",
+          unit: "kilogram",
+          unitDisplay: "short",
+        })}
+      </span>
+      <span className="weight-imperial">
+        {intl.formatNumber(lbs, {
+          style: "unit",
+          unit: "pound",
+          unitDisplay: "short",
+        })}
+      </span>
+    </span>
+  );
+};
+
+export const FormatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
+  const intl = useIntl();
+  if (!circumcised) {
+    return "";
+  }
+
+  return (
+    <span className="penis-circumcised">
+      {intl.formatMessage({
+        id: "circumcised_types." + circumcised,
+      })}
+    </span>
+  );
+};
+
+export const FormatPenisLength = (penis_length?: number | null) => {
+  const intl = useIntl();
+  if (!penis_length) {
+    return "";
+  }
+
+  const inches = cmToInches(penis_length);
+
+  return (
+    <span className="performer-penis-length">
+      <span className="penis-length-metric">
+        {intl.formatNumber(penis_length, {
+          style: "unit",
+          unit: "centimeter",
+          unitDisplay: "short",
+          maximumFractionDigits: 2,
+        })}
+      </span>
+      <span className="penis-length-imperial">
+        {intl.formatNumber(inches, {
+          style: "unit",
+          unit: "inch",
+          unitDisplay: "narrow",
+          maximumFractionDigits: 2,
+        })}
+      </span>
+    </span>
+  );
+};
+
+const PerformerListContent: React.FC<{
+  performers: GQL.SlimPerformerDataFragment[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
-  fromGroupId?: string;
-}> = ({ scenes, filter, selectedIds, onSelectChange, fromGroupId }) => {
-  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
-
-  if (scenes.length === 0) {
+  extraCriteria?: IPerformerCardExtraCriteria;
+}> = ({ performers, filter, selectedIds, onSelectChange, extraCriteria }) => {
+  if (performers.length === 0) {
     return null;
   }
 
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <SceneCardsGrid
-        scenes={scenes}
-        queue={queue}
+      <PerformerCardGrid
+        performers={performers as any}
         zoomIndex={filter.zoomIndex}
         selectedIds={selectedIds}
         onSelectChange={onSelectChange}
-        fromGroupId={fromGroupId}
+        extraCriteria={extraCriteria}
       />
     );
   }
   if (filter.displayMode === DisplayMode.List) {
     return (
-      <SceneListTable
-        scenes={scenes}
-        queue={queue}
+      <PerformerListTable
+        performers={performers as any}
         selectedIds={selectedIds}
         onSelectChange={onSelectChange}
       />
     );
   }
-  if (filter.displayMode === DisplayMode.Wall) {
-    return <SceneWallPanel scenes={scenes} sceneQueue={queue} />;
-  }
   if (filter.displayMode === DisplayMode.Tagger) {
-    return <Tagger scenes={scenes} queue={queue} />;
+    return <PerformerTagger performers={performers as any} />;
   }
 
   return null;
 };
 
-export const MyScenesFilterSidebarSections = PatchContainerComponent(
-  "MyFilteredSceneList.SidebarSections"
+export const MyPerformersFilterSidebarSections = PatchContainerComponent(
+  "MyFilteredPerformerList.SidebarSections"
 );
 
 const SidebarContent: React.FC<{
@@ -266,8 +293,6 @@ const SidebarContent: React.FC<{
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
-  const hideStudios = view === View.StudioScenes;
-
   return (
     <>
       <FilteredSidebarHeader
@@ -279,21 +304,11 @@ const SidebarContent: React.FC<{
         focus={focus}
       />
 
-      <MyScenesFilterSidebarSections>
-        {!hideStudios && (
-          <SidebarStudiosFilter
-            title={<FormattedMessage id="studios" />}
-            data-type={StudiosCriterionOption.type}
-            option={StudiosCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            filterHook={filterHook}
-          />
-        )}
-        <SidebarPerformersFilter
-          title={<FormattedMessage id="performers" />}
-          data-type={PerformersCriterionOption.type}
-          option={PerformersCriterionOption}
+      <MyPerformersFilterSidebarSections>
+        {/* <SidebarStudiosFilter
+          title={<FormattedMessage id="studios" />}
+          data-type={StudiosCriterionOption.type}
+          option={StudiosCriterionOption}
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
@@ -313,7 +328,7 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
-        />
+        /> */}
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
@@ -321,28 +336,14 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
-        <SidebarPhashFilter
-          title={<FormattedMessage id="media_info.phash" />}
-          data-type={PhashCriterionOption.type}
-          option={PhashCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarBooleanFilter
-          title={<FormattedMessage id="duplicated_phash" />}
-          data-type={DuplicatedCriterionOption.type}
-          option={DuplicatedCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarBooleanFilter
+        {/* <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}
           option={OrganizedCriterionOption}
           filter={filter}
           setFilter={setFilter}
-        />
-      </MyScenesFilterSidebarSections>
+        /> */}
+      </MyPerformersFilterSidebarSections>
 
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>
@@ -363,7 +364,7 @@ interface IOperations {
 const ListToolbarContent: React.FC<{
   searchTerm: string;
   criteria: Criterion[];
-  items: GQL.SlimSceneDataFragment[];
+  items: GQL.SlimPerformerDataFragment[];
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
@@ -376,7 +377,6 @@ const ListToolbarContent: React.FC<{
   onSelectNone: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onPlay: () => void;
   onCreateNew: () => void;
 }> = ({
   searchTerm,
@@ -394,7 +394,6 @@ const ListToolbarContent: React.FC<{
   onSelectNone,
   onEdit,
   onDelete,
-  onPlay,
   onCreateNew,
 }) => {
   const intl = useIntl();
@@ -452,16 +451,6 @@ const ListToolbarContent: React.FC<{
       )}
       <div>
         <ButtonGroup>
-          {!!items.length && (
-            <Button
-              className="play-button"
-              variant="secondary"
-              onClick={() => onPlay()}
-              title={intl.formatMessage({ id: "actions.play" })}
-            >
-              <Icon icon={faPlay} />
-            </Button>
-          )}
           {!hasSelection && (
             <Button
               className="create-new-button"
@@ -469,7 +458,7 @@ const ListToolbarContent: React.FC<{
               onClick={() => onCreateNew()}
               title={intl.formatMessage(
                 { id: "actions.create_entity" },
-                { entityType: intl.formatMessage({ id: "scene" }) }
+                { entityType: intl.formatMessage({ id: "performer" }) }
               )}
             >
               <Icon icon={faPlus} />
@@ -491,7 +480,7 @@ const ListToolbarContent: React.FC<{
             </>
           )}
 
-          <OperationDropdown className="scene-list-operations">
+          <OperationDropdown className="performer-list-operations">
             {operations.map((o) => {
               if (o.isDisplayed && !o.isDisplayed()) {
                 return null;
@@ -517,18 +506,16 @@ const ListResultsHeader: React.FC<{
   loading: boolean;
   filter: ListFilterModel;
   totalCount: number;
-  metadataByline?: React.ReactNode;
   onChangeFilter: (filter: ListFilterModel) => void;
-}> = ({ loading, filter, totalCount, metadataByline, onChangeFilter }) => {
+}> = ({ loading, filter, totalCount, onChangeFilter }) => {
   return (
-    <ButtonToolbar className="scene-list-header">
+    <ButtonToolbar className="performer-list-header">
       <div>
         <PaginationIndex
           loading={loading}
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
           totalItems={totalCount}
-          metadataByline={metadataByline}
         />
       </div>
       <div>
@@ -564,22 +551,22 @@ const ListResultsHeader: React.FC<{
   );
 };
 
-interface IFilteredScenes {
+interface IFilteredPerformers {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
   view?: View;
   alterQuery?: boolean;
-  fromGroupId?: string;
+  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
-export const MyFilteredSceneList = (props: IFilteredScenes) => {
+export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
   const intl = useIntl();
   const history = useHistory();
 
   const searchFocus = useFocus();
   const [, setSearchFocus] = searchFocus;
 
-  const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
+  const { filterHook, defaultSort, view, alterQuery, extraCriteria } = props;
 
   // States
   const {
@@ -591,15 +578,15 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
       filterStateProps: {
-        filterMode: GQL.FilterMode.Scenes,
+        filterMode: GQL.FilterMode.Performers,
         defaultSort,
         view,
         useURL: alterQuery,
       },
       queryResultProps: {
-        useResult: useFindScenes,
-        getCount: (r) => r.data?.findScenes.count ?? 0,
-        getItems: (r) => r.data?.findScenes.scenes ?? [],
+        useResult: useFindPerformers,
+        getCount: (r) => r.data?.findPerformers.count ?? 0,
+        getItems: (r) => r.data?.findPerformers.performers ?? [],
         filterHook,
       },
     });
@@ -657,43 +644,17 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     result,
   });
 
-  const metadataByline = useMemo(() => {
-    if (cachedResult.loading) return null;
-
-    return renderMetadataByline(cachedResult) ?? null;
-  }, [cachedResult]);
-
-  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
-
-  const playRandom = usePlayRandom(filter, totalCount);
-  const playSelected = usePlaySelected(selectedIds);
-  const playFirst = usePlayFirst();
+  const openRandom = useOpenRandom(filter, totalCount);
 
   function onCreateNew() {
-    history.push("/scenes/new");
-  }
-
-  function onPlay() {
-    if (items.length === 0) {
-      return;
-    }
-
-    // if there are selected items, play those
-    if (hasSelection) {
-      playSelected();
-      return;
-    }
-
-    // otherwise, play the first item in the list
-    const sceneID = items[0].id;
-    playFirst(queue, sceneID, 0);
+    history.push("/performers/new");
   }
 
   function onExport(all: boolean) {
     showModal(
       <ExportDialog
         exportInput={{
-          scenes: {
+          performers: {
             ids: Array.from(selectedIds.values()),
             all: all,
           },
@@ -703,54 +664,37 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     );
   }
 
-  function onMerge() {
-    const selected =
-      selectedItems.map((s) => {
-        return {
-          id: s.id,
-          title: objectTitle(s),
-        };
-      }) ?? [];
-    showModal(
-      <SceneMergeModal
-        scenes={selected}
-        onClose={(mergedID?: string) => {
-          closeModal();
-          if (mergedID) {
-            history.push(`/scenes/${mergedID}`);
-          }
-        }}
-        show
-      />
-    );
-  }
-
   function onEdit() {
     showModal(
-      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
-    );
-  }
-
-  function onDelete() {
-    showModal(
-      <DeleteScenesDialog
+      <EditPerformersDialog
         selected={selectedItems}
         onClose={onCloseEditDelete}
       />
     );
   }
 
+  function onDelete() {
+    showModal(
+      <DeleteEntityDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
+        singularEntity={intl.formatMessage({ id: "performer" })}
+        pluralEntity={intl.formatMessage({ id: "performers" })}
+        destroyMutation={usePerformersDestroy}
+      />
+    );
+  }
+
   const otherOperations = [
     {
-      text: intl.formatMessage({ id: "actions.play" }),
-      onClick: () => onPlay(),
-      isDisplayed: () => items.length > 0,
-      className: "play-item",
+      text: intl.formatMessage({ id: "actions.open_random" }),
+      onClick: openRandom,
+      isDisplayed: () => totalCount > 1,
     },
     {
       text: intl.formatMessage(
         { id: "actions.create_entity" },
-        { entityType: intl.formatMessage({ id: "scene" }) }
+        { entityType: intl.formatMessage({ id: "performer" }) }
       ),
       onClick: () => onCreateNew(),
       isDisplayed: () => !hasSelection,
@@ -764,39 +708,6 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     {
       text: intl.formatMessage({ id: "actions.select_none" }),
       onClick: () => onSelectNone(),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.play_random" }),
-      onClick: playRandom,
-      isDisplayed: () => totalCount > 1,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
-      onClick: () =>
-        showModal(
-          <GenerateDialog
-            type="scene"
-            selectedIds={Array.from(selectedIds.values())}
-            onClose={() => closeModal()}
-          />
-        ),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.identify" })}…`,
-      onClick: () =>
-        showModal(
-          <IdentifyDialog
-            selectedIds={Array.from(selectedIds.values())}
-            onClose={() => closeModal()}
-          />
-        ),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
-      onClick: () => onMerge(),
       isDisplayed: () => hasSelection,
     },
     {
@@ -816,7 +727,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   return (
     <TaggerContext>
       <div
-        className={cx("item-list-container scene-list", {
+        className={cx("item-list-container performer-list", {
           "hide-sidebar": !showSidebar,
         })}
       >
@@ -838,7 +749,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
           </Sidebar>
           <div>
             <ButtonToolbar
-              className={cx("scene-list-toolbar", {
+              className={cx("performer-list-toolbar", {
                 "has-selection": hasSelection,
               })}
             >
@@ -862,7 +773,6 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onCreateNew={onCreateNew}
-                onPlay={onPlay}
               />
             </ButtonToolbar>
 
@@ -870,17 +780,16 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
               loading={cachedResult.loading}
               filter={filter}
               totalCount={totalCount}
-              metadataByline={metadataByline}
               onChangeFilter={(newFilter) => setFilter(newFilter)}
             />
 
             <LoadedContent loading={result.loading} error={result.error}>
-              <SceneList
+              <PerformerListContent
                 filter={effectiveFilter}
-                scenes={items}
+                performers={items}
                 selectedIds={selectedIds}
                 onSelectChange={onSelectChange}
-                fromGroupId={fromGroupId}
+                extraCriteria={extraCriteria}
               />
             </LoadedContent>
 
@@ -890,7 +799,6 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
                   itemsPerPage={filter.itemsPerPage}
                   currentPage={filter.currentPage}
                   totalItems={totalCount}
-                  metadataByline={metadataByline}
                   onChangePage={setPage}
                   pagePopupPlacement="top"
                 />
@@ -903,4 +811,9 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   );
 };
 
-export default MyFilteredSceneList;
+// Keep the old component for backward compatibility
+export const PerformerList: React.FC<IFilteredPerformers> = (props) => {
+  return <MyFilteredPerformerList {...props} />;
+};
+
+export default MyFilteredPerformerList;
