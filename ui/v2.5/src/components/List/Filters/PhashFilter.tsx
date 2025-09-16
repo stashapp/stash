@@ -155,7 +155,7 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
         onSelect={onSelect}
         onUnselect={onUnselect}
         selected={selected}
-        singleValue
+        singleValue={true}
       />
     </>
   );

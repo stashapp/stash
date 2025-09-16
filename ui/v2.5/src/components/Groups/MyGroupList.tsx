@@ -1,0 +1,672 @@
+import React, { PropsWithChildren, useCallback, useEffect } from "react";
+import cloneDeep from "lodash-es/cloneDeep";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useHistory } from "react-router-dom";
+import Mousetrap from "mousetrap";
+import * as GQL from "src/core/generated-graphql";
+import { queryFindGroups, useFindGroups, useGroupsDestroy } from "src/core/StashService";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode } from "src/models/list-filter/types";
+import { GroupCardGrid } from "./GroupCardGrid";
+import { View } from "../List/views";
+import { LoadedContent } from "../List/PagedList";
+import { useCloseEditDelete, useFilterOperations } from "../List/util";
+import {
+  OperationDropdown,
+  OperationDropdownItem,
+} from "../List/ListOperationButtons";
+import { useFilteredItemList, ItemListContext } from "../List/ItemList";
+import { FilterTags } from "../List/FilterTags";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import cx from "classnames";
+import {
+  FilteredSidebarHeader,
+  useFilteredSidebarKeybinds,
+} from "../List/Filters/MyFilterSidebar";
+import { Pagination, PaginationIndex } from "../List/Pagination";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
+import { FilterButton } from "../List/Filters/FilterButton";
+import { Icon } from "../Shared/Icon";
+import { ListViewOptions } from "../List/ListViewOptions";
+import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+import useFocus from "src/utils/focus";
+import {
+  faPencil,
+  faPlus,
+  faSliders,
+  faTimes,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { EditGroupsDialog } from "./EditGroupsDialog";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
+import { ExportDialog } from "../Shared/ExportDialog";
+
+function getItems(result: GQL.FindGroupsQueryResult) {
+  return result?.data?.findGroups?.groups ?? [];
+}
+
+function getCount(result: GQL.FindGroupsQueryResult) {
+  return result?.data?.findGroups?.count ?? 0;
+}
+
+const filterMode = GQL.FilterMode.Groups;
+
+interface IGroupListContext {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  defaultFilter?: ListFilterModel;
+  view?: View;
+  alterQuery?: boolean;
+  selectable?: boolean;
+}
+
+export const GroupListContext: React.FC<
+  PropsWithChildren<IGroupListContext>
+> = ({ alterQuery, filterHook, defaultFilter, view, selectable, children }) => {
+  return (
+    <ItemListContext
+      filterMode={filterMode}
+      defaultFilter={defaultFilter}
+      useResult={useFindGroups}
+      getItems={getItems}
+      getCount={getCount}
+      alterQuery={alterQuery}
+      filterHook={filterHook}
+      view={view}
+      selectable={selectable}
+    >
+      {children}
+    </ItemListContext>
+  );
+};
+
+function useViewRandom(
+  result: GQL.FindGroupsQueryResult,
+  filter: ListFilterModel
+) {
+  const history = useHistory();
+
+  const viewRandom = useCallback(async () => {
+    // query for a random group
+    if (result.data?.findGroups) {
+      const { count } = result.data.findGroups;
+
+      const index = Math.floor(Math.random() * count);
+      const filterCopy = cloneDeep(filter);
+      filterCopy.itemsPerPage = 1;
+      filterCopy.currentPage = index + 1;
+      const singleResult = await queryFindGroups(filterCopy);
+      if (singleResult.data.findGroups.groups.length === 1) {
+        const { id } = singleResult.data.findGroups.groups[0];
+        // navigate to the group page
+        history.push(`/groups/${id}`);
+      }
+    }
+  }, [result, filter, history]);
+
+  return viewRandom;
+}
+
+function useAddKeybinds(
+  result: GQL.FindGroupsQueryResult,
+  filter: ListFilterModel
+) {
+  const viewRandom = useViewRandom(result, filter);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      viewRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [viewRandom]);
+}
+
+const GroupListContent: React.FC<{
+  groups: GQL.SlimGroupDataFragment[];
+  filter: ListFilterModel;
+  selectedIds: Set<string>;
+  onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
+}> = ({ groups, filter, selectedIds, onSelectChange, fromGroupId, onMove }) => {
+  if (filter.displayMode === DisplayMode.Grid) {
+    return (
+      <GroupCardGrid
+        groups={groups as any}
+        zoomIndex={filter.zoomIndex}
+        selectedIds={selectedIds}
+        onSelectChange={onSelectChange}
+        fromGroupId={fromGroupId}
+        onMove={onMove}
+      />
+    );
+  }
+
+  return null;
+};
+
+const SidebarContent: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
+  showEditFilter: (editingCriterion?: string) => void;
+  sidebarOpen: boolean;
+  onClose?: () => void;
+  count?: number;
+  focus?: ReturnType<typeof useFocus>;
+}> = ({
+  filter,
+  setFilter,
+  filterHook,
+  view,
+  showEditFilter,
+  sidebarOpen,
+  onClose,
+  count,
+  focus,
+}) => {
+  const showResultsId =
+    count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
+  return (
+    <>
+      <FilteredSidebarHeader
+        sidebarOpen={sidebarOpen}
+        showEditFilter={showEditFilter}
+        filter={filter}
+        setFilter={setFilter}
+        view={view}
+        focus={focus}
+      />
+
+      {/* Add group-specific filters here when available */}
+      <div className="sidebar-content">
+        <div className="sidebar-section">
+          <h5>
+            <FormattedMessage id="filters" />
+          </h5>
+          <p>
+            <FormattedMessage id="dialogs.scenes_found" values={{ count: 0 }} />
+          </p>
+        </div>
+      </div>
+
+      <div className="sidebar-footer">
+        <Button className="sidebar-close-button" onClick={onClose}>
+          <FormattedMessage id={showResultsId} values={{ count }} />
+        </Button>
+      </div>
+    </>
+  );
+};
+
+interface IOperations {
+  text: string;
+  onClick: () => void;
+  isDisplayed?: () => boolean;
+  className?: string;
+}
+
+const ListToolbarContent: React.FC<{
+  searchTerm: string;
+  criteria: Criterion[];
+  items: GQL.SlimGroupDataFragment[];
+  selectedIds: Set<string>;
+  operations: IOperations[];
+  onToggleSidebar: () => void;
+  onEditCriterion: (c?: Criterion) => void;
+  onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
+  onRemoveAllCriterion: () => void;
+  onEditSearchTerm: () => void;
+  onRemoveSearchTerm: () => void;
+  onSelectAll: () => void;
+  onSelectNone: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onCreateNew: () => void;
+}> = ({
+  searchTerm,
+  criteria,
+  items,
+  selectedIds,
+  operations,
+  onToggleSidebar,
+  onEditCriterion,
+  onRemoveCriterion,
+  onRemoveAllCriterion,
+  onEditSearchTerm,
+  onRemoveSearchTerm,
+  onSelectAll,
+  onSelectNone,
+  onEdit,
+  onDelete,
+  onCreateNew,
+}) => {
+  const intl = useIntl();
+
+  const hasSelection = selectedIds.size > 0;
+
+  const sidebarToggle = (
+    <Button
+      className="sidebar-toggle-button ignore-sidebar-outside-click"
+      variant="secondary"
+      onClick={() => onToggleSidebar()}
+      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+    >
+      <Icon icon={faSliders} />
+    </Button>
+  );
+
+  return (
+    <>
+      {!hasSelection && (
+        <div className="my-filter-toolbar">
+          {sidebarToggle}
+          <FilterTags
+            searchTerm={searchTerm}
+            criteria={criteria}
+            onEditCriterion={onEditCriterion}
+            onRemoveCriterion={onRemoveCriterion}
+            onRemoveAll={onRemoveAllCriterion}
+            onEditSearchTerm={onEditSearchTerm}
+            onRemoveSearchTerm={onRemoveSearchTerm}
+            truncateOnOverflow
+          />
+          <FilterButton
+            onClick={() => onEditCriterion()}
+            count={criteria.length}
+            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+          />
+        </div>
+      )}
+      {hasSelection && (
+        <div className="selected-items-info">
+          <Button
+            variant="secondary"
+            className="minimal"
+            onClick={() => onSelectNone()}
+            title={intl.formatMessage({ id: "actions.select_none" })}
+          >
+            <Icon icon={faTimes} />
+          </Button>
+          <span>{selectedIds.size} selected</span>
+          <Button variant="link" onClick={() => onSelectAll()}>
+            <FormattedMessage id="actions.select_all" />
+          </Button>
+        </div>
+      )}
+      <div>
+        <ButtonGroup>
+          {!hasSelection && (
+            <Button
+              className="create-new-button"
+              variant="secondary"
+              onClick={() => onCreateNew()}
+              title={intl.formatMessage(
+                { id: "actions.create_entity" },
+                { entityType: intl.formatMessage({ id: "group" }) }
+              )}
+            >
+              <Icon icon={faPlus} />
+            </Button>
+          )}
+
+          {hasSelection && (
+            <>
+              <Button variant="secondary" onClick={() => onEdit()}>
+                <Icon icon={faPencil} />
+              </Button>
+              <Button
+                variant="danger"
+                className="btn-danger-minimal"
+                onClick={() => onDelete()}
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            </>
+          )}
+
+          <OperationDropdown className="group-list-operations">
+            {operations.map((o) => {
+              if (o.isDisplayed && !o.isDisplayed()) {
+                return null;
+              }
+
+              return (
+                <OperationDropdownItem
+                  key={o.text}
+                  onClick={o.onClick}
+                  text={o.text}
+                  className={o.className}
+                />
+              );
+            })}
+          </OperationDropdown>
+        </ButtonGroup>
+      </div>
+    </>
+  );
+};
+
+const ListResultsHeader: React.FC<{
+  loading: boolean;
+  filter: ListFilterModel;
+  totalCount: number;
+  onChangeFilter: (filter: ListFilterModel) => void;
+}> = ({ loading, filter, totalCount, onChangeFilter }) => {
+  return (
+    <ButtonToolbar className="group-list-header">
+      <div>
+        <PaginationIndex
+          loading={loading}
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+        />
+      </div>
+      <div>
+        <SortBySelect
+          options={filter.options.sortByOptions}
+          sortBy={filter.sortBy}
+          sortDirection={filter.sortDirection}
+          onChangeSortBy={(s) =>
+            onChangeFilter(filter.setSortBy(s ?? undefined))
+          }
+          onChangeSortDirection={() =>
+            onChangeFilter(filter.toggleSortDirection())
+          }
+          onReshuffleRandomSort={() =>
+            onChangeFilter(filter.reshuffleRandomSort())
+          }
+        />
+        <PageSizeSelector
+          pageSize={filter.itemsPerPage}
+          setPageSize={(s) => onChangeFilter(filter.setPageSize(s))}
+        />
+        <ListViewOptions
+          displayMode={filter.displayMode}
+          zoomIndex={filter.zoomIndex}
+          displayModeOptions={filter.options.displayModeOptions}
+          onSetDisplayMode={(mode) =>
+            onChangeFilter(filter.setDisplayMode(mode))
+          }
+          onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
+        />
+      </div>
+    </ButtonToolbar>
+  );
+};
+
+interface IFilteredGroups {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  defaultSort?: string;
+  view?: View;
+  alterQuery?: boolean;
+  fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
+}
+
+interface IGroupList extends IGroupListContext {
+  fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
+}
+
+export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
+  const intl = useIntl();
+  const history = useHistory();
+
+  const searchFocus = useFocus();
+  const [, setSearchFocus] = searchFocus;
+
+  const { filterHook, defaultSort, view, alterQuery, fromGroupId, onMove } = props;
+
+  // States
+  const {
+    showSidebar,
+    setShowSidebar,
+    loading: sidebarStateLoading,
+  } = useSidebarState(view);
+
+  const { filterState, queryResult, modalState, listSelect, showEditFilter } =
+    useFilteredItemList({
+      filterStateProps: {
+        filterMode: GQL.FilterMode.Groups,
+        defaultSort,
+        view,
+        useURL: alterQuery,
+      },
+      queryResultProps: {
+        useResult: useFindGroups,
+        getCount: (r) => r.data?.findGroups.count ?? 0,
+        getItems: (r) => r.data?.findGroups.groups ?? [],
+        filterHook,
+      },
+    });
+
+  const { filter, setFilter, loading: filterLoading } = filterState;
+
+  const { effectiveFilter, result, cachedResult, items, totalCount } =
+    queryResult;
+
+  const {
+    selectedIds,
+    selectedItems,
+    onSelectChange,
+    onSelectAll,
+    onSelectNone,
+    hasSelection,
+  } = listSelect;
+
+  const { modal, showModal, closeModal } = modalState;
+
+  // Utility hooks
+  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+    filter,
+    setFilter,
+  });
+
+  useAddKeybinds(result, filter);
+  useFilteredSidebarKeybinds({
+    showSidebar,
+    setShowSidebar,
+  });
+
+  useEffect(() => {
+    Mousetrap.bind("e", () => {
+      if (hasSelection) {
+        onEdit?.();
+      }
+    });
+
+    Mousetrap.bind("d d", () => {
+      if (hasSelection) {
+        onDelete?.();
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
+  const onCloseEditDelete = useCloseEditDelete({
+    closeModal,
+    onSelectNone,
+    result,
+  });
+
+  const viewRandom = useViewRandom(result, filter);
+
+  function onCreateNew() {
+    history.push("/groups/new");
+  }
+
+  function onExport(all: boolean) {
+    showModal(
+      <ExportDialog
+        exportInput={{
+          groups: {
+            ids: Array.from(selectedIds.values()),
+            all: all,
+          },
+        }}
+        onClose={() => closeModal()}
+      />
+    );
+  }
+
+  function onEdit() {
+    showModal(
+      <EditGroupsDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
+      />
+    );
+  }
+
+  function onDelete() {
+    showModal(
+      <DeleteEntityDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
+        singularEntity={intl.formatMessage({ id: "group" })}
+        pluralEntity={intl.formatMessage({ id: "groups" })}
+        destroyMutation={useGroupsDestroy}
+      />
+    );
+  }
+
+  const otherOperations = [
+    {
+      text: intl.formatMessage({ id: "actions.view_random" }),
+      onClick: viewRandom,
+      isDisplayed: () => totalCount > 1,
+    },
+    {
+      text: intl.formatMessage(
+        { id: "actions.create_entity" },
+        { entityType: intl.formatMessage({ id: "group" }) }
+      ),
+      onClick: () => onCreateNew(),
+      isDisplayed: () => !hasSelection,
+      className: "create-new-item",
+    },
+    {
+      text: intl.formatMessage({ id: "actions.select_all" }),
+      onClick: () => onSelectAll(),
+      isDisplayed: () => totalCount > 0,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.select_none" }),
+      onClick: () => onSelectNone(),
+      isDisplayed: () => hasSelection,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.export" }),
+      onClick: () => onExport(false),
+      isDisplayed: () => hasSelection,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.export_all" }),
+      onClick: () => onExport(true),
+    },
+  ];
+
+  // render
+  if (filterLoading || sidebarStateLoading) return null;
+
+  return (
+    <div
+      className={cx("item-list-container group-list", {
+        "hide-sidebar": !showSidebar,
+      })}
+    >
+      {modal}
+
+      <SidebarPane hideSidebar={!showSidebar}>
+        <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+          <SidebarContent
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+            showEditFilter={showEditFilter}
+            view={view}
+            sidebarOpen={showSidebar}
+            onClose={() => setShowSidebar(false)}
+            count={cachedResult.loading ? undefined : totalCount}
+            focus={searchFocus}
+          />
+        </Sidebar>
+        <div>
+          <ButtonToolbar
+            className={cx("group-list-toolbar", {
+              "has-selection": hasSelection,
+            })}
+          >
+            <ListToolbarContent
+              searchTerm={filter.searchTerm}
+              criteria={filter.criteria}
+              items={items}
+              selectedIds={selectedIds}
+              operations={otherOperations}
+              onToggleSidebar={() => setShowSidebar(!showSidebar)}
+              onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
+              onRemoveCriterion={removeCriterion}
+              onRemoveAllCriterion={() => clearAllCriteria(true)}
+              onEditSearchTerm={() => {
+                setShowSidebar(true);
+                setSearchFocus(true);
+              }}
+              onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
+              onSelectAll={() => onSelectAll()}
+              onSelectNone={() => onSelectNone()}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onCreateNew={onCreateNew}
+            />
+          </ButtonToolbar>
+
+          <ListResultsHeader
+            loading={cachedResult.loading}
+            filter={filter}
+            totalCount={totalCount}
+            onChangeFilter={(newFilter) => setFilter(newFilter)}
+          />
+
+          <LoadedContent loading={result.loading} error={result.error}>
+            <GroupListContent
+              filter={effectiveFilter}
+              groups={items}
+              selectedIds={selectedIds}
+              onSelectChange={onSelectChange}
+              fromGroupId={fromGroupId}
+              onMove={onMove}
+            />
+          </LoadedContent>
+
+          {totalCount > filter.itemsPerPage && (
+            <div className="pagination-footer">
+              <Pagination
+                itemsPerPage={filter.itemsPerPage}
+                currentPage={filter.currentPage}
+                totalItems={totalCount}
+                onChangePage={setPage}
+                pagePopupPlacement="top"
+              />
+            </div>
+          )}
+        </div>
+      </SidebarPane>
+    </div>
+  );
+};
+
+// Backward compatibility wrapper
+export const GroupList: React.FC<IGroupList> = (props) => {
+  return <MyFilteredGroupList {...props} />;
+};

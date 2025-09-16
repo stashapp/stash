@@ -54,6 +54,19 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { TaggerContext } from "../Tagger/context";
+import { GenderCriterionOption } from "src/models/list-filter/criteria/gender";
+import { SidebarGenderFilter } from "../List/Filters/GenderFilter";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
+import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { FavoritePerformerCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { StashIDCriterionOption } from "src/models/list-filter/criteria/stash-ids";
+import { SidebarStashIDFilter } from "../List/Filters/StashIDFilter";
+import { CountryCriterionOption } from "src/models/list-filter/criteria/country";
+import { SidebarCountryFilter } from "../List/Filters/CountryFilter";
+import { TattoosCriterionOption } from "src/models/list-filter/criteria/tattoos";
+import { SidebarStringFilter } from "../List/Filters/StringFilter";
+import { PiercingsCriterionOption } from "src/models/list-filter/criteria/piercings";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];
@@ -305,22 +318,6 @@ const SidebarContent: React.FC<{
       />
 
       <MyPerformersFilterSidebarSections>
-        {/* <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          data-type={StudiosCriterionOption.type}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarTagsFilter
-          title={<FormattedMessage id="performer_tags" />}
-          data-type={PerformerTagsCriterionOption.type}
-          option={PerformerTagsCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
           data-type={TagsCriterionOption.type}
@@ -328,7 +325,35 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
-        /> */}
+        />
+        <SidebarGenderFilter
+          title={<FormattedMessage id="gender" />}
+          data-type={GenderCriterionOption.type}
+          option={GenderCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarCountryFilter
+          title={<FormattedMessage id="country" />}
+          data-type={CountryCriterionOption.type}
+          option={CountryCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStringFilter
+          title={<FormattedMessage id="piercings" />}
+          data-type={PiercingsCriterionOption.type}
+          option={PiercingsCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStringFilter
+          title={<FormattedMessage id="tattoos" />}
+          data-type={TattoosCriterionOption.type}
+          option={TattoosCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
@@ -336,13 +361,20 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
-        {/* <SidebarBooleanFilter
-          title={<FormattedMessage id="organized" />}
-          data-type={OrganizedCriterionOption.type}
-          option={OrganizedCriterionOption}
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="favourite" />}
+          data-type={FavoritePerformerCriterionOption.type}
+          option={FavoritePerformerCriterionOption}
           filter={filter}
           setFilter={setFilter}
-        /> */}
+        />
+        <SidebarStashIDFilter
+          title={<FormattedMessage id="stash_id" />}
+          data-type={StashIDCriterionOption.type}
+          option={StashIDCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
       </MyPerformersFilterSidebarSections>
 
       <div className="sidebar-footer">
