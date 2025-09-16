@@ -30,12 +30,14 @@ import { faBookmark, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { AlertModal } from "../Shared/Alert";
 import cx from "classnames";
 import { TruncatedInlineText } from "../Shared/TruncatedText";
+import { OperationButton } from "../Shared/OperationButton";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
   setName: (name: string) => void;
   existing: { name: string; id: string }[];
-}> = ({ name, setName, existing }) => {
+  disabled?: boolean;
+}> = ({ name, setName, existing, disabled = false }) => {
   const filtered = useMemo(() => {
     if (!name) return existing;
 
@@ -52,6 +54,7 @@ const ExistingSavedFilterList: React.FC<{
             className="minimal"
             variant="link"
             onClick={() => setName(f.name)}
+            disabled={disabled}
           >
             {f.name}
           </Button>
@@ -64,7 +67,8 @@ const ExistingSavedFilterList: React.FC<{
 export const SaveFilterDialog: React.FC<{
   mode: FilterMode;
   onClose: (name?: string, id?: string) => void;
-}> = ({ mode, onClose }) => {
+  isSaving?: boolean;
+}> = ({ mode, onClose, isSaving = false }) => {
   const intl = useIntl();
   const [filterName, setFilterName] = useState("");
 
@@ -89,6 +93,7 @@ export const SaveFilterDialog: React.FC<{
             placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
             value={filterName}
             onChange={(e) => setFilterName(e.target.value)}
+            disabled={isSaving}
           />
         </Form.Group>
 
@@ -110,15 +115,20 @@ export const SaveFilterDialog: React.FC<{
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => onClose()}>
+        <Button
+          variant="secondary"
+          onClick={() => onClose()}
+          disabled={isSaving}
+        >
           {intl.formatMessage({ id: "actions.cancel" })}
         </Button>
-        <Button
+        <OperationButton
+          loading={isSaving}
           variant="primary"
           onClick={() => onClose(filterName, overwritingFilter?.id)}
         >
           {intl.formatMessage({ id: "actions.save" })}
-        </Button>
+        </OperationButton>
       </Modal.Footer>
     </Modal>
   );

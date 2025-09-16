@@ -29,11 +29,12 @@ import {
 import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
-import { useConfigureUI } from "src/core/StashService";
+import { useConfigureUI, useSaveFilter } from "src/core/StashService";
 import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import ScreenUtils from "src/utils/screen";
+import { SaveFilterDialog } from "./SavedFilterList";
 
 interface ICriterionList {
   criteria: string[];
@@ -230,6 +231,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const [criterion, setCriterion] = useState<Criterion>();
 
   const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
+
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [savingFilter, setSavingFilter] = useState(false);
+
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
+
+  const saveFilter = useSaveFilter();
 
   const { criteria } = currentFilter;
 
@@ -432,9 +440,50 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     setCurrentFilter(newFilter);
   }
 
+  async function onSaveFilter(name: string, id?: string) {
+    try {
+      setSavingFilter(true);
+      await saveFilter(filter, name, id);
+
+      Toast.success(
+        intl.formatMessage(
+          {
+            id: "toast.saved_entity",
+          },
+          {
+            entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
+          }
+        )
+      );
+      setShowSaveDialog(false);
+      onApply(currentFilter);
+    } catch (err) {
+      Toast.error(err);
+    } finally {
+      setSavingFilter(false);
+    }
+  }
+
   return (
     <>
-      <Modal show onHide={() => onCancel()} className="edit-filter-dialog">
+      {showSaveDialog && (
+        <SaveFilterDialog
+          mode={filter.mode}
+          onClose={(name, id) => {
+            if (name) {
+              onSaveFilter(name, id);
+            } else {
+              setShowSaveDialog(false);
+            }
+          }}
+          isSaving={savingFilter}
+        />
+      )}
+      <Modal
+        show={!showSaveDialog && !showLoadDialog}
+        onHide={() => onCancel()}
+        className="edit-filter-dialog"
+      >
         <Modal.Header>
           <div>
             <FormattedMessage id="search_filter.edit_filter" />
@@ -481,7 +530,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
             <Button variant="secondary" onClick={() => {}}>
               <FormattedMessage id="actions.load" />…
             </Button>
-            <Button variant="secondary" onClick={() => {}}>
+            <Button variant="secondary" onClick={() => setShowSaveDialog(true)}>
               <FormattedMessage id="actions.save" />…
             </Button>
           </div>
