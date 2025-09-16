@@ -1411,3 +1411,8 @@ select {
   overflow-y: auto;
   padding-right: 1.5rem;
 }
+
+// Fix descenders clipping in line-height #6047
+h3 .TruncatedText {
+  line-height: 1.5;
+}
