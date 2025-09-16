@@ -2,7 +2,10 @@ import React, { useMemo } from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { IStashIDValue } from "../../../models/list-filter/types";
-import { ModifierCriterion, CriterionOption } from "../../../models/list-filter/criteria/criterion";
+import {
+  ModifierCriterion,
+  CriterionOption,
+} from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { StashIDCriterion } from "src/models/list-filter/criteria/stash-ids";

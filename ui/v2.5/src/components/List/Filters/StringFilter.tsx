@@ -59,12 +59,14 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
 }) => {
   const intl = useIntl();
 
-  const criteria = filter.criteriaFor(option.type) as ModifierCriterion<string>[];
+  const criteria = filter.criteriaFor(
+    option.type
+  ) as ModifierCriterion<string>[];
   const criterion = criteria.length > 0 ? criteria[0] : null;
 
   function onValueChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value;
-    
+
     if (!value.trim()) {
       // Remove criterion if empty
       setFilter(filter.removeCriterion(option.type));
@@ -78,10 +80,7 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
   }
 
   return (
-    <SidebarSection
-      className="sidebar-list-filter"
-      text={title}
-    >
+    <SidebarSection className="sidebar-list-filter" text={title}>
       <div className="string-filter">
         <div className="filter-group">
           <Form.Control

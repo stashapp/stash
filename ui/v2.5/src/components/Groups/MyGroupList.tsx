@@ -4,7 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindGroups, useFindGroups, useGroupsDestroy } from "src/core/StashService";
+import {
+  queryFindGroups,
+  useFindGroups,
+  useGroupsDestroy,
+} from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { GroupCardGrid } from "./GroupCardGrid";
@@ -422,7 +426,8 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
   const searchFocus = useFocus();
   const [, setSearchFocus] = searchFocus;
 
-  const { filterHook, defaultSort, view, alterQuery, fromGroupId, onMove } = props;
+  const { filterHook, defaultSort, view, alterQuery, fromGroupId, onMove } =
+    props;
 
   // States
   const {
@@ -522,10 +527,7 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
 
   function onEdit() {
     showModal(
-      <EditGroupsDialog
-        selected={selectedItems}
-        onClose={onCloseEditDelete}
-      />
+      <EditGroupsDialog selected={selectedItems} onClose={onCloseEditDelete} />
     );
   }
 

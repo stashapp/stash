@@ -22,22 +22,18 @@ export const CountryFilter: React.FC<ICountryFilterProps> = ({
   const intl = useIntl();
 
   const countryOptions = useMemo(() => {
-    return getCountries(intl.locale).map(country => ({
+    return getCountries(intl.locale).map((country) => ({
       id: country.value,
       label: country.label,
     }));
   }, [intl.locale]);
 
   const selectedOptions = useMemo(() => {
-    return countryOptions.filter(option => 
-      criterion.value === option.id
-    );
+    return countryOptions.filter((option) => criterion.value === option.id);
   }, [countryOptions, criterion.value]);
 
   const availableOptions = useMemo(() => {
-    return countryOptions.filter(option => 
-      criterion.value !== option.id
-    );
+    return countryOptions.filter((option) => criterion.value !== option.id);
   }, [countryOptions, criterion.value]);
 
   function onSelect(item: Option) {
@@ -77,7 +73,7 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
   const intl = useIntl();
 
   const options = useMemo(() => {
-    return getCountries(intl.locale).map(country => ({
+    return getCountries(intl.locale).map((country) => ({
       id: country.value,
       label: country.label,
     }));
@@ -90,9 +86,7 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
     if (!criterion) return [];
 
     if (criterion.modifier === CriterionModifier.Equals) {
-      return options.filter(option => 
-        criterion.value === option.id
-      );
+      return options.filter((option) => criterion.value === option.id);
     }
 
     return [];
@@ -118,7 +112,11 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
   function onUnselect(item: Option) {
     const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
 
-    if (criterion && criterion.modifier === CriterionModifier.Equals && criterion.value === item.id) {
+    if (
+      criterion &&
+      criterion.modifier === CriterionModifier.Equals &&
+      criterion.value === item.id
+    ) {
       setFilter(filter.removeCriterion(option.type));
       return;
     }
@@ -128,9 +126,11 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
 
   // handle filtering of selected options
   const candidates = useMemo(() => {
-    return options.filter((p) => selected.find((s) => s.id === p.id) === undefined);
+    return options.filter(
+      (p) => selected.find((s) => s.id === p.id) === undefined
+    );
   }, [options, selected]);
-  
+
   return (
     <>
       <SidebarListFilter

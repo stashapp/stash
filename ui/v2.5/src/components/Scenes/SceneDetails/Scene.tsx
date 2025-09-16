@@ -649,18 +649,18 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
               </Nav.Link>
             </Nav.Item>
             <Dropdown ref={dropDownRef}>
-            <Dropdown.Toggle
-              variant="secondary"
-              id="tab-dropdown"
-              className="minimal"
-            >
-              <Icon icon={faEllipsisV} />
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              className="bg-secondary text-white"
-              renderOnMount={true}
-            ></Dropdown.Menu>
-          </Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="tab-dropdown"
+                className="minimal"
+              >
+                <Icon icon={faEllipsisV} />
+              </Dropdown.Toggle>
+              <Dropdown.Menu
+                className="bg-secondary text-white"
+                renderOnMount={true}
+              ></Dropdown.Menu>
+            </Dropdown>
           </ScenePageTabs>
         </Nav>
       </div>

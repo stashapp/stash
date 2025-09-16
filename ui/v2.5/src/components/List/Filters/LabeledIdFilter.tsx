@@ -552,14 +552,14 @@ export function setObjectFilter(
       out.performers_filter = relatedFilterOutput as PerformerFilterType;
       break;
     case FilterMode.Galleries:
-        // if empty, only get objects with performers
-        if (empty) {
-          out.galleries_count = {
-            modifier: CriterionModifier.GreaterThan,
-            value: 0,
-          };
-        }
-        out.galleries_filter = relatedFilterOutput as GalleryFilterType;
-        break;
+      // if empty, only get objects with performers
+      if (empty) {
+        out.galleries_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.galleries_filter = relatedFilterOutput as GalleryFilterType;
+      break;
   }
 }

@@ -359,7 +359,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   }
 
   function maybeRenderSceneSpecsOverlay(scene: QueuedScene) {
-    let file = scene.files.length > 0 ? scene.files[0] : undefined
+    let file = scene.files.length > 0 ? scene.files[0] : undefined;
     let sizeObj = null;
     if (file?.size) {
       sizeObj = TextUtils.fileSize(file.size);

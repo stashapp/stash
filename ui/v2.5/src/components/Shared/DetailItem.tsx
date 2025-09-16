@@ -68,9 +68,10 @@ export const DetailItem: React.FC<IDetailItem> = ({
   // according to linter rule CSS classes shouldn't use underscores
   const sanitisedID = id.replace(/_/g, "-");
 
-
   return (
-    <div className={cx(`detail-item ${sanitisedID}`, { "full-width": fullWidth })}>
+    <div
+      className={cx(`detail-item ${sanitisedID}`, { "full-width": fullWidth })}
+    >
       <span className={`detail-item-title ${sanitisedID}`} title={labelTitle}>
         {heading ? (
           heading

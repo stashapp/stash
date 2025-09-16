@@ -23,23 +23,38 @@ export const GenderFilter: React.FC<IGenderFilterProps> = ({
   const genderOptions = useMemo(() => {
     return [
       { id: "Male", label: intl.formatMessage({ id: "gender_types.MALE" }) },
-      { id: "Female", label: intl.formatMessage({ id: "gender_types.FEMALE" }) },
-      { id: "Transgender Male", label: intl.formatMessage({ id: "gender_types.TRANSGENDER_MALE" }) },
-      { id: "Transgender Female", label: intl.formatMessage({ id: "gender_types.TRANSGENDER_FEMALE" }) },
-      { id: "Intersex", label: intl.formatMessage({ id: "gender_types.INTERSEX" }) },
-      { id: "Non-Binary", label: intl.formatMessage({ id: "gender_types.NON_BINARY" }) },
+      {
+        id: "Female",
+        label: intl.formatMessage({ id: "gender_types.FEMALE" }),
+      },
+      {
+        id: "Transgender Male",
+        label: intl.formatMessage({ id: "gender_types.TRANSGENDER_MALE" }),
+      },
+      {
+        id: "Transgender Female",
+        label: intl.formatMessage({ id: "gender_types.TRANSGENDER_FEMALE" }),
+      },
+      {
+        id: "Intersex",
+        label: intl.formatMessage({ id: "gender_types.INTERSEX" }),
+      },
+      {
+        id: "Non-Binary",
+        label: intl.formatMessage({ id: "gender_types.NON_BINARY" }),
+      },
     ];
   }, [intl]);
 
   const selectedOptions = useMemo(() => {
-    return genderOptions.filter(option => 
+    return genderOptions.filter((option) =>
       criterion.value.includes(option.id)
     );
   }, [genderOptions, criterion.value]);
 
   const availableOptions = useMemo(() => {
-    return genderOptions.filter(option => 
-      !criterion.value.includes(option.id)
+    return genderOptions.filter(
+      (option) => !criterion.value.includes(option.id)
     );
   }, [genderOptions, criterion.value]);
 
@@ -49,7 +64,7 @@ export const GenderFilter: React.FC<IGenderFilterProps> = ({
   }
 
   function onUnselect(item: Option) {
-    const newValue = criterion.value.filter(v => v !== item.id);
+    const newValue = criterion.value.filter((v) => v !== item.id);
     onValueChanged(newValue);
   }
 
@@ -73,8 +88,6 @@ interface ISidebarFilter {
   setFilter: (f: ListFilterModel) => void;
 }
 
-
-
 export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
   title,
   option,
@@ -86,11 +99,26 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
   const options = useMemo(() => {
     return [
       { id: "Male", label: intl.formatMessage({ id: "gender_types.MALE" }) },
-      { id: "Female", label: intl.formatMessage({ id: "gender_types.FEMALE" }) },
-      { id: "Transgender Male", label: intl.formatMessage({ id: "gender_types.TRANSGENDER_MALE" }) },
-      { id: "Transgender Female", label: intl.formatMessage({ id: "gender_types.TRANSGENDER_FEMALE" }) },
-      { id: "Intersex", label: intl.formatMessage({ id: "gender_types.INTERSEX" }) },
-      { id: "Non-Binary", label: intl.formatMessage({ id: "gender_types.NON_BINARY" }) },
+      {
+        id: "Female",
+        label: intl.formatMessage({ id: "gender_types.FEMALE" }),
+      },
+      {
+        id: "Transgender Male",
+        label: intl.formatMessage({ id: "gender_types.TRANSGENDER_MALE" }),
+      },
+      {
+        id: "Transgender Female",
+        label: intl.formatMessage({ id: "gender_types.TRANSGENDER_FEMALE" }),
+      },
+      {
+        id: "Intersex",
+        label: intl.formatMessage({ id: "gender_types.INTERSEX" }),
+      },
+      {
+        id: "Non-Binary",
+        label: intl.formatMessage({ id: "gender_types.NON_BINARY" }),
+      },
     ];
   }, [intl]);
 
@@ -100,10 +128,11 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
   const selected: Option[] = useMemo(() => {
     if (!criterion) return [];
 
-    if (criterion.modifier === CriterionModifier.Includes || criterion.modifier === CriterionModifier.Excludes) {
-      return options.filter(option => 
-        criterion.value.includes(option.id)
-      );
+    if (
+      criterion.modifier === CriterionModifier.Includes ||
+      criterion.modifier === CriterionModifier.Excludes
+    ) {
+      return options.filter((option) => criterion.value.includes(option.id));
     }
 
     return [];
@@ -126,7 +155,6 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
       newCriterion.value = [item.id];
     }
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
-    
   }
 
   function onUnselect(item: Option) {
@@ -136,7 +164,7 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
       const currentValues = criterion.value;
       if (currentValues.includes(item.id)) {
         // Remove from selection
-        newCriterion.value = currentValues.filter(v => v !== item.id);
+        newCriterion.value = currentValues.filter((v) => v !== item.id);
         if (newCriterion.value.length === 0) {
           setFilter(filter.removeCriterion(option.type));
           return;
@@ -148,9 +176,11 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
 
   // handle filtering of selected options
   const candidates = useMemo(() => {
-    return options.filter( (p) => selected.find((s) => s.id === p.id) === undefined);
+    return options.filter(
+      (p) => selected.find((s) => s.id === p.id) === undefined
+    );
   }, [options, selected]);
-  
+
   return (
     <>
       <SidebarListFilter
