@@ -83,6 +83,9 @@ export const SaveFilterDialog: React.FC<{
 
   return (
     <Modal show className="save-filter-dialog">
+      <Modal.Header>
+        <FormattedMessage id="actions.save_filter" />
+      </Modal.Header>
       <Modal.Body>
         <Form.Group>
           <Form.Label>
