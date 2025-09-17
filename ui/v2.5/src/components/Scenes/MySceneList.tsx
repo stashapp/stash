@@ -73,6 +73,8 @@ import {
   PhashCriterionOption,
 } from "src/models/list-filter/criteria/phash";
 import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
+import { SidebarPathFilter } from "../List/Filters/PathFilter";
+import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -318,6 +320,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
           option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarPathFilter
+          title={<FormattedMessage id="path" />}
+          data-type={PathCriterionOption.type}
+          option={PathCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />

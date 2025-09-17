@@ -8,6 +8,7 @@ import {
 } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SidebarSection } from "src/components/Shared/Sidebar";
+import { SelectedList } from "./SidebarListFilter";
 
 interface IStringFilterProps {
   criterion: ModifierCriterion<string>;
@@ -80,7 +81,29 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
   }
 
   return (
-    <SidebarSection className="sidebar-list-filter" text={title}>
+    <SidebarSection
+      className="sidebar-list-filter"
+      text={title}
+      outsideCollapse={
+        <>
+          {criterion?.value ? (
+            <SelectedList
+              items={[
+                {
+                  id: "1",
+                  label: criterion.value,
+                },
+              ]}
+              onUnselect={() =>
+                onValueChange({
+                  target: { value: "" },
+                } as React.ChangeEvent<HTMLInputElement>)
+              }
+            />
+          ) : null}
+        </>
+      }
+    >
       <div className="string-filter">
         <div className="filter-group">
           <Form.Control

@@ -1012,3 +1012,24 @@ input[type="range"].zoom-slider {
     }
   }
 }
+
+.label-group.path {
+  margin-bottom: 0.5rem;
+  font-size: 15px;
+  overflow: hidden;
+  padding: 0.25rem 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label-group.path:before {
+  content: "📁";
+  display: inline-block;
+  transform: scale(1.2);
+  margin: 0 0.4rem;
+}
+
+.label-group.path:hover {
+  background-color: rgba(138, 155, 168, 0.15);
+  cursor: pointer;
+}

@@ -58,6 +58,8 @@ import {
 import { TaggerContext } from "../Tagger/context";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
+import { SidebarPathFilter } from "../List/Filters/PathFilter";
+import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
@@ -226,6 +228,13 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
+        />
+        <SidebarPathFilter
+          title={<FormattedMessage id="path" />}
+          data-type={PathCriterionOption.type}
+          option={PathCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
         />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
