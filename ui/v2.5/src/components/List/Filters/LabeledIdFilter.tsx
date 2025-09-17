@@ -520,7 +520,7 @@ interface IFilterType {
   performers_filter?: InputMaybe<PerformerFilterType>;
   performer_count?: InputMaybe<IntCriterionInput>;
   galleries_filter?: InputMaybe<GalleryFilterType>;
-  galleries_count?: InputMaybe<IntCriterionInput>;
+  gallery_count?: InputMaybe<IntCriterionInput>;
 }
 
 export function setObjectFilter(
@@ -554,7 +554,7 @@ export function setObjectFilter(
     case FilterMode.Galleries:
       // if empty, only get objects with performers
       if (empty) {
-        out.galleries_count = {
+        out.gallery_count = {
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
