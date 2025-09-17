@@ -62,7 +62,11 @@ import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
-import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
+import {
+  PageSizeSelector,
+  SearchTermInput,
+  SortBySelect,
+} from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
@@ -220,7 +224,13 @@ const SceneList: React.FC<{
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {
-    return <SceneWallPanel scenes={scenes} sceneQueue={queue} />;
+    return (
+      <SceneWallPanel
+        scenes={scenes}
+        sceneQueue={queue}
+        zoomIndex={filter.zoomIndex}
+      />
+    );
   }
   if (filter.displayMode === DisplayMode.Tagger) {
     return <Tagger scenes={scenes} queue={queue} />;
@@ -236,6 +246,7 @@ const ScenesFilterSidebarSections = PatchContainerComponent(
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   sidebarOpen: boolean;
   onClose?: () => void;
@@ -244,6 +255,7 @@ const SidebarContent: React.FC<{
 }> = ({
   filter,
   setFilter,
+  filterHook,
   view,
   showEditFilter,
   sidebarOpen,
@@ -252,6 +264,8 @@ const SidebarContent: React.FC<{
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
+  const hideStudios = view === View.StudioScenes;
 
   return (
     <>
@@ -264,19 +278,23 @@ const SidebarContent: React.FC<{
       />
 
       <ScenesFilterSidebarSections>
-        <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          data-type={StudiosCriterionOption.type}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        {!hideStudios && (
+          <SidebarStudiosFilter
+            title={<FormattedMessage id="studios" />}
+            data-type={StudiosCriterionOption.type}
+            option={StudiosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+        )}
         <SidebarPerformersFilter
           title={<FormattedMessage id="performers" />}
           data-type={PerformersCriterionOption.type}
           option={PerformersCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
@@ -284,6 +302,7 @@ const SidebarContent: React.FC<{
           option={TagsCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          filterHook={filterHook}
         />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
@@ -318,11 +337,12 @@ interface IOperations {
 }
 
 const ListToolbarContent: React.FC<{
-  criteria: Criterion[];
+  filter: ListFilterModel;
   items: GQL.SlimSceneDataFragment[];
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
+  onSetFilter: (filter: ListFilterModel) => void;
   onEditCriterion: (c?: Criterion) => void;
   onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
   onRemoveAllCriterion: () => void;
@@ -333,11 +353,12 @@ const ListToolbarContent: React.FC<{
   onPlay: () => void;
   onCreateNew: () => void;
 }> = ({
-  criteria,
+  filter,
   items,
   selectedIds,
   operations,
   onToggleSidebar,
+  onSetFilter,
   onEditCriterion,
   onRemoveCriterion,
   onRemoveAllCriterion,
@@ -350,6 +371,7 @@ const ListToolbarContent: React.FC<{
 }) => {
   const intl = useIntl();
 
+  const { criteria } = filter;
   const hasSelection = selectedIds.size > 0;
 
   const sidebarToggle = (
@@ -366,20 +388,25 @@ const ListToolbarContent: React.FC<{
   return (
     <>
       {!hasSelection && (
-        <div className="filter-toolbar">
-          <FilterButton
-            onClick={() => onEditCriterion()}
-            count={criteria.length}
-          />
-          <FilterTags
-            criteria={criteria}
-            onEditCriterion={onEditCriterion}
-            onRemoveCriterion={onRemoveCriterion}
-            onRemoveAll={onRemoveAllCriterion}
-            truncateOnOverflow
-          />
-          {sidebarToggle}
-        </div>
+        <>
+          <div className="search-container">
+            <SearchTermInput filter={filter} onFilterUpdate={onSetFilter} />
+          </div>
+          <div className="filter-section">
+            <FilterButton
+              onClick={() => onEditCriterion()}
+              count={criteria.length}
+            />
+            <FilterTags
+              criteria={criteria}
+              onEditCriterion={onEditCriterion}
+              onRemoveCriterion={onRemoveCriterion}
+              onRemoveAll={onRemoveAllCriterion}
+              truncateOnOverflow
+            />
+            {sidebarToggle}
+          </div>
+        </>
       )}
       {hasSelection && (
         <div className="selected-items-info">
@@ -577,6 +604,25 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     setShowSidebar,
   });
 
+  useEffect(() => {
+    Mousetrap.bind("e", () => {
+      if (hasSelection) {
+        onEdit?.();
+      }
+    });
+
+    Mousetrap.bind("d d", () => {
+      if (hasSelection) {
+        onDelete?.();
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
   const onCloseEditDelete = useCloseEditDelete({
     closeModal,
     onSelectNone,
@@ -683,6 +729,16 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       className: "create-new-item",
     },
     {
+      text: intl.formatMessage({ id: "actions.select_all" }),
+      onClick: () => onSelectAll(),
+      isDisplayed: () => totalCount > 0,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.select_none" }),
+      onClick: () => onSelectNone(),
+      isDisplayed: () => hasSelection,
+    },
+    {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
       isDisplayed: () => totalCount > 1,
@@ -743,6 +799,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
             <SidebarContent
               filter={filter}
               setFilter={setFilter}
+              filterHook={filterHook}
               showEditFilter={showEditFilter}
               view={view}
               sidebarOpen={showSidebar}
@@ -757,7 +814,8 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               })}
             >
               <ListToolbarContent
-                criteria={filter.criteria}
+                filter={filter}
+                onSetFilter={setFilter}
                 items={items}
                 selectedIds={selectedIds}
                 operations={otherOperations}
