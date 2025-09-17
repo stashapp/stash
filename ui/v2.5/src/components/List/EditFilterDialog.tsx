@@ -30,11 +30,14 @@ import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
 import { useConfigureUI, useSaveFilter } from "src/core/StashService";
-import { FilterMode } from "src/core/generated-graphql";
+import {
+  FilterMode,
+  SavedFilterDataFragment,
+} from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import ScreenUtils from "src/utils/screen";
-import { SaveFilterDialog } from "./SavedFilterList";
+import { LoadFilterDialog, SaveFilterDialog } from "./SavedFilterList";
 
 interface ICriterionList {
   criteria: string[];
@@ -440,6 +443,19 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     setCurrentFilter(newFilter);
   }
 
+  function onLoadFilter(f: SavedFilterDataFragment) {
+    const newFilter = filter.clone();
+
+    newFilter.currentPage = 1;
+    // #1795 - reset search term if not present in saved filter
+    newFilter.searchTerm = "";
+    newFilter.configureFromSavedFilter(f);
+    // #1507 - reset random seed when loaded
+    newFilter.randomSeed = -1;
+
+    onApply(newFilter);
+  }
+
   async function onSaveFilter(name: string, id?: string) {
     try {
       setSavingFilter(true);
@@ -477,6 +493,17 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
             }
           }}
           isSaving={savingFilter}
+        />
+      )}
+      {showLoadDialog && (
+        <LoadFilterDialog
+          mode={filter.mode}
+          onClose={(f) => {
+            if (f) {
+              onLoadFilter(f);
+            }
+            setShowLoadDialog(false);
+          }}
         />
       )}
       <Modal
@@ -527,7 +554,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
         </Modal.Body>
         <Modal.Footer>
           <div>
-            <Button variant="secondary" onClick={() => {}}>
+            <Button variant="secondary" onClick={() => setShowLoadDialog(true)}>
               <FormattedMessage id="actions.load" />…
             </Button>
             <Button variant="secondary" onClick={() => setShowSaveDialog(true)}>

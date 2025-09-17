@@ -34,8 +34,8 @@ import { OperationButton } from "../Shared/OperationButton";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
-  onSelect: (value: { name: string; id: string }) => void;
-  savedFilters: { name: string; id: string }[];
+  onSelect: (value: SavedFilterDataFragment) => void;
+  savedFilters: SavedFilterDataFragment[];
   disabled?: boolean;
 }> = ({ name, onSelect, savedFilters: existing, disabled = false }) => {
   const filtered = useMemo(() => {
@@ -132,6 +132,48 @@ export const SaveFilterDialog: React.FC<{
         >
           {intl.formatMessage({ id: "actions.save" })}
         </OperationButton>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
+export const LoadFilterDialog: React.FC<{
+  mode: FilterMode;
+  onClose: (filter?: SavedFilterDataFragment) => void;
+}> = ({ mode, onClose }) => {
+  const intl = useIntl();
+  const [filterName, setFilterName] = useState("");
+
+  const { data } = useFindSavedFilters(mode);
+
+  return (
+    <Modal show className="load-filter-dialog">
+      <Modal.Header>
+        <FormattedMessage id="actions.load_filter" />
+      </Modal.Header>
+      <Modal.Body>
+        <Form.Group>
+          <Form.Label>
+            <FormattedMessage id="filter_name" />
+          </Form.Label>
+          <FormControl
+            className="bg-secondary text-white border-secondary"
+            placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
+            value={filterName}
+            onChange={(e) => setFilterName(e.target.value)}
+          />
+        </Form.Group>
+
+        <ExistingSavedFilterList
+          name={filterName}
+          onSelect={(f) => onClose(f)}
+          savedFilters={data?.findSavedFilters ?? []}
+        />
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => onClose()}>
+          {intl.formatMessage({ id: "actions.cancel" })}
+        </Button>
       </Modal.Footer>
     </Modal>
   );
