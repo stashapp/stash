@@ -34,10 +34,10 @@ import { OperationButton } from "../Shared/OperationButton";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
-  setName: (name: string) => void;
-  existing: { name: string; id: string }[];
+  onSelect: (value: { name: string; id: string }) => void;
+  savedFilters: { name: string; id: string }[];
   disabled?: boolean;
-}> = ({ name, setName, existing, disabled = false }) => {
+}> = ({ name, onSelect, savedFilters: existing, disabled = false }) => {
   const filtered = useMemo(() => {
     if (!name) return existing;
 
@@ -53,7 +53,7 @@ const ExistingSavedFilterList: React.FC<{
           <Button
             className="minimal"
             variant="link"
-            onClick={() => setName(f.name)}
+            onClick={() => onSelect(f)}
             disabled={disabled}
           >
             {f.name}
@@ -102,8 +102,8 @@ export const SaveFilterDialog: React.FC<{
 
         <ExistingSavedFilterList
           name={filterName}
-          setName={setFilterName}
-          existing={data?.findSavedFilters ?? []}
+          onSelect={(f) => setFilterName(f.name)}
+          savedFilters={data?.findSavedFilters ?? []}
         />
 
         {!!overwritingFilter && (
