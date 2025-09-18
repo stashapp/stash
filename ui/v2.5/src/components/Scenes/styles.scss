@@ -1147,6 +1147,19 @@ input[type="range"].blue-slider {
   }
 }
 
+// move the sidebar toggle to the left on xl viewports
+@include media-breakpoint-up(xl) {
+  .scene-list .scene-list-toolbar .filter-section {
+    .sidebar-toggle-button {
+      margin-left: 0;
+    }
+
+    .filter-tags {
+      order: 2;
+    }
+  }
+}
+
 .scene-list-header {
   flex-wrap: wrap-reverse;
   gap: 0.5rem;
