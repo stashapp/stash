@@ -1063,7 +1063,7 @@ input[type="range"].blue-slider {
     }
   }
 
-  > div:first-child {
+  > div.filter-section {
     border: 1px solid $secondary;
     border-radius: 0.25rem;
     flex-grow: 1;
@@ -1072,6 +1072,23 @@ input[type="range"].blue-slider {
     .filter-button {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0;
+    }
+  }
+
+  .search-container {
+    border-right: 1px solid $secondary;
+    display: block;
+    margin-right: -0.5rem;
+    padding-right: 10px;
+    width: calc($sidebar-width - 15px);
+
+    .search-term-input {
+      margin-right: 0;
+      width: 100%;
+
+      .clearable-text-field {
+        height: 100%;
+      }
     }
   }
 
@@ -1090,6 +1107,17 @@ input[type="range"].blue-slider {
     .tag-item {
       white-space: nowrap;
     }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .sidebar-pane:not(.hide-sidebar) .scene-list-toolbar .search-container {
+    display: none;
+  }
+}
+@include media-breakpoint-down(md) {
+  .sidebar-pane.hide-sidebar .scene-list-toolbar .search-container {
+    display: none;
   }
 }
 

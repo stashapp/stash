@@ -5,6 +5,8 @@ $navbar-height: 48.75px;
 
 $sticky-detail-header-height: 50px;
 
+$sidebar-width: 250px;
+
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
@@ -1410,4 +1412,9 @@ select {
   max-height: calc(100vh - 12rem);
   overflow-y: auto;
   padding-right: 1.5rem;
+}
+
+// Fix descenders clipping in line-height #6047
+h3 .TruncatedText {
+  line-height: 1.5;
 }

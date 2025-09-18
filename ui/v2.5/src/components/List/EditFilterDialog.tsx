@@ -38,6 +38,7 @@ import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import ScreenUtils from "src/utils/screen";
 import { LoadFilterDialog, SaveFilterDialog } from "./SavedFilterList";
+import { SearchTermInput } from "./ListFilter";
 
 interface ICriterionList {
   criteria: string[];
@@ -529,6 +530,15 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               "criterion-selected": !!criterion,
             })}
           >
+            <div className="search-term-row">
+              <span>
+                <FormattedMessage id="search_filter.search_term" />
+              </span>
+              <SearchTermInput
+                filter={currentFilter}
+                onFilterUpdate={setCurrentFilter}
+              />
+            </div>
             <CriterionOptionList
               criteria={criteriaList}
               currentCriterion={criterion}
