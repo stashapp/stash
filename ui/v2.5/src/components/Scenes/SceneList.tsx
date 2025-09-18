@@ -61,7 +61,11 @@ import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
-import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
+import {
+  PageSizeSelector,
+  SearchTermInput,
+  SortBySelect,
+} from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
 
@@ -336,12 +340,12 @@ interface IOperations {
 }
 
 const ListToolbarContent: React.FC<{
-  searchTerm: string;
-  criteria: Criterion[];
+  filter: ListFilterModel;
   items: GQL.SlimSceneDataFragment[];
   selectedIds: Set<string>;
   operations: IOperations[];
   onToggleSidebar: () => void;
+  onSetFilter: (filter: ListFilterModel) => void;
   onEditCriterion: (c: Criterion) => void;
   onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
   onRemoveAllCriterion: () => void;
@@ -354,12 +358,12 @@ const ListToolbarContent: React.FC<{
   onPlay: () => void;
   onCreateNew: () => void;
 }> = ({
-  searchTerm,
-  criteria,
+  filter,
   items,
   selectedIds,
   operations,
   onToggleSidebar,
+  onSetFilter,
   onEditCriterion,
   onRemoveCriterion,
   onRemoveAllCriterion,
@@ -374,28 +378,34 @@ const ListToolbarContent: React.FC<{
 }) => {
   const intl = useIntl();
 
+  const { criteria, searchTerm } = filter;
   const hasSelection = selectedIds.size > 0;
 
   return (
     <>
       {!hasSelection && (
-        <div>
-          <FilterButton
-            onClick={() => onToggleSidebar()}
-            count={criteria.length}
-            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
-          />
-          <FilterTags
-            searchTerm={searchTerm}
-            criteria={criteria}
-            onEditCriterion={onEditCriterion}
-            onRemoveCriterion={onRemoveCriterion}
-            onRemoveAll={onRemoveAllCriterion}
-            onEditSearchTerm={onEditSearchTerm}
-            onRemoveSearchTerm={onRemoveSearchTerm}
-            truncateOnOverflow
-          />
-        </div>
+        <>
+          <div className="search-container">
+            <SearchTermInput filter={filter} onFilterUpdate={onSetFilter} />
+          </div>
+          <div className="filter-section">
+            <FilterButton
+              onClick={() => onToggleSidebar()}
+              count={criteria.length}
+              title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+            />
+            <FilterTags
+              searchTerm={searchTerm}
+              criteria={criteria}
+              onEditCriterion={onEditCriterion}
+              onRemoveCriterion={onRemoveCriterion}
+              onRemoveAll={onRemoveAllCriterion}
+              onEditSearchTerm={onEditSearchTerm}
+              onRemoveSearchTerm={onRemoveSearchTerm}
+              truncateOnOverflow
+            />
+          </div>
+        </>
       )}
       {hasSelection && (
         <div className="selected-items-info">
@@ -806,8 +816,8 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               })}
             >
               <ListToolbarContent
-                searchTerm={filter.searchTerm}
-                criteria={filter.criteria}
+                filter={filter}
+                onSetFilter={setFilter}
                 items={items}
                 selectedIds={selectedIds}
                 operations={otherOperations}
