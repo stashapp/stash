@@ -149,7 +149,9 @@
         },
         "show_count_results": "Afficher {count} résultats",
         "show_results": "Afficher les résultats",
-        "play": "Lecture"
+        "play": "Lecture",
+        "load": "Charger",
+        "load_filter": "Charger un filtre"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -1237,7 +1239,8 @@
         "name": "Filtre",
         "saved_filters": "Filtres sauvegardés",
         "update_filter": "Filtre actualisé",
-        "more_filter_criteria": "+{count} de plus"
+        "more_filter_criteria": "+{count} de plus",
+        "search_term": "Terme recherché"
     },
     "second": "Deuxième",
     "seconds": "Secondes",
