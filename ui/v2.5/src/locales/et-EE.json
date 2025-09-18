@@ -149,7 +149,9 @@
         },
         "play": "Esita",
         "show_results": "Näita tulemusi",
-        "show_count_results": "Näita {count} tulemust"
+        "show_count_results": "Näita {count} tulemust",
+        "load": "Lae",
+        "load_filter": "Lae filter"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -1226,7 +1228,8 @@
         "name": "Filter",
         "saved_filters": "Salvestatud filtrid",
         "update_filter": "Uuenda Filtrit",
-        "more_filter_criteria": "+{count} rohkem"
+        "more_filter_criteria": "+{count} rohkem",
+        "search_term": "Otsi sõnet"
     },
     "second": "Sekund",
     "seconds": "Sekundit",
