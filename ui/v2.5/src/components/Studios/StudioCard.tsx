@@ -223,7 +223,7 @@ export const StudioCard: React.FC<IProps> = ({
           <div className="studio-o-counter">
             <FormattedMessage id="o_counter" defaultMessage="O Counter" />: {studio.o_counter}
           </div>
-        </div>
+        
         </div>
       }
       overlays={
