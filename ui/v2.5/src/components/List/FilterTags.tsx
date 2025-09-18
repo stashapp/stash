@@ -167,7 +167,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
         return (child as HTMLElement).classList.contains("more-tags");
       });
 
-      if (moreTags && !!cutoff) {
+      if (moreTags && cutoff !== undefined) {
         return;
       }
 
@@ -273,7 +273,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
 
   const filterTags = criteria.map((c) => getFilterTags(c)).flat();
 
-  if (cutoff && filterTags.length > cutoff) {
+  if (cutoff !== undefined && filterTags.length > cutoff) {
     const visibleCriteria = filterTags.slice(0, cutoff);
     const hiddenCriteria = filterTags.slice(cutoff);
 
