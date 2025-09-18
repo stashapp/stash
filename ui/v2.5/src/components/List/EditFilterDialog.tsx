@@ -564,10 +564,18 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
         </Modal.Body>
         <Modal.Footer>
           <div>
-            <Button variant="secondary" onClick={() => setShowLoadDialog(true)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowLoadDialog(true)}
+              title={intl.formatMessage({ id: "actions.load_filter" })}
+            >
               <FormattedMessage id="actions.load" />…
             </Button>
-            <Button variant="secondary" onClick={() => setShowSaveDialog(true)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowSaveDialog(true)}
+              title={intl.formatMessage({ id: "actions.save_filter" })}
+            >
               <FormattedMessage id="actions.save" />…
             </Button>
           </div>
