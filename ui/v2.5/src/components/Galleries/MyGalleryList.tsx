@@ -21,7 +21,7 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { FilterTags } from "../List/FilterTags";
+import { FilterTags } from "../List/MyFilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
@@ -47,7 +47,7 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { createMandatoryNumberCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
-import useFocus from "src/utils/focus";
+import useFocus from "src/utils/myFocus";
 import {
   faPencil,
   faPlus,
@@ -524,7 +524,7 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
   const { modal, showModal, closeModal } = modalState;
 
   // Utility hooks
-  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+  const { setPage, removeCriterion, myClearAllCriteria } = useFilterOperations({
     filter,
     setFilter,
   });
@@ -675,7 +675,7 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => clearAllCriteria(true)}
+                onRemoveAllCriterion={() => myClearAllCriteria(true)}
                 onEditSearchTerm={() => {
                   setShowSidebar(true);
                   setSearchFocus(true);

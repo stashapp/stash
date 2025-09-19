@@ -39,7 +39,7 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { FilterTags } from "../List/FilterTags";
+import { FilterTags } from "../List/MyFilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
@@ -67,7 +67,7 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { createMandatoryNumberCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
-import useFocus from "src/utils/focus";
+import useFocus from "src/utils/myFocus";
 import {
   DuplicatedCriterionOption,
   PhashCriterionOption,
@@ -232,7 +232,7 @@ const SceneList: React.FC<{
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {
-    return <SceneWallPanel scenes={scenes} sceneQueue={queue} />;
+    return <SceneWallPanel scenes={scenes} sceneQueue={queue} zoomIndex={filter.zoomIndex} />;
   }
   if (filter.displayMode === DisplayMode.Tagger) {
     return <Tagger scenes={scenes} queue={queue} />;
@@ -639,7 +639,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   const { modal, showModal, closeModal } = modalState;
 
   // Utility hooks
-  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+  const { setPage, removeCriterion, myClearAllCriteria } = useFilterOperations({
     filter,
     setFilter,
   });
@@ -869,7 +869,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => clearAllCriteria(true)}
+                onRemoveAllCriterion={() => myClearAllCriteria(true)}
                 onEditSearchTerm={() => {
                   setShowSidebar(true);
                   setSearchFocus(true);

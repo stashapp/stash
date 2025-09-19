@@ -28,7 +28,7 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { FilterTags } from "../List/FilterTags";
+import { FilterTags } from "../List/MyFilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
@@ -45,7 +45,7 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
-import useFocus from "src/utils/focus";
+import useFocus from "src/utils/myFocus";
 import {
   faPencil,
   faPlus,
@@ -640,7 +640,7 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
   const { modal, showModal, closeModal } = modalState;
 
   // Utility hooks
-  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+  const { setPage, removeCriterion, myClearAllCriteria } = useFilterOperations({
     filter,
     setFilter,
   });
@@ -794,7 +794,7 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => clearAllCriteria(true)}
+                onRemoveAllCriterion={() => myClearAllCriteria(true)}
                 onEditSearchTerm={() => {
                   setShowSidebar(true);
                   setSearchFocus(true);
