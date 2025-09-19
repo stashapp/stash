@@ -14,7 +14,7 @@ import { SidebarSection } from "src/components/Shared/Sidebar";
 import { ModifierSelectorButtons } from "../ModifierSelect";
 import { cloneDeep } from "lodash-es";
 import { SelectedItem, SelectedList } from "./SidebarListFilter";
-import { useStringCriterion } from "./StringFilter";
+import { useModifierCriterion, SelectedItems, ModifierControls } from "./StringFilter";
 
 interface IInputFilterProps {
   criterion: ModifierCriterion<CriterionValue>;
@@ -73,34 +73,13 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
   const { configuration } = React.useContext(ConfigurationContext);
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
-  const {criterion, setCriterion} = useStringCriterion(option, filter, setFilter);
-  const modifierCriterionOption = criterion?.modifierCriterionOption();
-  const defaultModifier = modifierCriterionOption.defaultModifier;
-  const modifierOptions = modifierCriterionOption.modifierOptions;
-
-  function onValueChange(value: string) {
-    if (!value.trim()) {
-      // Remove criterion if empty
-      setFilter(filter.removeCriterion(option.type));
-      return;
-    }
-
-    // const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
-    const newCriterion = cloneDeep(criterion);
-    newCriterion.modifier = criterion?.modifier ? criterion.modifier : defaultModifier;
-    newCriterion.value = value;
-    setFilter(filter.replaceCriteria(option.type, [newCriterion]));
-  }
-
-  const onChangedModifierSelect = useCallback(
-    (m: CriterionModifier) => {
-      console.log("onChangedModifierSelect", m);
-      const newCriterion = cloneDeep(criterion);
-      newCriterion.modifier = m;
-      setCriterion(newCriterion);
-    },
-    [criterion, setCriterion]
-  );
+  const {
+    criterion,
+    defaultModifier,
+    modifierOptions,
+    onValueChange,
+    onChangedModifierSelect
+  } = useModifierCriterion(option, filter, setFilter);
 
   // check if we should show regex input or folder select
   const regex =
@@ -112,29 +91,20 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
       className="sidebar-list-filter"
       text={title}
       outsideCollapse={
-        <ul className="selected-list">
-          {criterion?.modifier != defaultModifier ? (
-            <SelectedItem
-              className="modifier-object"
-              label={ModifierCriterion.getModifierLabel(intl, criterion.modifier)}
-              onClick={() => onChangedModifierSelect(defaultModifier)}
-            />
-          ) : null}
-          {criterion?.value ? (
-            <SelectedItem
-              label={criterion.value}
-              onClick={() => onValueChange("")}
-            />
-          ) : null}
-        </ul>
+        <SelectedItems
+          criterion={criterion}
+          defaultModifier={defaultModifier}
+          onChangedModifierSelect={onChangedModifierSelect}
+          onValueChange={onValueChange}
+        />
       }
     >
       <div className="path-filter">
         <div className="filter-group">
-          <ModifierSelectorButtons
-            options={modifierOptions}
-            value={criterion?.modifier ? criterion.modifier : defaultModifier}
-            onChanged={onChangedModifierSelect}
+          <ModifierControls
+            modifierOptions={modifierOptions}
+            currentModifier={criterion?.modifier || defaultModifier}
+            onChangedModifierSelect={onChangedModifierSelect}
           />
           {regex ? (
             <Form.Control

@@ -51,6 +51,102 @@ export function useStringCriterion(
   return { criterion, setCriterion };
 }
 
+// Shared hook for modifier-based sidebar filters
+export function useModifierCriterion(
+  option: CriterionOption,
+  filter: ListFilterModel,
+  setFilter: (f: ListFilterModel) => void
+) {
+  const { criterion, setCriterion } = useStringCriterion(option, filter, setFilter);
+  const modifierCriterionOption = criterion?.modifierCriterionOption();
+  const defaultModifier = modifierCriterionOption?.defaultModifier;
+  const modifierOptions = modifierCriterionOption?.modifierOptions;
+
+  const onValueChange = useCallback((value: string) => {
+    if (!value.trim()) {
+      setFilter(filter.removeCriterion(option.type));
+      return;
+    }
+
+    const newCriterion = cloneDeep(criterion);
+    newCriterion.modifier = criterion?.modifier ? criterion.modifier : defaultModifier;
+    newCriterion.value = value;
+    setFilter(filter.replaceCriteria(option.type, [newCriterion]));
+  }, [criterion, setCriterion, filter, setFilter, option.type, defaultModifier]);
+
+  const onChangedModifierSelect = useCallback(
+    (m: CriterionModifier) => {
+      const newCriterion = cloneDeep(criterion);
+      newCriterion.modifier = m;
+      setCriterion(newCriterion);
+    },
+    [criterion, setCriterion]
+  );
+
+  return {
+    criterion,
+    setCriterion,
+    defaultModifier,
+    modifierOptions,
+    onValueChange,
+    onChangedModifierSelect
+  };
+}
+
+// Shared component for selected items display
+interface ISelectedItemsProps {
+  criterion: ModifierCriterion<string> | null;
+  defaultModifier: CriterionModifier;
+  onChangedModifierSelect: (m: CriterionModifier) => void;
+  onValueChange: (value: string) => void;
+}
+
+export const SelectedItems: React.FC<ISelectedItemsProps> = ({
+  criterion,
+  defaultModifier,
+  onChangedModifierSelect,
+  onValueChange
+}) => {
+  const intl = useIntl();
+
+  return (
+    <ul className="selected-list">
+      {criterion?.modifier != defaultModifier && criterion?.modifier ? (
+        <SelectedItem
+          className="modifier-object"
+          label={ModifierCriterion.getModifierLabel(intl, criterion.modifier)}
+          onClick={() => onChangedModifierSelect(defaultModifier)}
+        />
+      ) : null}
+      {criterion?.value ? (
+        <SelectedItem
+          label={criterion.value}
+          onClick={() => onValueChange("")}
+        />
+      ) : null}
+    </ul>
+  );
+};
+
+// Shared component for modifier controls
+interface IModifierControlsProps {
+  modifierOptions: CriterionModifier[] | undefined;
+  currentModifier: CriterionModifier;
+  onChangedModifierSelect: (m: CriterionModifier) => void;
+}
+
+export const ModifierControls: React.FC<IModifierControlsProps> = ({
+  modifierOptions,
+  currentModifier,
+  onChangedModifierSelect
+}) => (
+  <ModifierSelectorButtons
+    options={modifierOptions}
+    value={currentModifier}
+    onChanged={onChangedModifierSelect}
+  />
+);
+
 export const StringFilter: React.FC<IStringFilterProps> = ({
   criterion,
   onValueChanged,
@@ -94,67 +190,33 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
 }) => {
   const intl = useIntl();
 
-  // const criteria = filter.criteriaFor(
-  //   option.type
-  // ) as ModifierCriterion<string>[];
-  // const criterion = criteria.length > 0 ? criteria[0] : null;
-  const {criterion, setCriterion} = useStringCriterion(option, filter, setFilter);
-  const modifierCriterionOption = criterion?.modifierCriterionOption();
-  const defaultModifier = modifierCriterionOption.defaultModifier;
-  const modifierOptions = modifierCriterionOption.modifierOptions;
-
-  function onValueChange(value: string) {
-    if (!value.trim()) {
-      // Remove criterion if empty
-      setFilter(filter.removeCriterion(option.type));
-      return;
-    }
-
-    // const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
-    const newCriterion = cloneDeep(criterion);
-    newCriterion.modifier = criterion?.modifier ? criterion.modifier : defaultModifier;
-    newCriterion.value = value;
-    setFilter(filter.replaceCriteria(option.type, [newCriterion]));
-  }
-
-  const onChangedModifierSelect = useCallback(
-    (m: CriterionModifier) => {
-      console.log("onChangedModifierSelect", m);
-      const newCriterion = cloneDeep(criterion);
-      newCriterion.modifier = m;
-      setCriterion(newCriterion);
-    },
-    [criterion, setCriterion]
-  );
+  const {
+    criterion,
+    defaultModifier,
+    modifierOptions,
+    onValueChange,
+    onChangedModifierSelect
+  } = useModifierCriterion(option, filter, setFilter);
 
   return (
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
       outsideCollapse={
-        <ul className="selected-list">
-          {criterion?.modifier != defaultModifier ? (
-            <SelectedItem
-              className="modifier-object"
-              label={ModifierCriterion.getModifierLabel(intl, criterion.modifier)}
-              onClick={() => onChangedModifierSelect(defaultModifier)}
-            />
-          ) : null}
-          {criterion?.value ? (
-            <SelectedItem
-              label={criterion.value}
-              onClick={() => onValueChange("")}
-            />
-          ) : null}
-        </ul>
+        <SelectedItems
+          criterion={criterion}
+          defaultModifier={defaultModifier}
+          onChangedModifierSelect={onChangedModifierSelect}
+          onValueChange={onValueChange}
+        />
       }
     >
       <div className="string-filter">
         <div className="filter-group">
-        <ModifierSelectorButtons
-            options={modifierOptions}
-            value={criterion?.modifier ? criterion.modifier : defaultModifier}
-            onChanged={onChangedModifierSelect}
+          <ModifierControls
+            modifierOptions={modifierOptions}
+            currentModifier={criterion?.modifier || defaultModifier}
+            onChangedModifierSelect={onChangedModifierSelect}
           />
           <Form.Control
             className="btn-secondary"
