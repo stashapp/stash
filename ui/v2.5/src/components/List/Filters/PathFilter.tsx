@@ -11,9 +11,6 @@ import {
 } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SidebarSection } from "src/components/Shared/Sidebar";
-import { ModifierSelectorButtons } from "../ModifierSelect";
-import { cloneDeep } from "lodash-es";
-import { SelectedItem, SelectedList } from "./SidebarListFilter";
 import { useModifierCriterion, SelectedItems, ModifierControls } from "./StringFilter";
 
 interface IInputFilterProps {

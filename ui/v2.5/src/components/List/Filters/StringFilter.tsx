@@ -8,7 +8,7 @@ import {
 } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SidebarSection } from "src/components/Shared/Sidebar";
-import { SelectedItem, SelectedList } from "./SidebarListFilter";
+import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierSelectorButtons } from "../ModifierSelect";
 
