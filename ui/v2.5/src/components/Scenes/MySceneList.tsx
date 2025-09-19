@@ -66,7 +66,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { createMandatoryNumberCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
 import {
   DuplicatedCriterionOption,
@@ -75,6 +75,7 @@ import {
 import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
 import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
+import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -269,6 +270,7 @@ const SidebarContent: React.FC<{
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
   const hideStudios = view === View.StudioScenes;
+  const fileCountCriterionOption = createMandatoryNumberCriterionOption("file_count");
 
   return (
     <>
@@ -327,6 +329,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="path" />}
           data-type={PathCriterionOption.type}
           option={PathCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="file_count" />}
+          data-type={fileCountCriterionOption.type}
+          option={fileCountCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />

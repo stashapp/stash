@@ -46,7 +46,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { createMandatoryNumberCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
 import {
   faPencil,
@@ -60,6 +60,7 @@ import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
+import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
@@ -184,6 +185,8 @@ const SidebarContent: React.FC<{
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
+  
+  const fileCountCriterionOption = createMandatoryNumberCriterionOption("file_count");
 
   return (
     <>
@@ -233,6 +236,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="path" />}
           data-type={PathCriterionOption.type}
           option={PathCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="file_count" />}
+          data-type={fileCountCriterionOption.type}
+          option={fileCountCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />
