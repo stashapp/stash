@@ -46,7 +46,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { createMandatoryNumberCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
+import { createMandatoryNumberCriterionOption, createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   faPencil,
@@ -61,6 +61,7 @@ import { PerformersCriterionOption } from "src/models/list-filter/criteria/perfo
 import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
+import { SidebarStringFilter } from "../List/Filters/StringFilter";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
@@ -187,6 +188,7 @@ const SidebarContent: React.FC<{
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
   
   const fileCountCriterionOption = createMandatoryNumberCriterionOption("file_count");
+  const UrlCriterionOption = createStringCriterionOption("url");
 
   return (
     <>
@@ -250,6 +252,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
           option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStringFilter
+          title={<FormattedMessage id="url" />}
+          data-type={UrlCriterionOption.type}
+          option={UrlCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />

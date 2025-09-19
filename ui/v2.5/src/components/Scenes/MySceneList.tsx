@@ -66,7 +66,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { createMandatoryNumberCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
+import { createMandatoryNumberCriterionOption, createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   DuplicatedCriterionOption,
@@ -76,6 +76,9 @@ import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
 import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
+import { SidebarStashIDFilter } from "../List/Filters/StashIDFilter";
+import { StashIDCriterionOption } from "src/models/list-filter/criteria/stash-ids";
+import { SidebarStringFilter } from "../List/Filters/StringFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -271,6 +274,7 @@ const SidebarContent: React.FC<{
 
   const hideStudios = view === View.StudioScenes;
   const fileCountCriterionOption = createMandatoryNumberCriterionOption("file_count");
+  const UrlCriterionOption = createStringCriterionOption("url");
 
   return (
     <>
@@ -325,6 +329,13 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
+        <SidebarStringFilter
+          title={<FormattedMessage id="url" />}
+          data-type={UrlCriterionOption.type}
+          option={UrlCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
         <SidebarPathFilter
           title={<FormattedMessage id="path" />}
           data-type={PathCriterionOption.type}
@@ -357,6 +368,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}
           option={OrganizedCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStashIDFilter
+          title={<FormattedMessage id="stash_id" />}
+          data-type={StashIDCriterionOption.type}
+          option={StashIDCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />

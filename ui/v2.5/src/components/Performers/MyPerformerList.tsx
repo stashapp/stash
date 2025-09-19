@@ -44,7 +44,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   faPencil,
@@ -306,6 +306,9 @@ const SidebarContent: React.FC<{
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
+  
+  const UrlCriterionOption = createStringCriterionOption("url");
+
   return (
     <>
       <FilteredSidebarHeader
@@ -358,6 +361,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
           option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStringFilter
+          title={<FormattedMessage id="url" />}
+          data-type={UrlCriterionOption.type}
+          option={UrlCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />
