@@ -312,6 +312,40 @@ input[type="range"].zoom-slider {
     padding-right: 0;
   }
 
+  .modal-footer {
+    justify-content: space-between;
+
+    > div > :not(:first-child) {
+      margin-left: 0.25rem;
+    }
+  }
+
+  .search-term-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    margin-left: 1.5rem;
+    margin-right: 1rem;
+
+    .search-term-input {
+      flex-basis: 75%;
+    }
+
+    @include media-breakpoint-down(xs) {
+      flex-wrap: wrap;
+
+      > span {
+        width: 100%;
+      }
+
+      .search-term-input {
+        flex-basis: 100%;
+      }
+    }
+  }
+
   .filter-tags {
     border-top: 1px solid rgb(16 22 26 / 40%);
     padding: 1rem 1rem 0 1rem;

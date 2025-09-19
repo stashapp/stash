@@ -126,14 +126,24 @@ function getDimensions(s: GQL.SlimSceneDataFragment) {
 interface ISceneWallProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
+  zoomIndex: number;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
 const SceneGallery = Gallery as unknown as GalleryI<IScenePhoto>;
 
-const defaultTargetRowHeight = 250;
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
 
-const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
+const SceneWall: React.FC<ISceneWallProps> = ({
+  scenes,
+  sceneQueue,
+  zoomIndex,
+}) => {
   const history = useHistory();
 
   const margin = 3;
@@ -186,6 +196,16 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
     return Math.round(columnCount);
   }
 
+  function targetRowHeight(containerWidth: number) {
+    let zoomHeight = 280;
+    breakpointZoomHeights.forEach((e) => {
+      if (containerWidth >= e.minWidth) {
+        zoomHeight = e.heights[zoomIndex];
+      }
+    });
+    return zoomHeight;
+  }
+
   const renderImage = useCallback((props: RenderImageProps<IScenePhoto>) => {
     return <SceneWallItem {...props} />;
   }, []);
@@ -200,7 +220,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
           margin={margin}
           direction={direction}
           columns={columns}
-          targetRowHeight={defaultTargetRowHeight}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -210,11 +230,15 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
 interface ISceneWallPanelProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
+  zoomIndex: number;
 }
 
 export const SceneWallPanel: React.FC<ISceneWallPanelProps> = ({
   scenes,
   sceneQueue,
+  zoomIndex,
 }) => {
-  return <SceneWall scenes={scenes} sceneQueue={sceneQueue} />;
+  return (
+    <SceneWall scenes={scenes} sceneQueue={sceneQueue} zoomIndex={zoomIndex} />
+  );
 };

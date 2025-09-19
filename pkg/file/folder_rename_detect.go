@@ -107,7 +107,8 @@ func (s *scanJob) detectFolderMove(ctx context.Context, file scanFile) (*models.
 
 		info, err := d.Info()
 		if err != nil {
-			return fmt.Errorf("reading info for %q: %w", path, err)
+			logger.Errorf("reading info for %q: %v", path, err)
+			return nil
 		}
 
 		if !s.acceptEntry(ctx, path, info) {
