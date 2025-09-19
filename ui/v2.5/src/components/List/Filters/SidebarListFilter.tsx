@@ -27,7 +27,7 @@ interface ISelectedItem {
   modifier?: boolean;
 }
 
-const SelectedItem: React.FC<ISelectedItem> = ({
+export const SelectedItem: React.FC<ISelectedItem> = ({
   className,
   label,
   excluded = false,

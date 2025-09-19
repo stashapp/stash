@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
@@ -9,9 +9,12 @@ import {
   CriterionValue,
   CriterionOption,
 } from "../../../models/list-filter/criteria/criterion";
-import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SidebarSection } from "src/components/Shared/Sidebar";
+import { ModifierSelectorButtons } from "../ModifierSelect";
+import { cloneDeep } from "lodash-es";
+import { SelectedItem, SelectedList } from "./SidebarListFilter";
+import { useStringCriterion } from "./StringFilter";
 
 interface IInputFilterProps {
   criterion: ModifierCriterion<CriterionValue>;
@@ -70,8 +73,10 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
   const { configuration } = React.useContext(ConfigurationContext);
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
-  const criteria = filter.criteriaFor(option.type) as PathCriterion[];
-  const criterion = criteria.length > 0 ? criteria[0] : null;
+  const {criterion, setCriterion} = useStringCriterion(option, filter, setFilter);
+  const modifierCriterionOption = criterion?.modifierCriterionOption();
+  const defaultModifier = modifierCriterionOption.defaultModifier;
+  const modifierOptions = modifierCriterionOption.modifierOptions;
 
   function onValueChange(value: string) {
     if (!value.trim()) {
@@ -80,11 +85,22 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
       return;
     }
 
-    const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
-    newCriterion.modifier = CriterionModifier.Includes;
+    // const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
+    const newCriterion = cloneDeep(criterion);
+    newCriterion.modifier = criterion?.modifier ? criterion.modifier : defaultModifier;
     newCriterion.value = value;
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
   }
+
+  const onChangedModifierSelect = useCallback(
+    (m: CriterionModifier) => {
+      console.log("onChangedModifierSelect", m);
+      const newCriterion = cloneDeep(criterion);
+      newCriterion.modifier = m;
+      setCriterion(newCriterion);
+    },
+    [criterion, setCriterion]
+  );
 
   // check if we should show regex input or folder select
   const regex =
@@ -96,21 +112,30 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
       className="sidebar-list-filter"
       text={title}
       outsideCollapse={
-        <>
-          {criterion?.value ? (
-            <div
-              title={criterion.value}
-              className="label-group path"
-              onClick={() => onValueChange("")}
-            >
-              {criterion.value}
-            </div>
+        <ul className="selected-list">
+          {criterion?.modifier != defaultModifier ? (
+            <SelectedItem
+              className="modifier-object"
+              label={ModifierCriterion.getModifierLabel(intl, criterion.modifier)}
+              onClick={() => onChangedModifierSelect(defaultModifier)}
+            />
           ) : null}
-        </>
+          {criterion?.value ? (
+            <SelectedItem
+              label={criterion.value}
+              onClick={() => onValueChange("")}
+            />
+          ) : null}
+        </ul>
       }
     >
       <div className="path-filter">
         <div className="filter-group">
+          <ModifierSelectorButtons
+            options={modifierOptions}
+            value={criterion?.modifier ? criterion.modifier : defaultModifier}
+            onChanged={onChangedModifierSelect}
+          />
           {regex ? (
             <Form.Control
               className="btn-secondary"
