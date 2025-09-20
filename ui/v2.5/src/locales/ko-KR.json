@@ -51,7 +51,7 @@
         "hash_migration": "해쉬 값 마이그레이션",
         "hide": "숨기기",
         "hide_configuration": "설정 숨기기",
-        "identify": "인증",
+        "identify": "식별",
         "ignore": "무시",
         "import": "불러오기…",
         "import_from_file": "파일 불러오기",
@@ -149,7 +149,9 @@
         },
         "play": "재생",
         "show_results": "결과 표시",
-        "show_count_results": "{count}개 결과 표시"
+        "show_count_results": "{count}개 결과 표시",
+        "load": "불러오기",
+        "load_filter": "필터 불러오기"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -317,7 +319,7 @@
                 "heading": "바이너리 데이터 저장 타입"
             },
             "cache_location": "캐시 폴더 경로입니다. HLS(애플 기기 등)이나 DASH로 스트리밍할 때 필요합니다.",
-            "cache_path_head": "캐쉬 경로",
+            "cache_path_head": "캐시 경로",
             "calculate_md5_and_ohash_desc": "oshash 외에 MD5 체크섬도 계산합니다. 활성화하면 초기 스캔을 더 느리게 만들 것입니다. MD5 계산을 사용하지 않으려면 파일 이름 해쉬를 oshash로 설정해야 합니다.",
             "calculate_md5_and_ohash_label": "비디오 MD5 계산하기",
             "check_for_insecure_certificates": "안전하지 않은 자격증명 검사",
@@ -1188,21 +1190,21 @@
         "network_error": "네트워크 오류",
         "no_results_found": "결과가 없습니다.",
         "number_of_performers_will_be_processed": "{performer_count}명의 배우들이 처리됩니다",
-        "performer_already_tagged": "이 배우에 이미 존재하는 태그입니다",
+        "performer_already_tagged": "배우가 이미 태그되어 있음",
         "performer_names_separated_by_comma": "배우 이름 (,으로 구분)",
         "performer_selection": "배우 선택",
         "performer_successfully_tagged": "배우 태깅에 성공했습니다:",
         "query_all_performers_in_the_database": "데이터베이스의 모든 배우",
         "refresh_tagged_performers": "태그된 배우 새로고침",
-        "refreshing_will_update_the_data": "새로고침하면 Stash-box 인스턴스에 있는 태그된 배우들의 데이터가 업데이트될 것입니다.",
+        "refreshing_will_update_the_data": "'새로고침'을 통해, Stash-box 인스턴스로부터 태그된 배우들의 데이터를 업데이트합니다.",
         "status_tagging_job_queued": "상태: 태그 작업 대기열 추가됨",
         "status_tagging_performers": "상태: 배우 태그 중",
         "tag_status": "태그 상태",
         "to_use_the_performer_tagger": "배우 태거를 사용하기 위해서는 stash-box 인스턴스가 설정되어야 합니다.",
         "untagged_performers": "태그되지 않은 배우",
-        "update_performer": "배우 수정",
-        "update_performers": "배우 수정",
-        "updating_untagged_performers_description": "태그가 지정되지 않은 배우를 업데이트하면, Stash ID가 없는 배우와 비교해본 뒤 메타데이터를 업데이트할 것입니다."
+        "update_performer": "배우 업데이트",
+        "update_performers": "배우 업데이트",
+        "updating_untagged_performers_description": "'태그되지 않은 배우 업데이트'를 통해, Stash ID가 없는 배우들에 대한 데이터를 찾아보고, 가능하다면 이를 이용해 배우를 업데이트합니다."
     },
     "performer_tags": "배우 태그",
     "performers": "배우",
@@ -1234,14 +1236,15 @@
         "name": "필터",
         "saved_filters": "저장된 필터",
         "update_filter": "필터 업데이트",
-        "more_filter_criteria": "외 {count} 개"
+        "more_filter_criteria": "외 {count} 개",
+        "search_term": "검색어"
     },
     "second": "초",
     "seconds": "초",
     "settings": "설정",
     "setup": {
         "confirm": {
-            "almost_ready": "거의 설정을 완료했습니다. 아래 설정들을 확인해주세요. 틀린 내용이 있다면 이전으로 돌아가 변경할 수 있습니다. 내용이 모두 맞다면, '확인'을 눌러 시스템을 만드세요.",
+            "almost_ready": "거의 설정을 완료했습니다. 아래 설정들을 확인해주세요. 틀린 내용이 있다면 이전으로 돌아가 변경할 수 있습니다. 내용이 모두 맞다면, '확인'을 눌러 시스템을 생성하세요.",
             "blobs_directory": "바이너리 데이터 경로",
             "cache_directory": "캐시 파일 경로",
             "configuration_file_location": "설정 파일 위치:",
