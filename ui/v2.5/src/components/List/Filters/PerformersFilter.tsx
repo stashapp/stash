@@ -46,7 +46,7 @@ function queryVariables(
 
       // TODO - look for same in AND?
     }
-    
+
     setObjectFilter(performerFilter, f.mode, filterOutput);
   }
 

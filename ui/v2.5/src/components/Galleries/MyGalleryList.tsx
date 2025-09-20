@@ -46,7 +46,12 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { createMandatoryNumberCriterionOption, createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  createDateCriterionOption,
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+  Criterion,
+} from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   faPencil,
@@ -62,6 +67,7 @@ import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
+import { SidebarDateFilter } from "../List/Filters/DateFilter";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
@@ -186,9 +192,11 @@ const SidebarContent: React.FC<{
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
-  
-  const fileCountCriterionOption = createMandatoryNumberCriterionOption("file_count");
+
+  const fileCountCriterionOption =
+    createMandatoryNumberCriterionOption("file_count");
   const UrlCriterionOption = createStringCriterionOption("url");
+  const DateCriterionOption = createDateCriterionOption("date");
 
   return (
     <>
@@ -233,6 +241,13 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
+        />
+        <SidebarDateFilter
+          title={<FormattedMessage id="date" />}
+          data-type={DateCriterionOption.type}
+          option={DateCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
         />
         <SidebarPathFilter
           title={<FormattedMessage id="path" />}

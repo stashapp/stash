@@ -57,22 +57,31 @@ export function useModifierCriterion(
   filter: ListFilterModel,
   setFilter: (f: ListFilterModel) => void
 ) {
-  const { criterion, setCriterion } = useStringCriterion(option, filter, setFilter);
+  const { criterion, setCriterion } = useStringCriterion(
+    option,
+    filter,
+    setFilter
+  );
   const modifierCriterionOption = criterion?.modifierCriterionOption();
   const defaultModifier = modifierCriterionOption?.defaultModifier;
   const modifierOptions = modifierCriterionOption?.modifierOptions;
 
-  const onValueChange = useCallback((value: string) => {
-    if (!value.trim()) {
-      setFilter(filter.removeCriterion(option.type));
-      return;
-    }
+  const onValueChange = useCallback(
+    (value: string) => {
+      if (!value.trim()) {
+        setFilter(filter.removeCriterion(option.type));
+        return;
+      }
 
-    const newCriterion = cloneDeep(criterion);
-    newCriterion.modifier = criterion?.modifier ? criterion.modifier : defaultModifier;
-    newCriterion.value = value;
-    setFilter(filter.replaceCriteria(option.type, [newCriterion]));
-  }, [criterion, setCriterion, filter, setFilter, option.type, defaultModifier]);
+      const newCriterion = cloneDeep(criterion);
+      newCriterion.modifier = criterion?.modifier
+        ? criterion.modifier
+        : defaultModifier;
+      newCriterion.value = value;
+      setFilter(filter.replaceCriteria(option.type, [newCriterion]));
+    },
+    [criterion, setCriterion, filter, setFilter, option.type, defaultModifier]
+  );
 
   const onChangedModifierSelect = useCallback(
     (m: CriterionModifier) => {
@@ -89,7 +98,7 @@ export function useModifierCriterion(
     defaultModifier,
     modifierOptions,
     onValueChange,
-    onChangedModifierSelect
+    onChangedModifierSelect,
   };
 }
 
@@ -105,8 +114,11 @@ export const SelectedItems: React.FC<ISelectedItemsProps> = ({
   criterion,
   defaultModifier,
   onChangedModifierSelect,
-  onValueChange
+  onValueChange,
 }) => {
+  if (!criterion?.value) {
+    return null;
+  }
   const intl = useIntl();
 
   return (
@@ -138,7 +150,7 @@ interface IModifierControlsProps {
 export const ModifierControls: React.FC<IModifierControlsProps> = ({
   modifierOptions,
   currentModifier,
-  onChangedModifierSelect
+  onChangedModifierSelect,
 }) => (
   <ModifierSelectorButtons
     options={modifierOptions}
@@ -195,7 +207,7 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
     defaultModifier,
     modifierOptions,
     onValueChange,
-    onChangedModifierSelect
+    onChangedModifierSelect,
   } = useModifierCriterion(option, filter, setFilter);
 
   return (

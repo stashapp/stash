@@ -3,10 +3,10 @@ import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
-import { 
+import {
   NumberCriterion,
   CriterionOption,
-  ModifierCriterion
+  ModifierCriterion,
 } from "../../../models/list-filter/criteria/criterion";
 import { NumberField } from "src/utils/form";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -32,9 +32,7 @@ export function useNumberCriterion(
     );
     if (ret) return ret as NumberCriterion;
 
-    const newCriterion = filter.makeCriterion(
-      option.type
-    ) as NumberCriterion;
+    const newCriterion = filter.makeCriterion(option.type) as NumberCriterion;
     return newCriterion;
   }, [filter, option]);
 
@@ -55,17 +53,22 @@ export function useNumberCriterion(
   const defaultModifier = modifierCriterionOption?.defaultModifier;
   const modifierOptions = modifierCriterionOption?.modifierOptions;
 
-  const onValueChange = useCallback((value: INumberValue) => {
-    if (!value.value && !value.value2) {
-      setFilter(filter.removeCriterion(option.type));
-      return;
-    }
+  const onValueChange = useCallback(
+    (value: INumberValue) => {
+      if (!value.value && !value.value2) {
+        setFilter(filter.removeCriterion(option.type));
+        return;
+      }
 
-    const newCriterion = cloneDeep(criterion);
-    newCriterion.modifier = criterion?.modifier ? criterion.modifier : defaultModifier;
-    newCriterion.value = value;
-    setFilter(filter.replaceCriteria(option.type, [newCriterion]));
-  }, [criterion, filter, setFilter, option.type, defaultModifier]);
+      const newCriterion = cloneDeep(criterion);
+      newCriterion.modifier = criterion?.modifier
+        ? criterion.modifier
+        : defaultModifier;
+      newCriterion.value = value;
+      setFilter(filter.replaceCriteria(option.type, [newCriterion]));
+    },
+    [criterion, filter, setFilter, option.type, defaultModifier]
+  );
 
   const onChangedModifierSelect = useCallback(
     (m: CriterionModifier) => {
@@ -82,7 +85,7 @@ export function useNumberCriterion(
     defaultModifier,
     modifierOptions,
     onValueChange,
-    onChangedModifierSelect
+    onChangedModifierSelect,
   };
 }
 
@@ -98,15 +101,18 @@ export const NumberSelectedItems: React.FC<INumberSelectedItemsProps> = ({
   criterion,
   defaultModifier,
   onChangedModifierSelect,
-  onClear
+  onClear,
 }) => {
+  if (criterion?.value.value === undefined) {
+    return null;
+  }
   const intl = useIntl();
 
   const getValueLabel = () => {
     if (!criterion?.value) return null;
-    
+
     const { value, value2 } = criterion.value;
-    
+
     switch (criterion.modifier) {
       case CriterionModifier.Equals:
         return value?.toString();
@@ -137,10 +143,7 @@ export const NumberSelectedItems: React.FC<INumberSelectedItemsProps> = ({
         />
       ) : null}
       {valueLabel ? (
-        <SelectedItem
-          label={valueLabel}
-          onClick={onClear}
-        />
+        <SelectedItem label={valueLabel} onClick={onClear} />
       ) : null}
     </ul>
   );
@@ -262,36 +265,39 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
     defaultModifier,
     modifierOptions,
     onValueChange,
-    onChangedModifierSelect
+    onChangedModifierSelect,
   } = useNumberCriterion(option, filter, setFilter);
 
   const onClear = useCallback(() => {
     setFilter(filter.removeCriterion(option.type));
   }, [filter, setFilter, option.type]);
 
-  const onChanged = useCallback((
-    event: React.ChangeEvent<HTMLInputElement>,
-    property: "value" | "value2"
-  ) => {
-    const numericValue = parseInt(event.target.value, 10);
-    const currentValue = criterion?.value || { value: 0, value2: 0 };
-    const valueCopy = { ...currentValue };
+  const onChanged = useCallback(
+    (
+      event: React.ChangeEvent<HTMLInputElement>,
+      property: "value" | "value2"
+    ) => {
+      const numericValue = parseInt(event.target.value, 10);
+      const currentValue = criterion?.value || { value: 0, value2: 0 };
+      const valueCopy = { ...currentValue };
 
-    valueCopy[property] = !Number.isNaN(numericValue) ? numericValue : 0;
-    onValueChange(valueCopy);
-  }, [criterion?.value, onValueChange]);
+      valueCopy[property] = !Number.isNaN(numericValue) ? numericValue : 0;
+      onValueChange(valueCopy);
+    },
+    [criterion?.value, onValueChange]
+  );
 
   // Determine which controls to show based on modifier
-  const showEqualsControl = 
+  const showEqualsControl =
     criterion?.modifier === CriterionModifier.Equals ||
     criterion?.modifier === CriterionModifier.NotEquals;
-    
-  const showLowerControl = 
+
+  const showLowerControl =
     criterion?.modifier === CriterionModifier.GreaterThan ||
     criterion?.modifier === CriterionModifier.Between ||
     criterion?.modifier === CriterionModifier.NotBetween;
-    
-  const showUpperControl = 
+
+  const showUpperControl =
     criterion?.modifier === CriterionModifier.LessThan ||
     criterion?.modifier === CriterionModifier.Between ||
     criterion?.modifier === CriterionModifier.NotBetween;
@@ -316,7 +322,7 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
             currentModifier={criterion?.modifier || defaultModifier}
             onChangedModifierSelect={onChangedModifierSelect}
           />
-          
+
           {showEqualsControl && (
             <Form.Group>
               <NumberField
@@ -329,7 +335,7 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
               />
             </Form.Group>
           )}
-          
+
           {showLowerControl && (
             <Form.Group>
               <NumberField
@@ -338,11 +344,13 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
                   onChanged(e, "value")
                 }
                 value={criterion?.value?.value ?? ""}
-                placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
+                placeholder={intl.formatMessage({
+                  id: "criterion.greater_than",
+                })}
               />
             </Form.Group>
           )}
-          
+
           {showUpperControl && (
             <Form.Group>
               <NumberField

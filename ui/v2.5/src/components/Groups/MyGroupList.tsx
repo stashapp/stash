@@ -33,7 +33,12 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { createMandatoryNumberCriterionOption, createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  createDateCriterionOption,
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+  Criterion,
+} from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   faPencil,
@@ -61,6 +66,7 @@ import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { PatchContainerComponent } from "src/patch";
+import { SidebarDateFilter } from "../List/Filters/DateFilter";
 
 function useViewRandom(
   result: GQL.FindGroupsQueryResult,
@@ -157,10 +163,13 @@ const SidebarContent: React.FC<{
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
-  
-  const containingGroupCountCriterionOption = createMandatoryNumberCriterionOption("containing_group_count");
-  const subGroupCountCriterionOption = createMandatoryNumberCriterionOption("sub_group_count");
+
+  const containingGroupCountCriterionOption =
+    createMandatoryNumberCriterionOption("containing_group_count");
+  const subGroupCountCriterionOption =
+    createMandatoryNumberCriterionOption("sub_group_count");
   const UrlCriterionOption = createStringCriterionOption("url");
+  const DateCriterionOption = createDateCriterionOption("date");
 
   return (
     <>
@@ -172,8 +181,8 @@ const SidebarContent: React.FC<{
         view={view}
         focus={focus}
       />
+
       <MyGroupsFilterSidebarSections>
-      <div className="sidebar-content">
         <SidebarPerformersFilter
           title={<FormattedMessage id="performers" />}
           option={PerformersCriterionOption}
@@ -189,6 +198,13 @@ const SidebarContent: React.FC<{
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
           option={TagsCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarDateFilter
+          title={<FormattedMessage id="date" />}
+          data-type={DateCriterionOption.type}
+          option={DateCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />
@@ -217,7 +233,6 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
         />
-      </div>
       </MyGroupsFilterSidebarSections>
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>
@@ -324,7 +339,7 @@ const ListToolbarContent: React.FC<{
         </div>
       )}
       <div>
-      <ButtonGroup>
+        <ButtonGroup>
           {!hasSelection && (
             <Button
               className="create-new-button"

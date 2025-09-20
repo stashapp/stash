@@ -44,7 +44,11 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  createNumberCriterionOption,
+  createStringCriterionOption,
+  Criterion,
+} from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   faPencil,
@@ -67,6 +71,7 @@ import { SidebarCountryFilter } from "../List/Filters/CountryFilter";
 import { TattoosCriterionOption } from "src/models/list-filter/criteria/tattoos";
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
 import { PiercingsCriterionOption } from "src/models/list-filter/criteria/piercings";
+import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];
@@ -306,8 +311,8 @@ const SidebarContent: React.FC<{
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
-  
   const UrlCriterionOption = createStringCriterionOption("url");
+  const AgeCriterionOption = createNumberCriterionOption("age");
 
   return (
     <>
@@ -333,6 +338,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="gender" />}
           data-type={GenderCriterionOption.type}
           option={GenderCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="age" />}
+          data-type={AgeCriterionOption.type}
+          option={AgeCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />

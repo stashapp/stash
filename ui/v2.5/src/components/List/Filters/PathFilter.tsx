@@ -11,7 +11,11 @@ import {
 } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SidebarSection } from "src/components/Shared/Sidebar";
-import { useModifierCriterion, SelectedItems, ModifierControls } from "./StringFilter";
+import {
+  useModifierCriterion,
+  SelectedItems,
+  ModifierControls,
+} from "./StringFilter";
 
 interface IInputFilterProps {
   criterion: ModifierCriterion<CriterionValue>;
@@ -75,7 +79,7 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
     defaultModifier,
     modifierOptions,
     onValueChange,
-    onChangedModifierSelect
+    onChangedModifierSelect,
   } = useModifierCriterion(option, filter, setFilter);
 
   // check if we should show regex input or folder select

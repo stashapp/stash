@@ -138,8 +138,6 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
     return [];
   }, [options, criterion]);
 
-  console.log("selected1", selected);
-
   function onSelect(item: Option) {
     const newCriterion = criterion ? criterion.clone() : option.makeCriterion();
 

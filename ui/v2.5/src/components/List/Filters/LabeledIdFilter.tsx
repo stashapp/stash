@@ -529,7 +529,11 @@ interface IFilterType {
 export function setObjectFilter(
   out: IFilterType,
   mode: FilterMode,
-  relatedFilterOutput: SceneFilterType | PerformerFilterType | GalleryFilterType | GroupFilterType,
+  relatedFilterOutput:
+    | SceneFilterType
+    | PerformerFilterType
+    | GalleryFilterType
+    | GroupFilterType,
   query?: string
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
@@ -566,7 +570,7 @@ export function setObjectFilter(
       out.galleries_filter = relatedFilterOutput as GalleryFilterType;
       break;
     case FilterMode.Groups:
-      if (query === 'tags') {
+      if (query === "tags") {
         // if empty, only get objects with groups
         if (empty) {
           out.group_count = {
