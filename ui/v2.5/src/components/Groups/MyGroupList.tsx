@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -19,7 +19,7 @@ import {
   OperationDropdown,
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
-import { useFilteredItemList, ItemListContext } from "../List/ItemList";
+import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/MyFilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import cx from "classnames";
@@ -33,7 +33,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { createMandatoryNumberCriterionOption, createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   faPencil,
@@ -45,44 +45,22 @@ import {
 import { EditGroupsDialog } from "./EditGroupsDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
-
-function getItems(result: GQL.FindGroupsQueryResult) {
-  return result?.data?.findGroups?.groups ?? [];
-}
-
-function getCount(result: GQL.FindGroupsQueryResult) {
-  return result?.data?.findGroups?.count ?? 0;
-}
-
-const filterMode = GQL.FilterMode.Groups;
-
-interface IGroupListContext {
-  filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  defaultFilter?: ListFilterModel;
-  view?: View;
-  alterQuery?: boolean;
-  selectable?: boolean;
-}
-
-export const GroupListContext: React.FC<
-  PropsWithChildren<IGroupListContext>
-> = ({ alterQuery, filterHook, defaultFilter, view, selectable, children }) => {
-  return (
-    <ItemListContext
-      filterMode={filterMode}
-      defaultFilter={defaultFilter}
-      useResult={useFindGroups}
-      getItems={getItems}
-      getCount={getCount}
-      alterQuery={alterQuery}
-      filterHook={filterHook}
-      view={view}
-      selectable={selectable}
-    >
-      {children}
-    </ItemListContext>
-  );
-};
+import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
+import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
+import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
+import {
+  PerformerTagsCriterionOption,
+  TagsCriterionOption,
+} from "src/models/list-filter/criteria/tags";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
+import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
+import { SidebarStringFilter } from "../List/Filters/StringFilter";
+import { SidebarPathFilter } from "../List/Filters/PathFilter";
+import { PathCriterionOption } from "src/models/list-filter/criteria/path";
+import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
+import { PatchContainerComponent } from "src/patch";
 
 function useViewRandom(
   result: GQL.FindGroupsQueryResult,
@@ -139,7 +117,7 @@ const GroupListContent: React.FC<{
   if (filter.displayMode === DisplayMode.Grid) {
     return (
       <GroupCardGrid
-        groups={groups as any}
+        groups={groups as GQL.GroupDataFragment[]}
         zoomIndex={filter.zoomIndex}
         selectedIds={selectedIds}
         onSelectChange={onSelectChange}
@@ -151,6 +129,10 @@ const GroupListContent: React.FC<{
 
   return null;
 };
+
+export const MyGroupsFilterSidebarSections = PatchContainerComponent(
+  "MyFilteredGroupList.SidebarSections"
+);
 
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
@@ -175,6 +157,10 @@ const SidebarContent: React.FC<{
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
+  
+  const containingGroupCountCriterionOption = createMandatoryNumberCriterionOption("containing_group_count");
+  const subGroupCountCriterionOption = createMandatoryNumberCriterionOption("sub_group_count");
+  const UrlCriterionOption = createStringCriterionOption("url");
 
   return (
     <>
@@ -186,19 +172,53 @@ const SidebarContent: React.FC<{
         view={view}
         focus={focus}
       />
-
-      {/* Add group-specific filters here when available */}
+      <MyGroupsFilterSidebarSections>
       <div className="sidebar-content">
-        <div className="sidebar-section">
-          <h5>
-            <FormattedMessage id="filters" />
-          </h5>
-          <p>
-            <FormattedMessage id="dialogs.scenes_found" values={{ count: 0 }} />
-          </p>
-        </div>
+        <SidebarPerformersFilter
+          title={<FormattedMessage id="performers" />}
+          option={PerformersCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStudiosFilter
+          title={<FormattedMessage id="studios" />}
+          option={StudiosCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarTagsFilter
+          title={<FormattedMessage id="tags" />}
+          option={TagsCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarRatingFilter
+          title={<FormattedMessage id="rating" />}
+          option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarStringFilter
+          title={<FormattedMessage id="url" />}
+          data-type={UrlCriterionOption.type}
+          option={UrlCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="containing_group_count" />}
+          option={containingGroupCountCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="sub_group_count" />}
+          option={subGroupCountCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
       </div>
-
+      </MyGroupsFilterSidebarSections>
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>
           <FormattedMessage id={showResultsId} values={{ count }} />
@@ -304,7 +324,7 @@ const ListToolbarContent: React.FC<{
         </div>
       )}
       <div>
-        <ButtonGroup>
+      <ButtonGroup>
           {!hasSelection && (
             <Button
               className="create-new-button"
@@ -414,11 +434,6 @@ interface IFilteredGroups {
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
 }
 
-interface IGroupList extends IGroupListContext {
-  fromGroupId?: string;
-  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
-}
-
 export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
   const intl = useIntl();
   const history = useHistory();
@@ -483,13 +498,13 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
   useEffect(() => {
     Mousetrap.bind("e", () => {
       if (hasSelection) {
-        onEdit?.();
+        onEdit();
       }
     });
 
     Mousetrap.bind("d d", () => {
       if (hasSelection) {
-        onDelete?.();
+        onDelete();
       }
     });
 
@@ -669,6 +684,6 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
 };
 
 // Backward compatibility wrapper
-export const GroupList: React.FC<IGroupList> = (props) => {
+export const GroupList: React.FC<IFilteredGroups> = (props) => {
   return <MyFilteredGroupList {...props} />;
 };

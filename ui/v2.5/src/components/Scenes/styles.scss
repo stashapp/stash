@@ -1339,10 +1339,12 @@ input[type="range"].blue-slider {
 }
 
 .gallery-list-toolbar,
+.group-list-toolbar,
 .performer-list-toolbar,
 .scene-list-toolbar,
 .performer-list-header,
 .gallery-list-header,
+.group-list-header,
 .scene-list-header {
   align-items: center;
   background-color: $body-bg;
@@ -1363,6 +1365,7 @@ input[type="range"].blue-slider {
 }
 
 .gallery-list-toolbar,
+.group-list-toolbar,
 .performer-list-toolbar,
 .scene-list-toolbar {
   flex-wrap: nowrap;
@@ -1473,6 +1476,7 @@ input[type="range"].blue-slider {
 }
 
 .gallery-list-header,
+.group-list-header,
 .performer-list-header,
 .scene-list-header {
   flex-wrap: wrap-reverse;
@@ -1496,6 +1500,7 @@ input[type="range"].blue-slider {
 }
 
 .detail-body .gallery-list-toolbar,
+.detail-body .group-list-toolbar,
 .detail-body .performer-list-toolbar,
 .detail-body .scene-list-toolbar {
   top: calc($sticky-detail-header-height + $navbar-height);
@@ -1512,6 +1517,7 @@ input[type="range"].blue-slider {
 }
 
 .gallery-list-toolbar,
+.group-list-toolbar,
 .performer-list-toolbar,
 .scene-list-toolbar {
   .selected-items-info,

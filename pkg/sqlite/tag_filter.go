@@ -122,6 +122,15 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 				tagRepository.performers.innerJoin(f, "", "tags.id")
 			},
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "groups_tags.group_id",
+			relatedRepo:    groupRepository.repository,
+			relatedHandler: &groupFilterHandler{tagFilter.GroupsFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.groups.innerJoin(f, "", "tags.id")
+			},
+		},
 	}
 }
 

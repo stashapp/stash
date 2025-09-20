@@ -107,6 +107,7 @@ type tagRepositoryType struct {
 	images     joinRepository
 	galleries  joinRepository
 	performers joinRepository
+	groups     joinRepository
 }
 
 var (
@@ -153,6 +154,14 @@ var (
 			},
 			fkColumn:     performerIDColumn,
 			foreignTable: performerTable,
+		},
+		groups: joinRepository{
+			repository: repository{
+				tableName: groupsTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     groupIDColumn,
+			foreignTable: groupTable,
 		},
 	}
 )

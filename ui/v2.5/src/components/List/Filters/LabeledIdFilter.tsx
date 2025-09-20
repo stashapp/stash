@@ -23,6 +23,7 @@ import {
   SceneFilterType,
   PerformerFilterType,
   GalleryFilterType,
+  GroupFilterType,
 } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
@@ -521,12 +522,15 @@ interface IFilterType {
   performer_count?: InputMaybe<IntCriterionInput>;
   galleries_filter?: InputMaybe<GalleryFilterType>;
   gallery_count?: InputMaybe<IntCriterionInput>;
+  groups_filter?: InputMaybe<GroupFilterType>;
+  group_count?: InputMaybe<IntCriterionInput>;
 }
 
 export function setObjectFilter(
   out: IFilterType,
   mode: FilterMode,
-  relatedFilterOutput: SceneFilterType | PerformerFilterType | GalleryFilterType
+  relatedFilterOutput: SceneFilterType | PerformerFilterType | GalleryFilterType | GroupFilterType,
+  query?: string
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
 
@@ -552,7 +556,7 @@ export function setObjectFilter(
       out.performers_filter = relatedFilterOutput as PerformerFilterType;
       break;
     case FilterMode.Galleries:
-      // if empty, only get objects with performers
+      // if empty, only get objects with galleries
       if (empty) {
         out.gallery_count = {
           modifier: CriterionModifier.GreaterThan,
@@ -560,6 +564,18 @@ export function setObjectFilter(
         };
       }
       out.galleries_filter = relatedFilterOutput as GalleryFilterType;
+      break;
+    case FilterMode.Groups:
+      if (query === 'tags') {
+        // if empty, only get objects with groups
+        if (empty) {
+          out.group_count = {
+            modifier: CriterionModifier.GreaterThan,
+            value: 0,
+          };
+        }
+        out.groups_filter = relatedFilterOutput as GroupFilterType;
+      }
       break;
   }
 }
