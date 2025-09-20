@@ -66,19 +66,27 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
-import { createMandatoryNumberCriterionOption, createStringCriterionOption, Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  createDateCriterionOption,
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+  Criterion,
+} from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
 import {
   DuplicatedCriterionOption,
   PhashCriterionOption,
 } from "src/models/list-filter/criteria/phash";
-import { PhashFilter, SidebarPhashFilter } from "../List/Filters/PhashFilter";
+import { SidebarPhashFilter } from "../List/Filters/PhashFilter";
 import { SidebarPathFilter } from "../List/Filters/PathFilter";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { SidebarStashIDFilter } from "../List/Filters/StashIDFilter";
 import { StashIDCriterionOption } from "src/models/list-filter/criteria/stash-ids";
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
+import { SidebarDateFilter } from "../List/Filters/DateFilter";
+import { SidebarOrientationFilter } from "../List/Filters/OrientationFilter";
+import { OrientationCriterionOption } from "src/models/list-filter/criteria/orientation";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -235,7 +243,13 @@ const SceneList: React.FC<{
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {
-    return <SceneWallPanel scenes={scenes} sceneQueue={queue} zoomIndex={filter.zoomIndex} />;
+    return (
+      <SceneWallPanel
+        scenes={scenes}
+        sceneQueue={queue}
+        zoomIndex={filter.zoomIndex}
+      />
+    );
   }
   if (filter.displayMode === DisplayMode.Tagger) {
     return <Tagger scenes={scenes} queue={queue} />;
@@ -273,8 +287,10 @@ const SidebarContent: React.FC<{
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
   const hideStudios = view === View.StudioScenes;
-  const fileCountCriterionOption = createMandatoryNumberCriterionOption("file_count");
+  const fileCountCriterionOption =
+    createMandatoryNumberCriterionOption("file_count");
   const UrlCriterionOption = createStringCriterionOption("url");
+  const DateCriterionOption = createDateCriterionOption("date");
 
   return (
     <>
@@ -322,10 +338,23 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
           filterHook={filterHook}
         />
+        <SidebarDateFilter
+          title={<FormattedMessage id="date" />}
+          data-type={DateCriterionOption.type}
+          option={DateCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
           data-type={RatingCriterionOption.type}
           option={RatingCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarOrientationFilter
+          title={<FormattedMessage id="orientation" />}
+          option={OrientationCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />
