@@ -1,7 +1,7 @@
-//go:build integration
-// +build integration
+//go:build db_integration
+// +build db_integration
 
-package sqlite_test
+package database_test
 
 import (
 	"context"

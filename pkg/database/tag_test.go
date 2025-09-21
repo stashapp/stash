@@ -1,7 +1,7 @@
-//go:build pg_integration
-// +build pg_integration
+//go:build db_integration
+// +build db_integration
 
-package postgres_test
+package database_test
 
 import (
 	"context"
@@ -341,6 +341,165 @@ func queryTags(ctx context.Context, t *testing.T, qb models.TagReader, tagFilter
 	}
 
 	return tags
+}
+
+func tagsToIDs(i []*models.Tag) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestTagQuery(t *testing.T) {
+	var (
+		endpoint = tagStashID(tagIdxWithPerformer).Endpoint
+		stashID  = tagStashID(tagIdxWithPerformer).StashID
+		stashID2 = tagStashID(tagIdx1WithPerformer).StashID
+		stashIDs = []*string{&stashID, &stashID2}
+	)
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.TagFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{tagIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
+			"exclude stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer},
+			false,
+		},
+		{
+			"null stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer},
+			false,
+		},
+		{
+			"not null stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{tagIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
+			"stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			nil,
+			false,
+		},
+		{
+			"exclude stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			false,
+		},
+		{
+			"null stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			false,
+		},
+		{
+			"not null stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			tags, _, err := db.Tag.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := tagsToIDs(tags)
+			include := indexesToIDs(tagIDs, tt.includeIdxs)
+			exclude := indexesToIDs(tagIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func TestTagQueryIsMissingImage(t *testing.T) {
@@ -902,7 +1061,7 @@ func TestTagUpdateAlias(t *testing.T) {
 
 func TestTagStashIDs(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.Tag()
 
 		// create tag to test against
 		const name = "TestTagStashIDs"
@@ -924,7 +1083,7 @@ func TestTagStashIDs(t *testing.T) {
 
 func TestTagFindByStashID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.Tag()
 
 		// create tag to test against
 		const name = "TestTagFindByStashID"
@@ -991,6 +1150,8 @@ func TestTagMerge(t *testing.T) {
 			tagIdxWithGallery,
 			tagIdx1WithGallery,
 			tagIdx2WithGallery,
+			tagIdx1WithGroup,
+			tagIdx2WithGroup,
 		}
 		var srcIDs []int
 		for _, idx := range srcIdxs {
@@ -1083,6 +1244,18 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		assert.Contains(studioTagIDs, destID)
+
+		// ensure group points to new tag
+		group, err := db.Group().Find(ctx, groupIDs[groupIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+		if err := group.LoadTagIDs(ctx, db.Group()); err != nil {
+			return err
+		}
+		groupTagIDs := group.TagIDs.List()
+
+		assert.Contains(groupTagIDs, destID)
 
 		return nil
 	}); err != nil {

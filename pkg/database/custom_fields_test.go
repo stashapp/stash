@@ -1,7 +1,7 @@
-//go:build pg_integration
-// +build pg_integration
+//go:build db_integration
+// +build db_integration
 
-package postgres_test
+package database_test
 
 import (
 	"context"
@@ -62,6 +62,18 @@ func TestSetCustomFields(t *testing.T) {
 			mergeCustomFields(map[string]interface{}{
 				"real": float64(4.56),
 			}),
+			false,
+		},
+		{
+			"valid remove",
+			models.CustomFieldsInput{
+				Remove: []string{"real"},
+			},
+			func() map[string]interface{} {
+				m := getPerformerCustomFields(performerIdx)
+				delete(m, "real")
+				return m
+			}(),
 			false,
 		},
 		{
@@ -144,16 +156,38 @@ func TestSetCustomFields(t *testing.T) {
 			nil,
 			true,
 		},
+		{
+			"invalid remove full",
+			models.CustomFieldsInput{
+				Full: map[string]interface{}{
+					"key": "value",
+				},
+				Remove: []string{"key"},
+			},
+			nil,
+			true,
+		},
+		{
+			"invalid remove partial",
+			models.CustomFieldsInput{
+				Partial: map[string]interface{}{
+					"real": float64(4.56),
+				},
+				Remove: []string{"real"},
+			},
+			nil,
+			true,
+		},
 	}
 
 	// use performer custom fields store
 	store := db.Performer()
 	id := performerIDs[performerIdx]
 
-	assert := assert.New(t)
-
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
 			err := store.SetCustomFields(ctx, id, tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetCustomFields() error = %v, wantErr %v", err, tt.wantErr)
