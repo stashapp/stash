@@ -1,7 +1,7 @@
-//go:build pg_integration
-// +build pg_integration
+//go:build db_integration
+// +build db_integration
 
-package postgres_test
+package database_test
 
 import (
 	"context"
@@ -9,7 +9,15 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/postgres"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
+
+func IsPostgresTest() *string {
+	if val, ok := os.LookupEnv("PGSQL_TEST"); ok {
+		return &val
+	}
+	return nil
+}
 
 func TestAnonymiser_Anonymise(t *testing.T) {
 	f, err := os.CreateTemp("", "*.sqlite")
@@ -22,7 +30,13 @@ func TestAnonymiser_Anonymise(t *testing.T) {
 	defer os.Remove(f.Name())
 
 	// use existing database
-	anonymiser, err := postgres.NewAnonymiser(db, f.Name())
+	var anonymiser *sqlite.Anonymiser
+	if val := IsPostgresTest(); val != nil {
+		anonymiser, err = postgres.NewAnonymiser(db.(*postgres.Database), f.Name())
+	} else {
+		anonymiser, err = sqlite.NewAnonymiser(db.(*sqlite.Database), f.Name())
+	}
+
 	if err != nil {
 		t.Errorf("Could not create anonymiser: %v", err)
 		return

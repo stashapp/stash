@@ -1,7 +1,7 @@
-//go:build integration
-// +build integration
+//go:build db_integration
+// +build db_integration
 
-package sqlite_test
+package database_test
 
 import (
 	"context"
@@ -76,8 +76,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 		favorite       = true
 		endpoint1      = "endpoint1"
 		endpoint2      = "endpoint2"
-		stashID1       = "stashid1"
-		stashID2       = "stashid2"
+		stashID1       = getUUID("stashid1")
+		stashID2       = getUUID("stashid2")
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -239,8 +239,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 		favorite       = true
 		endpoint1      = "endpoint1"
 		endpoint2      = "endpoint2"
-		stashID1       = "stashid1"
-		stashID2       = "stashid2"
+		stashID1       = getUUID("stashid1")
+		stashID2       = getUUID("stashid2")
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -465,8 +465,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		favorite       = true
 		endpoint1      = "endpoint1"
 		endpoint2      = "endpoint2"
-		stashID1       = "stashid1"
-		stashID2       = "stashid2"
+		stashID1       = getUUID("stashid1")
+		stashID2       = getUUID("stashid2")
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -2080,7 +2080,7 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	assert.Len(t, s.StashIDs.List(), 0)
 
 	// add stash ids
-	const stashIDStr = "stashID"
+	var stashIDStr = getUUID("stashID")
 	const endpoint = "endpoint"
 	stashID := models.StashID{
 		StashID:   stashIDStr,
@@ -2347,7 +2347,7 @@ func TestPerformerStore_FindByStashID(t *testing.T) {
 		{
 			name: "non-existing",
 			stashID: models.StashID{
-				StashID:  getPerformerStringValue(performerIdxWithScene, "stashid"),
+				StashID:  getUUID("stashid"),
 				Endpoint: "non-existing",
 			},
 			expectedIDs: []int{},

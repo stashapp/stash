@@ -130,7 +130,7 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 	// ORDER BY ((n+seed)*(n+seed)*p1 + (n+seed)*p2) % p3
 	// since sqlite converts overflowing numbers to reals, a custom db function that uses uints with overflow should be faster,
 	// however in practice the overhead of calling a custom function vastly outweighs the benefits
-	return fmt.Sprintf(" ORDER BY mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
+	return fmt.Sprintf(" ORDER BY (%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763 %% 2147483647 %[3]s", colName, seed, direction)
 }
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {

@@ -1,7 +1,7 @@
-//go:build integration
-// +build integration
+//go:build db_integration
+// +build db_integration
 
-package sqlite_test
+package database_test
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderW
 	testNoStashIDs(ctx, t, r, -1)
 
 	// add stash ids
-	const stashIDStr = "stashID"
+	var stashIDStr = getUUID("stashID")
 	const endpoint = "endpoint"
 	stashID := models.StashID{
 		StashID:  stashIDStr,

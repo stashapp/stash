@@ -1,7 +1,7 @@
-//go:build pg_integration
-// +build pg_integration
+//go:build db_integration
+// +build db_integration
 
-package postgres_test
+package database_test
 
 import (
 	"context"
@@ -506,7 +506,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdxWithGallery]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
