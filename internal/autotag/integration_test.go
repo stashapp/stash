@@ -45,43 +45,49 @@ func testTeardown(db database.Database) {
 	}
 }
 
-func getNewDB(databaseFile string) database.Database {
-	if dbUrl, valid := os.LookupEnv("PGSQL_TEST"); valid {
+func IsPostgresTest() *string {
+	if val, ok := os.LookupEnv("PGSQL_TEST"); ok {
+		return &val
+	}
+	return nil
+}
+
+func getNewDB() {
+	if val := IsPostgresTest(); val != nil {
 		fmt.Printf("Postgres backend for tests detected\n")
 		db = postgres.NewDatabase()
 
-		if err := db.Open(dbUrl); err != nil {
+		if err := db.Open(*val); err != nil {
 			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 		}
-		return db
-	}
+	} else {
+		fmt.Printf("SQLite backend for tests detected\n")
+		db = sqlite.NewDatabase()
 
-	fmt.Printf("SQLite backend for tests detected\n")
-	db = sqlite.NewDatabase()
+		// create the database file
+		f, err := os.CreateTemp("", "*.sqlite")
+		if err != nil {
+			panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
+		}
 
-	if err := db.Open(databaseFile); err != nil {
-		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		f.Close()
+		databaseFile := f.Name()
+
+		if err := db.Open(databaseFile); err != nil {
+			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		}
 	}
-	return db
 }
 
 func runTests(m *testing.M) int {
-	// create the database file
-	f, err := os.CreateTemp("", "*.sqlite")
-	if err != nil {
-		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
-	}
-
-	f.Close()
-	databaseFile := f.Name()
-	db = getNewDB(databaseFile)
+	getNewDB()
 
 	r = db.Repository()
 
 	// defer close and delete the database
 	defer testTeardown(db)
 
-	err = populateDB()
+	err := populateDB()
 	if err != nil {
 		panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
 	} else {

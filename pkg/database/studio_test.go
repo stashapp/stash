@@ -1,7 +1,7 @@
-//go:build integration
-// +build integration
+//go:build db_integration
+// +build db_integration
 
-package sqlite_test
+package database_test
 
 import (
 	"context"
@@ -83,7 +83,7 @@ func TestStudioQueryNameOr(t *testing.T) {
 }
 
 func loadStudioRelationships(ctx context.Context, t *testing.T, s *models.Studio) error {
-	if err := s.LoadURLs(ctx, db.Studio); err != nil {
+	if err := s.LoadURLs(ctx, db.Studio()); err != nil {
 		return err
 	}
 
@@ -119,7 +119,7 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 			return nil
 		}
 
-		if err := studios[0].LoadURLs(ctx, db.Studio); err != nil {
+		if err := studios[0].LoadURLs(ctx, db.Studio()); err != nil {
 			t.Errorf("Error loading studio relationships: %v", err)
 		}
 
@@ -160,7 +160,7 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		for _, studio := range studios {
-			if err := studio.LoadURLs(ctx, db.Studio); err != nil {
+			if err := studio.LoadURLs(ctx, db.Studio()); err != nil {
 				t.Errorf("Error loading studio relationships: %v", err)
 			}
 
@@ -611,7 +611,7 @@ func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
 	assert.Len(t, s.StashIDs.List(), 0)
 
 	// add stash ids
-	const stashIDStr = "stashID"
+	var stashIDStr = getUUID("stashID")
 	const endpoint = "endpoint"
 	stashID := models.StashID{
 		StashID:  stashIDStr,
@@ -678,7 +678,7 @@ func TestStudioQueryURL(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, g *models.Studio) {
 		t.Helper()
-		if err := g.LoadURLs(ctx, db.Studio); err != nil {
+		if err := g.LoadURLs(ctx, db.Studio()); err != nil {
 			t.Errorf("Error loading studio relationships: %v", err)
 			return
 		}
@@ -1070,13 +1070,14 @@ func TestStudioQueryFast(t *testing.T) {
 
 	tsString := "test"
 	tsInt := 1
+	tsId := "1"
 
 	testStringCriterion := models.StringCriterionInput{
 		Value:    tsString,
 		Modifier: models.CriterionModifierEquals,
 	}
-	testIncludesMultiCriterion := models.MultiCriterionInput{
-		Value:    []string{tsString},
+	testIncludesMultiCriterionId := models.MultiCriterionInput{
+		Value:    []string{tsId},
 		Modifier: models.CriterionModifierIncludes,
 	}
 	testIntCriterion := models.IntCriterionInput{
@@ -1106,7 +1107,7 @@ func TestStudioQueryFast(t *testing.T) {
 		SceneCount: &testIntCriterion,
 	}
 	parentsFilter := models.StudioFilterType{
-		Parents: &testIncludesMultiCriterion,
+		Parents: &testIncludesMultiCriterionId,
 	}
 
 	filters := []models.StudioFilterType{nameFilter, aliasesFilter, stashIDFilter, urlFilter, ratingFilter, sceneCountFilter, imageCountFilter, parentsFilter}

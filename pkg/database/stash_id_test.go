@@ -1,7 +1,7 @@
-//go:build integration
-// +build integration
+//go:build db_integration
+// +build db_integration
 
-package sqlite_test
+package database_test
 
 import (
 	"context"
@@ -24,7 +24,38 @@ func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderW
 	testNoStashIDs(ctx, t, r, -1)
 
 	// add stash ids
-	const stashIDStr = "stashID"
+	var stashIDStr = getUUID("stashID")
+	const endpoint = "endpoint"
+	stashID := models.StashID{
+		StashID:   stashIDStr,
+		Endpoint:  endpoint,
+		UpdatedAt: epochTime,
+	}
+
+	// update stash ids and ensure was updated
+	if err := r.UpdateStashIDs(ctx, id, []models.StashID{stashID}); err != nil {
+		t.Error(err.Error())
+	}
+
+	testStashIDs(ctx, t, r, id, []models.StashID{stashID})
+
+	// remove stash ids and ensure was updated
+	if err := r.UpdateStashIDs(ctx, id, []models.StashID{}); err != nil {
+		t.Error(err.Error())
+	}
+
+	testNoStashIDs(ctx, t, r, id)
+}
+
+func testStashIDReaderWriterFail(ctx context.Context, t *testing.T, r stashIDReaderWriter, id int) {
+	// ensure no stash IDs to begin with
+	testNoStashIDs(ctx, t, r, id)
+
+	// ensure GetStashIDs with non-existing also returns none
+	testNoStashIDs(ctx, t, r, -1)
+
+	// add stash ids
+	var stashIDStr = getUUID("stashID")
 	const endpoint = "endpoint"
 	stashID := models.StashID{
 		StashID:   stashIDStr,
@@ -43,13 +74,6 @@ func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderW
 	if err := r.UpdateStashIDs(ctx, -1, []models.StashID{stashID}); err == nil {
 		t.Error("expected error when updating non-existing id")
 	}
-
-	// remove stash ids and ensure was updated
-	if err := r.UpdateStashIDs(ctx, id, []models.StashID{}); err != nil {
-		t.Error(err.Error())
-	}
-
-	testNoStashIDs(ctx, t, r, id)
 }
 
 func testNoStashIDs(ctx context.Context, t *testing.T, r stashIDReaderWriter, id int) {

@@ -1,7 +1,7 @@
-//go:build pg_integration
-// +build pg_integration
+//go:build db_integration
+// +build db_integration
 
-package postgres_test
+package database_test
 
 import (
 	"context"
@@ -19,6 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/postgres"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -602,7 +603,7 @@ func indexFromID(ids []int, id int) int {
 	return -1
 }
 
-var db *postgres.Database
+var db database.Database
 
 func TestMain(m *testing.M) {
 	// initialise empty config - needed by some migrations
@@ -642,24 +643,37 @@ func testTeardown(db database.Database) {
 	}
 }
 
-func getNewDB(databaseFile string) {
-	fmt.Printf("Postgres backend for tests detected\n")
-	db = postgres.NewDatabase()
+func getNewDB() {
+	if val := IsPostgresTest(); val != nil {
+		fmt.Printf("Postgres backend for tests detected\n")
+		db = postgres.NewDatabase()
 
-	if err := db.Open(databaseFile); err != nil {
-		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		if err := db.Open(*val); err != nil {
+			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		}
+	} else {
+		fmt.Printf("SQLite backend for tests detected\n")
+		db = sqlite.NewDatabase()
+
+		// create the database file
+		f, err := os.CreateTemp("", "*.sqlite")
+		if err != nil {
+			panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
+		}
+
+		f.Close()
+		databaseFile := f.Name()
+
+		if err := db.Open(databaseFile); err != nil {
+			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		}
 	}
 }
 
 func runTests(m *testing.M) int {
 	// create the database file
-	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
-	if !valid {
-		// If the flag is not set, exit gracefully by not running the tests
-		os.Exit(0)
-	}
+	getNewDB()
 
-	getNewDB(dbUrl)
 	db.SetBlobStoreOptions(database.BlobStoreOptions{
 		UseDatabase: true,
 		// don't use filesystem

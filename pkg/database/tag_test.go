@@ -1,7 +1,7 @@
-//go:build pg_integration
-// +build pg_integration
+//go:build db_integration
+// +build db_integration
 
-package postgres_test
+package database_test
 
 import (
 	"context"
@@ -902,7 +902,7 @@ func TestTagUpdateAlias(t *testing.T) {
 
 func TestTagStashIDs(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.Tag()
 
 		// create tag to test against
 		const name = "TestTagStashIDs"
@@ -924,7 +924,7 @@ func TestTagStashIDs(t *testing.T) {
 
 func TestTagFindByStashID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.Tag()
 
 		// create tag to test against
 		const name = "TestTagFindByStashID"
@@ -991,6 +991,8 @@ func TestTagMerge(t *testing.T) {
 			tagIdxWithGallery,
 			tagIdx1WithGallery,
 			tagIdx2WithGallery,
+			tagIdx1WithGroup,
+			tagIdx2WithGroup,
 		}
 		var srcIDs []int
 		for _, idx := range srcIdxs {
@@ -1083,6 +1085,18 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		assert.Contains(studioTagIDs, destID)
+
+		// ensure group points to new tag
+		group, err := db.Group().Find(ctx, groupIDs[groupIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+		if err := group.LoadTagIDs(ctx, db.Group()); err != nil {
+			return err
+		}
+		groupTagIDs := group.TagIDs.List()
+
+		assert.Contains(groupTagIDs, destID)
 
 		return nil
 	}); err != nil {
