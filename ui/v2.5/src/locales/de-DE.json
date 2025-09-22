@@ -149,7 +149,9 @@
             "open": "Seitenleiste öffnen"
         },
         "show_count_results": "Zeige {count} Ergebnisse",
-        "show_results": "Ergebnisse anzeigen"
+        "show_results": "Ergebnisse anzeigen",
+        "load_filter": "Filter laden",
+        "load": "Laden"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -1234,7 +1236,8 @@
         "name": "Filter",
         "saved_filters": "Gespeicherte Filter",
         "update_filter": "Filter aktualisieren",
-        "more_filter_criteria": "+{count} mehr"
+        "more_filter_criteria": "+{count} mehr",
+        "search_term": "Suchbegriff"
     },
     "second": "Sekunde",
     "seconds": "Sekunden",
