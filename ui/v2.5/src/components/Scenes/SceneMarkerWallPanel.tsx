@@ -231,12 +231,20 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
     [zoomIndex]
   );
 
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
   const renderImage = useCallback(
     (props: RenderImageProps<IMarkerPhoto>) => {
       return (
         <MarkerWallItem
           {...props}
-          maxHeight={targetRowHeight(containerRef.current?.offsetWidth ?? 0)}
+          maxHeight={
+            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor
+          }
         />
       );
     },
