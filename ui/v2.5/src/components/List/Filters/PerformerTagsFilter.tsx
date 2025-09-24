@@ -76,7 +76,6 @@ function sortResults(
 function useTagQueryFilter(props: IUseQueryHookProps) {
   const { q: query, filter: f, skip, filterHook } = props;
   const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
-  console.log("appliedFilter", appliedFilter);
   const { data, loading } = useFindTagsForSelectQuery({
     variables: queryVariables(query, appliedFilter),
     skip,
@@ -91,7 +90,6 @@ function useTagQueryFilter(props: IUseQueryHookProps) {
 }
 
 function useTagQuery(query: string, skip?: boolean) {
-  console.log("query", query);
   return useTagQueryFilter({ q: query, skip: !!skip });
 }
 

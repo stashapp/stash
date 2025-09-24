@@ -293,9 +293,6 @@ const SidebarContent: React.FC<{
   const UrlCriterionOption = createStringCriterionOption("url");
   const DateCriterionOption = createDateCriterionOption("date");
 
-  console.log("PerformerTagsCriterionOption.type", PerformerTagsCriterionOption.type);
-  console.log("PerformerTagsCriterionOption", PerformerTagsCriterionOption);
-
   return (
     <>
       <FilteredSidebarHeader
