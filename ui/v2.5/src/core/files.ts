@@ -6,7 +6,7 @@ export interface IFile {
 }
 
 interface IObjectWithFiles {
-  files?: IFile[];
+  files?: GQL.Maybe<IFile[]>;
 }
 
 export interface IObjectWithTitleFiles extends IObjectWithFiles {

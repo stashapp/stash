@@ -710,6 +710,10 @@ button.btn.favorite-button {
   }
 }
 
+.custom-fields {
+  width: 100%;
+}
+
 .custom-fields .detail-item .detail-item-title {
   max-width: 130px;
   overflow: hidden;
@@ -751,8 +755,6 @@ button.btn.favorite-button {
   }
 }
 
-$sidebar-width: 250px;
-
 .sidebar-pane {
   display: flex;
 
@@ -770,8 +772,9 @@ $sidebar-width: 250px;
   .sidebar {
     bottom: 0;
     left: 0;
-    margin-top: 4rem;
+    margin-top: $navbar-height;
     overflow-y: auto;
+    padding-top: 0.5rem;
     position: fixed;
     scrollbar-gutter: stable;
     top: 0;
@@ -781,6 +784,14 @@ $sidebar-width: 250px;
 
   &.hide-sidebar .sidebar {
     margin-left: -$sidebar-width;
+  }
+
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
   }
 
   > :nth-child(2) {
@@ -886,8 +897,7 @@ $sticky-header-height: calc(50px + 3.3rem);
     padding-left: 0;
     position: sticky;
 
-    // sticky detail header is 50px + 3.3rem
-    top: calc(50px + 3.3rem);
+    top: calc($sticky-detail-header-height + $navbar-height);
 
     .sidebar-toolbar {
       padding-top: 15px;
@@ -914,7 +924,6 @@ $sticky-header-height: calc(50px + 3.3rem);
       flex: 100% 0 0;
       height: calc(100vh - 4rem);
       max-height: calc(100vh - 4rem);
-      padding-top: 0;
       top: 0;
     }
 

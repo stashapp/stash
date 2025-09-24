@@ -70,6 +70,17 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func joinedStringCriterionHandler(c *models.StringCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+			stringCriterionHandler(c, column)(ctx, f)
+		}
+	}
+}
+
 func enumCriterionHandler(modifier models.CriterionModifier, values []string, column string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if modifier.IsValid() {

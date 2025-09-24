@@ -120,6 +120,7 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
 
 interface IMarkerWallProps {
   markers: GQL.SceneMarkerDataFragment[];
+  zoomIndex: number;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
@@ -152,9 +153,14 @@ function getDimensions(file?: IFile) {
   };
 }
 
-const defaultTargetRowHeight = 250;
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
 
-const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
+const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
   const history = useHistory();
 
   const margin = 3;
@@ -202,6 +208,16 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
     return Math.round(columnCount);
   }
 
+  function targetRowHeight(containerWidth: number) {
+    let zoomHeight = 280;
+    breakpointZoomHeights.forEach((e) => {
+      if (containerWidth >= e.minWidth) {
+        zoomHeight = e.heights[zoomIndex];
+      }
+    });
+    return zoomHeight;
+  }
+
   const renderImage = useCallback((props: RenderImageProps<IMarkerPhoto>) => {
     return <MarkerWallItem {...props} />;
   }, []);
@@ -216,7 +232,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
           margin={margin}
           direction={direction}
           columns={columns}
-          targetRowHeight={defaultTargetRowHeight}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -225,10 +241,12 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
 
 interface IMarkerWallPanelProps {
   markers: GQL.SceneMarkerDataFragment[];
+  zoomIndex: number;
 }
 
 export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
   markers,
+  zoomIndex,
 }) => {
-  return <MarkerWall markers={markers} />;
+  return <MarkerWall markers={markers} zoomIndex={zoomIndex} />;
 };

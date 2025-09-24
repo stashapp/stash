@@ -68,6 +68,8 @@
     "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
+    "load": "Load",
+    "load_filter": "Load filter",
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
@@ -81,6 +83,7 @@
     "open_random": "Open Random",
     "optimise_database": "Optimise Database",
     "overwrite": "Overwrite",
+    "play": "Play",
     "play_random": "Play Random",
     "play_selected": "Play selected",
     "preview": "Preview",
@@ -124,9 +127,12 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "show_results": "Show results",
+    "show_count_results": "Show {count} results",
     "sidebar": {
       "close": "Close sidebar",
-      "open": "Open sidebar"
+      "open": "Open sidebar",
+      "toggle": "Toggle sidebar"
     },
     "skip": "Skip",
     "split": "Split",
@@ -565,6 +571,8 @@
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
+      "graphql_playground": "GraphQL playground",
+      "heading": "Tools",
       "scene_duplicate_checker": "Scene Duplicate Checker",
       "scene_filename_parser": {
         "add_field": "Add Field",
@@ -1311,7 +1319,9 @@
     "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
-    "update_filter": "Update Filter"
+    "search_term": "Search term",
+    "update_filter": "Update Filter",
+    "more_filter_criteria": "+{count} more"
   },
   "second": "Second",
   "seconds": "Seconds",

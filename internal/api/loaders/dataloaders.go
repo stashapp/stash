@@ -10,6 +10,7 @@
 //go:generate go run github.com/vektah/dataloaden TagLoader int *github.com/stashapp/stash/pkg/models.Tag
 //go:generate go run github.com/vektah/dataloaden GroupLoader int *github.com/stashapp/stash/pkg/models.Group
 //go:generate go run github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/models.FileID github.com/stashapp/stash/pkg/models.File
+//go:generate go run github.com/vektah/dataloaden FolderLoader github.com/stashapp/stash/pkg/models.FolderID *github.com/stashapp/stash/pkg/models.Folder
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
@@ -62,6 +63,7 @@ type Loaders struct {
 	TagByID    *TagLoader
 	GroupByID  *GroupLoader
 	FileByID   *FileLoader
+	FolderByID *FolderLoader
 }
 
 type Middleware struct {
@@ -116,6 +118,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchFiles(ctx),
+			},
+			FolderByID: &FolderLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchFolders(ctx),
 			},
 			SceneFiles: &SceneFileIDsLoader{
 				wait:     wait,
@@ -273,6 +280,17 @@ func (m Middleware) fetchFiles(ctx context.Context) func(keys []models.FileID) (
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.File.Find(ctx, keys...)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchFolders(ctx context.Context) func(keys []models.FolderID) ([]*models.Folder, []error) {
+	return func(keys []models.FolderID) (ret []*models.Folder, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Folder.FindMany(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

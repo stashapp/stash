@@ -83,6 +83,8 @@ Returns a `Promise<void>` that resolves when all of the components have been loa
 ### `hooks`
 
 This namespace provides access to the following core utility hooks:
+- `useGalleryLightbox`
+- `useLightbox`
 - `useSpriteInfo`
 - `useToast`
 
@@ -151,8 +153,8 @@ Returns `void`.
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
-- `CustomFields`
 - `CustomFieldInput`
+- `CustomFields`
 - `DateInput`
 - `DetailImage`
 - `ExternalLinkButtons`
@@ -167,6 +169,9 @@ Returns `void`.
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `GroupIDSelect`
+- `GroupSelect`
+- `GroupSelect.sort`
 - `HeaderImage`
 - `HoverPopover`
 - `Icon`
@@ -174,11 +179,12 @@ Returns `void`.
 - `ImageInput`
 - `LightboxLink`
 - `LoadingIndicator`
+- `MainNavBar.MenuItems`
+- `MainNavBar.UtilityItems`
 - `ModalSetting`
-- `GroupIDSelect`
-- `GroupSelect`
-- `GroupSelect.sort`
 - `NumberSetting`
+- `Pagination`
+- `PaginationIndex`
 - `PerformerAppearsWithPanel`
 - `PerformerCard`
 - `PerformerCard.Details`
@@ -188,16 +194,17 @@ Returns `void`.
 - `PerformerCard.Title`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
-- `PerformerIDSelect`
-- `PerformerPage`
-- `PerformerSelect`
-- `PerformerSelect.sort`
 - `PerformerGalleriesPanel`
 - `PerformerGroupsPanel`
 - `PerformerHeaderImage`
+- `PerformerIDSelect`
 - `PerformerImagesPanel`
+- `PerformerPage`
 - `PerformerScenesPanel`
+- `PerformerSelect`
+- `PerformerSelect.sort`
 - `PluginRoutes`
+- `PluginSettings`
 - `RatingNumber`
 - `RatingStars`
 - `RatingSystem`
@@ -206,18 +213,20 @@ Returns `void`.
 - `SceneCard.Image`
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
+- `SceneFileInfoPanel`
 - `SceneIDSelect`
 - `ScenePage`
-- `ScenePage.Tabs`
 - `ScenePage.TabContent`
+- `ScenePage.Tabs`
 - `ScenePlayer`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
 - `Setting`
+- `SettingGroup`
 - `SettingModal`
-- `StringSetting`
 - `StringListSetting`
+- `StringSetting`
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
@@ -229,15 +238,11 @@ Returns `void`.
 - `TagCard.Overlays`
 - `TagCard.Popovers`
 - `TagCard.Title`
-- `TagLink`
-- `TabTitleCounter`
 - `TagIDSelect`
+- `TagLink`
 - `TagSelect`
 - `TagSelect.sort`
 - `TruncatedText`
-- `PluginSettings`
-- `Setting`
-- `SettingGroup`
 
 ### `PluginApi.Event`
 

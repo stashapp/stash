@@ -578,6 +578,22 @@ func indexToID(ids []int, idx int) int {
 	return ids[idx]
 }
 
+func indexesToIDPtrs[T any](ids []T, indexes []int) []*T {
+	ret := make([]*T, len(indexes))
+	for i, idx := range indexes {
+		ret[i] = indexToIDPtr(ids, idx)
+	}
+
+	return ret
+}
+
+func indexToIDPtr[T any](ids []T, idx int) *T {
+	if idx < 0 {
+		return nil
+	}
+	return &ids[idx]
+}
+
 func indexFromID(ids []int, id int) int {
 	for i, v := range ids {
 		if v == id {
@@ -675,7 +691,9 @@ func populateDB() error {
 			return fmt.Errorf("creating files: %w", err)
 		}
 
-		// TODO - link folders to zip files
+		if err := linkFoldersToZip(ctx); err != nil {
+			return fmt.Errorf("linking folders to zip files: %w", err)
+		}
 
 		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
@@ -793,6 +811,27 @@ func createFolders(ctx context.Context) error {
 
 		folderIDs = append(folderIDs, folder.ID)
 		folderPaths = append(folderPaths, folder.Path)
+	}
+
+	return nil
+}
+
+func linkFoldersToZip(ctx context.Context) error {
+	// link folders to zip files
+	for folderIdx, fileIdx := range folderZipFiles {
+		folderID := folderIDs[folderIdx]
+		fileID := fileIDs[fileIdx]
+
+		f, err := db.Folder.Find(ctx, folderID)
+		if err != nil {
+			return fmt.Errorf("Error finding folder [%d] to link to zip file [%d]", folderID, fileID)
+		}
+
+		f.ZipFileID = &fileID
+
+		if err := db.Folder.Update(ctx, f); err != nil {
+			return fmt.Errorf("Error linking folder [%d] to zip file [%d]: %s", folderIdx, fileIdx, err.Error())
+		}
 	}
 
 	return nil

@@ -35,9 +35,22 @@ interface IImageWallProps {
   currentPage: number;
   pageCount: number;
   handleImageOpen: (index: number) => void;
+  zoomIndex: number;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
+const zoomWidths = [280, 340, 480, 640];
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
+
+const ImageWall: React.FC<IImageWallProps> = ({
+  images,
+  zoomIndex,
+  handleImageOpen,
+}) => {
   const { configuration } = useContext(ConfigurationContext);
   const uiConfig = configuration?.ui;
 
@@ -76,9 +89,19 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 300;
+    let preferredSize = zoomWidths[zoomIndex];
     let columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
+  }
+
+  function targetRowHeight(containerWidth: number) {
+    let zoomHeight = 280;
+    breakpointZoomHeights.forEach((e) => {
+      if (containerWidth >= e.minWidth) {
+        zoomHeight = e.heights[zoomIndex];
+      }
+    });
+    return zoomHeight;
   }
 
   return (
@@ -91,6 +114,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
           margin={uiConfig?.imageWallOptions?.margin!}
           direction={uiConfig?.imageWallOptions?.direction!}
           columns={columns}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -211,6 +235,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
         currentPage={filter.currentPage}
         pageCount={pageCount}
         handleImageOpen={handleImageOpen}
+        zoomIndex={filter.zoomIndex}
       />
     );
   }
