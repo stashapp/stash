@@ -39,14 +39,22 @@ interface IMarkerPhoto {
   onError?: (photo: PhotoProps<IMarkerPhoto>) => void;
 }
 
-export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
-  props: RenderImageProps<IMarkerPhoto>
-) => {
+interface IExtraProps {
+  maxHeight: number;
+}
+
+export const MarkerWallItem: React.FC<
+  RenderImageProps<IMarkerPhoto> & IExtraProps
+> = (props: RenderImageProps<IMarkerPhoto> & IExtraProps) => {
   const { configuration } = useContext(ConfigurationContext);
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
 
   const [active, setActive] = useState(false);
+
+  const height = Math.min(props.maxHeight, props.photo.height);
+  const zoomFactor = height / props.photo.height;
+  const width = props.photo.width * zoomFactor;
 
   type style = Record<string, string | number | undefined>;
   var divStyle: style = {
@@ -79,8 +87,8 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
       role="button"
       style={{
         ...divStyle,
-        width: props.photo.width,
-        height: props.photo.height,
+        width,
+        height,
       }}
     >
       <ImagePreview
@@ -90,8 +98,8 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
         autoPlay={video}
         key={props.photo.key}
         src={props.photo.src}
-        width={props.photo.width}
-        height={props.photo.height}
+        width={width}
+        height={height}
         alt={props.photo.alt}
         onMouseEnter={() => setActive(true)}
         onMouseLeave={() => setActive(false)}
@@ -163,6 +171,8 @@ const breakpointZoomHeights = [
 const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
   const history = useHistory();
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   const margin = 3;
   const direction = "row";
 
@@ -208,22 +218,33 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
     return Math.round(columnCount);
   }
 
-  function targetRowHeight(containerWidth: number) {
-    let zoomHeight = 280;
-    breakpointZoomHeights.forEach((e) => {
-      if (containerWidth >= e.minWidth) {
-        zoomHeight = e.heights[zoomIndex];
-      }
-    });
-    return zoomHeight;
-  }
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
 
-  const renderImage = useCallback((props: RenderImageProps<IMarkerPhoto>) => {
-    return <MarkerWallItem {...props} />;
-  }, []);
+  const renderImage = useCallback(
+    (props: RenderImageProps<IMarkerPhoto>) => {
+      return (
+        <MarkerWallItem
+          {...props}
+          maxHeight={targetRowHeight(containerRef.current?.offsetWidth ?? 0)}
+        />
+      );
+    },
+    [targetRowHeight]
+  );
 
   return (
-    <div className="marker-wall">
+    <div className="marker-wall" ref={containerRef}>
       {photos.length ? (
         <MarkerGallery
           photos={photos}
