@@ -87,6 +87,7 @@ import { SidebarStringFilter } from "../List/Filters/StringFilter";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
 import { SidebarOrientationFilter } from "../List/Filters/OrientationFilter";
 import { OrientationCriterionOption } from "src/models/list-filter/criteria/orientation";
+import { SidebarPerformerTagsFilter } from "../List/Filters/PerformerTagsFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -292,6 +293,9 @@ const SidebarContent: React.FC<{
   const UrlCriterionOption = createStringCriterionOption("url");
   const DateCriterionOption = createDateCriterionOption("date");
 
+  console.log("PerformerTagsCriterionOption.type", PerformerTagsCriterionOption.type);
+  console.log("PerformerTagsCriterionOption", PerformerTagsCriterionOption);
+
   return (
     <>
       <FilteredSidebarHeader
@@ -322,7 +326,7 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
           filterHook={filterHook}
         />
-        <SidebarTagsFilter
+        <SidebarPerformerTagsFilter
           title={<FormattedMessage id="performer_tags" />}
           data-type={PerformerTagsCriterionOption.type}
           option={PerformerTagsCriterionOption}

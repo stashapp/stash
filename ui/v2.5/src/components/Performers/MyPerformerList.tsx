@@ -45,6 +45,7 @@ import { Icon } from "../Shared/Icon";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import {
+  createDateCriterionOption,
   createNumberCriterionOption,
   createStringCriterionOption,
   Criterion,
@@ -72,6 +73,9 @@ import { TattoosCriterionOption } from "src/models/list-filter/criteria/tattoos"
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
 import { PiercingsCriterionOption } from "src/models/list-filter/criteria/piercings";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
+import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
+import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
+import { SidebarDateFilter } from "../List/Filters/DateFilter";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];
@@ -313,6 +317,10 @@ const SidebarContent: React.FC<{
 
   const UrlCriterionOption = createStringCriterionOption("url");
   const AgeCriterionOption = createNumberCriterionOption("age");
+  
+  const DeathDateCriterionOption = createDateCriterionOption("death_date");
+  const SceneCountCriterionOption = createNumberCriterionOption("scene_count");
+  const GalleryCountCriterionOption = createNumberCriterionOption("gallery_count");
 
   return (
     <>
@@ -324,8 +332,15 @@ const SidebarContent: React.FC<{
         view={view}
         focus={focus}
       />
-
       <MyPerformersFilterSidebarSections>
+        <SidebarStudiosFilter
+          title={<FormattedMessage id="studios" />}
+          data-type={StudiosCriterionOption.type}
+          option={StudiosCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
           data-type={TagsCriterionOption.type}
@@ -345,6 +360,13 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="age" />}
           data-type={AgeCriterionOption.type}
           option={AgeCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarDateFilter
+          title={<FormattedMessage id="death_date" />}
+          data-type={DeathDateCriterionOption.type}
+          option={DeathDateCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />
@@ -380,6 +402,20 @@ const SidebarContent: React.FC<{
           title={<FormattedMessage id="url" />}
           data-type={UrlCriterionOption.type}
           option={UrlCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="scene_count" />}
+          data-type={SceneCountCriterionOption.type}
+          option={SceneCountCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+        />
+        <SidebarNumberFilter
+          title={<FormattedMessage id="gallery_count" />}
+          data-type={GalleryCountCriterionOption.type}
+          option={GalleryCountCriterionOption}
           filter={filter}
           setFilter={setFilter}
         />

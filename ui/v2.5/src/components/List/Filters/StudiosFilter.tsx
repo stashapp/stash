@@ -34,7 +34,7 @@ function queryVariables(query: string, f?: ListFilterModel) {
 
     // TODO - look for same in AND?
 
-    setObjectFilter(studioFilter, f.mode, filterOutput);
+    setObjectFilter(studioFilter, f.mode, filterOutput, "studios");
   }
 
   return makeQueryVariables(query, { studio_filter: studioFilter });

@@ -68,6 +68,7 @@ import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
+import { SidebarPerformerTagsFilter } from "../List/Filters/PerformerTagsFilter";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
@@ -226,7 +227,7 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
           filterHook={filterHook}
         />
-        <SidebarTagsFilter
+        <SidebarPerformerTagsFilter
           title={<FormattedMessage id="performer_tags" />}
           data-type={PerformerTagsCriterionOption.type}
           option={PerformerTagsCriterionOption}

@@ -538,6 +538,8 @@ export function setObjectFilter(
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
 
+  if (query === "performer_tags") return;
+
   switch (mode) {
     case FilterMode.Scenes:
       // if empty, only get objects with scenes
@@ -550,6 +552,8 @@ export function setObjectFilter(
       out.scenes_filter = relatedFilterOutput as SceneFilterType;
       break;
     case FilterMode.Performers:
+      if (query === "studios") return;
+
       // if empty, only get objects with performers
       if (empty) {
         out.performer_count = {
