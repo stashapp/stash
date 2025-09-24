@@ -29,11 +29,15 @@ import {
 import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
-import { useConfigureUI } from "src/core/StashService";
-import { FilterMode } from "src/core/generated-graphql";
+import { useConfigureUI, useSaveFilter } from "src/core/StashService";
+import {
+  FilterMode,
+  SavedFilterDataFragment,
+} from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import ScreenUtils from "src/utils/screen";
+import { LoadFilterDialog, SaveFilterDialog } from "./SavedFilterList";
 import { SearchTermInput } from "./ListFilter";
 
 interface ICriterionList {
@@ -231,6 +235,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const [criterion, setCriterion] = useState<Criterion>();
 
   const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
+
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [savingFilter, setSavingFilter] = useState(false);
+
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
+
+  const saveFilter = useSaveFilter();
 
   const { criteria } = currentFilter;
 
@@ -433,9 +444,74 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     setCurrentFilter(newFilter);
   }
 
+  function onLoadFilter(f: SavedFilterDataFragment) {
+    const newFilter = filter.clone();
+
+    newFilter.currentPage = 1;
+    // #1795 - reset search term if not present in saved filter
+    newFilter.searchTerm = "";
+    newFilter.configureFromSavedFilter(f);
+    // #1507 - reset random seed when loaded
+    newFilter.randomSeed = -1;
+
+    onApply(newFilter);
+  }
+
+  async function onSaveFilter(name: string, id?: string) {
+    try {
+      setSavingFilter(true);
+      await saveFilter(filter, name, id);
+
+      Toast.success(
+        intl.formatMessage(
+          {
+            id: "toast.saved_entity",
+          },
+          {
+            entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
+          }
+        )
+      );
+      setShowSaveDialog(false);
+      onApply(currentFilter);
+    } catch (err) {
+      Toast.error(err);
+    } finally {
+      setSavingFilter(false);
+    }
+  }
+
   return (
     <>
-      <Modal show onHide={() => onCancel()} className="edit-filter-dialog">
+      {showSaveDialog && (
+        <SaveFilterDialog
+          mode={filter.mode}
+          onClose={(name, id) => {
+            if (name) {
+              onSaveFilter(name, id);
+            } else {
+              setShowSaveDialog(false);
+            }
+          }}
+          isSaving={savingFilter}
+        />
+      )}
+      {showLoadDialog && (
+        <LoadFilterDialog
+          mode={filter.mode}
+          onClose={(f) => {
+            if (f) {
+              onLoadFilter(f);
+            }
+            setShowLoadDialog(false);
+          }}
+        />
+      )}
+      <Modal
+        show={!showSaveDialog && !showLoadDialog}
+        onHide={() => onCancel()}
+        className="edit-filter-dialog"
+      >
         <Modal.Header>
           <div>
             <FormattedMessage id="search_filter.edit_filter" />
@@ -487,12 +563,30 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => onCancel()}>
-            <FormattedMessage id="actions.cancel" />
-          </Button>
-          <Button onClick={() => onApply(currentFilter)}>
-            <FormattedMessage id="actions.apply" />
-          </Button>
+          <div>
+            <Button
+              variant="secondary"
+              onClick={() => setShowLoadDialog(true)}
+              title={intl.formatMessage({ id: "actions.load_filter" })}
+            >
+              <FormattedMessage id="actions.load" />…
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setShowSaveDialog(true)}
+              title={intl.formatMessage({ id: "actions.save_filter" })}
+            >
+              <FormattedMessage id="actions.save" />…
+            </Button>
+          </div>
+          <div>
+            <Button variant="secondary" onClick={() => onCancel()}>
+              <FormattedMessage id="actions.cancel" />
+            </Button>
+            <Button onClick={() => onApply(currentFilter)}>
+              <FormattedMessage id="actions.apply" />
+            </Button>
+          </div>
         </Modal.Footer>
       </Modal>
     </>

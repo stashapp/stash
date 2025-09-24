@@ -1160,6 +1160,21 @@ input[type="range"].blue-slider {
   }
 }
 
+// hide the search term tag item when the search box is visible
+@include media-breakpoint-up(lg) {
+  .scene-list-toolbar .filter-tags .search-term-filter-tag {
+    display: none;
+  }
+}
+@include media-breakpoint-down(md) {
+  .sidebar-pane:not(.hide-sidebar)
+    .scene-list-toolbar
+    .filter-tags
+    .search-term-filter-tag {
+    display: none;
+  }
+}
+
 .scene-list-header {
   flex-wrap: wrap-reverse;
   gap: 0.5rem;

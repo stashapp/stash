@@ -312,6 +312,14 @@ input[type="range"].zoom-slider {
     padding-right: 0;
   }
 
+  .modal-footer {
+    justify-content: space-between;
+
+    > div > :not(:first-child) {
+      margin-left: 0.25rem;
+    }
+  }
+
   .search-term-row {
     align-items: center;
     display: flex;

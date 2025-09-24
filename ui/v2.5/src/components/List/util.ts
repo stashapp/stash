@@ -196,9 +196,12 @@ export function useFilterOperations(props: {
     [setFilter]
   );
 
-  const clearAllCriteria = useCallback(() => {
-    setFilter((cv) => cv.clearCriteria());
-  }, [setFilter]);
+  const clearAllCriteria = useCallback(
+    (includeSearchTerm = false) => {
+      setFilter((cv) => cv.clearCriteria(includeSearchTerm));
+    },
+    [setFilter]
+  );
 
   return {
     setPage,
