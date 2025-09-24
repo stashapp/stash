@@ -179,7 +179,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
         return (child as HTMLElement).classList.contains("more-tags");
       });
 
-      if (moreTags && !!cutoff) {
+      if (moreTags && cutoff !== undefined) {
         return;
       }
 
@@ -302,8 +302,9 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     );
   }
 
-  const visibleCriteria = cutoff ? filterTags.slice(0, cutoff) : filterTags;
-  const hiddenCriteria = cutoff ? filterTags.slice(cutoff) : [];
+  const visibleCriteria =
+    cutoff !== undefined ? filterTags.slice(0, cutoff) : filterTags;
+  const hiddenCriteria = cutoff !== undefined ? filterTags.slice(cutoff) : [];
 
   return (
     <div className={className} ref={ref}>
