@@ -19,8 +19,9 @@ const DefaultMaxRequestsPerMinute = 240
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
-	client *graphql.Client
-	box    models.StashBox
+	client     *graphql.Client
+	httpClient *http.Client
+	box        models.StashBox
 
 	maxRequestsPerMinute int
 
@@ -70,6 +71,7 @@ func NewClient(box models.StashBox, options ...ClientOption) *Client {
 	ret := &Client{
 		box:                  box,
 		maxRequestsPerMinute: DefaultMaxRequestsPerMinute,
+		httpClient:           http.DefaultClient,
 	}
 
 	if box.MaxRequestsPerMinute > 0 {
@@ -84,16 +86,12 @@ func NewClient(box models.StashBox, options ...ClientOption) *Client {
 	limitRequests := rateLimit(ret.maxRequestsPerMinute)
 
 	client := &graphql.Client{
-		Client: clientv2.NewClient(http.DefaultClient, box.Endpoint, nil, authHeader, limitRequests),
+		Client: clientv2.NewClient(ret.httpClient, box.Endpoint, nil, authHeader, limitRequests),
 	}
 
 	ret.client = client
 
 	return ret
-}
-
-func (c Client) getHTTPClient() *http.Client {
-	return c.client.Client.Client
 }
 
 func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {

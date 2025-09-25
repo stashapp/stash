@@ -15,14 +15,17 @@ import {
   faPencilAlt,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 
-export const OperationDropdown: React.FC<PropsWithChildren<{}>> = ({
-  children,
-}) => {
+export const OperationDropdown: React.FC<
+  PropsWithChildren<{
+    className?: string;
+  }>
+> = ({ className, children }) => {
   if (!children) return null;
 
   return (
-    <Dropdown>
+    <Dropdown className={className} as={ButtonGroup}>
       <Dropdown.Toggle variant="secondary" id="more-menu">
         <Icon icon={faEllipsisH} />
       </Dropdown.Toggle>
@@ -30,6 +33,21 @@ export const OperationDropdown: React.FC<PropsWithChildren<{}>> = ({
         {children}
       </Dropdown.Menu>
     </Dropdown>
+  );
+};
+
+export const OperationDropdownItem: React.FC<{
+  text: string;
+  onClick: () => void;
+  className?: string;
+}> = ({ text, onClick, className }) => {
+  return (
+    <Dropdown.Item
+      className={cx("bg-secondary text-white", className)}
+      onClick={onClick}
+    >
+      {text}
+    </Dropdown.Item>
   );
 };
 
@@ -116,7 +134,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (buttons.length > 0) {
       return (
-        <ButtonGroup className="ml-2 mb-2">
+        <ButtonGroup className="ml-2">
           {buttons.map((button) => {
             return (
               <OverlayTrigger
@@ -206,7 +224,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     <>
       {maybeRenderButtons()}
 
-      <div className="mx-2 mb-2">{renderMore()}</div>
+      <ButtonGroup className="ml-2">{renderMore()}</ButtonGroup>
     </>
   );
 };

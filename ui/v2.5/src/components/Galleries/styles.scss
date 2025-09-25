@@ -206,7 +206,22 @@ $galleryTabWidth: 450px;
   }
 }
 
-.GalleryWall {
+.gallery-cover {
+  aspect-ratio: 4 / 3;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.gallery-cover img {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
+}
+
+div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
   margin: 0 auto;
@@ -247,28 +262,6 @@ $galleryTabWidth: 450px;
   .preview-scrubber {
     top: 0;
     z-index: 1;
-  }
-
-  @mixin galleryWidth($width) {
-    height: math.div($width, 3) * 2;
-
-    &-landscape {
-      width: $width;
-    }
-
-    &-portrait {
-      width: math.div($width, 2);
-    }
-  }
-
-  @media (min-width: 576px) {
-    @include galleryWidth(96vw);
-  }
-  @media (min-width: 768px) {
-    @include galleryWidth(48vw);
-  }
-  @media (min-width: 1200px) {
-    @include galleryWidth(32vw);
   }
 
   &-img {
@@ -351,6 +344,62 @@ $galleryTabWidth: 450px;
 
     .filled-star {
       filter: drop-shadow(1px 1px 1px #222);
+    }
+  }
+}
+
+div.GalleryWall {
+  @mixin galleryWidth($width) {
+    height: math.div($width, 3) * 2;
+
+    &-landscape {
+      width: $width;
+    }
+
+    &-portrait {
+      width: math.div($width, 2);
+    }
+  }
+
+  .GalleryWallCard {
+    @media (min-width: 576px) {
+      @include galleryWidth(96vw);
+    }
+  }
+
+  &.zoom-0 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(16vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(10vw);
+    }
+  }
+
+  &.zoom-1 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(24vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(16vw);
+    }
+  }
+
+  &.zoom-2 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(32vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(24vw);
+    }
+  }
+
+  &.zoom-3 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(48vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(32vw);
     }
   }
 }

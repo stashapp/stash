@@ -126,7 +126,7 @@ type SceneQueryOptions struct {
 }
 
 type SceneQueryResult struct {
-	QueryResult
+	QueryResult[int]
 	TotalDuration float64
 	TotalSize     float64
 

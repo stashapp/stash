@@ -7,6 +7,7 @@ import { cloneDeep } from "@apollo/client/utilities";
 import { Icon } from "./Icon";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import { PatchComponent } from "src/patch";
 
 const maxFieldNameLength = 64;
 
@@ -53,23 +54,28 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
   );
 };
 
-export const CustomFields: React.FC<ICustomFields> = ({ values }) => {
-  const intl = useIntl();
-  if (Object.keys(values).length === 0) {
-    return null;
-  }
+export const CustomFields: React.FC<ICustomFields> = PatchComponent(
+  "CustomFields",
+  ({ values }) => {
+    const intl = useIntl();
+    if (Object.keys(values).length === 0) {
+      return null;
+    }
 
-  return (
-    // according to linter rule CSS classes shouldn't use underscores
-    <div className="custom-fields">
-      <CollapseButton text={intl.formatMessage({ id: "custom_fields.title" })}>
-        {Object.entries(values).map(([key, value]) => (
-          <CustomField key={key} field={key} value={value} />
-        ))}
-      </CollapseButton>
-    </div>
-  );
-};
+    return (
+      // according to linter rule CSS classes shouldn't use underscores
+      <div className="custom-fields">
+        <CollapseButton
+          text={intl.formatMessage({ id: "custom_fields.title" })}
+        >
+          {Object.entries(values).map(([key, value]) => (
+            <CustomField key={key} field={key} value={value} />
+          ))}
+        </CollapseButton>
+      </div>
+    );
+  }
+);
 
 function isNumeric(v: string) {
   return /^-?(?:0|(?:[1-9][0-9]*))(?:\.[0-9]+)?$/.test(v);
@@ -90,76 +96,85 @@ const CustomFieldInput: React.FC<{
   onChange: (field: string, value: unknown) => void;
   isNew?: boolean;
   error?: string;
-}> = ({ field, value, onChange, isNew = false, error }) => {
-  const intl = useIntl();
-  const [currentField, setCurrentField] = useState(field);
-  const [currentValue, setCurrentValue] = useState(value as string);
+}> = PatchComponent(
+  "CustomFieldInput",
+  ({ field, value, onChange, isNew = false, error }) => {
+    const intl = useIntl();
+    const [currentField, setCurrentField] = useState(field);
+    const [currentValue, setCurrentValue] = useState(value as string);
 
-  const fieldRef = useRef<HTMLInputElement>(null);
-  const valueRef = useRef<HTMLInputElement>(null);
+    const fieldRef = useRef<HTMLInputElement>(null);
+    const valueRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setCurrentField(field);
-    setCurrentValue(value as string);
-  }, [field, value]);
+    useEffect(() => {
+      setCurrentField(field);
+      setCurrentValue(value as string);
+    }, [field, value]);
 
-  function onBlur() {
-    onChange(currentField, convertCustomValue(currentValue));
-  }
+    function onBlur() {
+      onChange(currentField, convertCustomValue(currentValue));
+    }
 
-  function onDelete() {
-    onChange("", "");
-  }
+    function onDelete() {
+      onChange("", "");
+    }
 
-  return (
-    <FormGroup>
-      <Row className={cx("custom-fields-row", { "custom-fields-new": isNew })}>
-        <Col sm={3} xl={2} className="custom-fields-field">
-          {isNew ? (
-            <>
+    return (
+      <FormGroup>
+        <Row
+          className={cx("custom-fields-row", { "custom-fields-new": isNew })}
+        >
+          <Col sm={3} xl={2} className="custom-fields-field">
+            {isNew ? (
+              <>
+                <Form.Control
+                  ref={fieldRef}
+                  className="input-control"
+                  type="text"
+                  value={currentField ?? ""}
+                  placeholder={intl.formatMessage({
+                    id: "custom_fields.field",
+                  })}
+                  onChange={(event) =>
+                    setCurrentField(event.currentTarget.value)
+                  }
+                  onBlur={onBlur}
+                />
+              </>
+            ) : (
+              <Form.Label title={currentField}>{currentField}</Form.Label>
+            )}
+          </Col>
+          <Col sm={9} xl={7}>
+            <InputGroup>
               <Form.Control
-                ref={fieldRef}
+                ref={valueRef}
                 className="input-control"
                 type="text"
-                value={currentField ?? ""}
-                placeholder={intl.formatMessage({ id: "custom_fields.field" })}
-                onChange={(event) => setCurrentField(event.currentTarget.value)}
+                value={(currentValue as string) ?? ""}
+                placeholder={currentField}
+                onChange={(event) => setCurrentValue(event.currentTarget.value)}
                 onBlur={onBlur}
               />
-            </>
-          ) : (
-            <Form.Label title={currentField}>{currentField}</Form.Label>
-          )}
-        </Col>
-        <Col sm={9} xl={7}>
-          <InputGroup>
-            <Form.Control
-              ref={valueRef}
-              className="input-control"
-              type="text"
-              value={(currentValue as string) ?? ""}
-              placeholder={currentField}
-              onChange={(event) => setCurrentValue(event.currentTarget.value)}
-              onBlur={onBlur}
-            />
-            <InputGroup.Append>
-              {!isNew && (
-                <Button
-                  className="custom-fields-remove"
-                  variant="danger"
-                  onClick={() => onDelete()}
-                >
-                  <Icon icon={faMinus} />
-                </Button>
-              )}
-            </InputGroup.Append>
-          </InputGroup>
-        </Col>
-      </Row>
-      <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-    </FormGroup>
-  );
-};
+              <InputGroup.Append>
+                {!isNew && (
+                  <Button
+                    className="custom-fields-remove"
+                    variant="danger"
+                    onClick={() => onDelete()}
+                  >
+                    <Icon icon={faMinus} />
+                  </Button>
+                )}
+              </InputGroup.Append>
+            </InputGroup>
+          </Col>
+        </Row>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </FormGroup>
+    );
+  }
+);
 
 interface ICustomField {
   field: string;

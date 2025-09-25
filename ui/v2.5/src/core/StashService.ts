@@ -1613,17 +1613,30 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     },
   });
 
+function evictCover(cache: ApolloCache<GQL.Gallery>, gallery_id: string) {
+  const fields: Pick<Modifiers<GQL.Gallery>, "paths" | "cover"> = {};
+  fields.paths = (paths) => {
+    if (!("cover" in paths)) {
+      return paths;
+    }
+    const coverUrl = new URL(paths.cover);
+    coverUrl.search = "?t=" + Math.floor(Date.now() / 1000);
+    return { ...paths, cover: coverUrl.toString() };
+  };
+  fields.cover = (_value, { DELETE }) => DELETE;
+  cache.modify({
+    id: cache.identify({ __typename: "Gallery", id: gallery_id }),
+    fields,
+  });
+}
+
 export const mutateSetGalleryCover = (input: GQL.GallerySetCoverInput) =>
   client.mutate<GQL.SetGalleryCoverMutation>({
     mutation: GQL.SetGalleryCoverDocument,
     variables: input,
     update(cache, result) {
       if (!result.data?.setGalleryCover) return;
-
-      cache.evict({
-        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
-        fieldName: "cover",
-      });
+      evictCover(cache, input.gallery_id);
     },
   });
 
@@ -1633,11 +1646,7 @@ export const mutateResetGalleryCover = (input: GQL.GalleryResetCoverInput) =>
     variables: input,
     update(cache, result) {
       if (!result.data?.resetGalleryCover) return;
-
-      cache.evict({
-        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
-        fieldName: "cover",
-      });
+      evictCover(cache, input.gallery_id);
     },
   });
 
@@ -2061,14 +2070,34 @@ export const useTagsMerge = () =>
     },
   });
 
-export const useSaveFilter = () =>
-  GQL.useSaveFilterMutation({
+export const useSaveFilter = () => {
+  const [saveFilterMutation] = GQL.useSaveFilterMutation({
     update(cache, result) {
       if (!result.data?.saveFilter) return;
 
       evictQueries(cache, [GQL.FindSavedFiltersDocument]);
     },
   });
+
+  function saveFilter(filter: ListFilterModel, name: string, id?: string) {
+    const filterCopy = filter.clone();
+
+    return saveFilterMutation({
+      variables: {
+        input: {
+          id,
+          mode: filter.mode,
+          name,
+          find_filter: filterCopy.makeFindFilter(),
+          object_filter: filterCopy.makeSavedFilter(),
+          ui_options: filterCopy.makeSavedUIOptions(),
+        },
+      },
+    });
+  }
+
+  return saveFilter;
+};
 
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({

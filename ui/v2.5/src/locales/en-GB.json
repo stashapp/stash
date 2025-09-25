@@ -68,6 +68,8 @@
     "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
+    "load": "Load",
+    "load_filter": "Load filter",
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
@@ -81,6 +83,7 @@
     "open_random": "Open Random",
     "optimise_database": "Optimise Database",
     "overwrite": "Overwrite",
+    "play": "Play",
     "play_random": "Play Random",
     "play_selected": "Play selected",
     "preview": "Preview",
@@ -124,6 +127,13 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "show_results": "Show results",
+    "show_count_results": "Show {count} results",
+    "sidebar": {
+      "close": "Close sidebar",
+      "open": "Open sidebar",
+      "toggle": "Toggle sidebar"
+    },
     "skip": "Skip",
     "split": "Split",
     "stop": "Stop",
@@ -561,6 +571,8 @@
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
+      "graphql_playground": "GraphQL playground",
+      "heading": "Tools",
       "scene_duplicate_checker": "Scene Duplicate Checker",
       "scene_filename_parser": {
         "add_field": "Add Field",
@@ -932,7 +944,7 @@
       "destination": "Destination",
       "source": "Source"
     },
-    "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
     "reassign_files": {
@@ -982,6 +994,7 @@
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
+    "set_default_filter_confirm": "Are you sure you want to set this filter as the default?",
     "set_image_url_title": "Image URL",
     "unsaved_changes": "Unsaved changes. Are you sure you want to leave?"
   },
@@ -990,6 +1003,7 @@
   "disambiguation": "Disambiguation",
   "display_mode": {
     "grid": "Grid",
+    "label_current": "Display Mode: {current}",
     "list": "List",
     "tagger": "Tagger",
     "unknown": "Unknown",
@@ -1305,7 +1319,9 @@
     "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
-    "update_filter": "Update Filter"
+    "search_term": "Search term",
+    "update_filter": "Update Filter",
+    "more_filter_criteria": "+{count} more"
   },
   "second": "Second",
   "seconds": "Seconds",

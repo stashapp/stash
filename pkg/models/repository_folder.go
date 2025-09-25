@@ -5,6 +5,7 @@ import "context"
 // FolderGetter provides methods to get folders by ID.
 type FolderGetter interface {
 	Find(ctx context.Context, id FolderID) (*Folder, error)
+	FindMany(ctx context.Context, id []FolderID) ([]*Folder, error)
 }
 
 // FolderFinder provides methods to find folders.
@@ -14,6 +15,10 @@ type FolderFinder interface {
 	FindByPath(ctx context.Context, path string) (*Folder, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Folder, error)
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
+}
+
+type FolderQueryer interface {
+	Query(ctx context.Context, options FolderQueryOptions) (*FolderQueryResult, error)
 }
 
 type FolderCounter interface {
@@ -47,6 +52,7 @@ type FolderFinderDestroyer interface {
 // FolderReader provides all methods to read folders.
 type FolderReader interface {
 	FolderFinder
+	FolderQueryer
 	FolderCounter
 }
 
