@@ -54,17 +54,16 @@ import {
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
 import { PatchContainerComponent } from "src/patch";
-import { Pagination, PaginationIndex } from "../List/Pagination";
-import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
+import { Pagination } from "../List/Pagination";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
-import { ListViewOptions } from "../List/ListViewOptions";
-import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import useFocus from "src/utils/focus";
 import {
   FilteredListToolbar2,
   ToolbarFilterSection,
   ToolbarSelectionSection,
 } from "../List/ListToolbar";
+import { ListResultsHeader } from "../List/ListResultsHeader";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -415,57 +414,6 @@ const SceneListOperations: React.FC<{
         </OperationDropdown>
       </ButtonGroup>
     </div>
-  );
-};
-
-const ListResultsHeader: React.FC<{
-  loading: boolean;
-  filter: ListFilterModel;
-  totalCount: number;
-  metadataByline?: React.ReactNode;
-  onChangeFilter: (filter: ListFilterModel) => void;
-}> = ({ loading, filter, totalCount, metadataByline, onChangeFilter }) => {
-  return (
-    <ButtonToolbar className="scene-list-header">
-      <div>
-        <PaginationIndex
-          loading={loading}
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          metadataByline={metadataByline}
-        />
-      </div>
-      <div>
-        <SortBySelect
-          options={filter.options.sortByOptions}
-          sortBy={filter.sortBy}
-          sortDirection={filter.sortDirection}
-          onChangeSortBy={(s) =>
-            onChangeFilter(filter.setSortBy(s ?? undefined))
-          }
-          onChangeSortDirection={() =>
-            onChangeFilter(filter.toggleSortDirection())
-          }
-          onReshuffleRandomSort={() =>
-            onChangeFilter(filter.reshuffleRandomSort())
-          }
-        />
-        <PageSizeSelector
-          pageSize={filter.itemsPerPage}
-          setPageSize={(s) => onChangeFilter(filter.setPageSize(s))}
-        />
-        <ListViewOptions
-          displayMode={filter.displayMode}
-          zoomIndex={filter.zoomIndex}
-          displayModeOptions={filter.options.displayModeOptions}
-          onSetDisplayMode={(mode) =>
-            onChangeFilter(filter.setDisplayMode(mode))
-          }
-          onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
-        />
-      </div>
-    </ButtonToolbar>
   );
 };
 
