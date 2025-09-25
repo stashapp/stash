@@ -206,6 +206,21 @@ $galleryTabWidth: 450px;
   }
 }
 
+.gallery-cover {
+  aspect-ratio: 4 / 3;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.gallery-cover img {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
+}
+
 div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
