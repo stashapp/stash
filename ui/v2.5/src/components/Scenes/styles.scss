@@ -902,46 +902,6 @@ input[type="range"].blue-slider {
   }
 }
 
-.scene-list .filtered-list-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  row-gap: 1rem;
-
-  & > div {
-    display: flex;
-    flex: 1;
-    flex-wrap: nowrap;
-
-    &:first-child {
-      justify-content: flex-start;
-    }
-
-    &:nth-child(2) {
-      justify-content: center;
-    }
-
-    &:last-child {
-      justify-content: flex-end;
-    }
-
-    @include media-breakpoint-down(xs) {
-      &:nth-child(2) {
-        justify-content: flex-end;
-      }
-
-      &:last-child {
-        display: none;
-      }
-    }
-  }
-}
-
-.scene-list.hide-sidebar .sidebar-toggle-button {
-  transition-delay: 0.1s;
-  transition-duration: 0;
-  transition-property: opacity;
-}
-
 .scene-wall,
 .marker-wall {
   .wall-item {
@@ -999,7 +959,6 @@ input[type="range"].blue-slider {
   }
 }
 
-.scene-list-toolbar,
 .scene-list-header {
   align-items: center;
   background-color: $body-bg;
@@ -1016,162 +975,6 @@ input[type="range"].blue-slider {
       flex-shrink: 0;
       justify-content: flex-end;
     }
-  }
-}
-
-.scene-list-toolbar {
-  flex-wrap: nowrap;
-  gap: 1rem;
-  // offset the main padding
-  margin-top: -0.5rem;
-  padding-bottom: 0.5rem;
-  padding-top: 0.5rem;
-  position: sticky;
-  top: $navbar-height;
-  z-index: 10;
-
-  @include media-breakpoint-down(xs) {
-    top: 0;
-  }
-
-  .selected-items-info .btn {
-    margin-right: 0.5rem;
-  }
-
-  // hide drop down menu items for play and create new
-  // when the buttons are visible
-  @include media-breakpoint-up(sm) {
-    .scene-list-operations {
-      .play-item,
-      .create-new-item {
-        display: none;
-      }
-    }
-  }
-
-  // hide play and create new buttons on xs screens
-  // show these in the drop down menu instead
-  @include media-breakpoint-down(xs) {
-    .play-button,
-    .create-new-button {
-      display: none;
-    }
-  }
-
-  .selected-items-info,
-  > div.filter-section {
-    border: 1px solid $secondary;
-    border-radius: 0.25rem;
-    flex-grow: 1;
-    overflow-x: hidden;
-  }
-
-  > div.filter-toolbar {
-    border: 1px solid $secondary;
-    border-radius: 0.25rem;
-
-    .filter-button {
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 0;
-    }
-  }
-
-  .sidebar-toggle-button {
-    margin-left: auto;
-  }
-
-  .search-container {
-    border-right: 1px solid $secondary;
-    display: block;
-    margin-right: -0.5rem;
-    min-width: calc($sidebar-width - 15px);
-    padding-right: 10px;
-
-    .search-term-input {
-      margin-right: 0;
-      width: 100%;
-
-      .clearable-text-field {
-        height: 100%;
-      }
-    }
-  }
-
-  .filter-tags {
-    flex-grow: 1;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    margin-bottom: 0;
-
-    // account for filter button, and toggle sidebar buttons with gaps
-    width: calc(100% - 70px - 1rem);
-
-    @include media-breakpoint-down(xs) {
-      overflow-x: auto;
-      scrollbar-width: thin;
-    }
-
-    .tag-item {
-      white-space: nowrap;
-    }
-  }
-}
-
-@include media-breakpoint-up(xl) {
-  .sidebar-pane:not(.hide-sidebar) .scene-list-toolbar .search-container {
-    display: none;
-  }
-}
-@include media-breakpoint-down(md) {
-  .sidebar-pane.hide-sidebar .scene-list-toolbar .search-container {
-    display: none;
-  }
-}
-
-// hide Edit Filter button on larger screens
-@include media-breakpoint-up(lg) {
-  .scene-list .sidebar .edit-filter-button {
-    display: none;
-  }
-}
-
-// hide the filter icon button when sidebar is shown on smaller screens
-@include media-breakpoint-down(md) {
-  .sidebar-pane:not(.hide-sidebar) .scene-list-toolbar .filter-button {
-    display: none;
-  }
-
-  // adjust the width of the filter-tags as well
-  .sidebar-pane:not(.hide-sidebar) .scene-list-toolbar .filter-tags {
-    width: calc(100% - 35px - 0.5rem);
-  }
-}
-
-// move the sidebar toggle to the left on xl viewports
-@include media-breakpoint-up(xl) {
-  .scene-list .scene-list-toolbar .filter-section {
-    .sidebar-toggle-button {
-      margin-left: 0;
-    }
-
-    .filter-tags {
-      order: 2;
-    }
-  }
-}
-
-// hide the search term tag item when the search box is visible
-@include media-breakpoint-up(lg) {
-  .scene-list-toolbar .filter-tags .search-term-filter-tag {
-    display: none;
-  }
-}
-@include media-breakpoint-down(md) {
-  .sidebar-pane:not(.hide-sidebar)
-    .scene-list-toolbar
-    .filter-tags
-    .search-term-filter-tag {
-    display: none;
   }
 }
 
@@ -1194,18 +997,4 @@ input[type="range"].blue-slider {
       margin-right: auto;
     }
   }
-}
-
-.detail-body .scene-list-toolbar {
-  top: calc($sticky-detail-header-height + $navbar-height);
-
-  @include media-breakpoint-down(xs) {
-    top: 0;
-  }
-}
-
-#more-criteria-popover {
-  box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
-  max-width: 400px;
-  padding: 0.25rem;
 }
