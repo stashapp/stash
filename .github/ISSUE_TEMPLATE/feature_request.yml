@@ -1,0 +1,44 @@
+name: Feature Request
+description: Request a new feature or idea to be added to Stash
+labels: ["feature request"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the feature you'd like
+      description: Provide a clear description of the feature you'd like implemented
+    validations:
+      required: true
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Describe the benefits this would bring to existing users
+      description: |
+        Explain the measurable benefits this feature would achieve for existing users.
+        The benefits should be described in terms of outcomes for users, not specific implementations.
+    validations:
+      required: true
+  - type: textarea
+    id: already_possible
+    attributes:
+      label: Is there an existing way to achieve this goal?
+      description: |
+        Yes/No. If Yes, describe how your proposed feature differs from or improves upon the current method
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm-search
+    attributes:
+      label: Have you searched for an existing open/closed issue?
+      description: |
+        To help us keep these issues under control, please ensure you have first [searched our issue list](https://github.com/stashapp/stash/issues?q=is%3Aissue) for any existing issues that cover the core request or benefit of your proposal.
+      options:
+        - label: I have searched for existing issues and none cover the core request of my proposal
+          required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+    validations:
+      required: false
