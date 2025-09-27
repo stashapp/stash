@@ -55,7 +55,7 @@ export function useNumberCriterion(
 
   const onValueChange = useCallback(
     (value: INumberValue) => {
-      if (!value.value && !value.value2) {
+      if (value.value === undefined && value.value2 === undefined) {
         setFilter(filter.removeCriterion(option.type));
         return;
       }
@@ -301,7 +301,7 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
     criterion?.modifier === CriterionModifier.LessThan ||
     criterion?.modifier === CriterionModifier.Between ||
     criterion?.modifier === CriterionModifier.NotBetween;
-
+    
   return (
     <SidebarSection
       className="sidebar-list-filter"
