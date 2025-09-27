@@ -149,7 +149,9 @@
         },
         "play": "Přehrát",
         "show_results": "Zobrazit výsledky",
-        "show_count_results": "Zobrazit {count} výsledků"
+        "show_count_results": "Zobrazit {count} výsledků",
+        "load": "Načíst",
+        "load_filter": "Načíst filtr"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -1330,7 +1332,8 @@
         "update_filter": "Aktualizovat filtr",
         "edit_filter": "Upravit filtr",
         "name": "Filtr",
-        "more_filter_criteria": "+{count} navíc"
+        "more_filter_criteria": "+{count} navíc",
+        "search_term": "Hledaný výraz"
     },
     "ethnicity": "Etnická příslušnost",
     "existing_value": "Existujicí hodnota",
