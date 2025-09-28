@@ -13,6 +13,7 @@ import { SidebarSection } from "src/components/Shared/Sidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierControls } from "./StringFilter";
+import { ModifierSelectorButtons } from "../ModifierSelect";
 
 interface IDateFilterProps {
   criterion: ModifierCriterion<IDateValue>;
@@ -43,7 +44,8 @@ export function useDateCriterion(
         (cc) => cc.criterionOption.type !== option.type
       );
 
-      if (c.isValid()) newCriteria.push(c);
+      // if (c.isValid()) newCriteria.push(c);
+      newCriteria.push(c);
 
       setFilter(filter.setCriteria(newCriteria));
     },
@@ -54,19 +56,11 @@ export function useDateCriterion(
   const defaultModifier = modifierCriterionOption?.defaultModifier;
   const modifierOptions = modifierCriterionOption?.modifierOptions;
 
-  const onValueChange = useCallback(
+  const onValueChanged = useCallback(
     (value: IDateValue) => {
-      if (!value.value && !value.value2) {
-        setFilter(filter.removeCriterion(option.type));
-        return;
-      }
-
       const newCriterion = cloneDeep(criterion);
-      newCriterion.modifier = criterion?.modifier
-        ? criterion.modifier
-        : defaultModifier;
       newCriterion.value = value;
-      setFilter(filter.replaceCriteria(option.type, [newCriterion]));
+      setCriterion(newCriterion);
     },
     [criterion, filter, setFilter, option.type, defaultModifier]
   );
@@ -85,7 +79,7 @@ export function useDateCriterion(
     setCriterion,
     defaultModifier,
     modifierOptions,
-    onValueChange,
+    onValueChanged,
     onChangedModifierSelect,
   };
 }
@@ -255,9 +249,30 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
     criterion,
     defaultModifier,
     modifierOptions,
-    onValueChange,
+    onValueChanged,
     onChangedModifierSelect,
   } = useDateCriterion(option, filter, setFilter);
+
+  const modifierSelector = useMemo(() => {
+    return (
+      <ModifierSelectorButtons
+        options={modifierOptions}
+        value={criterion.modifier}
+        onChanged={onChangedModifierSelect}
+      />
+    );
+  }, [
+    modifierOptions,
+    onChangedModifierSelect,
+    criterion.modifier,
+  ]);
+
+  const valueControl = useMemo(() => {
+    return (
+      <DateFilter criterion={criterion} onValueChanged={onValueChanged} />
+    );
+  }, [criterion]);
+
 
   const onClear = useCallback(() => {
     setFilter(filter.removeCriterion(option.type));
@@ -269,25 +284,10 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
       const valueCopy = { ...currentValue };
 
       valueCopy[property] = newValue;
-      onValueChange(valueCopy);
+      onValueChanged(valueCopy);
     },
-    [criterion?.value, onValueChange]
+    [criterion?.value, onValueChanged]
   );
-
-  // Determine which controls to show based on modifier
-  const showEqualsControl =
-    criterion?.modifier === CriterionModifier.Equals ||
-    criterion?.modifier === CriterionModifier.NotEquals;
-
-  const showLowerControl =
-    criterion?.modifier === CriterionModifier.GreaterThan ||
-    criterion?.modifier === CriterionModifier.Between ||
-    criterion?.modifier === CriterionModifier.NotBetween;
-
-  const showUpperControl =
-    criterion?.modifier === CriterionModifier.LessThan ||
-    criterion?.modifier === CriterionModifier.Between ||
-    criterion?.modifier === CriterionModifier.NotBetween;
 
   return (
     <SidebarSection
@@ -304,54 +304,8 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
     >
       <div className="date-filter">
         <div className="filter-group">
-          <ModifierControls
-            modifierOptions={modifierOptions}
-            currentModifier={criterion?.modifier || defaultModifier}
-            onChangedModifierSelect={onChangedModifierSelect}
-          />
-
-          {showEqualsControl && (
-            <Form.Group>
-              <DateInput
-                value={criterion?.value?.value ?? ""}
-                onValueChange={(v) => onChanged(v, "value")}
-                placeholder={intl.formatMessage({ id: "criterion.value" })}
-              />
-            </Form.Group>
-          )}
-
-          {showLowerControl && (
-            <Form.Group>
-              <DateInput
-                value={criterion?.value?.value ?? ""}
-                onValueChange={(v) => onChanged(v, "value")}
-                placeholder={intl.formatMessage({
-                  id: "criterion.greater_than",
-                })}
-              />
-            </Form.Group>
-          )}
-
-          {showUpperControl && (
-            <Form.Group>
-              <DateInput
-                value={
-                  (criterion?.modifier === CriterionModifier.LessThan
-                    ? criterion?.value?.value
-                    : criterion?.value?.value2) ?? ""
-                }
-                onValueChange={(v) =>
-                  onChanged(
-                    v,
-                    criterion?.modifier === CriterionModifier.LessThan
-                      ? "value"
-                      : "value2"
-                  )
-                }
-                placeholder={intl.formatMessage({ id: "criterion.less_than" })}
-              />
-            </Form.Group>
-          )}
+          {modifierSelector}
+          {valueControl}
         </div>
       </div>
     </SidebarSection>
