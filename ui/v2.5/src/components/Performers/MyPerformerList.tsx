@@ -317,10 +317,11 @@ const SidebarContent: React.FC<{
 
   const UrlCriterionOption = createStringCriterionOption("url");
   const AgeCriterionOption = createNumberCriterionOption("age");
-  
+
   const DeathDateCriterionOption = createDateCriterionOption("death_date");
   const SceneCountCriterionOption = createNumberCriterionOption("scene_count");
-  const GalleryCountCriterionOption = createNumberCriterionOption("gallery_count");
+  const GalleryCountCriterionOption =
+    createNumberCriterionOption("gallery_count");
 
   return (
     <>
