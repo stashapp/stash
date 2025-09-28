@@ -48,24 +48,24 @@ export function useNumberCriterion(
         const newCriteria = filter.criteria.filter((cc) => {
           return cc.criterionOption.type !== c.criterionOption.type;
         });
-  
+
         newFilter.criteria = newCriteria;
       } else {
         let found = false;
-  
+
         const newCriteria = filter.criteria.map((cc) => {
           if (cc.criterionOption.type === c.criterionOption.type) {
             found = true;
             return c;
           }
-  
+
           return cc;
         });
-  
+
         if (!found) {
           newCriteria.push(c);
         }
-  
+
         newFilter.criteria = newCriteria;
       }
       setFilter(newFilter);
@@ -271,7 +271,6 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
   filter,
   setFilter,
 }) => {
-
   const {
     criterion,
     defaultModifier,
@@ -288,11 +287,7 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
         onChanged={onChangedModifierSelect}
       />
     );
-  }, [
-    modifierOptions,
-    onChangedModifierSelect,
-    criterion.modifier,
-  ]);
+  }, [modifierOptions, onChangedModifierSelect, criterion.modifier]);
 
   const valueControl = useMemo(() => {
     return (
@@ -300,11 +295,10 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
     );
   }, [criterion]);
 
-
   const onClear = useCallback(() => {
     setFilter(filter.removeCriterion(option.type));
   }, [filter, setFilter, option.type]);
-    
+
   return (
     <SidebarSection
       className="sidebar-list-filter"

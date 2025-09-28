@@ -34,7 +34,7 @@ function queryVariables(query: string, f?: ListFilterModel) {
   // Only show tags that have at least one performer
   tagFilter.performer_count = {
     value: 0,
-    modifier: CriterionModifier.GreaterThan
+    modifier: CriterionModifier.GreaterThan,
   };
 
   if (f) {
@@ -93,7 +93,10 @@ function useTagQuery(query: string, skip?: boolean) {
   return useTagQueryFilter({ q: query, skip: !!skip });
 }
 
-const PerformerTagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
+const PerformerTagsFilter: React.FC<ITagsFilter> = ({
+  criterion,
+  setCriterion,
+}) => {
   return (
     <HierarchicalObjectsFilter
       criterion={criterion}

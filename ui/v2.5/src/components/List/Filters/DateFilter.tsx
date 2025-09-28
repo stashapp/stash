@@ -98,7 +98,12 @@ export const DateSelectedItems: React.FC<IDateSelectedItemsProps> = ({
   onChangedModifierSelect,
   onClear,
 }) => {
-  if (criterion?.value.value === "") {
+  console.log("criterion?.value.value", criterion?.value.value);
+  if (
+    criterion?.modifier !== CriterionModifier.IsNull &&
+    criterion?.modifier !== CriterionModifier.NotNull &&
+    criterion?.value.value === ""
+  ) {
     return null;
   }
 
@@ -261,18 +266,11 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
         onChanged={onChangedModifierSelect}
       />
     );
-  }, [
-    modifierOptions,
-    onChangedModifierSelect,
-    criterion.modifier,
-  ]);
+  }, [modifierOptions, onChangedModifierSelect, criterion.modifier]);
 
   const valueControl = useMemo(() => {
-    return (
-      <DateFilter criterion={criterion} onValueChanged={onValueChanged} />
-    );
+    return <DateFilter criterion={criterion} onValueChanged={onValueChanged} />;
   }, [criterion]);
-
 
   const onClear = useCallback(() => {
     setFilter(filter.removeCriterion(option.type));
