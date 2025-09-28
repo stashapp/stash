@@ -149,7 +149,9 @@
             "toggle": "Bật thanh bên",
             "open": "Mở thanh bên",
             "close": "Đóng thanh bên"
-        }
+        },
+        "load": "Nạp",
+        "load_filter": "Nạp bộ lọc"
     },
     "actions_name": "Hành động",
     "age": "Tuổi",
@@ -907,7 +909,9 @@
             "sprites": "Sprites của Phần tìm Phân cảnh",
             "sprites_tooltip": "Danh sách ảnh hiển thị ở dưới video để dễ thao tác",
             "transcodes": "Giải mã",
-            "video_previews": "Xem trước"
+            "video_previews": "Xem trước",
+            "transcodes_tooltip": "Mã chuyển đổi MP4 sẽ được tạo trước cho tất cả nội dung; hữu ích cho CPU chậm nhưng cần nhiều dung lượng hơn",
+            "video_previews_tooltip": "Bản xem trước video phát khi di chuột qua một cảnh"
         },
         "merge": {
             "destination": "Đích đến",
@@ -922,7 +926,12 @@
         "reassign_entity_title": "{count, plural, one {Chỉnh lại {singularEntity}} other {Chỉnh lại {pluralEntity}}}",
         "reassign_files": {
             "destination": "Chỉnh lại đến"
-        }
+        },
+        "scrape_results_existing": "Hiện có",
+        "set_default_filter_confirm": "Bạn có chắc chắn muốn đặt bộ lọc này làm mặc định không?",
+        "set_image_url_title": "URL hình ảnh",
+        "unsaved_changes": "Thay đổi chưa được lưu. Bạn có chắc chắn muốn thoát không?",
+        "scenes_found": "tìm được {count} cảnh quay"
     },
     "configuration": "Cấu Hình",
     "connection_monitor": {
@@ -985,5 +994,60 @@
     "date_format": "YYYY-MM-DD",
     "containing_group_count": "Số lượng Nhóm chứa",
     "detail": "Chi tiết",
-    "datetime_format": "YYYY-MM-DD HH:MM"
+    "datetime_format": "YYYY-MM-DD HH:MM",
+    "dimensions": "Kích thước",
+    "director": "Đạo diễn",
+    "display_mode": {
+        "grid": "Lưới",
+        "list": "Danh sách",
+        "unknown": "Chưa biết",
+        "label_current": "Chế độ Hiển Thị: {current}",
+        "wall": "Tường"
+    },
+    "distance": "Khoảng cách",
+    "donate": "Ủng hộ",
+    "dupe_check": {
+        "duration_diff": "Chênh lệch thời lượng tối đa",
+        "only_select_matching_codecs": "Chỉ chọn nếu tất cả codec khớp với nhóm trùng lặp",
+        "options": {
+            "high": "Cao",
+            "low": "Thấp",
+            "medium": "Trung bình",
+            "exact": "Chính xác"
+        },
+        "search_accuracy_label": "Độ chính xác tìm kiếm",
+        "select_all_but_largest_file": "Chọn mọi tệp trong mỗi nhóm trùng lặp, ngoại trừ tệp lớn nhất",
+        "select_all_but_largest_resolution": "Chọn mọi tệp trong mỗi nhóm được sao chép, ngoại trừ tệp có độ phân giải cao nhất",
+        "select_none": "Chọn Không",
+        "select_oldest": "Chọn tệp cũ nhất trong nhóm trùng lặp",
+        "select_options": "Chọn Tùy chọn…",
+        "select_youngest": "Chọn tệp mớinhất trong nhóm trùng lặp",
+        "title": "Cảnh quay trùng lặp",
+        "duration_options": {
+            "any": "Bất kỳ",
+            "equal": "Tương đương"
+        }
+    },
+    "duplicated_phash": "Trùng lặp (pHash)",
+    "duration": "Thời lượng",
+    "effect_filters": {
+        "aspect": "Tỷ lệ",
+        "blur": "Mờ",
+        "brightness": "Độ sáng",
+        "contrast": "Tương phản",
+        "green": "Xanh lá",
+        "hue": "Sắc thái",
+        "name": "Bộ lọc",
+        "name_transforms": "Biến đổi",
+        "red": "Đỏ",
+        "reset_filters": "Đặt lại bộ lọc",
+        "reset_transforms": "Đặt lại chuyển đổi",
+        "rotate": "Xoay",
+        "rotate_left_and_scale": "Xoay trái và thay đổi tỷ lệ",
+        "rotate_right_and_scale": "Xoay phải và thay đổi tỷ lệ",
+        "saturation": "Độ bão hòa",
+        "scale": "Tỉ lệ",
+        "warmth": "Sự ấm áp"
+    },
+    "empty_server": "Thêm một số cảnh quay vào máy chủ của bạn để xem các đề xuất trên trang này."
 }
