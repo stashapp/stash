@@ -3,7 +3,7 @@
         "welcome_to_stash": "Selamat datang di Stash",
         "paths": {
             "where_is_your_porn_located": "Di mana lokasi porno Anda?",
-            "description": "Selanjutnya, kita perlu menentukan di mana lokasi koleksi porno Anda, dan di mana menyimpan pangkalan data Stash, berkas yang dihasilkan, dan berkas tembolok. Pengaturan ini dapat diubah nanti jika diperlukan."
+            "description": "Selanjutnya, kita perlu menentukan di mana lokasi koleksi bokep Anda, dan di mana menyimpan pangkalan data Stash, berkas yang dihasilkan, dan berkas tembolok. Pengaturan ini dapat diubah nanti jika diperlukan."
         },
         "success": {
             "thanks_for_trying_stash": "Terima kasih sudah mencoba Stash!",
@@ -29,7 +29,7 @@
         "continue": "Lanjutkan",
         "copy_to_clipboard": "Salin ke papan klip",
         "create": "Buat",
-        "create_chapters": "Buat Bab",
+        "create_chapters": "Buat Bagian",
         "create_entity": "Buat {entityType}",
         "create_marker": "Buat Tanda",
         "create_parent_studio": "Buat studio induk",
@@ -153,7 +153,17 @@
         "reset_resume_time": "Atur ulang waktu lanjut",
         "reset_play_duration": "Atur ulang durasi putar",
         "add_sub_groups": "Tambah Subgrup",
-        "remove_from_containing_group": "Hapus dari Grup"
+        "remove_from_containing_group": "Hapus dari Grup",
+        "load": "Muat",
+        "load_filter": "Muat filter",
+        "play": "Mainkan",
+        "show_results": "Lihat hasil",
+        "show_count_results": "Lihat {count} hasil",
+        "sidebar": {
+            "close": "Tutup bilah samping",
+            "open": "Buka bilah samping",
+            "toggle": "Alihkan bilah samping"
+        }
     },
     "circumcised_types": {
         "CUT": "Disunat",
@@ -222,7 +232,7 @@
             "query_mode_filename_desc": "Hanya menggunakan nama berkas",
             "query_mode_label": "Mode Kueri",
             "query_mode_metadata_desc": "Hanya menggunakan metadata",
-            "query_mode_path": "Jalur",
+            "query_mode_path": "Lokasi",
             "query_mode_path_desc": "Menggunakan seluruh jalur berkas",
             "set_cover_desc": "Ganti gambar adegan jika cover ditemukan.",
             "set_cover_label": "Tetapkan gambar cover adegan",
@@ -290,7 +300,8 @@
             "network_interfaces_desc": "Antarmuka untuk mengekspos server DLNA. Daftar kosong menghasilkan berjalannya di semua antarmuka. Dibutuhkan mulai ulang DLNA setelah perubahan.",
             "recent_ip_addresses": "Alamat IP terbaru",
             "server_display_name": "Nama Tampilan Server",
-            "server_port_desc": "Port untuk menjalankan server DLNA. Harus memulai ulang DLNA setelah diganti."
+            "server_port_desc": "Port untuk menjalankan server DLNA. Harus memulai ulang DLNA setelah diganti.",
+            "server_port": "Port Server"
         },
         "general": {
             "logging": "Pencatatan",
@@ -395,7 +406,9 @@
                         "heading": "Argumen Output Transcode FFmpeg"
                     }
                 }
-            }
+            },
+            "create_galleries_from_folders_label": "Buat galeri dari folder yang berisi gambar",
+            "directory_locations_to_your_content": "Lokasi direktori konten Anda"
         },
         "library": {
             "exclusions": "Pengecualian"
@@ -535,7 +548,8 @@
             "options": "Opsi",
             "scroll_mode": {
                 "zoom": "Perbesar"
-            }
+            },
+            "page_header": "Halaman {page} / {total}"
         },
         "merge": {
             "destination": "Destinasi",
@@ -550,7 +564,9 @@
             "video_previews": "Pratinjau"
         },
         "scrape_results_existing": "Yang sudah ada",
-        "scrape_results_scraped": "Digali"
+        "scrape_results_scraped": "Digali",
+        "performers_found": "{count} pemain ditemukan",
+        "dont_show_until_updated": "Sembunyikan hingga pembaruan selanjutnya"
     },
     "effect_filters": {
         "brightness": "Kecerahan",
@@ -584,13 +600,16 @@
         "uninstall": "Copot pemasangan",
         "update": "Perbarui",
         "version": "Versi",
-        "unknown": "<tidak diketahui>"
+        "unknown": "<tidak diketahui>",
+        "installed_version": "Versi Terpasang",
+        "latest_version": "Versi Terkini"
     },
     "pagination": {
         "next": "Berikutnya",
         "previous": "Sebelumnya",
         "last": "Terakhir",
-        "first": "Pertama"
+        "first": "Pertama",
+        "current_total": "{current} dari {total}"
     },
     "performer": "Pemain",
     "performers": "Pemain",
@@ -686,7 +705,7 @@
     },
     "instagram": "Instagram",
     "interactive": "Interaktif",
-    "library": "Pustaka",
+    "library": "Koleksi",
     "loading": {
         "generic": "Memuat…"
     },
@@ -697,5 +716,34 @@
     "orientation": "Orientasi",
     "all": "semua",
     "ascending": "Urut naik",
-    "age_on_date": "{age} diproduksi"
+    "age_on_date": "{age} saat produksi",
+    "performer_age": "Umur Pemain",
+    "performer_count": "Jumlah Pemain",
+    "performer_favorite": "Pemain Difavorit",
+    "performer_image": "Foto Pemain",
+    "performer_tagger": {
+        "add_new_performers": "Tambah Pemain Baru"
+    },
+    "part_of": "Bagian dari {parent}",
+    "cover_image": "Foto Sampul",
+    "death_date": "Tanggal Kematian",
+    "death_year": "Tahun Kematian",
+    "last_o_at": "Terakhir Crot Pada",
+    "last_played_at": "Terakhir Dimainkan Pada",
+    "login": {
+        "username": "Nama Pengguna",
+        "password": "Kata Sandi",
+        "login": "Masuk",
+        "invalid_credentials": "Nama pengguna atau kata sandi salah"
+    },
+    "marker_count": "Jumlah Penanda",
+    "media_info": {
+        "o_count": "Jumlah Crot",
+        "performer_card": {
+            "age": "{age} {years_old}",
+            "age_context": "{age} {years_old} saat produksi"
+        },
+        "phash": "PHash"
+    },
+    "o_count": "Jumlah Crot"
 }
