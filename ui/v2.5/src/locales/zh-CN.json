@@ -149,7 +149,9 @@
         },
         "play": "播放",
         "show_results": "显示结果",
-        "show_count_results": "显示{count}个结果"
+        "show_count_results": "显示{count}个结果",
+        "load": "加载",
+        "load_filter": "加载过滤器"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -1231,7 +1233,8 @@
         "name": "过滤",
         "saved_filters": "保存过滤器",
         "update_filter": "更新过滤器",
-        "more_filter_criteria": "+{count}个更多"
+        "more_filter_criteria": "+{count}个更多",
+        "search_term": "搜索词"
     },
     "second": "秒",
     "seconds": "秒",
