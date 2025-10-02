@@ -343,7 +343,8 @@
             "gallery_ext_desc": "Daftar ekstensi berkas yang dibatasi koma yang akan diidentifikasi sebagai berkas zip galeri.",
             "gallery_ext_head": "Ekstensi zip galeri",
             "python_path": {
-                "heading": "Jalur Eksekusi Python"
+                "heading": "Jalur Eksekusi Python",
+                "description": "Lokasi executable Python (bukan hanya folder). Digunakan untuk skrip penggali data dan plugin. Jika kosong, Python akan diambil dari environment"
             },
             "scraper_user_agent": "Agen Pengguna Penggali",
             "db_path_head": "Jalur Pangkalan Data",
@@ -394,6 +395,10 @@
                     "output_args": {
                         "desc": "Lanjutan: Argumen tambahan untuk ditambahkan pada ffmpeg sebelum isian output saat mentranscode video secara langsung.",
                         "heading": "Argumen untuk Output Transcode Langsung pada FFmpeg"
+                    },
+                    "input_args": {
+                        "desc": "Lanjutan: Argumen tambahan untuk diteruskan ke ffmpeg sebelum field input saat melakukan transcoding video langsung.",
+                        "heading": "FFmpeg Live Transcode Input Args"
                     }
                 },
                 "transcode": {
@@ -405,13 +410,43 @@
                         "desc": "Lanjutan: Argumen tambahan untuk ditambahkan pada ffmpeg sebelum output saat menghasilkan video.",
                         "heading": "Argumen Output Transcode FFmpeg"
                     }
+                },
+                "download_ffmpeg": {
+                    "description": "Mengunduh FFmpeg ke dalam direktori konfigurasi dan mengosongkan lokasi ffmpeg serta ffprobe untuk diambil dari direktori konfigurasi.",
+                    "heading": "Unduh FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "Lokasi ke executable ffmpeg (bukan hanya folder). Jika kosong, ffmpeg akan diambil dari environment melalui $PATH, direktori konfigurasi, atau dari $HOME/.stash",
+                    "heading": "Lokasi Executable FFmpeg"
+                },
+                "ffprobe_path": {
+                    "description": "Lokasi executable ffprobe (bukan hanya folder). Jika kosong, ffprobe akan diambil dari environment melalui $PATH, direktori konfigurasi, atau dari $HOME/.stash",
+                    "heading": "Lokasi Executable FFprobe"
+                },
+                "hardware_acceleration": {
+                    "desc": "Menggunakan perangkat keras yang tersedia untuk melakukan encoding video dalam transcoding langsung.",
+                    "heading": "Encoding perangkat keras FFmpeg"
                 }
             },
             "create_galleries_from_folders_label": "Buat galeri dari folder yang berisi gambar",
-            "directory_locations_to_your_content": "Lokasi direktori konten Anda"
+            "directory_locations_to_your_content": "Lokasi direktori konten Anda",
+            "create_galleries_from_folders_desc": "Jika true, secara bawaan membuat galeri dari folder yang berisi gambar. Buat sebuah file bernama .forcegallery atau .nogallery di dalam folder untuk memaksa/mencegah hal ini.",
+            "excluded_image_gallery_patterns_desc": "Regexp file gambar dan galeri/lokasi yang akan dikecualikan dari Pemindaian dan ditambahkan ke Pembersihan",
+            "excluded_image_gallery_patterns_head": "Pola Gambar/Galeri yang Dikecualikan",
+            "excluded_video_patterns_desc": "Regexp file video/lokasi yang akan dikecualikan dari Pemindaian dan ditambahkan ke Pembersihan",
+            "excluded_video_patterns_head": "Pola Video yang Dikecualikan",
+            "generated_file_naming_hash_desc": "Gunakan MD5 atau oshash untuk penamaan file yang dihasilkan. Mengubah ini memerlukan semua adegan memiliki nilai MD5/oshash yang sesuai. Setelah mengubah nilai ini, file yang sudah dihasilkan perlu dimigrasikan atau dibuat ulang. Lihat halaman Tugas untuk migrasi.",
+            "image_ext_desc": "Daftar ekstensi file yang dipisahkan koma dan akan dikenali sebagai gambar.",
+            "plugins_path": {
+                "description": "Lokasi direktori file konfigurasi plugin",
+                "heading": "Lokasi Plugin"
+            },
+            "video_ext_desc": "Daftar ekstensi file yang dipisahkan koma dan akan dikenali sebagai video."
         },
         "library": {
-            "exclusions": "Pengecualian"
+            "exclusions": "Pengecualian",
+            "gallery_and_image_options": "Opsi Galeri dan Gambar",
+            "media_content_extensions": "Ekstensi konten media"
         },
         "tasks": {
             "identify": {
@@ -436,9 +471,11 @@
                 "markers": "Pratinjau Penanda",
                 "image_thumbnails": "Keluku Gambar",
                 "image_thumbnails_desc": "Keluku dan klip gambar",
-                "previews": "Pratinjau Adegan"
+                "previews": "Pratinjau Adegan",
+                "previews_desc": "Pratinjau adegan dan keluku"
             },
-            "added_job_to_queue": "{operation_name} ditambahkan ke antrean tugas"
+            "added_job_to_queue": "{operation_name} ditambahkan ke antrean tugas",
+            "data_management": "Manajemen data"
         },
         "ui": {
             "editing": {
@@ -505,14 +542,16 @@
             "supported_types": "Tipe yang didukung",
             "search_by_name": "Cari berdasarkan nama",
             "available_scrapers": "Penggali Tersedia",
-            "entity_scrapers": "Penggali {entityType}"
+            "entity_scrapers": "Penggali {entityType}",
+            "excluded_tag_patterns_head": "Pola Tag Terkecualikan"
         },
         "stashbox": {
             "endpoint": "Titik akhir",
             "name": "Nama",
             "graphql_endpoint": "Titik akhir GraphQL",
             "title": "Titik Akhir Stash-box",
-            "api_key": "Kunci API"
+            "api_key": "Kunci API",
+            "max_requests_per_minute": "Maks permintaan per menit"
         },
         "system": {
             "transcoding": "Transkode"
@@ -521,6 +560,13 @@
             "scene_filename_parser": {
                 "filename": "Nama berkas"
             }
+        },
+        "logs": {
+            "log_level": "Level Log"
+        },
+        "plugins": {
+            "available_plugins": "Plugin Tersedia",
+            "installed_plugins": "Plugin Terinstal"
         }
     },
     "criterion": {
