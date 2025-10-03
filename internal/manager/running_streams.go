@@ -3,7 +3,9 @@ package manager
 import (
 	"context"
 	"errors"
+	"mime"
 	"net/http"
+	"path"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/static"
@@ -53,6 +55,9 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 	// We trust that the request context will be closed, so we don't need to call Cancel on the
 	// returned context here.
 	_ = GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
+	_, filename := path.Split(filepath)
+	contentDisposition := mime.FormatMediaType("inline", map[string]string{"filename": filename})
+	w.Header().Set("Content-Disposition", contentDisposition)
 	http.ServeFile(w, r, filepath)
 }
 
