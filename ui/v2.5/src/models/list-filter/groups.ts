@@ -38,7 +38,7 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
-    }
+    },
   ]);
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
