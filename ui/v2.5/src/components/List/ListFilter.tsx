@@ -324,7 +324,6 @@ interface IListFilterProps {
   filter: ListFilterModel;
   view?: View;
   openFilterDialog: () => void;
-  withSidebar?: boolean;
 }
 
 export const ListFilter: React.FC<IListFilterProps> = ({
@@ -332,7 +331,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filter,
   openFilterDialog,
   view,
-  withSidebar,
 }) => {
   const filterOptions = filter.options;
 
@@ -379,36 +377,32 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   function render() {
     return (
       <>
-        {!withSidebar && (
-          <div className="d-flex">
-            <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-          </div>
-        )}
+        <div className="d-flex">
+          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
+        </div>
 
-        {!withSidebar && (
-          <ButtonGroup className="mr-2">
-            <SavedFilterDropdown
-              filter={filter}
-              onSetFilter={(f) => {
-                onFilterUpdate(f);
-              }}
-              view={view}
+        <ButtonGroup className="mr-2">
+          <SavedFilterDropdown
+            filter={filter}
+            onSetFilter={(f) => {
+              onFilterUpdate(f);
+            }}
+            view={view}
+          />
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              <Tooltip id="filter-tooltip">
+                <FormattedMessage id="search_filter.name" />
+              </Tooltip>
+            }
+          >
+            <FilterButton
+              onClick={() => openFilterDialog()}
+              count={filter.count()}
             />
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id="filter-tooltip">
-                  <FormattedMessage id="search_filter.name" />
-                </Tooltip>
-              }
-            >
-              <FilterButton
-                onClick={() => openFilterDialog()}
-                count={filter.count()}
-              />
-            </OverlayTrigger>
-          </ButtonGroup>
-        )}
+          </OverlayTrigger>
+        </ButtonGroup>
 
         <SortBySelect
           className="mr-2"
