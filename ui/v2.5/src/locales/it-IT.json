@@ -135,7 +135,8 @@
         "optimise_database": "Ottimizza il Database",
         "reload": "Ricarica",
         "remove_date": "Rimuovi la data",
-        "view_history": "Visualizza cronologia"
+        "view_history": "Visualizza cronologia",
+        "add_sub_groups": "Aggiungi Sottogruppi"
     },
     "actions_name": "Azioni",
     "age": "Età",
