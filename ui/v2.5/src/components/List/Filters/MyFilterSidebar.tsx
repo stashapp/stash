@@ -30,7 +30,7 @@ export const FilteredSidebarHeader: React.FC<{
   const [, setFocus] = focus;
 
   // Set the focus on the input field when the sidebar is opened
-  // Don't do this on mobile devices
+  // Don't do this on touch devices
   useEffect(() => {
     if (sidebarOpen && !ScreenUtils.isTouch()) {
       setFocus();
