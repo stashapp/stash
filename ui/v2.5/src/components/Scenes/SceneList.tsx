@@ -37,20 +37,13 @@ import {
 } from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
-import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
-import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
-import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import cx from "classnames";
-import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
-import {
-  DurationCriterionOption,
-  PerformerAgeCriterionOption,
-} from "src/models/list-filter/scenes";
+import { PerformerAgeCriterionOption } from "src/models/list-filter/scenes";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { SidebarDurationFilter } from "../List/Filters/SidebarDurationFilter";
 import {
@@ -288,48 +281,23 @@ const SidebarContent: React.FC<{
       <ScenesFilterSidebarSections>
         {!hideStudios && (
           <SidebarStudiosFilter
-            title={<FormattedMessage id="studios" />}
-            data-type={StudiosCriterionOption.type}
-            option={StudiosCriterionOption}
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
-            sectionID="studios"
           />
         )}
         <SidebarPerformersFilter
-          title={<FormattedMessage id="performers" />}
-          data-type={PerformersCriterionOption.type}
-          option={PerformersCriterionOption}
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
-          sectionID="performers"
         />
         <SidebarTagsFilter
-          title={<FormattedMessage id="tags" />}
-          data-type={TagsCriterionOption.type}
-          option={TagsCriterionOption}
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
-          sectionID="tags"
         />
-        <SidebarRatingFilter
-          title={<FormattedMessage id="rating" />}
-          data-type={RatingCriterionOption.type}
-          option={RatingCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          sectionID="rating"
-        />
-        <SidebarDurationFilter
-          title={<FormattedMessage id="duration" />}
-          option={DurationCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          sectionID="duration"
-        />
+        <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarDurationFilter filter={filter} setFilter={setFilter} />
         <SidebarBooleanFilter
           title={<FormattedMessage id="hasMarkers" />}
           data-type={HasMarkersCriterionOption.type}

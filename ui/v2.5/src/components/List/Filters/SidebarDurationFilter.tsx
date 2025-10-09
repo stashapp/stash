@@ -7,10 +7,12 @@ import { Option, SidebarListFilter } from "./SidebarListFilter";
 import TextUtils from "src/utils/text";
 import { DoubleRangeInput } from "src/components/Shared/DoubleRangeInput";
 import { useDebounce } from "src/hooks/debounce";
+import { FormattedMessage } from "react-intl";
+import { DurationCriterionOption } from "src/models/list-filter/scenes";
 
 interface ISidebarFilter {
   title?: React.ReactNode;
-  option: CriterionOption;
+  option?: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   sectionID?: string;
@@ -55,11 +57,11 @@ function snapToStep(value: number): number {
 }
 
 export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
-  title,
-  option,
+  title = <FormattedMessage id="duration" />,
+  option = DurationCriterionOption,
   filter,
   setFilter,
-  sectionID,
+  sectionID = "duration",
 }) => {
   const criteria = filter.criteriaFor(option.type) as DurationCriterion[];
   const criterion = criteria.length > 0 ? criteria[0] : null;
