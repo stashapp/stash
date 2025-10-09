@@ -19,12 +19,6 @@ import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
-import {
-  faPencil,
-  faPlay,
-  faPlus,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
@@ -32,10 +26,7 @@ import { View } from "../List/views";
 import { FileSize } from "../Shared/FileSize";
 import { LoadedContent } from "../List/PagedList";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
-import {
-  OperationDropdown,
-  OperationDropdownItem,
-} from "../List/ListOperationButtons";
+import { ListOperations } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
@@ -55,8 +46,7 @@ import {
 } from "../List/Filters/FilterSidebar";
 import { PatchContainerComponent } from "src/patch";
 import { Pagination } from "../List/Pagination";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { Icon } from "../Shared/Icon";
+import { Button } from "react-bootstrap";
 import useFocus from "src/utils/focus";
 import {
   FilteredListToolbar2,
@@ -325,95 +315,6 @@ const SidebarContent: React.FC<{
         </Button>
       </div>
     </>
-  );
-};
-
-interface IOperations {
-  text: string;
-  onClick: () => void;
-  isDisplayed?: () => boolean;
-  className?: string;
-}
-
-const SceneListOperations: React.FC<{
-  items: number;
-  hasSelection: boolean;
-  operations: IOperations[];
-  onEdit: () => void;
-  onDelete: () => void;
-  onPlay: () => void;
-  onCreateNew: () => void;
-}> = ({
-  items,
-  hasSelection,
-  operations,
-  onEdit,
-  onDelete,
-  onPlay,
-  onCreateNew,
-}) => {
-  const intl = useIntl();
-
-  return (
-    <div>
-      <ButtonGroup>
-        {!!items && (
-          <Button
-            className="play-button"
-            variant="secondary"
-            onClick={() => onPlay()}
-            title={intl.formatMessage({ id: "actions.play" })}
-          >
-            <Icon icon={faPlay} />
-          </Button>
-        )}
-        {!hasSelection && (
-          <Button
-            className="create-new-button"
-            variant="secondary"
-            onClick={() => onCreateNew()}
-            title={intl.formatMessage(
-              { id: "actions.create_entity" },
-              { entityType: intl.formatMessage({ id: "scene" }) }
-            )}
-          >
-            <Icon icon={faPlus} />
-          </Button>
-        )}
-
-        {hasSelection && (
-          <>
-            <Button variant="secondary" onClick={() => onEdit()}>
-              <Icon icon={faPencil} />
-            </Button>
-            <Button
-              variant="danger"
-              className="btn-danger-minimal"
-              onClick={() => onDelete()}
-            >
-              <Icon icon={faTrash} />
-            </Button>
-          </>
-        )}
-
-        <OperationDropdown className="scene-list-operations">
-          {operations.map((o) => {
-            if (o.isDisplayed && !o.isDisplayed()) {
-              return null;
-            }
-
-            return (
-              <OperationDropdownItem
-                key={o.text}
-                onClick={o.onClick}
-                text={o.text}
-                className={o.className}
-              />
-            );
-          })}
-        </OperationDropdown>
-      </ButtonGroup>
-    </div>
   );
 };
 
@@ -719,7 +620,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 />
               }
               operationSection={
-                <SceneListOperations
+                <ListOperations
                   items={items.length}
                   hasSelection={hasSelection}
                   operations={otherOperations}
@@ -727,6 +628,8 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                   onDelete={onDelete}
                   onPlay={onPlay}
                   onCreateNew={onCreateNew}
+                  entityType={intl.formatMessage({ id: "scene" })}
+                  operationsClassName="scene-list-operations"
                 />
               }
             />
