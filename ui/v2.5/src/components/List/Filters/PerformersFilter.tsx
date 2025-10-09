@@ -1,5 +1,8 @@
 import React, { ReactNode, useMemo } from "react";
-import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import {
+  PerformersCriterion,
+  PerformersCriterionOption,
+} from "src/models/list-filter/criteria/performers";
 import {
   CriterionModifier,
   FindPerformersForSelectQueryVariables,
@@ -18,6 +21,7 @@ import {
   useLabeledIdFilterState,
 } from "./LabeledIdFilter";
 import { SidebarListFilter } from "./SidebarListFilter";
+import { FormattedMessage } from "react-intl";
 
 interface IPerformersFilter {
   criterion: PerformersCriterion;
@@ -106,11 +110,17 @@ const PerformersFilter: React.FC<IPerformersFilter> = ({
 
 export const SidebarPerformersFilter: React.FC<{
   title?: ReactNode;
-  option: CriterionOption;
+  option?: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   filterHook?: (f: ListFilterModel) => ListFilterModel;
-}> = ({ title, option, filter, setFilter, filterHook }) => {
+}> = ({
+  title = <FormattedMessage id="performers" />,
+  option = PerformersCriterionOption,
+  filter,
+  setFilter,
+  filterHook,
+}) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
@@ -119,7 +129,7 @@ export const SidebarPerformersFilter: React.FC<{
     useQuery: usePerformerQueryFilter,
   });
 
-  return <SidebarListFilter {...state} title={title} />;
+  return <SidebarListFilter {...state} data-type={option.type} title={title} />;
 };
 
 export default PerformersFilter;

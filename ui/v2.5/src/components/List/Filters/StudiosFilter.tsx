@@ -5,7 +5,10 @@ import {
   useFindStudiosForSelectQuery,
 } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
-import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import {
+  StudiosCriterion,
+  StudiosCriterionOption,
+} from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -16,6 +19,7 @@ import {
   useLabeledIdFilterState,
 } from "./LabeledIdFilter";
 import { SidebarListFilter } from "./SidebarListFilter";
+import { FormattedMessage } from "react-intl";
 
 interface IStudiosFilter {
   criterion: StudiosCriterion;
@@ -94,11 +98,17 @@ const StudiosFilter: React.FC<IStudiosFilter> = ({
 
 export const SidebarStudiosFilter: React.FC<{
   title?: ReactNode;
-  option: CriterionOption;
+  option?: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   filterHook?: (f: ListFilterModel) => ListFilterModel;
-}> = ({ title, option, filter, setFilter, filterHook }) => {
+}> = ({
+  title = <FormattedMessage id="studios" />,
+  option = StudiosCriterionOption,
+  filter,
+  setFilter,
+  filterHook,
+}) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
@@ -110,7 +120,7 @@ export const SidebarStudiosFilter: React.FC<{
     includeSubMessageID: "subsidiary_studios",
   });
 
-  return <SidebarListFilter {...state} title={title} />;
+  return <SidebarListFilter {...state} data-type={option.type} title={title} />;
 };
 
 export default StudiosFilter;

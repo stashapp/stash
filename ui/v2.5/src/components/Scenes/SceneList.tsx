@@ -31,12 +31,8 @@ import { useFilteredItemList } from "../List/ItemList";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
-import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
-import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
-import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import cx from "classnames";
-import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
@@ -269,37 +265,22 @@ const SidebarContent: React.FC<{
       <ScenesFilterSidebarSections>
         {!hideStudios && (
           <SidebarStudiosFilter
-            title={<FormattedMessage id="studios" />}
-            data-type={StudiosCriterionOption.type}
-            option={StudiosCriterionOption}
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
           />
         )}
         <SidebarPerformersFilter
-          title={<FormattedMessage id="performers" />}
-          data-type={PerformersCriterionOption.type}
-          option={PerformersCriterionOption}
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
         />
         <SidebarTagsFilter
-          title={<FormattedMessage id="tags" />}
-          data-type={TagsCriterionOption.type}
-          option={TagsCriterionOption}
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
         />
-        <SidebarRatingFilter
-          title={<FormattedMessage id="rating" />}
-          data-type={RatingCriterionOption.type}
-          option={RatingCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <SidebarRatingFilter filter={filter} setFilter={setFilter} />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}

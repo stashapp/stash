@@ -16,7 +16,11 @@ import {
   useLabeledIdFilterState,
 } from "./LabeledIdFilter";
 import { SidebarListFilter } from "./SidebarListFilter";
-import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import {
+  TagsCriterion,
+  TagsCriterionOption,
+} from "src/models/list-filter/criteria/tags";
+import { FormattedMessage } from "react-intl";
 
 interface ITagsFilter {
   criterion: TagsCriterion;
@@ -99,11 +103,17 @@ const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
 
 export const SidebarTagsFilter: React.FC<{
   title?: ReactNode;
-  option: CriterionOption;
+  option?: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   filterHook?: (f: ListFilterModel) => ListFilterModel;
-}> = ({ title, option, filter, setFilter, filterHook }) => {
+}> = ({
+  title = <FormattedMessage id="tags" />,
+  option = TagsCriterionOption,
+  filter,
+  setFilter,
+  filterHook,
+}) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
@@ -114,7 +124,7 @@ export const SidebarTagsFilter: React.FC<{
     includeSubMessageID: "sub_tags",
   });
 
-  return <SidebarListFilter {...state} title={title} />;
+  return <SidebarListFilter {...state} data-type={option.type} title={title} />;
 };
 
 export default TagsFilter;
