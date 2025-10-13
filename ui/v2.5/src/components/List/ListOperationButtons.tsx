@@ -295,7 +295,7 @@ export const ListOperations: React.FC<{
   onPlay,
   onCreateNew,
   entityType,
-  operationsClassName,
+  operationsClassName = "list-operations",
   operationsMenuClassName,
 }) => {
   const intl = useIntl();

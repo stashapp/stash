@@ -18,6 +18,7 @@ import { Option } from "./SidebarListFilter";
 import {
   CriterionModifier,
   FilterMode,
+  GalleryFilterType,
   InputMaybe,
   IntCriterionInput,
   SceneFilterType,
@@ -515,12 +516,14 @@ export function makeQueryVariables(query: string, extraProps: {}) {
 interface IFilterType {
   scenes_filter?: InputMaybe<SceneFilterType>;
   scene_count?: InputMaybe<IntCriterionInput>;
+  galleries_filter?: InputMaybe<GalleryFilterType>;
+  gallery_count?: InputMaybe<IntCriterionInput>;
 }
 
 export function setObjectFilter(
   out: IFilterType,
   mode: FilterMode,
-  relatedFilterOutput: SceneFilterType
+  relatedFilterOutput: SceneFilterType | GalleryFilterType
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
 
@@ -535,5 +538,17 @@ export function setObjectFilter(
       }
       out.scenes_filter = relatedFilterOutput;
       break;
+    case FilterMode.Galleries:
+      // if empty, only get objects with galleries
+      if (empty) {
+        out.gallery_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.galleries_filter = relatedFilterOutput;
+      break;
+    default:
+      throw new Error("Invalid filter mode");
   }
 }

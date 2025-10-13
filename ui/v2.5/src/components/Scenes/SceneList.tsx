@@ -602,7 +602,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       onPlay={onPlay}
       onCreateNew={onCreateNew}
       entityType={intl.formatMessage({ id: "scene" })}
-      operationsClassName="scene-list-operations"
       operationsMenuClassName="scene-list-operations-dropdown"
     />
   );

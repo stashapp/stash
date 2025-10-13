@@ -1120,7 +1120,8 @@ input[type="range"].zoom-slider {
   justify-content: flex-end;
 }
 
-.scene-list-toolbar .selected-items-info {
+.scene-list-toolbar .selected-items-info,
+.gallery-list-toolbar .selected-items-info {
   justify-content: flex-start;
 }
 
