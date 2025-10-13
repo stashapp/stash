@@ -148,7 +148,8 @@
         },
         "play": "Oynat",
         "show_results": "Sonuçları göster",
-        "show_count_results": "{count} sonucu göster"
+        "show_count_results": "{count} sonucu göster",
+        "load": "Yükle"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
