@@ -1057,7 +1057,8 @@ input[type="range"].zoom-slider {
 // the following refers to the new FilteredListToolbar2 component
 // ensure the rules here don't conflict with the original filtered-list-toolbar above
 // TODO - replace with only .filtered-list-toolbar once all lists use the new toolbar
-.scene-list-toolbar {
+.scene-list-toolbar,
+.gallery-list-toolbar {
   &.filtered-list-toolbar {
     align-items: center;
     background-color: $body-bg;
@@ -1101,7 +1102,7 @@ input[type="range"].zoom-slider {
     // hide drop down menu items for play and create new
     // when the buttons are visible
     @include media-breakpoint-up(sm) {
-      .scene-list-operations {
+      .list-operations {
         .play-item,
         .create-new-item {
           display: none;
@@ -1207,24 +1208,26 @@ input[type="range"].zoom-slider {
 // hide the search term tag item when the search box is visible
 @include media-breakpoint-up(lg) {
   // TODO - remove scene-list-toolbar when all lists use the new toolbar
-  .scene-list-toolbar.filtered-list-toolbar
-    .filter-tags
-    .search-term-filter-tag {
-    display: none;
+  .scene-list-toolbar.filtered-list-toolbar,
+  .gallery-list-toolbar.filtered-list-toolbar {
+    .filter-tags .search-term-filter-tag {
+      display: none;
+    }
   }
 }
 @include media-breakpoint-down(md) {
   // TODO - remove scene-list-toolbar when all lists use the new toolbar
-  .sidebar-pane:not(.hide-sidebar)
-    .scene-list-toolbar.filtered-list-toolbar
-    .filter-tags
-    .search-term-filter-tag {
-    display: none;
+  .sidebar-pane:not(.hide-sidebar) .scene-list-toolbar,
+  .gallery-list-toolbar {
+    &.filtered-list-toolbar .filter-tags .search-term-filter-tag {
+      display: none;
+    }
   }
 }
 
 // TODO - remove scene-list-toolbar when all lists use the new toolbar
-.detail-body .scene-list-toolbar.filtered-list-toolbar {
+.detail-body .scene-list-toolbar.filtered-list-toolbar,
+.detail-body .gallery-list-toolbar.filtered-list-toolbar {
   top: calc($sticky-detail-header-height + $navbar-height);
 
   @include media-breakpoint-down(xs) {
