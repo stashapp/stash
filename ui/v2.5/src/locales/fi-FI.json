@@ -452,7 +452,7 @@
             "name": "Nimi",
             "title": "Stash-box päätepisteet",
             "max_requests_per_minute": "Enimmäispyynnöt minuutissa",
-            "max_requests_per_minute_description": "Käyttää oletusarvoa {defaultValue}, jos arvo on asetettu nollaksi"
+            "max_requests_per_minute_description": "Käyttää oletusarvoa {defaultValue}, jos se on asetettu 0:ksi"
         },
         "system": {
             "transcoding": "Transkoodaus"
@@ -626,7 +626,8 @@
                         "options": {
                             "full": "Kokonainen",
                             "half": "Puolikas",
-                            "quarter": "Neljäsosa"
+                            "quarter": "Neljäsosa",
+                            "tenth": "Kymmenes"
                         }
                     },
                     "type": {
@@ -743,7 +744,7 @@
             },
             "detail": {
                 "compact_expanded_details": {
-                    "description": "Kun tämä asetus on käytössä, vaihtoehto näyttää laajennetut tiedot säilyttäen tiiviin esitystavan.",
+                    "description": "Kun tämä asetus on otettu käyttöön, se näyttää laajennetut tiedot säilyttäen samalla kompaktin esityksen.",
                     "heading": "Tiivistetyt laajennetut tiedot"
                 },
                 "enable_background_image": {
@@ -752,7 +753,7 @@
                 },
                 "heading": "Lisätietosivu",
                 "show_all_details": {
-                    "description": "Kun tämä asetus on käytössä, kaikki sisällön tiedot näytetään oletusarvoisesti ja kukin tiedon osa mahtuu yhdelle sarakkeelle.",
+                    "description": "Kun tämä on otettu käyttöön, kaikki sisällön tiedot näytetään oletuksena ja jokainen tietoelementti mahtuu yhden sarakkeen alle.",
                     "heading": "Näytä kaikki tiedot"
                 }
             }
@@ -861,7 +862,7 @@
             "marker_image_previews": "Animoidut merkkien esikatselukuvat",
             "marker_image_previews_tooltip": "Animoidut merkkien WebP esikatselut, vaaditaan vain jos esikatselun tyypiksi on valittu Animoitu kuva.",
             "marker_screenshots": "Merkkien esikatselukuvat",
-            "marker_screenshots_tooltip": "Merkkien staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva.",
+            "marker_screenshots_tooltip": "Staattiset JPG-kuvat merkintöihin",
             "markers": "Merkkien esikatselut",
             "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
             "override_preview_generation_options": "Ohita Esikatselun generoinnin asetukset",
@@ -1010,7 +1011,7 @@
         "interactive_speed": "Interaktiivinen nopeus",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} tässä kohtauksessa"
+            "age_context": "{age} {years_old} tuotantovaiheessa"
         },
         "phash": "PHash",
         "play_count": "Toistokerrat",
