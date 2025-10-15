@@ -160,30 +160,6 @@ export const LibraryTasks: React.FC = () => {
         setGenerateOptions(withoutTypename(generate));
       }
 
-      if (configuration?.general) {
-        const { general } = configuration;
-        setGenerateOptions((existing) => ({
-          ...existing,
-          previewOptions: {
-            ...existing.previewOptions,
-            previewSegments:
-              general.previewSegments ??
-              existing.previewOptions?.previewSegments,
-            previewSegmentDuration:
-              general.previewSegmentDuration ??
-              existing.previewOptions?.previewSegmentDuration,
-            previewExcludeStart:
-              general.previewExcludeStart ??
-              existing.previewOptions?.previewExcludeStart,
-            previewExcludeEnd:
-              general.previewExcludeEnd ??
-              existing.previewOptions?.previewExcludeEnd,
-            previewPreset:
-              general.previewPreset ?? existing.previewOptions?.previewPreset,
-          },
-        }));
-      }
-
       setConfigRead(true);
     }
   }, [configuration, configRead, taskDefaults, loading]);
@@ -291,7 +267,30 @@ export const LibraryTasks: React.FC = () => {
 
   async function onGenerateClicked() {
     try {
-      await mutateMetadataGenerate(generateOptions);
+      // insert preview options here instead of loading them
+      const general = configuration?.general;
+
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        previewOptions: {
+          ...generateOptions.previewOptions,
+          previewSegments:
+            general?.previewSegments ??
+            generateOptions.previewOptions?.previewSegments,
+          previewSegmentDuration:
+            general?.previewSegmentDuration ??
+            generateOptions.previewOptions?.previewSegmentDuration,
+          previewExcludeStart:
+            general?.previewExcludeStart ??
+            generateOptions.previewOptions?.previewExcludeStart,
+          previewExcludeEnd:
+            general?.previewExcludeEnd ??
+            generateOptions.previewOptions?.previewExcludeEnd,
+          previewPreset:
+            general?.previewPreset ??
+            generateOptions.previewOptions?.previewPreset,
+        },
+      });
       Toast.success(
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
