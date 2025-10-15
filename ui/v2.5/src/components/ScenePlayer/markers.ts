@@ -5,6 +5,7 @@ export interface IMarker {
   title: string;
   seconds: number;
   end_seconds?: number | null;
+  primaryTag: { name: string };
 }
 
 interface IMarkersOptions {
@@ -85,8 +86,8 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markerSet.dot.toggleAttribute("marker-tooltip-shown", true);
 
     // Set background color based on tag (if available)
-    if (marker.title && this.tagColors[marker.title]) {
-      markerSet.dot.style.backgroundColor = this.tagColors[marker.title];
+    if (marker.primaryTag && marker.primaryTag.name && this.tagColors[marker.primaryTag.name]) {
+      markerSet.dot.style.backgroundColor = this.tagColors[marker.primaryTag.name];
     }
     markerSet.dot.addEventListener("mouseenter", () => {
       this.showMarkerTooltip(marker.title);
@@ -152,8 +153,8 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     rangeDiv.style.display = "none"; // Initially hidden
 
     // Set background color based on tag (if available)
-    if (marker.title && this.tagColors[marker.title]) {
-      rangeDiv.style.backgroundColor = this.tagColors[marker.title];
+    if (marker.primaryTag && marker.primaryTag.name && this.tagColors[marker.primaryTag.name]) {
+      rangeDiv.style.backgroundColor = this.tagColors[marker.primaryTag.name];
     }
 
     markerSet.range = rangeDiv;
