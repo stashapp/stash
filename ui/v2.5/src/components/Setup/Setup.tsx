@@ -511,16 +511,28 @@ const BlobsSection: React.FC<{
 };
 
 const SetPathsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
-  const { configuration } = useSetupContext();
+  const { configuration, setupState } = useSetupContext();
 
   const [showStashAlert, setShowStashAlert] = useState(false);
 
-  const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
-  const [databaseFile, setDatabaseFile] = useState("");
-  const [generatedLocation, setGeneratedLocation] = useState("");
-  const [cacheLocation, setCacheLocation] = useState("");
-  const [storeBlobsInDatabase, setStoreBlobsInDatabase] = useState(false);
-  const [blobsLocation, setBlobsLocation] = useState("");
+  const [stashes, setStashes] = useState<GQL.StashConfig[]>(
+    setupState.stashes ?? []
+  );
+  const [databaseFile, setDatabaseFile] = useState(
+    setupState.databaseFile ?? ""
+  );
+  const [generatedLocation, setGeneratedLocation] = useState(
+    setupState.generatedLocation ?? ""
+  );
+  const [cacheLocation, setCacheLocation] = useState(
+    setupState.cacheLocation ?? ""
+  );
+  const [storeBlobsInDatabase, setStoreBlobsInDatabase] = useState(
+    setupState.storeBlobsInDatabase ?? false
+  );
+  const [blobsLocation, setBlobsLocation] = useState(
+    setupState.blobsLocation ?? ""
+  );
 
   const overrideDatabase = configuration?.general.databasePath;
   const overrideGenerated = configuration?.general.generatedPath;
