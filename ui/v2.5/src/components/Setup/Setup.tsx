@@ -640,12 +640,19 @@ const StashExclusions: React.FC<{ stash: GQL.StashConfig }> = ({ stash }) => {
 };
 
 const ConfirmStep: React.FC<IWizardStep> = ({ goBack, next }) => {
-  const { configuration, pathDir, pathJoin, pwd, setupState } =
-    useSetupContext();
+  const {
+    configuration,
+    pathDir,
+    pathJoin,
+    setupState,
+    homeDirPath,
+    workingDir,
+  } = useSetupContext();
 
+  // if unset, means use homeDirPath
   const cfgFile = setupState.configLocation
-    ? setupState.configLocation
-    : pathJoin(pwd, "config.yml");
+    ? pathJoin(workingDir, setupState.configLocation)
+    : pathJoin(homeDirPath, "config.yml");
   const cfgDir = pathDir(cfgFile);
   const stashes = setupState.stashes ?? [];
   const {
