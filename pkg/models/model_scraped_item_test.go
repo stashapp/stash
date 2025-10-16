@@ -92,7 +92,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 					got.StashIDs.List()[stid].UpdatedAt = time.Time{}
 				}
 			}
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got.Studio)
 		})
 	}
 }

@@ -27,7 +27,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	db.Studio.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
-		s := args.Get(1).(*models.Studio)
+		s := args.Get(1).(*models.CreateStudioInput)
 		s.ID = validStoredIDInt
 	}).Return(nil)
 
