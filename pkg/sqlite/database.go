@@ -368,7 +368,7 @@ func (db *Database) Backup(backupPath string) (err error) {
 
 	if moveAfter {
 		logger.Infof("Moving database backup to: %s", backupPath)
-		err = os.Rename(vacuumOut, backupPath)
+		err = fsutil.SafeMove(vacuumOut, backupPath)
 		if err != nil {
 			return fmt.Errorf("moving database backup failed: %w", err)
 		}
