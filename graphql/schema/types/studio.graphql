@@ -26,6 +26,8 @@ type Studio {
   groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
   o_counter: Int
+
+  custom_fields: Map!
 }
 
 input StudioCreateInput {
@@ -43,6 +45,8 @@ input StudioCreateInput {
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+
+  custom_fields: Map
 }
 
 input StudioUpdateInput {
@@ -61,6 +65,8 @@ input StudioUpdateInput {
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+
+  custom_fields: CustomFieldsInput
 }
 
 input BulkStudioUpdateInput {

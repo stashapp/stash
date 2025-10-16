@@ -75,7 +75,7 @@ func ValidateAliases(ctx context.Context, id int, aliases []string, qb models.St
 	return nil
 }
 
-func ValidateCreate(ctx context.Context, studio models.Studio, qb models.StudioQueryer) error {
+func ValidateCreate(ctx context.Context, studio models.CreateStudioInput, qb models.StudioQueryer) error {
 	if err := validateName(ctx, 0, studio.Name, qb); err != nil {
 		return err
 	}

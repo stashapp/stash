@@ -80,11 +80,11 @@ func (_m *StudioReaderWriter) CountByTagID(ctx context.Context, tagID int) (int,
 }
 
 // Create provides a mock function with given fields: ctx, newStudio
-func (_m *StudioReaderWriter) Create(ctx context.Context, newStudio *models.Studio) error {
+func (_m *StudioReaderWriter) Create(ctx context.Context, newStudio *models.CreateStudioInput) error {
 	ret := _m.Called(ctx, newStudio)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Studio) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.CreateStudioInput) error); ok {
 		r0 = rf(ctx, newStudio)
 	} else {
 		r0 = ret.Error(0)
@@ -291,6 +291,52 @@ func (_m *StudioReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]
 	return r0, r1
 }
 
+// GetCustomFields provides a mock function with given fields: ctx, id
+func (_m *StudioReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, int) map[string]interface{}); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFieldsBulk provides a mock function with given fields: ctx, ids
+func (_m *StudioReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []models.CustomFieldMap
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []models.CustomFieldMap); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.CustomFieldMap)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetImage provides a mock function with given fields: ctx, studioID
 func (_m *StudioReaderWriter) GetImage(ctx context.Context, studioID int) ([]byte, error) {
 	ret := _m.Called(ctx, studioID)
@@ -479,11 +525,11 @@ func (_m *StudioReaderWriter) QueryForAutoTag(ctx context.Context, words []strin
 }
 
 // Update provides a mock function with given fields: ctx, updatedStudio
-func (_m *StudioReaderWriter) Update(ctx context.Context, updatedStudio *models.Studio) error {
+func (_m *StudioReaderWriter) Update(ctx context.Context, updatedStudio *models.UpdateStudioInput) error {
 	ret := _m.Called(ctx, updatedStudio)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Studio) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdateStudioInput) error); ok {
 		r0 = rf(ctx, updatedStudio)
 	} else {
 		r0 = ret.Error(0)

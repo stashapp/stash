@@ -23,11 +23,30 @@ type Studio struct {
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
+type CreateStudioInput struct {
+	*Studio
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdateStudioInput struct {
+	*Studio
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
 func NewStudio() Studio {
 	currentTime := time.Now()
 	return Studio{
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
+	}
+}
+
+func NewCreateStudioInput() CreateStudioInput {
+	s := NewStudio()
+	return CreateStudioInput{
+		Studio: &s,
 	}
 }
 
@@ -48,6 +67,8 @@ type StudioPartial struct {
 	URLs     *UpdateStrings
 	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
+
+	CustomFields CustomFieldsInput
 }
 
 func NewStudioPartial() StudioPartial {
