@@ -101,16 +101,15 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 
 func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
-	studio := models.Studio{
-		Name: name,
-	}
+	studio := models.NewCreateStudioInput()
+	studio.Name = name
 
 	err := qb.Create(ctx, &studio)
 	if err != nil {
 		return nil, err
 	}
 
-	return &studio, nil
+	return studio.Studio, nil
 }
 
 func createTag(ctx context.Context, qb models.TagWriter) error {
