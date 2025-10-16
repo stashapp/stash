@@ -2,7 +2,7 @@
     "actions": {
         "add": "Hinzufügen",
         "add_directory": "Ordner hinzufügen",
-        "add_entity": "Füge {Entity} hinzu",
+        "add_entity": "Füge {entityType} hinzu",
         "add_to_entity": "Hinzufügen zu {entityType}",
         "allow": "Erlauben",
         "allow_temporarily": "Vorübergehend erlauben",
