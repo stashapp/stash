@@ -77,9 +77,9 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	}
 
 	db.Studio.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
-	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
-		s := args.Get(1).(*models.Studio)
-		s.ID = existingStudioID
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.CreateStudioInput")).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.CreateStudioInput)
+		s.Studio.ID = existingStudioID
 	}).Return(nil)
 
 	err := i.PreImport(testCtx)
@@ -109,7 +109,7 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 	}
 
 	db.Studio.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
-	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.CreateStudioInput")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
