@@ -332,7 +332,8 @@ var (
 	}
 
 	// formerly: goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc()
-	tagTableSort = goqu.L("COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI").Asc()
+	tagTableSort    = goqu.L("COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI").Asc()
+	tagTableSortSQL = "COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI ASC"
 
 	tagsAliasesTableMgr = &stringTable{
 		table: table{
