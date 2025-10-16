@@ -141,7 +141,17 @@
         "reset_play_duration": "重置播放时长",
         "reset_resume_time": "重置恢复时间",
         "add_sub_groups": "添加子集合",
-        "remove_from_containing_group": "从集合中移除"
+        "remove_from_containing_group": "从集合中移除",
+        "sidebar": {
+            "close": "关闭侧边栏",
+            "open": "打开侧边栏",
+            "toggle": "切换侧边栏"
+        },
+        "play": "播放",
+        "show_results": "显示结果",
+        "show_count_results": "显示{count}个结果",
+        "load": "加载",
+        "load_filter": "加载过滤器"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -446,7 +456,9 @@
             "endpoint": "入口",
             "graphql_endpoint": "GraphQL 入口",
             "name": "名称",
-            "title": "Stash-box 入口"
+            "title": "Stash-box 入口",
+            "max_requests_per_minute": "每分钟最多可发起请求数量",
+            "max_requests_per_minute_description": "使用{defaultValue}的默认数值，当其数值设置为0时"
         },
         "system": {
             "transcoding": "转码"
@@ -572,7 +584,9 @@
                 "whitespace_chars": "空白字符",
                 "whitespace_chars_desc": "这些字符在标题中会替换为空白字符"
             },
-            "scene_tools": "短片工具"
+            "scene_tools": "短片工具",
+            "heading": "工具",
+            "graphql_playground": "GraphQL试验场"
         },
         "ui": {
             "abbreviate_counters": {
@@ -906,7 +920,6 @@
             "destination": "目标",
             "source": "源"
         },
-        "overwrite_filter_confirm": "确定要覆盖现有的已保存查询 {entityName} 吗？",
         "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} 其它 {Reassign {pluralEntity}}}",
         "reassign_files": {
             "destination": "重新指定至"
@@ -959,7 +972,9 @@
         "unsaved_changes": "更改未保存，确定离开吗？",
         "performers_found": "找到{count} 个演员",
         "clear_o_history_confirm": "真的确定要清空高潮记录吗?",
-        "clear_play_history_confirm": "真的确定要清空播放历史?"
+        "clear_play_history_confirm": "真的确定要清空播放历史?",
+        "set_default_filter_confirm": "你确定要设置这个过滤器为默认吗？",
+        "overwrite_filter_warning": "已保存的过滤器 \"{entityName}\" 将被覆盖。"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -969,7 +984,8 @@
         "list": "列表显示",
         "tagger": "标签工具",
         "unknown": "未知",
-        "wall": "预览墙"
+        "wall": "预览墙",
+        "label_current": "显示模式: {current}"
     },
     "donate": "赞助",
     "dupe_check": {
@@ -1216,7 +1232,9 @@
         "edit_filter": "编辑筛选器",
         "name": "过滤",
         "saved_filters": "保存过滤器",
-        "update_filter": "更新过滤器"
+        "update_filter": "更新过滤器",
+        "more_filter_criteria": "+{count}个更多",
+        "search_term": "搜索词"
     },
     "second": "秒",
     "seconds": "秒",
@@ -1522,5 +1540,12 @@
     },
     "eta": "预估剩余时间",
     "sort_name": "排序用名",
-    "age_on_date": "在制作时{age}岁"
+    "age_on_date": "在制作时{age}岁",
+    "login": {
+        "username": "用户名",
+        "password": "密码",
+        "invalid_credentials": "无效的用户名或密码",
+        "internal_error": "意外的内部错误。有关更多详细信息，请查看日志",
+        "login": "登录"
+    }
 }
