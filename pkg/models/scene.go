@@ -25,6 +25,8 @@ type SceneFilterType struct {
 	PhashDistance *PhashDistanceCriterionInput `json:"phash_distance"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
+	// Filter by filename/basename
+	Filename *StringCriterionInput `json:"filename"`
 	// Filter by file count
 	FileCount *IntCriterionInput `json:"file_count"`
 	// Filter by rating expressed as 1-100
