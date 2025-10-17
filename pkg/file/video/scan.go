@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -30,8 +29,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 	probe := d.FFProbe
 	videoFile, err := probe.NewVideoFile(base.Path)
 	if err != nil {
-		logger.Errorf("running ffprobe on %q: %v", base.Path, err)
-		return f, nil
+		return f, fmt.Errorf("running ffprobe on %q: %w", base.Path, err)
 	}
 
 	container, err := ffmpeg.MatchContainer(videoFile.Container, base.Path)
