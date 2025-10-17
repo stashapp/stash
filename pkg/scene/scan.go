@@ -74,7 +74,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 	videoFile, ok := f.(*models.VideoFile)
 	if !ok {
-		return nil
+		return ErrNotVideoFile
 	}
 
 	if oldFile != nil {
