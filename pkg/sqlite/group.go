@@ -122,7 +122,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 	}
 )

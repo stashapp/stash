@@ -72,8 +72,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
         image.paths.preview != ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files?.[0]?.width ?? 0,
+      height: image.visual_files?.[0]?.height ?? 0,
       tabIndex: index,
       key: image.id,
       loading: "lazy",

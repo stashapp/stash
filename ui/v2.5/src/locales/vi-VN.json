@@ -134,14 +134,24 @@
             "clean_confirm_message": "Bạn có chắc chắn muốn làm sạch không? Thao tác này sẽ xóa thông tin cơ sở dữ liệu và nội dung đã tạo cho tất cả các cảnh và bộ sưu tập không còn tồn tại trong hệ thống tệp.",
             "import_warning": "Bạn có chắc chắn muốn nhập không? Thao tác này sẽ xóa cơ sở dữ liệu và nhập lại từ siêu dữ liệu đã xuất của bạn."
         },
-        "temp_disable": "Tạm thời vô hiệu hóa…",
-        "temp_enable": "Tạm thời kích hoạt…",
+        "temp_disable": "Vô hiệu hóa tạm thời…",
+        "temp_enable": "Kích hoạt tạm thời…",
         "unset": "Bỏ thiết lập",
-        "use_default": "Dùng mặc định",
+        "use_default": "Dùng thiết lập mặc định",
         "view_history": "Xem lịch sử",
         "view_random": "Xem ngẫu nhiên",
         "set_front_image": "Ảnh trước…",
-        "select_entity": "Chọn {entityType}"
+        "select_entity": "Chọn {entityType}",
+        "play": "Phát",
+        "show_results": "Hiển thị kết quả",
+        "show_count_results": "Hiển thị {count} kết quả",
+        "sidebar": {
+            "toggle": "Bật thanh bên",
+            "open": "Mở thanh bên",
+            "close": "Đóng thanh bên"
+        },
+        "load": "Nạp",
+        "load_filter": "Nạp bộ lọc"
     },
     "actions_name": "Hành động",
     "age": "Tuổi",
@@ -158,25 +168,886 @@
     "bitrate": "Bit Rate",
     "blobs_storage_type": {
         "database": "Cơ sở dữ liệu",
-        "filesystem": "Files hệ thống"
+        "filesystem": "Tập tin hệ thống"
     },
     "captions": "Tiêu đề",
     "career_length": "Tuổi nghề",
-    "chapters": "Chapters",
+    "chapters": "Chương",
     "circumcised_types": {
         "CUT": "Cắt",
         "UNCUT": "Không cắt"
     },
-    "circumcised": "Cắt bao quy đầu",
+    "circumcised": "Đã cắt bao quy đầu",
     "component_tagger": {
         "config": {
             "blacklist_desc": "Các mục trong danh sách đen sẽ bị loại trừ khỏi các truy vấn. Lưu ý rằng chúng là các biểu thức chính quy và không phân biệt chữ hoa chữ thường. Một số ký tự cần phải được thoát bằng dấu gạch chéo ngược: {chars_require_escape}",
             "blacklist_label": "Danh sách đen",
-            "mark_organized_desc": "Ngay lập tức đánh dấu cảnh là Đã tổ chức sau khi nhấn nút Lưu.",
+            "mark_organized_desc": "Ngay lập tức đánh dấu cảnh là Đã sắp xếp sau khi nhấn nút Lưu.",
             "active_instance": "Phiên bản stash-box đang hoạt động:",
-            "mark_organized_label": "Đánh dấu là Đã tổ chức khi lưu.",
+            "mark_organized_label": "Đánh dấu là Đã sắp xếp khi lưu.",
             "query_mode_auto": "Tự động",
-            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp."
+            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp",
+            "query_mode_filename": "Tên tệp tin",
+            "query_mode_filename_desc": "Chỉ dùng tên tệp tin",
+            "query_mode_label": "Chế độ truy vấn",
+            "query_mode_path": "Đường dẫn",
+            "query_mode_path_desc": "Dùng toàn bộ đường dẫn tệp tin",
+            "set_cover_desc": "Thay thế bìa nền nếu đã được tìm thấy.",
+            "set_cover_label": "Đặt ảnh bìa nền",
+            "set_tag_label": "Đặt các thẻ",
+            "query_mode_dir_desc": "Chỉ dùng thư mục chính của file video",
+            "set_tag_desc": "Đính kèm các thẻ vào cảnh, bằng cách ghi đè hoặc ghép với các thẻ có sẵn trên cảnh.",
+            "source": "Nguồn",
+            "errors": {
+                "blacklist_duplicate": "Các mục bị trùng lặp trong danh sách đen"
+            },
+            "query_mode_dir": "Danh sách",
+            "show_male_desc": "Chọn khi thẻ của nam diễn viên có sẵn để gán.",
+            "show_male_label": "Xem danh sách diễn viên nam",
+            "query_mode_metadata_desc": "Chỉ dùng dữ liệu mô tả",
+            "query_mode_metadata": "Thông tin mô tả"
+        },
+        "noun_query": "Truy vấn",
+        "results": {
+            "duration_unknown": "Thời gian không xác định",
+            "fp_matches": "Thời lượng tương ứng",
+            "fp_matches_multi": "Thời lượng khớp {matchCount}/{durationsLength} dấu vân tay",
+            "hash_matches": "Khớp với {hash_type}",
+            "match_failed_already_tagged": "Phân cảnh đã được gắn thẻ",
+            "match_failed_no_result": "Không có kết quả được tìm thấy",
+            "match_success": "Phân cảnh đã được gán thẻ thành công",
+            "phash_matches": "Khớp với {count} PHashes",
+            "duration_off": "Thời gian tắt ít nhất {number} giây",
+            "fp_found": "{fpCount, plural, =0 {Không có dấu vết trùng khớp mới được tìm thấy} other {# dấu vết trùng khớp mới đã được tìm thấy}}",
+            "unnamed": "Chưa được đặt tên"
+        },
+        "verb_match_fp": "Các dấu vân tay trùng khớp",
+        "verb_matched": "Trùng khớp",
+        "verb_scrape_all": "Loại bỏ tất cả",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} phân cảnh không trùng khớp",
+        "verb_submit_fp": "Gửi {fpCount, plural, one{# Fingerprint} other{# Fingerprint}}"
+    },
+    "config": {
+        "about": {
+            "new_version_notice": "[MỚI]",
+            "build_hash": "Mã băm bản xây dựng:",
+            "check_for_new_version": "Kiểm tra phiên bản mới",
+            "latest_version": "Phiên bản mới nhất",
+            "latest_version_build_hash": "Mã bản dựng mới nhất:",
+            "release_date": "Ngày phát hành:",
+            "stash_discord": "Tham gia vào kênh {url} của chúng tôi",
+            "stash_open_collective": "Giúp đỡ chúng tôi qua {url}",
+            "version": "Phiên bản",
+            "build_time": "Thời điểm tạo:",
+            "stash_wiki": "Trang {url} của Stash",
+            "stash_home": "Trang chủ Stash tại {url}"
+        },
+        "application_paths": {
+            "heading": "Đường dẫn tới ứng dụng"
+        },
+        "categories": {
+            "about": "Về",
+            "changelog": "Nhật ký thay đổi",
+            "interface": "Giao diện",
+            "logs": "Tập nhật ký",
+            "plugins": "Các phần bổ trợ",
+            "security": "Bảo mật",
+            "services": "Các dịch vụ",
+            "system": "Hệ thống",
+            "tasks": "Các công việc",
+            "tools": "Các công cụ",
+            "metadata_providers": "Các bên cung cấp thông tin dữ liệu",
+            "scraping": "Đang quét dữ liệu"
+        },
+        "dlna": {
+            "allow_temp_ip": "Cho phép {tempIP}",
+            "allowed_ip_addresses": "Các địa chỉ IP được cho phép",
+            "default_ip_whitelist": "Danh sách các IP mặc định được cho phép",
+            "disabled_dlna_temporarily": "Vô hiệu DLNA tạm thời",
+            "disallowed_ip": "Các IP bị cấm",
+            "enabled_by_default": "Mặc định được kích hoạt",
+            "enabled_dlna_temporarily": "Kích hoạt DLNA tạm thời",
+            "network_interfaces": "Các giao diện",
+            "recent_ip_addresses": "Các địa chỉ IP gần đây",
+            "server_display_name": "Tên hiển thị của máy chủ",
+            "server_display_name_desc": "Tên hiển thị cho máy chủ DLNA. Mặc định là {server_name} nếu để trống.",
+            "server_port": "Cổng máy chủ",
+            "server_port_desc": "Cổng cho máy chủ DLNA dùng. Yêu cầu khởi động lại DLNA sau khi sửa đổi.",
+            "successfully_cancelled_temporary_behaviour": "Hủy bỏ hành vi tạm thời thành công",
+            "until_restart": "cho tới lúc khởi động lại",
+            "video_sort_order": "Thứ tự sắp xếp video mặc định",
+            "video_sort_order_desc": "Thứ tự sắp xếp các video mặc định.",
+            "allowed_ip_temporarily": "Các địa chỉ IP được cho phép tạm thời",
+            "default_ip_whitelist_desc": "Các địa chỉ IP mặc định được phép sử dụng DLNA. Dùng {wildcard} để cho phép tất cả các địa chỉ IP.",
+            "network_interfaces_desc": "Các giao diện để hiển thị máy chủ DLNA. Danh sách trống nghĩa là chạy trên mọi máy chủ. Yêu cần khởi động lại DLNA sau khi sửa đổi."
+        },
+        "general": {
+            "auth": {
+                "api_key": "Khóa API",
+                "authentication": "Xác thực",
+                "clear_api_key": "Xóa khóa API",
+                "credentials": {
+                    "heading": "Các thông tin xác thực",
+                    "description": "Tài khoản/mật khẩu dùng để kiểm soát quyền truy cập Stash."
+                },
+                "generate_api_key": "Tạo khóa API",
+                "log_file": "File nhật ký",
+                "log_file_desc": "Đường dẫn tới file lưu nhật ký. Để trống để vô hiệu lưu nhật ký vào file. Yêu cầu khởi động lại.",
+                "log_http": "Nhật ký truy cập HTTP",
+                "log_to_terminal": "Xuất nhật ký lên terminal",
+                "maximum_session_age": "Thời gian phiên tối đa",
+                "maximum_session_age_desc": "Thời gian chờ tối đa trước khi phiên đăng nhập hết hạn, tính bằng giây. Yêu cầu khởi động lại.",
+                "password": "Mật khẩu",
+                "password_desc": "Mật khẩu để truy cập Stash. Để trống để tắt xác thực người dùng",
+                "stash-box_integration": "Tích hợp Stash-box",
+                "username": "Tên người dùng",
+                "username_desc": "Tên người dùng để truy cập Stash. Để trống để tắt xác thực người dùng",
+                "log_http_desc": "Xuất nhật ký truy cập HTTP lên terminal. Yêu cầu khởi động lại.",
+                "api_key_desc": "Khóa API cho các hệ thống ngoài. Chỉ yêu cầu khóa khi tên người dùng / mật khẩu được thiết lập. Tên người dùng phải được lưu trước khi tạo khóa API.",
+                "log_to_terminal_desc": "Đẩy nhật ký lên terminal bên cạnh việc lưu vào file. Luôn bật nếu đang vô hiệu lưu vào file. Yêu cầu khởi động lại."
+            },
+            "backup_directory_path": {
+                "heading": "Đường dẫn tới thư mục sao lưu",
+                "description": "Vị trí thư mục để sao lưu file dữ liệu SQLite"
+            },
+            "blobs_path": {
+                "heading": "Đường dẫn tới hệ thống tập tin dữ liệu binary",
+                "description": "Chỗ nào trong hệ thống file để lưu dữ liệu binary. Chỉ áp dụng cho lựa chọn lưu trữ blob trong hệ thống tệp tin. CẢNH BÁO: thay đổi cài đặt này yêu cầu di chuyển thủ công các dữ liệu hiện tại."
+            },
+            "blobs_storage": {
+                "heading": "Loại lưu trữ dữ liệu binary",
+                "description": "Chỗ nào để lưu trữ dữ liệu binary như bìa phân cảnh, người biểu diễn, studio và các nhãn ảnh. Sau khi thay đổi giá trị này, dữ liệu hiện tại phải được chuyển đổi bằng cách sử dụng các tác vụ Chuyển Đổi Các Blob. Xem trang Các Tác Vụ để chuyển đổi."
+            },
+            "cache_location": "Vị trí thư mục cache. Yêu cầu dùng nếu đang truyền trực tiếp sử dụng HLS (như trên thiết bị Apple) hoặc DASH.",
+            "cache_path_head": "Đường dẫn cache",
+            "calculate_md5_and_ohash_desc": "Tính toán hàm băm MD5 bên cạnh oshash. Bật lên sẽ làm quá trình quét ban đầu diễn ra chậm hơn. Hàm băm tên file phải đặt về oshash để vô hiệu MD5.",
+            "calculate_md5_and_ohash_label": "Tính toán MD5 cho các video",
+            "check_for_insecure_certificates": "Kiểm tra các chứng chỉ không an toàn",
+            "check_for_insecure_certificates_desc": "Một số trang sử dụng chứng chỉ ssl không an toàn. Nếu bỏ tick, bộ thu thập sẽ bỏ qua quy trình kiểm tra tính an toàn của chứng chỉ và sẽ thu thập toàn bộ các trang đó. Nếu bạn gặp vấn đề về chứng chỉ khi thu thập dữ liệu thì hãy bỏ tick.",
+            "create_galleries_from_folders_desc": "Nếu bật, các thư mục chứa ảnh sẽ mặc định được tạo thành thư viện. Tạo một tệp có tên .forcegallery hoặc .nogallery trong thư mục để ép buộc hoặc ngăn việc tạo thư viện.",
+            "create_galleries_from_folders_label": "Tạo thư viện ảnh từ các thư mục chứa hình ảnh",
+            "database": "Cơ sở dữ liệu",
+            "db_path_head": "Vị trí tệp cơ sở dữ liệu",
+            "directory_locations_to_your_content": "Vị trí thư mục chứa nội dung của bạn",
+            "excluded_image_gallery_patterns_head": "Các mẫu tên ảnh/thư viện cần loại trừ",
+            "excluded_video_patterns_desc": "Biểu thức chính quy (regex) của các tệp video hoặc đường dẫn cần loại trừ khỏi quá trình Quét và thêm vào mục Dọn dẹp",
+            "excluded_video_patterns_head": "Các mẫu tên video cần loại trừ",
+            "ffmpeg": {
+                "download_ffmpeg": {
+                    "heading": "Tải xuống FFmpeg",
+                    "description": "Tải FFmpeg vào thư mục cấu hình và xóa đường dẫn ffmpeg và ffprobe hiện tại để sử dụng từ thư mục cấu hình."
+                },
+                "ffmpeg_path": {
+                    "heading": "Đường dẫn tệp FFmpeg",
+                    "description": "Đường dẫn đến tệp ffmpeg (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffmpeg từ biến môi trường $PATH, thư mục cấu hình, hoặc từ $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Đường dẫn đến tệp ffprobe (không chỉ là thư mục). Nếu để trống, hệ thống sẽ tự tìm ffprobe từ biến môi trường $PATH, thư mục cấu hình hoặc từ $HOME/.stash",
+                    "heading": "Đường dẫn tệp FFprobe"
+                },
+                "hardware_acceleration": {
+                    "desc": "Sử dụng phần cứng hiện có để mã hóa video trong quá trình chuyển mã trực tiếp.",
+                    "heading": "Mã hóa phần cứng bằng FFmpeg"
+                },
+                "live_transcode": {
+                    "output_args": {
+                        "heading": "Tham số đầu ra cho chuyển mã trực tiếp bằng FFmpeg",
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu ra khi chuyển mã video trực tiếp."
+                    },
+                    "input_args": {
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu vào khi chuyển mã video trực tiếp.",
+                        "heading": "Tham số đầu vào cho chuyển mã trực tiếp bằng FFmpeg"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu vào khi tạo video.",
+                        "heading": "Tham số đầu vào khi chuyển mã bằng FFmpeg"
+                    },
+                    "output_args": {
+                        "heading": "Tham số đầu ra khi chuyển mã bằng FFmpeg",
+                        "desc": "Nâng cao: Các tham số bổ sung sẽ được truyền vào FFmpeg trước trường đầu ra khi tạo video."
+                    }
+                }
+            },
+            "funscript_heatmap_draw_range": "Bao gồm khoảng giá trị trong các bản đồ nhiệt được tạo ra",
+            "gallery_cover_regex_desc": "Biểu thức chính quy dùng để nhận diện ảnh bìa của thư viện",
+            "gallery_cover_regex_label": "Mẫu tên file ảnh dùng làm bìa thư viện",
+            "gallery_ext_desc": "Danh sách phần mở rộng tệp (file extensions), phân cách bằng dấu phẩy, sẽ được nhận diện là tệp thư viện dạng nén (zip).",
+            "gallery_ext_head": "Phần mở rộng tệp thư viện nén",
+            "generated_file_naming_hash_head": "Mã băm dùng để đặt tên cho các tệp được tạo ra",
+            "generated_files_location": "Vị trí thư mục lưu trữ các tệp được tạo (dấu cảnh, ảnh xem trước cảnh, ảnh sprite, v.v.)",
+            "generated_path_head": "Thư mục lưu trữ các tệp sinh ra tự động",
+            "hashing": "Băm (tạo mã băm)",
+            "heatmap_generation": "Tạo bản đồ nhiệt từ Funscript",
+            "image_ext_desc": "Danh sách phần mở rộng tệp được nhận diện là hình ảnh, ngăn cách bằng dấu phẩy.",
+            "image_ext_head": "Đuôi file ảnh",
+            "include_audio_desc": "Bao gồm luồng âm thanh khi tạo bản xem trước.",
+            "include_audio_head": "Bao gồm âm thanh",
+            "maximum_streaming_transcode_size_head": "Kích thước tối đa cho các luồng video đã chuyển mã",
+            "maximum_transcode_size_desc": "Kích thước tối đa cho các video chuyển mã được tạo ra",
+            "maximum_transcode_size_head": "Kích thước chuyển mã tối đa",
+            "metadata_path": {
+                "heading": "Vị trí thư mục chứa siêu dữ liệu",
+                "description": "Vị trí thư mục được sử dụng khi thực hiện xuất hoặc nhập toàn bộ dữ liệu"
+            },
+            "number_of_parallel_task_for_scan_generation_head": "Số lượng tác vụ song song cho quá trình quét/tạo dữ liệu",
+            "parallel_scan_head": "Quét/Tạo dữ liệu song song",
+            "plugins_path": {
+                "description": "Vị trí thư mục chứa các tệp cấu hình plugin",
+                "heading": "Đường dẫn plugins"
+            },
+            "preview_generation": "Tạo bản xem trước",
+            "python_path": {
+                "description": "Đường dẫn đến tệp Python (không chỉ là thư mục). Được sử dụng cho các trình quét (scraper) và plugin viết bằng script. Nếu để trống, hệ thống sẽ tự tìm Python từ môi trường",
+                "heading": "Đường dẫn tệp thực thi Python"
+            },
+            "scrapers_path": {
+                "description": "Vị trí thư mục chứa các tệp cấu hình của trình quét (scraper)",
+                "heading": "Đường dẫn đến thư mục chứa các scraper"
+            },
+            "scraping": "Thu thập dữ liệu từ website",
+            "video_ext_desc": "Danh sách phần mở rộng tệp sẽ được nhận diện là video, phân cách bằng dấu phẩy.",
+            "video_ext_head": "Định dạng của video",
+            "video_head": "Video",
+            "chrome_cdp_path": "Đường dẫn giao thức CDP của Chrome",
+            "chrome_cdp_path_desc": "Đường dẫn đến tệp thực thi của Chrome, hoặc một địa chỉ từ xa (bắt đầu bằng http:// hoặc https://, ví dụ http://localhost:9222/json/version) trỏ đến một phiên bản Chrome đang chạy.",
+            "excluded_image_gallery_patterns_desc": "Biểu thức chính quy (regex) của tệp ảnh và thư mục thư viện cần loại trừ khỏi quá trình Quét và thêm vào mục Dọn dẹp",
+            "funscript_heatmap_draw_range_desc": "Vẽ phạm vi chuyển động trên trục y của bản đồ nhiệt được tạo. Các bản đồ nhiệt hiện có sẽ cần được tạo lại sau khi thay đổi tùy chọn này.",
+            "generated_file_naming_hash_desc": "Sử dụng MD5 hoặc oshash để đặt tên cho các tệp được tạo. Việc thay đổi tùy chọn này yêu cầu tất cả các cảnh (scenes) phải có giá trị MD5/oshash tương ứng. Sau khi thay đổi, các tệp đã tạo trước đó sẽ cần được di chuyển hoặc tạo lại. Vui lòng xem trang Nhiệm vụ (Tasks) để thực hiện di chuyển.",
+            "maximum_streaming_transcode_size_desc": "Kích thước tối đa cho các luồng video đã chuyển mã",
+            "number_of_parallel_task_for_scan_generation_desc": "Đặt giá trị là 0 để hệ thống tự động phát hiện. Cảnh báo: chạy nhiều tác vụ hơn mức cần thiết để sử dụng 100% CPU sẽ làm giảm hiệu suất và có thể gây ra các sự cố khác.",
+            "scraper_user_agent": "User Agent cho trình quét (scraper)",
+            "scraper_user_agent_desc": "Chuỗi User-Agent được sử dụng trong các yêu cầu HTTP khi quét dữ liệu (scrape)",
+            "sqlite_location": "Vị trí tệp cơ sở dữ liệu SQLite (cần khởi động lại). CẢNH BÁO: Lưu cơ sở dữ liệu trên một hệ thống khác với nơi chạy Stash server (ví dụ: qua mạng) là không được hỗ trợ!",
+            "logging": "Ghi nhật ký"
+        },
+        "advanced_mode": "Chế độ nâng cao",
+        "stashbox": {
+            "name": "Tên",
+            "title": "Các điểm cuối Stash-box",
+            "add_instance": "Thêm một phiên bản Stash-box",
+            "api_key": "API key",
+            "endpoint": "Điểm cuối (Endpoint)",
+            "graphql_endpoint": "Điểm cuối GraphQL",
+            "description": "Stash-box hỗ trợ gán tag tự động cho cảnh và diễn viên dựa trên dấu vân tay (fingerprints) và tên tệp.\nEndpoint và khóa API có thể được tìm thấy trong trang tài khoản của bạn trên phiên hoạt động của stash-box. Tên định danh là bắt buộc nếu bạn thêm nhiều hơn một phiên hoạt động.",
+            "max_requests_per_minute": "Số lượng yêu cầu tối đa mỗi phút",
+            "max_requests_per_minute_description": "Sử dụng giá trị mặc định là {defaultValue} nếu đặt là 0"
+        },
+        "system": {
+            "transcoding": "Chuyển đổi định dạng video"
+        },
+        "tasks": {
+            "added_job_to_queue": "Đã thêm {operation_name} vào hàng đợi công việc",
+            "anonymising_database": "Đang ẩn danh cơ sở dữ liệu",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Tự động gắn tag cho tất cả các đường dẫn",
+                "auto_tagging_paths": "Đang tự động gắn tag cho các đường dẫn sau"
+            },
+            "backing_up_database": "Sao lưu dữ liệu",
+            "backup_and_download": "Thực hiện sao lưu cơ sở dữ liệu và tải xuống tệp kết quả.",
+            "backup_database": "Thực hiện sao lưu cơ sở dữ liệu vào thư mục sao lưu (backups), với định dạng tên tệp là {filename_format}",
+            "cleanup_desc": "Kiểm tra các tệp bị thiếu và xóa chúng khỏi cơ sở dữ liệu. Đây là hành động có tính phá hủy.",
+            "clean_generated": {
+                "blob_files": "Tệp nhị phân (blob)",
+                "description": "Xóa các tệp đã được tạo nhưng không còn bản ghi tương ứng trong cơ sở dữ liệu.",
+                "image_thumbnails": "Ảnh thu nhỏ",
+                "markers": "Xem trước điểm đánh dấu",
+                "previews": "Xem trước của cảnh",
+                "previews_desc": "Ảnh và đoạn xem trước cảnh",
+                "sprites": "Bản ghép khung hình của cảnh",
+                "transcodes": "Bản video đã chuyển mã của cảnh",
+                "image_thumbnails_desc": "Ảnh thu nhỏ và đoạn xem trước"
+            },
+            "data_management": "Quản lý dữ liệu",
+            "dont_include_file_extension_as_part_of_the_title": "Không bao gồm phần đuôi tệp trong tiêu đề",
+            "empty_queue": "Hiện không có tác vụ nào đang chạy.",
+            "generate": {
+                "generating_from_paths": "Đang tạo dữ liệu cho các cảnh từ những đường dẫn sau",
+                "generating_scenes": "Đang tạo dữ liệu cho {num} {scene}"
+            },
+            "generate_clip_previews_during_scan": "Tạo bản xem trước cho các đoạn ảnh clip",
+            "generate_desc": "Tạo các tệp hỗ trợ bao gồm ảnh, sprite, video, vtt và các tệp khác.",
+            "generate_phashes_during_scan": "Tạo mã băm theo đặc điểm hình ảnh",
+            "generate_previews_during_scan": "Tạo ảnh xem trước động",
+            "anonymise_and_download": "Tạo một bản sao ẩn danh của cơ sở dữ liệu và tải xuống tệp kết quả.",
+            "generate_previews_during_scan_tooltip": "Cũng tạo các ảnh xem trước động (định dạng WebP), chỉ cần thiết khi kiểu xem trước Cảnh/Dấu mốc (Scene/Marker Wall Preview Type) được đặt thành Ảnh động. Khi duyệt nội dung, ảnh WebP tiêu tốn ít CPU hơn so với video preview, nhưng sẽ được tạo thêm bên cạnh video và có kích thước tệp lớn hơn.",
+            "anonymise_database": "Tạo một bản sao của cơ sở dữ liệu trong thư mục sao lưu (backups), đồng thời ẩn danh toàn bộ dữ liệu nhạy cảm. Bản sao này có thể được cung cấp cho người khác để hỗ trợ khắc phục sự cố và gỡ lỗi. Cơ sở dữ liệu gốc sẽ không bị thay đổi. Tệp cơ sở dữ liệu ẩn danh sẽ sử dụng định dạng tên file là {filename_format}.",
+            "generate_phashes_during_scan_tooltip": "Dùng để loại bỏ trùng lặp và nhận diện Scene.",
+            "defaults_set": "Giá trị mặc định đã được thiết lập và sẽ được sử dụng khi nhấn nút {action} trên trang Tác vụ (Tasks).",
+            "export_to_json": "Xuất nội dung cơ sở dữ liệu sang định dạng JSON trong thư mục metadata.",
+            "auto_tag_based_on_filenames": "Tự động gắn tag cho nội dung dựa trên đường dẫn tệp.",
+            "auto_tagging": "Gắn tag tự động",
+            "generate_sprites_during_scan": "Tạo ảnh xem trước cho thanh tua",
+            "generate_sprites_during_scan_tooltip": "Tập hợp hình ảnh được hiển thị bên dưới trình phát video để hỗ trợ điều hướng dễ dàng.",
+            "generate_thumbnails_during_scan": "Tạo ảnh thu nhỏ cho các hình ảnh",
+            "generate_video_covers_during_scan": "Tạo ảnh bìa cho từng cảnh quay",
+            "generate_video_previews_during_scan": "Tạo đoạn xem trước video",
+            "generate_video_previews_during_scan_tooltip": "Tạo video xem trước phát tự động khi rê chuột lên cảnh quay",
+            "generated_content": "Nội dung được tạo tự động",
+            "identify": {
+                "and_create_missing": "và tạo các mục còn thiếu",
+                "create_missing": "Tạo phần bị thiếu",
+                "default_options": "Tùy Chọn Mặc Định",
+                "description": "Tự động điền thông tin cảnh quay từ stash-box và các nguồn dữ liệu quét.",
+                "heading": "Nhận diện",
+                "identifying_from_paths": "Đang nhận diện các cảnh quay từ các đường dẫn sau",
+                "identifying_scenes": "Đang nhận diện {num} {scene}",
+                "include_male_performers": "Bao gồm diễn viên nam",
+                "set_cover_images": "Thiết lập ảnh bìa",
+                "set_organized": "Đánh dấu đã sắp xếp",
+                "skip_multiple_matches_tooltip": "Nếu tùy chọn này không được bật và có nhiều kết quả được trả về, một kết quả sẽ được chọn ngẫu nhiên để khớp",
+                "skip_single_name_performers_tooltip": "Nếu tùy chọn này không được bật, các diễn viên có tên chung chung như Samantha hoặc Olga vẫn sẽ được gán khớp",
+                "source": "Nguồn",
+                "source_options": "Tùy chọn cho {source}",
+                "sources": "Các nguồn",
+                "strategy": "Chiến lược",
+                "tag_skipped_matches": "Gắn thẻ cho các kết quả bị bỏ qua bằng",
+                "tag_skipped_performer_tooltip": "Tạo một thẻ như 'Nhận diện: Diễn viên một tên' để bạn có thể lọc trong chế độ xem Scene Tagger và tự chọn cách xử lý các diễn viên này",
+                "tag_skipped_performers": "Gắn thẻ cho các diễn viên bị bỏ qua bằng",
+                "field_options": "Tùy chọn trường dữ liệu",
+                "skip_single_name_performers": "Bỏ qua các diễn viên chỉ có một tên mà không có thông tin phân biệt rõ ràng",
+                "field_behaviour": "{strategy} {field}",
+                "field": "Trường dữ liệu",
+                "tag_skipped_matches_tooltip": "Tạo một thẻ như 'Nhận diện: Nhiều kết quả khớp' để bạn có thể lọc trong chế độ xem Scene Tagger và tự chọn kết quả đúng bằng tay",
+                "explicit_set_description": "Các thiết lập dưới đây sẽ áp dụng trừ khi có thiết lập riêng từ từng nguồn.",
+                "skip_multiple_matches": "Bỏ qua nếu tìm thấy nhiều kết quả trùng khớp"
+            },
+            "incremental_import": "Chỉ nhập những dữ liệu còn thiếu từ tệp ZIP được cung cấp.",
+            "job_queue": "Hàng đợi tác vụ",
+            "maintenance": "Công cụ bảo trì hệ thống",
+            "migrate_blobs": {
+                "delete_old": "Xóa dữ liệu không còn sử dụng",
+                "description": "Di chuyển dữ liệu blob sang hệ thống lưu trữ blob hiện tại. Quá trình di chuyển này nên được thực hiện sau khi thay đổi hệ thống lưu trữ. Có thể chọn xóa dữ liệu cũ sau khi hoàn tất di chuyển."
+            },
+            "migrate_scene_screenshots": {
+                "delete_files": "Xóa các tệp ảnh chụp màn hình",
+                "overwrite_existing": "Ghi đè các blob hiện có bằng dữ liệu ảnh chụp màn hình",
+                "description": "Di chuyển ảnh chụp cảnh quay sang hệ thống lưu trữ blob mới. Quá trình này nên được thực hiện sau khi nâng cấp hệ thống hiện tại lên phiên bản 0.20. Có thể tùy chọn xóa các ảnh chụp cũ sau khi di chuyển."
+            },
+            "migrations": "Chuyển đổi dữ liệu",
+            "only_dry_run": "Chỉ thực hiện chạy thử. Không xóa bất kỳ dữ liệu nào",
+            "optimise_database": "Cố gắng cải thiện hiệu suất bằng cách phân tích và sau đó tái tạo lại toàn bộ tệp cơ sở dữ liệu.",
+            "plugin_tasks": "Các tác vụ của tiện ích mở rộng",
+            "rescan": "Quét lại tất cả các tệp",
+            "rescan_tooltip": "Quét lại mọi tệp trong đường dẫn. Dùng để buộc cập nhật metadata của tệp và quét lại các tệp ZIP.",
+            "scan": {
+                "scanning_all_paths": "Đang quét tất cả các đường dẫn",
+                "scanning_paths": "Đang quét các đường dẫn sau"
+            },
+            "scan_for_content_desc": "Quét nội dung mới và thêm vào cơ sở dữ liệu.",
+            "set_name_date_details_from_metadata_if_present": "Thiết lập tên, ngày và thông tin chi tiết từ metadata được nhúng trong tệp",
+            "migrate_hash_files": "Được sử dụng sau khi thay đổi mã hash đặt tên tệp để đổi tên các tệp đã tạo sang định dạng hash mới.",
+            "import_from_exported_json": "Nhập dữ liệu từ tệp JSON đã xuất trong thư mục metadata. Hành động này sẽ xóa toàn bộ cơ sở dữ liệu hiện tại.",
+            "optimise_database_warning": "Cảnh báo: trong khi tác vụ này đang chạy, mọi thao tác có thay đổi cơ sở dữ liệu sẽ bị lỗi. Tùy vào kích thước cơ sở dữ liệu, quá trình này có thể mất vài phút để hoàn tất. Ngoài ra, bạn cần ít nhất dung lượng ổ đĩa trống tương đương với kích thước cơ sở dữ liệu, nhưng khuyến nghị là 1.5 lần để đảm bảo an toàn."
+        },
+        "library": {
+            "exclusions": "Danh sách loại trừ",
+            "gallery_and_image_options": "Tùy chọn Thư viện và Hình ảnh",
+            "media_content_extensions": "Phần mở rộng của nội dung đa phương tiện"
+        },
+        "logs": {
+            "log_level": "Cấp độ ghi nhật ký"
+        },
+        "plugins": {
+            "available_plugins": "Plugin khả dụng",
+            "hooks": "Cơ chế kích hoạt tự động",
+            "installed_plugins": "Cài đặt plugin",
+            "triggers_on": "Kích hoạt khi"
+        },
+        "scraping": {
+            "available_scrapers": "Scraper khả dụng",
+            "entity_scrapers": "Thông tin mô tả cho {entityType}",
+            "excluded_tag_patterns_head": "Mẫu tag bị loại trừ",
+            "installed_scrapers": "Các trình quét đã cài đặt",
+            "scraper": "Trình quét dữ liệu tự động",
+            "scrapers": "Các trình quét dữ liệu",
+            "search_by_name": "Tìm kiếm theo tên",
+            "supported_types": "Các loại được hỗ trợ",
+            "supported_urls": "URLs",
+            "entity_metadata": "Siêu dữ liệu {entityType}",
+            "excluded_tag_patterns_desc": "Biểu thức chính quy của tên tag cần loại trừ khỏi kết quả quét dữ liệu"
+        },
+        "tools": {
+            "scene_duplicate_checker": "Kiểm tra cảnh quay bị trùng",
+            "scene_filename_parser": {
+                "add_field": "Thêm trường dữ liệu",
+                "capitalize_title": "Tự động viết hoa chữ cái đầu của mỗi từ trong tiêu đề",
+                "display_fields": "Hiển thị các trường dữ liệu",
+                "escape_chars": "Sử dụng \\ để thoát các ký tự đặc biệt",
+                "filename": "Tên tệp",
+                "filename_pattern": "Mẫu tên tệp",
+                "ignore_organized": "Bỏ qua các cảnh đã được sắp xếp",
+                "ignored_words": "Từ bị bỏ qua",
+                "matches_with": "Khớp với {i}",
+                "title": "Trình phân tích tên tệp cảnh quay",
+                "whitespace_chars": "Ký tự khoảng trắng",
+                "select_parser_recipe": "Chọn công thức phân tích",
+                "whitespace_chars_desc": "Các ký tự này sẽ được thay thế bằng khoảng trắng trong tiêu đề"
+            },
+            "scene_tools": "Công cụ xử lý cảnh quay",
+            "graphql_playground": "Công cụ GraphGL",
+            "heading": "Công cụ"
+        },
+        "ui": {
+            "abbreviate_counters": {
+                "description": "Rút gọn số đếm trong giao diện thẻ và trang chi tiết, ví dụ '1831' sẽ được định dạng thành '1.8K'.",
+                "heading": "Rút gọn số đếm"
+            },
+            "basic_settings": "Cài đặt cơ bản",
+            "custom_css": {
+                "heading": "CSS tùy chỉnh",
+                "option_label": "Đã bật CSS tùy chỉnh",
+                "description": "Trang cần được tải lại để các thay đổi có hiệu lực. Không có gì đảm bảo rằng CSS tùy chỉnh sẽ tương thích với các phiên bản Stash trong tương lai."
+            },
+            "custom_javascript": {
+                "description": "Hãy tải lại trang để áp dụng thay đổi. JavaScript tùy chỉnh có thể không tương thích với các bản cập nhật sau này.",
+                "option_label": "Đã bật JavaScript tùy chỉnh",
+                "heading": "JavaScript tùy chỉnh"
+            },
+            "custom_locales": {
+                "heading": "Bản địa hóa tùy chỉnh",
+                "option_label": "Đã bật bản địa hóa tùy chỉnh",
+                "description": "Ghi đè các chuỗi ngôn ngữ riêng lẻ. Xem danh sách chính tại https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. Trang cần được tải lại để các thay đổi có hiệu lực."
+            },
+            "delete_options": {
+                "description": "Thiết lập mặc định cho thao tác xóa ảnh, gallery và cảnh.",
+                "heading": "Tùy chọn xóa",
+                "options": {
+                    "delete_file": "Xóa tệp theo mặc định",
+                    "delete_generated_supporting_files": "Xóa các tệp hỗ trợ đã tạo theo mặc định"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Tích hợp Desktop",
+                "notifications_enabled": "Cho phép Thông báo",
+                "send_desktop_notifications_for_events": "Gửi thông báo trên màn hình máy tính cho các sự kiện",
+                "skip_opening_browser": "Bỏ qua việc mở trình duyệt",
+                "skip_opening_browser_on_startup": "Bỏ qua việc tự động mở trình duyệt khi khởi động"
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "Khi được bật, tùy chọn này sẽ hiển thị chi tiết mở rộng trong khi vẫn duy trì giao diện gọn gàng",
+                    "heading": "Thu gọn chi tiết mở rộng"
+                },
+                "enable_background_image": {
+                    "description": "Hiển thị ảnh nền trên trang chi tiết.",
+                    "heading": "Bật ảnh nền"
+                },
+                "heading": "Trang Chi tiết",
+                "show_all_details": {
+                    "heading": "Hiển thị tất cả chi tiết",
+                    "description": "Khi được bật, tất cả các chi tiết nội dung sẽ được hiển thị theo mặc định và mỗi mục chi tiết sẽ nằm gọn trong một cột duy nhất"
+                }
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "Xóa bỏ khả năng tạo đối tượng mới từ các bộ chọn thả xuống",
+                    "heading": "Tắt chức năng tạo mới từ danh sách thả xuống"
+                },
+                "heading": "Chỉnh sửa",
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Độ chính xác của sao đánh giá",
+                        "options": {
+                            "full": "Đầy",
+                            "half": "Một nữa",
+                            "quarter": "1/4",
+                            "tenth": "1/10"
+                        }
+                    },
+                    "type": {
+                        "label": "Loại Hệ thống Đánh giá",
+                        "options": {
+                            "decimal": "Thập phân",
+                            "stars": "Sao"
+                        }
+                    }
+                },
+                "max_options_shown": {
+                    "label": "Số lượng mục tối đa hiển thị trong danh sách thả xuống"
+                }
+            },
+            "funscript_offset": {
+                "description": "Độ lệch thời gian tính bằng mili giây cho việc phát lại các kịch bản tương tác.",
+                "heading": "Độ lệch Funscript (ms)"
+            },
+            "handy_connection": {
+                "connect": "Kết nối",
+                "status": {
+                    "heading": "Trạng thái Kết nối Handy"
+                },
+                "sync": "Đồng bộ hóa",
+                "server_offset": {
+                    "heading": "Độ lệch Máy chủ"
+                }
+            },
+            "handy_connection_key": {
+                "heading": "Khóa Kết nối Handy",
+                "description": "Khóa kết nối Handy để sử dụng cho các cảnh tương tác. Việc thiết lập khóa này sẽ cho phép Stash chia sẻ thông tin cảnh hiện tại của bạn với handyfeeling.com"
+            },
+            "image_lightbox": {
+                "heading": "Hộp đèn ảnh"
+            },
+            "image_wall": {
+                "direction": "Phương hướng",
+                "heading": "Tường ảnh",
+                "margin": "Khoảng lề (pixel)"
+            },
+            "images": {
+                "heading": "Hình ảnh",
+                "options": {
+                    "create_image_clips_from_videos": {
+                        "heading": "Quét các Phần mở rộng Video dưới dạng Clip hình ảnh",
+                        "description": "Khi một thư viện bị tắt Video, các Tệp video (các tệp có phần mở rộng là Video Extension) sẽ được quét dưới dạng Clip hình ảnh."
+                    },
+                    "write_image_thumbnails": {
+                        "description": "Ghi hình thu nhỏ của ảnh ra đĩa khi chúng được tạo tự động",
+                        "heading": "Ghi hình thu nhỏ của ảnh"
+                    }
+                }
+            },
+            "interactive_options": "Tùy chọn Tương tác",
+            "menu_items": {
+                "description": "Hiển thị hoặc ẩn các loại nội dung khác nhau trên thanh điều hướng",
+                "heading": "Mục Menu"
+            },
+            "minimum_play_percent": {
+                "description": "Phần trăm thời lượng cảnh phải được phát trước khi số lượt phát của nó được tăng lên.",
+                "heading": "Phần trăm Phát tối thiểu"
+            },
+            "scene_player": {
+                "options": {
+                    "enable_chromecast": "Bật Chromecast",
+                    "show_ab_loop_controls": "Hiển thị điều khiển plugin Vòng lặp AB",
+                    "show_scrubber": "Hiển thị Thanh điều khiển",
+                    "vr_tag": {
+                        "description": "Nút VR sẽ chỉ hiển thị cho các cảnh có gắn thẻ này.",
+                        "heading": "Thẻ VR"
+                    },
+                    "show_range_markers": "Hiện thị phạm vị của điểm đánh dấu",
+                    "track_activity": "Bật lịch sử phát cảnh quay",
+                    "auto_start_video_on_play_selected": {
+                        "description": "Tự động phát video cảnh quay khi phát từ hàng chờ, hoặc phát các cảnh được chọn hoặc ngẫu nhiên từ trang Cảnh Quay",
+                        "heading": "Tự động phát video khi phát các mục đã chọn"
+                    },
+                    "continue_playlist_default": {
+                        "description": "Phát cảnh tiếp theo trong hàng chờ khi video kết thúc",
+                        "heading": "Tiếp tục danh sách phát theo mặc định"
+                    },
+                    "disable_mobile_media_auto_rotate": "Tắt tự động xoay phương tiện toàn màn hình trên thiết bị Di động",
+                    "always_start_from_beginning": "Luôn phát video từ đầu",
+                    "auto_start_video": "Tự động phát video"
+                },
+                "heading": "Trình phát cảnh quay"
+            },
+            "scene_wall": {
+                "options": {
+                    "toggle_sound": "Bật âm thanh",
+                    "display_title": "Hiển thị tiêu đề và thẻ"
+                },
+                "heading": "Tường Cảnh Quay / Điểm Đánh Dấu"
+            },
+            "scroll_attempts_before_change": {
+                "heading": "Số lần thử cuộn trước khi chuyển đổi",
+                "description": "Số lần thử cuộn trước khi chuyển sang mục tiếp theo/trước đó. Chỉ áp dụng cho chế độ cuộn Pan Y."
+            },
+            "show_tag_card_on_hover": {
+                "description": "Hiển thị thẻ thông tin thẻ khi di chuột qua các huy hiệu thẻ",
+                "heading": "Chú giải công cụ thẻ thông tin"
+            },
+            "slideshow_delay": {
+                "heading": "Độ trễ Trình chiếu (giây)",
+                "description": "Trình chiếu có sẵn trong các thư viện ảnh khi ở chế độ xem dạng tường"
+            },
+            "studio_panel": {
+                "heading": "Chế độ xem Studio",
+                "options": {
+                    "show_child_studio_content": {
+                        "description": "Trong chế độ xem Studio, hãy hiển thị cả nội dung từ các studio phụ",
+                        "heading": "Hiển thị nội dung của các studio phụ"
+                    }
+                }
+            },
+            "tag_panel": {
+                "heading": "Chế độ xem Thẻ",
+                "options": {
+                    "show_child_tagged_content": {
+                        "heading": "Hiển thị nội dung của thẻ phụ",
+                        "description": "Trong chế độ xem thẻ, hãy hiển thị cả nội dung từ các thẻ phụ"
+                    }
+                }
+            },
+            "title": "Giao diện Người dùng",
+            "use_stash_hosted_funscript": {
+                "heading": "Phục vụ/Truyền funscript trực tiếp",
+                "description": "Khi được bật, funscript sẽ được phục vụ trực tiếp từ Stash đến thiết bị Handy của bạn mà không sử dụng máy chủ Handy của bên thứ ba. Yêu cầu Stash phải truy cập được từ thiết bị Handy của bạn và cần tạo khóa API nếu Stash có cấu hình thông tin xác thực."
+            },
+            "max_loop_duration": {
+                "heading": "Thời lượng lặp tối đa",
+                "description": "Thời lượng cảnh tối đa (tính bằng giây) mà trình phát cảnh sẽ lặp lại video - 0 để tắt"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "Đường dẫn tùy chỉnh cho ảnh mặc định của người biểu diễn. Để trống để sử dụng các mặc định có sẵn",
+                        "heading": "Đường dẫn Ảnh Người biểu diễn Tùy chỉnh"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "Tùy chọn mặc định là xem trước video (mp4). Để giảm sử dụng CPU khi duyệt, bạn có thể dùng xem trước ảnh động (webp). Tuy nhiên, chúng phải được tạo ra ngoài các bản xem trước video và có kích thước tệp lớn hơn.",
+                "heading": "Kiểu Xem trước",
+                "options": {
+                    "animated": "Ảnh động",
+                    "static": "Ảnh tĩnh",
+                    "video": "Video"
+                }
+            },
+            "scene_list": {
+                "heading": "Chế độ xem dạng lưới",
+                "options": {
+                    "show_studio_as_text": "Hiển thị lớp phủ studio dưới dạng văn bản"
+                }
+            },
+            "language": {
+                "heading": "Ngôn ngữ"
+            }
         }
-    }
+    },
+    "age_on_date": "{age} tại thời điểm sản xuất",
+    "description": "Mô Tả",
+    "custom_fields": {
+        "title": "Tùy Chỉnh Trường (dữ liệu)",
+        "criteria_format_string": "{Tiêu chí} (trường tùy chỉnh) {Điều kiện} {Giá trị}",
+        "value": "Giá trị",
+        "criteria_format_string_others": "{Tiêu chí} (trường tùy chỉnh) {Điều kiện} {Giá trị} (+{số lượng khác} mục khác)",
+        "field": "Trường (dữ liệu)"
+    },
+    "dialogs": {
+        "delete_entity_title": "{count, plural, one {Xóa {singularEntity}} other {Xóa {pluralEntity}}}",
+        "delete_galleries_extra": "...cộng với bất kỳ tệp ảnh nào không được đính kèm vào bất kỳ thư viện ảnh nào khác.",
+        "delete_object_title": "Xóa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "lightbox": {
+            "scale_up": {
+                "description": "Phóng lớn ảnh nhỏ để lấp đầy màn hình",
+                "label": "Phóng lớn để vừa"
+            },
+            "delay": "Độ Trễ (Giây)",
+            "display_mode": {
+                "fit_horizontally": "Căn chỉnh vừa theo chiều ngang",
+                "fit_to_screen": "Vừa màn hình",
+                "label": "Chế độ hiển thị",
+                "original": "Bản gốc"
+            },
+            "options": "Tùy Chọn",
+            "page_header": "Trang {page} / {total}",
+            "reset_zoom_on_nav": "Đặt lại mức thu phóng khi đổi ảnh",
+            "scroll_mode": {
+                "description": "Giữ phím Shift để tạm thời dùng chế độ khác.",
+                "pan_y": "Pan (chiều) Y",
+                "label": "Chế độ cuộn",
+                "zoom": "Phóng"
+            }
+        },
+        "clear_o_history_confirm": "Bạn có chắc chắn muốn xóa lịch sử O không?",
+        "clear_play_history_confirm": "Bạn có chắc muốn xóa lịch sử phát không?",
+        "create_new_entity": "Tạo mới {entity}",
+        "delete_entity_simple_desc": "{count, plural, one {Bạn có chắc chắn muốn xóa {singularEntity} này không?} other {Bạn có chắc chắn muốn xóa {pluralEntity} này không?}}",
+        "delete_gallery_files": "Xóa thư mục/tệp zip thư viện ảnh và bất kỳ ảnh nào không được đính kèm vào thư viện ảnh khác.",
+        "delete_object_desc": "Bạn có chắc muốn xóa {count, plural, one {{singularEntity} này} other {{pluralEntity} này} } không?",
+        "dont_show_until_updated": "Không hiển thị cho đến bản cập nhật tiếp theo",
+        "export_include_related_objects": "Bao gồm các đối tượng liên quan khi xuất",
+        "export_title": "Xuất (dữ liệu)",
+        "imagewall": {
+            "direction": {
+                "column": "Cột",
+                "description": "Bố cục dựa trên cột hoặc hàng.",
+                "row": "Hàng"
+            },
+            "margin_desc": "Số lượng pixel lề xung quanh mỗi ảnh."
+        },
+        "edit_entity_title": "Chỉnh sửa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "delete_alert": "Các {count, plural, one {{singularEntity}} other {{pluralEntity}}} sau đây sẽ bị xóa vĩnh viễn:",
+        "delete_confirm": "Bạn có chắc chắn muốn xóa {entityName} không?",
+        "delete_entity_desc": "{count, plural, one {Bạn có chắc chắn muốn xóa {singularEntity} này không? Trừ khi tệp cũng bị xóa, {singularEntity} này sẽ được thêm lại khi quá trình quét được thực hiện.} other {Bạn có chắc chắn muốn xóa {pluralEntity} này không? Trừ khi các tệp cũng bị xóa, {pluralEntity} này sẽ được thêm lại khi quá trình quét được thực hiện.}}",
+        "delete_object_overflow": "...và {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} khác.",
+        "overwrite_filter_warning": "Bộ lọc đã lưu \"{entityName}\" sẽ bị ghi đè.",
+        "scene_gen": {
+            "clip_previews": "Xem trước Hình ảnh từ Clip",
+            "marker_screenshots": "Ảnh màn hình Điểm đánh dấu",
+            "marker_screenshots_tooltip": "Điểm đánh dấu ảnh tĩnh JPG",
+            "overwrite": "Ghi đè các tệp tin có sẫn",
+            "phash": "Băm (hash) nhận thức",
+            "preview_generation_options": "Lựa chọn Tạo ra Bản xem trước",
+            "covers": "Bìa cảnh quay",
+            "force_transcodes": "Ép chuyển mã",
+            "image_previews": "Xem trước Hình ảnh Động",
+            "image_thumbnails": "Hình thu nhỏ của Ảnh",
+            "interactive_heatmap_speed": "Tạo bản đồ nhiệt và tốc độ cho các cảnh tương tác",
+            "marker_image_previews": "Xem trước Điểm đánh dấu Ảnh động",
+            "marker_image_previews_tooltip": "Ngoài ra sẽ tạo nên những hình xem trước động (webp), chỉ bắt buộc khi Loại Cảnh/Dấu Tường Xem Trước được thành Ảnh Động. Khi lướt nó sử dụng ít CPU hơn video xem trước, nhưng khi tạo nên thì đi kèm với chúng và là những file lớn hơn.",
+            "markers": "Xem trước Điểm đánh dấu",
+            "markers_tooltip": "Video 20 giây bắt đầu tại điểm thời gian đã cho sẫn.",
+            "override_preview_generation_options": "Ghi đè các lựa chọn tạo ra Bản xem trước",
+            "phash_tooltip": "Cho việc khử trùng lặp và phát hiện cảnh quay",
+            "preview_exclude_end_time_desc": "Bỏ qua x giây cuối cùng từ các bản xem trước cảnh. Đây có thể là một giá trị bằng giây, hoặc phần trăm (ví dụ 2%) của tổng thời gian cảnh quay.",
+            "preview_exclude_start_time_head": "Bỏ qua thời gian bắt đầu",
+            "preview_options": "Lựa chọn Bản xem trước",
+            "preview_preset_desc": "Phần cài đặt trước điều chỉnh kích thước, chất lượng và thời gian mã hóa của bản xem trước. Các cài đặt trước vượt quá việc \"chậm\" có hiệu năng giảm dần và không được khuyến khích.",
+            "preview_preset_head": "Xem trước phần cài đặt trước cho việc mã hóa",
+            "preview_exclude_end_time_head": "Bỏ qua thời gian kết thúc",
+            "force_transcodes_tooltip": "Mặc định, việc chuyển mã sẽ được tạo ra khi file video không được hỗ trợ trong trình duyệt. Khi kích hoạt, việc chuyển mã sẽ bắt đầu kể cả khi file video có vẻ được hỗ trợ bởi trình duyệt.",
+            "image_previews_tooltip": "Ngoài ra sẽ tạo nên những hình xem trước động (webp), chỉ bắt buộc khi Loại Cảnh/Dấu Tường Xem Trước được thành Ảnh Động. Khi lướt nó sử dụng ít CPU hơn video xem trước, nhưng khi tạo nên thì đi kèm với chúng và là những file lớn hơn.",
+            "preview_exclude_start_time_desc": "Bỏ qua x giây đầu tiên từ các bản xem trước cảnh. Đây có thể là một giá trị bằng giây, hoặc phần trăm (ví dụ 2%) của tổng thời gian cảnh quay.",
+            "override_preview_generation_options_desc": "Ghi đè các lựa chọn tạo ra Bản xem trước cho hành động này. Những thiết lập mặc định được đặt trong Hệ thống -> Tạo ra Bản xem trước.",
+            "preview_seg_count_desc": "Số lượng phân đoạn trong các file bản xem trước.",
+            "preview_seg_count_head": "Số lượng phân đoạn trong bản xem trước",
+            "preview_seg_duration_desc": "Độ dài của mỗi đoạn xem trước, tính theo giây.",
+            "preview_seg_duration_head": "Độ dài đoạn xem trước",
+            "sprites": "Sprites của Phần tìm Phân cảnh",
+            "sprites_tooltip": "Danh sách ảnh hiển thị ở dưới video để dễ thao tác",
+            "transcodes": "Giải mã",
+            "video_previews": "Xem trước",
+            "transcodes_tooltip": "Mã chuyển đổi MP4 sẽ được tạo trước cho tất cả nội dung; hữu ích cho CPU chậm nhưng cần nhiều dung lượng hơn",
+            "video_previews_tooltip": "Bản xem trước video phát khi di chuột qua một cảnh"
+        },
+        "merge": {
+            "destination": "Đích đến",
+            "source": "Nguồn",
+            "empty_results": "Giá trị điền vào mục Đích đến sẽ không bị thay đổi."
+        },
+        "merge_tags": {
+            "destination": "Đích đến",
+            "source": "Nguồn"
+        },
+        "performers_found": "Đã tìm thấy {count} diễn viên",
+        "reassign_entity_title": "{count, plural, one {Chỉnh lại {singularEntity}} other {Chỉnh lại {pluralEntity}}}",
+        "reassign_files": {
+            "destination": "Chỉnh lại đến"
+        },
+        "scrape_results_existing": "Hiện có",
+        "set_default_filter_confirm": "Bạn có chắc chắn muốn đặt bộ lọc này làm mặc định không?",
+        "set_image_url_title": "URL hình ảnh",
+        "unsaved_changes": "Thay đổi chưa được lưu. Bạn có chắc chắn muốn thoát không?",
+        "scenes_found": "tìm được {count} cảnh quay"
+    },
+    "configuration": "Cấu Hình",
+    "connection_monitor": {
+        "websocket_connection_failed": "Không thể tạo kết nối websocket: xem bảng điều khiển trình duyệt để biết chi tiết",
+        "websocket_connection_reestablished": "Kết nối Websocket đã được thiết lập lại"
+    },
+    "containing_group": "Nhóm chứa",
+    "containing_groups": "Các Nhóm chứa",
+    "countables": {
+        "files": "{count, plural, one {Tệp} other {Các tệp}}",
+        "groups": "{count, plural, one {Nhóm} other {Các nhóm}}",
+        "images": "{count, plural, one {Ảnh} other {Các ảnh}}",
+        "markers": "{count, plural, one {Dấu} other {Các dấu}}",
+        "scenes": "{count, plural, one {Cảnh} other {Các cảnh}}",
+        "studios": "{count, plural, one {Studio} other {Các studio}}",
+        "tags": "{count, plural, one {Thẻ} other {Các thẻ}}",
+        "performers": "{count, plural, one {Người biểu diễn} other {Các người biểu diễn}}",
+        "galleries": "{count, plural, one {Thư viện ảnh} other {Các thư viện ảnh}}"
+    },
+    "country": "Quốc Gia",
+    "cover_image": "Ảnh Bìa",
+    "created_at": "Thời gian tạo",
+    "criterion": {
+        "greater_than": "Lớn hơn",
+        "less_than": "Nhỏ hơn",
+        "value": "Giá trị"
+    },
+    "criterion_modifier": {
+        "between": "Giữa",
+        "equals": "Là",
+        "format_string": "{criterion} {modifierString} {valueString}",
+        "format_string_excludes": "{Tiêu chí} {Điều kiện} {Giá trị} (loại trừ {Ngoại lệ})",
+        "format_string_excludes_depth": "{Tiêu chí} {Điều kiện} {Giá trị} (loại trừ {Ngoại lệ}) (+{depth, plural, =-1 {tất cả} other {{depth}}})",
+        "greater_than": "lớn hơn",
+        "includes": "Bao gồm",
+        "includes_all": "Bao gồm tất cả",
+        "is_null": "rỗng",
+        "less_than": "nhỏ hơn",
+        "matches_regex": "Khớp biểu thức chính quy",
+        "not_between": "không nằm giữa",
+        "not_equals": "không phải",
+        "not_null": "không rỗng",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+        "not_matches_regex": "Không khớp biểu thức chính quy",
+        "excludes": "Không bao gồm"
+    },
+    "death_date": "Ngày Mất",
+    "death_year": "Năm Mất",
+    "descending": "Giảm dần",
+    "details": "Thông tin chi tiết",
+    "developmentVersion": "Phiên bản Phát triển",
+    "criterion_modifier_values": {
+        "any_of": "bất kỳ nào trong số",
+        "none": "không gì cả",
+        "only": "Duy nhất",
+        "any": "bất kỳ"
+    },
+    "custom": "Tùy chỉnh",
+    "date": "Ngày",
+    "date_format": "YYYY-MM-DD",
+    "containing_group_count": "Số lượng Nhóm chứa",
+    "detail": "Chi tiết",
+    "datetime_format": "YYYY-MM-DD HH:MM",
+    "dimensions": "Kích thước",
+    "director": "Đạo diễn",
+    "display_mode": {
+        "grid": "Lưới",
+        "list": "Danh sách",
+        "unknown": "Chưa biết",
+        "label_current": "Chế độ Hiển Thị: {current}",
+        "wall": "Tường"
+    },
+    "distance": "Khoảng cách",
+    "donate": "Ủng hộ",
+    "dupe_check": {
+        "duration_diff": "Chênh lệch thời lượng tối đa",
+        "only_select_matching_codecs": "Chỉ chọn nếu tất cả codec khớp với nhóm trùng lặp",
+        "options": {
+            "high": "Cao",
+            "low": "Thấp",
+            "medium": "Trung bình",
+            "exact": "Chính xác"
+        },
+        "search_accuracy_label": "Độ chính xác tìm kiếm",
+        "select_all_but_largest_file": "Chọn mọi tệp trong mỗi nhóm trùng lặp, ngoại trừ tệp lớn nhất",
+        "select_all_but_largest_resolution": "Chọn mọi tệp trong mỗi nhóm được sao chép, ngoại trừ tệp có độ phân giải cao nhất",
+        "select_none": "Chọn Không",
+        "select_oldest": "Chọn tệp cũ nhất trong nhóm trùng lặp",
+        "select_options": "Chọn Tùy chọn…",
+        "select_youngest": "Chọn tệp mớinhất trong nhóm trùng lặp",
+        "title": "Cảnh quay trùng lặp",
+        "duration_options": {
+            "any": "Bất kỳ",
+            "equal": "Tương đương"
+        }
+    },
+    "duplicated_phash": "Trùng lặp (pHash)",
+    "duration": "Thời lượng",
+    "effect_filters": {
+        "aspect": "Tỷ lệ",
+        "blur": "Mờ",
+        "brightness": "Độ sáng",
+        "contrast": "Tương phản",
+        "green": "Xanh lá",
+        "hue": "Sắc thái",
+        "name": "Bộ lọc",
+        "name_transforms": "Biến đổi",
+        "red": "Đỏ",
+        "reset_filters": "Đặt lại bộ lọc",
+        "reset_transforms": "Đặt lại chuyển đổi",
+        "rotate": "Xoay",
+        "rotate_left_and_scale": "Xoay trái và thay đổi tỷ lệ",
+        "rotate_right_and_scale": "Xoay phải và thay đổi tỷ lệ",
+        "saturation": "Độ bão hòa",
+        "scale": "Tỉ lệ",
+        "warmth": "Sự ấm áp"
+    },
+    "empty_server": "Thêm một số cảnh quay vào máy chủ của bạn để xem các đề xuất trên trang này."
 }
