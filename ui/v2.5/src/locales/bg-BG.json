@@ -142,7 +142,178 @@
         "submit_update": "Подай обноваване",
         "swap": "Подмени",
         "tasks": {
-            "clean_confirm_message": "Сигурен ли си че искаш да Изчистиш? Това ще изтрие иформацията от база данни и генерирано съдържание за всички сцени и галерий който не мога да бъдат намерени на файловата система."
+            "clean_confirm_message": "Сигурен ли си че искаш да Изчистиш? Това ще изтрие иформацията от база данни и генерирано съдържание за всички сцени и галерий който не мога да бъдат намерени на файловата система.",
+            "dry_mode_selected": "Избрано е Сухо Пускане. Нищо няма да бъде изтрито на истина, са ще бъде записано в логовете.",
+            "import_warning": "Сигурен ли си че искаш да импортираш? Това ще изтрие базата данни и че вкара на ново твоите експортирани метаданни."
+        },
+        "temp_disable": "Спри временно…",
+        "temp_enable": "Включи временно…",
+        "unset": "",
+        "use_default": "Използвай на стойностите по подразбиране",
+        "view_history": "Виж история",
+        "view_random": "Виж Случайно"
+    },
+    "actions_name": "Действия",
+    "age": "Години",
+    "age_on_date": "{age} по време на продукция",
+    "aliases": "Псевдоними",
+    "all": "всички",
+    "also_known_as": "Също така познат/а като",
+    "appears_with": "Има Участия Със",
+    "ascending": "Възходящ",
+    "audio_codec": "Аудио Кодек",
+    "average_resolution": "Средностатистическа Резолюция",
+    "between_and": "и",
+    "birth_year": "Година на раждане",
+    "birthdate": "Дата на раждане",
+    "bitrate": "Бит Рейт",
+    "blobs_storage_type": {
+        "database": "База Данни",
+        "filesystem": "Файлова Система"
+    },
+    "captions": "Субтитри",
+    "career_length": "Подължителност на Кариера",
+    "chapters": "Глави",
+    "circumcised": "Образан",
+    "circumcised_types": {
+        "CUT": "Обрязан",
+        "UNCUT": "Необрязан"
+    },
+    "component_tagger": {
+        "config": {
+            "active_instance": "Активни инстанции на stash-box:",
+            "blacklist_desc": "Предмети от черният списък са изключени от заяки. Забележи че те са regular expressions и не гледа главни и малки букви. Някой символи трябва да пъдат escape-нати със наклонка: {chars_require_escape}",
+            "blacklist_label": "Черен списък",
+            "errors": {
+                "blacklist_duplicate": "Дубликирани предмети от черния списък"
+            },
+            "mark_organized_desc": "Веднага отбележи сцена като Организирана след като се натисне бутон Запази.",
+            "mark_organized_label": "Отбележи като Организирана на запазване",
+            "query_mode_auto": "Автоматично",
+            "query_mode_auto_desc": "Използа метаданни ако съществиват, или име на файл",
+            "query_mode_dir": "Папка",
+            "query_mode_dir_desc": "Използва само папката която съдържа видео файла",
+            "query_mode_filename": "Име на файл",
+            "query_mode_filename_desc": "Използва само име на файл",
+            "query_mode_label": "Мод на Заявки",
+            "query_mode_metadata": "Мета данни",
+            "query_mode_metadata_desc": "Използва само мета данни",
+            "query_mode_path": "Път",
+            "query_mode_path_desc": "Използва целият път на файла",
+            "set_cover_desc": "Замени корицата на сцената ако се намери такава.",
+            "set_cover_label": "Заложи картина за корица на сцена",
+            "set_tag_desc": "Закачи тагове към сцената, или чрез презаписване или чрез сливане със съществуващите тагове на сцената.",
+            "set_tag_label": "Задай тагове",
+            "show_male_desc": "Превключи дали мъжки изпълнители ще въдат предоставени за тагване.",
+            "show_male_label": "Покажи мъжки изпълнители",
+            "source": "Източник"
+        },
+        "noun_query": "Заявка",
+        "results": {
+            "duration_off": "Продължителност не съвпада с поне {number} сек.",
+            "duration_unknown": "Неизвестна продължителност",
+            "fp_matches": "Продължителността съвпада",
+            "fp_matches_multi": "Продължителността съвпада {matchCount}/{durationsLength} отпечатъци",
+            "hash_matches": "{hash_type} съвпада",
+            "match_failed_already_tagged": "Сцената вече има тагове",
+            "match_failed_no_result": "Няма намерени резултати",
+            "match_success": "Счената е успешно тагната",
+            "phash_matches": "{count} PHashes съвпадат",
+            "unnamed": "Неименуван"
+        },
+        "verb_match_fp": "Сравни Отпечатъци",
+        "verb_matched": "Сравнени",
+        "verb_scrape_all": "Изтъркай Всичко",
+        "verb_submit_fp": "Подай {fpCount, plural, one{# Отпечатък} other{# Отпечатъци}}",
+        "verb_toggle_unmatched": "{toggle} несъвпадаци сцени"
+    },
+    "config": {
+        "about": {
+            "build_hash": "Хеш на билда:",
+            "build_time": "Време на билда:",
+            "check_for_new_version": "Проверка за нова версия",
+            "latest_version": "Последна Версия",
+            "latest_version_build_hash": "Хеш на билда на Последна Версия:",
+            "new_version_notice": "[НОВО]",
+            "release_date": "Дана за издаване:",
+            "stash_discord": "Присъедини се към нашият {url} канал",
+            "stash_home": "Stash home на {url}",
+            "stash_open_collective": "Подкрепи ни чрез {url}",
+            "stash_wiki": "Stash {url} страница",
+            "version": "Версия"
+        },
+        "advanced_mode": "Мод за Напреднали",
+        "application_paths": {
+            "heading": "Пътища на Апликация"
+        },
+        "categories": {
+            "about": "Относно",
+            "changelog": "Списък на промените",
+            "interface": "Интерфейс",
+            "logs": "Дневници",
+            "metadata_providers": "Доставчици на Мета данни",
+            "plugins": "Приставки",
+            "scraping": "Търкане",
+            "security": "Сигурност",
+            "services": "Услуги",
+            "system": "Система",
+            "tasks": "Задачи",
+            "tools": "Иструменти"
+        },
+        "dlna": {
+            "allow_temp_ip": "Позволи {tempIP}",
+            "allowed_ip_addresses": "Позволени IP адреси",
+            "allowed_ip_temporarily": "Позволени IP временно",
+            "default_ip_whitelist": "Основен IP Бъл списък",
+            "default_ip_whitelist_desc": "Основени IP адреси позволени да достигат DLNA. Изполвай {wildcard} за да позволиш всички IP адреси.",
+            "disabled_dlna_temporarily": "Временно изключено DLNA",
+            "disallowed_ip": "Непозволени IP",
+            "enabled_by_default": "Включено по подразвиране",
+            "enabled_dlna_temporarily": "Временно включено DLNA",
+            "network_interfaces": "Интерфейси",
+            "network_interfaces_desc": "Интерфейси да се достъпн DLNA сървъра. Празен лист ще ползва всички интерфейси. Изисква DLNA рестрат след промяна.",
+            "recent_ip_addresses": "Скорошни IP адреси",
+            "server_display_name": "Име за Покаване на Сървъра",
+            "server_display_name_desc": "Име за покаване на DLNA сървъра. По подразбиране {server_name} ако е празно.",
+            "server_port": "Порт на Сървъра",
+            "server_port_desc": "Порт на който да върви DLNA сървъра. Изисква рестарт на DLNA след промяна.",
+            "successfully_cancelled_temporary_behaviour": "Успешно отказано временно поведение",
+            "until_restart": "до рестартиране",
+            "video_sort_order": "Ред на Видеа по подразбиране",
+            "video_sort_order_desc": "Ред по който да реди видеа по подразбиране."
+        },
+        "general": {
+            "auth": {
+                "api_key": "API ключ",
+                "api_key_desc": "API ключ за външни системи. Нужен само когато име/парола са настроени. Името трябва да бъде запазене преди генерация на API ключ.",
+                "authentication": "Идентификация",
+                "clear_api_key": "Изчисти API ключ",
+                "credentials": {
+                    "description": "Удостоверителни данни за контрол на достъпа до stash.",
+                    "heading": "Удостоверителни данни"
+                },
+                "generate_api_key": "Генерирай API ключ",
+                "log_file": "Лог файл",
+                "log_file_desc": "Път към файла за извод на лог. Празен за да спре извод на лог. Изисква рестарт.",
+                "log_http": "Логвай http достъп",
+                "log_http_desc": "Логва http достъп на терминала. Изисква рестарт.",
+                "log_to_terminal": "Лог към терминал",
+                "log_to_terminal_desc": "Логва към терминал заедно с към файл. Винаги истина ако логване към файл е изключено. Изискава рестарт.",
+                "maximum_session_age": "Максимална Продължителност на Сесия",
+                "maximum_session_age_desc": "Максимално време на бездействие, преди сесията за вход да изтече, в секунди. Изисква рестартиране.",
+                "password": "Парола",
+                "password_desc": "Парола за достъп до Stash. Остави празно за да изключи достъп чрез потребител",
+                "stash-box_integration": "Stash-box интеграция",
+                "username": "Потребителско име",
+                "username_desc": "Потребителско име за достъп до Stash. Остави празно за да изключи достъп чрез потребител"
+            },
+            "backup_directory_path": {
+                "description": "Местоположение на папка за резрвни SQLite бази данни",
+                "heading": "Път към Папка за Резервни Данни"
+            },
+            "blobs_path": {
+                "description": "Къде във файловата система да се пазят бинарни данни. Позва се само ако се ползва Файлова система за блоб пазене. ВНИМАНИЕ: промяната ще изисква ръчно местене на съществуващи данни."
+            }
         }
     }
 }
