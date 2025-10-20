@@ -305,8 +305,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
-          }),
-        !dest.stash_ids.length
+          })
       )
     );
 
