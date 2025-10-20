@@ -538,6 +538,8 @@ input GalleryFilterType {
   tags_filter: TagFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+   "Filter by related folders that meet this criteria"
+  folders_filter: FolderFilterType
 }
 
 input TagFilterType {

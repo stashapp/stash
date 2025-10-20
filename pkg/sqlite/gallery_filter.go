@@ -161,6 +161,21 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 			// don't use a subquery; join directly
 			directJoin: true,
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "gallery_folder.id",
+			relatedRepo:  folderRepository.repository,
+			relatedHandler: &folderFilterHandler{
+				folderFilter: filter.FoldersFilter,
+				table:        "gallery_folder",
+				isRelated:    true,
+			},
+			joinFn: func(f *filterBuilder) {
+				f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
+		},
 	}
 }
 

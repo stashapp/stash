@@ -61,6 +61,8 @@ type GalleryFilterType struct {
 	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by related files that meet this criteria
 	FilesFilter *FileFilterType `json:"files_filter"`
+	// Filter by related folders that meet this criteria
+	FoldersFilter *FolderFilterType `json:"folders_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
