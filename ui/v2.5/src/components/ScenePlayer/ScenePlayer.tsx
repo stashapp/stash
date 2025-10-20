@@ -712,8 +712,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           .filter((stream) => {
             const src = new URL(stream.url);
             const isFileTranscode = !isDirect(src);
+            const isMp4 = stream.mime_type?.includes("mp4");
 
-            return !(isFileTranscode && isSafari);
+            return !(isFileTranscode && isMp4) && !(isFileTranscode && isSafari);
           })
           .map((stream) => {
             const src = new URL(stream.url);
