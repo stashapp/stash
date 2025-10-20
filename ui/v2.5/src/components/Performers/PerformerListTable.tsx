@@ -64,7 +64,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   }
 
   const ImageCell = (performer: GQL.PerformerDataFragment) => (
-    <Link to={`/performers/${performer.id}`}>
+    <Link to={`/performers/${performer.id}`} target="_blank">
       <img
         loading="lazy"
         className="image-thumbnail"
@@ -75,7 +75,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   const NameCell = (performer: GQL.PerformerDataFragment) => (
-    <Link to={`/performers/${performer.id}`}>
+    <Link to={`/performers/${performer.id}`} target="_blank">
       <div className="ellips-data" title={performer.name}>
         {performer.name}
         {performer.disambiguation && (
