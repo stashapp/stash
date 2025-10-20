@@ -21,13 +21,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
-import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
-import {
-  mutateImageIncrementO,
-  mutateImageDecrementO,
-  mutateImageResetO,
-  useImageUpdate,
-} from "src/core/StashService";
+import { useImageUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
@@ -705,32 +699,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       }
     }
 
-    async function onIncrementClick() {
-      if (currentImage?.id === undefined) return;
-      try {
-        await mutateImageIncrementO(currentImage.id);
-      } catch (e) {
-        Toast.error(e);
-      }
-    }
 
-    async function onDecrementClick() {
-      if (currentImage?.id === undefined) return;
-      try {
-        await mutateImageDecrementO(currentImage.id);
-      } catch (e) {
-        Toast.error(e);
-      }
-    }
-
-    async function onResetClick() {
-      if (currentImage?.id === undefined) return;
-      try {
-        await mutateImageResetO(currentImage?.id);
-      } catch (e) {
-        Toast.error(e);
-      }
-    }
 
     const pageHeader =
       page && pages
@@ -915,22 +884,12 @@ export const LightboxComponent: React.FC<IProps> = ({
         <div className={CLASSNAME_FOOTER}>
           <div className={CLASSNAME_FOOTER_LEFT}>
             {currentImage?.id !== undefined && (
-              <>
-                <div>
-                  <OCounterButton
-                    onDecrement={onDecrementClick}
-                    onIncrement={onIncrementClick}
-                    onReset={onResetClick}
-                    value={currentImage?.o_counter ?? 0}
-                  />
-                </div>
-                <RatingSystem
-                  value={currentImage?.rating100}
-                  onSetRating={(v) => setRating(v)}
-                  clickToRate
-                  withoutContext
-                />
-              </>
+              <RatingSystem
+                value={currentImage?.rating100}
+                onSetRating={(v) => setRating(v)}
+                clickToRate
+                withoutContext
+              />
             )}
           </div>
           <div>

@@ -75,6 +75,10 @@ func NewImagePartial() ImagePartial {
 	}
 }
 
+func NewImagePartialWithoutUpdate() ImagePartial {
+	return ImagePartial{}
+}
+
 func (i *Image) LoadURLs(ctx context.Context, l URLLoader) error {
 	return i.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, i.ID)

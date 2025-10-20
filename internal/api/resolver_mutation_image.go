@@ -105,7 +105,20 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input models.ImageUp
 	}
 
 	// Populate image from the input
-	updatedImage := models.NewImagePartial()
+	// Check if only rating is being updated - if so, don't update UpdatedAt
+	onlyRatingUpdate := input.Rating100 != nil &&
+		input.Title == nil && input.Code == nil && input.Details == nil &&
+		input.Photographer == nil && input.Organized == nil && input.Date == nil &&
+		input.StudioID == nil && input.Urls == nil && input.URL == nil &&
+		input.PrimaryFileID == nil && input.GalleryIds == nil &&
+		input.PerformerIds == nil && input.TagIds == nil
+
+	var updatedImage models.ImagePartial
+	if onlyRatingUpdate {
+		updatedImage = models.NewImagePartialWithoutUpdate()
+	} else {
+		updatedImage = models.NewImagePartial()
+	}
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Code = translator.optionalString(input.Code, "code")
@@ -204,7 +217,19 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	}
 
 	// Populate image from the input
-	updatedImage := models.NewImagePartial()
+	// Check if only rating is being updated - if so, don't update UpdatedAt
+	onlyRatingUpdate := input.Rating100 != nil &&
+		input.Title == nil && input.Code == nil && input.Details == nil &&
+		input.Photographer == nil && input.Organized == nil && input.Date == nil &&
+		input.StudioID == nil && input.Urls == nil && input.URL == nil &&
+		input.GalleryIds == nil && input.PerformerIds == nil && input.TagIds == nil
+
+	var updatedImage models.ImagePartial
+	if onlyRatingUpdate {
+		updatedImage = models.NewImagePartialWithoutUpdate()
+	} else {
+		updatedImage = models.NewImagePartial()
+	}
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Code = translator.optionalString(input.Code, "code")
