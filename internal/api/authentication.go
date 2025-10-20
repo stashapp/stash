@@ -26,7 +26,18 @@ const (
 
 func allowUnauthenticated(r *http.Request) bool {
 	// #2715 - allow access to UI files
-	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
+	// Allow access to internal image routes for cover image URLs
+	path := r.URL.Path
+	if strings.HasPrefix(path, "/performer/") && strings.HasSuffix(path, "/image") ||
+		strings.HasPrefix(path, "/studio/") && strings.HasSuffix(path, "/image") ||
+		strings.HasPrefix(path, "/tag/") && strings.HasSuffix(path, "/image") ||
+		strings.HasPrefix(path, "/group/") && (strings.HasSuffix(path, "/frontimage") || strings.HasSuffix(path, "/backimage")) ||
+		strings.HasPrefix(path, "/image/") && (strings.HasSuffix(path, "/image") || strings.HasSuffix(path, "/thumbnail") || strings.HasSuffix(path, "/preview")) ||
+		strings.HasPrefix(path, "/scene/") && (strings.HasSuffix(path, "/screenshot") || strings.HasSuffix(path, "/preview")) {
+		return true
+	}
+
+	return strings.HasPrefix(path, loginEndpoint) || path == logoutEndpoint || path == "/css" || strings.HasPrefix(path, "/assets")
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
