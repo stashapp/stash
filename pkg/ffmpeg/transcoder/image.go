@@ -24,11 +24,17 @@ func ImageThumbnail(input string, options ImageThumbnailOptions) ffmpeg.Args {
 	args = append(args, "-hide_banner")
 	args = args.LogLevel(ffmpeg.LogLevelError)
 
+	// Select codec based on output format
+	codec := ffmpeg.VideoCodecMJpeg
+	if options.OutputFormat == ffmpeg.ImageFormatWebp {
+		codec = ffmpeg.VideoCodecLibWebP
+	}
+
 	args = args.Overwrite().
 		ImageFormat(options.InputFormat).
 		Input(input).
 		VideoFilter(videoFilter).
-		VideoCodec(ffmpeg.VideoCodecMJpeg)
+		VideoCodec(codec)
 
 	args = append(args, "-frames:v", "1")
 

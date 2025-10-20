@@ -64,7 +64,9 @@ func (t *GenerateImageThumbnailTask) required() bool {
 		return false
 	}
 
-	if vf.GetHeight() <= models.DefaultGthumbWidth && vf.GetWidth() <= models.DefaultGthumbWidth {
+	// 修改为基于文件大小判断：只有文件大小 >= 1MB 时才生成缩略图
+	// 1MB = 1024 * 1024 = 1048576 bytes
+	if vf.Base().Size < 1048576 {
 		return false
 	}
 

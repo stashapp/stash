@@ -75,7 +75,7 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 }
 
 func (gp *generatedPaths) GetThumbnailPath(checksum string, width int) string {
-	fname := fmt.Sprintf("%s_%d.jpg", checksum, width)
+	fname := fmt.Sprintf("%s_%d.webp", checksum, width)
 	return filepath.Join(gp.Thumbnails, fsutil.GetIntraDir(checksum, thumbDirDepth, thumbDirLength), fname)
 }
 

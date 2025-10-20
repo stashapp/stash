@@ -37,6 +37,25 @@ interface IImageWallProps {
   handleImageOpen: (index: number) => void;
 }
 
+function getImageSrc(image: GQL.SlimImageDataFragment): string {
+  const fileSize = image.visual_files && image.visual_files[0] ? image.visual_files[0].size : 0;
+  const hasImagePath = image.paths.image && image.paths.image !== "";
+  const hasThumbnailPath = image.paths.thumbnail && image.paths.thumbnail !== "";
+
+  // 图片小于1MB，优先使用原图
+  if (fileSize < 1048576) {
+    return hasImagePath ? image.paths.image! : hasThumbnailPath ? image.paths.thumbnail! : image.paths.image!;
+  }
+
+  // 图片大于等于1MB，优先使用缩略图（如果存在）
+  if (hasThumbnailPath) {
+    return image.paths.thumbnail!;
+  }
+
+  // 缩略图不存在，回退到原图
+  return hasImagePath ? image.paths.image! : image.paths.thumbnail!;
+}
+
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   const { configuration } = useContext(ConfigurationContext);
   const uiConfig = configuration?.ui;
@@ -53,12 +72,9 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
 
   images.forEach((image, index) => {
     let imageData = {
-      src:
-        image.paths.preview != ""
-          ? image.paths.preview!
-          : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      src: getImageSrc(image),
+      width: image.visual_files && image.visual_files[0] ? image.visual_files[0].width : 100,
+      height: image.visual_files && image.visual_files[0] ? image.visual_files[0].height : 100,
       tabIndex: index,
       key: image.id,
       loading: "lazy",

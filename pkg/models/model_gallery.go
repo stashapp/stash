@@ -170,4 +170,4 @@ func (g Gallery) DisplayName() string {
 	return strconv.Itoa(g.ID)
 }
 
-const DefaultGthumbWidth int = 640
+const DefaultGthumbWidth int = 1920
