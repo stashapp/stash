@@ -683,6 +683,8 @@ input ImageFilterType {
   studios_filter: StudioFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
 }
 
 input FileFilterType {
