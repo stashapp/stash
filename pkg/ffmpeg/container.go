@@ -34,6 +34,7 @@ const (
 	Hevc           string = "hevc"
 	Vp8            string = "vp8"
 	Vp9            string = "vp9"
+	Av1            string = "av1"
 	Mkv            string = "mkv" // only used from the browser to indicate mkv support
 	Hls            string = "hls" // only used from the browser to indicate hls support
 )

@@ -6,7 +6,7 @@ import (
 )
 
 // only support H264 by default, since Safari does not support VP8/VP9
-var defaultSupportedCodecs = []string{H264, H265}
+var defaultSupportedCodecs = []string{H264, H265, Hevc, Vp9, Av1}
 
 var validForH264Mkv = []Container{Mp4, Matroska}
 var validForH264 = []Container{Mp4}
@@ -17,6 +17,8 @@ var validForVp9Mkv = []Container{Webm, Matroska}
 var validForVp9 = []Container{Webm}
 var validForHevcMkv = []Container{Mp4, Matroska}
 var validForHevc = []Container{Mp4}
+var validForAv1Mkv = []Container{Mp4, Matroska, Webm}
+var validForAv1 = []Container{Mp4, Webm}
 
 var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
 var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
@@ -122,6 +124,11 @@ func isValidCombo(codecName string, format Container, supportedVideoCodecs []str
 			}
 			return isValidForContainer(format, validForHevc)
 		}
+	case Av1:
+		if supportMKV {
+			return isValidForContainer(format, validForAv1Mkv)
+		}
+		return isValidForContainer(format, validForAv1)
 	}
 	return false
 }

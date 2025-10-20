@@ -17,16 +17,26 @@ var (
 	// Hardware codec's
 	VideoCodecN264  = makeVideoCodec("H264 NVENC", "h264_nvenc")
 	VideoCodecN264H = makeVideoCodec("H264 NVENC HQ profile", "h264_nvenc")
+	VideoCodecNHEVC = makeVideoCodec("HEVC NVENC", "hevc_nvenc")
+	VideoCodecNAV1  = makeVideoCodec("AV1 NVENC", "av1_nvenc")
 	VideoCodecI264  = makeVideoCodec("H264 Intel Quick Sync Video (QSV)", "h264_qsv")
 	VideoCodecI264C = makeVideoCodec("H264 Intel Quick Sync Video (QSV) Compatibility profile", "h264_qsv")
-	VideoCodecA264  = makeVideoCodec("H264 Advanced Media Framework (AMF)", "h264_amf")
-	VideoCodecM264  = makeVideoCodec("H264 VideoToolbox", "h264_videotoolbox")
-	VideoCodecV264  = makeVideoCodec("H264 VAAPI", "h264_vaapi")
-	VideoCodecR264  = makeVideoCodec("H264 V4L2M2M", "h264_v4l2m2m")
-	VideoCodecO264  = makeVideoCodec("H264 OMX", "h264_omx")
+	VideoCodecIHEVC = makeVideoCodec("HEVC Intel Quick Sync Video (QSV)", "hevc_qsv")
+	VideoCodecIAV1  = makeVideoCodec("AV1 Intel Quick Sync Video (QSV)", "av1_qsv")
 	VideoCodecIVP9  = makeVideoCodec("VP9 Intel Quick Sync Video (QSV)", "vp9_qsv")
+	VideoCodecA264  = makeVideoCodec("H264 Advanced Media Framework (AMF)", "h264_amf")
+	VideoCodecAHEVC = makeVideoCodec("HEVC Advanced Media Framework (AMF)", "hevc_amf")
+	VideoCodecAAV1  = makeVideoCodec("AV1 Advanced Media Framework (AMF)", "av1_amf")
+	VideoCodecM264  = makeVideoCodec("H264 VideoToolbox", "h264_videotoolbox")
+	VideoCodecMHEVC = makeVideoCodec("HEVC VideoToolbox", "hevc_videotoolbox")
+	VideoCodecMAV1  = makeVideoCodec("AV1 VideoToolbox", "av1_videotoolbox")
+	VideoCodecV264  = makeVideoCodec("H264 VAAPI", "h264_vaapi")
+	VideoCodecVHEVC = makeVideoCodec("HEVC VAAPI", "hevc_vaapi")
+	VideoCodecVAV1  = makeVideoCodec("AV1 VAAPI", "av1_vaapi")
 	VideoCodecVVP9  = makeVideoCodec("VP9 VAAPI", "vp9_vaapi")
 	VideoCodecVVPX  = makeVideoCodec("VP8 VAAPI", "vp8_vaapi")
+	VideoCodecR264  = makeVideoCodec("H264 V4L2M2M", "h264_v4l2m2m")
+	VideoCodecO264  = makeVideoCodec("H264 OMX", "h264_omx")
 )
 
 const minHeight int = 480
@@ -36,16 +46,41 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 	var hwCodecSupport []VideoCodec
 
 	// Note that the first compatible codec is returned, so order is important
+	// Priority: Modern codecs first, then legacy codecs
 	for _, codec := range []VideoCodec{
+		// NVIDIA modern codecs
+		VideoCodecNAV1,
+		VideoCodecNHEVC,
 		VideoCodecN264H,
 		VideoCodecN264,
+
+		// Intel modern codecs
+		VideoCodecIAV1,
+		VideoCodecIHEVC,
 		VideoCodecI264,
 		VideoCodecI264C,
+
+		// AMD modern codecs (VAAPI)
+		VideoCodecVAV1,
+		VideoCodecVHEVC,
 		VideoCodecV264,
-		VideoCodecR264,
-		VideoCodecIVP9,
 		VideoCodecVVP9,
+
+		// AMD legacy codecs (AMF)
+		VideoCodecAAV1,
+		VideoCodecAHEVC,
+		VideoCodecA264,
+
+		// Apple modern codecs
+		VideoCodecMAV1,
+		VideoCodecMHEVC,
 		VideoCodecM264,
+
+		// Other legacy codecs
+		VideoCodecR264,
+		VideoCodecO264,
+		VideoCodecVVPX,
+		VideoCodecIVP9,
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
@@ -93,8 +128,11 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 
 func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, codec VideoCodec, vf *models.VideoFile, reqHeight int) bool {
 	if codec == VideoCodecCopy {
+		logger.Infof("[transcode] Codec is VideoCodecCopy, full hardware transcode not applicable")
 		return false
 	}
+
+	logger.Infof("[transcode] Testing full hardware transcode for file %s with codec: %s (%s)", vf.Basename, codec.Name, codec.CodeName)
 
 	var args Args
 	args = append(args, "-hide_banner")
@@ -123,18 +161,23 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, codec VideoCodec, vf 
 			errOutput = err.Error()
 		}
 
-		logger.Debugf("[InitHWSupport] Full hardware transcode for file %s not supported. Error output:\n%s", vf.Basename, errOutput)
+		logger.Infof("[transcode] Full hardware transcode test failed for file %s with codec %s: %s", vf.Basename, codec.Name, errOutput)
+		logger.Debugf("[transcode] Full hardware transcode for file %s not supported. Error output:\n%s", vf.Basename, errOutput)
 		return false
 	}
 
+	logger.Infof("[transcode] Full hardware transcode test passed for file %s with codec %s", vf.Basename, codec.Name)
 	return true
 }
 
 // Prepend input for hardware encoding only
 func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 	switch toCodec {
+	// NVIDIA codecs
 	case VideoCodecN264,
-		VideoCodecN264H:
+		VideoCodecN264H,
+		VideoCodecNHEVC,
+		VideoCodecNAV1:
 		args = append(args, "-hwaccel_device")
 		args = append(args, "0")
 		if fullhw {
