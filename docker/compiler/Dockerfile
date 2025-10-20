@@ -2,7 +2,8 @@ FROM golang:1.22.8
 
 LABEL maintainer="https://discord.gg/2TsNFKt"
 
-RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnupg
+RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnupg tzdata
+ENV TZ=Asia/Shanghai
 
 RUN mkdir -p /etc/apt/keyrings
 

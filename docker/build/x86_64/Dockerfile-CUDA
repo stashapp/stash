@@ -2,7 +2,8 @@
 
 # Build Frontend
 FROM node:alpine as frontend
-RUN apk add --no-cache make git
+RUN apk add --no-cache make git tzdata
+ENV TZ=Asia/Shanghai
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
 WORKDIR /stash
@@ -17,7 +18,8 @@ RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
 
 # Build Backend
 FROM golang:1.22-bullseye as backend
-RUN apt update && apt install -y build-essential golang
+RUN apt update && apt install -y build-essential golang tzdata
+ENV TZ=Asia/Shanghai
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
 COPY ./scripts /stash/scripts/
@@ -32,8 +34,9 @@ RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM nvidia/cuda:12.0.1-base-ubuntu22.04
-RUN apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo
+RUN apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo tzdata
 RUN rm -rf /var/lib/apt/lists/*
+ENV TZ=Asia/Shanghai
 COPY --from=backend /stash/stash /usr/bin/
 
 # NVENC Patch
