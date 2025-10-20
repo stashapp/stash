@@ -235,6 +235,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     const [time, setTime] = useState(0);
     const [ready, setReady] = useState(false);
+    const [isUserPaused, setIsUserPaused] = useState(false);
 
     const {
       interactive: interactiveClient,
@@ -502,6 +503,122 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         player.off("fullscreenchange", fullscreenchange);
       };
     }, [getPlayer]);
+
+    // Pause protection logic - only monitor pause button clicks
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      // When user clicks play button, reset the flag
+      function handlePlay() {
+        setIsUserPaused(false);
+      }
+
+      // When user clicks pause button, set the flag
+      function handlePauseButtonClick() {
+        setIsUserPaused(true);
+      }
+
+      // Add play event listener
+      player.on("play", handlePlay);
+
+      // Listen for clicks on the control bar play/pause toggle button
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const controlBar = player.controlBar as any;
+      const playToggle = controlBar?.playToggle?.el();
+      if (playToggle) {
+        playToggle.addEventListener("click", handlePauseButtonClick);
+        playToggle.addEventListener("touchend", handlePauseButtonClick);
+      }
+
+      // Listen for clicks on the big play/pause button (mobile view)
+      // The big button is dynamically added, so we need to wait for it
+      const checkForBigButton = () => {
+        // Look for the big play/pause button
+        const bigPlayPauseButton = player.el()?.querySelector(".vjs-big-play-pause-button");
+        if (bigPlayPauseButton) {
+          bigPlayPauseButton.addEventListener("click", handlePauseButtonClick);
+          bigPlayPauseButton.addEventListener("touchend", handlePauseButtonClick);
+          return true; // Found and attached
+        }
+
+        // Fallback: look for the big button group and attach to it
+        const bigButtonGroup = player.el()?.querySelector(".vjs-big-button-group");
+        if (bigButtonGroup) {
+          bigButtonGroup.addEventListener("click", handlePauseButtonClick);
+          bigButtonGroup.addEventListener("touchend", handlePauseButtonClick);
+          return true; // Found and attached
+        }
+
+        return false; // Not found yet
+      };
+
+      // Try to find big button immediately
+      let bigButtonFound = checkForBigButton();
+
+      // If not found, set up a mutation observer to watch for it
+      if (!bigButtonFound) {
+        const observer = new MutationObserver(() => {
+          if (checkForBigButton()) {
+            observer.disconnect(); // Stop observing once we find it
+          }
+        });
+
+        if (player.el()) {
+          observer.observe(player.el()!, {
+            childList: true,
+            subtree: true
+          });
+        }
+
+        // Clean up observer on unmount
+        return () => {
+          observer.disconnect();
+        };
+      }
+
+      return () => {
+        player.off("play", handlePlay);
+        if (playToggle) {
+          playToggle.removeEventListener("click", handlePauseButtonClick);
+          playToggle.removeEventListener("touchend", handlePauseButtonClick);
+        }
+
+        // Clean up big button listeners
+        const bigPlayPauseButton = player.el()?.querySelector(".vjs-big-play-pause-button");
+        if (bigPlayPauseButton) {
+          bigPlayPauseButton.removeEventListener("click", handlePauseButtonClick);
+          bigPlayPauseButton.removeEventListener("touchend", handlePauseButtonClick);
+        }
+
+        const bigButtonGroup = player.el()?.querySelector(".vjs-big-button-group");
+        if (bigButtonGroup) {
+          bigButtonGroup.removeEventListener("click", handlePauseButtonClick);
+          bigButtonGroup.removeEventListener("touchend", handlePauseButtonClick);
+        }
+      };
+    }, [getPlayer]);
+
+    // 1-second timer to check pause state
+    useEffect(() => {
+      const interval = setInterval(() => {
+        const player = getPlayer();
+        if (!player) return;
+
+        const isPaused = player.paused();
+
+        // If video is paused but user didn't click pause button, resume playback
+        if (isPaused && !isUserPaused) {
+          player.play()?.catch((error) => {
+            console.error("Auto-resume playback failed:", error);
+          });
+        }
+      }, 1000);
+
+      return () => {
+        clearInterval(interval);
+      };
+    }, [getPlayer, isUserPaused]);
 
     // delay before second play event after a play event to adjust for video player issues
     const DELAY_FOR_SECOND_PLAY_MS = 1000;
