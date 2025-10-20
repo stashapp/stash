@@ -1,4 +1,5 @@
 import videojs, { VideoJsPlayer } from "video.js";
+import ScreenUtils from "src/utils/screen";
 
 // prettier-ignore
 const BigPlayButton = videojs.getComponent("BigPlayButton") as unknown as typeof videojs.BigPlayButton;
@@ -46,7 +47,10 @@ class BigButtonsPlugin extends videojs.getPlugin("plugin") {
     super(player);
 
     player.ready(() => {
-      player.addChild("BigButtonGroup");
+      // 只在移动设备上显示大按钮
+      if (ScreenUtils.isMobile()) {
+        player.addChild("BigButtonGroup");
+      }
     });
   }
 }
