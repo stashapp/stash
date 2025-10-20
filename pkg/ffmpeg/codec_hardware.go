@@ -5,9 +5,11 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -64,12 +66,32 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		args = args.Format("null")
 		args = args.Output("-")
 
-		cmd := f.Command(ctx, args)
+		// #6064 - add timeout to context to prevent hangs
+		const hwTestTimeoutSecondsDefault = 1
+		hwTestTimeoutSeconds := hwTestTimeoutSecondsDefault * time.Second
+
+		// allow timeout to be overridden with environment variable
+		if timeout := os.Getenv("STASH_HW_TEST_TIMEOUT"); timeout != "" {
+			if seconds, err := strconv.Atoi(timeout); err == nil {
+				hwTestTimeoutSeconds = time.Duration(seconds) * time.Second
+			}
+		}
+
+		testCtx, cancel := context.WithTimeout(ctx, hwTestTimeoutSeconds)
+		defer cancel()
+
+		cmd := f.Command(testCtx, args)
+		logger.Tracef("[InitHWSupport] Testing codec %s: %v", codec, cmd.Args)
 
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 
 		if err := cmd.Run(); err != nil {
+			if testCtx.Err() != nil {
+				logger.Debugf("[InitHWSupport] Codec %s test timed out after %d seconds", codec, hwTestTimeoutSeconds)
+				continue
+			}
+
 			errOutput := stderr.String()
 
 			if len(errOutput) == 0 {
