@@ -18,6 +18,9 @@
       max-width: 100%;
       min-height: 210px;
       width: 100%;
+      // 确保没有额外的padding或margin影响宽度
+      padding: 0;
+      margin: 0;
     }
 
     &-anchor:hover {

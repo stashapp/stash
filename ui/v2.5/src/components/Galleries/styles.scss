@@ -180,6 +180,12 @@ $galleryTabWidth: 450px;
   padding-right: 15px;
   position: relative;
   width: 100%;
+
+  // 移动设备下移除padding，使用完整宽度
+  @media (max-width: 576px) {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 @media (min-width: 1200px), (max-width: 575px) {
@@ -217,6 +223,12 @@ $galleryTabWidth: 450px;
     content: "";
     flex: auto;
     flex-grow: 9999;
+  }
+
+  // 移动设备下使用完整宽度
+  @media (max-width: 576px) {
+    width: 100vw;
+    margin: 0;
   }
 }
 
@@ -259,6 +271,14 @@ $galleryTabWidth: 450px;
     &-portrait {
       width: math.div($width, 2);
     }
+  }
+
+  // 修改移动设备下的宽度为100vw
+  @media (max-width: 576px) {
+    @include galleryWidth(100vw);
+
+    // 同时移除padding以使用完整宽度
+    padding: 0;
   }
 
   @media (min-width: 576px) {
