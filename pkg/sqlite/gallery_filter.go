@@ -146,6 +146,21 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 				galleryRepository.tags.innerJoin(f, "gallery_tag", "galleries.id")
 			},
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "files.id",
+			relatedRepo:  fileRepository.repository,
+			relatedHandler: &fileFilterHandler{
+				fileFilter: filter.FilesFilter,
+				isRelated:  true,
+			},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.addFilesTable(f)
+				galleryRepository.addFoldersTable(f)
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
+		},
 	}
 }
 

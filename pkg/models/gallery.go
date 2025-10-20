@@ -59,6 +59,8 @@ type GalleryFilterType struct {
 	StudiosFilter *StudioFilterType `json:"studios_filter"`
 	// Filter by related tags that meet this criteria
 	TagsFilter *TagFilterType `json:"tags_filter"`
+	// Filter by related files that meet this criteria
+	FilesFilter *FileFilterType `json:"files_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
