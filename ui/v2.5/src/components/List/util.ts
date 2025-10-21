@@ -196,16 +196,12 @@ export function useFilterOperations(props: {
     [setFilter]
   );
 
-  const myClearAllCriteria = useCallback(
+  const clearAllCriteria = useCallback(
     (includeSearchTerm = false) => {
-      setFilter((cv) => cv.myClearCriteria(includeSearchTerm));
+      setFilter((cv) => cv.clearCriteria(includeSearchTerm));
     },
     [setFilter]
   );
-
-  const clearAllCriteria = useCallback(() => {
-    setFilter((cv) => cv.clearCriteria());
-  }, [setFilter]);
 
   return {
     setPage,
@@ -213,7 +209,6 @@ export function useFilterOperations(props: {
     setZoom,
     removeCriterion,
     clearAllCriteria,
-    myClearAllCriteria,
   };
 }
 

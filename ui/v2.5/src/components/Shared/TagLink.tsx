@@ -37,7 +37,7 @@ const SortNameLinkComponent: React.FC<ISortNameLinkProps> = ({
     <Badge
       data-name={className}
       data-sort-name={sortName}
-      className={cx("tag-item", className)}
+      className={cx("tag-item tag-link", className)}
       variant="secondary"
     >
       <Link to={link}>{children}</Link>
@@ -56,7 +56,7 @@ const CommonLinkComponent: React.FC<ICommonLinkProps> = ({
   children,
 }) => {
   return (
-    <Badge className={cx("tag-item", className)} variant="secondary">
+    <Badge className={cx("tag-item tag-link", className)} variant="secondary">
       <Link to={link}>{children}</Link>
     </Badge>
   );

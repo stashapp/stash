@@ -350,10 +350,28 @@ func (db *Database) Backup(backupPath string) (err error) {
 		defer thisDB.Close()
 	}
 
-	logger.Infof("Backing up database into: %s", backupPath)
-	_, err = thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
+	// if backup path is not in the same directory as the database,
+	// then backup to the same directory first, then move to the final location.
+	// This is to prevent errors if the backup directory is over a network share.
+	dbDir := filepath.Dir(db.dbPath)
+	moveAfter := filepath.Dir(backupPath) != dbDir
+	vacuumOut := backupPath
+	if moveAfter {
+		vacuumOut = filepath.Join(dbDir, filepath.Base(backupPath))
+	}
+
+	logger.Infof("Backing up database into: %s", vacuumOut)
+	_, err = thisDB.Exec(`VACUUM INTO "` + vacuumOut + `"`)
 	if err != nil {
 		return fmt.Errorf("vacuum failed: %w", err)
+	}
+
+	if moveAfter {
+		logger.Infof("Moving database backup to: %s", backupPath)
+		err = fsutil.SafeMove(vacuumOut, backupPath)
+		if err != nil {
+			return fmt.Errorf("moving database backup failed: %w", err)
+		}
 	}
 
 	return nil

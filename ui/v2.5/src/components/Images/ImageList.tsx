@@ -20,7 +20,7 @@ import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
-import Gallery from "react-photo-gallery";
+import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -54,6 +54,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
   const { configuration } = useContext(ConfigurationContext);
   const uiConfig = configuration?.ui;
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   let photos: {
     src: string;
     srcSet?: string | string[] | undefined;
@@ -70,8 +72,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
         image.paths.preview != ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files?.[0]?.width ?? 0,
+      height: image.visual_files?.[0]?.height ?? 0,
       tabIndex: index,
       key: image.id,
       loading: "lazy",
@@ -94,22 +96,45 @@ const ImageWall: React.FC<IImageWallProps> = ({
     return Math.round(columnCount);
   }
 
-  function targetRowHeight(containerWidth: number) {
-    let zoomHeight = 280;
-    breakpointZoomHeights.forEach((e) => {
-      if (containerWidth >= e.minWidth) {
-        zoomHeight = e.heights[zoomIndex];
-      }
-    });
-    return zoomHeight;
-  }
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
+
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps) => {
+      return (
+        <ImageWallItem
+          {...props}
+          maxHeight={
+            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor
+          }
+        />
+      );
+    },
+    [targetRowHeight]
+  );
 
   return (
-    <div className="gallery">
+    <div className="gallery" ref={containerRef}>
       {photos.length ? (
         <Gallery
           photos={photos}
-          renderImage={ImageWallItem}
+          renderImage={renderImage}
           onClick={showLightboxOnClick}
           margin={uiConfig?.imageWallOptions?.margin!}
           direction={uiConfig?.imageWallOptions?.direction!}

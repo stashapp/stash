@@ -11,8 +11,10 @@ import ScreenUtils, { useMediaQuery } from "src/utils/screen";
 import { IViewConfig, useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { View } from "../List/views";
 import cx from "classnames";
-import { Button, ButtonToolbar, CollapseProps } from "react-bootstrap";
+import { Button, CollapseProps } from "react-bootstrap";
 import { useIntl } from "react-intl";
+import { Icon } from "./Icon";
+import { faSliders } from "@fortawesome/free-solid-svg-icons";
 
 const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
 
@@ -79,62 +81,19 @@ export const SidebarSection: React.FC<
   );
 };
 
-export const SidebarIcon: React.FC = () => (
-  <>
-    {/* From: https://iconduck.com/icons/19707/sidebar
-MIT License
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. */}
-    <svg
-      className="svg-inline--fa fa-icon"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <line x1="9" y1="3" x2="9" y2="21" />
-    </svg>
-  </>
-);
-
-export const SidebarToolbar: React.FC<{
-  onClose?: () => void;
-}> = ({ onClose, children }) => {
+export const SidebarToggleButton: React.FC<{
+  onClick: () => void;
+}> = ({ onClick }) => {
   const intl = useIntl();
-
   return (
-    <ButtonToolbar className="sidebar-toolbar">
-      {onClose ? (
-        <Button
-          onClick={onClose}
-          className="sidebar-close-button"
-          variant="secondary"
-          title={intl.formatMessage({ id: "actions.sidebar.close" })}
-        >
-          <SidebarIcon />
-        </Button>
-      ) : null}
-      {children}
-    </ButtonToolbar>
+    <Button
+      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
+      variant="secondary"
+      onClick={onClick}
+      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+    >
+      <Icon icon={faSliders} />
+    </Button>
   );
 };
 

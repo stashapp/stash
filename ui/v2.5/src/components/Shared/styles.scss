@@ -1075,11 +1075,11 @@ $sticky-header-height: calc(50px + 3.3rem);
         margin-left: 0;
       }
     }
+  }
 
-    .sidebar-pane.hide-sidebar {
-      > :nth-child(2) {
-        padding-left: 15px;
-      }
+  .sidebar-pane.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 15px;
     }
   }
 }

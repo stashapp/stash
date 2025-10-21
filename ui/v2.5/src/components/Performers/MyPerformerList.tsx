@@ -699,7 +699,7 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
   const { modal, showModal, closeModal } = modalState;
 
   // Utility hooks
-  const { setPage, removeCriterion, myClearAllCriteria } = useFilterOperations({
+  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
     filter,
     setFilter,
   });
@@ -853,7 +853,7 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => myClearAllCriteria(true)}
+                onRemoveAllCriterion={() => clearAllCriteria(true)}
                 onEditSearchTerm={() => {
                   setShowSidebar(true);
                   setSearchFocus(true);

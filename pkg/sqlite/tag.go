@@ -808,6 +808,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		imagesTagsTable:      imageIDColumn,
 		"performers_tags":    "performer_id",
 		"studios_tags":       "studio_id",
+		groupsTagsTable:      "group_id",
 	}
 
 	args = append(args, destination)

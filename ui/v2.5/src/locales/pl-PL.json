@@ -141,7 +141,9 @@
         "remove_from_containing_group": "Usuń z grupy",
         "reset_cover": "Przywróć domyślną okładkę",
         "add_sub_groups": "Dodaj podgrupy",
-        "view_history": "Zobacz historię"
+        "view_history": "Zobacz historię",
+        "play": "Odtwarzaj",
+        "show_results": "Pokaż wyniki"
     },
     "actions_name": "Działania",
     "age": "Wiek",
@@ -346,6 +348,9 @@
                         "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do FFmpeg przed polem wyjściowym podczas generowania wideo.",
                         "heading": "Argumenty wyjścia dla transkodowania z użyciem FFmpeg"
                     }
+                },
+                "download_ffmpeg": {
+                    "heading": "Pobierz FFmpeg"
                 }
             },
             "funscript_heatmap_draw_range": "Bierz pod uwagę zakres dla wygenerowanych heatmap",
@@ -832,7 +837,6 @@
             "destination": "Cel",
             "source": "Źródło"
         },
-        "overwrite_filter_confirm": "Czy na pewno chcesz nadpisać istniejące zapisane zapytanie {entityName}?",
         "reassign_entity_title": "Przypisz {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "reassign_files": {
             "destination": "Przypisz ponownie do"

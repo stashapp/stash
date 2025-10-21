@@ -26,14 +26,22 @@ interface IScenePhoto {
   onError?: (photo: PhotoProps<IScenePhoto>) => void;
 }
 
-export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
-  props: RenderImageProps<IScenePhoto>
-) => {
+interface IExtraProps {
+  maxHeight: number;
+}
+
+export const SceneWallItem: React.FC<
+  RenderImageProps<IScenePhoto> & IExtraProps
+> = (props: RenderImageProps<IScenePhoto> & IExtraProps) => {
   const intl = useIntl();
 
   const { configuration } = useContext(ConfigurationContext);
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
+
+  const height = Math.min(props.maxHeight, props.photo.height);
+  const zoomFactor = height / props.photo.height;
+  const width = props.photo.width * zoomFactor;
 
   const [active, setActive] = useState(false);
 
@@ -72,8 +80,8 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
       role="button"
       style={{
         ...divStyle,
-        width: props.photo.width,
-        height: props.photo.height,
+        width,
+        height,
       }}
     >
       <ImagePreview
@@ -83,8 +91,8 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
         autoPlay={video}
         key={props.photo.key}
         src={props.photo.src}
-        width={props.photo.width}
-        height={props.photo.height}
+        width={width}
+        height={height}
         alt={props.photo.alt}
         onMouseEnter={() => setActive(true)}
         onMouseLeave={() => setActive(false)}
@@ -146,6 +154,8 @@ const SceneWall: React.FC<ISceneWallProps> = ({
 }) => {
   const history = useHistory();
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   const margin = 3;
   const direction = "row";
 
@@ -196,22 +206,41 @@ const SceneWall: React.FC<ISceneWallProps> = ({
     return Math.round(columnCount);
   }
 
-  function targetRowHeight(containerWidth: number) {
-    let zoomHeight = 280;
-    breakpointZoomHeights.forEach((e) => {
-      if (containerWidth >= e.minWidth) {
-        zoomHeight = e.heights[zoomIndex];
-      }
-    });
-    return zoomHeight;
-  }
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
 
-  const renderImage = useCallback((props: RenderImageProps<IScenePhoto>) => {
-    return <SceneWallItem {...props} />;
-  }, []);
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps<IScenePhoto>) => {
+      return (
+        <SceneWallItem
+          {...props}
+          maxHeight={
+            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor
+          }
+        />
+      );
+    },
+    [targetRowHeight]
+  );
 
   return (
-    <div className="scene-wall">
+    <div className={`scene-wall`} ref={containerRef}>
       {photos.length ? (
         <SceneGallery
           photos={photos}

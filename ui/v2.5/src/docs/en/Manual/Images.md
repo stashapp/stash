@@ -13,6 +13,8 @@ For best results, images in zip file should be stored without compression (copy,
 
 If a filename of an image in the gallery zip file ends with `cover.jpg`, it will be treated like a cover and presented first in the gallery view page and as a gallery cover in the gallery list view. If more than one images match the name the first one found in natural sort order is selected.
 
+You can also manually select any image from a gallery as its cover. On the gallery details page, select the desired cover image, and then select **Set as Cover** in the ⋯ menu.
+
 ## Image clips/gifs
 
 Images can also be clips/gifs. These are meant to be short video loops. Right now they are not possible in zipfiles. To declare video files to be images, there are two ways:

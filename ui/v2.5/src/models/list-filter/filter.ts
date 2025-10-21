@@ -476,7 +476,7 @@ export class ListFilterModel {
     return this.setCriteria(criteria);
   }
 
-  public myClearCriteria(clearSearchTerm = false) {
+  public clearCriteria(clearSearchTerm = false) {
     const ret = this.clone();
     if (clearSearchTerm) {
       ret.searchTerm = "";
@@ -490,13 +490,6 @@ export class ListFilterModel {
     const ret = this.clone();
     ret.searchTerm = "";
     ret.currentPage = 1; // reset to first page
-    return ret;
-  }
-
-  public clearCriteria() {
-    const ret = this.clone();
-    ret.criteria = [];
-    ret.currentPage = 1;
     return ret;
   }
 

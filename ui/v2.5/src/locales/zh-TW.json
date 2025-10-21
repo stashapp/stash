@@ -141,7 +141,15 @@
         "reset_resume_time": "重置恢復時間",
         "set_cover": "設為封面",
         "remove_from_containing_group": "從群組中刪除",
-        "add_sub_groups": "新增子分類"
+        "add_sub_groups": "新增子分類",
+        "sidebar": {
+            "close": "關閉側邊攔",
+            "open": "開啟側邊攔",
+            "toggle": "切換側邊欄"
+        },
+        "show_results": "顯示結果",
+        "show_count_results": "顯示 {count} 筆結果",
+        "play": "播放"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -440,7 +448,9 @@
             "endpoint": "端點",
             "graphql_endpoint": "GraphQL 端點",
             "name": "名稱",
-            "title": "Stash-box 端點"
+            "title": "Stash-box 端點",
+            "max_requests_per_minute": "每分鐘請求上限",
+            "max_requests_per_minute_description": "當設為 0 時，會套用預設值 {defaultValue}"
         },
         "system": {
             "transcoding": "轉檔"
@@ -566,7 +576,9 @@
                 "whitespace_chars": "空白字元",
                 "whitespace_chars_desc": "這些字元將在標題中被空格取代"
             },
-            "scene_tools": "短片工具"
+            "scene_tools": "短片工具",
+            "heading": "工具",
+            "graphql_playground": "GraphQL 測試環境"
         },
         "ui": {
             "abbreviate_counters": {
@@ -726,7 +738,8 @@
                     },
                     "enable_chromecast": "啟用 Chromecast",
                     "show_ab_loop_controls": "顯示AB循環插件控件",
-                    "disable_mobile_media_auto_rotate": "停用行動裝置上全螢幕媒體的自動旋轉功能"
+                    "disable_mobile_media_auto_rotate": "停用行動裝置上全螢幕媒體的自動旋轉功能",
+                    "show_range_markers": "顯示範圍標記"
                 }
             },
             "scene_wall": {
@@ -889,7 +902,6 @@
             "destination": "目的地",
             "source": "來源"
         },
-        "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
         "reassign_entity_title": "{count, plural, one {重新指定{singularEntity}}}",
         "reassign_files": {
             "destination": "重新指定至"
@@ -950,7 +962,9 @@
         },
         "clear_o_history_confirm": "您確定要清除尻尻紀錄嗎？",
         "clear_play_history_confirm": "您確定要清除播放紀錄嗎？",
-        "performers_found": "找到{count} 個演員"
+        "performers_found": "找到{count} 個演員",
+        "set_default_filter_confirm": "是否確定設定這一個過濾條件為預設?",
+        "overwrite_filter_warning": "篩選器 \"{entityName}\" 已存在，將被覆蓋。"
     },
     "dimensions": "解析度",
     "director": "導演",
@@ -960,7 +974,8 @@
         "list": "條列顯示",
         "tagger": "標記工具",
         "unknown": "未知",
-        "wall": "預覽牆顯示"
+        "wall": "預覽牆顯示",
+        "label_current": "顯示模式：{current}"
     },
     "donate": "贊助",
     "dupe_check": {
@@ -1090,7 +1105,7 @@
         "interactive_speed": "互動速度",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "這齣戲裡面 {age} {years_old}"
+            "age_context": "這齣戲時 {age} {years_old}"
         },
         "phash": "PHash",
         "play_count": "播放次數",
@@ -1190,7 +1205,8 @@
         "name": "篩選",
         "saved_filters": "已儲存的過濾條件",
         "update_filter": "更新篩選",
-        "edit_filter": "編輯篩選器"
+        "edit_filter": "編輯篩選器",
+        "more_filter_criteria": "+{count} 更多"
     },
     "seconds": "秒",
     "settings": "設定",
@@ -1515,6 +1531,18 @@
     "custom_fields": {
         "field": "欄位",
         "title": "自訂欄位",
-        "value": "值"
-    }
+        "value": "值",
+        "criteria_format_string_others": "{criterion} (custom field) 條件：{modifierString} {valueString} (+{others} others)",
+        "criteria_format_string": "{criterion} (custom field) 條件：{modifierString} {valueString}"
+    },
+    "login": {
+        "login": "登入",
+        "username": "使用者名稱",
+        "password": "密碼",
+        "invalid_credentials": "無效的使用者名稱或是密碼",
+        "internal_error": "系統發生未預期的內部錯誤。詳情請參考日誌"
+    },
+    "sort_name": "分類名稱",
+    "eta": "預估剩餘時間",
+    "age_on_date": "在{age}歲時製作"
 }

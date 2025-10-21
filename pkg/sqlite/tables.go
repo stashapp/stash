@@ -76,7 +76,7 @@ var (
 		},
 		fkColumn:     imagesTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	imagesPerformersTableMgr = &joinTable{
@@ -116,7 +116,7 @@ var (
 		},
 		fkColumn:     galleriesTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	galleriesPerformersTableMgr = &joinTable{
@@ -174,7 +174,7 @@ var (
 		},
 		fkColumn:     scenesTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	scenesPerformersTableMgr = &joinTable{
@@ -282,7 +282,7 @@ var (
 		},
 		fkColumn:     performersTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	performersStashIDsTableMgr = &stashIDTable{
@@ -314,7 +314,7 @@ var (
 		},
 		fkColumn:     studiosTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	studiosStashIDsTableMgr = &stashIDTable{
@@ -331,6 +331,10 @@ var (
 		idColumn: goqu.T(tagTable).Col(idColumn),
 	}
 
+	// formerly: goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc()
+	tagTableSort    = goqu.L("COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI").Asc()
+	tagTableSortSQL = "COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI ASC"
+
 	tagsAliasesTableMgr = &stringTable{
 		table: table{
 			table:    tagsAliasesJoinTable,
@@ -346,7 +350,7 @@ var (
 		},
 		fkColumn:     tagRelationsJoinTable.Col(tagParentIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	tagsChildTagsTableMgr = *tagsParentTagsTableMgr.invert()
@@ -373,7 +377,7 @@ var (
 		},
 		fkColumn:     groupsTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
-		orderBy:      goqu.COALESCE(tagTableMgr.table.Col("sort_name"), tagTableMgr.table.Col("name")).Asc(),
+		orderBy:      tagTableSort,
 	}
 
 	groupRelationshipTableMgr = &table{

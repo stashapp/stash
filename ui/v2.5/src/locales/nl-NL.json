@@ -141,7 +141,15 @@
         "make_primary": "Als primair aanduiden",
         "reload": "Herladen",
         "copy_to_clipboard": "Kopiëren naar klembord",
-        "swap": "Omwisselen"
+        "swap": "Omwisselen",
+        "sidebar": {
+            "close": "Sluit zijbalk",
+            "open": "Open zijbalk",
+            "toggle": "Schakelaar Zijbalk"
+        },
+        "show_results": "Resultaat tonen",
+        "show_count_results": "{count} resultaten tonen",
+        "play": "Afspelen"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -179,7 +187,10 @@
             "show_male_label": "Mannen tonen",
             "source": "Bron",
             "mark_organized_label": "Markeren als geordend na opslaan",
-            "mark_organized_desc": "Markeer een scène als geordend na klikken op opslaan."
+            "mark_organized_desc": "Markeer een scène als geordend na klikken op opslaan.",
+            "errors": {
+                "blacklist_duplicate": "Dubbel zwarte lijst item"
+            }
         },
         "noun_query": "Zoekvraag",
         "results": {
@@ -343,12 +354,59 @@
             "database": "Database",
             "ffmpeg": {
                 "download_ffmpeg": {
-                    "heading": "Download FFmpeg"
+                    "heading": "Download FFmpeg",
+                    "description": "Downloadt FFmpeg naar de configuratiemap en wist de ffmpeg- en ffprobe-paden zodat deze uit de configuratiemap kunnen worden opgehaald."
                 },
                 "hardware_acceleration": {
-                    "heading": "FFmpeg hardwarecodering"
+                    "heading": "FFmpeg hardwarecodering",
+                    "desc": "Gebruikt beschikbare hardware om video te coderen voor live transcodering."
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg uitvoerbaar pad",
+                    "description": "Pad naar het uitvoerbare bestand van ffmpeg (niet alleen de map). Indien leeg, wordt ffmpeg vanuit de omgeving opgelost via $PATH, de configuratiemap of vanuit $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "heading": "FFprobe uitvoerbaar pad",
+                    "description": "Pad naar het uitvoerbare bestand ffprobe (niet alleen de map). Indien leeg, wordt ffprobe vanuit de omgeving opgelost via $PATH, de configuratiemap of vanuit $HOME/.stash"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Geavanceerd: Extra argumenten om door te geven aan ffmpeg vóór het invoerveld bij het live transcoderen van video.",
+                        "heading": "FFmpeg Live Transcode Invoer Argumenten"
+                    },
+                    "output_args": {
+                        "desc": "Geavanceerd: Extra argumenten om door te geven aan ffmpeg vóór het uitvoerveld bij het live transcoderen van video.",
+                        "heading": "FFmpeg Live Transcode Uitvoer Argumenten"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Geavanceerd: Extra argumenten om door te geven aan ffmpeg vóór het invoerveld bij het genereren van video.",
+                        "heading": "FFmpeg Transcode Invoer Argumenten"
+                    },
+                    "output_args": {
+                        "heading": "FFmpeg Transcode Uitvoer Argumenten",
+                        "desc": "Geavanceerd: Extra argumenten die aan ffmpeg moeten worden doorgegeven vóór het uitvoerveld bij het genereren van video."
+                    }
                 }
-            }
+            },
+            "blobs_storage": {
+                "heading": "Type binaire gegevensopslag",
+                "description": "Waar binaire gegevens zoals scènecovers, performer-, studio- en tagafbeeldingen worden opgeslagen. Nadat u deze waarde hebt gewijzigd, moeten de bestaande gegevens worden gemigreerd met behulp van de taken Blobs migreren. Zie de pagina Taken voor meer informatie over migratie."
+            },
+            "blobs_path": {
+                "description": "Locatie in het bestandssysteem waar binaire gegevens worden opgeslagen. Alleen van toepassing bij gebruik van het Bestandssysteem blob-opslagtype. WAARSCHUWING: om dit te wijzigen, moeten bestaande gegevens handmatig worden verplaatst.",
+                "heading": "Pad naar binair gegevensbestandssysteem"
+            },
+            "heatmap_generation": "Funscript Heatmap Generatie",
+            "gallery_cover_regex_desc": "Regexp gebruikt om een afbeelding te identificeren als galerijomslag",
+            "plugins_path": {
+                "description": "Map locatie van plugin-configuratiebestanden",
+                "heading": "Plugin Pad"
+            },
+            "gallery_cover_regex_label": "Galerie omslagpatroon",
+            "funscript_heatmap_draw_range": "Bereik opnemen in gegenereerde heatmaps",
+            "funscript_heatmap_draw_range_desc": "Teken het bewegingsbereik op de y-as van de gegenereerde heatmap. Bestaande heatmaps moeten na wijziging opnieuw worden gegenereerd."
         },
         "library": {
             "exclusions": "Uitzonderingen",
@@ -360,7 +418,9 @@
         },
         "plugins": {
             "hooks": "Triggers",
-            "triggers_on": "Reageert op"
+            "triggers_on": "Reageert op",
+            "available_plugins": "Beschikbare Plugins",
+            "installed_plugins": "Geïnstalleerde Plugins"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadata",
@@ -371,7 +431,9 @@
             "scrapers": "Schrapers",
             "search_by_name": "Zoek op naam",
             "supported_types": "Ondersteunde types",
-            "supported_urls": "URL's"
+            "supported_urls": "URL's",
+            "installed_scrapers": "Geïnstalleerde Schrapers",
+            "available_scrapers": "Beschikbare schrapers"
         },
         "stashbox": {
             "add_instance": "Voeg stash-box instance toe",
@@ -380,7 +442,9 @@
             "endpoint": "Eindpunt",
             "graphql_endpoint": "GraphQL eindpunt",
             "name": "Naam",
-            "title": "Stash-box Eindpunten"
+            "title": "Stash-box Eindpunten",
+            "max_requests_per_minute_description": "Gebruikt de standaardwaarde van {defaultValue} als deze is ingesteld op 0",
+            "max_requests_per_minute": "Max aanvragen per minuut"
         },
         "system": {
             "transcoding": "Transcoderen"
@@ -449,7 +513,22 @@
                 "scanning_paths": "Scannen van de volgende paden"
             },
             "scan_for_content_desc": "Scan naar nieuwe inhoud en voeg deze toe aan de database.",
-            "set_name_date_details_from_metadata_if_present": "Stel de naam, datum, details in vanuit Embedded File Metadata"
+            "set_name_date_details_from_metadata_if_present": "Stel de naam, datum, details in vanuit Embedded File Metadata",
+            "clean_generated": {
+                "blob_files": "Blob bestanden",
+                "image_thumbnails_desc": "Afbeeldingsminiaturen en clips",
+                "markers": "Markeer Voorbeelden",
+                "previews": "Scene Voorbeelden",
+                "sprites": "Scène Sprites",
+                "transcodes": "Scène Transcoderingen",
+                "description": "Verwijdert gegenereerde bestanden zonder bijbehorende database-invoer.",
+                "previews_desc": "Scene voorbeelden en afbeeldingsminiaturen",
+                "image_thumbnails": "Afbeeldingsminiaturen"
+            },
+            "anonymising_database": "Anonimiseer database",
+            "anonymise_database": "Maakt een kopie van de database naar de backups-map, waarbij alle gevoelige gegevens anoniem worden gemaakt. Deze kan vervolgens aan anderen worden verstrekt voor probleemoplossing en debugging. De originele database wordt niet gewijzigd. De geanonimiseerde database gebruikt de bestandsnaamindeling {filename_format}.",
+            "anonymise_and_download": "Maakt een geanonimiseerde kopie van de database en downloadt het resulterende bestand.",
+            "generate_clip_previews_during_scan": "Genereer voorbeelden van Afbeelingsfragmenten"
         },
         "tools": {
             "scene_duplicate_checker": "Scène Duplicator Checker",
@@ -501,7 +580,7 @@
             },
             "funscript_offset": {
                 "description": "Time Offset in milliseconden voor het afspelen van interactieve scripts.",
-                "heading": "Funscript Offset (ms)"
+                "heading": ""
             },
             "handy_connection": {
                 "connect": "Connecteer",
@@ -515,7 +594,7 @@
             },
             "handy_connection_key": {
                 "description": "Handy connection key om te gebruiken voor interactieve scènes. Instellen van deze sleutel staat Stash toe om uw huidige scène-informatie met HandyFeeling.com te delen",
-                "heading": "Handy Connection Key"
+                "heading": ""
             },
             "image_lightbox": {
                 "heading": "Afbeelding Lightbox"
@@ -602,11 +681,11 @@
         "files": "{count, plural, one {Bestand} other {Bestanden}}",
         "galleries": "{count, plural, one {Galerij} other {Galerijen}}",
         "images": "{count, plural, one {Afbeelding} other {Afbeeldingen}}",
-        "markers": "{count, plural, one {Marker} other {Markers}}",
-        "performers": "{count, plural, one {Performer} other {Performers}}",
-        "scenes": "{count, plural, one {Scene} other {Scenes}}",
-        "studios": "{count, plural, one {Studio} other {Studios}}",
-        "tags": "{count, plural, one {Tag} other {Tags}}"
+        "markers": "",
+        "performers": "",
+        "scenes": "",
+        "studios": "",
+        "tags": ""
     },
     "country": "Land",
     "cover_image": "Cover afbeelding",
@@ -678,7 +757,6 @@
             "destination": "Bestemming",
             "source": "Afkomst"
         },
-        "overwrite_filter_confirm": "Weet u zeker dat u de bestaande opgeslagen zoekopdracht {entityName} wilt overschrijven?",
         "scene_gen": {
             "force_transcodes": "Genereren van transcode forceren",
             "force_transcodes_tooltip": "Standaard worden transcodes alleen gegenereerd als het videobestand niet wordt ondersteund in de browser. Indien ingeschakeld, worden transcodes gegenereerd, zelfs als het videobestand in de browser lijkt te worden ondersteund.",
@@ -707,7 +785,7 @@
             "preview_seg_count_head": "Aantal segmenten in voorbeeld",
             "preview_seg_duration_desc": "Duur van elk voorbeeldsegment, in seconden.",
             "preview_seg_duration_head": "Voorbeeld Segment Duur",
-            "sprites": "Scene Scrubber Sprites",
+            "sprites": "Scène Scrubber Sprites",
             "sprites_tooltip": "De set afbeeldingen die onder de videospeler worden weergegeven voor eenvoudige navigatie.",
             "transcodes": "Transcoderingen",
             "transcodes_tooltip": "MP4-conversies van niet-ondersteunde video-indelingen",
@@ -720,7 +798,12 @@
         "scrape_results_existing": "Bestaande",
         "scrape_results_scraped": "Geschraapt",
         "set_image_url_title": "Afbeelding URL",
-        "unsaved_changes": "Niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je wilt vertrekken?"
+        "unsaved_changes": "Niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je wilt vertrekken?",
+        "merge": {
+            "destination": "Bestemming",
+            "source": "Bron"
+        },
+        "performers_found": "{count} artiesten gevonden"
     },
     "dimensions": "Dimensies",
     "director": "Regisseur",
@@ -783,11 +866,11 @@
     "filter_name": "Filter Naam",
     "filters": "Filters",
     "framerate": "Frame snelheid",
-    "frames_per_second": "{value} frames per seconde",
+    "frames_per_second": "{value} fps",
     "front_page": {
         "types": {
             "premade_filter": "Vooraf gemaakte filter",
-            "saved_filter": "Opgeslagen Filter"
+            "saved_filter": "Opgeslagen filter"
         }
     },
     "galleries": "Galerijen",
@@ -798,11 +881,11 @@
         "FEMALE": "Vrouw",
         "INTERSEX": "Intersex",
         "MALE": "Man",
-        "NON_BINARY": "Non-Binar",
+        "NON_BINARY": "Non-binair",
         "TRANSGENDER_FEMALE": "Transgender Vrouw",
         "TRANSGENDER_MALE": "Transgender Man"
     },
-    "hair_color": "Haar kleur",
+    "hair_color": "Haarkleur",
     "handy_connection_status": {
         "connecting": "Verbinden",
         "disconnected": "Verbinding verbroken",
@@ -828,7 +911,8 @@
     "isMissing": "Is Missende",
     "library": "Bibliotheek",
     "loading": {
-        "generic": "Laden…"
+        "generic": "Laden…",
+        "plugins": "Plugins laden…"
     },
     "marker_count": "Marker Aantal",
     "markers": "Markeringen",
@@ -841,13 +925,13 @@
         "interactive_speed": "Interactieve snelheid",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} in deze scène"
+            "age_context": "{age} {years_old} bij productie"
         },
         "phash": "PHash",
         "stream": "Stream",
         "video_codec": "Video Codec"
     },
-    "megabits_per_second": "{value} megabits per seconde",
+    "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
     "name": "Naam",
     "new": "Nieuw",
@@ -996,7 +1080,8 @@
     "stats": {
         "image_size": "Afbeelding groote",
         "scenes_duration": "Scene duur",
-        "scenes_size": "Scene groote"
+        "scenes_size": "Scene groote",
+        "scenes_played": "Scènes gespeeld"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
@@ -1048,5 +1133,47 @@
     "circumcised_types": {
         "CUT": "Ja",
         "UNCUT": "Nee"
+    },
+    "folder": "Folder",
+    "hasChapters": "Heeft hoofdstukken",
+    "image_index": "Afbeelding #",
+    "include_sub_groups": "Inclusief subgroepen",
+    "index_of_total": "{index} van {total}",
+    "orientation": "Oriëntatie",
+    "group": "Groep",
+    "group_count": "Aantal groepen",
+    "height_cm": "Lengte (cm)",
+    "history": "Geschiedenis",
+    "groups": "Groepen",
+    "file_count": "Aantal bestanden",
+    "files_amount": "{value} bestanden",
+    "include_sub_group_content": "Inclusief subgroep inhoud",
+    "login": {
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "login": "Login",
+        "invalid_credentials": "Ongeldige gebruikersnaam of wachtwoord"
+    },
+    "group_scene_number": "Scènenummer",
+    "include_sub_studio_content": "Inclusief substudio inhoud",
+    "last_played_at": "Laatst gespeeld op",
+    "include_sub_tag_content": "Inclusief sub-tag inhoud",
+    "age_on_date": "{age} tijdens productie",
+    "studio_tagger": {
+        "query_all_studios_in_the_database": "Alle studio's in de database",
+        "current_page": "Huidige pagina",
+        "status_tagging_job_queued": "Status: Tagging-taak in de wachtrij",
+        "config": {
+            "no_instances_found": "Geen gevallen gevonden",
+            "these_fields_will_not_be_changed_when_updating_studios": "Deze velden worden niet gewijzigd bij het updaten van studio's."
+        },
+        "failed_to_save_studio": "Opslaan van studio “{studio}” mislukt",
+        "name_already_exists": "Naam bestaat reeds",
+        "network_error": "Netwerkfout",
+        "no_results_found": "Geen resultaten gevonden.",
+        "number_of_studios_will_be_processed": "{studio_count} studio's worden verwerkt",
+        "refresh_tagged_studios": "Vernieuwen getagde studio's",
+        "refreshing_will_update_the_data": "Vernieuwen zal de gegevens van alle getagde studio's van de stash-box bijwerken.",
+        "create_or_tag_parent_studios": "Maak ontbrekende of label bestaande moederstudio's"
     }
 }
