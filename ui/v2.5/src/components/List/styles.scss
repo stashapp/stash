@@ -1080,113 +1080,111 @@ input[type="range"].zoom-slider {
 // the following refers to the new FilteredListToolbar2 component
 // ensure the rules here don't conflict with the original filtered-list-toolbar above
 // TODO - replace with only .filtered-list-toolbar once all lists use the new toolbar
-.scene-list-toolbar {
-  &.filtered-list-toolbar {
+.filtered-list-toolbar {
+  align-items: center;
+  background-color: $body-bg;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  row-gap: 1rem;
+
+  > div {
     align-items: center;
-    background-color: $body-bg;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    row-gap: 1rem;
+    gap: 0.5rem;
+    justify-content: flex-start;
 
-    > div {
-      align-items: center;
-      display: flex;
-      gap: 0.5rem;
-      justify-content: flex-start;
+    &:last-child {
+      flex-shrink: 0;
+      justify-content: flex-end;
+    }
+  }
+}
 
-      &:last-child {
-        flex-shrink: 0;
-        justify-content: flex-end;
+.filtered-list-toolbar {
+  flex-wrap: nowrap;
+  gap: 1rem;
+  // offset the main padding
+  margin-top: -0.5rem;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+  position: sticky;
+  top: $navbar-height;
+  z-index: 10;
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
+
+  .selected-items-info .btn {
+    margin-right: 0.5rem;
+  }
+
+  // hide drop down menu items for play and create new
+  // when the buttons are visible
+  @include media-breakpoint-up(sm) {
+    .scene-list-operations {
+      .play-item,
+      .create-new-item {
+        display: none;
       }
     }
   }
 
-  &.filtered-list-toolbar {
+  // hide play and create new buttons on xs screens
+  // show these in the drop down menu instead
+  @include media-breakpoint-down(xs) {
+    .play-button,
+    .create-new-button {
+      display: none;
+    }
+  }
+
+  .selected-items-info,
+  div.filter-section {
+    border: 1px solid $secondary;
+    border-radius: 0.25rem;
+    flex-grow: 1;
+    overflow-x: hidden;
+  }
+
+  .sidebar-toggle-button {
+    margin-left: auto;
+  }
+
+  .search-container {
+    border-right: 1px solid $secondary;
+    display: block;
+    margin-right: -0.5rem;
+    min-width: calc($sidebar-width - 15px);
+    padding-right: 10px;
+
+    .search-term-input {
+      margin-right: 0;
+      width: 100%;
+
+      .clearable-text-field {
+        height: 100%;
+      }
+    }
+  }
+
+  .filter-tags {
+    flex-grow: 1;
     flex-wrap: nowrap;
-    gap: 1rem;
-    // offset the main padding
-    margin-top: -0.5rem;
-    padding-bottom: 0.5rem;
-    padding-top: 0.5rem;
-    position: sticky;
-    top: $navbar-height;
-    z-index: 10;
+    justify-content: flex-start;
+    margin-bottom: 0;
+
+    // account for filter button, and toggle sidebar buttons with gaps
+    width: calc(100% - 70px - 1rem);
 
     @include media-breakpoint-down(xs) {
-      top: 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
     }
 
-    .selected-items-info .btn {
-      margin-right: 0.5rem;
-    }
-
-    // hide drop down menu items for play and create new
-    // when the buttons are visible
-    @include media-breakpoint-up(sm) {
-      .scene-list-operations {
-        .play-item,
-        .create-new-item {
-          display: none;
-        }
-      }
-    }
-
-    // hide play and create new buttons on xs screens
-    // show these in the drop down menu instead
-    @include media-breakpoint-down(xs) {
-      .play-button,
-      .create-new-button {
-        display: none;
-      }
-    }
-
-    .selected-items-info,
-    div.filter-section {
-      border: 1px solid $secondary;
-      border-radius: 0.25rem;
-      flex-grow: 1;
-      overflow-x: hidden;
-    }
-
-    .sidebar-toggle-button {
-      margin-left: auto;
-    }
-
-    .search-container {
-      border-right: 1px solid $secondary;
-      display: block;
-      margin-right: -0.5rem;
-      min-width: calc($sidebar-width - 15px);
-      padding-right: 10px;
-
-      .search-term-input {
-        margin-right: 0;
-        width: 100%;
-
-        .clearable-text-field {
-          height: 100%;
-        }
-      }
-    }
-
-    .filter-tags {
-      flex-grow: 1;
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-      margin-bottom: 0;
-
-      // account for filter button, and toggle sidebar buttons with gaps
-      width: calc(100% - 70px - 1rem);
-
-      @include media-breakpoint-down(xs) {
-        overflow-x: auto;
-        scrollbar-width: thin;
-      }
-
-      .tag-item {
-        white-space: nowrap;
-      }
+    .tag-item {
+      white-space: nowrap;
     }
   }
 }
@@ -1222,7 +1220,7 @@ input[type="range"].zoom-slider {
     }
 
     .filter-tags {
-      order: 2;
+      // order: 2;
     }
   }
 }
@@ -1230,16 +1228,14 @@ input[type="range"].zoom-slider {
 // hide the search term tag item when the search box is visible
 @include media-breakpoint-up(lg) {
   // TODO - remove scene-list-toolbar when all lists use the new toolbar
-  .scene-list-toolbar.filtered-list-toolbar
-    .filter-tags
-    .search-term-filter-tag {
+  .filtered-list-toolbar .filter-tags .search-term-filter-tag {
     display: none;
   }
 }
 @include media-breakpoint-down(md) {
   // TODO - remove scene-list-toolbar when all lists use the new toolbar
   .sidebar-pane:not(.hide-sidebar)
-    .scene-list-toolbar.filtered-list-toolbar
+    .filtered-list-toolbar
     .filter-tags
     .search-term-filter-tag {
     display: none;
@@ -1247,7 +1243,7 @@ input[type="range"].zoom-slider {
 }
 
 // TODO - remove scene-list-toolbar when all lists use the new toolbar
-.detail-body .scene-list-toolbar.filtered-list-toolbar {
+.detail-body .filtered-list-toolbar {
   top: calc($sticky-detail-header-height + $navbar-height);
 
   @include media-breakpoint-down(xs) {
@@ -1298,5 +1294,46 @@ input[type="range"].zoom-slider {
       margin-left: auto;
       margin-right: auto;
     }
+  }
+}
+
+.my {
+  .selected-items-info,
+  &.filter-section {
+    flex-grow: 1;
+    overflow-x: hidden;
+  }
+
+  &.filter-section {
+    border: 1px solid $secondary;
+    border-radius: 0.25rem;
+  }
+
+  &.filter-section {
+    .sidebar-toggle-button {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+      margin-left: 0;
+    }
+
+    .filter-button {
+      background: none;
+      border: none;
+      border-bottom-right-radius: inherit;
+      border-top-right-radius: inherit;
+      color: #f5f8fa;
+      margin-left: auto;
+      transition: none;
+    }
+  }
+
+  .filter-button {
+    background: none;
+    border: none;
+    border-bottom-right-radius: inherit;
+    border-top-right-radius: inherit;
+    color: #f5f8fa;
+    margin-left: auto;
+    transition: none;
   }
 }

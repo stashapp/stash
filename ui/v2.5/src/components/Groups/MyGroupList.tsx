@@ -19,34 +19,28 @@ import {
   OperationDropdown,
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
+import {
+  FilteredListToolbar2,
+  ToolbarFilterSection,
+  ToolbarSelectionSection,
+} from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { FilterTags } from "../List/MyFilterTags";
 import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import cx from "classnames";
 import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
 } from "../List/Filters/MyFilterSidebar";
-import { Pagination, PaginationIndex } from "../List/Pagination";
-import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
-import { FilterButton } from "../List/Filters/FilterButton";
+import { Pagination } from "../List/Pagination";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
-import { ListViewOptions } from "../List/ListViewOptions";
-import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
 import {
   createDateCriterionOption,
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
-  Criterion,
 } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
-import {
-  faPencil,
-  faPlus,
-  faSliders,
-  faTimes,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { EditGroupsDialog } from "./EditGroupsDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -67,6 +61,7 @@ import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { PatchContainerComponent } from "src/patch";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
+import { ListResultsHeader } from "../List/ListResultsHeader";
 
 function useViewRandom(
   result: GQL.FindGroupsQueryResult,
@@ -250,193 +245,66 @@ interface IOperations {
   className?: string;
 }
 
-const ListToolbarContent: React.FC<{
-  searchTerm: string;
-  criteria: Criterion[];
-  items: GQL.SlimGroupDataFragment[];
-  selectedIds: Set<string>;
+const GroupListOperations: React.FC<{
+  items: number;
+  hasSelection: boolean;
   operations: IOperations[];
-  onToggleSidebar: () => void;
-  onEditCriterion: (c?: Criterion) => void;
-  onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
-  onRemoveAllCriterion: () => void;
-  onEditSearchTerm: () => void;
-  onRemoveSearchTerm: () => void;
-  onSelectAll: () => void;
-  onSelectNone: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onCreateNew: () => void;
-}> = ({
-  searchTerm,
-  criteria,
-  items,
-  selectedIds,
-  operations,
-  onToggleSidebar,
-  onEditCriterion,
-  onRemoveCriterion,
-  onRemoveAllCriterion,
-  onEditSearchTerm,
-  onRemoveSearchTerm,
-  onSelectAll,
-  onSelectNone,
-  onEdit,
-  onDelete,
-  onCreateNew,
-}) => {
+}> = ({ items, hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
   const intl = useIntl();
 
-  const hasSelection = selectedIds.size > 0;
-
-  const sidebarToggle = (
-    <Button
-      className="sidebar-toggle-button ignore-sidebar-outside-click"
-      variant="secondary"
-      onClick={() => onToggleSidebar()}
-      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
-    >
-      <Icon icon={faSliders} />
-    </Button>
-  );
-
   return (
-    <>
-      {!hasSelection && (
-        <div className="my-filter-toolbar">
-          {sidebarToggle}
-          <FilterTags
-            searchTerm={searchTerm}
-            criteria={criteria}
-            onEditCriterion={onEditCriterion}
-            onRemoveCriterion={onRemoveCriterion}
-            onRemoveAll={onRemoveAllCriterion}
-            onEditSearchTerm={onEditSearchTerm}
-            onRemoveSearchTerm={onRemoveSearchTerm}
-            truncateOnOverflow
-          />
-          <FilterButton
-            onClick={() => onEditCriterion()}
-            count={criteria.length}
-            title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
-          />
-        </div>
-      )}
-      {hasSelection && (
-        <div className="selected-items-info">
+    <div>
+      <ButtonGroup>
+        {!hasSelection && (
           <Button
+            className="create-new-button"
             variant="secondary"
-            className="minimal"
-            onClick={() => onSelectNone()}
-            title={intl.formatMessage({ id: "actions.select_none" })}
+            onClick={() => onCreateNew()}
+            title={intl.formatMessage(
+              { id: "actions.create_entity" },
+              { entityType: intl.formatMessage({ id: "group" }) }
+            )}
           >
-            <Icon icon={faTimes} />
+            <Icon icon={faPlus} />
           </Button>
-          <span>{selectedIds.size} selected</span>
-          <Button variant="link" onClick={() => onSelectAll()}>
-            <FormattedMessage id="actions.select_all" />
-          </Button>
-        </div>
-      )}
-      <div>
-        <ButtonGroup>
-          {!hasSelection && (
-            <Button
-              className="create-new-button"
-              variant="secondary"
-              onClick={() => onCreateNew()}
-              title={intl.formatMessage(
-                { id: "actions.create_entity" },
-                { entityType: intl.formatMessage({ id: "group" }) }
-              )}
-            >
-              <Icon icon={faPlus} />
+        )}
+
+        {hasSelection && (
+          <>
+            <Button variant="secondary" onClick={() => onEdit()}>
+              <Icon icon={faPencil} />
             </Button>
-          )}
+            <Button
+              variant="danger"
+              className="btn-danger-minimal"
+              onClick={() => onDelete()}
+            >
+              <Icon icon={faTrash} />
+            </Button>
+          </>
+        )}
 
-          {hasSelection && (
-            <>
-              <Button variant="secondary" onClick={() => onEdit()}>
-                <Icon icon={faPencil} />
-              </Button>
-              <Button
-                variant="danger"
-                className="btn-danger-minimal"
-                onClick={() => onDelete()}
-              >
-                <Icon icon={faTrash} />
-              </Button>
-            </>
-          )}
+        <OperationDropdown className="group-list-operations">
+          {operations.map((o) => {
+            if (o.isDisplayed && !o.isDisplayed()) {
+              return null;
+            }
 
-          <OperationDropdown className="group-list-operations">
-            {operations.map((o) => {
-              if (o.isDisplayed && !o.isDisplayed()) {
-                return null;
-              }
-
-              return (
-                <OperationDropdownItem
-                  key={o.text}
-                  onClick={o.onClick}
-                  text={o.text}
-                  className={o.className}
-                />
-              );
-            })}
-          </OperationDropdown>
-        </ButtonGroup>
-      </div>
-    </>
-  );
-};
-
-const ListResultsHeader: React.FC<{
-  loading: boolean;
-  filter: ListFilterModel;
-  totalCount: number;
-  onChangeFilter: (filter: ListFilterModel) => void;
-}> = ({ loading, filter, totalCount, onChangeFilter }) => {
-  return (
-    <ButtonToolbar className="group-list-header">
-      <div>
-        <PaginationIndex
-          loading={loading}
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-        />
-      </div>
-      <div>
-        <SortBySelect
-          options={filter.options.sortByOptions}
-          sortBy={filter.sortBy}
-          sortDirection={filter.sortDirection}
-          onChangeSortBy={(s) =>
-            onChangeFilter(filter.setSortBy(s ?? undefined))
-          }
-          onChangeSortDirection={() =>
-            onChangeFilter(filter.toggleSortDirection())
-          }
-          onReshuffleRandomSort={() =>
-            onChangeFilter(filter.reshuffleRandomSort())
-          }
-        />
-        <PageSizeSelector
-          pageSize={filter.itemsPerPage}
-          setPageSize={(s) => onChangeFilter(filter.setPageSize(s))}
-        />
-        <ListViewOptions
-          displayMode={filter.displayMode}
-          zoomIndex={filter.zoomIndex}
-          displayModeOptions={filter.options.displayModeOptions}
-          onSetDisplayMode={(mode) =>
-            onChangeFilter(filter.setDisplayMode(mode))
-          }
-          onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
-        />
-      </div>
-    </ButtonToolbar>
+            return (
+              <OperationDropdownItem
+                key={o.text}
+                onClick={o.onClick}
+                text={o.text}
+                className={o.className}
+              />
+            );
+          })}
+        </OperationDropdown>
+      </ButtonGroup>
+    </div>
   );
 };
 
@@ -635,33 +503,43 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
           />
         </Sidebar>
         <div>
-          <ButtonToolbar
-            className={cx("group-list-toolbar", {
-              "has-selection": hasSelection,
-            })}
-          >
-            <ListToolbarContent
-              searchTerm={filter.searchTerm}
-              criteria={filter.criteria}
-              items={items}
-              selectedIds={selectedIds}
-              operations={otherOperations}
-              onToggleSidebar={() => setShowSidebar(!showSidebar)}
-              onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
-              onRemoveCriterion={removeCriterion}
-              onRemoveAllCriterion={() => clearAllCriteria(true)}
-              onEditSearchTerm={() => {
-                setShowSidebar(true);
-                setSearchFocus(true);
-              }}
-              onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
-              onSelectAll={() => onSelectAll()}
-              onSelectNone={() => onSelectNone()}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onCreateNew={onCreateNew}
-            />
-          </ButtonToolbar>
+          <FilteredListToolbar2
+            className="group-list-toolbar"
+            hasSelection={hasSelection}
+            filterSection={
+              <ToolbarFilterSection
+                filter={filter}
+                onSetFilter={setFilter}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
+                onRemoveCriterion={removeCriterion}
+                onRemoveAllCriterion={() => clearAllCriteria(true)}
+                onEditSearchTerm={() => {
+                  setShowSidebar(true);
+                  setSearchFocus(true);
+                }}
+                onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
+              />
+            }
+            selectionSection={
+              <ToolbarSelectionSection
+                selected={selectedIds.size}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onSelectAll={() => onSelectAll()}
+                onSelectNone={() => onSelectNone()}
+              />
+            }
+            operationSection={
+              <GroupListOperations
+                items={items.length}
+                hasSelection={hasSelection}
+                operations={otherOperations}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onCreateNew={onCreateNew}
+              />
+            }
+          />
 
           <ListResultsHeader
             loading={cachedResult.loading}
