@@ -894,7 +894,7 @@ export const LightboxComponent: React.FC<IProps> = ({
           </div>
           <div>
             {currentImage && (
-              <Link to={`/images/${currentImage.id}`} onClick={() => close()} target="_blank">
+              <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
                 {title ?? ""}
               </Link>
             )}
