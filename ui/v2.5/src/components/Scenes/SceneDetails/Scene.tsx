@@ -51,6 +51,7 @@ import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PatchComponent, PatchContainerComponent } from "src/patch";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -178,6 +179,9 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     setCollapsed,
     setContinuePlaylist,
   } = props;
+
+  // Scroll to top on forward navigation (e.g., clicking a scene card)
+  useScrollToTopOnMount();
 
   const Toast = useToast();
   const intl = useIntl();

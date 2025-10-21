@@ -35,6 +35,7 @@ import {
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
 import { ConfigurationContext } from "src/hooks/Config";
+import { useScrollRestoration } from "src/hooks/scrollToTop";
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
@@ -93,6 +94,9 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
 
   // scroll to the top of the page when the page changes
   useScrollToTopOnPageChange(filter.currentPage, result.loading);
+  
+  // Preserve scroll position on back navigation, wait for loading to complete
+  useScrollRestoration(result.loading);
 
   const { modal, showModal, closeModal } = useModal();
 

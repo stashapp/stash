@@ -19,7 +19,7 @@
     "isolatedModules": true,
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
   "include": ["src"]
 }

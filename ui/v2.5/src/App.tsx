@@ -182,6 +182,47 @@ export const App: React.FC = () => {
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
+  // Mark forward navigation for scroll restoration
+  useEffect(() => {
+    const NAVIGATION_KEY = "stash_forward_navigation";
+    const SCROLL_POSITION_KEY_PREFIX = "stash_scroll_position_";
+    
+    // Listen to history changes
+    const unlisten = history.listen((newLocation, action) => {
+      console.debug("[App] History change:", { action, pathname: newLocation.pathname });
+      
+      // Mark as forward navigation when user clicks a link (PUSH action)
+      // Don't mark for POP (back/forward button) or REPLACE actions
+      if (action === "PUSH") {
+        // CRITICAL: Save the current page's scroll position BEFORE navigation
+        // because after navigation the scroll position will be reset to 0
+        const currentPath = location.pathname + location.search;
+        const currentScrollY = window.scrollY;
+        const scrollKey = `${SCROLL_POSITION_KEY_PREFIX}${currentPath}`;
+        
+        // Extract page number from URL
+        const urlParams = new URLSearchParams(location.search);
+        const currentPage = parseInt(urlParams.get("p") || "1", 10);
+        
+        // Save both scroll position and page number (format: "scrollY|pageNumber")
+        const dataToSave = `${currentScrollY}|${currentPage}`;
+        sessionStorage.setItem(scrollKey, dataToSave);
+        sessionStorage.setItem(NAVIGATION_KEY, "true");
+        
+        console.debug("[App] 🔖 Marked forward navigation (PUSH) and saved scroll:", {
+          from: currentPath,
+          to: newLocation.pathname,
+          scrollPosition: currentScrollY,
+          page: currentPage
+        });
+      } else {
+        console.debug("[App] ⏭️  Not marking navigation (action:", action, ")");
+      }
+    });
+
+    return unlisten;
+  }, [history, location.pathname, location.search]);
+
   // dispatch event when location changes
   useEffect(() => {
     Event.dispatch("location", "", { location });
