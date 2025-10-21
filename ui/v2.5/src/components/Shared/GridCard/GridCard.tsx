@@ -265,9 +265,9 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       {maybeRenderInteractiveHeatmap()}
       <div className="card-section">
         <Link to={props.url} onClick={handleImageClick}>
-          <h5 className="card-section-title flex-aligned">
+          <h5 data-value={props.title} className="card-section-title flex-aligned">
             {props.pretitleIcon}
-            <TruncatedText data-name={props.title} text={props.title} lineCount={2} />
+            <TruncatedText text={props.title} lineCount={2} />
           </h5>
         </Link>
         {props.details}
