@@ -116,15 +116,13 @@ const ImageWall: React.FC<IImageWallProps> = ({
 
   const renderImage = useCallback(
     (props: RenderImageProps) => {
-      return (
-        <ImageWallItem
-          {...props}
-          maxHeight={
-            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
-            maxHeightFactor
-          }
-        />
-      );
+      // #6165 - only use targetRowHeight in row direction
+      const maxHeight =
+        props.direction === "column"
+          ? props.photo.height
+          : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor;
+      return <ImageWallItem {...props} maxHeight={maxHeight} />;
     },
     [targetRowHeight]
   );
