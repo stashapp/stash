@@ -294,13 +294,16 @@ func (s *mappedImageScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 
 type mappedPerformerScraperConfig struct {
 	mappedConfig
-
-	Tags mappedConfig `yaml:"Tags"`
+	Images mappedConfig `yaml:"Images"`
+	Tags   mappedConfig `yaml:"Tags"`
 }
 type _mappedPerformerScraperConfig mappedPerformerScraperConfig
 
 const (
 	mappedScraperConfigPerformerTags = "Tags"
+)
+const (
+	mappedScraperConfigPerformerImages = "Images"
 )
 
 func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -315,8 +318,10 @@ func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{})
 	thisMap := make(map[string]interface{})
 
 	thisMap[mappedScraperConfigPerformerTags] = parentMap[mappedScraperConfigPerformerTags]
+	thisMap[mappedScraperConfigPerformerImages] = parentMap[mappedScraperConfigPerformerImages]
 
 	delete(parentMap, mappedScraperConfigPerformerTags)
+	delete(parentMap, mappedScraperConfigPerformerImages)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -955,6 +960,7 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 	}
 
 	performerTagsMap := performerMap.Tags
+	performerImagesMap := performerMap.Images
 
 	results := performerMap.process(ctx, q, s.Common, urlsIsMulti)
 
@@ -967,6 +973,13 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 			tag := &models.ScrapedTag{}
 			p.apply(tag)
 			ret.Tags = append(ret.Tags, tag)
+		}
+	}
+
+	if performerImagesMap != nil {
+		imageResults := performerImagesMap.process(ctx, q, s.Common, nil)
+		for _, p := range imageResults {
+			ret.Images = append(ret.Images, p["URL"].(string))
 		}
 	}
 
