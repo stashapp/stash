@@ -5,11 +5,11 @@
   "author": "WithoutPants",
   "license": "AGPL-3.0",
   "scripts": {
-    "compile:ts": "yarn tsc",
-    "compile:sass": "yarn sass src/testReact.scss dist/testReact.css",
+    "compile:ts": "npm run tsc",
+    "compile:sass": "npm run sass src/testReact.scss dist/testReact.css",
     "copy:yml": "cpx \"src/testReact.yml\" \"dist\"",
-    "compile": "yarn run compile:ts && yarn run compile:sass",
-    "build": "yarn run compile && yarn run copy:yml"
+    "compile": "npm run compile:ts && npm run compile:sass",
+    "build": "npm run compile && npm run copy:yml"
   },
   "devDependencies": {
     "@types/react": "^18.2.31",

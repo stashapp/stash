@@ -1,14 +1,16 @@
 # This dockerfile should be built with `make docker-build` from the stash root.
 
 # Build Frontend
-FROM node:20-alpine AS frontend
+FROM node:24-alpine AS frontend
 RUN apk add --no-cache make git
 ## cache node_modules separately
-COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
+COPY ./ui/v2.5/package.json ./ui/v2.5/ypnpm-lock.yaml /stash/ui/v2.5/
 WORKDIR /stash
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
+# enable pnpm
+RUN corepack enable
 RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH

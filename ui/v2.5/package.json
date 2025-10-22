@@ -6,9 +6,9 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "build-ci": "yarn run validate && yarn run build",
-    "validate": "yarn run lint && yarn run check && yarn run format-check",
-    "lint": "yarn run lint:js && yarn run lint:css",
+    "build-ci": "npm run validate && npm run build",
+    "validate": "npm run lint && npm run check && npm run format-check",
+    "lint": "npm run lint:js && npm run lint:css",
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "eslint --cache src/",
     "check": "tsc --noEmit",
@@ -35,6 +35,7 @@
     "@react-hook/resize-observer": "^1.2.6",
     "@silvermine/videojs-airplay": "^1.2.0",
     "@silvermine/videojs-chromecast": "^1.4.1",
+    "@types/react-router-dom": "^5.3.3",
     "apollo-upload-client": "^18.0.1",
     "base64-blob": "^1.4.1",
     "bootstrap": "^4.6.2",
@@ -131,5 +132,6 @@
     "vite": "^4.5.14",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.0.5"
-  }
+  },
+  "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8"
 }

@@ -5,11 +5,13 @@ ARG CUDA_VERSION=12.8.0
 FROM node:20-alpine AS frontend
 RUN apk add --no-cache make git
 ## cache node_modules separately
-COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
+COPY ./ui/v2.5/package.json ./ui/v2.5/pnpm-lock.yaml /stash/ui/v2.5/
 WORKDIR /stash
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
+# enable pnpm
+RUN corepack enable
 RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH
