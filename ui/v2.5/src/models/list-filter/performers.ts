@@ -35,16 +35,13 @@ const sortByOptions = [
   "career_length",
   "weight",
   "measurements",
+  "scenes_duration",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
       messageID: "scene_count",
       value: "scenes_count",
-    },
-    {
-      messageID: "scene_duration",
-      value: "scenes_duration",
     },
     {
       messageID: "image_count",

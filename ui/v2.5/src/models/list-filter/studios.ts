@@ -15,7 +15,7 @@ import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "tag_count", "random", "rating"]
+const sortByOptions = ["name", "tag_count", "random", "rating", "scenes_duration"]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -29,10 +29,6 @@ const sortByOptions = ["name", "tag_count", "random", "rating"]
     {
       messageID: "scene_count",
       value: "scenes_count",
-    },
-    {
-      messageID: "scene_duration",
-      value: "scenes_duration",
     },
     {
       messageID: "subsidiary_studio_count",

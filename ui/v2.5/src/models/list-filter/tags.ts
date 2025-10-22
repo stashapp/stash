@@ -16,7 +16,7 @@ import {
 import { FavoriteTagCriterionOption } from "./criteria/favorite";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "random"]
+const sortByOptions = ["name", "random", "scenes_duration"]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -34,10 +34,6 @@ const sortByOptions = ["name", "random"]
     {
       messageID: "scene_count",
       value: "scenes_count",
-    },
-    {
-      messageID: "scene_duration",
-      value: "scenes_duration",
     },
     {
       messageID: "group_count",
