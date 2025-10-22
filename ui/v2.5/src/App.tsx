@@ -188,9 +188,7 @@ export const App: React.FC = () => {
     const SCROLL_POSITION_KEY_PREFIX = "stash_scroll_position_";
     
     // Listen to history changes
-    const unlisten = history.listen((newLocation, action) => {
-      console.debug("[App] History change:", { action, pathname: newLocation.pathname });
-      
+    const unlisten = history.listen((newLocation, action) => {      
       // Mark as forward navigation when user clicks a link (PUSH action)
       // Don't mark for POP (back/forward button) or REPLACE actions
       if (action === "PUSH") {
@@ -207,17 +205,8 @@ export const App: React.FC = () => {
         // Save both scroll position and page number (format: "scrollY|pageNumber")
         const dataToSave = `${currentScrollY}|${currentPage}`;
         sessionStorage.setItem(scrollKey, dataToSave);
-        sessionStorage.setItem(NAVIGATION_KEY, "true");
-        
-        console.debug("[App] 🔖 Marked forward navigation (PUSH) and saved scroll:", {
-          from: currentPath,
-          to: newLocation.pathname,
-          scrollPosition: currentScrollY,
-          page: currentPage
-        });
-      } else {
-        console.debug("[App] ⏭️  Not marking navigation (action:", action, ")");
-      }
+        sessionStorage.setItem(NAVIGATION_KEY, "true");        
+      } 
     });
 
     return unlisten;

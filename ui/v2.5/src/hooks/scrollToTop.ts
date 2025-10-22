@@ -17,15 +17,7 @@ export function useScrollToTopOnMount() {
     const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
     const navigationType = navigationEntry?.type;
     
-    console.debug("[useScrollToTopOnMount] Debug Info:", {
-      isFirstMount: isFirstMount.current,
-      isForwardNavigation,
-      navigationType,
-      pathname: location.pathname,
-      currentScrollY: window.scrollY,
-      willScroll: isFirstMount.current && isForwardNavigation
-    });
-    
+   
     // Clear the flag immediately after reading
     sessionStorage.removeItem(NAVIGATION_KEY);
     
@@ -33,10 +25,7 @@ export function useScrollToTopOnMount() {
     // 1. It's the first mount of this component instance
     // 2. AND it's a forward navigation (not back/forward button)
     if (isFirstMount.current && isForwardNavigation) {
-      console.debug("[useScrollToTopOnMount] ✅ Scrolling to top (forward navigation)");
       window.scrollTo(0, 0);
-    } else {
-      console.debug("[useScrollToTopOnMount] ⏭️  Skipping scroll (back navigation or no flag)");
     }
     
     isFirstMount.current = false;
@@ -59,7 +48,6 @@ export function useScrollRestoration(loading = false) {
   useEffect(() => {
     // Don't attempt restoration while page is loading
     if (loading) {
-      console.debug("[useScrollRestoration] ⏸️  Waiting for loading to complete");
       return;
     }
     
@@ -74,17 +62,12 @@ export function useScrollRestoration(loading = false) {
     const handleScroll = () => {
       // Don't save scroll position while we're restoring it
       if (isRestoringRef.current) {
-        console.debug("[useScrollRestoration] ⏸️  Ignoring scroll event during restoration");
         return;
       }
       
       // CRITICAL: Only save if we're still on the same page
       // This prevents saving scroll position when navigating away
       if (window.location.pathname !== currentPathname || window.location.search !== currentSearch) {
-        console.debug("[useScrollRestoration] ⏭️  Skipping save - page has changed:", {
-          expected: currentPathname + currentSearch,
-          actual: window.location.pathname + window.location.search
-        });
         return;
       }
       
@@ -99,11 +82,6 @@ export function useScrollRestoration(loading = false) {
         // Save both scroll position and page number (format: "scrollY|pageNumber")
         const dataToSave = `${currentPosition}|${currentPage}`;
         sessionStorage.setItem(scrollKey, dataToSave);
-        console.debug("[useScrollRestoration] 💾 Saved scroll position (on scroll):", {
-          pathname: location.pathname,
-          position: currentPosition,
-          page: currentPage
-        });
       }, 100);
     };
     
@@ -114,15 +92,7 @@ export function useScrollRestoration(loading = false) {
         // Parse saved data (format: "scrollY|pageNumber" or just "scrollY" for backward compatibility)
         const parts = savedData.split("|");
         const position = parseInt(parts[0], 10);
-        const savedPage = parts[1] ? parseInt(parts[1], 10) : null;
-        
-        console.debug("[useScrollRestoration] 🔄 Restoring scroll position:", {
-          pathname: location.pathname,
-          position,
-          savedPage,
-          currentDocHeight: document.documentElement.scrollHeight,
-          currentScrollY: window.scrollY
-        });
+        const savedPage = parts[1] ? parseInt(parts[1], 10) : null;        
         
         // Mark that we're restoring to prevent saving during restoration
         isRestoringRef.current = true;
@@ -139,22 +109,10 @@ export function useScrollRestoration(loading = false) {
           const newStableCount = docHeightStable ? stableCount + 1 : 0;
           
           // Check if loading state changed during restoration attempts
-          const isStillLoading = loadingRef.current;
-          
-          console.debug("[useScrollRestoration] 🔍 Attempt", attempts + 1, {
-            targetPosition: position,
-            currentDocHeight: docHeight,
-            lastDocHeight,
-            maxScroll,
-            canScroll: maxScroll >= position,
-            docHeightStable,
-            stableCount: newStableCount,
-            isStillLoading
-          });
-          
+          const isStillLoading = loadingRef.current;          
+        
           // If loading state changed back to true, abort restoration
           if (isStillLoading) {
-            console.debug("[useScrollRestoration] ⏸️  Loading state changed, aborting restoration");
             isRestoringRef.current = false;
             return;
           }
@@ -172,32 +130,11 @@ export function useScrollRestoration(loading = false) {
           if (shouldRestore) {
             // Scroll to target position or max scroll, whichever is smaller
             const targetScroll = Math.min(position, maxScroll);
-            window.scrollTo(0, targetScroll);
-            
-            let reason = "unknown";
-            if (docHeightStable && canScrollToTarget) {
-              reason = "can scroll to target";
-            } else if (pageStableEnough) {
-              reason = `page stable (height unchanged for 500ms, height: ${docHeight}px >= ${(position * 0.5).toFixed(0)}px)`;
-            } else if (attempts >= maxAttempts) {
-              reason = "max attempts reached";
-            }
-            
-            console.debug("[useScrollRestoration] ✅ Scrolled to position:", {
-              targetPosition: position,
-              actualPosition: window.scrollY,
-              maxScroll,
-              docHeight,
-              attempts: attempts + 1,
-              stableCount: newStableCount,
-              pageHeightReasonable,
-              reason
-            });
-            
+            window.scrollTo(0, targetScroll);            
+          
             // Wait a bit before enabling scroll listener
             setTimeout(() => {
               isRestoringRef.current = false;
-              console.debug("[useScrollRestoration] ✅ Restoration complete, scroll listener enabled");
             }, 150);
           } else {
             // Page height is still changing, try again
@@ -209,14 +146,9 @@ export function useScrollRestoration(loading = false) {
         requestAnimationFrame(() => {
           setTimeout(() => attemptRestore(0, 0, 0), 50);
         });
-      } else {
-        console.debug("[useScrollRestoration] ℹ️  No saved position found for:", location.pathname);
       }
+
       hasRestoredRef.current = true;
-    } else if (isForwardNavigation) {
-      console.debug("[useScrollRestoration] ➡️  Forward navigation, not restoring scroll");
-      // DON'T remove NAVIGATION_KEY here - let useScrollToTopOnMount handle it
-      // This prevents race condition where list page clears the flag before detail page reads it
     }
 
     // Save scroll position on scroll (debounced)
@@ -226,9 +158,6 @@ export function useScrollRestoration(loading = false) {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(scrollTimeout);
-      // DON'T save on unmount - the scroll position is already saved by App.tsx
-      // when PUSH action happens, and saving here would overwrite it with 0
-      console.debug("[useScrollRestoration] 🧹 Cleanup (not saving on unmount)");
     };
   }, [location.pathname, location.search, scrollKey, loading]);
 }
@@ -237,5 +166,4 @@ export function useScrollRestoration(loading = false) {
 // Call this before navigating to a detail page
 export function markForwardNavigation() {
   sessionStorage.setItem(NAVIGATION_KEY, "true");
-  console.debug("[markForwardNavigation] 🔖 Marked forward navigation");
 }
