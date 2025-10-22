@@ -29,7 +29,3 @@ func NewPaths(generatedPath string, blobsPath string) Paths {
 func GetStashHomeDirectory() string {
 	return filepath.Join(fsutil.GetHomeDirectory(), ".stash")
 }
-
-func GetDefaultDatabaseFilePath() string {
-	return filepath.Join(GetStashHomeDirectory(), "stash-go.sqlite")
-}

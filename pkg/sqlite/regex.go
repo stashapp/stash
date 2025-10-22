@@ -36,3 +36,51 @@ func regexFn(re, s string) (bool, error) {
 
 	return compiled.MatchString(s), nil
 }
+
+// Returns a substring of the source string that matches the pattern.
+func regexpSubstrFn(src, re string) (string, error) {
+	compiled, ok := regexCache.Get(re)
+	if !ok {
+		var err error
+		compiled, err = regexp.Compile(re)
+		if err != nil {
+			return "", err
+		}
+		regexCache.Add(re, compiled)
+	}
+	return compiled.FindString(src), nil
+}
+
+// Finds a substring of the source string that matches the pattern and returns
+// the nth matching group within that substring. Group numbering starts at 1.
+// n = 0 (default) returns the entire substring.
+func regexpCaptureFn(src, re string, n int) (string, error) {
+	compiled, ok := regexCache.Get(re)
+	if !ok {
+		var err error
+		compiled, err = regexp.Compile(re)
+		if err != nil {
+			return "", err
+		}
+		regexCache.Add(re, compiled)
+	}
+	matches := compiled.FindStringSubmatch(src)
+	if len(matches) > n {
+		return matches[n], nil
+	}
+	return "", nil
+}
+
+// Replaces all matching substrings with the replacement string.
+func regexpReplaceFn(src, re, repl string) (string, error) {
+	compiled, ok := regexCache.Get(re)
+	if !ok {
+		var err error
+		compiled, err = regexp.Compile(re)
+		if err != nil {
+			return "", err
+		}
+		regexCache.Add(re, compiled)
+	}
+	return compiled.ReplaceAllString(src, repl), nil
+}
