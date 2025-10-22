@@ -31,6 +31,10 @@ const sortByOptions = ["name", "tag_count", "random", "rating"]
       value: "scenes_count",
     },
     {
+      messageID: "scene_duration",
+      value: "scenes_duration",
+    },
+    {
       messageID: "subsidiary_studio_count",
       value: "child_count",
     },
