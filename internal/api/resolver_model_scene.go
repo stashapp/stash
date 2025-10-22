@@ -367,7 +367,11 @@ func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*t
 		return nil, err
 	}
 
-	return ret, nil
+	if ret == nil {
+		return nil, nil
+	}
+
+	return &ret.Time, nil
 }
 
 func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
@@ -385,11 +389,10 @@ func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*
 		return nil, err
 	}
 
-	// convert to pointer slice
+	// convert to pointer slice of time.Time
 	ptrRet := make([]*time.Time, len(ret))
 	for i, t := range ret {
-		tt := t
-		ptrRet[i] = &tt
+		ptrRet[i] = &t.Time
 	}
 
 	return ptrRet, nil
@@ -401,11 +404,10 @@ func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*tim
 		return nil, err
 	}
 
-	// convert to pointer slice
+	// convert to pointer slice of time.Time
 	ptrRet := make([]*time.Time, len(ret))
 	for i, t := range ret {
-		tt := t
-		ptrRet[i] = &tt
+		ptrRet[i] = &t.Time
 	}
 
 	return ptrRet, nil
