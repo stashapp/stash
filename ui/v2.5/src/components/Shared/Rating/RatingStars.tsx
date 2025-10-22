@@ -248,7 +248,7 @@ export const RatingStars = PatchComponent(
           renderRatingButton(index + 1)
         )}
         <span className="star-rating-number">
-        {maybeGetStarRatingNumber()}
+          {maybeGetStarRatingNumber()}
         </span>
       </div>
     );
