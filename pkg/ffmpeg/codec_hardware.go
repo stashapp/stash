@@ -29,6 +29,7 @@ var (
 	VideoCodecIVP9  = makeVideoCodec("VP9 Intel Quick Sync Video (QSV)", "vp9_qsv")
 	VideoCodecVVP9  = makeVideoCodec("VP9 VAAPI", "vp9_vaapi")
 	VideoCodecVVPX  = makeVideoCodec("VP8 VAAPI", "vp8_vaapi")
+	VideoCodecRK264 = makeVideoCodec("H264 Rockchip MPP (rkmpp)", "h264_rkmpp")
 )
 
 const minHeight int = 480
@@ -45,6 +46,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		VideoCodecI264C,
 		VideoCodecV264,
 		VideoCodecR264,
+		VideoCodecRK264,
 		VideoCodecIVP9,
 		VideoCodecVVP9,
 		VideoCodecM264,
@@ -201,6 +203,19 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 			args = append(args, "-init_hw_device")
 			args = append(args, "videotoolbox=vt")
 		}
+	case VideoCodecRK264:
+		// Rockchip: always create rkmpp device and make it the filter device, so
+		// scale_rkrga and subsequent hwupload/hwmap operate in the right context.
+		args = append(args, "-init_hw_device")
+		args = append(args, "rkmpp=rk")
+		args = append(args, "-filter_hw_device")
+		args = append(args, "rk")
+		if fullhw {
+			args = append(args, "-hwaccel")
+			args = append(args, "rkmpp")
+			args = append(args, "-hwaccel_output_format")
+			args = append(args, "drm_prime")
+		}
 	}
 
 	return args
@@ -232,6 +247,13 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 		if !fullhw {
 			videoFilter = videoFilter.Append("format=nv12")
 			videoFilter = videoFilter.Append("hwupload")
+		}
+	case VideoCodecRK264:
+		// For Rockchip full-hw, do NOT pre-map to rkrga here. scale_rkrga can
+		// consume DRM_PRIME frames directly when filter_hw_device is set.
+		// For non-fullhw, keep a sane software format.
+		if !fullhw {
+			videoFilter = videoFilter.Append("format=nv12")
 		}
 	}
 
@@ -310,6 +332,9 @@ func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw 
 		if fullhw && f.version.Gteq(Version{major: 3, minor: 3}) { // Added in FFMpeg 3.3
 			args = args.Append("scale_qsv=format=nv12")
 		}
+	case VideoCodecRK264:
+		// For Rockchip, no extra mapping here. If there is no scale filter,
+		// leave frames in DRM_PRIME for the encoder.
 	}
 
 	return args
@@ -337,6 +362,14 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 		}
 	case VideoCodecM264:
 		template = "scale_vt=$value"
+	case VideoCodecRK264:
+		if !fullhw {
+			return VideoFilter(sargs)
+		}
+		// Rockchip fallback chain for maximum compatibility:
+		// RGA scale → system memory → upload → rkmpp encoder.
+		// This avoids hwmap(rkrga→rkmpp) failures (-38/-12) seen on some builds.
+		template = "scale_rkrga=$value:format=nv12,hwdownload,format=nv12,hwupload"
 	default:
 		return VideoFilter(sargs)
 	}
@@ -345,7 +378,9 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 	isIntel := codec == VideoCodecI264 || codec == VideoCodecI264C || codec == VideoCodecIVP9
 	// BUG: scale_vt doesn't call ff_scale_adjust_dimensions, thus cant accept negative size values
 	isApple := codec == VideoCodecM264
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple))
+	// BUG: scale_rkrga expects positive sizes.
+	isRockchip := codec == VideoCodecRK264
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple || isRockchip))
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -354,7 +389,8 @@ func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec) (int, int) {
 	case VideoCodecN264,
 		VideoCodecN264H,
 		VideoCodecI264,
-		VideoCodecI264C:
+		VideoCodecI264C,
+		VideoCodecRK264:
 		return 4096, 4096
 	}
 
@@ -382,7 +418,8 @@ func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
 			VideoCodecI264C,
 			VideoCodecV264,
 			VideoCodecR264,
-			VideoCodecM264: // Note that the Apple encoder sucks at startup, thus HLS quality is crap
+			VideoCodecM264, // Note that the Apple encoder sucks at startup, thus HLS quality is crap
+			VideoCodecRK264:
 			return &element
 		}
 	}
@@ -397,7 +434,8 @@ func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
 			VideoCodecN264H,
 			VideoCodecI264,
 			VideoCodecI264C,
-			VideoCodecM264:
+			VideoCodecM264,
+			VideoCodecRK264:
 			return &element
 		}
 	}
