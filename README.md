@@ -1,101 +1,69 @@
 # Stash
 
-[![Build](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
-[![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash.svg)](https://hub.docker.com/r/stashapp/stash 'DockerHub')
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/stashapp?logo=github)](https://github.com/sponsors/stashapp)
-[![Open Collective backers](https://img.shields.io/opencollective/backers/stashapp?logo=opencollective)](https://opencollective.com/stashapp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
+[![构建](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
+[![Docker-Hub-Downloads](https://img.shields.io/docker/pulls/stashapp/stash.svg)](https://hub.docker.com/r/stashapp/stash 'DockerHub')
+[![GitHub-Sponsoren](https://img.shields.io/github/sponsors/stashapp?logo=github)](https://github.com/sponsors/stashapp)
+[![Open-Collective-Unterstützer](https://img.shields.io/opencollective/backers/stashapp?logo=opencollective)](https://opencollective.com/stashapp)
+[![Go-Report-Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash?logo=github)](https://github.com/stashapp/stash/releases/latest)
-[![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash/bounty)](https://github.com/stashapp/stash/labels/bounty)
+[![GitHub-Veröffentlichung (neueste nach Datum)](https://img.shields.io/github/v/release/stashapp/stash?logo=github)](https://github.com/stashapp/stash/releases/latest)
+[![GitHub-Issues nach Label](https://img.shields.io/github/issues-raw/stashapp/stash/bounty)](https://github.com/stashapp/stash/labels/bounty)
 
-### **Stash is a self-hosted webapp written in Go which organizes and serves your porn.**
-![demo image](docs/readme_assets/demo_image.png)
+### **Stash 是一个用 Go 编写的自托管 Web 应用程序，用于组织和提供您的成人影片。**
 
-* Stash gathers information about videos in your collection from the internet, and is extensible through the use of community-built plugins for a large number of content producers and sites.
-* Stash supports a wide variety of both video and image formats.
-* You can tag videos and find them later.
-* Stash provides statistics about performers, tags, studios and more.
+> **本仓库提供了rkmpp的硬件编解码支持**
 
-You can [watch a SFW demo video](https://vimeo.com/545323354) to see it in action.
+![演示图片](docs/readme_assets/demo_image.png)
 
-For further information you can consult the [documentation](https://docs.stashapp.cc) or [read the in-app manual](ui/v2.5/src/docs/en).
+*   Stash 从互联网上收集关于您收藏的视频的信息，并且可以通过社区构建的插件进行扩展，以支持大量的内容制作者和网站。
+*   Stash 支持多种视频和图像格式。
+*   您可以标记视频并稍后找到它们。
+*   Stash 提供有关表演者、标签、工作室等的统计信息。
 
-# Installing Stash
+您可以[观看一个 SFW（工作安全）的演示视频](https://vimeo.com/545323354)来了解它的实际操作。
 
-#### Windows Users:
+更多信息，您可以查阅[文档](https://docs.stashapp.cc)或[阅读应用内手册](ui/v2.5/src/docs/en)。
 
-As of version 0.27.0, Stash doesn't support anymore _Windows 7, 8, Server 2008 and Server 2012._  
-Windows 10 or Server 2016 are at least required.
+# 安装 Stash
 
-#### Mac Users:
-
-As of version 0.29.0, Stash requires at least _macOS 11 Big Sur._  
-Stash can still be ran through docker on older versions of macOS
-
-<img src="docs/readme_assets/windows_logo.svg" width="100%" height="75"> Windows | <img src="docs/readme_assets/mac_logo.svg" width="100%" height="75"> macOS | <img src="docs/readme_assets/linux_logo.svg" width="100%" height="75"> Linux | <img src="docs/readme_assets/docker_logo.svg" width="100%" height="75"> Docker
-:---:|:---:|:---:|:---:
-[Latest Release](https://github.com/stashapp/stash/releases/latest/download/stash-win.exe) <br /> <sup><sub>[Development Preview](https://github.com/stashapp/stash/releases/download/latest_develop/stash-win.exe)</sub></sup> | [Latest Release](https://github.com/stashapp/stash/releases/latest/download/Stash.app.zip) <br /> <sup><sub>[Development Preview](https://github.com/stashapp/stash/releases/download/latest_develop/Stash.app.zip)</sub></sup> | [Latest Release (amd64)](https://github.com/stashapp/stash/releases/latest/download/stash-linux) <br /> <sup><sub>[Development Preview (amd64)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-linux)</sub></sup> <br /> [More Architectures...](https://github.com/stashapp/stash/releases/latest) | [Instructions](docker/production/README.md) <br /> <sup><sub>[Sample docker-compose.yml](docker/production/docker-compose.yml)</sub></sup>
-
-Download links for other platforms and architectures are available on the [Releases page](https://github.com/stashapp/stash/releases).
-
-## First Run
-
-#### Windows/macOS Users: Security Prompt
-
-On Windows or macOS, running the app might present a security prompt since the binary isn't yet signed. 
-
-On Windows, bypass this by clicking "more info" and then the "run anyway" button. On macOS, Control+Click the app, click "Open", and then "Open" again.
-
-#### FFmpeg
-Stash requires FFmpeg. If you don't have it installed, Stash will download a copy for you. It is recommended that Linux users install `ffmpeg` from their distro's package manager.
-
-# Usage
-
-## Quickstart Guide
-Stash is a web-based application. Once the application is running, the interface is available (by default) from http://localhost:9999.
-
-On first run, Stash will prompt you for some configuration options and media directories to index, called "Scanning" in Stash. After scanning, your media will be available for browsing, curating, editing, and tagging.
-
-Stash can pull metadata (performers, tags, descriptions, studios, and more) directly from many sites through the use of [scrapers](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Manual/Scraping.md), which integrate directly into Stash. Identifying an entire collection will typically require a mix of multiple sources:
-- The project maintains [StashDB](https://stashdb.org/), a crowd-sourced repository of scene, studio, and performer information. Connecting it to Stash will allow you to automatically identify much of a typical media collection. It runs on our stash-box software and is primarily focused on mainstream digital scenes and studios. Instructions, invite codes, and more can be found in this guide to [Accessing StashDB](https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stashdb/).
-- Several community-managed stash-box databases can also be connected to Stash in a similar manner. Each one serves a slightly different niche and follows their own methodology. A rundown of each stash-box, their differences, and the information you need to sign up can be found in this guide to [Accessing Stash-Boxes](https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stash-boxes/).
-- Many community-maintained scrapers can also be downloaded, installed, and updated from within Stash, allowing you to pull data from a wide range of other websites and databases. They can be found by navigating to Settings -> Metadata Providers -> Available Scrapers -> Community (stable). These can be trickier to use than a stash-box because every scraper works a little differently. For more information, please visit the [CommunityScrapers repository](https://github.com/stashapp/CommunityScrapers).
-- All of the above methods of scraping data into Stash are also covered in more detail in our [Guide to Scraping](https://docs.stashapp.cc/beginner-guides/guide-to-scraping/).
-
-<sub>[StashDB](http://stashdb.org) is the canonical instance of our open source metadata API, [stash-box](https://github.com/stashapp/stash-box).</sub>
-
-# Translation
-[![Translate](https://translate.codeberg.org/widget/stash/stash/svg-badge.svg)](https://translate.codeberg.org/engage/stash/)
-
-Stash is available in 32 languages (so far!) and it could be in your language too. We use Weblate to coordinate community translations. If you want to help us translate Stash into your language, you can make an account at [Codeberg's Weblate](https://translate.codeberg.org/projects/stash/stash/) to get started contributing new languages or improving existing ones. Thanks!
-
-[![Translation status](https://translate.codeberg.org/widget/stash/stash/multi-auto.svg)](https://translate.codeberg.org/engage/stash/)
-
-## Join Our Community
-
-We are excited to announce that we have a new home for support, feature requests, and discussions related to Stash and its associated projects. Join our community on the [Discourse forum](https://discourse.stashapp.cc) to connect with other users, share your ideas, and get help from fellow enthusiasts.
-
-# Support (FAQ)
-
-Check out our documentation on [Stash-Docs](https://docs.stashapp.cc) for information about the software, questions, guides, add-ons and more. 
-
-For more help you can:
-* Check the in-app documentation, in the top right corner of the app (it's also mirrored on [Stash-Docs](https://docs.stashapp.cc/in-app-manual))
-* Join our [community forum](https://discourse.stashapp.cc)
-* Join the [Discord server](https://discord.gg/2TsNFKt)
-* Start a [discussion on GitHub](https://github.com/stashapp/stash/discussions)
-
-# Customization
-
-## Themes and CSS Customization
-
-There is a [directory of community-created themes](https://docs.stashapp.cc/themes/list) on Stash-Docs.
-
-You can also change the Stash interface to fit your desired style with various snippets from [Custom CSS snippets](https://docs.stashapp.cc/themes/custom-css-snippets).
-
-# For Developers
-
-Pull requests are welcome! 
-
-See [Development](docs/DEVELOPMENT.md) and [Contributing](docs/CONTRIBUTING.md) for information on working with the codebase, getting a local development setup, and contributing changes.
+```yaml
+services:
+  stash:
+    image: a15355447898a/stash-rk:latest
+    container_name: stash-rk
+    restart: always
+    privileged: true
+    ports:
+      - "9999:9999"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "2m"
+    environment:
+      - STASH_STASH=/video/
+      - STASH_GENERATED=/generated/
+      - STASH_METADATA=/metadata/
+      - STASH_CACHE=/cache/
+      - STASH_PORT=9999
+    devices:
+      - /dev/dri:/dev/dri           # GPU/显示接口
+      - /dev/dma_heap:/dev/dma_heap # DMA 内存堆
+      - /dev/mpp_service:/dev/mpp_service # MPP VPU 服务核心
+      - /dev/rga:/dev/rga           # RGA 2D 加速器
+      - /dev/mali0:/dev/mali0       # Mali GPU 设备，用于 OpenCL (HDR 色调映射)
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      ## 此目录存储配置文件、抓取器和插件
+      - /docker-file/stash/config:/root/.stash
+      ## 指向你的数据集合，比如你存放视频的地方
+      - /docker-file/stash/video:/video
+      ## Stash 的元数据存储位置
+      - /docker-file/stash/metadata:/metadata
+      ## 其他缓存内容存储位置
+      - /docker-file/stash/cache:/cache
+      ## 存储二进制大对象（比如场景封面、图片等）
+      - /docker-file/stash/blobs:/blobs
+      ## 存储生成的内容（截图、预览图、转码文件、精灵图等）
+      - /docker-file/stash/generated:/generated
+```
