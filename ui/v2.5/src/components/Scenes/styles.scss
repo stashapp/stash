@@ -958,3 +958,9 @@ input[type="range"].blue-slider {
     }
   }
 }
+
+.table-list.scene-table {
+  // Set max height to viewport height minus estimated header/footer height
+  // TODO - this will need to be rolled out to other tables
+  max-height: calc(100dvh - 210px);
+}
