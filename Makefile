@@ -340,7 +340,7 @@ server-clean:
 # dependencies have changed
 .PHONY: pre-ui
 pre-ui:
-	cd ui/v2.5 && corepack enable && corepack install && pnpm install --frozen-lockfile
+	cd ui/v2.5 && pnpm install --frozen-lockfile
 
 .PHONY: ui-env
 ui-env: build-info

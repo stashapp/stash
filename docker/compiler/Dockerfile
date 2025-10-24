@@ -20,8 +20,8 @@ RUN apt-get update && \
         gcc-aarch64-linux-gnu libc-dev-arm64-cross && \
     rm -rf /var/lib/apt/lists/*;
 
-# pnpm install with corepack
-RUN corepack enable
+# pnpm install with npm
+RUN npm install -g pnpm
 
 # FreeBSD cross-compilation setup
 # https://github.com/smartmontools/docker-build/blob/6b8c92560d17d325310ba02d9f5a4b250cb0764a/Dockerfile#L66
