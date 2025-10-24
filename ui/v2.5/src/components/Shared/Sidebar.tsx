@@ -87,7 +87,7 @@ export const SidebarToggleButton: React.FC<{
   const intl = useIntl();
   return (
     <Button
-      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
+      className="sidebar-toggle-button ignore-sidebar-outside-click"
       variant="secondary"
       onClick={onClick}
       title={intl.formatMessage({ id: "actions.sidebar.toggle" })}

@@ -708,6 +708,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                     setSearchFocus(true);
                   }}
                   onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
+                  view={view}
                 />
               }
               selectionSection={

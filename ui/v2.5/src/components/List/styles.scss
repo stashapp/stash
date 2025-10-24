@@ -1132,7 +1132,7 @@ input[type="range"].zoom-slider {
 
     .search-container {
       border-right: 1px solid $secondary;
-      display: block;
+      display: flex;
       margin-right: -0.5rem;
       min-width: calc($sidebar-width - 15px);
       padding-right: 10px;

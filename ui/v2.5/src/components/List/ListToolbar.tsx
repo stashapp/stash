@@ -4,13 +4,15 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FilterTags } from "../List/FilterTags";
 import cx from "classnames";
-import { Button, ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { SearchTermInput } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { SidebarToggleButton } from "../Shared/Sidebar";
 import { PatchComponent } from "src/patch";
+import { SavedFilterDropdown } from "./SavedFilterList";
+import { View } from "./views";
 
 export const ToolbarFilterSection: React.FC<{
   filter: ListFilterModel;
@@ -21,6 +23,7 @@ export const ToolbarFilterSection: React.FC<{
   onRemoveAllCriterion: () => void;
   onEditSearchTerm: () => void;
   onRemoveSearchTerm: () => void;
+  view?: View;
 }> = PatchComponent(
   "ToolbarFilterSection",
   ({
@@ -32,6 +35,7 @@ export const ToolbarFilterSection: React.FC<{
     onRemoveAllCriterion,
     onEditSearchTerm,
     onRemoveSearchTerm,
+    view,
   }) => {
     const { criteria, searchTerm } = filter;
 
@@ -41,10 +45,18 @@ export const ToolbarFilterSection: React.FC<{
           <SearchTermInput filter={filter} onFilterUpdate={onSetFilter} />
         </div>
         <div className="filter-section">
-          <FilterButton
-            onClick={() => onEditCriterion()}
-            count={criteria.length}
-          />
+          <ButtonGroup>
+            <SavedFilterDropdown
+              filter={filter}
+              onSetFilter={onSetFilter}
+              view={view}
+            />
+            <FilterButton
+              onClick={() => onEditCriterion()}
+              count={criteria.length}
+            />
+            <SidebarToggleButton onClick={onToggleSidebar} />
+          </ButtonGroup>
           <FilterTags
             searchTerm={searchTerm}
             criteria={criteria}
@@ -55,7 +67,6 @@ export const ToolbarFilterSection: React.FC<{
             onRemoveSearchTerm={onRemoveSearchTerm}
             truncateOnOverflow
           />
-          <SidebarToggleButton onClick={onToggleSidebar} />
         </div>
       </>
     );
