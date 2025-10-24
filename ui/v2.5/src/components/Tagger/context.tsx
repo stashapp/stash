@@ -174,9 +174,10 @@ export const TaggerContext: React.FC = ({ children }) => {
   }, [Scrapers.data, stashConfig]);
 
   useEffect(() => {
-    if (!sources.length) {
+    if (!sources.length || currentSource) {
       return;
     }
+    // First, see if we have a saved endpoint.
     if (config.selectedEndpoint) {
       let source = sources.find((s) => s.sourceInput.stash_box_endpoint == config.selectedEndpoint);
       if (source) {
@@ -184,10 +185,9 @@ export const TaggerContext: React.FC = ({ children }) => {
         return;
       }
     }
-    if (!currentSource) {
-      setCurrentSource(sources[0]);
-    }
-  }, [sources, config]);
+    // Otherwise, just use the first source.
+    setCurrentSource(sources[0]);
+  }, [sources, currentSource, config]);
 
   useEffect(() => {
     setSearchResults({});
@@ -198,7 +198,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         selectedEndpoint,
       });
     }
-  }, [currentSource]);
+  }, [currentSource, config, setConfig]);
 
   function getPendingFingerprints() {
     const endpoint = currentSource?.sourceInput.stash_box_endpoint;
