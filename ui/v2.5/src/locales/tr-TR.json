@@ -149,7 +149,8 @@
         "play": "Oynat",
         "show_results": "Sonuçları göster",
         "show_count_results": "{count} sonucu göster",
-        "load": "Yükle"
+        "load": "Yükle",
+        "load_filter": "Filtre yükle"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -1021,7 +1022,7 @@
     "include_sub_tags": "Alt etiketleri dahil et",
     "instagram": "Instagram",
     "interactive": "Etkileşimli",
-    "interactive_speed": "Etkileşim hızı",
+    "interactive_speed": "Etkileşimli Hız",
     "isMissing": "Eksik",
     "library": "Kütüphane",
     "loading": {
@@ -1036,7 +1037,7 @@
         "checksum": "Sağlama Toplamı (checksum)",
         "downloaded_from": "İndirildiği Yer",
         "hash": "Dosya İmzası (Hash)",
-        "interactive_speed": "Etkileşim hızı",
+        "interactive_speed": "Etkileşimli Hız",
         "performer_card": {
             "age": "{age} {years_old}",
             "age_context": "Bu sahnede {age} {years_old}"
@@ -1090,7 +1091,8 @@
         "name": "Filtre",
         "saved_filters": "Kaydedilmiş filtreler",
         "update_filter": "Filtreyi Güncelle",
-        "edit_filter": "Filtreyi Düzenle"
+        "edit_filter": "Filtreyi Düzenle",
+        "search_term": "Arama terimi"
     },
     "seconds": "Saniye",
     "settings": "Ayarlar",
@@ -1135,7 +1137,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "veritabanı adı (varsayılan için boş bırakın)",
-            "description": "Sırada porno koleksiyonunuzun hangi dizinde olduğunun, stash veritabanının ve oluşturulan ek dosyaların nereye kaydedileceğinin belirlenmesi var. Bu ayarları sonradan değiştirebilirsiniz.",
+            "description": "Sırada, porno koleksiyonunuzun nerede bulunacağını ve Stash veritabanının, oluşturulan dosyaların ve önbellek dosyalarının nerede depolanacağını belirlememiz gerekiyor. Bu ayarlar daha sonra gerekirse değiştirilebilir.",
             "path_to_generated_directory_empty_for_default": "oluşturulan ek dosyalar için dizin konumu (varsayılan için boş bırakın)",
             "set_up_your_paths": "Yollarınızı ayarlayın",
             "stash_alert": "Herhangi bir kütüphane konumu seçilmedi. Hiçbir medya Stash'e taranamayacak. Emin misiniz?",
