@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import useResizeObserver from "@react-hook/resize-observer";
 import * as GQL from "src/core/generated-graphql";
 
 const ZOOM_STEP = 1.1;
@@ -50,6 +57,28 @@ function calculateDefaultZoom(
   return newZoom;
 }
 
+interface IDimension {
+  width: number;
+  height: number;
+}
+
+export const useContainerDimensions = <
+  T extends HTMLElement = HTMLDivElement
+>(): [MutableRefObject<T | null>, IDimension] => {
+  const target = useRef<T | null>(null);
+  const [dimension, setDimension] = useState<IDimension>({
+    width: 0,
+    height: 0,
+  });
+
+  useResizeObserver(target, (entry) => {
+    const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
+    setDimension({ width, height });
+  });
+
+  return [target, dimension];
+};
+
 interface IProps {
   src: string;
   width: number;
@@ -100,14 +129,13 @@ export const LightboxImage: React.FC<IProps> = ({
   const [positionY, setPositionY] = useState(0);
   const [imageWidth, setImageWidth] = useState(width);
   const [imageHeight, setImageHeight] = useState(height);
-  const [boxWidth, setBoxWidth] = useState(0);
-  const [boxHeight, setBoxHeight] = useState(0);
   const dimensionsProvided = width > 0 && height > 0;
+  const [containerRef, { width: boxWidth, height: boxHeight }] =
+    useContainerDimensions();
 
   const mouseDownEvent = useRef<MouseEvent>();
   const resetPositionRef = useRef(resetPosition);
 
-  const container = React.createRef<HTMLDivElement>();
   const startPoints = useRef<number[]>([0, 0]);
   const pointerCache = useRef<React.PointerEvent[]>([]);
   const prevDiff = useRef<number | undefined>();
@@ -115,15 +143,9 @@ export const LightboxImage: React.FC<IProps> = ({
   const scrollAttempts = useRef(0);
 
   useEffect(() => {
-    const box = container.current;
-    if (box) {
-      setBoxWidth(box.offsetWidth);
-      setBoxHeight(box.offsetHeight);
-    }
-
     function toggleVideoPlay() {
-      if (container.current) {
-        let openVideo = container.current.getElementsByTagName("video");
+      if (containerRef.current) {
+        let openVideo = containerRef.current.getElementsByTagName("video");
         if (openVideo.length > 0) {
           let rect = openVideo[0].getBoundingClientRect();
           if (Math.abs(rect.x) < document.body.clientWidth / 2) {
@@ -138,7 +160,7 @@ export const LightboxImage: React.FC<IProps> = ({
     setTimeout(() => {
       toggleVideoPlay();
     }, 250);
-  }, [container]);
+  }, [containerRef]);
 
   useEffect(() => {
     if (dimensionsProvided) {
@@ -547,7 +569,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   return (
     <div
-      ref={container}
+      ref={containerRef}
       className={`${CLASSNAME_IMAGE}`}
       onWheel={(e) => onContainerScroll(e)}
     >
