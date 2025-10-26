@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Button,
   Col,
@@ -83,6 +90,84 @@ const MIN_ZOOM = 0.1;
 const SCROLL_ZOOM_TIMEOUT = 250;
 const ZOOM_NONE_EPSILON = 0.015;
 
+interface ILightboxCarouselProps {
+  instantTransition: boolean;
+  currentIndex: number;
+  images: ILightboxImage[];
+  displayMode: GQL.ImageLightboxDisplayMode;
+  lightboxSettings: GQL.ConfigImageLightboxInput | undefined;
+  resetPosition?: boolean;
+  zoom: number;
+  scrollAttemptsBeforeChange: number;
+  firstScroll: React.MutableRefObject<number | null>;
+  inScrollGroup: React.MutableRefObject<boolean>;
+  movingLeft: boolean;
+  updateZoom: (v: number) => void;
+  debouncedScrollReset: () => void;
+  handleLeft: () => void;
+  handleRight: () => void;
+}
+
+const LightboxCarousel = forwardRef(function (
+  {
+    instantTransition,
+    currentIndex,
+    images,
+    displayMode,
+    lightboxSettings,
+    resetPosition,
+    zoom,
+    scrollAttemptsBeforeChange,
+    firstScroll,
+    inScrollGroup,
+    movingLeft,
+    updateZoom,
+    debouncedScrollReset,
+    handleLeft,
+    handleRight,
+  }: ILightboxCarouselProps,
+  carouselRef: ForwardedRef<HTMLDivElement>
+) {
+  return (
+    <div
+      className={cx(CLASSNAME_CAROUSEL, {
+        [CLASSNAME_INSTANT]: instantTransition,
+      })}
+      style={{ left: `${currentIndex * -100}vw` }}
+      ref={carouselRef}
+    >
+      {images.map((image, i) => (
+        <div className={`${CLASSNAME_IMAGE_CONTAINER}`} key={image.paths.image}>
+          {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
+            <LightboxImage
+              src={image.paths.image ?? ""}
+              width={image.visual_files?.[0]?.width ?? 0}
+              height={image.visual_files?.[0]?.height ?? 0}
+              displayMode={displayMode}
+              scaleUp={lightboxSettings?.scaleUp ?? false}
+              scrollMode={
+                lightboxSettings?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
+              }
+              resetPosition={resetPosition}
+              zoom={i === currentIndex ? zoom : 1}
+              scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
+              firstScroll={firstScroll}
+              inScrollGroup={inScrollGroup}
+              current={i === currentIndex}
+              alignBottom={movingLeft}
+              setZoom={updateZoom}
+              debouncedScrollReset={debouncedScrollReset}
+              onLeft={handleLeft}
+              onRight={handleRight}
+              isVideo={isVideo(image.visual_files?.[0] ?? {})}
+            />
+          ) : undefined}
+        </div>
+      ))}
+    </div>
+  );
+});
+
 interface IProps {
   images: ILightboxImage[];
   isVisible: boolean;
@@ -145,7 +230,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayTarget = useRef<HTMLButtonElement | null>(null);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const clearIntervalCallback = useRef<() => void>();
@@ -870,48 +954,23 @@ export const LightboxComponent: React.FC<IProps> = ({
               <Icon icon={faChevronLeft} />
             </Button>
           )}
-
-          <div
-            className={cx(CLASSNAME_CAROUSEL, {
-              [CLASSNAME_INSTANT]: instantTransition,
-            })}
-            style={{ left: `${currentIndex * -100}vw` }}
-            ref={carouselRef}
-          >
-            {images.map((image, i) => (
-              <div
-                className={`${CLASSNAME_IMAGE_CONTAINER}`}
-                key={image.paths.image}
-              >
-                {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
-                  <LightboxImage
-                    src={image.paths.image ?? ""}
-                    width={image.visual_files?.[0]?.width ?? 0}
-                    height={image.visual_files?.[0]?.height ?? 0}
-                    displayMode={displayMode}
-                    scaleUp={lightboxSettings?.scaleUp ?? false}
-                    scrollMode={
-                      lightboxSettings?.scrollMode ??
-                      GQL.ImageLightboxScrollMode.Zoom
-                    }
-                    resetPosition={resetPosition}
-                    zoom={i === currentIndex ? zoom : 1}
-                    scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
-                    firstScroll={firstScroll}
-                    inScrollGroup={inScrollGroup}
-                    current={i === currentIndex}
-                    alignBottom={movingLeft}
-                    setZoom={updateZoom}
-                    debouncedScrollReset={debouncedScrollReset}
-                    onLeft={handleLeft}
-                    onRight={handleRight}
-                    isVideo={isVideo(image.visual_files?.[0] ?? {})}
-                  />
-                ) : undefined}
-              </div>
-            ))}
-          </div>
-
+          <LightboxCarousel
+            instantTransition={instantTransition}
+            currentIndex={currentIndex}
+            images={images}
+            displayMode={displayMode}
+            lightboxSettings={lightboxSettings}
+            resetPosition={resetPosition}
+            zoom={zoom}
+            scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
+            firstScroll={firstScroll}
+            inScrollGroup={inScrollGroup}
+            movingLeft={movingLeft}
+            updateZoom={updateZoom}
+            debouncedScrollReset={debouncedScrollReset}
+            handleLeft={handleLeft}
+            handleRight={handleRight}
+          />
           {allowNavigation && (
             <Button
               variant="link"
