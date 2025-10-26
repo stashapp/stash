@@ -76,6 +76,7 @@ const CLASSNAME_FOOTER_RIGHT = `${CLASSNAME_FOOTER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
+const CLASSNAME_SWIPE = `${CLASSNAME_CAROUSEL}-swipe`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
 const CLASSNAME_IMAGE_CONTAINER = `${CLASSNAME_CAROUSEL}-image-container`;
 const CLASSNAME_NAVBUTTON = `${CLASSNAME}-navbutton`;
@@ -91,7 +92,7 @@ const SCROLL_ZOOM_TIMEOUT = 250;
 const ZOOM_NONE_EPSILON = 0.015;
 
 interface ILightboxCarouselProps {
-  instantTransition: boolean;
+  transition: string | null;
   currentIndex: number;
   images: ILightboxImage[];
   displayMode: GQL.ImageLightboxDisplayMode;
@@ -106,11 +107,12 @@ interface ILightboxCarouselProps {
   debouncedScrollReset: () => void;
   handleLeft: () => void;
   handleRight: () => void;
+  overrideTransition: (t: string) => void;
 }
 
 const LightboxCarousel = forwardRef(function (
   {
-    instantTransition,
+    transition,
     currentIndex,
     images,
     displayMode,
@@ -125,15 +127,36 @@ const LightboxCarousel = forwardRef(function (
     debouncedScrollReset,
     handleLeft,
     handleRight,
+    overrideTransition,
   }: ILightboxCarouselProps,
   carouselRef: ForwardedRef<HTMLDivElement>
 ) {
+  const [carouselShift, setCarouselShift] = useState(0);
+
+  function handleMoveCarousel(delta: number) {
+    overrideTransition(CLASSNAME_INSTANT);
+    setCarouselShift(carouselShift + delta);
+  }
+
+  function handleReleaseCarousel(
+    event: React.TouchEvent,
+    swipeDuration: number
+  ) {
+    const cappedDuration = Math.max(50, Math.min(500, swipeDuration)) / 1000;
+    const adjustedShift = carouselShift / (2 * cappedDuration);
+    if (adjustedShift < -window.innerWidth / 2) {
+      handleRight();
+    } else if (adjustedShift > window.innerWidth / 2) {
+      handleLeft();
+    }
+    setCarouselShift(0);
+    overrideTransition(CLASSNAME_SWIPE);
+  }
+
   return (
     <div
-      className={cx(CLASSNAME_CAROUSEL, {
-        [CLASSNAME_INSTANT]: instantTransition,
-      })}
-      style={{ left: `${currentIndex * -100}vw` }}
+      className={CLASSNAME_CAROUSEL + (transition ? ` ${transition}` : "")}
+      style={{ left: `calc(${currentIndex * -100}vw + ${carouselShift}px)` }}
       ref={carouselRef}
     >
       {images.map((image, i) => (
@@ -160,6 +183,8 @@ const LightboxCarousel = forwardRef(function (
               onLeft={handleLeft}
               onRight={handleRight}
               isVideo={isVideo(image.visual_files?.[0] ?? {})}
+              moveCarousel={handleMoveCarousel}
+              releaseCarousel={handleReleaseCarousel}
             />
           ) : undefined}
         </div>
@@ -203,7 +228,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
-  const [instantTransition, setInstantTransition] = useState(false);
+  const [transition, setTransition] = useState<string | null>(null);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -317,15 +342,15 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [isSwitchingPage, images, index]);
 
-  const disableInstantTransition = useDebounce(
-    () => setInstantTransition(false),
-    400
-  );
+  const restoreTransition = useDebounce(() => setTransition(null), 400);
 
-  const setInstant = useCallback(() => {
-    setInstantTransition(true);
-    disableInstantTransition();
-  }, [disableInstantTransition]);
+  const overrideTransition = useCallback(
+    (t: string) => {
+      setTransition(t);
+      restoreTransition();
+    },
+    [restoreTransition]
+  );
 
   useEffect(() => {
     if (images.length < 2) return;
@@ -507,12 +532,12 @@ export const LightboxComponent: React.FC<IProps> = ({
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (e.repeat && (e.key === "ArrowRight" || e.key === "ArrowLeft"))
-        setInstant();
+        overrideTransition(CLASSNAME_INSTANT);
       if (e.key === "ArrowLeft") handleLeft();
       else if (e.key === "ArrowRight") handleRight();
       else if (e.key === "Escape") close();
     },
-    [setInstant, handleLeft, handleRight, close]
+    [overrideTransition, handleLeft, handleRight, close]
   );
   const handleFullScreenChange = () => {
     if (clearIntervalCallback.current) {
@@ -955,7 +980,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             </Button>
           )}
           <LightboxCarousel
-            instantTransition={instantTransition}
+            transition={transition}
             currentIndex={currentIndex}
             images={images}
             displayMode={displayMode}
@@ -970,6 +995,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             debouncedScrollReset={debouncedScrollReset}
             handleLeft={handleLeft}
             handleRight={handleRight}
+            overrideTransition={overrideTransition}
           />
           {allowNavigation && (
             <Button
