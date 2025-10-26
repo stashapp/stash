@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import useResizeObserver from "@react-hook/resize-observer";
 import * as GQL from "src/core/generated-graphql";
+import cx from "classnames";
 
 const ZOOM_STEP = 1.1;
 const ZOOM_FACTOR = 700;
@@ -18,6 +19,7 @@ const SCROLL_PAN_FACTOR = 2;
 const CLASSNAME = "Lightbox";
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
+const CLASSNAME_IMAGE_PAN = `${CLASSNAME_IMAGE}-pan`;
 
 function calculateDefaultZoom(
   width: number,
@@ -183,27 +185,27 @@ export const LightboxImage: React.FC<IProps> = ({
     };
   }, [src, dimensionsProvided]);
 
+  const calcPanBounds = useCallback(
+    (appliedZoom: number) => {
+      const xRange = Math.max(appliedZoom * imageWidth - boxWidth, 0);
+      const yRange = Math.max(appliedZoom * imageHeight - boxHeight, 0);
+      const nonZero = xRange != 0 || yRange != 0;
+      return {
+        minX: -xRange / 2,
+        maxX: xRange / 2,
+        minY: -yRange / 2,
+        maxY: yRange / 2,
+        nonZero,
+      };
+    },
+    [imageWidth, boxWidth, imageHeight, boxHeight]
+  );
+  const panBounds = calcPanBounds(defaultZoom * zoom);
+
   const minMaxY = useCallback(
     (appliedZoom: number) => {
-      let minY, maxY: number;
-      const inBounds = appliedZoom * imageHeight <= boxHeight;
-
-      // NOTE: I don't even know how these work, but they do
-      if (!inBounds) {
-        if (imageHeight > boxHeight) {
-          minY =
-            (appliedZoom * imageHeight - imageHeight) / 2 -
-            appliedZoom * imageHeight +
-            boxHeight;
-          maxY = (appliedZoom * imageHeight - imageHeight) / 2;
-        } else {
-          minY = (boxHeight - appliedZoom * imageHeight) / 2;
-          maxY = (appliedZoom * imageHeight - boxHeight) / 2;
-        }
-      } else {
-        minY = Math.min((boxHeight - imageHeight) / 2, 0);
-        maxY = minY;
-      }
+      const minY = Math.min((boxHeight - appliedZoom * imageHeight) / 2, 0);
+      const maxY = Math.max((appliedZoom * imageHeight - boxHeight) / 2, 0);
 
       return [minY, maxY];
     },
@@ -212,33 +214,21 @@ export const LightboxImage: React.FC<IProps> = ({
 
   const calculateInitialPosition = useCallback(
     (appliedZoom: number) => {
-      // Center image from container's center
-      const newPositionX = Math.min((boxWidth - imageWidth) / 2, 0);
-      let newPositionY: number;
-
-      if (displayMode === GQL.ImageLightboxDisplayMode.FitXy) {
-        newPositionY = Math.min((boxHeight - imageHeight) / 2, 0);
-      } else {
-        // otherwise, align image with container
-        const [minY, maxY] = minMaxY(appliedZoom);
-        if (!alignBottom) {
-          newPositionY = maxY;
-        } else {
-          newPositionY = minY;
-        }
-      }
+      // If image is smaller than container, place in center. Otherwise, align
+      // the left side of the image with the left side of the container, and
+      // align either the top or bottom of the image with the corresponding
+      // edge of container, depending on whether navigation is forwards or
+      // backwards.
+      const [minY, maxY] = minMaxY(appliedZoom);
+      const newPositionX = Math.max(
+        (appliedZoom * imageWidth - boxWidth) / 2,
+        0
+      );
+      const newPositionY = alignBottom ? minY : maxY;
 
       return [newPositionX, newPositionY];
     },
-    [
-      displayMode,
-      boxWidth,
-      imageWidth,
-      boxHeight,
-      imageHeight,
-      alignBottom,
-      minMaxY,
-    ]
+    [boxWidth, imageWidth, alignBottom, minMaxY]
   );
 
   useEffect(() => {
@@ -408,6 +398,8 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onImageScroll(ev: React.WheelEvent) {
+    if (defaultZoom === null) return;
+
     const absDeltaY = Math.abs(ev.deltaY);
     const firstDeltaY = firstScroll.current;
     // detect infinite scrolling (mousepad, mouse with infinite scrollwheel)
@@ -427,6 +419,9 @@ export const LightboxImage: React.FC<IProps> = ({
           percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
         }
         setZoom(zoom * percent);
+        const bounds = calcPanBounds(defaultZoom * zoom * percent);
+        setPositionX(Math.max(bounds.minX, Math.min(bounds.maxX, positionX)));
+        setPositionY(Math.max(bounds.minY, Math.min(bounds.maxY, positionY)));
         break;
       case GQL.ImageLightboxScrollMode.PanY:
         onImageScrollPanY(ev, infinite);
@@ -452,12 +447,21 @@ export const LightboxImage: React.FC<IProps> = ({
       return;
     }
 
-    const posX = ev.pageX - startPoints.current[0];
-    const posY = ev.pageY - startPoints.current[1];
+    const deltaX = ev.pageX - startPoints.current[0];
+    const deltaY = ev.pageY - startPoints.current[1];
     startPoints.current = [ev.pageX, ev.pageY];
 
-    setPositionX(positionX + posX);
-    setPositionY(positionY + posY);
+    const newPositionX = Math.max(
+      panBounds.minX,
+      Math.min(panBounds.maxX, positionX + deltaX)
+    );
+    const newPositionY = Math.max(
+      panBounds.minY,
+      Math.min(panBounds.maxY, positionY + deltaY)
+    );
+
+    setPositionX(newPositionX);
+    setPositionY(newPositionY);
   }
 
   function onImageMouseDown(ev: React.MouseEvent) {
@@ -542,6 +546,8 @@ export const LightboxImage: React.FC<IProps> = ({
       pointerCache.current[cachedIndex] = ev;
     }
 
+    if (defaultZoom === null) return;
+
     // compare the difference between the two pointers
     if (pointerCache.current.length === 2) {
       const ev1 = pointerCache.current[0];
@@ -554,11 +560,11 @@ export const LightboxImage: React.FC<IProps> = ({
         const diffDiff = diff - prevDiff.current;
         const factor = (Math.abs(diffDiff) / 20) * 0.1 + 1;
 
-        if (diffDiff > 0) {
-          setZoom(zoom * factor);
-        } else if (diffDiff < 0) {
-          setZoom((zoom * 1) / factor);
-        }
+        let newZoom = diffDiff > 0 ? zoom * factor : zoom / factor;
+        setZoom(newZoom);
+        const bounds = calcPanBounds(defaultZoom * newZoom);
+        setPositionX(Math.max(bounds.minX, Math.min(bounds.maxX, positionX)));
+        setPositionY(Math.max(bounds.minY, Math.min(bounds.maxY, positionY)));
       }
 
       prevDiff.current = diff;
@@ -570,25 +576,29 @@ export const LightboxImage: React.FC<IProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`${CLASSNAME_IMAGE}`}
+      className={cx(CLASSNAME_IMAGE, {
+        [CLASSNAME_IMAGE_PAN]: panBounds.nonZero,
+      })}
+      style={{ touchAction: "none" }}
       onWheel={(e) => onContainerScroll(e)}
     >
       {defaultZoom ? (
-        <picture
-          style={{
-            transform: `translate(${positionX}px, ${positionY}px) scale(${
-              defaultZoom * zoom
-            })`,
-          }}
-        >
-          <source srcSet={src} media="(min-width: 800px)" />
+        <picture>
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <ImageView
+            style={{
+              touchAction: "none",
+              position: "relative",
+              left: "50%",
+              top: "50%",
+              transform: `translate(-50%, -50%) translate(${positionX}px, ${positionY}px) scale(${
+                defaultZoom * zoom
+              })`,
+            }}
             loop={isVideo}
             src={src}
             alt=""
             draggable={false}
-            style={{ touchAction: "none" }}
             onWheel={current ? (e) => onImageScroll(e) : undefined}
             onMouseDown={onImageMouseDown}
             onMouseUp={onImageMouseUp}

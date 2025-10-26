@@ -70,6 +70,7 @@ const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
+const CLASSNAME_IMAGE_CONTAINER = `${CLASSNAME_CAROUSEL}-image-container`;
 const CLASSNAME_NAVBUTTON = `${CLASSNAME}-navbutton`;
 const CLASSNAME_NAV = `${CLASSNAME}-nav`;
 const CLASSNAME_NAVIMAGE = `${CLASSNAME_NAV}-image`;
@@ -878,7 +879,10 @@ export const LightboxComponent: React.FC<IProps> = ({
             ref={carouselRef}
           >
             {images.map((image, i) => (
-              <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
+              <div
+                className={`${CLASSNAME_IMAGE_CONTAINER}`}
+                key={image.paths.image}
+              >
                 {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
                   <LightboxImage
                     src={image.paths.image ?? ""}
