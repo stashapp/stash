@@ -144,27 +144,23 @@
       transition-duration: 0ms;
     }
 
-    &-image {
+    &-image-container {
       content-visibility: auto;
-      display: flex;
       width: 100vw;
+    }
 
-      picture {
-        display: flex;
-        margin: auto;
-        position: relative;
-
-        > div {
-          display: flex;
-          height: 100%;
-          position: absolute;
-          width: 100%;
-        }
-      }
+    &-image {
+      height: 100%;
+      width: 100%;
 
       img {
-        cursor: pointer;
         object-fit: contain;
+      }
+
+      &-pan {
+        img {
+          cursor: pointer;
+        }
       }
     }
   }
