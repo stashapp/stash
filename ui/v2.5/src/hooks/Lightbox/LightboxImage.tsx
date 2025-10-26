@@ -102,6 +102,8 @@ interface IProps {
   debouncedScrollReset: () => void;
   onLeft: () => void;
   onRight: () => void;
+  moveCarousel: (v: number) => void;
+  releaseCarousel: (ev: React.TouchEvent, swipeDuration: number) => void;
   isVideo: boolean;
 }
 
@@ -123,9 +125,11 @@ export const LightboxImage: React.FC<IProps> = ({
   debouncedScrollReset,
   onLeft,
   onRight,
+  moveCarousel,
+  releaseCarousel,
   isVideo,
 }) => {
-  const [defaultZoom, setDefaultZoom] = useState(1);
+  const [defaultZoom, setDefaultZoom] = useState<number | null>(null);
   const [moving, setMoving] = useState(false);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
@@ -139,6 +143,7 @@ export const LightboxImage: React.FC<IProps> = ({
   const resetPositionRef = useRef(resetPosition);
 
   const startPoints = useRef<number[]>([0, 0]);
+  const startTime = useRef<number>(0);
   const pointerCache = useRef<React.PointerEvent[]>([]);
   const prevDiff = useRef<number | undefined>();
 
@@ -200,7 +205,10 @@ export const LightboxImage: React.FC<IProps> = ({
     },
     [imageWidth, boxWidth, imageHeight, boxHeight]
   );
-  const panBounds = calcPanBounds(defaultZoom * zoom);
+  const panBounds =
+    defaultZoom !== null
+      ? calcPanBounds(defaultZoom * zoom)
+      : { minX: 0, maxX: 0, minY: 0, maxY: 0, nonZero: false };
 
   const minMaxY = useCallback(
     (appliedZoom: number) => {
@@ -279,6 +287,9 @@ export const LightboxImage: React.FC<IProps> = ({
   ]);
 
   useEffect(() => {
+    if (defaultZoom === null) {
+      return;
+    }
     if (resetPosition !== resetPositionRef.current) {
       resetPositionRef.current = resetPosition;
 
@@ -364,7 +375,7 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onImageScrollPanY(ev: React.WheelEvent, infinite: boolean) {
-    if (!current) return;
+    if (!current || defaultZoom === null) return;
 
     const [minY, maxY] = minMaxY(zoom * defaultZoom);
 
@@ -466,6 +477,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   function onImageMouseDown(ev: React.MouseEvent) {
     startPoints.current = [ev.pageX, ev.pageY];
+    startTime.current = ev.timeStamp;
     setMoving(true);
 
     mouseDownEvent.current = ev.nativeEvent;
@@ -497,24 +509,58 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onTouchStart(ev: React.TouchEvent) {
-    ev.preventDefault();
-    if (ev.touches.length === 1) {
-      startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
-      setMoving(true);
+  const onTouchStart = useCallback(
+    (ev: TouchEvent) => {
+      ev.preventDefault();
+      if (ev.touches.length === 1) {
+        startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
+        startTime.current = ev.timeStamp;
+        setMoving(true);
+      }
+    },
+    [startPoints, startTime, setMoving]
+  );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
     }
-  }
+    container.addEventListener("touchstart", onTouchStart);
+    return () => {
+      container.removeEventListener("touchstart", onTouchStart);
+    };
+  }, [containerRef, onTouchStart]);
 
   function onTouchMove(ev: React.TouchEvent) {
     if (!moving) return;
 
     if (ev.touches.length === 1) {
-      const posX = ev.touches[0].pageX - startPoints.current[0];
-      const posY = ev.touches[0].pageY - startPoints.current[1];
+      const deltaX = ev.touches[0].pageX - startPoints.current[0];
+      const deltaY = ev.touches[0].pageY - startPoints.current[1];
       startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
 
-      setPositionX(positionX + posX);
-      setPositionY(positionY + posY);
+      if (panBounds.minX != panBounds.maxX) {
+        const newPositionX = Math.max(
+          panBounds.minX,
+          Math.min(panBounds.maxX, positionX + deltaX)
+        );
+        const newPositionY = Math.max(
+          panBounds.minY,
+          Math.min(panBounds.maxY, positionY + deltaY)
+        );
+
+        setPositionX(newPositionX);
+        setPositionY(newPositionY);
+      } else {
+        moveCarousel(deltaX);
+      }
+    }
+  }
+
+  function onTouchEnd(ev: React.TouchEvent) {
+    if (ev.changedTouches.length === 1 && ev.touches.length === 0) {
+      releaseCarousel(ev, ev.timeStamp - startTime.current);
     }
   }
 
@@ -581,6 +627,8 @@ export const LightboxImage: React.FC<IProps> = ({
       })}
       style={{ touchAction: "none" }}
       onWheel={(e) => onContainerScroll(e)}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       {defaultZoom ? (
         <picture>
@@ -603,8 +651,6 @@ export const LightboxImage: React.FC<IProps> = ({
             onMouseDown={onImageMouseDown}
             onMouseUp={onImageMouseUp}
             onMouseMove={onImageMouseOver}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
             onPointerDown={onPointerDown}
             onPointerUp={onPointerUp}
             onPointerMove={onPointerMove}

@@ -144,6 +144,11 @@
       transition-duration: 0ms;
     }
 
+    &-swipe {
+      transition-duration: 200ms;
+      transition-timing-function: ease-out;
+    }
+
     &-image-container {
       content-visibility: auto;
       width: 100vw;
