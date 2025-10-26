@@ -254,6 +254,7 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 		// For non-fullhw, keep a sane software format.
 		if !fullhw {
 			videoFilter = videoFilter.Append("format=nv12")
+			videoFilter = videoFilter.Append("hwupload")
 		}
 	}
 
@@ -363,13 +364,13 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 	case VideoCodecM264:
 		template = "scale_vt=$value"
 	case VideoCodecRK264:
-		if !fullhw {
-			return VideoFilter(sargs)
-		}
-		// Rockchip fallback chain for maximum compatibility:
-		// RGA scale → system memory → upload → rkmpp encoder.
-		// This avoids hwmap(rkrga→rkmpp) failures (-38/-12) seen on some builds.
-		template = "scale_rkrga=$value:format=nv12,hwdownload,format=nv12,hwupload"
+		// The original filter chain is a fallback for maximum compatibility:
+		// "scale_rkrga=$value:format=nv12,hwdownload,format=nv12,hwupload"
+		// It avoids hwmap(rkrga→rkmpp) failures (-38/-12) seen on some builds
+		// by downloading the scaled frame to system RAM and re-uploading it.
+		// The filter chain below uses a zero-copy approach, passing the hardware-scaled
+		// frame directly to the encoder. This is more efficient but may be less stable.
+		template = "scale_rkrga=$value"
 	default:
 		return VideoFilter(sargs)
 	}
@@ -378,20 +379,20 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 	isIntel := codec == VideoCodecI264 || codec == VideoCodecI264C || codec == VideoCodecIVP9
 	// BUG: scale_vt doesn't call ff_scale_adjust_dimensions, thus cant accept negative size values
 	isApple := codec == VideoCodecM264
-	// BUG: scale_rkrga expects positive sizes.
-	isRockchip := codec == VideoCodecRK264
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple || isRockchip))
+	// Rockchip's scale_rkrga supports -1/-2; don't apply minus-one hack here.
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple))
 }
 
 // Returns the max resolution for a given codec, or a default
 func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec) (int, int) {
 	switch codec {
-	case VideoCodecN264,
-		VideoCodecN264H,
-		VideoCodecI264,
-		VideoCodecI264C,
-		VideoCodecRK264:
-		return 4096, 4096
+    case VideoCodecRK264:
+        return 8192, 8192
+    case VideoCodecN264,
+        VideoCodecN264H,
+        VideoCodecI264,
+        VideoCodecI264C:
+        return 4096, 4096
 	}
 
 	return 0, 0
