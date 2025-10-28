@@ -371,6 +371,7 @@ type Mutation {
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
   studiosDestroy(ids: [ID!]!): Boolean!
+  bulkStudioUpdate(input: BulkStudioUpdateInput!): [Studio!]
 
   movieCreate(input: MovieCreateInput!): Movie
     @deprecated(reason: "Use groupCreate instead")
