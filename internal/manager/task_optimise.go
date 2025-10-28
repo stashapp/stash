@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/stashapp/stash/pkg/job"
@@ -17,7 +18,7 @@ type OptimiseDatabaseJob struct {
 	Optimiser Optimiser
 }
 
-func (j *OptimiseDatabaseJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *OptimiseDatabaseJob) Execute(ctx context.Context, progress *job.Progress) error {
 	logger.Info("Optimising database")
 	progress.SetTotal(2)
 
@@ -31,11 +32,10 @@ func (j *OptimiseDatabaseJob) Execute(ctx context.Context, progress *job.Progres
 	})
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 	if err != nil {
-		logger.Errorf("Error analyzing database: %v", err)
-		return
+		return fmt.Errorf("Error analyzing database: %w", err)
 	}
 
 	progress.ExecuteTask("Vacuuming database", func() {
@@ -44,13 +44,13 @@ func (j *OptimiseDatabaseJob) Execute(ctx context.Context, progress *job.Progres
 	})
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 	if err != nil {
-		logger.Errorf("Error vacuuming database: %v", err)
-		return
+		return fmt.Errorf("error vacuuming database: %w", err)
 	}
 
 	elapsed := time.Since(start)
 	logger.Infof("Finished optimising database after %s", elapsed)
+	return nil
 }

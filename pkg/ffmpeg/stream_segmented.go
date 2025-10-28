@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,7 +17,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -46,12 +46,16 @@ const (
 	// maximum idle time between segment requests before
 	// stopping transcode and deleting cache folder
 	maxIdleTime = 30 * time.Second
+
+	resolutionParamKey = "resolution"
+	// TODO - setting the apikey in here isn't ideal
+	apiKeyParamKey = "apikey"
 )
 
 type StreamType struct {
 	Name          string
 	SegmentType   *SegmentType
-	ServeManifest func(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string)
+	ServeManifest func(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *models.VideoFile, resolution string)
 	Args          func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) Args
 }
 
@@ -82,6 +86,7 @@ var (
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
 				"-hls_time", fmt.Sprint(segmentLength),
+				"-hls_flags", "split_by_time",
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -111,6 +116,7 @@ var (
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
 				"-hls_time", fmt.Sprint(segmentLength),
+				"-hls_flags", "split_by_time",
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -250,7 +256,7 @@ var ErrInvalidSegment = errors.New("invalid segment")
 
 type StreamOptions struct {
 	StreamType *StreamType
-	VideoFile  *file.VideoFile
+	VideoFile  *models.VideoFile
 	Resolution string
 	Hash       string
 	Segment    string
@@ -279,7 +285,7 @@ type waitingSegment struct {
 type runningStream struct {
 	dir              string
 	streamType       *StreamType
-	vf               *file.VideoFile
+	vf               *models.VideoFile
 	maxTranscodeSize int
 	outputDir        string
 
@@ -329,7 +335,8 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	codec := HLSGetCodec(sm, s.streamType.Name)
 
-	args = sm.encoder.hwDeviceInit(args, codec)
+	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, codec, s.vf, s.maxTranscodeSize)
+	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 
 	if segment > 0 {
@@ -340,7 +347,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
-	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf, s.maxTranscodeSize, fullhw)
 
 	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 
@@ -394,7 +401,7 @@ func (tp *transcodeProcess) checkSegments() {
 	}
 }
 
-func lastSegment(vf *file.VideoFile) int {
+func lastSegment(vf *models.VideoFile) int {
 	return int(math.Ceil(vf.Duration/segmentLength)) - 1
 }
 
@@ -405,7 +412,7 @@ func segmentExists(path string) bool {
 
 // serveHLSManifest serves a generated HLS playlist. The URLs for the segments
 // are of the form {r.URL}/%d.ts{?urlQuery} where %d is the segment index.
-func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string) {
+func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *models.VideoFile, resolution string) {
 	if sm.cacheDir == "" {
 		logger.Error("[transcode] cannot live transcode with HLS because cache dir is unset")
 		http.Error(w, "cannot live transcode with HLS because cache dir is unset", http.StatusServiceUnavailable)
@@ -419,13 +426,27 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	prefix := r.Header.Get("X-Forwarded-Prefix")
+
 	baseUrl := *r.URL
 	baseUrl.RawQuery = ""
-	baseURL := baseUrl.String()
+	baseURL := prefix + baseUrl.String()
 
-	var urlQuery string
+	urlQuery := url.Values{}
+	apikey := r.URL.Query().Get(apiKeyParamKey)
+
 	if resolution != "" {
-		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
+		urlQuery.Set(resolutionParamKey, resolution)
+	}
+
+	// TODO - this needs to be handled outside of this package
+	if apikey != "" {
+		urlQuery.Set(apiKeyParamKey, apikey)
+	}
+
+	urlQueryString := ""
+	if len(urlQuery) > 0 {
+		urlQueryString = "?" + urlQuery.Encode()
 	}
 
 	var buf bytes.Buffer
@@ -447,7 +468,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 		}
 
 		fmt.Fprintf(&buf, "#EXTINF:%f,\n", thisLength)
-		fmt.Fprintf(&buf, "%s/%d.ts%s\n", baseURL, segment, urlQuery)
+		fmt.Fprintf(&buf, "%s/%d.ts%s\n", baseURL, segment, urlQueryString)
 
 		leftover -= thisLength
 		segment++
@@ -460,7 +481,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 }
 
 // serveDASHManifest serves a generated DASH manifest.
-func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string) {
+func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *models.VideoFile, resolution string) {
 	if sm.cacheDir == "" {
 		logger.Error("[transcode] cannot live transcode with DASH because cache dir is unset")
 		http.Error(w, "cannot live transcode files with DASH because cache dir is unset", http.StatusServiceUnavailable)
@@ -506,11 +527,18 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 		videoWidth = vf.Width
 	}
 
-	var urlQuery string
+	urlQuery := url.Values{}
+
+	// TODO - this needs to be handled outside of this package
+	apikey := r.URL.Query().Get(apiKeyParamKey)
+	if apikey != "" {
+		urlQuery.Set(apiKeyParamKey, apikey)
+	}
+
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if resolution != "" {
 		maxTranscodeSize = models.StreamingResolutionEnum(resolution).GetMaxResolution()
-		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
+		urlQuery.Set(resolutionParamKey, resolution)
 	}
 	if maxTranscodeSize != 0 {
 		videoSize := videoHeight
@@ -525,21 +553,28 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 		}
 	}
 
+	urlQueryString := ""
+	if len(urlQuery) > 0 {
+		urlQueryString = "?" + urlQuery.Encode()
+	}
+
 	mediaDuration := mpd.Duration(time.Duration(probeResult.FileDuration * float64(time.Second)))
 	m := mpd.NewMPD(mpd.DASH_PROFILE_LIVE, mediaDuration.String(), "PT4.0S")
 
+	prefix := r.Header.Get("X-Forwarded-Prefix")
+
 	baseUrl := r.URL.JoinPath("/")
 	baseUrl.RawQuery = ""
-	m.BaseURL = baseUrl.String()
+	m.BaseURL = prefix + baseUrl.String()
 
 	video, _ := m.AddNewAdaptationSetVideo(MimeWebmVideo, "progressive", true, 1)
 
-	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQuery, "$Number$_v.webm"+urlQuery, 0, 1)
+	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQueryString, "$Number$_v.webm"+urlQueryString, 0, 1)
 	_, _ = video.AddNewRepresentationVideo(200000, "vp09.00.40.08", "0", framerate, int64(videoWidth), int64(videoHeight))
 
 	if ProbeAudioCodec(vf.AudioCodec) != MissingUnsupported {
 		audio, _ := m.AddNewAdaptationSetAudio(MimeWebmAudio, true, 1, "und")
-		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQuery, "$Number$_a.webm"+urlQuery, 0, 1)
+		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQueryString, "$Number$_a.webm"+urlQueryString, 0, 1)
 		_, _ = audio.AddNewRepresentationAudio(48000, 96000, "opus", "1")
 	}
 
@@ -550,7 +585,7 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	utils.ServeStaticContent(w, r, buf.Bytes())
 }
 
-func (sm *StreamManager) ServeManifest(w http.ResponseWriter, r *http.Request, streamType *StreamType, vf *file.VideoFile, resolution string) {
+func (sm *StreamManager) ServeManifest(w http.ResponseWriter, r *http.Request, streamType *StreamType, vf *models.VideoFile, resolution string) {
 	streamType.ServeManifest(sm, w, r, vf, resolution)
 }
 

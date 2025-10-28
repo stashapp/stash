@@ -1,6 +1,3 @@
-"Log entries"
-scalar Time
-
 enum LogLevel {
   Trace
   Debug

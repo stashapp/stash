@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -57,8 +56,9 @@ func (e GenderEnum) MarshalGQL(w io.Writer) {
 }
 
 type GenderCriterionInput struct {
-	Value    *GenderEnum       `json:"value"`
-	Modifier CriterionModifier `json:"modifier"`
+	Value     GenderEnum        `json:"value"`
+	ValueList []GenderEnum      `json:"value_list"`
+	Modifier  CriterionModifier `json:"modifier"`
 }
 
 type CircumisedEnum string
@@ -108,9 +108,7 @@ type CircumcisionCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And            *PerformerFilterType  `json:"AND"`
-	Or             *PerformerFilterType  `json:"OR"`
-	Not            *PerformerFilterType  `json:"NOT"`
+	OperatorFilter[PerformerFilterType]
 	Name           *StringCriterionInput `json:"name"`
 	Disambiguation *StringCriterionInput `json:"disambiguation"`
 	Details        *StringCriterionInput `json:"details"`
@@ -160,14 +158,14 @@ type PerformerFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	// Filter by play count
+	PlayCount *IntCriterionInput `json:"play_count"`
 	// Filter by O count
 	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by url
@@ -180,6 +178,8 @@ type PerformerFilterType struct {
 	DeathYear *IntCriterionInput `json:"death_year"`
 	// Filter by studios where performer appears in scene/image/gallery
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter by groups where performer appears in scene
+	Groups *HierarchicalMultiCriterionInput `json:"groups"`
 	// Filter by performers where performer appears with another performer in scene/image/gallery
 	Performers *MultiCriterionInput `json:"performers"`
 	// Filter by autotag ignore value
@@ -188,49 +188,96 @@ type PerformerFilterType struct {
 	Birthdate *DateCriterionInput `json:"birth_date"`
 	// Filter by death date
 	DeathDate *DateCriterionInput `json:"death_date"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related tags that meet this criteria
+	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
-type PerformerFinder interface {
-	FindMany(ctx context.Context, ids []int) ([]*Performer, error)
+type PerformerCreateInput struct {
+	Name           string          `json:"name"`
+	Disambiguation *string         `json:"disambiguation"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
+	Gender         *GenderEnum     `json:"gender"`
+	Birthdate      *string         `json:"birthdate"`
+	Ethnicity      *string         `json:"ethnicity"`
+	Country        *string         `json:"country"`
+	EyeColor       *string         `json:"eye_color"`
+	Height         *string         `json:"height"`
+	HeightCm       *int            `json:"height_cm"`
+	Measurements   *string         `json:"measurements"`
+	FakeTits       *string         `json:"fake_tits"`
+	PenisLength    *float64        `json:"penis_length"`
+	Circumcised    *CircumisedEnum `json:"circumcised"`
+	CareerLength   *string         `json:"career_length"`
+	Tattoos        *string         `json:"tattoos"`
+	Piercings      *string         `json:"piercings"`
+	Aliases        *string         `json:"aliases"`
+	AliasList      []string        `json:"alias_list"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
+	Favorite       *bool           `json:"favorite"`
+	TagIds         []string        `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Details       *string        `json:"details"`
+	DeathDate     *string        `json:"death_date"`
+	HairColor     *string        `json:"hair_color"`
+	Weight        *int           `json:"weight"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
-type PerformerReader interface {
-	Find(ctx context.Context, id int) (*Performer, error)
-	PerformerFinder
-	FindBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
-	FindByImageID(ctx context.Context, imageID int) ([]*Performer, error)
-	FindByGalleryID(ctx context.Context, galleryID int) ([]*Performer, error)
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Performer, error)
-	FindByStashID(ctx context.Context, stashID StashID) ([]*Performer, error)
-	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Performer, error)
-	CountByTagID(ctx context.Context, tagID int) (int, error)
-	Count(ctx context.Context) (int, error)
-	All(ctx context.Context) ([]*Performer, error)
-	// TODO - this interface is temporary until the filter schema can fully
-	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
-	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
-	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
-	AliasLoader
-	GetImage(ctx context.Context, performerID int) ([]byte, error)
-	HasImage(ctx context.Context, performerID int) (bool, error)
-	StashIDLoader
-	TagIDLoader
-}
+type PerformerUpdateInput struct {
+	ID             string          `json:"id"`
+	Name           *string         `json:"name"`
+	Disambiguation *string         `json:"disambiguation"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
+	Gender         *GenderEnum     `json:"gender"`
+	Birthdate      *string         `json:"birthdate"`
+	Ethnicity      *string         `json:"ethnicity"`
+	Country        *string         `json:"country"`
+	EyeColor       *string         `json:"eye_color"`
+	Height         *string         `json:"height"`
+	HeightCm       *int            `json:"height_cm"`
+	Measurements   *string         `json:"measurements"`
+	FakeTits       *string         `json:"fake_tits"`
+	PenisLength    *float64        `json:"penis_length"`
+	Circumcised    *CircumisedEnum `json:"circumcised"`
+	CareerLength   *string         `json:"career_length"`
+	Tattoos        *string         `json:"tattoos"`
+	Piercings      *string         `json:"piercings"`
+	Aliases        *string         `json:"aliases"`
+	AliasList      []string        `json:"alias_list"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
+	Favorite       *bool           `json:"favorite"`
+	TagIds         []string        `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Details       *string        `json:"details"`
+	DeathDate     *string        `json:"death_date"`
+	HairColor     *string        `json:"hair_color"`
+	Weight        *int           `json:"weight"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
 
-type PerformerWriter interface {
-	Create(ctx context.Context, newPerformer *Performer) error
-	UpdatePartial(ctx context.Context, id int, updatedPerformer PerformerPartial) (*Performer, error)
-	Update(ctx context.Context, updatedPerformer *Performer) error
-	Destroy(ctx context.Context, id int) error
-	UpdateImage(ctx context.Context, performerID int, image []byte) error
-}
-
-type PerformerReaderWriter interface {
-	PerformerReader
-	PerformerWriter
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

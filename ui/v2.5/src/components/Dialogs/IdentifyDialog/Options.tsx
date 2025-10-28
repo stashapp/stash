@@ -63,6 +63,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
               options.skipMultipleMatchTag ? [options.skipMultipleMatchTag] : []
             }
             noSelectionString="Select/create tag..."
+            menuPortalTarget={document.body}
           />
         </Col>
       </Form.Group>
@@ -98,6 +99,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
                 : []
             }
             noSelectionString="Select/create tag..."
+            menuPortalTarget={document.body}
           />
         </Col>
       </Form.Group>

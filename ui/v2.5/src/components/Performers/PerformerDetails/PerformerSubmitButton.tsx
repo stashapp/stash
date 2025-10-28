@@ -24,9 +24,9 @@ export const PerformerSubmitButton: React.FC<IPerformerOperationsProps> = ({
         <FormattedMessage id="actions.submit_stash_box" />
       </Button>
       <SubmitStashBoxDraft
+        type="performer"
         boxes={boxes}
         entity={performer}
-        query={GQL.SubmitStashBoxPerformerDraftDocument}
         show={showDraftModal}
         onHide={() => setShowDraftModal(false)}
       />

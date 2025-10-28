@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import Gallery from "react-photo-gallery";
+import Gallery, { PhotoClickHandler } from "react-photo-gallery";
 import "flexbin/flexbin.css";
 import {
   CriterionModifier,
@@ -45,9 +45,9 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
   }, [images]);
 
   const showLightbox = useLightbox(lightboxState);
-  const showLightboxOnClick = useCallback(
+  const showLightboxOnClick: PhotoClickHandler = useCallback(
     (event, { index }) => {
-      showLightbox(index);
+      showLightbox({ initialIndex: index });
     },
     [showLightbox]
   );
@@ -67,8 +67,8 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
   images.forEach((image, index) => {
     let imageData = {
       src: image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files[0]?.width ?? 0,
+      height: image.visual_files[0]?.height ?? 0,
       tabIndex: index,
       key: image.id ?? index,
       loading: "lazy",

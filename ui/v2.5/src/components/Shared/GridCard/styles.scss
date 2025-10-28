@@ -1,0 +1,84 @@
+.grid-card {
+  a {
+    color: $text-color;
+    text-decoration: none;
+  }
+
+  .rating-banner {
+    transition: opacity 0.5s;
+  }
+
+  &:hover,
+  &:active {
+    .rating-banner,
+    .studio-overlay {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .studio-overlay:hover,
+    .studio-overlay:active {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
+  }
+}
+
+.studio-overlay {
+  display: block;
+  font-weight: 900;
+  height: 10%;
+  max-width: 40%;
+  opacity: 0.75;
+  position: absolute;
+  right: 0.7rem;
+  top: 0.7rem;
+  transition: opacity 0.5s;
+  z-index: 8;
+
+  .image-thumbnail {
+    height: 50px;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  a {
+    color: $text-color;
+    display: inline-block;
+    letter-spacing: -0.03rem;
+    text-align: right;
+    text-decoration: none;
+    text-shadow: 0 0 3px #000;
+  }
+
+  &:hover,
+  &:active {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
+}
+
+.move-target {
+  align-items: center;
+  background-color: $primary;
+  color: $secondary;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+  width: 10%;
+
+  &.move-target-before {
+    left: 0;
+  }
+
+  &.move-target-after {
+    right: 0;
+  }
+}
+
+.card-drag-handle {
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7));
+}

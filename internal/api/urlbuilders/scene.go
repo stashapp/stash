@@ -57,10 +57,6 @@ func (b SceneURLBuilder) GetScreenshotURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?t=" + b.UpdatedAt
 }
 
-func (b SceneURLBuilder) GetChaptersVTTURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/vtt/chapter"
-}
-
 func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }

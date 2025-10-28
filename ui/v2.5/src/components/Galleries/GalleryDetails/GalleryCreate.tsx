@@ -25,12 +25,12 @@ const GalleryCreate: React.FC = () => {
     });
     if (result.data?.galleryCreate) {
       history.push(`/galleries/${result.data.galleryCreate.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 

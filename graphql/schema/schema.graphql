@@ -4,6 +4,27 @@ type Query {
   findSavedFilter(id: ID!): SavedFilter
   findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
+    @deprecated(reason: "default filter now stored in UI config")
+
+  "Find a file by its id or path"
+  findFile(id: ID, path: String): BaseFile!
+
+  "Queries for Files"
+  findFiles(
+    file_filter: FileFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindFilesResultType!
+
+  "Find a file by its id or path"
+  findFolder(id: ID, path: String): Folder!
+
+  "Queries for Files"
+  findFolders(
+    folder_filter: FolderFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindFoldersResultType!
 
   "Find a scene by ID or Checksum"
   findScene(id: ID, checksum: String): Scene
@@ -12,7 +33,8 @@ type Query {
   "A function which queries Scene objects"
   findScenes(
     scene_filter: SceneFilterType
-    scene_ids: [Int!]
+    scene_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
     filter: FindFilterType
   ): FindScenesResultType!
 
@@ -43,6 +65,7 @@ type Query {
   findSceneMarkers(
     scene_marker_filter: SceneMarkerFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindSceneMarkersResultType!
 
   findImage(id: ID, checksum: String): Image
@@ -50,7 +73,8 @@ type Query {
   "A function which queries Scene objects"
   findImages(
     image_filter: ImageFilterType
-    image_ids: [Int!]
+    image_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
     filter: FindFilterType
   ): FindImagesResultType!
 
@@ -60,6 +84,8 @@ type Query {
   findPerformers(
     performer_filter: PerformerFilterType
     filter: FindFilterType
+    performer_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
   ): FindPerformersResultType!
 
   "Find a studio by ID"
@@ -68,26 +94,39 @@ type Query {
   findStudios(
     studio_filter: StudioFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindStudiosResultType!
 
   "Find a movie by ID"
-  findMovie(id: ID!): Movie
+  findMovie(id: ID!): Movie @deprecated(reason: "Use findGroup instead")
   "A function which queries Movie objects"
   findMovies(
     movie_filter: MovieFilterType
     filter: FindFilterType
-  ): FindMoviesResultType!
+    ids: [ID!]
+  ): FindMoviesResultType! @deprecated(reason: "Use findGroups instead")
+
+  "Find a group by ID"
+  findGroup(id: ID!): Group
+  "A function which queries Group objects"
+  findGroups(
+    group_filter: GroupFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindGroupsResultType!
 
   findGallery(id: ID!): Gallery
   findGalleries(
     gallery_filter: GalleryFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindGalleriesResultType!
 
   findTag(id: ID!): Tag
   findTags(
     tag_filter: TagFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindTagsResultType!
 
   "Retrieve random scene markers for the wall"
@@ -108,14 +147,6 @@ type Query {
 
   "List available scrapers"
   listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
-  listPerformerScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
-  listSceneScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [SCENE])")
-  listGalleryScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [GALLERY])")
-  listMovieScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [MOVIE])")
 
   "Scrape for a single scene"
   scrapeSingleScene(
@@ -155,7 +186,19 @@ type Query {
   scrapeSingleMovie(
     source: ScraperSourceInput!
     input: ScrapeSingleMovieInput!
-  ): [ScrapedMovie!]!
+  ): [ScrapedMovie!]! @deprecated(reason: "Use scrapeSingleGroup instead")
+
+  "Scrape for a single group"
+  scrapeSingleGroup(
+    source: ScraperSourceInput!
+    input: ScrapeSingleGroupInput!
+  ): [ScrapedGroup!]!
+
+  "Scrape for a single image"
+  scrapeSingleImage(
+    source: ScraperSourceInput!
+    input: ScrapeSingleImageInput!
+  ): [ScrapedImage!]!
 
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
@@ -166,35 +209,25 @@ type Query {
   scrapeSceneURL(url: String!): ScrapedScene
   "Scrapes a complete gallery record based on a URL"
   scrapeGalleryURL(url: String!): ScrapedGallery
+  "Scrapes a complete image record based on a URL"
+  scrapeImageURL(url: String!): ScrapedImage
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
-
-  "Scrape a list of performers based on name"
-  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
-    @deprecated(reason: "use scrapeSinglePerformer")
-  "Scrapes a complete performer record based on a scrapePerformerList result"
-  scrapePerformer(
-    scraper_id: ID!
-    scraped_performer: ScrapedPerformerInput!
-  ): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer")
-  "Scrapes a complete scene record based on an existing scene"
-  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
-    @deprecated(reason: "use scrapeSingleScene")
-  "Scrapes a complete gallery record based on an existing gallery"
-  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
-    @deprecated(reason: "use scrapeSingleGallery")
-
-  "Scrape a list of performers from a query"
-  scrapeFreeonesPerformerList(query: String!): [String!]!
-    @deprecated(
-      reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones"
-    )
+    @deprecated(reason: "Use scrapeGroupURL instead")
+  "Scrapes a complete group record based on a URL"
+  scrapeGroupURL(url: String!): ScrapedGroup
 
   # Plugins
   "List loaded plugins"
   plugins: [Plugin!]
   "List available plugin operations"
   pluginTasks: [PluginTask!]
+
+  # Packages
+  "List installed packages"
+  installedPackages(type: PackageType!): [Package!]!
+  "List available packages"
+  availablePackages(type: PackageType!, source: String!): [Package!]!
 
   # Config
   "Returns the current, complete configuration"
@@ -219,14 +252,16 @@ type Query {
 
   # Get everything
 
-  allScenes: [Scene!]!
+  allScenes: [Scene!]! @deprecated(reason: "Use findScenes instead")
   allSceneMarkers: [SceneMarker!]!
-  allImages: [Image!]!
-  allGalleries: [Gallery!]!
+    @deprecated(reason: "Use findSceneMarkers instead")
+  allImages: [Image!]! @deprecated(reason: "Use findImages instead")
+  allGalleries: [Gallery!]! @deprecated(reason: "Use findGalleries instead")
+
   allPerformers: [Performer!]!
-  allStudios: [Studio!]!
-  allMovies: [Movie!]!
-  allTags: [Tag!]!
+  allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
+  allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
+  allMovies: [Movie!]! @deprecated(reason: "Use findGroups instead")
 
   # Get everything with minimal metadata
 
@@ -239,7 +274,12 @@ type Query {
 
 type Mutation {
   setup(input: SetupInput!): Boolean!
-  migrate(input: MigrateInput!): Boolean!
+
+  "Migrates the schema to the required version. Returns the job ID"
+  migrate(input: MigrateInput!): ID!
+
+  "Downloads and installs ffmpeg and ffprobe binaries into the configuration directory. Returns the job ID."
+  downloadFFMpeg: ID!
 
   sceneCreate(input: SceneCreateInput!): Scene
   sceneUpdate(input: SceneUpdateInput!): Scene
@@ -250,17 +290,38 @@ type Mutation {
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
   "Increments the o-counter for a scene. Returns the new value"
-  sceneIncrementO(id: ID!): Int!
+  sceneIncrementO(id: ID!): Int! @deprecated(reason: "Use sceneAddO instead")
   "Decrements the o-counter for a scene. Returns the new value"
-  sceneDecrementO(id: ID!): Int!
+  sceneDecrementO(id: ID!): Int! @deprecated(reason: "Use sceneRemoveO instead")
+
+  "Increments the o-counter for a scene. Uses the current time if none provided."
+  sceneAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the o-counter for a scene, removing the last recorded time if specific time not provided. Returns the new value"
+  sceneDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+
   "Resets the o-counter for a scene to 0. Returns the new value"
   sceneResetO(id: ID!): Int!
 
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
+  "Resets the resume time point and play duration"
+  sceneResetActivity(
+    id: ID!
+    reset_resume: Boolean
+    reset_duration: Boolean
+  ): Boolean!
+
   "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
+    @deprecated(reason: "Use sceneAddPlay instead")
+
+  "Increments the play count for the scene. Uses the current time if none provided."
+  sceneAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the play count for the scene, removing the specific times or the last recorded time if not provided."
+  sceneDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Resets the play count for a scene to 0. Returns the new play count value."
+  sceneResetPlayCount(id: ID!): Int!
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
   sceneGenerateScreenshot(id: ID!, at: Float): String!
@@ -268,6 +329,7 @@ type Mutation {
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
+  sceneMarkersDestroy(ids: [ID!]!): Boolean!
 
   sceneAssignFile(input: AssignSceneFileInput!): Boolean!
 
@@ -292,6 +354,8 @@ type Mutation {
 
   addGalleryImages(input: GalleryAddInput!): Boolean!
   removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+  setGalleryCover(input: GallerySetCoverInput!): Boolean!
+  resetGalleryCover(input: GalleryResetCoverInput!): Boolean!
 
   galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
   galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
@@ -309,16 +373,34 @@ type Mutation {
   studiosDestroy(ids: [ID!]!): Boolean!
 
   movieCreate(input: MovieCreateInput!): Movie
+    @deprecated(reason: "Use groupCreate instead")
   movieUpdate(input: MovieUpdateInput!): Movie
+    @deprecated(reason: "Use groupUpdate instead")
   movieDestroy(input: MovieDestroyInput!): Boolean!
+    @deprecated(reason: "Use groupDestroy instead")
   moviesDestroy(ids: [ID!]!): Boolean!
+    @deprecated(reason: "Use groupsDestroy instead")
   bulkMovieUpdate(input: BulkMovieUpdateInput!): [Movie!]
+    @deprecated(reason: "Use bulkGroupUpdate instead")
+
+  groupCreate(input: GroupCreateInput!): Group
+  groupUpdate(input: GroupUpdateInput!): Group
+  groupDestroy(input: GroupDestroyInput!): Boolean!
+  groupsDestroy(ids: [ID!]!): Boolean!
+  bulkGroupUpdate(input: BulkGroupUpdateInput!): [Group!]
+
+  addGroupSubGroups(input: GroupSubGroupAddInput!): Boolean!
+  removeGroupSubGroups(input: GroupSubGroupRemoveInput!): Boolean!
+
+  "Reorder sub groups within a group. Returns true if successful."
+  reorderSubGroups(input: ReorderSubGroupsInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
+  bulkTagUpdate(input: BulkTagUpdateInput!): [Tag!]
 
   """
   Moves the given files to the given destination. Returns true if successful.
@@ -332,10 +414,13 @@ type Mutation {
   moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
 
+  fileSetFingerprints(input: FileSetFingerprintsInput!): Boolean!
+
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter!
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
+    @deprecated(reason: "now uses UI config")
 
   "Change general configuration options"
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
@@ -346,9 +431,19 @@ type Mutation {
     input: ConfigDefaultSettingsInput!
   ): ConfigDefaultSettingsResult!
 
-  # overwrites the entire UI configuration
-  configureUI(input: Map!): Map!
-  # sets a single UI key value
+  "overwrites the entire plugin configuration for the given plugin"
+  configurePlugin(plugin_id: ID!, input: Map!): Map!
+
+  """
+  overwrites the UI configuration
+  if input is provided, then the entire UI configuration is replaced
+  if partial is provided, then the partial UI configuration is merged into the existing UI configuration
+  """
+  configureUI(input: Map, partial: Map): Map!
+  """
+  sets a single UI key value
+  key is a dot separated path to the value
+  """
   configureUISetting(key: String!, value: Any): Map!
 
   "Generate and set (or clear) API key"
@@ -372,6 +467,8 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): ID!
   "Clean metadata. Returns the job ID"
   metadataClean(input: CleanMetadataInput!): ID!
+  "Clean generated files. Returns the job ID"
+  metadataCleanGenerated(input: CleanGeneratedInput!): ID!
   "Identifies scenes using scrapers. Returns the job ID"
   metadataIdentify(input: IdentifyMetadataInput!): ID!
 
@@ -391,13 +488,59 @@ type Mutation {
   "Reload scrapers"
   reloadScrapers: Boolean!
 
-  "Run plugin task. Returns the job ID"
+  """
+  Enable/disable plugins - enabledMap is a map of plugin IDs to enabled booleans.
+  Plugins not in the map are not affected.
+  """
+  setPluginsEnabled(enabledMap: BoolMap!): Boolean!
+
+  """
+  Run a plugin task.
+  If task_name is provided, then the task must exist in the plugin config and the tasks configuration
+  will be used to run the plugin.
+  If no task_name is provided, then the plugin will be executed with the arguments provided only.
+  Returns the job ID
+  """
   runPluginTask(
     plugin_id: ID!
-    task_name: String!
-    args: [PluginArgInput!]
+    "if provided, then the default args will be applied"
+    task_name: String
+    "displayed in the task queue"
+    description: String
+    args: [PluginArgInput!] @deprecated(reason: "Use args_map instead")
+    args_map: Map
   ): ID!
+
+  """
+  Runs a plugin operation. The operation is run immediately and does not use the job queue.
+  Returns a map of the result.
+  """
+  runPluginOperation(plugin_id: ID!, args: Map): Any
+
   reloadPlugins: Boolean!
+
+  """
+  Installs the given packages.
+  If a package is already installed, it will be updated if needed..
+  If an error occurs when installing a package, the job will continue to install the remaining packages.
+  Returns the job ID
+  """
+  installPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
+  """
+  Updates the given packages.
+  If a package is not installed, it will not be installed.
+  If a package does not need to be updated, it will not be updated.
+  If no packages are provided, all packages of the given type will be updated.
+  If an error occurs when updating a package, the job will continue to update the remaining packages.
+  Returns the job ID.
+  """
+  updatePackages(type: PackageType!, packages: [PackageSpecInput!]): ID!
+  """
+  Uninstalls the given packages.
+  If an error occurs when uninstalling a package, the job will continue to uninstall the remaining packages.
+  Returns the job ID
+  """
+  uninstallPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
 
   stopJob(job_id: ID!): Boolean!
   stopAllJobs: Boolean!

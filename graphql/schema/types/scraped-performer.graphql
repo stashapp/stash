@@ -5,9 +5,10 @@ type ScrapedPerformer {
   name: String
   disambiguation: String
   gender: String
-  url: String
-  twitter: String
-  instagram: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
+  twitter: String @deprecated(reason: "use urls")
+  instagram: String @deprecated(reason: "use urls")
   birthdate: String
   ethnicity: String
   country: String
@@ -40,9 +41,10 @@ input ScrapedPerformerInput {
   name: String
   disambiguation: String
   gender: String
-  url: String
-  twitter: String
-  instagram: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
+  twitter: String @deprecated(reason: "use urls")
+  instagram: String @deprecated(reason: "use urls")
   birthdate: String
   ethnicity: String
   country: String

@@ -1,63 +1,73 @@
 package models
 
 import (
+	"context"
 	"time"
 )
 
 type Tag struct {
 	ID            int       `json:"id"`
 	Name          string    `json:"name"`
+	SortName      string    `json:"sort_name"`
+	Favorite      bool      `json:"favorite"`
 	Description   string    `json:"description"`
 	IgnoreAutoTag bool      `json:"ignore_auto_tag"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
+
+	Aliases   RelatedStrings `json:"aliases"`
+	ParentIDs RelatedIDs     `json:"parent_ids"`
+	ChildIDs  RelatedIDs     `json:"tag_ids"`
 }
 
-type TagPartial struct {
-	Name          OptionalString
-	Description   OptionalString
-	IgnoreAutoTag OptionalBool
-	CreatedAt     OptionalTime
-	UpdatedAt     OptionalTime
-}
-
-type TagPath struct {
-	Tag
-	Path string `json:"path"`
-}
-
-func NewTag(name string) *Tag {
+func NewTag() Tag {
 	currentTime := time.Now()
-	return &Tag{
-		Name:      name,
+	return Tag{
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
 }
 
+func (s *Tag) LoadAliases(ctx context.Context, l AliasLoader) error {
+	return s.Aliases.load(func() ([]string, error) {
+		return l.GetAliases(ctx, s.ID)
+	})
+}
+
+func (s *Tag) LoadParentIDs(ctx context.Context, l TagRelationLoader) error {
+	return s.ParentIDs.load(func() ([]int, error) {
+		return l.GetParentIDs(ctx, s.ID)
+	})
+}
+
+func (s *Tag) LoadChildIDs(ctx context.Context, l TagRelationLoader) error {
+	return s.ChildIDs.load(func() ([]int, error) {
+		return l.GetChildIDs(ctx, s.ID)
+	})
+}
+
+type TagPartial struct {
+	Name          OptionalString
+	SortName      OptionalString
+	Description   OptionalString
+	Favorite      OptionalBool
+	IgnoreAutoTag OptionalBool
+	CreatedAt     OptionalTime
+	UpdatedAt     OptionalTime
+
+	Aliases   *UpdateStrings
+	ParentIDs *UpdateIDs
+	ChildIDs  *UpdateIDs
+}
+
 func NewTagPartial() TagPartial {
-	updatedTime := time.Now()
+	currentTime := time.Now()
 	return TagPartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
+		UpdatedAt: NewOptionalTime(currentTime),
 	}
 }
 
-type Tags []*Tag
-
-func (t *Tags) Append(o interface{}) {
-	*t = append(*t, o.(*Tag))
-}
-
-func (t *Tags) New() interface{} {
-	return &Tag{}
-}
-
-type TagPaths []*TagPath
-
-func (t *TagPaths) Append(o interface{}) {
-	*t = append(*t, o.(*TagPath))
-}
-
-func (t *TagPaths) New() interface{} {
-	return &TagPath{}
+type TagPath struct {
+	Tag
+	Path string `json:"path"`
 }

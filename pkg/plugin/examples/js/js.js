@@ -2,26 +2,40 @@ var tagName = "Hawwwwt"
 
 function main() {
     var modeArg = input.Args.mode;
-    try {
-        if (modeArg == "" || modeArg == "add") {
-            addTag();
-        } else if (modeArg == "remove") {
-            removeTag();
-        } else if (modeArg == "long") {
-            doLongTask();
-        } else if (modeArg == "indef") {
-            doIndefiniteTask();
-        } else if (modeArg == "hook") {
-            doHookTask();
+    if (modeArg !== undefined) {
+        try {
+            if (modeArg == "" || modeArg == "add") {
+                addTag();
+            } else if (modeArg == "remove") {
+                removeTag();
+            } else if (modeArg == "long") {
+                doLongTask();
+            } else if (modeArg == "indef") {
+                doIndefiniteTask();
+            } else if (modeArg == "hook") {
+                doHookTask();
+            }
+        } catch (err) {
+            return {
+                Error: err
+            };
         }
-    } catch (err) {
+
         return {
-            Error: err
+            Output: "ok"
         };
     }
 
+    if (input.Args.error) {
+        return {
+            Error: input.Args.error
+        };
+    }
+
+    // immediate mode
+    // just return the args
     return {
-        Output: "ok"
+        Output: input.Args
     };
 }
 

@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 const (
@@ -162,7 +162,7 @@ func (qb *GalleryChapterStore) FindMany(ctx context.Context, ids []int) ([]*mode
 	}
 
 	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
+		i := slices.Index(ids, s.ID)
 		ret[i] = s
 	}
 

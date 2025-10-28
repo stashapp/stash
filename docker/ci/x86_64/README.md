@@ -1,1 +1,1 @@
-This dockerfile is used by travis to build the stash image. It must be run after cross-compiling - that is, `stash-linux` must exist in the `dist` directory. This image must be built from the `dist` directory.
+This Dockerfile is used by CI to build the `stashapp/stash` Docker image. It must be run after cross-compiling - that is, `stash-linux` must exist in the `dist` directory. This image must be built from the `dist` directory.

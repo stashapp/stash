@@ -3,56 +3,32 @@ package api
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
-func convertVideoFile(f *file.VideoFile) *VideoFile {
-	ret := &VideoFile{
-		ID:             strconv.Itoa(int(f.ID)),
-		Path:           f.Path,
-		Basename:       f.Basename,
-		ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
-		ModTime:        f.ModTime,
-		Format:         f.Format,
-		Size:           f.Size,
-		Duration:       handleFloat64Value(f.Duration),
-		VideoCodec:     f.VideoCodec,
-		AudioCodec:     f.AudioCodec,
-		Width:          f.Width,
-		Height:         f.Height,
-		FrameRate:      handleFloat64Value(f.FrameRate),
-		BitRate:        int(f.BitRate),
-		CreatedAt:      f.CreatedAt,
-		UpdatedAt:      f.UpdatedAt,
-		Fingerprints:   resolveFingerprints(f.Base()),
+func convertVideoFile(f models.File) (*models.VideoFile, error) {
+	vf, ok := f.(*models.VideoFile)
+	if !ok {
+		return nil, fmt.Errorf("file %T is not a video file", f)
 	}
-
-	if f.ZipFileID != nil {
-		zipFileID := strconv.Itoa(int(*f.ZipFileID))
-		ret.ZipFileID = &zipFileID
-	}
-
-	return ret
+	return vf, nil
 }
 
-func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (*file.VideoFile, error) {
+func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (*models.VideoFile, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
 		if err != nil {
 			return nil, err
 		}
 
-		ret, ok := f.(*file.VideoFile)
-		if !ok {
-			return nil, fmt.Errorf("file %T is not an image file", f)
+		ret, err := convertVideoFile(f)
+		if err != nil {
+			return nil, err
 		}
 
 		obj.Files.SetPrimary(ret)
@@ -65,38 +41,29 @@ func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (
 	return nil, nil
 }
 
-func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*file.VideoFile, error) {
+func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*models.VideoFile, error) {
 	fileIDs, err := loaders.From(ctx).SceneFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
-	ret := make([]*file.VideoFile, len(files))
-	for i, bf := range files {
-		f, ok := bf.(*file.VideoFile)
-		if !ok {
-			return nil, fmt.Errorf("file %T is not a video file", f)
-		}
-
-		ret[i] = f
-	}
-
-	obj.Files.Set(ret)
-
-	return ret, firstError(errs)
-}
-
-func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
+	err = firstError(errs)
 	if err != nil {
 		return nil, err
 	}
 
-	if f != nil {
-		return &f.ModTime, nil
+	ret := make([]*models.VideoFile, len(files))
+	for i, f := range files {
+		ret[i], err = convertVideoFile(f)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return nil, nil
+
+	obj.Files.Set(ret)
+
+	return ret, nil
 }
 
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
@@ -105,31 +72,6 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 		return &result, nil
 	}
 	return nil, nil
-}
-
-// File is deprecated
-func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-	if f == nil {
-		return nil, nil
-	}
-
-	bitrate := int(f.BitRate)
-	size := strconv.FormatInt(f.Size, 10)
-
-	return &models.SceneFileType{
-		Size:       &size,
-		Duration:   handleFloat64(f.Duration),
-		VideoCodec: &f.VideoCodec,
-		AudioCodec: &f.AudioCodec,
-		Width:      &f.Width,
-		Height:     &f.Height,
-		Framerate:  handleFloat64(f.FrameRate),
-		Bitrate:    &bitrate,
-	}, nil
 }
 
 func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
@@ -141,7 +83,9 @@ func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoF
 	ret := make([]*VideoFile, len(files))
 
 	for i, f := range files {
-		ret[i] = convertVideoFile(f)
+		ret[i] = &VideoFile{
+			VideoFile: f,
+		}
 	}
 
 	return ret, nil
@@ -159,28 +103,6 @@ func (r *sceneResolver) Rating100(ctx context.Context, obj *models.Scene) (*int,
 	return obj.Rating, nil
 }
 
-func resolveFingerprints(f *file.BaseFile) []*Fingerprint {
-	ret := make([]*Fingerprint, len(f.Fingerprints))
-
-	for i, fp := range f.Fingerprints {
-		ret[i] = &Fingerprint{
-			Type:  fp.Type,
-			Value: formatFingerprint(fp.Fingerprint),
-		}
-	}
-
-	return ret
-}
-
-func formatFingerprint(fp interface{}) string {
-	switch v := fp.(type) {
-	case int64:
-		return strconv.FormatUint(uint64(v), 16)
-	default:
-		return fmt.Sprintf("%v", fp)
-	}
-}
-
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
@@ -192,7 +114,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
 	spritePath := builder.GetSpriteURL(objHash)
-	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
 	captionBasePath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
@@ -203,7 +124,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 		Stream:             &streamPath,
 		Webp:               &webpPath,
 		Vtt:                &vttPath,
-		ChaptersVtt:        &chaptersVttPath,
 		Sprite:             &spritePath,
 		Funscript:          &funscriptPath,
 		InteractiveHeatmap: &interactiveHeatmap,
@@ -264,20 +184,20 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
-	if !obj.Movies.Loaded() {
+	if !obj.Groups.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.repository.Scene
 
-			return obj.LoadMovies(ctx, qb)
+			return obj.LoadGroups(ctx, qb)
 		}); err != nil {
 			return nil, err
 		}
 	}
 
-	loader := loaders.From(ctx).MovieByID
+	loader := loaders.From(ctx).GroupByID
 
-	for _, sm := range obj.Movies.List() {
-		movie, err := loader.Load(sm.MovieID)
+	for _, sm := range obj.Groups.List() {
+		movie, err := loader.Load(sm.GroupID)
 		if err != nil {
 			return nil, err
 		}
@@ -289,6 +209,37 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 		}
 
 		ret = append(ret, sceneMovie)
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) Groups(ctx context.Context, obj *models.Scene) (ret []*SceneGroup, err error) {
+	if !obj.Groups.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			qb := r.repository.Scene
+
+			return obj.LoadGroups(ctx, qb)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	loader := loaders.From(ctx).GroupByID
+
+	for _, sm := range obj.Groups.List() {
+		group, err := loader.Load(sm.GroupID)
+		if err != nil {
+			return nil, err
+		}
+
+		sceneIdx := sm.SceneIndex
+		sceneGroup := &SceneGroup{
+			Group:      group,
+			SceneIndex: sceneIdx,
+		}
+
+		ret = append(ret, sceneGroup)
 	}
 
 	return ret, nil
@@ -322,16 +273,6 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret 
 	return ret, firstError(errs)
 }
 
-func stashIDsSliceToPtrSlice(v []models.StashID) []*models.StashID {
-	ret := make([]*models.StashID, len(v))
-	for i, vv := range v {
-		c := vv
-		ret[i] = &c
-	}
-
-	return ret
-}
-
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		return obj.LoadStashIDs(ctx, r.repository.Scene)
@@ -340,30 +281,6 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 	}
 
 	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
-}
-
-func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-
-	if f == nil {
-		return nil, nil
-	}
-
-	val := f.Fingerprints.Get(file.FingerprintTypePhash)
-	if val == nil {
-		return nil, nil
-	}
-
-	phash, _ := val.(int64)
-
-	if phash != 0 {
-		hexval := utils.PhashToString(phash)
-		return &hexval, nil
-	}
-	return nil, nil
 }
 
 func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
@@ -433,4 +350,63 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 	}
 
 	return obj.URLs.List(), nil
+}
+
+func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).SceneOCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneLastPlayed.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).ScenePlayCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).ScenePlayHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
+}
+
+func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneOHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
 }

@@ -7,20 +7,17 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
 type MarkerCreatorUpdater interface {
-	Create(ctx context.Context, newSceneMarker *models.SceneMarker) error
-	Update(ctx context.Context, updatedSceneMarker *models.SceneMarker) error
+	models.SceneMarkerCreatorUpdater
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
-	UpdateTags(ctx context.Context, markerID int, tagIDs []int) error
 }
 
 type MarkerImporter struct {
 	SceneID             int
 	ReaderWriter        MarkerCreatorUpdater
-	TagWriter           tag.NameFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.SceneMarker
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -30,12 +27,20 @@ type MarkerImporter struct {
 
 func (i *MarkerImporter) PreImport(ctx context.Context) error {
 	seconds, _ := strconv.ParseFloat(i.Input.Seconds, 64)
+
+	var endSeconds *float64
+	if i.Input.EndSeconds != "" {
+		parsedEndSeconds, _ := strconv.ParseFloat(i.Input.EndSeconds, 64)
+		endSeconds = &parsedEndSeconds
+	}
+
 	i.marker = models.SceneMarker{
-		Title:     i.Input.Title,
-		Seconds:   seconds,
-		SceneID:   i.SceneID,
-		CreatedAt: i.Input.CreatedAt.GetTime(),
-		UpdatedAt: i.Input.UpdatedAt.GetTime(),
+		Title:      i.Input.Title,
+		Seconds:    seconds,
+		EndSeconds: endSeconds,
+		SceneID:    i.SceneID,
+		CreatedAt:  i.Input.CreatedAt.GetTime(),
+		UpdatedAt:  i.Input.UpdatedAt.GetTime(),
 	}
 
 	if err := i.populateTags(ctx); err != nil {

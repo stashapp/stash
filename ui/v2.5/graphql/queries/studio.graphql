@@ -1,0 +1,27 @@
+query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {
+  findStudios(filter: $filter, studio_filter: $studio_filter) {
+    count
+    studios {
+      ...StudioData
+    }
+  }
+}
+
+query FindStudio($id: ID!) {
+  findStudio(id: $id) {
+    ...StudioData
+  }
+}
+
+query FindStudiosForSelect(
+  $filter: FindFilterType
+  $studio_filter: StudioFilterType
+  $ids: [ID!]
+) {
+  findStudios(filter: $filter, studio_filter: $studio_filter, ids: $ids) {
+    count
+    studios {
+      ...SelectStudioData
+    }
+  }
+}

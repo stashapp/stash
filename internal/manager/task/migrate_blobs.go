@@ -26,7 +26,7 @@ type MigrateBlobsJob struct {
 	DeleteOld  bool
 }
 
-func (j *MigrateBlobsJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *MigrateBlobsJob) Execute(ctx context.Context, progress *job.Progress) error {
 	var (
 		count int
 		err   error
@@ -37,13 +37,12 @@ func (j *MigrateBlobsJob) Execute(ctx context.Context, progress *job.Progress) {
 	})
 
 	if err != nil {
-		logger.Errorf("Error counting blobs: %s", err.Error())
-		return
+		return fmt.Errorf("error counting blobs: %w", err)
 	}
 
 	if count == 0 {
 		logger.Infof("No blobs to migrate")
-		return
+		return nil
 	}
 
 	logger.Infof("Migrating %d blobs", count)
@@ -54,12 +53,11 @@ func (j *MigrateBlobsJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Cancelled migrating blobs")
-		return
+		return nil
 	}
 
 	if err != nil {
-		logger.Errorf("Error migrating blobs: %v", err)
-		return
+		return fmt.Errorf("error migrating blobs: %w", err)
 	}
 
 	// run a vacuum to reclaim space
@@ -71,6 +69,7 @@ func (j *MigrateBlobsJob) Execute(ctx context.Context, progress *job.Progress) {
 	})
 
 	logger.Infof("Finished migrating blobs")
+	return nil
 }
 
 func (j *MigrateBlobsJob) countBlobs(ctx context.Context) (int, error) {

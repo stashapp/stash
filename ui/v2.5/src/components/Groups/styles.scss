@@ -1,0 +1,182 @@
+.group-card {
+  width: 240px;
+
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+
+  &.card {
+    padding: 0 0 1rem;
+  }
+
+  &-image {
+    object-fit: contain;
+    width: 100%;
+  }
+
+  .group-scene-number,
+  .group-containing-group-description {
+    text-align: center;
+  }
+
+  &__details {
+    margin-bottom: 1rem;
+  }
+}
+
+.group-images {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  max-width: 100%;
+
+  .group-image-container {
+    box-shadow: none;
+  }
+
+  img {
+    max-width: 100%;
+    object-fit: contain;
+  }
+}
+
+#group-page {
+  .rating-number .text-input {
+    width: auto;
+  }
+
+  // the detail element ids are the same as field type name
+  // which don't follow the correct convention
+  /* stylelint-disable selector-class-pattern */
+  .collapsed {
+    .detail-item.tags,
+    .detail-item.containing_groups {
+      display: none;
+    }
+  }
+  /* stylelint-enable selector-class-pattern */
+}
+
+.group-select-option {
+  .group-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .group-select-image {
+      background-color: $body-bg;
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 89px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .group-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .group-select-title {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+
+        .group-select-alias {
+          font-size: 0.8rem;
+          font-weight: bold;
+        }
+      }
+
+      .group-select-date,
+      .group-select-studio {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+button.flip {
+  display: none;
+}
+
+#group-page .detail-header:not(.collapsed) {
+  .group-images {
+    padding: 0.375rem 0.75rem;
+    position: relative;
+    z-index: 1;
+
+    button.btn-link {
+      padding: 0;
+      position: relative;
+      transition: all 0.3s;
+      z-index: 1;
+    }
+
+    button:has(.active) {
+      z-index: 2;
+    }
+
+    button:has(.inactive) {
+      opacity: 0.5;
+      padding: 0;
+      transform: rotateY(180deg);
+    }
+
+    button.flip {
+      align-items: center;
+      border-radius: 50%;
+      bottom: -5px;
+      display: flex;
+      font-size: 20px;
+      height: 40px;
+      justify-content: center;
+      padding: 0;
+      position: absolute;
+      right: -5px;
+      width: 40px;
+      z-index: 2;
+    }
+
+    img.active {
+      max-width: 22rem;
+    }
+
+    img.inactive {
+      display: none;
+    }
+  }
+
+  .detail-item .detail-item-title {
+    width: 150px;
+  }
+}
+
+.groups-list {
+  list-style-type: none;
+  padding-inline-start: 0;
+
+  li {
+    display: inline;
+  }
+}
+
+.related-group-popover-button {
+  .containing-group-count {
+    display: inline-block;
+  }
+
+  .related-group-count .fa-icon {
+    color: $text-muted;
+    margin-left: 0;
+    margin-right: 0.25rem;
+  }
+}

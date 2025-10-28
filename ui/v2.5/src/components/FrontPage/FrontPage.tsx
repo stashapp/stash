@@ -10,11 +10,12 @@ import { ConfigurationContext } from "src/hooks/Config";
 import {
   FrontPageContent,
   generateDefaultFrontPageContent,
-  IUIConfig,
+  getFrontPageContent,
 } from "src/core/config";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { PatchComponent } from "src/patch";
 
-const FrontPage: React.FC = () => {
+const FrontPage: React.FC = PatchComponent("FrontPage", () => {
   const intl = useIntl();
   const Toast = useToast();
 
@@ -58,19 +59,19 @@ const FrontPage: React.FC = () => {
     return <FrontPageConfig onClose={(content) => onUpdateConfig(content)} />;
   }
 
-  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const ui = configuration?.ui ?? {};
 
   if (!ui.frontPageContent) {
     const defaultContent = generateDefaultFrontPageContent(intl);
     onUpdateConfig(defaultContent);
   }
 
-  const { frontPageContent } = ui;
+  const frontPageContent = getFrontPageContent(ui);
 
   return (
     <div className="recommendations-container">
       <div>
-        {frontPageContent?.map((content: FrontPageContent, i) => (
+        {frontPageContent?.map((content, i) => (
           <Control key={i} content={content} />
         ))}
       </div>
@@ -81,6 +82,6 @@ const FrontPage: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default FrontPage;

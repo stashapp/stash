@@ -6,6 +6,27 @@ import (
 	"strconv"
 )
 
+type OperatorFilter[T any] struct {
+	And *T `json:"AND"`
+	Or  *T `json:"OR"`
+	Not *T `json:"NOT"`
+}
+
+// SubFilter returns the subfilter of the operator filter.
+// Only one of And, Or, or Not should be set, so it returns the first of these that are not nil.
+func (f *OperatorFilter[T]) SubFilter() *T {
+	if f.And != nil {
+		return f.And
+	}
+	if f.Or != nil {
+		return f.Or
+	}
+	if f.Not != nil {
+		return f.Not
+	}
+	return nil
+}
+
 type CriterionModifier string
 
 const (
@@ -168,4 +189,42 @@ type PhashDistanceCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 	Distance *int              `json:"distance"`
+}
+
+type OrientationCriterionInput struct {
+	Value []OrientationEnum `json:"value"`
+}
+
+type CustomFieldCriterionInput struct {
+	Field    string            `json:"field"`
+	Value    []any             `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
+type FingerprintFilterInput struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+	// Hamming distance - defaults to 0
+	Distance *int `json:"distance,omitempty"`
+}
+
+type VideoFileFilterInput struct {
+	Format      *StringCriterionInput      `json:"format,omitempty"`
+	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
+	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
+	Framerate   *IntCriterionInput         `json:"framerate,omitempty"`
+	Bitrate     *IntCriterionInput         `json:"bitrate,omitempty"`
+	VideoCodec  *StringCriterionInput      `json:"video_codec,omitempty"`
+	AudioCodec  *StringCriterionInput      `json:"audio_codec,omitempty"`
+	// in seconds
+	Duration         *IntCriterionInput    `json:"duration,omitempty"`
+	Captions         *StringCriterionInput `json:"captions,omitempty"`
+	Interactive      *bool                 `json:"interactive,omitempty"`
+	InteractiveSpeed *IntCriterionInput    `json:"interactive_speed,omitempty"`
+}
+
+type ImageFileFilterInput struct {
+	Format      *StringCriterionInput      `json:"format,omitempty"`
+	Resolution  *ResolutionCriterionInput  `json:"resolution,omitempty"`
+	Orientation *OrientationCriterionInput `json:"orientation,omitempty"`
 }

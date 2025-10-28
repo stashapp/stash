@@ -5,7 +5,6 @@ import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataGenerate,
-  useConfigureDefaults,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -20,6 +19,7 @@ import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { useSettings } from "../context";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -71,16 +71,31 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
-  const [configureDefaults] = useConfigureDefaults();
+  const { ui, saveUI, loading } = useSettings();
+
+  const { taskDefaults } = ui;
 
   const [dialogOpen, setDialogOpenState] = useState({
-    clean: false,
     scan: false,
     autoTag: false,
     identify: false,
   });
 
-  const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
+  function getDefaultScanOptions(): GQL.ScanMetadataInput {
+    return {
+      scanGenerateCovers: true,
+      scanGeneratePreviews: false,
+      scanGenerateImagePreviews: false,
+      scanGenerateSprites: false,
+      scanGeneratePhashes: false,
+      scanGenerateThumbnails: false,
+      scanGenerateClipPreviews: false,
+    };
+  }
+
+  const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>(
+    getDefaultScanOptions()
+  );
   const [autoTagOptions, setAutoTagOptions] =
     useState<GQL.AutoTagMetadataInput>({
       performers: ["*"],
@@ -112,54 +127,61 @@ export const LibraryTasks: React.FC = () => {
   const [configRead, setConfigRead] = useState(false);
 
   useEffect(() => {
-    if (!configuration?.defaults) {
+    if (!configuration?.defaults || loading) {
       return;
     }
 
     const { scan, autoTag } = configuration.defaults;
 
-    if (scan) {
+    // prefer UI defaults over system defaults
+    // other defaults should be deprecated
+    if (taskDefaults?.scan) {
+      setScanOptions(taskDefaults.scan);
+    } else if (scan) {
       setScanOptions(withoutTypename(scan));
     }
-    if (autoTag) {
+
+    if (taskDefaults?.autoTag) {
+      setAutoTagOptions(taskDefaults.autoTag);
+    } else if (autoTag) {
       setAutoTagOptions(withoutTypename(autoTag));
+    }
+
+    if (taskDefaults?.generate) {
+      setGenerateOptions(taskDefaults.generate);
     }
 
     // combine the defaults with the system preview generation settings
     // only do this once
-    if (!configRead) {
+    // don't do this if UI had a default
+    if (!configRead && !taskDefaults?.generate) {
       if (configuration?.defaults.generate) {
         const { generate } = configuration.defaults;
         setGenerateOptions(withoutTypename(generate));
       }
 
-      if (configuration?.general) {
-        const { general } = configuration;
-        setGenerateOptions((existing) => ({
-          ...existing,
-          previewOptions: {
-            ...existing.previewOptions,
-            previewSegments:
-              general.previewSegments ??
-              existing.previewOptions?.previewSegments,
-            previewSegmentDuration:
-              general.previewSegmentDuration ??
-              existing.previewOptions?.previewSegmentDuration,
-            previewExcludeStart:
-              general.previewExcludeStart ??
-              existing.previewOptions?.previewExcludeStart,
-            previewExcludeEnd:
-              general.previewExcludeEnd ??
-              existing.previewOptions?.previewExcludeEnd,
-            previewPreset:
-              general.previewPreset ?? existing.previewOptions?.previewPreset,
-          },
-        }));
-      }
-
       setConfigRead(true);
     }
-  }, [configuration, configRead]);
+  }, [configuration, configRead, taskDefaults, loading]);
+
+  function configureDefaults(partial: Record<string, {}>) {
+    saveUI({ taskDefaults: { ...partial } });
+  }
+
+  function onSetScanOptions(s: GQL.ScanMetadataInput) {
+    configureDefaults({ scan: s });
+    setScanOptions(s);
+  }
+
+  function onSetGenerateOptions(s: GQL.GenerateMetadataInput) {
+    configureDefaults({ generate: s });
+    setGenerateOptions(s);
+  }
+
+  function onSetAutoTagOptions(s: GQL.AutoTagMetadataInput) {
+    configureDefaults({ autoTag: s });
+    setAutoTagOptions(s);
+  }
 
   function setDialogOpen(s: Partial<DialogOpenState>) {
     setDialogOpenState((v) => {
@@ -185,25 +207,17 @@ export const LibraryTasks: React.FC = () => {
 
   async function runScan(paths?: string[]) {
     try {
-      configureDefaults({
-        variables: {
-          input: {
-            scan: scanOptions,
-          },
-        },
-      });
-
       await mutateMetadataScan({
         ...scanOptions,
         paths,
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.scan" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -227,25 +241,17 @@ export const LibraryTasks: React.FC = () => {
 
   async function runAutoTag(paths?: string[]) {
     try {
-      configureDefaults({
-        variables: {
-          input: {
-            autoTag: autoTagOptions,
-          },
-        },
-      });
-
       await mutateMetadataAutoTag({
         ...autoTagOptions,
         paths,
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -261,21 +267,36 @@ export const LibraryTasks: React.FC = () => {
 
   async function onGenerateClicked() {
     try {
-      configureDefaults({
-        variables: {
-          input: {
-            generate: generateOptions,
-          },
+      // insert preview options here instead of loading them
+      const general = configuration?.general;
+
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        previewOptions: {
+          ...generateOptions.previewOptions,
+          previewSegments:
+            general?.previewSegments ??
+            generateOptions.previewOptions?.previewSegments,
+          previewSegmentDuration:
+            general?.previewSegmentDuration ??
+            generateOptions.previewOptions?.previewSegmentDuration,
+          previewExcludeStart:
+            general?.previewExcludeStart ??
+            generateOptions.previewOptions?.previewExcludeStart,
+          previewExcludeEnd:
+            general?.previewExcludeEnd ??
+            generateOptions.previewOptions?.previewExcludeEnd,
+          previewPreset:
+            general?.previewPreset ??
+            generateOptions.previewOptions?.previewPreset,
         },
       });
-
-      await mutateMetadataGenerate(generateOptions);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.generate" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -323,11 +344,11 @@ export const LibraryTasks: React.FC = () => {
           }
           collapsible
         >
-          <ScanOptions options={scanOptions} setOptions={setScanOptions} />
+          <ScanOptions options={scanOptions} setOptions={onSetScanOptions} />
         </SettingGroup>
       </SettingSection>
 
-      <SettingSection>
+      <SettingSection advanced>
         <Setting
           heading={
             <>
@@ -349,7 +370,7 @@ export const LibraryTasks: React.FC = () => {
         </Setting>
       </SettingSection>
 
-      <SettingSection>
+      <SettingSection advanced>
         <SettingGroup
           settingProps={{
             heading: (
@@ -385,7 +406,7 @@ export const LibraryTasks: React.FC = () => {
         >
           <AutoTagOptions
             options={autoTagOptions}
-            setOptions={(o) => setAutoTagOptions(o)}
+            setOptions={onSetAutoTagOptions}
           />
         </SettingGroup>
       </SettingSection>
@@ -416,7 +437,7 @@ export const LibraryTasks: React.FC = () => {
         >
           <GenerateOptions
             options={generateOptions}
-            setOptions={setGenerateOptions}
+            setOptions={onSetGenerateOptions}
           />
         </SettingGroup>
       </SettingSection>

@@ -1,0 +1,52 @@
+fragment SlimImageData on Image {
+  id
+  title
+  code
+  date
+  urls
+  details
+  photographer
+  rating100
+  organized
+  o_counter
+
+  paths {
+    thumbnail
+    preview
+    image
+  }
+
+  galleries {
+    id
+    title
+    files {
+      path
+    }
+    folder {
+      path
+    }
+  }
+
+  studio {
+    id
+    name
+    image_path
+  }
+
+  tags {
+    id
+    name
+  }
+
+  performers {
+    id
+    name
+    gender
+    favorite
+    image_path
+  }
+
+  visual_files {
+    ...VisualFileData
+  }
+}

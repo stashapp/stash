@@ -88,7 +88,7 @@ func (m *schema34Migrator) migrateObjects(ctx context.Context, table string, col
 
 			query += fmt.Sprintf(" ORDER BY `id` LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -126,7 +126,7 @@ func (m *schema34Migrator) migrateObjects(ctx context.Context, table string, col
 
 				updateSQL := fmt.Sprintf("UPDATE `%s` SET %s WHERE `id` = ?", table, updateList)
 
-				_, err = m.db.Exec(updateSQL, args...)
+				_, err = tx.Exec(updateSQL, args...)
 				if err != nil {
 					return err
 				}

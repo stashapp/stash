@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const flattenMessages = (nestedMessages: any, prefix = "") => {
+type NestedMessage = { [key: string]: NestedMessage | string };
+const flattenMessages = (nestedMessages: NestedMessage | null, prefix = "") => {
   if (nestedMessages === null) {
     return {};
   }
@@ -14,7 +14,7 @@ const flattenMessages = (nestedMessages: any, prefix = "") => {
     }
 
     return messages;
-  }, {});
+  }, {} as Record<string, string>);
 };
 
 export default flattenMessages;

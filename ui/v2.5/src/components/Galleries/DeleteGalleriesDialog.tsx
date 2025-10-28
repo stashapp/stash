@@ -60,7 +60,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
     setIsDeleting(true);
     try {
       await deleteGallery();
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
     } catch (e) {
       Toast.error(e);
     }

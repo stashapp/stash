@@ -2,6 +2,10 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import { SceneCard } from "./SceneCard";
+import {
+  useCardWidth,
+  useContainerDimensions,
+} from "../Shared/GridCard/GridCard";
 
 interface ISceneCardsGrid {
   scenes: GQL.SlimSceneDataFragment[];
@@ -9,7 +13,10 @@ interface ISceneCardsGrid {
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
 }
+
+const zoomWidths = [280, 340, 480, 640];
 
 export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
   scenes,
@@ -17,12 +24,18 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
   selectedIds,
   zoomIndex,
   onSelectChange,
+  fromGroupId,
 }) => {
+  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+
+  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+
   return (
-    <div className="row justify-content-center">
+    <div className="row justify-content-center" ref={componentRef}>
       {scenes.map((scene, index) => (
         <SceneCard
           key={scene.id}
+          width={cardWidth}
           scene={scene}
           queue={queue}
           index={index}
@@ -32,6 +45,7 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
             onSelectChange(scene.id, selected, shiftKey)
           }
+          fromGroupId={fromGroupId}
         />
       ))}
     </div>

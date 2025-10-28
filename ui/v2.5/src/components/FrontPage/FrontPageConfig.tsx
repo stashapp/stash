@@ -3,41 +3,39 @@ import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import { useFindSavedFilters } from "src/core/StashService";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { Button, Form, Modal } from "react-bootstrap";
-import {
-  FilterMode,
-  FindSavedFiltersQuery,
-  SavedFilter,
-} from "src/core/generated-graphql";
+import * as GQL from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
 import {
-  IUIConfig,
   ISavedFilterRow,
   ICustomFilter,
   FrontPageContent,
   generatePremadeFrontPageContent,
+  getFrontPageContent,
 } from "src/core/config";
 
 interface IAddSavedFilterModalProps {
   onClose: (content?: FrontPageContent) => void;
   existingSavedFilterIDs: string[];
-  candidates: FindSavedFiltersQuery;
+  candidates: GQL.FindSavedFiltersQuery;
 }
 
 const FilterModeToMessageID = {
-  [FilterMode.Galleries]: "galleries",
-  [FilterMode.Images]: "images",
-  [FilterMode.Movies]: "movies",
-  [FilterMode.Performers]: "performers",
-  [FilterMode.SceneMarkers]: "markers",
-  [FilterMode.Scenes]: "scenes",
-  [FilterMode.Studios]: "studios",
-  [FilterMode.Tags]: "tags",
+  [GQL.FilterMode.Galleries]: "galleries",
+  [GQL.FilterMode.Images]: "images",
+  [GQL.FilterMode.Movies]: "groups",
+  [GQL.FilterMode.Groups]: "groups",
+  [GQL.FilterMode.Performers]: "performers",
+  [GQL.FilterMode.SceneMarkers]: "markers",
+  [GQL.FilterMode.Scenes]: "scenes",
+  [GQL.FilterMode.Studios]: "studios",
+  [GQL.FilterMode.Tags]: "tags",
 };
 
-function filterTitle(intl: IntlShape, f: Pick<SavedFilter, "mode" | "name">) {
-  return `${intl.formatMessage({ id: FilterModeToMessageID[f.mode] })}: ${
-    f.name
-  }`;
+type SavedFilter = Pick<GQL.SavedFilter, "id" | "mode" | "name">;
+
+function filterTitle(intl: IntlShape, f: SavedFilter) {
+  const typeMessage = intl.formatMessage({ id: FilterModeToMessageID[f.mode] });
+  return `${typeMessage}: ${f.name}`;
 }
 
 const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
@@ -97,7 +95,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
         .filter((f) => {
           // markers not currently supported
           return (
-            f.mode !== FilterMode.SceneMarkers &&
+            f.mode !== GQL.FilterMode.SceneMarkers &&
             !existingSavedFilterIDs.includes(f.id)
           );
         })
@@ -231,7 +229,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
 
 interface IFilterRowProps {
   content: FrontPageContent;
-  allSavedFilters: Pick<SavedFilter, "id" | "mode" | "name">[];
+  allSavedFilters: SavedFilter[];
   onDelete: () => void;
 }
 
@@ -241,10 +239,9 @@ const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
   function title() {
     switch (props.content.__typename) {
       case "SavedFilter":
+        const savedFilterId = String(props.content.savedFilterId);
         const savedFilter = props.allSavedFilters.find(
-          (f) =>
-            f.id ===
-            (props.content as ISavedFilterRow).savedFilterId?.toString()
+          (f) => f.id === savedFilterId
         );
         if (!savedFilter) return "";
         return filterTitle(intl, savedFilter);
@@ -286,7 +283,7 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
 }) => {
   const { configuration, loading } = React.useContext(ConfigurationContext);
 
-  const ui = configuration?.ui as IUIConfig;
+  const ui = configuration?.ui;
 
   const { data: allFilters, loading: loading2 } = useFindSavedFilters();
 
@@ -299,8 +296,20 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
       return;
     }
 
-    if (ui?.frontPageContent) {
-      setCurrentContent(ui.frontPageContent);
+    const frontPageContent = getFrontPageContent(ui);
+    if (frontPageContent) {
+      setCurrentContent(
+        // filter out rows where the saved filter no longer exists
+        frontPageContent.filter((r) => {
+          if (r.__typename === "SavedFilter") {
+            const savedFilterId = String(r.savedFilterId);
+            return allFilters.findSavedFilters.some(
+              (f) => f.id === savedFilterId
+            );
+          }
+          return true;
+        })
+      );
     }
   }, [allFilters, ui]);
 

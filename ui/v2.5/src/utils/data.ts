@@ -1,6 +1,10 @@
 export const filterData = <T>(data?: (T | null | undefined)[] | null) =>
   data ? (data.filter((item) => item) as T[]) : [];
 
+export interface IHasID {
+  id: string;
+}
+
 export interface ITypename {
   __typename?: string;
 }
@@ -41,4 +45,28 @@ export function excludeFields(
       data[k] = undefined;
     }
   });
+}
+
+export interface IHasStoredID {
+  stored_id?: string | null;
+}
+
+export function sortStoredIdObjects<T extends IHasStoredID>(
+  scrapedObjects?: T[]
+): T[] | undefined {
+  if (!scrapedObjects) {
+    return undefined;
+  }
+  const ret = scrapedObjects.filter((p) => !!p.stored_id);
+
+  if (ret.length === 0) {
+    return undefined;
+  }
+
+  // sort by id numerically
+  ret.sort((a, b) => {
+    return parseInt(a.stored_id!, 10) - parseInt(b.stored_id!, 10);
+  });
+
+  return ret;
 }

@@ -12,6 +12,7 @@ import ScraperDevelopment from "src/docs/en/Manual/ScraperDevelopment.md";
 import Plugins from "src/docs/en/Manual/Plugins.md";
 import ExternalPlugins from "src/docs/en/Manual/ExternalPlugins.md";
 import EmbeddedPlugins from "src/docs/en/Manual/EmbeddedPlugins.md";
+import UIPluginApi from "src/docs/en/Manual/UIPluginApi.md";
 import Tagger from "src/docs/en/Manual/Tagger.md";
 import Contributing from "src/docs/en/Manual/Contributing.md";
 import SceneFilenameParser from "src/docs/en/Manual/SceneFilenameParser.md";
@@ -118,6 +119,12 @@ export const Manual: React.FC<IManualProps> = ({
       key: "EmbeddedPlugins.md",
       title: "Embedded",
       content: EmbeddedPlugins,
+      className: "indent-1",
+    },
+    {
+      key: "UIPluginApi.md",
+      title: "UI Plugin API",
+      content: UIPluginApi,
       className: "indent-1",
     },
     {

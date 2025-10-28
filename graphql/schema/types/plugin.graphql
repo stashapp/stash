@@ -1,3 +1,10 @@
+type PluginPaths {
+  # path to javascript files
+  javascript: [String!]
+  # path to css files
+  css: [String!]
+}
+
 type Plugin {
   id: ID!
   name: String!
@@ -5,8 +12,19 @@ type Plugin {
   url: String
   version: String
 
+  enabled: Boolean!
+
   tasks: [PluginTask!]
   hooks: [PluginHook!]
+  settings: [PluginSetting!]
+
+  """
+  Plugin IDs of plugins that this plugin depends on.
+  Applies only for UI plugins to indicate css/javascript load order.
+  """
+  requires: [ID!]
+
+  paths: PluginPaths!
 }
 
 type PluginTask {
@@ -39,4 +57,17 @@ input PluginValueInput {
   f: Float
   o: [PluginArgInput!]
   a: [PluginValueInput!]
+}
+
+enum PluginSettingTypeEnum {
+  STRING
+  NUMBER
+  BOOLEAN
+}
+
+type PluginSetting {
+  name: String!
+  display_name: String
+  description: String
+  type: PluginSettingTypeEnum!
 }

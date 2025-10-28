@@ -79,7 +79,7 @@ export function getRatingPrecision(precision: RatingStarPrecision) {
 }
 
 export function convertToRatingFormat(
-  rating: number | undefined,
+  rating: number | null | undefined,
   ratingSystemOptions: RatingSystemOptions
 ) {
   if (!rating) {

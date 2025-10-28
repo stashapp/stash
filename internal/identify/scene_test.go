@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/mock"
 )
@@ -24,14 +24,15 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+	db := mocks.NewDatabase()
+
+	db.Studio.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
 		s := args.Get(1).(*models.Studio)
 		s.ID = validStoredIDInt
 	}).Return(nil)
 
 	tr := sceneRelationships{
-		studioReaderWriter: mockStudioReaderWriter,
+		studioReaderWriter: db.Studio,
 		fieldOptions:       make(map[string]*FieldOptions),
 	}
 
@@ -123,7 +124,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: "endpoint",
 				},
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Studio: tt.result,
 				},
 			}
@@ -174,8 +175,10 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		}),
 	}
 
+	db := mocks.NewDatabase()
+
 	tr := sceneRelationships{
-		sceneReader:  &mocks.SceneReaderWriter{},
+		sceneReader:  db.Scene,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -311,7 +314,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["performers"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Performers: tt.scraped,
 				},
 			}
@@ -363,23 +366,22 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 	}
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
-	mockTagReaderWriter := &mocks.TagReaderWriter{}
+	db := mocks.NewDatabase()
 
-	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
 		return p.Name == validName
 	})).Run(func(args mock.Arguments) {
 		t := args.Get(1).(*models.Tag)
 		t.ID = validStoredIDInt
 	}).Return(nil)
-	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		sceneReader:      mockSceneReaderWriter,
-		tagCreatorFinder: mockTagReaderWriter,
-		fieldOptions:     make(map[string]*FieldOptions),
+		sceneReader:  db.Scene,
+		tagCreator:   db.Tag,
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -504,7 +506,7 @@ func Test_sceneRelationships_tags(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["tags"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Tags: tt.scraped,
 				},
 			}
@@ -546,27 +548,31 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		ID: sceneWithStashID,
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			{
-				StashID:  remoteSiteID,
-				Endpoint: existingEndpoint,
+				StashID:   remoteSiteID,
+				Endpoint:  existingEndpoint,
+				UpdatedAt: time.Time{},
 			},
 		}),
 	}
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	db := mocks.NewDatabase()
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
+		sceneReader:  db.Scene,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
+	setTime := time.Now()
+
 	tests := []struct {
-		name         string
-		scene        *models.Scene
-		fieldOptions *FieldOptions
-		endpoint     string
-		remoteSiteID *string
-		want         []models.StashID
-		wantErr      bool
+		name          string
+		scene         *models.Scene
+		fieldOptions  *FieldOptions
+		endpoint      string
+		remoteSiteID  *string
+		setUpdateTime bool
+		want          []models.StashID
+		wantErr       bool
 	}{
 		{
 			"ignore",
@@ -576,6 +582,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			},
 			newEndpoint,
 			&remoteSiteID,
+			false,
 			nil,
 			false,
 		},
@@ -585,6 +592,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			"",
 			&remoteSiteID,
+			false,
 			nil,
 			false,
 		},
@@ -594,6 +602,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			newEndpoint,
 			nil,
+			false,
 			nil,
 			false,
 		},
@@ -603,7 +612,24 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			existingEndpoint,
 			&remoteSiteID,
+			false,
 			nil,
+			false,
+		},
+		{
+			"merge existing set update time",
+			sceneWithStashIDs,
+			defaultOptions,
+			existingEndpoint,
+			&remoteSiteID,
+			true,
+			[]models.StashID{
+				{
+					StashID:   remoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: setTime,
+				},
+			},
 			false,
 		},
 		{
@@ -612,10 +638,12 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			existingEndpoint,
 			&newRemoteSiteID,
+			false,
 			[]models.StashID{
 				{
-					StashID:  newRemoteSiteID,
-					Endpoint: existingEndpoint,
+					StashID:   newRemoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -626,14 +654,17 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			newEndpoint,
 			&newRemoteSiteID,
+			false,
 			[]models.StashID{
 				{
-					StashID:  remoteSiteID,
-					Endpoint: existingEndpoint,
+					StashID:   remoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: time.Time{},
 				},
 				{
-					StashID:  newRemoteSiteID,
-					Endpoint: newEndpoint,
+					StashID:   newRemoteSiteID,
+					Endpoint:  newEndpoint,
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -646,10 +677,12 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			},
 			newEndpoint,
 			&newRemoteSiteID,
+			false,
 			[]models.StashID{
 				{
-					StashID:  newRemoteSiteID,
-					Endpoint: newEndpoint,
+					StashID:   newRemoteSiteID,
+					Endpoint:  newEndpoint,
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -662,7 +695,26 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			},
 			existingEndpoint,
 			&remoteSiteID,
+			false,
 			nil,
+			false,
+		},
+		{
+			"overwrite same set update time",
+			sceneWithStashIDs,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
+			},
+			existingEndpoint,
+			&remoteSiteID,
+			true,
+			[]models.StashID{
+				{
+					StashID:   remoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: setTime,
+				},
+			},
 			false,
 		},
 	}
@@ -674,16 +726,25 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: tt.endpoint,
 				},
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					RemoteSiteID: tt.remoteSiteID,
 				},
 			}
 
-			got, err := tr.stashIDs(testCtx)
+			got, err := tr.stashIDs(testCtx, tt.setUpdateTime)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.stashIDs() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// massage updatedAt times to be consistent for comparison
+			for i := range got {
+				if !got[i].UpdatedAt.IsZero() {
+					got[i].UpdatedAt = setTime
+				}
+			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("sceneRelationships.stashIDs() = %+v, want %+v", got, tt.want)
 			}
@@ -706,12 +767,13 @@ func Test_sceneRelationships_cover(t *testing.T) {
 	newDataEncoded := base64Prefix + utils.GetBase64StringFromData(newData)
 	invalidData := newDataEncoded + "!!!"
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
-	mockSceneReaderWriter.On("GetCover", testCtx, sceneID).Return(existingData, nil)
-	mockSceneReaderWriter.On("GetCover", testCtx, errSceneID).Return(nil, errors.New("error getting cover"))
+	db := mocks.NewDatabase()
+
+	db.Scene.On("GetCover", testCtx, sceneID).Return(existingData, nil)
+	db.Scene.On("GetCover", testCtx, errSceneID).Return(nil, errors.New("error getting cover"))
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
+		sceneReader:  db.Scene,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -764,7 +826,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				ID: tt.sceneID,
 			}
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Image: tt.image,
 				},
 			}

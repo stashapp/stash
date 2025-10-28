@@ -3,22 +3,15 @@ import * as GQL from "src/core/generated-graphql";
 import { ParentStudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { StudioList } from "../StudioList";
+import { View } from "src/components/List/views";
 
-interface IStudioChildrenPanel {
-  active: boolean;
-  studio: GQL.StudioDataFragment;
-}
-
-export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
-  active,
-  studio,
-}) => {
-  function filterHook(filter: ListFilterModel) {
+function useFilterHook(studio: GQL.StudioDataFragment) {
+  return (filter: ListFilterModel) => {
     const studioValue = { id: studio.id!, label: studio.name! };
     // if studio is already present, then we modify it, otherwise add
     let parentStudioCriterion = filter.criteria.find((c) => {
-      return c.criterionOption.type === "parent_studios";
-    }) as ParentStudiosCriterion;
+      return c.criterionOption.type === "parents";
+    }) as ParentStudiosCriterion | undefined;
 
     if (
       parentStudioCriterion &&
@@ -43,7 +36,26 @@ export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
     }
 
     return filter;
-  }
+  };
+}
 
-  return <StudioList fromParent filterHook={filterHook} alterQuery={active} />;
+interface IStudioChildrenPanel {
+  active: boolean;
+  studio: GQL.StudioDataFragment;
+}
+
+export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
+  active,
+  studio,
+}) => {
+  const filterHook = useFilterHook(studio);
+
+  return (
+    <StudioList
+      fromParent
+      filterHook={filterHook}
+      alterQuery={active}
+      view={View.StudioChildren}
+    />
+  );
 };

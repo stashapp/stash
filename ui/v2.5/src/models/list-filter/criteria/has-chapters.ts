@@ -1,18 +1,16 @@
-import { CriterionOption, StringCriterion } from "./criterion";
+import {
+  StringBooleanCriterion,
+  StringBooleanCriterionOption,
+} from "./criterion";
 
-export const HasChaptersCriterionOption = new CriterionOption({
-  messageID: "hasChapters",
-  type: "hasChapters",
-  parameterName: "has_chapters",
-  options: [true.toString(), false.toString()],
-});
+export const HasChaptersCriterionOption = new StringBooleanCriterionOption(
+  "hasChapters",
+  "has_chapters",
+  () => new HasChaptersCriterion()
+);
 
-export class HasChaptersCriterion extends StringCriterion {
+export class HasChaptersCriterion extends StringBooleanCriterion {
   constructor() {
     super(HasChaptersCriterionOption);
-  }
-
-  protected toCriterionInput(): string {
-    return this.value;
   }
 }

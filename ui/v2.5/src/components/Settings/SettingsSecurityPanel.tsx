@@ -4,7 +4,7 @@ import { SettingSection } from "./SettingSection";
 import * as GQL from "src/core/generated-graphql";
 import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useGenerateAPIKey } from "src/core/StashService";
@@ -72,7 +72,7 @@ export const SettingsSecurityPanel: React.FC = () => {
   const Toast = useToast();
 
   const { general, apiKey, loading, error, saveGeneral, refetch } =
-    React.useContext(SettingStateContext);
+    useSettings();
 
   const [generateAPIKey] = useGenerateAPIKey();
 

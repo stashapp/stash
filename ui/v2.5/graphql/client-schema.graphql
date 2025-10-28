@@ -1,0 +1,21 @@
+scalar UIConfig
+scalar SavedObjectFilter
+scalar SavedUIOptions
+
+extend type ConfigResult {
+  ui: UIConfig!
+}
+
+extend type SavedFilter {
+  object_filter: SavedObjectFilter
+  ui_options: SavedUIOptions
+}
+
+extend input SaveFilterInput {
+  object_filter: SavedObjectFilter
+  ui_options: SavedUIOptions
+}
+
+extend type Mutation {
+  configureUI(input: Map, partial: Map): UIConfig!
+}

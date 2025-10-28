@@ -1,3 +1,4 @@
+// Package generate provides functions to generate media assets from scenes.
 package generate
 
 import (
@@ -97,7 +98,7 @@ func (g Generator) generateFile(lockCtx *fsutil.LockContext, p Paths, pattern st
 	}
 
 	if err := fsutil.SafeMove(tmpFn, output); err != nil {
-		return fmt.Errorf("moving %s to %s", tmpFn, output)
+		return fmt.Errorf("moving %s to %s failed: %w", tmpFn, output, err)
 	}
 
 	return nil

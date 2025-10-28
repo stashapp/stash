@@ -7,7 +7,6 @@ import {
   RatingSystemType,
 } from "src/utils/rating";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "src/core/config";
 
 interface IProps {
   rating?: number | null;
@@ -16,8 +15,7 @@ interface IProps {
 export const RatingBanner: React.FC<IProps> = ({ rating }) => {
   const { configuration: config } = useContext(ConfigurationContext);
   const ratingSystemOptions =
-    (config?.ui as IUIConfig)?.ratingSystemOptions ??
-    defaultRatingSystemOptions;
+    config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
   const isLegacy =
     ratingSystemOptions.type === RatingSystemType.Stars &&
     ratingSystemOptions.starPrecision === RatingStarPrecision.Full;

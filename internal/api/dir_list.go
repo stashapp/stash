@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/text/collate"
 )
@@ -25,12 +26,26 @@ func (s dirLister) Bytes(i int) []byte {
 // listDir will return the contents of a given directory path as a string slice
 func listDir(col *collate.Collator, path string) ([]string, error) {
 	var dirPaths []string
+	dirPath := path
+
 	files, err := os.ReadDir(path)
 	if err != nil {
-		path = filepath.Dir(path)
-		files, err = os.ReadDir(path)
+		dirPath = filepath.Dir(path)
+		dirFiles, err := os.ReadDir(dirPath)
 		if err != nil {
 			return dirPaths, err
+		}
+
+		// Filter dir contents by last path fragment if the dir isn't an exact match
+		base := strings.ToLower(filepath.Base(path))
+		if base != "." && base != string(filepath.Separator) {
+			for _, file := range dirFiles {
+				if strings.HasPrefix(strings.ToLower(file.Name()), base) {
+					files = append(files, file)
+				}
+			}
+		} else {
+			files = dirFiles
 		}
 	}
 
@@ -42,7 +57,7 @@ func listDir(col *collate.Collator, path string) ([]string, error) {
 		if !file.IsDir() {
 			continue
 		}
-		dirPaths = append(dirPaths, filepath.Join(path, file.Name()))
+		dirPaths = append(dirPaths, filepath.Join(dirPath, file.Name()))
 	}
 	return dirPaths, nil
 }

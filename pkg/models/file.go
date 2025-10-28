@@ -4,22 +4,40 @@ import (
 	"context"
 	"path/filepath"
 	"strings"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 type FileQueryOptions struct {
 	QueryOptions
 	FileFilter *FileFilterType
+
+	TotalDuration bool
+	Megapixels    bool
+	TotalSize     bool
 }
 
 type FileFilterType struct {
-	And *FileFilterType `json:"AND"`
-	Or  *FileFilterType `json:"OR"`
-	Not *FileFilterType `json:"NOT"`
+	OperatorFilter[FileFilterType]
 
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
+
+	Basename        *StringCriterionInput            `json:"basename"`
+	Dir             *StringCriterionInput            `json:"dir"`
+	ParentFolder    *HierarchicalMultiCriterionInput `json:"parent_folder"`
+	ZipFile         *MultiCriterionInput             `json:"zip_file"`
+	ModTime         *TimestampCriterionInput         `json:"mod_time"`
+	Duplicated      *PHashDuplicationCriterionInput  `json:"duplicated"`
+	Hashes          []*FingerprintFilterInput        `json:"hashes"`
+	VideoFileFilter *VideoFileFilterInput            `json:"video_file_filter"`
+	ImageFileFilter *ImageFileFilterInput            `json:"image_file_filter"`
+	SceneCount      *IntCriterionInput               `json:"scene_count"`
+	ImageCount      *IntCriterionInput               `json:"image_count"`
+	GalleryCount    *IntCriterionInput               `json:"gallery_count"`
+	ScenesFilter    *SceneFilterType                 `json:"scenes_filter"`
+	ImagesFilter    *ImageFilterType                 `json:"images_filter"`
+	GalleriesFilter *GalleryFilterType               `json:"galleries_filter"`
+	CreatedAt       *TimestampCriterionInput         `json:"created_at"`
+	UpdatedAt       *TimestampCriterionInput         `json:"updated_at"`
 }
 
 func PathsFileFilter(paths []string) *FileFilterType {
@@ -55,26 +73,26 @@ func PathsFileFilter(paths []string) *FileFilterType {
 }
 
 type FileQueryResult struct {
-	// can't use QueryResult because id type is wrong
+	QueryResult[FileID]
+	TotalDuration float64
+	Megapixels    float64
+	TotalSize     int64
 
-	IDs   []file.ID
-	Count int
-
-	finder     file.Finder
-	files      []file.File
+	getter     FileGetter
+	files      []File
 	resolveErr error
 }
 
-func NewFileQueryResult(finder file.Finder) *FileQueryResult {
+func NewFileQueryResult(fileGetter FileGetter) *FileQueryResult {
 	return &FileQueryResult{
-		finder: finder,
+		getter: fileGetter,
 	}
 }
 
-func (r *FileQueryResult) Resolve(ctx context.Context) ([]file.File, error) {
+func (r *FileQueryResult) Resolve(ctx context.Context) ([]File, error) {
 	// cache results
 	if r.files == nil && r.resolveErr == nil {
-		r.files, r.resolveErr = r.finder.Find(ctx, r.IDs...)
+		r.files, r.resolveErr = r.getter.Find(ctx, r.IDs...)
 	}
 	return r.files, r.resolveErr
 }

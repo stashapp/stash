@@ -2,7 +2,11 @@
 
 Scrapers can be contributed to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls).
 
-# Scraper configuration file format
+## XPath scraper templates
+
+The most basic XPath scraper templates are available on [CommunityScrapers repository](https://github.com/stashapp/CommunityScrapers/tree/master/templates).
+
+## Scraper configuration file format
 
 ```yaml
 name: <site>
@@ -20,11 +24,15 @@ sceneByFragment:
   <single scraper config>
 sceneByURL:
   <multiple scraper URL configs>
-movieByURL:
+groupByURL:
   <multiple scraper URL configs>
 galleryByFragment:
   <single scraper config>
 galleryByURL:
+  <multiple scraper URL configs>
+imageByFragment:
+  <single scraper config>
+imageByURL:
   <multiple scraper URL configs>
 <other configurations>
 ```
@@ -42,7 +50,7 @@ The scraping types and their required fields are outlined in the following table
 | Scraper in query dropdown button in Scene Edit page | Valid `sceneByName` and `sceneByQueryFragment` configurations. |
 | Scraper in `Scrape...` dropdown button in Scene Edit page | Valid `sceneByFragment` configuration. |
 | Scrape scene from URL | Valid `sceneByURL` configuration with matching URL. |
-| Scrape movie from URL | Valid `movieByURL` configuration with matching URL. |
+| Scrape group from URL | Valid `groupByURL` configuration with matching URL. **Note:** `movieByURL` is also supported but is deprecated. |
 | Scraper in `Scrape...` dropdown button in Gallery Edit page | Valid `galleryByFragment` configuration. |
 | Scrape gallery from URL | Valid `galleryByURL` configuration with matching URL. |
 
@@ -78,9 +86,11 @@ The script is sent input and expects output based on the scraping type, as detai
 | `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded scene fragments |
 | `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
 | `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
-| `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
+| `groupByURL` | `{"url": "<url>"}` | JSON-encoded group fragment |
 | `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
 | `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
+| `imageByFragment` | JSON-encoded image fragment | JSON-encoded image fragment |
+| `imageByURL` | `{"url": "<url>"}` | JSON-encoded image fragment |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
   
@@ -166,7 +176,6 @@ sceneByURL:
 The above configuration requires that `sceneScraper` exists in the `xPathScrapers` configuration.
 
 XPath scraping configurations specify the mapping between object fields and an xpath selector. The xpath scraper scrapes the applicable URL and uses xpath to populate the object fields.
->
 
 ### scrapeJson
 
@@ -202,6 +211,7 @@ xPathScrapers:
 ### scrapeXPath and scrapeJson use with `sceneByFragment` and `sceneByQueryFragment`
 
 For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
+
 * `{checksum}` - the MD5 checksum of the scene
 * `{oshash}` - the oshash of the scene
 * `{filename}` - the base filename of the scene
@@ -225,9 +235,10 @@ sceneByFragment:
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
 
-### scrapeXPath and scrapeJson use with `<scene|performer|gallery|movie>ByURL`
+### scrapeXPath and scrapeJson use with `<scene|performer|gallery|group>ByURL`
 
 For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
+
 * `{url}` - the url of the scene/performer/gallery
 
 ```yaml
@@ -245,9 +256,11 @@ sceneByURL:
 
 ### Stash
 
-A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, and `sceneByFragment` types. This action requires that the top-level `stashServer` field is configured.
+A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, `sceneByName`, `sceneByQueryFragment` and `sceneByFragment`, types. This action requires that the top-level `stashServer` field is configured.
 
-`stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`.
+- `stashServer` contains a single `url` field for the remote stash server. 
+- The username and password can be embedded in this string using `username:password@host`. 
+- Alternatively, the `apiKey` field can be used to authenticate with the remote stash server.
 
 An example stash scrape configuration is below:
 
@@ -259,7 +272,12 @@ performerByFragment:
   action: stash
 sceneByFragment:
   action: stash
+sceneByName:
+  action: stash
+sceneByQueryFragment:
+  action: stash
 stashServer:
+  apiKey: <api key>
   url: http://stashserver.com:9999
 ```
   
@@ -271,9 +289,9 @@ Likewise, the top-level `jsonScrapers` field contains json scraping configuratio
 
 Collectively, these configurations are known as mapped scraping configurations. 
 
-A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for. 
+A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `group` or `gallery` depending on the scraping type it is configured for. 
 
-Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
+Within the `performer`/`scene`/`group`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
@@ -341,10 +359,26 @@ scene:
 ### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
+
+* `javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. If an error occurs while compiling or running the script, then the original value is returned.
+Example:
+```yaml
+performer:
+  Name:
+    selector: //div[@class="example element"]
+    postProcess:
+      - javascript: |
+          // capitalise the first letter
+          if (value && value.length) {
+            return value[0].toUpperCase() + value.substring(1)
+          }
+```
+
+We use [`goja` javascript engine](https://github.com/dop251/goja) which is missing a few built-in methods and may not be consistent with other modern javascript implementations.
+
 * `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
 * `lbToKg`: converts a string containing lbs to kg.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
-
 Example:
 ```yaml
 performer:
@@ -363,8 +397,11 @@ performer:
     postProcess:
       - lbToKg: true
 ```
-Gets the contents of the selected div element, and sets the returned value to `Female` if the scraped value is `F`; `Male` if the scraped value is `M`.
-Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
+Gets the contents of the selected div element, and sets the returned value to:
+    - `Female` if the scraped value is `F`;
+    - `Male` if the scraped value is `M`.
+
+    Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
 
 * `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them. 
 Unix timestamps (example: 1660169451) can also be parsed by selecting `unix` as the date format.
@@ -389,7 +426,6 @@ Date:
 ```
 
 * `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
-
 Example:
 ```yaml
 CareerLength: 
@@ -404,9 +440,9 @@ Replaces `2001 to 2003` with `2001-2003`.
 * `subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606)
 
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
+
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
 * `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
-
 Example:
 ```yaml
 Tags:
@@ -472,7 +508,7 @@ xPathScrapers:
   sceneScraper:
     scene:
       Title: //head/title
-      Details: # shows the id/s of the the visible div/s for the Multiple targets example of the page
+      Details: # shows the id/s of the visible div/s for the Multiple targets example of the page
         selector: //div[@class="bd-example"]//div[@class="multi-collapse collapse show"]/@id
         concat: "\n\n"
 
@@ -584,7 +620,7 @@ and having a look at the log / console in debug mode.
 
 Sending request headers is possible when using a scraper.
 Headers can be set in the `driver` section and are supported for plain, CDP enabled and JSON scrapers.
-They consist of a Key and a Value. If the the Key is empty or not defined then the header is ignored.
+They consist of a Key and a Value. If the Key is empty or not defined then the header is ignored.
 
 ```yaml
 driver:
@@ -767,83 +803,120 @@ driver:
 ```
 
 ## Object fields
+
+### Gallery
+
+```
+Code
+Date
+Details
+Performers (see Performer fields)
+Photographer
+Rating
+Studio (see Studio Fields)
+Tags (see Tag fields)
+Title
+URLs
+```
+
+> **Important**: `Title` field is required. 
+
+### Group
+
+```
+Aliases
+BackImage
+Date
+Director
+Duration
+FrontImage
+Name
+Rating
+Studio (see Studio Fields)
+Synopsis
+Tags (see Tag fields)
+URLs
+```
+
+> **Important**: `Name` field is required. 
+
+### Image
+
+```
+Code
+Date
+Details
+Performers (see Performer fields)
+Photographer
+Rating
+Studio (see Studio Fields)
+Tags (see Tag fields)
+Title
+URLs
+```
+
 ### Performer
 
 ```
-Name
-Gender
-URL
-Twitter
-Instagram
-Birthdate
-DeathDate
-Ethnicity
-Country
-HairColor
-EyeColor
-Height
-Weight
-Measurements
-FakeTits
-CareerLength
-Tattoos
-Piercings
 Aliases
-Tags (see Tag fields)
-Image
+Birthdate
+CareerLength
+Circumcised
+Country
+DeathDate
 Details
+Disambiguation
+Ethnicity
+EyeColor
+FakeTits
+Gender
+HairColor
+Height
+Measurements
+Name
+PenisLength
+Piercings
+Tags (see Tag fields)
+Tattoos
+URLs
+Weight
 ```
 
-*Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+> **Important**: `Name` field is required. 
+
+> **Note:**  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
 ### Scene
+
 ```
-Title
-Details
 Code
-Director
-URL
 Date
+Details
+Director
+Groups (see Group Fields)
 Image
+Performers (see Performer fields)
 Studio (see Studio Fields)
-Movies (see Movie Fields)
 Tags (see Tag fields)
-Performers (list of Performer fields)
+Title
+URLs
 ```
+
+> **Important**: `Title` field is required only if fileless.
+
 ### Studio
+
 ```
 Name
 URL
 ```
+
+> **Important**: `Name` field is required. 
 
 ### Tag
+
 ```
 Name
 ```
 
-### Movie
-```
-Name
-Aliases
-Duration
-Date
-Rating
-Director
-Studio
-Synopsis
-URL
-FrontImage
-BackImage
-```
-
-### Gallery
-```
-Title
-Details
-URL
-Date
-Rating
-Studio (see Studio Fields)
-Tags (see Tag fields)
-Performers (list of Performer fields)
-```
+> **Important**: `Name` field is required. 

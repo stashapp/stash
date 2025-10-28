@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type ContentsChangedError struct {
@@ -42,7 +42,7 @@ func (s *Service) ValidateImageGalleryChange(ctx context.Context, i *models.Imag
 		changedIDs = updateIDs.IDs
 	case models.RelationshipUpdateModeSet:
 		// get the difference between the two lists
-		changedIDs = intslice.IntNotIntersect(i.GalleryIDs.List(), updateIDs.IDs)
+		changedIDs = sliceutil.NotIntersect(i.GalleryIDs.List(), updateIDs.IDs)
 	}
 
 	galleries, err := s.Repository.FindMany(ctx, changedIDs)

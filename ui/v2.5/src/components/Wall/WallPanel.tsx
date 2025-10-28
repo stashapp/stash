@@ -62,18 +62,6 @@ const WallPanel = <T extends WallItemType>({
   );
 };
 
-interface IImageWallPanelProps {
-  images: GQL.SlimImageDataFragment[];
-  clickHandler?: (e: MouseEvent, item: GQL.SlimImageDataFragment) => void;
-}
-
-export const ImageWallPanel: React.FC<IImageWallPanelProps> = ({
-  images,
-  clickHandler,
-}) => {
-  return <WallPanel type="image" data={images} clickHandler={clickHandler} />;
-};
-
 interface IMarkerWallPanelProps {
   markers: GQL.SceneMarkerDataFragment[];
   clickHandler?: (e: MouseEvent, item: GQL.SceneMarkerDataFragment) => void;
@@ -85,26 +73,5 @@ export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
 }) => {
   return (
     <WallPanel type="sceneMarker" data={markers} clickHandler={clickHandler} />
-  );
-};
-
-interface ISceneWallPanelProps {
-  scenes: GQL.SlimSceneDataFragment[];
-  sceneQueue?: SceneQueue;
-  clickHandler?: (e: MouseEvent, item: GQL.SlimSceneDataFragment) => void;
-}
-
-export const SceneWallPanel: React.FC<ISceneWallPanelProps> = ({
-  scenes,
-  sceneQueue,
-  clickHandler,
-}) => {
-  return (
-    <WallPanel
-      type="scene"
-      data={scenes}
-      sceneQueue={sceneQueue}
-      clickHandler={clickHandler}
-    />
   );
 };

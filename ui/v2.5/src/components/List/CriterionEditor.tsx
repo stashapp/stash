@@ -1,20 +1,18 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, { useCallback, useMemo } from "react";
-import { Button, Form } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
   CriterionValue,
-  Criterion,
+  ModifierCriterion,
   IHierarchicalLabeledIdCriterion,
   NumberCriterion,
   ILabeledIdCriterion,
   DateCriterion,
   TimestampCriterion,
   BooleanCriterion,
-  PathCriterionOption,
+  Criterion,
 } from "src/models/list-filter/criteria/criterion";
-import { useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
@@ -46,20 +44,42 @@ import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import TagsFilter from "./Filters/TagsFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
-import cx from "classnames";
+import { PathCriterion } from "src/models/list-filter/criteria/path";
+import { ModifierSelectorButtons } from "./ModifierSelect";
+import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
+import { CustomFieldsFilter } from "./Filters/CustomFieldsFilter";
 
 interface IGenericCriterionEditor {
-  criterion: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterion: ModifierCriterion<CriterionValue>;
+  setCriterion: (c: ModifierCriterion<CriterionValue>) => void;
 }
 
 const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
   criterion,
   setCriterion,
 }) => {
-  const intl = useIntl();
+  const { options, modifierOptions } = criterion.modifierCriterionOption();
 
-  const { options, modifierOptions } = criterion.criterionOption;
+  const showModifierSelector = useMemo(() => {
+    if (
+      criterion instanceof PerformersCriterion ||
+      criterion instanceof StudiosCriterion ||
+      criterion instanceof TagsCriterion
+    ) {
+      return false;
+    }
+
+    return modifierOptions && modifierOptions.length > 1;
+  }, [criterion, modifierOptions]);
+
+  const alwaysShowFilter = useMemo(() => {
+    return (
+      criterion instanceof StashIDCriterion ||
+      criterion instanceof PerformersCriterion ||
+      criterion instanceof StudiosCriterion ||
+      criterion instanceof TagsCriterion
+    );
+  }, [criterion]);
 
   const onChangedModifierSelect = useCallback(
     (m: CriterionModifier) => {
@@ -71,26 +91,23 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
   );
 
   const modifierSelector = useMemo(() => {
-    if (!modifierOptions || modifierOptions.length === 0) {
+    if (!showModifierSelector) {
       return;
     }
 
     return (
-      <Form.Group className="modifier-options">
-        {modifierOptions.map((m) => (
-          <Button
-            className={cx("modifier-option", {
-              selected: criterion.modifier === m,
-            })}
-            key={m}
-            onClick={() => onChangedModifierSelect(m)}
-          >
-            {Criterion.getModifierLabel(intl, m)}
-          </Button>
-        ))}
-      </Form.Group>
+      <ModifierSelectorButtons
+        options={modifierOptions}
+        value={criterion.modifier}
+        onChanged={onChangedModifierSelect}
+      />
     );
-  }, [modifierOptions, onChangedModifierSelect, criterion.modifier, intl]);
+  }, [
+    showModifierSelector,
+    modifierOptions,
+    onChangedModifierSelect,
+    criterion.modifier,
+  ]);
 
   const valueControl = useMemo(() => {
     function onValueChanged(value: CriterionValue) {
@@ -108,8 +125,9 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 
     // Hide the value select if the modifier is "IsNull" or "NotNull"
     if (
-      criterion.modifier === CriterionModifier.IsNull ||
-      criterion.modifier === CriterionModifier.NotNull
+      !alwaysShowFilter &&
+      (criterion.modifier === CriterionModifier.IsNull ||
+        criterion.modifier === CriterionModifier.NotNull)
     ) {
       return;
     }
@@ -175,7 +193,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         );
       }
     }
-    if (criterion.criterionOption instanceof PathCriterionOption) {
+    if (criterion instanceof PathCriterion) {
       return (
         <PathFilter criterion={criterion} onValueChanged={onValueChanged} />
       );
@@ -229,7 +247,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     return (
       <InputFilter criterion={criterion} onValueChanged={onValueChanged} />
     );
-  }, [criterion, setCriterion, options]);
+  }, [criterion, setCriterion, options, alwaysShowFilter]);
 
   return (
     <div>
@@ -240,8 +258,8 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 };
 
 interface ICriterionEditor {
-  criterion: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterion: Criterion;
+  setCriterion: (c: Criterion) => void;
 }
 
 export const CriterionEditor: React.FC<ICriterionEditor> = ({
@@ -255,12 +273,22 @@ export const CriterionEditor: React.FC<ICriterionEditor> = ({
       );
     }
 
-    return (
-      <GenericCriterionEditor
-        criterion={criterion}
-        setCriterion={setCriterion}
-      />
-    );
+    if (criterion instanceof CustomFieldsCriterion) {
+      return (
+        <CustomFieldsFilter criterion={criterion} setCriterion={setCriterion} />
+      );
+    }
+
+    if (criterion instanceof ModifierCriterion) {
+      return (
+        <GenericCriterionEditor
+          criterion={criterion}
+          setCriterion={setCriterion}
+        />
+      );
+    }
+
+    return null;
   }, [criterion, setCriterion]);
 
   return <div className="criterion-editor">{filterControl}</div>;

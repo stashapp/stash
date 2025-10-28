@@ -1,6 +1,0 @@
-fragment SavedFilterData on SavedFilter {
-  id
-  mode
-  name
-  filter
-}

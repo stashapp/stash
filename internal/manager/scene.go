@@ -6,7 +6,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -57,7 +56,7 @@ var (
 	}
 )
 
-func GetVideoFileContainer(file *file.VideoFile) (ffmpeg.Container, error) {
+func GetVideoFileContainer(file *models.VideoFile) (ffmpeg.Container, error) {
 	var container ffmpeg.Container
 	format := file.Format
 	if format != "" {
@@ -88,7 +87,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 
 	// convert StreamingResolutionEnum to ResolutionEnum
 	maxStreamingResolution := models.ResolutionEnum(maxStreamingTranscodeSize)
-	sceneResolution := file.GetMinResolution(pf)
+	sceneResolution := models.GetMinResolution(pf)
 	includeSceneStreamPath := func(streamingResolution models.StreamingResolutionEnum) bool {
 		var minResolution int
 		if streamingResolution == models.StreamingResolutionEnumOriginal {

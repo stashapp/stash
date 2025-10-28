@@ -1,17 +1,57 @@
 import {
   convertFromRatingFormat,
   convertToRatingFormat,
+  defaultRatingSystemOptions,
   RatingSystemOptions,
 } from "src/utils/rating";
 import {
+  ConfigDataFragment,
   CriterionModifier,
   IntCriterionInput,
-} from "../../../core/generated-graphql";
+} from "src/core/generated-graphql";
 import { INumberValue } from "../types";
-import { Criterion, CriterionOption } from "./criterion";
+import {
+  encodeRangeValue,
+  ModifierCriterion,
+  ModifierCriterionOption,
+} from "./criterion";
 
-export class RatingCriterion extends Criterion<INumberValue> {
+const modifierOptions = [
+  CriterionModifier.Equals,
+  CriterionModifier.NotEquals,
+  CriterionModifier.GreaterThan,
+  CriterionModifier.LessThan,
+  CriterionModifier.Between,
+  CriterionModifier.NotBetween,
+  CriterionModifier.IsNull,
+  CriterionModifier.NotNull,
+];
+
+function getRatingSystemOptions(config?: ConfigDataFragment) {
+  return config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
+}
+
+export const RatingCriterionOption = new ModifierCriterionOption({
+  messageID: "rating",
+  type: "rating100",
+  modifierOptions,
+  defaultModifier: CriterionModifier.Equals,
+  makeCriterion: (o, config) =>
+    new RatingCriterion(getRatingSystemOptions(config)),
+  inputType: "number",
+});
+
+export class RatingCriterion extends ModifierCriterion<INumberValue> {
   ratingSystem: RatingSystemOptions;
+
+  constructor(ratingSystem: RatingSystemOptions) {
+    super(RatingCriterionOption, { value: 0, value2: undefined });
+    this.ratingSystem = ratingSystem;
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
 
   public get value(): INumberValue {
     return this._value;
@@ -28,12 +68,25 @@ export class RatingCriterion extends Criterion<INumberValue> {
     }
   }
 
-  protected toCriterionInput(): IntCriterionInput {
+  public toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
       value: this.value.value ?? 0,
       value2: this.value.value2,
     };
+  }
+
+  public setFromSavedCriterion(c: {
+    modifier: CriterionModifier;
+    value: number | INumberValue;
+    value2?: number;
+  }) {
+    super.setFromSavedCriterion(c);
+    // this.value = decodeRangeValue(c);
+  }
+
+  protected encodeValue(): unknown {
+    return encodeRangeValue(this.modifier, this.value);
   }
 
   protected getLabelValue() {
@@ -48,10 +101,5 @@ export class RatingCriterion extends Criterion<INumberValue> {
     } else {
       return `${convertToRatingFormat(value, this.ratingSystem) ?? 0}`;
     }
-  }
-
-  constructor(type: CriterionOption, ratingSystem: RatingSystemOptions) {
-    super(type, { value: 0, value2: undefined });
-    this.ratingSystem = ratingSystem;
   }
 }

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Button,
   ButtonGroup,
   Card,
   Col,
+  Dropdown,
   Form,
   OverlayTrigger,
   Row,
@@ -18,7 +19,12 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ErrorMessage } from "../Shared/ErrorMessage";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
-import { TagLink } from "../Shared/TagLink";
+import {
+  GalleryLink,
+  GroupLink,
+  SceneMarkerLink,
+  TagLink,
+} from "../Shared/TagLink";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { Pagination } from "src/components/List/Pagination";
 import TextUtils from "src/utils/text";
@@ -38,6 +44,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "../Scenes/SceneMergeDialog";
 import { objectTitle } from "src/core/files";
+import { FileSize } from "../Shared/FileSize";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -46,7 +53,6 @@ const defaultDurationDiff = "1";
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
-
   const query = new URLSearchParams(history.location.search);
   const currentPage = Number.parseInt(query.get("page") ?? "1", 10);
   const pageSize = Number.parseInt(query.get("size") ?? "20", 10);
@@ -59,9 +65,12 @@ export const SceneDuplicateChecker: React.FC = () => {
   const [isMultiDelete, setIsMultiDelete] = useState(false);
   const [deletingScenes, setDeletingScenes] = useState(false);
   const [editingScenes, setEditingScenes] = useState(false);
+  const [chkSafeSelect, setChkSafeSelect] = useState(true);
+
   const [checkedScenes, setCheckedScenes] = useState<Record<string, boolean>>(
     {}
   );
+
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
     variables: {
@@ -69,6 +78,26 @@ export const SceneDuplicateChecker: React.FC = () => {
       duration_diff: durationDiff,
     },
   });
+
+  const getGroupTotalSize = (group: GQL.SlimSceneDataFragment[]) => {
+    // Sum all file sizes across all scenes in the group
+    return group.reduce((groupTotal, scene) => {
+      const sceneTotal = scene.files.reduce(
+        (fileTotal, file) => fileTotal + file.size,
+        0
+      );
+      return groupTotal + sceneTotal;
+    }, 0);
+  };
+
+  const scenes = useMemo(() => {
+    const groups = data?.findDuplicateScenes ?? [];
+    // Sort by total file size descending (largest groups first)
+    return [...groups].sort((a, b) => {
+      return getGroupTotalSize(b) - getGroupTotalSize(a);
+    });
+  }, [data?.findDuplicateScenes]);
+
   const { data: missingPhash } = GQL.useFindScenesQuery({
     variables: {
       filter: {
@@ -91,10 +120,27 @@ export const SceneDuplicateChecker: React.FC = () => {
   const [mergeScenes, setMergeScenes] =
     useState<{ id: string; title: string }[]>();
 
+  const pageOptions = useMemo(() => {
+    const pageSizes = [
+      10, 20, 30, 40, 50, 100, 150, 200, 250, 500, 750, 1000, 1250, 1500,
+    ];
+
+    const filteredSizes = pageSizes.filter((s, i) => {
+      return scenes.length > s || i == 0 || scenes.length > pageSizes[i - 1];
+    });
+
+    return filteredSizes.map((size) => {
+      return (
+        <option key={size} value={size}>
+          {size}
+        </option>
+      );
+    });
+  }, [scenes.length]);
+
   if (loading) return <LoadingIndicator />;
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;
 
-  const scenes = data?.findDuplicateScenes ?? [];
   const filteredScenes = scenes.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -116,6 +162,16 @@ export const SceneDuplicateChecker: React.FC = () => {
     history.push({ search: newQuery.toString() });
   };
 
+  const resetCheckboxSelection = () => {
+    const updatedScenes: Record<string, boolean> = {};
+
+    Object.keys(checkedScenes).forEach((sceneKey) => {
+      updatedScenes[sceneKey] = false;
+    });
+
+    setCheckedScenes(updatedScenes);
+  };
+
   function onDeleteDialogClosed(deleted: boolean) {
     setDeletingScenes(false);
     if (deleted) {
@@ -123,7 +179,148 @@ export const SceneDuplicateChecker: React.FC = () => {
       refetch();
       if (isMultiDelete) setCheckedScenes({});
     }
+    resetCheckboxSelection();
   }
+
+  const findLargestScene = (group: GQL.SlimSceneDataFragment[]) => {
+    // Get maximum file size of a scene
+    const totalSize = (scene: GQL.SlimSceneDataFragment) => {
+      return scene.files.reduce((prev: number, f) => Math.max(prev, f.size), 0);
+    };
+    // Find scene object with maximum total size
+    return group.reduce((largest, scene) => {
+      const largestSize = totalSize(largest);
+      const currentSize = totalSize(scene);
+      return currentSize > largestSize ? scene : largest;
+    });
+  };
+
+  const findLargestResolutionScene = (group: GQL.SlimSceneDataFragment[]) => {
+    // Get maximum resolution of a scene
+    const sceneResolution = (scene: GQL.SlimSceneDataFragment) => {
+      return scene.files.reduce(
+        (prev: number, f) => Math.max(prev, f.height * f.width),
+        0
+      );
+    };
+    // Find scene object with maximum resolution
+    return group.reduce((largest, scene) => {
+      const largestSize = sceneResolution(largest);
+      const currentSize = sceneResolution(scene);
+      return currentSize > largestSize ? scene : largest;
+    });
+  };
+
+  // Helper to get file date
+
+  const findFirstFileByAge = (
+    oldest: boolean,
+    compareScenes: GQL.SlimSceneDataFragment[]
+  ) => {
+    let selectedFile: GQL.VideoFileDataFragment;
+    let oldestTimestamp: Date | undefined = undefined;
+
+    // Loop through all files
+    for (const file of compareScenes.flatMap((s) => s.files)) {
+      // Get timestamp
+      const timestamp: Date = new Date(file.mod_time);
+
+      // Check if current file is oldest
+      if (oldest) {
+        if (oldestTimestamp === undefined || timestamp < oldestTimestamp) {
+          oldestTimestamp = timestamp;
+          selectedFile = file;
+        }
+      } else {
+        if (oldestTimestamp === undefined || timestamp > oldestTimestamp) {
+          oldestTimestamp = timestamp;
+          selectedFile = file;
+        }
+      }
+    }
+
+    // Find scene with oldest file
+    return compareScenes.find((s) =>
+      s.files.some((f) => f.id === selectedFile.id)
+    );
+  };
+
+  function checkSameCodec(codecGroup: GQL.SlimSceneDataFragment[]) {
+    const codecs = codecGroup.map((s) => s.files[0]?.video_codec);
+    return new Set(codecs).size === 1;
+  }
+
+  function checkSameResolution(dataGroup: GQL.SlimSceneDataFragment[]) {
+    const resolutions = dataGroup.map(
+      (s) => s.files[0]?.width * s.files[0]?.height
+    );
+    return new Set(resolutions).size === 1;
+  }
+
+  const onSelectLargestClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      if (chkSafeSelect && !checkSameCodec(group)) {
+        return;
+      }
+      // Find largest scene in group a
+      const largest = findLargestScene(group);
+      group.forEach((scene) => {
+        if (scene !== largest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+    });
+
+    setCheckedScenes(checkedArray);
+  };
+
+  const onSelectLargestResolutionClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      if (chkSafeSelect && !checkSameCodec(group)) {
+        return;
+      }
+      // Don't select scenes where resolution is identical.
+      if (checkSameResolution(group)) {
+        return;
+      }
+      // Find the highest resolution scene in group.
+      const highest = findLargestResolutionScene(group);
+      group.forEach((scene) => {
+        if (scene !== highest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+    });
+
+    setCheckedScenes(checkedArray);
+  };
+
+  const onSelectByAge = (oldest: boolean) => {
+    setSelectedScenes([]);
+
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      if (chkSafeSelect && !checkSameCodec(group)) {
+        return;
+      }
+
+      const oldestScene = findFirstFileByAge(oldest, group);
+      group.forEach((scene) => {
+        if (scene !== oldestScene) {
+          checkedArray[scene.id] = true;
+        }
+      });
+    });
+
+    setCheckedScenes(checkedArray);
+  };
 
   const handleCheck = (checked: boolean, sceneID: string) => {
     setCheckedScenes({ ...checkedScenes, [sceneID]: checked });
@@ -144,20 +341,8 @@ export const SceneDuplicateChecker: React.FC = () => {
   function onEdit() {
     setSelectedScenes(scenes.flat().filter((s) => checkedScenes[s.id]));
     setEditingScenes(true);
+    resetCheckboxSelection();
   }
-
-  const renderFilesize = (filesize: number | null | undefined) => {
-    const { size: parsedSize, unit } = TextUtils.fileSize(filesize ?? 0);
-    return (
-      <FormattedNumber
-        value={parsedSize}
-        style="unit"
-        unit={unit}
-        unitDisplay="narrow"
-        maximumFractionDigits={2}
-      />
-    );
-  };
 
   function maybeRenderMissingPhashWarning() {
     const missingPhashes = missingPhash?.findScenes.count ?? 0;
@@ -206,24 +391,24 @@ export const SceneDuplicateChecker: React.FC = () => {
     return <PerformerPopoverButton performers={scene.performers} />;
   }
 
-  function maybeRenderMoviePopoverButton(scene: GQL.SlimSceneDataFragment) {
-    if (scene.movies.length <= 0) return;
+  function maybeRenderGroupPopoverButton(scene: GQL.SlimSceneDataFragment) {
+    if (scene.groups.length <= 0) return;
 
-    const popoverContent = scene.movies.map((sceneMovie) => (
-      <div className="movie-tag-container row" key="movie">
+    const popoverContent = scene.groups.map((sceneGroup) => (
+      <div className="group-tag-container row" key={sceneGroup.group.id}>
         <Link
-          to={`/movies/${sceneMovie.movie.id}`}
-          className="movie-tag col m-auto zoom-2"
+          to={`/groups/${sceneGroup.group.id}`}
+          className="group-tag col m-auto zoom-2"
         >
           <img
             className="image-thumbnail"
-            alt={sceneMovie.movie.name ?? ""}
-            src={sceneMovie.movie.front_image_path ?? ""}
+            alt={sceneGroup.group.name ?? ""}
+            src={sceneGroup.group.front_image_path ?? ""}
           />
         </Link>
-        <TagLink
-          key={sceneMovie.movie.id}
-          movie={sceneMovie.movie}
+        <GroupLink
+          key={sceneGroup.group.id}
+          group={sceneGroup.group}
           className="d-block"
         />
       </div>
@@ -237,7 +422,7 @@ export const SceneDuplicateChecker: React.FC = () => {
       >
         <Button className="minimal">
           <Icon icon={faFilm} />
-          <span>{scene.movies.length}</span>
+          <span>{scene.groups.length}</span>
         </Button>
       </HoverPopover>
     );
@@ -249,8 +434,8 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (scene.scene_markers.length <= 0) return;
 
     const popoverContent = scene.scene_markers.map((marker) => {
-      const markerPopover = { ...marker, scene: { id: scene.id } };
-      return <TagLink key={marker.id} marker={markerPopover} />;
+      const markerWithScene = { ...marker, scene: { id: scene.id } };
+      return <SceneMarkerLink key={marker.id} marker={markerWithScene} />;
     });
 
     return (
@@ -282,7 +467,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (scene.galleries.length <= 0) return;
 
     const popoverContent = scene.galleries.map((gallery) => (
-      <TagLink key={gallery.id} gallery={gallery} />
+      <GalleryLink key={gallery.id} gallery={gallery} />
     ));
 
     return (
@@ -331,7 +516,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (
       scene.tags.length > 0 ||
       scene.performers.length > 0 ||
-      scene.movies.length > 0 ||
+      scene.groups.length > 0 ||
       scene.scene_markers.length > 0 ||
       scene?.o_counter ||
       scene.galleries.length > 0 ||
@@ -343,7 +528,7 @@ export const SceneDuplicateChecker: React.FC = () => {
           <ButtonGroup className="flex-wrap">
             {maybeRenderTagPopoverButton(scene)}
             {maybeRenderPerformerPopoverButton(scene)}
-            {maybeRenderMoviePopoverButton(scene)}
+            {maybeRenderGroupPopoverButton(scene)}
             {maybeRenderSceneMarkerPopoverButton(scene)}
             {maybeRenderOCounter(scene)}
             {maybeRenderGallery(scene)}
@@ -395,9 +580,10 @@ export const SceneDuplicateChecker: React.FC = () => {
           currentPage={currentPage}
           totalItems={scenes.length}
           metadataByline={[]}
-          onChangePage={(newPage) =>
-            setQuery({ page: newPage === 1 ? undefined : newPage })
-          }
+          onChangePage={(newPage) => {
+            setQuery({ page: newPage === 1 ? undefined : newPage });
+            resetCheckboxSelection();
+          }}
         />
         <Form.Control
           as="select"
@@ -412,13 +598,10 @@ export const SceneDuplicateChecker: React.FC = () => {
                   ? undefined
                   : e.currentTarget.value,
             });
+            resetCheckboxSelection();
           }}
         >
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={40}>40</option>
-          <option value={60}>60</option>
-          <option value={80}>80</option>
+          {pageOptions}
         </Form.Control>
       </div>
     );
@@ -572,6 +755,62 @@ export const SceneDuplicateChecker: React.FC = () => {
               </Col>
             </Row>
           </Form.Group>
+          <Form.Group>
+            <Row noGutters>
+              <Col xs="12">
+                <Dropdown className="">
+                  <Dropdown.Toggle variant="secondary">
+                    <FormattedMessage id="dupe_check.select_options" />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="bg-secondary text-white">
+                    <Dropdown.Item onClick={() => resetCheckboxSelection()}>
+                      {intl.formatMessage({ id: "dupe_check.select_none" })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item
+                      onClick={() => onSelectLargestResolutionClick()}
+                    >
+                      {intl.formatMessage({
+                        id: "dupe_check.select_all_but_largest_resolution",
+                      })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item onClick={() => onSelectLargestClick()}>
+                      {intl.formatMessage({
+                        id: "dupe_check.select_all_but_largest_file",
+                      })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item onClick={() => onSelectByAge(true)}>
+                      {intl.formatMessage({
+                        id: "dupe_check.select_oldest",
+                      })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item onClick={() => onSelectByAge(false)}>
+                      {intl.formatMessage({
+                        id: "dupe_check.select_youngest",
+                      })}
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Col>
+            </Row>
+            <Row noGutters>
+              <Form.Check
+                type="checkbox"
+                id="chkSafeSelect"
+                label={intl.formatMessage({
+                  id: "dupe_check.only_select_matching_codecs",
+                })}
+                checked={chkSafeSelect}
+                onChange={(e) => {
+                  setChkSafeSelect(e.target.checked);
+                  resetCheckboxSelection();
+                }}
+              />
+            </Row>
+          </Form.Group>
         </Form>
 
         {maybeRenderMissingPhashWarning()}
@@ -621,6 +860,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                     >
                       <td>
                         <Form.Check
+                          checked={checkedScenes[scene.id]}
                           onChange={(e) =>
                             handleCheck(e.currentTarget.checked, scene.id)
                           }
@@ -641,15 +881,36 @@ export const SceneDuplicateChecker: React.FC = () => {
                             src={scene.paths.sprite ?? ""}
                             alt=""
                             width={100}
+                            style={{
+                              border: checkedScenes[scene.id]
+                                ? "2px solid red"
+                                : "",
+                            }}
                           />
                         </HoverPopover>
                       </td>
                       <td className="text-left">
                         <p>
-                          <Link to={`/scenes/${scene.id}`}>
+                          <Link
+                            to={`/scenes/${scene.id}`}
+                            style={{
+                              fontWeight: checkedScenes[scene.id]
+                                ? "bold"
+                                : "inherit",
+                              textDecoration: checkedScenes[scene.id]
+                                ? "line-through 3px"
+                                : "inherit",
+                              textDecorationColor: checkedScenes[scene.id]
+                                ? "red"
+                                : "inherit",
+                            }}
+                          >
+                            {" "}
                             {scene.title
                               ? scene.title
-                              : TextUtils.fileNameFromPath(file?.path ?? "")}
+                              : TextUtils.fileNameFromPath(
+                                  file?.path ?? ""
+                                )}{" "}
                           </Link>
                         </p>
                         <p className="scene-path">{file?.path ?? ""}</p>
@@ -661,7 +922,9 @@ export const SceneDuplicateChecker: React.FC = () => {
                         {file?.duration &&
                           TextUtils.secondsToTimestamp(file.duration)}
                       </td>
-                      <td>{renderFilesize(file?.size ?? 0)}</td>
+                      <td>
+                        <FileSize size={file?.size ?? 0} />
+                      </td>
                       <td>{`${file?.width ?? 0}x${file?.height ?? 0}`}</td>
                       <td>
                         <FormattedNumber

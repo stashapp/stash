@@ -66,6 +66,7 @@ const Preview: React.FC<{
 
   const image = (
     <img
+      loading="lazy"
       alt=""
       className="wall-item-media"
       src={
@@ -182,7 +183,10 @@ export const WallItem = <T extends WallItemType>({
       case "sceneMarker":
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
         const newTitle = markerTitle(sceneMarker);
-        const seconds = TextUtils.secondsToTimestamp(sceneMarker.seconds);
+        const seconds = TextUtils.formatTimestampRange(
+          sceneMarker.seconds,
+          sceneMarker.end_seconds ?? undefined
+        );
         if (newTitle) {
           return `${newTitle} - ${seconds}`;
         } else {

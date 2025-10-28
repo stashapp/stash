@@ -20,7 +20,8 @@ type MigrateSceneScreenshotsInput struct {
 type HashFinderCoverUpdater interface {
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error)
-	CoverUpdater
+	HasCover(ctx context.Context, sceneID int) (bool, error)
+	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }
 
 type ScreenshotMigrator struct {

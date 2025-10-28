@@ -26,8 +26,8 @@ const defaultSHLength int = 8 // default length of SHA short hash returned by <g
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
-		"darwin/amd64":  "stash-osx",
-		"darwin/arm64":  "stash-osx-applesilicon",
+		"darwin/amd64":  "stash-macos",
+		"darwin/arm64":  "stash-macos",
 		"linux/amd64":   "stash-linux",
 		"windows/amd64": "stash-win.exe",
 		"linux/arm":     "stash-linux-arm32v6",

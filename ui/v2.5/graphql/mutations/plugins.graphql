@@ -1,0 +1,31 @@
+mutation ReloadPlugins {
+  reloadPlugins
+}
+
+mutation RunPluginTask($plugin_id: ID!, $task_name: String!, $args_map: Map) {
+  runPluginTask(
+    plugin_id: $plugin_id
+    task_name: $task_name
+    args_map: $args_map
+  )
+}
+
+mutation ConfigurePlugin($plugin_id: ID!, $input: Map!) {
+  configurePlugin(plugin_id: $plugin_id, input: $input)
+}
+
+mutation SetPluginsEnabled($enabledMap: BoolMap!) {
+  setPluginsEnabled(enabledMap: $enabledMap)
+}
+
+mutation InstallPluginPackages($packages: [PackageSpecInput!]!) {
+  installPackages(type: Plugin, packages: $packages)
+}
+
+mutation UpdatePluginPackages($packages: [PackageSpecInput!]!) {
+  updatePackages(type: Plugin, packages: $packages)
+}
+
+mutation UninstallPluginPackages($packages: [PackageSpecInput!]!) {
+  uninstallPackages(type: Plugin, packages: $packages)
+}

@@ -3,10 +3,14 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/mitchellh/mapstructure"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput) (ret *models.SavedFilter, err error) {
@@ -14,17 +18,11 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 		return nil, errors.New("name must be non-empty")
 	}
 
-	newFilter := models.SavedFilter{
-		Mode:   input.Mode,
-		Name:   input.Name,
-		Filter: input.Filter,
-	}
-
 	var id *int
 	if input.ID != nil {
 		idv, err := strconv.Atoi(*input.ID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting id: %w", err)
 		}
 		id = &idv
 	}
@@ -32,24 +30,34 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.SavedFilter
 
-		if id == nil {
-			err = qb.Create(ctx, &newFilter)
-		} else {
-			newFilter.ID = *id
-			err = qb.Update(ctx, &newFilter)
+		f := models.SavedFilter{
+			Mode:         input.Mode,
+			Name:         input.Name,
+			FindFilter:   input.FindFilter,
+			ObjectFilter: input.ObjectFilter,
+			UIOptions:    input.UIOptions,
 		}
+
+		if id == nil {
+			err = qb.Create(ctx, &f)
+			ret = &f
+		} else {
+			f.ID = *id
+			err = qb.Update(ctx, &f)
+			ret = &f
+		}
+
 		return err
 	}); err != nil {
 		return nil, err
 	}
-	ret = &newFilter
 	return ret, err
 }
 
 func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input DestroyFilterInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -62,30 +70,48 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 }
 
 func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaultFilterInput) (bool, error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.SavedFilter
+	// deprecated - write to the config in the meantime
+	config := config.GetInstance()
 
-		if input.Filter == nil {
-			// clearing
-			def, err := qb.FindDefault(ctx, input.Mode)
-			if err != nil {
-				return err
-			}
+	uiConfig := config.GetUIConfiguration()
+	if uiConfig == nil {
+		uiConfig = make(map[string]interface{})
+	}
 
-			if def != nil {
-				return qb.Destroy(ctx, def.ID)
-			}
+	m := utils.NestedMap(uiConfig)
 
-			return nil
+	if input.FindFilter == nil && input.ObjectFilter == nil && input.UIOptions == nil {
+		// clearing
+		m.Delete("defaultFilters." + strings.ToLower(input.Mode.String()))
+		config.SetUIConfiguration(m)
+
+		if err := config.Write(); err != nil {
+			return false, err
 		}
 
-		err := qb.SetDefault(ctx, &models.SavedFilter{
-			Mode:   input.Mode,
-			Filter: *input.Filter,
-		})
+		return true, nil
+	}
 
-		return err
-	}); err != nil {
+	subMap := make(map[string]interface{})
+	d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName:          "json",
+		WeaklyTypedInput: true,
+		Result:           &subMap,
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	if err := d.Decode(input); err != nil {
+		return false, err
+	}
+
+	m.Set("defaultFilters."+strings.ToLower(input.Mode.String()), subMap)
+
+	config.SetUIConfiguration(m)
+
+	if err := config.Write(); err != nil {
 		return false, err
 	}
 

@@ -3,8 +3,7 @@ import { Badge, Button, Card, Collapse, Form } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 
-import TextUtils from "src/utils/text";
-import { ITaggerConfig, STUDIO_FIELDS } from "../constants";
+import { ITaggerConfig } from "../constants";
 import StudioFieldSelector from "./StudioFieldSelector";
 
 interface IConfigProps {
@@ -72,7 +71,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                   {excludedFields.length > 0 ? (
                     excludedFields.map((f) => (
                       <Badge variant="secondary" className="tag-item" key={f}>
-                        {TextUtils.capitalize(f)}
+                        <FormattedMessage id={f} />
                       </Badge>
                     ))
                   ) : (
@@ -120,7 +119,6 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
         </Card>
       </Collapse>
       <StudioFieldSelector
-        fields={STUDIO_FIELDS}
         show={showExclusionModal}
         onSelect={handleFieldSelect}
         excludedFields={excludedFields}

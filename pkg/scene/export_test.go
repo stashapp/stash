@@ -3,12 +3,12 @@ package scene
 import (
 	"errors"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"testing"
 	"time"
@@ -26,8 +26,8 @@ const (
 	noTagsID  = 11
 	errTagsID = 12
 
-	noMoviesID     = 13
-	errFindMovieID = 15
+	noGroupsID     = 13
+	errFindGroupID = 15
 
 	noMarkersID         = 16
 	errMarkersID        = 17
@@ -41,7 +41,6 @@ var (
 	date       = "2001-01-01"
 	dateObj, _ = models.ParseDate(date)
 	rating     = 5
-	ocounter   = 2
 	organized  = true
 	details    = "details"
 )
@@ -50,15 +49,15 @@ var (
 	studioName = "studioName"
 	// galleryChecksum = "galleryChecksum"
 
-	validMovie1  = 1
-	validMovie2  = 2
-	invalidMovie = 3
+	validGroup1  = 1
+	validGroup2  = 2
+	invalidGroup = 3
 
-	movie1Name = "movie1Name"
-	movie2Name = "movie2Name"
+	group1Name = "group1Name"
+	group2Name = "group2Name"
 
-	movie1Scene = 1
-	movie2Scene = 2
+	group1Scene = 1
+	group2Scene = 2
 )
 
 var names = []string{
@@ -89,13 +88,12 @@ func createFullScene(id int) models.Scene {
 		Title:     title,
 		Date:      &dateObj,
 		Details:   details,
-		OCounter:  ocounter,
 		Rating:    &rating,
 		Organized: organized,
 		URLs:      models.NewRelatedStrings([]string{url}),
-		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 			{
-				BaseFile: &file.BaseFile{
+				BaseFile: &models.BaseFile{
 					Path: path,
 				},
 			},
@@ -111,9 +109,9 @@ func createFullScene(id int) models.Scene {
 func createEmptyScene(id int) models.Scene {
 	return models.Scene{
 		ID: id,
-		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 			{
-				BaseFile: &file.BaseFile{
+				BaseFile: &models.BaseFile{
 					Path: path,
 				},
 			},
@@ -131,7 +129,6 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		Files:     []string{path},
 		Date:      date,
 		Details:   details,
-		OCounter:  ocounter,
 		Rating:    rating,
 		Organized: organized,
 		URLs:      []string{url},
@@ -187,17 +184,19 @@ var scenarios = []basicTestScenario{
 }
 
 func TestToJSON(t *testing.T) {
-	mockSceneReader := &mocks.SceneReaderWriter{}
+	db := mocks.NewDatabase()
 
 	imageErr := errors.New("error getting image")
 
-	mockSceneReader.On("GetCover", testCtx, sceneID).Return(imageBytes, nil).Once()
-	mockSceneReader.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
-	mockSceneReader.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Scene.On("GetCover", testCtx, sceneID).Return(imageBytes, nil).Once()
+	db.Scene.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
+	db.Scene.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Scene.On("GetViewDates", testCtx, mock.Anything).Return(nil, nil)
+	db.Scene.On("GetODates", testCtx, mock.Anything).Return(nil, nil)
 
 	for i, s := range scenarios {
 		scene := s.input
-		json, err := ToBasicJSON(testCtx, mockSceneReader, &scene)
+		json, err := ToBasicJSON(testCtx, db.Scene, &scene)
 
 		switch {
 		case !s.err && err != nil:
@@ -209,7 +208,7 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	mockSceneReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func createStudioScene(studioID int) models.Scene {
@@ -243,19 +242,19 @@ var getStudioScenarios = []stringTestScenario{
 }
 
 func TestGetStudioName(t *testing.T) {
-	mockStudioReader := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	studioErr := errors.New("error getting image")
 
-	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
+	db.Studio.On("Find", testCtx, studioID).Return(&models.Studio{
 		Name: studioName,
 	}, nil).Once()
-	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
-	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
+	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
+	db.Studio.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
 
 	for i, s := range getStudioScenarios {
 		scene := s.input
-		json, err := GetStudioName(testCtx, mockStudioReader, &scene)
+		json, err := GetStudioName(testCtx, db.Studio, &scene)
 
 		switch {
 		case !s.err && err != nil:
@@ -267,7 +266,7 @@ func TestGetStudioName(t *testing.T) {
 		}
 	}
 
-	mockStudioReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 type stringSliceTestScenario struct {
@@ -306,17 +305,17 @@ func getTags(names []string) []*models.Tag {
 }
 
 func TestGetTagNames(t *testing.T) {
-	mockTagReader := &mocks.TagReaderWriter{}
+	db := mocks.NewDatabase()
 
 	tagErr := errors.New("error getting tag")
 
-	mockTagReader.On("FindBySceneID", testCtx, sceneID).Return(getTags(names), nil).Once()
-	mockTagReader.On("FindBySceneID", testCtx, noTagsID).Return(nil, nil).Once()
-	mockTagReader.On("FindBySceneID", testCtx, errTagsID).Return(nil, tagErr).Once()
+	db.Tag.On("FindBySceneID", testCtx, sceneID).Return(getTags(names), nil).Once()
+	db.Tag.On("FindBySceneID", testCtx, noTagsID).Return(nil, nil).Once()
+	db.Tag.On("FindBySceneID", testCtx, errTagsID).Return(nil, tagErr).Once()
 
 	for i, s := range getTagNamesScenarios {
 		scene := s.input
-		json, err := GetTagNames(testCtx, mockTagReader, &scene)
+		json, err := GetTagNames(testCtx, db.Tag, &scene)
 
 		switch {
 		case !s.err && err != nil:
@@ -328,84 +327,85 @@ func TestGetTagNames(t *testing.T) {
 		}
 	}
 
-	mockTagReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
-type sceneMoviesTestScenario struct {
+type sceneGroupsTestScenario struct {
 	input    models.Scene
-	expected []jsonschema.SceneMovie
+	expected []jsonschema.SceneGroup
 	err      bool
 }
 
-var validMovies = models.NewRelatedMovies([]models.MoviesScenes{
+var validGroups = models.NewRelatedGroups([]models.GroupsScenes{
 	{
-		MovieID:    validMovie1,
-		SceneIndex: &movie1Scene,
+		GroupID:    validGroup1,
+		SceneIndex: &group1Scene,
 	},
 	{
-		MovieID:    validMovie2,
-		SceneIndex: &movie2Scene,
-	},
-})
-
-var invalidMovies = models.NewRelatedMovies([]models.MoviesScenes{
-	{
-		MovieID:    invalidMovie,
-		SceneIndex: &movie1Scene,
+		GroupID:    validGroup2,
+		SceneIndex: &group2Scene,
 	},
 })
 
-var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
+var invalidGroups = models.NewRelatedGroups([]models.GroupsScenes{
+	{
+		GroupID:    invalidGroup,
+		SceneIndex: &group1Scene,
+	},
+})
+
+var getSceneGroupsJSONScenarios = []sceneGroupsTestScenario{
 	{
 		models.Scene{
 			ID:     sceneID,
-			Movies: validMovies,
+			Groups: validGroups,
 		},
-		[]jsonschema.SceneMovie{
+		[]jsonschema.SceneGroup{
 			{
-				MovieName:  movie1Name,
-				SceneIndex: movie1Scene,
+				GroupName:  group1Name,
+				SceneIndex: group1Scene,
 			},
 			{
-				MovieName:  movie2Name,
-				SceneIndex: movie2Scene,
+				GroupName:  group2Name,
+				SceneIndex: group2Scene,
 			},
 		},
 		false,
 	},
 	{
 		models.Scene{
-			ID:     noMoviesID,
-			Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+			ID:     noGroupsID,
+			Groups: models.NewRelatedGroups([]models.GroupsScenes{}),
 		},
 		nil,
 		false,
 	},
 	{
 		models.Scene{
-			ID:     errFindMovieID,
-			Movies: invalidMovies,
+			ID:     errFindGroupID,
+			Groups: invalidGroups,
 		},
 		nil,
 		true,
 	},
 }
 
-func TestGetSceneMoviesJSON(t *testing.T) {
-	mockMovieReader := &mocks.MovieReaderWriter{}
-	movieErr := errors.New("error getting movie")
+func TestGetSceneGroupsJSON(t *testing.T) {
+	db := mocks.NewDatabase()
 
-	mockMovieReader.On("Find", testCtx, validMovie1).Return(&models.Movie{
-		Name: movie1Name,
-	}, nil).Once()
-	mockMovieReader.On("Find", testCtx, validMovie2).Return(&models.Movie{
-		Name: movie2Name,
-	}, nil).Once()
-	mockMovieReader.On("Find", testCtx, invalidMovie).Return(nil, movieErr).Once()
+	groupErr := errors.New("error getting group")
 
-	for i, s := range getSceneMoviesJSONScenarios {
+	db.Group.On("Find", testCtx, validGroup1).Return(&models.Group{
+		Name: group1Name,
+	}, nil).Once()
+	db.Group.On("Find", testCtx, validGroup2).Return(&models.Group{
+		Name: group2Name,
+	}, nil).Once()
+	db.Group.On("Find", testCtx, invalidGroup).Return(nil, groupErr).Once()
+
+	for i, s := range getSceneGroupsJSONScenarios {
 		scene := s.input
-		json, err := GetSceneMoviesJSON(testCtx, mockMovieReader, &scene)
+		json, err := GetSceneGroupsJSON(testCtx, db.Group, &scene)
 
 		switch {
 		case !s.err && err != nil:
@@ -417,7 +417,7 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 		}
 	}
 
-	mockMovieReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 const (
@@ -543,27 +543,26 @@ var invalidMarkers2 = []*models.SceneMarker{
 }
 
 func TestGetSceneMarkersJSON(t *testing.T) {
-	mockTagReader := &mocks.TagReaderWriter{}
-	mockMarkerReader := &mocks.SceneMarkerReaderWriter{}
+	db := mocks.NewDatabase()
 
 	markersErr := errors.New("error getting scene markers")
 	tagErr := errors.New("error getting tags")
 
-	mockMarkerReader.On("FindBySceneID", testCtx, sceneID).Return(validMarkers, nil).Once()
-	mockMarkerReader.On("FindBySceneID", testCtx, noMarkersID).Return(nil, nil).Once()
-	mockMarkerReader.On("FindBySceneID", testCtx, errMarkersID).Return(nil, markersErr).Once()
-	mockMarkerReader.On("FindBySceneID", testCtx, errFindPrimaryTagID).Return(invalidMarkers1, nil).Once()
-	mockMarkerReader.On("FindBySceneID", testCtx, errFindByMarkerID).Return(invalidMarkers2, nil).Once()
+	db.SceneMarker.On("FindBySceneID", testCtx, sceneID).Return(validMarkers, nil).Once()
+	db.SceneMarker.On("FindBySceneID", testCtx, noMarkersID).Return(nil, nil).Once()
+	db.SceneMarker.On("FindBySceneID", testCtx, errMarkersID).Return(nil, markersErr).Once()
+	db.SceneMarker.On("FindBySceneID", testCtx, errFindPrimaryTagID).Return(invalidMarkers1, nil).Once()
+	db.SceneMarker.On("FindBySceneID", testCtx, errFindByMarkerID).Return(invalidMarkers2, nil).Once()
 
-	mockTagReader.On("Find", testCtx, validTagID1).Return(&models.Tag{
+	db.Tag.On("Find", testCtx, validTagID1).Return(&models.Tag{
 		Name: validTagName1,
 	}, nil)
-	mockTagReader.On("Find", testCtx, validTagID2).Return(&models.Tag{
+	db.Tag.On("Find", testCtx, validTagID2).Return(&models.Tag{
 		Name: validTagName2,
 	}, nil)
-	mockTagReader.On("Find", testCtx, invalidTagID).Return(nil, tagErr)
+	db.Tag.On("Find", testCtx, invalidTagID).Return(nil, tagErr)
 
-	mockTagReader.On("FindBySceneMarkerID", testCtx, validMarkerID1).Return([]*models.Tag{
+	db.Tag.On("FindBySceneMarkerID", testCtx, validMarkerID1).Return([]*models.Tag{
 		{
 			Name: validTagName1,
 		},
@@ -571,16 +570,16 @@ func TestGetSceneMarkersJSON(t *testing.T) {
 			Name: validTagName2,
 		},
 	}, nil)
-	mockTagReader.On("FindBySceneMarkerID", testCtx, validMarkerID2).Return([]*models.Tag{
+	db.Tag.On("FindBySceneMarkerID", testCtx, validMarkerID2).Return([]*models.Tag{
 		{
 			Name: validTagName2,
 		},
 	}, nil)
-	mockTagReader.On("FindBySceneMarkerID", testCtx, invalidMarkerID2).Return(nil, tagErr).Once()
+	db.Tag.On("FindBySceneMarkerID", testCtx, invalidMarkerID2).Return(nil, tagErr).Once()
 
 	for i, s := range getSceneMarkersJSONScenarios {
 		scene := s.input
-		json, err := GetSceneMarkersJSON(testCtx, mockMarkerReader, mockTagReader, &scene)
+		json, err := GetSceneMarkersJSON(testCtx, db.SceneMarker, db.Tag, &scene)
 
 		switch {
 		case !s.err && err != nil:
@@ -592,5 +591,5 @@ func TestGetSceneMarkersJSON(t *testing.T) {
 		}
 	}
 
-	mockTagReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

@@ -74,7 +74,7 @@ func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
 
 			query += fmt.Sprintf("ORDER BY `folders`.`id` LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -94,12 +94,12 @@ func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
 				count++
 
 				parent := filepath.Dir(p)
-				parentID, zipFileID, err := m.createFolderHierarchy(parent)
+				parentID, zipFileID, err := m.createFolderHierarchy(tx, parent)
 				if err != nil {
 					return err
 				}
 
-				_, err = m.db.Exec("UPDATE `folders` SET `parent_folder_id` = ?, `zip_file_id` = ? WHERE `id` = ?", parentID, zipFileID, id)
+				_, err = tx.Exec("UPDATE `folders` SET `parent_folder_id` = ?, `zip_file_id` = ? WHERE `id` = ?", parentID, zipFileID, id)
 				if err != nil {
 					return err
 				}
@@ -153,7 +153,7 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 		query += fmt.Sprintf("ORDER BY `id` LIMIT %d", limit)
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -178,12 +178,12 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 				parent := filepath.Dir(p)
 				basename := filepath.Base(p)
 				if parent != "." {
-					parentID, zipFileID, err := m.createFolderHierarchy(parent)
+					parentID, zipFileID, err := m.createFolderHierarchy(tx, parent)
 					if err != nil {
 						return err
 					}
 
-					_, err = m.db.Exec("UPDATE `files` SET `parent_folder_id` = ?, `zip_file_id` = ?, `basename` = ? WHERE `id` = ?", parentID, zipFileID, basename, id)
+					_, err = tx.Exec("UPDATE `files` SET `parent_folder_id` = ?, `zip_file_id` = ?, `basename` = ? WHERE `id` = ?", parentID, zipFileID, basename, id)
 					if err != nil {
 						return fmt.Errorf("migrating file %s: %w", p, err)
 					}
@@ -245,16 +245,18 @@ func (m *schema32Migrator) deletePlaceholderFolder(ctx context.Context) error {
 		return fmt.Errorf("not deleting placeholder folder because it has %d folders", result.Count)
 	}
 
-	_, err := m.db.Exec("DELETE FROM `folders` WHERE `id` = 1")
-	return err
+	return m.withTxn(ctx, func(tx *sqlx.Tx) error {
+		_, err := tx.Exec("DELETE FROM `folders` WHERE `id` = 1")
+		return err
+	})
 }
 
-func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64, error) {
+func (m *schema32Migrator) createFolderHierarchy(tx *sqlx.Tx, p string) (*int, sql.NullInt64, error) {
 	parent := filepath.Dir(p)
 
 	if parent == p {
 		// get or create this folder
-		return m.getOrCreateFolder(p, nil, sql.NullInt64{})
+		return m.getOrCreateFolder(tx, p, nil, sql.NullInt64{})
 	}
 
 	var (
@@ -269,23 +271,23 @@ func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64,
 		parentID = &foundEntry.id
 		zipFileID = foundEntry.zipID
 	} else {
-		parentID, zipFileID, err = m.createFolderHierarchy(parent)
+		parentID, zipFileID, err = m.createFolderHierarchy(tx, parent)
 		if err != nil {
 			return nil, sql.NullInt64{}, err
 		}
 	}
 
-	return m.getOrCreateFolder(p, parentID, zipFileID)
+	return m.getOrCreateFolder(tx, p, parentID, zipFileID)
 }
 
-func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFileID sql.NullInt64) (*int, sql.NullInt64, error) {
+func (m *schema32Migrator) getOrCreateFolder(tx *sqlx.Tx, path string, parentID *int, zipFileID sql.NullInt64) (*int, sql.NullInt64, error) {
 	foundEntry, ok := m.folderCache[path]
 	if ok {
 		return &foundEntry.id, foundEntry.zipID, nil
 	}
 
 	const query = "SELECT `id`, `zip_file_id` FROM `folders` WHERE `path` = ?"
-	rows, err := m.db.Query(query, path)
+	rows, err := tx.Query(query, path)
 	if err != nil {
 		return nil, sql.NullInt64{}, err
 	}
@@ -314,7 +316,7 @@ func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFile
 	}
 
 	now := time.Now()
-	result, err := m.db.Exec(insertSQL, path, parentFolderID, zipFileID, time.Time{}, now, now)
+	result, err := tx.Exec(insertSQL, path, parentFolderID, zipFileID, time.Time{}, now, now)
 	if err != nil {
 		return nil, sql.NullInt64{}, fmt.Errorf("creating folder %s: %w", path, err)
 	}

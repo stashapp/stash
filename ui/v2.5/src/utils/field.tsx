@@ -1,5 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { Link } from "react-router-dom";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface ITextField {
@@ -44,8 +46,8 @@ interface IURLField {
   url?: string | null;
   truncate?: boolean | null;
   target?: string;
-  // use for internal links
-  trusted?: boolean;
+  // an internal link (uses <Link to={url}>)
+  internal?: boolean;
 }
 
 export const URLField: React.FC<IURLField> = ({
@@ -55,11 +57,10 @@ export const URLField: React.FC<IURLField> = ({
   url,
   abbr,
   truncate,
-  children,
-  target,
-  trusted,
+  target = "_blank",
+  internal,
 }) => {
-  if (!value && !children) {
+  if (!value) {
     return null;
   }
 
@@ -67,26 +68,30 @@ export const URLField: React.FC<IURLField> = ({
     <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
   );
 
-  const rel = !trusted ? "noopener noreferrer" : undefined;
+  function maybeRenderUrl() {
+    if (!url) return;
+
+    const children = truncate ? <TruncatedText text={value} /> : value;
+
+    if (internal) {
+      return (
+        <Link to={url} target={target}>
+          {children}
+        </Link>
+      );
+    } else {
+      return (
+        <ExternalLink href={url} target={target}>
+          {children}
+        </ExternalLink>
+      );
+    }
+  }
 
   return (
     <>
       <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
-      <dd>
-        {url ? (
-          <a href={url} target={target || "_blank"} rel={rel}>
-            {value ? (
-              truncate ? (
-                <TruncatedText text={value} />
-              ) : (
-                value
-              )
-            ) : (
-              children
-            )}
-          </a>
-        ) : undefined}
-      </dd>
+      <dd>{maybeRenderUrl()}</dd>
     </>
   );
 };
@@ -98,8 +103,8 @@ interface IURLsField {
   urls?: string[] | null;
   truncate?: boolean | null;
   target?: string;
-  // use for internal links
-  trusted?: boolean;
+  // an internal link (uses <Link to={url}>)
+  internal?: boolean;
 }
 
 export const URLsField: React.FC<IURLsField> = ({
@@ -108,11 +113,10 @@ export const URLsField: React.FC<IURLsField> = ({
   urls,
   abbr,
   truncate,
-  target,
-  trusted,
+  target = "_blank",
+  internal,
 }) => {
-  const values = urls ?? [];
-  if (!values.length) {
+  if (!urls || !urls.length) {
     return null;
   }
 
@@ -120,19 +124,33 @@ export const URLsField: React.FC<IURLsField> = ({
     <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
   );
 
-  const rel = !trusted ? "noopener noreferrer" : undefined;
+  const renderUrls = () => {
+    return urls.map((url, i) => {
+      if (!url) return;
+
+      const children = truncate ? <TruncatedText text={url} /> : url;
+
+      if (internal) {
+        return (
+          <Link key={i} to={url} target={target}>
+            {children}
+          </Link>
+        );
+      } else {
+        return (
+          <ExternalLink key={i} href={url} target={target}>
+            {children}
+          </ExternalLink>
+        );
+      }
+    });
+  };
 
   return (
     <>
       <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
       <dd>
-        <dl>
-          {values.map((url, i) => (
-            <a key={i} href={url} target={target || "_blank"} rel={rel}>
-              {truncate ? <TruncatedText text={url} /> : url}
-            </a>
-          ))}
-        </dl>
+        <dl>{renderUrls()}</dl>
       </dd>
     </>
   );

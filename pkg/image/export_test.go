@@ -3,7 +3,6 @@ package image
 import (
 	"errors"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -45,8 +44,8 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID: id,
-		Files: models.NewRelatedFiles([]file.File{
-			&file.BaseFile{
+		Files: models.NewRelatedFiles([]models.File{
+			&models.BaseFile{
 				Path: path,
 			},
 		}),
@@ -54,7 +53,7 @@ func createFullImage(id int) models.Image {
 		OCounter:  ocounter,
 		Rating:    &rating,
 		Date:      &dateObj,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		Organized: organized,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -67,7 +66,7 @@ func createFullJSONImage() *jsonschema.Image {
 		OCounter:  ocounter,
 		Rating:    rating,
 		Date:      date,
-		URL:       url,
+		URLs:      []string{url},
 		Organized: organized,
 		Files:     []string{path},
 		CreatedAt: json.JSONTime{
@@ -131,19 +130,19 @@ var getStudioScenarios = []stringTestScenario{
 }
 
 func TestGetStudioName(t *testing.T) {
-	mockStudioReader := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	studioErr := errors.New("error getting image")
 
-	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
+	db.Studio.On("Find", testCtx, studioID).Return(&models.Studio{
 		Name: studioName,
 	}, nil).Once()
-	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
-	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
+	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
+	db.Studio.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
 
 	for i, s := range getStudioScenarios {
 		image := s.input
-		json, err := GetStudioName(testCtx, mockStudioReader, &image)
+		json, err := GetStudioName(testCtx, db.Studio, &image)
 
 		switch {
 		case !s.err && err != nil:
@@ -155,5 +154,5 @@ func TestGetStudioName(t *testing.T) {
 		}
 	}
 
-	mockStudioReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

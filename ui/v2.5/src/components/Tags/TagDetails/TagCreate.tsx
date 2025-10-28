@@ -40,12 +40,12 @@ const TagCreate: React.FC = () => {
         children: created.children,
       });
       history.push(`/tags/${created.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -61,7 +61,7 @@ const TagCreate: React.FC = () => {
         <div className="text-center logo-container">
           {encodingImage ? (
             <LoadingIndicator
-              message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+              message={intl.formatMessage({ id: "actions.encoding_image" })}
             />
           ) : (
             renderImage()

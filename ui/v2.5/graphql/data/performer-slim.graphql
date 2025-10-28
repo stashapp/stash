@@ -1,0 +1,45 @@
+fragment SlimPerformerData on Performer {
+  id
+  name
+  disambiguation
+  gender
+  urls
+  image_path
+  favorite
+  ignore_auto_tag
+  country
+  birthdate
+  ethnicity
+  hair_color
+  eye_color
+  height_cm
+  fake_tits
+  penis_length
+  circumcised
+  career_length
+  tattoos
+  piercings
+  alias_list
+  tags {
+    id
+    name
+  }
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
+  rating100
+  death_date
+  weight
+}
+
+fragment SelectPerformerData on Performer {
+  id
+  name
+  disambiguation
+  alias_list
+  image_path
+  birthdate
+  death_date
+}

@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useLatestVersion } from "src/core/StashService";
+import { ExternalLink } from "../Shared/ExternalLink";
 import { ConstantSetting, SettingGroup } from "./Inputs";
 import { SettingSection } from "./SettingSection";
 
@@ -115,13 +116,9 @@ export const SettingsAboutPanel: React.FC = () => {
                 { id: "config.about.stash_home" },
                 {
                   url: (
-                    <a
-                      href="https://github.com/stashapp/stash"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
+                    <ExternalLink href="https://github.com/stashapp/stash">
                       GitHub
-                    </a>
+                    </ExternalLink>
                   ),
                 }
               )}
@@ -131,13 +128,9 @@ export const SettingsAboutPanel: React.FC = () => {
                 { id: "config.about.stash_wiki" },
                 {
                   url: (
-                    <a
-                      href="https://docs.stashapp.cc"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
+                    <ExternalLink href="https://docs.stashapp.cc">
                       Documentation
-                    </a>
+                    </ExternalLink>
                   ),
                 }
               )}
@@ -147,13 +140,9 @@ export const SettingsAboutPanel: React.FC = () => {
                 { id: "config.about.stash_discord" },
                 {
                   url: (
-                    <a
-                      href="https://discord.gg/2TsNFKt"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
+                    <ExternalLink href="https://discord.gg/2TsNFKt">
                       Discord
-                    </a>
+                    </ExternalLink>
                   ),
                 }
               )}
@@ -163,13 +152,9 @@ export const SettingsAboutPanel: React.FC = () => {
                 { id: "config.about.stash_open_collective" },
                 {
                   url: (
-                    <a
-                      href="https://opencollective.com/stashapp"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
+                    <ExternalLink href="https://opencollective.com/stashapp">
                       Open Collective
-                    </a>
+                    </ExternalLink>
                   ),
                 }
               )}

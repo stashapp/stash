@@ -1,0 +1,171 @@
+query ListPerformerScrapers {
+  listScrapers(types: [PERFORMER]) {
+    id
+    name
+    performer {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListSceneScrapers {
+  listScrapers(types: [SCENE]) {
+    id
+    name
+    scene {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListGalleryScrapers {
+  listScrapers(types: [GALLERY]) {
+    id
+    name
+    gallery {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListImageScrapers {
+  listScrapers(types: [IMAGE]) {
+    id
+    name
+    image {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListGroupScrapers {
+  listScrapers(types: [GROUP]) {
+    id
+    name
+    group {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ScrapeSingleStudio(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleStudioInput!
+) {
+  scrapeSingleStudio(source: $source, input: $input) {
+    ...ScrapedStudioData
+  }
+}
+
+query ScrapeSinglePerformer(
+  $source: ScraperSourceInput!
+  $input: ScrapeSinglePerformerInput!
+) {
+  scrapeSinglePerformer(source: $source, input: $input) {
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapeMultiPerformers(
+  $source: ScraperSourceInput!
+  $input: ScrapeMultiPerformersInput!
+) {
+  scrapeMultiPerformers(source: $source, input: $input) {
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapePerformerURL($url: String!) {
+  scrapePerformerURL(url: $url) {
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapeSingleScene(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleSceneInput!
+) {
+  scrapeSingleScene(source: $source, input: $input) {
+    ...ScrapedSceneData
+  }
+}
+
+query ScrapeMultiScenes(
+  $source: ScraperSourceInput!
+  $input: ScrapeMultiScenesInput!
+) {
+  scrapeMultiScenes(source: $source, input: $input) {
+    ...ScrapedSceneData
+  }
+}
+
+query ScrapeSceneURL($url: String!) {
+  scrapeSceneURL(url: $url) {
+    ...ScrapedSceneData
+  }
+}
+
+query ScrapeSingleGallery(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleGalleryInput!
+) {
+  scrapeSingleGallery(source: $source, input: $input) {
+    ...ScrapedGalleryData
+  }
+}
+
+query ScrapeSingleImage(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleImageInput!
+) {
+  scrapeSingleImage(source: $source, input: $input) {
+    ...ScrapedImageData
+  }
+}
+
+query ScrapeGalleryURL($url: String!) {
+  scrapeGalleryURL(url: $url) {
+    ...ScrapedGalleryData
+  }
+}
+
+query ScrapeImageURL($url: String!) {
+  scrapeImageURL(url: $url) {
+    ...ScrapedImageData
+  }
+}
+
+query ScrapeGroupURL($url: String!) {
+  scrapeGroupURL(url: $url) {
+    ...ScrapedGroupData
+  }
+}
+
+query InstalledScraperPackages {
+  installedPackages(type: Scraper) {
+    ...PackageData
+  }
+}
+
+query InstalledScraperPackagesStatus {
+  installedPackages(type: Scraper) {
+    ...PackageData
+    source_package {
+      ...PackageData
+    }
+  }
+}
+
+query AvailableScraperPackages($source: String!) {
+  availablePackages(source: $source, type: Scraper) {
+    ...PackageData
+    requires {
+      package_id
+    }
+  }
+}

@@ -42,15 +42,35 @@ func TestSavedFilterFindByMode(t *testing.T) {
 
 func TestSavedFilterDestroy(t *testing.T) {
 	const filterName = "filterToDestroy"
-	const testFilter = "{}"
+	filterQ := ""
+	filterPage := 1
+	filterPerPage := 40
+	filterSort := "date"
+	filterDirection := models.SortDirectionEnumAsc
+	findFilter := models.FindFilterType{
+		Q:         &filterQ,
+		Page:      &filterPage,
+		PerPage:   &filterPerPage,
+		Sort:      &filterSort,
+		Direction: &filterDirection,
+	}
+	objectFilter := map[string]interface{}{
+		"test": "foo",
+	}
+	uiOptions := map[string]interface{}{
+		"display_mode": 1,
+		"zoom_index":   1,
+	}
 	var id int
 
 	// create the saved filter to destroy
 	withTxn(func(ctx context.Context) error {
 		newFilter := models.SavedFilter{
-			Name:   filterName,
-			Mode:   models.FilterModeScenes,
-			Filter: testFilter,
+			Name:         filterName,
+			Mode:         models.FilterModeScenes,
+			FindFilter:   &findFilter,
+			ObjectFilter: objectFilter,
+			UIOptions:    uiOptions,
 		}
 		err := db.SavedFilter.Create(ctx, &newFilter)
 
@@ -73,46 +93,6 @@ func TestSavedFilterDestroy(t *testing.T) {
 		}
 
 		return err
-	})
-}
-
-func TestSavedFilterFindDefault(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		def, err := db.SavedFilter.FindDefault(ctx, models.FilterModeScenes)
-		if err == nil {
-			assert.Equal(t, savedFilterIDs[savedFilterIdxDefaultScene], def.ID)
-		}
-
-		return err
-	})
-}
-
-func TestSavedFilterSetDefault(t *testing.T) {
-	const newFilter = "foo"
-
-	withTxn(func(ctx context.Context) error {
-		err := db.SavedFilter.SetDefault(ctx, &models.SavedFilter{
-			Mode:   models.FilterModeMovies,
-			Filter: newFilter,
-		})
-
-		return err
-	})
-
-	var defID int
-	withTxn(func(ctx context.Context) error {
-		def, err := db.SavedFilter.FindDefault(ctx, models.FilterModeMovies)
-		if err == nil {
-			defID = def.ID
-			assert.Equal(t, newFilter, def.Filter)
-		}
-
-		return err
-	})
-
-	// destroy it again
-	withTxn(func(ctx context.Context) error {
-		return db.SavedFilter.Destroy(ctx, defID)
 	})
 }
 

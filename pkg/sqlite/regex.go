@@ -3,7 +3,7 @@ package sqlite
 import (
 	"regexp"
 
-	lru "github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru/v2"
 )
 
 // size of the regex LRU cache in elements.
@@ -14,19 +14,17 @@ import (
 // again.
 const regexCacheSize = 10
 
-var regexCache *lru.Cache
+var regexCache *lru.Cache[string, *regexp.Regexp]
 
 func init() {
-	regexCache, _ = lru.New(regexCacheSize)
+	regexCache, _ = lru.New[string, *regexp.Regexp](regexCacheSize)
 }
 
 // regexFn is registered as an SQLite function as "regexp"
 // It uses an LRU cache to cache recent regex patterns to reduce CPU load over
 // identical patterns.
 func regexFn(re, s string) (bool, error) {
-	entry, ok := regexCache.Get(re)
-	var compiled *regexp.Regexp
-
+	compiled, ok := regexCache.Get(re)
 	if !ok {
 		var err error
 		compiled, err = regexp.Compile(re)
@@ -34,8 +32,6 @@ func regexFn(re, s string) (bool, error) {
 			return false, err
 		}
 		regexCache.Add(re, compiled)
-	} else {
-		compiled = entry.(*regexp.Regexp)
 	}
 
 	return compiled.MatchString(s), nil

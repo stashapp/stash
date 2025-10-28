@@ -15,4 +15,4 @@ src/locales/**/*.json
 /build
 
 # generated
-src/core/generated-graphql.tsx
+src/core/generated-graphql.ts

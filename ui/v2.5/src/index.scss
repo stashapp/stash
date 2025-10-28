@@ -1,3 +1,12 @@
+// variables required by other scss files
+
+// this is calculated from the existing height
+$navbar-height: 48.75px;
+
+$sticky-detail-header-height: 50px;
+
+$sidebar-width: 250px;
+
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
@@ -6,7 +15,7 @@
 @import "src/components/Help/styles.scss";
 @import "src/components/Images/styles.scss";
 @import "src/components/List/styles.scss";
-@import "src/components/Movies/styles.scss";
+@import "src/components/Groups/styles.scss";
 @import "src/components/Performers/styles.scss";
 @import "src/components/FrontPage/styles.scss";
 @import "src/components/Scenes/styles.scss";
@@ -17,7 +26,9 @@
 @import "src/components/Setup/styles.scss";
 @import "src/components/Studios/styles.scss";
 @import "src/components/Shared/styles.scss";
+@import "src/components/Shared/GridCard/styles.scss";
 @import "src/components/Shared/Rating/styles.scss";
+@import "src/components/Shared/PackageManager/styles.scss";
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 @import "src/components/Tagger/styles.scss";
@@ -43,16 +54,22 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   overflow-x: hidden;
-  padding: 4rem 0 0 0;
+  padding: $navbar-height 0 0 0;
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 1rem 0 5rem;
+      padding: 0.5rem 0 $navbar-height;
     }
   }
 }
 
-#movie-page,
+.main {
+  @include media-breakpoint-up(sm) {
+    padding-top: 0.5rem;
+  }
+}
+
+#group-page,
 #performer-page,
 #studio-page,
 #tag-page {
@@ -71,17 +88,17 @@ dd {
 
 .sticky.detail-header {
   display: block;
-  min-height: 50px;
+  min-height: $sticky-detail-header-height;
   padding: unset;
   position: fixed;
-  top: 3.3rem;
+  top: $navbar-height;
   z-index: 10;
 
   @media (max-width: 576px) {
     display: none;
   }
 
-  .movie-name,
+  .group-name,
   .performer-name,
   .studio-name,
   .tag-name {
@@ -91,7 +108,7 @@ dd {
   .sticky.detail-header-group {
     padding: 1rem 2.5rem;
 
-    a.movie-name,
+    a.group-name,
     a.performer-name,
     a.studio-name,
     a.tag-name {
@@ -204,6 +221,15 @@ dd {
   }
 }
 
+.btn.link {
+  color: $link-color;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    color: $link-color;
+  }
+}
+
 .detail-header.edit {
   background-color: unset;
   overflow: visible;
@@ -247,12 +273,26 @@ dd {
     padding: 5px 0;
   }
 
+  .tab-content {
+    padding-bottom: 0;
+  }
+
+  .item-list-header {
+    align-content: center;
+    // border-bottom: solid 2px #192127;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 5px 0 0 0;
+  }
+
   .item-list-container {
     padding-top: 15px;
 
-    @media (max-width: 576px) {
-      overflow-x: hidden;
-    }
+    // this breaks sticky sidebar - need to work out why this is here
+    // @media (max-width: 576px) {
+    //   overflow-x: hidden;
+    // }
   }
 }
 
@@ -302,7 +342,7 @@ dd {
   justify-content: center;
   padding: 0 1rem;
 
-  .movie-images {
+  .group-images {
     height: 100%;
   }
 
@@ -311,7 +351,7 @@ dd {
     height: auto;
     padding: 0;
 
-    .movie-images {
+    .group-images {
       .img {
         max-width: 100%;
       }
@@ -324,36 +364,38 @@ dd {
     transition: 0.5s;
   }
 
-  .movie-images img {
+  .group-images img {
     @media (max-width: 576px) {
       max-width: 100%;
     }
   }
 }
 
-#movie-page .detail-header-image .movie-images img {
+#group-page .detail-header-image .group-images img {
   max-width: 13rem;
 }
 
-#movie-page .detail-header-image img,
+#group-page .detail-header-image img,
 #performer-page .detail-header-image img,
 #tag-page .detail-header-image img {
   border-radius: 0.5rem;
 }
 
-#tag-page .full-width .detail-header-image img {
-  max-width: 22rem;
-
-  @media (max-width: 576px) {
-    max-width: 100%;
+#tag-page {
+  .full-width .detail-header-image img {
+    max-width: 22rem;
   }
-}
 
-#tag-page .detail-header-image img {
-  max-width: 18rem;
+  .detail-header.collapsed .detail-header-image img {
+    max-width: 18rem;
+  }
 
-  @media (max-width: 576px) {
-    max-width: 100%;
+  .detail-header-image img {
+    max-width: 20rem;
+
+    @media (max-width: 576px) {
+      max-width: 100%;
+    }
   }
 }
 
@@ -409,6 +451,7 @@ dd {
   align-items: center;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   white-space: pre-line;
 
   .birthdate,
@@ -459,34 +502,13 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
-.table-list {
-  min-width: min-content;
+/* stylelint-disable declaration-no-important */
+.border-row {
+  background-color: #414c53;
+  height: 1px;
+  padding: 0 !important;
 }
-
-.table-list a {
-  color: $text-color;
-}
-
-.table-list table {
-  width: inherit;
-}
-
-.table-list td,
-.table-list th {
-  border-left: 1px solid #414c53;
-  font-size: 1rem;
-  text-align: center;
-  vertical-align: middle;
-
-  h5,
-  h6 {
-    font-size: 1rem;
-  }
-
-  &:first-child {
-    border-left: none;
-  }
-}
+/* stylelint-enable declaration-no-important */
 
 @media (max-width: 576px) {
   .row.justify-content-center {
@@ -494,85 +516,46 @@ textarea.text-input {
     margin-right: 0;
   }
 }
-@media (min-width: 576px) {
-  .zoom-0 {
-    width: 240px;
 
-    .scene-card-preview {
-      height: 135px;
-    }
+.zoom-0 {
+  .gallery-card-image,
+  .tag-card-image {
+    height: 180px;
+  }
+}
 
-    .portrait {
-      height: 180px;
-    }
+.zoom-1 {
+  width: 320px;
 
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 180px;
-    }
+  .gallery-card-image,
+  .tag-card-image {
+    height: 240px;
   }
 
-  .zoom-1 {
-    width: 320px;
+  .image-card-preview {
+    height: 240px;
+  }
+}
 
-    .scene-card-preview {
-      height: 180px;
-    }
-
-    .portrait {
-      height: 240px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 240px;
-    }
-
-    .image-card-preview {
-      height: 240px;
-    }
+.zoom-2 {
+  .gallery-card-image,
+  .tag-card-image {
+    height: 360px;
   }
 
-  .zoom-2 {
-    width: 480px;
+  .image-card-preview {
+    height: 360px;
+  }
+}
 
-    .scene-card-preview {
-      height: 270px;
-    }
-
-    .portrait {
-      height: 360px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 360px;
-    }
-
-    .image-card-preview {
-      height: 360px;
-    }
+.zoom-3 {
+  .tag-card-image,
+  .gallery-card-image {
+    height: 480px;
   }
 
-  .zoom-3 {
-    width: 640px;
-
-    .scene-card-preview {
-      height: 360px;
-    }
-
-    .portrait {
-      height: 480px;
-    }
-
-    .tag-card-image,
-    .gallery-card-image {
-      max-height: 480px;
-    }
-
-    .image-card-preview {
-      height: 480px;
-    }
+  .image-card-preview {
+    height: 480px;
   }
 }
 
@@ -658,7 +641,6 @@ div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 1600;
 
   .react-select__option,
   .dropdown-item {
@@ -711,25 +693,38 @@ div.dropdown-menu {
   flex-wrap: wrap;
   row-gap: 10px;
 
-  /* stylelint-disable */
   .badge {
-    white-space: normal !important;
     margin: unset;
+    white-space: normal;
   }
-  /* stylelint-enable */
 }
 
 .tag-item {
+  align-items: center;
   background-color: $muted-gray;
   color: $dark-text;
+  display: inline-flex;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
   margin: 5px;
   padding: 2px 6px;
 
+  // if link, move padding to link to make full tag clickable
+  &.tag-link {
+    padding: 0;
+
+    a {
+      padding: 2px 6px;
+    }
+  }
+
   &:hover {
     cursor: pointer;
+  }
+
+  .search-term svg {
+    margin-left: 0;
   }
 
   .btn {
@@ -738,10 +733,10 @@ div.dropdown-menu {
     bottom: 2px;
     color: $dark-text;
     font-size: 12px;
-    line-height: 1rem;
+    line-height: 16px;
+    margin-right: -0.5rem;
     opacity: 0.5;
-    padding: 0 0 0 0.5rem;
-    position: relative;
+    padding: 0 0.5rem;
 
     &:active,
     &:hover {
@@ -760,7 +755,8 @@ div.dropdown-menu {
 }
 
 .filter-container,
-.operation-container {
+.operation-container,
+.pagination {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -902,11 +898,17 @@ div.dropdown-menu {
 }
 
 .toast-container {
-  left: 45%;
   max-width: 350px;
+  opacity: 0.9;
   position: fixed;
-  top: 2rem;
+  right: 2rem;
+  top: 4rem;
+  transition: right 0.5s;
   z-index: 1051;
+
+  &.hidden {
+    right: -350px;
+  }
 
   .success {
     background-color: $success;
@@ -928,15 +930,56 @@ div.dropdown-menu {
     background-color: transparent;
     border: none;
     color: $text-color;
+    padding: 1rem;
+    white-space: pre-wrap;
 
-    .close {
+    .close,
+    .expand-error-button {
       color: $text-color;
       text-shadow: none;
     }
+
+    .expand-error-button {
+      opacity: 0.5;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      &:hover {
+        opacity: 0.75;
+      }
+    }
   }
 
-  .toast-body {
-    white-space: pre-wrap;
+  .toast.danger .toast-header > span {
+    cursor: pointer;
+  }
+}
+
+.toast-expanded-dialog {
+  .modal-header {
+    align-items: center;
+    justify-content: start;
+
+    .fa-icon {
+      color: $danger;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(xs) {
+  .toast-container {
+    bottom: 4rem;
+    left: 50%;
+    margin-left: -175px;
+    right: unset;
+    top: unset;
+
+    transition: left 0.5s;
+
+    &.hidden {
+      left: -350px;
+    }
   }
 }
 
@@ -997,6 +1040,9 @@ div.dropdown-menu {
       bottom: 0;
       top: auto;
     }
+  }
+  @include media-breakpoint-up(xl) {
+    height: $navbar-height;
   }
 
   .navbar-toggler {
@@ -1330,6 +1376,11 @@ $detailTabWidth: calc(100% / 3);
   border-top-right-radius: 0;
 }
 
+.btn-group > .dropdown:not(:first-child) > .btn {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
 dl.details-list {
   display: grid;
   grid-column-gap: 10px;
@@ -1343,6 +1394,7 @@ dl.details-list {
 
 .invalid-feedback {
   display: block;
+  white-space: pre-wrap;
 
   &:empty {
     display: none;
@@ -1363,4 +1415,20 @@ select {
 
 .primary-file {
   font-weight: bold;
+}
+
+// ensure rating number editing doesn't resize column
+.table-list .rating-number {
+  width: 6rem;
+}
+
+.modal-body {
+  max-height: calc(100vh - 12rem);
+  overflow-y: auto;
+  padding-right: 1.5rem;
+}
+
+// Fix descenders clipping in line-height #6047
+h3 .TruncatedText {
+  line-height: 1.5;
 }

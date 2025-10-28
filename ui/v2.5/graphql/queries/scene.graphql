@@ -1,0 +1,104 @@
+query FindScenes(
+  $filter: FindFilterType
+  $scene_filter: SceneFilterType
+  $scene_ids: [Int!]
+) {
+  findScenes(
+    filter: $filter
+    scene_filter: $scene_filter
+    scene_ids: $scene_ids
+  ) {
+    count
+    filesize
+    duration
+    scenes {
+      ...SlimSceneData
+    }
+  }
+}
+
+query FindScenesByPathRegex($filter: FindFilterType) {
+  findScenesByPathRegex(filter: $filter) {
+    count
+    filesize
+    duration
+    scenes {
+      ...SlimSceneData
+    }
+  }
+}
+
+query FindDuplicateScenes($distance: Int, $duration_diff: Float) {
+  findDuplicateScenes(distance: $distance, duration_diff: $duration_diff) {
+    ...SlimSceneData
+  }
+}
+
+query FindScene($id: ID!, $checksum: String) {
+  findScene(id: $id, checksum: $checksum) {
+    ...SceneData
+  }
+}
+
+query FindSceneMarkerTags($id: ID!) {
+  sceneMarkerTags(scene_id: $id) {
+    tag {
+      id
+      name
+    }
+    scene_markers {
+      ...SceneMarkerData
+    }
+  }
+}
+
+query ParseSceneFilenames(
+  $filter: FindFilterType!
+  $config: SceneParserInput!
+) {
+  parseSceneFilenames(filter: $filter, config: $config) {
+    count
+    results {
+      scene {
+        ...SlimSceneData
+      }
+      title
+      code
+      details
+      director
+      url
+      date
+      rating
+      studio_id
+      gallery_ids
+      movies {
+        movie_id
+      }
+      performer_ids
+      tag_ids
+    }
+  }
+}
+
+query SceneStreams($id: ID!) {
+  findScene(id: $id) {
+    sceneStreams {
+      url
+      mime_type
+      label
+    }
+  }
+}
+
+query FindScenesForSelect(
+  $filter: FindFilterType
+  $scene_filter: SceneFilterType
+  $ids: [ID!]
+) {
+  findScenes(filter: $filter, scene_filter: $scene_filter, ids: $ids) {
+    count
+    scenes {
+      ...SelectSceneData
+    }
+  }
+}

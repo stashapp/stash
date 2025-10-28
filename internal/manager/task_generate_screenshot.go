@@ -10,9 +10,9 @@ import (
 )
 
 type GenerateCoverTask struct {
+	repository   models.Repository
 	Scene        models.Scene
 	ScreenshotAt *float64
-	txnManager   Repository
 	Overwrite    bool
 }
 
@@ -23,11 +23,13 @@ func (t *GenerateCoverTask) GetDescription() string {
 func (t *GenerateCoverTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 
+	r := t.repository
+
 	var required bool
-	if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		required = t.required(ctx)
 
-		return t.Scene.LoadPrimaryFile(ctx, t.txnManager.File)
+		return t.Scene.LoadPrimaryFile(ctx, r.File)
 	}); err != nil {
 		logger.Error(err)
 	}
@@ -54,7 +56,7 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 	logger.Debugf("Creating screenshot for %s", scenePath)
 
 	g := generate.Generator{
-		Encoder:      instance.FFMPEG,
+		Encoder:      instance.FFMpeg,
 		FFMpegConfig: instance.Config,
 		LockManager:  instance.ReadLockManager,
 		ScenePaths:   instance.Paths.Scene,
@@ -70,9 +72,9 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-		qb := t.txnManager.Scene
-		updatedScene := models.NewScenePartial()
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		qb := r.Scene
+		scenePartial := models.NewScenePartial()
 
 		// update the scene cover table
 		if err := qb.UpdateCover(ctx, t.Scene.ID, coverImageData); err != nil {
@@ -80,7 +82,7 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 		}
 
 		// update the scene with the update date
-		_, err = qb.UpdatePartial(ctx, t.Scene.ID, updatedScene)
+		_, err = qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %v", err)
 		}
@@ -103,7 +105,7 @@ func (t *GenerateCoverTask) required(ctx context.Context) bool {
 	}
 
 	// if the scene has a cover, then we don't need to generate it
-	hasCover, err := t.txnManager.Scene.HasCover(ctx, t.Scene.ID)
+	hasCover, err := t.repository.Scene.HasCover(ctx, t.Scene.ID)
 	if err != nil {
 		logger.Errorf("Error getting cover: %v", err)
 		return false

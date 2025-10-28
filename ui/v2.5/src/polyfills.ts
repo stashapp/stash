@@ -5,6 +5,9 @@ import { shouldPolyfill as shouldPolyfillNumberformat } from "@formatjs/intl-num
 import { shouldPolyfill as shouldPolyfillPluralRules } from "@formatjs/intl-pluralrules/should-polyfill";
 import "intersection-observer";
 
+// needed for older safari versions
+import "event-target-polyfill";
+
 // Required for browsers older than August 2020ish. Can be removed at some point.
 replaceAll.shim();
 

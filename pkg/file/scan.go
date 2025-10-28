@@ -13,6 +13,7 @@ import (
 
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -23,15 +24,6 @@ const (
 	// use -1 to retry forever
 	maxRetries = -1
 )
-
-// Repository provides access to storage methods for files and folders.
-type Repository struct {
-	txn.Manager
-	txn.DatabaseProvider
-	Store
-
-	FolderStore FolderStore
-}
 
 // Scanner scans files into the database.
 //
@@ -59,12 +51,44 @@ type Repository struct {
 // If the file is not a renamed file, then the decorators are fired and the file is created, then
 // the applicable handlers are fired.
 type Scanner struct {
-	FS                    FS
+	FS                    models.FS
 	Repository            Repository
 	FingerprintCalculator FingerprintCalculator
 
 	// FileDecorators are applied to files as they are scanned.
 	FileDecorators []Decorator
+}
+
+// FingerprintCalculator calculates a fingerprint for the provided file.
+type FingerprintCalculator interface {
+	CalculateFingerprints(f *models.BaseFile, o Opener, useExisting bool) ([]models.Fingerprint, error)
+}
+
+// Decorator wraps the Decorate method to add additional functionality while scanning files.
+type Decorator interface {
+	Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error)
+	IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool
+}
+
+type FilteredDecorator struct {
+	Decorator
+	Filter
+}
+
+// Decorate runs the decorator if the filter accepts the file.
+func (d *FilteredDecorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
+	if d.Accept(ctx, f) {
+		return d.Decorator.Decorate(ctx, fs, f)
+	}
+	return f, nil
+}
+
+func (d *FilteredDecorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {
+	if d.Accept(ctx, f) {
+		return d.Decorator.IsMissingMetadata(ctx, fs, f)
+	}
+
+	return false
 }
 
 // ProgressReporter is used to report progress of the scan.
@@ -110,6 +134,9 @@ type ScanOptions struct {
 	HandlerRequiredFilters []Filter
 
 	ParallelTasks int
+
+	// When true files in path will be rescanned even if they haven't changed
+	Rescan bool
 }
 
 // Scan starts the scanning process.
@@ -120,7 +147,7 @@ func (s *Scanner) Scan(ctx context.Context, handlers []Handler, options ScanOpti
 		ProgressReports: progressReporter,
 		options:         options,
 		txnRetryer: txn.Retryer{
-			Manager: s.Repository,
+			Manager: s.Repository.TxnManager,
 			Retries: maxRetries,
 		},
 	}
@@ -129,8 +156,8 @@ func (s *Scanner) Scan(ctx context.Context, handlers []Handler, options ScanOpti
 }
 
 type scanFile struct {
-	*BaseFile
-	fs   FS
+	*models.BaseFile
+	fs   models.FS
 	info fs.FileInfo
 }
 
@@ -139,7 +166,7 @@ func (s *scanJob) withTxn(ctx context.Context, fn func(ctx context.Context) erro
 }
 
 func (s *scanJob) withDB(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithDatabase(ctx, s.Repository, fn)
+	return s.Repository.WithDB(ctx, fn)
 }
 
 func (s *scanJob) execute(ctx context.Context) {
@@ -198,7 +225,7 @@ func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
 	return err
 }
 
-func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs.WalkDirFunc {
+func (s *scanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *scanFile) fs.WalkDirFunc {
 	return func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// don't let errors prevent scanning
@@ -212,7 +239,8 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 
 		info, err := d.Info()
 		if err != nil {
-			return fmt.Errorf("reading info for %q: %w", path, err)
+			logger.Errorf("reading info for %q: %v", path, err)
+			return nil
 		}
 
 		if !s.acceptEntry(ctx, path, info) {
@@ -229,8 +257,8 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		}
 
 		ff := scanFile{
-			BaseFile: &BaseFile{
-				DirEntry: DirEntry{
+			BaseFile: &models.BaseFile{
+				DirEntry: models.DirEntry{
 					ModTime: modTime(info),
 				},
 				Path:     path,
@@ -286,7 +314,7 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 	}
 }
 
-func getFileSize(f FS, path string, info fs.FileInfo) (int64, error) {
+func getFileSize(f models.FS, path string, info fs.FileInfo) (int64, error) {
 	// #2196/#3042 - replace size with target size if file is a symlink
 	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 		targetInfo, err := f.Stat(path)
@@ -314,7 +342,7 @@ func (s *scanJob) acceptEntry(ctx context.Context, path string, info fs.FileInfo
 }
 
 func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
-	zipFS, err := f.fs.OpenZip(f.Path)
+	zipFS, err := f.fs.OpenZip(f.Path, f.Size)
 	if err != nil {
 		if errors.Is(err, errNotReaderAt) {
 			// can't walk the zip file
@@ -408,14 +436,14 @@ func (s *scanJob) processQueueItem(ctx context.Context, f scanFile) {
 	})
 }
 
-func (s *scanJob) getFolderID(ctx context.Context, path string) (*FolderID, error) {
+func (s *scanJob) getFolderID(ctx context.Context, path string) (*models.FolderID, error) {
 	// check the folder cache first
 	if f, ok := s.folderPathToID.Load(path); ok {
-		v := f.(FolderID)
+		v := f.(models.FolderID)
 		return &v, nil
 	}
 
-	ret, err := s.Repository.FolderStore.FindByPath(ctx, path)
+	ret, err := s.Repository.Folder.FindByPath(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +456,7 @@ func (s *scanJob) getFolderID(ctx context.Context, path string) (*FolderID, erro
 	return &ret.ID, nil
 }
 
-func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*ID, error) {
+func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*models.FileID, error) {
 	if zipFile == nil {
 		return nil, nil
 	}
@@ -441,11 +469,11 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*ID, err
 
 	// check the folder cache first
 	if f, ok := s.zipPathToID.Load(path); ok {
-		v := f.(ID)
+		v := f.(models.FileID)
 		return &v, nil
 	}
 
-	ret, err := s.Repository.FindByPath(ctx, path)
+	ret, err := s.Repository.File.FindByPath(ctx, path)
 	if err != nil {
 		return nil, fmt.Errorf("getting zip file ID for %q: %w", path, err)
 	}
@@ -465,7 +493,7 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 		defer s.incrementProgress(file)
 
 		// determine if folder already exists in data store (by path)
-		f, err := s.Repository.FolderStore.FindByPath(ctx, path)
+		f, err := s.Repository.Folder.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("checking for existing folder %q: %w", path, err)
 		}
@@ -489,7 +517,7 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 	})
 }
 
-func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, error) {
+func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*models.Folder, error) {
 	renamed, err := s.handleFolderRename(ctx, file)
 	if err != nil {
 		return nil, err
@@ -501,7 +529,7 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 
 	now := time.Now()
 
-	toCreate := &Folder{
+	toCreate := &models.Folder{
 		DirEntry:  file.DirEntry,
 		Path:      file.Path,
 		CreatedAt: now,
@@ -529,14 +557,14 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 		logger.Infof("%s doesn't exist. Creating new folder entry...", file.Path)
 	})
 
-	if err := s.Repository.FolderStore.Create(ctx, toCreate); err != nil {
+	if err := s.Repository.Folder.Create(ctx, toCreate); err != nil {
 		return nil, fmt.Errorf("creating folder %q: %w", file.Path, err)
 	}
 
 	return toCreate, nil
 }
 
-func (s *scanJob) handleFolderRename(ctx context.Context, file scanFile) (*Folder, error) {
+func (s *scanJob) handleFolderRename(ctx context.Context, file scanFile) (*models.Folder, error) {
 	// ignore folders in zip files
 	if file.ZipFileID != nil {
 		return nil, nil
@@ -565,14 +593,19 @@ func (s *scanJob) handleFolderRename(ctx context.Context, file scanFile) (*Folde
 
 	renamedFrom.ParentFolderID = parentFolderID
 
-	if err := s.Repository.FolderStore.Update(ctx, renamedFrom); err != nil {
+	if err := s.Repository.Folder.Update(ctx, renamedFrom); err != nil {
 		return nil, fmt.Errorf("updating folder for rename %q: %w", renamedFrom.Path, err)
+	}
+
+	// #4146 - correct sub-folders to have the correct path
+	if err := correctSubFolderHierarchy(ctx, s.Repository.Folder, renamedFrom); err != nil {
+		return nil, fmt.Errorf("correcting sub folder hierarchy for %q: %w", renamedFrom.Path, err)
 	}
 
 	return renamedFrom, nil
 }
 
-func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Folder) (*Folder, error) {
+func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *models.Folder) (*models.Folder, error) {
 	update := false
 
 	// update if mod time is changed
@@ -597,7 +630,7 @@ func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Fo
 
 	if update {
 		var err error
-		if err = s.Repository.FolderStore.Update(ctx, existing); err != nil {
+		if err = s.Repository.Folder.Update(ctx, existing); err != nil {
 			return nil, fmt.Errorf("updating folder %q: %w", f.Path, err)
 		}
 	}
@@ -613,17 +646,18 @@ func modTime(info fs.FileInfo) time.Time {
 func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	defer s.incrementProgress(f)
 
-	var ff File
+	var ff models.File
 	// don't use a transaction to check if new or existing
 	if err := s.withDB(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
 		var err error
-		ff, err = s.Repository.FindByPath(ctx, f.Path)
+		ff, err = s.Repository.File.FindByPath(ctx, f.Path)
 		if err != nil {
 			return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
 		}
 
 		if ff == nil {
+			// returns a file only if it is actually new
 			ff, err = s.onNewFile(ctx, f)
 			return err
 		}
@@ -661,7 +695,7 @@ func (s *scanJob) isZipFile(path string) bool {
 	return false
 }
 
-func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
+func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (models.File, error) {
 	now := time.Now()
 
 	baseFile := f.BaseFile
@@ -711,12 +745,15 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	}
 
 	if renamed != nil {
-		return renamed, nil
+		// handle rename should have already handled the contents of the zip file
+		// so shouldn't need to scan it again
+		// return nil so it doesn't
+		return nil, nil
 	}
 
 	// if not renamed, queue file for creation
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Create(ctx, file); err != nil {
+		if err := s.Repository.File.Create(ctx, file); err != nil {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
 
@@ -732,7 +769,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	return file, nil
 }
 
-func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, error) {
+func (s *scanJob) fireDecorators(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
 	for _, h := range s.FileDecorators {
 		var err error
 		f, err = h.Decorate(ctx, fs, f)
@@ -744,7 +781,7 @@ func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, erro
 	return f, nil
 }
 
-func (s *scanJob) fireHandlers(ctx context.Context, f File, oldFile File) error {
+func (s *scanJob) fireHandlers(ctx context.Context, f models.File, oldFile models.File) error {
 	for _, h := range s.handlers {
 		if err := h.Handle(ctx, f, oldFile); err != nil {
 			return err
@@ -754,7 +791,7 @@ func (s *scanJob) fireHandlers(ctx context.Context, f File, oldFile File) error 
 	return nil
 }
 
-func (s *scanJob) calculateFingerprints(fs FS, f *BaseFile, path string, useExisting bool) (Fingerprints, error) {
+func (s *scanJob) calculateFingerprints(fs models.FS, f *models.BaseFile, path string, useExisting bool) (models.Fingerprints, error) {
 	// only log if we're (re)calculating fingerprints
 	if !useExisting {
 		logger.Infof("Calculating fingerprints for %s ...", path)
@@ -772,7 +809,7 @@ func (s *scanJob) calculateFingerprints(fs FS, f *BaseFile, path string, useExis
 	return fp, nil
 }
 
-func appendFileUnique(v []File, toAdd []File) []File {
+func appendFileUnique(v []models.File, toAdd []models.File) []models.File {
 	for _, f := range toAdd {
 		found := false
 		id := f.Base().ID
@@ -791,7 +828,7 @@ func appendFileUnique(v []File, toAdd []File) []File {
 	return v
 }
 
-func (s *scanJob) getFileFS(f *BaseFile) (FS, error) {
+func (s *scanJob) getFileFS(f *models.BaseFile) (models.FS, error) {
 	if f.ZipFile == nil {
 		return s.FS, nil
 	}
@@ -802,14 +839,14 @@ func (s *scanJob) getFileFS(f *BaseFile) (FS, error) {
 	}
 
 	zipPath := f.ZipFile.Base().Path
-	return fs.OpenZip(zipPath)
+	return fs.OpenZip(zipPath, f.Size)
 }
 
-func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (File, error) {
-	var others []File
+func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {
+	var others []models.File
 
 	for _, tfp := range fp {
-		thisOthers, err := s.Repository.FindByFingerprint(ctx, tfp)
+		thisOthers, err := s.Repository.File.FindByFingerprint(ctx, tfp)
 		if err != nil {
 			return nil, fmt.Errorf("getting files by fingerprint %v: %w", tfp, err)
 		}
@@ -817,7 +854,7 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 		others = appendFileUnique(others, thisOthers)
 	}
 
-	var missing []File
+	var missing []models.File
 
 	fZipID := f.Base().ZipFileID
 	for _, other := range others {
@@ -834,9 +871,11 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 			continue
 		}
 
-		if _, err := fs.Lstat(other.Base().Path); err != nil {
+		info, err := fs.Lstat(other.Base().Path)
+		switch {
+		case err != nil:
 			missing = append(missing, other)
-		} else if strings.EqualFold(f.Base().Path, other.Base().Path) {
+		case strings.EqualFold(f.Base().Path, other.Base().Path):
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, and the filesystem is case-insensitive
 			// then treat it as a move
@@ -844,6 +883,10 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 				// treat as a move
 				missing = append(missing, other)
 			}
+		case !s.acceptEntry(ctx, other.Base().Path, info):
+			// #4393 - if the file is no longer in the configured library paths, treat it as a move
+			logger.Debugf("File %q no longer in library paths. Treating as a move.", other.Base().Path)
+			missing = append(missing, other)
 		}
 	}
 
@@ -856,28 +899,35 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 	// assume does not exist, update existing file
 	// it's possible that there may be multiple missing files.
 	// just use the first one to rename.
+	// #4775 - using the new file instance means that any changes made to the existing
+	// file will be lost. Update the existing file instead.
 	other := missing[0]
-	otherBase := other.Base()
+	updated := other.Clone()
+	updatedBase := updated.Base()
 
-	fBase := f.Base()
+	fBaseCopy := *(f.Base())
 
-	logger.Infof("%s moved to %s. Updating path...", otherBase.Path, fBase.Path)
-	fBase.ID = otherBase.ID
-	fBase.CreatedAt = otherBase.CreatedAt
-	fBase.Fingerprints = otherBase.Fingerprints
+	oldPath := updatedBase.Path
+	newPath := fBaseCopy.Path
+
+	logger.Infof("%s moved to %s. Updating path...", oldPath, newPath)
+	fBaseCopy.ID = updatedBase.ID
+	fBaseCopy.CreatedAt = updatedBase.CreatedAt
+	fBaseCopy.Fingerprints = updatedBase.Fingerprints
+	*updatedBase = fBaseCopy
 
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Update(ctx, f); err != nil {
-			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
+		if err := s.Repository.File.Update(ctx, updated); err != nil {
+			return fmt.Errorf("updating file for rename %q: %w", newPath, err)
 		}
 
-		if s.isZipFile(fBase.Basename) {
-			if err := TransferZipFolderHierarchy(ctx, s.Repository.FolderStore, fBase.ID, otherBase.Path, fBase.Path); err != nil {
-				return fmt.Errorf("moving folder hierarchy for renamed zip file %q: %w", fBase.Path, err)
+		if s.isZipFile(updatedBase.Basename) {
+			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, updatedBase.ID, oldPath, newPath); err != nil {
+				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", newPath, err)
 			}
 		}
 
-		if err := s.fireHandlers(ctx, f, other); err != nil {
+		if err := s.fireHandlers(ctx, updated, other); err != nil {
 			return err
 		}
 
@@ -886,10 +936,10 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 		return nil, err
 	}
 
-	return f, nil
+	return updated, nil
 }
 
-func (s *scanJob) isHandlerRequired(ctx context.Context, f File) bool {
+func (s *scanJob) isHandlerRequired(ctx context.Context, f models.File) bool {
 	accept := len(s.options.HandlerRequiredFilters) == 0
 	for _, filter := range s.options.HandlerRequiredFilters {
 		// accept if any filter accepts the file
@@ -910,7 +960,7 @@ func (s *scanJob) isHandlerRequired(ctx context.Context, f File) bool {
 // - file size
 // - image format, width or height
 // - video codec, audio codec, format, width, height, framerate or bitrate
-func (s *scanJob) isMissingMetadata(ctx context.Context, f scanFile, existing File) bool {
+func (s *scanJob) isMissingMetadata(ctx context.Context, f scanFile, existing models.File) bool {
 	for _, h := range s.FileDecorators {
 		if h.IsMissingMetadata(ctx, f.fs, existing) {
 			return true
@@ -920,7 +970,7 @@ func (s *scanJob) isMissingMetadata(ctx context.Context, f scanFile, existing Fi
 	return false
 }
 
-func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing File) (File, error) {
+func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing models.File) (models.File, error) {
 	path := existing.Base().Path
 	logger.Infof("Updating metadata for %s", path)
 
@@ -934,7 +984,7 @@ func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing F
 
 	// queue file for update
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Update(ctx, existing); err != nil {
+		if err := s.Repository.File.Update(ctx, existing); err != nil {
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 
@@ -946,7 +996,7 @@ func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing F
 	return existing, nil
 }
 
-func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existing File) (File, error) {
+func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existing models.File) (models.File, error) {
 	const useExisting = true
 	fp, err := s.calculateFingerprints(f.fs, existing.Base(), f.Path, useExisting)
 	if err != nil {
@@ -957,7 +1007,7 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 		existing.SetFingerprints(fp)
 
 		if err := s.withTxn(ctx, func(ctx context.Context) error {
-			if err := s.Repository.Update(ctx, existing); err != nil {
+			if err := s.Repository.File.Update(ctx, existing); err != nil {
 				return fmt.Errorf("updating file %q: %w", f.Path, err)
 			}
 
@@ -971,20 +1021,26 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 }
 
 // returns a file only if it was updated
-func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
+func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing models.File) (models.File, error) {
 	base := existing.Base()
 	path := base.Path
 
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
+	forceRescan := s.options.Rescan
 
-	if !updated {
+	if !updated && !forceRescan {
 		return s.onUnchangedFile(ctx, f, existing)
 	}
 
 	oldBase := *base
 
-	logger.Infof("%s has been updated: rescanning", path)
+	if !updated && forceRescan {
+		logger.Infof("rescanning %s", path)
+	} else {
+		logger.Infof("%s has been updated: rescanning", path)
+	}
+
 	base.ModTime = fileModTime
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()
@@ -1006,7 +1062,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 
 	// queue file for update
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Update(ctx, existing); err != nil {
+		if err := s.Repository.File.Update(ctx, existing); err != nil {
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 
@@ -1022,21 +1078,21 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	return existing, nil
 }
 
-func (s *scanJob) removeOutdatedFingerprints(existing File, fp Fingerprints) {
+func (s *scanJob) removeOutdatedFingerprints(existing models.File, fp models.Fingerprints) {
 	// HACK - if no MD5 fingerprint was returned, and the oshash is changed
 	// then remove the MD5 fingerprint
-	oshash := fp.For(FingerprintTypeOshash)
+	oshash := fp.For(models.FingerprintTypeOshash)
 	if oshash == nil {
 		return
 	}
 
-	existingOshash := existing.Base().Fingerprints.For(FingerprintTypeOshash)
+	existingOshash := existing.Base().Fingerprints.For(models.FingerprintTypeOshash)
 	if existingOshash == nil || *existingOshash == *oshash {
 		// missing oshash or same oshash - nothing to do
 		return
 	}
 
-	md5 := fp.For(FingerprintTypeMD5)
+	md5 := fp.For(models.FingerprintTypeMD5)
 
 	if md5 != nil {
 		// nothing to do
@@ -1045,11 +1101,12 @@ func (s *scanJob) removeOutdatedFingerprints(existing File, fp Fingerprints) {
 
 	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
 	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
-	existing.Base().Fingerprints.Remove(FingerprintTypeMD5)
+	b := existing.Base()
+	b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypeMD5)
 }
 
 // returns a file only if it was updated
-func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File) (File, error) {
+func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing models.File) (models.File, error) {
 	var err error
 
 	isMissingMetdata := s.isMissingMetadata(ctx, f, existing)

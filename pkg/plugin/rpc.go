@@ -53,7 +53,7 @@ func (t *rpcPluginTask) Start() error {
 
 	command := t.plugin.getExecCommand(t.operation)
 	if len(command) == 0 {
-		return fmt.Errorf("empty exec value in operation %s", t.operation.Name)
+		return fmt.Errorf("empty exec value")
 	}
 
 	pluginErrReader, pluginErrWriter := io.Pipe()

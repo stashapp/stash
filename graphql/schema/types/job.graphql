@@ -4,6 +4,7 @@ enum JobStatus {
   FINISHED
   STOPPING
   CANCELLED
+  FAILED
 }
 
 type Job {
@@ -15,6 +16,7 @@ type Job {
   startTime: Time
   endTime: Time
   addTime: Time!
+  error: String
 }
 
 input FindJobInput {

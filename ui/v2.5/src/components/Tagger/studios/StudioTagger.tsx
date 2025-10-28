@@ -3,7 +3,6 @@ import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { useLocalForage } from "src/hooks/LocalForage";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -22,10 +21,14 @@ import { ConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import StudioConfig from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
+import { ITaggerConfig } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
+import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { mergeStudioStashIDs } from "../utils";
+import { useTaggerConfig } from "../config";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -120,7 +123,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           type="radio"
           name="studio-query"
           label={<FormattedMessage id="studio_tagger.current_page" />}
-          defaultChecked={!queryAll}
+          checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
         <Form.Check
@@ -130,7 +133,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.query_all_studios_in_the_database",
           })}
-          defaultChecked={queryAll}
+          checked={queryAll}
           onChange={() => setQueryAll(true)}
         />
       </Form.Group>
@@ -147,7 +150,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.untagged_studios",
           })}
-          defaultChecked={!refresh}
+          checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
@@ -160,7 +163,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.refresh_tagged_studios",
           })}
-          defaultChecked={refresh}
+          checked={refresh}
           onChange={() => setRefresh(true)}
         />
         <Form.Text>
@@ -265,7 +268,6 @@ interface IStudioTaggerListProps {
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  stashBoxes?: GQL.StashBox[];
   onBatchAdd: (studioInput: string, createParent: boolean) => void;
   onBatchUpdate: (
     ids: string[] | undefined,
@@ -279,7 +281,6 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   selectedEndpoint,
   isIdle,
   config,
-  stashBoxes,
   onBatchAdd,
   onBatchUpdate,
 }) => {
@@ -312,7 +313,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   >();
 
   const doBoxSearch = (studioID: string, searchVal: string) => {
-    stashBoxStudioQuery(searchVal, selectedEndpoint.index)
+    stashBoxStudioQuery(searchVal, selectedEndpoint.endpoint)
       .then((queryData) => {
         const s = queryData.data?.scrapeSingleStudio ?? [];
         setSearchResults({
@@ -341,17 +342,13 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
     setLoading(true);
   };
 
-  const doBoxUpdate = (
-    studioID: string,
-    stashID: string,
-    endpointIndex: number
-  ) => {
+  const doBoxUpdate = (studioID: string, stashID: string, endpoint: string) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
       [studioID]: undefined,
     });
-    stashBoxStudioQuery(stashID, endpointIndex)
+    stashBoxStudioQuery(stashID, endpoint)
       .then((queryData) => {
         const data = queryData.data?.scrapeSingleStudio ?? [];
         if (data.length > 0) {
@@ -400,7 +397,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           { studio: modalStudio?.name }
         ),
         details:
-          message === "UNIQUE constraint failed: studios.checksum"
+          message === "UNIQUE constraint failed: studios.name"
             ? intl.formatMessage({
                 id: "studio_tagger.name_already_exists",
               })
@@ -424,6 +421,10 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
               ...parentInput,
               id: input.parent_id,
             };
+            parentUpdateData.stash_ids = await mergeStudioStashIDs(
+              input.parent_id,
+              parentInput.stash_ids ?? []
+            );
             await updateStudio(parentUpdateData);
           } else {
             const parentRes = await createStudio({
@@ -431,9 +432,8 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             });
             input.parent_id = parentRes.data?.studioCreate?.id;
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-          handleSaveError(studioID, parentInput.name, e.message ?? "");
+        } catch (e) {
+          handleSaveError(studioID, parentInput.name, apolloError(e));
         }
       }
 
@@ -441,6 +441,10 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         ...input,
         id: studioID,
       };
+      updateData.stash_ids = await mergeStudioStashIDs(
+        studioID,
+        input.stash_ids ?? []
+      );
 
       const res = await updateStudio(updateData);
       if (!res.data?.studioUpdate)
@@ -515,41 +519,33 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             className="small d-block"
             href={`${base}studios/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );
-
-        const endpointIndex =
-          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-          -1;
 
         subContent = (
           <div key={studio.id}>
             <InputGroup className="StudioTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
-                {endpointIndex !== -1 && (
-                  <Button
-                    onClick={() =>
-                      doBoxUpdate(studio.id, stashID.stash_id, endpointIndex)
-                    }
-                    disabled={!!loadingUpdate}
-                  >
-                    {loadingUpdate === stashID.stash_id ? (
-                      <LoadingIndicator inline small message="" />
-                    ) : (
-                      <FormattedMessage id="actions.refresh" />
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={() =>
+                    doBoxUpdate(studio.id, stashID.stash_id, stashID.endpoint)
+                  }
+                  disabled={!!loadingUpdate}
+                >
+                  {loadingUpdate === stashID.stash_id ? (
+                    <LoadingIndicator inline small message="" />
+                  ) : (
+                    <FormattedMessage id="actions.refresh" />
+                  )}
+                </Button>
               </InputGroup.Append>
             </InputGroup>
             {error[studio.id] && (
@@ -611,7 +607,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             <div></div>
             <div>
               <Card className="studio-card">
-                <img src={studio.image_path ?? ""} alt="" />
+                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>
@@ -674,10 +670,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
-    LOCAL_FORAGE_KEY,
-    initialConfig
-  );
+  const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
@@ -841,7 +834,6 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />

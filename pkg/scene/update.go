@@ -6,19 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
-
-type Updater interface {
-	PartialUpdater
-	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-}
-
-type PartialUpdater interface {
-	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
-}
 
 var ErrEmptyUpdater = errors.New("no fields have been set")
 
@@ -46,7 +36,7 @@ func (u *UpdateSet) IsEmpty() bool {
 // Update updates a scene by updating the fields in the Partial field, then
 // updates non-nil relationships. Returns an error if there is no work to
 // be done.
-func (u *UpdateSet) Update(ctx context.Context, qb Updater) (*models.Scene, error) {
+func (u *UpdateSet) Update(ctx context.Context, qb models.SceneUpdater) (*models.Scene, error) {
 	if u.IsEmpty() {
 		return nil, ErrEmptyUpdater
 	}
@@ -83,37 +73,37 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, performerID int) error {
-	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
-		PerformerIDs: &models.UpdateIDs{
-			IDs:  []int{performerID},
-			Mode: models.RelationshipUpdateModeAdd,
-		},
-	})
+func AddPerformer(ctx context.Context, qb models.SceneUpdater, o *models.Scene, performerID int) error {
+	scenePartial := models.NewScenePartial()
+	scenePartial.PerformerIDs = &models.UpdateIDs{
+		IDs:  []int{performerID},
+		Mode: models.RelationshipUpdateModeAdd,
+	}
+	_, err := qb.UpdatePartial(ctx, o.ID, scenePartial)
 	return err
 }
 
-func AddTag(ctx context.Context, qb PartialUpdater, o *models.Scene, tagID int) error {
-	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
-		TagIDs: &models.UpdateIDs{
-			IDs:  []int{tagID},
-			Mode: models.RelationshipUpdateModeAdd,
-		},
-	})
+func AddTag(ctx context.Context, qb models.SceneUpdater, o *models.Scene, tagID int) error {
+	scenePartial := models.NewScenePartial()
+	scenePartial.TagIDs = &models.UpdateIDs{
+		IDs:  []int{tagID},
+		Mode: models.RelationshipUpdateModeAdd,
+	}
+	_, err := qb.UpdatePartial(ctx, o.ID, scenePartial)
 	return err
 }
 
-func AddGallery(ctx context.Context, qb PartialUpdater, o *models.Scene, galleryID int) error {
-	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
-		TagIDs: &models.UpdateIDs{
-			IDs:  []int{galleryID},
-			Mode: models.RelationshipUpdateModeAdd,
-		},
-	})
+func AddGallery(ctx context.Context, qb models.SceneUpdater, o *models.Scene, galleryID int) error {
+	scenePartial := models.NewScenePartial()
+	scenePartial.TagIDs = &models.UpdateIDs{
+		IDs:  []int{galleryID},
+		Mode: models.RelationshipUpdateModeAdd,
+	}
+	_, err := qb.UpdatePartial(ctx, o.ID, scenePartial)
 	return err
 }
 
-func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) error {
+func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID models.FileID) error {
 	// ensure file isn't a primary file and that it is a video file
 	f, err := s.File.Find(ctx, fileID)
 	if err != nil {
@@ -121,7 +111,7 @@ func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) e
 	}
 
 	ff := f[0]
-	if _, ok := ff.(*file.VideoFile); !ok {
+	if _, ok := ff.(*models.VideoFile); !ok {
 		return fmt.Errorf("%s is not a video file", ff.Base().Path)
 	}
 
@@ -134,5 +124,5 @@ func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) e
 		return errors.New("cannot reassign primary file")
 	}
 
-	return s.Repository.AssignFiles(ctx, sceneID, []file.ID{fileID})
+	return s.Repository.AssignFiles(ctx, sceneID, []models.FileID{fileID})
 }

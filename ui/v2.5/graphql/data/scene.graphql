@@ -1,0 +1,98 @@
+fragment SceneData on Scene {
+  id
+  title
+  code
+  details
+  director
+  urls
+  date
+  rating100
+  o_counter
+  organized
+  interactive
+  interactive_speed
+  captions {
+    language_code
+    caption_type
+  }
+  created_at
+  updated_at
+  resume_time
+  last_played_at
+  play_duration
+  play_count
+
+  play_history
+  o_history
+
+  files {
+    ...VideoFileData
+  }
+
+  paths {
+    screenshot
+    preview
+    stream
+    webp
+    vtt
+    sprite
+    funscript
+    interactive_heatmap
+    caption
+  }
+
+  scene_markers {
+    ...SceneMarkerData
+  }
+
+  galleries {
+    ...SlimGalleryData
+  }
+
+  studio {
+    ...SlimStudioData
+  }
+
+  groups {
+    group {
+      ...GroupData
+    }
+    scene_index
+  }
+
+  tags {
+    ...SlimTagData
+  }
+
+  performers {
+    ...PerformerData
+  }
+
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
+
+  sceneStreams {
+    url
+    mime_type
+    label
+  }
+}
+
+fragment SelectSceneData on Scene {
+  id
+  title
+  date
+  code
+  studio {
+    name
+  }
+  files {
+    path
+  }
+  paths {
+    screenshot
+  }
+}

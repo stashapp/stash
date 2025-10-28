@@ -28,9 +28,9 @@ External plugins may log to the stash server by writing to stderr. By default, d
 
 Plugins can log for specific levels or log progress by prefixing the output string with special control characters. See `pkg/plugin/common/log` for how this is done in go.
 
-# Plugin configuration file format
+## Plugin configuration file format
 
-## exec
+### exec
 
 For external plugin tasks, the `exec` field is a list with the first element being the binary that will be executed, and the subsequent elements are the arguments passed. The execution process will search the path for the binary, then will attempt to find the program in the same directory as the plugin configuration file. The `exe` extension is not necessary on Windows systems. 
 
@@ -55,7 +55,7 @@ exec:
   - {pluginDir}/foo.py
 ```
 
-## interface
+### interface
 
 For external plugin tasks, the `interface` field must be set to one of the following values:
 * `rpc`
@@ -65,11 +65,11 @@ See the `Plugin interfaces` section above for details on these interface types.
 
 The `interface` field defaults to `raw` if not provided.
 
-## errLog
+### errLog
 
 The `errLog` field tells stash what the default log level should be when the plugin outputs to stderr without encoding a log level. It defaults to the `error` level if no provided. This field is not necessary if the plugin outputs logging with the appropriate encoding. See the `Logging` section above for details.
 
-# Task configuration
+## Task configuration
 
 In addition to the standard task configuration, external tasks may be configured with an optional `execArgs` field to add extra parameters to the execution arguments for the task.
 

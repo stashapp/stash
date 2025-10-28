@@ -41,6 +41,7 @@ func jobToJobModel(j job.Job) *Job {
 		StartTime:   j.StartTime,
 		EndTime:     j.EndTime,
 		AddTime:     j.AddTime,
+		Error:       j.Error,
 	}
 
 	if j.Progress != -1 {

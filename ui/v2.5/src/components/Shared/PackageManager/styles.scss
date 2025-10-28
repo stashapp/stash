@@ -1,0 +1,125 @@
+.package-manager {
+  padding: 1em;
+
+  .package-source {
+    font-weight: bold;
+
+    .source-collapse {
+      padding-left: 0;
+      padding-right: 0;
+
+      .btn {
+        color: $text-color;
+      }
+    }
+
+    .source-controls {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: end;
+    }
+  }
+
+  .package-cell,
+  .package-source {
+    cursor: pointer;
+  }
+
+  .package-manager-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+
+    th {
+      border: none;
+    }
+  }
+
+  table thead {
+    background-color: $card-bg;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .check-cell {
+      width: 40px;
+    }
+
+    .collapse-cell {
+      width: 30px;
+    }
+  }
+
+  table td {
+    vertical-align: middle;
+  }
+
+  .package-name,
+  .package-id,
+  .package-version,
+  .package-date,
+  .package-latest-version,
+  .package-latest-date {
+    display: block;
+  }
+
+  .package-id,
+  .package-date,
+  .package-latest-date {
+    color: $muted-gray;
+    font-size: 0.8rem;
+  }
+
+  .package-id,
+  .package-version,
+  .package-date,
+  .package-latest-version,
+  .package-latest-date {
+    white-space: nowrap;
+  }
+
+  .package-update-available {
+    .package-latest-version,
+    .package-latest-date {
+      font-weight: 700;
+    }
+  }
+
+  .package-manager-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .package-required-by {
+    color: $warning;
+    font-size: 0.8rem;
+  }
+
+  .LoadingIndicator-message {
+    display: inline-block;
+    font-size: 1rem;
+    margin-left: 0.5em;
+    margin-top: 0;
+  }
+
+  .source-error {
+    & > .fa-icon {
+      color: $warning;
+    }
+
+    .btn {
+      margin-left: 0.5em;
+    }
+  }
+}
+
+.package-manager-no-results {
+  color: $text-muted;
+  padding: 1em;
+  text-align: center;
+
+  .btn {
+    margin-top: 0.5em;
+  }
+}

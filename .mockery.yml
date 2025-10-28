@@ -1,0 +1,4 @@
+dir: ./pkg/models
+name: ".*ReaderWriter"
+outpkg: mocks
+output: ./pkg/models/mocks

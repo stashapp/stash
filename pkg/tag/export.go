@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -21,7 +22,9 @@ type FinderAliasImageGetter interface {
 func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag) (*jsonschema.Tag, error) {
 	newTagJSON := jsonschema.Tag{
 		Name:          tag.Name,
+		SortName:      tag.SortName,
 		Description:   tag.Description,
+		Favorite:      tag.Favorite,
 		IgnoreAutoTag: tag.IgnoreAutoTag,
 		CreatedAt:     json.JSONTime{Time: tag.CreatedAt},
 		UpdatedAt:     json.JSONTime{Time: tag.UpdatedAt},
@@ -51,6 +54,28 @@ func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag)
 	newTagJSON.Parents = GetNames(parents)
 
 	return &newTagJSON, nil
+}
+
+// GetDependentTagIDs returns a slice of unique tag IDs that this tag references.
+func GetDependentTagIDs(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag) ([]int, error) {
+	var ret []int
+
+	parents, err := reader.FindByChildTagID(ctx, tag.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting parents: %v", err)
+	}
+
+	for _, tt := range parents {
+		toAdd, err := GetDependentTagIDs(ctx, reader, tt)
+		if err != nil {
+			return nil, fmt.Errorf("error getting dependent tag IDs: %v", err)
+		}
+
+		ret = sliceutil.AppendUniques(ret, toAdd)
+		ret = sliceutil.AppendUnique(ret, tt.ID)
+	}
+
+	return ret, nil
 }
 
 func GetIDs(tags []*models.Tag) []int {

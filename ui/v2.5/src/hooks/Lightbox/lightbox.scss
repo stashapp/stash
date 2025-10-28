@@ -94,6 +94,10 @@
       padding-left: 0.38rem;
     }
 
+    .rating-number .text-input {
+      width: auto;
+    }
+
     &-left {
       display: flex;
       flex-direction: column;
@@ -101,10 +105,25 @@
       padding-left: 1em;
     }
 
+    &-center {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 1em;
+      text-align: center;
+    }
+
     a {
       color: $text-color;
-      font-weight: bold;
       text-decoration: none;
+
+      .fa-icon {
+        margin-right: 0.5rem;
+      }
+
+      &.image-link {
+        font-weight: bold;
+      }
     }
   }
 

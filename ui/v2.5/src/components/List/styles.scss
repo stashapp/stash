@@ -7,18 +7,93 @@
     padding-right: 15px;
     transition: none;
 
+    &.page-count {
+      padding-right: 5px;
+    }
+
+    &.page-count-dropdown {
+      padding-left: 5px;
+    }
+
     &:first-child {
       border-left: none;
+      border-right: none;
     }
 
     &:last-child {
       border-right: none;
     }
   }
+
+  .page-count-container .btn {
+    border-radius: 0;
+  }
 }
 
 .center-text {
   text-align: center;
+}
+
+.display-mode-select {
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  text-wrap: nowrap;
+
+  > svg:first-child {
+    margin-right: 0;
+  }
+}
+
+.display-mode-menu {
+  .dropdown-item {
+    color: #f5f8fa;
+    font-size: 1rem;
+
+    &:hover {
+      background-color: rgba(138, 155, 168, 0.15);
+      cursor: pointer;
+    }
+  }
+
+  .zoom-slider-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    min-height: 1rem;
+    padding-bottom: 0.5rem;
+    padding-top: 0.25rem;
+  }
+
+  .zoom-slider {
+    &::-webkit-slider-thumb {
+      background-color: $primary;
+    }
+
+    &::-webkit-slider-runnable-track {
+      background-color: $body-bg;
+    }
+
+    &:focus::-webkit-slider-runnable-track {
+      background-color: lighten($body-bg, 5%);
+    }
+
+    &::-moz-range-thumb {
+      background-color: $primary;
+    }
+
+    &::-moz-range-track {
+      background-color: $body-bg;
+    }
+
+    &:focus::-moz-range-track {
+      background-color: lighten($body-bg, 5%);
+    }
+  }
+}
+
+.display-mode-popover {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 input[type="range"].zoom-slider {
@@ -27,6 +102,9 @@ input[type="range"].zoom-slider {
   max-width: 60px;
   padding-left: 0;
   padding-right: 0;
+
+  // width is set to 100% by default, but in a flex container, it gets a very small width
+  width: unset;
 }
 
 .query-text-field-group {
@@ -65,8 +143,16 @@ input[type="range"].zoom-slider {
 .saved-filter-list-menu {
   width: 300px;
 
+  &.dropdown-menu.show {
+    display: flex;
+    flex-direction: column;
+  }
+
   .set-as-default-button {
     float: right;
+    margin-right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    width: auto;
   }
 
   .LoadingIndicator {
@@ -82,7 +168,7 @@ input[type="range"].zoom-slider {
 
 .saved-filter-list {
   list-style: none;
-  margin-bottom: 0;
+  margin-bottom: 0.25rem;
   max-height: 230px;
   overflow-y: auto;
   padding-left: 0;
@@ -92,20 +178,113 @@ input[type="range"].zoom-slider {
 
     .dropdown-item {
       align-items: center;
+      color: $text-color;
       display: inline;
       overflow-x: hidden;
+      padding-left: 1.25rem;
       padding-right: 0.25rem;
       text-overflow: ellipsis;
+
+      &:focus,
+      &:hover {
+        background-color: #8a9ba826;
+        cursor: pointer;
+      }
     }
 
     .btn-group {
       margin-left: auto;
+
+      .btn {
+        border-radius: 0;
+      }
     }
 
     .delete-button {
       color: $danger;
     }
   }
+}
+
+.sidebar-saved-filter-list-container .toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+
+  .btn {
+    font-weight: bold;
+  }
+}
+
+.sidebar-saved-filter-list-container {
+  .label-group {
+    align-items: center;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .saved-filter-item {
+    cursor: pointer;
+    height: 2em;
+    margin-bottom: 0.25rem;
+
+    a {
+      align-items: center;
+      display: flex;
+      height: 2em;
+      justify-content: space-between;
+      outline: none;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(138, 155, 168, 0.15);
+      }
+
+      .selected-object-label,
+      .excluded-object-label {
+        font-size: 16px;
+      }
+    }
+
+    .label-group {
+      align-items: center;
+      display: flex;
+      overflow: hidden;
+
+      .selected {
+        font-weight: bold;
+      }
+
+      .fa-icon {
+        flex-shrink: 0;
+      }
+    }
+
+    .delete-button {
+      color: $danger;
+    }
+  }
+
+  .saved-filter-search-input {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.save-filter-dialog {
+  .existing-filter-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}
+
+.save-filter-button {
+  color: $text-color;
+}
+
+.saved-filter-overwrite-warning {
+  color: $danger;
+  font-weight: bold;
 }
 
 .edit-filter-dialog .rating-stars {
@@ -128,8 +307,43 @@ input[type="range"].zoom-slider {
   }
 
   .modal-body {
+    max-height: min(550px, calc(100vh - 12rem));
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .modal-footer {
+    justify-content: space-between;
+
+    > div > :not(:first-child) {
+      margin-left: 0.25rem;
+    }
+  }
+
+  .search-term-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    margin-left: 1.5rem;
+    margin-right: 1rem;
+
+    .search-term-input {
+      flex-basis: 75%;
+    }
+
+    @include media-breakpoint-down(xs) {
+      flex-wrap: wrap;
+
+      > span {
+        width: 100%;
+      }
+
+      .search-term-input {
+        flex-basis: 100%;
+      }
+    }
   }
 
   .filter-tags {
@@ -140,8 +354,6 @@ input[type="range"].zoom-slider {
   .criterion-list {
     flex-direction: column;
     flex-wrap: nowrap;
-    max-height: 550px;
-    overflow-y: auto;
 
     .pinned-criterion-divider {
       padding-bottom: 2.5rem;
@@ -234,21 +446,35 @@ input[type="range"].zoom-slider {
   }
 }
 
-.filter-tags .clear-all-button {
-  color: $text-color;
-  // to match filter pills
-  line-height: 16px;
-  padding: 0;
+.filter-tags {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  .more-tags {
+    background-color: transparent;
+    color: #fff;
+  }
+
+  .clear-all-button {
+    color: $text-color;
+    // to match filter pills
+    line-height: 16px;
+    padding: 0;
+  }
 }
 
 .filter-button {
+  position: relative;
+
   .fa-icon {
     margin: 0;
   }
 
   .badge {
+    font-size: 60%;
     position: absolute;
-    right: -3px;
+    right: 0;
 
     // button group has a z-index of 1
     z-index: 2;
@@ -277,6 +503,15 @@ input[type="range"].zoom-slider {
   // to prevent unnecessary vertical scrollbar
   padding-bottom: 0.15rem;
   padding-inline-start: 0;
+
+  .modifier-object {
+    font-style: italic;
+
+    .selected-object-label,
+    .unselected-object-label {
+      opacity: 0.6;
+    }
+  }
 
   .unselected-object {
     opacity: 0.8;
@@ -356,6 +591,689 @@ input[type="range"].zoom-slider {
   }
 }
 
+// used to align list text without icons to those that do
+.sidebar .no-icon-margin {
+  // icon width is 17.5px + 5.6px margin each side
+  margin-left: 28.7px;
+}
+
+.sidebar-list-filter .clearable-input-group {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-list-filter ul {
+  list-style-type: none;
+  margin-bottom: 0.25rem;
+  max-height: 300px;
+  overflow-y: auto;
+  // to prevent unnecessary vertical scrollbar
+  padding-bottom: 0.15rem;
+  padding-inline-start: 0;
+
+  .modifier-object {
+    font-style: italic;
+
+    .selected-object-label,
+    .unselected-object-label {
+      opacity: 0.6;
+    }
+  }
+
+  .unselected-object {
+    opacity: 0.8;
+  }
+
+  .selected-object,
+  .excluded-object,
+  .unselected-object {
+    cursor: pointer;
+    height: 2em;
+    margin-bottom: 0.25rem;
+
+    a {
+      align-items: center;
+      display: flex;
+      height: 2em;
+      justify-content: space-between;
+      outline: none;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(138, 155, 168, 0.15);
+      }
+
+      .selected-object-label,
+      .excluded-object-label {
+        font-size: 16px;
+      }
+    }
+
+    .include-button {
+      color: $success;
+
+      &.single-value {
+        visibility: hidden;
+      }
+    }
+
+    .exclude-icon {
+      color: $danger;
+    }
+
+    .exclude-button {
+      align-items: center;
+      display: flex;
+      margin-left: 0.25rem;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      .exclude-button-text {
+        color: $danger;
+        display: none;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background-color: inherit;
+      }
+
+      &:hover .exclude-button-text,
+      &:focus .exclude-button-text {
+        display: inline;
+      }
+    }
+
+    .object-count {
+      color: $text-muted;
+      font-size: 12px;
+    }
+  }
+
+  .selected-object:hover,
+  .selected-object a:focus-visible,
+  .excluded-object:hover,
+  .excluded-object a:focus-visible {
+    .include-button,
+    .exclude-icon {
+      color: #fff;
+    }
+  }
+
+  .selected-object,
+  .unselected-object {
+    .label-group {
+      align-items: center;
+      display: flex;
+      overflow: hidden;
+    }
+  }
+}
+
+.sidebar-list-filter > .extra {
+  padding-top: 0.25rem;
+}
+
+.sidebar-list-filter .extra {
+  min-height: 2em;
+}
+
 .tilted {
   transform: rotate(45deg);
+}
+
+.table-list {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  margin-bottom: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  max-height: 78dvh;
+  min-width: min-content;
+  overflow-x: auto;
+  position: relative;
+
+  table {
+    margin: 0;
+
+    thead {
+      background-color: #202b33;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    td:first-child {
+      padding: 0;
+    }
+
+    label {
+      margin: 0;
+      padding: 0.5rem;
+    }
+  }
+
+  .column-select {
+    margin: 0;
+    padding: 7px;
+  }
+
+  .select-col {
+    width: 20px;
+  }
+
+  .comma-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 2px;
+
+    li {
+      display: inline;
+    }
+
+    li::after {
+      content: ", ";
+    }
+
+    li:last-child::after {
+      content: "";
+    }
+  }
+
+  .newline-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 2px;
+
+    li {
+      display: inline;
+      white-space: pre-wrap;
+    }
+
+    li::after {
+      content: "\A";
+    }
+
+    li:last-child::after {
+      content: "";
+    }
+  }
+
+  .newline-list.overflowable,
+  .comma-list.overflowable {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .comma-list.overflowable {
+    width: 190px;
+  }
+
+  .newline-list.overflowable {
+    -webkit-line-clamp: 1;
+    width: 700px;
+  }
+
+  .newline-list.overflowable:hover,
+  .comma-list.overflowable:hover {
+    background: #28343c;
+    border: 1px solid #414c53;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.28);
+    display: block;
+    height: auto;
+    margin-left: -0.4rem;
+    margin-top: -0.9rem;
+    overflow: hidden;
+    padding: 0.1rem 0.5rem;
+    position: absolute;
+    top: auto;
+    white-space: normal;
+    width: max-content;
+    z-index: 100;
+  }
+
+  .comma-list.overflowable:hover {
+    max-width: 40rem;
+  }
+
+  .newline-list.overflowable li .ellips-data:hover,
+  .comma-list.overflowable li .ellips-data:hover {
+    max-width: fit-content;
+  }
+
+  td {
+    color: hsla(0, 0%, 100%, 0.6);
+    font-weight: 500;
+    position: relative;
+    text-align: left;
+    white-space: nowrap;
+
+    .ellips-data {
+      display: block;
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .star-rating-number {
+      display: none;
+    }
+
+    a {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+
+  td.select-col {
+    text-align: center;
+  }
+
+  .table thead th {
+    border: none;
+    white-space: nowrap;
+  }
+
+  tr {
+    border-collapse: collapse;
+  }
+
+  .date-head {
+    width: 97px;
+  }
+}
+
+.table-list tbody tr:hover {
+  background-color: #2d3942;
+}
+
+.table-list a {
+  color: $text-color;
+}
+
+.table-list .table-striped td,
+.table-list .table-striped th {
+  font-size: 1rem;
+  vertical-align: middle;
+
+  h5,
+  h6 {
+    font-size: 1rem;
+  }
+
+  &:first-child {
+    border-left: none;
+  }
+}
+
+.filtered-list-toolbar {
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  & > .btn-group {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.5rem;
+
+    &:first-child {
+      justify-content: flex-start;
+    }
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
+
+  .btn.display-mode-select {
+    margin-left: 0.5rem;
+  }
+}
+
+.sidebar-pane .filtered-list-toolbar {
+  flex-wrap: nowrap;
+
+  & > .btn-group {
+    align-items: baseline;
+  }
+}
+
+.search-term-input {
+  margin-right: 0.5rem;
+}
+
+.custom-field-filter {
+  align-items: center;
+  display: flex;
+
+  > div:first-child {
+    flex-grow: 1;
+  }
+
+  .custom-field-filter-buttons {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0.25rem;
+
+    .btn {
+      border-radius: 0.2rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      padding: 0.25rem 0.5rem;
+
+      &:first-child {
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+}
+
+.item-list-container .sidebar-pane {
+  width: 100%;
+}
+
+.sidebar {
+  // make controls slightly larger on mobile
+  @include media-breakpoint-down(xs) {
+    .btn,
+    .form-control {
+      font-size: 1.25rem;
+    }
+  }
+
+  .sidebar-search-container {
+    display: flex;
+    margin-bottom: 0.5rem;
+  }
+
+  .search-term-input {
+    flex-grow: 1;
+    margin-right: 0;
+
+    .clearable-text-field {
+      height: 100%;
+    }
+  }
+
+  .edit-filter-button {
+    width: 100%;
+  }
+
+  .sidebar-footer {
+    background-color: $body-bg;
+    bottom: 0;
+    display: none;
+    padding: 0.5rem;
+    position: sticky;
+
+    @include media-breakpoint-down(xs) {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar .sidebar-search-container {
+    margin-top: 0.25rem;
+  }
+}
+
+.pagination-footer {
+  background-color: transparent;
+  bottom: $navbar-height;
+  margin: auto;
+  padding: 0.5rem 1rem 0.75rem;
+  position: sticky;
+  width: fit-content;
+  z-index: 10;
+
+  @include media-breakpoint-up(sm) {
+    bottom: 0;
+  }
+
+  .pagination.btn-group {
+    box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
+  }
+
+  .pagination {
+    margin-bottom: 0;
+
+    .btn:disabled {
+      color: #888;
+      opacity: 1;
+    }
+  }
+}
+
+// hide sidebar Edit Filter button on larger screens
+@include media-breakpoint-up(lg) {
+  .sidebar .edit-filter-button {
+    display: none;
+  }
+}
+
+// the following refers to the new FilteredListToolbar2 component
+// ensure the rules here don't conflict with the original filtered-list-toolbar above
+// TODO - replace with only .filtered-list-toolbar once all lists use the new toolbar
+.scene-list-toolbar {
+  &.filtered-list-toolbar {
+    align-items: center;
+    background-color: $body-bg;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    row-gap: 1rem;
+
+    > div {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-start;
+
+      &:last-child {
+        flex-shrink: 0;
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  &.filtered-list-toolbar {
+    flex-wrap: nowrap;
+    gap: 1rem;
+    // offset the main padding
+    margin-top: -0.5rem;
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+    position: sticky;
+    top: $navbar-height;
+    z-index: 10;
+
+    @include media-breakpoint-down(xs) {
+      top: 0;
+    }
+
+    .selected-items-info .btn {
+      margin-right: 0.5rem;
+    }
+
+    // hide drop down menu items for play and create new
+    // when the buttons are visible
+    @include media-breakpoint-up(sm) {
+      .scene-list-operations {
+        .play-item,
+        .create-new-item {
+          display: none;
+        }
+      }
+    }
+
+    // hide play and create new buttons on xs screens
+    // show these in the drop down menu instead
+    @include media-breakpoint-down(xs) {
+      .play-button,
+      .create-new-button {
+        display: none;
+      }
+    }
+
+    .selected-items-info,
+    div.filter-section {
+      border: 1px solid $secondary;
+      border-radius: 0.25rem;
+      flex-grow: 1;
+      overflow-x: hidden;
+    }
+
+    .sidebar-toggle-button {
+      margin-left: auto;
+    }
+
+    .search-container {
+      border-right: 1px solid $secondary;
+      display: block;
+      margin-right: -0.5rem;
+      min-width: calc($sidebar-width - 15px);
+      padding-right: 10px;
+
+      .search-term-input {
+        margin-right: 0;
+        width: 100%;
+
+        .clearable-text-field {
+          height: 100%;
+        }
+      }
+    }
+
+    .filter-tags {
+      flex-grow: 1;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      margin-bottom: 0;
+
+      // account for filter button, and toggle sidebar buttons with gaps
+      width: calc(100% - 70px - 1rem);
+
+      @include media-breakpoint-down(xs) {
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+
+      .tag-item {
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .search-container {
+    display: none;
+  }
+}
+@include media-breakpoint-down(md) {
+  .sidebar-pane.hide-sidebar .filtered-list-toolbar .search-container {
+    display: none;
+  }
+}
+
+// hide the filter icon button when sidebar is shown on smaller screens
+@include media-breakpoint-down(md) {
+  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .filter-button {
+    display: none;
+  }
+
+  // adjust the width of the filter-tags as well
+  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .filter-tags {
+    width: calc(100% - 35px - 0.5rem);
+  }
+}
+
+// move the sidebar toggle to the left on xl viewports
+@include media-breakpoint-up(xl) {
+  .filtered-list-toolbar .filter-section {
+    .sidebar-toggle-button {
+      margin-left: 0;
+    }
+
+    .filter-tags {
+      order: 2;
+    }
+  }
+}
+
+// hide the search term tag item when the search box is visible
+@include media-breakpoint-up(lg) {
+  // TODO - remove scene-list-toolbar when all lists use the new toolbar
+  .scene-list-toolbar.filtered-list-toolbar
+    .filter-tags
+    .search-term-filter-tag {
+    display: none;
+  }
+}
+@include media-breakpoint-down(md) {
+  // TODO - remove scene-list-toolbar when all lists use the new toolbar
+  .sidebar-pane:not(.hide-sidebar)
+    .scene-list-toolbar.filtered-list-toolbar
+    .filter-tags
+    .search-term-filter-tag {
+    display: none;
+  }
+}
+
+// TODO - remove scene-list-toolbar when all lists use the new toolbar
+.detail-body .scene-list-toolbar.filtered-list-toolbar {
+  top: calc($sticky-detail-header-height + $navbar-height);
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
+}
+
+#more-criteria-popover {
+  box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
+  max-width: 400px;
+  padding: 0.25rem;
+}
+
+.list-results-header {
+  align-items: center;
+  background-color: $body-bg;
+  display: flex;
+  justify-content: space-between;
+
+  > div {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+
+    &:last-child {
+      flex-shrink: 0;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.list-results-header {
+  flex-wrap: wrap-reverse;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  .paginationIndex {
+    margin: 0;
+  }
+
+  // center the header on smaller screens
+  @include media-breakpoint-down(sm) {
+    & > div,
+    & > div:last-child {
+      flex-basis: 100%;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
 }

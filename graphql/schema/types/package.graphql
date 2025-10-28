@@ -1,0 +1,36 @@
+enum PackageType {
+  Scraper
+  Plugin
+}
+
+type Package {
+  package_id: String!
+  name: String!
+  version: String
+  date: Timestamp
+  requires: [Package!]!
+
+  sourceURL: String!
+
+  "The version of this package currently available from the remote source"
+  source_package: Package
+
+  metadata: Map!
+}
+
+input PackageSpecInput {
+  id: String!
+  sourceURL: String!
+}
+
+type PackageSource {
+  name: String
+  url: String!
+  local_path: String
+}
+
+input PackageSourceInput {
+  name: String
+  url: String!
+  local_path: String
+}

@@ -1,13 +1,18 @@
 import {
   faChevronDown,
   faChevronRight,
+  faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
-import { Button, Collapse } from "react-bootstrap";
+import { Button, Collapse, CollapseProps } from "react-bootstrap";
 import { Icon } from "./Icon";
 
 interface IProps {
-  text: string;
+  className?: string;
+  text: React.ReactNode;
+  collapseProps?: Partial<CollapseProps>;
+  outsideCollapse?: React.ReactNode;
+  onOpen?: () => void;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
@@ -15,18 +20,47 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
 ) => {
   const [open, setOpen] = useState(false);
 
+  function toggleOpen() {
+    const nv = !open;
+    setOpen(nv);
+    if (props.onOpen && nv) {
+      props.onOpen();
+    }
+  }
+
   return (
-    <div>
-      <Button
-        onClick={() => setOpen(!open)}
-        className="minimal collapse-button"
-      >
-        <Icon icon={open ? faChevronDown : faChevronRight} />
-        <span>{props.text}</span>
-      </Button>
-      <Collapse in={open}>
+    <div className={props.className}>
+      <div className="collapse-header">
+        <Button
+          onClick={() => toggleOpen()}
+          className="minimal collapse-button"
+        >
+          <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
+          <span>{props.text}</span>
+        </Button>
+      </div>
+      {props.outsideCollapse}
+      <Collapse in={open} {...props.collapseProps}>
         <div>{props.children}</div>
       </Collapse>
     </div>
+  );
+};
+
+export const ExpandCollapseButton: React.FC<{
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}> = ({ collapsed, setCollapsed }) => {
+  const buttonIcon = collapsed ? faChevronDown : faChevronUp;
+
+  return (
+    <span className="detail-expand-collapse">
+      <Button
+        className="minimal expand-collapse"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        <Icon icon={buttonIcon} fixedWidth />
+      </Button>
+    </span>
   );
 };

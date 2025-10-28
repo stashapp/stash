@@ -6,7 +6,7 @@ import {
   useLocation,
   useRouteMatch,
 } from "react-router-dom";
-import { IntlProvider, CustomFormats } from "react-intl";
+import { IntlProvider, CustomFormats, FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
@@ -35,11 +35,21 @@ import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
-import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
+import Event from "./hooks/event";
+
+import { PluginRoutes, PluginsLoader } from "./plugins";
+
+// import plugin_api to run code
+import "./pluginApi";
+import { ConnectionMonitor } from "./ConnectionMonitor";
+import { PatchFunction } from "./patch";
+
+import moment from "moment/min/moment-with-locales";
+import { ErrorMessage } from "./components/Shared/ErrorMessage";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -55,7 +65,7 @@ const Galleries = lazyComponent(
   () => import("./components/Galleries/Galleries")
 );
 
-const Movies = lazyComponent(() => import("./components/Movies/Movies"));
+const Groups = lazyComponent(() => import("./components/Groups/Groups"));
 const Tags = lazyComponent(() => import("./components/Tags/Tags"));
 const Images = lazyComponent(() => import("./components/Images/Images"));
 const Setup = lazyComponent(() => import("./components/Setup/Setup"));
@@ -86,6 +96,32 @@ function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
 
+const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
+  "App",
+  (props: React.PropsWithChildren<{}>) => {
+    return <>{props.children}</>;
+  }
+) as React.FC;
+
+const MainContainer: React.FC = ({ children }) => {
+  return (
+    <div className={`main container-fluid ${appleRendering ? "apple" : ""}`}>
+      {children}
+    </div>
+  );
+};
+
+function translateLanguageLocale(l: string) {
+  // intl doesn't support all locales, so we need to map some to supported ones
+  switch (l) {
+    case "nn-NO":
+      // use other Norwegian locale for intl
+      return "nb-NO";
+    default:
+      return l;
+  }
+}
+
 export const App: React.FC = () => {
   const config = useConfiguration();
   const [saveUI] = useConfigureUI();
@@ -94,6 +130,7 @@ export const App: React.FC = () => {
 
   const language =
     config.data?.configuration?.interface?.language ?? defaultLocale;
+  const intlLanguage = translateLanguageLocale(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
   const [messages, setMessages] = useState<{}>();
@@ -102,7 +139,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(getPlatformURL() + "customlocales");
+        const res = await fetch(getPlatformURL("customlocales"));
         if (res.ok) {
           setCustomMessages(await res.json());
         }
@@ -135,10 +172,7 @@ export const App: React.FC = () => {
         }
       );
 
-      const newMessages = flattenMessages(mergedMessages) as Record<
-        string,
-        string
-      >;
+      const newMessages = flattenMessages(mergedMessages);
 
       yup.setLocale({
         mixed: {
@@ -147,6 +181,7 @@ export const App: React.FC = () => {
       });
 
       setMessages(newMessages);
+      moment.locale([language, defaultLocale]);
     };
 
     setLocale();
@@ -155,6 +190,11 @@ export const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+
+  // dispatch event when location changes
+  useEffect(() => {
+    Event.dispatch("location", "", { location });
+  }, [location]);
 
   // redirect to setup or migrate as needed
   useEffect(() => {
@@ -177,7 +217,7 @@ export const App: React.FC = () => {
       status === GQL.SystemStatusEnum.NeedsMigration
     ) {
       // redirect to migrate page
-      history.push("/migrate");
+      history.replace("/migrate");
     }
   }, [systemStatusData, setupMatch, history, location]);
 
@@ -204,7 +244,7 @@ export const App: React.FC = () => {
             <Route path="/performers" component={Performers} />
             <Route path="/tags" component={Tags} />
             <Route path="/studios" component={Studios} />
-            <Route path="/movies" component={Movies} />
+            <Route path="/groups" component={Groups} />
             <Route path="/stats" component={Stats} />
             <Route path="/settings" component={Settings} />
             <Route
@@ -217,6 +257,7 @@ export const App: React.FC = () => {
             />
             <Route path="/setup" component={Setup} />
             <Route path="/migrate" component={Migrate} />
+            <PluginRoutes />
             <Route component={PageNotFound} />
           </Switch>
         </Suspense>
@@ -229,8 +270,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    const lastNoteSeen = (config.data?.configuration.ui as IUIConfig)
-      ?.lastNoteSeen;
+    const lastNoteSeen = config.data?.configuration.ui.lastNoteSeen;
     const notes = releaseNotes.filter((n) => {
       return !lastNoteSeen || n.date > lastNoteSeen;
     });
@@ -256,41 +296,64 @@ export const App: React.FC = () => {
 
   const titleProps = makeTitleProps();
 
+  if (!messages) {
+    return null;
+  }
+
+  if (config.error) {
+    return (
+      <IntlProvider
+        locale={intlLanguage}
+        messages={messages}
+        formats={intlFormats}
+      >
+        <MainContainer>
+          <ErrorMessage
+            message={
+              <FormattedMessage
+                id="errors.loading_type"
+                values={{ type: "configuration" }}
+              />
+            }
+            error={config.error.message}
+          />
+        </MainContainer>
+      </IntlProvider>
+    );
+  }
+
   return (
     <ErrorBoundary>
-      {messages ? (
-        <IntlProvider
-          locale={language}
-          messages={messages}
-          formats={intlFormats}
-        >
-          <ConfigurationProvider
-            configuration={config.data?.configuration}
-            loading={config.loading}
-          >
-            {maybeRenderReleaseNotes()}
-            <ToastProvider>
-              <Suspense fallback={<LoadingIndicator />}>
-                <LightboxProvider>
-                  <ManualProvider>
-                    <InteractiveProvider>
-                      <Helmet {...titleProps} />
-                      {maybeRenderNavbar()}
-                      <div
-                        className={`main container-fluid ${
-                          appleRendering ? "apple" : ""
-                        }`}
-                      >
-                        {renderContent()}
-                      </div>
-                    </InteractiveProvider>
-                  </ManualProvider>
-                </LightboxProvider>
-              </Suspense>
-            </ToastProvider>
-          </ConfigurationProvider>
-        </IntlProvider>
-      ) : null}
+      <IntlProvider
+        locale={intlLanguage}
+        messages={messages}
+        formats={intlFormats}
+      >
+        <ToastProvider>
+          <PluginsLoader>
+            <AppContainer>
+              <ConfigurationProvider
+                configuration={config.data?.configuration}
+                loading={config.loading}
+              >
+                {maybeRenderReleaseNotes()}
+                <ConnectionMonitor />
+                <Suspense fallback={<LoadingIndicator />}>
+                  <LightboxProvider>
+                    <ManualProvider>
+                      <InteractiveProvider>
+                        <Helmet {...titleProps} />
+                        {maybeRenderNavbar()}
+                        <MainContainer>{renderContent()}</MainContainer>
+                      </InteractiveProvider>
+                    </ManualProvider>
+                  </LightboxProvider>
+                </Suspense>
+              </ConfigurationProvider>
+            </AppContainer>
+          </PluginsLoader>
+        </ToastProvider>
+      </IntlProvider>
     </ErrorBoundary>
   );
 };

@@ -6,18 +6,72 @@
   }
 }
 
+@include media-breakpoint-only(lg) {
+  .gallery-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .gallery-header {
+      flex: 0 0 75%;
+      order: 1;
+    }
+
+    .gallery-studio-image {
+      flex: 0 0 25%;
+      order: 2;
+    }
+  }
+}
+
 .gallery-header {
   flex-basis: auto;
+  font-size: 1.5rem;
   margin-top: 30px;
+
+  @include media-breakpoint-down(xl) {
+    font-size: 1.75rem;
+  }
+}
+
+.gallery-subheader {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+
+  .date {
+    color: $text-muted;
+  }
+
+  .resolution {
+    font-weight: bold;
+  }
+}
+
+.gallery-toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  width: 100%;
+
+  .gallery-toolbar-group {
+    align-items: center;
+    column-gap: 0.25rem;
+    display: flex;
+    width: 100%;
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
 }
 
 #gallery-details-container {
   .tab-content {
     min-height: 15rem;
-  }
-
-  .gallery-description {
-    width: 100%;
   }
 }
 
@@ -48,6 +102,14 @@
     color: $text-color;
   }
 
+  &-cover {
+    position: relative;
+  }
+
+  .preview-scrubber {
+    top: 0;
+  }
+
   &-image {
     object-fit: contain;
   }
@@ -56,6 +118,7 @@
 .gallery-tabs {
   max-height: calc(100vh - 4rem);
 
+  overflow: auto;
   overflow-wrap: break-word;
   word-wrap: break-word;
 }
@@ -66,7 +129,6 @@ $galleryTabWidth: 450px;
   .gallery-tabs {
     flex: 0 0 $galleryTabWidth;
     max-width: $galleryTabWidth;
-    overflow: auto;
 
     &.collapsed {
       display: none;
@@ -101,7 +163,9 @@ $galleryTabWidth: 450px;
 
   .gallery-container {
     flex: 0 0 calc(100% - #{$galleryTabWidth} - 15px);
+    height: calc(100vh - 4rem);
     max-width: calc(100% - #{$galleryTabWidth} - 15px);
+    overflow: auto;
 
     &.expanded {
       flex: 0 0 calc(100% - 15px);
@@ -116,11 +180,6 @@ $galleryTabWidth: 450px;
   padding-right: 15px;
   position: relative;
   width: 100%;
-}
-
-.gallery-container {
-  height: calc(100vh - 4rem);
-  overflow: auto;
 }
 
 @media (min-width: 1200px), (max-width: 575px) {
@@ -147,7 +206,22 @@ $galleryTabWidth: 450px;
   }
 }
 
-.GalleryWall {
+.gallery-cover {
+  aspect-ratio: 4 / 3;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.gallery-cover img {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
+}
+
+div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
   margin: 0 auto;
@@ -178,26 +252,16 @@ $galleryTabWidth: 450px;
     width: 96vw;
   }
 
-  @mixin galleryWidth($width) {
-    height: math.div($width, 3) * 2;
-
-    &-landscape {
-      width: $width;
-    }
-
-    &-portrait {
-      width: math.div($width, 2);
-    }
+  .lineargradient {
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    bottom: 100px;
+    height: 100px;
+    position: relative;
   }
 
-  @media (min-width: 576px) {
-    @include galleryWidth(96vw);
-  }
-  @media (min-width: 768px) {
-    @include galleryWidth(48vw);
-  }
-  @media (min-width: 1200px) {
-    @include galleryWidth(32vw);
+  .preview-scrubber {
+    top: 0;
+    z-index: 1;
   }
 
   &-img {
@@ -205,6 +269,11 @@ $galleryTabWidth: 450px;
     object-fit: cover;
     object-position: center 20%;
     width: 100%;
+
+    &.GalleryWallCard-img-contain {
+      object-fit: contain;
+      object-position: initial;
+    }
   }
 
   &-title {
@@ -212,13 +281,13 @@ $galleryTabWidth: 450px;
   }
 
   &-footer {
-    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
-    bottom: 0;
+    bottom: 20px;
     padding: 1rem;
     position: absolute;
     text-shadow: 1px 1px 3px black;
     transition: 0s opacity;
     width: 100%;
+    z-index: 2;
 
     @media (min-width: 768px) {
       opacity: 0;
@@ -249,7 +318,9 @@ $galleryTabWidth: 450px;
   .rating-number {
     position: absolute;
     right: 1rem;
+    text-shadow: 1px 1px 3px black;
     top: 1rem;
+    z-index: 2;
   }
 
   .rating-stars {
@@ -277,6 +348,62 @@ $galleryTabWidth: 450px;
   }
 }
 
+div.GalleryWall {
+  @mixin galleryWidth($width) {
+    height: math.div($width, 3) * 2;
+
+    &-landscape {
+      width: $width;
+    }
+
+    &-portrait {
+      width: math.div($width, 2);
+    }
+  }
+
+  .GalleryWallCard {
+    @media (min-width: 576px) {
+      @include galleryWidth(96vw);
+    }
+  }
+
+  &.zoom-0 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(16vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(10vw);
+    }
+  }
+
+  &.zoom-1 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(24vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(16vw);
+    }
+  }
+
+  &.zoom-2 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(32vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(24vw);
+    }
+  }
+
+  &.zoom-3 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(48vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(32vw);
+    }
+  }
+}
+
 .gallery-file-card.card {
   margin: 0;
   padding: 0;
@@ -287,5 +414,58 @@ $galleryTabWidth: 450px;
 
   dl {
     margin-bottom: 0;
+  }
+}
+
+.col-form-label {
+  padding-right: 2px;
+}
+
+.gallery-select-option {
+  .gallery-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .gallery-select-image {
+      background-color: $body-bg;
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 89px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .gallery-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .gallery-select-title {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .gallery-select-date,
+      .gallery-select-studio,
+      .gallery-select-code {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .gallery-select-alias {
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 100%;
+    word-break: break-all;
   }
 }

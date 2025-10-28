@@ -13,6 +13,7 @@ import {
   useConfigureDLNA,
   useConfigureGeneral,
   useConfigureInterface,
+  useConfigurePlugin,
   useConfigureScraping,
   useConfigureUI,
 } from "src/core/StashService";
@@ -20,6 +21,8 @@ import { useDebounce } from "src/hooks/debounce";
 import { useToast } from "src/hooks/Toast";
 import { withoutTypename } from "src/utils/data";
 import { Icon } from "../Shared/Icon";
+
+type PluginConfigs = Record<string, Record<string, unknown>>;
 
 export interface ISettingsContextState {
   loading: boolean;
@@ -30,6 +33,9 @@ export interface ISettingsContextState {
   scraping: GQL.ConfigScrapingInput;
   dlna: GQL.ConfigDlnaInput;
   ui: IUIConfig;
+  plugins: PluginConfigs;
+
+  advancedMode: boolean;
 
   // apikey isn't directly settable, so expose it here
   apiKey: string;
@@ -40,11 +46,15 @@ export interface ISettingsContextState {
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
+  savePluginSettings: (pluginID: string, input: {}) => void;
+  setAdvancedMode: (value: boolean) => void;
 
   refetch: () => void;
 }
 
-export const SettingStateContext = React.createContext<ISettingsContextState>({
+function noop() {}
+
+const emptyState: ISettingsContextState = {
   loading: false,
   error: undefined,
   general: {},
@@ -53,15 +63,46 @@ export const SettingStateContext = React.createContext<ISettingsContextState>({
   scraping: {},
   dlna: {},
   ui: {},
+  plugins: {},
+
+  advancedMode: false,
+
   apiKey: "",
-  saveGeneral: () => {},
-  saveInterface: () => {},
-  saveDefaults: () => {},
-  saveScraping: () => {},
-  saveDLNA: () => {},
-  saveUI: () => {},
-  refetch: () => {},
-});
+
+  saveGeneral: noop,
+  saveInterface: noop,
+  saveDefaults: noop,
+  saveScraping: noop,
+  saveDLNA: noop,
+  saveUI: noop,
+  savePluginSettings: noop,
+  setAdvancedMode: noop,
+
+  refetch: noop,
+};
+
+export const SettingStateContext =
+  React.createContext<ISettingsContextState | null>(null);
+
+export const useSettings = () => {
+  const context = React.useContext(SettingStateContext);
+
+  if (context === null) {
+    throw new Error("useSettings must be used within a SettingsContext");
+  }
+
+  return context;
+};
+
+export function useSettingsOptional(): ISettingsContextState {
+  const context = React.useContext(SettingStateContext);
+
+  if (context === null) {
+    return emptyState;
+  }
+
+  return context;
+}
 
 export const SettingsContext: React.FC = ({ children }) => {
   const Toast = useToast();
@@ -93,27 +134,17 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [pendingDLNA, setPendingDLNA] = useState<GQL.ConfigDlnaInput>();
   const [updateDLNAConfig] = useConfigureDLNA();
 
-  const [ui, setUI] = useState({});
+  const [ui, setUI] = useState<IUIConfig>({});
   const [pendingUI, setPendingUI] = useState<{}>();
   const [updateUIConfig] = useConfigureUI();
+
+  const [plugins, setPlugins] = useState<PluginConfigs>({});
+  const [pendingPlugins, setPendingPlugins] = useState<PluginConfigs>();
+  const [updatePluginConfig] = useConfigurePlugin();
 
   const [updateSuccess, setUpdateSuccess] = useState<boolean>();
 
   const [apiKey, setApiKey] = useState("");
-
-  // cannot use Toast.error directly with the debounce functions
-  // since they are refreshed every time the Toast context is updated.
-  const [saveError, setSaveError] = useState<unknown>();
-
-  useEffect(() => {
-    if (!saveError) {
-      return;
-    }
-
-    Toast.error(saveError);
-    setSaveError(undefined);
-    setUpdateSuccess(false);
-  }, [saveError, Toast]);
 
   useEffect(() => {
     if (!data?.configuration || error) return;
@@ -132,14 +163,23 @@ export const SettingsContext: React.FC = ({ children }) => {
     setScraping({ ...withoutTypename(data.configuration.scraping) });
     setDLNA({ ...withoutTypename(data.configuration.dlna) });
     setUI(data.configuration.ui);
+    setPlugins(data.configuration.plugins);
   }, [data, error]);
 
-  const resetSuccess = useDebounce(() => setUpdateSuccess(undefined), [], 4000);
+  const resetSuccess = useDebounce(() => setUpdateSuccess(undefined), 4000);
 
   const onSuccess = useCallback(() => {
     setUpdateSuccess(true);
     resetSuccess();
   }, [resetSuccess]);
+
+  const onError = useCallback(
+    (err) => {
+      Toast.error(err);
+      setUpdateSuccess(false);
+    },
+    [Toast]
+  );
 
   // saves the configuration if no further changes are made after a half second
   const saveGeneralConfig = useDebounce(
@@ -155,10 +195,9 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingGeneral(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
-    [updateGeneralConfig, onSuccess],
     500
   );
 
@@ -205,10 +244,9 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingInterface(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
-    [updateInterfaceConfig, onSuccess],
     500
   );
 
@@ -255,10 +293,9 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingDefaults(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
-    [updateDefaultsConfig, onSuccess],
     500
   );
 
@@ -305,10 +342,9 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingScraping(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
-    [updateScrapingConfig, onSuccess],
     500
   );
 
@@ -342,25 +378,21 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveDLNAConfig = useDebounce(
-    async (input: GQL.ConfigDlnaInput) => {
-      try {
-        setUpdateSuccess(undefined);
-        await updateDLNAConfig({
-          variables: {
-            input,
-          },
-        });
+  const saveDLNAConfig = useDebounce(async (input: GQL.ConfigDlnaInput) => {
+    try {
+      setUpdateSuccess(undefined);
+      await updateDLNAConfig({
+        variables: {
+          input,
+        },
+      });
 
-        setPendingDLNA(undefined);
-        onSuccess();
-      } catch (e) {
-        setSaveError(e);
-      }
-    },
-    [updateDLNAConfig, onSuccess],
-    500
-  );
+      setPendingDLNA(undefined);
+      onSuccess();
+    } catch (e) {
+      onError(e);
+    }
+  }, 500);
 
   useEffect(() => {
     if (!pendingDLNA) {
@@ -391,26 +423,24 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
-  // saves the configuration if no further changes are made after a half second
-  const saveUIConfig = useDebounce(
-    async (input: IUIConfig) => {
-      try {
-        setUpdateSuccess(undefined);
-        await updateUIConfig({
-          variables: {
-            input,
-          },
-        });
+  type UIConfigInput = GQL.Scalars["Map"]["input"];
 
-        setPendingUI(undefined);
-        onSuccess();
-      } catch (e) {
-        setSaveError(e);
-      }
-    },
-    [updateUIConfig, onSuccess],
-    500
-  );
+  // saves the configuration if no further changes are made after a half second
+  const saveUIConfig = useDebounce(async (input: Partial<IUIConfig>) => {
+    try {
+      setUpdateSuccess(undefined);
+      await updateUIConfig({
+        variables: {
+          partial: input as UIConfigInput,
+        },
+      });
+
+      setPendingUI(undefined);
+      onSuccess();
+    } catch (e) {
+      onError(e);
+    }
+  }, 500);
 
   useEffect(() => {
     if (!pendingUI) {
@@ -431,16 +461,72 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
 
     setPendingUI((current) => {
+      return {
+        ...current,
+        ...input,
+      };
+    });
+  }
+
+  function setAdvancedMode(value: boolean) {
+    saveUI({
+      advancedMode: value,
+    });
+  }
+
+  // saves the configuration if no further changes are made after a half second
+  const savePluginConfig = useDebounce(async (input: PluginConfigs) => {
+    try {
+      setUpdateSuccess(undefined);
+
+      for (const pluginID in input) {
+        await updatePluginConfig({
+          variables: {
+            plugin_id: pluginID,
+            input: input[pluginID],
+          },
+        });
+      }
+
+      setPendingPlugins(undefined);
+      onSuccess();
+    } catch (e) {
+      onError(e);
+    }
+  }, 500);
+
+  useEffect(() => {
+    if (!pendingPlugins) {
+      return;
+    }
+
+    savePluginConfig(pendingPlugins);
+  }, [pendingPlugins, savePluginConfig]);
+
+  function savePluginSettings(
+    pluginID: string,
+    input: Record<string, unknown>
+  ) {
+    if (!plugins) {
+      return;
+    }
+
+    setPlugins({
+      ...plugins,
+      [pluginID]: input,
+    });
+
+    setPendingPlugins((current) => {
       if (!current) {
         // use full UI object to ensure nothing is wiped
         return {
-          ...ui,
-          ...input,
+          ...plugins,
+          [pluginID]: input,
         };
       }
       return {
         ...current,
-        ...input,
+        [pluginID]: input,
       };
     });
   }
@@ -460,7 +546,8 @@ export const SettingsContext: React.FC = ({ children }) => {
       pendingDefaults ||
       pendingScraping ||
       pendingDLNA ||
-      pendingUI
+      pendingUI ||
+      pendingPlugins
     ) {
       return (
         <div className="loading-indicator">
@@ -492,6 +579,8 @@ export const SettingsContext: React.FC = ({ children }) => {
         scraping,
         dlna,
         ui,
+        plugins,
+        advancedMode: ui.advancedMode ?? false,
         saveGeneral,
         saveInterface,
         saveDefaults,
@@ -499,6 +588,8 @@ export const SettingsContext: React.FC = ({ children }) => {
         saveDLNA,
         saveUI,
         refetch,
+        savePluginSettings,
+        setAdvancedMode,
       }}
     >
       {maybeRenderLoadingIndicator()}

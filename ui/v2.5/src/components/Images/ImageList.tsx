@@ -11,27 +11,23 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindImages, useFindImages } from "src/core/StashService";
-import {
-  makeItemList,
-  IItemListOperation,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 
-import { ImageCard } from "./ImageCard";
 import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
-import Gallery from "react-photo-gallery";
+import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
-import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "src/core/config";
+import { ImageGridCard } from "./ImageGridCard";
+import { View } from "../List/views";
+import { IItemListOperation } from "../List/FilteredListToolbar";
+import { FileSize } from "../Shared/FileSize";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -39,11 +35,26 @@ interface IImageWallProps {
   currentPage: number;
   pageCount: number;
   handleImageOpen: (index: number) => void;
+  zoomIndex: number;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
+const zoomWidths = [280, 340, 480, 640];
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
+
+const ImageWall: React.FC<IImageWallProps> = ({
+  images,
+  zoomIndex,
+  handleImageOpen,
+}) => {
   const { configuration } = useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   let photos: {
     src: string;
@@ -61,8 +72,8 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
         image.paths.preview != ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files?.[0]?.width ?? 0,
+      height: image.visual_files?.[0]?.height ?? 0,
       tabIndex: index,
       key: image.id,
       loading: "lazy",
@@ -80,21 +91,53 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 300;
+    let preferredSize = zoomWidths[zoomIndex];
     let columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
   }
 
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
+
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps) => {
+      // #6165 - only use targetRowHeight in row direction
+      const maxHeight =
+        props.direction === "column"
+          ? props.photo.height
+          : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor;
+      return <ImageWallItem {...props} maxHeight={maxHeight} />;
+    },
+    [targetRowHeight]
+  );
+
   return (
-    <div className="gallery">
+    <div className="gallery" ref={containerRef}>
       {photos.length ? (
         <Gallery
           photos={photos}
-          renderImage={ImageWallItem}
+          renderImage={renderImage}
           onClick={showLightboxOnClick}
           margin={uiConfig?.imageWallOptions?.margin!}
           direction={uiConfig?.imageWallOptions?.direction!}
           columns={columns}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -186,7 +229,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
   const handleImageOpen = useCallback(
     (index) => {
       setSlideshowRunning(true);
-      showLightbox(index, true);
+      showLightbox({ initialIndex: index, slideshowEnabled: true });
     },
     [showLightbox, setSlideshowRunning]
   );
@@ -196,35 +239,15 @@ const ImageListImages: React.FC<IImageListImages> = ({
     ev.preventDefault();
   }
 
-  function renderImageCard(
-    index: number,
-    image: GQL.SlimImageDataFragment,
-    zoomIndex: number
-  ) {
-    return (
-      <ImageCard
-        key={image.id}
-        image={image}
-        zoomIndex={zoomIndex}
-        selecting={selectedIds.size > 0}
-        selected={selectedIds.has(image.id)}
-        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          onSelectChange(image.id, selected, shiftKey)
-        }
-        onPreview={
-          selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
-        }
-      />
-    );
-  }
-
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <div className="row justify-content-center">
-        {images.map((image, index) =>
-          renderImageCard(index, image, filter.zoomIndex)
-        )}
-      </div>
+      <ImageGridCard
+        images={images}
+        selectedIds={selectedIds}
+        zoomIndex={filter.zoomIndex}
+        onSelectChange={onSelectChange}
+        onPreview={onPreview}
+      />
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {
@@ -235,6 +258,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
         currentPage={filter.currentPage}
         pageCount={pageCount}
         handleImageOpen={handleImageOpen}
+        zoomIndex={filter.zoomIndex}
       />
     );
   }
@@ -243,56 +267,46 @@ const ImageListImages: React.FC<IImageListImages> = ({
   return <></>;
 };
 
-const ImageItemList = makeItemList({
-  filterMode: GQL.FilterMode.Images,
-  useResult: useFindImages,
-  getItems(result: GQL.FindImagesQueryResult) {
-    return result?.data?.findImages?.images ?? [];
-  },
-  getCount(result: GQL.FindImagesQueryResult) {
-    return result?.data?.findImages?.count ?? 0;
-  },
-  renderMetadataByline(result: GQL.FindImagesQueryResult) {
-    const megapixels = result?.data?.findImages?.megapixels;
-    const size = result?.data?.findImages?.filesize;
-    const filesize = size ? TextUtils.fileSize(size) : undefined;
+function getItems(result: GQL.FindImagesQueryResult) {
+  return result?.data?.findImages?.images ?? [];
+}
 
-    if (!megapixels && !size) {
-      return;
-    }
+function getCount(result: GQL.FindImagesQueryResult) {
+  return result?.data?.findImages?.count ?? 0;
+}
 
-    const separator = megapixels && size ? " - " : "";
+function renderMetadataByline(result: GQL.FindImagesQueryResult) {
+  const megapixels = result?.data?.findImages?.megapixels;
+  const size = result?.data?.findImages?.filesize;
 
-    return (
-      <span className="images-stats">
-        &nbsp;(
-        {megapixels ? (
-          <span className="images-megapixels">
-            <FormattedNumber value={megapixels} /> Megapixels
-          </span>
-        ) : undefined}
-        {separator}
-        {size && filesize ? (
-          <span className="images-size">
-            <FormattedNumber
-              value={filesize.size}
-              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                filesize.unit
-              )}
-            />
-            {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
-          </span>
-        ) : undefined}
-        )
-      </span>
-    );
-  },
-});
+  if (!megapixels && !size) {
+    return;
+  }
+
+  const separator = megapixels && size ? " - " : "";
+
+  return (
+    <span className="images-stats">
+      &nbsp;(
+      {megapixels ? (
+        <span className="images-megapixels">
+          <FormattedNumber value={megapixels} /> Megapixels
+        </span>
+      ) : undefined}
+      {separator}
+      {size ? (
+        <span className="images-size">
+          <FileSize size={size} />
+        </span>
+      ) : undefined}
+      )
+    </span>
+  );
+}
 
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: PersistanceLevel;
-  persistanceKey?: string;
+  view?: View;
   alterQuery?: boolean;
   extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
   chapters?: GQL.GalleryChapterDataFragment[];
@@ -300,8 +314,7 @@ interface IImageList {
 
 export const ImageList: React.FC<IImageList> = ({
   filterHook,
-  persistState,
-  persistanceKey,
+  view,
   alterQuery,
   extraOperations,
   chapters = [],
@@ -311,6 +324,8 @@ export const ImageList: React.FC<IImageList> = ({
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
+
+  const filterMode = GQL.FilterMode.Images;
 
   const otherOperations = [
     ...(extraOperations ?? []),
@@ -438,18 +453,26 @@ export const ImageList: React.FC<IImageList> = ({
   }
 
   return (
-    <ImageItemList
-      zoomable
-      selectable
-      filterHook={filterHook}
-      persistState={persistState}
-      persistanceKey={persistanceKey}
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindImages}
+      getItems={getItems}
+      getCount={getCount}
       alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderEditDialog={renderEditDialog}
-      renderDeleteDialog={renderDeleteDialog}
-    />
+      filterHook={filterHook}
+      view={view}
+      selectable
+    >
+      <ItemList
+        zoomable
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+        renderMetadataByline={renderMetadataByline}
+      />
+    </ItemListContext>
   );
 };

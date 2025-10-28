@@ -1,0 +1,40 @@
+fragment ImageData on Image {
+  id
+  title
+  code
+  rating100
+  date
+  urls
+  details
+  photographer
+  organized
+  o_counter
+  created_at
+  updated_at
+
+  paths {
+    thumbnail
+    preview
+    image
+  }
+
+  galleries {
+    ...GalleryData
+  }
+
+  studio {
+    ...SlimStudioData
+  }
+
+  tags {
+    ...SlimTagData
+  }
+
+  performers {
+    ...PerformerData
+  }
+
+  visual_files {
+    ...VisualFileData
+  }
+}

@@ -1,0 +1,38 @@
+query FindGalleries(
+  $filter: FindFilterType
+  $gallery_filter: GalleryFilterType
+) {
+  findGalleries(gallery_filter: $gallery_filter, filter: $filter) {
+    count
+    galleries {
+      ...SlimGalleryData
+    }
+  }
+}
+
+query FindGallery($id: ID!) {
+  findGallery(id: $id) {
+    ...GalleryData
+  }
+}
+
+query FindGalleriesForSelect(
+  $filter: FindFilterType
+  $gallery_filter: GalleryFilterType
+  $ids: [ID!]
+) {
+  findGalleries(filter: $filter, gallery_filter: $gallery_filter, ids: $ids) {
+    count
+    galleries {
+      ...SelectGalleryData
+    }
+  }
+}
+
+query FindGalleryImageID($id: ID!, $index: Int!) {
+  findGallery(id: $id) {
+    image(index: $index) {
+      id
+    }
+  }
+}

@@ -80,7 +80,7 @@ export const DirectorySelectionDialog: React.FC<
 
         <FolderSelect
           currentDirectory={currentDirectory}
-          setCurrentDirectory={(v) => setCurrentDirectory(v)}
+          onChangeDirectory={setCurrentDirectory}
           defaultDirectories={libraryPaths}
           appendButton={
             <Button

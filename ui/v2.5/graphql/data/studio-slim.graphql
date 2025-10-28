@@ -1,0 +1,20 @@
+fragment SlimStudioData on Studio {
+  id
+  name
+  image_path
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
+  parent_studio {
+    id
+  }
+  details
+  rating100
+  aliases
+  tags {
+    id
+    name
+  }
+}

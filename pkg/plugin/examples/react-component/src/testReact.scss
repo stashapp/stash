@@ -1,0 +1,47 @@
+.scene-card__date {
+  color: #bfccd6;;
+  font-size: 0.85em;
+}
+
+.scene-card__performer {
+  display: inline-block;
+  font-weight: 500;
+  margin-right: 0.5em;
+
+  a {
+    color: #137cbd;
+  }
+}
+
+.scene-card__performers,
+.scene-card__tags {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+
+  &:hover {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+}
+
+.scene-card__tags .tag-item {
+  margin-left: 0;
+}
+
+.scene-performer-popover .image-thumbnail {
+  margin: 1em;
+}
+
+.example-react-component-custom-overlay {
+  display: block;
+  font-weight: 900;
+  height: 100%;
+  opacity: 0.25;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
+  z-index: 8;
+}

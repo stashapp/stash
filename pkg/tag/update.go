@@ -7,11 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type NameFinderCreator interface {
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Tag, error)
-	Create(ctx context.Context, newTag *models.Tag) error
-}
-
 type NameExistsError struct {
 	Name string
 }
@@ -38,12 +33,16 @@ type InvalidTagHierarchyError struct {
 }
 
 func (e *InvalidTagHierarchyError) Error() string {
+	if e.ApplyingTag == "" {
+		return fmt.Sprintf("cannot apply tag \"%s\" as a %s of tag as it is already %s", e.InvalidTag, e.Direction, e.CurrentRelation)
+	}
+
 	return fmt.Sprintf("cannot apply tag \"%s\" as a %s of \"%s\" as it is already %s (%s)", e.InvalidTag, e.Direction, e.ApplyingTag, e.CurrentRelation, e.TagPath)
 }
 
 // EnsureTagNameUnique returns an error if the tag name provided
 // is used as a name or alias of another existing tag.
-func EnsureTagNameUnique(ctx context.Context, id int, name string, qb Queryer) error {
+func EnsureTagNameUnique(ctx context.Context, id int, name string, qb models.TagQueryer) error {
 	// ensure name is unique
 	sameNameTag, err := ByName(ctx, qb, name)
 	if err != nil {
@@ -72,7 +71,7 @@ func EnsureTagNameUnique(ctx context.Context, id int, name string, qb Queryer) e
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Queryer) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.TagQueryer) error {
 	for _, a := range aliases {
 		if err := EnsureTagNameUnique(ctx, id, a, qb); err != nil {
 			return err
@@ -82,19 +81,86 @@ func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Query
 	return nil
 }
 
-type RelationshipGetter interface {
+type RelationshipFinder interface {
 	FindAllAncestors(ctx context.Context, tagID int, excludeIDs []int) ([]*models.TagPath, error)
 	FindAllDescendants(ctx context.Context, tagID int, excludeIDs []int) ([]*models.TagPath, error)
-	FindByChildTagID(ctx context.Context, childID int) ([]*models.Tag, error)
-	FindByParentTagID(ctx context.Context, parentID int) ([]*models.Tag, error)
+	models.TagRelationLoader
 }
 
-func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs []int, qb RelationshipGetter) error {
-	id := tag.ID
+func ValidateHierarchyNew(ctx context.Context, parentIDs, childIDs []int, qb RelationshipFinder) error {
 	allAncestors := make(map[int]*models.TagPath)
 	allDescendants := make(map[int]*models.TagPath)
 
-	parentsAncestors, err := qb.FindAllAncestors(ctx, id, nil)
+	for _, parentID := range parentIDs {
+		parentsAncestors, err := qb.FindAllAncestors(ctx, parentID, nil)
+		if err != nil {
+			return err
+		}
+
+		for _, ancestorTag := range parentsAncestors {
+			allAncestors[ancestorTag.ID] = ancestorTag
+		}
+	}
+
+	for _, childID := range childIDs {
+		childsDescendants, err := qb.FindAllDescendants(ctx, childID, nil)
+		if err != nil {
+			return err
+		}
+
+		for _, descendentTag := range childsDescendants {
+			allDescendants[descendentTag.ID] = descendentTag
+		}
+	}
+
+	// Validate that the tag is not a parent of any of its ancestors
+	validateParent := func(testID int) error {
+		if parentTag, exists := allDescendants[testID]; exists {
+			return &InvalidTagHierarchyError{
+				Direction:       "parent",
+				CurrentRelation: "a descendant",
+				InvalidTag:      parentTag.Name,
+				TagPath:         parentTag.Path,
+			}
+		}
+
+		return nil
+	}
+
+	// Validate that the tag is not a child of any of its ancestors
+	validateChild := func(testID int) error {
+		if childTag, exists := allAncestors[testID]; exists {
+			return &InvalidTagHierarchyError{
+				Direction:       "child",
+				CurrentRelation: "an ancestor",
+				InvalidTag:      childTag.Name,
+				TagPath:         childTag.Path,
+			}
+		}
+
+		return nil
+	}
+
+	for _, parentID := range parentIDs {
+		if err := validateParent(parentID); err != nil {
+			return err
+		}
+	}
+
+	for _, childID := range childIDs {
+		if err := validateChild(childID); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func ValidateHierarchyExisting(ctx context.Context, tag *models.Tag, parentIDs, childIDs []int, qb RelationshipFinder) error {
+	allAncestors := make(map[int]*models.TagPath)
+	allDescendants := make(map[int]*models.TagPath)
+
+	parentsAncestors, err := qb.FindAllAncestors(ctx, tag.ID, nil)
 	if err != nil {
 		return err
 	}
@@ -103,7 +169,7 @@ func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs
 		allAncestors[ancestorTag.ID] = ancestorTag
 	}
 
-	childsDescendants, err := qb.FindAllDescendants(ctx, id, nil)
+	childsDescendants, err := qb.FindAllDescendants(ctx, tag.ID, nil)
 	if err != nil {
 		return err
 	}
@@ -140,28 +206,6 @@ func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs
 		return nil
 	}
 
-	if parentIDs == nil {
-		parentTags, err := qb.FindByChildTagID(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		for _, parentTag := range parentTags {
-			parentIDs = append(parentIDs, parentTag.ID)
-		}
-	}
-
-	if childIDs == nil {
-		childTags, err := qb.FindByParentTagID(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		for _, childTag := range childTags {
-			childIDs = append(childIDs, childTag.ID)
-		}
-	}
-
 	for _, parentID := range parentIDs {
 		if err := validateParent(parentID); err != nil {
 			return err
@@ -177,42 +221,42 @@ func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs
 	return nil
 }
 
-func MergeHierarchy(ctx context.Context, destination int, sources []int, qb RelationshipGetter) ([]int, []int, error) {
+func MergeHierarchy(ctx context.Context, destination int, sources []int, qb RelationshipFinder) ([]int, []int, error) {
 	var mergedParents, mergedChildren []int
 	allIds := append([]int{destination}, sources...)
 
-	addTo := func(mergedItems []int, tags []*models.Tag) []int {
+	addTo := func(mergedItems []int, tagIDs []int) []int {
 	Tags:
-		for _, tag := range tags {
+		for _, tagID := range tagIDs {
 			// Ignore tags which are already set
 			for _, existingItem := range mergedItems {
-				if tag.ID == existingItem {
+				if tagID == existingItem {
 					continue Tags
 				}
 			}
 
 			// Ignore tags which are being merged, as these are rolled up anyway (if A is merged into B any direct link between them can be ignored)
 			for _, id := range allIds {
-				if tag.ID == id {
+				if tagID == id {
 					continue Tags
 				}
 			}
 
-			mergedItems = append(mergedItems, tag.ID)
+			mergedItems = append(mergedItems, tagID)
 		}
 
 		return mergedItems
 	}
 
 	for _, id := range allIds {
-		parents, err := qb.FindByChildTagID(ctx, id)
+		parents, err := qb.GetParentIDs(ctx, id)
 		if err != nil {
 			return nil, nil, err
 		}
 
 		mergedParents = addTo(mergedParents, parents)
 
-		children, err := qb.FindByParentTagID(ctx, id)
+		children, err := qb.GetChildIDs(ctx, id)
 		if err != nil {
 			return nil, nil, err
 		}

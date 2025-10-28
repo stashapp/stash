@@ -3,36 +3,37 @@ package performer
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type NameFinderCreatorUpdater interface {
-	NameFinderCreator
-	Update(ctx context.Context, updatedPerformer *models.Performer) error
-	UpdateImage(ctx context.Context, performerID int, image []byte) error
+type ImporterReaderWriter interface {
+	models.PerformerCreatorUpdater
+	models.PerformerQueryer
 }
 
 type Importer struct {
-	ReaderWriter        NameFinderCreatorUpdater
-	TagWriter           tag.NameFinderCreator
+	ReaderWriter        ImporterReaderWriter
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Performer
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID        int
-	performer models.Performer
-	imageData []byte
+	ID           int
+	performer    models.Performer
+	customFields models.CustomFieldMap
+	imageData    []byte
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.performer = performerJSONToPerformer(i.Input)
+	i.customFields = i.Input.CustomFields
 
 	if err := i.populateTags(ctx); err != nil {
 		return err
@@ -65,7 +66,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -76,8 +77,8 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 		pluckedNames = append(pluckedNames, tag.Name)
 	}
 
-	missingTags := stringslice.StrFilter(names, func(name string) bool {
-		return !stringslice.StrInclude(pluckedNames, name)
+	missingTags := sliceutil.Filter(names, func(name string) bool {
+		return !slices.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {
@@ -100,17 +101,18 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := models.NewTag(name)
+		newTag := models.NewTag()
+		newTag.Name = name
 
-		err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, &newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, newTag)
+		ret = append(ret, &newTag)
 	}
 
 	return ret, nil
@@ -165,7 +167,10 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.performer)
+	err := i.ReaderWriter.Create(ctx, &models.CreatePerformerInput{
+		Performer:    &i.performer,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %v", err)
 	}
@@ -175,9 +180,13 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
-	performer := i.performer
-	performer.ID = id
-	err := i.ReaderWriter.Update(ctx, &performer)
+	i.performer.ID = id
+	err := i.ReaderWriter.Update(ctx, &models.UpdatePerformerInput{
+		Performer: &i.performer,
+		CustomFields: models.CustomFieldsInput{
+			Full: i.customFields,
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("error updating existing performer: %v", err)
 	}
@@ -189,7 +198,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	newPerformer := models.Performer{
 		Name:           performerJSON.Name,
 		Disambiguation: performerJSON.Disambiguation,
-		URL:            performerJSON.URL,
 		Ethnicity:      performerJSON.Ethnicity,
 		Country:        performerJSON.Country,
 		EyeColor:       performerJSON.EyeColor,
@@ -199,8 +207,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
 		Aliases:        models.NewRelatedStrings(performerJSON.Aliases),
-		Twitter:        performerJSON.Twitter,
-		Instagram:      performerJSON.Instagram,
 		Details:        performerJSON.Details,
 		HairColor:      performerJSON.HairColor,
 		Favorite:       performerJSON.Favorite,
@@ -210,6 +216,25 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(performerJSON.StashIDs),
+	}
+
+	if len(performerJSON.URLs) > 0 {
+		newPerformer.URLs = models.NewRelatedStrings(performerJSON.URLs)
+	} else {
+		urls := []string{}
+		if performerJSON.URL != "" {
+			urls = append(urls, performerJSON.URL)
+		}
+		if performerJSON.Twitter != "" {
+			urls = append(urls, performerJSON.Twitter)
+		}
+		if performerJSON.Instagram != "" {
+			urls = append(urls, performerJSON.Instagram)
+		}
+
+		if len(urls) > 0 {
+			newPerformer.URLs = models.NewRelatedStrings([]string{performerJSON.URL})
+		}
 	}
 
 	if performerJSON.Gender != "" {

@@ -9,33 +9,38 @@ import {
   useFindSceneMarkers,
 } from "src/core/StashService";
 import NavUtils from "src/utils/navigation";
-import { makeItemList, PersistanceLevel } from "../List/ItemList";
+import { ItemList, ItemListContext } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { MarkerWallPanel } from "../Wall/WallPanel";
+import { MarkerWallPanel } from "./SceneMarkerWallPanel";
+import { View } from "../List/views";
+import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
+import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
 
-const SceneMarkerItemList = makeItemList({
-  filterMode: GQL.FilterMode.SceneMarkers,
-  useResult: useFindSceneMarkers,
-  getItems(result: GQL.FindSceneMarkersQueryResult) {
-    return result?.data?.findSceneMarkers?.scene_markers ?? [];
-  },
-  getCount(result: GQL.FindSceneMarkersQueryResult) {
-    return result?.data?.findSceneMarkers?.count ?? 0;
-  },
-});
+function getItems(result: GQL.FindSceneMarkersQueryResult) {
+  return result?.data?.findSceneMarkers?.scene_markers ?? [];
+}
+
+function getCount(result: GQL.FindSceneMarkersQueryResult) {
+  return result?.data?.findSceneMarkers?.count ?? 0;
+}
 
 interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
   alterQuery?: boolean;
+  defaultSort?: string;
 }
 
 export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   filterHook,
+  view,
   alterQuery,
 }) => {
   const intl = useIntl();
   const history = useHistory();
+
+  const filterMode = GQL.FilterMode.SceneMarkers;
 
   const otherOperations = [
     {
@@ -82,26 +87,65 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 
   function renderContent(
     result: GQL.FindSceneMarkersQueryResult,
-    filter: ListFilterModel
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
   ) {
     if (!result.data?.findSceneMarkers) return;
 
     if (filter.displayMode === DisplayMode.Wall) {
       return (
-        <MarkerWallPanel markers={result.data.findSceneMarkers.scene_markers} />
+        <MarkerWallPanel
+          markers={result.data.findSceneMarkers.scene_markers}
+          zoomIndex={filter.zoomIndex}
+        />
+      );
+    }
+
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <SceneMarkerCardsGrid
+          markers={result.data.findSceneMarkers.scene_markers}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
       );
     }
   }
 
+  function renderDeleteDialog(
+    selectedSceneMarkers: GQL.SceneMarkerDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) {
+    return (
+      <DeleteSceneMarkersDialog
+        selected={selectedSceneMarkers}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
-    <SceneMarkerItemList
-      filterHook={filterHook}
-      persistState={PersistanceLevel.ALL}
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindSceneMarkers}
+      getItems={getItems}
+      getCount={getCount}
       alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-    />
+      filterHook={filterHook}
+      view={view}
+      selectable
+    >
+      <ItemList
+        zoomable
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </ItemListContext>
   );
 };
 

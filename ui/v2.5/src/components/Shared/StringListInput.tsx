@@ -53,12 +53,14 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
   const values = props.value.concat("");
 
   function valueChanged(idx: number, value: string) {
-    const newValues = values
-      .map((v, i) => {
-        const ret = idx !== i ? v : value;
-        return ret;
-      })
-      .filter((v, i) => i < values.length - 2 || v);
+    const newValues = props.value.slice();
+    newValues[idx] = value;
+
+    // if we cleared the last string, delete it from the array entirely
+    if (!value && idx === newValues.length - 1) {
+      newValues.splice(newValues.length - 1);
+    }
+
     props.setValue(newValues);
   }
 

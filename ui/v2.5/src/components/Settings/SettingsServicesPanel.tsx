@@ -19,8 +19,9 @@ import {
   StringListSetting,
   StringSetting,
   SelectSetting,
+  NumberSetting,
 } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import {
   videoSortOrderIntlMap,
   defaultVideoSort,
@@ -31,29 +32,22 @@ import {
   faUserClock,
 } from "@fortawesome/free-solid-svg-icons";
 
+const defaultDLNAPort = 1338;
+
 export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
 
-  const {
-    dlna,
-    loading: configLoading,
-    error,
-    saveDLNA,
-  } = React.useContext(SettingStateContext);
+  const { dlna, loading: configLoading, error, saveDLNA } = useSettings();
 
   // undefined to hide dialog, true for enable, false for disable
-  const [enableDisable, setEnableDisable] = useState<boolean | undefined>(
-    undefined
-  );
+  const [enableDisable, setEnableDisable] = useState<boolean>();
 
   const [enableUntilRestart, setEnableUntilRestart] = useState<boolean>(false);
-  const [enableDuration, setEnableDuration] = useState<number | undefined>(
-    undefined
-  );
+  const [enableDuration, setEnableDuration] = useState<number>(0);
 
   const [ipEntry, setIPEntry] = useState<string>("");
-  const [tempIP, setTempIP] = useState<string | undefined>();
+  const [tempIP, setTempIP] = useState<string>();
 
   const { data: statusData, loading, refetch: statusRefetch } = useDLNAStatus();
 
@@ -77,18 +71,18 @@ export const SettingsServicesPanel: React.FC = () => {
     try {
       if (enableDisable) {
         await enableDLNA(input);
-        Toast.success({
-          content: intl.formatMessage({
+        Toast.success(
+          intl.formatMessage({
             id: "config.dlna.enabled_dlna_temporarily",
-          }),
-        });
+          })
+        );
       } else {
         await disableDLNA(input);
-        Toast.success({
-          content: intl.formatMessage({
+        Toast.success(
+          intl.formatMessage({
             id: "config.dlna.disabled_dlna_temporarily",
-          }),
-        });
+          })
+        );
       }
     } catch (e) {
       Toast.error(e);
@@ -114,11 +108,11 @@ export const SettingsServicesPanel: React.FC = () => {
 
     try {
       await addTempDLANIP(input);
-      Toast.success({
-        content: intl.formatMessage({
+      Toast.success(
+        intl.formatMessage({
           id: "config.dlna.allowed_ip_temporarily",
-        }),
-      });
+        })
+      );
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -138,9 +132,7 @@ export const SettingsServicesPanel: React.FC = () => {
 
     try {
       await removeTempDLNAIP(input);
-      Toast.success({
-        content: intl.formatMessage({ id: "config.dlna.disallowed_ip" }),
-      });
+      Toast.success(intl.formatMessage({ id: "config.dlna.disallowed_ip" }));
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -148,7 +140,7 @@ export const SettingsServicesPanel: React.FC = () => {
     }
   }
 
-  function renderDeadline(until?: string) {
+  function renderDeadline(until?: string | null) {
     if (until) {
       const deadline = new Date(until);
       return `until ${intl.formatDate(deadline)}`;
@@ -218,11 +210,11 @@ export const SettingsServicesPanel: React.FC = () => {
       } else {
         await disableDLNA(input);
       }
-      Toast.success({
-        content: intl.formatMessage({
+      Toast.success(
+        intl.formatMessage({
           id: "config.dlna.successfully_cancelled_temporary_behaviour",
-        }),
-      });
+        })
+      );
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -273,8 +265,8 @@ export const SettingsServicesPanel: React.FC = () => {
 
         <Form.Group id="temp-enable-duration">
           <DurationInput
-            numericValue={enableDuration ?? 0}
-            onValueChange={(v) => setEnableDuration(v ?? 0)}
+            value={enableDuration}
+            setValue={(v) => setEnableDuration(v ?? 0)}
             disabled={enableUntilRestart}
           />
           <Form.Text className="text-muted">
@@ -315,8 +307,8 @@ export const SettingsServicesPanel: React.FC = () => {
 
         <Form.Group id="temp-enable-duration">
           <DurationInput
-            numericValue={enableDuration ?? 0}
-            onValueChange={(v) => setEnableDuration(v ?? 0)}
+            value={enableDuration}
+            setValue={(v) => setEnableDuration(v ?? 0)}
             disabled={enableUntilRestart}
           />
           <Form.Text className="text-muted">
@@ -426,6 +418,15 @@ export const SettingsServicesPanel: React.FC = () => {
             )}
             value={dlna.serverName ?? undefined}
             onChange={(v) => saveDLNA({ serverName: v })}
+          />
+
+          <NumberSetting
+            headingID="config.dlna.server_port"
+            subHeading={intl.formatMessage({
+              id: "config.dlna.server_port_desc",
+            })}
+            value={dlna.port ?? undefined}
+            onChange={(v) => saveDLNA({ port: v ? v : defaultDLNAPort })}
           />
 
           <BooleanSetting

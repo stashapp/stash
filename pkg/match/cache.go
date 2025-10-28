@@ -20,7 +20,7 @@ type Cache struct {
 // against. This means that performers with single-letter words in their names could potentially
 // be missed.
 // This query is expensive, so it's queried once and cached, if the cache if provided.
-func getSingleLetterPerformers(ctx context.Context, c *Cache, reader PerformerAutoTagQueryer) ([]*models.Performer, error) {
+func getSingleLetterPerformers(ctx context.Context, c *Cache, reader models.PerformerAutoTagQueryer) ([]*models.Performer, error) {
 	if c == nil {
 		c = &Cache{}
 	}
@@ -53,7 +53,7 @@ func getSingleLetterPerformers(ctx context.Context, c *Cache, reader PerformerAu
 
 // getSingleLetterStudios returns all studios with names that start with single character words.
 // See getSingleLetterPerformers for details.
-func getSingleLetterStudios(ctx context.Context, c *Cache, reader StudioAutoTagQueryer) ([]*models.Studio, error) {
+func getSingleLetterStudios(ctx context.Context, c *Cache, reader models.StudioAutoTagQueryer) ([]*models.Studio, error) {
 	if c == nil {
 		c = &Cache{}
 	}
@@ -86,7 +86,7 @@ func getSingleLetterStudios(ctx context.Context, c *Cache, reader StudioAutoTagQ
 
 // getSingleLetterTags returns all tags with names that start with single character words.
 // See getSingleLetterPerformers for details.
-func getSingleLetterTags(ctx context.Context, c *Cache, reader TagAutoTagQueryer) ([]*models.Tag, error) {
+func getSingleLetterTags(ctx context.Context, c *Cache, reader models.TagAutoTagQueryer) ([]*models.Tag, error) {
 	if c == nil {
 		c = &Cache{}
 	}
@@ -98,10 +98,12 @@ func getSingleLetterTags(ctx context.Context, c *Cache, reader TagAutoTagQueryer
 				Value:    singleFirstCharacterRegex,
 				Modifier: models.CriterionModifierMatchesRegex,
 			},
-			Or: &models.TagFilterType{
-				Aliases: &models.StringCriterionInput{
-					Value:    singleFirstCharacterRegex,
-					Modifier: models.CriterionModifierMatchesRegex,
+			OperatorFilter: models.OperatorFilter[models.TagFilterType]{
+				Or: &models.TagFilterType{
+					Aliases: &models.StringCriterionInput{
+						Value:    singleFirstCharacterRegex,
+						Modifier: models.CriterionModifierMatchesRegex,
+					},
 				},
 			},
 		}, &models.FindFilterType{

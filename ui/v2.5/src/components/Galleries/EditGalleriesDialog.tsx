@@ -7,7 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
@@ -95,14 +95,14 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
           input: getGalleryInput(),
         },
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           {
             entity: intl.formatMessage({ id: "galleries" }).toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -211,6 +211,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         existingIds={existingIds ?? []}
         ids={ids ?? []}
         mode={mode}
+        menuPortalTarget={document.body}
       />
     );
   }
@@ -257,7 +258,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             <Col xs={9}>
               <RatingSystem
                 value={rating100}
-                onSetRating={(value) => setRating(value)}
+                onSetRating={(value) => setRating(value ?? undefined)}
                 disabled={isUpdating}
               />
             </Col>
@@ -273,6 +274,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
                 }
                 ids={studioId ? [studioId] : []}
                 isDisabled={isUpdating}
+                menuPortalTarget={document.body}
               />
             </Col>
           </Form.Group>

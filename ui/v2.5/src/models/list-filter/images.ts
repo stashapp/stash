@@ -2,50 +2,60 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
   createDateCriterionOption,
-  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
+import { PathCriterionOption } from "./criteria/path";
 import { PerformersCriterionOption } from "./criteria/performers";
+import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
+import { OrientationCriterionOption } from "./criteria/orientation";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
+  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
-const sortByOptions = [
-  "o_counter",
-  "filesize",
-  "file_count",
-  "date",
-  ...MediaSortByOptions,
-].map(ListFilterOptions.createSortBy);
-
+const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+  ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("code", "scene_code"),
+  createStringCriterionOption("details"),
+  createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
-  createPathCriterionOption("path"),
+  PathCriterionOption,
+  GalleriesCriterionOption,
   OrganizedCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   ResolutionCriterionOption,
+  OrientationCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
+  // StudioTagsCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
   createDateCriterionOption("date"),

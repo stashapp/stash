@@ -11,32 +11,28 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type SceneReaderUpdater interface {
+type SceneCoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
-	scene.Updater
+}
+
+type SceneReaderUpdater interface {
+	SceneCoverGetter
+	models.SceneUpdater
 	models.PerformerIDLoader
 	models.TagIDLoader
 	models.StashIDLoader
 	models.URLLoader
 }
 
-type TagCreatorFinder interface {
-	Create(ctx context.Context, newTag *models.Tag) error
-	tag.Finder
-}
-
 type sceneRelationships struct {
-	sceneReader              SceneReaderUpdater
+	sceneReader              SceneCoverGetter
 	studioReaderWriter       models.StudioReaderWriter
 	performerCreator         PerformerCreator
-	tagCreatorFinder         TagCreatorFinder
+	tagCreator               models.TagCreator
 	scene                    *models.Scene
 	result                   *scrapeResult
 	fieldOptions             map[string]*FieldOptions
@@ -115,7 +111,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		}
 
 		if performerID != nil {
-			performerIDs = intslice.IntAppendUnique(performerIDs, *performerID)
+			performerIDs = sliceutil.AppendUnique(performerIDs, *performerID)
 		}
 	}
 
@@ -165,15 +161,12 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
 
-			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
-			now := time.Now()
-			newTag := models.Tag{
-				Name:      t.Name,
-				CreatedAt: now,
-				UpdatedAt: now,
-			}
-			err := g.tagCreatorFinder.Create(ctx, &newTag)
+			newTag := models.NewTag()
+			newTag.Name = t.Name
+
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}
@@ -190,7 +183,13 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	return tagIDs, nil
 }
 
-func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, error) {
+// stashIDs returns the updated stash IDs for the scene
+// returns nil if not applicable or no changes were made
+// if setUpdateTime is true, then the updated_at field will be set to the current time
+// for the applicable matching stash ID
+func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) ([]models.StashID, error) {
+	updateTime := time.Now()
+
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
@@ -207,7 +206,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 		strategy = fieldStrategy.Strategy
 	}
 
-	var stashIDs []models.StashID
+	var stashIDs models.StashIDs
 	originalStashIDs := target.StashIDs.List()
 
 	if strategy == FieldStrategyMerge {
@@ -216,15 +215,17 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 		stashIDs = append(stashIDs, originalStashIDs...)
 	}
 
+	// find and update the stash id if it exists
 	for i, stashID := range stashIDs {
 		if endpoint == stashID.Endpoint {
 			// if stashID is the same, then don't set
-			if stashID.StashID == *remoteSiteID {
+			if !setUpdateTime && stashID.StashID == *remoteSiteID {
 				return nil, nil
 			}
 
 			// replace the stash id and return
 			stashID.StashID = *remoteSiteID
+			stashID.UpdatedAt = updateTime
 			stashIDs[i] = stashID
 			return stashIDs, nil
 		}
@@ -232,11 +233,14 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 
 	// not found, create new entry
 	stashIDs = append(stashIDs, models.StashID{
-		StashID:  *remoteSiteID,
-		Endpoint: endpoint,
+		StashID:   *remoteSiteID,
+		Endpoint:  endpoint,
+		UpdatedAt: updateTime,
 	})
 
-	if sliceutil.SliceSame(originalStashIDs, stashIDs) {
+	// don't return if nothing was changed
+	// if we're setting update time, then we always return
+	if !setUpdateTime && stashIDs.HasSameStashIDs(originalStashIDs) {
 		return nil, nil
 	}
 

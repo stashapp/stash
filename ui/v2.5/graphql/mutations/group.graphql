@@ -1,0 +1,37 @@
+mutation GroupCreate($input: GroupCreateInput!) {
+  groupCreate(input: $input) {
+    ...GroupData
+  }
+}
+
+mutation GroupUpdate($input: GroupUpdateInput!) {
+  groupUpdate(input: $input) {
+    ...GroupData
+  }
+}
+
+mutation BulkGroupUpdate($input: BulkGroupUpdateInput!) {
+  bulkGroupUpdate(input: $input) {
+    ...GroupData
+  }
+}
+
+mutation GroupDestroy($id: ID!) {
+  groupDestroy(input: { id: $id })
+}
+
+mutation GroupsDestroy($ids: [ID!]!) {
+  groupsDestroy(ids: $ids)
+}
+
+mutation AddGroupSubGroups($input: GroupSubGroupAddInput!) {
+  addGroupSubGroups(input: $input)
+}
+
+mutation RemoveGroupSubGroups($input: GroupSubGroupRemoveInput!) {
+  removeGroupSubGroups(input: $input)
+}
+
+mutation ReorderSubGroups($input: ReorderSubGroupsInput!) {
+  reorderSubGroups(input: $input)
+}

@@ -1,4 +1,24 @@
 .LoadingIndicator {
+  // fade in animation - delay showing
+  animation: fadeInAnimation ease 200ms;
+  animation-delay: 200ms;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+
+  opacity: 0;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.LoadingIndicator {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -6,7 +26,7 @@
   width: 100%;
 
   &:not(.card-based) {
-    height: 70vh;
+    padding-top: 2rem;
   }
 
   &-message {
@@ -80,10 +100,9 @@
   }
 }
 
-.folder-list {
-  margin-top: 0.5rem 0 0 0;
-  max-height: 30vw;
-  overflow-x: auto;
+// z-index gets set on button groups for some reason
+.multi-set .btn-group > button.btn {
+  z-index: auto;
 }
 
 .folder-item {
@@ -92,14 +111,12 @@
   }
 }
 
-// z-index gets set on button groups for some reason
-.multi-set .btn-group > button.btn {
-  z-index: auto;
-}
-
 .folder-list {
   list-style-type: none;
   margin: 0;
+  max-height: 30vw;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
   padding-top: 1rem;
 
   &-item {
@@ -144,6 +161,10 @@
     padding-right: 15px;
   }
 
+  .image-selection-parent {
+    min-width: 100%;
+  }
+
   .image-selection {
     .select-buttons {
       align-items: center;
@@ -176,6 +197,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   border: none;
   box-shadow: none;
   color: #f5f8fa;
+  text-align: left;
+}
+
+button.collapse-button {
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  padding-left: 0;
 }
 
 .hover-popover-content {
@@ -183,13 +213,29 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   text-align: center;
 }
 
-.ErrorMessage {
-  align-items: center;
-  height: 20rem;
+.ErrorMessage-container {
+  display: flex;
   justify-content: center;
+  width: 100%;
+}
 
-  &-content {
-    display: inline-block;
+.ErrorMessage {
+  .fa-icon {
+    color: $warning;
+    font-size: 1.5em;
+    margin-right: 0.3em;
+    vertical-align: middle;
+  }
+
+  background-color: initial;
+  border-color: $danger;
+  color: $text-color;
+  margin: 1rem;
+  text-align: left;
+  width: 500px;
+
+  @include media-breakpoint-down(xs) {
+    width: 100%;
   }
 }
 
@@ -213,22 +259,47 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     height: 5px;
   }
 
-  .card-check {
+  .card-controls {
+    align-items: center;
+    display: flex;
     left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
+
     position: absolute;
     top: 0.7rem;
-    width: 1.2rem;
     z-index: 1;
+  }
+
+  .card-check,
+  .card-drag-handle {
+    height: 1.2rem;
+    opacity: 0;
+    width: 1.2rem;
+
+    @media (hover: none), (pointer: coarse) {
+      // always show card controls when hovering not supported
+      opacity: 0.25;
+    }
+  }
+
+  .card-drag-handle {
+    cursor: move;
+  }
+
+  .card-check {
+    padding-left: 15px;
 
     &:checked {
       opacity: 0.75;
     }
+
+    @media (hover: none), (pointer: coarse) {
+      // and make it bigger when hovering not supported
+      width: 1.5rem;
+    }
   }
 
-  &:hover .card-check {
+  &:hover .card-check,
+  &:hover .card-drag-handle {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
@@ -247,6 +318,12 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
 
   .file-info-panel a > & {
     word-break: break-all;
+  }
+
+  &.inline {
+    display: inline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -369,6 +446,7 @@ div.react-datepicker {
 
   .react-datepicker__day {
     color: $text-color;
+
     &.react-datepicker__day--disabled {
       color: $text-muted;
     }
@@ -438,6 +516,7 @@ div.react-datepicker {
     }
   }
 }
+
 /* stylelint-enable */
 
 #date-picker-portal .react-datepicker-popper {
@@ -454,23 +533,419 @@ div.react-datepicker {
 .clearable-text-field,
 .clearable-text-field:active,
 .clearable-text-field:focus {
-  background-color: #394b59;
+  background-color: $secondary;
   border: 0;
-  border-color: #394b59;
+  border-color: $secondary;
   color: #fff;
 }
 
 .clearable-text-field-clear {
-  background-color: #394b59;
-  color: #bfccd6;
+  background-color: $secondary;
+  bottom: 0;
+  color: $muted-gray;
   font-size: 0.875rem;
   margin: 0.375rem 0.75rem;
   padding: 0;
   position: absolute;
   right: 0;
+  top: 0;
   z-index: 4;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled):active:focus {
+    background-color: $secondary;
+    border-color: transparent;
+    box-shadow: none;
+  }
 }
 
 .string-list-row .input-group {
   flex-wrap: nowrap;
+}
+
+.stash-id-pill {
+  display: inline-block;
+  font-size: 90%;
+  font-weight: 700;
+  line-height: 1;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+
+  span,
+  a {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+  }
+
+  span {
+    background-color: $primary;
+    border-radius: 0.25rem 0 0 0.25rem;
+    min-width: 5em;
+  }
+
+  a {
+    background-color: $secondary;
+    border-radius: 0 0.25rem 0.25rem 0;
+  }
+}
+
+.react-select-image-option {
+  align-items: baseline;
+  display: flex;
+}
+
+button.btn.favorite-button {
+  opacity: 1;
+  transition: opacity 0.5s;
+
+  &.not-favorite {
+    color: rgba(191, 204, 214, 0.5);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+
+    &.hide-not-favorite {
+      opacity: 0;
+    }
+  }
+
+  &.favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+  }
+
+  &:hover,
+  &:active,
+  &:focus,
+  &:active:focus {
+    background: none;
+    box-shadow: none;
+  }
+}
+
+.count-button {
+  border-radius: 5px;
+
+  &:hover {
+    background: rgba(138, 155, 168, 0.15);
+    color: #f5f8fa;
+  }
+
+  .count-icon {
+    padding-left: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .count-value {
+    padding-left: 0.25rem;
+    padding-right: 0.5rem;
+  }
+
+  button.count-icon,
+  &.increment-only button.count-value {
+    &:hover {
+      background: none;
+      color: #f5f8fa;
+    }
+  }
+
+  button.btn-secondary.count-icon,
+  button.btn-secondary.count-value {
+    &:focus {
+      border: none;
+      box-shadow: none;
+      color: #f5f8fa;
+
+      &:not(:hover) {
+        background: none;
+      }
+    }
+  }
+}
+
+.external-links-button {
+  display: inline-block;
+}
+
+.scraper-menu .dropdown-menu {
+  min-width: 250px;
+  padding-top: 0;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0;
+  }
+
+  .scraper-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .btn-group {
+      border: solid 1px $textfield-bg;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+    }
+
+    .clearable-text-field-clear {
+      background-color: unset;
+      border: unset;
+    }
+
+    .reload-button.btn {
+      border-bottom-right-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
+  }
+}
+
+.custom-fields {
+  width: 100%;
+}
+
+.custom-fields .detail-item .detail-item-title {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-fields-input > .collapse-button {
+  font-weight: 700;
+}
+
+.custom-fields-row {
+  align-items: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+
+  .form-label {
+    margin-bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  // labels with titles are styled with help cursor and dotted underline elsewhere
+  div.custom-fields-field label.form-label {
+    cursor: inherit;
+    text-decoration: inherit;
+  }
+
+  .form-control,
+  .btn {
+    font-size: 0.875rem;
+  }
+
+  &.custom-fields-new > div:not(:last-child) {
+    padding-right: 0;
+  }
+}
+
+.sidebar-pane {
+  display: flex;
+
+  .sidebar {
+    // TODO - use different colours for sidebar and toolbar
+    background-color: $body-bg;
+    border-right: 1px solid $secondary;
+    flex: $sidebar-width;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-left: 15px;
+    transition: margin-left 0.1s;
+  }
+
+  .sidebar {
+    bottom: 0;
+    left: 0;
+    margin-top: $navbar-height;
+    overflow-y: auto;
+    padding-top: 0.5rem;
+    position: fixed;
+    scrollbar-gutter: stable;
+    top: 0;
+    width: $sidebar-width;
+    z-index: 100;
+  }
+
+  &.hide-sidebar .sidebar {
+    margin-left: -$sidebar-width;
+  }
+
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
+  }
+
+  > :nth-child(2) {
+    flex-grow: 1;
+    padding-left: 0.5rem;
+  }
+
+  &.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 0;
+    }
+  }
+
+  @include media-breakpoint-up(xl) {
+    transition: margin-left 0.1s;
+
+    &:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: calc($sidebar-width - 15px);
+      }
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      width: 100%;
+    }
+
+    &.hide-sidebar .sidebar {
+      margin-left: -100%;
+    }
+
+    &.hide-sidebar > :nth-child(2) {
+      width: 100%;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    display: block;
+
+    .sidebar {
+      margin-bottom: $navbar-height;
+      margin-top: 0;
+    }
+  }
+}
+
+.sidebar-toolbar {
+  // TODO - use different colours for sidebar and toolbar
+  background-color: $body-bg;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar-toolbar {
+    padding-top: 1rem;
+  }
+}
+
+.sidebar-section {
+  border-bottom: 1px solid $secondary;
+
+  .collapse-header {
+    // background-color: $secondary;
+
+    padding: 0.25rem;
+
+    .collapse-button {
+      font-weight: bold;
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  .collapse,
+  // include collapsing to allow for the transition
+  .collapsing {
+    padding-top: 0.25rem;
+  }
+}
+
+.sidebar-section:first-child .collapse-header {
+  border-top: 1px solid $secondary;
+}
+
+$sticky-header-height: calc(50px + 3.3rem);
+
+// special case for sidebar in details view
+.detail-body {
+  .sidebar {
+    // required for sticky to work
+    align-self: flex-start;
+
+    // take a further 15px padding to match the detail body
+    height: calc(100vh - $sticky-header-height - 15px);
+    margin-top: -15px;
+    max-height: calc(100vh - $sticky-header-height - 15px);
+    overflow-y: auto;
+    padding-left: 0;
+    position: sticky;
+
+    top: calc($sticky-detail-header-height + $navbar-height);
+
+    .sidebar-toolbar {
+      padding-top: 15px;
+    }
+  }
+
+  .sidebar-pane.hide-sidebar .sidebar {
+    left: -$sidebar-width;
+    margin-left: calc(-15px - $sidebar-width);
+  }
+
+  // on smaller viewports we want the sidebar to overlap content
+  @include media-breakpoint-down(lg) {
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -$sidebar-width;
+    }
+
+    .sidebar-pane > :nth-child(2) {
+      transition: none;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      flex: 100% 0 0;
+      height: calc(100vh - 4rem);
+      max-height: calc(100vh - 4rem);
+      top: 0;
+    }
+
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -100%;
+    }
+
+    .sidebar-pane.hide-sidebar .sidebar {
+      display: none;
+    }
+  }
+  @include media-breakpoint-up(xl) {
+    .sidebar-pane:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .sidebar-pane.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 15px;
+    }
+  }
 }

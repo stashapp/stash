@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/corona10/goimagehash"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type Phash struct {
@@ -58,7 +58,7 @@ func findNeighbors(bucket int, neighbors []int, hashes []*Phash, scenes *[]int) 
 		hash := hashes[id]
 		if hash.Bucket == -1 {
 			hash.Bucket = bucket
-			*scenes = intslice.IntAppendUnique(*scenes, hash.SceneID)
+			*scenes = sliceutil.AppendUnique(*scenes, hash.SceneID)
 			findNeighbors(bucket, hash.Neighbors, hashes, scenes)
 		}
 	}

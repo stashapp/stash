@@ -1,0 +1,14 @@
+query SystemStatus {
+  systemStatus {
+    databaseSchema
+    databasePath
+    appSchema
+    status
+    configPath
+    os
+    workingDir
+    homeDir
+    ffmpegPath
+    ffprobePath
+  }
+}

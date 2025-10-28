@@ -1,0 +1,89 @@
+fragment SlimSceneData on Scene {
+  id
+  title
+  code
+  details
+  director
+  urls
+  date
+  rating100
+  o_counter
+  organized
+  interactive
+  interactive_speed
+  resume_time
+  play_duration
+  play_count
+
+  files {
+    ...VideoFileData
+  }
+
+  paths {
+    screenshot
+    preview
+    stream
+    webp
+    vtt
+    sprite
+    funscript
+    interactive_heatmap
+    caption
+  }
+
+  scene_markers {
+    id
+    title
+    seconds
+    primary_tag {
+      id
+      name
+    }
+  }
+
+  galleries {
+    id
+    files {
+      path
+    }
+    folder {
+      path
+    }
+    title
+  }
+
+  studio {
+    id
+    name
+    image_path
+  }
+
+  groups {
+    group {
+      id
+      name
+      front_image_path
+    }
+    scene_index
+  }
+
+  tags {
+    id
+    name
+  }
+
+  performers {
+    id
+    name
+    disambiguation
+    gender
+    favorite
+    image_path
+  }
+
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
+}

@@ -1,9 +1,9 @@
 package sqlite
 
 import (
-	"github.com/stashapp/stash/pkg/file"
-
 	"gopkg.in/guregu/null.v4"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // null package does not provide methods to convert null.Int to int pointer
@@ -33,27 +33,27 @@ func nullFloatPtr(i null.Float) *float64 {
 	return &v
 }
 
-func nullIntFolderIDPtr(i null.Int) *file.FolderID {
+func nullIntFolderIDPtr(i null.Int) *models.FolderID {
 	if !i.Valid {
 		return nil
 	}
 
-	v := file.FolderID(i.Int64)
+	v := models.FolderID(i.Int64)
 
 	return &v
 }
 
-func nullIntFileIDPtr(i null.Int) *file.ID {
+func nullIntFileIDPtr(i null.Int) *models.FileID {
 	if !i.Valid {
 		return nil
 	}
 
-	v := file.ID(i.Int64)
+	v := models.FileID(i.Int64)
 
 	return &v
 }
 
-func nullIntFromFileIDPtr(i *file.ID) null.Int {
+func nullIntFromFileIDPtr(i *models.FileID) null.Int {
 	if i == nil {
 		return null.NewInt(0, false)
 	}
@@ -61,7 +61,7 @@ func nullIntFromFileIDPtr(i *file.ID) null.Int {
 	return null.IntFrom(int64(*i))
 }
 
-func nullIntFromFolderIDPtr(i *file.FolderID) null.Int {
+func nullIntFromFolderIDPtr(i *models.FolderID) null.Int {
 	if i == nil {
 		return null.NewInt(0, false)
 	}

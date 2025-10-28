@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const ffmpegImageQuality = 5
@@ -30,7 +31,7 @@ var (
 
 type ThumbnailEncoder struct {
 	FFMpeg             *ffmpeg.FFMpeg
-	FFProbe            ffmpeg.FFProbe
+	FFProbe            *ffmpeg.FFProbe
 	ClipPreviewOptions ClipPreviewOptions
 	vips               *vipsEncoder
 }
@@ -48,7 +49,7 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, clipPreviewOptions ClipPreviewOptions) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe *ffmpeg.FFProbe, clipPreviewOptions ClipPreviewOptions) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
 		FFMpeg:             ffmpegEncoder,
 		FFProbe:            ffProbe,
@@ -68,7 +69,7 @@ func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, c
 // the provided max size. It resizes based on the largest X/Y direction.
 // It returns nil and an error if an error occurs reading, decoding or encoding
 // the image, or if the image is not suitable for thumbnails.
-func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error) {
+func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, error) {
 	reader, err := f.Open(&file.OsFS{})
 	if err != nil {
 		return nil, err
@@ -82,7 +83,7 @@ func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error
 
 	data := buf.Bytes()
 
-	if imageFile, ok := f.(*file.ImageFile); ok {
+	if imageFile, ok := f.(*models.ImageFile); ok {
 		format := imageFile.Format
 		animated := imageFile.Format == formatGif
 
@@ -98,7 +99,7 @@ func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error
 	}
 
 	// Videofiles can only be thumbnailed with ffmpeg
-	if _, ok := f.(*file.VideoFile); ok {
+	if _, ok := f.(*models.VideoFile); ok {
 		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 

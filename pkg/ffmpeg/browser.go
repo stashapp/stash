@@ -20,7 +20,7 @@ var validForHevc = []Container{Mp4}
 
 var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
 var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
-var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3}
+var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3, Opus}
 
 var (
 	// ErrUnsupportedVideoCodecForBrowser is returned when the video codec is not supported for browser streaming.

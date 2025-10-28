@@ -1,14 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
-import { galleryTitle } from "src/core/galleries";
+import { PhotographerLink } from "src/components/Shared/Link";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -24,7 +21,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     return (
       <>
         <h6>
-          <FormattedMessage id="details" />
+          <FormattedMessage id="details" />:{" "}
         </h6>
         <p className="pre">{gallery.details}</p>
       </>
@@ -34,7 +31,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
   function renderTags() {
     if (gallery.tags.length === 0) return;
     const tags = gallery.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} tagType="gallery" />
+      <TagLink key={tag.id} tag={tag} linkType="gallery" />
     ));
     return (
       <>
@@ -77,32 +74,11 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
 
   // filename should use entire row if there is no studio
   const galleryDetailsWidth = gallery.studio ? "col-9" : "col-12";
-  const title = galleryTitle(gallery);
 
   return (
     <>
       <div className="row">
-        <div className={`${galleryDetailsWidth} col-xl-12 gallery-details`}>
-          <h3 className="gallery-header d-xl-none">
-            <TruncatedText text={title} />
-          </h3>
-          {gallery.date ? (
-            <h5>
-              <FormattedDate
-                value={gallery.date}
-                format="long"
-                timeZone="utc"
-              />
-            </h5>
-          ) : undefined}
-          {gallery.rating100 ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={gallery.rating100} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
+        <div className={`${galleryDetailsWidth} col-12 gallery-details`}>
           <h6>
             <FormattedMessage id="created_at" />:{" "}
             {TextUtils.formatDateTime(intl, gallery.created_at)}{" "}
@@ -111,18 +87,21 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
             <FormattedMessage id="updated_at" />:{" "}
             {TextUtils.formatDateTime(intl, gallery.updated_at)}{" "}
           </h6>
-        </div>
-        {gallery.studio && (
-          <div className="col-3 d-xl-none">
-            <Link to={`/studios/${gallery.studio.id}`}>
-              <img
-                src={gallery.studio.image_path ?? ""}
-                alt={`${gallery.studio.name} logo`}
-                className="studio-logo float-right"
+          {gallery.code && (
+            <h6>
+              <FormattedMessage id="scene_code" />: {gallery.code}{" "}
+            </h6>
+          )}
+          {gallery.photographer && (
+            <h6>
+              <FormattedMessage id="photographer" />:{" "}
+              <PhotographerLink
+                photographer={gallery.photographer}
+                linkType="gallery"
               />
-            </Link>
-          </div>
-        )}
+            </h6>
+          )}
+        </div>
       </div>
       <div className="row">
         <div className="col-12">

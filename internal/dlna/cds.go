@@ -30,6 +30,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -40,8 +41,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 var pageSize = 100
@@ -86,7 +85,6 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 		Path:   iconPath,
 		RawQuery: url.Values{
 			"scene": {strconv.Itoa(scene.ID)},
-			"c":     {"jpeg"},
 		}.Encode(),
 	}).String()
 
@@ -194,7 +192,7 @@ func (me *contentDirectoryService) Handle(action string, argsXML []byte, r *http
 
 		obj, err := me.objectFromID(browse.ObjectID)
 		if err != nil {
-			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, err.Error())
+			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, "cannot find object with id %q: %v", browse.ObjectID, err.Error())
 		}
 
 		switch browse.BrowseFlag {
@@ -318,13 +316,13 @@ func (me *contentDirectoryService) handleBrowseDirectChildren(obj object, host s
 		objs = me.getPerformerScenes(childPath(paths), host)
 	}
 
-	// Movies
-	if obj.Path == "movies" {
-		objs = me.getMovies()
+	// Groups - deprecated
+	if obj.Path == "groups" {
+		objs = me.getGroups()
 	}
 
-	if strings.HasPrefix(obj.Path, "movies/") {
-		objs = me.getMovieScenes(childPath(paths), host)
+	if strings.HasPrefix(obj.Path, "groups/") {
+		objs = me.getGroupScenes(childPath(paths), host)
 	}
 
 	// Rating
@@ -360,10 +358,11 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 	} else {
 		var scene *models.Scene
 
-		if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
-			scene, err = me.repository.SceneFinder.Find(ctx, sceneID)
+		r := me.repository
+		if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
+			scene, err = r.SceneFinder.Find(ctx, sceneID)
 			if scene != nil {
-				err = scene.LoadPrimaryFile(ctx, me.repository.FileFinder)
+				err = scene.LoadPrimaryFile(ctx, r.FileGetter)
 			}
 
 			if err != nil {
@@ -434,7 +433,7 @@ func getRootObjects() []interface{} {
 	objs = append(objs, makeStorageFolder("performers", "performers", rootID))
 	objs = append(objs, makeStorageFolder("tags", "tags", rootID))
 	objs = append(objs, makeStorageFolder("studios", "studios", rootID))
-	objs = append(objs, makeStorageFolder("movies", "movies", rootID))
+	objs = append(objs, makeStorageFolder("groups", "groups", rootID))
 	objs = append(objs, makeStorageFolder("rating", "rating", rootID))
 
 	return objs
@@ -452,7 +451,8 @@ func getSortDirection(sceneFilter *models.SceneFilterType, sort string) models.S
 func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType, parentID string, host string) []interface{} {
 	var objs []interface{}
 
-	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+	r := me.repository
+	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
 		sort := me.VideoSortOrder
 		direction := getSortDirection(sceneFilter, sort)
 		findFilter := &models.FindFilterType{
@@ -461,7 +461,7 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 			Direction: &direction,
 		}
 
-		scenes, total, err := scene.QueryWithCount(ctx, me.repository.SceneFinder, sceneFilter, findFilter)
+		scenes, total, err := scene.QueryWithCount(ctx, r.SceneFinder, sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}
@@ -472,13 +472,13 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 				parentID:    parentID,
 			}
 
-			objs, err = pager.getPages(ctx, me.repository.SceneFinder, total)
+			objs, err = pager.getPages(ctx, r.SceneFinder, total)
 			if err != nil {
 				return err
 			}
 		} else {
 			for _, s := range scenes {
-				if err := s.LoadPrimaryFile(ctx, me.repository.FileFinder); err != nil {
+				if err := s.LoadPrimaryFile(ctx, r.FileGetter); err != nil {
 					return err
 				}
 
@@ -497,7 +497,8 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilterType, parentID string, page int, host string) []interface{} {
 	var objs []interface{}
 
-	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+	r := me.repository
+	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
 		pager := scenePager{
 			sceneFilter: sceneFilter,
 			parentID:    parentID,
@@ -506,7 +507,7 @@ func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilter
 		sort := me.VideoSortOrder
 		direction := getSortDirection(sceneFilter, sort)
 		var err error
-		objs, err = pager.getPageVideos(ctx, me.repository.SceneFinder, me.repository.FileFinder, page, host, sort, direction)
+		objs, err = pager.getPageVideos(ctx, r.SceneFinder, r.FileGetter, page, host, sort, direction)
 		if err != nil {
 			return err
 		}
@@ -520,7 +521,7 @@ func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilter
 }
 
 func getPageFromID(paths []string) *int {
-	i := stringslice.StrIndex(paths, "page")
+	i := slices.Index(paths, "page")
 	if i == -1 || i+1 >= len(paths) {
 		return nil
 	}
@@ -540,8 +541,9 @@ func (me *contentDirectoryService) getAllScenes(host string) []interface{} {
 func (me *contentDirectoryService) getStudios() []interface{} {
 	var objs []interface{}
 
-	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
-		studios, err := me.repository.StudioFinder.All(ctx)
+	r := me.repository
+	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
+		studios, err := r.StudioFinder.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -579,8 +581,9 @@ func (me *contentDirectoryService) getStudioScenes(paths []string, host string) 
 func (me *contentDirectoryService) getTags() []interface{} {
 	var objs []interface{}
 
-	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
-		tags, err := me.repository.TagFinder.All(ctx)
+	r := me.repository
+	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
+		tags, err := r.TagFinder.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -618,8 +621,9 @@ func (me *contentDirectoryService) getTagScenes(paths []string, host string) []i
 func (me *contentDirectoryService) getPerformers() []interface{} {
 	var objs []interface{}
 
-	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
-		performers, err := me.repository.PerformerFinder.All(ctx)
+	r := me.repository
+	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
+		performers, err := r.PerformerFinder.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -654,17 +658,18 @@ func (me *contentDirectoryService) getPerformerScenes(paths []string, host strin
 	return me.getVideos(sceneFilter, parentID, host)
 }
 
-func (me *contentDirectoryService) getMovies() []interface{} {
+func (me *contentDirectoryService) getGroups() []interface{} {
 	var objs []interface{}
 
-	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
-		movies, err := me.repository.MovieFinder.All(ctx)
+	r := me.repository
+	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
+		groups, err := r.GroupFinder.All(ctx)
 		if err != nil {
 			return err
 		}
 
-		for _, s := range movies {
-			objs = append(objs, makeStorageFolder("movies/"+strconv.Itoa(s.ID), s.Name, "movies"))
+		for _, s := range groups {
+			objs = append(objs, makeStorageFolder("groups/"+strconv.Itoa(s.ID), s.Name, "groups"))
 		}
 
 		return nil
@@ -675,15 +680,15 @@ func (me *contentDirectoryService) getMovies() []interface{} {
 	return objs
 }
 
-func (me *contentDirectoryService) getMovieScenes(paths []string, host string) []interface{} {
+func (me *contentDirectoryService) getGroupScenes(paths []string, host string) []interface{} {
 	sceneFilter := &models.SceneFilterType{
-		Movies: &models.MultiCriterionInput{
+		Groups: &models.HierarchicalMultiCriterionInput{
 			Modifier: models.CriterionModifierIncludes,
 			Value:    []string{paths[0]},
 		},
 	}
 
-	parentID := "movies/" + strings.Join(paths, "/")
+	parentID := "groups/" + strings.Join(paths, "/")
 
 	page := getPageFromID(paths)
 	if page != nil {
@@ -711,9 +716,9 @@ func (me *contentDirectoryService) getRatingScenes(paths []string, host string) 
 	}
 
 	sceneFilter := &models.SceneFilterType{
-		Rating: &models.IntCriterionInput{
+		Rating100: &models.IntCriterionInput{
 			Modifier: models.CriterionModifierEquals,
-			Value:    r,
+			Value:    models.Rating5To100(r),
 		},
 	}
 

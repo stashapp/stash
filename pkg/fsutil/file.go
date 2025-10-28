@@ -1,14 +1,15 @@
 package fsutil
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
-
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 // CopyFile copies the contents of the file at srcpath to a regular file at dstpath.
@@ -20,7 +21,7 @@ func CopyFile(srcpath, dstpath string) (err error) {
 		return err
 	}
 
-	w, err := os.OpenFile(dstpath, os.O_CREATE|os.O_EXCL, 0666)
+	w, err := os.OpenFile(dstpath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0666)
 	if err != nil {
 		r.Close() // We need to close the input file as the defer below would not be called.
 		return err
@@ -55,18 +56,21 @@ func CopyFile(srcpath, dstpath string) (err error) {
 }
 
 // SafeMove attempts to move the file with path src to dest using os.Rename. If this fails, then it copies src to dest, then deletes src.
+// If the copy fails, or the delete fails, the function will return an error.
 func SafeMove(src, dst string) error {
 	err := os.Rename(src, dst)
 
 	if err != nil {
-		err = CopyFile(src, dst)
-		if err != nil {
-			return err
+		copyErr := CopyFile(src, dst)
+		if copyErr != nil {
+			return fmt.Errorf("copying file during SaveMove failed with: '%w'; renaming file failed previously with: '%v'", copyErr, err)
 		}
 
-		err = os.Remove(src)
-		if err != nil {
-			logger.Errorf("error removing old file %s during SafeMove: %v", src, err)
+		removeErr := os.Remove(src)
+		if removeErr != nil {
+			// if we can't remove the old file, remove the new one and fail
+			_ = os.Remove(dst)
+			return fmt.Errorf("removing old file during SafeMove failed with: '%w'; renaming file failed previously with: '%v'", removeErr, err)
 		}
 	}
 
@@ -149,7 +153,12 @@ var (
 )
 
 // SanitiseBasename returns a file basename removing any characters that are illegal or problematic to use in the filesystem.
+// It appends a short hash of the original string to ensure uniqueness.
 func SanitiseBasename(v string) string {
+	// Generate a short hash for uniqueness
+	hash := sha1.Sum([]byte(v))
+	shortHash := hex.EncodeToString(hash[:4]) // Use the first 4 bytes of the hash
+
 	v = strings.TrimSpace(v)
 
 	// replace illegal filename characters with -
@@ -161,5 +170,14 @@ func SanitiseBasename(v string) string {
 	// remove multiple hyphens
 	v = multiHyphenRE.ReplaceAllString(v, "-")
 
-	return strings.TrimSpace(v)
+	return strings.TrimSpace(v) + "-" + shortHash
+}
+
+// GetExeName returns the name of the given executable for the current platform.
+// One windows it returns the name with the .exe extension.
+func GetExeName(base string) string {
+	if runtime.GOOS == "windows" {
+		return base + ".exe"
+	}
+	return base
 }

@@ -39,6 +39,7 @@ func ReadImageFromURL(ctx context.Context, url string) ([]byte, error) {
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy:           http.ProxyFromEnvironment,
 		},
 
 		Timeout: imageGetTimeout,

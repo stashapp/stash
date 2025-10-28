@@ -60,7 +60,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     setIsDeleting(true);
     try {
       await deleteImage();
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
     } catch (e) {
       Toast.error(e);
     }
@@ -76,7 +76,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     const deletedFiles: string[] = [];
 
     props.selected.forEach((s) => {
-      const paths = s.files.map((f) => f.path);
+      const paths = s.visual_files.map((f) => f.path);
       deletedFiles.push(...paths);
     });
 

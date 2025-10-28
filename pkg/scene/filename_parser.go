@@ -204,7 +204,7 @@ type sceneHolder struct {
 	mm         string
 	dd         string
 	performers []string
-	movies     []string
+	groups     []string
 	studio     string
 	tags       []string
 }
@@ -340,7 +340,7 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 	case "studio":
 		h.studio = value.(string)
 	case "movie":
-		h.movies = append(h.movies, value.(string))
+		h.groups = append(h.groups, value.(string))
 	case "tag":
 		h.tags = append(h.tags, value.(string))
 	case "yyyy":
@@ -410,22 +410,24 @@ type FilenameParser struct {
 	ParserInput    models.SceneParserInput
 	Filter         *models.FindFilterType
 	whitespaceRE   *regexp.Regexp
+	repository     FilenameParserRepository
 	performerCache map[string]*models.Performer
 	studioCache    map[string]*models.Studio
-	movieCache     map[string]*models.Movie
+	groupCache     map[string]*models.Group
 	tagCache       map[string]*models.Tag
 }
 
-func NewFilenameParser(filter *models.FindFilterType, config models.SceneParserInput) *FilenameParser {
+func NewFilenameParser(filter *models.FindFilterType, config models.SceneParserInput, repo FilenameParserRepository) *FilenameParser {
 	p := &FilenameParser{
 		Pattern:     *filter.Q,
 		ParserInput: config,
 		Filter:      filter,
+		repository:  repo,
 	}
 
 	p.performerCache = make(map[string]*models.Performer)
 	p.studioCache = make(map[string]*models.Studio)
-	p.movieCache = make(map[string]*models.Movie)
+	p.groupCache = make(map[string]*models.Group)
 	p.tagCache = make(map[string]*models.Tag)
 
 	p.initWhiteSpaceRegex()
@@ -450,14 +452,24 @@ func (p *FilenameParser) initWhiteSpaceRegex() {
 }
 
 type FilenameParserRepository struct {
-	Scene     Queryer
+	Scene     models.SceneQueryer
 	Performer PerformerNamesFinder
-	Studio    studio.Queryer
-	Movie     MovieNameFinder
-	Tag       tag.Queryer
+	Studio    models.StudioQueryer
+	Group     GroupNameFinder
+	Tag       models.TagQueryer
 }
 
-func (p *FilenameParser) Parse(ctx context.Context, repo FilenameParserRepository) ([]*models.SceneParserResult, int, error) {
+func NewFilenameParserRepository(repo models.Repository) FilenameParserRepository {
+	return FilenameParserRepository{
+		Scene:     repo.Scene,
+		Performer: repo.Performer,
+		Studio:    repo.Studio,
+		Group:     repo.Group,
+		Tag:       repo.Tag,
+	}
+}
+
+func (p *FilenameParser) Parse(ctx context.Context) ([]*models.SceneParserResult, int, error) {
 	// perform the query to find the scenes
 	mapper, err := newParseMapper(p.Pattern, p.ParserInput.IgnoreWords)
 
@@ -479,17 +491,17 @@ func (p *FilenameParser) Parse(ctx context.Context, repo FilenameParserRepositor
 
 	p.Filter.Q = nil
 
-	scenes, total, err := QueryWithCount(ctx, repo.Scene, sceneFilter, p.Filter)
+	scenes, total, err := QueryWithCount(ctx, p.repository.Scene, sceneFilter, p.Filter)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	ret := p.parseScenes(ctx, repo, scenes, mapper)
+	ret := p.parseScenes(ctx, scenes, mapper)
 
 	return ret, total, nil
 }
 
-func (p *FilenameParser) parseScenes(ctx context.Context, repo FilenameParserRepository, scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
+func (p *FilenameParser) parseScenes(ctx context.Context, scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
 	var ret []*models.SceneParserResult
 	for _, scene := range scenes {
 		sceneHolder := mapper.parse(scene)
@@ -498,7 +510,7 @@ func (p *FilenameParser) parseScenes(ctx context.Context, repo FilenameParserRep
 			r := &models.SceneParserResult{
 				Scene: scene,
 			}
-			p.setParserResult(ctx, repo, *sceneHolder, r)
+			p.setParserResult(ctx, *sceneHolder, r)
 
 			ret = append(ret, r)
 		}
@@ -544,7 +556,7 @@ func (p *FilenameParser) queryPerformer(ctx context.Context, qb PerformerNamesFi
 	return ret
 }
 
-func (p *FilenameParser) queryStudio(ctx context.Context, qb studio.Queryer, studioName string) *models.Studio {
+func (p *FilenameParser) queryStudio(ctx context.Context, qb models.StudioQueryer, studioName string) *models.Studio {
 	// massage the performer name
 	studioName = delimiterRE.ReplaceAllString(studioName, " ")
 
@@ -566,28 +578,28 @@ func (p *FilenameParser) queryStudio(ctx context.Context, qb studio.Queryer, stu
 	return ret
 }
 
-type MovieNameFinder interface {
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
+type GroupNameFinder interface {
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
-func (p *FilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, movieName string) *models.Movie {
-	// massage the movie name
-	movieName = delimiterRE.ReplaceAllString(movieName, " ")
+func (p *FilenameParser) queryGroup(ctx context.Context, qb GroupNameFinder, groupName string) *models.Group {
+	// massage the group name
+	groupName = delimiterRE.ReplaceAllString(groupName, " ")
 
 	// check cache first
-	if ret, found := p.movieCache[movieName]; found {
+	if ret, found := p.groupCache[groupName]; found {
 		return ret
 	}
 
-	ret, _ := qb.FindByName(ctx, movieName, true)
+	ret, _ := qb.FindByName(ctx, groupName, true)
 
 	// add result to cache
-	p.movieCache[movieName] = ret
+	p.groupCache[groupName] = ret
 
 	return ret
 }
 
-func (p *FilenameParser) queryTag(ctx context.Context, qb tag.Queryer, tagName string) *models.Tag {
+func (p *FilenameParser) queryTag(ctx context.Context, qb models.TagQueryer, tagName string) *models.Tag {
 	// massage the tag name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
 
@@ -626,7 +638,7 @@ func (p *FilenameParser) setPerformers(ctx context.Context, qb PerformerNamesFin
 	}
 }
 
-func (p *FilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) setTags(ctx context.Context, qb models.TagQueryer, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {
@@ -642,7 +654,7 @@ func (p *FilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sceneHol
 	}
 }
 
-func (p *FilenameParser) setStudio(ctx context.Context, qb studio.Queryer, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) setStudio(ctx context.Context, qb models.StudioQueryer, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	if h.studio != "" {
 		studio := p.queryStudio(ctx, qb, h.studio)
@@ -653,25 +665,25 @@ func (p *FilenameParser) setStudio(ctx context.Context, qb studio.Queryer, h sce
 	}
 }
 
-func (p *FilenameParser) setMovies(ctx context.Context, qb MovieNameFinder, h sceneHolder, result *models.SceneParserResult) {
-	// query for each movie
-	moviesSet := make(map[int]bool)
-	for _, movieName := range h.movies {
-		if movieName != "" {
-			movie := p.queryMovie(ctx, qb, movieName)
-			if movie != nil {
-				if _, found := moviesSet[movie.ID]; !found {
+func (p *FilenameParser) setGroups(ctx context.Context, qb GroupNameFinder, h sceneHolder, result *models.SceneParserResult) {
+	// query for each group
+	groupsSet := make(map[int]bool)
+	for _, groupName := range h.groups {
+		if groupName != "" {
+			group := p.queryGroup(ctx, qb, groupName)
+			if group != nil {
+				if _, found := groupsSet[group.ID]; !found {
 					result.Movies = append(result.Movies, &models.SceneMovieID{
-						MovieID: strconv.Itoa(movie.ID),
+						MovieID: strconv.Itoa(group.ID),
 					})
-					moviesSet[movie.ID] = true
+					groupsSet[group.ID] = true
 				}
 			}
 		}
 	}
 }
 
-func (p *FilenameParser) setParserResult(ctx context.Context, repo FilenameParserRepository, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) setParserResult(ctx context.Context, h sceneHolder, result *models.SceneParserResult) {
 	if h.result.Title != "" {
 		title := h.result.Title
 		title = p.replaceWhitespaceCharacters(title)
@@ -692,15 +704,17 @@ func (p *FilenameParser) setParserResult(ctx context.Context, repo FilenameParse
 		result.Rating = h.result.Rating
 	}
 
+	r := p.repository
+
 	if len(h.performers) > 0 {
-		p.setPerformers(ctx, repo.Performer, h, result)
+		p.setPerformers(ctx, r.Performer, h, result)
 	}
 	if len(h.tags) > 0 {
-		p.setTags(ctx, repo.Tag, h, result)
+		p.setTags(ctx, r.Tag, h, result)
 	}
-	p.setStudio(ctx, repo.Studio, h, result)
+	p.setStudio(ctx, r.Studio, h, result)
 
-	if len(h.movies) > 0 {
-		p.setMovies(ctx, repo.Movie, h, result)
+	if len(h.groups) > 0 {
+		p.setGroups(ctx, r.Group, h, result)
 	}
 }

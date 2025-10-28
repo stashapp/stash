@@ -1,11 +1,7 @@
 package models
 
-import "context"
-
 type StudioFilterType struct {
-	And     *StudioFilterType     `json:"AND"`
-	Or      *StudioFilterType     `json:"OR"`
-	Not     *StudioFilterType     `json:"NOT"`
+	OperatorFilter[StudioFilterType]
 	Name    *StringCriterionInput `json:"name"`
 	Details *StringCriterionInput `json:"details"`
 	// Filter to only include studios with this parent studio
@@ -16,10 +12,14 @@ type StudioFilterType struct {
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
+	// Filter to only include studios with these tags
+	Tags *HierarchicalMultiCriterionInput `json:"tags"`
+	// Filter by tag count
+	TagCount *IntCriterionInput `json:"tag_count"`
+	// Filter by favorite
+	Favorite *bool `json:"favorite"`
 	// Filter by scene count
 	SceneCount *IntCriterionInput `json:"scene_count"`
 	// Filter by image count
@@ -30,46 +30,49 @@ type StudioFilterType struct {
 	URL *StringCriterionInput `json:"url"`
 	// Filter by studio aliases
 	Aliases *StringCriterionInput `json:"aliases"`
+	// Filter by subsidiary studio count
+	ChildCount *IntCriterionInput `json:"child_count"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
-type StudioFinder interface {
-	FindMany(ctx context.Context, ids []int) ([]*Studio, error)
+type StudioCreateInput struct {
+	Name     string  `json:"name"`
+	URL      *string `json:"url"`
+	ParentID *string `json:"parent_id"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Favorite      *bool          `json:"favorite"`
+	Details       *string        `json:"details"`
+	Aliases       []string       `json:"aliases"`
+	TagIds        []string       `json:"tag_ids"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
 }
 
-type StudioReader interface {
-	Find(ctx context.Context, id int) (*Studio, error)
-	StudioFinder
-	FindChildren(ctx context.Context, id int) ([]*Studio, error)
-	FindByName(ctx context.Context, name string, nocase bool) (*Studio, error)
-	FindByStashID(ctx context.Context, stashID StashID) ([]*Studio, error)
-	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Studio, error)
-	Count(ctx context.Context) (int, error)
-	All(ctx context.Context) ([]*Studio, error)
-	// TODO - this interface is temporary until the filter schema can fully
-	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Studio, error)
-	Query(ctx context.Context, studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int, error)
-	GetImage(ctx context.Context, studioID int) ([]byte, error)
-	HasImage(ctx context.Context, studioID int) (bool, error)
-	AliasLoader
-	StashIDLoader
-}
-
-type StudioWriter interface {
-	Create(ctx context.Context, newStudio *Studio) error
-	UpdatePartial(ctx context.Context, input StudioPartial) (*Studio, error)
-	Update(ctx context.Context, updatedStudio *Studio) error
-	Destroy(ctx context.Context, id int) error
-	UpdateImage(ctx context.Context, studioID int, image []byte) error
-}
-
-type StudioReaderWriter interface {
-	StudioReader
-	StudioWriter
+type StudioUpdateInput struct {
+	ID       string  `json:"id"`
+	Name     *string `json:"name"`
+	URL      *string `json:"url"`
+	ParentID *string `json:"parent_id"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Favorite      *bool          `json:"favorite"`
+	Details       *string        `json:"details"`
+	Aliases       []string       `json:"aliases"`
+	TagIds        []string       `json:"tag_ids"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
 }

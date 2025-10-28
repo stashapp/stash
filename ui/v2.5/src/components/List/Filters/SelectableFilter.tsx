@@ -16,25 +16,31 @@ import {
 } from "src/models/list-filter/types";
 import { cloneDeep } from "lodash-es";
 import {
-  Criterion,
+  ModifierCriterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 import useFocus from "src/utils/focus";
+import cx from "classnames";
+import ScreenUtils from "src/utils/screen";
+import { NumberField } from "src/utils/form";
 
 interface ISelectedItem {
-  item: ILabeledId;
+  label: string;
   excluded?: boolean;
   onClick: () => void;
+  // true if the object is a special modifier value
+  modifier?: boolean;
 }
 
 const SelectedItem: React.FC<ISelectedItem> = ({
-  item,
+  label,
   excluded = false,
   onClick,
+  modifier = false,
 }) => {
   const iconClassName = excluded ? "exclude-icon" : "include-button";
   const spanClassName = excluded
@@ -59,21 +65,66 @@ const SelectedItem: React.FC<ISelectedItem> = ({
   }
 
   return (
-    <a
-      onClick={() => onClick()}
-      onKeyDown={keyboardClickHandler(onClick)}
-      onMouseEnter={() => onMouseOver()}
-      onMouseLeave={() => onMouseOut()}
-      onFocus={() => onMouseOver()}
-      onBlur={() => onMouseOut()}
-      tabIndex={0}
-    >
-      <div>
-        <Icon className={`fa-fw ${iconClassName}`} icon={icon} />
-        <span className={spanClassName}>{item.label}</span>
-      </div>
-      <div></div>
-    </a>
+    <li className={cx("selected-object", { "modifier-object": modifier })}>
+      <a
+        onClick={() => onClick()}
+        onKeyDown={keyboardClickHandler(onClick)}
+        onMouseEnter={() => onMouseOver()}
+        onMouseLeave={() => onMouseOut()}
+        onFocus={() => onMouseOver()}
+        onBlur={() => onMouseOut()}
+        tabIndex={0}
+      >
+        <div>
+          <Icon className={`fa-fw ${iconClassName}`} icon={icon} />
+          <span className={spanClassName}>{label}</span>
+        </div>
+        <div></div>
+      </a>
+    </li>
+  );
+};
+
+const UnselectedItem: React.FC<{
+  onSelect: (exclude: boolean) => void;
+  label: string;
+  canExclude: boolean;
+  // true if the object is a special modifier value
+  modifier?: boolean;
+}> = ({ onSelect, label, canExclude, modifier = false }) => {
+  const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
+  const excludeIcon = <Icon className="fa-fw exclude-icon" icon={faMinus} />;
+
+  return (
+    <li className={cx("unselected-object", { "modifier-object": modifier })}>
+      <a
+        onClick={() => onSelect(false)}
+        onKeyDown={keyboardClickHandler(() => onSelect(false))}
+        tabIndex={0}
+      >
+        <div>
+          {includeIcon}
+          <span className="unselected-object-label">{label}</span>
+        </div>
+        <div>
+          {/* TODO item count */}
+          {/* <span className="object-count">{p.id}</span> */}
+          {canExclude && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(true);
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="minimal exclude-button"
+            >
+              <span className="exclude-button-text">exclude</span>
+              {excludeIcon}
+            </Button>
+          )}
+        </div>
+      </a>
+    </li>
   );
 };
 
@@ -81,6 +132,7 @@ interface ISelectableFilter {
   query: string;
   onQueryChange: (query: string) => void;
   modifier: CriterionModifier;
+  showModifierValues: boolean;
   inputFocus: ReturnType<typeof useFocus>;
   canExclude: boolean;
   queryResults: ILabeledId[];
@@ -88,12 +140,31 @@ interface ISelectableFilter {
   excluded: ILabeledId[];
   onSelect: (value: ILabeledId, exclude: boolean) => void;
   onUnselect: (value: ILabeledId) => void;
+  onSetModifier: (modifier: CriterionModifier) => void;
+  // true if the filter is for a single value
+  singleValue?: boolean;
+}
+
+type SpecialValue = "any" | "none" | "any_of" | "only";
+
+function modifierValueToModifier(key: SpecialValue): CriterionModifier {
+  switch (key) {
+    case "any":
+      return CriterionModifier.NotNull;
+    case "none":
+      return CriterionModifier.IsNull;
+    case "any_of":
+      return CriterionModifier.Includes;
+    case "only":
+      return CriterionModifier.Equals;
+  }
 }
 
 const SelectableFilter: React.FC<ISelectableFilter> = ({
   query,
   onQueryChange,
   modifier,
+  showModifierValues,
   inputFocus,
   canExclude,
   queryResults,
@@ -101,22 +172,73 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   excluded,
   onSelect,
   onUnselect,
+  onSetModifier,
+  singleValue,
 }) => {
+  const intl = useIntl();
   const objects = useMemo(() => {
+    if (
+      modifier === CriterionModifier.IsNull ||
+      modifier === CriterionModifier.NotNull
+    ) {
+      return [];
+    }
     return queryResults.filter(
       (p) =>
         selected.find((s) => s.id === p.id) === undefined &&
         excluded.find((s) => s.id === p.id) === undefined
     );
-  }, [queryResults, selected, excluded]);
+  }, [modifier, queryResults, selected, excluded]);
 
   const includingOnly = modifier == CriterionModifier.Equals;
   const excludingOnly =
     modifier == CriterionModifier.Excludes ||
     modifier == CriterionModifier.NotEquals;
 
-  const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
-  const excludeIcon = <Icon className="fa-fw exclude-icon" icon={faMinus} />;
+  const modifierValues = useMemo(() => {
+    return {
+      any: modifier === CriterionModifier.NotNull,
+      none: modifier === CriterionModifier.IsNull,
+      any_of: !singleValue && modifier === CriterionModifier.Includes,
+      only: !singleValue && modifier === CriterionModifier.Equals,
+    };
+  }, [modifier, singleValue]);
+
+  const defaultModifier = useMemo(() => {
+    if (singleValue) {
+      return CriterionModifier.Includes;
+    }
+    return CriterionModifier.IncludesAll;
+  }, [singleValue]);
+
+  const availableModifierValues: Record<SpecialValue, boolean> = useMemo(() => {
+    return {
+      any:
+        modifier === defaultModifier &&
+        selected.length === 0 &&
+        excluded.length === 0,
+      none:
+        modifier === defaultModifier &&
+        selected.length === 0 &&
+        excluded.length === 0,
+      any_of:
+        !singleValue && modifier === defaultModifier && selected.length > 1,
+      only:
+        !singleValue &&
+        modifier === defaultModifier &&
+        selected.length > 0 &&
+        excluded.length === 0,
+    };
+  }, [singleValue, defaultModifier, modifier, selected, excluded]);
+
+  function onModifierValueSelect(key: SpecialValue) {
+    const m = modifierValueToModifier(key);
+    onSetModifier(m);
+  }
+
+  function onModifierValueUnselect() {
+    onSetModifier(defaultModifier);
+  }
 
   return (
     <div className="selectable-filter">
@@ -124,75 +246,95 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         focus={inputFocus}
         value={query}
         setValue={(v) => onQueryChange(v)}
+        placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
       />
       <ul>
-        {selected.map((p) => (
-          <li key={p.id} className="selected-object">
+        {Object.entries(modifierValues).map(([key, value]) => {
+          if (!value) {
+            return null;
+          }
+
+          return (
             <SelectedItem
-              item={p}
-              excluded={excludingOnly}
+              key={key}
+              onClick={() => onModifierValueUnselect()}
+              label={`(${intl.formatMessage({
+                id: `criterion_modifier_values.${key}`,
+              })})`}
+              modifier
+            />
+          );
+        })}
+        {selected.map((p) => (
+          <SelectedItem
+            key={p.id}
+            label={p.label}
+            excluded={excludingOnly}
+            onClick={() => onUnselect(p)}
+          />
+        ))}
+        {excluded.map((p) => (
+          <li key={p.id} className="excluded-object">
+            <SelectedItem
+              label={p.label}
+              excluded
               onClick={() => onUnselect(p)}
             />
           </li>
         ))}
-        {excluded.map((p) => (
-          <li key={p.id} className="excluded-object">
-            <SelectedItem item={p} excluded onClick={() => onUnselect(p)} />
-          </li>
-        ))}
+        {showModifierValues && (
+          <>
+            {Object.entries(availableModifierValues).map(([key, value]) => {
+              if (!value) {
+                return null;
+              }
+
+              return (
+                <UnselectedItem
+                  key={key}
+                  onSelect={() => onModifierValueSelect(key as SpecialValue)}
+                  label={`(${intl.formatMessage({
+                    id: `criterion_modifier_values.${key}`,
+                  })})`}
+                  canExclude={false}
+                  modifier
+                />
+              );
+            })}
+          </>
+        )}
         {objects.map((p) => (
-          <li key={p.id} className="unselected-object">
-            <a
-              onClick={() => onSelect(p, false)}
-              onKeyDown={keyboardClickHandler(() => onSelect(p, false))}
-              tabIndex={0}
-            >
-              <div>
-                {!excludingOnly ? includeIcon : excludeIcon}
-                <span>{p.label}</span>
-              </div>
-              <div>
-                {/* TODO item count */}
-                {/* <span className="object-count">{p.id}</span> */}
-                {canExclude && !includingOnly && !excludingOnly && (
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelect(p, true);
-                    }}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    className="minimal exclude-button"
-                  >
-                    <span className="exclude-button-text">exclude</span>
-                    {excludeIcon}
-                  </Button>
-                )}
-              </div>
-            </a>
-          </li>
+          <UnselectedItem
+            key={p.id}
+            onSelect={(exclude) => onSelect(p, exclude)}
+            label={p.label}
+            canExclude={canExclude && !includingOnly && !excludingOnly}
+          />
         ))}
       </ul>
     </div>
   );
 };
 
-interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
+interface IObjectsFilter<T extends ModifierCriterion<ILabeledValueListValue>> {
   criterion: T;
   setCriterion: (criterion: T) => void;
   useResults: (query: string) => { results: ILabeledId[]; loading: boolean };
+  singleValue?: boolean;
 }
 
 export const ObjectsFilter = <
-  T extends Criterion<ILabeledValueListValue | IHierarchicalLabelValue>
+  T extends ModifierCriterion<ILabeledValueListValue | IHierarchicalLabelValue>
 >({
   criterion,
   setCriterion,
   useResults,
+  singleValue,
 }: IObjectsFilter<T>) => {
   const [query, setQuery] = useState("");
   const [displayQuery, setDisplayQuery] = useState(query);
 
-  const debouncedSetQuery = useDebouncedSetState(setQuery, 250);
+  const debouncedSetQuery = useDebounce(setQuery, 250);
   const onQueryChange = useCallback(
     (input: string) => {
       setDisplayQuery(input);
@@ -233,7 +375,10 @@ export const ObjectsFilter = <
     setDisplayQuery("");
 
     // focus the input box
-    setInputFocus();
+    // don't do this on touch devices, as it's annoying
+    if (!ScreenUtils.isTouch()) {
+      setInputFocus();
+    }
   }
 
   const onUnselect = useCallback(
@@ -257,6 +402,15 @@ export const ObjectsFilter = <
     [criterion, setCriterion, setInputFocus]
   );
 
+  const onSetModifier = useCallback(
+    (modifier: CriterionModifier) => {
+      let newCriterion: T = criterion.clone();
+      newCriterion.modifier = modifier;
+      setCriterion(newCriterion);
+    },
+    [criterion, setCriterion]
+  );
+
   const sortedSelected = useMemo(() => {
     const ret = criterion.value.items.slice();
     ret.sort((a, b) => a.label.localeCompare(b.label));
@@ -272,15 +426,17 @@ export const ObjectsFilter = <
 
   // if excludes is not a valid modifierOption then we can use `value.excluded`
   const canExclude =
-    criterion.criterionOption.modifierOptions.find(
-      (m) => m === CriterionModifier.Excludes
-    ) === undefined;
+    criterion
+      .modifierCriterionOption()
+      .modifierOptions.find((m) => m === CriterionModifier.Excludes) ===
+    undefined;
 
   return (
     <SelectableFilter
       query={displayQuery}
       onQueryChange={onQueryChange}
       modifier={criterion.modifier}
+      showModifierValues={!query}
       inputFocus={inputFocus}
       canExclude={canExclude}
       selected={sortedSelected}
@@ -288,6 +444,8 @@ export const ObjectsFilter = <
       onSelect={onSelect}
       onUnselect={onUnselect}
       excluded={sortedExcluded}
+      onSetModifier={onSetModifier}
+      singleValue={singleValue}
     />
   );
 };
@@ -320,7 +478,7 @@ export const HierarchicalObjectsFilter = <
     if (criterion.criterionOption.type === "studios") {
       return "include-sub-studios";
     }
-    if (criterion.criterionOption.type === "childTags") {
+    if (criterion.criterionOption.type === "children") {
       return "include-parent-tags";
     }
     return "include-sub-tags";
@@ -330,7 +488,7 @@ export const HierarchicalObjectsFilter = <
     const optionType =
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
-        : criterion.criterionOption.type === "childTags"
+        : criterion.criterionOption.type === "children"
         ? "include_parent_tags"
         : "include_sub_tags";
     return {
@@ -340,24 +498,23 @@ export const HierarchicalObjectsFilter = <
 
   return (
     <Form>
-      {criterion.modifier !== CriterionModifier.Equals && (
-        <Form.Group>
-          <Form.Check
-            id={criterionOptionTypeToIncludeID()}
-            checked={criterion.value.depth !== 0}
-            label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
-            onChange={() =>
-              onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)
-            }
-          />
-        </Form.Group>
-      )}
+      <Form.Group>
+        <Form.Check
+          id={criterionOptionTypeToIncludeID()}
+          checked={
+            criterion.modifier !== CriterionModifier.Equals &&
+            criterion.value.depth !== 0
+          }
+          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+          onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
+          disabled={criterion.modifier === CriterionModifier.Equals}
+        />
+      </Form.Group>
 
       {criterion.value.depth !== 0 && (
         <Form.Group>
-          <Form.Control
+          <NumberField
             className="btn-secondary"
-            type="number"
             placeholder={intl.formatMessage(messages.studio_depth)}
             onChange={(e) =>
               onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)

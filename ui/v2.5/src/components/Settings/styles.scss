@@ -67,7 +67,7 @@
       min-width: 100px;
       text-align: right;
 
-      button {
+      .btn {
         margin: 0.25rem;
       }
     }
@@ -80,6 +80,7 @@
       font-family: "Courier New", Courier, monospace;
       margin-bottom: 0.5rem;
       margin-top: 0.5rem;
+      overflow-wrap: anywhere;
 
       pre {
         max-height: 250px;
@@ -228,6 +229,7 @@
 .scraper-table {
   display: block;
   margin-bottom: 16px;
+  max-height: 300px;
   overflow: auto;
   width: 100%;
 
@@ -247,12 +249,19 @@
 
   ul {
     margin-bottom: 0;
+    max-height: 100px;
+    overflow: auto;
     padding-left: 0;
   }
 
   li {
     list-style: none;
   }
+}
+
+.scraper-toolbar {
+  display: flex;
+  justify-content: space-between;
 }
 
 .job-table.card {
@@ -285,6 +294,11 @@
     width: 100%;
   }
 
+  .job-description {
+    display: flex;
+    justify-content: space-between;
+  }
+
   .stop:not(:disabled),
   .stopping .fa-icon,
   .cancelled .fa-icon {
@@ -296,6 +310,10 @@
     color: $success;
   }
 
+  .failed .fa-icon {
+    color: $danger;
+  }
+
   .ready .fa-icon {
     color: $warning;
   }
@@ -303,6 +321,10 @@
   .cancelled,
   .finished {
     color: $text-muted;
+  }
+
+  .job-error {
+    color: $danger;
   }
 }
 
@@ -409,4 +431,19 @@
 
 .empty-queue-message {
   color: $text-muted;
+}
+
+.advanced-switch {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+
+  .form-label {
+    color: $text-muted;
+    margin-right: 0.5rem;
+  }
+
+  .custom-switch {
+    display: inline-block;
+  }
 }

@@ -17,7 +17,7 @@
 
 # GraphQL generated output
 pkg/models/generated_*.go
-ui/v2.5/src/core/generated-*.tsx
+ui/v2.5/src/core/generated-graphql.ts
 
 ####
 # Jetbrains

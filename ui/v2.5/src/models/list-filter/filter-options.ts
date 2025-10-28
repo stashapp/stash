@@ -1,7 +1,7 @@
 import { CriterionOption } from "./criteria/criterion";
 import { DisplayMode } from "./types";
 
-interface ISortByOption {
+export interface ISortByOption {
   messageID: string;
   value: string;
 }

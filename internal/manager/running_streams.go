@@ -3,8 +3,9 @@ package manager
 import (
 	"context"
 	"errors"
-	"io"
+	"mime"
 	"net/http"
+	"path/filepath"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/static"
@@ -47,23 +48,25 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 
 	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 
-	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path, sceneHash)
+	fp := GetInstance().Paths.Scene.GetStreamPath(scene.Path, sceneHash)
 	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)
 
 	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari
 	// We trust that the request context will be closed, so we don't need to call Cancel on the
 	// returned context here.
-	_ = GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
-	http.ServeFile(w, r, filepath)
+	_ = GetInstance().ReadLockManager.ReadLock(streamRequestCtx, fp)
+	_, filename := filepath.Split(fp)
+	contentDisposition := mime.FormatMediaType("inline", map[string]string{"filename": filename})
+	w.Header().Set("Content-Disposition", contentDisposition)
+	http.ServeFile(w, r, fp)
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
-	const defaultSceneImage = "scene/scene.svg"
-
 	var cover []byte
 	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
-		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
-		return nil
+		var err error
+		cover, err = s.SceneCoverGetter.GetCover(ctx, scene.ID)
+		return err
 	})
 	if errors.Is(readTxnErr, context.Canceled) {
 		return
@@ -92,10 +95,7 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		}
 
 		// fallback to default cover if none found
-		// should always be there
-		f, _ := static.Scene.Open(defaultSceneImage)
-		defer f.Close()
-		cover, _ = io.ReadAll(f)
+		cover = static.ReadAll(static.DefaultSceneImage)
 	}
 
 	utils.ServeImage(w, r, cover)

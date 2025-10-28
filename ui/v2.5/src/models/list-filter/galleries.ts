@@ -1,10 +1,8 @@
 import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
-  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
@@ -12,13 +10,17 @@ import { OrganizedCriterionOption } from "./criteria/organized";
 import { HasChaptersCriterionOption } from "./criteria/has-chapters";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { AverageResolutionCriterionOption } from "./criteria/resolution";
+import { ScenesCriterionOption } from "./criteria/scenes";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
+  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { RatingCriterionOption } from "./criteria/rating";
+import { PathCriterionOption } from "./criteria/path";
 
 const defaultSortBy = "path";
 
@@ -43,26 +45,26 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("code", "scene_code"),
   createStringCriterionOption("details"),
-  createPathCriterionOption("path"),
-  createStringCriterionOption(
-    "galleryChecksum",
-    "media_info.checksum",
-    "checksum"
-  ),
-  new NullNumberCriterionOption("rating", "rating100"),
+  createStringCriterionOption("photographer"),
+  PathCriterionOption,
+  createStringCriterionOption("checksum", "media_info.checksum"),
+  RatingCriterionOption,
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
   TagsCriterionOption,
   HasChaptersCriterionOption,
-  createStringCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
-  createStringCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
-  createStringCriterionOption("image_count"),
+  createMandatoryNumberCriterionOption("image_count"),
+  // StudioTagsCriterionOption,
+  ScenesCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
   createMandatoryNumberCriterionOption("file_count", "zip_file_count"),

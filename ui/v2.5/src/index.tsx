@@ -9,7 +9,11 @@ import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
   <>
-    <link rel="stylesheet" type="text/css" href={`${getPlatformURL()}css`} />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href={getPlatformURL("css").toString()}
+    />
     <BrowserRouter basename={baseURL}>
       <ApolloProvider client={getClient()}>
         <App />
@@ -20,7 +24,7 @@ ReactDOM.render(
 );
 
 const script = document.createElement("script");
-script.src = `${getPlatformURL()}javascript`;
+script.src = getPlatformURL("javascript").toString();
 document.body.appendChild(script);
 
 // If you want your app to work offline and load faster, you can change

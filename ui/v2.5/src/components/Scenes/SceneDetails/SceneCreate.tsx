@@ -65,12 +65,12 @@ const SceneCreate: React.FC = () => {
     });
     if (result.data?.sceneCreate?.id) {
       history.push(`/scenes/${result.data.sceneCreate.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 

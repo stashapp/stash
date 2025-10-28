@@ -9,19 +9,23 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (s *Manager) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*plugin.PluginArgInput) int {
-	j := job.MakeJobExec(func(jobCtx context.Context, progress *job.Progress) {
+func (s *Manager) RunPluginTask(
+	ctx context.Context,
+	pluginID string,
+	taskName *string,
+	description *string,
+	args plugin.OperationInput,
+) int {
+	j := job.MakeJobExec(func(jobCtx context.Context, progress *job.Progress) error {
 		pluginProgress := make(chan float64)
 		task, err := s.PluginCache.CreateTask(ctx, pluginID, taskName, args, pluginProgress)
 		if err != nil {
-			logger.Errorf("Error creating plugin task: %s", err.Error())
-			return
+			return fmt.Errorf("Error creating plugin task: %w", err)
 		}
 
 		err = task.Start()
 		if err != nil {
-			logger.Errorf("Error running plugin task: %s", err.Error())
-			return
+			return fmt.Errorf("Error running plugin task: %w", err)
 		}
 
 		done := make(chan bool)
@@ -44,17 +48,24 @@ func (s *Manager) RunPluginTask(ctx context.Context, pluginID string, taskName s
 		for {
 			select {
 			case <-done:
-				return
+				return nil
 			case p := <-pluginProgress:
 				progress.SetPercent(p)
 			case <-jobCtx.Done():
 				if err := task.Stop(); err != nil {
 					logger.Errorf("Error stopping plugin operation: %s", err.Error())
 				}
-				return
+				return nil
 			}
 		}
 	})
 
-	return s.JobManager.Add(ctx, fmt.Sprintf("Running plugin task: %s", taskName), j)
+	displayName := pluginID
+	if taskName != nil {
+		displayName = *taskName
+	}
+	if description != nil {
+		displayName = *description
+	}
+	return s.JobManager.Add(ctx, fmt.Sprintf("Running plugin task: %s", displayName), j)
 }

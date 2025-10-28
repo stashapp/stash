@@ -6,15 +6,14 @@ import React, {
   useCallback,
 } from "react";
 import { Button } from "react-bootstrap";
-import axios from "axios";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { WebVTT } from "videojs-vtt.js";
 import { Icon } from "src/components/Shared/Icon";
 import {
   faChevronRight,
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
+import { useSpriteInfo } from "src/hooks/sprite";
 
 interface IScenePlayerScrubberProps {
   file: GQL.VideoFileDataFragment;
@@ -27,42 +26,6 @@ interface IScenePlayerScrubberProps {
 interface ISceneSpriteItem {
   style: CSSProperties;
   time: string;
-}
-
-interface ISceneSpriteInfo {
-  url: string;
-  start: number;
-  end: number;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-async function fetchSpriteInfo(vttPath: string) {
-  const response = await axios.get<string>(vttPath, { responseType: "text" });
-
-  const sprites: ISceneSpriteInfo[] = [];
-
-  const parser = new WebVTT.Parser(window, WebVTT.StringDecoder());
-  parser.oncue = (cue: VTTCue) => {
-    const match = cue.text.match(/^([^#]*)#xywh=(\d+),(\d+),(\d+),(\d+)$/i);
-    if (!match) return;
-
-    sprites.push({
-      url: new URL(match[1], vttPath).href,
-      start: cue.startTime,
-      end: cue.endTime,
-      x: Number(match[2]),
-      y: Number(match[3]),
-      w: Number(match[4]),
-      h: Number(match[5]),
-    });
-  };
-  parser.parse(response.data);
-  parser.flush();
-
-  return sprites;
 }
 
 export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
@@ -119,34 +82,32 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     [onSeek, file.duration, scrubWidth]
   );
 
+  const spriteInfo = useSpriteInfo(scene.paths.vtt ?? undefined);
   const [spriteItems, setSpriteItems] = useState<ISceneSpriteItem[]>();
 
   useEffect(() => {
-    if (!scene.paths.vtt) return;
-    fetchSpriteInfo(scene.paths.vtt).then((sprites) => {
-      if (!sprites) return;
-      let totalWidth = 0;
-      const newSprites = sprites?.map((sprite, index) => {
-        totalWidth += sprite.w;
-        const left = sprite.w * index;
-        const style = {
-          width: `${sprite.w}px`,
-          height: `${sprite.h}px`,
-          backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
-          backgroundImage: `url(${sprite.url})`,
-          left: `${left}px`,
-        };
-        const start = TextUtils.secondsToTimestamp(sprite.start);
-        const end = TextUtils.secondsToTimestamp(sprite.end);
-        return {
-          style,
-          time: `${start} - ${end}`,
-        };
-      });
-      setScrubWidth(totalWidth);
-      setSpriteItems(newSprites);
+    if (!spriteInfo) return;
+    let totalWidth = 0;
+    const newSprites = spriteInfo?.map((sprite, index) => {
+      totalWidth += sprite.w;
+      const left = sprite.w * index;
+      const style = {
+        width: `${sprite.w}px`,
+        height: `${sprite.h}px`,
+        backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
+        backgroundImage: `url(${sprite.url})`,
+        left: `${left}px`,
+      };
+      const start = TextUtils.secondsToTimestamp(sprite.start);
+      const end = TextUtils.secondsToTimestamp(sprite.end);
+      return {
+        style,
+        time: `${start} - ${end}`,
+      };
     });
-  }, [scene]);
+    setScrubWidth(totalWidth);
+    setSpriteItems(newSprites);
+  }, [spriteInfo]);
 
   useEffect(() => {
     const onResize = (entries: ResizeObserverEntry[]) => {
@@ -259,14 +220,20 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     (event: MouseEvent) => {
       if (!mouseDown.current) return;
 
+      // negative dragging right (past), positive left (future)
+      const delta = event.clientX - lastMouseEvent.current!.clientX;
+
       if (lastMouseEvent.current === startMouseEvent.current) {
+        // this is the first mousemove event after mousedown
+
+        // #4295: a mousemove with delta 0 can be sent when just clicking
+        // ignore such an event to prevent pausing the player
+        if (delta === 0) return;
+
         onScroll();
       }
 
       contentEl.current!.classList.add("dragging");
-
-      // negative dragging right (past), positive left (future)
-      const delta = event.clientX - lastMouseEvent.current!.clientX;
 
       const movement = event.movementX;
       velocity.current = movement;

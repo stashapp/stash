@@ -1,32 +1,22 @@
 package sliceutil
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestSliceSame(t *testing.T) {
-	objs := []struct {
-		a string
-		b int
-	}{
-		{"1", 2},
-		{"1", 2},
-		{"2", 1},
-	}
-
 	tests := []struct {
 		name string
-		a    interface{}
-		b    interface{}
+		a    []int
+		b    []int
 		want bool
 	}{
 		{"nil values", nil, nil, true},
 		{"empty", []int{}, []int{}, true},
 		{"nil and empty", nil, []int{}, true},
-		{
-			"different type",
-			[]string{"1"},
-			[]int{1},
-			false,
-		},
 		{
 			"different length",
 			[]int{1, 2, 3},
@@ -69,24 +59,93 @@ func TestSliceSame(t *testing.T) {
 			[]int{1, 1, 2, 2, 3},
 			false,
 		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := SliceSame(tt.a, tt.b)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestAppendUniques(t *testing.T) {
+	type args struct {
+		vs    []int
+		toAdd []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
 		{
-			"structs equal",
-			objs[0:1],
-			objs[0:1],
-			true,
+			name: "append to empty slice",
+			args: args{
+				vs:    []int{},
+				toAdd: []int{1, 2, 3},
+			},
+			want: []int{1, 2, 3},
 		},
 		{
-			"structs not equal",
-			objs[0:2],
-			objs[1:3],
-			false,
+			name: "append all unique values",
+			args: args{
+				vs:    []int{1, 2, 3},
+				toAdd: []int{4, 5, 6},
+			},
+			want: []int{1, 2, 3, 4, 5, 6},
+		},
+		{
+			name: "append with some duplicates",
+			args: args{
+				vs:    []int{1, 2, 3},
+				toAdd: []int{3, 4, 5},
+			},
+			want: []int{1, 2, 3, 4, 5},
+		},
+		{
+			name: "append all duplicates",
+			args: args{
+				vs:    []int{1, 2, 3},
+				toAdd: []int{1, 2, 3},
+			},
+			want: []int{1, 2, 3},
+		},
+		{
+			name: "append to nil slice",
+			args: args{
+				vs:    nil,
+				toAdd: []int{1, 2, 3},
+			},
+			want: []int{1, 2, 3},
+		},
+		{
+			name: "append empty slice",
+			args: args{
+				vs:    []int{1, 2, 3},
+				toAdd: []int{},
+			},
+			want: []int{1, 2, 3},
+		},
+		{
+			name: "append nil to slice",
+			args: args{
+				vs:    []int{1, 2, 3},
+				toAdd: nil,
+			},
+			want: []int{1, 2, 3},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := SliceSame(tt.a, tt.b); got != tt.want {
-				t.Errorf("SliceSame() = %v, want %v", got, tt.want)
+			if got := AppendUniques(tt.args.vs, tt.args.toAdd); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("AppendUniques() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkAppendUniques(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		AppendUniques([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, []int{3, 4, 4, 11, 12, 13, 14, 15, 16, 17, 18})
 	}
 }

@@ -1,7 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { ConfigurationContext } from "../Config";
 import { useLocalForage } from "../LocalForage";
 import { Interactive as InteractiveAPI } from "./interactive";
+import InteractiveUtils, {
+  IInteractiveClient,
+  IInteractiveClientProvider,
+} from "./utils";
 
 export enum ConnectionState {
   Missing,
@@ -34,7 +38,7 @@ export function connectionStateLabel(s: ConnectionState) {
 }
 
 export interface IState {
-  interactive: InteractiveAPI;
+  interactive: IInteractiveClient;
   state: ConnectionState;
   serverOffset: number;
   initialised: boolean;
@@ -62,15 +66,24 @@ export const InteractiveContext = React.createContext<IState>({
 });
 
 const LOCAL_FORAGE_KEY = "interactive";
+const TIME_BETWEEN_SYNCS = 60 * 60 * 1000; // 1 hour
 
 interface IInteractiveState {
   serverOffset: number;
+  lastSyncTime: number;
 }
+
+export const defaultInteractiveClientProvider: IInteractiveClientProvider = ({
+  handyKey,
+  scriptOffset,
+}): IInteractiveClient => {
+  return new InteractiveAPI(handyKey, scriptOffset);
+};
 
 export const InteractiveProvider: React.FC = ({ children }) => {
   const [{ data: config }, setConfig] = useLocalForage<IInteractiveState>(
     LOCAL_FORAGE_KEY,
-    { serverOffset: 0 }
+    { serverOffset: 0, lastSyncTime: 0 }
   );
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
@@ -83,7 +96,22 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   const [scriptOffset, setScriptOffset] = useState<number>(0);
   const [useStashHostedFunscript, setUseStashHostedFunscript] =
     useState<boolean>(false);
-  const [interactive] = useState<InteractiveAPI>(new InteractiveAPI("", 0));
+
+  const resolveInteractiveClient = useCallback(() => {
+    const interactiveClientProvider =
+      InteractiveUtils.interactiveClientProvider ??
+      defaultInteractiveClientProvider;
+
+    return interactiveClientProvider({
+      handyKey: "",
+      scriptOffset: 0,
+      defaultClientProvider: defaultInteractiveClientProvider,
+      stashConfig,
+    });
+  }, [stashConfig]);
+
+  // fetch client provider from PluginApi if not found use default provider
+  const [interactive] = useState(resolveInteractiveClient);
 
   const [initialised, setInitialised] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -91,14 +119,20 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   const initialise = useCallback(async () => {
     setError(undefined);
 
-    if (!config?.serverOffset) {
+    const shouldResync =
+      !config?.lastSyncTime ||
+      Date.now() - config?.lastSyncTime > TIME_BETWEEN_SYNCS;
+
+    if (!config?.serverOffset || shouldResync) {
       setState(ConnectionState.Syncing);
       const offset = await interactive.sync();
-      setConfig({ serverOffset: offset });
-      setState(ConnectionState.Ready);
-      setInitialised(true);
-    } else {
-      interactive.setServerTimeOffset(config.serverOffset);
+      setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
+    }
+
+    if (config?.serverOffset) {
+      await interactive.configure({
+        estimatedServerTimeOffset: config.serverOffset,
+      });
       setState(ConnectionState.Connecting);
       try {
         await interactive.connect();
@@ -132,13 +166,17 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     const oldKey = interactive.handyKey;
 
-    interactive.handyKey = handyKey ?? "";
-    interactive.scriptOffset = scriptOffset;
-    interactive.useStashHostedFunscript = useStashHostedFunscript;
-
-    if (oldKey !== interactive.handyKey && interactive.handyKey) {
-      initialise();
-    }
+    interactive
+      .configure({
+        connectionKey: handyKey ?? "",
+        offset: scriptOffset,
+        useStashHostedFunscript,
+      })
+      .then(() => {
+        if (oldKey !== interactive.handyKey && interactive.handyKey) {
+          initialise();
+        }
+      });
   }, [
     handyKey,
     scriptOffset,
@@ -159,13 +197,13 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     setState(ConnectionState.Syncing);
     const offset = await interactive.sync();
-    setConfig({ serverOffset: offset });
+    setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
     setState(ConnectionState.Ready);
   }, [interactive, state, setConfig, initialised]);
 
   const uploadScript = useCallback(
     async (funscriptPath: string) => {
-      interactive.pause();
+      await interactive.pause();
       if (
         !interactive.handyKey ||
         !funscriptPath ||
@@ -208,4 +246,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   );
 };
 
+export const useInteractive = () => {
+  return useContext(InteractiveContext);
+};
 export default InteractiveProvider;

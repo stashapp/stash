@@ -62,13 +62,13 @@ export const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
       if (onDeleted) {
         onDeleted();
       }
-      Toast.success({
-        content: intl.formatMessage(messages.deleteToast, {
+      Toast.success(
+        intl.formatMessage(messages.deleteToast, {
           count,
           singularEntity,
           pluralEntity,
-        }),
-      });
+        })
+      );
     } catch (e) {
       Toast.error(e);
     }

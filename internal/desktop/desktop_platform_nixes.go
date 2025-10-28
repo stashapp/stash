@@ -1,5 +1,5 @@
-//go:build linux || freebsd
-// +build linux freebsd
+//go:build unix && !darwin
+// +build unix,!darwin
 
 package desktop
 

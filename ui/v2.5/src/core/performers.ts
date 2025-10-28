@@ -16,7 +16,7 @@ export const usePerformerFilterHook = (
     // if performers is already present, then we modify it, otherwise add
     let performerCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "performers";
-    }) as PerformersCriterion;
+    }) as PerformersCriterion | undefined;
 
     if (performerCriterion) {
       if (
@@ -86,11 +86,13 @@ export function sortPerformers<T extends IPerformerFragment>(performers: T[]) {
 export const scrapedPerformerToCreateInput = (
   toCreate: GQL.ScrapedPerformer
 ) => {
+  const aliases = toCreate.aliases?.split(",").map((a) => a.trim());
+
   const input: GQL.PerformerCreateInput = {
     name: toCreate.name ?? "",
-    url: toCreate.url,
     gender: stringToGender(toCreate.gender),
     birthdate: toCreate.birthdate,
+    disambiguation: toCreate.disambiguation,
     ethnicity: toCreate.ethnicity,
     country: toCreate.country,
     eye_color: toCreate.eye_color,
@@ -100,9 +102,8 @@ export const scrapedPerformerToCreateInput = (
     career_length: toCreate.career_length,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
-    aliases: toCreate.aliases,
-    twitter: toCreate.twitter,
-    instagram: toCreate.instagram,
+    alias_list: aliases,
+    urls: toCreate.urls,
     tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
     image:
       (toCreate.images ?? []).length > 0

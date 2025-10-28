@@ -28,7 +28,8 @@ type InteractiveHeatmapSpeedGenerator struct {
 
 type Script struct {
 	// Version of Launchscript
-	Version string `json:"version"`
+	// #5600 - ignore version, don't validate type
+	Version json.RawMessage `json:"version"`
 	// Inverted causes up and down movement to be flipped.
 	Inverted bool `json:"inverted,omitempty"`
 	// Range is the percentage of a full stroke to use.
@@ -40,13 +41,11 @@ type Script struct {
 // Action is a move at a specific time.
 type Action struct {
 	// At time in milliseconds the action should fire.
-	At int64 `json:"at"`
+	At float64 `json:"at"`
 	// Pos is the place in percent to move to.
 	Pos int `json:"pos"`
 
-	Slope     float64
-	Intensity int64
-	Speed     float64
+	Speed float64
 }
 
 type GradientTable []struct {
@@ -111,8 +110,8 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneD
 	// trim actions with negative timestamps to avoid index range errors when generating heatmap
 	// #3181 - also trim actions that occur after the scene duration
 	loggedBadTimestamp := false
-	sceneDurationMilli := int64(sceneDuration * 1000)
-	isValid := func(x int64) bool {
+	sceneDurationMilli := sceneDuration * 1000
+	isValid := func(x float64) bool {
 		return x >= 0 && x < sceneDurationMilli
 	}
 
@@ -134,10 +133,9 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneD
 
 func (funscript *Script) UpdateIntensityAndSpeed() {
 
-	var t1, t2 int64
+	var t1, t2 float64
 	var p1, p2 int
-	var slope float64
-	var intensity int64
+	var intensity float64
 	for i := range funscript.Actions {
 		if i == 0 {
 			continue
@@ -147,13 +145,10 @@ func (funscript *Script) UpdateIntensityAndSpeed() {
 		p1 = funscript.Actions[i].Pos
 		p2 = funscript.Actions[i-1].Pos
 
-		slope = math.Min(math.Max(1/(2*float64(t1-t2)/1000), 0), 20)
-		intensity = int64(slope * math.Abs((float64)(p1-p2)))
-		speed := math.Abs(float64(p1-p2)) / float64(t1-t2) * 1000
+		speed := math.Abs(float64(p1 - p2))
+		intensity = float64(speed/float64(t1-t2)) * 1000
 
-		funscript.Actions[i].Slope = slope
-		funscript.Actions[i].Intensity = intensity
-		funscript.Actions[i].Speed = speed
+		funscript.Actions[i].Speed = intensity
 	}
 }
 
@@ -247,13 +242,13 @@ func (gt GradientTable) GetYRange(t float64) [2]float64 {
 
 func (funscript Script) getGradientTable(numSegments int, sceneDurationMilli int64) GradientTable {
 	const windowSize = 15
-	const backfillThreshold = 500
+	const backfillThreshold = float64(500)
 
 	segments := make([]struct {
 		count     int
 		intensity int
 		yRange    [2]float64
-		at        int64
+		at        float64
 	}, numSegments)
 	gradient := make(GradientTable, numSegments)
 	posList := []int{}
@@ -294,7 +289,7 @@ func (funscript Script) getGradientTable(numSegments int, sceneDurationMilli int
 		}
 		segments[segment].at = a.At
 		segments[segment].count++
-		segments[segment].intensity += int(a.Intensity)
+		segments[segment].intensity += int(a.Speed)
 		segments[segment].yRange[0] = averageTop
 		segments[segment].yRange[1] = averageBottom
 	}
@@ -303,7 +298,7 @@ func (funscript Script) getGradientTable(numSegments int, sceneDurationMilli int
 
 	// Fill in gaps in segments
 	for i := 0; i < numSegments; i++ {
-		segmentTS := int64(float64(i) / float64(numSegments))
+		segmentTS := float64((maxts / int64(numSegments)) * int64(i))
 
 		// Empty segment - fill it with the previous up to backfillThreshold ms
 		if segments[i].count == 0 {
@@ -340,12 +335,12 @@ func getSegmentColor(intensity float64) colorful.Color {
 	colorBlack, _ := colorful.Hex("#0f001e")
 	colorBackground, _ := colorful.Hex("#30404d") // Same as GridCard bg
 
-	var stepSize = 60.0
+	var stepSize = 125.0
 	var f float64
 	var c colorful.Color
 
 	switch {
-	case intensity <= 0.001:
+	case intensity <= 25:
 		c = colorBackground
 	case intensity <= 1*stepSize:
 		f = (intensity - 0*stepSize) / stepSize
@@ -412,7 +407,8 @@ func ConvertFunscriptToCSV(funscriptPath string) ([]byte, error) {
 			pos = convertRange(pos, 0, funscript.Range, 0, 100)
 		}
 
-		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", action.At, pos))
+		// I don't know whether the csv format requires int or float, so for now we'll use int
+		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", int(math.Round(action.At)), pos))
 	}
 	return buffer.Bytes(), nil
 }

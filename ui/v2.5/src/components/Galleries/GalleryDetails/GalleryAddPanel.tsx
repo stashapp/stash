@@ -30,7 +30,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "galleries";
-    }) as GalleriesCriterion;
+    }) as GalleriesCriterion | undefined;
 
     if (
       galleryCriterion &&
@@ -68,16 +68,16 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
         image_ids: Array.from(selectedIds.values()),
       });
       const imageCount = selectedIds.size;
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.added_entity" },
           {
             count: imageCount,
             singularEntity: intl.formatMessage({ id: "image" }),
             pluralEntity: intl.formatMessage({ id: "images" }),
           }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }

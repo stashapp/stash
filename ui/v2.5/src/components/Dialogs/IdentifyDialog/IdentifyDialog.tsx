@@ -46,6 +46,21 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
           field: "title",
           strategy: GQL.IdentifyFieldStrategy.Overwrite,
         },
+        {
+          field: "studio",
+          strategy: GQL.IdentifyFieldStrategy.Merge,
+          createMissing: true,
+        },
+        {
+          field: "performers",
+          strategy: GQL.IdentifyFieldStrategy.Merge,
+          createMissing: true,
+        },
+        {
+          field: "tags",
+          strategy: GQL.IdentifyFieldStrategy.Merge,
+          createMissing: true,
+        },
       ],
       includeMalePerformers: true,
       setCoverImage: true,
@@ -94,7 +109,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       })
     );
 
-    const scrapers = scraperData.listSceneScrapers;
+    const scrapers = scraperData.listScrapers;
 
     const fragmentScrapers = scrapers.filter((s) =>
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
@@ -285,12 +300,12 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     try {
       await mutateMetadataIdentify(makeIdentifyInput());
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.identify" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -358,12 +373,12 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.defaults_set" },
           { action: intl.formatMessage({ id: "actions.identify" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     } finally {

@@ -49,7 +49,7 @@ func (g *generatorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 
 	// If we are missing the frame count or frame rate then seek through the file and extract the info with regex
 	if numberOfFrames == 0 || !isValidFloat64(framerate) {
-		info, err := instance.FFMPEG.CalculateFrameRate(context.TODO(), &g.VideoFile)
+		info, err := instance.FFMpeg.CalculateFrameRate(context.TODO(), &g.VideoFile)
 		if err != nil {
 			logger.Errorf("error calculating frame rate: %v", err)
 		} else {

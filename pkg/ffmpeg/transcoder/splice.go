@@ -11,7 +11,7 @@ type SpliceOptions struct {
 	OutputPath string
 	Format     ffmpeg.Format
 
-	VideoCodec ffmpeg.VideoCodec
+	VideoCodec *ffmpeg.VideoCodec
 	VideoArgs  ffmpeg.Args
 
 	AudioCodec ffmpeg.AudioCodec
@@ -45,11 +45,11 @@ func Splice(concatFile string, options SpliceOptions) ffmpeg.Args {
 	args = args.Overwrite()
 
 	// if video codec is not provided, then use copy
-	if options.VideoCodec == "" {
-		options.VideoCodec = ffmpeg.VideoCodecCopy
+	if options.VideoCodec == nil {
+		options.VideoCodec = &ffmpeg.VideoCodecCopy
 	}
 
-	args = args.VideoCodec(options.VideoCodec)
+	args = args.VideoCodec(*options.VideoCodec)
 	args = args.AppendArgs(options.VideoArgs)
 
 	// if audio codec is not provided, then use copy

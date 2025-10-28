@@ -1,0 +1,11 @@
+name: Test React
+description: Adds a React component
+url: https://github.com/stashapp/CommunityScripts
+version: 1.0
+ui:
+  javascript:
+  - testReact.js
+  css:
+  - testReact.css
+
+

@@ -1,0 +1,31 @@
+mutation TagCreate($input: TagCreateInput!) {
+  tagCreate(input: $input) {
+    ...TagData
+  }
+}
+
+mutation TagDestroy($id: ID!) {
+  tagDestroy(input: { id: $id })
+}
+
+mutation TagsDestroy($ids: [ID!]!) {
+  tagsDestroy(ids: $ids)
+}
+
+mutation TagUpdate($input: TagUpdateInput!) {
+  tagUpdate(input: $input) {
+    ...TagData
+  }
+}
+
+mutation BulkTagUpdate($input: BulkTagUpdateInput!) {
+  bulkTagUpdate(input: $input) {
+    ...TagData
+  }
+}
+
+mutation TagsMerge($source: [ID!]!, $destination: ID!) {
+  tagsMerge(input: { source: $source, destination: $destination }) {
+    ...TagData
+  }
+}

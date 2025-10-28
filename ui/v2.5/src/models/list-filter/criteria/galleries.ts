@@ -1,14 +1,17 @@
 import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 
-const galleriesCriterionOption = new ILabeledIdCriterionOption(
+const inputType = "galleries";
+
+export const GalleriesCriterionOption = new ILabeledIdCriterionOption(
   "galleries",
   "galleries",
-  "galleries",
-  true
+  true,
+  inputType,
+  () => new GalleriesCriterion()
 );
 
 export class GalleriesCriterion extends ILabeledIdCriterion {
   constructor() {
-    super(galleriesCriterionOption);
+    super(GalleriesCriterionOption);
   }
 }

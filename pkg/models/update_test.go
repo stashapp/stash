@@ -3,6 +3,8 @@ package models
 import (
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateIDs_ImpactedIDs(t *testing.T) {
@@ -48,45 +50,40 @@ func TestUpdateIDs_ImpactedIDs(t *testing.T) {
 	}
 }
 
-func TestUpdateIDs_EffectiveIDs(t *testing.T) {
+func TestApplyUpdate(t *testing.T) {
 	tests := []struct {
 		name     string
-		IDs      []int
-		Mode     RelationshipUpdateMode
+		values   []int
+		mode     RelationshipUpdateMode
 		existing []int
 		want     []int
 	}{
 		{
 			name:     "add",
-			IDs:      []int{2, 3},
-			Mode:     RelationshipUpdateModeAdd,
+			values:   []int{2, 3},
+			mode:     RelationshipUpdateModeAdd,
 			existing: []int{1, 2},
 			want:     []int{1, 2, 3},
 		},
 		{
 			name:     "remove",
-			IDs:      []int{2, 3},
-			Mode:     RelationshipUpdateModeRemove,
+			values:   []int{2, 3},
+			mode:     RelationshipUpdateModeRemove,
 			existing: []int{1, 2},
 			want:     []int{1},
 		},
 		{
 			name:     "set",
-			IDs:      []int{1, 2, 3},
-			Mode:     RelationshipUpdateModeSet,
+			values:   []int{1, 2, 3},
+			mode:     RelationshipUpdateModeSet,
 			existing: []int{1, 2},
 			want:     []int{1, 2, 3},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := &UpdateIDs{
-				IDs:  tt.IDs,
-				Mode: tt.Mode,
-			}
-			if got := u.EffectiveIDs(tt.existing); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UpdateIDs.EffectiveIDs() = %v, want %v", got, tt.want)
-			}
+			got := applyUpdate(tt.values, tt.mode, tt.existing)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -177,7 +177,7 @@ func NewOptionalBoolPtr(v *bool) OptionalBool {
 	return OptionalBool{*v, false, true}
 }
 
-// OptionalBool represents an optional float64 argument that may be null. See OptionalString.
+// OptionalFloat64 represents an optional float64 argument that may be null. See OptionalString.
 type OptionalFloat64 struct {
 	Value float64
 	Null  bool

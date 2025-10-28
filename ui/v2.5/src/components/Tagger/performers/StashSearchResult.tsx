@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { mergeStashIDs } from "src/utils/stashbox";
 
 interface IStashSearchResultProps {
   performer: GQL.SlimPerformerDataFragment;
@@ -17,6 +18,21 @@ interface IStashSearchResultProps {
   excludedPerformerFields: string[];
 }
 
+// #4596 - remove any duplicate aliases or aliases that are the same as the performer's name
+function cleanAliases(currentName: string, aliases: string[]) {
+  const ret: string[] = [];
+  aliases.forEach((alias) => {
+    if (
+      alias.toLowerCase() !== currentName.toLowerCase() &&
+      !ret.find((r) => r.toLowerCase() === alias.toLowerCase())
+    ) {
+      ret.push(alias);
+    }
+  });
+
+  return ret;
+}
+
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   performer,
   stashboxPerformers,
@@ -24,9 +40,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   excludedPerformerFields,
   endpoint,
 }) => {
-  const [modalPerformer, setModalPerformer] = useState<
-    GQL.ScrapedPerformerDataFragment | undefined
-  >();
+  const [modalPerformer, setModalPerformer] =
+    useState<GQL.ScrapedPerformerDataFragment>();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
@@ -38,6 +53,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setError({});
     setSaveState("Saving performer");
     setModalPerformer(undefined);
+
+    if (input.stash_ids?.length) {
+      input.stash_ids = mergeStashIDs(performer.stash_ids, input.stash_ids);
+    }
+
+    if (input.alias_list) {
+      input.alias_list = cleanAliases(performer.name, input.alias_list);
+    }
 
     const updateData: GQL.PerformerUpdateInput = {
       ...input,
@@ -51,7 +74,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         message: `Failed to save performer "${performer.name}"`,
         details:
           res?.errors?.[0].message ===
-          "UNIQUE constraint failed: performers.checksum"
+          "UNIQUE constraint failed: performers.name"
             ? "Name already exists"
             : res?.errors?.[0].message,
       });

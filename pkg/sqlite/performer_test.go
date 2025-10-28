@@ -16,9 +16,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testCustomFields = map[string]interface{}{
+	"string": "aaa",
+	"int":    int64(123), // int64 to match the type of the field in the database
+	"real":   1.23,
+}
+
 func loadPerformerRelationships(ctx context.Context, expected models.Performer, actual *models.Performer) error {
 	if expected.Aliases.Loaded() {
 		if err := actual.LoadAliases(ctx, db.Performer); err != nil {
+			return err
+		}
+	}
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Performer); err != nil {
 			return err
 		}
 	}
@@ -45,6 +56,7 @@ func Test_PerformerStore_Create(t *testing.T) {
 		url            = "url"
 		twitter        = "twitter"
 		instagram      = "instagram"
+		urls           = []string{url, twitter, instagram}
 		rating         = 3
 		ethnicity      = "ethnicity"
 		country        = "country"
@@ -75,59 +87,64 @@ func Test_PerformerStore_Create(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		newObject models.Performer
+		newObject models.CreatePerformerInput
 		wantErr   bool
 	}{
 		{
 			"full",
-			models.Performer{
-				Name:           name,
-				Disambiguation: disambiguation,
-				Gender:         &gender,
-				URL:            url,
-				Twitter:        twitter,
-				Instagram:      instagram,
-				Birthdate:      &birthdate,
-				Ethnicity:      ethnicity,
-				Country:        country,
-				EyeColor:       eyeColor,
-				Height:         &height,
-				Measurements:   measurements,
-				FakeTits:       fakeTits,
-				PenisLength:    &penisLength,
-				Circumcised:    &circumcised,
-				CareerLength:   careerLength,
-				Tattoos:        tattoos,
-				Piercings:      piercings,
-				Favorite:       favorite,
-				Rating:         &rating,
-				Details:        details,
-				DeathDate:      &deathdate,
-				HairColor:      hairColor,
-				Weight:         &weight,
-				IgnoreAutoTag:  ignoreAutoTag,
-				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
-				Aliases:        models.NewRelatedStrings(aliases),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{
-					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
-					},
-					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
-					},
-				}),
-				CreatedAt: createdAt,
-				UpdatedAt: updatedAt,
+			models.CreatePerformerInput{
+				Performer: &models.Performer{
+					Name:           name,
+					Disambiguation: disambiguation,
+					Gender:         &gender,
+					URLs:           models.NewRelatedStrings(urls),
+					Birthdate:      &birthdate,
+					Ethnicity:      ethnicity,
+					Country:        country,
+					EyeColor:       eyeColor,
+					Height:         &height,
+					Measurements:   measurements,
+					FakeTits:       fakeTits,
+					PenisLength:    &penisLength,
+					Circumcised:    &circumcised,
+					CareerLength:   careerLength,
+					Tattoos:        tattoos,
+					Piercings:      piercings,
+					Favorite:       favorite,
+					Rating:         &rating,
+					Details:        details,
+					DeathDate:      &deathdate,
+					HairColor:      hairColor,
+					Weight:         &weight,
+					IgnoreAutoTag:  ignoreAutoTag,
+					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+					Aliases:        models.NewRelatedStrings(aliases),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
+				CustomFields: testCustomFields,
 			},
 			false,
 		},
 		{
 			"invalid tag id",
-			models.Performer{
-				Name:   name,
-				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.CreatePerformerInput{
+				Performer: &models.Performer{
+					Name:   name,
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
@@ -151,16 +168,16 @@ func Test_PerformerStore_Create(t *testing.T) {
 
 			assert.NotZero(p.ID)
 
-			copy := tt.newObject
+			copy := *tt.newObject.Performer
 			copy.ID = p.ID
 
 			// load relationships
-			if err := loadPerformerRelationships(ctx, copy, &p); err != nil {
+			if err := loadPerformerRelationships(ctx, copy, p.Performer); err != nil {
 				t.Errorf("loadPerformerRelationships() error = %v", err)
 				return
 			}
 
-			assert.Equal(copy, p)
+			assert.Equal(copy, *p.Performer)
 
 			// ensure can find the performer
 			found, err := qb.Find(ctx, p.ID)
@@ -179,6 +196,15 @@ func Test_PerformerStore_Create(t *testing.T) {
 			}
 			assert.Equal(copy, *found)
 
+			// ensure custom fields are set
+			cf, err := qb.GetCustomFields(ctx, p.ID)
+			if err != nil {
+				t.Errorf("PerformerStore.GetCustomFields() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.newObject.CustomFields, cf)
+
 			return
 		})
 	}
@@ -193,6 +219,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 		url            = "url"
 		twitter        = "twitter"
 		instagram      = "instagram"
+		urls           = []string{url, twitter, instagram}
 		rating         = 3
 		ethnicity      = "ethnicity"
 		country        = "country"
@@ -223,78 +250,111 @@ func Test_PerformerStore_Update(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		updatedObject *models.Performer
+		updatedObject models.UpdatePerformerInput
 		wantErr       bool
 	}{
 		{
 			"full",
-			&models.Performer{
-				ID:             performerIDs[performerIdxWithGallery],
-				Name:           name,
-				Disambiguation: disambiguation,
-				Gender:         &gender,
-				URL:            url,
-				Twitter:        twitter,
-				Instagram:      instagram,
-				Birthdate:      &birthdate,
-				Ethnicity:      ethnicity,
-				Country:        country,
-				EyeColor:       eyeColor,
-				Height:         &height,
-				Measurements:   measurements,
-				FakeTits:       fakeTits,
-				PenisLength:    &penisLength,
-				Circumcised:    &circumcised,
-				CareerLength:   careerLength,
-				Tattoos:        tattoos,
-				Piercings:      piercings,
-				Favorite:       favorite,
-				Rating:         &rating,
-				Details:        details,
-				DeathDate:      &deathdate,
-				HairColor:      hairColor,
-				Weight:         &weight,
-				IgnoreAutoTag:  ignoreAutoTag,
-				Aliases:        models.NewRelatedStrings(aliases),
-				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{
-					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
-					},
-					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
-					},
-				}),
-				CreatedAt: createdAt,
-				UpdatedAt: updatedAt,
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:             performerIDs[performerIdxWithGallery],
+					Name:           name,
+					Disambiguation: disambiguation,
+					Gender:         &gender,
+					URLs:           models.NewRelatedStrings(urls),
+					Birthdate:      &birthdate,
+					Ethnicity:      ethnicity,
+					Country:        country,
+					EyeColor:       eyeColor,
+					Height:         &height,
+					Measurements:   measurements,
+					FakeTits:       fakeTits,
+					PenisLength:    &penisLength,
+					Circumcised:    &circumcised,
+					CareerLength:   careerLength,
+					Tattoos:        tattoos,
+					Piercings:      piercings,
+					Favorite:       favorite,
+					Rating:         &rating,
+					Details:        details,
+					DeathDate:      &deathdate,
+					HairColor:      hairColor,
+					Weight:         &weight,
+					IgnoreAutoTag:  ignoreAutoTag,
+					Aliases:        models.NewRelatedStrings(aliases),
+					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
 			},
 			false,
 		},
 		{
 			"clear nullables",
-			&models.Performer{
-				ID:       performerIDs[performerIdxWithGallery],
-				Aliases:  models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:       performerIDs[performerIdxWithGallery],
+					Aliases:  models.NewRelatedStrings([]string{}),
+					URLs:     models.NewRelatedStrings([]string{}),
+					TagIDs:   models.NewRelatedIDs([]int{}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				},
 			},
 			false,
 		},
 		{
 			"clear tag ids",
-			&models.Performer{
-				ID:     performerIDs[sceneIdxWithTag],
-				TagIDs: models.NewRelatedIDs([]int{}),
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:     performerIDs[sceneIdxWithTag],
+					TagIDs: models.NewRelatedIDs([]int{}),
+				},
+			},
+			false,
+		},
+		{
+			"set custom fields",
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID: performerIDs[performerIdxWithGallery],
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			false,
+		},
+		{
+			"clear custom fields",
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID: performerIDs[performerIdxWithGallery],
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
 			},
 			false,
 		},
 		{
 			"invalid tag id",
-			&models.Performer{
-				ID:     performerIDs[sceneIdxWithGallery],
-				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:     performerIDs[sceneIdxWithGallery],
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
@@ -305,9 +365,9 @@ func Test_PerformerStore_Update(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			copy := *tt.updatedObject
+			copy := *tt.updatedObject.Performer
 
-			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+			if err := qb.Update(ctx, &tt.updatedObject); (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -327,6 +387,17 @@ func Test_PerformerStore_Update(t *testing.T) {
 			}
 
 			assert.Equal(copy, *s)
+
+			// ensure custom fields are correct
+			if tt.updatedObject.CustomFields.Full != nil {
+				cf, err := qb.GetCustomFields(ctx, tt.updatedObject.ID)
+				if err != nil {
+					t.Errorf("PerformerStore.GetCustomFields() error = %v", err)
+					return
+				}
+
+				assert.Equal(tt.updatedObject.CustomFields.Full, cf)
+			}
 		})
 	}
 }
@@ -341,9 +412,7 @@ func clearPerformerPartial() models.PerformerPartial {
 	return models.PerformerPartial{
 		Disambiguation: nullString,
 		Gender:         nullString,
-		URL:            nullString,
-		Twitter:        nullString,
-		Instagram:      nullString,
+		URLs:           &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Birthdate:      nullDate,
 		Ethnicity:      nullString,
 		Country:        nullString,
@@ -376,6 +445,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		url            = "url"
 		twitter        = "twitter"
 		instagram      = "instagram"
+		urls           = []string{url, twitter, instagram}
 		rating         = 3
 		ethnicity      = "ethnicity"
 		country        = "country"
@@ -418,21 +488,22 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Name:           models.NewOptionalString(name),
 				Disambiguation: models.NewOptionalString(disambiguation),
 				Gender:         models.NewOptionalString(gender.String()),
-				URL:            models.NewOptionalString(url),
-				Twitter:        models.NewOptionalString(twitter),
-				Instagram:      models.NewOptionalString(instagram),
-				Birthdate:      models.NewOptionalDate(birthdate),
-				Ethnicity:      models.NewOptionalString(ethnicity),
-				Country:        models.NewOptionalString(country),
-				EyeColor:       models.NewOptionalString(eyeColor),
-				Height:         models.NewOptionalInt(height),
-				Measurements:   models.NewOptionalString(measurements),
-				FakeTits:       models.NewOptionalString(fakeTits),
-				PenisLength:    models.NewOptionalFloat64(penisLength),
-				Circumcised:    models.NewOptionalString(circumcised.String()),
-				CareerLength:   models.NewOptionalString(careerLength),
-				Tattoos:        models.NewOptionalString(tattoos),
-				Piercings:      models.NewOptionalString(piercings),
+				URLs: &models.UpdateStrings{
+					Values: urls,
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+				Birthdate:    models.NewOptionalDate(birthdate),
+				Ethnicity:    models.NewOptionalString(ethnicity),
+				Country:      models.NewOptionalString(country),
+				EyeColor:     models.NewOptionalString(eyeColor),
+				Height:       models.NewOptionalInt(height),
+				Measurements: models.NewOptionalString(measurements),
+				FakeTits:     models.NewOptionalString(fakeTits),
+				PenisLength:  models.NewOptionalFloat64(penisLength),
+				Circumcised:  models.NewOptionalString(circumcised.String()),
+				CareerLength: models.NewOptionalString(careerLength),
+				Tattoos:      models.NewOptionalString(tattoos),
+				Piercings:    models.NewOptionalString(piercings),
 				Aliases: &models.UpdateStrings{
 					Values: aliases,
 					Mode:   models.RelationshipUpdateModeSet,
@@ -445,18 +516,20 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Weight:        models.NewOptionalInt(weight),
 				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				StashIDs: &models.UpdateStashIDs{
 					StashIDs: []models.StashID{
 						{
-							StashID:  stashID1,
-							Endpoint: endpoint1,
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
 						},
 						{
-							StashID:  stashID2,
-							Endpoint: endpoint2,
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
 						},
 					},
 					Mode: models.RelationshipUpdateModeSet,
@@ -469,9 +542,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Name:           name,
 				Disambiguation: disambiguation,
 				Gender:         &gender,
-				URL:            url,
-				Twitter:        twitter,
-				Instagram:      instagram,
+				URLs:           models.NewRelatedStrings(urls),
 				Birthdate:      &birthdate,
 				Ethnicity:      ethnicity,
 				Country:        country,
@@ -492,15 +563,17 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				HairColor:      hairColor,
 				Weight:         &weight,
 				IgnoreAutoTag:  ignoreAutoTag,
-				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				CreatedAt: createdAt,
@@ -516,6 +589,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				ID:            performerIDs[performerIdxWithTwoTags],
 				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
 				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
+				URLs:          models.NewRelatedStrings([]string{}),
 				Aliases:       models.NewRelatedStrings([]string{}),
 				TagIDs:        models.NewRelatedIDs([]int{}),
 				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
@@ -566,6 +640,79 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			}
 
 			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_PerformerStore_UpdatePartialCustomFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       int
+		partial  models.PerformerPartial
+		expected map[string]interface{} // nil to use the partial
+	}{
+		{
+			"set custom fields",
+			performerIDs[performerIdxWithGallery],
+			models.PerformerPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			nil,
+		},
+		{
+			"clear custom fields",
+			performerIDs[performerIdxWithGallery],
+			models.PerformerPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			nil,
+		},
+		{
+			"partial custom fields",
+			performerIDs[performerIdxWithGallery],
+			models.PerformerPartial{
+				CustomFields: models.CustomFieldsInput{
+					Partial: map[string]interface{}{
+						"string":    "bbb",
+						"new_field": "new",
+					},
+				},
+			},
+			map[string]interface{}{
+				"int":       int64(3),
+				"real":      1.3,
+				"string":    "bbb",
+				"new_field": "new",
+			},
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Performer
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			_, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if err != nil {
+				t.Errorf("PerformerStore.UpdatePartial() error = %v", err)
+				return
+			}
+
+			// ensure custom fields are correct
+			cf, err := qb.GetCustomFields(ctx, tt.id)
+			if err != nil {
+				t.Errorf("PerformerStore.GetCustomFields() error = %v", err)
+				return
+			}
+			if tt.expected == nil {
+				assert.Equal(tt.partial.CustomFields.Full, cf)
+			} else {
+				assert.Equal(tt.expected, cf)
+			}
 		})
 	}
 }
@@ -731,10 +878,12 @@ func TestPerformerQueryEthnicityOr(t *testing.T) {
 			Value:    performer1Eth,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.PerformerFilterType{
-			Ethnicity: &models.StringCriterionInput{
-				Value:    performer2Eth,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			Or: &models.PerformerFilterType{
+				Ethnicity: &models.StringCriterionInput{
+					Value:    performer2Eth,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -760,10 +909,12 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 			Value:    performerEth,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.PerformerFilterType{
-			Rating100: &models.IntCriterionInput{
-				Value:    performerRating,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			And: &models.PerformerFilterType{
+				Rating100: &models.IntCriterionInput{
+					Value:    performerRating,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -801,8 +952,10 @@ func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 
 	performerFilter := models.PerformerFilterType{
 		Ethnicity: &ethCriterion,
-		Not: &models.PerformerFilterType{
-			Rating100: &ratingCriterion,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			Not: &models.PerformerFilterType{
+				Rating100: &ratingCriterion,
+			},
 		},
 	}
 
@@ -838,24 +991,30 @@ func TestPerformerIllegalQuery(t *testing.T) {
 			// And and Or in the same filter
 			"AndOr",
 			models.PerformerFilterType{
-				And: &subFilter,
-				Or:  &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					And: &subFilter,
+					Or:  &subFilter,
+				},
 			},
 		},
 		{
 			// And and Not in the same filter
 			"AndNot",
 			models.PerformerFilterType{
-				And: &subFilter,
-				Not: &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					And: &subFilter,
+					Not: &subFilter,
+				},
 			},
 		},
 		{
 			// Or and Not in the same filter
 			"OrNot",
 			models.PerformerFilterType{
-				Or:  &subFilter,
-				Not: &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					Or:  &subFilter,
+					Not: &subFilter,
+				},
 			},
 		},
 		{
@@ -1027,6 +1186,242 @@ func TestPerformerQuery(t *testing.T) {
 	}
 }
 
+func TestPerformerQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.PerformerFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")},
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"includes",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"regex",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*13_custom"},
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*13_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"null",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.05, 0.15},
+					},
+				},
+			},
+			[]int{performerIdx1WithScene},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdx1WithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.05, 0.15},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdx1WithScene},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			performers, _, err := db.Performer.Query(ctx, tt.filter, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := performersToIDs(performers)
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestPerformerQueryPenisLength(t *testing.T) {
 	var upper = 4.0
 
@@ -1157,7 +1552,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		performer := models.Performer{
 			Name: name,
 		}
-		err := qb.Create(ctx, &performer)
+		err := qb.Create(ctx, &models.CreatePerformerInput{Performer: &performer})
 		if err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
@@ -1278,7 +1673,14 @@ func TestPerformerQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Performer) {
 		t.Helper()
-		verifyString(t, g.URL, urlCriterion)
+
+		urls := g.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifyPerformerQuery(t, filter, verifyFn)
@@ -1305,6 +1707,12 @@ func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verif
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
 		performers := queryPerformers(ctx, t, &filter, nil)
+
+		for _, performer := range performers {
+			if err := performer.LoadURLs(ctx, db.Performer); err != nil {
+				t.Errorf("Error loading url relationships: %v", err)
+			}
+		}
 
 		// assume it should find at least one
 		assert.Greater(t, len(performers), 0)
@@ -1652,7 +2060,7 @@ func TestPerformerStashIDs(t *testing.T) {
 		performer := &models.Performer{
 			Name: name,
 		}
-		if err := qb.Create(ctx, performer); err != nil {
+		if err := qb.Create(ctx, &models.CreatePerformerInput{Performer: performer}); err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
@@ -1675,8 +2083,9 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	const stashIDStr = "stashID"
 	const endpoint = "endpoint"
 	stashID := models.StashID{
-		StashID:  stashIDStr,
-		Endpoint: endpoint,
+		StashID:   stashIDStr,
+		Endpoint:  endpoint,
+		UpdatedAt: epochTime,
 	}
 
 	qb := db.Performer
@@ -1717,50 +2126,6 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	}
 
 	assert.Len(t, s.StashIDs.List(), 0)
-}
-
-func TestPerformerQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyPerformersLegacyRating(t, ratingCriterion)
-}
-
-func verifyPerformersLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		performerFilter := models.PerformerFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		performers := queryPerformers(ctx, t, &performerFilter, nil)
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, performer := range performers {
-			verifyIntPtr(t, performer.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
 }
 
 func TestPerformerQueryRating100(t *testing.T) {
@@ -1804,14 +2169,17 @@ func verifyPerformersRating100(t *testing.T, ratingCriterion models.IntCriterion
 	})
 }
 
+func performerQueryIsMissing(ctx context.Context, t *testing.T, m string) []*models.Performer {
+	performerFilter := models.PerformerFilterType{
+		IsMissing: &m,
+	}
+
+	return queryPerformers(ctx, t, &performerFilter, nil)
+}
+
 func TestPerformerQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		isMissing := "rating"
-		performerFilter := models.PerformerFilterType{
-			IsMissing: &isMissing,
-		}
-
-		performers := queryPerformers(ctx, t, &performerFilter, nil)
+		performers := performerQueryIsMissing(ctx, t, "rating")
 
 		assert.True(t, len(performers) > 0)
 
@@ -1825,16 +2193,7 @@ func TestPerformerQueryIsMissingRating(t *testing.T) {
 
 func TestPerformerQueryIsMissingImage(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		isMissing := "image"
-		performerFilter := &models.PerformerFilterType{
-			IsMissing: &isMissing,
-		}
-
-		// ensure query does not error
-		performers, _, err := db.Performer.Query(ctx, performerFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying performers: %s", err.Error())
-		}
+		performers := performerQueryIsMissing(ctx, t, "image")
 
 		assert.True(t, len(performers) > 0)
 
@@ -1844,6 +2203,24 @@ func TestPerformerQueryIsMissingImage(t *testing.T) {
 				t.Errorf("error getting performer image: %s", err.Error())
 			}
 			assert.Nil(t, img)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryIsMissingAlias(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		performers := performerQueryIsMissing(ctx, t, "aliases")
+
+		assert.True(t, len(performers) > 0)
+
+		for _, performer := range performers {
+			a, err := db.Performer.GetAliases(ctx, performer.ID)
+			if err != nil {
+				t.Errorf("error getting performer aliases: %s", err.Error())
+			}
+			assert.Nil(t, a)
 		}
 
 		return nil

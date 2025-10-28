@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community forum
+    url: https://discourse.stashapp.cc
+    about: Start a discussion on the community forum.
+  - name: Community Discord
+    url: https://discord.gg/Y8MNsvQBvZ
+    about: Chat with the community on Discord.
+  - name: Documentation
+    url: https://docs.stashapp.cc
+    about: Check out documentation for help and information.

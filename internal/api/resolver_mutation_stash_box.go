@@ -6,54 +6,69 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/stashbox"
 )
 
-func (r *Resolver) stashboxRepository() stashbox.Repository {
-	return stashbox.Repository{
-		Scene:     r.repository.Scene,
-		Performer: r.repository.Performer,
-		Tag:       r.repository.Tag,
-		Studio:    r.repository.Studio,
-	}
-}
-
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return false, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	if err != nil {
+		return false, err
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
+	ids, err := stringslice.StringSliceToIntSlice(input.SceneIds)
+	if err != nil {
+		return false, err
+	}
 
-	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
+	client := r.newStashBoxClient(*b)
+
+	var scenes []*models.Scene
+
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		scenes, err = r.sceneService.FindByIDs(ctx, ids, scene.LoadStashIDs, scene.LoadFiles)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	return client.SubmitFingerprints(ctx, scenes)
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	if err != nil {
+		return "", err
+	}
+
+	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, b, input)
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, input)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	if err != nil {
+		return "", err
+	}
+
+	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, b, input)
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	if err != nil {
+		return nil, err
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
+	client := r.newStashBoxClient(*b)
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var res *string
@@ -73,29 +88,87 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			logger.Errorf("Error getting scene cover: %v", err)
 		}
 
-		if err := scene.LoadURLs(ctx, r.repository.Scene); err != nil {
-			return fmt.Errorf("loading scene URLs: %w", err)
+		draft, err := r.makeSceneDraft(ctx, scene, cover)
+		if err != nil {
+			return err
 		}
 
-		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)
+		res, err = client.SubmitSceneDraft(ctx, *draft)
 		return err
 	})
 
 	return res, err
 }
 
-func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+func (r *mutationResolver) makeSceneDraft(ctx context.Context, s *models.Scene, cover []byte) (*stashbox.SceneDraft, error) {
+	if err := s.LoadURLs(ctx, r.repository.Scene); err != nil {
+		return nil, fmt.Errorf("loading scene URLs: %w", err)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
+	if err := s.LoadStashIDs(ctx, r.repository.Scene); err != nil {
+		return nil, err
+	}
+
+	draft := &stashbox.SceneDraft{
+		Scene: s,
+	}
+
+	pqb := r.repository.Performer
+	sqb := r.repository.Studio
+
+	if s.StudioID != nil {
+		var err error
+		draft.Studio, err = sqb.Find(ctx, *s.StudioID)
+		if err != nil {
+			return nil, err
+		}
+		if draft.Studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", *s.StudioID)
+		}
+
+		if err := draft.Studio.LoadStashIDs(ctx, r.repository.Studio); err != nil {
+			return nil, err
+		}
+	}
+
+	// submit all file fingerprints
+	if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		return nil, err
+	}
+
+	scenePerformers, err := pqb.FindBySceneID(ctx, s.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range scenePerformers {
+		if err := p.LoadStashIDs(ctx, pqb); err != nil {
+			return nil, err
+		}
+	}
+	draft.Performers = scenePerformers
+
+	draft.Tags, err = r.repository.Tag.FindBySceneID(ctx, s.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	draft.Cover = cover
+
+	return draft, nil
+}
+
+func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	client := r.newStashBoxClient(*b)
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var res *string
@@ -110,7 +183,22 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 			return fmt.Errorf("performer with id %d not found", id)
 		}
 
-		res, err = client.SubmitPerformerDraft(ctx, performer, boxes[input.StashBoxIndex].Endpoint)
+		pqb := r.repository.Performer
+		if err := performer.LoadAliases(ctx, pqb); err != nil {
+			return err
+		}
+
+		if err := performer.LoadURLs(ctx, pqb); err != nil {
+			return err
+		}
+
+		if err := performer.LoadStashIDs(ctx, pqb); err != nil {
+			return err
+		}
+
+		img, _ := pqb.GetImage(ctx, performer.ID)
+
+		res, err = client.SubmitPerformerDraft(ctx, performer, img)
 		return err
 	})
 

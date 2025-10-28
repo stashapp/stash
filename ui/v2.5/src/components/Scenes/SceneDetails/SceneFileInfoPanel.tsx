@@ -15,8 +15,10 @@ import { mutateSceneSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { getStashboxBase } from "src/utils/stashbox";
 import { TextField, URLField, URLsField } from "src/utils/field";
+import { StashIDPill } from "src/components/Shared/StashID";
+import { PatchComponent } from "../../../patch";
+import { FileSize } from "src/components/Shared/FileSize";
 
 interface IFileInfoPanelProps {
   sceneID: string;
@@ -34,25 +36,6 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
 ) => {
   const intl = useIntl();
   const history = useHistory();
-
-  function renderFileSize() {
-    const { size, unit } = TextUtils.fileSize(props.file.size);
-
-    return (
-      <TextField id="filesize">
-        <span className="text-truncate">
-          <FormattedNumber
-            value={size}
-            // eslint-disable-next-line react/style-prop-object
-            style="unit"
-            unit={unit}
-            unitDisplay="narrow"
-            maximumFractionDigits={2}
-          />
-        </span>
-      </TextField>
-    );
-  }
 
   // TODO - generalise fingerprints
   const oshash = props.file.fingerprints.find((f) => f.type === "oshash");
@@ -85,7 +68,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           url={NavUtils.makeScenesPHashMatchUrl(phash?.value)}
           target="_self"
           truncate
-          trusted
+          internal
         />
         <URLField
           id="path"
@@ -93,7 +76,11 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           value={`file://${props.file.path}`}
           truncate
         />
-        {renderFileSize()}
+        <TextField id="filesize">
+          <span className="text-truncate">
+            <FileSize size={props.file.size} />
+          </span>
+        </TextField>
         <TextField id="file_mod_time">
           <FormattedTime
             dateStyle="medium"
@@ -174,7 +161,7 @@ interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
+const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
   const Toast = useToast();
@@ -197,21 +184,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <dd>
           <dl>
             {props.scene.stash_ids.map((stashID) => {
-              const base = getStashboxBase(stashID.endpoint);
-              const link = base ? (
-                <a
-                  href={`${base}scenes/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                stashID.stash_id
-              );
               return (
                 <dd key={stashID.stash_id} className="row no-gutters">
-                  {link}
+                  <StashIDPill stashID={stashID} linkType="scenes" />
                 </dd>
               );
             })}
@@ -320,16 +295,6 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         {renderInteractiveSpeed()}
         <URLsField id="urls" urls={props.scene.urls} truncate />
         {renderStashIDs()}
-        <TextField
-          id="media_info.play_count"
-          value={(props.scene.play_count ?? 0).toString()}
-          truncate
-        />
-        <TextField
-          id="media_info.play_duration"
-          value={TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0)}
-          truncate
-        />
       </dl>
 
       {filesPanel}
@@ -337,4 +302,8 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   );
 };
 
+export const SceneFileInfoPanel = PatchComponent(
+  "SceneFileInfoPanel",
+  _SceneFileInfoPanel
+);
 export default SceneFileInfoPanel;

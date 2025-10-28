@@ -1,0 +1,55 @@
+mutation MetadataImport {
+  metadataImport
+}
+
+mutation MetadataExport {
+  metadataExport
+}
+
+mutation ExportObjects($input: ExportObjectsInput!) {
+  exportObjects(input: $input)
+}
+
+mutation ImportObjects($input: ImportObjectsInput!) {
+  importObjects(input: $input)
+}
+
+mutation MetadataScan($input: ScanMetadataInput!) {
+  metadataScan(input: $input)
+}
+
+mutation MetadataGenerate($input: GenerateMetadataInput!) {
+  metadataGenerate(input: $input)
+}
+
+mutation MetadataAutoTag($input: AutoTagMetadataInput!) {
+  metadataAutoTag(input: $input)
+}
+
+mutation MetadataIdentify($input: IdentifyMetadataInput!) {
+  metadataIdentify(input: $input)
+}
+
+mutation MetadataClean($input: CleanMetadataInput!) {
+  metadataClean(input: $input)
+}
+
+mutation MetadataCleanGenerated($input: CleanGeneratedInput!) {
+  metadataCleanGenerated(input: $input)
+}
+
+mutation MigrateHashNaming {
+  migrateHashNaming
+}
+
+mutation BackupDatabase($input: BackupDatabaseInput!) {
+  backupDatabase(input: $input)
+}
+
+mutation AnonymiseDatabase($input: AnonymiseDatabaseInput!) {
+  anonymiseDatabase(input: $input)
+}
+
+mutation OptimiseDatabase {
+  optimiseDatabase
+}
