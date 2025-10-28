@@ -46,16 +46,17 @@ export const ToolbarFilterSection: React.FC<{
         </div>
         <div className="filter-section">
           <ButtonGroup>
+            <SidebarToggleButton onClick={onToggleSidebar} />
             <SavedFilterDropdown
               filter={filter}
               onSetFilter={onSetFilter}
               view={view}
+              menuPortalTarget={document.body}
             />
             <FilterButton
               onClick={() => onEditCriterion()}
               count={criteria.length}
             />
-            <SidebarToggleButton onClick={onToggleSidebar} />
           </ButtonGroup>
           <FilterTags
             searchTerm={searchTerm}

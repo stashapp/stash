@@ -31,6 +31,7 @@ import { AlertModal } from "../Shared/Alert";
 import cx from "classnames";
 import { TruncatedInlineText } from "../Shared/TruncatedText";
 import { OperationButton } from "../Shared/OperationButton";
+import { createPortal } from "react-dom";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
@@ -243,6 +244,7 @@ interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
   view?: View;
+  menuPortalTarget?: Element | DocumentFragment;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
@@ -841,6 +843,13 @@ export const SavedFilterDropdown: React.FC<ISavedFilterListProps> = (props) => {
   ));
   SavedFilterDropdownRef.displayName = "SavedFilterDropdown";
 
+  const menu = (
+    <Dropdown.Menu
+      as={SavedFilterDropdownRef}
+      className="saved-filter-list-menu"
+    />
+  );
+
   return (
     <Dropdown as={ButtonGroup}>
       <OverlayTrigger
@@ -855,10 +864,9 @@ export const SavedFilterDropdown: React.FC<ISavedFilterListProps> = (props) => {
           <Icon icon={faBookmark} />
         </Dropdown.Toggle>
       </OverlayTrigger>
-      <Dropdown.Menu
-        as={SavedFilterDropdownRef}
-        className="saved-filter-list-menu"
-      />
+      {props.menuPortalTarget
+        ? createPortal(menu, props.menuPortalTarget)
+        : menu}
     </Dropdown>
   );
 };
