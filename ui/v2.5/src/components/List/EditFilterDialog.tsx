@@ -50,6 +50,7 @@ interface ICriterionList {
   optionSelected: (o?: CriterionOption) => void;
   onRemoveCriterion: (c: string) => void;
   onTogglePin: (c: CriterionOption) => void;
+  externallySelected?: boolean;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
@@ -62,6 +63,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   optionSelected,
   onRemoveCriterion,
   onTogglePin,
+  externallySelected = false,
 }) => {
   const prevCriterion = usePrevious(currentCriterion);
 
@@ -101,14 +103,19 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     // scrolling to the current criterion doesn't work well when the
     // dialog is already open, so limit to when we click on the
     // criterion from the external tags
-    if (!scrolled.current && type && criteriaRefs[type]?.current) {
+    if (
+      externallySelected &&
+      !scrolled.current &&
+      type &&
+      criteriaRefs[type]?.current
+    ) {
       criteriaRefs[type].current!.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
       scrolled.current = true;
     }
-  }, [currentCriterion, criteriaRefs, type]);
+  }, [externallySelected, currentCriterion, criteriaRefs, type]);
 
   function getReleventCriterion(t: CriterionType) {
     if (currentCriterion?.criterionOption.type === t) {
@@ -549,6 +556,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               selected={criterion?.criterionOption}
               onRemoveCriterion={(c) => removeCriterionString(c)}
               onTogglePin={(c) => onTogglePinFilter(c)}
+              externallySelected={!!editingCriterion}
             />
             {criteria.length > 0 && (
               <div>
