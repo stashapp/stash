@@ -32,6 +32,7 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 		return t.Scene.LoadPrimaryFile(ctx, r.File)
 	}); err != nil {
 		logger.Error(err)
+		return
 	}
 
 	if !required {
