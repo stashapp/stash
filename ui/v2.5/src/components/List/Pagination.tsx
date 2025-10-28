@@ -44,7 +44,7 @@ const PageCount: React.FC<{
   useStopWheelScroll(pageInput);
 
   const pageOptions = useMemo(() => {
-    const maxPagesToShow = 10;
+    const maxPagesToShow = 1000;
     const min = Math.max(1, currentPage - maxPagesToShow / 2);
     const max = Math.min(min + maxPagesToShow, totalPages);
     const pages = [];
