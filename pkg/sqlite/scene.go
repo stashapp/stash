@@ -958,7 +958,7 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 			},
 		)
 
-		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		filepathColumn := "COALESCE(folders.path, '') || '" + string(filepath.Separator) + "' || COALESCE(files.basename, '')"
 		searchColumns := []string{"scenes.title", "scenes.details", filepathColumn, "files_fingerprints.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
