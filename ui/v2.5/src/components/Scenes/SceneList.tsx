@@ -518,7 +518,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
   const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
 
-  const playRandom = usePlayRandom(filter, totalCount);
+  const playRandom = usePlayRandom(effectiveFilter, totalCount);
   const playSelected = usePlaySelected(selectedIds);
   const playFirst = usePlayFirst();
 
