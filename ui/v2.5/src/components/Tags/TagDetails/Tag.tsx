@@ -49,6 +49,7 @@ import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { goBackOrReplace } from "src/utils/history";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -420,7 +421,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       return;
     }
 
-    history.goBack();
+    goBackOrReplace(history, "/tags");
   }
 
   function renderDeleteAlert() {
