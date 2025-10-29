@@ -114,6 +114,7 @@ export const AddSubGroupsDialog: React.FC<IListOperationProps> = (
           onUpdate={(input) => setEntries(input)}
           excludeIDs={excludeIDs}
           filterHook={filterHook}
+          menuPortalTarget={document.body}
         />
       </Form>
     </ModalComponent>
