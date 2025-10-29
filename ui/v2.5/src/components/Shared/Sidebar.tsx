@@ -56,6 +56,10 @@ export const SidebarPane: React.FC<
   );
 };
 
+export const SidebarPaneContent: React.FC = ({ children }) => {
+  return <div className="sidebar-pane-content">{children}</div>;
+};
+
 export const SidebarSection: React.FC<
   PropsWithChildren<{
     text: React.ReactNode;

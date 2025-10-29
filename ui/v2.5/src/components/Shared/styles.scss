@@ -915,7 +915,7 @@ $sticky-header-height: calc(50px + 3.3rem);
       margin-right: -$sidebar-width;
     }
 
-    .sidebar-pane > :nth-child(2) {
+    .sidebar-pane > .sidebar-pane-content {
       transition: none;
     }
   }

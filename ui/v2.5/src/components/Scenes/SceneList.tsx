@@ -37,7 +37,12 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -704,7 +709,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               focus={searchFocus}
             />
           </Sidebar>
-          <div>
+          <SidebarPaneContent>
             <FilteredListToolbar2
               className="scene-list-toolbar"
               hasSelection={hasSelection}
@@ -767,7 +772,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 />
               </div>
             )}
-          </div>
+          </SidebarPaneContent>
         </SidebarPane>
       </div>
     </TaggerContext>
