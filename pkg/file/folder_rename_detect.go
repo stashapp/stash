@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -115,7 +116,7 @@ func (s *scanJob) detectFolderMove(ctx context.Context, file scanFile) (*models.
 			return nil
 		}
 
-		size, err := getFileSize(file.fs, path, info)
+		size, err := fsutil.GetFileSize(file.fs, path, info)
 		if err != nil {
 			return fmt.Errorf("getting file size for %q: %w", path, err)
 		}
