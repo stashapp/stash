@@ -851,7 +851,7 @@ export const SavedFilterDropdown: React.FC<ISavedFilterListProps> = (props) => {
   );
 
   return (
-    <Dropdown as={ButtonGroup}>
+    <Dropdown as={ButtonGroup} className="saved-filter-dropdown">
       <OverlayTrigger
         placement="top"
         overlay={

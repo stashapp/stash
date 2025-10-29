@@ -1179,10 +1179,13 @@ input[type="range"].zoom-slider {
   }
 }
 
-// hide the filter icon button when sidebar is shown on smaller screens
+// hide the filter and saved filters icon buttons when sidebar is shown on smaller screens
 @include media-breakpoint-down(md) {
-  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .filter-button {
-    display: none;
+  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar {
+    .filter-button,
+    .saved-filter-dropdown {
+      display: none;
+    }
   }
 
   // adjust the width of the filter-tags as well
