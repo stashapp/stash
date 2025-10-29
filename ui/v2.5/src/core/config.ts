@@ -165,5 +165,6 @@ export function generatePremadeFrontPageContent(intl: IntlShape) {
     recentlyAdded(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
+    recentlyAdded(intl, FilterMode.SceneMarkers, "markers"),
   ];
 }
