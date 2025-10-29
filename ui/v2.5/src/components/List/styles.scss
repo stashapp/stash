@@ -1048,7 +1048,7 @@ input[type="range"].zoom-slider {
 }
 
 // hide sidebar Edit Filter button on larger screens
-@include media-breakpoint-up(lg) {
+@include media-breakpoint-up(md) {
   .sidebar .edit-filter-button {
     display: none;
   }
@@ -1168,11 +1168,14 @@ input[type="range"].zoom-slider {
   }
 }
 
-@include media-breakpoint-up(xl) {
+// hide the search box in the toolbar when sidebar is shown on larger screens
+// larger screens don't overlap the sidebar
+@include media-breakpoint-up(md) {
   .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .search-container {
     display: none;
   }
 }
+// hide the search box when sidebar is hidden on smaller screens
 @include media-breakpoint-down(md) {
   .sidebar-pane.hide-sidebar .filtered-list-toolbar .search-container {
     display: none;
@@ -1180,7 +1183,7 @@ input[type="range"].zoom-slider {
 }
 
 // hide the filter icon button when sidebar is shown on smaller screens
-@include media-breakpoint-down(md) {
+@include media-breakpoint-down(sm) {
   .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .filter-button {
     display: none;
   }
@@ -1191,8 +1194,8 @@ input[type="range"].zoom-slider {
   }
 }
 
-// move the sidebar toggle to the left on xl viewports
-@include media-breakpoint-up(xl) {
+// move the sidebar toggle to the left on larger viewports
+@include media-breakpoint-up(md) {
   .filtered-list-toolbar .filter-section {
     .sidebar-toggle-button {
       margin-left: 0;
