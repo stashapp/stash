@@ -1064,6 +1064,7 @@ input[type="range"].zoom-slider {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    margin-bottom: 0;
     row-gap: 1rem;
 
     > div {
@@ -1280,13 +1281,17 @@ input[type="range"].zoom-slider {
   align-items: center;
   background-color: $body-bg;
   display: flex;
-  justify-content: space-between;
 
   > div {
     align-items: center;
     display: flex;
+    flex: 1;
     gap: 0.5rem;
     justify-content: flex-start;
+
+    &.pagination-index-container {
+      justify-content: center;
+    }
 
     &:last-child {
       flex-shrink: 0;
@@ -1296,7 +1301,6 @@ input[type="range"].zoom-slider {
 }
 
 .list-results-header {
-  flex-wrap: wrap-reverse;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 
@@ -1304,10 +1308,22 @@ input[type="range"].zoom-slider {
     margin: 0;
   }
 
+  // move pagination info to right on medium screens
+  @include media-breakpoint-down(md) {
+    & > .empty-space {
+      flex: 0;
+    }
+
+    & > div.pagination-index-container {
+      justify-content: flex-end;
+      order: 3;
+    }
+  }
+
   // center the header on smaller screens
   @include media-breakpoint-down(sm) {
     & > div,
-    & > div:last-child {
+    & > div.pagination-index-container {
       flex-basis: 100%;
       justify-content: center;
       margin-left: auto;
