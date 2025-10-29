@@ -76,29 +76,32 @@ export const ToolbarFilterSection: React.FC<{
 
 export const ToolbarSelectionSection: React.FC<{
   selected: number;
-  onToggleSidebar: () => void;
+  operations?: React.ReactNode;
   onSelectAll: () => void;
   onSelectNone: () => void;
 }> = PatchComponent(
   "ToolbarSelectionSection",
-  ({ selected, onToggleSidebar, onSelectAll, onSelectNone }) => {
+  ({ selected, operations, onSelectAll, onSelectNone }) => {
     const intl = useIntl();
 
     return (
-      <div className="selected-items-info">
-        <Button
-          variant="secondary"
-          className="minimal"
-          onClick={() => onSelectNone()}
-          title={intl.formatMessage({ id: "actions.select_none" })}
-        >
-          <Icon icon={faTimes} />
-        </Button>
-        <span>{selected} selected</span>
-        <Button variant="link" onClick={() => onSelectAll()}>
-          <FormattedMessage id="actions.select_all" />
-        </Button>
-        <SidebarToggleButton onClick={onToggleSidebar} />
+      <div className="toolbar-selection-section">
+        <div className="selected-items-info">
+          <Button
+            variant="secondary"
+            className="minimal"
+            onClick={() => onSelectNone()}
+            title={intl.formatMessage({ id: "actions.select_none" })}
+          >
+            <Icon icon={faTimes} />
+          </Button>
+          <span>{selected} selected</span>
+          <Button variant="link" onClick={() => onSelectAll()}>
+            <FormattedMessage id="actions.select_all" />
+          </Button>
+        </div>
+        <div className="empty-space"></div>
+        {operations}
       </div>
     );
   }
@@ -126,7 +129,11 @@ export const FilteredListToolbar2: React.FC<{
       })}
     >
       {!hasSelection ? filterSection : selectionSection}
-      <div className="filtered-list-toolbar-operations">{operationSection}</div>
+      {!hasSelection ? (
+        <div className="filtered-list-toolbar-operations">
+          {operationSection}
+        </div>
+      ) : null}
     </ButtonToolbar>
   );
 };

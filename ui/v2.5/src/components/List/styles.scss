@@ -1094,10 +1094,6 @@ input[type="range"].zoom-slider {
       top: 0;
     }
 
-    .selected-items-info .btn {
-      margin-right: 0.5rem;
-    }
-
     // hide drop down menu items for play and create new
     // when the buttons are visible
     @include media-breakpoint-up(sm) {
@@ -1118,12 +1114,51 @@ input[type="range"].zoom-slider {
       }
     }
 
-    .selected-items-info,
+    .toolbar-selection-section,
     div.filter-section {
       border: 1px solid $secondary;
       border-radius: 0.25rem;
       flex-grow: 1;
       overflow-x: hidden;
+    }
+
+    div.toolbar-selection-section {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
+
+      .selected-items-info {
+        align-items: center;
+        display: flex;
+      }
+
+      > div:first-child,
+      > div:last-child {
+        flex: 1;
+      }
+
+      > div:last-child {
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+
+    // on larger viewports, move the operation buttons to the center
+    @include media-breakpoint-up(md) {
+      div.toolbar-selection-section div.scene-list-operations {
+        justify-content: center;
+        order: 2;
+
+        > .btn-group {
+          gap: 0.5rem;
+        }
+      }
+
+      div.toolbar-selection-section .empty-space {
+        flex: 1;
+        order: 3;
+      }
     }
 
     .sidebar-toggle-button {

@@ -355,7 +355,7 @@ const SceneListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div>
+    <div className="scene-list-operations">
       <ButtonGroup>
         {!!items && (
           <Button
@@ -396,7 +396,10 @@ const SceneListOperations: React.FC<{
           </>
         )}
 
-        <OperationDropdown className="scene-list-operations">
+        <OperationDropdown
+          className="scene-list-operations"
+          menuPortalTarget={document.body}
+        >
           {operations.map((o) => {
             if (o.isDisplayed && !o.isDisplayed()) {
               return null;
@@ -666,6 +669,18 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <SceneListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onPlay={onPlay}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <TaggerContext>
       <div
@@ -714,22 +729,12 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               selectionSection={
                 <ToolbarSelectionSection
                   selected={selectedIds.size}
-                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
                   onSelectAll={() => onSelectAll()}
                   onSelectNone={() => onSelectNone()}
+                  operations={operations}
                 />
               }
-              operationSection={
-                <SceneListOperations
-                  items={items.length}
-                  hasSelection={hasSelection}
-                  operations={otherOperations}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onPlay={onPlay}
-                  onCreateNew={onCreateNew}
-                />
-              }
+              operationSection={operations}
             />
 
             <ListResultsHeader
