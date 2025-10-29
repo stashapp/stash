@@ -16,7 +16,8 @@ import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
 
-const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
+// this needs to correspond to the CSS media query that overlaps the sidebar over content
+const fixedSidebarMediaQuery = "only screen and (max-width: 767px)";
 
 export const Sidebar: React.FC<
   PropsWithChildren<{
