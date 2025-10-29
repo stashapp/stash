@@ -734,6 +734,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               selectionSection={
                 <ToolbarSelectionSection
                   selected={selectedIds.size}
+                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
                   onSelectAll={() => onSelectAll()}
                   onSelectNone={() => onSelectNone()}
                   operations={operations}

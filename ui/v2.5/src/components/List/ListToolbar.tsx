@@ -76,17 +76,19 @@ export const ToolbarFilterSection: React.FC<{
 
 export const ToolbarSelectionSection: React.FC<{
   selected: number;
+  onToggleSidebar: () => void;
   operations?: React.ReactNode;
   onSelectAll: () => void;
   onSelectNone: () => void;
 }> = PatchComponent(
   "ToolbarSelectionSection",
-  ({ selected, operations, onSelectAll, onSelectNone }) => {
+  ({ selected, onToggleSidebar, operations, onSelectAll, onSelectNone }) => {
     const intl = useIntl();
 
     return (
       <div className="toolbar-selection-section">
         <div className="selected-items-info">
+          <SidebarToggleButton onClick={onToggleSidebar} />
           <Button
             variant="secondary"
             className="minimal"
@@ -100,8 +102,8 @@ export const ToolbarSelectionSection: React.FC<{
             <FormattedMessage id="actions.select_all" />
           </Button>
         </div>
-        <div className="empty-space"></div>
         {operations}
+        <div className="empty-space" />
       </div>
     );
   }

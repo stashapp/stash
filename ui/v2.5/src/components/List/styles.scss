@@ -1129,6 +1129,10 @@ input[type="range"].zoom-slider {
       flex-wrap: nowrap;
       justify-content: center;
 
+      .sidebar-toggle-button {
+        margin-right: 0.5rem;
+      }
+
       .selected-items-info {
         align-items: center;
         display: flex;
@@ -1143,13 +1147,30 @@ input[type="range"].zoom-slider {
         display: flex;
         justify-content: flex-end;
       }
+
+      .scene-list-operations {
+        display: flex;
+      }
+
+      // on smaller viewports move the operation buttons to the right
+      @include media-breakpoint-down(md) {
+        div.scene-list-operations {
+          flex: 1;
+          justify-content: flex-end;
+          order: 3;
+        }
+
+        > div:last-child {
+          flex: 0;
+          order: 2;
+        }
+      }
     }
 
     // on larger viewports, move the operation buttons to the center
-    @include media-breakpoint-up(md) {
+    @include media-breakpoint-up(lg) {
       div.toolbar-selection-section div.scene-list-operations {
         justify-content: center;
-        order: 2;
 
         > .btn-group {
           gap: 0.5rem;
@@ -1160,10 +1181,6 @@ input[type="range"].zoom-slider {
         flex: 1;
         order: 3;
       }
-    }
-
-    .sidebar-toggle-button {
-      margin-left: auto;
     }
 
     .search-container {
