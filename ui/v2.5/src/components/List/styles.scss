@@ -1012,8 +1012,7 @@ input[type="range"].zoom-slider {
       flex-grow: 1;
       flex-shrink: 1;
 
-      > .queryable-candidate-list,
-      > .sidebar-saved-filter-list-container {
+      > .queryable-candidate-list {
         display: flex;
         flex-direction: column;
         flex-grow: 1;
