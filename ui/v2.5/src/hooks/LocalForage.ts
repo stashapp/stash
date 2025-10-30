@@ -12,6 +12,7 @@ interface IInterfaceQueryConfig {
 
 export interface IViewConfig {
   showSidebar?: boolean;
+  sectionOpen?: Record<string, boolean>;
 }
 
 type IQueryConfig = Record<string, IInterfaceQueryConfig>;

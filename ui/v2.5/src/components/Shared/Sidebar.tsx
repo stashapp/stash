@@ -16,6 +16,8 @@ import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
 
+export type SidebarSectionStates = Record<string, boolean>;
+
 const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
 
 export const Sidebar: React.FC<
@@ -56,14 +58,35 @@ export const SidebarPane: React.FC<
   );
 };
 
+interface IContext {
+  sectionOpen: SidebarSectionStates;
+  setSectionOpen: (section: string, open: boolean) => void;
+}
+
+export const SidebarStateContext = React.createContext<IContext | null>(null);
+
 export const SidebarSection: React.FC<
   PropsWithChildren<{
     text: React.ReactNode;
     className?: string;
     outsideCollapse?: React.ReactNode;
-    onOpen?: () => void;
+    // used to store open/closed state in SidebarStateContext
+    sectionID?: string;
   }>
-> = ({ className = "", text, outsideCollapse, onOpen, children }) => {
+> = ({ className = "", text, outsideCollapse, sectionID = "", children }) => {
+  // this is optional
+  const contextState = React.useContext(SidebarStateContext);
+  const openState =
+    !contextState || !sectionID
+      ? undefined
+      : contextState.sectionOpen[sectionID] ?? undefined;
+
+  function onOpenInternal(open: boolean) {
+    if (contextState && sectionID) {
+      contextState.setSectionOpen(sectionID, open);
+    }
+  }
+
   const collapseProps: Partial<CollapseProps> = {
     mountOnEnter: true,
     unmountOnExit: true,
@@ -74,7 +97,8 @@ export const SidebarSection: React.FC<
       collapseProps={collapseProps}
       text={text}
       outsideCollapse={outsideCollapse}
-      onOpen={onOpen}
+      onOpenChanged={onOpenInternal}
+      open={openState}
     >
       {children}
     </CollapseButton>
@@ -113,6 +137,7 @@ export function useSidebarState(view?: View) {
   }, [view, interfaceLocalForageData]);
 
   const [showSidebar, setShowSidebar] = useState<boolean>();
+  const [sectionOpen, setSectionOpen] = useState<SidebarSectionStates>();
 
   // set initial state once loading is done
   useEffect(() => {
@@ -127,7 +152,14 @@ export function useSidebarState(view?: View) {
 
     // only show sidebar by default on large screens
     setShowSidebar(!!viewConfig.showSidebar && defaultShowSidebar());
-  }, [view, loading, showSidebar, viewConfig.showSidebar]);
+    setSectionOpen(viewConfig.sectionOpen || {});
+  }, [
+    view,
+    loading,
+    showSidebar,
+    viewConfig.showSidebar,
+    viewConfig.sectionOpen,
+  ]);
 
   const onSetShowSidebar = useCallback(
     (show: boolean | ((prevState: boolean | undefined) => boolean)) => {
@@ -149,9 +181,31 @@ export function useSidebarState(view?: View) {
     [showSidebar, setInterfaceLocalForage, view, viewConfig]
   );
 
+  const onSetSectionOpen = useCallback(
+    (section: string, open: boolean) => {
+      const newSectionOpen = { ...sectionOpen, [section]: open };
+      setSectionOpen(newSectionOpen);
+      if (view === undefined) return;
+
+      setInterfaceLocalForage((prev) => ({
+        ...prev,
+        viewConfig: {
+          ...prev.viewConfig,
+          [view]: {
+            ...viewConfig,
+            sectionOpen: newSectionOpen,
+          },
+        },
+      }));
+    },
+    [sectionOpen, setInterfaceLocalForage, view, viewConfig]
+  );
+
   return {
     showSidebar: showSidebar ?? defaultShowSidebar(),
+    sectionOpen: sectionOpen || {},
     setShowSidebar: onSetShowSidebar,
+    setSectionOpen: onSetSectionOpen,
     loading: showSidebar === undefined,
   };
 }
