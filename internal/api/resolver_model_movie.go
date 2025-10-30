@@ -204,3 +204,14 @@ func (r *groupResolver) Scenes(ctx context.Context, obj *models.Group) (ret []*m
 
 	return ret, nil
 }
+
+func (r *groupResolver) OCounter(ctx context.Context, obj *models.Group) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		count, err = r.repository.Scene.OCountByGroupID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return &count, nil
+}

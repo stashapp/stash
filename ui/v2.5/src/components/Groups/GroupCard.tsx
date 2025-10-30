@@ -10,6 +10,7 @@ import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RelatedGroupPopoverButton } from "./RelatedGroupPopover";
+import { SweatDrops } from "../Shared/SweatDrops";
 
 const Description: React.FC<{
   sceneNumber?: number;
@@ -107,6 +108,21 @@ export const GroupCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderOCounter() {
+    if (!group.o_counter) return;
+
+    return (
+      <div className="o-counter">
+        <Button className="minimal">
+          <span className="fa-icon">
+            <SweatDrops />
+          </span>
+          <span>{group.o_counter}</span>
+        </Button>
+      </div>
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       sceneNumber ||
@@ -126,6 +142,7 @@ export const GroupCard: React.FC<IProps> = ({
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {maybeRenderOCounter()}
             {(group.sub_group_count > 0 ||
               group.containing_groups.length > 0) && (
               <RelatedGroupPopoverButton group={group} />

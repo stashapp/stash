@@ -795,6 +795,29 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, error) {
+	table := qb.table()
+	joinTable := scenesGroupsJoinTable
+	oHistoryTable := goqu.T(scenesODatesTable)
+
+	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
+		oHistoryTable,
+		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+	).InnerJoin(
+		joinTable,
+		goqu.On(
+			table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)),
+		),
+	).Where(joinTable.Col(groupIDColumn).Eq(groupID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesGroupsJoinTable).Select(scenesGroupsJoinTable.Col(sceneIDColumn)).Where(
 		scenesGroupsJoinTable.Col(groupIDColumn).Eq(groupID),

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type groupFilterHandler struct {
@@ -73,6 +74,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		qb.performersCriterionHandler(groupFilter.Performers),
 		qb.tagsCriterionHandler(groupFilter.Tags),
 		qb.tagCountCriterionHandler(groupFilter.TagCount),
+		qb.groupOCounterCriterionHandler(groupFilter.OCounter),
 		&dateCriterionHandler{groupFilter.Date, "groups.date", nil},
 		groupHierarchyHandler.ParentsCriterionHandler(groupFilter.ContainingGroups),
 		groupHierarchyHandler.ChildrenCriterionHandler(groupFilter.SubGroups),
@@ -200,4 +202,38 @@ func (qb *groupFilterHandler) tagCountCriterionHandler(count *models.IntCriterio
 	}
 
 	return h.handler(count)
+}
+
+// used for sorting and filtering on group o-count
+var selectGroupOCountSQL = utils.StrFormat(
+	"SELECT SUM(o_counter) "+
+		"FROM ("+
+		"SELECT COUNT({scenes_o_dates}.{o_date}) as o_counter from {groups_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{group_id} = {group}.id "+
+		")",
+	map[string]interface{}{
+		"group":          groupTable,
+		"group_id":       groupIDColumn,
+		"groups_scenes":  groupsScenesTable,
+		"scenes":         sceneTable,
+		"scene_id":       sceneIDColumn,
+		"scenes_o_dates": scenesODatesTable,
+		"o_date":         sceneODateColumn,
+	},
+)
+
+func (qb *groupFilterHandler) groupOCounterCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count == nil {
+			return
+		}
+
+		lhs := "(" + selectGroupOCountSQL + ")"
+		clause, args := getIntCriterionWhereClause(lhs, *count)
+
+		f.addWhere(clause, args...)
+	}
+
 }
