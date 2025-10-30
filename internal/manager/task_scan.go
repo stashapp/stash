@@ -59,8 +59,14 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, cfg.GetParallelTasksWithAutoDetection())
 
 	var minModTime time.Time
-	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
-		minModTime = *j.input.Filter.MinModTime
+	var minDuration *float64
+	if j.input.Filter != nil {
+		if j.input.Filter.MinModTime != nil {
+			minModTime = *j.input.Filter.MinModTime
+		}
+		if j.input.Filter.MinDuration != nil {
+			minDuration = j.input.Filter.MinDuration
+		}
 	}
 
 	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
@@ -70,6 +76,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 		ParallelTasks:          cfg.GetParallelTasksWithAutoDetection(),
 		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
 		Rescan:                 j.input.Rescan,
+		DurationFilter:         minDuration,
 	}, progress)
 
 	taskQueue.Close()

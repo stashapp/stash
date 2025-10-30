@@ -96,6 +96,18 @@ export const LibraryTasks: React.FC = () => {
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>(
     getDefaultScanOptions()
   );
+
+  function getDefaultScanFilters(): GQL.ScanMetaDataFilterInput {
+    return {
+      minDuration: null,
+      minModTime: null,
+    };
+  }
+
+  const [scanFilters, setScanFilters] = useState<GQL.ScanMetaDataFilterInput>(
+    getDefaultScanFilters()
+  );
+
   const [autoTagOptions, setAutoTagOptions] =
     useState<GQL.AutoTagMetadataInput>({
       performers: ["*"],
@@ -131,7 +143,7 @@ export const LibraryTasks: React.FC = () => {
       return;
     }
 
-    const { scan, autoTag } = configuration.defaults;
+    const { scan, filter, autoTag } = configuration.defaults;
 
     // prefer UI defaults over system defaults
     // other defaults should be deprecated
@@ -139,6 +151,11 @@ export const LibraryTasks: React.FC = () => {
       setScanOptions(taskDefaults.scan);
     } else if (scan) {
       setScanOptions(withoutTypename(scan));
+    }
+    if (taskDefaults?.filter) {
+      setScanFilters(taskDefaults.filter);
+    } else if (filter) {
+      setScanFilters(withoutTypename(filter));
     }
 
     if (taskDefaults?.autoTag) {
@@ -171,6 +188,11 @@ export const LibraryTasks: React.FC = () => {
   function onSetScanOptions(s: GQL.ScanMetadataInput) {
     configureDefaults({ scan: s });
     setScanOptions(s);
+  }
+
+  function onSetScanFilters(s: GQL.ScanMetaDataFilterInput) {
+    configureDefaults({ filter: s });
+    setScanFilters(s);
   }
 
   function onSetGenerateOptions(s: GQL.GenerateMetadataInput) {
@@ -210,6 +232,7 @@ export const LibraryTasks: React.FC = () => {
       await mutateMetadataScan({
         ...scanOptions,
         paths,
+        filter: scanFilters,
       });
 
       Toast.success(
@@ -344,7 +367,12 @@ export const LibraryTasks: React.FC = () => {
           }
           collapsible
         >
-          <ScanOptions options={scanOptions} setOptions={onSetScanOptions} />
+          <ScanOptions
+            options={scanOptions}
+            filters={scanFilters}
+            setOptions={onSetScanOptions}
+            setFilters={onSetScanFilters}
+          />
         </SettingGroup>
       </SettingSection>
 
