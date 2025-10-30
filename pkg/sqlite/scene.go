@@ -1417,3 +1417,29 @@ func getFirstPath(scenes []*models.Scene) string {
 	}
 	return firstPath
 }
+
+func (qb *SceneStore) OCountByStudioID(ctx context.Context, filter *models.SceneFilterType) (int, error) {
+	table := qb.table()
+	q := dialect.Select(goqu.COALESCE(goqu.SUM(table.Col("o_counter")), 0)).From(table)
+
+	if filter != nil {
+		builder := filterBuilderFromHandler(ctx, &sceneFilterHandler{sceneFilter: filter})
+		if err := builder.getError(); err != nil {
+			return 0, err
+		}
+		// Add joins
+		for _, j := range builder.getAllJoins() {
+			if j.joinType == "LEFT" {
+				q = q.LeftJoin(goqu.T(j.table), goqu.On(goqu.L(j.onClause, j.args...)))
+			} else if j.joinType == "INNER" {
+				q = q.Join(goqu.T(j.table), goqu.On(goqu.L(j.onClause, j.args...)))
+			}
+		}
+		// Add where clauses
+		if clause, args := builder.generateWhereClauses(); clause != "" {
+			q = q.Where(goqu.L(clause, args...))
+		}
+	}
+
+	return count(ctx, q)
+}

@@ -164,3 +164,15 @@ func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []
 func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Group, err error) {
 	return r.Groups(ctx, obj)
 }
+
+func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (int, error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		count, err = scene.OCountByStudioID(ctx, r.repository.Scene, obj.ID, nil)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+	return count, nil
+}

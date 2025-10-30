@@ -21,6 +21,8 @@ type Studio struct {
 	Aliases  RelatedStrings  `json:"aliases"`
 	TagIDs   RelatedIDs      `json:"tag_ids"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
+
+	OCounter int `json:"o_counter"`
 }
 
 func NewStudio() Studio {
