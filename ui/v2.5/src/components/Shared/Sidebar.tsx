@@ -15,6 +15,7 @@ import { Button, CollapseProps } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { useHistory } from "react-router-dom";
 
 export type SidebarSectionStates = Record<string, boolean>;
 
@@ -129,6 +130,7 @@ export function defaultShowSidebar() {
 export function useSidebarState(view?: View) {
   const [interfaceLocalForage, setInterfaceLocalForage] =
     useInterfaceLocalForage();
+  const history = useHistory();
 
   const { data: interfaceLocalForageData, loading } = interfaceLocalForage;
 
@@ -152,13 +154,16 @@ export function useSidebarState(view?: View) {
 
     // only show sidebar by default on large screens
     setShowSidebar(!!viewConfig.showSidebar && defaultShowSidebar());
-    setSectionOpen(viewConfig.sectionOpen || {});
+    setSectionOpen(
+      (history.location.state as { sectionOpen?: SidebarSectionStates })
+        ?.sectionOpen || {}
+    );
   }, [
     view,
     loading,
     showSidebar,
     viewConfig.showSidebar,
-    viewConfig.sectionOpen,
+    history.location.state,
   ]);
 
   const onSetShowSidebar = useCallback(
@@ -187,18 +192,15 @@ export function useSidebarState(view?: View) {
       setSectionOpen(newSectionOpen);
       if (view === undefined) return;
 
-      setInterfaceLocalForage((prev) => ({
-        ...prev,
-        viewConfig: {
-          ...prev.viewConfig,
-          [view]: {
-            ...viewConfig,
-            sectionOpen: newSectionOpen,
-          },
+      history.replace({
+        ...history.location,
+        state: {
+          ...(history.location.state as {}),
+          sectionOpen: newSectionOpen,
         },
-      }));
+      });
     },
-    [sectionOpen, setInterfaceLocalForage, view, viewConfig]
+    [sectionOpen, view, history]
   );
 
   return {
