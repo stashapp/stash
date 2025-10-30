@@ -285,7 +285,7 @@ type fileRepositoryType struct {
 var (
 	fileRepository = fileRepositoryType{
 		repository: repository{
-			tableName: sceneTable,
+			tableName: fileTable,
 			idColumn:  idColumn,
 		},
 		scenes: joinRepository{

@@ -362,3 +362,13 @@ func coalesce(column string) string {
 func like(v string) string {
 	return "%" + v + "%"
 }
+
+type sqlTable string
+
+func (t sqlTable) Name() string {
+	return string(t)
+}
+
+func (t sqlTable) Col(n string) string {
+	return fmt.Sprintf("%s.%s", string(t), n)
+}

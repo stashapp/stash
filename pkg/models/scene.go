@@ -111,6 +111,8 @@ type SceneFilterType struct {
 	MoviesFilter *GroupFilterType `json:"movies_filter"`
 	// Filter by related markers that meet this criteria
 	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
+	// Filter by related files that meet this criteria
+	FilesFilter *FileFilterType `json:"files_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
