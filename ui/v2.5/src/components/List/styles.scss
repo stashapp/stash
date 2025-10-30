@@ -981,9 +981,6 @@ input[type="range"].zoom-slider {
 }
 
 .sidebar {
-  display: flex;
-  flex-direction: column;
-
   // make controls slightly larger on mobile
   @include media-breakpoint-down(xs) {
     .btn,
@@ -995,37 +992,6 @@ input[type="range"].zoom-slider {
   .sidebar-search-container {
     display: flex;
     margin-bottom: 0.5rem;
-  }
-
-  .sidebar-section {
-    display: flex;
-    flex-direction: column;
-
-    &:has(.collapse.show) {
-      flex-grow: 1;
-      flex-shrink: 1;
-    }
-
-    > .collapse.show {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-      flex-shrink: 1;
-
-      > .queryable-candidate-list {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-        flex-shrink: 1;
-
-        > ul {
-          flex-grow: 1;
-          flex-shrink: 1;
-          flex-basis: 0;
-          max-height: max-content;
-        }
-      }
-    }
   }
 
   .search-term-input {
