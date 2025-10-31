@@ -35,6 +35,7 @@ var (
 	performersCustomFieldsTable = goqu.T("performer_custom_fields")
 
 	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
+	studiosURLsJoinTable     = goqu.T(studioURLsTable)
 	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
 
@@ -305,6 +306,14 @@ var (
 			idColumn: studiosAliasesJoinTable.Col(studioIDColumn),
 		},
 		stringColumn: studiosAliasesJoinTable.Col(studioAliasColumn),
+	}
+
+	studiosURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    studiosURLsJoinTable,
+			idColumn: studiosURLsJoinTable.Col(studioIDColumn),
+		},
+		valueColumn: studiosURLsJoinTable.Col(studioURLColumn),
 	}
 
 	studiosTagsTableMgr = &joinTable{

@@ -2659,6 +2659,21 @@ func verifyString(t *testing.T, value string, criterion models.StringCriterionIn
 	}
 }
 
+func verifyStringList(t *testing.T, values []string, criterion models.StringCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	switch criterion.Modifier {
+	case models.CriterionModifierIsNull:
+		assert.Empty(values)
+	case models.CriterionModifierNotNull:
+		assert.NotEmpty(values)
+	default:
+		for _, v := range values {
+			verifyString(t, v, criterion)
+		}
+	}
+}
+
 func TestSceneQueryRating100(t *testing.T) {
 	const rating = 60
 	ratingCriterion := models.IntCriterionInput{
