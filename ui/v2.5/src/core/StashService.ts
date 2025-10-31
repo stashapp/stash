@@ -1614,7 +1614,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
   });
 
 function evictCover(cache: ApolloCache<GQL.Gallery>, gallery_id: string) {
-  const fields: Pick<Modifiers<GQL.Gallery>, "paths" | "cover"> = {};
+  const fields: Partial<Pick<Modifiers<GQL.Gallery>, "paths" | "cover">> = {};
   fields.paths = (paths) => {
     if (!("cover" in paths)) {
       return paths;

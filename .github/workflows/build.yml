@@ -37,7 +37,7 @@ jobs:
         cache-name: cache-node_modules
       with:
         path: ui/v2.5/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/pnpm-lock.yaml') }}
 
     - name: Cache UI build
       uses: actions/cache@v3
@@ -46,7 +46,7 @@ jobs:
         cache-name: cache-ui
       with:
         path: ui/v2.5/build
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/pnpm-lock.yaml', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
       uses: actions/cache@v3
