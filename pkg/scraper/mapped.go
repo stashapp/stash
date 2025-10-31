@@ -873,50 +873,55 @@ func (r mappedResult) apply(dest interface{}) {
 
 func mapFieldValue(destVal reflect.Value, key string, value interface{}) error {
 	field := destVal.FieldByName(key)
+
+	if !field.IsValid() {
+		return fmt.Errorf("field %s does not exist on %s", key, destVal.Type().Name())
+	}
+
+	if !field.CanSet() {
+		return fmt.Errorf("field %s cannot be set on %s", key, destVal.Type().Name())
+	}
+
 	fieldType := field.Type()
 
-	if field.IsValid() && field.CanSet() {
-		switch v := value.(type) {
-		case string:
-			// if the field is a pointer to a string, then we need to convert the string to a pointer
-			// if the field is a string slice, then we need to convert the string to a slice
-			switch {
-			case fieldType.Kind() == reflect.String:
-				field.SetString(v)
-			case fieldType.Kind() == reflect.Ptr && fieldType.Elem().Kind() == reflect.String:
-				ptr := reflect.New(fieldType.Elem())
-				ptr.Elem().SetString(v)
-				field.Set(ptr)
-			case fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String:
-				field.Set(reflect.ValueOf([]string{v}))
-			default:
-				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
-			}
-		case []string:
-			// expect the field to be a string slice
-			if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
-				field.Set(reflect.ValueOf(v))
-			} else {
-				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
-			}
+	switch v := value.(type) {
+	case string:
+		// if the field is a pointer to a string, then we need to convert the string to a pointer
+		// if the field is a string slice, then we need to convert the string to a slice
+		switch {
+		case fieldType.Kind() == reflect.String:
+			field.SetString(v)
+		case fieldType.Kind() == reflect.Ptr && fieldType.Elem().Kind() == reflect.String:
+			ptr := reflect.New(fieldType.Elem())
+			ptr.Elem().SetString(v)
+			field.Set(ptr)
+		case fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String:
+			field.Set(reflect.ValueOf([]string{v}))
 		default:
-			// fallback to reflection
-			reflectValue := reflect.ValueOf(value)
-			reflectValueType := reflectValue.Type()
-
-			switch {
-			case reflectValueType.ConvertibleTo(fieldType):
-				field.Set(reflectValue.Convert(fieldType))
-			case fieldType.Kind() == reflect.Pointer && reflectValueType.ConvertibleTo(fieldType.Elem()):
-				ptr := reflect.New(fieldType.Elem())
-				ptr.Elem().Set(reflectValue.Convert(fieldType.Elem()))
-				field.Set(ptr)
-			default:
-				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
-			}
+			return fmt.Errorf("cannot convert %T to %s", value, fieldType)
 		}
-	} else {
-		return fmt.Errorf("field does not exist or cannot be set")
+	case []string:
+		// expect the field to be a string slice
+		if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
+			field.Set(reflect.ValueOf(v))
+		} else {
+			return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+		}
+	default:
+		// fallback to reflection
+		reflectValue := reflect.ValueOf(value)
+		reflectValueType := reflectValue.Type()
+
+		switch {
+		case reflectValueType.ConvertibleTo(fieldType):
+			field.Set(reflectValue.Convert(fieldType))
+		case fieldType.Kind() == reflect.Pointer && reflectValueType.ConvertibleTo(fieldType.Elem()):
+			ptr := reflect.New(fieldType.Elem())
+			ptr.Elem().Set(reflectValue.Convert(fieldType.Elem()))
+			field.Set(ptr)
+		default:
+			return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+		}
 	}
 
 	return nil
