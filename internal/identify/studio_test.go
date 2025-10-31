@@ -21,13 +21,13 @@ func Test_createMissingStudio(t *testing.T) {
 
 	db := mocks.NewDatabase()
 
-	db.Studio.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+	db.Studio.On("Create", testCtx, mock.MatchedBy(func(p *models.CreateStudioInput) bool {
 		return p.Name == validName
 	})).Run(func(args mock.Arguments) {
-		s := args.Get(1).(*models.Studio)
+		s := args.Get(1).(*models.CreateStudioInput)
 		s.ID = createdID
 	}).Return(nil)
-	db.Studio.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+	db.Studio.On("Create", testCtx, mock.MatchedBy(func(p *models.CreateStudioInput) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating studio"))
 
