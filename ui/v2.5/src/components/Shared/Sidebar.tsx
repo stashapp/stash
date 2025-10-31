@@ -16,7 +16,8 @@ import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
 
-const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
+// this needs to correspond to the CSS media query that overlaps the sidebar over content
+const fixedSidebarMediaQuery = "only screen and (max-width: 767px)";
 
 export const Sidebar: React.FC<
   PropsWithChildren<{
@@ -56,6 +57,10 @@ export const SidebarPane: React.FC<
   );
 };
 
+export const SidebarPaneContent: React.FC = ({ children }) => {
+  return <div className="sidebar-pane-content">{children}</div>;
+};
+
 export const SidebarSection: React.FC<
   PropsWithChildren<{
     text: React.ReactNode;
@@ -87,7 +92,7 @@ export const SidebarToggleButton: React.FC<{
   const intl = useIntl();
   return (
     <Button
-      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
+      className="sidebar-toggle-button ignore-sidebar-outside-click"
       variant="secondary"
       onClick={onClick}
       title={intl.formatMessage({ id: "actions.sidebar.toggle" })}

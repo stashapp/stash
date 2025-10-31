@@ -37,7 +37,12 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -355,7 +360,7 @@ const SceneListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div>
+    <div className="scene-list-operations">
       <ButtonGroup>
         {!!items && (
           <Button
@@ -396,7 +401,10 @@ const SceneListOperations: React.FC<{
           </>
         )}
 
-        <OperationDropdown className="scene-list-operations">
+        <OperationDropdown
+          className="scene-list-operations"
+          menuPortalTarget={document.body}
+        >
           {operations.map((o) => {
             if (o.isDisplayed && !o.isDisplayed()) {
               return null;
@@ -666,6 +674,18 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <SceneListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onPlay={onPlay}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <TaggerContext>
       <div
@@ -689,7 +709,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               focus={searchFocus}
             />
           </Sidebar>
-          <div>
+          <SidebarPaneContent>
             <FilteredListToolbar2
               className="scene-list-toolbar"
               hasSelection={hasSelection}
@@ -708,6 +728,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                     setSearchFocus(true);
                   }}
                   onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
+                  view={view}
                 />
               }
               selectionSection={
@@ -716,19 +737,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                   onToggleSidebar={() => setShowSidebar(!showSidebar)}
                   onSelectAll={() => onSelectAll()}
                   onSelectNone={() => onSelectNone()}
+                  operations={operations}
                 />
               }
-              operationSection={
-                <SceneListOperations
-                  items={items.length}
-                  hasSelection={hasSelection}
-                  operations={otherOperations}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onPlay={onPlay}
-                  onCreateNew={onCreateNew}
-                />
-              }
+              operationSection={operations}
             />
 
             <ListResultsHeader
@@ -761,7 +773,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 />
               </div>
             )}
-          </div>
+          </SidebarPaneContent>
         </SidebarPane>
       </div>
     </TaggerContext>
