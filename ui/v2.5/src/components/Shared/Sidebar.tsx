@@ -15,6 +15,9 @@ import { Button, CollapseProps } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { useHistory } from "react-router-dom";
+
+export type SidebarSectionStates = Record<string, boolean>;
 
 // this needs to correspond to the CSS media query that overlaps the sidebar over content
 const fixedSidebarMediaQuery = "only screen and (max-width: 767px)";
@@ -61,14 +64,35 @@ export const SidebarPaneContent: React.FC = ({ children }) => {
   return <div className="sidebar-pane-content">{children}</div>;
 };
 
+interface IContext {
+  sectionOpen: SidebarSectionStates;
+  setSectionOpen: (section: string, open: boolean) => void;
+}
+
+export const SidebarStateContext = React.createContext<IContext | null>(null);
+
 export const SidebarSection: React.FC<
   PropsWithChildren<{
     text: React.ReactNode;
     className?: string;
     outsideCollapse?: React.ReactNode;
-    onOpen?: () => void;
+    // used to store open/closed state in SidebarStateContext
+    sectionID?: string;
   }>
-> = ({ className = "", text, outsideCollapse, onOpen, children }) => {
+> = ({ className = "", text, outsideCollapse, sectionID = "", children }) => {
+  // this is optional
+  const contextState = React.useContext(SidebarStateContext);
+  const openState =
+    !contextState || !sectionID
+      ? undefined
+      : contextState.sectionOpen[sectionID] ?? undefined;
+
+  function onOpenInternal(open: boolean) {
+    if (contextState && sectionID) {
+      contextState.setSectionOpen(sectionID, open);
+    }
+  }
+
   const collapseProps: Partial<CollapseProps> = {
     mountOnEnter: true,
     unmountOnExit: true,
@@ -79,7 +103,8 @@ export const SidebarSection: React.FC<
       collapseProps={collapseProps}
       text={text}
       outsideCollapse={outsideCollapse}
-      onOpen={onOpen}
+      onOpenChanged={onOpenInternal}
+      open={openState}
     >
       {children}
     </CollapseButton>
@@ -110,6 +135,7 @@ export function defaultShowSidebar() {
 export function useSidebarState(view?: View) {
   const [interfaceLocalForage, setInterfaceLocalForage] =
     useInterfaceLocalForage();
+  const history = useHistory();
 
   const { data: interfaceLocalForageData, loading } = interfaceLocalForage;
 
@@ -118,6 +144,7 @@ export function useSidebarState(view?: View) {
   }, [view, interfaceLocalForageData]);
 
   const [showSidebar, setShowSidebar] = useState<boolean>();
+  const [sectionOpen, setSectionOpen] = useState<SidebarSectionStates>();
 
   // set initial state once loading is done
   useEffect(() => {
@@ -132,7 +159,17 @@ export function useSidebarState(view?: View) {
 
     // only show sidebar by default on large screens
     setShowSidebar(!!viewConfig.showSidebar && defaultShowSidebar());
-  }, [view, loading, showSidebar, viewConfig.showSidebar]);
+    setSectionOpen(
+      (history.location.state as { sectionOpen?: SidebarSectionStates })
+        ?.sectionOpen || {}
+    );
+  }, [
+    view,
+    loading,
+    showSidebar,
+    viewConfig.showSidebar,
+    history.location.state,
+  ]);
 
   const onSetShowSidebar = useCallback(
     (show: boolean | ((prevState: boolean | undefined) => boolean)) => {
@@ -154,9 +191,28 @@ export function useSidebarState(view?: View) {
     [showSidebar, setInterfaceLocalForage, view, viewConfig]
   );
 
+  const onSetSectionOpen = useCallback(
+    (section: string, open: boolean) => {
+      const newSectionOpen = { ...sectionOpen, [section]: open };
+      setSectionOpen(newSectionOpen);
+      if (view === undefined) return;
+
+      history.replace({
+        ...history.location,
+        state: {
+          ...(history.location.state as {}),
+          sectionOpen: newSectionOpen,
+        },
+      });
+    },
+    [sectionOpen, view, history]
+  );
+
   return {
     showSidebar: showSidebar ?? defaultShowSidebar(),
+    sectionOpen: sectionOpen || {},
     setShowSidebar: onSetShowSidebar,
+    setSectionOpen: onSetSectionOpen,
     loading: showSidebar === undefined,
   };
 }
