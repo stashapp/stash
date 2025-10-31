@@ -24,15 +24,6 @@ export const ListResultsHeader: React.FC<{
   return (
     <ButtonToolbar className={cx(className, "list-results-header")}>
       <div>
-        <PaginationIndex
-          loading={loading}
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          metadataByline={metadataByline}
-        />
-      </div>
-      <div>
         <SortBySelect
           options={filter.options.sortByOptions}
           sortBy={filter.sortBy}
@@ -61,6 +52,16 @@ export const ListResultsHeader: React.FC<{
           onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
         />
       </div>
+      <div className="pagination-index-container">
+        <PaginationIndex
+          loading={loading}
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          metadataByline={metadataByline}
+        />
+      </div>
+      <div className="empty-space"></div>
     </ButtonToolbar>
   );
 };

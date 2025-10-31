@@ -19,7 +19,8 @@ import { useHistory } from "react-router-dom";
 
 export type SidebarSectionStates = Record<string, boolean>;
 
-const fixedSidebarMediaQuery = "only screen and (max-width: 1199px)";
+// this needs to correspond to the CSS media query that overlaps the sidebar over content
+const fixedSidebarMediaQuery = "only screen and (max-width: 767px)";
 
 export const Sidebar: React.FC<
   PropsWithChildren<{
@@ -57,6 +58,10 @@ export const SidebarPane: React.FC<
       {children}
     </div>
   );
+};
+
+export const SidebarPaneContent: React.FC = ({ children }) => {
+  return <div className="sidebar-pane-content">{children}</div>;
 };
 
 interface IContext {
@@ -112,7 +117,7 @@ export const SidebarToggleButton: React.FC<{
   const intl = useIntl();
   return (
     <Button
-      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
+      className="sidebar-toggle-button ignore-sidebar-outside-click"
       variant="secondary"
       onClick={onClick}
       title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
