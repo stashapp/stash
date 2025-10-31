@@ -36,18 +36,8 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 
 ### OpenBSD
 
-1. Install dependencies `doas pkg_add gmake go git yarn node cmake`
-2. Compile a custom ffmpeg from ports. The default ffmpeg in OpenBSD's packages is not compiled with WebP support, which is required by Stash.
-   - If you've already installed ffmpeg, uninstall it: `doas pkg_delete ffmpeg`
-   - If you haven't already, [fetch the ports tree and verify](https://www.openbsd.org/faq/ports/ports.html#PortsFetch).
-   - Find the ffmpeg port in `/usr/ports/graphics/ffmpeg`, and patch the Makefile to include libwebp
-     - Add `webp` to `WANTLIB`
-     - Add `graphics/libwebp` to the list in `LIB_DEPENDS`
-     - Add `-lwebp -lwebpdecoder -lwebpdemux -lwebpmux` to `LIBavcodec_EXTRALIBS`
-     - Add `--enable-libweb` to the list in `CONFIGURE_ARGS`
-     - If you've already built ffmpeg from ports before, you may need to also increment `REVISION`
-     - Run `doas make install`
-   - Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866).
+1. Install dependencies `doas pkg_add gmake go git yarn node cmake ffmpeg`
+2. Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866).
 
 NOTE: The `make` command in OpenBSD will be `gmake`. For example, `make pre-ui` will be `gmake pre-ui`.
 
