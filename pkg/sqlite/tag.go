@@ -651,7 +651,19 @@ var tagSortOptions = sortOptions{
 	"random",
 	"scene_markers_count",
 	"scenes_count",
+	"scenes_duration",
 	"updated_at",
+}
+
+func (qb *TagStore) sortByScenesDuration(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(video_files.duration), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.id = %s.%s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN video_files ON video_files.file_id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, scenesTagsTable, sceneTable, sceneTable, scenesTagsTable, sceneIDColumn, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, scenesTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
 }
 
 func (qb *TagStore) getDefaultTagSort() string {
@@ -680,6 +692,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += fmt.Sprintf(" ORDER BY COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI %s", getSortDirection(direction))
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
+	case "scenes_duration":
+		sortQuery += qb.sortByScenesDuration(direction)
 	case "scene_markers_count":
 		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 	case "images_count":
