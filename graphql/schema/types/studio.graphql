@@ -59,6 +59,18 @@ input StudioUpdateInput {
   ignore_auto_tag: Boolean
 }
 
+input BulkStudioUpdateInput {
+  ids: [ID!]!
+  url: String
+  parent_id: ID
+  # rating expressed as 1-100
+  rating100: Int
+  favorite: Boolean
+  details: String
+  tag_ids: BulkUpdateIds
+  ignore_auto_tag: Boolean
+}
+
 input StudioDestroyInput {
   id: ID!
 }
