@@ -33,7 +33,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio := models.NewStudio()
 
 	newStudio.Name = input.Name
-	newStudio.URL = translator.string(input.URL)
 	newStudio.Rating = input.Rating100
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
@@ -42,6 +41,15 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
+
+	newStudio.URLs = models.NewRelatedStrings([]string{})
+	if input.URL != nil {
+		newStudio.URLs.Add(*input.URL)
+	}
+
+	if input.Urls != nil {
+		newStudio.URLs.Add(input.Urls...)
+	}
 
 	newStudio.ParentID, err = translator.intPtrFromString(input.ParentID)
 	if err != nil {
@@ -106,7 +114,6 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	updatedStudio.ID = studioID
 	updatedStudio.Name = translator.optionalString(input.Name, "name")
-	updatedStudio.URL = translator.optionalString(input.URL, "url")
 	updatedStudio.Details = translator.optionalString(input.Details, "details")
 	updatedStudio.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedStudio.Favorite = translator.optionalBool(input.Favorite, "favorite")
@@ -122,6 +129,26 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	if translator.hasField("urls") {
+		// ensure url not included in the input
+		if err := r.validateNoLegacyURLs(translator); err != nil {
+			return nil, err
+		}
+
+		updatedStudio.URLs = translator.updateStrings(input.Urls, "urls")
+	} else if translator.hasField("url") {
+		// handle legacy url field
+		legacyURLs := []string{}
+		if input.URL != nil {
+			legacyURLs = append(legacyURLs, *input.URL)
+		}
+
+		updatedStudio.URLs = &models.UpdateStrings{
+			Mode:   models.RelationshipUpdateModeSet,
+			Values: legacyURLs,
+		}
 	}
 
 	// Process the base 64 encoded image string

@@ -46,9 +46,28 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
+  function renderURLs() {
+    if (!studio.urls?.length) {
+      return;
+    }
+
+    return (
+      <ul className="pl-0">
+        {studio.urls.map((url) => (
+          <li key={url}>
+            <a href={url} target="_blank" rel="noreferrer">
+              {url}
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <div className="detail-group">
       <DetailItem id="details" value={studio.details} fullWidth={fullWidth} />
+      <DetailItem id="urls" value={renderURLs()} fullWidth={fullWidth} />
       <DetailItem
         id="parent_studios"
         value={

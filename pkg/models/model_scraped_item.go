@@ -14,7 +14,8 @@ type ScrapedStudio struct {
 	// Set if studio matched
 	StoredID     *string        `json:"stored_id"`
 	Name         string         `json:"name"`
-	URL          *string        `json:"url"`
+	URL          *string        `json:"url"` // deprecated
+	URLs         []string       `json:"urls"`
 	Parent       *ScrapedStudio `json:"parent"`
 	Image        *string        `json:"image"`
 	Images       []string       `json:"images"`
@@ -38,8 +39,20 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 		})
 	}
 
-	if s.URL != nil && !excluded["url"] {
-		ret.URL = *s.URL
+	// if URLs are provided, only use those
+	if len(s.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = NewRelatedStrings(s.URLs)
+		}
+	} else {
+		urls := []string{}
+		if s.URL != nil && !excluded["url"] {
+			urls = append(urls, *s.URL)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = NewRelatedStrings(urls)
+		}
 	}
 
 	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] && !excluded["parent_studio"] {
@@ -74,8 +87,25 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 		ret.Name = NewOptionalString(s.Name)
 	}
 
-	if s.URL != nil && !excluded["url"] {
-		ret.URL = NewOptionalString(*s.URL)
+	if len(s.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = &UpdateStrings{
+				Values: s.URLs,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
+	} else {
+		urls := []string{}
+		if s.URL != nil && !excluded["url"] {
+			urls = append(urls, *s.URL)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = &UpdateStrings{
+				Values: urls,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
 	}
 
 	if s.Parent != nil && !excluded["parent"] {

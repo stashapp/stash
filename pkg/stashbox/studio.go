@@ -65,9 +65,12 @@ func studioFragmentToScrapedStudio(s graphql.StudioFragment) *models.ScrapedStud
 
 	st := &models.ScrapedStudio{
 		Name:         s.Name,
-		URL:          findURL(s.Urls, "HOME"),
 		Images:       images,
 		RemoteSiteID: &s.ID,
+	}
+
+	for _, u := range s.Urls {
+		st.URLs = append(st.URLs, u.URL)
 	}
 
 	if len(st.Images) > 0 {

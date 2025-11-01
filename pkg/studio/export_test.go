@@ -60,7 +60,7 @@ func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{
 		ID:            id,
 		Name:          studioName,
-		URL:           url,
+		URLs:          models.NewRelatedStrings([]string{url}),
 		Details:       details,
 		Favorite:      true,
 		CreatedAt:     createTime,
@@ -84,6 +84,7 @@ func createEmptyStudio(id int) models.Studio {
 		ID:        id,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
+		URLs:      models.NewRelatedStrings([]string{}),
 		Aliases:   models.NewRelatedStrings([]string{}),
 		TagIDs:    models.NewRelatedIDs([]int{}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
@@ -93,7 +94,7 @@ func createEmptyStudio(id int) models.Studio {
 func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonschema.Studio {
 	return &jsonschema.Studio{
 		Name:     studioName,
-		URL:      url,
+		URLs:     []string{url},
 		Details:  details,
 		Favorite: true,
 		CreatedAt: json.JSONTime{
@@ -120,6 +121,7 @@ func createEmptyJSONStudio() *jsonschema.Studio {
 			Time: updateTime,
 		},
 		Aliases:  []string{},
+		URLs:     []string{},
 		StashIDs: []models.StashID{},
 	}
 }

@@ -47,7 +47,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    url: yup.string().ensure(),
+    urls: yup.array(yup.string().required()).defined(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
     aliases: yupUniqueAliases(intl, "name"),
@@ -60,7 +60,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   const initialValues = {
     id: studio.id,
     name: studio.name ?? "",
-    url: studio.url ?? "",
+    urls: studio.urls ?? [],
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
     aliases: studio.aliases ?? [],
@@ -187,7 +187,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
       <Form noValidate onSubmit={formik.handleSubmit} id="studio-edit">
         {renderInputField("name")}
         {renderStringListField("aliases")}
-        {renderInputField("url")}
+        {renderStringListField("urls")}
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}
         {renderTagsField()}

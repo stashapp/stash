@@ -12,7 +12,7 @@ import (
 
 type Studio struct {
 	Name          string           `json:"name,omitempty"`
-	URL           string           `json:"url,omitempty"`
+	URLs          []string         `json:"urls,omitempty"`
 	ParentStudio  string           `json:"parent_studio,omitempty"`
 	Image         string           `json:"image,omitempty"`
 	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
@@ -24,6 +24,9 @@ type Studio struct {
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
 	Tags          []string         `json:"tags,omitempty"`
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+
+	// deprecated - for import only
+	URL string `json:"url,omitempty"`
 }
 
 func (s Studio) Filename() string {
