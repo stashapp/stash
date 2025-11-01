@@ -328,6 +328,7 @@ type Mutation {
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
+  bulkSceneMarkerUpdate(input: BulkSceneMarkerUpdateInput!): [SceneMarker!]
   sceneMarkerDestroy(id: ID!): Boolean!
   sceneMarkersDestroy(ids: [ID!]!): Boolean!
 

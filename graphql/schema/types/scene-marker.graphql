@@ -42,6 +42,13 @@ input SceneMarkerUpdateInput {
   tag_ids: [ID!]
 }
 
+input BulkSceneMarkerUpdateInput {
+  ids: [ID!]
+  title: String
+  primary_tag_id: ID
+  tag_ids: BulkUpdateIds
+}
+
 type FindSceneMarkersResultType {
   count: Int!
   scene_markers: [SceneMarker!]!

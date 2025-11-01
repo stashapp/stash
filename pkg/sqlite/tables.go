@@ -28,6 +28,8 @@ var (
 	scenesGroupsJoinTable     = goqu.T(groupsScenesTable)
 	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
 
+	sceneMarkersTagsJoinTable = goqu.T(sceneMarkersTagsTable)
+
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersURLsJoinTable     = goqu.T(performerURLsTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
@@ -158,6 +160,16 @@ var (
 	sceneMarkerTableMgr = &table{
 		table:    goqu.T(sceneMarkerTable),
 		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),
+	}
+
+	sceneMarkersTagsTableMgr = &joinTable{
+		table: table{
+			table:    sceneMarkersTagsJoinTable,
+			idColumn: sceneMarkersTagsJoinTable.Col(sceneMarkerIDColumn),
+		},
+		fkColumn:     sceneMarkersTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableSort,
 	}
 
 	scenesFilesTableMgr = &relatedFilesTable{
