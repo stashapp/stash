@@ -801,6 +801,15 @@
           }
         }
       },
+      "performer_panel": {
+        "heading": "Performer view",
+        "options": {
+          "show_links_on_thumbnail": {
+            "description": "In the performer view, display links on the thumbnail",
+            "heading": "Display links on thumbnail"
+          }
+        }
+      },
       "tag_panel": {
         "heading": "Tag view",
         "options": {

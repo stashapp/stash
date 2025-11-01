@@ -17,12 +17,15 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
-import { faTag } from "@fortawesome/free-solid-svg-icons";
+import { faLink, faTag } from "@fortawesome/free-solid-svg-icons";
+import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { PatchComponent } from "src/patch";
+import { ExternalLinksButton } from "../Shared/ExternalLinksButton";
+import { ConfigurationContext } from "src/hooks/Config";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: ModifierCriterion<CriterionValue>[];
@@ -176,6 +179,8 @@ const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
 const PerformerCardOverlays: React.FC<IPerformerCardProps> = PatchComponent(
   "PerformerCard.Overlays",
   ({ performer }) => {
+    const { configuration } = React.useContext(ConfigurationContext);
+    const uiConfig = configuration?.ui;
     const [updatePerformer] = usePerformerUpdate();
 
     function onToggleFavorite(v: boolean) {
@@ -215,6 +220,63 @@ const PerformerCardOverlays: React.FC<IPerformerCardProps> = PatchComponent(
       }
     }
 
+    function maybeRenderLinks() {
+      if (!uiConfig?.showLinksOnThumbnail) {
+        return;
+      }
+
+      if (performer.urls && performer.urls.length > 0) {
+        const twitter = performer.urls.filter((u) =>
+          u.match(/https?:\/\/(?:www\.)?(?:twitter|x).com\//)
+        );
+        const instagram = performer.urls.filter((u) =>
+          u.match(/https?:\/\/(?:www\.)?instagram.com\//)
+        );
+        const others = performer.urls.filter(
+          (u) => !twitter.includes(u) && !instagram.includes(u)
+        );
+
+        return (
+          <div
+            className="performer-card__links"
+            style={{
+              position: "absolute",
+              left: "0",
+              bottom: "0",
+              display: "flex",
+              gap: "0.5rem",
+              flexDirection: "column-reverse",
+            }}
+          >
+            {twitter.length > 0 && (
+              <ExternalLinksButton
+                className="performer-card__link twitter"
+                urls={twitter}
+                icon={faTwitter}
+                openIfSingle={true}
+              ></ExternalLinksButton>
+            )}
+            {instagram.length > 0 && (
+              <ExternalLinksButton
+                className="performer-card__link instagram"
+                urls={instagram}
+                icon={faInstagram}
+                openIfSingle={true}
+              ></ExternalLinksButton>
+            )}
+            {others.length > 0 && (
+              <ExternalLinksButton
+                className="performer-card__link"
+                icon={faLink}
+                urls={others}
+                openIfSingle={true}
+              />
+            )}
+          </div>
+        );
+      }
+    }
+
     return (
       <>
         <FavoriteIcon
@@ -224,6 +286,7 @@ const PerformerCardOverlays: React.FC<IPerformerCardProps> = PatchComponent(
           className="hide-not-favorite"
         />
         {maybeRenderRatingBanner()}
+        {maybeRenderLinks()}
         {maybeRenderFlag()}
       </>
     );

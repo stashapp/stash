@@ -470,6 +470,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveUI({ showChildTagContent: v })}
           />
         </SettingSection>
+
         <SettingSection headingID="config.ui.studio_panel.heading">
           <BooleanSetting
             id="show-child-studio-content"
@@ -477,6 +478,16 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
             checked={ui.showChildStudioContent ?? undefined}
             onChange={(v) => saveUI({ showChildStudioContent: v })}
+          />
+        </SettingSection>
+
+        <SettingSection headingID="config.ui.performer_panel.heading">
+          <BooleanSetting
+            id="show-links-on-thumbnail"
+            headingID="config.ui.performer_panel.options.show_links_on_thumbnail.heading"
+            subHeadingID="config.ui.performer_panel.options.show_links_on_thumbnail.description"
+            checked={ui.showLinksOnThumbnail ?? undefined}
+            onChange={(v) => saveUI({ showLinksOnThumbnail: v })}
           />
         </SettingSection>
 
