@@ -42,6 +42,7 @@ import {
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
+import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
@@ -423,12 +424,22 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
                   </span>
                 </DetailTitle>
                 <AliasList aliases={performer.alias_list} />
-                <RatingSystem
-                  value={performer.rating100}
-                  onSetRating={(value) => setRating(value)}
-                  clickToRate
-                  withoutContext
-                />
+                <div className="quality-group">
+                  <RatingSystem
+                    value={performer.rating100}
+                    onSetRating={(value) => setRating(value)}
+                    clickToRate
+                    withoutContext
+                  />
+                  {!!performer.o_counter && (
+                    <span className="o-counter">
+                      <span className="fa-icon">
+                        <SweatDrops />
+                      </span>
+                      <span>{performer.o_counter}</span>
+                    </span>
+                  )}
+                </div>
                 {!isEditing && (
                   <PerformerDetailsPanel
                     performer={performer}
