@@ -362,3 +362,9 @@ func coalesce(column string) string {
 func like(v string) string {
 	return "%" + v + "%"
 }
+
+// wraps a string with wildcard characters and converts it to lowercase
+// for use in case-insensitive LIKE queries with the lower_unicode() SQL function.
+func likeLower(v string) string {
+	return "%" + strings.ToLower(v) + "%"
+}
