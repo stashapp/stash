@@ -126,6 +126,7 @@ type mappedSceneScraperConfig struct {
 	Performers mappedPerformerScraperConfig `yaml:"Performers"`
 	Studio     mappedConfig                 `yaml:"Studio"`
 	Movies     mappedConfig                 `yaml:"Movies"`
+	Groups     mappedConfig                 `yaml:"Groups"`
 }
 type _mappedSceneScraperConfig mappedSceneScraperConfig
 
@@ -134,6 +135,7 @@ const (
 	mappedScraperConfigScenePerformers = "Performers"
 	mappedScraperConfigSceneStudio     = "Studio"
 	mappedScraperConfigSceneMovies     = "Movies"
+	mappedScraperConfigSceneGroups     = "Groups"
 )
 
 func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -151,11 +153,13 @@ func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	thisMap[mappedScraperConfigScenePerformers] = parentMap[mappedScraperConfigScenePerformers]
 	thisMap[mappedScraperConfigSceneStudio] = parentMap[mappedScraperConfigSceneStudio]
 	thisMap[mappedScraperConfigSceneMovies] = parentMap[mappedScraperConfigSceneMovies]
+	thisMap[mappedScraperConfigSceneGroups] = parentMap[mappedScraperConfigSceneGroups]
 
 	delete(parentMap, mappedScraperConfigSceneTags)
 	delete(parentMap, mappedScraperConfigScenePerformers)
 	delete(parentMap, mappedScraperConfigSceneStudio)
 	delete(parentMap, mappedScraperConfigSceneMovies)
+	delete(parentMap, mappedScraperConfigSceneGroups)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -1013,6 +1017,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 	sceneTagsMap := sceneScraperConfig.Tags
 	sceneStudioMap := sceneScraperConfig.Studio
 	sceneMoviesMap := sceneScraperConfig.Movies
+	sceneGroupsMap := sceneScraperConfig.Groups
 
 	ret.Performers = s.processPerformers(ctx, scenePerformersMap, q)
 
@@ -1039,7 +1044,12 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 		ret.Movies = processRelationships[models.ScrapedMovie](ctx, s, sceneMoviesMap, q)
 	}
 
-	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0
+	if sceneGroupsMap != nil {
+		logger.Debug(`Processing scene groups:`)
+		ret.Groups = processRelationships[models.ScrapedGroup](ctx, s, sceneGroupsMap, q)
+	}
+
+	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0 || len(ret.Groups) > 0
 }
 
 func (s mappedScraper) processPerformers(ctx context.Context, performersMap mappedPerformerScraperConfig, q mappedQuery) []*models.ScrapedPerformer {
