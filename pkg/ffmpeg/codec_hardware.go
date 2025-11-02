@@ -386,13 +386,13 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 // Returns the max resolution for a given codec, or a default
 func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec) (int, int) {
 	switch codec {
-    case VideoCodecRK264:
-        return 8192, 8192
-    case VideoCodecN264,
-        VideoCodecN264H,
-        VideoCodecI264,
-        VideoCodecI264C:
-        return 4096, 4096
+	case VideoCodecRK264:
+		return 8192, 8192
+	case VideoCodecN264,
+		VideoCodecN264H,
+		VideoCodecI264,
+		VideoCodecI264C:
+		return 4096, 4096
 	}
 
 	return 0, 0
