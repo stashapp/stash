@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "./",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "vite build",
@@ -108,8 +109,8 @@
     "@types/videojs-seek-buttons": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
-    "@vitejs/plugin-legacy": "^4.0.1",
-    "@vitejs/plugin-react": "^3.1.0",
+    "@vitejs/plugin-legacy": "^5.4.3",
+    "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^8.34.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.0.0",
@@ -128,7 +129,7 @@
     "terser": "^5.9.0",
     "ts-node": "^10.9.1",
     "typescript": "~4.8.4",
-    "vite": "^4.5.14",
+    "vite": "^5.4.21",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.0.5"
   }

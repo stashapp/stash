@@ -71,8 +71,7 @@ const _TagSelect: React.FC<TagSelectProps> = (props) => {
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
-  const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.tag ?? true;
+  const defaultCreatable = !configuration?.interface.disableDropdownCreate.tag;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
