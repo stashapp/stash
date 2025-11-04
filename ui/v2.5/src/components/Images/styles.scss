@@ -141,6 +141,12 @@ $imageTabWidth: 450px;
   padding-right: 15px;
   position: relative;
   width: 100%;
+
+  // 移动设备下移除padding，使用完整宽度
+  @media (max-width: 576px) {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 .image-container {
@@ -192,4 +198,16 @@ $imageTabWidth: 450px;
 
 .col-form-label {
   padding-right: 2px;
+}
+
+// Image wall视图样式
+.gallery {
+  // 移动设备下使用完整宽度
+  @media (max-width: 576px) {
+    width: 100vw;
+    // 使用这个技巧让元素突破所有父容器的限制，实现真正的全屏宽度
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 0;
+  }
 }
