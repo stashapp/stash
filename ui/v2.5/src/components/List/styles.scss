@@ -1305,7 +1305,7 @@ input[type="range"].zoom-slider {
 }
 
 .list-results-header {
-  align-items: center;
+  align-items: flex-start;
   background-color: $body-bg;
   display: flex;
 
@@ -1324,6 +1324,18 @@ input[type="range"].zoom-slider {
       flex-shrink: 0;
       justify-content: flex-end;
     }
+  }
+}
+
+.list-results-header .pagination-index-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .pagination {
+    // hidden by default. Can be shown via css override if needed
+    display: none;
+    margin: 0;
   }
 }
 
