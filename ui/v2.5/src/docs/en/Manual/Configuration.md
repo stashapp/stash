@@ -2,7 +2,13 @@
 
 ## Library
 
-This section allows you to add and remove directories from your library list. Files in these directories will be included when scanning. Files that are outside of these directories will be removed when running the Clean task.
+This section enables you to add or remove directories that will be discoverable by Stash. The directories you add will be utilized for scanning new files and for updating their locations.
+
+You can configure these directories to apply specifically to:
+
+- **Videos**
+- **Images**
+- **Both**
 
 > **⚠️ Note:** Don't forget to click `Save` after updating these directories!
 
