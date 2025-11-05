@@ -2,7 +2,7 @@
 
 ## Library
 
-This section enables you to add or remove directories that will be discoverable by Stash. The directories you add will be utilized for scanning new files and for updating their locations.
+This section enables you to add or remove directories that will be discoverable by Stash. The directories you add will be utilized for scanning new files and for updating their locations in Stash database.
 
 You can configure these directories to apply specifically to:
 
