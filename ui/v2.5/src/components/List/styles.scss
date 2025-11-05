@@ -1354,7 +1354,7 @@ input[type="range"].zoom-slider {
     }
 
     & > div.pagination-index-container {
-      justify-content: flex-end;
+      align-items: flex-end;
       order: 3;
     }
   }
@@ -1367,6 +1367,10 @@ input[type="range"].zoom-slider {
       justify-content: center;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    & > div.pagination-index-container {
+      align-items: center;
     }
   }
 }
