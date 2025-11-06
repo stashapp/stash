@@ -275,6 +275,7 @@ export const SidebarListFilter: React.FC<{
   postSelected?: React.ReactNode;
   preCandidates?: React.ReactNode;
   postCandidates?: React.ReactNode;
+  onOpen?: () => void;
   // used to store open/closed state in SidebarStateContext
   sectionID?: string;
 }> = ({
@@ -292,6 +293,7 @@ export const SidebarListFilter: React.FC<{
   postCandidates,
   preSelected,
   postSelected,
+  onOpen,
   sectionID,
 }) => {
   // TODO - sort items?
@@ -344,6 +346,7 @@ export const SidebarListFilter: React.FC<{
           {postSelected ? <div className="extra">{postSelected}</div> : null}
         </>
       }
+      onOpen={onOpen}
     >
       {preCandidates ? <div className="extra">{preCandidates}</div> : null}
       <CandidateList
