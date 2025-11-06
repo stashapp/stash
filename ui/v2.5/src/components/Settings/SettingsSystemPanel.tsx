@@ -222,6 +222,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.backupDirectoryPath ?? undefined}
           onChange={(v) => saveGeneral({ backupDirectoryPath: v })}
         />
+
+        <StringSetting
+          id="delete-trash-path"
+          headingID="config.general.delete_trash_path.heading"
+          subHeadingID="config.general.delete_trash_path.description"
+          value={general.deleteTrashPath ?? undefined}
+          onChange={(v) => saveGeneral({ deleteTrashPath: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.database">
