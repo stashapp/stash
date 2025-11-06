@@ -11,7 +11,9 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/postgres"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -33,42 +35,59 @@ var existingStudioID int
 
 const expectedMatchTitle = "expected match"
 
-var db *sqlite.Database
+var db database.Database
 var r models.Repository
 
-func testTeardown(databaseFile string) {
-	err := db.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.Remove(databaseFile)
+func testTeardown(db database.Database) {
+	err := db.Remove()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func runTests(m *testing.M) int {
-	// create the database file
-	f, err := os.CreateTemp("", "*.sqlite")
-	if err != nil {
-		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
+func IsPostgresTest() *string {
+	if val, ok := os.LookupEnv("PGSQL_TEST"); ok {
+		return &val
 	}
+	return nil
+}
 
-	f.Close()
-	databaseFile := f.Name()
-	db = sqlite.NewDatabase()
-	if err := db.Open(databaseFile); err != nil {
-		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+func getNewDB() {
+	if val := IsPostgresTest(); val != nil {
+		fmt.Printf("Postgres backend for tests detected\n")
+		db = postgres.NewDatabase()
+
+		if err := db.Open(*val); err != nil {
+			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		}
+	} else {
+		fmt.Printf("SQLite backend for tests detected\n")
+		db = sqlite.NewDatabase()
+
+		// create the database file
+		f, err := os.CreateTemp("", "*.sqlite")
+		if err != nil {
+			panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
+		}
+
+		f.Close()
+		databaseFile := f.Name()
+
+		if err := db.Open(databaseFile); err != nil {
+			panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+		}
 	}
+}
+
+func runTests(m *testing.M) int {
+	getNewDB()
 
 	r = db.Repository()
 
 	// defer close and delete the database
-	defer testTeardown(databaseFile)
+	defer testTeardown(db)
 
-	err = populateDB()
+	err := populateDB()
 	if err != nil {
 		panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
 	} else {
