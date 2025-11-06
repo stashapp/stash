@@ -9,16 +9,17 @@ import (
 
 // MoveToTrash moves a file or directory to a custom trash directory.
 // If a file with the same name already exists in the trash, a timestamp is appended.
-func MoveToTrash(sourcePath string, trashPath string) error {
+// Returns the destination path where the file was moved to.
+func MoveToTrash(sourcePath string, trashPath string) (string, error) {
 	// Get absolute path for the source
 	absSourcePath, err := filepath.Abs(sourcePath)
 	if err != nil {
-		return fmt.Errorf("failed to get absolute path: %w", err)
+		return "", fmt.Errorf("failed to get absolute path: %w", err)
 	}
 
 	// Ensure trash directory exists
 	if err := os.MkdirAll(trashPath, 0755); err != nil {
-		return fmt.Errorf("failed to create trash directory: %w", err)
+		return "", fmt.Errorf("failed to create trash directory: %w", err)
 	}
 
 	// Get the base name of the file/directory
@@ -35,8 +36,8 @@ func MoveToTrash(sourcePath string, trashPath string) error {
 
 	// Move the file to trash using SafeMove to support cross-filesystem moves
 	if err := SafeMove(absSourcePath, destPath); err != nil {
-		return fmt.Errorf("failed to move to trash: %w", err)
+		return "", fmt.Errorf("failed to move to trash: %w", err)
 	}
 
-	return nil
+	return destPath, nil
 }
