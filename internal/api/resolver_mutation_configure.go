@@ -150,6 +150,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.BackupDirectoryPath, *input.BackupDirectoryPath)
 	}
 
+	existingDeleteTrashPath := c.GetDeleteTrashPath()
+	if input.DeleteTrashPath != nil && existingDeleteTrashPath != *input.DeleteTrashPath {
+		if err := validateDir(config.DeleteTrashPath, *input.DeleteTrashPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.SetString(config.DeleteTrashPath, *input.DeleteTrashPath)
+	}
+
 	existingGeneratedPath := c.GetGeneratedPath()
 	if input.GeneratedPath != nil && existingGeneratedPath != *input.GeneratedPath {
 		if err := validateDir(config.Generated, *input.GeneratedPath, false); err != nil {
