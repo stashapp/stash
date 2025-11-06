@@ -143,6 +143,21 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, exclu
 		return nil, nil, err
 	}
 
+	// populate URL/URLs
+	// if URLs are provided, only use those
+	if len(m.URLs) > 0 {
+		m.URL = &m.URLs[0]
+	} else {
+		urls := []string{}
+		if m.URL != nil {
+			urls = append(urls, *m.URL)
+		}
+
+		if len(urls) > 0 {
+			m.URLs = urls
+		}
+	}
+
 	// post-process - set the image if applicable
 	if err := setMovieFrontImage(ctx, c.client, &m, c.globalConfig); err != nil {
 		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
@@ -173,6 +188,21 @@ func (c Cache) postScrapeGroup(ctx context.Context, m models.ScrapedGroup, exclu
 		return nil
 	}); err != nil {
 		return nil, nil, err
+	}
+
+	// populate URL/URLs
+	// if URLs are provided, only use those
+	if len(m.URLs) > 0 {
+		m.URL = &m.URLs[0]
+	} else {
+		urls := []string{}
+		if m.URL != nil {
+			urls = append(urls, *m.URL)
+		}
+
+		if len(urls) > 0 {
+			m.URLs = urls
+		}
 	}
 
 	// post-process - set the image if applicable
