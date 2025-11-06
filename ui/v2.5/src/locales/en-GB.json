@@ -313,6 +313,10 @@
         "description": "Directory location for SQLite database file backups",
         "heading": "Backup Directory Path"
       },
+      "delete_trash_path": {
+        "description": "Path where deleted files will be moved to instead of being permanently deleted. Leave empty to permanently delete files.",
+        "heading": "Trash Path"
+      },
       "blobs_path": {
         "description": "Where in the filesystem to store binary data. Applicable only when using the Filesystem blob storage type. WARNING: changing this requires manually moving existing data.",
         "heading": "Binary data filesystem path"

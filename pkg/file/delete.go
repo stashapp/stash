@@ -67,11 +67,20 @@ type Deleter struct {
 	RenamerRemover RenamerRemover
 	files          []string
 	dirs           []string
+	TrashPath      string // if set, files will be moved to this directory instead of being permanently deleted
 }
 
 func NewDeleter() *Deleter {
 	return &Deleter{
 		RenamerRemover: newRenamerRemoverImpl(),
+		TrashPath:      "",
+	}
+}
+
+func NewDeleterWithTrash(trashPath string) *Deleter {
+	return &Deleter{
+		RenamerRemover: newRenamerRemoverImpl(),
+		TrashPath:      trashPath,
 	}
 }
 
@@ -156,15 +165,33 @@ func (d *Deleter) Rollback() {
 // Any errors encountered are logged. All files will be attempted, regardless
 // of the errors encountered.
 func (d *Deleter) Commit() {
-	for _, f := range d.files {
-		if err := d.RenamerRemover.Remove(f + deleteFileSuffix); err != nil {
-			logger.Warnf("Error deleting file %q: %v", f+deleteFileSuffix, err)
+	if d.TrashPath != "" {
+		// Move files and directories to trash instead of permanently deleting them
+		for _, f := range append(d.files, d.dirs...) {
+			markedPath := f + deleteFileSuffix
+			if err := fsutil.MoveToTrash(markedPath, d.TrashPath); err != nil {
+				logger.Warnf("Error moving %q to trash: %v", markedPath, err)
+				logger.Warnf("Falling back to permanent deletion")
+				// Fall back to permanent deletion if trash fails
+				if err := d.RenamerRemover.RemoveAll(markedPath); err != nil {
+					logger.Warnf("Error deleting %q: %v", markedPath, err)
+				}
+			} else {
+				logger.Infof("Moved %q to trash at %s", f, d.TrashPath)
+			}
 		}
-	}
+	} else {
+		// Permanently delete files and directories
+		for _, f := range d.files {
+			if err := d.RenamerRemover.Remove(f + deleteFileSuffix); err != nil {
+				logger.Warnf("Error deleting file %q: %v", f+deleteFileSuffix, err)
+			}
+		}
 
-	for _, f := range d.dirs {
-		if err := d.RenamerRemover.RemoveAll(f + deleteFileSuffix); err != nil {
-			logger.Warnf("Error deleting directory %q: %v", f+deleteFileSuffix, err)
+		for _, f := range d.dirs {
+			if err := d.RenamerRemover.RemoveAll(f + deleteFileSuffix); err != nil {
+				logger.Warnf("Error deleting directory %q: %v", f+deleteFileSuffix, err)
+			}
 		}
 	}
 
