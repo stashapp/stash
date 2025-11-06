@@ -58,22 +58,25 @@ func newRenamerRemoverImpl() renamerRemoverImpl {
 
 // Deleter is used to safely delete files and directories from the filesystem.
 // During a transaction, files and directories are marked for deletion using
-// the Files and Dirs methods. This will rename the files/directories to be
-// deleted. If the transaction is rolled back, then the files/directories can
-// be restored to their original state with the Abort method. If the
-// transaction is committed, the marked files are then deleted from the
-// filesystem using the Complete method.
+// the Files and Dirs methods. If TrashPath is set, files are moved to trash
+// immediately. Otherwise, they are renamed with a .delete suffix. If the
+// transaction is rolled back, then the files/directories can be restored to
+// their original state with the Rollback method. If the transaction is
+// committed, the marked files are then deleted from the filesystem using the
+// Commit method.
 type Deleter struct {
 	RenamerRemover RenamerRemover
 	files          []string
 	dirs           []string
-	TrashPath      string // if set, files will be moved to this directory instead of being permanently deleted
+	TrashPath      string            // if set, files will be moved to this directory instead of being permanently deleted
+	trashedPaths   map[string]string // map of original path -> trash path (only used when TrashPath is set)
 }
 
 func NewDeleter() *Deleter {
 	return &Deleter{
 		RenamerRemover: newRenamerRemoverImpl(),
 		TrashPath:      "",
+		trashedPaths:   make(map[string]string),
 	}
 }
 
@@ -81,6 +84,7 @@ func NewDeleterWithTrash(trashPath string) *Deleter {
 	return &Deleter{
 		RenamerRemover: newRenamerRemoverImpl(),
 		TrashPath:      trashPath,
+		trashedPaths:   make(map[string]string),
 	}
 }
 
@@ -159,29 +163,20 @@ func (d *Deleter) Rollback() {
 
 	d.files = nil
 	d.dirs = nil
+	d.trashedPaths = make(map[string]string)
 }
 
 // Commit deletes all files marked for deletion and clears the marked list.
+// When using trash, files have already been moved during renameForDelete, so
+// this just clears the tracking. Otherwise, permanently delete the .delete files.
 // Any errors encountered are logged. All files will be attempted, regardless
 // of the errors encountered.
 func (d *Deleter) Commit() {
 	if d.TrashPath != "" {
-		// Move files and directories to trash instead of permanently deleting them
-		for _, f := range append(d.files, d.dirs...) {
-			markedPath := f + deleteFileSuffix
-			if err := fsutil.MoveToTrash(markedPath, d.TrashPath); err != nil {
-				logger.Warnf("Error moving %q to trash: %v", markedPath, err)
-				logger.Warnf("Falling back to permanent deletion")
-				// Fall back to permanent deletion if trash fails
-				if err := d.RenamerRemover.RemoveAll(markedPath); err != nil {
-					logger.Warnf("Error deleting %q: %v", markedPath, err)
-				}
-			} else {
-				logger.Infof("Moved %q to trash at %s", f, d.TrashPath)
-			}
-		}
+		// Files were already moved to trash during renameForDelete, just clear tracking
+		logger.Debugf("Commit: %d files and %d directories already in trash, clearing tracking", len(d.files), len(d.dirs))
 	} else {
-		// Permanently delete files and directories
+		// Permanently delete files and directories marked with .delete suffix
 		for _, f := range d.files {
 			if err := d.RenamerRemover.Remove(f + deleteFileSuffix); err != nil {
 				logger.Warnf("Error deleting file %q: %v", f+deleteFileSuffix, err)
@@ -197,13 +192,36 @@ func (d *Deleter) Commit() {
 
 	d.files = nil
 	d.dirs = nil
+	d.trashedPaths = make(map[string]string)
 }
 
 func (d *Deleter) renameForDelete(path string) error {
+	if d.TrashPath != "" {
+		// Move file to trash immediately
+		trashDest, err := fsutil.MoveToTrash(path, d.TrashPath)
+		if err != nil {
+			return err
+		}
+		d.trashedPaths[path] = trashDest
+		logger.Infof("Moved %q to trash at %s", path, trashDest)
+		return nil
+	}
+
+	// Standard behavior: rename with .delete suffix
 	return d.RenamerRemover.Rename(path, path+deleteFileSuffix)
 }
 
 func (d *Deleter) renameForRestore(path string) error {
+	if d.TrashPath != "" {
+		// Restore file from trash
+		trashPath, ok := d.trashedPaths[path]
+		if !ok {
+			return fmt.Errorf("no trash path found for %q", path)
+		}
+		return d.RenamerRemover.Rename(trashPath, path)
+	}
+
+	// Standard behavior: restore from .delete suffix
 	return d.RenamerRemover.Rename(path+deleteFileSuffix, path)
 }
 
