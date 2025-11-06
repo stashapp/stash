@@ -76,10 +76,18 @@ export const SidebarSection: React.FC<
     text: React.ReactNode;
     className?: string;
     outsideCollapse?: React.ReactNode;
+    onOpen?: () => void;
     // used to store open/closed state in SidebarStateContext
     sectionID?: string;
   }>
-> = ({ className = "", text, outsideCollapse, sectionID = "", children }) => {
+> = ({
+  className = "",
+  text,
+  outsideCollapse,
+  onOpen,
+  sectionID = "",
+  children,
+}) => {
   // this is optional
   const contextState = React.useContext(SidebarStateContext);
   const openState =
@@ -92,6 +100,12 @@ export const SidebarSection: React.FC<
       contextState.setSectionOpen(sectionID, open);
     }
   }
+
+  useEffect(() => {
+    if (openState && onOpen) {
+      onOpen();
+    }
+  }, [openState, onOpen]);
 
   const collapseProps: Partial<CollapseProps> = {
     mountOnEnter: true,
