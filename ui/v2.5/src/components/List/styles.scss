@@ -91,6 +91,13 @@
   }
 }
 
+// hide zoom slider in xs viewport
+@include media-breakpoint-down(xs) {
+  .display-mode-menu .zoom-slider-container {
+    display: none;
+  }
+}
+
 .display-mode-popover {
   padding-left: 0;
   padding-right: 0;
@@ -1048,7 +1055,7 @@ input[type="range"].zoom-slider {
 }
 
 // hide sidebar Edit Filter button on larger screens
-@include media-breakpoint-up(lg) {
+@include media-breakpoint-up(md) {
   .sidebar .edit-filter-button {
     display: none;
   }
@@ -1064,6 +1071,7 @@ input[type="range"].zoom-slider {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    margin-bottom: 0;
     row-gap: 1rem;
 
     > div {
@@ -1094,10 +1102,6 @@ input[type="range"].zoom-slider {
       top: 0;
     }
 
-    .selected-items-info .btn {
-      margin-right: 0.5rem;
-    }
-
     // hide drop down menu items for play and create new
     // when the buttons are visible
     @include media-breakpoint-up(sm) {
@@ -1118,7 +1122,7 @@ input[type="range"].zoom-slider {
       }
     }
 
-    .selected-items-info,
+    .toolbar-selection-section,
     div.filter-section {
       border: 1px solid $secondary;
       border-radius: 0.25rem;
@@ -1126,13 +1130,69 @@ input[type="range"].zoom-slider {
       overflow-x: hidden;
     }
 
-    .sidebar-toggle-button {
-      margin-left: auto;
+    div.toolbar-selection-section {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
+
+      .sidebar-toggle-button {
+        margin-right: 0.5rem;
+      }
+
+      .selected-items-info {
+        align-items: center;
+        display: flex;
+      }
+
+      > div:first-child,
+      > div:last-child {
+        flex: 1;
+      }
+
+      > div:last-child {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .scene-list-operations {
+        display: flex;
+      }
+
+      // on smaller viewports move the operation buttons to the right
+      @include media-breakpoint-down(md) {
+        div.scene-list-operations {
+          flex: 1;
+          justify-content: flex-end;
+          order: 3;
+        }
+
+        > div:last-child {
+          flex: 0;
+          order: 2;
+        }
+      }
+    }
+
+    // on larger viewports, move the operation buttons to the center
+    @include media-breakpoint-up(lg) {
+      div.toolbar-selection-section div.scene-list-operations {
+        justify-content: center;
+
+        > .btn-group {
+          gap: 0.5rem;
+        }
+      }
+
+      div.toolbar-selection-section .empty-space {
+        flex: 1;
+        order: 3;
+      }
     }
 
     .search-container {
       border-right: 1px solid $secondary;
-      display: block;
+      display: flex;
       margin-right: -0.5rem;
       min-width: calc($sidebar-width - 15px);
       padding-right: 10px;
@@ -1168,21 +1228,27 @@ input[type="range"].zoom-slider {
   }
 }
 
-@include media-breakpoint-up(xl) {
+// hide the search box in the toolbar when sidebar is shown on larger screens
+// larger screens don't overlap the sidebar
+@include media-breakpoint-up(md) {
   .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .search-container {
     display: none;
   }
 }
+// hide the search box when sidebar is hidden on smaller screens
 @include media-breakpoint-down(md) {
   .sidebar-pane.hide-sidebar .filtered-list-toolbar .search-container {
     display: none;
   }
 }
 
-// hide the filter icon button when sidebar is shown on smaller screens
-@include media-breakpoint-down(md) {
-  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .filter-button {
-    display: none;
+// hide the filter and saved filters icon buttons when sidebar is shown on smaller screens
+@include media-breakpoint-down(sm) {
+  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar {
+    .filter-button,
+    .saved-filter-dropdown {
+      display: none;
+    }
   }
 
   // adjust the width of the filter-tags as well
@@ -1191,8 +1257,8 @@ input[type="range"].zoom-slider {
   }
 }
 
-// move the sidebar toggle to the left on xl viewports
-@include media-breakpoint-up(xl) {
+// move the sidebar toggle to the left on larger viewports
+@include media-breakpoint-up(md) {
   .filtered-list-toolbar .filter-section {
     .sidebar-toggle-button {
       margin-left: 0;
@@ -1239,16 +1305,20 @@ input[type="range"].zoom-slider {
 }
 
 .list-results-header {
-  align-items: center;
+  align-items: flex-start;
   background-color: $body-bg;
   display: flex;
-  justify-content: space-between;
 
   > div {
     align-items: center;
     display: flex;
+    flex: 1;
     gap: 0.5rem;
     justify-content: flex-start;
+
+    &.pagination-index-container {
+      justify-content: center;
+    }
 
     &:last-child {
       flex-shrink: 0;
@@ -1257,19 +1327,72 @@ input[type="range"].zoom-slider {
   }
 }
 
-.list-results-header {
-  flex-wrap: wrap-reverse;
+.list-results-header .pagination-index-container {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
+
+  .pagination {
+    // hidden by default. Can be shown via css override if needed
+    display: none;
+    margin: 0;
+  }
+}
+
+.list-results-header {
+  gap: 0.25rem;
   margin-bottom: 0.5rem;
 
   .paginationIndex {
     margin: 0;
   }
 
+  // move pagination info to right on medium screens
+  @include media-breakpoint-down(md) {
+    & > .empty-space {
+      flex: 0;
+    }
+
+    & > div.pagination-index-container {
+      align-items: flex-end;
+      order: 3;
+    }
+  }
+
   // center the header on smaller screens
   @include media-breakpoint-down(sm) {
     & > div,
-    & > div:last-child {
+    & > div.pagination-index-container {
+      flex-basis: 100%;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    & > div.pagination-index-container {
+      align-items: center;
+    }
+  }
+}
+
+// sidebar visible styling
+.sidebar-pane:not(.hide-sidebar) .list-results-header {
+  // move pagination info to right on medium screens when sidebar
+  @include media-breakpoint-down(lg) {
+    & > .empty-space {
+      flex: 0;
+    }
+
+    & > div.pagination-index-container {
+      justify-content: flex-end;
+      order: 3;
+    }
+  }
+
+  // center the header on smaller screens when sidebar is visible
+  @include media-breakpoint-down(md) {
+    & > div,
+    & > div.pagination-index-container {
       flex-basis: 100%;
       justify-content: center;
       margin-left: auto;
