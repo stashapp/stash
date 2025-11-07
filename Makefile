@@ -368,7 +368,7 @@ zip-ui:
 
 .PHONY: ui-start
 ui-start: ui-env
-	cd ui/v2.5 && npm run start --host
+	cd ui/v2.5 && npm run start -- --host
 
 .PHONY: fmt-ui
 fmt-ui:
@@ -381,7 +381,11 @@ validate-ui:
 
 # these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
 fmt-ui-quick:
-	cd ui/v2.5 && npm run prettier --write $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+	cd ui/v2.5 && \
+	files=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
+	if [ -n "$$files" ]; then \
+	  npm run prettier -- --write $$files; \
+	fi
 
 # does not run tsc checks, as they are slow
 validate-ui-quick:
@@ -389,9 +393,9 @@ validate-ui-quick:
 	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
 	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
 	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
-	if [ -n "$$tsfiles" ]; then npm run eslint $$tsfiles; fi && \
-	if [ -n "$$scssfiles" ]; then npm run stylelint $$scssfiles; fi && \
-	if [ -n "$$prettyfiles" ]; then npm run prettier --check $$prettyfiles; fi
+	if [ -n "$$tsfiles" ]; then npm run eslint -- $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then npm run stylelint -- $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then npm run prettier -- --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
