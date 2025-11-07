@@ -30,7 +30,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	// Populate a new studio from the input
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 
 	newStudio.Name = input.Name
 	newStudio.URL = translator.string(input.URL)
@@ -52,6 +52,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+	newStudio.CustomFields = convertMapJSONNumbers(input.CustomFields)
 
 	// Process the base 64 encoded image string
 	var imageData []byte
@@ -123,6 +124,11 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+
+	updatedStudio.CustomFields = input.CustomFields
+	// convert json.Numbers to int/float
+	updatedStudio.CustomFields.Full = convertMapJSONNumbers(updatedStudio.CustomFields.Full)
+	updatedStudio.CustomFields.Partial = convertMapJSONNumbers(updatedStudio.CustomFields.Partial)
 
 	// Process the base 64 encoded image string
 	var imageData []byte
