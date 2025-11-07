@@ -173,6 +173,7 @@ export const TaggerContext: React.FC = ({ children }) => {
     setSources(stashboxSources.concat(scraperSources));
   }, [Scrapers.data, stashConfig]);
 
+  // set the current source on load
   useEffect(() => {
     if (!sources.length || currentSource) {
       return;
@@ -191,8 +192,13 @@ export const TaggerContext: React.FC = ({ children }) => {
     setCurrentSource(sources[0]);
   }, [sources, currentSource, config]);
 
+  // clear the search results when the source changes
   useEffect(() => {
     setSearchResults({});
+  }, [currentSource]);
+
+  // keep selected endpoint in config in sync with current source
+  useEffect(() => {
     const selectedEndpoint = currentSource?.sourceInput.stash_box_endpoint;
     if (selectedEndpoint && selectedEndpoint !== config.selectedEndpoint) {
       setConfig({
