@@ -338,9 +338,19 @@ server-clean:
 
 # installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
+# If DOCKER_BUILD is set, configures pnpm to use a local store to avoid
+# putting .pnpm-store in /stash
+# NOTE: to run in the docker build container, using the existing
+# node_modules folder, rename the .modules.yaml to .modules.yaml.bak
+# and a new one will be generated. This will need to be reversed after
+# building.
 .PHONY: pre-ui
 pre-ui:
+ifdef DOCKER_BUILD
+	cd ui/v2.5 && pnpm config set store-dir ~/.pnpm-store && pnpm install --frozen-lockfile
+else
 	cd ui/v2.5 && pnpm install --frozen-lockfile
+endif
 
 .PHONY: ui-env
 ui-env: build-info

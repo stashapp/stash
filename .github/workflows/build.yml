@@ -65,7 +65,7 @@ jobs:
         docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
 
     - name: Pre-install
-      run: docker exec -t build /bin/bash -c "make pre-ui"
+      run: docker exec -t build /bin/bash -c "make DOCKER_BUILD=1 pre-ui"
 
     - name: Generate
       run: docker exec -t build /bin/bash -c "make generate"
