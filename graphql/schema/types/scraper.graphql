@@ -58,6 +58,10 @@ type ScrapedStudio {
   url: String
   parent: ScrapedStudio
   image: String
+  details: String
+  "Aliases must be comma-delimited to be parsed correctly"
+  aliases: String
+  tags: [ScrapedTag!]
 
   remote_site_id: String
 }
