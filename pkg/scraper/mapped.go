@@ -24,6 +24,7 @@ type mappedQuery interface {
 	getType() QueryType
 	setType(QueryType)
 	subScrape(ctx context.Context, value string) mappedQuery
+	getURL() string
 }
 
 type commonMappedConfig map[string]string
@@ -53,10 +54,14 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 		if attrConfig.Fixed != "" {
 			// TODO - not sure if this needs to set _all_ indexes for the key
 			const i = 0
-			ret = ret.setSingleValue(i, k, attrConfig.Fixed)
+			// Support {inputURL} placeholder in fixed values
+			value := strings.ReplaceAll(attrConfig.Fixed, "{inputURL}", q.getURL())
+			ret = ret.setSingleValue(i, k, value)
 		} else {
 			selector := attrConfig.Selector
 			selector = s.applyCommon(common, selector)
+			// Support {inputURL} placeholder in selectors
+			selector = strings.ReplaceAll(selector, "{inputURL}", q.getURL())
 
 			found, err := q.runQuery(selector)
 			if err != nil {
