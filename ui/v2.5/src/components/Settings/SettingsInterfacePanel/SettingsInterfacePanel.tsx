@@ -240,6 +240,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <option value="zh-CN">简体中文 (中国)</option>
           </SelectSetting>
 
+          <BooleanSetting
+            id="sfw-mode"
+            headingID="config.ui.sfw_mode.heading"
+            subHeadingID="config.ui.sfw_mode.description"
+            checked={iface.sfwMode ?? undefined}
+            onChange={(v) => saveInterface({ sfwMode: v })}
+          />
+
           <div className="setting-group">
             <div className="setting">
               <div>

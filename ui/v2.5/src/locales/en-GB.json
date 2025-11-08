@@ -784,6 +784,10 @@
         "description": "Number of times to attempt to scroll before moving to the next/previous item. Only applies for Pan Y scroll mode.",
         "heading": "Scroll attempts before transition"
       },
+      "sfw_mode": {
+        "description": "Enable if using stash to store SFW content. Hides or changes some porn-related aspects of the UI.",
+        "heading": "SFW Content Mode"
+      },
       "show_tag_card_on_hover": {
         "description": "Show tag card when hovering tag badges",
         "heading": "Tag card tooltips"

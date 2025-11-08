@@ -71,6 +71,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
+  sfwMode
   menuItems
   soundOnPreview
   wallShowTitle
