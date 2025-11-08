@@ -9,7 +9,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash?logo=github)](https://github.com/stashapp/stash/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash/bounty)](https://github.com/stashapp/stash/labels/bounty)
 
-### **Stash is a self-hosted webapp written in Go which organizes and serves your porn.**
+### **Stash is a self-hosted webapp written in Go which organizes and serves your ~~porn~~ content collection.**
 ![demo image](docs/readme_assets/demo_image.png)
 
 * Stash gathers information about videos in your collection from the internet, and is extensible through the use of community-built plugins for a large number of content producers and sites.
