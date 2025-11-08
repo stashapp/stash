@@ -325,9 +325,35 @@ Alternatively, an attribute value may be set to a fixed value, rather than scrap
 
 ```yaml
 performer:
-  Gender: 
+  Gender:
     fixed: Female
 ```
+
+### Input URL placeholder
+
+The `{inputURL}` placeholder can be used in both `fixed` values and `selector` expressions to access the original URL that was used to scrape the content. This is useful when you want to return or reference the source URL as part of the scraped data.
+
+For example:
+
+```yaml
+scene:
+  URL:
+    fixed: "{inputURL}"
+  Title:
+    selector: //h1[@class="title"]
+```
+
+When scraping from `https://example.com/scene/12345`, the `{inputURL}` placeholder will be replaced with `https://example.com/scene/12345`.
+
+The placeholder can also be used within selectors for more advanced use cases:
+
+```yaml
+scene:
+  Details:
+    selector: //div[@data-url="{inputURL}"]//p[@class="description"]
+```
+
+> **Note:** The `{inputURL}` placeholder represents the actual URL used to fetch the content, after any URL replacements have been applied.
 
 ### Common fragments
 
