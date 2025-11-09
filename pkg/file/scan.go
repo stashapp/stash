@@ -239,7 +239,8 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *scanF
 
 		info, err := d.Info()
 		if err != nil {
-			return fmt.Errorf("reading info for %q: %w", path, err)
+			logger.Errorf("reading info for %q: %v", path, err)
+			return nil
 		}
 
 		if !s.acceptEntry(ctx, path, info) {

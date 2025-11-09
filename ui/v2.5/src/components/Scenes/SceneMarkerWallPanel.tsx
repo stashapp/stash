@@ -39,14 +39,22 @@ interface IMarkerPhoto {
   onError?: (photo: PhotoProps<IMarkerPhoto>) => void;
 }
 
-export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
-  props: RenderImageProps<IMarkerPhoto>
-) => {
+interface IExtraProps {
+  maxHeight: number;
+}
+
+export const MarkerWallItem: React.FC<
+  RenderImageProps<IMarkerPhoto> & IExtraProps
+> = (props: RenderImageProps<IMarkerPhoto> & IExtraProps) => {
   const { configuration } = useContext(ConfigurationContext);
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
 
   const [active, setActive] = useState(false);
+
+  const height = Math.min(props.maxHeight, props.photo.height);
+  const zoomFactor = height / props.photo.height;
+  const width = props.photo.width * zoomFactor;
 
   type style = Record<string, string | number | undefined>;
   var divStyle: style = {
@@ -79,8 +87,8 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
       role="button"
       style={{
         ...divStyle,
-        width: props.photo.width,
-        height: props.photo.height,
+        width,
+        height,
       }}
     >
       <ImagePreview
@@ -90,8 +98,8 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
         autoPlay={video}
         key={props.photo.key}
         src={props.photo.src}
-        width={props.photo.width}
-        height={props.photo.height}
+        width={width}
+        height={height}
         alt={props.photo.alt}
         onMouseEnter={() => setActive(true)}
         onMouseLeave={() => setActive(false)}
@@ -120,6 +128,7 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
 
 interface IMarkerWallProps {
   markers: GQL.SceneMarkerDataFragment[];
+  zoomIndex: number;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
@@ -152,10 +161,17 @@ function getDimensions(file?: IFile) {
   };
 }
 
-const defaultTargetRowHeight = 250;
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
 
-const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
+const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
   const history = useHistory();
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const margin = 3;
   const direction = "row";
@@ -202,12 +218,41 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
     return Math.round(columnCount);
   }
 
-  const renderImage = useCallback((props: RenderImageProps<IMarkerPhoto>) => {
-    return <MarkerWallItem {...props} />;
-  }, []);
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
+
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps<IMarkerPhoto>) => {
+      return (
+        <MarkerWallItem
+          {...props}
+          maxHeight={
+            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor
+          }
+        />
+      );
+    },
+    [targetRowHeight]
+  );
 
   return (
-    <div className="marker-wall">
+    <div className="marker-wall" ref={containerRef}>
       {photos.length ? (
         <MarkerGallery
           photos={photos}
@@ -216,7 +261,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
           margin={margin}
           direction={direction}
           columns={columns}
-          targetRowHeight={defaultTargetRowHeight}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -225,10 +270,12 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers }) => {
 
 interface IMarkerWallPanelProps {
   markers: GQL.SceneMarkerDataFragment[];
+  zoomIndex: number;
 }
 
 export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
   markers,
+  zoomIndex,
 }) => {
-  return <MarkerWall markers={markers} />;
+  return <MarkerWall markers={markers} zoomIndex={zoomIndex} />;
 };

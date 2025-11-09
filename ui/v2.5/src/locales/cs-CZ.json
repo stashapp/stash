@@ -6,15 +6,15 @@
         "add_to_entity": "Přidat do {entityType}",
         "allow": "Povolit",
         "allow_temporarily": "Povolit dočasně",
-        "apply": "Potvrdit",
+        "apply": "Použít",
         "auto_tag": "Auto Tag",
         "backup": "Záloha",
         "browse_for_image": "Vybrat obrázek…",
         "cancel": "Zrušit",
         "clean": "Vyčistit",
         "clear": "Vyčistit",
-        "clear_back_image": "Vymazat zadní obrázek",
-        "clear_front_image": "Vymazat přední obrázek",
+        "clear_back_image": "Vymazat obrázek zadní strany",
+        "clear_front_image": "Vymazat obrázek přední strany",
         "clear_image": "Vymazat obrázek",
         "close": "Zavřít",
         "confirm": "Potvrdit",
@@ -106,9 +106,9 @@
         "submit_update": "Publikovat aktualizaci",
         "swap": "Prohodit",
         "tasks": {
-            "clean_confirm_message": "Jste si jistý, že chcete vyčistit databázi? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které se již nenacházejí v souborovém systému.",
+            "clean_confirm_message": "Chcete doopravdy provést vyčištění databáze? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které se již nenacházejí v souborovém systému.",
             "dry_mode_selected": "Vybrán \"Dry Mode\". Nic nebude smazáno, pouze logováno.",
-            "import_warning": "Jste si jisti, že chcete importovat? Tato operace smaže databázi a znovu importuje z Vašich exportovaných metadat."
+            "import_warning": "Chcete doopravdy provést import? Tato operace smaže databázi a znovu naimportuje Vaše exportovaná metadata."
         },
         "temp_disable": "Zakázat dočasně…",
         "temp_enable": "Povolit dočasně…",
@@ -129,9 +129,9 @@
         "assign_stashid_to_parent_studio": "Přiřaď Stash ID k existujícímu nadřazenému studiu a aktualizuj metadata",
         "choose_date": "Vyberte datum",
         "create_chapters": "Vytvořit kapitolu",
-        "clear_date_data": "Vymazat data datumu",
+        "clear_date_data": "Vymazat informace o datumech",
         "reload": "Načíst znovu",
-        "clean_generated": "Vyčistěte vygenerované soubory",
+        "clean_generated": "Vyčistit vygenerované soubory",
         "remove_date": "Odstranit datum",
         "add_manual_date": "Přidat datum ručně",
         "add_play": "Přidat přehrávání",
@@ -139,9 +139,19 @@
         "reset_cover": "Obnovit výchozí obal",
         "add_sub_groups": "Přidat podskupinu",
         "set_cover": "Nastavit jako obal",
-        "remove_from_containing_group": "Odebrat ze skupiny",
+        "remove_from_containing_group": "Odstranit ze skupiny",
         "reset_resume_time": "Obnovit čas pokračování",
-        "reset_play_duration": "Obnovit dobu přehrávání"
+        "reset_play_duration": "Obnovit dobu přehrávání",
+        "sidebar": {
+            "close": "Zavřít postranní panel",
+            "open": "Zobrazit postranní panel",
+            "toggle": "Boční panel"
+        },
+        "play": "Přehrát",
+        "show_results": "Zobrazit výsledky",
+        "show_count_results": "Zobrazit {count} výsledků",
+        "load": "Načíst",
+        "load_filter": "Načíst filtr"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -333,7 +343,7 @@
                 "description": "Cesta ke spustitelnému souboru pythonu (nejen ke složce). Používá se pro script scrappery a pluginy. Pokud je prázdné, python bude vyřešen z prostředí",
                 "heading": "Cesta k Pythonu"
             },
-            "scraper_user_agent": "Scraper User Agent",
+            "scraper_user_agent": "User Agent Scraperu",
             "scraper_user_agent_desc": "User-Agent řetězec používaný při scrapování http požadavků",
             "scrapers_path": {
                 "description": "Adresář konfiguračních souborů scraperů",
@@ -435,7 +445,9 @@
             "endpoint": "Koncový bod",
             "graphql_endpoint": "Koncový bod GraphQL",
             "name": "Název",
-            "title": "Stash-box Endpointy"
+            "title": "Stash-box Endpointy",
+            "max_requests_per_minute": "Maximální počet dotazů za minutu",
+            "max_requests_per_minute_description": "Používá základní hodnotu {defaultValue} pokud je nastaven na 0"
         },
         "system": {
             "transcoding": "Překódování"
@@ -561,7 +573,9 @@
                 "whitespace_chars": "Whitespace znaky",
                 "whitespace_chars_desc": "Tyto znaky v názvu budou nahrazeny prázdným znakem (mezerou)"
             },
-            "scene_tools": "Nástroje pro scény"
+            "scene_tools": "Nástroje pro scény",
+            "graphql_playground": "GraphQL hřiště",
+            "heading": "Nástroje"
         },
         "ui": {
             "abbreviate_counters": {
@@ -710,7 +724,7 @@
                         "heading": "Automaticky spustit video při přehrávání vybraného"
                     },
                     "continue_playlist_default": {
-                        "description": "Přehrát následující scénu na seznamu při skončení vida",
+                        "description": "Přehrát následující scénu na seznamu při skončení videa",
                         "heading": "(Výchozí nastavení) Pokračovat v playlistu"
                     },
                     "show_scrubber": "Zobrazit Scrubber",
@@ -840,12 +854,12 @@
     "developmentVersion": "Vývojářská verze",
     "dialogs": {
         "delete_alert": "Následující {count, plural, one {{singularEntity}} other {{pluralEntity}}} budou permanentně smazány:",
-        "delete_confirm": "Jste si jisti, že chcete smazat {entityName}?",
-        "delete_entity_desc": "{count, plural, one {Jste si jisti, že checete smazat toto {singularEntity}? Pokud není soubor rovněž smazán, tato {singularEntity} bude znovu přidána při příštím skenování.} other {Jste si jisti, že chcete smazat tyto {pluralEntity}? Pokud nejsou soubory rovněž smazány, tyto {pluralEntity} budou znovu přidány při příštím skenování.}}",
+        "delete_confirm": "Chcete doopravdy smazat {entityName}?",
+        "delete_entity_desc": "{count, plural, one {Doopravdy chcete smazat {singularEntity}? Pokud nebude smazán i soubor, {singularEntity} bude znovu přidán při příštím skenování.} other {Doopravdy chcete smazat tyto {pluralEntity}? Pokud nebudou smazány i soubory, tyto {pluralEntity} budou znovu přidány při příštím skenování.}}",
         "delete_entity_title": "{count, plural, one {Smazat {singularEntity}} other {Smazat {pluralEntity}}}",
         "delete_galleries_extra": "…navíc všechny obrazové soubory, které nejsou připojeny k žádné jiné galerii.",
         "delete_gallery_files": "Smazat složku galerie/zip soubor a jakékoliv obrázky nenapojené na jinou galerii.",
-        "delete_object_desc": "Jste si jisti, že chcete smazat {count, plural, one {tuto {singularEntity}} other {tyto {pluralEntity}}}?",
+        "delete_object_desc": "Doopravdy chcete smazat {count, plural, one {{singularEntity}} other {tyto {pluralEntity}}}?",
         "delete_object_overflow": "…a {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
         "delete_object_title": "Smazat {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "dont_show_until_updated": "Skrýt do příští aktualizace",
@@ -878,7 +892,6 @@
             "destination": "Cíl",
             "source": "Zdroj"
         },
-        "overwrite_filter_confirm": "JSte si jisti, že chcete přepsat aktuálně uložený dotaz {entityName}?",
         "scene_gen": {
             "force_transcodes": "Vynutit generování Transkódu",
             "force_transcodes_tooltip": "Ve výchozím nastavení, transkódy jsou generovány pouze tehdy, když video soubor není podporován prohlížečem. V případě aktivování, transkódy budou generovány i v ostatních případech.",
@@ -946,7 +959,9 @@
         "clear_o_history_confirm": "Opravdu chcete vymazat historii O?",
         "clear_play_history_confirm": "Opravdu chcete vymazat historii přehrávání?",
         "delete_entity_simple_desc": "{count, plural, one {Opravdu chcete smazat tuto {singularEntity}?} other {Opravdu chcete smazat tyto {pluralEntity}?}}",
-        "performers_found": "{count} nalezených účinkujících"
+        "performers_found": "{count} nalezených účinkujících",
+        "overwrite_filter_warning": "Uložený filtr \"{entityName}\" bude přepsán.",
+        "set_default_filter_confirm": "Chcete doopravdy nastavit tento filtr jako výchozí?"
     },
     "chapters": "Kapitoly",
     "circumcised": "Obřezán",
@@ -1012,7 +1027,8 @@
         "grid": "Mřížka",
         "tagger": "Tagger",
         "wall": "Stěna",
-        "unknown": "Neznámý"
+        "unknown": "Neznámý",
+        "label_current": "Mód zobrazení: {current}"
     },
     "effect_filters": {
         "aspect": "Aspekt",
@@ -1315,7 +1331,9 @@
         "saved_filters": "Uložené filtry",
         "update_filter": "Aktualizovat filtr",
         "edit_filter": "Upravit filtr",
-        "name": "Filtr"
+        "name": "Filtr",
+        "more_filter_criteria": "+{count} navíc",
+        "search_term": "Hledaný výraz"
     },
     "ethnicity": "Etnická příslušnost",
     "existing_value": "Existujicí hodnota",
@@ -1522,5 +1540,12 @@
     },
     "age_on_date": "{age} během produkce",
     "sort_name": "Seřadit jména",
-    "eta": "Přibližný čas dokončení"
+    "eta": "Přibližný čas dokončení",
+    "login": {
+        "password": "Heslo",
+        "invalid_credentials": "Neplatné uživatelské jméno nebo heslo",
+        "login": "Přihlášení",
+        "username": "Uživatelské jméno",
+        "internal_error": "Neočekávaná interní chyba. Podívej se do logu pro více detailů"
+    }
 }

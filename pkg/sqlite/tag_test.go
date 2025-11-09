@@ -931,6 +931,8 @@ func TestTagMerge(t *testing.T) {
 			tagIdxWithGallery,
 			tagIdx1WithGallery,
 			tagIdx2WithGallery,
+			tagIdx1WithGroup,
+			tagIdx2WithGroup,
 		}
 		var srcIDs []int
 		for _, idx := range srcIdxs {
@@ -1023,6 +1025,18 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		assert.Contains(studioTagIDs, destID)
+
+		// ensure group points to new tag
+		group, err := db.Group.Find(ctx, groupIDs[groupIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+		if err := group.LoadTagIDs(ctx, db.Group); err != nil {
+			return err
+		}
+		groupTagIDs := group.TagIDs.List()
+
+		assert.Contains(groupTagIDs, destID)
 
 		return nil
 	}); err != nil {

@@ -16,22 +16,28 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import { createPortal } from "react-dom";
 
 export const OperationDropdown: React.FC<
   PropsWithChildren<{
     className?: string;
+    menuPortalTarget?: HTMLElement;
   }>
-> = ({ className, children }) => {
+> = ({ className, menuPortalTarget, children }) => {
   if (!children) return null;
+
+  const menu = (
+    <Dropdown.Menu className="bg-secondary text-white">
+      {children}
+    </Dropdown.Menu>
+  );
 
   return (
     <Dropdown className={className} as={ButtonGroup}>
       <Dropdown.Toggle variant="secondary" id="more-menu">
         <Icon icon={faEllipsisH} />
       </Dropdown.Toggle>
-      <Dropdown.Menu className="bg-secondary text-white">
-        {children}
-      </Dropdown.Menu>
+      {menuPortalTarget ? createPortal(menu, menuPortalTarget) : menu}
     </Dropdown>
   );
 };

@@ -50,7 +50,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 
 	isClip := true
 	// This list is derived from ffmpegImageThumbnail in pkg/image/thumbnail. If one gets updated, the other should be as well
-	for _, item := range []string{"png", "mjpeg", "webp", "bmp"} {
+	for _, item := range []string{"png", "mjpeg", "webp", "bmp", "jpegxl"} {
 		if item == probe.VideoCodec {
 			isClip = false
 		}

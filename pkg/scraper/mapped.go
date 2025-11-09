@@ -126,6 +126,7 @@ type mappedSceneScraperConfig struct {
 	Performers mappedPerformerScraperConfig `yaml:"Performers"`
 	Studio     mappedConfig                 `yaml:"Studio"`
 	Movies     mappedConfig                 `yaml:"Movies"`
+	Groups     mappedConfig                 `yaml:"Groups"`
 }
 type _mappedSceneScraperConfig mappedSceneScraperConfig
 
@@ -134,6 +135,7 @@ const (
 	mappedScraperConfigScenePerformers = "Performers"
 	mappedScraperConfigSceneStudio     = "Studio"
 	mappedScraperConfigSceneMovies     = "Movies"
+	mappedScraperConfigSceneGroups     = "Groups"
 )
 
 func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -151,11 +153,13 @@ func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	thisMap[mappedScraperConfigScenePerformers] = parentMap[mappedScraperConfigScenePerformers]
 	thisMap[mappedScraperConfigSceneStudio] = parentMap[mappedScraperConfigSceneStudio]
 	thisMap[mappedScraperConfigSceneMovies] = parentMap[mappedScraperConfigSceneMovies]
+	thisMap[mappedScraperConfigSceneGroups] = parentMap[mappedScraperConfigSceneGroups]
 
 	delete(parentMap, mappedScraperConfigSceneTags)
 	delete(parentMap, mappedScraperConfigScenePerformers)
 	delete(parentMap, mappedScraperConfigSceneStudio)
 	delete(parentMap, mappedScraperConfigSceneMovies)
+	delete(parentMap, mappedScraperConfigSceneGroups)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -873,50 +877,55 @@ func (r mappedResult) apply(dest interface{}) {
 
 func mapFieldValue(destVal reflect.Value, key string, value interface{}) error {
 	field := destVal.FieldByName(key)
+
+	if !field.IsValid() {
+		return fmt.Errorf("field %s does not exist on %s", key, destVal.Type().Name())
+	}
+
+	if !field.CanSet() {
+		return fmt.Errorf("field %s cannot be set on %s", key, destVal.Type().Name())
+	}
+
 	fieldType := field.Type()
 
-	if field.IsValid() && field.CanSet() {
-		switch v := value.(type) {
-		case string:
-			// if the field is a pointer to a string, then we need to convert the string to a pointer
-			// if the field is a string slice, then we need to convert the string to a slice
-			switch {
-			case fieldType.Kind() == reflect.String:
-				field.SetString(v)
-			case fieldType.Kind() == reflect.Ptr && fieldType.Elem().Kind() == reflect.String:
-				ptr := reflect.New(fieldType.Elem())
-				ptr.Elem().SetString(v)
-				field.Set(ptr)
-			case fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String:
-				field.Set(reflect.ValueOf([]string{v}))
-			default:
-				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
-			}
-		case []string:
-			// expect the field to be a string slice
-			if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
-				field.Set(reflect.ValueOf(v))
-			} else {
-				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
-			}
+	switch v := value.(type) {
+	case string:
+		// if the field is a pointer to a string, then we need to convert the string to a pointer
+		// if the field is a string slice, then we need to convert the string to a slice
+		switch {
+		case fieldType.Kind() == reflect.String:
+			field.SetString(v)
+		case fieldType.Kind() == reflect.Ptr && fieldType.Elem().Kind() == reflect.String:
+			ptr := reflect.New(fieldType.Elem())
+			ptr.Elem().SetString(v)
+			field.Set(ptr)
+		case fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String:
+			field.Set(reflect.ValueOf([]string{v}))
 		default:
-			// fallback to reflection
-			reflectValue := reflect.ValueOf(value)
-			reflectValueType := reflectValue.Type()
-
-			switch {
-			case reflectValueType.ConvertibleTo(fieldType):
-				field.Set(reflectValue.Convert(fieldType))
-			case fieldType.Kind() == reflect.Pointer && reflectValueType.ConvertibleTo(fieldType.Elem()):
-				ptr := reflect.New(fieldType.Elem())
-				ptr.Elem().Set(reflectValue.Convert(fieldType.Elem()))
-				field.Set(ptr)
-			default:
-				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
-			}
+			return fmt.Errorf("cannot convert %T to %s", value, fieldType)
 		}
-	} else {
-		return fmt.Errorf("field does not exist or cannot be set")
+	case []string:
+		// expect the field to be a string slice
+		if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
+			field.Set(reflect.ValueOf(v))
+		} else {
+			return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+		}
+	default:
+		// fallback to reflection
+		reflectValue := reflect.ValueOf(value)
+		reflectValueType := reflectValue.Type()
+
+		switch {
+		case reflectValueType.ConvertibleTo(fieldType):
+			field.Set(reflectValue.Convert(fieldType))
+		case fieldType.Kind() == reflect.Pointer && reflectValueType.ConvertibleTo(fieldType.Elem()):
+			ptr := reflect.New(fieldType.Elem())
+			ptr.Elem().Set(reflectValue.Convert(fieldType.Elem()))
+			field.Set(ptr)
+		default:
+			return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+		}
 	}
 
 	return nil
@@ -1008,6 +1017,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 	sceneTagsMap := sceneScraperConfig.Tags
 	sceneStudioMap := sceneScraperConfig.Studio
 	sceneMoviesMap := sceneScraperConfig.Movies
+	sceneGroupsMap := sceneScraperConfig.Groups
 
 	ret.Performers = s.processPerformers(ctx, scenePerformersMap, q)
 
@@ -1034,7 +1044,12 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 		ret.Movies = processRelationships[models.ScrapedMovie](ctx, s, sceneMoviesMap, q)
 	}
 
-	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0
+	if sceneGroupsMap != nil {
+		logger.Debug(`Processing scene groups:`)
+		ret.Groups = processRelationships[models.ScrapedGroup](ctx, s, sceneGroupsMap, q)
+	}
+
+	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0 || len(ret.Groups) > 0
 }
 
 func (s mappedScraper) processPerformers(ctx context.Context, performersMap mappedPerformerScraperConfig, q mappedQuery) []*models.ScrapedPerformer {

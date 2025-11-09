@@ -8,11 +8,9 @@ import {
   IListFilterOperation,
   ListOperationButtons,
 } from "./ListOperationButtons";
-import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
+import { ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IListSelect, useFilterOperations } from "./util";
-import { SidebarIcon } from "../Shared/Sidebar";
-import { useIntl } from "react-intl";
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
@@ -43,7 +41,6 @@ export interface IFilteredListToolbar {
   onDelete?: () => void;
   operations?: IListFilterOperation[];
   zoomable?: boolean;
-  onToggleSidebar?: () => void;
 }
 
 export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
@@ -56,9 +53,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   onDelete,
   operations,
   zoomable = false,
-  onToggleSidebar,
 }) => {
-  const intl = useIntl();
   const filterOptions = filter.options;
   const { setDisplayMode, setZoom } = useFilterOperations({
     filter,
@@ -69,28 +64,12 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   return (
     <ButtonToolbar className="filtered-list-toolbar">
       <ButtonGroup>
-        {onToggleSidebar && (
-          <ButtonGroup>
-            <Button
-              className="sidebar-toggle-button"
-              onClick={onToggleSidebar}
-              variant="secondary"
-              title={intl.formatMessage({ id: "actions.sidebar.open" })}
-            >
-              <SidebarIcon />
-            </Button>
-          </ButtonGroup>
-        )}
-      </ButtonGroup>
-
-      <ButtonGroup>
         {showEditFilter && (
           <ListFilter
             onFilterUpdate={setFilter}
             filter={filter}
             openFilterDialog={() => showEditFilter()}
             view={view}
-            withSidebar={!!onToggleSidebar}
           />
         )}
         <ListOperationButtons

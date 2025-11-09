@@ -201,7 +201,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 		performers: joinRepository{
 			repository: repository{
@@ -1096,6 +1096,7 @@ var sceneSortOptions = sortOptions{
 	"perceptual_similarity",
 	"random",
 	"rating",
+	"studio",
 	"tag_count",
 	"title",
 	"updated_at",
@@ -1232,6 +1233,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			sceneTable,
 			getSortDirection(direction),
 		)
+	case "studio":
+		query.join(studioTable, "", "scenes.studio_id = studios.id")
+		query.sortAndPagination += getSort("name", direction, studioTable)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}

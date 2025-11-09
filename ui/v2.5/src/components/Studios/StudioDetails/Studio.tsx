@@ -47,6 +47,7 @@ import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { goBackOrReplace } from "src/utils/history";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -378,7 +379,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       return;
     }
 
-    history.goBack();
+    goBackOrReplace(history, "/studios");
   }
 
   function renderDeleteAlert() {

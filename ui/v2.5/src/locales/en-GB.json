@@ -68,6 +68,8 @@
     "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
+    "load": "Load",
+    "load_filter": "Load filter",
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
@@ -1317,6 +1319,7 @@
     "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
+    "search_term": "Search term",
     "update_filter": "Update Filter",
     "more_filter_criteria": "+{count} more"
   },

@@ -102,7 +102,13 @@
         "performers_found": "Fann {count} utøvarar",
         "delete_entity_title": "{count, plural, one {Slett {singularEntity}} other {Slett {pluralEntity}}}",
         "scenes_found": "Fann {count} scener",
-        "dont_show_until_updated": "Ikkje vis før neste oppdatering"
+        "dont_show_until_updated": "Ikkje vis før neste oppdatering",
+        "imagewall": {
+            "direction": {
+                "column": "Kolonne",
+                "row": "Rad"
+            }
+        }
     },
     "date": "Dato",
     "bitrate": "Bitrate",
@@ -143,6 +149,9 @@
                         }
                     }
                 }
+            },
+            "images": {
+                "heading": "Bilete"
             }
         },
         "about": {
@@ -229,5 +238,16 @@
     "sub_group": "Undergruppe",
     "sub_group_count": "Tal på undergrupper",
     "sub_group_of": "Undergruppe av {parent}",
-    "sub_group_order": "Undergruppesortert"
+    "sub_group_order": "Undergruppesortert",
+    "groups": "Grupper",
+    "performers": "Utøvarar",
+    "studios": "Studio",
+    "image": "Bilete",
+    "images": "Bilete",
+    "scene": "Scene",
+    "group": "Gruppe",
+    "galleries": "Galleri",
+    "scenes": "Scener",
+    "studio": "Studio",
+    "performer": "Utøvar"
 }

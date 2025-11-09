@@ -2,10 +2,14 @@ import { useRef, useEffect, useCallback } from "react";
 
 const useFocus = () => {
   const htmlElRef = useRef<HTMLInputElement | null>(null);
-  const setFocus = useCallback(() => {
+  const setFocus = useCallback((selectAll?: boolean) => {
     const currentEl = htmlElRef.current;
     if (currentEl) {
-      currentEl.focus();
+      if (selectAll) {
+        currentEl.select();
+      } else {
+        currentEl.focus();
+      }
     }
   }, []);
 

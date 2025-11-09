@@ -203,6 +203,21 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
+			relatedIDCol: "files.id",
+			relatedRepo:  fileRepository.repository,
+			relatedHandler: &fileFilterHandler{
+				fileFilter: sceneFilter.FilesFilter,
+				isRelated:  true,
+			},
+			joinFn: func(f *filterBuilder) {
+				qb.addFilesTable(f)
+				qb.addFoldersTable(f)
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
+		},
+
+		&relatedFilterHandler{
 			relatedIDCol:   "scene_markers.id",
 			relatedRepo:    sceneMarkerRepository.repository,
 			relatedHandler: &sceneMarkerFilterHandler{sceneFilter.MarkersFilter},
@@ -319,7 +334,7 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("galleries_join.scene_id IS NULL")
 			case "studio":
 				f.addWhere("scenes.studio_id IS NULL")
-			case "movie":
+			case "movie", "group":
 				sceneRepository.groups.join(f, "groups_join", "scenes.id")
 				f.addWhere("groups_join.scene_id IS NULL")
 			case "performers":
