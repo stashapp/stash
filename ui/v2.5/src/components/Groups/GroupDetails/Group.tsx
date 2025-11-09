@@ -23,7 +23,7 @@ import {
 import { GroupEditPanel } from "./GroupEditPanel";
 import { faRefresh, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
@@ -146,7 +146,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const Toast = useToast();
 
   // Configuration settings
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;

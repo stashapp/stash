@@ -16,7 +16,7 @@ import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import {
   CompressedPerformerDetailsPanel,
@@ -240,7 +240,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
     const intl = useIntl();
 
     // Configuration settings
-    const { configuration } = React.useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const uiConfig = configuration?.ui;
     const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
     const enableBackgroundImage =

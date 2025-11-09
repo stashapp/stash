@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import Gallery, {
@@ -12,7 +6,7 @@ import Gallery, {
   PhotoProps,
   RenderImageProps,
 } from "react-photo-gallery";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -35,7 +29,7 @@ export const SceneWallItem: React.FC<
 > = (props: RenderImageProps<IScenePhoto> & IExtraProps) => {
   const intl = useIntl();
 
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
 

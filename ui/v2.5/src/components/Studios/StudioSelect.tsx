@@ -13,7 +13,7 @@ import {
   queryFindStudiosByIDForSelect,
   queryFindStudiosForSelect,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -65,7 +65,7 @@ const _StudioSelect: React.FC<
 > = (props) => {
   const [createStudio] = useStudioCreate();
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const intl = useIntl();
   const maxOptionsShown =
     (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;

@@ -4,7 +4,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { useFindTag } from "../../core/StashService";
 import { TagCard } from "./TagCard";
-import { ConfigurationContext } from "../../hooks/Config";
+import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface ITagPopoverCardProps {
@@ -47,7 +47,7 @@ export const TagPopover: React.FC<ITagPopoverProps> = ({
   placement = "top",
   target,
 }) => {
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const showTagCardOnHover = config?.ui.showTagCardOnHover ?? true;
 

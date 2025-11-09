@@ -1,7 +1,6 @@
 import React, {
   KeyboardEvent,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -31,7 +30,7 @@ import {
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   ConnectionState,
   InteractiveContext,
@@ -240,7 +239,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     onNext,
     onPrevious,
   }) => {
-    const { configuration } = useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
     const uiConfig = configuration?.ui;
     const videoRef = useRef<HTMLDivElement>(null);

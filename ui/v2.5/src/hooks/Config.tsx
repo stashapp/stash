@@ -2,14 +2,24 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 
 export interface IContext {
-  configuration?: GQL.ConfigDataFragment;
-  loading?: boolean;
+  configuration: GQL.ConfigDataFragment;
 }
 
-export const ConfigurationContext = React.createContext<IContext>({});
+export const ConfigurationContext = React.createContext<IContext | null>(null);
+
+export const useConfigurationContext = () => {
+  const context = React.useContext(ConfigurationContext);
+
+  if (context === null) {
+    throw new Error(
+      "useConfigurationContext must be used within a ConfigurationProvider"
+    );
+  }
+
+  return context;
+};
 
 export const ConfigurationProvider: React.FC<IContext> = ({
-  loading,
   configuration,
   children,
 }) => {
@@ -17,7 +27,6 @@ export const ConfigurationProvider: React.FC<IContext> = ({
     <ConfigurationContext.Provider
       value={{
         configuration,
-        loading,
       }}
     >
       {children}

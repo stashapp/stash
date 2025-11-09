@@ -1,7 +1,6 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -14,7 +13,7 @@ import {
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
@@ -233,7 +232,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const Toast = useToast();
   const intl = useIntl();
 
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(

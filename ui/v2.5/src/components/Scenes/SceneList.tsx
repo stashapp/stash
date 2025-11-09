@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -18,7 +18,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   faPencil,
   faPlay,
@@ -103,7 +103,7 @@ function renderMetadataByline(result: GQL.FindScenesQueryResult) {
 function usePlayScene() {
   const history = useHistory();
 
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const cont = config?.interface.continuePlaylistDefault ?? false;
   const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
 
@@ -473,7 +473,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       },
     });
 
-  const { filter, setFilter, loading: filterLoading } = filterState;
+  const { filter, setFilter } = filterState;
 
   const { effectiveFilter, result, cachedResult, items, totalCount } =
     queryResult;
@@ -680,7 +680,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   ];
 
   // render
-  if (filterLoading || sidebarStateLoading) return null;
+  if (sidebarStateLoading) return null;
 
   const operations = (
     <SceneListOperations

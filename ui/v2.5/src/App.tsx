@@ -300,25 +300,33 @@ export const App: React.FC = () => {
     return null;
   }
 
-  if (config.error) {
+  function renderSimple(content: React.ReactNode) {
     return (
       <IntlProvider
         locale={intlLanguage}
         messages={messages}
         formats={intlFormats}
       >
-        <MainContainer>
-          <ErrorMessage
-            message={
-              <FormattedMessage
-                id="errors.loading_type"
-                values={{ type: "configuration" }}
-              />
-            }
-            error={config.error.message}
-          />
-        </MainContainer>
+        <MainContainer>{content}</MainContainer>
       </IntlProvider>
+    );
+  }
+
+  if (config.loading) {
+    return renderSimple(<LoadingIndicator />);
+  }
+
+  if (config.error) {
+    return renderSimple(
+      <ErrorMessage
+        message={
+          <FormattedMessage
+            id="errors.loading_type"
+            values={{ type: "configuration" }}
+          />
+        }
+        error={config.error.message}
+      />
     );
   }
 
@@ -332,10 +340,7 @@ export const App: React.FC = () => {
         <ToastProvider>
           <PluginsLoader>
             <AppContainer>
-              <ConfigurationProvider
-                configuration={config.data?.configuration}
-                loading={config.loading}
-              >
+              <ConfigurationProvider configuration={config.data!.configuration}>
                 {maybeRenderReleaseNotes()}
                 <ConnectionMonitor />
                 <Suspense fallback={<LoadingIndicator />}>

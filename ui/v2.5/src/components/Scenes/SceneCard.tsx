@@ -11,7 +11,7 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
@@ -353,7 +353,7 @@ const SceneCardImage = PatchComponent(
   "SceneCard.Image",
   (props: ISceneCardProps) => {
     const history = useHistory();
-    const { configuration } = React.useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
     const file = useMemo(
@@ -437,7 +437,7 @@ const SceneCardImage = PatchComponent(
 export const SceneCard = PatchComponent(
   "SceneCard",
   (props: ISceneCardProps) => {
-    const { configuration } = React.useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),

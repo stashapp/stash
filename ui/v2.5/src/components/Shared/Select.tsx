@@ -15,7 +15,7 @@ import CreatableSelect from "react-select/creatable";
 import * as GQL from "src/core/generated-graphql";
 import { useMarkerStrings } from "src/core/StashService";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { useDebounce } from "src/hooks/debounce";
@@ -108,7 +108,7 @@ const getSelectedItems = (selectedItems: OnChangeValue<Option, boolean>) => {
 const LimitedSelectMenu = <T extends boolean>(
   props: MenuListProps<Option, T, GroupBase<Option>>
 ) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
 
