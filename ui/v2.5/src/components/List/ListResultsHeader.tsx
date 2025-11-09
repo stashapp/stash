@@ -1,6 +1,6 @@
 import React from "react";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { PaginationIndex } from "../List/Pagination";
+import { Pagination, PaginationIndex } from "../List/Pagination";
 import { ButtonToolbar } from "react-bootstrap";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
@@ -53,6 +53,12 @@ export const ListResultsHeader: React.FC<{
         />
       </div>
       <div className="pagination-index-container">
+        <Pagination
+          currentPage={filter.currentPage}
+          itemsPerPage={filter.itemsPerPage}
+          totalItems={totalCount}
+          onChangePage={(page) => onChangeFilter(filter.changePage(page))}
+        />
         <PaginationIndex
           loading={loading}
           itemsPerPage={filter.itemsPerPage}

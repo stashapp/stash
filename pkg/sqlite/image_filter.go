@@ -123,6 +123,21 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 				imageRepository.tags.innerJoin(f, "image_tag", "images.id")
 			},
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "files.id",
+			relatedRepo:  fileRepository.repository,
+			relatedHandler: &fileFilterHandler{
+				fileFilter: imageFilter.FilesFilter,
+				isRelated:  true,
+			},
+			joinFn: func(f *filterBuilder) {
+				imageRepository.addFilesTable(f)
+				imageRepository.addFoldersTable(f)
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
+		},
 	}
 }
 

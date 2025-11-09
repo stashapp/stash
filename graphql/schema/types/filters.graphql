@@ -330,6 +330,8 @@ input SceneFilterType {
   groups_filter: GroupFilterType
   "Filter by related markers that meet this criteria"
   markers_filter: SceneMarkerFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
 }
 
 input MovieFilterType {
@@ -534,6 +536,10 @@ input GalleryFilterType {
   studios_filter: StudioFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
+  "Filter by related folders that meet this criteria"
+  folders_filter: FolderFilterType
 }
 
 input TagFilterType {
@@ -679,6 +685,8 @@ input ImageFilterType {
   studios_filter: StudioFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
 }
 
 input FileFilterType {
