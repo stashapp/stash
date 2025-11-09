@@ -778,6 +778,11 @@ jsonScrapers:
         Name: data.performers.#.name
       Studio:
         Name: data.site.name
+        URL: data.site.url
+        Details: data.site.description
+        Aliases: data.site.aliases
+        Tags:
+          Name: data.site.tags.#.name
       Tags:
         Name: data.tags.#.tag
 
@@ -795,6 +800,11 @@ jsonScrapers:
         Name: $data.performers.#.name
       Studio:
         Name: $data.site.name
+        URL: $data.site.url
+        Details: $data.site.description
+        Aliases: $data.site.aliases
+        Tags:
+          Name: $data.site.tags.#.name
       Tags:
         Name: $data.tags.#.tag
 driver:
