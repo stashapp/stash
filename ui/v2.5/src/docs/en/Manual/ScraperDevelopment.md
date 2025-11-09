@@ -329,9 +329,13 @@ performer:
     fixed: Female
 ```
 
-### Input URL placeholder
+### Input URL placeholders
 
-The `{inputURL}` placeholder can be used in both `fixed` values and `selector` expressions to access the original URL that was used to scrape the content. This is useful when you want to return or reference the source URL as part of the scraped data.
+The `{inputURL}` and `{inputHostname}` placeholders can be used in both `fixed` values and `selector` expressions to access information about the original URL that was used to scrape the content.
+
+#### {inputURL}
+
+The `{inputURL}` placeholder provides access to the full URL. This is useful when you want to return or reference the source URL as part of the scraped data.
 
 For example:
 
@@ -345,15 +349,33 @@ scene:
 
 When scraping from `https://example.com/scene/12345`, the `{inputURL}` placeholder will be replaced with `https://example.com/scene/12345`.
 
-The placeholder can also be used within selectors for more advanced use cases:
+#### {inputHostname}
+
+The `{inputHostname}` placeholder extracts just the hostname from the URL. This is useful when you need to reference the domain without manually parsing the URL.
+
+For example:
+
+```yaml
+scene:
+  Studio:
+    fixed: "{inputHostname}"
+  Details:
+    selector: //div[@data-domain="{inputHostname}"]//p[@class="description"]
+```
+
+When scraping from `https://example.com/scene/12345`, the `{inputHostname}` placeholder will be replaced with `example.com`.
+
+These placeholders can also be used within selectors for more advanced use cases:
 
 ```yaml
 scene:
   Details:
     selector: //div[@data-url="{inputURL}"]//p[@class="description"]
+  Site:
+    selector: //div[@data-host="{inputHostname}"]//span[@class="site-name"]
 ```
 
-> **Note:** The `{inputURL}` placeholder represents the actual URL used to fetch the content, after any URL replacements have been applied.
+> **Note:** These placeholders represent the actual URL used to fetch the content, after any URL replacements have been applied.
 
 ### Common fragments
 
