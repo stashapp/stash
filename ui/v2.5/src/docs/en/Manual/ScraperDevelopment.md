@@ -691,7 +691,11 @@ xPathScrapers:
         URL: $performer/@href
       Studio:
         Name: $studio
-        URL: $studio/@href    
+        URL: $studio/@href
+        Details: //div[@class="studioDescription"]
+        Aliases: //div[@class="studioAliases"]/span
+        Tags:
+          Name: //div[@class="studioTags"]/a    
 ```
 
 See also [#333](https://github.com/stashapp/stash/pull/333) for more examples.
@@ -907,7 +911,10 @@ URLs
 ### Studio
 
 ```
+Aliases
+Details
 Name
+Tags (see Tag fields)
 URL
 ```
 
