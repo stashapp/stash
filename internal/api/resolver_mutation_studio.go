@@ -208,7 +208,26 @@ func (r *mutationResolver) BulkStudioUpdate(ctx context.Context, input BulkStudi
 		return nil, fmt.Errorf("converting parent id: %w", err)
 	}
 
-	partial.URL = translator.optionalString(input.URL, "url")
+	if translator.hasField("urls") {
+		// ensure url/twitter/instagram are not included in the input
+		if err := r.validateNoLegacyURLs(translator); err != nil {
+			return nil, err
+		}
+
+		partial.URLs = translator.updateStringsBulk(input.Urls, "urls")
+	} else if translator.hasField("url") {
+		// handle legacy url field
+		legacyURLs := []string{}
+		if input.URL != nil {
+			legacyURLs = append(legacyURLs, *input.URL)
+		}
+
+		partial.URLs = &models.UpdateStrings{
+			Mode:   models.RelationshipUpdateModeSet,
+			Values: legacyURLs,
+		}
+	}
+
 	partial.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	partial.Rating = translator.optionalInt(input.Rating100, "rating100")
 	partial.Details = translator.optionalString(input.Details, "details")

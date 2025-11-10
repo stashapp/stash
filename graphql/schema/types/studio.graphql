@@ -64,7 +64,8 @@ input StudioUpdateInput {
 
 input BulkStudioUpdateInput {
   ids: [ID!]!
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   parent_id: ID
   # rating expressed as 1-100
   rating100: Int
