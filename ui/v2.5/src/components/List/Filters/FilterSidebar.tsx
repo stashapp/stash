@@ -10,6 +10,8 @@ import ScreenUtils from "src/utils/screen";
 import Mousetrap from "mousetrap";
 import { Button } from "react-bootstrap";
 
+const savedFiltersSectionID = "saved-filters";
+
 export const FilteredSidebarHeader: React.FC<{
   sidebarOpen: boolean;
   showEditFilter: () => void;
@@ -60,6 +62,7 @@ export const FilteredSidebarHeader: React.FC<{
       <SidebarSection
         className="sidebar-saved-filters"
         text={<FormattedMessage id="search_filter.saved_filters" />}
+        sectionID={savedFiltersSectionID}
       >
         <SidebarSavedFilterList
           filter={filter}

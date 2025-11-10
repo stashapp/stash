@@ -12,6 +12,13 @@ import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 
+function locationEquals(
+  loc1: ReturnType<typeof useLocation> | undefined,
+  loc2: ReturnType<typeof useLocation>
+) {
+  return loc1 && loc1.pathname === loc2.pathname && loc1.search === loc2.search;
+}
+
 export function useFilterURL(
   filter: ListFilterModel,
   setFilter: React.Dispatch<React.SetStateAction<ListFilterModel>>,
@@ -24,6 +31,7 @@ export function useFilterURL(
 
   const history = useHistory();
   const location = useLocation();
+  const prevLocation = usePrevious(location);
 
   // when the filter changes, update the URL
   const updateFilter = useCallback(
@@ -47,7 +55,8 @@ export function useFilterURL(
   // and updates the filter accordingly.
   useEffect(() => {
     // don't apply if active is false
-    if (!active) return;
+    // also don't apply if location is unchanged
+    if (!active || locationEquals(prevLocation, location)) return;
 
     // re-init to load default filter on empty new query params
     if (!location.search) {
@@ -73,7 +82,8 @@ export function useFilterURL(
     });
   }, [
     active,
-    location.search,
+    prevLocation,
+    location,
     defaultFilter,
     setFilter,
     updateFilter,

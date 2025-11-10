@@ -71,7 +71,7 @@ export const GroupSelect: React.FC<
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.movie ?? true;
+    !configuration?.interface.disableDropdownCreate.movie;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 

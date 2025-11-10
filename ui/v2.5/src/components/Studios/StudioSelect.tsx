@@ -70,7 +70,7 @@ const _StudioSelect: React.FC<
   const maxOptionsShown =
     (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.studio ?? true;
+    !configuration?.interface.disableDropdownCreate.studio;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 

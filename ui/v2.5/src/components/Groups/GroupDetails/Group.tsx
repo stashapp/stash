@@ -43,6 +43,7 @@ import { Button, Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
 import { GroupPerformersPanel } from "./GroupPerformersPanel";
 import { Icon } from "src/components/Shared/Icon";
+import { goBackOrReplace } from "src/utils/history";
 
 const validTabs = ["default", "scenes", "performers", "subgroups"] as const;
 type TabKey = (typeof validTabs)[number];
@@ -276,7 +277,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
       return;
     }
 
-    history.goBack();
+    goBackOrReplace(history, "/groups");
   }
 
   function toggleEditing(value?: boolean) {

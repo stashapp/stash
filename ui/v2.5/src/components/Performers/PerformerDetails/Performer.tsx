@@ -47,6 +47,7 @@ import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 import { PatchComponent } from "src/patch";
 import { ILightboxImage } from "src/hooks/Lightbox/types";
+import { goBackOrReplace } from "src/utils/history";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -330,7 +331,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
         return;
       }
 
-      history.goBack();
+      goBackOrReplace(history, "/performers");
     }
 
     function toggleEditing(value?: boolean) {

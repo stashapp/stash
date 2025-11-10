@@ -1317,6 +1317,7 @@
   "sceneTagger": "Scene Tagger",
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
+  "scenes_duration": "Scene Duration",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",
