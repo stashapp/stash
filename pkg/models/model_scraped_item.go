@@ -425,11 +425,30 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 
 type ScrapedTag struct {
 	// Set if tag matched
-	StoredID *string `json:"stored_id"`
-	Name     string  `json:"name"`
+	StoredID     *string `json:"stored_id"`
+	Name         string  `json:"name"`
+	RemoteSiteID *string `json:"remote_site_id"`
 }
 
 func (ScrapedTag) IsScrapedContent() {}
+
+func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
+	currentTime := time.Now()
+	ret := NewTag()
+	ret.Name = t.Name
+
+	if t.RemoteSiteID != nil && endpoint != "" {
+		ret.StashIDs = NewRelatedStashIDs([]StashID{
+			{
+				Endpoint:  endpoint,
+				StashID:   *t.RemoteSiteID,
+				UpdatedAt: currentTime,
+			},
+		})
+	}
+
+	return &ret
+}
 
 func ScrapedTagSortFunction(a, b *ScrapedTag) int {
 	return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))

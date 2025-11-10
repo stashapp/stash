@@ -14,6 +14,7 @@ import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
+import { getStashIDs } from "src/utils/stashIds";
 import { Tag, TagSelect } from "../TagSelect";
 
 interface ITagEditPanel {
@@ -52,6 +53,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     parent_ids: yup.array(yup.string().required()).defined(),
     child_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
   });
 
@@ -63,6 +65,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
     ignore_auto_tag: tag?.ignore_auto_tag ?? false,
+    stash_ids: getStashIDs(tag?.stash_ids),
   };
 
   type InputValues = yup.InferType<typeof schema>;
@@ -140,10 +143,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  const { renderField, renderInputField, renderStringListField } = formikUtils(
-    intl,
-    formik
-  );
+  const {
+    renderField,
+    renderInputField,
+    renderStringListField,
+    renderStashIDsField,
+  } = formikUtils(intl, formik);
 
   function renderParentTagsField() {
     const title = intl.formatMessage({ id: "parent_tags" });
@@ -210,6 +215,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         {renderInputField("description", "textarea")}
         {renderParentTagsField()}
         {renderSubTagsField()}
+        {renderStashIDsField("stash_ids", "tags")}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}
       </Form>

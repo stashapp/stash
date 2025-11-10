@@ -153,6 +153,8 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 		tagIDs = originalTagIDs
 	}
 
+	endpoint := g.result.source.RemoteSite
+
 	for _, t := range scraped {
 		if t.StoredID != nil {
 			// existing tag, just add it
@@ -161,12 +163,36 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
 
+			// If the scraped tag has a RemoteSiteID and endpoint, update the existing tag to add the StashID
+			if t.RemoteSiteID != nil && endpoint != "" {
+				// Get the tag updater interface
+				if tagUpdater, ok := g.tagCreator.(models.TagUpdater); ok {
+					// Create a partial update to add the StashID
+					partial := models.NewTagPartial()
+					partial.StashIDs = &models.UpdateStashIDs{
+						StashIDs: []models.StashID{
+							{
+								Endpoint:  endpoint,
+								StashID:   *t.RemoteSiteID,
+								UpdatedAt: time.Now(),
+							},
+						},
+						Mode: models.RelationshipUpdateModeAdd,
+					}
+
+					_, err = tagUpdater.UpdatePartial(ctx, int(tagID), partial)
+					if err != nil {
+						// Log the error but don't fail the whole operation
+						logger.Warnf("Failed to update StashID for tag %d: %v", tagID, err)
+					}
+				}
+			}
+
 			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
-			newTag := models.NewTag()
-			newTag.Name = t.Name
+			newTag := t.ToTag(endpoint, nil)
 
-			err := g.tagCreator.Create(ctx, &newTag)
+			err := g.tagCreator.Create(ctx, newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}
