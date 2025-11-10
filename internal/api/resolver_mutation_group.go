@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/group"
@@ -21,7 +22,7 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	// Populate a new group from the input
 	newGroup := models.NewGroup()
 
-	newGroup.Name = input.Name
+	newGroup.Name = strings.TrimSpace(input.Name)
 	newGroup.Aliases = translator.string(input.Aliases)
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
@@ -55,7 +56,7 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	}
 
 	if input.Urls != nil {
-		newGroup.URLs = models.NewRelatedStrings(input.Urls)
+		newGroup.URLs = models.NewRelatedStrings(trimStringSlice(input.Urls))
 	}
 
 	return &newGroup, nil

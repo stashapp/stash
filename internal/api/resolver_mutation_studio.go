@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
@@ -32,13 +33,13 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	// Populate a new studio from the input
 	newStudio := models.NewStudio()
 
-	newStudio.Name = input.Name
+	newStudio.Name = strings.TrimSpace(input.Name)
 	newStudio.URL = translator.string(input.URL)
 	newStudio.Rating = input.Rating100
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
-	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
+	newStudio.Aliases = models.NewRelatedStrings(trimStringSlice(input.Aliases))
 	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error

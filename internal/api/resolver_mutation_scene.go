@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
@@ -62,9 +63,9 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 
 	if input.Urls != nil {
-		newScene.URLs = models.NewRelatedStrings(input.Urls)
+		newScene.URLs = models.NewRelatedStrings(trimStringSlice(input.Urls))
 	} else if input.URL != nil {
-		newScene.URLs = models.NewRelatedStrings([]string{*input.URL})
+		newScene.URLs = models.NewRelatedStrings([]string{strings.TrimSpace(*input.URL)})
 	}
 
 	newScene.PerformerIDs, err = translator.relatedIds(input.PerformerIds)
@@ -650,7 +651,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	// Populate a new scene marker from the input
 	newMarker := models.NewSceneMarker()
 
-	newMarker.Title = input.Title
+	newMarker.Title = strings.TrimSpace(input.Title)
 	newMarker.Seconds = input.Seconds
 	newMarker.PrimaryTagID = primaryTagID
 	newMarker.SceneID = sceneID
