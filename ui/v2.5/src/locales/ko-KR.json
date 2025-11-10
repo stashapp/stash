@@ -1556,5 +1556,5 @@
         "any_of": "해당 값 중 일부 포함"
     },
     "eta": "예상 소요 시간",
-    "scenes_duration": "영상 시간"
+    "scenes_duration": "영상 길이"
 }
