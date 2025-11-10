@@ -811,6 +811,14 @@
             "use_stash_hosted_funscript": {
                 "description": "Wenn aktiviert, werden Funscripts direkt von Stash an dein Handy-Gerät gesendet, ohne Handy-Server von Drittanbietern zu verwenden. Erfordert, dass Stash von deinem Handy-Gerät aus zugänglich ist und ein API-Schlüssel generiert wurde, falls Stash mit Zugangsdaten konfiguriert ist.",
                 "heading": "Funscripts direkt bereitstellen"
+            },
+            "performer_list": {
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Zeige den Link auf der Darsteller Gitterkarte"
+                    }
+                },
+                "heading": "Darsteller Liste"
             }
         },
         "advanced_mode": "Fortgeschrittener Modus"
@@ -1547,5 +1555,6 @@
         "username": "Benutzername"
     },
     "age_on_date": "bei Produktion",
-    "sort_name": "Namen sortieren"
+    "sort_name": "Namen sortieren",
+    "scenes_duration": "Szenen Dauer"
 }
