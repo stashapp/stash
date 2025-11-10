@@ -45,9 +45,9 @@
         "from_url": "URL로 불러오기…",
         "full_export": "전부 내보내기",
         "full_import": "전부 불러오기",
-        "generate": "만들기",
-        "generate_thumb_default": "기본 썸네일 만들기",
-        "generate_thumb_from_current": "현재 화면으로 썸네일 만들기",
+        "generate": "생성",
+        "generate_thumb_default": "기본 썸네일 생성",
+        "generate_thumb_from_current": "현재 화면으로 썸네일 생성",
         "hash_migration": "해쉬 값 마이그레이션",
         "hide": "숨기기",
         "hide_configuration": "설정 숨기기",
@@ -65,7 +65,7 @@
         "next_action": "다음",
         "not_running": "실행 중이 아님",
         "open_in_external_player": "외부 플레이어에서 열기",
-        "open_random": "랜덤 배우 정보 열기",
+        "open_random": "랜덤 열기",
         "overwrite": "덮어쓰기",
         "play_random": "랜덤 영상 재생",
         "play_selected": "선택된 영상 재생",
@@ -104,7 +104,7 @@
         "show": "보여주기",
         "show_configuration": "설정 보여주기",
         "skip": "건너뛰기",
-        "split": "나누기",
+        "split": "분할",
         "stop": "정지",
         "submit": "제출",
         "submit_stash_box": "Stash-Box에 제출하기",
@@ -214,7 +214,7 @@
             "fp_matches": "영상 길이가 일치함",
             "fp_matches_multi": "영상 길이가 {durationsLength}개 중 {matchCount}개의 식별값과 일치합니다",
             "hash_matches": "{hash_type}이 일치함",
-            "match_failed_already_tagged": "이미 태깅된 영상",
+            "match_failed_already_tagged": "이미 태그된 영상",
             "match_failed_no_result": "결과 없음",
             "match_success": "영상 태깅 성공",
             "phash_matches": "{count}개의 PHash가 일치함",
@@ -432,7 +432,7 @@
         },
         "plugins": {
             "hooks": "후크",
-            "triggers_on": "트리거 켜기",
+            "triggers_on": "작동 조건",
             "available_plugins": "사용 가능한 플러그인",
             "installed_plugins": "설치된 플러그인"
         },
@@ -487,9 +487,9 @@
                 "generating_from_paths": "다음 경로에서 영상 생성 중",
                 "generating_scenes": "{num}개의 {scene} 생성 중"
             },
-            "generate_clip_previews_during_scan": "이미지 클립 미리보기 생성하기",
+            "generate_clip_previews_during_scan": "이미지 클립 미리보기 생성",
             "generate_desc": "이미지, 스프라이트, 비디오, vtt 등 파일을 생성합니다.",
-            "generate_phashes_during_scan": "컨텐츠 해시 값 생성",
+            "generate_phashes_during_scan": "해쉬 값 생성",
             "generate_phashes_during_scan_tooltip": "중복된 파일 확인과 영상 식별에 사용됩니다.",
             "generate_previews_during_scan": "움직이는 이미지 미리보기 생성",
             "generate_previews_during_scan_tooltip": "애니메이션(webp) 미리보기 또한 생성합니다. 영상/마커 월의 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '애니메이션 미리보기'는 '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 '애니메이션 미리보기'가 생성되기 때문에 파일 크기가 커집니다.",
@@ -626,12 +626,12 @@
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "드랍다운 메뉴에서 새로운 오브젝트를 추가할 수 없도록 합니다",
-                    "heading": "드랍다운 메뉴 비활성화"
+                    "description": "선택창에서 새로운 오브젝트를 추가할 수 없도록 합니다",
+                    "heading": "선택창 비활성화"
                 },
                 "heading": "수정하기",
                 "max_options_shown": {
-                    "label": "Dropdown에 표시되는 최대 개수"
+                    "label": "선택창에 표시되는 최대 개수"
                 },
                 "rating_system": {
                     "star_precision": {
@@ -846,7 +846,7 @@
     "criterion_modifier": {
         "between": "구간",
         "equals": "=",
-        "excludes": "포함하지 않음",
+        "excludes": "제외",
         "format_string": "{criterion} {modifierString} {valueString}",
         "greater_than": ">",
         "includes": "포함",
@@ -941,7 +941,7 @@
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
             "override_preview_generation_options_desc": "이 작업에 대한 미리보기 생성 옵션을 재정의합니다. 기본값은 '시스템' -> '미리보기 생성'에서 설정됩니다.",
             "overwrite": "기존 파일들 덮어쓰기",
-            "phash": "해시",
+            "phash": "해쉬",
             "preview_exclude_end_time_desc": "영상 미리보기에서 마지막 x 초를 제외합니다. 초 단위, 혹은 전체 영상 재생 길이 중 비율(예: 2%)로 나타낼 수 있습니다.",
             "preview_exclude_end_time_head": "마지막 영상 부분 제외",
             "preview_exclude_start_time_desc": "영상 미리보기에서 처음 x 초를 제외합니다. 초 단위, 혹은 전체 영상 재생 길이 중 비율(예: 2%)로 나타낼 수 있습니다.",
@@ -998,7 +998,7 @@
     "donate": "후원",
     "dupe_check": {
         "description": "'정확' 이하의 수준에서는 계산이 오래 걸릴 수 있습니다. 낮은 정밀도 수준에서는 부정확한 결과가 함께 나올 수 있습니다.",
-        "duration_diff": "최대 영상 재생 시간 차이",
+        "duration_diff": "최대 영상 길이 차이",
         "duration_options": {
             "any": "상관 없음",
             "equal": "같음"
@@ -1045,7 +1045,7 @@
     },
     "empty_server": "이 페이지에서 추천 영상들을 확인하려면 영상을 추가하세요.",
     "errors": {
-        "image_index_greater_than_zero": "이미지 인덱스는 0보다 커야 합니다",
+        "image_index_greater_than_zero": "이미지 번호는 0보다 커야 합니다",
         "lazy_component_error_help": "만약 최근에 Stash를 업그레이드했다면, 웹페이지를 새로고침하거나 브라우저 캐시를 삭제해주세요.",
         "something_went_wrong": "오류가 발생했습니다.",
         "header": "오류",
@@ -1382,20 +1382,20 @@
     "title": "제목",
     "toast": {
         "added_entity": "{singularEntity}을(를) 추가했습니다",
-        "added_generation_job_to_queue": "생성 작업을 대기열에 추가했습니다",
+        "added_generation_job_to_queue": "컨텐츠 생성 작업을 대기열에 추가했습니다",
         "created_entity": "{entity}를 생성했습니다",
         "default_filter_set": "기본 필터가 설정되었습니다",
         "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 삭제되었습니다",
         "generating_screenshot": "스크린샷을 생성하는 중…",
         "image_index_too_large": "오류: 이미지 번호가 갤러리의 이미지 개수보다 큽니다",
-        "merged_scenes": "영상들을 합쳤습니다",
-        "merged_tags": "병합된 태그",
-        "reassign_past_tense": "재할당된 파일",
+        "merged_scenes": "영상이 병합되었습니다",
+        "merged_tags": "태그가 병합되었습니다",
+        "reassign_past_tense": "파일이 재할당되었습니다",
         "removed_entity": "{singularEntity}을(를) 제거했습니다",
         "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 다시 스캔하는 중…",
         "saved_entity": "{entity}를 저장했습니다",
         "started_auto_tagging": "자동 태깅을 시작했습니다",
-        "started_generating": "생성을 시작했습니다",
+        "started_generating": "컨텐츠 생성을 시작했습니다",
         "started_importing": "불러오기를 시작했습니다",
         "updated_entity": "{entity}를 수정했습니다"
     },
@@ -1410,7 +1410,7 @@
         "required": "${path}는 필수 항목입니다",
         "unique": "${path}은(는) 유일해야 합니다",
         "blank": "${path}를 빈 칸으로 둘 수 없습니다",
-        "end_time_before_start_time": "종료 시간은 시작 시간보다 크거나 같아야 합니다"
+        "end_time_before_start_time": "종료 시간은 시작 시간 이후여야 합니다"
     },
     "videos": "비디오",
     "view_all": "모두 보기",
@@ -1496,7 +1496,7 @@
         "show_all": "모두 보여주기",
         "update": "업데이트",
         "selected_only": "선택된 것만",
-        "required_by": "{packages}로 인해 요구됨"
+        "required_by": "{packages}가 정상 동작하기 위해 설치되어야 함"
     },
     "o_count": "싼 횟수",
     "orientation": "방향",
