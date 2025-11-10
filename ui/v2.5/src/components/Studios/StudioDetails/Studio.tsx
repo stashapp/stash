@@ -287,11 +287,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   const showAllCounts = uiConfig?.showChildStudioContent;
 
-  // make array of url so that it doesn't re-render on every change
-  const urls = useMemo(() => {
-    return studio?.url ? [studio.url] : [];
-  }, [studio.url]);
-
   const studioImage = useMemo(() => {
     const existingPath = studio.image_path;
     if (isEditing) {
@@ -471,7 +466,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                     favorite={studio.favorite}
                     onToggleFavorite={(v) => setFavorite(v)}
                   />
-                  <ExternalLinkButtons urls={urls} />
+                  <ExternalLinkButtons urls={studio.urls} />
                 </span>
               </DetailTitle>
 

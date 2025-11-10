@@ -217,7 +217,6 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 	newStudio := models.Studio{
 		Name:          studioJSON.Name,
-		URL:           studioJSON.URL,
 		Aliases:       models.NewRelatedStrings(studioJSON.Aliases),
 		Details:       studioJSON.Details,
 		Favorite:      studioJSON.Favorite,
@@ -227,6 +226,19 @@ func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(studioJSON.StashIDs),
+	}
+
+	if len(studioJSON.URLs) > 0 {
+		newStudio.URLs = models.NewRelatedStrings(studioJSON.URLs)
+	} else {
+		urls := []string{}
+		if studioJSON.URL != "" {
+			urls = append(urls, studioJSON.URL)
+		}
+
+		if len(urls) > 0 {
+			newStudio.URLs = models.NewRelatedStrings(urls)
+		}
 	}
 
 	if studioJSON.Rating != 0 {
