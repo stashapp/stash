@@ -32,6 +32,7 @@ fragment GroupData on Group {
   performer_count_all: performer_count(depth: -1)
   sub_group_count
   sub_group_count_all: sub_group_count(depth: -1)
+  o_counter
 
   scenes {
     id
