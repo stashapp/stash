@@ -142,11 +142,11 @@ export const GroupCard: React.FC<IProps> = ({
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
             {maybeRenderTagPopoverButton()}
-            {maybeRenderOCounter()}
             {(group.sub_group_count > 0 ||
               group.containing_groups.length > 0) && (
               <RelatedGroupPopoverButton group={group} />
             )}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );
