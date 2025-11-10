@@ -811,6 +811,14 @@
                     "description": "활성화되면, 모든 컨텐츠 세부사항이 기본값으로 보여지게 되고, 각각의 세부사항들이 하나의 열에 위아래로 정렬됩니다",
                     "heading": "모든 세부사항 보여주기"
                 }
+            },
+            "performer_list": {
+                "heading": "배우 목록",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "배우 그리드 카드에 링크 표시"
+                    }
+                }
             }
         },
         "advanced_mode": "고급 설정 모드"
@@ -1547,5 +1555,6 @@
         "any": "값 존재",
         "any_of": "해당 값 중 일부 포함"
     },
-    "eta": "예상 소요 시간"
+    "eta": "예상 소요 시간",
+    "scenes_duration": "영상 시간"
 }
