@@ -791,6 +791,9 @@
                 "direction": "方向",
                 "heading": "画像ウォール",
                 "margin": "マージン (px単位)"
+            },
+            "performer_list": {
+                "heading": "AV女優・男優リスト"
             }
         },
         "advanced_mode": "高度なモード"
@@ -1328,5 +1331,6 @@
         "value": "値"
     },
     "distance": "距離",
-    "age_on_date": "撮影時の年齢 {age}歳"
+    "age_on_date": "撮影時の年齢 {age}歳",
+    "containing_group": "含まれるグループ"
 }
