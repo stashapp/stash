@@ -492,6 +492,7 @@ type ScrapedGroup struct {
 	Date     *string        `json:"date"`
 	Rating   *string        `json:"rating"`
 	Director *string        `json:"director"`
+	URL      *string        `json:"url"` // included for backward compatibility
 	URLs     []string       `json:"urls"`
 	Synopsis *string        `json:"synopsis"`
 	Studio   *ScrapedStudio `json:"studio"`

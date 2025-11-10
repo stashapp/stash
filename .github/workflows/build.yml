@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:11
+  COMPILER_IMAGE: stashapp/compiler:12
 
 jobs:
   build:
@@ -37,7 +37,7 @@ jobs:
         cache-name: cache-node_modules
       with:
         path: ui/v2.5/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/pnpm-lock.yaml') }}
 
     - name: Cache UI build
       uses: actions/cache@v3
@@ -46,7 +46,7 @@ jobs:
         cache-name: cache-ui
       with:
         path: ui/v2.5/build
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/pnpm-lock.yaml', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
       uses: actions/cache@v3
@@ -65,7 +65,7 @@ jobs:
         docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
 
     - name: Pre-install
-      run: docker exec -t build /bin/bash -c "make pre-ui"
+      run: docker exec -t build /bin/bash -c "make CI=1 pre-ui"
 
     - name: Generate
       run: docker exec -t build /bin/bash -c "make generate"

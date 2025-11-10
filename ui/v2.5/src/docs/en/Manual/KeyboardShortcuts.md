@@ -67,6 +67,9 @@
 | `r 0` | Unset rating (stars) |
 | `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
 | ``r ` `` | Unset rating (decimal) |
+| Cover generation ||
+| `c c` | Generate screenshot at current time |
+| `c d` | Generate default screenshot |
 | Playback ||
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |

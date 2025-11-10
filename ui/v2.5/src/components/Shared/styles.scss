@@ -805,7 +805,7 @@ button.btn.favorite-button {
     }
   }
 
-  @include media-breakpoint-up(xl) {
+  @include media-breakpoint-up(md) {
     transition: margin-left 0.1s;
 
     &:not(.hide-sidebar) {
@@ -910,12 +910,12 @@ $sticky-header-height: calc(50px + 3.3rem);
   }
 
   // on smaller viewports we want the sidebar to overlap content
-  @include media-breakpoint-down(lg) {
+  @include media-breakpoint-down(sm) {
     .sidebar-pane:not(.hide-sidebar) .sidebar {
       margin-right: -$sidebar-width;
     }
 
-    .sidebar-pane > :nth-child(2) {
+    .sidebar-pane > .sidebar-pane-content {
       transition: none;
     }
   }
@@ -935,7 +935,7 @@ $sticky-header-height: calc(50px + 3.3rem);
       display: none;
     }
   }
-  @include media-breakpoint-up(xl) {
+  @include media-breakpoint-up(md) {
     .sidebar-pane:not(.hide-sidebar) {
       > :nth-child(2) {
         margin-left: 0;

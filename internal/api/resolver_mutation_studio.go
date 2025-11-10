@@ -190,6 +190,77 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	return r.getStudio(ctx, studioID)
 }
 
+func (r *mutationResolver) BulkStudioUpdate(ctx context.Context, input BulkStudioUpdateInput) ([]*models.Studio, error) {
+	ids, err := stringslice.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, fmt.Errorf("converting ids: %w", err)
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	// Populate performer from the input
+	partial := models.NewStudioPartial()
+
+	partial.ParentID, err = translator.optionalIntFromString(input.ParentID, "parent_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting parent id: %w", err)
+	}
+
+	partial.URL = translator.optionalString(input.URL, "url")
+	partial.Favorite = translator.optionalBool(input.Favorite, "favorite")
+	partial.Rating = translator.optionalInt(input.Rating100, "rating100")
+	partial.Details = translator.optionalString(input.Details, "details")
+	partial.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+
+	partial.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	ret := []*models.Studio{}
+
+	// Start the transaction and save the performers
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Studio
+
+		for _, id := range ids {
+			local := partial
+			local.ID = id
+			if err := studio.ValidateModify(ctx, local, qb); err != nil {
+				return err
+			}
+
+			updated, err := qb.UpdatePartial(ctx, local)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, updated)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// execute post hooks outside of txn
+	var newRet []*models.Studio
+	for _, studio := range ret {
+		r.hookExecutor.ExecutePostHooks(ctx, studio.ID, hook.StudioUpdatePost, input, translator.getFields())
+
+		studio, err = r.getStudio(ctx, studio.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, studio)
+	}
+
+	return newRet, nil
+}
+
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {

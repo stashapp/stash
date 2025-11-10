@@ -30,6 +30,7 @@ type Group {
   performer_count(depth: Int): Int! # Resolver
   sub_group_count(depth: Int): Int! # Resolver
   scenes: [Scene!]!
+  o_counter: Int # Resolver
 }
 
 input GroupDescriptionInput {

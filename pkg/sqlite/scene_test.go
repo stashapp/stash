@@ -4146,6 +4146,13 @@ func TestSceneQuerySorting(t *testing.T) {
 			sceneIDs[sceneIdx1WithPerformer],
 			-1,
 		},
+		{
+			"performer_age",
+			"performer_age",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
 	}
 
 	qb := db.Scene

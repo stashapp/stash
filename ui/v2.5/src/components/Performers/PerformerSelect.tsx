@@ -87,7 +87,7 @@ const _PerformerSelect: React.FC<
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.performer ?? true;
+    !configuration?.interface.disableDropdownCreate.performer;
 
   async function loadPerformers(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Performers);
