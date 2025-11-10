@@ -141,7 +141,17 @@
         "reset_resume_time": "Réinitialiser le temps de reprise",
         "set_cover": "Définir comme vignette",
         "remove_from_containing_group": "Supprimer du groupe",
-        "add_sub_groups": "Ajouter des groupes affiliés"
+        "add_sub_groups": "Ajouter des groupes affiliés",
+        "sidebar": {
+            "close": "Fermer la barre latérale",
+            "open": "Ouvrir la barre latérale",
+            "toggle": "Barre latérale"
+        },
+        "show_count_results": "Afficher {count} résultats",
+        "show_results": "Afficher les résultats",
+        "play": "Lecture",
+        "load": "Charger",
+        "load_filter": "Charger un filtre"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -447,7 +457,9 @@
             "endpoint": "Point de terminaison",
             "graphql_endpoint": "Point de terminaison GraphQL",
             "name": "Nom",
-            "title": "Points de terminaison Stash-Box"
+            "title": "Points de terminaison Stash-Box",
+            "max_requests_per_minute": "Requêtes maximales par minute",
+            "max_requests_per_minute_description": "Utiliser la valeur par défaut de {defaultValue} si définie à 0"
         },
         "system": {
             "transcoding": "Transcodage"
@@ -573,7 +585,9 @@
                 "whitespace_chars": "Caractères d'espacement",
                 "whitespace_chars_desc": "Ces caractères seront remplacés par un espace dans le titre"
             },
-            "scene_tools": "Outils de scène"
+            "scene_tools": "Outils de scène",
+            "heading": "Outils",
+            "graphql_playground": "Implémentation GraphQL"
         },
         "ui": {
             "abbreviate_counters": {
@@ -907,7 +921,6 @@
             "destination": "Destination",
             "source": "Source"
         },
-        "overwrite_filter_confirm": "Êtes-vous sûr de vouloir remplacer la requête sauvegardée existante {entityName} ?",
         "performers_found": "{count} performeurs trouvés",
         "reassign_entity_title": "{count, plural, one {Réaffecté {singularEntity}} other {Réaffectés {pluralEntity}}}",
         "reassign_files": {
@@ -960,7 +973,9 @@
         "set_image_url_title": "URL de l'image",
         "unsaved_changes": "Modifications non sauvegardées. Vous êtes sûr de vouloir quitter ?",
         "clear_o_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique des O ?",
-        "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?"
+        "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?",
+        "overwrite_filter_warning": "Le filtre enregistré \"{entityName}\" sera remplacé.",
+        "set_default_filter_confirm": "Êtes-vous sûr de vouloir définir ce filtre par défaut ?"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
@@ -970,7 +985,8 @@
         "list": "Liste",
         "tagger": "Étiqueteuse",
         "unknown": "Inconnu",
-        "wall": "Mur"
+        "wall": "Mur",
+        "label_current": "Mode d'affichage : {current}"
     },
     "donate": "Faire un don",
     "dupe_check": {
@@ -1114,7 +1130,7 @@
         "audio_codec": "Codec audio",
         "checksum": "Somme de contrôle",
         "downloaded_from": "Téléchargé depuis",
-        "hash": "Hachage",
+        "hash": "Empreinte",
         "interactive_speed": "Vitesse interactive",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1222,7 +1238,9 @@
         "edit_filter": "Modifier le filtre",
         "name": "Filtre",
         "saved_filters": "Filtres sauvegardés",
-        "update_filter": "Filtre actualisé"
+        "update_filter": "Filtre actualisé",
+        "more_filter_criteria": "+{count} de plus",
+        "search_term": "Terme recherché"
     },
     "second": "Deuxième",
     "seconds": "Secondes",
@@ -1522,5 +1540,12 @@
     },
     "eta": "TAE",
     "sort_name": "Nom de tri",
-    "age_on_date": "{age} à la production"
+    "age_on_date": "{age} à la production",
+    "login": {
+        "password": "Mot de passe",
+        "invalid_credentials": "Nom d'utilisateur ou mot de passe incorrect",
+        "internal_error": "Erreur interne inattendue. Consulter le journal pour plus de détails",
+        "login": "Identification",
+        "username": "Nom d'utilisateur"
+    }
 }

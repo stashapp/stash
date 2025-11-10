@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GroupList } from "../GroupList";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -101,6 +101,18 @@ interface IGroupSubGroupsPanel {
   group: GQL.GroupDataFragment;
 }
 
+const defaultFilter = (() => {
+  const sortBy = "sub_group_order";
+  const ret = new ListFilterModel(GQL.FilterMode.Groups, undefined, {
+    defaultSortBy: sortBy,
+  });
+
+  // unset the sort by so that its not included in the URL
+  ret.sortBy = undefined;
+
+  return ret;
+})();
+
 export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
   active,
   group,
@@ -113,18 +125,6 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
   const mutateRemoveSubGroups = useRemoveSubGroups();
 
   const filterHook = useContainingGroupFilterHook(group);
-
-  const defaultFilter = useMemo(() => {
-    const sortBy = "sub_group_order";
-    const ret = new ListFilterModel(GQL.FilterMode.Groups, undefined, {
-      defaultSortBy: sortBy,
-    });
-
-    // unset the sort by so that its not included in the URL
-    ret.sortBy = undefined;
-
-    return ret;
-  }, []);
 
   async function removeSubGroups(
     result: GQL.FindGroupsQueryResult,

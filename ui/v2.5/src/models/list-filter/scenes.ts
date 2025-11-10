@@ -53,6 +53,8 @@ const sortByOptions = [
   "interactive",
   "interactive_speed",
   "perceptual_similarity",
+  "performer_age",
+  "studio",
   ...MediaSortByOptions,
 ]
   .map(ListFilterOptions.createSortBy)

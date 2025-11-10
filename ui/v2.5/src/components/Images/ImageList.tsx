@@ -72,8 +72,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
         image.paths.preview != ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files?.[0]?.width ?? 0,
+      height: image.visual_files?.[0]?.height ?? 0,
       tabIndex: index,
       key: image.id,
       loading: "lazy",
@@ -116,15 +116,13 @@ const ImageWall: React.FC<IImageWallProps> = ({
 
   const renderImage = useCallback(
     (props: RenderImageProps) => {
-      return (
-        <ImageWallItem
-          {...props}
-          maxHeight={
-            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
-            maxHeightFactor
-          }
-        />
-      );
+      // #6165 - only use targetRowHeight in row direction
+      const maxHeight =
+        props.direction === "column"
+          ? props.photo.height
+          : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor;
+      return <ImageWallItem {...props} maxHeight={maxHeight} />;
     },
     [targetRowHeight]
   );

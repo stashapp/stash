@@ -77,6 +77,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 const any = "any";
@@ -87,6 +88,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -199,6 +201,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
         singleValue
         preCandidates={ratingValue === null ? ratingStars : undefined}
         preSelected={ratingValue !== null ? ratingStars : undefined}
+        sectionID={sectionID}
       />
       <div></div>
     </>

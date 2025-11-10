@@ -155,7 +155,7 @@ var (
 			},
 			fkColumn:     "tag_id",
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 		images: joinRepository{
 			repository: repository{

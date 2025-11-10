@@ -133,7 +133,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 	}
 )
@@ -576,6 +576,16 @@ func (qb *StudioStore) QueryCount(ctx context.Context, studioFilter *models.Stud
 	return query.executeCount(ctx)
 }
 
+func (qb *StudioStore) sortByScenesDuration(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(video_files.duration), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN video_files ON video_files.file_id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
+}
+
 var studioSortOptions = sortOptions{
 	"child_count",
 	"created_at",
@@ -584,6 +594,7 @@ var studioSortOptions = sortOptions{
 	"images_count",
 	"name",
 	"scenes_count",
+	"scenes_duration",
 	"random",
 	"rating",
 	"tag_count",
@@ -612,6 +623,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, studiosTagsTable, studioIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
+	case "scenes_duration":
+		sortQuery += qb.sortByScenesDuration(direction)
 	case "images_count":
 		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":

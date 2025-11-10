@@ -54,6 +54,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const SidebarBooleanFilter: React.FC<ISidebarFilter> = ({
@@ -61,6 +62,7 @@ export const SidebarBooleanFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -127,6 +129,7 @@ export const SidebarBooleanFilter: React.FC<ISidebarFilter> = ({
         onUnselect={onUnselect}
         selected={selected}
         singleValue
+        sectionID={sectionID}
       />
     </>
   );

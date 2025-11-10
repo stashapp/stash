@@ -23,8 +23,6 @@ import {
   faPencil,
   faPlay,
   faPlus,
-  faSliders,
-  faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
@@ -39,8 +37,13 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { FilterTags } from "../List/FilterTags";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -57,18 +60,16 @@ import {
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
 import { PatchContainerComponent } from "src/patch";
-import { Pagination, PaginationIndex } from "../List/Pagination";
-import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
-import { FilterButton } from "../List/Filters/FilterButton";
+import { Pagination } from "../List/Pagination";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
-import { ListViewOptions } from "../List/ListViewOptions";
-import {
-  PageSizeSelector,
-  SearchTermInput,
-  SortBySelect,
-} from "../List/ListFilter";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/focus";
+import {
+  FilteredListToolbar2,
+  ToolbarFilterSection,
+  ToolbarSelectionSection,
+} from "../List/ListToolbar";
+import { ListResultsHeader } from "../List/ListResultsHeader";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -290,6 +291,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="studios"
           />
         )}
         <SidebarPerformersFilter
@@ -299,6 +301,7 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
+          sectionID="performers"
         />
         <SidebarTagsFilter
           title={<FormattedMessage id="tags" />}
@@ -307,6 +310,7 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
+          sectionID="tags"
         />
         <SidebarRatingFilter
           title={<FormattedMessage id="rating" />}
@@ -314,6 +318,7 @@ const SidebarContent: React.FC<{
           option={RatingCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          sectionID="rating"
         />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
@@ -321,6 +326,7 @@ const SidebarContent: React.FC<{
           option={OrganizedCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          sectionID="organized"
         />
       </ScenesFilterSidebarSections>
 
@@ -340,38 +346,18 @@ interface IOperations {
   className?: string;
 }
 
-const ListToolbarContent: React.FC<{
-  filter: ListFilterModel;
-  items: GQL.SlimSceneDataFragment[];
-  selectedIds: Set<string>;
+const SceneListOperations: React.FC<{
+  items: number;
+  hasSelection: boolean;
   operations: IOperations[];
-  onToggleSidebar: () => void;
-  onSetFilter: (filter: ListFilterModel) => void;
-  onEditCriterion: (c?: Criterion) => void;
-  onRemoveCriterion: (criterion: Criterion, valueIndex?: number) => void;
-  onRemoveAllCriterion: () => void;
-  onEditSearchTerm: () => void;
-  onRemoveSearchTerm: () => void;
-  onSelectAll: () => void;
-  onSelectNone: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onPlay: () => void;
   onCreateNew: () => void;
 }> = ({
-  filter,
   items,
-  selectedIds,
+  hasSelection,
   operations,
-  onToggleSidebar,
-  onSetFilter,
-  onEditCriterion,
-  onRemoveCriterion,
-  onRemoveAllCriterion,
-  onEditSearchTerm,
-  onRemoveSearchTerm,
-  onSelectAll,
-  onSelectNone,
   onEdit,
   onDelete,
   onPlay,
@@ -379,174 +365,69 @@ const ListToolbarContent: React.FC<{
 }) => {
   const intl = useIntl();
 
-  const { criteria, searchTerm } = filter;
-  const hasSelection = selectedIds.size > 0;
-
-  const sidebarToggle = (
-    <Button
-      className="minimal sidebar-toggle-button ignore-sidebar-outside-click"
-      variant="secondary"
-      onClick={() => onToggleSidebar()}
-      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
-    >
-      <Icon icon={faSliders} />
-    </Button>
-  );
-
   return (
-    <>
-      {!hasSelection && (
-        <>
-          <div className="search-container">
-            <SearchTermInput filter={filter} onFilterUpdate={onSetFilter} />
-          </div>
-          <div className="filter-section">
-            <FilterButton
-              onClick={() => onEditCriterion()}
-              count={criteria.length}
-            />
-            <FilterTags
-              searchTerm={searchTerm}
-              criteria={criteria}
-              onEditCriterion={onEditCriterion}
-              onRemoveCriterion={onRemoveCriterion}
-              onRemoveAll={onRemoveAllCriterion}
-              onEditSearchTerm={onEditSearchTerm}
-              onRemoveSearchTerm={onRemoveSearchTerm}
-              truncateOnOverflow
-            />
-            {sidebarToggle}
-          </div>
-        </>
-      )}
-      {hasSelection && (
-        <div className="selected-items-info">
+    <div className="scene-list-operations">
+      <ButtonGroup>
+        {!!items && (
           <Button
+            className="play-button"
             variant="secondary"
-            className="minimal"
-            onClick={() => onSelectNone()}
-            title={intl.formatMessage({ id: "actions.select_none" })}
+            onClick={() => onPlay()}
+            title={intl.formatMessage({ id: "actions.play" })}
           >
-            <Icon icon={faTimes} />
+            <Icon icon={faPlay} />
           </Button>
-          <span>{selectedIds.size} selected</span>
-          <Button variant="link" onClick={() => onSelectAll()}>
-            <FormattedMessage id="actions.select_all" />
+        )}
+        {!hasSelection && (
+          <Button
+            className="create-new-button"
+            variant="secondary"
+            onClick={() => onCreateNew()}
+            title={intl.formatMessage(
+              { id: "actions.create_entity" },
+              { entityType: intl.formatMessage({ id: "scene" }) }
+            )}
+          >
+            <Icon icon={faPlus} />
           </Button>
-          {sidebarToggle}
-        </div>
-      )}
-      <div>
-        <ButtonGroup>
-          {!!items.length && (
-            <Button
-              className="play-button"
-              variant="secondary"
-              onClick={() => onPlay()}
-              title={intl.formatMessage({ id: "actions.play" })}
-            >
-              <Icon icon={faPlay} />
+        )}
+
+        {hasSelection && (
+          <>
+            <Button variant="secondary" onClick={() => onEdit()}>
+              <Icon icon={faPencil} />
             </Button>
-          )}
-          {!hasSelection && (
             <Button
-              className="create-new-button"
-              variant="secondary"
-              onClick={() => onCreateNew()}
-              title={intl.formatMessage(
-                { id: "actions.create_entity" },
-                { entityType: intl.formatMessage({ id: "scene" }) }
-              )}
+              variant="danger"
+              className="btn-danger-minimal"
+              onClick={() => onDelete()}
             >
-              <Icon icon={faPlus} />
+              <Icon icon={faTrash} />
             </Button>
-          )}
+          </>
+        )}
 
-          {hasSelection && (
-            <>
-              <Button variant="secondary" onClick={() => onEdit()}>
-                <Icon icon={faPencil} />
-              </Button>
-              <Button
-                variant="danger"
-                className="btn-danger-minimal"
-                onClick={() => onDelete()}
-              >
-                <Icon icon={faTrash} />
-              </Button>
-            </>
-          )}
+        <OperationDropdown
+          className="scene-list-operations"
+          menuPortalTarget={document.body}
+        >
+          {operations.map((o) => {
+            if (o.isDisplayed && !o.isDisplayed()) {
+              return null;
+            }
 
-          <OperationDropdown className="scene-list-operations">
-            {operations.map((o) => {
-              if (o.isDisplayed && !o.isDisplayed()) {
-                return null;
-              }
-
-              return (
-                <OperationDropdownItem
-                  key={o.text}
-                  onClick={o.onClick}
-                  text={o.text}
-                  className={o.className}
-                />
-              );
-            })}
-          </OperationDropdown>
-        </ButtonGroup>
-      </div>
-    </>
-  );
-};
-
-const ListResultsHeader: React.FC<{
-  loading: boolean;
-  filter: ListFilterModel;
-  totalCount: number;
-  metadataByline?: React.ReactNode;
-  onChangeFilter: (filter: ListFilterModel) => void;
-}> = ({ loading, filter, totalCount, metadataByline, onChangeFilter }) => {
-  return (
-    <ButtonToolbar className="scene-list-header">
-      <div>
-        <PaginationIndex
-          loading={loading}
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          metadataByline={metadataByline}
-        />
-      </div>
-      <div>
-        <SortBySelect
-          options={filter.options.sortByOptions}
-          sortBy={filter.sortBy}
-          sortDirection={filter.sortDirection}
-          onChangeSortBy={(s) =>
-            onChangeFilter(filter.setSortBy(s ?? undefined))
-          }
-          onChangeSortDirection={() =>
-            onChangeFilter(filter.toggleSortDirection())
-          }
-          onReshuffleRandomSort={() =>
-            onChangeFilter(filter.reshuffleRandomSort())
-          }
-        />
-        <PageSizeSelector
-          pageSize={filter.itemsPerPage}
-          setPageSize={(s) => onChangeFilter(filter.setPageSize(s))}
-        />
-        <ListViewOptions
-          displayMode={filter.displayMode}
-          zoomIndex={filter.zoomIndex}
-          displayModeOptions={filter.options.displayModeOptions}
-          onSetDisplayMode={(mode) =>
-            onChangeFilter(filter.setDisplayMode(mode))
-          }
-          onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
-        />
-      </div>
-    </ButtonToolbar>
+            return (
+              <OperationDropdownItem
+                key={o.text}
+                onClick={o.onClick}
+                text={o.text}
+                className={o.className}
+              />
+            );
+          })}
+        </OperationDropdown>
+      </ButtonGroup>
+    </div>
   );
 };
 
@@ -572,6 +453,8 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     showSidebar,
     setShowSidebar,
     loading: sidebarStateLoading,
+    sectionOpen,
+    setSectionOpen,
   } = useSidebarState(view);
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
@@ -651,7 +534,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
   const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
 
-  const playRandom = usePlayRandom(filter, totalCount);
+  const playRandom = usePlayRandom(effectiveFilter, totalCount);
   const playSelected = usePlaySelected(selectedIds);
   const playFirst = usePlayFirst();
 
@@ -799,6 +682,18 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <SceneListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onPlay={onPlay}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <TaggerContext>
       <div
@@ -808,82 +703,90 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       >
         {modal}
 
-        <SidebarPane hideSidebar={!showSidebar}>
-          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent
-              filter={filter}
-              setFilter={setFilter}
-              filterHook={filterHook}
-              showEditFilter={showEditFilter}
-              view={view}
-              sidebarOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              count={cachedResult.loading ? undefined : totalCount}
-              focus={searchFocus}
-            />
-          </Sidebar>
-          <div>
-            <ButtonToolbar
-              className={cx("scene-list-toolbar", {
-                "has-selection": hasSelection,
-              })}
-            >
-              <ListToolbarContent
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
                 filter={filter}
-                onSetFilter={setFilter}
-                items={items}
-                selectedIds={selectedIds}
-                operations={otherOperations}
-                onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
-                onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => clearAllCriteria(true)}
-                onEditSearchTerm={() => {
-                  setShowSidebar(true);
-                  setSearchFocus(true);
-                }}
-                onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
-                onSelectAll={() => onSelectAll()}
-                onSelectNone={() => onSelectNone()}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onCreateNew={onCreateNew}
-                onPlay={onPlay}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
               />
-            </ButtonToolbar>
-
-            <ListResultsHeader
-              loading={cachedResult.loading}
-              filter={filter}
-              totalCount={totalCount}
-              metadataByline={metadataByline}
-              onChangeFilter={(newFilter) => setFilter(newFilter)}
-            />
-
-            <LoadedContent loading={result.loading} error={result.error}>
-              <SceneList
-                filter={effectiveFilter}
-                scenes={items}
-                selectedIds={selectedIds}
-                onSelectChange={onSelectChange}
-                fromGroupId={fromGroupId}
+            </Sidebar>
+            <SidebarPaneContent>
+              <FilteredListToolbar2
+                className="scene-list-toolbar"
+                hasSelection={hasSelection}
+                filterSection={
+                  <ToolbarFilterSection
+                    filter={filter}
+                    onSetFilter={setFilter}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onEditCriterion={(c) =>
+                      showEditFilter(c?.criterionOption.type)
+                    }
+                    onRemoveCriterion={removeCriterion}
+                    onRemoveAllCriterion={() => clearAllCriteria(true)}
+                    onEditSearchTerm={() => {
+                      setShowSidebar(true);
+                      setSearchFocus(true);
+                    }}
+                    onRemoveSearchTerm={() =>
+                      setFilter(filter.clearSearchTerm())
+                    }
+                    view={view}
+                  />
+                }
+                selectionSection={
+                  <ToolbarSelectionSection
+                    selected={selectedIds.size}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onSelectAll={() => onSelectAll()}
+                    onSelectNone={() => onSelectNone()}
+                    operations={operations}
+                  />
+                }
+                operationSection={operations}
               />
-            </LoadedContent>
 
-            {totalCount > filter.itemsPerPage && (
-              <div className="pagination-footer">
-                <Pagination
-                  itemsPerPage={filter.itemsPerPage}
-                  currentPage={filter.currentPage}
-                  totalItems={totalCount}
-                  metadataByline={metadataByline}
-                  onChangePage={setPage}
-                  pagePopupPlacement="top"
+              <ListResultsHeader
+                loading={cachedResult.loading}
+                filter={filter}
+                totalCount={totalCount}
+                metadataByline={metadataByline}
+                onChangeFilter={(newFilter) => setFilter(newFilter)}
+              />
+
+              <LoadedContent loading={result.loading} error={result.error}>
+                <SceneList
+                  filter={effectiveFilter}
+                  scenes={items}
+                  selectedIds={selectedIds}
+                  onSelectChange={onSelectChange}
+                  fromGroupId={fromGroupId}
                 />
-              </div>
-            )}
-          </div>
-        </SidebarPane>
+              </LoadedContent>
+
+              {totalCount > filter.itemsPerPage && (
+                <div className="pagination-footer">
+                  <Pagination
+                    itemsPerPage={filter.itemsPerPage}
+                    currentPage={filter.currentPage}
+                    totalItems={totalCount}
+                    metadataByline={metadataByline}
+                    onChangePage={setPage}
+                    pagePopupPlacement="top"
+                  />
+                </div>
+              )}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
       </div>
     </TaggerContext>
   );

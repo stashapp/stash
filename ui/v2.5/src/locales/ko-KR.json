@@ -51,7 +51,7 @@
         "hash_migration": "해쉬 값 마이그레이션",
         "hide": "숨기기",
         "hide_configuration": "설정 숨기기",
-        "identify": "인증",
+        "identify": "식별",
         "ignore": "무시",
         "import": "불러오기…",
         "import_from_file": "파일 불러오기",
@@ -141,7 +141,17 @@
         "reset_play_duration": "재생 시간 초기화",
         "reset_resume_time": "마지막 재생 위치 초기화",
         "add_sub_groups": "서브그룹 추가",
-        "remove_from_containing_group": "그룹에서 제거"
+        "remove_from_containing_group": "그룹에서 제거",
+        "sidebar": {
+            "close": "사이드바 닫기",
+            "open": "사이드바 열기",
+            "toggle": "사이드바 토글"
+        },
+        "play": "재생",
+        "show_results": "결과 표시",
+        "show_count_results": "{count}개 결과 표시",
+        "load": "불러오기",
+        "load_filter": "필터 불러오기"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -191,7 +201,10 @@
             "show_male_label": "남성 배우 보여주기",
             "source": "출처",
             "mark_organized_desc": "저장 버튼을 클릭하면 곧바로 영상을 '정리됨' 상태로 만듭니다.",
-            "mark_organized_label": "저장 시 '정리됨' 상태로 만들기"
+            "mark_organized_label": "저장 시 '정리됨' 상태로 만들기",
+            "errors": {
+                "blacklist_duplicate": "블랙리스트 항목이 중복되었습니다"
+            }
         },
         "noun_query": "쿼리",
         "results": {
@@ -306,7 +319,7 @@
                 "heading": "바이너리 데이터 저장 타입"
             },
             "cache_location": "캐시 폴더 경로입니다. HLS(애플 기기 등)이나 DASH로 스트리밍할 때 필요합니다.",
-            "cache_path_head": "캐쉬 경로",
+            "cache_path_head": "캐시 경로",
             "calculate_md5_and_ohash_desc": "oshash 외에 MD5 체크섬도 계산합니다. 활성화하면 초기 스캔을 더 느리게 만들 것입니다. MD5 계산을 사용하지 않으려면 파일 이름 해쉬를 oshash로 설정해야 합니다.",
             "calculate_md5_and_ohash_label": "비디오 MD5 계산하기",
             "check_for_insecure_certificates": "안전하지 않은 자격증명 검사",
@@ -443,7 +456,9 @@
             "endpoint": "엔드포인트",
             "graphql_endpoint": "GraphQL 엔드포인트",
             "name": "이름",
-            "title": "Stash-box 엔드포인트"
+            "title": "Stash-box 엔드포인트",
+            "max_requests_per_minute": "분당 최대 요청 수",
+            "max_requests_per_minute_description": "0으로 설정할 경우 기본값({defaultValue})을 사용합니다"
         },
         "system": {
             "transcoding": "트랜스코딩"
@@ -569,7 +584,9 @@
                 "whitespace_chars": "공백 문자",
                 "whitespace_chars_desc": "이 문자들은 제목에서 공백으로 대체됩니다"
             },
-            "scene_tools": "영상 도구"
+            "scene_tools": "영상 도구",
+            "heading": "도구",
+            "graphql_playground": "GraphQL 플레이그라운드"
         },
         "ui": {
             "abbreviate_counters": {
@@ -726,7 +743,7 @@
                         "description": "비디오가 끝나면 대기열에 있는 다음 영상을 재생합니다",
                         "heading": "플레이리스트 이어보기"
                     },
-                    "show_scrubber": "스크러버 보이기",
+                    "show_scrubber": "스크러버 표시",
                     "track_activity": "영상 재생 기록 활성화",
                     "vr_tag": {
                         "description": "VR 버튼은 이 태그를 가진 영상에서만 보여질 것입니다.",
@@ -734,7 +751,8 @@
                     },
                     "enable_chromecast": "크롬캐스트 활성화",
                     "disable_mobile_media_auto_rotate": "모바일 환경에서 전체화면 시 자동 방향 회전 비활성화",
-                    "show_ab_loop_controls": "구간반복 기능 활성화"
+                    "show_ab_loop_controls": "구간반복 기능 활성화",
+                    "show_range_markers": "범위 마커 표시"
                 }
             },
             "scene_wall": {
@@ -834,7 +852,7 @@
         "not_null": "값 존재함",
         "format_string_excludes": "{criterion} {modifierString} {valueString} ({excludedString} 제외)",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} ({excludedString} 제외) (+{depth, plural, =-1 {all} other {{depth}}})",
-        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})"
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}}수준)"
     },
     "custom": "커스텀",
     "date": "날짜",
@@ -897,7 +915,6 @@
             "destination": "다른 태그와 합쳐질 태그",
             "source": "다른 태그로 합쳐질 태그"
         },
-        "overwrite_filter_confirm": "정말 원래 저장되어 있었던 쿼리 {entityName}을 덮어쓰시겠습니까?",
         "reassign_entity_title": "{count, plural, one {{singularEntity} 재할당} other {{pluralEntity} 재할당}}",
         "scene_gen": {
             "clip_previews": "이미지 클립 미리보기",
@@ -910,7 +927,7 @@
             "marker_image_previews": "마커 움직이는 이미지 미리보기",
             "marker_image_previews_tooltip": "애니메이션(webp) 미리보기도 생성합니다. 영상/마커 월 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 생성되기 때문에 파일 크기가 커집니다.",
             "marker_screenshots": "마커 스크린샷",
-            "marker_screenshots_tooltip": "마커 JPG 이미지. 미리보기 유형이 이미지로 설정된 경우에만 필요합니다.",
+            "marker_screenshots_tooltip": "마커 고정 JPG 이미지",
             "markers": "마커 미리보기",
             "markers_tooltip": "주어진 시간 코드에서 시작하는 20초 짜리 비디오입니다.",
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
@@ -955,7 +972,9 @@
         },
         "reassign_files": {
             "destination": "~으로 재지정"
-        }
+        },
+        "overwrite_filter_warning": "저장된 필터 \"{entityName}\"은 덮어쓰기될 것입니다.",
+        "set_default_filter_confirm": "정말로 이 필터를 기본값으로 설정하시겠습니까?"
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -965,7 +984,8 @@
         "list": "목록",
         "tagger": "태거",
         "unknown": "알 수 없음",
-        "wall": "월 모드"
+        "wall": "월 모드",
+        "label_current": "디스플레이 모드: {current}"
     },
     "donate": "후원",
     "dupe_check": {
@@ -1023,7 +1043,13 @@
         "header": "오류",
         "loading_type": "{type}을(를) 로딩하는 중 오류가 발생했습니다",
         "invalid_javascript_string": "유효하지 않은 자바스크립트 코드입니다: {error}",
-        "invalid_json_string": "유효하지 않은 JSON 문자열입니다: {error}"
+        "invalid_json_string": "유효하지 않은 JSON 문자열입니다: {error}",
+        "custom_fields": {
+            "field_name_required": "항목 이름이 필요합니다",
+            "field_name_whitespace": "항목 이름의 전후에 공백이 없어야 합니다",
+            "duplicate_field": "항목 이름은 중복될 수 없습니다",
+            "field_name_length": "항목 이름의 글자 수는 65글자보다 작아야 합니다"
+        }
     },
     "ethnicity": "인종",
     "existing_value": "존재하는 값",
@@ -1092,7 +1118,8 @@
     "last_played_at": "마지막 재생 날짜",
     "library": "라이브러리",
     "loading": {
-        "generic": "로드 중…"
+        "generic": "로드 중…",
+        "plugins": "플러그인 로딩 중…"
     },
     "marker_count": "마커 개수",
     "markers": "마커",
@@ -1105,11 +1132,11 @@
         "interactive_speed": "인터랙티브 속도",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "작품에서 {age} {years_old}"
+            "age_context": "제작 당시 {age} {years_old}"
         },
         "phash": "PHash",
-        "play_count": "재생 횟수",
-        "play_duration": "재생 길이",
+        "play_count": "재생된 횟수",
+        "play_duration": "재생된 길이",
         "stream": "스트림",
         "video_codec": "비디오 코덱",
         "o_count": "싼 횟수"
@@ -1163,21 +1190,21 @@
         "network_error": "네트워크 오류",
         "no_results_found": "결과가 없습니다.",
         "number_of_performers_will_be_processed": "{performer_count}명의 배우들이 처리됩니다",
-        "performer_already_tagged": "이 배우에 이미 존재하는 태그입니다",
+        "performer_already_tagged": "배우가 이미 태그되어 있음",
         "performer_names_separated_by_comma": "배우 이름 (,으로 구분)",
         "performer_selection": "배우 선택",
         "performer_successfully_tagged": "배우 태깅에 성공했습니다:",
         "query_all_performers_in_the_database": "데이터베이스의 모든 배우",
         "refresh_tagged_performers": "태그된 배우 새로고침",
-        "refreshing_will_update_the_data": "새로고침하면 Stash-box 인스턴스에 있는 태그된 배우들의 데이터가 업데이트될 것입니다.",
+        "refreshing_will_update_the_data": "'새로고침'을 통해, Stash-box 인스턴스로부터 태그된 배우들의 데이터를 업데이트합니다.",
         "status_tagging_job_queued": "상태: 태그 작업 대기열 추가됨",
         "status_tagging_performers": "상태: 배우 태그 중",
         "tag_status": "태그 상태",
         "to_use_the_performer_tagger": "배우 태거를 사용하기 위해서는 stash-box 인스턴스가 설정되어야 합니다.",
         "untagged_performers": "태그되지 않은 배우",
-        "update_performer": "배우 수정",
-        "update_performers": "배우 수정",
-        "updating_untagged_performers_description": "태그가 지정되지 않은 배우를 업데이트하면, Stash ID가 없는 배우와 비교해본 뒤 메타데이터를 업데이트할 것입니다."
+        "update_performer": "배우 업데이트",
+        "update_performers": "배우 업데이트",
+        "updating_untagged_performers_description": "'태그되지 않은 배우 업데이트'를 통해, Stash ID가 없는 배우들에 대한 데이터를 찾아보고, 가능하다면 이를 이용해 배우를 업데이트합니다."
     },
     "performer_tags": "배우 태그",
     "performers": "배우",
@@ -1208,14 +1235,16 @@
         "edit_filter": "필터 수정",
         "name": "필터",
         "saved_filters": "저장된 필터",
-        "update_filter": "필터 업데이트"
+        "update_filter": "필터 업데이트",
+        "more_filter_criteria": "외 {count} 개",
+        "search_term": "검색어"
     },
     "second": "초",
     "seconds": "초",
     "settings": "설정",
     "setup": {
         "confirm": {
-            "almost_ready": "거의 설정을 완료했습니다. 아래 설정들을 확인해주세요. 틀린 내용이 있다면 이전으로 돌아가 변경할 수 있습니다. 내용이 모두 맞다면, '확인'을 눌러 시스템을 만드세요.",
+            "almost_ready": "거의 설정을 완료했습니다. 아래 설정들을 확인해주세요. 틀린 내용이 있다면 이전으로 돌아가 변경할 수 있습니다. 내용이 모두 맞다면, '확인'을 눌러 시스템을 생성하세요.",
             "blobs_directory": "바이너리 데이터 경로",
             "cache_directory": "캐시 파일 경로",
             "configuration_file_location": "설정 파일 위치:",
@@ -1495,5 +1524,28 @@
     "include_sub_studio_content": "서브스튜디오 컨텐츠 포함",
     "include_sub_tag_content": "서브태그 컨텐츠 포함",
     "time_end": "종료 시간",
-    "include_sub_groups": "서브그룹 포함"
+    "include_sub_groups": "서브그룹 포함",
+    "custom_fields": {
+        "value": "값",
+        "field": "항목",
+        "title": "커스텀 항목",
+        "criteria_format_string": "{criterion} (커스텀 항목) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (커스텀 항목) {modifierString} {valueString} (+{others} 기타)"
+    },
+    "login": {
+        "password": "비밀번호",
+        "invalid_credentials": "유효하지 않은 사용자 이름 또는 비밀번호입니다",
+        "login": "로그인",
+        "internal_error": "예상치 못한 내부 에러입니다. 로그에서 세부 사항을 확인하세요",
+        "username": "사용자 이름"
+    },
+    "age_on_date": "제작 당시 {age}살",
+    "sort_name": "이름 (sort name)",
+    "criterion_modifier_values": {
+        "none": "값 없음",
+        "only": "해당 값만 존재",
+        "any": "값 존재",
+        "any_of": "해당 값 중 일부 포함"
+    },
+    "eta": "예상 소요 시간"
 }

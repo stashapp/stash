@@ -3,7 +3,7 @@ import {
   faChevronRight,
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Collapse, CollapseProps } from "react-bootstrap";
 import { Icon } from "./Icon";
 
@@ -12,21 +12,26 @@ interface IProps {
   text: React.ReactNode;
   collapseProps?: Partial<CollapseProps>;
   outsideCollapse?: React.ReactNode;
-  onOpen?: () => void;
+  onOpenChanged?: (o: boolean) => void;
+  open?: boolean;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
   props: React.PropsWithChildren<IProps>
 ) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(props.open ?? false);
 
   function toggleOpen() {
     const nv = !open;
     setOpen(nv);
-    if (props.onOpen && nv) {
-      props.onOpen();
-    }
+    props.onOpenChanged?.(nv);
   }
+
+  useEffect(() => {
+    if (props.open !== undefined) {
+      setOpen(props.open);
+    }
+  }, [props.open]);
 
   return (
     <div className={props.className}>

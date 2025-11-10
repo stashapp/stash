@@ -1078,7 +1078,6 @@
             "destination": "ปลายทาง",
             "source": "ต้นทาง"
         },
-        "overwrite_filter_confirm": "คุณแน่ใจว่าต้องการเขียนทับเงื่อนไขการค้นหา{entityName}ใช่หรือไม่?",
         "reassign_files": {
             "destination": "ย้ายไปที่"
         },

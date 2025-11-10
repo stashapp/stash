@@ -201,7 +201,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 		performers: joinRepository{
 			repository: repository{
@@ -1119,9 +1119,11 @@ var sceneSortOptions = sortOptions{
 	"perceptual_similarity",
 	"random",
 	"rating",
+	"studio",
 	"tag_count",
 	"title",
 	"updated_at",
+	"performer_age",
 }
 
 func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) error {
@@ -1231,6 +1233,32 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesODatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
 	case "o_counter":
 		query.sortAndPagination += getCountSort(sceneTable, scenesODatesTable, sceneIDColumn, direction)
+	case "performer_age":
+		// Looking at the youngest performer by default
+		aggregation := "MIN"
+		if direction == "DESC" {
+			// When sorting by performer_'s age DESC, I should consider the oldest performer instead
+			aggregation = "MAX"
+		}
+		fallback := "NULL"
+		if direction == "ASC" {
+			// When sorting ascending, NULLs are first by default. Coalescing to the MAX int value supported by sqlite
+			fallback = "9223372036854775807"
+		}
+		query.sortAndPagination += fmt.Sprintf(
+			" ORDER BY (SELECT COALESCE(%s(JulianDay(scenes.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+			aggregation,
+			fallback,
+			performerTable,
+			performersScenesTable,
+			performerIDColumn,
+			sceneIDColumn,
+			sceneTable,
+			getSortDirection(direction),
+		)
+	case "studio":
+		query.join(studioTable, "", "scenes.studio_id = studios.id")
+		query.sortAndPagination += getSort("name", direction, studioTable)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
