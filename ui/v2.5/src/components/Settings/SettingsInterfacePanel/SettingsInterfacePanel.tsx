@@ -481,13 +481,12 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           />
         </SettingSection>
 
-        <SettingSection headingID="config.ui.performer_panel.heading">
+        <SettingSection headingID="config.ui.performer_list.heading">
           <BooleanSetting
-            id="show-links-on-thumbnail"
-            headingID="config.ui.performer_panel.options.show_links_on_thumbnail.heading"
-            subHeadingID="config.ui.performer_panel.options.show_links_on_thumbnail.description"
-            checked={ui.showLinksOnThumbnail ?? undefined}
-            onChange={(v) => saveUI({ showLinksOnThumbnail: v })}
+            id="show-links-on-grid-card"
+            headingID="config.ui.performer_list.options.show_links_on_grid_card.heading"
+            checked={ui.showLinksOnPerformerCard ?? undefined}
+            onChange={(v) => saveUI({ showLinksOnPerformerCard: v })}
           />
         </SettingSection>
 

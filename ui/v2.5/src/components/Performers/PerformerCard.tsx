@@ -221,7 +221,7 @@ const PerformerCardOverlays: React.FC<IPerformerCardProps> = PatchComponent(
     }
 
     function maybeRenderLinks() {
-      if (!uiConfig?.showLinksOnThumbnail) {
+      if (!uiConfig?.showLinksOnPerformerCard) {
         return;
       }
 

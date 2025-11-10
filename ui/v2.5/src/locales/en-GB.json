@@ -801,12 +801,11 @@
           }
         }
       },
-      "performer_panel": {
-        "heading": "Performer view",
+      "performer_list": {
+        "heading": "Performer list",
         "options": {
-          "show_links_on_thumbnail": {
-            "description": "In the performer view, display links on the thumbnail",
-            "heading": "Display links on thumbnail"
+          "show_links_on_grid_card": {
+            "heading": "Display links on performer grid cards"
           }
         }
       },
