@@ -812,6 +812,14 @@
             "use_stash_hosted_funscript": {
                 "description": "Activée, les scripts interactifs sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy, et qu'une clé API soit générée si Stash a des informations d'identification configurées.",
                 "heading": "Transmettre directement les funscripts"
+            },
+            "performer_list": {
+                "heading": "Liste de performeurs",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Afficher les liens sur les fiches des performeurs"
+                    }
+                }
             }
         },
         "advanced_mode": "Mode avancé"
@@ -1547,5 +1555,6 @@
         "internal_error": "Erreur interne inattendue. Consulter le journal pour plus de détails",
         "login": "Identification",
         "username": "Nom d'utilisateur"
-    }
+    },
+    "scenes_duration": "Durée de la scène"
 }
