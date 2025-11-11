@@ -811,6 +811,14 @@
             "use_stash_hosted_funscript": {
                 "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求可以从您的Handy设备访问Stash，并且如果stash配置了凭据，则会生成API密钥。",
                 "heading": "直接提供funscripts服务"
+            },
+            "performer_list": {
+                "heading": "演员列表",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "在演员网格卡片上显示链接"
+                    }
+                }
             }
         },
         "advanced_mode": "高级模式"
@@ -1547,5 +1555,6 @@
         "invalid_credentials": "无效的用户名或密码",
         "internal_error": "意外的内部错误。有关更多详细信息，请查看日志",
         "login": "登录"
-    }
+    },
+    "scenes_duration": "场景持续时间"
 }
