@@ -267,6 +267,7 @@ export const SortBySelect: React.FC<{
           key={option.value}
           className="bg-secondary text-white"
           eventKey={option.value}
+          data-value={option.value}
         >
           {option.message}
         </Dropdown.Item>
@@ -274,7 +275,7 @@ export const SortBySelect: React.FC<{
   }
 
   return (
-    <Dropdown as={ButtonGroup} className={className}>
+    <Dropdown as={ButtonGroup} className={`${className ?? ""} sort-by-select`}>
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy

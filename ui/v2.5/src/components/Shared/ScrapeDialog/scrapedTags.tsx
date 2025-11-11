@@ -37,6 +37,7 @@ export function useScrapedTags(
 
   const scrapedTagsRow = (
     <ScrapedTagsRow
+      field="tags"
       title={intl.formatMessage({ id: "tags" })}
       result={tags}
       onChange={(value) => setTags(value)}

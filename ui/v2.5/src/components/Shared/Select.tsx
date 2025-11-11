@@ -496,6 +496,7 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
 
 type DisableOption = Option & {
   isDisabled?: boolean;
+  className?: string;
 };
 
 interface ICheckBoxSelectProps {
@@ -510,7 +511,17 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
   onChange,
 }) => {
   const Option = (props: OptionProps<DisableOption, true>) => (
-    <reactSelectComponents.Option {...props}>
+    <reactSelectComponents.Option
+      {...props}
+      className={`${props.className || ""} ${props.data.className || ""}`}
+      // data values don't seem to be included in props.innerProps by default
+      innerProps={
+        { "data-value": props.data.value } as React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLDivElement>,
+          HTMLDivElement
+        >
+      }
+    >
       <input
         type="checkbox"
         disabled={props.isDisabled}
