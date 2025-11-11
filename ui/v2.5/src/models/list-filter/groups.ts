@@ -53,7 +53,9 @@ const criterionOptions = [
   RatingCriterionOption,
   PerformersCriterionOption,
   createDateCriterionOption("date"),
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ContainingGroupsCriterionOption,
   SubGroupsCriterionOption,
   createMandatoryNumberCriterionOption("containing_group_count"),

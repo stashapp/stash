@@ -64,6 +64,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   onTogglePin,
   externallySelected = false,
 }) => {
+  const { configuration } = useConfigurationContext();
+  const { sfwMode } = configuration.interface;
+
   const prevCriterion = usePrevious(currentCriterion);
 
   const scrolled = useRef(false);
@@ -147,7 +150,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               className="collapse-icon fa-fw"
               icon={type === c.type ? faChevronDown : faChevronRight}
             />
-            <FormattedMessage id={c.messageID} />
+            <FormattedMessage
+              id={!sfwMode ? c.messageID : c.sfwMessageID ?? c.messageID}
+            />
           </span>
           {criteria.some((cc) => c.type === cc) && (
             <Button
@@ -265,10 +270,16 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       .filter((c) => !c.hidden)
       .sort((a, b) => {
         return intl
-          .formatMessage({ id: a.messageID })
-          .localeCompare(intl.formatMessage({ id: b.messageID }));
+          .formatMessage({
+            id: !sfwMode ? a.messageID : a.sfwMessageID ?? a.messageID,
+          })
+          .localeCompare(
+            intl.formatMessage({
+              id: !sfwMode ? b.messageID : b.sfwMessageID ?? b.messageID,
+            })
+          );
       });
-  }, [intl, filterOptions.criterionOptions]);
+  }, [intl, sfwMode, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -302,11 +313,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
     return criterionOptions.filter((c) => {
       return intl
-        .formatMessage({ id: c.messageID })
+        .formatMessage({
+          id: !sfwMode ? c.messageID : c.sfwMessageID ?? c.messageID,
+        })
         .toLowerCase()
         .includes(trimmedSearch);
     });
-  }, [intl, searchValue, criterionOptions]);
+  }, [intl, sfwMode, searchValue, criterionOptions]);
 
   const pinnedFilters = useMemo(
     () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],

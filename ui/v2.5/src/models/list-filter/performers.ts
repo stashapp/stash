@@ -102,7 +102,9 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("play_count"),
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   createBooleanCriterionOption("ignore_auto_tag"),
   CountryCriterionOption,
   createNumberCriterionOption("height_cm", "height"),

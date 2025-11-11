@@ -43,7 +43,9 @@ const criterionOptions = [
   PathCriterionOption,
   GalleriesCriterionOption,
   OrganizedCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   ImageIsMissingCriterionOption,

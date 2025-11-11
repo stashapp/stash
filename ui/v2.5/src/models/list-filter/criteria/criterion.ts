@@ -78,7 +78,7 @@ export abstract class Criterion {
 
   protected cloneValues() {}
 
-  public abstract getLabel(intl: IntlShape): string;
+  public abstract getLabel(intl: IntlShape, sfwMode?: boolean): string;
 
   public getId(): string {
     return `${this.criterionOption.type}`;
@@ -148,7 +148,7 @@ export abstract class ModifierCriterion<
       : "";
   }
 
-  public getLabel(intl: IntlShape): string {
+  public getLabel(intl: IntlShape, sfwMode: boolean = false): string {
     const modifierString = ModifierCriterion.getModifierLabel(
       intl,
       this.modifier
@@ -162,10 +162,14 @@ export abstract class ModifierCriterion<
       valueString = this.getLabelValue(intl);
     }
 
+    const messageID = !sfwMode
+      ? this.criterionOption.messageID
+      : this.criterionOption.sfwMessageID ?? this.criterionOption.messageID;
+
     return intl.formatMessage(
       { id: "criterion_modifier.format_string" },
       {
-        criterion: intl.formatMessage({ id: this.criterionOption.messageID }),
+        criterion: intl.formatMessage({ id: messageID }),
         modifierString,
         valueString,
       }
@@ -257,12 +261,14 @@ interface ICriterionOptionParams {
   type: CriterionType;
   makeCriterion: MakeCriterionFn;
   hidden?: boolean;
+  sfwMessageID?: string;
 }
 
 export class CriterionOption {
   public readonly type: CriterionType;
   public readonly messageID: string;
   public readonly makeCriterionFn: MakeCriterionFn;
+  public readonly sfwMessageID?: string;
 
   // used for legacy criteria that are not shown in the UI
   public readonly hidden: boolean = false;
@@ -272,6 +278,7 @@ export class CriterionOption {
     this.messageID = options.messageID;
     this.makeCriterionFn = options.makeCriterion;
     this.hidden = options.hidden ?? false;
+    this.sfwMessageID = options.sfwMessageID;
   }
 
   public makeCriterion(config?: ConfigDataFragment) {
@@ -478,7 +485,7 @@ export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarch
     );
   }
 
-  public getLabel(intl: IntlShape): string {
+  public getLabel(intl: IntlShape, sfwMode?: boolean): string {
     let id = "criterion_modifier.format_string";
     let modifierString = ModifierCriterion.getModifierLabel(
       intl,
@@ -511,10 +518,14 @@ export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarch
       }
     }
 
+    const messageID = !sfwMode
+      ? this.criterionOption.messageID
+      : this.criterionOption.sfwMessageID ?? this.criterionOption.messageID;
+
     return intl.formatMessage(
       { id },
       {
-        criterion: intl.formatMessage({ id: this.criterionOption.messageID }),
+        criterion: intl.formatMessage({ id: messageID }),
         modifierString,
         valueString,
         excludedString,
@@ -760,7 +771,8 @@ export class MandatoryNumberCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     value: CriterionType,
-    makeCriterion?: () => ModifierCriterion<CriterionValue>
+    makeCriterion?: () => ModifierCriterion<CriterionValue>,
+    options?: { sfwMessageID?: string }
   ) {
     super({
       messageID,
@@ -778,15 +790,22 @@ export class MandatoryNumberCriterionOption extends ModifierCriterionOption {
       makeCriterion: makeCriterion
         ? makeCriterion
         : () => new NumberCriterion(this),
+      ...options,
     });
   }
 }
 
 export function createMandatoryNumberCriterionOption(
   value: CriterionType,
-  messageID?: string
+  messageID?: string,
+  options?: { sfwMessageID?: string }
 ) {
-  return new MandatoryNumberCriterionOption(messageID ?? value, value);
+  return new MandatoryNumberCriterionOption(
+    messageID ?? value,
+    value,
+    undefined,
+    options
+  );
 }
 
 export function encodeRangeValue<V>(

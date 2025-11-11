@@ -91,7 +91,9 @@ const criterionOptions = [
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
   RatingCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   createMandatoryNumberCriterionOption("framerate"),
