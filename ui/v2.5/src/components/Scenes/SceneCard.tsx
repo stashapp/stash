@@ -6,7 +6,6 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { GalleryLink, TagLink, SceneMarkerLink } from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
-import { SweatDrops } from "../Shared/SweatDrops";
 import { TruncatedText } from "../Shared/TruncatedText";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
@@ -30,6 +29,7 @@ import { PatchComponent } from "src/patch";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
 import { FileSize } from "../Shared/FileSize";
+import { OCounterButton } from "../Shared/CountButton";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -218,16 +218,7 @@ const SceneCardPopovers = PatchComponent(
 
     function maybeRenderOCounter() {
       if (props.scene.o_counter) {
-        return (
-          <div className="o-count">
-            <Button className="minimal">
-              <span className="fa-icon">
-                <SweatDrops />
-              </span>
-              <span>{props.scene.o_counter}</span>
-            </Button>
-          </div>
-        );
+        return <OCounterButton value={props.scene.o_counter} />;
       }
     }
 

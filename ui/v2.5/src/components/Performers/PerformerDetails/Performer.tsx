@@ -42,13 +42,13 @@ import {
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
-import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 import { PatchComponent } from "src/patch";
 import { ILightboxImage } from "src/hooks/Lightbox/types";
 import { goBackOrReplace } from "src/utils/history";
+import { OCounterButton } from "src/components/Shared/CountButton";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -432,12 +432,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
                     withoutContext
                   />
                   {!!performer.o_counter && (
-                    <span className="o-counter">
-                      <span className="fa-icon">
-                        <SweatDrops />
-                      </span>
-                      <span>{performer.o_counter}</span>
-                    </span>
+                    <OCounterButton value={performer.o_counter} />
                   )}
                 </div>
                 {!isEditing && (

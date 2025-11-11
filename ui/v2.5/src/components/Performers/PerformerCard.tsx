@@ -6,7 +6,6 @@ import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
-import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
@@ -26,6 +25,7 @@ import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { PatchComponent } from "src/patch";
 import { ExternalLinksButton } from "../Shared/ExternalLinksButton";
 import { useConfigurationContext } from "src/hooks/Config";
+import { OCounterButton } from "../Shared/CountButton";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: ModifierCriterion<CriterionValue>[];
@@ -103,16 +103,7 @@ const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
     function maybeRenderOCounter() {
       if (!performer.o_counter) return;
 
-      return (
-        <div className="o-counter">
-          <Button className="minimal">
-            <span className="fa-icon">
-              <SweatDrops />
-            </span>
-            <span>{performer.o_counter}</span>
-          </Button>
-        </div>
-      );
+      return <OCounterButton value={performer.o_counter} />;
     }
 
     function maybeRenderTagPopoverButton() {
