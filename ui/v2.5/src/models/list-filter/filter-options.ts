@@ -4,6 +4,7 @@ import { DisplayMode } from "./types";
 export interface ISortByOption {
   messageID: string;
   value: string;
+  sfwMessageID?: string;
 }
 
 export const MediaSortByOptions = [

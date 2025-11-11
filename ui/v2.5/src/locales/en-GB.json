@@ -901,6 +901,7 @@
   "developmentVersion": "Development Version",
   "dialogs": {
     "clear_o_history_confirm": "Are you sure you want to clear the O history?",
+    "clear_o_history_confirm_sfw": "Are you sure you want to clear the like history?",
     "clear_play_history_confirm": "Are you sure you want to clear the play history?",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
@@ -1162,6 +1163,7 @@
   "interactive_speed": "Interactive Speed",
   "isMissing": "Is Missing",
   "last_o_at": "Last O At",
+  "last_o_at_sfw": "Last Like At",
   "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
@@ -1204,7 +1206,9 @@
   "o_count": "O Count",
   "o_count_sfw": "Likes",
   "o_history": "O History",
+  "o_history_sfw": "Like History",
   "odate_recorded_no": "No O Date Recorded",
+  "odate_recorded_no_sfw": "No Like Date Recorded",
   "operations": "Operations",
   "organized": "Organised",
   "orientation": "Orientation",

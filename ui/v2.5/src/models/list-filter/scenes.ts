@@ -46,7 +46,6 @@ const sortByOptions = [
   "framerate",
   "bitrate",
   "last_played_at",
-  "last_o_at",
   "resume_time",
   "play_duration",
   "play_count",
@@ -62,6 +61,12 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
+      sfwMessageID: "o_count_sfw",
+    },
+    {
+      messageID: "last_o_at",
+      value: "last_o_at",
+      sfwMessageID: "last_o_at_sfw",
     },
     {
       messageID: "group_scene_number",

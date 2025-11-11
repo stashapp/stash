@@ -31,6 +31,7 @@ const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
     {
       messageID: "o_count",
       value: "o_counter",
+      sfwMessageID: "o_count_sfw",
     },
   ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];

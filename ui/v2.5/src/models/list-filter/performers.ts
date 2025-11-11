@@ -54,6 +54,7 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
+      sfwMessageID: "o_count_sfw",
     },
   ]);
 

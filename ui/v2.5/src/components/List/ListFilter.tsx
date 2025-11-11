@@ -37,6 +37,7 @@ import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { useStopWheelScroll } from "src/utils/form";
 import { ISortByOption } from "src/models/list-filter/filter-options";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
@@ -249,14 +250,24 @@ export const SortBySelect: React.FC<{
   onReshuffleRandomSort,
 }) => {
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+  const { sfwMode } = configuration.interface;
 
   const currentSortBy = options.find((o) => o.value === sortBy);
+  const currentSortByMessageID = currentSortBy
+    ? !sfwMode
+      ? currentSortBy.messageID
+      : currentSortBy.sfwMessageID ?? currentSortBy.messageID
+    : "";
 
   function renderSortByOptions() {
     return options
       .map((o) => {
+        const messageID = !sfwMode
+          ? o.messageID
+          : o.sfwMessageID ?? o.messageID;
         return {
-          message: intl.formatMessage({ id: o.messageID }),
+          message: intl.formatMessage({ id: messageID }),
           value: o.value,
         };
       })
@@ -279,7 +290,7 @@ export const SortBySelect: React.FC<{
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy
-            ? intl.formatMessage({ id: currentSortBy.messageID })
+            ? intl.formatMessage({ id: currentSortByMessageID })
             : ""}
         </Dropdown.Toggle>
       </InputGroup.Prepend>
