@@ -552,9 +552,14 @@ export class StringCriterionOption extends ModifierCriterionOption {
 
 export function createStringCriterionOption(
   type: CriterionType,
-  messageID?: string
+  messageID?: string,
+  options?: { nsfw?: boolean }
 ) {
-  return new StringCriterionOption({ messageID: messageID ?? type, type });
+  return new StringCriterionOption({
+    messageID: messageID ?? type,
+    type,
+    ...options,
+  });
 }
 
 export class MandatoryStringCriterionOption extends ModifierCriterionOption {

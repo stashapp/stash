@@ -233,6 +233,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const intl = useIntl();
 
   const { configuration } = useConfigurationContext();
+  const { sfwMode } = configuration.interface;
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
@@ -516,7 +517,8 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       <Modal
         show={!showSaveDialog && !showLoadDialog}
         onHide={() => onCancel()}
-        className="edit-filter-dialog"
+        // need sfw mode class because dialog is outside body
+        className={cx("edit-filter-dialog", { "sfw-mode": sfwMode })}
       >
         <Modal.Header>
           <div>

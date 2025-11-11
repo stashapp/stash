@@ -44,7 +44,6 @@
   }
 
   #performer-edit,
-  &.edit-performers-dialog,
   &.scrape-dialog {
     [data-field="death_date"],
     [data-field="ethnicity"],
@@ -58,6 +57,24 @@
     [data-field="fake_tits"],
     [data-field="tattoos"],
     [data-field="piercings"] {
+      display: none;
+    }
+  }
+
+  &.edit-filter-dialog {
+    [data-type="death_date"],
+    [data-type="death_year"],
+    [data-type="ethnicity"],
+    [data-type="hair_color"],
+    [data-type="eye_color"],
+    [data-type="height_cm"],
+    [data-type="measurements"],
+    [data-type="weight"],
+    [data-type="penis_length"],
+    [data-type="circumcised"],
+    [data-type="fake_tits"],
+    [data-type="tattoos"],
+    [data-type="piercings"] {
       display: none;
     }
   }
