@@ -2,6 +2,8 @@ input SetupInput {
   "Empty to indicate $HOME/.stash/config.yml default"
   configLocation: String!
   stashes: [StashConfigInput!]!
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean
   "Empty to indicate default"
   databaseFile: String!
   "Empty to indicate default"
