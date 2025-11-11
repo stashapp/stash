@@ -31,7 +31,7 @@ import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
-import { ConfigurationProvider } from "./hooks/Config";
+import { ConfigurationProvider, useConfigurationContext } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
@@ -50,6 +50,7 @@ import { PatchFunction } from "./patch";
 
 import moment from "moment/min/moment-with-locales";
 import { ErrorMessage } from "./components/Shared/ErrorMessage";
+import cx from "classnames";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -104,8 +105,16 @@ const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
 ) as React.FC;
 
 const MainContainer: React.FC = ({ children }) => {
+  const { configuration } = useConfigurationContext();
+  const { sfwMode } = configuration.interface;
+
   return (
-    <div className={`main container-fluid ${appleRendering ? "apple" : ""}`}>
+    <div
+      className={cx("main container-fluid", {
+        apple: appleRendering,
+        "sfw-mode": sfwMode,
+      })}
+    >
       {children}
     </div>
   );
