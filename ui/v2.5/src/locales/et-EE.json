@@ -806,6 +806,14 @@
                     "heading": "Kompaktselt laiendatud detailid"
                 },
                 "heading": "Detailide Leht"
+            },
+            "performer_list": {
+                "heading": "Näitlejate nimekiri",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Kuva linke näitlejate ruudustiku kaartidel"
+                    }
+                }
             }
         },
         "advanced_mode": "Täpsem Režiim"
@@ -1547,5 +1555,6 @@
         "login": "Logi Sisse"
     },
     "age_on_date": "{age} filmimisel",
-    "sort_name": "Sorteeritud Nimi"
+    "sort_name": "Sorteeritud Nimi",
+    "scenes_duration": "Stseeni Pikkus"
 }
