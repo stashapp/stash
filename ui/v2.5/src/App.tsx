@@ -106,13 +106,13 @@ const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
 
 const MainContainer: React.FC = ({ children }) => {
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   return (
     <div
       className={cx("main container-fluid", {
         apple: appleRendering,
-        "sfw-mode": sfwMode,
+        "sfw-content-mode": sfwContentMode,
       })}
     >
       {children}

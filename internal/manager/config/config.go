@@ -43,8 +43,8 @@ const (
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
 
-	// SFW mode config key
-	SFW = "sfw"
+	// SFWContentMode mode config key
+	SFWContentMode = "sfw_content_mode"
 
 	FFMpegPath  = "ffmpeg_path"
 	FFProbePath = "ffprobe_path"
@@ -633,10 +633,10 @@ func (i *Config) getStringMapString(key string) map[string]string {
 
 // GetSFW returns true if SFW mode is enabled.
 // Default performer images are changed to more agnostic images when enabled.
-func (i *Config) GetSFW() bool {
+func (i *Config) GetSFWContentMode() bool {
 	i.RLock()
 	defer i.RUnlock()
-	return i.getBool(SFW)
+	return i.getBool(SFWContentMode)
 }
 
 // GetStashPaths returns the configured stash library paths.

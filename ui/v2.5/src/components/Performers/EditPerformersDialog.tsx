@@ -65,7 +65,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
 
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   const [tagIds, setTagIds] = useState<GQL.BulkUpdateIds>({
     mode: GQL.BulkUpdateIdMode.Add,
@@ -228,7 +228,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
     return (
       <ModalComponent
-        dialogClassName={cx("edit-performers-dialog", { "sfw-mode": sfwMode })}
+        dialogClassName={cx("edit-performers-dialog", {
+          "sfw-content-mode": sfwContentMode,
+        })}
         show
         icon={faPencilAlt}
         header={intl.formatMessage(

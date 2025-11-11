@@ -341,8 +341,8 @@ type ConfigImageLightboxResult {
 }
 
 input ConfigInterfaceInput {
-  "True if SFW mode is enabled"
-  sfwMode: Boolean
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean
 
   "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
@@ -410,8 +410,8 @@ type ConfigDisableDropdownCreate {
 }
 
 type ConfigInterfaceResult {
-  "True if SFW mode is enabled"
-  sfwMode: Boolean!
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean!
 
   "Ordered list of items that should be shown in the menu"
   menuItems: [String!]

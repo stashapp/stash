@@ -174,7 +174,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   const Toast = useToast();
 
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   const [dialogs, setDialogs] = React.useState({
     playHistory: false,
@@ -303,7 +303,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   }
 
   function maybeRenderDialogs() {
-    const clearHistoryMessageID = sfwMode
+    const clearHistoryMessageID = sfwContentMode
       ? "dialogs.clear_o_history_confirm_sfw"
       : "dialogs.clear_play_history_confirm";
     return (
@@ -358,8 +358,10 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   ) as string[];
   const oHistory = (scene.o_history ?? []).filter((h) => h != null) as string[];
 
-  const oHistoryMessageID = sfwMode ? "o_history_sfw" : "o_history";
-  const noneMessageID = sfwMode ? "odate_recorded_no_sfw" : "odate_recorded_no";
+  const oHistoryMessageID = sfwContentMode ? "o_history_sfw" : "o_history";
+  const noneMessageID = sfwContentMode
+    ? "odate_recorded_no_sfw"
+    : "odate_recorded_no";
 
   return (
     <div>

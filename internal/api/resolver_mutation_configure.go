@@ -445,7 +445,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigInterfaceInput) (*ConfigInterfaceResult, error) {
 	c := config.GetInstance()
 
-	r.setConfigBool(config.SFW, input.SfwMode)
+	r.setConfigBool(config.SFWContentMode, input.SfwContentMode)
 
 	if input.MenuItems != nil {
 		c.SetInterface(config.MenuItems, input.MenuItems)

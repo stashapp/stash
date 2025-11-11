@@ -65,10 +65,10 @@ export const ViewCountButton: React.FC<CountButtonPropsNoIcon> = (props) => {
 export const OCounterButton: React.FC<CountButtonPropsNoIcon> = (props) => {
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
-  const icon = !sfwMode ? <SweatDrops /> : <Icon icon={faThumbsUp} />;
-  const messageID = !sfwMode ? "o_count" : "o_count_sfw";
+  const icon = !sfwContentMode ? <SweatDrops /> : <Icon icon={faThumbsUp} />;
+  const messageID = !sfwContentMode ? "o_count" : "o_count_sfw";
 
   return (
     <CountButton

@@ -251,11 +251,11 @@ export const SortBySelect: React.FC<{
 }) => {
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   const currentSortBy = options.find((o) => o.value === sortBy);
   const currentSortByMessageID = currentSortBy
-    ? !sfwMode
+    ? !sfwContentMode
       ? currentSortBy.messageID
       : currentSortBy.sfwMessageID ?? currentSortBy.messageID
     : "";
@@ -263,7 +263,7 @@ export const SortBySelect: React.FC<{
   function renderSortByOptions() {
     return options
       .map((o) => {
-        const messageID = !sfwMode
+        const messageID = !sfwContentMode
           ? o.messageID
           : o.sfwMessageID ?? o.messageID;
         return {

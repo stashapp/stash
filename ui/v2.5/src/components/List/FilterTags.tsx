@@ -127,7 +127,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   const ref = useRef<HTMLDivElement>(null);
 
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   const [cutoff, setCutoff] = React.useState<number | undefined>();
   const elementGap = 10; // Adjust this value based on your CSS gap or margin
@@ -274,7 +274,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     return (
       <FilterTag
         key={criterion.getId()}
-        label={criterion.getLabel(intl, sfwMode)}
+        label={criterion.getLabel(intl, sfwContentMode)}
         onClick={() => onClickCriterionTag(criterion)}
         onRemove={($event) => onRemoveCriterionTag(criterion, $event)}
       />

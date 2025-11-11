@@ -1,6 +1,6 @@
-// hide nsfw elements when in sfw mode
+// hide nsfw elements when in sfw-content mode
 // stylelint-disable selector-class-pattern
-.sfw-mode {
+.sfw-content-mode {
   // hide adult-oriented performer fields in sort by select
   .sort-by-select,
   .performer-table {

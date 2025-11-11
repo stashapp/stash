@@ -78,7 +78,7 @@ export abstract class Criterion {
 
   protected cloneValues() {}
 
-  public abstract getLabel(intl: IntlShape, sfwMode?: boolean): string;
+  public abstract getLabel(intl: IntlShape, sfwContentMode?: boolean): string;
 
   public getId(): string {
     return `${this.criterionOption.type}`;
@@ -148,7 +148,7 @@ export abstract class ModifierCriterion<
       : "";
   }
 
-  public getLabel(intl: IntlShape, sfwMode: boolean = false): string {
+  public getLabel(intl: IntlShape, sfwContentMode: boolean = false): string {
     const modifierString = ModifierCriterion.getModifierLabel(
       intl,
       this.modifier
@@ -162,7 +162,7 @@ export abstract class ModifierCriterion<
       valueString = this.getLabelValue(intl);
     }
 
-    const messageID = !sfwMode
+    const messageID = !sfwContentMode
       ? this.criterionOption.messageID
       : this.criterionOption.sfwMessageID ?? this.criterionOption.messageID;
 
@@ -485,7 +485,7 @@ export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarch
     );
   }
 
-  public getLabel(intl: IntlShape, sfwMode?: boolean): string {
+  public getLabel(intl: IntlShape, sfwContentMode?: boolean): string {
     let id = "criterion_modifier.format_string";
     let modifierString = ModifierCriterion.getModifierLabel(
       intl,
@@ -518,7 +518,7 @@ export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarch
       }
     }
 
-    const messageID = !sfwMode
+    const messageID = !sfwContentMode
       ? this.criterionOption.messageID
       : this.criterionOption.sfwMessageID ?? this.criterionOption.messageID;
 

@@ -241,11 +241,11 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           </SelectSetting>
 
           <BooleanSetting
-            id="sfw-mode"
+            id="sfw-content-mode"
             headingID="config.ui.sfw_mode.heading"
             subHeadingID="config.ui.sfw_mode.description"
-            checked={iface.sfwMode ?? undefined}
-            onChange={(v) => saveInterface({ sfwMode: v })}
+            checked={iface.sfwContentMode ?? undefined}
+            onChange={(v) => saveInterface({ sfwContentMode: v })}
           />
 
           <div className="setting-group">

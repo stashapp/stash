@@ -65,7 +65,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   externallySelected = false,
 }) => {
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   const prevCriterion = usePrevious(currentCriterion);
 
@@ -151,7 +151,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               icon={type === c.type ? faChevronDown : faChevronRight}
             />
             <FormattedMessage
-              id={!sfwMode ? c.messageID : c.sfwMessageID ?? c.messageID}
+              id={!sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID}
             />
           </span>
           {criteria.some((cc) => c.type === cc) && (
@@ -238,7 +238,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const intl = useIntl();
 
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
@@ -271,15 +271,15 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       .sort((a, b) => {
         return intl
           .formatMessage({
-            id: !sfwMode ? a.messageID : a.sfwMessageID ?? a.messageID,
+            id: !sfwContentMode ? a.messageID : a.sfwMessageID ?? a.messageID,
           })
           .localeCompare(
             intl.formatMessage({
-              id: !sfwMode ? b.messageID : b.sfwMessageID ?? b.messageID,
+              id: !sfwContentMode ? b.messageID : b.sfwMessageID ?? b.messageID,
             })
           );
       });
-  }, [intl, sfwMode, filterOptions.criterionOptions]);
+  }, [intl, sfwContentMode, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -314,12 +314,12 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     return criterionOptions.filter((c) => {
       return intl
         .formatMessage({
-          id: !sfwMode ? c.messageID : c.sfwMessageID ?? c.messageID,
+          id: !sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID,
         })
         .toLowerCase()
         .includes(trimmedSearch);
     });
-  }, [intl, sfwMode, searchValue, criterionOptions]);
+  }, [intl, sfwContentMode, searchValue, criterionOptions]);
 
   const pinnedFilters = useMemo(
     () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],
@@ -531,7 +531,9 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
         show={!showSaveDialog && !showLoadDialog}
         onHide={() => onCancel()}
         // need sfw mode class because dialog is outside body
-        className={cx("edit-filter-dialog", { "sfw-mode": sfwMode })}
+        className={cx("edit-filter-dialog", {
+          "sfw-content-mode": sfwContentMode,
+        })}
       >
         <Modal.Header>
           <div>
