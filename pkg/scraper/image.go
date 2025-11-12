@@ -37,6 +37,32 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 	return nil
 }
 
+func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedStudio, globalConfig GlobalConfig) error {
+	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
+	// Image is deprecated, so only do this if Images is unset
+	if p.Image == nil || len(p.Images) > 0 {
+		// nothing to do
+		return nil
+	}
+
+	// don't try to get the image if it doesn't appear to be a URL
+	if !strings.HasPrefix(*p.Image, "http") {
+		p.Images = []string{*p.Image}
+		return nil
+	}
+
+	img, err := getImage(ctx, *p.Image, client, globalConfig)
+	if err != nil {
+		return err
+	}
+
+	p.Image = img
+	// Image is deprecated. Use images instead
+	p.Images = []string{*img}
+
+	return nil
+}
+
 func processImageField(ctx context.Context, imageField *string, client *http.Client, globalConfig GlobalConfig) error {
 	if imageField == nil {
 		return nil

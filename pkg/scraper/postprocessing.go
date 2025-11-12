@@ -23,7 +23,7 @@ type postScraper struct {
 // requires post-processing, this function fans out to the given content
 // type and post-processes it.
 // Assumes called within a read transaction.
-func (c postScraper) postScrape(ctx context.Context, content ScrapedContent) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrape(ctx context.Context, content ScrapedContent) (_ ScrapedContent, err error) {
 	// Analyze the concrete type, call the right post-processing function
 	switch v := content.(type) {
 	case *models.ScrapedPerformer:
@@ -68,7 +68,7 @@ func (c postScraper) postScrape(ctx context.Context, content ScrapedContent) (_ 
 	return content, nil
 }
 
-func (c postScraper) filterTags(tags []*models.ScrapedTag) []*models.ScrapedTag {
+func (c *postScraper) filterTags(tags []*models.ScrapedTag) []*models.ScrapedTag {
 	var ret []*models.ScrapedTag
 	var thisIgnoredTags []string
 	ret, thisIgnoredTags = FilterTags(c.excludeTagRE, tags)
@@ -77,7 +77,7 @@ func (c postScraper) filterTags(tags []*models.ScrapedTag) []*models.ScrapedTag 
 	return ret
 }
 
-func (c postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 
@@ -123,7 +123,7 @@ func (c postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedPe
 	return p, nil
 }
 
-func (c postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 	tags, err := postProcessTags(ctx, tqb, m.Tags)
@@ -164,7 +164,7 @@ func (c postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie)
 	return m, nil
 }
 
-func (c postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 	tags, err := postProcessTags(ctx, tqb, m.Tags)
@@ -207,7 +207,7 @@ func (c postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup)
 
 // postScrapeRelatedPerformers post-processes a list of performers.
 // It modifies the performers in place.
-func (c postScraper) postScrapeRelatedPerformers(ctx context.Context, items []*models.ScrapedPerformer) error {
+func (c *postScraper) postScrapeRelatedPerformers(ctx context.Context, items []*models.ScrapedPerformer) error {
 	for _, p := range items {
 		if p == nil {
 			continue
@@ -227,7 +227,7 @@ func (c postScraper) postScrapeRelatedPerformers(ctx context.Context, items []*m
 	return nil
 }
 
-func (c postScraper) postScrapeRelatedMovies(ctx context.Context, items []*models.ScrapedMovie) error {
+func (c *postScraper) postScrapeRelatedMovies(ctx context.Context, items []*models.ScrapedMovie) error {
 	for _, p := range items {
 		sc, err := c.postScrapeMovie(ctx, *p)
 		if err != nil {
@@ -249,7 +249,7 @@ func (c postScraper) postScrapeRelatedMovies(ctx context.Context, items []*model
 	return nil
 }
 
-func (c postScraper) postScrapeRelatedGroups(ctx context.Context, items []*models.ScrapedGroup) error {
+func (c *postScraper) postScrapeRelatedGroups(ctx context.Context, items []*models.ScrapedGroup) error {
 	for _, p := range items {
 		sc, err := c.postScrapeGroup(ctx, *p)
 		if err != nil {
@@ -271,7 +271,60 @@ func (c postScraper) postScrapeRelatedGroups(ctx context.Context, items []*model
 	return nil
 }
 
-func (c postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeStudio(ctx context.Context, s models.ScrapedStudio) (_ ScrapedContent, err error) {
+	r := c.repository
+	tqb := r.TagFinder
+
+	tags, err := postProcessTags(ctx, tqb, s.Tags)
+	if err != nil {
+		return nil, err
+	}
+
+	s.Tags = c.filterTags(tags)
+
+	// post-process - set the image if applicable
+	if err := setStudioImage(ctx, c.client, &s, c.globalConfig); err != nil {
+		logger.Warnf("Could not set image using URL %s: %s", *s.Image, err.Error())
+	}
+
+	// populate URL/URLs
+	// if URLs are provided, only use those
+	if len(s.URLs) > 0 {
+		s.URL = &s.URLs[0]
+	} else {
+		urls := []string{}
+		if s.URL != nil {
+			urls = append(urls, *s.URL)
+		}
+
+		if len(urls) > 0 {
+			s.URLs = urls
+		}
+	}
+
+	return s, nil
+}
+
+func (c *postScraper) postScrapeRelatedStudio(ctx context.Context, s *models.ScrapedStudio) error {
+	if s == nil {
+		return nil
+	}
+
+	sc, err := c.postScrapeStudio(ctx, *s)
+	if err != nil {
+		return err
+	}
+	newS := sc.(models.ScrapedStudio)
+	*s = newS
+
+	if err = match.ScrapedStudio(ctx, c.repository.StudioFinder, s, ""); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (_ ScrapedContent, err error) {
 	// set the URL/URLs field
 	if scene.URL == nil && len(scene.URLs) > 0 {
 		scene.URL = &scene.URLs[0]
@@ -282,7 +335,6 @@ func (c postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedSc
 
 	r := c.repository
 	tqb := r.TagFinder
-	sqb := r.StudioFinder
 
 	if err = c.postScrapeRelatedPerformers(ctx, scene.Performers); err != nil {
 		return nil, err
@@ -316,11 +368,8 @@ func (c postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedSc
 	}
 	scene.Tags = c.filterTags(tags)
 
-	if scene.Studio != nil {
-		err := match.ScrapedStudio(ctx, sqb, scene.Studio, "")
-		if err != nil {
-			return nil, err
-		}
+	if err := c.postScrapeRelatedStudio(ctx, scene.Studio); err != nil {
+		return nil, err
 	}
 
 	// post-process - set the image if applicable
@@ -331,7 +380,7 @@ func (c postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedSc
 	return scene, nil
 }
 
-func (c postScraper) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (_ ScrapedContent, err error) {
 	// set the URL/URLs field
 	if g.URL == nil && len(g.URLs) > 0 {
 		g.URL = &g.URLs[0]
@@ -342,7 +391,6 @@ func (c postScraper) postScrapeGallery(ctx context.Context, g models.ScrapedGall
 
 	r := c.repository
 	tqb := r.TagFinder
-	sqb := r.StudioFinder
 
 	if err = c.postScrapeRelatedPerformers(ctx, g.Performers); err != nil {
 		return nil, err
@@ -354,20 +402,16 @@ func (c postScraper) postScrapeGallery(ctx context.Context, g models.ScrapedGall
 	}
 	g.Tags = c.filterTags(tags)
 
-	if g.Studio != nil {
-		err := match.ScrapedStudio(ctx, sqb, g.Studio, "")
-		if err != nil {
-			return nil, err
-		}
+	if err := c.postScrapeRelatedStudio(ctx, g.Studio); err != nil {
+		return nil, err
 	}
 
 	return g, nil
 }
 
-func (c postScraper) postScrapeImage(ctx context.Context, image models.ScrapedImage) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeImage(ctx context.Context, image models.ScrapedImage) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
-	sqb := r.StudioFinder
 
 	if err = c.postScrapeRelatedPerformers(ctx, image.Performers); err != nil {
 		return nil, err
@@ -380,11 +424,8 @@ func (c postScraper) postScrapeImage(ctx context.Context, image models.ScrapedIm
 
 	image.Tags = c.filterTags(tags)
 
-	if image.Studio != nil {
-		err := match.ScrapedStudio(ctx, sqb, image.Studio, "")
-		if err != nil {
-			return nil, err
-		}
+	if err := c.postScrapeRelatedStudio(ctx, image.Studio); err != nil {
+		return nil, err
 	}
 
 	return image, nil
