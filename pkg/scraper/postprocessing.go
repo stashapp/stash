@@ -154,10 +154,10 @@ func (c postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie)
 	}
 
 	// post-process - set the image if applicable
-	if err := setMovieFrontImage(ctx, c.client, &m, c.globalConfig); err != nil {
+	if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
 		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
 	}
-	if err := setMovieBackImage(ctx, c.client, &m, c.globalConfig); err != nil {
+	if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
 		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
 	}
 
@@ -195,10 +195,10 @@ func (c postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup)
 	}
 
 	// post-process - set the image if applicable
-	if err := setGroupFrontImage(ctx, c.client, &m, c.globalConfig); err != nil {
+	if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
 		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
 	}
-	if err := setGroupBackImage(ctx, c.client, &m, c.globalConfig); err != nil {
+	if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
 		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
 	}
 
@@ -324,7 +324,7 @@ func (c postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedSc
 	}
 
 	// post-process - set the image if applicable
-	if err := setSceneImage(ctx, c.client, &scene, c.globalConfig); err != nil {
+	if err := processImageField(ctx, scene.Image, c.client, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %v", *scene.Image, err)
 	}
 

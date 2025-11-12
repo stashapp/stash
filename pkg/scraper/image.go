@@ -37,88 +37,17 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 	return nil
 }
 
-func setSceneImage(ctx context.Context, client *http.Client, s *models.ScrapedScene, globalConfig GlobalConfig) error {
-	// don't try to get the image if it doesn't appear to be a URL
-	if s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
-		// nothing to do
+func processImageField(ctx context.Context, imageField *string, client *http.Client, globalConfig GlobalConfig) error {
+	if imageField == nil {
 		return nil
 	}
 
-	img, err := getImage(ctx, *s.Image, client, globalConfig)
+	img, err := getImage(ctx, *imageField, client, globalConfig)
 	if err != nil {
 		return err
 	}
 
-	s.Image = img
-
-	return nil
-}
-
-func setMovieFrontImage(ctx context.Context, client *http.Client, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
-	// don't try to get the image if it doesn't appear to be a URL
-	if m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
-		// nothing to do
-		return nil
-	}
-
-	img, err := getImage(ctx, *m.FrontImage, client, globalConfig)
-	if err != nil {
-		return err
-	}
-
-	m.FrontImage = img
-
-	return nil
-}
-
-func setMovieBackImage(ctx context.Context, client *http.Client, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
-	// don't try to get the image if it doesn't appear to be a URL
-	if m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
-		// nothing to do
-		return nil
-	}
-
-	img, err := getImage(ctx, *m.BackImage, client, globalConfig)
-	if err != nil {
-		return err
-	}
-
-	m.BackImage = img
-
-	return nil
-}
-
-func setGroupFrontImage(ctx context.Context, client *http.Client, m *models.ScrapedGroup, globalConfig GlobalConfig) error {
-	// don't try to get the image if it doesn't appear to be a URL
-	if m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
-		// nothing to do
-		return nil
-	}
-
-	img, err := getImage(ctx, *m.FrontImage, client, globalConfig)
-	if err != nil {
-		return err
-	}
-
-	m.FrontImage = img
-
-	return nil
-}
-
-func setGroupBackImage(ctx context.Context, client *http.Client, m *models.ScrapedGroup, globalConfig GlobalConfig) error {
-	// don't try to get the image if it doesn't appear to be a URL
-	if m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
-		// nothing to do
-		return nil
-	}
-
-	img, err := getImage(ctx, *m.BackImage, client, globalConfig)
-	if err != nil {
-		return err
-	}
-
-	m.BackImage = img
-
+	*imageField = *img
 	return nil
 }
 
