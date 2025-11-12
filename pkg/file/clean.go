@@ -18,7 +18,8 @@ type Cleaner struct {
 	FS         models.FS
 	Repository Repository
 
-	Handlers []CleanHandler
+	Handlers  []CleanHandler
+	TrashPath string
 }
 
 type cleanJob struct {
@@ -392,7 +393,7 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool
 
 func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {
 	// delete associated objects
-	fileDeleter := NewDeleter()
+	fileDeleter := NewDeleterWithTrash(j.TrashPath)
 	r := j.Repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)
@@ -410,7 +411,7 @@ func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn stri
 
 func (j *cleanJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) {
 	// delete associated objects
-	fileDeleter := NewDeleter()
+	fileDeleter := NewDeleterWithTrash(j.TrashPath)
 	r := j.Repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)

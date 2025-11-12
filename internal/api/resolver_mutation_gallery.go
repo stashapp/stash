@@ -333,10 +333,12 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
+
 	var galleries []*models.Gallery
 	var imgsDestroyed []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: file.NewDeleter(),
+		Deleter: file.NewDeleterWithTrash(trashPath),
 		Paths:   manager.GetInstance().Paths,
 	}
 
