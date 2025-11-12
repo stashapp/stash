@@ -142,6 +142,9 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
         <div className="col-12">
           {maybeRenderField("name", studio.name, !isNew)}
           {maybeRenderURLListField("urls", studio.urls)}
+          {maybeRenderField("details", studio.details)}
+          {maybeRenderField("aliases", studio.aliases)}
+          {maybeRenderField("tags", studio.tags?.map((t) => t.name).join(", "))}
           {maybeRenderField("parent_studio", studio.parent?.name, false)}
           {maybeRenderStashBoxLink()}
         </div>
@@ -232,6 +235,11 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       urls: studio.urls,
       image: studio.image,
       parent_id: studio.parent?.stored_id,
+      details: studio.details,
+      aliases: studio.aliases?.split(",").map((a) => a.trim()),
+      tag_ids: studio.tags?.map((t) => t.stored_id).filter((id) => id) as
+        | string[]
+        | undefined,
     };
 
     // stashid handling code
@@ -261,6 +269,11 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         name: studio.parent?.name,
         urls: studio.parent?.urls,
         image: studio.parent?.image,
+        details: studio.parent?.details,
+        aliases: studio.parent?.aliases?.split(",").map((a) => a.trim()),
+        tag_ids: studio.parent?.tags
+          ?.map((t) => t.stored_id)
+          .filter((id) => id) as string[] | undefined,
       };
 
       // stashid handling code

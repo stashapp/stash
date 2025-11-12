@@ -7,9 +7,19 @@ fragment ScrapedStudioData on ScrapedStudio {
     name
     urls
     image
+    details
+    aliases
+    tags {
+      ...ScrapedSceneTagData
+    }
     remote_site_id
   }
   image
+  details
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
 }
 
@@ -129,9 +139,19 @@ fragment ScrapedSceneStudioData on ScrapedStudio {
     name
     urls
     image
+    details
+    aliases
+    tags {
+      ...ScrapedSceneTagData
+    }
     remote_site_id
   }
   image
+  details
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
 }
 
