@@ -1,11 +1,11 @@
 fragment ScrapedStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   parent {
     stored_id
     name
-    url
+    urls
     image
     details
     aliases
@@ -86,7 +86,7 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
 fragment ScrapedGroupStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
 }
 
 fragment ScrapedGroupData on ScrapedGroup {
@@ -133,11 +133,11 @@ fragment ScrapedSceneGroupData on ScrapedGroup {
 fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   parent {
     stored_id
     name
-    url
+    urls
     image
     details
     aliases

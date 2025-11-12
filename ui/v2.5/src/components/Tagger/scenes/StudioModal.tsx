@@ -84,6 +84,44 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
     );
   }
 
+  function maybeRenderURLListField(
+    name: string,
+    text: string[] | null | undefined,
+    truncate: boolean = true
+  ) {
+    if (!text) return;
+
+    return (
+      <div className="row no-gutters">
+        <div className="col-5 studio-create-modal-field" key={name}>
+          {!isNew && (
+            <Button
+              onClick={() => toggleField(name)}
+              variant="secondary"
+              className={excluded[name] ? "text-muted" : "text-success"}
+            >
+              <Icon icon={excluded[name] ? faTimes : faCheck} />
+            </Button>
+          )}
+          <strong>
+            <FormattedMessage id={name} />:
+          </strong>
+        </div>
+        <div className="col-7 studio-create-modal-value">
+          <ul>
+            {text.map((t, i) => (
+              <li key={i}>
+                <ExternalLink href={t}>
+                  {truncate ? <TruncatedText text={t} /> : t}
+                </ExternalLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
   function maybeRenderStashBoxLink() {
     if (!link) return;
 
@@ -103,7 +141,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
       <div className="row">
         <div className="col-12">
           {maybeRenderField("name", studio.name, !isNew)}
-          {maybeRenderField("url", studio.url)}
+          {maybeRenderURLListField("urls", studio.urls)}
           {maybeRenderField("details", studio.details)}
           {maybeRenderField("aliases", studio.aliases)}
           {maybeRenderField("tags", studio.tags?.map((t) => t.name).join(", "))}
@@ -194,7 +232,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
     const studioData: GQL.StudioCreateInput = {
       name: studio.name,
-      url: studio.url,
+      urls: studio.urls,
       image: studio.image,
       parent_id: studio.parent?.stored_id,
       details: studio.details,
@@ -229,7 +267,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
       parentData = {
         name: studio.parent?.name,
-        url: studio.parent?.url,
+        urls: studio.parent?.urls,
         image: studio.parent?.image,
         details: studio.parent?.details,
         aliases: studio.parent?.aliases?.split(",").map((a) => a.trim()),

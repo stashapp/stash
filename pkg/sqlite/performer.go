@@ -726,6 +726,28 @@ func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
+// used for sorting by total scene duration
+var selectPerformerScenesDurationSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM(video_files.duration), 0) FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_files} ON {scenes_files}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN video_files ON video_files.file_id = {scenes_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_files":      scenesFilesTable,
+	},
+)
+
+func (qb *PerformerStore) sortByScenesDuration(direction string) string {
+	// need to sum duration from all scenes for this performer
+	return " ORDER BY (" + selectPerformerScenesDurationSQL + ") " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
 	"career_length",
@@ -744,6 +766,7 @@ var performerSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"scenes_duration",
 	"tag_count",
 	"updated_at",
 	"weight",
@@ -771,6 +794,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	case "scenes_duration":
+		sortQuery += qb.sortByScenesDuration(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":

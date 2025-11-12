@@ -55,7 +55,8 @@ type ScrapedStudio {
   "Set if studio matched"
   stored_id: ID
   name: String!
-  url: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   parent: ScrapedStudio
   image: String
   details: String

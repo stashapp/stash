@@ -12,6 +12,7 @@ import { PerformerRecommendationRow } from "../Performers/PerformerRecommendatio
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";
 import { TagRecommendationRow } from "../Tags/TagRecommendationRow";
+import { SceneMarkerRecommendationRow } from "../Scenes/SceneMarkerRecommendationRow";
 
 interface IFilter {
   mode: GQL.FilterMode;
@@ -79,6 +80,14 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
     case GQL.FilterMode.Tags:
       return (
         <TagRecommendationRow
+          isTouch={isTouch}
+          filter={filter}
+          header={header}
+        />
+      );
+    case GQL.FilterMode.SceneMarkers:
+      return (
+        <SceneMarkerRecommendationRow
           isTouch={isTouch}
           filter={filter}
           header={header}

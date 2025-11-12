@@ -801,6 +801,14 @@
           }
         }
       },
+      "performer_list": {
+        "heading": "Performer list",
+        "options": {
+          "show_links_on_grid_card": {
+            "heading": "Display links on performer grid cards"
+          }
+        }
+      },
       "tag_panel": {
         "heading": "Tag view",
         "options": {
@@ -1308,6 +1316,7 @@
   "sceneTagger": "Scene Tagger",
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
+  "scenes_duration": "Scene Duration",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",

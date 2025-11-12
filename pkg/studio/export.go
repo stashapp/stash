@@ -14,6 +14,7 @@ import (
 type FinderImageStashIDGetter interface {
 	models.StudioGetter
 	models.AliasLoader
+	models.URLLoader
 	models.StashIDLoader
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
 }
@@ -22,7 +23,6 @@ type FinderImageStashIDGetter interface {
 func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models.Studio) (*jsonschema.Studio, error) {
 	newStudioJSON := jsonschema.Studio{
 		Name:          studio.Name,
-		URL:           studio.URL,
 		Details:       studio.Details,
 		Favorite:      studio.Favorite,
 		IgnoreAutoTag: studio.IgnoreAutoTag,
@@ -49,6 +49,11 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 		return nil, fmt.Errorf("loading studio aliases: %w", err)
 	}
 	newStudioJSON.Aliases = studio.Aliases.List()
+
+	if err := studio.LoadURLs(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading studio URLs: %w", err)
+	}
+	newStudioJSON.URLs = studio.URLs.List()
 
 	if err := studio.LoadStashIDs(ctx, reader); err != nil {
 		return nil, fmt.Errorf("loading studio stash ids: %w", err)

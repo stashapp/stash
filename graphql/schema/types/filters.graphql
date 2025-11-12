@@ -403,6 +403,8 @@ input GroupFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+  "Filter by o-counter"
+  o_counter: IntCriterionInput
 
   "Filter by containing groups"
   containing_groups: HierarchicalMultiCriterionInput
