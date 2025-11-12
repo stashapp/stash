@@ -42,10 +42,12 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
   const [sliderMin, setSliderMin] = useState(currentMin);
   const [sliderMax, setSliderMax] = useState(currentMax);
   const [minInput, setMinInput] = useState(
-    TextUtils.secondsAsTimeString(currentMin)
+    currentMin === 0 ? "0m" : TextUtils.secondsAsTimeString(currentMin)
   );
   const [maxInput, setMaxInput] = useState(
-    currentMax >= MAX_DURATION ? "max" : TextUtils.secondsAsTimeString(currentMax)
+    currentMax >= MAX_DURATION
+      ? "max"
+      : TextUtils.secondsAsTimeString(currentMax)
   );
 
   // Determine which preset is selected
@@ -130,7 +132,9 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
 
     setSliderMin(preset.min);
     setSliderMax(preset.max ?? MAX_DURATION);
-    setMinInput(TextUtils.secondsAsTimeString(preset.min));
+    setMinInput(
+      preset.min === 0 ? "0m" : TextUtils.secondsAsTimeString(preset.min)
+    );
     setMaxInput(
       preset.max === null ? "max" : TextUtils.secondsAsTimeString(preset.max)
     );
@@ -141,7 +145,7 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     setFilter(filter.removeCriterion(option.type));
     setSliderMin(0);
     setSliderMax(MAX_DURATION);
-    setMinInput(TextUtils.secondsAsTimeString(0));
+    setMinInput("0m");
     setMaxInput("max");
   }
 
@@ -179,8 +183,10 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
   function handleSliderChange(min: number, max: number) {
     setSliderMin(min);
     setSliderMax(max);
-    setMinInput(TextUtils.secondsAsTimeString(min));
-    setMaxInput(max >= MAX_DURATION ? "max" : TextUtils.secondsAsTimeString(max));
+    setMinInput(min === 0 ? "0m" : TextUtils.secondsAsTimeString(min));
+    setMaxInput(
+      max >= MAX_DURATION ? "max" : TextUtils.secondsAsTimeString(max)
+    );
 
     // If slider is at full range (0 to max), remove the filter entirely
     if (min === 0 && max >= MAX_DURATION) {
@@ -218,7 +224,9 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
       handleSliderChange(parsed, sliderMax);
     } else {
       // Reset to current value if invalid
-      setMinInput(TextUtils.secondsAsTimeString(sliderMin));
+      setMinInput(
+        sliderMin === 0 ? "0m" : TextUtils.secondsAsTimeString(sliderMin)
+      );
     }
   }
 
@@ -229,7 +237,9 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     } else {
       // Reset to current value if invalid
       setMaxInput(
-        sliderMax >= MAX_DURATION ? "max" : TextUtils.secondsAsTimeString(sliderMax)
+        sliderMax >= MAX_DURATION
+          ? "max"
+          : TextUtils.secondsAsTimeString(sliderMax)
       );
     }
   }
