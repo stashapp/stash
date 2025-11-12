@@ -450,7 +450,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
 ) => {
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
-  const { sfwMode } = configuration.interface;
+  const { sfwContentMode } = configuration.interface;
 
   return (
     <ModalComponent
@@ -470,7 +470,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
       }}
       modalProps={{
         size: "lg",
-        dialogClassName: `scrape-dialog ${sfwMode ? "sfw-mode" : ""}`,
+        dialogClassName: `scrape-dialog ${sfwContentMode ? "sfw-mode" : ""}`,
       }}
     >
       <div className="dialog-container">

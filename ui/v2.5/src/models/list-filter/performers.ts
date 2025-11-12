@@ -31,7 +31,6 @@ const sortByOptions = [
   "penis_length",
   "play_count",
   "last_played_at",
-  "last_o_at",
   "career_length",
   "weight",
   "measurements",
@@ -55,6 +54,11 @@ const sortByOptions = [
       messageID: "o_count",
       value: "o_counter",
       sfwMessageID: "o_count_sfw",
+    },
+    {
+      messageID: "last_o_at",
+      value: "last_o_at",
+      sfwMessageID: "last_o_at_sfw",
     },
   ]);
 

@@ -23,7 +23,7 @@ export class ListFilterOptions {
   public readonly displayModeOptions: DisplayMode[] = [];
   public readonly criterionOptions: CriterionOption[] = [];
 
-  public static createSortBy(value: string) {
+  public static createSortBy(value: string): ISortByOption {
     return {
       messageID: value,
       value,
