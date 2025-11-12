@@ -455,6 +455,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     React.createElement(image.paths.preview != "" ? "video" : "img", {
       loop: image.paths.preview != "",
       autoPlay: image.paths.preview != "",
+      playsInline: image.paths.preview != "",
       src:
         image.paths.preview != ""
           ? image.paths.preview ?? ""
