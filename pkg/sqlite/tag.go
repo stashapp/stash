@@ -290,6 +290,12 @@ func (qb *TagStore) Update(ctx context.Context, updatedObject *models.Tag) error
 		}
 	}
 
+	if updatedObject.StashIDs.Loaded() {
+		if err := tagsStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -817,7 +823,11 @@ func (qb *TagStore) UpdateAliases(ctx context.Context, tagID int, aliases []stri
 }
 
 func (qb *TagStore) GetStashIDs(ctx context.Context, tagID int) ([]models.StashID, error) {
-	return tagRepository.stashIDs.get(ctx, tagID)
+	return tagsStashIDsTableMgr.get(ctx, tagID)
+}
+
+func (qb *TagStore) UpdateStashIDs(ctx context.Context, tagID int, stashIDs []models.StashID) error {
+	return tagsStashIDsTableMgr.replaceJoins(ctx, tagID, stashIDs)
 }
 
 func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) error {
