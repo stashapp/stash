@@ -785,7 +785,7 @@
         "heading": "Scroll attempts before transition"
       },
       "sfw_mode": {
-        "description": "Enable if using stash to store SFW content. Hides or changes some porn-related aspects of the UI.",
+        "description": "Enable if using stash to store SFW content. Hides or changes some adult-content-related aspects of the UI.",
         "heading": "SFW Content Mode"
       },
       "show_tag_card_on_hover": {
