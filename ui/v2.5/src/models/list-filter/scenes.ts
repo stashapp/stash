@@ -79,6 +79,9 @@ const displayModeOptions = [
   DisplayMode.Tagger,
 ];
 
+export const DurationCriterionOption =
+  createDurationCriterionOption("duration");
+
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
@@ -98,7 +101,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("bitrate"),
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
-  createDurationCriterionOption("duration"),
+  DurationCriterionOption,
   createDurationCriterionOption("resume_time"),
   createDurationCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
