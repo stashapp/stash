@@ -55,6 +55,8 @@ import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { PerformerAgeCriterionOption } from "src/models/list-filter/scenes";
+import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
@@ -319,6 +321,13 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           sectionID="rating"
+        />
+        <SidebarAgeFilter
+          title={<FormattedMessage id="performer_age" />}
+          option={PerformerAgeCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="performer_age"
         />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
