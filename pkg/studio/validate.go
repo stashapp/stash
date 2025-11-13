@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -62,7 +63,16 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.
 }
 
 func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.StudioQueryer) error {
+	// Filter out empty/whitespace-only aliases
+	filteredAliases := make([]string, 0, len(aliases))
 	for _, a := range aliases {
+		trimmed := strings.TrimSpace(a)
+		if trimmed != "" {
+			filteredAliases = append(filteredAliases, trimmed)
+		}
+	}
+
+	for _, a := range filteredAliases {
 		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
 			return err
 		}
