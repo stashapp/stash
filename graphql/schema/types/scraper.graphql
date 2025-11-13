@@ -71,6 +71,8 @@ type ScrapedTag {
   "Set if tag matched"
   stored_id: ID
   name: String!
+  "Remote site ID, if applicable"
+  remote_site_id: String
 }
 
 type ScrapedScene {

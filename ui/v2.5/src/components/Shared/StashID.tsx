@@ -4,7 +4,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "./ExternalLink";
 
-export type LinkType = "performers" | "scenes" | "studios";
+export type LinkType = "performers" | "scenes" | "studios" | "tags";
 
 export const StashIDPill: React.FC<{
   stashID: Pick<StashId, "endpoint" | "stash_id">;

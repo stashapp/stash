@@ -102,6 +102,7 @@ func (db *Anonymiser) deleteStashIDs() error {
 		func() error { return db.truncateTable("scene_stash_ids") },
 		func() error { return db.truncateTable("studio_stash_ids") },
 		func() error { return db.truncateTable("performer_stash_ids") },
+		func() error { return db.truncateTable("tag_stash_ids") },
 	})
 }
 
