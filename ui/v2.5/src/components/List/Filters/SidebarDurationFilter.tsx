@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { CriterionOption } from "../../../models/list-filter/criteria/criterion";
 import { DurationCriterion } from "src/models/list-filter/criteria/criterion";
@@ -6,6 +6,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
 import TextUtils from "src/utils/text";
 import { DoubleRangeInput } from "src/components/Shared/DoubleRangeInput";
+import { useDebounce } from "src/hooks/debounce";
 
 interface ISidebarFilter {
   title?: React.ReactNode;
@@ -77,9 +78,6 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
       ? MAX_LABEL
       : TextUtils.secondsAsTimeString(currentMax)
   );
-
-  // Debounce timer ref
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset slider when criterion is removed externally (via filter tag X)
   useEffect(() => {
@@ -247,6 +245,12 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
   }
 
+  const updateFilterDebounceMS = 300;
+  const debounceUpdateFilter = useDebounce(
+    updateFilter,
+    updateFilterDebounceMS
+  );
+
   function handleSliderChange(min: number, max: number) {
     if (min < 0 || max > MAX_DURATION || min >= max) {
       return;
@@ -259,14 +263,7 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
       max >= MAX_DURATION ? MAX_LABEL : TextUtils.secondsAsTimeString(max)
     );
 
-    // Debounce the filter update
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      updateFilter(min, max);
-    }, 300); // 300ms debounce
+    debounceUpdateFilter(min, max);
   }
 
   function handleMinInputChange(value: string) {
