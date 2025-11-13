@@ -129,8 +129,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio := models.NewStudioPartial()
 
 	// Filter empty aliases from input
-	if input.Aliases != nil && input.Aliases.Values != nil {
-		input.Aliases.Values = filterEmptyStrings(input.Aliases.Values)
+	if input.Aliases != nil {
+		input.Aliases = filterEmptyStrings(input.Aliases)
 	}
 
 	updatedStudio.ID = studioID
