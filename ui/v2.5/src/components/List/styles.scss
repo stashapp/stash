@@ -1400,3 +1400,78 @@ input[type="range"].zoom-slider {
     }
   }
 }
+
+// Age slider styles
+.age-slider-container {
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+.age-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.age-label-input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  color: $text-color;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.125rem 0.25rem;
+  text-align: center;
+  width: 4rem;
+
+  &:hover {
+    border-color: $secondary;
+  }
+
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
+}
+
+.age-slider-inputs {
+  height: 22px;
+  position: relative;
+}
+
+.age-slider {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+
+  &::-webkit-slider-thumb {
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+  }
+
+  &::-moz-range-thumb {
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+  }
+
+  &::-ms-thumb {
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+  }
+}
+
+.age-slider-min {
+  z-index: 1;
+}
+
+.age-slider-max {
+  z-index: 2;
+}
+
+.age-preset {
+  cursor: pointer;
+}
