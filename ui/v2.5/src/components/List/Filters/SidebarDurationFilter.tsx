@@ -5,6 +5,7 @@ import { DurationCriterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
 import TextUtils from "src/utils/text";
+import { DoubleRangeInput } from "src/components/Shared/DoubleRangeInput";
 
 interface ISidebarFilter {
   title?: React.ReactNode;
@@ -247,6 +248,10 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
   }
 
   function handleSliderChange(min: number, max: number) {
+    if (min < 0 || max > MAX_DURATION || min >= max) {
+      return;
+    }
+
     setSliderMin(min);
     setSliderMax(max);
     setMinInput(min === 0 ? "0m" : TextUtils.secondsAsTimeString(min));
@@ -299,8 +304,9 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
   }
 
   const customSlider = (
-    <div className="duration-slider-container">
-      <div className="duration-slider-labels">
+    <DoubleRangeInput
+      className="duration-slider"
+      minInput={
         <input
           type="text"
           className="duration-label-input"
@@ -314,6 +320,8 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
           }}
           placeholder="0:00"
         />
+      }
+      maxInput={
         <input
           type="text"
           className="duration-label-input"
@@ -327,40 +335,14 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
           }}
           placeholder={MAX_LABEL}
         />
-      </div>
-      <div className="duration-slider-inputs">
-        <input
-          type="range"
-          min={0}
-          max={MAX_DURATION}
-          step={1}
-          value={sliderMin}
-          onChange={(e) => {
-            const rawValue = parseInt(e.target.value);
-            const snapped = snapToStep(rawValue);
-            if (snapped < sliderMax) {
-              handleSliderChange(snapped, sliderMax);
-            }
-          }}
-          className="duration-slider duration-slider-min"
-        />
-        <input
-          type="range"
-          min={0}
-          max={MAX_DURATION}
-          step={1}
-          value={sliderMax}
-          onChange={(e) => {
-            const rawValue = parseInt(e.target.value);
-            const snapped = snapToStep(rawValue);
-            if (snapped > sliderMin) {
-              handleSliderChange(sliderMin, snapped);
-            }
-          }}
-          className="duration-slider duration-slider-max"
-        />
-      </div>
-    </div>
+      }
+      min={0}
+      max={MAX_DURATION}
+      value={[sliderMin, sliderMax]}
+      onChange={(vals) => {
+        handleSliderChange(snapToStep(vals[0]), snapToStep(vals[1]));
+      }}
+    />
   );
 
   return (
