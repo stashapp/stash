@@ -1403,7 +1403,7 @@ input[type="range"].zoom-slider {
 
 // Duration slider styles
 .duration-slider-container {
-  padding: 0.5rem 0;
+  padding: 0.5rem 0 1rem;
   width: 100%;
 }
 
@@ -1412,6 +1412,16 @@ input[type="range"].zoom-slider {
   justify-content: space-between;
   margin-bottom: 0.5rem;
   padding: 0 0.25rem;
+
+  .duration-label-input {
+    &:first-child {
+      text-align: left;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
 }
 
 .duration-label {
@@ -1428,7 +1438,6 @@ input[type="range"].zoom-slider {
   font-size: 0.875rem;
   font-weight: 500;
   padding: 0.125rem 0.25rem;
-  text-align: center;
   width: 4rem;
 
   &:hover {
@@ -1495,8 +1504,21 @@ input[type="range"].zoom-slider {
   z-index: 1;
 }
 
-.duration-slider-max {
+input[type="range"].duration-slider-max {
   z-index: 2;
+
+  // combining these into one rule doesn't work for some reason
+  &::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+
+  &::-moz-range-track {
+    background: transparent;
+  }
+
+  &::-ms-track {
+    background: transparent;
+  }
 }
 
 .duration-preset {
