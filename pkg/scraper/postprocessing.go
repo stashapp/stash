@@ -24,14 +24,16 @@ type postScraper struct {
 // type and post-processes it.
 // Assumes called within a read transaction.
 func (c *postScraper) postScrape(ctx context.Context, content ScrapedContent) (_ ScrapedContent, err error) {
+	const related = false
+
 	// Analyze the concrete type, call the right post-processing function
 	switch v := content.(type) {
 	case *models.ScrapedPerformer:
 		if v != nil {
-			return c.postScrapePerformer(ctx, *v)
+			return c.postScrapePerformer(ctx, *v, related)
 		}
 	case models.ScrapedPerformer:
-		return c.postScrapePerformer(ctx, v)
+		return c.postScrapePerformer(ctx, v, related)
 	case *models.ScrapedScene:
 		if v != nil {
 			return c.postScrapeScene(ctx, *v)
@@ -52,16 +54,16 @@ func (c *postScraper) postScrape(ctx context.Context, content ScrapedContent) (_
 		return c.postScrapeImage(ctx, v)
 	case *models.ScrapedMovie:
 		if v != nil {
-			return c.postScrapeMovie(ctx, *v)
+			return c.postScrapeMovie(ctx, *v, related)
 		}
 	case models.ScrapedMovie:
-		return c.postScrapeMovie(ctx, v)
+		return c.postScrapeMovie(ctx, v, related)
 	case *models.ScrapedGroup:
 		if v != nil {
-			return c.postScrapeGroup(ctx, *v)
+			return c.postScrapeGroup(ctx, *v, related)
 		}
 	case models.ScrapedGroup:
-		return c.postScrapeGroup(ctx, v)
+		return c.postScrapeGroup(ctx, v, related)
 	}
 
 	// If nothing matches, pass the content through
@@ -77,7 +79,7 @@ func (c *postScraper) filterTags(tags []*models.ScrapedTag) []*models.ScrapedTag
 	return ret
 }
 
-func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer, related bool) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 
@@ -89,8 +91,11 @@ func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedP
 	p.Tags = c.filterTags(tags)
 
 	// post-process - set the image if applicable
-	if err := setPerformerImage(ctx, c.client, &p, c.globalConfig); err != nil {
-		logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
+	// don't set image for related performers to avoid excessive network calls
+	if !related {
+		if err := setPerformerImage(ctx, c.client, &p, c.globalConfig); err != nil {
+			logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
+		}
 	}
 
 	p.Country = resolveCountryName(p.Country)
@@ -123,7 +128,7 @@ func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedP
 	return p, nil
 }
 
-func (c *postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, related bool) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 	tags, err := postProcessTags(ctx, tqb, m.Tags)
@@ -154,17 +159,20 @@ func (c *postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie
 	}
 
 	// post-process - set the image if applicable
-	if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
-		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
-	}
-	if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
-		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
+	// don't set images for related movies to avoid excessive network calls
+	if !related {
+		if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
+			logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
+		}
+		if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
+			logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
+		}
 	}
 
 	return m, nil
 }
 
-func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup, related bool) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 	tags, err := postProcessTags(ctx, tqb, m.Tags)
@@ -195,11 +203,14 @@ func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup
 	}
 
 	// post-process - set the image if applicable
-	if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
-		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
-	}
-	if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
-		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
+	// don't set images for related groups to avoid excessive network calls
+	if !related {
+		if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
+			logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
+		}
+		if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
+			logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
+		}
 	}
 
 	return m, nil
@@ -213,7 +224,8 @@ func (c *postScraper) postScrapeRelatedPerformers(ctx context.Context, items []*
 			continue
 		}
 
-		sc, err := c.postScrapePerformer(ctx, *p)
+		const related = true
+		sc, err := c.postScrapePerformer(ctx, *p, related)
 		if err != nil {
 			return err
 		}
@@ -229,7 +241,8 @@ func (c *postScraper) postScrapeRelatedPerformers(ctx context.Context, items []*
 
 func (c *postScraper) postScrapeRelatedMovies(ctx context.Context, items []*models.ScrapedMovie) error {
 	for _, p := range items {
-		sc, err := c.postScrapeMovie(ctx, *p)
+		const related = true
+		sc, err := c.postScrapeMovie(ctx, *p, related)
 		if err != nil {
 			return err
 		}
@@ -251,7 +264,8 @@ func (c *postScraper) postScrapeRelatedMovies(ctx context.Context, items []*mode
 
 func (c *postScraper) postScrapeRelatedGroups(ctx context.Context, items []*models.ScrapedGroup) error {
 	for _, p := range items {
-		sc, err := c.postScrapeGroup(ctx, *p)
+		const related = true
+		sc, err := c.postScrapeGroup(ctx, *p, related)
 		if err != nil {
 			return err
 		}
@@ -271,7 +285,7 @@ func (c *postScraper) postScrapeRelatedGroups(ctx context.Context, items []*mode
 	return nil
 }
 
-func (c *postScraper) postScrapeStudio(ctx context.Context, s models.ScrapedStudio) (_ ScrapedContent, err error) {
+func (c *postScraper) postScrapeStudio(ctx context.Context, s models.ScrapedStudio, related bool) (_ ScrapedContent, err error) {
 	r := c.repository
 	tqb := r.TagFinder
 
@@ -283,8 +297,11 @@ func (c *postScraper) postScrapeStudio(ctx context.Context, s models.ScrapedStud
 	s.Tags = c.filterTags(tags)
 
 	// post-process - set the image if applicable
-	if err := setStudioImage(ctx, c.client, &s, c.globalConfig); err != nil {
-		logger.Warnf("Could not set image using URL %s: %s", *s.Image, err.Error())
+	// don't set image for related studios to avoid excessive network calls
+	if !related {
+		if err := setStudioImage(ctx, c.client, &s, c.globalConfig); err != nil {
+			logger.Warnf("Could not set image using URL %s: %s", *s.Image, err.Error())
+		}
 	}
 
 	// populate URL/URLs
@@ -310,7 +327,8 @@ func (c *postScraper) postScrapeRelatedStudio(ctx context.Context, s *models.Scr
 		return nil
 	}
 
-	sc, err := c.postScrapeStudio(ctx, *s)
+	const related = true
+	sc, err := c.postScrapeStudio(ctx, *s, related)
 	if err != nil {
 		return err
 	}
