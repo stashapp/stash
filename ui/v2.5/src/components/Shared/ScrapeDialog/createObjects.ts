@@ -46,6 +46,7 @@ interface IUseCreateNewStudioProps {
     scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>
   ) => void;
   setNewObject: (newObject: GQL.ScrapedStudio | undefined) => void;
+  endpoint?: string;
 }
 
 export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
@@ -54,12 +55,29 @@ export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
   const { scrapeResult, setScrapeResult, setNewObject } = props;
 
   async function createNewStudio(toCreate: GQL.ScrapedStudio) {
+    const input: GQL.StudioCreateInput = {
+      name: toCreate.name,
+      urls: toCreate.urls,
+      aliases: toCreate.aliases?.split(",").map((a) => a.trim()) || [],
+      details: toCreate.details,
+      image: toCreate.image,
+      tag_ids: (toCreate.tags ?? [])
+        .filter((t) => t.stored_id)
+        .map((t) => t.stored_id!),
+    };
+
+    if (props.endpoint && toCreate.remote_site_id) {
+      input.stash_ids = [
+        {
+          endpoint: props.endpoint,
+          stash_id: toCreate.remote_site_id,
+        },
+      ];
+    }
+
     const result = await createStudio({
       variables: {
-        input: {
-          name: toCreate.name,
-          url: toCreate.url,
-        },
+        input,
       },
     });
 
@@ -81,6 +99,7 @@ interface IUseCreateNewObjectProps<T> {
   setScrapeResult: (scrapeResult: ScrapeResult<T[]>) => void;
   newObjects: T[];
   setNewObjects: (newObject: T[]) => void;
+  endpoint?: string;
 }
 
 export function useCreateScrapedPerformer(
@@ -91,7 +110,7 @@ export function useCreateScrapedPerformer(
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
   async function createNewPerformer(toCreate: GQL.ScrapedPerformer) {
-    const input = scrapedPerformerToCreateInput(toCreate);
+    const input = scrapedPerformerToCreateInput(toCreate, props.endpoint);
 
     const result = await createPerformer({
       variables: { input },
@@ -168,7 +187,18 @@ export function useCreateScrapedTag(
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
   async function createNewTag(toCreate: GQL.ScrapedTag) {
-    const input: GQL.TagCreateInput = { name: toCreate.name ?? "" };
+    const input: GQL.TagCreateInput = {
+      name: toCreate.name ?? "",
+    };
+
+    if (props.endpoint && toCreate.remote_site_id) {
+      input.stash_ids = [
+        {
+          endpoint: props.endpoint,
+          stash_id: toCreate.remote_site_id,
+        },
+      ];
+    }
 
     const result = await createTag({
       variables: { input },
