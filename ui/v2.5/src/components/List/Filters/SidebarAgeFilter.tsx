@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { CriterionOption } from "../../../models/list-filter/criteria/criterion";
 import { NumberCriterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
+import { DoubleRangeInput } from "src/components/Shared/DoubleRangeInput";
+import { useDebounce } from "src/hooks/debounce";
 
 interface ISidebarFilter {
   title?: React.ReactNode;
@@ -45,9 +47,6 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
   const [maxInput, setMaxInput] = useState(
     currentMax >= MAX_AGE ? MAX_LABEL : currentMax.toString()
   );
-
-  // Debounce timer ref
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset slider when criterion is removed externally (via filter tag X)
   useEffect(() => {
@@ -178,7 +177,7 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     return age;
   }
 
-  // Debounced filter update
+  // Filter update
   function updateFilter(min: number, max: number) {
     // If slider is at full range (18 to max), remove the filter entirely
     if (min === 18 && max >= MAX_AGE) {
@@ -209,20 +208,19 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
   }
 
+  const updateFilterDebounceMS = 300;
+  const debounceUpdateFilter = useDebounce(
+    updateFilter,
+    updateFilterDebounceMS
+  );
+
   function handleSliderChange(min: number, max: number) {
     setSliderMin(min);
     setSliderMax(max);
     setMinInput(min.toString());
     setMaxInput(max >= MAX_AGE ? MAX_LABEL : max.toString());
 
-    // Debounce the filter update
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      updateFilter(min, max);
-    }, 300); // 300ms debounce
+    debounceUpdateFilter(min, max);
   }
 
   function handleMinInputChange(value: string) {
@@ -255,64 +253,42 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
 
   const customSlider = (
     <div className="age-slider-container">
-      <div className="age-slider-labels">
-        <input
-          type="text"
-          className="age-label-input"
-          value={minInput}
-          onChange={(e) => handleMinInputChange(e.target.value)}
-          onBlur={handleMinInputBlur}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur();
-            }
-          }}
-          placeholder="18"
-        />
-        <input
-          type="text"
-          className="age-label-input"
-          value={maxInput}
-          onChange={(e) => handleMaxInputChange(e.target.value)}
-          onBlur={handleMaxInputBlur}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur();
-            }
-          }}
-          placeholder={MAX_LABEL}
-        />
-      </div>
-      <div className="age-slider-inputs">
-        <input
-          type="range"
-          min={18}
-          max={MAX_AGE}
-          step={1}
-          value={sliderMin}
-          onChange={(e) => {
-            const newMin = parseInt(e.target.value);
-            if (newMin < sliderMax) {
-              handleSliderChange(newMin, sliderMax);
-            }
-          }}
-          className="age-slider age-slider-min"
-        />
-        <input
-          type="range"
-          min={18}
-          max={MAX_AGE}
-          step={1}
-          value={sliderMax}
-          onChange={(e) => {
-            const newMax = parseInt(e.target.value);
-            if (newMax > sliderMin) {
-              handleSliderChange(sliderMin, newMax);
-            }
-          }}
-          className="age-slider age-slider-max"
-        />
-      </div>
+      <DoubleRangeInput
+        min={18}
+        max={MAX_AGE}
+        value={[sliderMin, sliderMax]}
+        onChange={([min, max]) => handleSliderChange(min, max)}
+        minInput={
+          <input
+            type="text"
+            className="age-label-input"
+            value={minInput}
+            onChange={(e) => handleMinInputChange(e.target.value)}
+            onBlur={handleMinInputBlur}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.currentTarget.blur();
+              }
+            }}
+            placeholder="18"
+          />
+        }
+        maxInput={
+          <input
+            type="text"
+            className="age-label-input"
+            value={maxInput}
+            onChange={(e) => handleMaxInputChange(e.target.value)}
+            onBlur={handleMaxInputBlur}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.currentTarget.blur();
+              }
+            }}
+            placeholder={MAX_LABEL}
+          />
+        }
+      />
     </div>
   );
 
