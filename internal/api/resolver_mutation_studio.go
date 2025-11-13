@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
@@ -12,21 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
-
-// filterEmptyStrings removes empty and whitespace-only strings from a slice
-func filterEmptyStrings(vals []string) []string {
-	if vals == nil {
-		return nil
-	}
-	filtered := make([]string, 0, len(vals))
-	for _, s := range vals {
-		trimmed := strings.TrimSpace(s)
-		if trimmed != "" {
-			filtered = append(filtered, trimmed)
-		}
-	}
-	return filtered
-}
 
 // used to refetch studio after hooks run
 func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
@@ -53,7 +37,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
-	newStudio.Aliases = models.NewRelatedStrings(filterEmptyStrings(input.Aliases))
+	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
 	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
@@ -127,11 +111,6 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	// Populate studio from the input
 	updatedStudio := models.NewStudioPartial()
-
-	// Filter empty aliases from input
-	if input.Aliases != nil {
-		input.Aliases = filterEmptyStrings(input.Aliases)
-	}
 
 	updatedStudio.ID = studioID
 	updatedStudio.Name = translator.optionalString(input.Name, "name")

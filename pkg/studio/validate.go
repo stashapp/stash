@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
 var (
 	ErrNameMissing       = errors.New("studio name must not be blank")
+	ErrEmptyAlias        = errors.New("studio alias must not be an empty string")
 	ErrStudioOwnAncestor = errors.New("studio cannot be an ancestor of itself")
 )
 
@@ -62,18 +62,12 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.StudioQueryer) error {
-	// Filter out empty/whitespace-only aliases
-	filteredAliases := make([]string, 0, len(aliases))
+func ValidateAliases(ctx context.Context, id int, aliases []string, qb models.StudioQueryer) error {
 	for _, a := range aliases {
-		trimmed := strings.TrimSpace(a)
-		if trimmed != "" {
-			filteredAliases = append(filteredAliases, trimmed)
-		}
-	}
-
-	for _, a := range filteredAliases {
-		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
+		if err := validateName(ctx, id, a, qb); err != nil {
+			if err == ErrNameMissing {
+				return ErrEmptyAlias
+			}
 			return err
 		}
 	}
@@ -87,7 +81,7 @@ func ValidateCreate(ctx context.Context, studio models.Studio, qb models.StudioQ
 	}
 
 	if studio.Aliases.Loaded() && len(studio.Aliases.List()) > 0 {
-		if err := EnsureAliasesUnique(ctx, 0, studio.Aliases.List(), qb); err != nil {
+		if err := ValidateAliases(ctx, 0, studio.Aliases.List(), qb); err != nil {
 			return err
 		}
 	}
@@ -141,7 +135,7 @@ func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModi
 		}
 
 		effectiveAliases := s.Aliases.Apply(existing.Aliases.List())
-		if err := EnsureAliasesUnique(ctx, s.ID, effectiveAliases, qb); err != nil {
+		if err := ValidateAliases(ctx, s.ID, effectiveAliases, qb); err != nil {
 			return err
 		}
 	}
