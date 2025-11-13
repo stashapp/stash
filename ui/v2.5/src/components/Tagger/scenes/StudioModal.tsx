@@ -236,7 +236,10 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       image: studio.image,
       parent_id: studio.parent?.stored_id,
       details: studio.details,
-      aliases: studio.aliases?.split(",").map((a) => a.trim()),
+      aliases: studio.aliases
+        ?.split(",")
+        .map((a) => a.trim())
+        .filter((a) => a),
       tag_ids: studio.tags?.map((t) => t.stored_id).filter((id) => id) as
         | string[]
         | undefined,
@@ -270,7 +273,10 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         urls: studio.parent?.urls,
         image: studio.parent?.image,
         details: studio.parent?.details,
-        aliases: studio.parent?.aliases?.split(",").map((a) => a.trim()),
+        aliases: studio.parent?.aliases
+          ?.split(",")
+          .map((a) => a.trim())
+          .filter((a) => a),
         tag_ids: studio.parent?.tags
           ?.map((t) => t.stored_id)
           .filter((id) => id) as string[] | undefined,
