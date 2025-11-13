@@ -58,7 +58,13 @@ export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
       variables: {
         input: {
           name: toCreate.name,
-          url: toCreate.url,
+          urls: toCreate.urls,
+          aliases: toCreate.aliases?.split(",").map((a) => a.trim()) || [],
+          details: toCreate.details,
+          image: toCreate.image,
+          tag_ids: (toCreate.tags ?? [])
+            .filter((t) => t.stored_id)
+            .map((t) => t.stored_id!),
         },
       },
     });
