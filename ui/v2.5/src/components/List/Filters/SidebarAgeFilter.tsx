@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { CriterionOption } from "../../../models/list-filter/criteria/criterion";
 import { NumberCriterion } from "src/models/list-filter/criteria/criterion";
@@ -23,6 +23,7 @@ const AGE_PRESETS = [
 ];
 
 const MAX_AGE = 100; // Maximum age for the slider
+const MAX_LABEL = "99+"; // Display label for maximum age
 
 export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
   title,
@@ -42,8 +43,21 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
   const [sliderMax, setSliderMax] = useState(currentMax);
   const [minInput, setMinInput] = useState(currentMin.toString());
   const [maxInput, setMaxInput] = useState(
-    currentMax >= MAX_AGE ? "max" : currentMax.toString()
+    currentMax >= MAX_AGE ? MAX_LABEL : currentMax.toString()
   );
+
+  // Debounce timer ref
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Reset slider when criterion is removed externally (via filter tag X)
+  useEffect(() => {
+    if (!criterion) {
+      setSliderMin(18);
+      setSliderMax(MAX_AGE);
+      setMinInput("18");
+      setMaxInput(MAX_LABEL);
+    }
+  }, [criterion]);
 
   // Determine which preset is selected
   const selectedPreset = useMemo(() => {
@@ -114,11 +128,16 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     setSliderMin(preset.min);
     setSliderMax(preset.max ?? MAX_AGE);
     setMinInput(preset.min.toString());
-    setMaxInput(preset.max === null ? "max" : preset.max.toString());
+    setMaxInput(preset.max === null ? MAX_LABEL : preset.max.toString());
 
-    const currentCriteria = filter.criteriaFor(option.type) as NumberCriterion[];
-    const currentCriterion = currentCriteria.length > 0 ? currentCriteria[0] : null;
-    const newCriterion = currentCriterion ? currentCriterion.clone() : option.makeCriterion();
+    const currentCriteria = filter.criteriaFor(
+      option.type
+    ) as NumberCriterion[];
+    const currentCriterion =
+      currentCriteria.length > 0 ? currentCriteria[0] : null;
+    const newCriterion = currentCriterion
+      ? currentCriterion.clone()
+      : option.makeCriterion();
 
     if (preset.max === null) {
       // "60+" - use GreaterThan
@@ -139,15 +158,15 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     setSliderMin(18);
     setSliderMax(MAX_AGE);
     setMinInput("18");
-    setMaxInput("max");
+    setMaxInput(MAX_LABEL);
     setFilter(filter.removeCriterion(option.type));
   }
 
-  // Parse age input (supports formats like "25", "max")
+  // Parse age input (supports formats like "25", "99+")
   function parseAgeInput(input: string): number | null {
     const trimmed = input.trim().toLowerCase();
 
-    if (trimmed === "max") {
+    if (trimmed === "max" || trimmed === MAX_LABEL.toLowerCase()) {
       return MAX_AGE;
     }
 
@@ -159,21 +178,22 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     return age;
   }
 
-  function handleSliderChange(min: number, max: number) {
-    setSliderMin(min);
-    setSliderMax(max);
-    setMinInput(min.toString());
-    setMaxInput(max >= MAX_AGE ? "max" : max.toString());
-
+  // Debounced filter update
+  function updateFilter(min: number, max: number) {
     // If slider is at full range (18 to max), remove the filter entirely
     if (min === 18 && max >= MAX_AGE) {
       setFilter(filter.removeCriterion(option.type));
       return;
     }
 
-    const currentCriteria = filter.criteriaFor(option.type) as NumberCriterion[];
-    const currentCriterion = currentCriteria.length > 0 ? currentCriteria[0] : null;
-    const newCriterion = currentCriterion ? currentCriterion.clone() : option.makeCriterion();
+    const currentCriteria = filter.criteriaFor(
+      option.type
+    ) as NumberCriterion[];
+    const currentCriterion =
+      currentCriteria.length > 0 ? currentCriteria[0] : null;
+    const newCriterion = currentCriterion
+      ? currentCriterion.clone()
+      : option.makeCriterion();
 
     // If max is at MAX_AGE (but min > 18), use GreaterThan
     if (max >= MAX_AGE) {
@@ -187,6 +207,22 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     }
 
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
+  }
+
+  function handleSliderChange(min: number, max: number) {
+    setSliderMin(min);
+    setSliderMax(max);
+    setMinInput(min.toString());
+    setMaxInput(max >= MAX_AGE ? MAX_LABEL : max.toString());
+
+    // Debounce the filter update
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      updateFilter(min, max);
+    }, 300); // 300ms debounce
   }
 
   function handleMinInputChange(value: string) {
@@ -213,7 +249,7 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
       handleSliderChange(sliderMin, parsed);
     } else {
       // Reset to current value if invalid
-      setMaxInput(sliderMax >= MAX_AGE ? "max" : sliderMax.toString());
+      setMaxInput(sliderMax >= MAX_AGE ? MAX_LABEL : sliderMax.toString());
     }
   }
 
@@ -244,7 +280,7 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
               e.currentTarget.blur();
             }
           }}
-          placeholder="max"
+          placeholder={MAX_LABEL}
         />
       </div>
       <div className="age-slider-inputs">
