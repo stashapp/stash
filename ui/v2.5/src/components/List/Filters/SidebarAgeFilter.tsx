@@ -23,7 +23,7 @@ const AGE_PRESETS = [
 ];
 
 const MAX_AGE = 100; // Maximum age for the slider
-const MAX_LABEL = "99+"; // Display label for maximum age
+const MAX_LABEL = "100+"; // Display label for maximum age
 
 export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
   title,
@@ -162,7 +162,7 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
     setFilter(filter.removeCriterion(option.type));
   }
 
-  // Parse age input (supports formats like "25", "99+")
+  // Parse age input (supports formats like "25", "100+")
   function parseAgeInput(input: string): number | null {
     const trimmed = input.trim().toLowerCase();
 
