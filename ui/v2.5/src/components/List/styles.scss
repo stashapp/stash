@@ -1452,21 +1452,42 @@ input[type="range"].zoom-slider {
   width: 100%;
 
   &::-webkit-slider-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
     pointer-events: all;
     position: relative;
-    z-index: 2;
+    width: 18px;
   }
 
   &::-moz-range-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
     pointer-events: all;
     position: relative;
-    z-index: 2;
+    width: 18px;
   }
 
   &::-ms-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
     pointer-events: all;
     position: relative;
-    z-index: 2;
+    width: 18px;
   }
 }
 

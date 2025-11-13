@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { CriterionOption } from "../../../models/list-filter/criteria/criterion";
 import { DurationCriterion } from "src/models/list-filter/criteria/criterion";
@@ -24,6 +24,33 @@ const DURATION_PRESETS = [
 ];
 
 const MAX_DURATION = 7200; // 2 hours in seconds for the slider
+const MAX_LABEL = "2+ hrs"; // Display label for maximum duration
+
+// Custom step values: 0, 2min (120s), 5min (300s), then 5 minute intervals
+const DURATION_STEPS = [
+  0, 120, 300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600,
+  3900, 4200, 4500, 4800, 5100, 5400, 5700, 6000, 6300, 6600, 6900, 7200,
+];
+
+// Snap a value to the nearest valid step
+function snapToStep(value: number): number {
+  if (value <= 0) return 0;
+  if (value >= MAX_DURATION) return MAX_DURATION;
+
+  // Find the closest step
+  let closest = DURATION_STEPS[0];
+  let minDiff = Math.abs(value - closest);
+
+  for (const step of DURATION_STEPS) {
+    const diff = Math.abs(value - step);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = step;
+    }
+  }
+
+  return closest;
+}
 
 export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
   title,
@@ -46,9 +73,22 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
   );
   const [maxInput, setMaxInput] = useState(
     currentMax >= MAX_DURATION
-      ? "max"
+      ? MAX_LABEL
       : TextUtils.secondsAsTimeString(currentMax)
   );
+
+  // Debounce timer ref
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Reset slider when criterion is removed externally (via filter tag X)
+  useEffect(() => {
+    if (!criterion) {
+      setSliderMin(0);
+      setSliderMax(MAX_DURATION);
+      setMinInput("0m");
+      setMaxInput(MAX_LABEL);
+    }
+  }, [criterion]);
 
   // Determine which preset is selected
   const selectedPreset = useMemo(() => {
@@ -136,7 +176,9 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
       preset.min === 0 ? "0m" : TextUtils.secondsAsTimeString(preset.min)
     );
     setMaxInput(
-      preset.max === null ? "max" : TextUtils.secondsAsTimeString(preset.max)
+      preset.max === null
+        ? MAX_LABEL
+        : TextUtils.secondsAsTimeString(preset.max)
     );
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
   }
@@ -146,14 +188,14 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     setSliderMin(0);
     setSliderMax(MAX_DURATION);
     setMinInput("0m");
-    setMaxInput("max");
+    setMaxInput(MAX_LABEL);
   }
 
-  // Parse time input (supports formats like "10", "1:30", "1:30:00")
+  // Parse time input (supports formats like "10", "1:30", "1:30:00", "2+ hrs")
   function parseTimeInput(input: string): number | null {
     const trimmed = input.trim().toLowerCase();
 
-    if (trimmed === "max") {
+    if (trimmed === "max" || trimmed === MAX_LABEL.toLowerCase()) {
       return MAX_DURATION;
     }
 
@@ -180,14 +222,8 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     return null;
   }
 
-  function handleSliderChange(min: number, max: number) {
-    setSliderMin(min);
-    setSliderMax(max);
-    setMinInput(min === 0 ? "0m" : TextUtils.secondsAsTimeString(min));
-    setMaxInput(
-      max >= MAX_DURATION ? "max" : TextUtils.secondsAsTimeString(max)
-    );
-
+  // Debounced filter update
+  function updateFilter(min: number, max: number) {
     // If slider is at full range (0 to max), remove the filter entirely
     if (min === 0 && max >= MAX_DURATION) {
       setFilter(filter.removeCriterion(option.type));
@@ -208,6 +244,24 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     }
 
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
+  }
+
+  function handleSliderChange(min: number, max: number) {
+    setSliderMin(min);
+    setSliderMax(max);
+    setMinInput(min === 0 ? "0m" : TextUtils.secondsAsTimeString(min));
+    setMaxInput(
+      max >= MAX_DURATION ? MAX_LABEL : TextUtils.secondsAsTimeString(max)
+    );
+
+    // Debounce the filter update
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      updateFilter(min, max);
+    }, 300); // 300ms debounce
   }
 
   function handleMinInputChange(value: string) {
@@ -238,7 +292,7 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
       // Reset to current value if invalid
       setMaxInput(
         sliderMax >= MAX_DURATION
-          ? "max"
+          ? MAX_LABEL
           : TextUtils.secondsAsTimeString(sliderMax)
       );
     }
@@ -271,7 +325,7 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
               e.currentTarget.blur();
             }
           }}
-          placeholder="max"
+          placeholder={MAX_LABEL}
         />
       </div>
       <div className="duration-slider-inputs">
@@ -279,12 +333,13 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
           type="range"
           min={0}
           max={MAX_DURATION}
-          step={60}
+          step={1}
           value={sliderMin}
           onChange={(e) => {
-            const newMin = parseInt(e.target.value);
-            if (newMin < sliderMax) {
-              handleSliderChange(newMin, sliderMax);
+            const rawValue = parseInt(e.target.value);
+            const snapped = snapToStep(rawValue);
+            if (snapped < sliderMax) {
+              handleSliderChange(snapped, sliderMax);
             }
           }}
           className="duration-slider duration-slider-min"
@@ -293,12 +348,13 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
           type="range"
           min={0}
           max={MAX_DURATION}
-          step={60}
+          step={1}
           value={sliderMax}
           onChange={(e) => {
-            const newMax = parseInt(e.target.value);
-            if (newMax > sliderMin) {
-              handleSliderChange(sliderMin, newMax);
+            const rawValue = parseInt(e.target.value);
+            const snapped = snapToStep(rawValue);
+            if (snapped > sliderMin) {
+              handleSliderChange(sliderMin, snapped);
             }
           }}
           className="duration-slider duration-slider-max"
