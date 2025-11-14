@@ -3,6 +3,7 @@ import { ParseMode } from "./constants";
 import { queryFindStudio } from "src/core/StashService";
 import { mergeStashIDs } from "src/utils/stashbox";
 
+
 const months = [
   "jan",
   "feb",
@@ -92,6 +93,13 @@ const handleSpecialStrings = (input: string): string => {
   return output.replace(/-/g, " ");
 };
 
+function parseDate(input: string): string {
+  return input
+    .replace(/\./g, " ")
+    .replace(/ {2,}/g, " ")
+    .trim();
+}
+
 export function prepareQueryString(
   scene: Partial<GQL.SlimSceneDataFragment>,
   paths: string[],
@@ -99,19 +107,10 @@ export function prepareQueryString(
   mode: ParseMode,
   blacklist: string[]
 ) {
-  const regexs = blacklist
-    .map((b) => {
-      try {
-        return new RegExp(b, "gi");
-      } catch {
-        // ignore
-        return null;
-      }
-    })
-    .filter((r) => r !== null) as RegExp[];
+  let str = "";
 
   if ((mode === "auto" && scene.date && scene.studio) || mode === "metadata") {
-    let str = [
+    str = [
       scene.date,
       scene.studio?.name ?? "",
       (scene?.performers ?? []).map((p) => p.name).join(" "),
@@ -119,27 +118,51 @@ export function prepareQueryString(
     ]
       .filter((s) => s !== "")
       .join(" ");
-    regexs.forEach((re) => {
-      str = str.replace(re, " ");
-    });
-    return str;
-  }
-  let s = "";
-
-  if (mode === "auto" || mode === "filename") {
-    s = filename;
-  } else if (mode === "path") {
-    s = [...paths, filename].join(" ");
-  } else if (mode === "dir" && paths.length) {
-    s = paths[paths.length - 1];
+  } else {
+    if (mode === "auto" || mode === "filename") {
+      str = filename;
+    } else if (mode === "path") {
+      str = [...paths, filename].join(" ");
+    } else if (mode === "dir" && paths.length) {
+      str = paths[paths.length - 1];
+    }
   }
 
-  regexs.forEach((re) => {
-    s = s.replace(re, " ");
+  const regexReplacements = new Map<string, string>();
+  const regexs = blacklist
+    .map((entry) => {
+      let [pattern, replacement] = entry.split("||"); // Extract regex and replacement
+
+      try {
+        const compiledRegex = new RegExp(pattern, "gi");
+
+        if (replacement  !== undefined ){
+          regexReplacements.set(compiledRegex.source, replacement); // Store replacement
+        }
+
+        return compiledRegex;
+      } catch {
+        return null; // Ignore invalid regex patterns
+      }
+    })
+    .filter((r) => r !== null) as RegExp[];
+
+  // Apply regex filtering and replacements
+  regexs.forEach((regex) => {
+    const replacement = regexReplacements.get(regex.source);
+    if (replacement) {
+      str = str.replace(regex, (match:string, ...groups: string[]) => {
+        return replacement.replace(/\\(\d+)/g, (_, groupIndex) => groups[parseInt(groupIndex, 10) - 1] || "");
+      });
+    } else {
+      str = str.replace(regex, "");
+    }
   });
-  s = handleSpecialStrings(s);
-  return s.replace(/\./g, " ").replace(/ +/g, " ");
+  str = handleSpecialStrings(str);
+  str = parseDate(str);
+  return str;
 }
+
 
 export const parsePath = (filePath: string) => {
   if (!filePath) {
