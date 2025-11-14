@@ -19,6 +19,10 @@ export const useConfigurationContext = () => {
   return context;
 };
 
+export const useConfigurationContextOptional = () => {
+  return React.useContext(ConfigurationContext);
+};
+
 export const ConfigurationProvider: React.FC<IContext> = ({
   configuration,
   children,

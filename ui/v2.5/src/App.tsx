@@ -31,7 +31,10 @@ import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
-import { ConfigurationProvider, useConfigurationContext } from "./hooks/Config";
+import {
+  ConfigurationProvider,
+  useConfigurationContextOptional,
+} from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
@@ -105,8 +108,9 @@ const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
 ) as React.FC;
 
 const MainContainer: React.FC = ({ children }) => {
-  const { configuration } = useConfigurationContext();
-  const { sfwContentMode } = configuration.interface;
+  // use optional here because the configuration may have be loading or errored
+  const { configuration } = useConfigurationContextOptional() || {};
+  const { sfwContentMode } = configuration?.interface || {};
 
   return (
     <div
