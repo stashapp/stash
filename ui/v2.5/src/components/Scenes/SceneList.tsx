@@ -55,6 +55,8 @@ import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { DurationCriterionOption } from "src/models/list-filter/scenes";
+import { SidebarDurationFilter } from "../List/Filters/SidebarDurationFilter";
 import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
@@ -319,6 +321,13 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           sectionID="rating"
+        />
+        <SidebarDurationFilter
+          title={<FormattedMessage id="duration" />}
+          option={DurationCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="duration"
         />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}

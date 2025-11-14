@@ -59,6 +59,10 @@ type ScrapedStudio {
   urls: [String!]
   parent: ScrapedStudio
   image: String
+  details: String
+  "Aliases must be comma-delimited to be parsed correctly"
+  aliases: String
+  tags: [ScrapedTag!]
 
   remote_site_id: String
 }
@@ -67,6 +71,8 @@ type ScrapedTag {
   "Set if tag matched"
   stored_id: ID
   name: String!
+  "Remote site ID, if applicable"
+  remote_site_id: String
 }
 
 type ScrapedScene {

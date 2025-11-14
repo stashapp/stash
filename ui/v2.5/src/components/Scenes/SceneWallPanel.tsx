@@ -83,6 +83,7 @@ export const SceneWallItem: React.FC<
         loop={video}
         muted={!video || !playSound || !active}
         autoPlay={video}
+        playsInline={video}
         key={props.photo.key}
         src={props.photo.src}
         width={width}

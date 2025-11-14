@@ -43,7 +43,9 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
     const value = resultValue ? [resultValue] : [];
 
     const selectValue = value.map((p) => {
-      const aliases: string[] = [];
+      const aliases: string[] = p.aliases
+        ? p.aliases.split(",").map((a) => a.trim())
+        : [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
@@ -57,10 +59,11 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            const { id, ...data } = items[0];
+            const { id, aliases, ...data } = items[0];
             onChangeFn({
               ...data,
               stored_id: id,
+              aliases: aliases?.join(", "),
             });
           }
         }}
