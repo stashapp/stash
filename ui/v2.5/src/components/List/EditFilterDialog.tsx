@@ -1,7 +1,6 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -14,7 +13,7 @@ import {
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
@@ -65,6 +64,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   onTogglePin,
   externallySelected = false,
 }) => {
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
+
   const prevCriterion = usePrevious(currentCriterion);
 
   const scrolled = useRef(false);
@@ -148,7 +150,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               className="collapse-icon fa-fw"
               icon={type === c.type ? faChevronDown : faChevronRight}
             />
-            <FormattedMessage id={c.messageID} />
+            <FormattedMessage
+              id={!sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID}
+            />
           </span>
           {criteria.some((cc) => c.type === cc) && (
             <Button
@@ -233,7 +237,8 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const Toast = useToast();
   const intl = useIntl();
 
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
@@ -265,10 +270,16 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       .filter((c) => !c.hidden)
       .sort((a, b) => {
         return intl
-          .formatMessage({ id: a.messageID })
-          .localeCompare(intl.formatMessage({ id: b.messageID }));
+          .formatMessage({
+            id: !sfwContentMode ? a.messageID : a.sfwMessageID ?? a.messageID,
+          })
+          .localeCompare(
+            intl.formatMessage({
+              id: !sfwContentMode ? b.messageID : b.sfwMessageID ?? b.messageID,
+            })
+          );
       });
-  }, [intl, filterOptions.criterionOptions]);
+  }, [intl, sfwContentMode, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -302,11 +313,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
     return criterionOptions.filter((c) => {
       return intl
-        .formatMessage({ id: c.messageID })
+        .formatMessage({
+          id: !sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID,
+        })
         .toLowerCase()
         .includes(trimmedSearch);
     });
-  }, [intl, searchValue, criterionOptions]);
+  }, [intl, sfwContentMode, searchValue, criterionOptions]);
 
   const pinnedFilters = useMemo(
     () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],
@@ -517,7 +530,10 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       <Modal
         show={!showSaveDialog && !showLoadDialog}
         onHide={() => onCancel()}
-        className="edit-filter-dialog"
+        // need sfw mode class because dialog is outside body
+        className={cx("edit-filter-dialog", {
+          "sfw-content-mode": sfwContentMode,
+        })}
       >
         <Modal.Header>
           <div>

@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 interface IDetailItem {
   id?: string | null;
+  className?: string;
   label?: React.ReactNode;
   value?: React.ReactNode;
   labelTitle?: string;
@@ -13,6 +14,7 @@ interface IDetailItem {
 
 export const DetailItem: React.FC<IDetailItem> = ({
   id,
+  className = "",
   label,
   value,
   labelTitle,
@@ -30,7 +32,7 @@ export const DetailItem: React.FC<IDetailItem> = ({
   const sanitisedID = id.replace(/_/g, "-");
 
   return (
-    <div className={`detail-item ${id}`}>
+    <div className={`detail-item ${id} ${className}`}>
       <span className={`detail-item-title ${sanitisedID}`} title={labelTitle}>
         {message}
         {fullWidth ? ":" : ""}

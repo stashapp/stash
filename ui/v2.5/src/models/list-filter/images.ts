@@ -31,6 +31,7 @@ const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
     {
       messageID: "o_count",
       value: "o_counter",
+      sfwMessageID: "o_count_sfw",
     },
   ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
@@ -43,7 +44,9 @@ const criterionOptions = [
   PathCriterionOption,
   GalleriesCriterionOption,
   OrganizedCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   ImageIsMissingCriterionOption,

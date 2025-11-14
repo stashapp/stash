@@ -162,6 +162,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	disableDropdownCreate := config.GetDisableDropdownCreate()
 
 	return &ConfigInterfaceResult{
+		SfwContentMode:               config.GetSFWContentMode(),
 		MenuItems:                    menuItems,
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,

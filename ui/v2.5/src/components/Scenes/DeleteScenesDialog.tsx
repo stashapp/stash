@@ -4,7 +4,7 @@ import { useScenesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { objectPath } from "src/core/files";
@@ -34,7 +34,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
     { count: props.selected.length, singularEntity, pluralEntity }
   );
 
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const [deleteFile, setDeleteFile] = useState<boolean>(
     config?.defaults.deleteFile ?? false

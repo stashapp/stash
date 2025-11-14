@@ -2,7 +2,7 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import { CriterionModifier } from "src/core/generated-graphql";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   ModifierCriterion,
   CriterionValue,
@@ -17,7 +17,7 @@ export const PathFilter: React.FC<IInputFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
   // don't show folder select for regex

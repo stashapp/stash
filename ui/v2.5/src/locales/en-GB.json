@@ -784,6 +784,10 @@
         "description": "Number of times to attempt to scroll before moving to the next/previous item. Only applies for Pan Y scroll mode.",
         "heading": "Scroll attempts before transition"
       },
+      "sfw_mode": {
+        "description": "Enable if using stash to store SFW content. Hides or changes some adult-content-related aspects of the UI.",
+        "heading": "SFW Content Mode"
+      },
       "show_tag_card_on_hover": {
         "description": "Show tag card when hovering tag badges",
         "heading": "Tag card tooltips"
@@ -897,6 +901,7 @@
   "developmentVersion": "Development Version",
   "dialogs": {
     "clear_o_history_confirm": "Are you sure you want to clear the O history?",
+    "clear_o_history_confirm_sfw": "Are you sure you want to clear the like history?",
     "clear_play_history_confirm": "Are you sure you want to clear the play history?",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
@@ -1158,6 +1163,7 @@
   "interactive_speed": "Interactive Speed",
   "isMissing": "Is Missing",
   "last_o_at": "Last O At",
+  "last_o_at_sfw": "Last Like At",
   "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
@@ -1198,9 +1204,11 @@
   "new": "New",
   "none": "None",
   "o_count": "O Count",
-  "o_counter": "O-Counter",
+  "o_count_sfw": "Likes",
   "o_history": "O History",
+  "o_history_sfw": "Like History",
   "odate_recorded_no": "No O Date Recorded",
+  "odate_recorded_no_sfw": "No Like Date Recorded",
   "operations": "Operations",
   "organized": "Organised",
   "orientation": "Orientation",
@@ -1377,25 +1385,28 @@
     },
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
-      "description": "Next up, we need to determine where to find your porn collection, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
+      "description": "Next up, we need to determine where to find your content, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
       "path_to_blobs_directory_empty_for_default": "path to blobs directory (empty for default)",
       "path_to_cache_directory_empty_for_default": "path to cache directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
       "set_up_your_paths": "Set up your paths",
+      "sfw_content_settings": "Using stash for SFW content?",
+      "sfw_content_settings_description": "stash can be used to manage SFW content such as photography, art, comics, and more. Enabling this option will adjust some UI behaviour to be more appropriate for SFW content.",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
       "store_blobs_in_database": "Store blobs in database",
+      "use_sfw_content_mode": "Use SFW content mode",
       "where_can_stash_store_blobs": "Where can Stash store database binary data?",
       "where_can_stash_store_blobs_description": "Stash can store binary data such as scene covers, performer, studio and tag images either in the database or in the filesystem. By default, it will store this data in the filesystem in the subdirectory <code>blobs</code> within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_can_stash_store_blobs_description_addendum": "Alternatively, you can store this data in the database. <strong>Note:</strong> This will increase the size of your database file, and will increase database migration times.",
       "where_can_stash_store_cache_files": "Where can Stash store cache files?",
       "where_can_stash_store_cache_files_description": "In order for some functionality like HLS/DASH live transcoding to function, Stash requires a cache directory for temporary files. By default, Stash will create a <code>cache</code> directory within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_can_stash_store_its_database": "Where can Stash store its database?",
-      "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your content metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
       "where_can_stash_store_its_database_warning": "WARNING: storing the database on a different system to where Stash is run from (e.g. storing the database on a NAS while running the Stash server on another computer) is <strong>unsupported</strong>! SQLite is not intended for use across a network, and attempting to do so can very easily cause your entire database to become corrupted.",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
-      "where_is_your_porn_located": "Where is your porn located?",
-      "where_is_your_porn_located_description": "Add directories containing your porn videos and images. Stash will use these directories to find videos and images during scanning."
+      "where_is_your_porn_located": "Where is your content located?",
+      "where_is_your_porn_located_description": "Add directories containing your videos and images. Stash will use these directories to find videos and images during scanning."
     },
     "stash_setup_wizard": "Stash Setup Wizard",
     "success": {

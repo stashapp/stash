@@ -19,7 +19,7 @@ import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
@@ -103,7 +103,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setStudio(scene.studio ?? null);
   }, [scene.studio]);
 
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);

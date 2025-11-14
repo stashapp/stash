@@ -1,6 +1,5 @@
-import { useContext } from "react";
 import { useConfigureUI } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useToast } from "./Toast";
 
 export const useTableColumns = (
@@ -9,7 +8,7 @@ export const useTableColumns = (
 ) => {
   const Toast = useToast();
 
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const [saveUI] = useConfigureUI();
 
   const ui = configuration?.ui;

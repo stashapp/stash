@@ -17,7 +17,7 @@ import {
   useTagCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 import { errorToString } from "src/utils";
 import { mergeStudioStashIDs } from "./utils";
@@ -117,7 +117,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
   const stopping = useRef(false);
 
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
 
   const Scrapers = useListSceneScrapers();

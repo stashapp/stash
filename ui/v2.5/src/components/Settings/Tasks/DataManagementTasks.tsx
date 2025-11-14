@@ -22,7 +22,7 @@ import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import {
   faMinus,
@@ -44,7 +44,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
   onClose,
 }) => {
   const intl = useIntl();
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 

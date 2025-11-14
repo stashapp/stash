@@ -21,6 +21,7 @@ type SetupInput struct {
 	// Empty to indicate $HOME/.stash/config.yml default
 	ConfigLocation string                     `json:"configLocation"`
 	Stashes        []*config.StashConfigInput `json:"stashes"`
+	SFWContentMode bool                       `json:"sfwContentMode"`
 	// Empty to indicate default
 	DatabaseFile string `json:"databaseFile"`
 	// Empty to indicate default

@@ -5,7 +5,6 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
-import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
 import { GridCard } from "src/components/Shared/GridCard/GridCard";
 import { RatingBanner } from "src/components/Shared/RatingBanner";
@@ -18,6 +17,7 @@ import {
 import { imageTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { OCounterButton } from "../Shared/CountButton";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -74,16 +74,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
 
   function maybeRenderOCounter() {
     if (props.image.o_counter) {
-      return (
-        <div className="o-count">
-          <Button className="minimal">
-            <span className="fa-icon">
-              <SweatDrops />
-            </span>
-            <span>{props.image.o_counter}</span>
-          </Button>
-        </div>
-      );
+      return <OCounterButton value={props.image.o_counter} />;
     }
   }
 

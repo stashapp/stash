@@ -103,10 +103,14 @@ export function formikUtils<V extends FormikValues>(
     },
   }: IProps = {}
 ) {
-  type Field = keyof V & string;
+  type FieldName = keyof V & string;
   type ErrorMessage = string | undefined;
 
-  function renderFormControl(field: Field, type: string, placeholder: string) {
+  function renderFormControl(
+    field: FieldName,
+    type: string,
+    placeholder: string
+  ) {
     const formikProps = formik.getFieldProps({ name: field, type: type });
     const error = formik.errors[field] as ErrorMessage;
 
@@ -168,38 +172,90 @@ export function formikUtils<V extends FormikValues>(
     );
   }
 
-  function renderField(
-    field: Field,
-    title: string,
-    control: React.ReactNode,
-    props?: IProps
-  ) {
+  const FieldGroup: React.FC<{
+    field: FieldName;
+    title: string;
+    control: React.ReactNode;
+    props?: IProps;
+    className?: string;
+  }> = ({ field, title, control, props, className }) => {
     return (
-      <Form.Group controlId={field} as={Row}>
+      <Form.Group
+        controlId={field}
+        as={Row}
+        className={className ?? ""}
+        data-field={field}
+      >
         <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
         <Col {...(props?.fieldProps ?? fieldProps)}>{control}</Col>
       </Form.Group>
     );
+  };
+
+  function renderField(
+    field: FieldName,
+    title: string,
+    control: React.ReactNode,
+    props?: IProps,
+    className?: string
+  ) {
+    return (
+      <FieldGroup
+        field={field}
+        title={title}
+        control={control}
+        props={props}
+        className={className}
+      />
+    );
   }
 
-  function renderInputField(
-    field: Field,
-    type: string = "text",
-    messageID: string = field,
-    props?: IProps
-  ) {
+  const InputFieldGroup: React.FC<{
+    field: FieldName;
+    type?: string;
+    messageID?: string;
+    props?: IProps;
+    className?: string;
+  }> = ({ field, type = "text", messageID = field, props, className }) => {
     const title = intl.formatMessage({ id: messageID });
     const control = renderFormControl(field, type, title);
 
-    return renderField(field, title, control, props);
+    return (
+      <FieldGroup
+        field={field}
+        title={title}
+        control={control}
+        props={props}
+        className={className}
+      />
+    );
+  };
+
+  function renderInputField(
+    field: FieldName,
+    type: string = "text",
+    messageID: string = field,
+    props?: IProps,
+    className?: string
+  ) {
+    return (
+      <InputFieldGroup
+        field={field}
+        type={type}
+        messageID={messageID}
+        props={props}
+        className={className}
+      />
+    );
   }
 
-  function renderSelectField(
-    field: Field,
-    entries: Map<string, string>,
-    messageID: string = field,
-    props?: IProps
-  ) {
+  const SelectFieldGroup: React.FC<{
+    field: FieldName;
+    className?: string;
+    entries: Map<string, string>;
+    messageID?: string;
+    props?: IProps;
+  }> = ({ field, className, entries, messageID = field, props }) => {
     const formikProps = formik.getFieldProps(field);
 
     let { value } = formikProps;
@@ -224,11 +280,35 @@ export function formikUtils<V extends FormikValues>(
       </Form.Control>
     );
 
-    return renderField(field, title, control, props);
+    return (
+      <FieldGroup
+        className={className}
+        field={field}
+        title={title}
+        control={control}
+        props={props}
+      />
+    );
+  };
+
+  function renderSelectField(
+    field: FieldName,
+    entries: Map<string, string>,
+    messageID: string = field,
+    props?: IProps
+  ) {
+    return (
+      <SelectFieldGroup
+        field={field}
+        entries={entries}
+        messageID={messageID}
+        props={props}
+      />
+    );
   }
 
   function renderDateField(
-    field: Field,
+    field: FieldName,
     messageID: string = field,
     props?: IProps
   ) {
@@ -248,7 +328,7 @@ export function formikUtils<V extends FormikValues>(
   }
 
   function renderDurationField(
-    field: Field,
+    field: FieldName,
     messageID: string = field,
     props?: IProps
   ) {
@@ -268,7 +348,7 @@ export function formikUtils<V extends FormikValues>(
   }
 
   function renderRatingField(
-    field: Field,
+    field: FieldName,
     messageID: string = field,
     props?: IProps
   ) {
@@ -309,7 +389,7 @@ export function formikUtils<V extends FormikValues>(
   }
 
   function renderStringListField(
-    field: Field,
+    field: FieldName,
     messageID: string = field,
     props?: IProps
   ) {
@@ -332,7 +412,7 @@ export function formikUtils<V extends FormikValues>(
   }
 
   function renderURLListField(
-    field: Field,
+    field: FieldName,
     onScrapeClick?: (url: string) => void,
     urlScrapable?: (url: string) => boolean,
     messageID: string = field,
@@ -359,7 +439,7 @@ export function formikUtils<V extends FormikValues>(
   }
 
   function renderStashIDsField(
-    field: Field,
+    field: FieldName,
     linkType: LinkType,
     messageID: string = field,
     props?: IProps
@@ -405,8 +485,11 @@ export function formikUtils<V extends FormikValues>(
   return {
     renderFormControl,
     renderField,
+    FieldGroup,
     renderInputField,
+    InputFieldGroup,
     renderSelectField,
+    SelectFieldGroup,
     renderDateField,
     renderDurationField,
     renderRatingField,

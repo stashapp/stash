@@ -1,5 +1,5 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useHistory,
   Link,
@@ -41,7 +41,7 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
 
@@ -59,7 +59,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);

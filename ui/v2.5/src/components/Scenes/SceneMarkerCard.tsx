@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
@@ -6,7 +6,7 @@ import { TagLink } from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { markerTitle } from "src/core/markers";
@@ -109,7 +109,7 @@ const SceneMarkerCardDetails = (props: ISceneMarkerCardProps) => {
 };
 
 const SceneMarkerCardImage = (props: ISceneMarkerCardProps) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const file = useMemo(
     () =>

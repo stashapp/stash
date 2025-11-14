@@ -1,7 +1,6 @@
 import React, {
   PropsWithChildren,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -43,7 +42,7 @@ import {
   IItemListOperation,
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IFilteredItemList<T extends QueryResult, E extends IHasID = IHasID> {
   filterStateProps: IFilterStateHook;
@@ -55,7 +54,7 @@ export function useFilteredItemList<
   T extends QueryResult,
   E extends IHasID = IHasID
 >(props: IFilteredItemList<T, E>) {
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   // States
   const filterState = useFilterState({
@@ -393,7 +392,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
     children,
   } = props;
 
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const emptyFilter = useMemo(
     () =>
@@ -409,12 +408,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
       new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
   );
 
-  const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(
-    emptyFilter,
-    view
-  );
-
-  if (defaultFilterLoading) return null;
+  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
 
   return (
     <FilterContext filter={filter} setFilter={setFilterState}>

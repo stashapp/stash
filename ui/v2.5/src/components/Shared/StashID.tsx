@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { StashId } from "src/core/generated-graphql";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "./ExternalLink";
 
@@ -10,7 +10,7 @@ export const StashIDPill: React.FC<{
   stashID: Pick<StashId, "endpoint" | "stash_id">;
   linkType: LinkType;
 }> = ({ stashID, linkType }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const { endpoint, stash_id } = stashID;
 

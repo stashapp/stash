@@ -2,6 +2,8 @@ input SetupInput {
   "Empty to indicate $HOME/.stash/config.yml default"
   configLocation: String!
   stashes: [StashConfigInput!]!
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean
   "Empty to indicate default"
   databaseFile: String!
   "Empty to indicate default"
@@ -341,6 +343,9 @@ type ConfigImageLightboxResult {
 }
 
 input ConfigInterfaceInput {
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean
+
   "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
 
@@ -407,6 +412,9 @@ type ConfigDisableDropdownCreate {
 }
 
 type ConfigInterfaceResult {
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean!
+
   "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
 

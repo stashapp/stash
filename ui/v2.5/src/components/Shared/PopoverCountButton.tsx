@@ -11,14 +11,14 @@ import React from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FormattedNumber, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { Icon } from "./Icon";
 
 export const Count: React.FC<{
   count: number;
 }> = ({ count }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const abbreviateCounter = configuration?.ui.abbreviateCounters ?? false;
 
   if (!abbreviateCounter) {

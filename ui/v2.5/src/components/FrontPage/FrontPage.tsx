@@ -6,7 +6,7 @@ import { Button } from "react-bootstrap";
 import { FrontPageConfig } from "./FrontPageConfig";
 import { useToast } from "src/hooks/Toast";
 import { Control } from "./Control";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   FrontPageContent,
   generateDefaultFrontPageContent,
@@ -24,7 +24,7 @@ const FrontPage: React.FC = PatchComponent("FrontPage", () => {
 
   const [saveUI] = useConfigureUI();
 
-  const { configuration, loading } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   useScrollToTopOnMount();
 
@@ -51,7 +51,7 @@ const FrontPage: React.FC = PatchComponent("FrontPage", () => {
     setSaving(false);
   }
 
-  if (loading || saving) {
+  if (saving) {
     return <LoadingIndicator />;
   }
 

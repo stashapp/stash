@@ -19,7 +19,7 @@ import {
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { SceneQueue } from "src/models/sceneQueue";
 
 interface ITaggerSceneDetails {
@@ -154,7 +154,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
 
   const history = useHistory();
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
   async function query() {

@@ -4,6 +4,15 @@
 
 Setting the language affects the formatting of numbers and dates.
 
+## SFW Content Mode
+
+SFW Content Mode is used to indicate that the content being managed is _not_ adult content. 
+
+When SFW Content Mode is enabled, the following changes are made to the UI:
+- default performer images are changed to less adult-oriented images
+- certain adult-specific metadata fields are hidden (e.g. performer genital fields)
+- `O`-Counter is replaced with `Like`-counter
+
 ## Scene/Marker Wall Preview Type
 
 The Scene Wall and Marker pages display scene preview videos (mp4) by default. This can be changed to animated image (webp) or static image. 

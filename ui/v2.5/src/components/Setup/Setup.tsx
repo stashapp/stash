@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   Alert,
@@ -15,7 +15,7 @@ import {
   useSystemStatus,
 } from "src/core/StashService";
 import { useHistory } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -518,6 +518,10 @@ const SetPathsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
   const [stashes, setStashes] = useState<GQL.StashConfig[]>(
     setupState.stashes ?? []
   );
+  const [sfwContentMode, setSfwContentMode] = useState(
+    setupState.sfwContentMode ?? false
+  );
+
   const [databaseFile, setDatabaseFile] = useState(
     setupState.databaseFile ?? ""
   );
@@ -555,6 +559,7 @@ const SetPathsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
       cacheLocation,
       blobsLocation: storeBlobsInDatabase ? "" : blobsLocation,
       storeBlobsInDatabase,
+      sfwContentMode,
     };
     next(input);
   }
@@ -591,6 +596,22 @@ const SetPathsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
             <StashConfiguration
               stashes={stashes}
               setStashes={(s) => setStashes(s)}
+            />
+          </Card>
+        </Form.Group>
+        <Form.Group id="sfw_content">
+          <h3>
+            <FormattedMessage id="setup.paths.sfw_content_settings" />
+          </h3>
+          <p>
+            <FormattedMessage id="setup.paths.sfw_content_settings_description" />
+          </p>
+          <Card>
+            <Form.Check
+              id="use-sfw-content-mode"
+              checked={sfwContentMode}
+              label={<FormattedMessage id="setup.paths.use_sfw_content_mode" />}
+              onChange={() => setSfwContentMode(!sfwContentMode)}
             />
           </Card>
         </Form.Group>
@@ -952,8 +973,7 @@ const FinishStep: React.FC<IWizardStep> = ({ goBack }) => {
 
 export const Setup: React.FC = () => {
   const intl = useIntl();
-  const { configuration, loading: configLoading } =
-    useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const [saveUI] = useConfigureUI();
 
@@ -1024,7 +1044,7 @@ export const Setup: React.FC = () => {
     }
   }
 
-  if (configLoading || statusLoading) {
+  if (statusLoading) {
     return <LoadingIndicator />;
   }
 
