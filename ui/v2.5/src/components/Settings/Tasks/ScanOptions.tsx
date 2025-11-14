@@ -1,15 +1,21 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { BooleanSetting } from "../Inputs";
+import { BooleanSetting, ModalSetting } from "../Inputs";
+import { DurationInput } from "../../Shared/DurationInput";
+import TextUtils from "../../../utils/text";
 
 interface IScanOptions {
   options: GQL.ScanMetadataInput;
+  filters: GQL.ScanMetaDataFilterInput;
   setOptions: (s: GQL.ScanMetadataInput) => void;
+  setFilters: (s: GQL.ScanMetaDataFilterInput) => void;
 }
 
 export const ScanOptions: React.FC<IScanOptions> = ({
   options,
+  filters,
   setOptions: setOptionsState,
+  setFilters: setFiltersState,
 }) => {
   const {
     scanGenerateCovers,
@@ -22,8 +28,14 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     rescan,
   } = options;
 
+  const { minDuration } = filters;
+
   function setOptions(input: Partial<GQL.ScanMetadataInput>) {
     setOptionsState({ ...options, ...input });
+  }
+
+  function setFilters(input: Partial<GQL.ScanMetaDataFilterInput>) {
+    setFiltersState({ ...filters, ...input });
   }
 
   return (
@@ -84,6 +96,22 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         tooltipID="config.tasks.rescan_tooltip"
         checked={rescan ?? false}
         onChange={(v) => setOptions({ rescan: v })}
+      />
+      <ModalSetting<number>
+        id="duration-filter"
+        headingID="config.tasks.filter_duration_during_scan"
+        tooltipID="config.tasks.filter_duration_during_scan_tooltip"
+        value={minDuration ?? undefined}
+        onChange={(v) => setFilters({ minDuration: v })}
+        renderField={(value, setValue) => (
+          <DurationInput
+            value={value}
+            setValue={(duration) => setValue(duration ?? 0)}
+          />
+        )}
+        renderValue={(v) => {
+          return <span>{TextUtils.secondsToTimestamp(v ?? 0)}</span>;
+        }}
       />
     </>
   );
