@@ -65,7 +65,7 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.
 func ValidateAliases(ctx context.Context, id int, aliases []string, qb models.StudioQueryer) error {
 	for _, a := range aliases {
 		if err := validateName(ctx, id, a, qb); err != nil {
-			if err == ErrNameMissing {
+			if errors.Is(err, ErrNameMissing) {
 				return ErrEmptyAlias
 			}
 			return err
