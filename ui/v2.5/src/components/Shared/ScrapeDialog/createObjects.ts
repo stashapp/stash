@@ -58,7 +58,11 @@ export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
     const input: GQL.StudioCreateInput = {
       name: toCreate.name,
       urls: toCreate.urls,
-      aliases: toCreate.aliases?.split(",").map((a) => a.trim()) || [],
+      aliases:
+        toCreate.aliases
+          ?.split(",")
+          .map((a) => a.trim())
+          .filter((a) => a) || [],
       details: toCreate.details,
       image: toCreate.image,
       tag_ids: (toCreate.tags ?? [])
