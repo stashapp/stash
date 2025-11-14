@@ -17,4 +17,5 @@ fragment SlimStudioData on Studio {
     id
     name
   }
+  o_counter
 }

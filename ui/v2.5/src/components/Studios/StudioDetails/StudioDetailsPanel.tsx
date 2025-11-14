@@ -87,6 +87,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         value={renderStashIDs()}
         fullWidth={fullWidth}
       />
+      <DetailItem id="o_counter" value={studio.o_counter} fullWidth={fullWidth} />
     </div>
   );
 };

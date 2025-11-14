@@ -25,6 +25,7 @@ type Studio {
   updated_at: Time!
   groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
+  o_counter: Int
 }
 
 input StudioCreateInput {

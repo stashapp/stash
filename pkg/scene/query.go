@@ -156,3 +156,14 @@ func CountByGroupID(ctx context.Context, r models.SceneQueryer, id int, depth *i
 
 	return r.QueryCount(ctx, filter, nil)
 }
+
+func OCountByStudioID(ctx context.Context, r models.SceneQueryer, id int, depth *int) (int, error) {
+	filter := &models.SceneFilterType{
+		Studios: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(id)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    depth,
+		},
+	}
+	return r.OCountByStudioID(ctx, filter)
+}
