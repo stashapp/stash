@@ -4,10 +4,7 @@
   // hide adult-oriented performer fields in sort by select
   .sort-by-select,
   .performer-table {
-    [data-value="death_date"],
     [data-value="ethnicity"],
-    [data-value="height"],
-    [data-value="height_cm"],
     [data-value="hair_color"],
     [data-value="eye_color"],
     [data-value="measurements"],
@@ -24,13 +21,11 @@
   .performer-table {
     td,
     th {
-      &.death_date,
       &.ethnicity,
       &.hair_color,
       &.eye_color,
       &.height,
       &.measurements,
-      &.height_cm,
       &.weight_kg,
       &.penis_length_cm,
       &.circumcised,
@@ -45,11 +40,9 @@
 
   #performer-edit,
   &.scrape-dialog {
-    [data-field="death_date"],
     [data-field="ethnicity"],
     [data-field="hair_color"],
     [data-field="eye_color"],
-    [data-field="height_cm"],
     [data-field="measurements"],
     [data-field="weight"],
     [data-field="penis_length"],
@@ -62,12 +55,9 @@
   }
 
   &.edit-filter-dialog {
-    [data-type="death_date"],
-    [data-type="death_year"],
     [data-type="ethnicity"],
     [data-type="hair_color"],
     [data-type="eye_color"],
-    [data-type="height_cm"],
     [data-type="measurements"],
     [data-type="weight"],
     [data-type="penis_length"],
@@ -80,11 +70,9 @@
   }
 
   #performer-page {
-    .detail-item.death_date,
     .detail-item.ethnicity,
     .detail-item.hair_color,
     .detail-item.eye_color,
-    .detail-item.height,
     .detail-item.measurements,
     .detail-item.weight,
     .detail-item.penis_length,
