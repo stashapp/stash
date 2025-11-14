@@ -80,6 +80,11 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
       deletedFiles.push(...paths);
     });
 
+    const deleteTrashPath = config?.general.deleteTrashPath;
+    const deleteAlertId = deleteTrashPath
+      ? "dialogs.delete_alert_to_trash"
+      : "dialogs.delete_alert";
+
     return (
       <div className="delete-dialog alert alert-danger text-break">
         <p className="font-weight-bold">
@@ -89,7 +94,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
               singularEntity: intl.formatMessage({ id: "file" }),
               pluralEntity: intl.formatMessage({ id: "files" }),
             }}
-            id="dialogs.delete_alert"
+            id={deleteAlertId}
           />
         </p>
         <ul>

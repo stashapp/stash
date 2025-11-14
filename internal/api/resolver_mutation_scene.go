@@ -428,10 +428,11 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	}
 
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	var s *models.Scene
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -482,9 +483,10 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 	var scenes []*models.Scene
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -593,8 +595,9 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	mgr := manager.GetInstance()
+	trashPath := mgr.Config.GetDeleteTrashPath()
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
 	}
@@ -736,9 +739,10 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	}
 
 	mgr := manager.GetInstance()
+	trashPath := mgr.Config.GetDeleteTrashPath()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
 	}
@@ -949,9 +953,10 @@ func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []
 
 	var markers []*models.SceneMarker
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}

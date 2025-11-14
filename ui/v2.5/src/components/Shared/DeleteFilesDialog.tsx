@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { mutateDeleteFiles } from "src/core/StashService";
 import { ModalComponent } from "./Modal";
 import { useToast } from "src/hooks/Toast";
+import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
@@ -53,8 +54,15 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
     setIsDeleting(false);
   }
 
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
   function renderDeleteFileAlert() {
     const deletedFiles = props.selected.map((f) => f.path);
+
+    const deleteTrashPath = config?.general.deleteTrashPath;
+    const deleteAlertId = deleteTrashPath
+      ? "dialogs.delete_alert_to_trash"
+      : "dialogs.delete_alert";
 
     return (
       <div className="delete-dialog alert alert-danger text-break">
@@ -65,7 +73,7 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
               singularEntity: intl.formatMessage({ id: "file" }),
               pluralEntity: intl.formatMessage({ id: "files" }),
             }}
-            id="dialogs.delete_alert"
+            id={deleteAlertId}
           />
         </p>
         <ul>
