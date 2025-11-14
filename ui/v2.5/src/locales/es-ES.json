@@ -141,7 +141,7 @@
         "reset_play_duration": "Reiniciar la duración de la reproducción",
         "load": "Cargar",
         "load_filter": "Cargar el filtro",
-        "play": "Jugar",
+        "play": "Reproducir",
         "reset_resume_time": "Restablecer el tiempo de reanudación"
     },
     "actions_name": "Acciones",
