@@ -146,6 +146,22 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       return;
     }
 
+    // #6257 - it is possible (though unsupported) to have multiple stash IDs for the same
+    // endpoint; in that case, we should prefer the one matching the scraped remote site ID
+    // if it exists
+    const stashIDs = (props.performer.stash_ids ?? []).filter(
+      (s) => s.endpoint === endpoint
+    );
+    if (stashIDs.length > 1 && props.scraped.remote_site_id) {
+      const matchingID = stashIDs.find(
+        (s) => s.stash_id === props.scraped.remote_site_id
+      );
+      if (matchingID) {
+        return matchingID.stash_id;
+      }
+    }
+
+    // otherwise, return the first stash ID for the endpoint
     return props.performer.stash_ids?.find((s) => s.endpoint === endpoint)
       ?.stash_id;
   }
