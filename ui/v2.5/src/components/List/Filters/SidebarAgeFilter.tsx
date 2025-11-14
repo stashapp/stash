@@ -24,8 +24,8 @@ const AGE_PRESETS = [
   { id: "60+", label: "60+", min: 60, max: null },
 ];
 
-const MAX_AGE = 100; // Maximum age for the slider
-const MAX_LABEL = "100+"; // Display label for maximum age
+const MAX_AGE = 60; // Maximum age for the slider
+const MAX_LABEL = "60+"; // Display label for maximum age
 
 export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
   title,
