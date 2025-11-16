@@ -181,7 +181,7 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 	}
 
 	if newObject.Aliases.Loaded() {
-		if err := studio.EnsureAliasesUnique(ctx, id, newObject.Aliases.List(), qb); err != nil {
+		if err := studio.ValidateAliases(ctx, id, newObject.Aliases.List(), qb); err != nil {
 			return err
 		}
 
@@ -232,10 +232,6 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 	}
 
 	if input.Aliases != nil {
-		if err := studio.EnsureAliasesUnique(ctx, input.ID, input.Aliases.Values, qb); err != nil {
-			return nil, err
-		}
-
 		if err := studiosAliasesTableMgr.modifyJoins(ctx, input.ID, input.Aliases.Values, input.Aliases.Mode); err != nil {
 			return nil, err
 		}

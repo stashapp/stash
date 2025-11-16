@@ -47,6 +47,7 @@ var (
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
+	tagsStashIDsJoinTable = goqu.T("tag_stash_ids")
 )
 
 var (
@@ -375,6 +376,13 @@ var (
 	}
 
 	tagsChildTagsTableMgr = *tagsParentTagsTableMgr.invert()
+
+	tagsStashIDsTableMgr = &stashIDTable{
+		table: table{
+			table:    tagsStashIDsJoinTable,
+			idColumn: tagsStashIDsJoinTable.Col(tagIDColumn),
+		},
+	}
 )
 
 var (
