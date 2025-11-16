@@ -141,8 +141,10 @@
         "reset_play_duration": "Reiniciar la duración de la reproducción",
         "load": "Cargar",
         "load_filter": "Cargar el filtro",
-        "play": "Jugar",
-        "reset_resume_time": "Restablecer el tiempo de reanudación"
+        "play": "Reproducir",
+        "reset_resume_time": "Restablecer el tiempo de reanudación",
+        "reset_cover": "Restaurar portada por defecto",
+        "set_cover": "Establecer como portada"
     },
     "actions_name": "Acciones",
     "age": "Edad",
