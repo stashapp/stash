@@ -465,6 +465,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           checked={general.logAccess ?? false}
           onChange={(v) => saveGeneral({ logAccess: v })}
         />
+
+        <NumberSetting
+          id="log-file-max-size"
+          headingID="config.general.auth.log_file_max_size"
+          subHeadingID="config.general.auth.log_file_max_size_desc"
+          value={general.logFileMaxSize ?? 1}
+          onChange={(v) => saveGeneral({ logFileMaxSize: v })}
+        />
       </SettingSection>
     </>
   );

@@ -301,6 +301,8 @@
         "log_http_desc": "Logs http access to the terminal. Requires restart.",
         "log_to_terminal": "Log to terminal",
         "log_to_terminal_desc": "Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart.",
+        "log_file_max_size": "Maximum log size",
+        "log_file_max_size_desc": "Maximum size in megabytes of the log file before it is rotated. Requires restart.",
         "maximum_session_age": "Maximum Session Age",
         "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds. Requires restart.",
         "password": "Password",

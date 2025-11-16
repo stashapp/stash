@@ -42,7 +42,8 @@ func NewLogger() *Logger {
 }
 
 // Init initialises the logger based on a logging configuration
-func (log *Logger) Init(logFile string, logOut bool, logLevel string) {
+func (log *Logger) Init(logFile string, logOut bool, logLevel string, maxSize int) {
+	var rollingLogger *lumberjack.Logger
 	customFormatter := new(logrus.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.ForceColors = true
@@ -60,7 +61,7 @@ func (log *Logger) Init(logFile string, logOut bool, logLevel string) {
 	if logFile != "" {
 		rollingLogger = &lumberjack.Logger{
 			Filename: logFile,
-			MaxSize:  1, // Megabytes
+			MaxSize:  maxSize, // Megabytes
 			Compress: true,
 		}
 	}

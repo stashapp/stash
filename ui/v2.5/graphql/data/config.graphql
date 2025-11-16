@@ -37,6 +37,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
+  logFileMaxSize
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
