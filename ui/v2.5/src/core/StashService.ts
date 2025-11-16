@@ -1907,6 +1907,16 @@ export const useStudioUpdate = () =>
     },
   });
 
+export const useBulkStudioUpdate = () =>
+  GQL.useBulkStudioUpdateMutation({
+    update(cache, result) {
+      if (!result.data?.bulkStudioUpdate) return;
+
+      evictTypeFields(cache, studioMutationImpactedTypeFields);
+      evictQueries(cache, studioMutationImpactedQueries);
+    },
+  });
+
 export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
   GQL.useStudioDestroyMutation({
     variables: input,
