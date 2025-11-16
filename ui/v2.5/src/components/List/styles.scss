@@ -1401,12 +1401,14 @@ input[type="range"].zoom-slider {
   }
 }
 
-// Age slider styles
+// Duration slider styles
+.duration-slider,
 .age-slider-container {
   padding: 0.5rem 0 1rem;
   width: 100%;
 }
 
+.duration-label-input,
 .age-label-input {
   background: transparent;
   border: 1px solid transparent;
@@ -1427,6 +1429,6 @@ input[type="range"].zoom-slider {
   }
 }
 
-.age-preset {
+.duration-preset {
   cursor: pointer;
 }

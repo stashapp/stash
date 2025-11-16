@@ -950,6 +950,12 @@ $sticky-header-height: calc(50px + 3.3rem);
   }
 }
 
+// Duration slider styles
+.duration-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
 .double-range-input-labels {
   color: $text-color;
   display: flex;
@@ -959,8 +965,7 @@ $sticky-header-height: calc(50px + 3.3rem);
   margin-bottom: 0.5rem;
   padding: 0 0.25rem;
 
-  .duration-label-input,
-  .age-label-input {
+  .duration-label-input {
     &:first-child {
       text-align: left;
     }

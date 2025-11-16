@@ -133,7 +133,8 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
 
   const { tags, newTags, scrapedTagsRow } = useScrapedTags(
     sceneTags,
-    scraped.tags
+    scraped.tags,
+    endpoint
   );
 
   const [details, setDetails] = useState<ScrapeResult<string>>(
@@ -148,6 +149,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     scrapeResult: studio,
     setScrapeResult: setStudio,
     setNewObject: setNewStudio,
+    endpoint,
   });
 
   const createNewPerformer = useCreateScrapedPerformer({
@@ -155,6 +157,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     setScrapeResult: setPerformers,
     newObjects: newPerformers,
     setNewObjects: setNewPerformers,
+    endpoint,
   });
 
   const createNewGroup = useCreateScrapedGroup({
@@ -162,6 +165,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     setScrapeResult: setGroups,
     newObjects: newGroups,
     setNewObjects: setNewGroups,
+    endpoint,
   });
 
   const intl = useIntl();
