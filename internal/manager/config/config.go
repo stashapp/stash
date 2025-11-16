@@ -257,7 +257,7 @@ const (
 	LogAccess             = "logaccess"
 	defaultLogAccess      = true
 	LogFileMaxSize        = "logfile_max_size"
-	defaultLogFileMaxSize = 1 // megabytes
+	defaultLogFileMaxSize = 10 // megabytes
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
