@@ -149,7 +149,9 @@
         },
         "show_results": "顯示結果",
         "show_count_results": "顯示 {count} 筆結果",
-        "play": "播放"
+        "play": "播放",
+        "load": "載入",
+        "load_filter": "載入篩選結果"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -803,6 +805,14 @@
             "use_stash_hosted_funscript": {
                 "description": "啟用後，funscript 將直接從 Stash 傳送至您的 Handy 裝置，而無需使用第三方 Handy 伺服器。要求可從您的 Handy 裝置存取 Stash，且如果 stash 已設定憑證，則會產生 API 金鑰。",
                 "heading": "直接為 funscript 服務"
+            },
+            "performer_list": {
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "在表演者卡片上顯示連結"
+                    }
+                },
+                "heading": "表演者清單"
             }
         },
         "advanced_mode": "進階模式"
@@ -1206,7 +1216,8 @@
         "saved_filters": "已儲存的過濾條件",
         "update_filter": "更新篩選",
         "edit_filter": "編輯篩選器",
-        "more_filter_criteria": "+{count} 更多"
+        "more_filter_criteria": "+{count} 更多",
+        "search_term": "搜尋詞組"
     },
     "seconds": "秒",
     "settings": "設定",
@@ -1544,5 +1555,6 @@
     },
     "sort_name": "分類名稱",
     "eta": "預估剩餘時間",
-    "age_on_date": "在{age}歲時製作"
+    "age_on_date": "在{age}歲時製作",
+    "scenes_duration": "場景持續時間"
 }
