@@ -1,15 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Form,
-  Button,
-  Dropdown,
-  Row,
-  Col,
-  Badge,
-  InputGroup,
-} from "react-bootstrap";
+import { Form, Button, Row, Col, Badge, InputGroup } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import Select from "react-select";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -390,26 +383,43 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
           <Form.Label className="mb-0 mr-2">
             <FormattedMessage id="stashbox_instance" />
           </Form.Label>
-          <Dropdown>
-            <Dropdown.Toggle variant="secondary">
-              {selectedStashBox
-                ? stashboxDisplayName(
-                    selectedStashBox.name,
-                    selectedStashBox.index
-                  )
-                : intl.formatMessage({ id: "stashbox_search.select_stashbox" })}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {stashBoxes.map((box, index) => (
-                <Dropdown.Item
-                  key={box.endpoint}
-                  onClick={() => setSelectedStashBox({ ...box, index })}
-                >
-                  {stashboxDisplayName(box.name, index)}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
+          <Select
+            classNamePrefix="react-select"
+            className="flex-grow-1"
+            value={
+              selectedStashBox
+                ? {
+                    value: selectedStashBox.endpoint,
+                    label: stashboxDisplayName(
+                      selectedStashBox.name,
+                      selectedStashBox.index
+                    ),
+                  }
+                : null
+            }
+            placeholder={intl.formatMessage({
+              id: "stashbox_search.select_stashbox",
+            })}
+            options={stashBoxes.map((box, index) => ({
+              value: box.endpoint,
+              label: stashboxDisplayName(box.name, index),
+            }))}
+            onChange={(selectedOption) => {
+              const box = stashBoxes.find(
+                (b) => b.endpoint === selectedOption?.value
+              );
+              if (box) {
+                setSelectedStashBox({
+                  ...box,
+                  index: stashBoxes.indexOf(box),
+                });
+              }
+            }}
+            isClearable={false}
+            components={{
+              IndicatorSeparator: null,
+            }}
+          />
         </Form.Group>
 
         <InputGroup>
