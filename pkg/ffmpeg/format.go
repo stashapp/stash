@@ -38,6 +38,7 @@ var (
 	ImageFormatJpeg ImageFormat = "mjpeg"
 	ImageFormatPng  ImageFormat = "png_pipe"
 	ImageFormatWebp ImageFormat = "webp_pipe"
+	ImageFormatAvif ImageFormat = "avif"
 
 	ImageFormatImage2Pipe ImageFormat = "image2pipe"
 )
