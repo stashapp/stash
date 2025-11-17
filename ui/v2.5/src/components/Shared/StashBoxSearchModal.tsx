@@ -1,21 +1,31 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Form, Button, Dropdown, Row, Col, Badge } from "react-bootstrap";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Form,
+  Button,
+  Dropdown,
+  Row,
+  Col,
+  Badge,
+  InputGroup,
+} from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { stringToGender } from "src/utils/gender";
 import TextUtils from "src/utils/text";
 import GenderIcon from "src/components/Performers/GenderIcon";
 import { CountryFlag } from "src/components/Shared/CountryFlag";
+import { Icon } from "src/components/Shared/Icon";
 import {
   stashBoxPerformerQuery,
   stashBoxStudioQuery,
   stashBoxSceneQuery,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { stringToGender } from "src/utils/gender";
 
 const CLASSNAME = "StashBoxSearchModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -69,6 +79,7 @@ const SearchResultTags: React.FC<{
   );
 };
 
+// Performer Result Component
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformerDataFragment;
 }
@@ -129,6 +140,17 @@ const PerformerSearchResultDetails: React.FC<IPerformerResultProps> = ({
   );
 };
 
+export const PerformerSearchResult: React.FC<IPerformerResultProps> = ({
+  performer,
+}) => {
+  return (
+    <div className="mt-3 search-item">
+      <PerformerSearchResultDetails performer={performer} />
+    </div>
+  );
+};
+
+// Studio Result Component
 interface IStudioResultProps {
   studio: GQL.ScrapedStudioDataFragment;
 }
@@ -159,6 +181,17 @@ const StudioSearchResultDetails: React.FC<IStudioResultProps> = ({
   );
 };
 
+export const StudioSearchResult: React.FC<IStudioResultProps> = ({
+  studio,
+}) => {
+  return (
+    <div className="mt-3 search-item">
+      <StudioSearchResultDetails studio={studio} />
+    </div>
+  );
+};
+
+// Scene Result Component
 interface ISceneResultProps {
   scene: GQL.ScrapedSceneDataFragment;
 }
@@ -206,6 +239,15 @@ const SceneSearchResultDetails: React.FC<ISceneResultProps> = ({ scene }) => {
   );
 };
 
+export const SceneSearchResult: React.FC<ISceneResultProps> = ({ scene }) => {
+  return (
+    <div className="mt-3 search-item">
+      <SceneSearchResultDetails scene={scene} />
+    </div>
+  );
+};
+
+// Main Modal Component
 export const StashBoxSearchModal: React.FC<IProps> = ({
   entityType,
   stashBoxes,
@@ -219,16 +261,12 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
   const [selectedStashBox, setSelectedStashBox] = useState<IStashBox | null>(
     null
   );
-  const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<
     | GQL.ScrapedPerformerDataFragment[]
     | GQL.ScrapedStudioDataFragment[]
     | GQL.ScrapedSceneDataFragment[]
   >([]);
   const [loading, setLoading] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<
-    GQL.ScrapedPerformer | GQL.ScrapedStudio | GQL.ScrapedScene | null
-  >(null);
 
   useEffect(() => {
     if (stashBoxes.length > 0) {
@@ -238,14 +276,14 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
 
   useEffect(() => inputRef.current?.focus(), []);
 
-  async function performSearch() {
+  const doSearch = useCallback(async () => {
+    const query = inputRef.current?.value;
     if (!selectedStashBox || !query) {
       return;
     }
 
     setLoading(true);
     setResults([]);
-    setSelectedItem(null);
 
     try {
       let queryData;
@@ -278,13 +316,7 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleKeyPress(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      performSearch();
-    }
-  }
+  }, [selectedStashBox, entityType, Toast]);
 
   function handleItemClick(
     item:
@@ -292,13 +324,8 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
       | GQL.ScrapedStudioDataFragment
       | GQL.ScrapedSceneDataFragment
   ) {
-    setSelectedItem(item);
-  }
-
-  function handleSave() {
-    if (selectedItem && selectedStashBox) {
-      onSelectItem(selectedItem, selectedStashBox.endpoint);
-      onHide();
+    if (selectedStashBox) {
+      onSelectItem(item, selectedStashBox.endpoint);
     }
   }
 
@@ -316,34 +343,25 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
           />
         </div>
         <ul className={CLASSNAME_LIST}>
-          {results.map((item, i) => {
-            const isSelected = selectedItem === item;
-            return (
-              <li
-                key={i}
-                onClick={() => handleItemClick(item)}
-                className={isSelected ? "selected" : ""}
-              >
-                <div className="mt-3 search-item">
-                  {entityType === "performer" && (
-                    <PerformerSearchResultDetails
-                      performer={item as GQL.ScrapedPerformerDataFragment}
-                    />
-                  )}
-                  {entityType === "studio" && (
-                    <StudioSearchResultDetails
-                      studio={item as GQL.ScrapedStudioDataFragment}
-                    />
-                  )}
-                  {entityType === "scene" && (
-                    <SceneSearchResultDetails
-                      scene={item as GQL.ScrapedSceneDataFragment}
-                    />
-                  )}
-                </div>
-              </li>
-            );
-          })}
+          {results.map((item, i) => (
+            <li key={i} onClick={() => handleItemClick(item)}>
+              {entityType === "performer" && (
+                <PerformerSearchResult
+                  performer={item as GQL.ScrapedPerformerDataFragment}
+                />
+              )}
+              {entityType === "studio" && (
+                <StudioSearchResult
+                  studio={item as GQL.ScrapedStudioDataFragment}
+                />
+              )}
+              {entityType === "scene" && (
+                <SceneSearchResult
+                  scene={item as GQL.ScrapedSceneDataFragment}
+                />
+              )}
+            </li>
+          ))}
         </ul>
       </div>
     );
@@ -360,23 +378,14 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
         { id: "stashbox_search.header" },
         { entityType: entityTypeLabel }
       )}
-      accept={
-        selectedItem
-          ? {
-              text: intl.formatMessage({ id: "actions.save" }),
-              onClick: handleSave,
-              variant: "success",
-            }
-          : undefined
-      }
-      cancel={{
+      accept={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: onHide,
         variant: "secondary",
       }}
     >
       <div className={CLASSNAME}>
-        <Form.Group className="d-flex align-items-center">
+        <Form.Group className="d-flex align-items-center mb-3">
           <Form.Label className="mb-0 mr-2">
             <FormattedMessage id="stashbox_instance" />
           </Form.Label>
@@ -402,32 +411,29 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
           </Dropdown>
         </Form.Group>
 
-        <Form.Group>
-          <Form.Label>
-            <FormattedMessage id="actions.search" />
-          </Form.Label>
-          <div className="d-flex">
-            <Form.Control
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={intl.formatMessage(
-                { id: "stashbox_search.placeholder_name_or_id" },
-                { entityType: entityTypeLabel }
-              )}
-              className="mr-2"
-            />
+        <InputGroup className="mb-3">
+          <Form.Control
+            ref={inputRef}
+            type="text"
+            placeholder={intl.formatMessage(
+              { id: "stashbox_search.placeholder_name_or_id" },
+              { entityType: entityTypeLabel }
+            )}
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              e.key === "Enter" && doSearch()
+            }
+          />
+          <InputGroup.Append>
             <Button
               variant="primary"
-              onClick={performSearch}
-              disabled={!selectedStashBox || !query}
+              onClick={doSearch}
+              disabled={!selectedStashBox}
+              title={intl.formatMessage({ id: "actions.search" })}
             >
-              <FormattedMessage id="actions.search" />
+              <Icon icon={faSearch} />
             </Button>
-          </div>
-        </Form.Group>
+          </InputGroup.Append>
+        </InputGroup>
 
         {loading ? (
           <div className="m-4 text-center">
@@ -436,7 +442,7 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
         ) : results.length > 0 ? (
           renderResults()
         ) : (
-          query !== "" &&
+          inputRef.current?.value &&
           !loading && (
             <h5 className="text-center">
               <FormattedMessage id="stashbox_search.no_results" />
