@@ -1106,8 +1106,8 @@
         "syncing": "서버와 동기화 중",
         "uploading": "스크립트 업로드 중"
     },
-    "hasChapters": "챕터 유무",
-    "hasMarkers": "마커 유무",
+    "hasChapters": "챕터",
+    "hasMarkers": "마커",
     "height": "키",
     "height_cm": "키 (cm)",
     "help": "도움말",
