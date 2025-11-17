@@ -54,6 +54,7 @@ import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
+import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import {
   DurationCriterionOption,
@@ -332,6 +333,14 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           sectionID="duration"
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="hasMarkers" />}
+          data-type={HasMarkersCriterionOption.type}
+          option={HasMarkersCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="hasMarkers"
         />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
