@@ -949,3 +949,100 @@ $sticky-header-height: calc(50px + 3.3rem);
     }
   }
 }
+
+// Duration slider styles
+.duration-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.double-range-input-labels {
+  color: $text-color;
+  display: flex;
+  font-size: 0.875rem;
+  font-weight: 500;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+
+  input[type="text"] {
+    &:first-child {
+      text-align: left;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
+}
+
+.double-range-sliders {
+  height: 22px;
+  position: relative;
+}
+
+.double-range-slider {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-moz-range-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-ms-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+}
+
+.double-range-slider-min {
+  z-index: 1;
+}
+
+input[type="range"].double-range-slider-max {
+  z-index: 2;
+
+  // combining these into one rule doesn't work for some reason
+  &::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+
+  &::-moz-range-track {
+    background: transparent;
+  }
+
+  &::-ms-track {
+    background: transparent;
+  }
+}

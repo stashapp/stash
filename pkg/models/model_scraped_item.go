@@ -19,6 +19,9 @@ type ScrapedStudio struct {
 	Parent       *ScrapedStudio `json:"parent"`
 	Image        *string        `json:"image"`
 	Images       []string       `json:"images"`
+	Details      *string        `json:"details"`
+	Aliases      *string        `json:"aliases"`
+	Tags         []*ScrapedTag  `json:"tags"`
 	RemoteSiteID *string        `json:"remote_site_id"`
 }
 
@@ -53,6 +56,14 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 		if len(urls) > 0 {
 			ret.URLs = NewRelatedStrings(urls)
 		}
+	}
+
+	if s.Details != nil && !excluded["details"] {
+		ret.Details = *s.Details
+	}
+
+	if s.Aliases != nil && !excluded["aliases"] {
+		ret.Aliases = NewRelatedStrings(stringslice.FromString(*s.Aliases, ","))
 	}
 
 	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] && !excluded["parent_studio"] {
@@ -105,6 +116,17 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 				Values: urls,
 				Mode:   RelationshipUpdateModeSet,
 			}
+		}
+	}
+
+	if s.Details != nil && !excluded["details"] {
+		ret.Details = NewOptionalString(*s.Details)
+	}
+
+	if s.Aliases != nil && !excluded["aliases"] {
+		ret.Aliases = &UpdateStrings{
+			Values: stringslice.FromString(*s.Aliases, ","),
+			Mode:   RelationshipUpdateModeSet,
 		}
 	}
 
@@ -425,11 +447,30 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 
 type ScrapedTag struct {
 	// Set if tag matched
-	StoredID *string `json:"stored_id"`
-	Name     string  `json:"name"`
+	StoredID     *string `json:"stored_id"`
+	Name         string  `json:"name"`
+	RemoteSiteID *string `json:"remote_site_id"`
 }
 
 func (ScrapedTag) IsScrapedContent() {}
+
+func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
+	currentTime := time.Now()
+	ret := NewTag()
+	ret.Name = t.Name
+
+	if t.RemoteSiteID != nil && endpoint != "" {
+		ret.StashIDs = NewRelatedStashIDs([]StashID{
+			{
+				Endpoint:  endpoint,
+				StashID:   *t.RemoteSiteID,
+				UpdatedAt: currentTime,
+			},
+		})
+	}
+
+	return &ret
+}
 
 func ScrapedTagSortFunction(a, b *ScrapedTag) int {
 	return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))

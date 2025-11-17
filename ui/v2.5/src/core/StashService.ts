@@ -1486,6 +1486,16 @@ export const useSceneMarkerUpdate = () =>
     },
   });
 
+export const useBulkSceneMarkerUpdate = () =>
+  GQL.useBulkSceneMarkerUpdateMutation({
+    update(cache, result) {
+      if (!result.data?.bulkSceneMarkerUpdate) return;
+
+      evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
+      evictQueries(cache, sceneMarkerMutationImpactedQueries);
+    },
+  });
+
 export const useSceneMarkerDestroy = () =>
   GQL.useSceneMarkerDestroyMutation({
     update(cache, result, { variables }) {
@@ -1903,6 +1913,16 @@ export const useStudioUpdate = () =>
         cache.identify(obj) // don't evict this studio
       );
 
+      evictQueries(cache, studioMutationImpactedQueries);
+    },
+  });
+
+export const useBulkStudioUpdate = () =>
+  GQL.useBulkStudioUpdateMutation({
+    update(cache, result) {
+      if (!result.data?.bulkStudioUpdate) return;
+
+      evictTypeFields(cache, studioMutationImpactedTypeFields);
       evictQueries(cache, studioMutationImpactedQueries);
     },
   });

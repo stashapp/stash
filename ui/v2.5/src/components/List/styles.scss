@@ -1400,3 +1400,35 @@ input[type="range"].zoom-slider {
     }
   }
 }
+
+// Duration slider styles
+.duration-slider,
+.age-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.duration-label-input,
+.age-label-input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  color: $text-color;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.125rem 0.25rem;
+  width: 4rem;
+
+  &:hover {
+    border-color: $secondary;
+  }
+
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
+}
+
+.duration-preset {
+  cursor: pointer;
+}

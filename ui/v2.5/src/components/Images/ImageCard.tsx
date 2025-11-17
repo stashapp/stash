@@ -169,6 +169,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
             <ImagePreview
               loop={video}
               autoPlay={video}
+              playsInline={video}
               className="image-card-preview-image"
               alt={props.image.title ?? ""}
               src={source}

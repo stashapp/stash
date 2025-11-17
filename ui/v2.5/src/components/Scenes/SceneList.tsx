@@ -57,6 +57,12 @@ import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organi
 import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import {
+  DurationCriterionOption,
+  PerformerAgeCriterionOption,
+} from "src/models/list-filter/scenes";
+import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
+import { SidebarDurationFilter } from "../List/Filters/SidebarDurationFilter";
+import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
@@ -321,13 +327,12 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
           sectionID="rating"
         />
-        <SidebarBooleanFilter
-          title={<FormattedMessage id="organized" />}
-          data-type={OrganizedCriterionOption.type}
-          option={OrganizedCriterionOption}
+        <SidebarDurationFilter
+          title={<FormattedMessage id="duration" />}
+          option={DurationCriterionOption}
           filter={filter}
           setFilter={setFilter}
-          sectionID="organized"
+          sectionID="duration"
         />
         <SidebarBooleanFilter
           title={<FormattedMessage id="hasMarkers" />}
@@ -336,6 +341,21 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           sectionID="hasMarkers"
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="organized" />}
+          data-type={OrganizedCriterionOption.type}
+          option={OrganizedCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="organized"
+        />
+        <SidebarAgeFilter
+          title={<FormattedMessage id="performer_age" />}
+          option={PerformerAgeCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="performer_age"
         />
       </ScenesFilterSidebarSections>
 
