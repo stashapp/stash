@@ -149,7 +149,9 @@
             "close": "Stäng sidolisten",
             "open": "Öppna sidolisten"
         },
-        "show_results": "Visa resultat"
+        "show_results": "Visa resultat",
+        "load": "Ladda",
+        "load_filter": "Ladda filter"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -810,6 +812,14 @@
             "use_stash_hosted_funscript": {
                 "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet och att en API-nyckel är genererad om stash har lösenord aktiverat.",
                 "heading": "Skicka funscripts direkt"
+            },
+            "performer_list": {
+                "heading": "Lista av stjärnor",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Visa länkar på stjärnors kort"
+                    }
+                }
             }
         },
         "advanced_mode": "Avancerat Läge"
@@ -1097,8 +1107,8 @@
         "syncing": "Synkar med server",
         "uploading": "Laddar upp skript"
     },
-    "hasChapters": "Har Kapitel",
-    "hasMarkers": "Har Markörer",
+    "hasChapters": "Kapitel",
+    "hasMarkers": "Markörer",
     "height": "Längd",
     "height_cm": "Längd (cm)",
     "help": "Hjälp",
@@ -1237,7 +1247,8 @@
         "name": "Filter",
         "saved_filters": "Sparade filter",
         "update_filter": "Uppdatera filter",
-        "more_filter_criteria": "+{count} fler"
+        "more_filter_criteria": "+{count} fler",
+        "search_term": "Sökterm"
     },
     "second": "Sekund",
     "seconds": "Sekunder",
@@ -1544,5 +1555,6 @@
         "login": "Inlogg",
         "invalid_credentials": "Ogiltigt användarnamn eller lösenord"
     },
-    "age_on_date": "{age} vid produktion"
+    "age_on_date": "{age} vid produktion",
+    "scenes_duration": "Scen Speltid"
 }
