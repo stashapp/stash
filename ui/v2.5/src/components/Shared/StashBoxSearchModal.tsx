@@ -261,6 +261,7 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
   const [selectedStashBox, setSelectedStashBox] = useState<IStashBox | null>(
     null
   );
+  const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<
     | GQL.ScrapedPerformerDataFragment[]
     | GQL.ScrapedStudioDataFragment[]
@@ -277,7 +278,6 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
   useEffect(() => inputRef.current?.focus(), []);
 
   const doSearch = useCallback(async () => {
-    const query = inputRef.current?.value;
     if (!selectedStashBox || !query) {
       return;
     }
@@ -316,7 +316,7 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [selectedStashBox, entityType, Toast]);
+  }, [query, selectedStashBox, entityType, Toast]);
 
   function handleItemClick(
     item:
@@ -413,11 +413,13 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
 
         <InputGroup>
           <Form.Control
-            className="text-input"
+            onChange={(e) => setQuery(e.currentTarget.value)}
+            value={query}
             placeholder={intl.formatMessage(
               { id: "stashbox_search.placeholder_name_or_id" },
               { entityType: entityTypeLabel }
             )}
+            className="text-input"
             ref={inputRef}
             onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
               e.key === "Enter" && doSearch()
@@ -442,7 +444,7 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
         ) : results.length > 0 ? (
           renderResults()
         ) : (
-          inputRef.current?.value &&
+          query !== "" &&
           !loading && (
             <h5 className="text-center">
               <FormattedMessage id="stashbox_search.no_results" />
