@@ -2313,6 +2313,22 @@ export const stashBoxStudioQuery = (
     fetchPolicy: "network-only",
   });
 
+export const stashBoxSceneQuery = (query: string, stashBoxEndpoint: string) =>
+  client.query<GQL.ScrapeSingleSceneQuery, GQL.ScrapeSingleSceneQueryVariables>(
+    {
+      query: GQL.ScrapeSingleSceneDocument,
+      variables: {
+        source: {
+          stash_box_endpoint: stashBoxEndpoint,
+        },
+        input: {
+          query: query,
+        },
+      },
+      fetchPolicy: "network-only",
+    }
+  );
+
 export const mutateStashBoxBatchPerformerTag = (
   input: GQL.StashBoxBatchTagInput
 ) =>

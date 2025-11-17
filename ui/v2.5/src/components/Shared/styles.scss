@@ -1046,3 +1046,44 @@ input[type="range"].double-range-slider-max {
     background: transparent;
   }
 }
+
+// Label offset for buttons that need to align with form fields
+.ml-label {
+  @include media-breakpoint-up(sm) {
+    // sm: label is 3 of 12 columns = 25%, plus partial gutter
+    margin-left: calc(25% + 7.5px);
+  }
+  @include media-breakpoint-up(xl) {
+    // xl: label is 2 of 12 columns = 16.667%, plus partial gutter
+    margin-left: calc(16.667% + 7.5px);
+  }
+}
+
+// StashBox Search Modal
+.StashBoxSearchModal {
+  &-list {
+    list-style: none;
+    padding: 0;
+
+    li {
+      border-radius: 0.25rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(138, 155, 168, 0.1);
+      }
+
+      &.selected {
+        background-color: #e7f3ff;
+      }
+    }
+  }
+
+  &-list-container {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}

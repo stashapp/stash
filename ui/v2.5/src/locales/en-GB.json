@@ -113,6 +113,7 @@
     "scrape_scene_fragment": "Scrape by fragment",
     "scrape_with": "Scrape with…",
     "search": "Search",
+    "search_stashbox_for_stashid": "Search StashBox for StashID",
     "select_all": "Select All",
     "select_entity": "Select {entityType}",
     "select_folders": "Select folders",
@@ -1433,6 +1434,13 @@
   "stash_id": "Stash ID",
   "stash_id_endpoint": "Stash ID Endpoint",
   "stash_ids": "Stash IDs",
+  "stashbox_instance": "Select Stash-Box:",
+  "stashbox_search": {
+    "header": "Search {entityType} from StashBox",
+    "no_results": "No results found.",
+    "placeholder_name_or_id": "{entityType} name or StashID...",
+    "select_stashbox": "Select StashBox..."
+  },
   "stashbox": {
     "go_review_draft": "Go to {endpoint_name} to review draft.",
     "selected_stash_box": "Selected Stash-Box endpoint",
