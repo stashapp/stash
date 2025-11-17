@@ -79,6 +79,9 @@ const displayModeOptions = [
   DisplayMode.Tagger,
 ];
 
+export const PerformerAgeCriterionOption =
+  createMandatoryNumberCriterionOption("performer_age");
+
 export const DurationCriterionOption =
   createDurationCriterionOption("duration");
 
@@ -113,7 +116,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
-  createMandatoryNumberCriterionOption("performer_age"),
+  PerformerAgeCriterionOption,
   PerformerFavoriteCriterionOption,
   // StudioTagsCriterionOption,
   StudiosCriterionOption,

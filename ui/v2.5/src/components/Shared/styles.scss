@@ -965,7 +965,7 @@ $sticky-header-height: calc(50px + 3.3rem);
   margin-bottom: 0.5rem;
   padding: 0 0.25rem;
 
-  .duration-label-input {
+  input[type="text"] {
     &:first-child {
       text-align: left;
     }
