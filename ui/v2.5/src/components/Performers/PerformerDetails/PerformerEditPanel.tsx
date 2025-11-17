@@ -699,7 +699,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           onClick={() => setIsStashIDSearchOpen(true)}
           disabled={!stashConfig?.general.stashBoxes?.length}
         >
-          <FormattedMessage id="actions.search_stashbox_for_stashid" />
+          <FormattedMessage id="actions.add_stashid" />
         </Button>
       </Form.Group>
     );
