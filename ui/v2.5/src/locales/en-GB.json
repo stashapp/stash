@@ -113,7 +113,7 @@
     "scrape_scene_fragment": "Scrape by fragment",
     "scrape_with": "Scrape with…",
     "search": "Search",
-    "add_stashid": "Add StashID",
+    "add": "Add...",
     "select_all": "Select All",
     "select_entity": "Select {entityType}",
     "select_folders": "Select folders",

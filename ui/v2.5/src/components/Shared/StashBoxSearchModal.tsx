@@ -326,6 +326,7 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
   ) {
     if (selectedStashBox) {
       onSelectItem(item, selectedStashBox.endpoint);
+      onHide();
     }
   }
 

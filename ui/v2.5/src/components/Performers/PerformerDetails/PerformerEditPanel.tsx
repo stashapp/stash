@@ -699,7 +699,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           onClick={() => setIsStashIDSearchOpen(true)}
           disabled={!stashConfig?.general.stashBoxes?.length}
         >
-          <FormattedMessage id="actions.add_stashid" />
+          <FormattedMessage id="actions.add" />
         </Button>
       </Form.Group>
     );
@@ -759,9 +759,23 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("details", "textarea")}
         {renderTagsField()}
 
-        {renderStashIDsField("stash_ids", "performers")}
+        {formik.values.stash_ids.length === 0
+          ? renderStashIDsField(
+              "stash_ids",
+              "performers",
+              undefined,
+              undefined,
+              <Button
+                variant="secondary"
+                onClick={() => setIsStashIDSearchOpen(true)}
+                disabled={!stashConfig?.general.stashBoxes?.length}
+              >
+                <FormattedMessage id="actions.add" />
+              </Button>
+            )
+          : renderStashIDsField("stash_ids", "performers")}
 
-        {renderStashIDSearchButton()}
+        {formik.values.stash_ids.length > 0 && renderStashIDSearchButton()}
 
         <hr />
 
