@@ -1107,8 +1107,8 @@
         "syncing": "Synchronisation avec le serveur",
         "uploading": "Script de chargement"
     },
-    "hasChapters": "A des chapitres",
-    "hasMarkers": "Dispose de marqueurs",
+    "hasChapters": "Chapitres",
+    "hasMarkers": "Marqueurs",
     "height": "Taille",
     "height_cm": "Taille (cm)",
     "help": "Aide",
