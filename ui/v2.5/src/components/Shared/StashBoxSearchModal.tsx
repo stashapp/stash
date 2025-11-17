@@ -411,22 +411,22 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
           </Dropdown>
         </Form.Group>
 
-        <InputGroup className="mb-3">
+        <InputGroup>
           <Form.Control
-            ref={inputRef}
-            type="text"
+            className="text-input"
             placeholder={intl.formatMessage(
               { id: "stashbox_search.placeholder_name_or_id" },
               { entityType: entityTypeLabel }
             )}
+            ref={inputRef}
             onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
               e.key === "Enter" && doSearch()
             }
           />
           <InputGroup.Append>
             <Button
-              variant="primary"
               onClick={doSearch}
+              variant="primary"
               disabled={!selectedStashBox}
               title={intl.formatMessage({ id: "actions.search" })}
             >
