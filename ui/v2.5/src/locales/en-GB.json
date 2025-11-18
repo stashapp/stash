@@ -425,7 +425,11 @@
       "sqlite_location": "File location for the SQLite database (requires restart). WARNING: storing the database on a different system to where the Stash server is run from (i.e. over the network) is unsupported!",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
-      "video_head": "Video"
+      "video_head": "Video",
+      "auto_watch": {
+        "heading": "Filesystem Watcher",
+        "description": "When enabled, watches your configured library paths and automatically schedules a scan when files change. The watcher uses your scan settings when scheduling these scans."
+      }
     },
     "library": {
       "exclusions": "Exclusions",

@@ -290,6 +290,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	r.setConfigBool(config.WriteImageThumbnails, input.WriteImageThumbnails)
 	r.setConfigBool(config.CreateImageClipsFromVideos, input.CreateImageClipsFromVideos)
 
+	r.setConfigBool(config.AutoScanWatch, input.AutoScanWatch)
+
 	if input.GalleryCoverRegex != nil {
 		_, err := regexp.Compile(*input.GalleryCoverRegex)
 		if err != nil {
@@ -442,6 +444,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if refreshPluginSource {
 		manager.GetInstance().RefreshPluginSourceManager()
 	}
+	manager.GetInstance().RefreshFileWatcher()
 
 	return makeConfigGeneralResult(), nil
 }

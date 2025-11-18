@@ -59,8 +59,8 @@ func IsLangInCaptions(lang string, ext string, captions []*models.VideoCaption) 
 	return false
 }
 
-// getCaptionPrefix returns the prefix used to search for video files for the provided caption path
-func getCaptionPrefix(captionPath string) string {
+// GetCaptionPrefix returns the prefix used to search for video files for the provided caption path
+func GetCaptionPrefix(captionPath string) string {
 	basename := strings.TrimSuffix(captionPath, filepath.Ext(captionPath)) // caption filename without the extension
 
 	// a caption file can be something like scene_filename.srt or scene_filename.en.srt
@@ -94,7 +94,7 @@ type CaptionUpdater interface {
 func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb models.FileFinder, w CaptionUpdater) {
 	captionLang := getCaptionsLangFromPath(captionPath)
 
-	captionPrefix := getCaptionPrefix(captionPath)
+	captionPrefix := GetCaptionPrefix(captionPath)
 	if err := txn.WithTxn(ctx, txnMgr, func(ctx context.Context) error {
 		var err error
 		files, er := fqb.FindAllByPath(ctx, captionPrefix+"*")

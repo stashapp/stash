@@ -1,5 +1,5 @@
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
+import React, { useState, PropsWithChildren } from "react";
 import { Button, Form, Row, Col, Dropdown } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
@@ -193,7 +193,11 @@ interface IStashSetting {
   onChange: (v: GQL.StashConfigInput[]) => void;
 }
 
-export const StashSetting: React.FC<IStashSetting> = ({ value, onChange }) => {
+export const StashSetting: React.FC<PropsWithChildren<IStashSetting>> = ({
+  value,
+  onChange,
+  children,
+}) => {
   return (
     <SettingSection
       id="stashes"
@@ -201,6 +205,7 @@ export const StashSetting: React.FC<IStashSetting> = ({ value, onChange }) => {
       subHeadingID="config.general.directory_locations_to_your_content"
     >
       <StashConfiguration stashes={value} setStashes={(v) => onChange(v)} />
+      {children}
     </SettingSection>
   );
 };

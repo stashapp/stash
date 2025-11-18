@@ -141,6 +141,8 @@ input ConfigGeneralInput {
   writeImageThumbnails: Boolean
   "Create Image Clips from Video extensions when Videos are disabled in Library"
   createImageClipsFromVideos: Boolean
+  "Watch library directories for changes"
+  autoScanWatch: Boolean
   "Username"
   username: String
   "Password"
@@ -265,6 +267,8 @@ type ConfigGeneralResult {
   writeImageThumbnails: Boolean!
   "Create Image Clips from Video extensions when Videos are disabled in Library"
   createImageClipsFromVideos: Boolean!
+  "Watch library directories for changes"
+  autoScanWatch: Boolean!
   "API Key"
   apiKey: String!
   "Username"

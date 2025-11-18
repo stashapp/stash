@@ -110,6 +110,10 @@ const (
 	CreateImageClipsFromVideos        = "create_image_clip_from_videos"
 	createImageClipsFromVideosDefault = false
 
+	// AutoScanWatch enables filesystem watcher to auto-trigger scans
+	AutoScanWatch        = "auto_scan_watch"
+	AutoScanWatchDefault = false
+
 	Host        = "host"
 	hostDefault = "0.0.0.0"
 
@@ -210,7 +214,8 @@ const (
 	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
-	UI = "ui"
+	UI             = "ui"
+	UIScanSettings = "ui.taskDefaults.scan"
 
 	defaultImageLightboxSlideshowDelay = 5
 
@@ -1066,6 +1071,11 @@ func (i *Config) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
 }
 
+// GetAutoScanWatch returns whether filesystem watcher should be enabled.
+func (i *Config) GetAutoScanWatch() bool {
+	return i.getBool(AutoScanWatch)
+}
+
 func (i *Config) GetAPIKey() string {
 	return i.getString(ApiKey)
 }
@@ -1318,6 +1328,25 @@ func (i *Config) SetUIConfiguration(v map[string]interface{}) {
 	defer i.Unlock()
 
 	i.set(UI, v)
+}
+
+// GetUIScanSettings returns the UI Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Config) GetUIScanSettings() *ScanMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.forKey(UIScanSettings)
+
+	if v.Exists(UIScanSettings) && v.Get(UIScanSettings) != nil {
+		var ret ScanMetadataOptions
+		if err := v.Unmarshal(UIScanSettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
 }
 
 func (i *Config) GetCSSPath() string {
@@ -1803,6 +1832,8 @@ func (i *Config) setDefaultValues() {
 
 	i.setDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 	i.setDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
+
+	i.setDefault(AutoScanWatch, AutoScanWatchDefault)
 
 	i.setDefault(Database, defaultDatabaseFilePath)
 
