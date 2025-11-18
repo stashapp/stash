@@ -40,6 +40,14 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 
+	var stashIDInputs models.StashIDInputs
+	for _, sid := range input.StashIds {
+		if sid != nil {
+			stashIDInputs = append(stashIDInputs, *sid)
+		}
+	}
+	newTag.StashIDs = models.NewRelatedStashIDs(stashIDInputs.ToStashIDs())
+
 	var err error
 
 	newTag.ParentIDs, err = translator.relatedIds(input.ParentIds)
@@ -110,6 +118,14 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	updatedTag.Description = translator.optionalString(input.Description, "description")
 
 	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
+
+	var updateStashIDInputs models.StashIDInputs
+	for _, sid := range input.StashIds {
+		if sid != nil {
+			updateStashIDInputs = append(updateStashIDInputs, *sid)
+		}
+	}
+	updatedTag.StashIDs = translator.updateStashIDs(updateStashIDInputs, "stash_ids")
 
 	updatedTag.ParentIDs, err = translator.updateIds(input.ParentIds, "parent_ids")
 	if err != nil {

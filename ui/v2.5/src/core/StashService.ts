@@ -1486,6 +1486,16 @@ export const useSceneMarkerUpdate = () =>
     },
   });
 
+export const useBulkSceneMarkerUpdate = () =>
+  GQL.useBulkSceneMarkerUpdateMutation({
+    update(cache, result) {
+      if (!result.data?.bulkSceneMarkerUpdate) return;
+
+      evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
+      evictQueries(cache, sceneMarkerMutationImpactedQueries);
+    },
+  });
+
 export const useSceneMarkerDestroy = () =>
   GQL.useSceneMarkerDestroyMutation({
     update(cache, result, { variables }) {
@@ -1614,7 +1624,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
   });
 
 function evictCover(cache: ApolloCache<GQL.Gallery>, gallery_id: string) {
-  const fields: Pick<Modifiers<GQL.Gallery>, "paths" | "cover"> = {};
+  const fields: Partial<Pick<Modifiers<GQL.Gallery>, "paths" | "cover">> = {};
   fields.paths = (paths) => {
     if (!("cover" in paths)) {
       return paths;
@@ -1903,6 +1913,16 @@ export const useStudioUpdate = () =>
         cache.identify(obj) // don't evict this studio
       );
 
+      evictQueries(cache, studioMutationImpactedQueries);
+    },
+  });
+
+export const useBulkStudioUpdate = () =>
+  GQL.useBulkStudioUpdateMutation({
+    update(cache, result) {
+      if (!result.data?.bulkStudioUpdate) return;
+
+      evictTypeFields(cache, studioMutationImpactedTypeFields);
       evictQueries(cache, studioMutationImpactedQueries);
     },
   });

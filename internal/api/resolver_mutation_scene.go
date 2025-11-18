@@ -821,6 +821,123 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	return r.getSceneMarker(ctx, markerID)
 }
 
+func (r *mutationResolver) BulkSceneMarkerUpdate(ctx context.Context, input BulkSceneMarkerUpdateInput) ([]*models.SceneMarker, error) {
+	ids, err := stringslice.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, fmt.Errorf("converting ids: %w", err)
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	// Populate performer from the input
+	partial := models.NewSceneMarkerPartial()
+
+	partial.Title = translator.optionalString(input.Title, "title")
+
+	partial.PrimaryTagID, err = translator.optionalIntFromString(input.PrimaryTagID, "primary_tag_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting primary tag id: %w", err)
+	}
+
+	partial.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	ret := []*models.SceneMarker{}
+
+	// Start the transaction and save the performers
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneMarker
+
+		for _, id := range ids {
+			l := partial
+
+			if err := adjustMarkerPartialForTagExclusion(ctx, r.repository.SceneMarker, id, &l); err != nil {
+				return err
+			}
+
+			updated, err := qb.UpdatePartial(ctx, id, l)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, updated)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// execute post hooks outside of txn
+	var newRet []*models.SceneMarker
+	for _, m := range ret {
+		r.hookExecutor.ExecutePostHooks(ctx, m.ID, hook.SceneMarkerUpdatePost, input, translator.getFields())
+
+		m, err = r.getSceneMarker(ctx, m.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, m)
+	}
+
+	return newRet, nil
+}
+
+// adjustMarkerPartialForTagExclusion adjusts the SceneMarkerPartial to exclude the primary tag from tag updates.
+func adjustMarkerPartialForTagExclusion(ctx context.Context, r models.SceneMarkerReader, id int, partial *models.SceneMarkerPartial) error {
+	if partial.TagIDs == nil && !partial.PrimaryTagID.Set {
+		return nil
+	}
+
+	// exclude primary tag from tag updates
+	var primaryTagID int
+	if partial.PrimaryTagID.Set {
+		primaryTagID = partial.PrimaryTagID.Value
+	} else {
+		existing, err := r.Find(ctx, id)
+		if err != nil {
+			return fmt.Errorf("finding existing primary tag id: %w", err)
+		}
+
+		primaryTagID = existing.PrimaryTagID
+	}
+
+	existingTagIDs, err := r.GetTagIDs(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting existing tag ids: %w", err)
+	}
+
+	tagIDAttr := partial.TagIDs
+
+	if tagIDAttr == nil {
+		tagIDAttr = &models.UpdateIDs{
+			IDs:  existingTagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
+
+	newTagIDs := tagIDAttr.Apply(existingTagIDs)
+	// Remove primary tag from newTagIDs if present
+	newTagIDs = sliceutil.Exclude(newTagIDs, []int{primaryTagID})
+
+	if len(existingTagIDs) != len(newTagIDs) {
+		partial.TagIDs = &models.UpdateIDs{
+			IDs:  newTagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	} else {
+		// no change to tags required
+		partial.TagIDs = nil
+	}
+
+	return nil
+}
+
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
 	return r.SceneMarkersDestroy(ctx, []string{id})
 }

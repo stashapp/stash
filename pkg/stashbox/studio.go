@@ -2,6 +2,7 @@ package stashbox
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/stashapp/stash/pkg/models"
@@ -63,11 +64,17 @@ func studioFragmentToScrapedStudio(s graphql.StudioFragment) *models.ScrapedStud
 		images = append(images, image.URL)
 	}
 
+	aliases := strings.Join(s.Aliases, ", ")
+
 	st := &models.ScrapedStudio{
 		Name:         s.Name,
-		URL:          findURL(s.Urls, "HOME"),
+		Aliases:      &aliases,
 		Images:       images,
 		RemoteSiteID: &s.ID,
+	}
+
+	for _, u := range s.Urls {
+		st.URLs = append(st.URLs, u.URL)
 	}
 
 	if len(st.Images) > 0 {

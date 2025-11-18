@@ -19,7 +19,7 @@ import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { tagRelationHook } from "src/core/tags";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
@@ -293,7 +293,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const intl = useIntl();
 
   // Configuration settings
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;

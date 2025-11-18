@@ -30,7 +30,7 @@ import {
   stringCircumMap,
   stringToCircumcised,
 } from "src/utils/circumcised";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -97,7 +97,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const [scrapedPerformer, setScrapedPerformer] =
     useState<GQL.ScrapedPerformer>();
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
 
   const intl = useIntl();
 

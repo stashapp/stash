@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -18,7 +18,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   faPencil,
   faPlay,
@@ -54,7 +54,14 @@ import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
+import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import {
+  DurationCriterionOption,
+  PerformerAgeCriterionOption,
+} from "src/models/list-filter/scenes";
+import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
+import { SidebarDurationFilter } from "../List/Filters/SidebarDurationFilter";
 import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
@@ -103,7 +110,7 @@ function renderMetadataByline(result: GQL.FindScenesQueryResult) {
 function usePlayScene() {
   const history = useHistory();
 
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const cont = config?.interface.continuePlaylistDefault ?? false;
   const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
 
@@ -320,6 +327,21 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
           sectionID="rating"
         />
+        <SidebarDurationFilter
+          title={<FormattedMessage id="duration" />}
+          option={DurationCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="duration"
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="hasMarkers" />}
+          data-type={HasMarkersCriterionOption.type}
+          option={HasMarkersCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="hasMarkers"
+        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}
@@ -327,6 +349,13 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           sectionID="organized"
+        />
+        <SidebarAgeFilter
+          title={<FormattedMessage id="performer_age" />}
+          option={PerformerAgeCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="performer_age"
         />
       </ScenesFilterSidebarSections>
 
@@ -473,7 +502,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       },
     });
 
-  const { filter, setFilter, loading: filterLoading } = filterState;
+  const { filter, setFilter } = filterState;
 
   const { effectiveFilter, result, cachedResult, items, totalCount } =
     queryResult;
@@ -680,7 +709,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   ];
 
   // render
-  if (filterLoading || sidebarStateLoading) return null;
+  if (sidebarStateLoading) return null;
 
   const operations = (
     <SceneListOperations

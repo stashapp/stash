@@ -153,6 +153,14 @@ func (r *mutationResolver) makeSceneDraft(ctx context.Context, s *models.Scene, 
 		return nil, err
 	}
 
+	// Load StashIDs for tags
+	tqb := r.repository.Tag
+	for _, t := range draft.Tags {
+		if err := t.LoadStashIDs(ctx, tqb); err != nil {
+			return nil, err
+		}
+	}
+
 	draft.Cover = cover
 
 	return draft, nil

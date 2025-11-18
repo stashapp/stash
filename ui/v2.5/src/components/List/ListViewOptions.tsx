@@ -84,11 +84,17 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         onSetDisplayMode(DisplayMode.Wall);
       }
     });
+    Mousetrap.bind("v t", () => {
+      if (displayModeOptions.includes(DisplayMode.Tagger)) {
+        onSetDisplayMode(DisplayMode.Tagger);
+      }
+    });
 
     return () => {
       Mousetrap.unbind("v g");
       Mousetrap.unbind("v l");
       Mousetrap.unbind("v w");
+      Mousetrap.unbind("v t");
     };
   });
 

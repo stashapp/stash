@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -24,6 +25,7 @@ type mappedQuery interface {
 	getType() QueryType
 	setType(QueryType)
 	subScrape(ctx context.Context, value string) mappedQuery
+	getURL() string
 }
 
 type commonMappedConfig map[string]string
@@ -43,6 +45,22 @@ func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 	return ret
 }
 
+// extractHostname parses a URL string and returns the hostname.
+// Returns empty string if the URL cannot be parsed.
+func extractHostname(urlStr string) string {
+	if urlStr == "" {
+		return ""
+	}
+
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		logger.Warnf("Error parsing URL '%s': %s", urlStr, err.Error())
+		return ""
+	}
+
+	return u.Hostname()
+}
+
 type isMultiFunc func(key string) bool
 
 func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonMappedConfig, isMulti isMultiFunc) mappedResults {
@@ -53,10 +71,16 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 		if attrConfig.Fixed != "" {
 			// TODO - not sure if this needs to set _all_ indexes for the key
 			const i = 0
-			ret = ret.setSingleValue(i, k, attrConfig.Fixed)
+			// Support {inputURL} and {inputHostname} placeholders in fixed values
+			value := strings.ReplaceAll(attrConfig.Fixed, "{inputURL}", q.getURL())
+			value = strings.ReplaceAll(value, "{inputHostname}", extractHostname(q.getURL()))
+			ret = ret.setSingleValue(i, k, value)
 		} else {
 			selector := attrConfig.Selector
 			selector = s.applyCommon(common, selector)
+			// Support {inputURL} and {inputHostname} placeholders in selectors
+			selector = strings.ReplaceAll(selector, "{inputURL}", q.getURL())
+			selector = strings.ReplaceAll(selector, "{inputHostname}", extractHostname(q.getURL()))
 
 			found, err := q.runQuery(selector)
 			if err != nil {
@@ -126,6 +150,7 @@ type mappedSceneScraperConfig struct {
 	Performers mappedPerformerScraperConfig `yaml:"Performers"`
 	Studio     mappedConfig                 `yaml:"Studio"`
 	Movies     mappedConfig                 `yaml:"Movies"`
+	Groups     mappedConfig                 `yaml:"Groups"`
 }
 type _mappedSceneScraperConfig mappedSceneScraperConfig
 
@@ -134,6 +159,7 @@ const (
 	mappedScraperConfigScenePerformers = "Performers"
 	mappedScraperConfigSceneStudio     = "Studio"
 	mappedScraperConfigSceneMovies     = "Movies"
+	mappedScraperConfigSceneGroups     = "Groups"
 )
 
 func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -151,11 +177,13 @@ func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	thisMap[mappedScraperConfigScenePerformers] = parentMap[mappedScraperConfigScenePerformers]
 	thisMap[mappedScraperConfigSceneStudio] = parentMap[mappedScraperConfigSceneStudio]
 	thisMap[mappedScraperConfigSceneMovies] = parentMap[mappedScraperConfigSceneMovies]
+	thisMap[mappedScraperConfigSceneGroups] = parentMap[mappedScraperConfigSceneGroups]
 
 	delete(parentMap, mappedScraperConfigSceneTags)
 	delete(parentMap, mappedScraperConfigScenePerformers)
 	delete(parentMap, mappedScraperConfigSceneStudio)
 	delete(parentMap, mappedScraperConfigSceneMovies)
+	delete(parentMap, mappedScraperConfigSceneGroups)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -1013,6 +1041,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 	sceneTagsMap := sceneScraperConfig.Tags
 	sceneStudioMap := sceneScraperConfig.Studio
 	sceneMoviesMap := sceneScraperConfig.Movies
+	sceneGroupsMap := sceneScraperConfig.Groups
 
 	ret.Performers = s.processPerformers(ctx, scenePerformersMap, q)
 
@@ -1039,7 +1068,12 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 		ret.Movies = processRelationships[models.ScrapedMovie](ctx, s, sceneMoviesMap, q)
 	}
 
-	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0
+	if sceneGroupsMap != nil {
+		logger.Debug(`Processing scene groups:`)
+		ret.Groups = processRelationships[models.ScrapedGroup](ctx, s, sceneGroupsMap, q)
+	}
+
+	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0 || len(ret.Groups) > 0
 }
 
 func (s mappedScraper) processPerformers(ctx context.Context, performersMap mappedPerformerScraperConfig, q mappedQuery) []*models.ScrapedPerformer {

@@ -149,7 +149,8 @@
         },
         "show_results": "Resultaat tonen",
         "show_count_results": "{count} resultaten tonen",
-        "play": "Afspelen"
+        "play": "Afspelen",
+        "load_filter": "Laad filter"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -498,7 +499,8 @@
                 "source": "Bron",
                 "source_options": "{source} Opties",
                 "sources": "Bronnen",
-                "strategy": "Strategie"
+                "strategy": "Strategie",
+                "skip_multiple_matches": "Sla overeenkomsten met meer dan één resultaat over"
             },
             "import_from_exported_json": "Import van geëxporteerde JSON in de map metadata. Maakt de bestaande database leeg.",
             "incremental_import": "Incrementele import uit een meegeleverde export zip-bestand.",
@@ -528,7 +530,13 @@
             "anonymising_database": "Anonimiseer database",
             "anonymise_database": "Maakt een kopie van de database naar de backups-map, waarbij alle gevoelige gegevens anoniem worden gemaakt. Deze kan vervolgens aan anderen worden verstrekt voor probleemoplossing en debugging. De originele database wordt niet gewijzigd. De geanonimiseerde database gebruikt de bestandsnaamindeling {filename_format}.",
             "anonymise_and_download": "Maakt een geanonimiseerde kopie van de database en downloadt het resulterende bestand.",
-            "generate_clip_previews_during_scan": "Genereer voorbeelden van Afbeelingsfragmenten"
+            "generate_clip_previews_during_scan": "Genereer voorbeelden van Afbeelingsfragmenten",
+            "migrate_blobs": {
+                "delete_old": "Verwijder oude gegevens"
+            },
+            "migrate_scene_screenshots": {
+                "delete_files": "Verwijder screenshotbestanden"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "Scène Duplicator Checker",
@@ -547,7 +555,9 @@
                 "whitespace_chars": "WhiteSpace-tekens",
                 "whitespace_chars_desc": "Deze tekens worden vervangen door witruimte in de titel"
             },
-            "scene_tools": "Scene gereedschap"
+            "scene_tools": "Scene gereedschap",
+            "graphql_playground": "GraphQL speeltuin",
+            "heading": "Hulpmiddelen"
         },
         "ui": {
             "basic_settings": "Basis instellingen",
@@ -576,7 +586,15 @@
                     "description": "Verwijder de mogelijkheid om nieuwe objecten te maken uit de dropdown menu",
                     "heading": "Schakel het maken van dropdowns uit"
                 },
-                "heading": "Aanpassen"
+                "heading": "Aanpassen",
+                "rating_system": {
+                    "type": {
+                        "options": {
+                            "decimal": "Decimaal",
+                            "stars": "Sterren"
+                        }
+                    }
+                }
             },
             "funscript_offset": {
                 "description": "Time Offset in milliseconden voor het afspelen van interactieve scripts.",
@@ -654,7 +672,9 @@
                     "continue_playlist_default": {
                         "description": "Speel de volgende scène in de wachtrij wanneer video is voltooid",
                         "heading": "Ga Standaard door met de afspeellijst"
-                    }
+                    },
+                    "always_start_from_beginning": "Start video altijd vanaf het begin",
+                    "enable_chromecast": "Chromecast inschakelen"
                 }
             },
             "scene_wall": {
@@ -672,7 +692,28 @@
                 "description": "Diavoorstelling is beschikbaar in galerijen in de muurweergavemodus",
                 "heading": "Diavoorstellingsvertraging (in seconden)"
             },
-            "title": "Gebruikers interface"
+            "title": "Gebruikers interface",
+            "custom_javascript": {
+                "heading": "Aangepaste JavaScript",
+                "option_label": "Aangepaste JavaScript ingeschakeld"
+            },
+            "custom_locales": {
+                "heading": "Aangepaste lokalisatie",
+                "option_label": "Aangepaste lokalisatie ingeschakeld"
+            },
+            "detail": {
+                "enable_background_image": {
+                    "description": "Achtergrondfoto op detailscherm weergeven.",
+                    "heading": "Achtergrondfoto inschakelen"
+                },
+                "heading": "Detailscherm",
+                "show_all_details": {
+                    "heading": "Alle details weergeven"
+                }
+            },
+            "image_wall": {
+                "margin": "Marge (pixels)"
+            }
         },
         "advanced_mode": "Geavanceerde modus"
     },

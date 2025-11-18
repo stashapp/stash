@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useState,
   useMemo,
-  useContext,
   useRef,
   useLayoutEffect,
 } from "react";
@@ -32,7 +31,7 @@ import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import {
   faEllipsisV,
@@ -184,7 +183,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const intl = useIntl();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
@@ -248,6 +247,12 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind("c c", () => {
+      onGenerateScreenshot(getPlayerPosition());
+    });
+    Mousetrap.bind("c d", () => {
+      onGenerateScreenshot();
+    });
 
     return () => {
       Mousetrap.unbind("a");
@@ -261,6 +266,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
       Mousetrap.unbind(",");
+      Mousetrap.unbind("c c");
+      Mousetrap.unbind("c d");
     };
   });
 
@@ -681,7 +688,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   match,
 }) => {
   const { id } = match.params;
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();

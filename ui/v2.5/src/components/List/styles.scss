@@ -1305,7 +1305,7 @@ input[type="range"].zoom-slider {
 }
 
 .list-results-header {
-  align-items: center;
+  align-items: flex-start;
   background-color: $body-bg;
   display: flex;
 
@@ -1327,6 +1327,18 @@ input[type="range"].zoom-slider {
   }
 }
 
+.list-results-header .pagination-index-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .pagination {
+    // hidden by default. Can be shown via css override if needed
+    display: none;
+    margin: 0;
+  }
+}
+
 .list-results-header {
   gap: 0.25rem;
   margin-bottom: 0.5rem;
@@ -1342,7 +1354,7 @@ input[type="range"].zoom-slider {
     }
 
     & > div.pagination-index-container {
-      justify-content: flex-end;
+      align-items: flex-end;
       order: 3;
     }
   }
@@ -1355,6 +1367,10 @@ input[type="range"].zoom-slider {
       justify-content: center;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    & > div.pagination-index-container {
+      align-items: center;
     }
   }
 }
@@ -1383,4 +1399,36 @@ input[type="range"].zoom-slider {
       margin-right: auto;
     }
   }
+}
+
+// Duration slider styles
+.duration-slider,
+.age-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.duration-label-input,
+.age-label-input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  color: $text-color;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.125rem 0.25rem;
+  width: 4rem;
+
+  &:hover {
+    border-color: $secondary;
+  }
+
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
+}
+
+.duration-preset {
+  cursor: pointer;
 }
