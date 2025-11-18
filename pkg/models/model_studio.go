@@ -21,8 +21,6 @@ type Studio struct {
 	URLs     RelatedStrings  `json:"urls"`
 	TagIDs   RelatedIDs      `json:"tag_ids"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
-
-	OCounter int `json:"o_counter"`
 }
 
 func NewStudio() Studio {

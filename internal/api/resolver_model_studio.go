@@ -143,6 +143,24 @@ func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, dep
 	return r.GroupCount(ctx, obj, depth)
 }
 
+func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res_scene int
+	var res_image int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByStudioID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_image, err = r.repository.Image.OCountByStudioID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_image
+	return &res, nil
+}
+
 func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {
 	if obj.ParentID == nil {
 		return nil, nil
@@ -192,16 +210,4 @@ func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []
 // deprecated
 func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Group, err error) {
 	return r.Groups(ctx, obj)
-}
-
-func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (int, error) {
-	var count int
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var err error
-		count, err = scene.OCountByStudioID(ctx, r.repository.Scene, obj.ID, nil)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-	return count, nil
 }

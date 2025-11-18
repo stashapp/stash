@@ -818,6 +818,23 @@ func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, er
 	return ret, nil
 }
 
+func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+	table := qb.table()
+	oHistoryTable := goqu.T(scenesODatesTable)
+
+	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
+		oHistoryTable,
+		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+	).Where(table.Col(studioIDColumn).Eq(studioID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesGroupsJoinTable).Select(scenesGroupsJoinTable.Col(sceneIDColumn)).Where(
 		scenesGroupsJoinTable.Col(groupIDColumn).Eq(groupID),
@@ -1467,30 +1484,4 @@ func getFirstPath(scenes []*models.Scene) string {
 		}
 	}
 	return firstPath
-}
-
-func (qb *SceneStore) OCountByStudioID(ctx context.Context, filter *models.SceneFilterType) (int, error) {
-	table := qb.table()
-	q := dialect.Select(goqu.COALESCE(goqu.SUM(table.Col("o_counter")), 0)).From(table)
-
-	if filter != nil {
-		builder := filterBuilderFromHandler(ctx, &sceneFilterHandler{sceneFilter: filter})
-		if err := builder.getError(); err != nil {
-			return 0, err
-		}
-		// Add joins
-		for _, j := range builder.getAllJoins() {
-			if j.joinType == "LEFT" {
-				q = q.LeftJoin(goqu.T(j.table), goqu.On(goqu.L(j.onClause, j.args...)))
-			} else if j.joinType == "INNER" {
-				q = q.Join(goqu.T(j.table), goqu.On(goqu.L(j.onClause, j.args...)))
-			}
-		}
-		// Add where clauses
-		if clause, args := builder.generateWhereClauses(); clause != "" {
-			q = q.Where(goqu.L(clause, args...))
-		}
-	}
-
-	return count(ctx, q)
 }
