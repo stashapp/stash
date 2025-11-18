@@ -41,7 +41,7 @@ var stashReleases = func() map[string]string {
 // isMacOSBundle checks if the application is running from within a macOS .app bundle
 func isMacOSBundle() bool {
 	exec, err := os.Executable()
-	return err == nil && strings.Contains(exec, ".app/")
+	return err == nil && strings.Contains(exec, "Stash.app/")
 }
 
 // getWantedRelease determines which release variant to download based on platform and bundle type
