@@ -1,13 +1,9 @@
 {
     "actions": {
+        "anonymise": "Anonymize",
+        "download_anonymised": "Download anonymized",
         "customise": "Customize",
-        "add_sub_groups": "Add Sub-Groups",
-        "add": "Add",
-        "add_directory": "Add Directory",
-        "add_entity": "Add {entityType}",
-        "add_manual_date": "Add manual date",
-        "add_o": "Add O",
-        "add_play": "Add play"
+        "optimise_database": "Optimize Database"
     },
     "config": {
         "tools": {
@@ -26,5 +22,10 @@
     "favourite": "Favorite",
     "hair_color": "Hair Color",
     "organized": "Organized",
-    "performer_favorite": "Performer Favorited"
+    "performer_favorite": "Performer Favorited",
+    "component_tagger": {
+        "config": {
+            "mark_organized_label": "Mark as Organized on save"
+        }
+    }
 }

@@ -82,11 +82,12 @@ func (t *ImageFragment) GetHeight() int {
 }
 
 type StudioFragment struct {
-	Name   string                 "json:\"name\" graphql:\"name\""
-	ID     string                 "json:\"id\" graphql:\"id\""
-	Urls   []*URLFragment         "json:\"urls\" graphql:\"urls\""
-	Parent *StudioFragment_Parent "json:\"parent,omitempty\" graphql:\"parent\""
-	Images []*ImageFragment       "json:\"images\" graphql:\"images\""
+	Name    string                 "json:\"name\" graphql:\"name\""
+	ID      string                 "json:\"id\" graphql:\"id\""
+	Aliases []string               "json:\"aliases\" graphql:\"aliases\""
+	Urls    []*URLFragment         "json:\"urls\" graphql:\"urls\""
+	Parent  *StudioFragment_Parent "json:\"parent,omitempty\" graphql:\"parent\""
+	Images  []*ImageFragment       "json:\"images\" graphql:\"images\""
 }
 
 func (t *StudioFragment) GetName() string {
@@ -100,6 +101,12 @@ func (t *StudioFragment) GetID() string {
 		t = &StudioFragment{}
 	}
 	return t.ID
+}
+func (t *StudioFragment) GetAliases() []string {
+	if t == nil {
+		t = &StudioFragment{}
+	}
+	return t.Aliases
 }
 func (t *StudioFragment) GetUrls() []*URLFragment {
 	if t == nil {
@@ -845,6 +852,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
 	name
 	id
+	aliases
 	urls {
 		... URLFragment
 	}
@@ -980,6 +988,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
 	name
 	id
+	aliases
 	urls {
 		... URLFragment
 	}
@@ -1115,6 +1124,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
 	name
 	id
+	aliases
 	urls {
 		... URLFragment
 	}
@@ -1250,6 +1260,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
 	name
 	id
+	aliases
 	urls {
 		... URLFragment
 	}
@@ -1543,6 +1554,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
 	name
 	id
+	aliases
 	urls {
 		... URLFragment
 	}
@@ -1641,6 +1653,7 @@ const FindStudioDocument = `query FindStudio ($id: ID, $name: String) {
 fragment StudioFragment on Studio {
 	name
 	id
+	aliases
 	urls {
 		... URLFragment
 	}

@@ -24,6 +24,7 @@ import { CountrySelect } from "../CountrySelect";
 import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
 import { ScrapeResult } from "./scrapeResult";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
@@ -31,6 +32,7 @@ interface IScrapedFieldProps<T> {
 
 interface IScrapedRowProps<T, V> extends IScrapedFieldProps<T> {
   className?: string;
+  field: string;
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
@@ -105,7 +107,10 @@ export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
   }
 
   return (
-    <Row className={`px-3 pt-3 ${props.className ?? ""}`}>
+    <Row
+      className={`px-3 pt-3 ${props.className ?? ""}`}
+      data-field={props.field}
+    >
       <Form.Label column lg="3">
         {props.title}
       </Form.Label>
@@ -175,6 +180,8 @@ function getNameString(value: string) {
 
 interface IScrapedInputGroupRowProps {
   title: string;
+  field: string;
+  className?: string;
   placeholder?: string;
   result: ScrapeResult<string>;
   locked?: boolean;
@@ -187,6 +194,8 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
   return (
     <ScrapeDialogRow
       title={props.title}
+      field={props.field}
+      className={props.className}
       result={props.result}
       renderOriginalField={() => (
         <ScrapedInputGroup
@@ -240,6 +249,7 @@ const ScrapedStringList: React.FC<IScrapedStringListProps> = (props) => {
 
 interface IScrapedStringListRowProps {
   title: string;
+  field: string;
   placeholder?: string;
   result: ScrapeResult<string[]>;
   locked?: boolean;
@@ -253,6 +263,7 @@ export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
     <ScrapeDialogRow
       className="string-list-row"
       title={props.title}
+      field={props.field}
       result={props.result}
       renderOriginalField={() => (
         <ScrapedStringList
@@ -300,6 +311,7 @@ export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (
   return (
     <ScrapeDialogRow
       title={props.title}
+      field={props.field}
       result={props.result}
       renderOriginalField={() => (
         <ScrapedTextArea
@@ -346,6 +358,7 @@ const ScrapedImage: React.FC<IScrapedImageProps> = (props) => {
 
 interface IScrapedImageRowProps {
   title: string;
+  field: string;
   className?: string;
   result: ScrapeResult<string>;
   onChange: (value: ScrapeResult<string>) => void;
@@ -355,6 +368,7 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
   return (
     <ScrapeDialogRow
       title={props.title}
+      field={props.field}
       result={props.result}
       renderOriginalField={() => (
         <ScrapedImage
@@ -379,6 +393,7 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
 
 interface IScrapedImagesRowProps {
   title: string;
+  field: string;
   className?: string;
   result: ScrapeResult<string>;
   images: string[];
@@ -397,6 +412,7 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
   return (
     <ScrapeDialogRow
       title={props.title}
+      field={props.field}
       result={props.result}
       renderOriginalField={() => (
         <ScrapedImage
@@ -433,6 +449,9 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
   props: IScrapeDialogProps
 ) => {
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
+
   return (
     <ModalComponent
       show
@@ -449,7 +468,10 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
         text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
-      modalProps={{ size: "lg", dialogClassName: "scrape-dialog" }}
+      modalProps={{
+        size: "lg",
+        dialogClassName: `scrape-dialog ${sfwContentMode ? "sfw-mode" : ""}`,
+      }}
     >
       <div className="dialog-container">
         <Form>
@@ -479,6 +501,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
 
 interface IScrapedCountryRowProps {
   title: string;
+  field: string;
   result: ScrapeResult<string>;
   onChange: (value: ScrapeResult<string>) => void;
   locked?: boolean;
@@ -487,6 +510,7 @@ interface IScrapedCountryRowProps {
 
 export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
   title,
+  field,
   result,
   onChange,
   locked,
@@ -494,6 +518,7 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
 }) => (
   <ScrapeDialogRow
     title={title}
+    field={field}
     result={result}
     renderOriginalField={() => (
       <FormControl

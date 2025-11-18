@@ -18,8 +18,12 @@ import (
 )
 
 const (
-	studioTable           = "studios"
-	studioIDColumn        = "studio_id"
+	studioTable    = "studios"
+	studioIDColumn = "studio_id"
+
+	studioURLsTable = "studio_urls"
+	studioURLColumn = "url"
+
 	studioAliasesTable    = "studio_aliases"
 	studioAliasColumn     = "alias"
 	studioParentIDColumn  = "parent_id"
@@ -31,7 +35,6 @@ const (
 type studioRow struct {
 	ID        int         `db:"id" goqu:"skipinsert"`
 	Name      zero.String `db:"name"`
-	URL       zero.String `db:"url"`
 	ParentID  null.Int    `db:"parent_id,omitempty"`
 	CreatedAt Timestamp   `db:"created_at"`
 	UpdatedAt Timestamp   `db:"updated_at"`
@@ -48,7 +51,6 @@ type studioRow struct {
 func (r *studioRow) fromStudio(o models.Studio) {
 	r.ID = o.ID
 	r.Name = zero.StringFrom(o.Name)
-	r.URL = zero.StringFrom(o.URL)
 	r.ParentID = intFromPtr(o.ParentID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -62,7 +64,6 @@ func (r *studioRow) resolve() *models.Studio {
 	ret := &models.Studio{
 		ID:            r.ID,
 		Name:          r.Name.String,
-		URL:           r.URL.String,
 		ParentID:      nullIntPtr(r.ParentID),
 		CreatedAt:     r.CreatedAt.Timestamp,
 		UpdatedAt:     r.UpdatedAt.Timestamp,
@@ -81,7 +82,6 @@ type studioRowRecord struct {
 
 func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setNullString("name", o.Name)
-	r.setNullString("url", o.URL)
 	r.setNullInt("parent_id", o.ParentID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
@@ -133,7 +133,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 	}
 )
@@ -181,11 +181,18 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 	}
 
 	if newObject.Aliases.Loaded() {
-		if err := studio.EnsureAliasesUnique(ctx, id, newObject.Aliases.List(), qb); err != nil {
+		if err := studio.ValidateAliases(ctx, id, newObject.Aliases.List(), qb); err != nil {
 			return err
 		}
 
 		if err := studiosAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := studiosURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -225,11 +232,13 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 	}
 
 	if input.Aliases != nil {
-		if err := studio.EnsureAliasesUnique(ctx, input.ID, input.Aliases.Values, qb); err != nil {
+		if err := studiosAliasesTableMgr.modifyJoins(ctx, input.ID, input.Aliases.Values, input.Aliases.Mode); err != nil {
 			return nil, err
 		}
+	}
 
-		if err := studiosAliasesTableMgr.modifyJoins(ctx, input.ID, input.Aliases.Values, input.Aliases.Mode); err != nil {
+	if input.URLs != nil {
+		if err := studiosURLsTableMgr.modifyJoins(ctx, input.ID, input.URLs.Values, input.URLs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -258,6 +267,12 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 
 	if updatedObject.Aliases.Loaded() {
 		if err := studiosAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := studiosURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -507,7 +522,7 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 	ret, err := qb.findBySubquery(ctx, sq)
 
 	if err != nil {
-		return nil, fmt.Errorf("getting performers for autotag: %w", err)
+		return nil, fmt.Errorf("getting studios for autotag: %w", err)
 	}
 
 	return ret, nil
@@ -576,6 +591,16 @@ func (qb *StudioStore) QueryCount(ctx context.Context, studioFilter *models.Stud
 	return query.executeCount(ctx)
 }
 
+func (qb *StudioStore) sortByScenesDuration(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(video_files.duration), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN video_files ON video_files.file_id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
+}
+
 var studioSortOptions = sortOptions{
 	"child_count",
 	"created_at",
@@ -584,6 +609,7 @@ var studioSortOptions = sortOptions{
 	"images_count",
 	"name",
 	"scenes_count",
+	"scenes_duration",
 	"random",
 	"rating",
 	"tag_count",
@@ -612,6 +638,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, studiosTagsTable, studioIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
+	case "scenes_duration":
+		sortQuery += qb.sortByScenesDuration(direction)
 	case "images_count":
 		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":
@@ -649,4 +677,8 @@ func (qb *StudioStore) GetStashIDs(ctx context.Context, studioID int) ([]models.
 
 func (qb *StudioStore) GetAliases(ctx context.Context, studioID int) ([]string, error) {
 	return studiosAliasesTableMgr.get(ctx, studioID)
+}
+
+func (qb *StudioStore) GetURLs(ctx context.Context, studioID int) ([]string, error) {
+	return studiosURLsTableMgr.get(ctx, studioID)
 }

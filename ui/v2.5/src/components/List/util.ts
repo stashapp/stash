@@ -1,16 +1,23 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import { isEqual, isFunction } from "lodash-es";
 import { QueryResult } from "@apollo/client";
 import { IHasID } from "src/utils/data";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
 import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
+
+function locationEquals(
+  loc1: ReturnType<typeof useLocation> | undefined,
+  loc2: ReturnType<typeof useLocation>
+) {
+  return loc1 && loc1.pathname === loc2.pathname && loc1.search === loc2.search;
+}
 
 export function useFilterURL(
   filter: ListFilterModel,
@@ -24,6 +31,7 @@ export function useFilterURL(
 
   const history = useHistory();
   const location = useLocation();
+  const prevLocation = usePrevious(location);
 
   // when the filter changes, update the URL
   const updateFilter = useCallback(
@@ -47,7 +55,8 @@ export function useFilterURL(
   // and updates the filter accordingly.
   useEffect(() => {
     // don't apply if active is false
-    if (!active) return;
+    // also don't apply if location is unchanged
+    if (!active || locationEquals(prevLocation, location)) return;
 
     // re-init to load default filter on empty new query params
     if (!location.search) {
@@ -73,7 +82,8 @@ export function useFilterURL(
     });
   }, [
     active,
-    location.search,
+    prevLocation,
+    location,
     defaultFilter,
     setFilter,
     updateFilter,
@@ -84,7 +94,7 @@ export function useFilterURL(
 }
 
 export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
-  const { configuration: config, loading } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const defaultFilter = useMemo(() => {
     if (view && config?.ui.defaultFilters?.[view]) {
@@ -104,9 +114,9 @@ export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
     }
   }, [view, config?.ui.defaultFilters, emptyFilter]);
 
-  const retFilter = loading ? undefined : defaultFilter ?? emptyFilter;
+  const retFilter = defaultFilter ?? emptyFilter;
 
-  return { defaultFilter: retFilter, loading };
+  return { defaultFilter: retFilter };
 }
 
 function useEmptyFilter(props: {
@@ -148,14 +158,14 @@ export function useFilterState(
 
   const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
 
-  const { defaultFilter, loading } = useDefaultFilter(emptyFilter, view);
+  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
 
   const { setFilter } = useFilterURL(filter, setFilterState, {
     defaultFilter,
     active: useURL,
   });
 
-  return { loading, filter, setFilter };
+  return { filter, setFilter };
 }
 
 export function useFilterOperations(props: {
@@ -196,9 +206,12 @@ export function useFilterOperations(props: {
     [setFilter]
   );
 
-  const clearAllCriteria = useCallback(() => {
-    setFilter((cv) => cv.clearCriteria());
-  }, [setFilter]);
+  const clearAllCriteria = useCallback(
+    (includeSearchTerm = false) => {
+      setFilter((cv) => cv.clearCriteria(includeSearchTerm));
+    },
+    [setFilter]
+  );
 
   return {
     setPage,

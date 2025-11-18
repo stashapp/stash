@@ -21,6 +21,7 @@ import {
   useSceneResetActivity,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useToast } from "src/hooks/Toast";
 import { TextField } from "src/utils/field";
 import TextUtils from "src/utils/text";
@@ -172,6 +173,9 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   const intl = useIntl();
   const Toast = useToast();
 
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
+
   const [dialogs, setDialogs] = React.useState({
     playHistory: false,
     oHistory: false,
@@ -299,6 +303,9 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   }
 
   function maybeRenderDialogs() {
+    const clearHistoryMessageID = sfwContentMode
+      ? "dialogs.clear_o_history_confirm_sfw"
+      : "dialogs.clear_play_history_confirm";
     return (
       <>
         <AlertModal
@@ -312,7 +319,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         />
         <AlertModal
           show={dialogs.oHistory}
-          text={intl.formatMessage({ id: "dialogs.clear_o_history_confirm" })}
+          text={intl.formatMessage({ id: clearHistoryMessageID })}
           confirmButtonText={intl.formatMessage({ id: "actions.clear" })}
           onConfirm={() => handleClearODates()}
           onCancel={() => setDialogPartial({ oHistory: false })}
@@ -350,6 +357,11 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     (h) => h != null
   ) as string[];
   const oHistory = (scene.o_history ?? []).filter((h) => h != null) as string[];
+
+  const oHistoryMessageID = sfwContentMode ? "o_history_sfw" : "o_history";
+  const noneMessageID = sfwContentMode
+    ? "odate_recorded_no_sfw"
+    : "odate_recorded_no";
 
   return (
     <div>
@@ -401,7 +413,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         <div className="history-header">
           <h5>
             <span>
-              <FormattedMessage id="o_history" />
+              <FormattedMessage id={oHistoryMessageID} />
               <Counter count={oHistory.length} hideZero />
             </span>
             <span>
@@ -427,7 +439,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         </div>
         <History
           history={oHistory}
-          noneID="odate_recorded_no"
+          noneID={noneMessageID}
           unknownDate={scene.created_at}
           onRemove={(t) => handleDeleteODate(t)}
         />

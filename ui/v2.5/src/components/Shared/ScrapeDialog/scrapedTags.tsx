@@ -9,7 +9,8 @@ import { ScrapedTagsRow } from "./ScrapedObjectsRow";
 
 export function useScrapedTags(
   existingTags: Tag[],
-  scrapedTags?: GQL.Maybe<GQL.ScrapedTag[]>
+  scrapedTags?: GQL.Maybe<GQL.ScrapedTag[]>,
+  endpoint?: string
 ) {
   const intl = useIntl();
   const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
@@ -33,10 +34,12 @@ export function useScrapedTags(
     setScrapeResult: setTags,
     newObjects: newTags,
     setNewObjects: setNewTags,
+    endpoint,
   });
 
   const scrapedTagsRow = (
     <ScrapedTagsRow
+      field="tags"
       title={intl.formatMessage({ id: "tags" })}
       result={tags}
       onChange={(value) => setTags(value)}

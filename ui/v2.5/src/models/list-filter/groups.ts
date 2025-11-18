@@ -35,6 +35,11 @@ const sortByOptions = [
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "o_count",
+      value: "o_counter",
+      sfwMessageID: "o_count_sfw",
+    },
   ]);
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
@@ -49,6 +54,9 @@ const criterionOptions = [
   RatingCriterionOption,
   PerformersCriterionOption,
   createDateCriterionOption("date"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ContainingGroupsCriterionOption,
   SubGroupsCriterionOption,
   createMandatoryNumberCriterionOption("containing_group_count"),

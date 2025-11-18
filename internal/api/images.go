@@ -101,7 +101,7 @@ func initCustomPerformerImages(customPath string) {
 	}
 }
 
-func getDefaultPerformerImage(name string, gender *models.GenderEnum) []byte {
+func getDefaultPerformerImage(name string, gender *models.GenderEnum, sfwMode bool) []byte {
 	// try the custom box first if we have one
 	if performerBoxCustom != nil {
 		ret, err := performerBoxCustom.GetRandomImageByName(name)
@@ -109,6 +109,10 @@ func getDefaultPerformerImage(name string, gender *models.GenderEnum) []byte {
 			return ret
 		}
 		logger.Warnf("error loading custom default performer image: %v", err)
+	}
+
+	if sfwMode {
+		return static.ReadAll(static.DefaultSFWPerformerImage)
 	}
 
 	var g models.GenderEnum

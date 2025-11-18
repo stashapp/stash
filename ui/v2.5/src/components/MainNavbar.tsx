@@ -11,7 +11,7 @@ import {
   MessageDescriptor,
   useIntl,
 } from "react-intl";
-import { Nav, Navbar, Button, Fade } from "react-bootstrap";
+import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
@@ -19,7 +19,7 @@ import Mousetrap from "mousetrap";
 
 import SessionUtils from "src/utils/session";
 import { Icon } from "src/components/Shared/Icon";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";
 import {
@@ -181,7 +181,7 @@ const MainNavbarUtilityItems = PatchComponent(
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
-  const { configuration, loading } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const { openManual } = React.useContext(ManualStateContext);
 
   const [expanded, setExpanded] = useState(false);
@@ -359,35 +359,31 @@ export const MainNavbar: React.FC = () => {
         ref={navbarRef}
       >
         <Navbar.Collapse className="bg-dark order-sm-1">
-          <Fade in={!loading}>
-            <>
-              <MainNavbarMenuItems>
-                {menuItems.map(({ href, icon, message }) => (
-                  <Nav.Link
-                    eventKey={href}
-                    as="div"
-                    key={href}
-                    className="col-4 col-sm-3 col-md-2 col-lg-auto"
-                  >
-                    <LinkContainer activeClassName="active" exact to={href}>
-                      <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
-                        <Icon
-                          {...{ icon }}
-                          className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
-                        />
-                        <span>{intl.formatMessage(message)}</span>
-                      </Button>
-                    </LinkContainer>
-                  </Nav.Link>
-                ))}
-              </MainNavbarMenuItems>
-              <Nav>
-                <MainNavbarUtilityItems>
-                  {renderUtilityButtons()}
-                </MainNavbarUtilityItems>
-              </Nav>
-            </>
-          </Fade>
+          <MainNavbarMenuItems>
+            {menuItems.map(({ href, icon, message }) => (
+              <Nav.Link
+                eventKey={href}
+                as="div"
+                key={href}
+                className="col-4 col-sm-3 col-md-2 col-lg-auto"
+              >
+                <LinkContainer activeClassName="active" exact to={href}>
+                  <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
+                    <Icon
+                      {...{ icon }}
+                      className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
+                    />
+                    <span>{intl.formatMessage(message)}</span>
+                  </Button>
+                </LinkContainer>
+              </Nav.Link>
+            ))}
+          </MainNavbarMenuItems>
+          <Nav>
+            <MainNavbarUtilityItems>
+              {renderUtilityButtons()}
+            </MainNavbarUtilityItems>
+          </Nav>
         </Navbar.Collapse>
 
         <Navbar.Brand as="div" onClick={handleDismiss}>

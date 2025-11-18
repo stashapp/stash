@@ -27,8 +27,9 @@ func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderW
 	const stashIDStr = "stashID"
 	const endpoint = "endpoint"
 	stashID := models.StashID{
-		StashID:  stashIDStr,
-		Endpoint: endpoint,
+		StashID:   stashIDStr,
+		Endpoint:  endpoint,
+		UpdatedAt: epochTime,
 	}
 
 	// update stash ids and ensure was updated

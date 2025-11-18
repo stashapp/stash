@@ -200,6 +200,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ language: v })}
           >
             <option value="af-ZA">Afrikaans (Preview)</option>
+            <option value="bg-BG">Bulgarian (Preview)</option>
             <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
             <option value="ca-ES">Catalan (Preview)</option>
             <option value="cs-CZ">Čeština (Česko)</option>
@@ -219,7 +220,8 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <option value="ja-JP">日本語 (日本)</option>
             <option value="ko-KR">한국어 (대한민국)</option>
             <option value="lv-LV">Latviešu (Preview)</option>
-            <option value="nb-NO">Norsk bokmål (Preview)</option>
+            <option value="lt-LT">Lithuanian (Preview)</option>
+            <option value="nb-NO">Norsk bokmål</option>
             <option value="nn-NO">Nynorsk (Preview)</option>
             <option value="nl-NL">Nederlands (Nederland)</option>
             <option value="pl-PL">Polski</option>
@@ -232,10 +234,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <option value="tr-TR">Türkçe (Türkiye)</option>
             <option value="th-TH">ภาษาไทย (ไทย)</option>
             <option value="uk-UA">Ukrainian (Україна)</option>
+            <option value="ur-PK">Urdu (Preview)</option>
             <option value="vi-VN">Tiếng Việt (Preview)</option>
             <option value="zh-TW">繁體中文 (台灣)</option>
             <option value="zh-CN">简体中文 (中国)</option>
           </SelectSetting>
+
+          <BooleanSetting
+            id="sfw-content-mode"
+            headingID="config.ui.sfw_mode.heading"
+            subHeadingID="config.ui.sfw_mode.description"
+            checked={iface.sfwContentMode ?? undefined}
+            onChange={(v) => saveInterface({ sfwContentMode: v })}
+          />
 
           <div className="setting-group">
             <div className="setting">
@@ -467,6 +478,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveUI({ showChildTagContent: v })}
           />
         </SettingSection>
+
         <SettingSection headingID="config.ui.studio_panel.heading">
           <BooleanSetting
             id="show-child-studio-content"
@@ -474,6 +486,15 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
             checked={ui.showChildStudioContent ?? undefined}
             onChange={(v) => saveUI({ showChildStudioContent: v })}
+          />
+        </SettingSection>
+
+        <SettingSection headingID="config.ui.performer_list.heading">
+          <BooleanSetting
+            id="show-links-on-grid-card"
+            headingID="config.ui.performer_list.options.show_links_on_grid_card.heading"
+            checked={ui.showLinksOnPerformerCard ?? undefined}
+            onChange={(v) => saveUI({ showLinksOnPerformerCard: v })}
           />
         </SettingSection>
 

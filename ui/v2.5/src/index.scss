@@ -5,9 +5,12 @@ $navbar-height: 48.75px;
 
 $sticky-detail-header-height: 50px;
 
+$sidebar-width: 250px;
+
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
+@import "sfw-mode.scss";
 @import "src/components/Changelog/styles.scss";
 @import "src/components/Galleries/styles.scss";
 @import "src/components/Help/styles.scss";
@@ -698,16 +701,31 @@ div.dropdown-menu {
 }
 
 .tag-item {
+  align-items: center;
   background-color: $muted-gray;
   color: $dark-text;
+  display: inline-flex;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
   margin: 5px;
   padding: 2px 6px;
 
+  // if link, move padding to link to make full tag clickable
+  &.tag-link {
+    padding: 0;
+
+    a {
+      padding: 2px 6px;
+    }
+  }
+
   &:hover {
     cursor: pointer;
+  }
+
+  .search-term svg {
+    margin-left: 0;
   }
 
   .btn {
@@ -716,11 +734,10 @@ div.dropdown-menu {
     bottom: 2px;
     color: $dark-text;
     font-size: 12px;
-    line-height: 1rem;
+    line-height: 16px;
     margin-right: -0.5rem;
     opacity: 0.5;
     padding: 0 0.5rem;
-    position: relative;
 
     &:active,
     &:hover {
@@ -1410,4 +1427,9 @@ select {
   max-height: calc(100vh - 12rem);
   overflow-y: auto;
   padding-right: 1.5rem;
+}
+
+// Fix descenders clipping in line-height #6047
+h3 .TruncatedText {
+  line-height: 1.5;
 }

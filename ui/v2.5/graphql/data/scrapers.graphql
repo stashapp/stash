@@ -1,15 +1,25 @@
 fragment ScrapedStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   parent {
     stored_id
     name
-    url
+    urls
     image
+    details
+    aliases
+    tags {
+      ...ScrapedSceneTagData
+    }
     remote_site_id
   }
   image
+  details
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
 }
 
@@ -76,7 +86,7 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
 fragment ScrapedGroupStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
 }
 
 fragment ScrapedGroupData on ScrapedGroup {
@@ -123,21 +133,32 @@ fragment ScrapedSceneGroupData on ScrapedGroup {
 fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   parent {
     stored_id
     name
-    url
+    urls
     image
+    details
+    aliases
+    tags {
+      ...ScrapedSceneTagData
+    }
     remote_site_id
   }
   image
+  details
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
 }
 
 fragment ScrapedSceneTagData on ScrapedTag {
   stored_id
   name
+  remote_site_id
 }
 
 fragment ScrapedSceneData on ScrapedScene {

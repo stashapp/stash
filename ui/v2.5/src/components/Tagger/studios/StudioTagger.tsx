@@ -17,7 +17,7 @@ import {
   evictQueries,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import StudioConfig from "./Config";
@@ -669,7 +669,7 @@ interface ITaggerProps {
 export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);

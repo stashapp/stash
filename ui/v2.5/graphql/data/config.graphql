@@ -37,6 +37,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
+  logFileMaxSize
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
@@ -71,6 +72,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
+  sfwContentMode
   menuItems
   soundOnPreview
   wallShowTitle

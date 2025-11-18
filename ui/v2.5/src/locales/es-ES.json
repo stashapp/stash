@@ -138,7 +138,11 @@
         "view_history": "Ver historial",
         "add_sub_groups": "Añadir subgrupos",
         "remove_from_containing_group": "Eliminar del grupo",
-        "reset_play_duration": "Reiniciar la duración de la reproducción"
+        "reset_play_duration": "Reiniciar la duración de la reproducción",
+        "load": "Cargar",
+        "load_filter": "Cargar el filtro",
+        "play": "Jugar",
+        "reset_resume_time": "Restablecer el tiempo de reanudación"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -874,7 +878,6 @@
             "destination": "Destino",
             "source": "Fuente"
         },
-        "overwrite_filter_confirm": "¿Estás seguro de sobreescribir la consulta guardada {entityName}?",
         "scene_gen": {
             "force_transcodes": "Forzar generación de transcodificación",
             "force_transcodes_tooltip": "Por defecto las transcodificaciones son solo generadas cuando el archivo de vídeo no es soportado por el navegador. Cuando están habilitadas, las transcodificaciones se generarán incluso cuando el fichero de vídeo sea soportado por el navegador.",

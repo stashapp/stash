@@ -183,7 +183,7 @@ export class ListFilterModel {
       ret.disp = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      ret.q = params.q.trim();
+      ret.q = params.q;
     }
     if (params.p) {
       ret.p = Number.parseInt(params.p, 10);
@@ -476,10 +476,20 @@ export class ListFilterModel {
     return this.setCriteria(criteria);
   }
 
-  public clearCriteria() {
+  public clearCriteria(clearSearchTerm = false) {
     const ret = this.clone();
+    if (clearSearchTerm) {
+      ret.searchTerm = "";
+    }
     ret.criteria = [];
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public clearSearchTerm() {
+    const ret = this.clone();
+    ret.searchTerm = "";
+    ret.currentPage = 1; // reset to first page
     return ret;
   }
 

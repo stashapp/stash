@@ -162,6 +162,21 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }, [scrapers]);
 
+  const cover = useMemo(() => {
+    if (gallery?.paths?.cover) {
+      return (
+        <div className="gallery-cover">
+          <img
+            src={gallery.paths.cover}
+            alt={intl.formatMessage({ id: "cover_image" })}
+          />
+        </div>
+      );
+    }
+
+    return <div></div>;
+  }, [gallery?.paths?.cover, intl]);
+
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
@@ -463,6 +478,12 @@ export const GalleryEditPanel: React.FC<IProps> = ({
           </Col>
           <Col lg={5} xl={12}>
             {renderDetailsField()}
+            <Form.Group controlId="cover_image">
+              <Form.Label>
+                <FormattedMessage id="cover_image" />
+              </Form.Label>
+              {cover}
+            </Form.Group>
           </Col>
         </Row>
       </Form>

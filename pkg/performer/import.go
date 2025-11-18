@@ -233,7 +233,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		}
 
 		if len(urls) > 0 {
-			newPerformer.URLs = models.NewRelatedStrings([]string{performerJSON.URL})
+			newPerformer.URLs = models.NewRelatedStrings(urls)
 		}
 	}
 

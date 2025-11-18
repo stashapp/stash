@@ -1,23 +1,17 @@
 import React from "react";
-import type {
-  RenderImageProps,
-  renderImageClickHandler,
-  PhotoProps,
-} from "react-photo-gallery";
+import type { RenderImageProps } from "react-photo-gallery";
 
-interface IImageWallProps {
-  margin?: string;
-  index: number;
-  photo: PhotoProps;
-  onClick: renderImageClickHandler | null;
-  direction: "row" | "column";
-  top?: number;
-  left?: number;
+interface IExtraProps {
+  maxHeight: number;
 }
 
-export const ImageWallItem: React.FC<RenderImageProps> = (
-  props: IImageWallProps
+export const ImageWallItem: React.FC<RenderImageProps & IExtraProps> = (
+  props: RenderImageProps & IExtraProps
 ) => {
+  const height = Math.min(props.maxHeight, props.photo.height);
+  const zoomFactor = height / props.photo.height;
+  const width = props.photo.width * zoomFactor;
+
   type style = Record<string, string | number | undefined>;
   var imgStyle: style = {
     margin: props.margin,
@@ -45,12 +39,13 @@ export const ImageWallItem: React.FC<RenderImageProps> = (
     <ImagePreview
       loop={video}
       muted={video}
+      playsInline={video}
       autoPlay={video}
       key={props.photo.key}
       style={imgStyle}
       src={props.photo.src}
-      width={props.photo.width}
-      height={props.photo.height}
+      width={width}
+      height={height}
       alt={props.photo.alt}
       onClick={handleClick}
     />

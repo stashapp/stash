@@ -8,7 +8,6 @@ import (
 type Studio struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
-	URL       string    `json:"url"`
 	ParentID  *int      `json:"parent_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -19,6 +18,7 @@ type Studio struct {
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
+	URLs     RelatedStrings  `json:"urls"`
 	TagIDs   RelatedIDs      `json:"tag_ids"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 
@@ -37,7 +37,6 @@ func NewStudio() Studio {
 type StudioPartial struct {
 	ID       int
 	Name     OptionalString
-	URL      OptionalString
 	ParentID OptionalInt
 	// Rating expressed in 1-100 scale
 	Rating        OptionalInt
@@ -48,6 +47,7 @@ type StudioPartial struct {
 	IgnoreAutoTag OptionalBool
 
 	Aliases  *UpdateStrings
+	URLs     *UpdateStrings
 	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
 }
@@ -62,6 +62,12 @@ func NewStudioPartial() StudioPartial {
 func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
 	return s.Aliases.load(func() ([]string, error) {
 		return l.GetAliases(ctx, s.ID)
+	})
+}
+
+func (s *Studio) LoadURLs(ctx context.Context, l URLLoader) error {
+	return s.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, s.ID)
 	})
 }
 

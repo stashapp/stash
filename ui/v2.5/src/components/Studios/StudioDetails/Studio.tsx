@@ -18,7 +18,7 @@ import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -47,6 +47,7 @@ import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { goBackOrReplace } from "src/utils/history";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -263,7 +264,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const intl = useIntl();
 
   // Configuration settings
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
@@ -285,11 +286,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
   const showAllCounts = uiConfig?.showChildStudioContent;
-
-  // make array of url so that it doesn't re-render on every change
-  const urls = useMemo(() => {
-    return studio?.url ? [studio.url] : [];
-  }, [studio.url]);
 
   const studioImage = useMemo(() => {
     const existingPath = studio.image_path;
@@ -378,7 +374,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       return;
     }
 
-    history.goBack();
+    goBackOrReplace(history, "/studios");
   }
 
   function renderDeleteAlert() {
@@ -470,7 +466,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                     favorite={studio.favorite}
                     onToggleFavorite={(v) => setFavorite(v)}
                   />
-                  <ExternalLinkButtons urls={urls} />
+                  <ExternalLinkButtons urls={studio.urls} />
                 </span>
               </DetailTitle>
 

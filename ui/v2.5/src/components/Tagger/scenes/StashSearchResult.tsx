@@ -715,6 +715,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   async function onCreateTag(t: GQL.ScrapedTag) {
     const toCreate: GQL.TagCreateInput = { name: t.name };
+
+    // If the tag has a remote_site_id and we have an endpoint, include the stash_id
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
+    if (t.remote_site_id && endpoint) {
+      toCreate.stash_ids = [
+        {
+          endpoint: endpoint,
+          stash_id: t.remote_site_id,
+        },
+      ];
+    }
+
     const newTagID = await createNewTag(t, toCreate);
     if (newTagID !== undefined) {
       setTagIDs([...tagIDs, newTagID]);

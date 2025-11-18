@@ -84,11 +84,17 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         onSetDisplayMode(DisplayMode.Wall);
       }
     });
+    Mousetrap.bind("v t", () => {
+      if (displayModeOptions.includes(DisplayMode.Tagger)) {
+        onSetDisplayMode(DisplayMode.Tagger);
+      }
+    });
 
     return () => {
       Mousetrap.unbind("v g");
       Mousetrap.unbind("v l");
       Mousetrap.unbind("v w");
+      Mousetrap.unbind("v t");
     };
   });
 
@@ -130,7 +136,8 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
               <div className="display-mode-menu">
                 {onSetZoom &&
                 zoomIndex !== undefined &&
-                displayMode === DisplayMode.Grid ? (
+                (displayMode === DisplayMode.Grid ||
+                  displayMode === DisplayMode.Wall) ? (
                   <div className="zoom-slider-container">
                     <ZoomSelect
                       minZoom={minZoom}

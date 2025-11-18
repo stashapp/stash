@@ -37,6 +37,7 @@ import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { useStopWheelScroll } from "src/utils/form";
 import { ISortByOption } from "src/models/list-filter/filter-options";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
@@ -249,14 +250,24 @@ export const SortBySelect: React.FC<{
   onReshuffleRandomSort,
 }) => {
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
 
   const currentSortBy = options.find((o) => o.value === sortBy);
+  const currentSortByMessageID = currentSortBy
+    ? !sfwContentMode
+      ? currentSortBy.messageID
+      : currentSortBy.sfwMessageID ?? currentSortBy.messageID
+    : "";
 
   function renderSortByOptions() {
     return options
       .map((o) => {
+        const messageID = !sfwContentMode
+          ? o.messageID
+          : o.sfwMessageID ?? o.messageID;
         return {
-          message: intl.formatMessage({ id: o.messageID }),
+          message: intl.formatMessage({ id: messageID }),
           value: o.value,
         };
       })
@@ -267,6 +278,7 @@ export const SortBySelect: React.FC<{
           key={option.value}
           className="bg-secondary text-white"
           eventKey={option.value}
+          data-value={option.value}
         >
           {option.message}
         </Dropdown.Item>
@@ -274,11 +286,11 @@ export const SortBySelect: React.FC<{
   }
 
   return (
-    <Dropdown as={ButtonGroup} className={className}>
+    <Dropdown as={ButtonGroup} className={`${className ?? ""} sort-by-select`}>
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy
-            ? intl.formatMessage({ id: currentSortBy.messageID })
+            ? intl.formatMessage({ id: currentSortByMessageID })
             : ""}
         </Dropdown.Toggle>
       </InputGroup.Prepend>
@@ -324,7 +336,6 @@ interface IListFilterProps {
   filter: ListFilterModel;
   view?: View;
   openFilterDialog: () => void;
-  withSidebar?: boolean;
 }
 
 export const ListFilter: React.FC<IListFilterProps> = ({
@@ -332,7 +343,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filter,
   openFilterDialog,
   view,
-  withSidebar,
 }) => {
   const filterOptions = filter.options;
 
@@ -379,36 +389,32 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   function render() {
     return (
       <>
-        {!withSidebar && (
-          <div className="d-flex">
-            <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-          </div>
-        )}
+        <div className="d-flex">
+          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
+        </div>
 
-        {!withSidebar && (
-          <ButtonGroup className="mr-2">
-            <SavedFilterDropdown
-              filter={filter}
-              onSetFilter={(f) => {
-                onFilterUpdate(f);
-              }}
-              view={view}
+        <ButtonGroup className="mr-2">
+          <SavedFilterDropdown
+            filter={filter}
+            onSetFilter={(f) => {
+              onFilterUpdate(f);
+            }}
+            view={view}
+          />
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              <Tooltip id="filter-tooltip">
+                <FormattedMessage id="search_filter.name" />
+              </Tooltip>
+            }
+          >
+            <FilterButton
+              onClick={() => openFilterDialog()}
+              count={filter.count()}
             />
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id="filter-tooltip">
-                  <FormattedMessage id="search_filter.name" />
-                </Tooltip>
-              }
-            >
-              <FilterButton
-                onClick={() => openFilterDialog()}
-                count={filter.count()}
-              />
-            </OverlayTrigger>
-          </ButtonGroup>
-        )}
+          </OverlayTrigger>
+        </ButtonGroup>
 
         <SortBySelect
           className="mr-2"

@@ -1,7 +1,6 @@
 import React, {
   KeyboardEvent,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -31,7 +30,7 @@ import {
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   ConnectionState,
   InteractiveContext,
@@ -118,6 +117,22 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
 
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
+  }
+
+  const skipButtons = player.skipButtons();
+  if (skipButtons) {
+    // handle multimedia keys
+    switch (event.key) {
+      case "MediaTrackNext":
+        if (!skipButtons.onNext) return;
+        skipButtons.onNext();
+        break;
+      case "MediaTrackPrevious":
+        if (!skipButtons.onPrevious) return;
+        skipButtons.onPrevious();
+        break;
+      // MediaPlayPause handled by videojs
+    }
   }
 
   switch (event.which) {
@@ -224,7 +239,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     onNext,
     onPrevious,
   }) => {
-    const { configuration } = useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
     const uiConfig = configuration?.ui;
     const videoRef = useRef<HTMLDivElement>(null);

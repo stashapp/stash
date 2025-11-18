@@ -13,6 +13,7 @@ import { uniq } from "lodash-es";
 
 interface IScrapedStudioRow {
   title: string;
+  field: string;
   result: ObjectScrapeResult<GQL.ScrapedStudio>;
   onChange: (value: ObjectScrapeResult<GQL.ScrapedStudio>) => void;
   newStudio?: GQL.ScrapedStudio;
@@ -25,6 +26,7 @@ function getObjectName<T extends { name: string }>(value: T) {
 
 export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   title,
+  field,
   result,
   onChange,
   newStudio,
@@ -41,7 +43,9 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
     const value = resultValue ? [resultValue] : [];
 
     const selectValue = value.map((p) => {
-      const aliases: string[] = [];
+      const aliases: string[] = p.aliases
+        ? p.aliases.split(",").map((a) => a.trim())
+        : [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
@@ -55,10 +59,11 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            const { id, ...data } = items[0];
+            const { id, aliases, ...data } = items[0];
             onChangeFn({
               ...data,
               stored_id: id,
+              aliases: aliases?.join(", "),
             });
           }
         }}
@@ -70,6 +75,7 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   return (
     <ScrapeDialogRow
       title={title}
+      field={field}
       result={result}
       renderOriginalField={() => renderScrapedStudio(result)}
       renderNewField={() =>
@@ -89,6 +95,7 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
 
 interface IScrapedObjectsRow<T> {
   title: string;
+  field: string;
   result: ScrapeResult<T[]>;
   onChange: (value: ScrapeResult<T[]>) => void;
   newObjects?: T[];
@@ -104,6 +111,7 @@ interface IScrapedObjectsRow<T> {
 export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
   const {
     title,
+    field,
     result,
     onChange,
     newObjects,
@@ -115,6 +123,7 @@ export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
   return (
     <ScrapeDialogRow
       title={title}
+      field={field}
       result={result}
       renderOriginalField={() => renderObjects(result)}
       renderNewField={() =>
@@ -139,7 +148,15 @@ type IScrapedObjectRowImpl<T> = Omit<
 
 export const ScrapedPerformersRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedPerformer> & { ageFromDate?: string | null }
-> = ({ title, result, onChange, newObjects, onCreateNew, ageFromDate }) => {
+> = ({
+  title,
+  field,
+  result,
+  onChange,
+  newObjects,
+  onCreateNew,
+  ageFromDate,
+}) => {
   const performersCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
@@ -188,6 +205,7 @@ export const ScrapedPerformersRow: React.FC<
   return (
     <ScrapedObjectsRow<GQL.ScrapedPerformer>
       title={title}
+      field={field}
       result={result}
       renderObjects={renderScrapedPerformers}
       onChange={onChange}
@@ -200,7 +218,7 @@ export const ScrapedPerformersRow: React.FC<
 
 export const ScrapedGroupsRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedGroup>
-> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+> = ({ title, field, result, onChange, newObjects, onCreateNew }) => {
   const groupsCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
@@ -248,6 +266,7 @@ export const ScrapedGroupsRow: React.FC<
   return (
     <ScrapedObjectsRow<GQL.ScrapedGroup>
       title={title}
+      field={field}
       result={result}
       renderObjects={renderScrapedGroups}
       onChange={onChange}
@@ -260,7 +279,7 @@ export const ScrapedGroupsRow: React.FC<
 
 export const ScrapedTagsRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedTag>
-> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+> = ({ title, field, result, onChange, newObjects, onCreateNew }) => {
   function renderScrapedTags(
     scrapeResult: ScrapeResult<GQL.ScrapedTag[]>,
     isNew?: boolean,
@@ -294,6 +313,7 @@ export const ScrapedTagsRow: React.FC<
   return (
     <ScrapedObjectsRow<GQL.ScrapedTag>
       title={title}
+      field={field}
       result={result}
       renderObjects={renderScrapedTags}
       onChange={onChange}
