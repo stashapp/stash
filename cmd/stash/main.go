@@ -110,7 +110,7 @@ func main() {
 // Logs only error level message to stderr.
 func initLogTemp() *log.Logger {
 	l := log.NewLogger()
-	l.Init("", true, "Error", 10)
+	l.Init("", true, "Error", 0)
 	logger.Logger = l
 
 	return l

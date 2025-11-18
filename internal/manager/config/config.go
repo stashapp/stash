@@ -257,7 +257,7 @@ const (
 	LogAccess             = "logaccess"
 	defaultLogAccess      = true
 	LogFileMaxSize        = "logfile_max_size"
-	defaultLogFileMaxSize = 10 // megabytes
+	defaultLogFileMaxSize = 0 // megabytes, default disabled
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
@@ -1630,7 +1630,7 @@ func (i *Config) GetLogAccess() bool {
 // GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
 func (i *Config) GetLogFileMaxSize() int {
 	value := i.getInt(LogFileMaxSize)
-	if value <= 0 {
+	if value < 0 {
 		value = defaultLogFileMaxSize
 	}
 
