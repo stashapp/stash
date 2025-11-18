@@ -12,7 +12,7 @@ import {
   defaultRatingStarPrecision,
   defaultRatingSystemOptions,
 } from "src/utils/rating";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { RatingCriterion } from "src/models/list-filter/criteria/rating";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
@@ -117,7 +117,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
     [noneLabel]
   );
 
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const ratingSystemOptions =
     config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
 

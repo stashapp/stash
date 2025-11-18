@@ -13,7 +13,7 @@ import {
   queryFindGroupsByIDForSelect,
   useGroupCreate,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -66,7 +66,7 @@ export const GroupSelect: React.FC<
 > = PatchComponent("GroupSelect", (props) => {
   const [createGroup] = useGroupCreate();
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;

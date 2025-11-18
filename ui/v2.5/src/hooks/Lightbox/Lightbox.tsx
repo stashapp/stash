@@ -19,7 +19,7 @@ import usePageVisibility from "../PageVisibility";
 import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
-import { ConfigurationContext } from "../Config";
+import { useConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
@@ -154,7 +154,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const [interfaceLocalForage, setInterfaceLocalForage] =
     useInterfaceLocalForage();
 

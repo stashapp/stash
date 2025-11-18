@@ -12,7 +12,7 @@ import TextUtils from "src/utils/text";
 import NavUtils from "src/utils/navigation";
 import cx from "classnames";
 import { SceneQueue } from "src/models/sceneQueue";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { markerTitle } from "src/core/markers";
 import { objectTitle } from "src/core/files";
 
@@ -128,7 +128,7 @@ export const WallItem = <T extends WallItemType>({
 }: IWallItemProps<T>) => {
   const [active, setActive] = useState(false);
   const itemEl = useRef<HTMLDivElement>(null);
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const showTextContainer = config?.interface.wallShowTitle ?? true;
 

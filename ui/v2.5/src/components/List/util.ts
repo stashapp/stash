@@ -1,11 +1,11 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import { isEqual, isFunction } from "lodash-es";
 import { QueryResult } from "@apollo/client";
 import { IHasID } from "src/utils/data";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
 import * as GQL from "src/core/generated-graphql";
@@ -94,7 +94,7 @@ export function useFilterURL(
 }
 
 export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
-  const { configuration: config, loading } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const defaultFilter = useMemo(() => {
     if (view && config?.ui.defaultFilters?.[view]) {
@@ -114,9 +114,9 @@ export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
     }
   }, [view, config?.ui.defaultFilters, emptyFilter]);
 
-  const retFilter = loading ? undefined : defaultFilter ?? emptyFilter;
+  const retFilter = defaultFilter ?? emptyFilter;
 
-  return { defaultFilter: retFilter, loading };
+  return { defaultFilter: retFilter };
 }
 
 function useEmptyFilter(props: {
@@ -158,14 +158,14 @@ export function useFilterState(
 
   const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
 
-  const { defaultFilter, loading } = useDefaultFilter(emptyFilter, view);
+  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
 
   const { setFilter } = useFilterURL(filter, setFilterState, {
     defaultFilter,
     active: useURL,
   });
 
-  return { loading, filter, setFilter };
+  return { filter, setFilter };
 }
 
 export function useFilterOperations(props: {

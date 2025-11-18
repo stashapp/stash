@@ -7,7 +7,7 @@ import {
   mutateMetadataGenerate,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
@@ -123,7 +123,7 @@ export const LibraryTasks: React.FC = () => {
 
   type DialogOpenState = typeof dialogOpen;
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const [configRead, setConfigRead] = useState(false);
 
   useEffect(() => {

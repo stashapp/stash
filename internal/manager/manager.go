@@ -262,6 +262,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		cfg.SetString(config.Cache, input.CacheLocation)
 	}
 
+	if input.SFWContentMode {
+		cfg.SetBool(config.SFWContentMode, true)
+	}
+
 	if input.StoreBlobsInDatabase {
 		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	} else {

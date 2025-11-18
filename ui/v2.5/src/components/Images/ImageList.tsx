@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useState,
-  useMemo,
-  MouseEvent,
-  useContext,
-} from "react";
+import React, { useCallback, useState, useMemo, MouseEvent } from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -23,7 +17,7 @@ import "flexbin/flexbin.css";
 import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ImageGridCard } from "./ImageGridCard";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
@@ -51,7 +45,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   zoomIndex,
   handleImageOpen,
 }) => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
