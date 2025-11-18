@@ -151,6 +151,7 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int
 // ffmpegImageThumbnailFromPath generates a thumbnail from a file path (used for AVIF which can't be piped)
 func (e *ThumbnailEncoder) ffmpegImageThumbnailFromPath(inputPath string, maxSize int) ([]byte, error) {
 	options := transcoder.ImageThumbnailOptions{
+		InputFormat:   ffmpeg.ImageFormatAvif,
 		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
 		MaxDimensions: maxSize,
