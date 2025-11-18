@@ -13,6 +13,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
+import { OCounterButton } from "../Shared/CountButton";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -175,6 +176,12 @@ export const StudioCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderOCounter() {
+    if (!studio.o_counter) return;
+
+    return <OCounterButton value={studio.o_counter} />;
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       studio.scene_count ||
@@ -182,6 +189,7 @@ export const StudioCard: React.FC<IProps> = ({
       studio.gallery_count ||
       studio.group_count ||
       studio.performer_count ||
+      studio.o_counter ||
       studio.tags.length > 0
     ) {
       return (
@@ -194,6 +202,7 @@ export const StudioCard: React.FC<IProps> = ({
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderPerformersPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );
@@ -220,10 +229,6 @@ export const StudioCard: React.FC<IProps> = ({
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
-          <div className="studio-o-counter">
-            <FormattedMessage id="o_counter" defaultMessage="O Counter" />: {studio.o_counter}
-          </div>
-        
         </div>
       }
       overlays={

@@ -48,6 +48,7 @@ import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { goBackOrReplace } from "src/utils/history";
+import { OCounterButton } from "src/components/Shared/CountButton";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -471,12 +472,17 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               </DetailTitle>
 
               <AliasList aliases={studio.aliases} />
-              <RatingSystem
-                value={studio.rating100}
-                onSetRating={(value) => setRating(value)}
-                clickToRate
-                withoutContext
-              />
+              <div className="quality-group">
+                <RatingSystem
+                  value={studio.rating100}
+                  onSetRating={(value) => setRating(value)}
+                  clickToRate
+                  withoutContext
+                />
+                {!!studio.o_counter && (
+                  <OCounterButton value={studio.o_counter} />
+                )}
+              </div>
               {!isEditing && (
                 <StudioDetailsPanel
                   studio={studio}
