@@ -83,8 +83,9 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 
 	data := buf.Bytes()
 
+	format := ""
 	if imageFile, ok := f.(*models.ImageFile); ok {
-		format := imageFile.Format
+		format = imageFile.Format
 		animated := imageFile.Format == formatGif
 
 		// #2266 - if image is webp, then determine if it is animated
@@ -96,18 +97,23 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 		if animated {
 			return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
 		}
+
+		// AVIF cannot be read from stdin, must use file path
+		if format == "avif" {
+			return e.ffmpegImageThumbnailFromPath(f.Base().Path, maxSize)
+		}
 	}
 
 	// Videofiles can only be thumbnailed with ffmpeg
 	if _, ok := f.(*models.VideoFile); ok {
-		return e.ffmpegImageThumbnail(buf, maxSize)
+		return e.ffmpegImageThumbnail(buf, maxSize, format)
 	}
 
 	// vips has issues loading files from stdin on Windows
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
 	} else {
-		return e.ffmpegImageThumbnail(buf, maxSize)
+		return e.ffmpegImageThumbnail(buf, maxSize, format)
 	}
 }
 
@@ -129,15 +135,31 @@ func (e *ThumbnailEncoder) GetPreview(inPath string, outPath string, maxSize int
 	return e.getClipPreview(inPath, outPath, maxSize, clipDuration, fileData.FrameRate)
 }
 
-func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
-	args := transcoder.ImageThumbnail("-", transcoder.ImageThumbnailOptions{
+func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int, format string) ([]byte, error) {
+	options := transcoder.ImageThumbnailOptions{
 		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
 		MaxDimensions: maxSize,
 		Quality:       ffmpegImageQuality,
-	})
+	}
+
+	args := transcoder.ImageThumbnail("-", options)
 
 	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
+}
+
+// ffmpegImageThumbnailFromPath generates a thumbnail from a file path (used for AVIF which can't be piped)
+func (e *ThumbnailEncoder) ffmpegImageThumbnailFromPath(inputPath string, maxSize int) ([]byte, error) {
+	options := transcoder.ImageThumbnailOptions{
+		OutputFormat:  ffmpeg.ImageFormatJpeg,
+		OutputPath:    "-",
+		MaxDimensions: maxSize,
+		Quality:       ffmpegImageQuality,
+	}
+
+	args := transcoder.ImageThumbnail(inputPath, options)
+
+	return e.FFMpeg.GenerateOutput(context.TODO(), args, nil)
 }
 
 func (e *ThumbnailEncoder) getClipPreview(inPath string, outPath string, maxSize int, clipDuration float64, frameRate float64) error {
