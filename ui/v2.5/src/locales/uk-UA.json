@@ -1016,7 +1016,6 @@
         "generic": "Завантаження…",
         "plugins": "Завантаження плагінів…"
     },
-    "o_counter": "O-Лічильник",
     "performer_tagger": {
         "status_tagging_job_queued": "Статус: Задача проставлення міток в черзі",
         "number_of_performers_will_be_processed": "Будуть оброблені {performer_count} виконавців",
