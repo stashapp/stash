@@ -1101,8 +1101,8 @@
         "syncing": "Serveriga sünkroniseerimine",
         "uploading": "Skripti üleslaadimine"
     },
-    "hasChapters": "Sisaldab Episoode",
-    "hasMarkers": "On Markereid",
+    "hasChapters": "Peatükid",
+    "hasMarkers": "Markerid",
     "height": "Pikkus",
     "height_cm": "Pikkus (cm)",
     "help": "Abi",
