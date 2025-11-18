@@ -56,7 +56,7 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	}
 
 	if input.Urls != nil {
-		newGroup.URLs = models.NewRelatedStrings(trimStringSlice(input.Urls))
+		newGroup.URLs = models.NewRelatedStrings(stringslice.TrimSpace(input.Urls))
 	}
 
 	return &newGroup, nil

@@ -63,7 +63,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 
 	if input.Urls != nil {
-		newScene.URLs = models.NewRelatedStrings(trimStringSlice(input.Urls))
+		newScene.URLs = models.NewRelatedStrings(stringslice.TrimSpace(input.Urls))
 	} else if input.URL != nil {
 		newScene.URLs = models.NewRelatedStrings([]string{strings.TrimSpace(*input.URL)})
 	}

@@ -38,7 +38,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
-	newStudio.Aliases = models.NewRelatedStrings(trimStringSlice(input.Aliases))
+	newStudio.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.Aliases))
 	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
@@ -49,7 +49,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	if input.Urls != nil {
-		newStudio.URLs.Add(trimStringSlice(input.Urls)...)
+		newStudio.URLs.Add(stringslice.TrimSpace(input.Urls)...)
 	}
 
 	newStudio.ParentID, err = translator.intPtrFromString(input.ParentID)

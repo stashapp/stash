@@ -75,15 +75,6 @@ type changesetTranslator struct {
 	inputMap map[string]interface{}
 }
 
-// trimStringSlice trims whitespace from each string in a slice
-func trimStringSlice(values []string) []string {
-	trimmed := make([]string, len(values))
-	for i, v := range values {
-		trimmed[i] = strings.TrimSpace(v)
-	}
-	return trimmed
-}
-
 func (t changesetTranslator) hasField(field string) bool {
 	if t.inputMap == nil {
 		return false

@@ -40,7 +40,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.Name = strings.TrimSpace(input.Name)
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
-	newPerformer.Aliases = models.NewRelatedStrings(trimStringSlice(input.AliasList))
+	newPerformer.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.AliasList))
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
@@ -73,7 +73,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	}
 
 	if input.Urls != nil {
-		newPerformer.URLs.Add(trimStringSlice(input.Urls)...)
+		newPerformer.URLs.Add(stringslice.TrimSpace(input.Urls)...)
 	}
 
 	var err error

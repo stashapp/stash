@@ -35,7 +35,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 
 	newTag.Name = strings.TrimSpace(input.Name)
 	newTag.SortName = translator.string(input.SortName)
-	newTag.Aliases = models.NewRelatedStrings(trimStringSlice(input.Aliases))
+	newTag.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.Aliases))
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
