@@ -49,5 +49,9 @@
       display: none;
     }
   }
+
+  .detail-item.urls ul {
+    list-style-type: none;
+  }
   /* stylelint-enable selector-class-pattern */
 }
