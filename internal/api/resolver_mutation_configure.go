@@ -334,6 +334,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		logger.SetLogLevel(*input.LogLevel)
 	}
 
+	if input.LogFileMaxSize != nil && *input.LogFileMaxSize != c.GetLogFileMaxSize() {
+		c.SetInt(config.LogFileMaxSize, *input.LogFileMaxSize)
+	}
+
 	if input.Excludes != nil {
 		for _, r := range input.Excludes {
 			_, err := regexp.Compile(r)

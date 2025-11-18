@@ -252,13 +252,15 @@ const (
 	DLNAPortDefault = 1338
 
 	// Logging options
-	LogFile          = "logfile"
-	LogOut           = "logout"
-	defaultLogOut    = true
-	LogLevel         = "loglevel"
-	defaultLogLevel  = "Info"
-	LogAccess        = "logaccess"
-	defaultLogAccess = true
+	LogFile               = "logfile"
+	LogOut                = "logout"
+	defaultLogOut         = true
+	LogLevel              = "loglevel"
+	defaultLogLevel       = "Info"
+	LogAccess             = "logaccess"
+	defaultLogAccess      = true
+	LogFileMaxSize        = "logfile_max_size"
+	defaultLogFileMaxSize = 0 // megabytes, default disabled
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
@@ -1634,6 +1636,16 @@ func (i *Config) GetLogLevel() string {
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Config) GetLogAccess() bool {
 	return i.getBoolDefault(LogAccess, defaultLogAccess)
+}
+
+// GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
+func (i *Config) GetLogFileMaxSize() int {
+	value := i.getInt(LogFileMaxSize)
+	if value < 0 {
+		value = defaultLogFileMaxSize
+	}
+
+	return value
 }
 
 // Max allowed graphql upload size in megabytes

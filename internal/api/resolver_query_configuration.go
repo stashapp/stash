@@ -115,6 +115,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		LogOut:                        config.GetLogOut(),
 		LogLevel:                      config.GetLogLevel(),
 		LogAccess:                     config.GetLogAccess(),
+		LogFileMaxSize:                config.GetLogFileMaxSize(),
 		VideoExtensions:               config.GetVideoExtensions(),
 		ImageExtensions:               config.GetImageExtensions(),
 		GalleryExtensions:             config.GetGalleryExtensions(),
