@@ -2366,6 +2366,7 @@ packages:
 
   bootstrap@4.6.2:
     resolution: {integrity: sha512-51Bbp/Uxr9aTuy6ca/8FbFloBUJZLHwnhTcnjIeRn2suQWsWzcuJhGjKDB5eppVte/8oCdOL3VuwxvZDUggwGQ==}
+    deprecated: This version of Bootstrap is no longer supported. Please upgrade to the latest version.
     peerDependencies:
       jquery: 1.9.1 - 3
       popper.js: ^1.16.1
