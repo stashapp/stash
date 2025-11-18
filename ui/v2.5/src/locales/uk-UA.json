@@ -141,7 +141,17 @@
         "copy_to_clipboard": "Копіювати до буфера обміну",
         "set_back_image": "Зворотне зображення…",
         "set_front_image": "Переднє зображення…",
-        "unset": "Скинути"
+        "unset": "Скинути",
+        "load": "Завантажити",
+        "load_filter": "Завантажити фільтр",
+        "play": "Відтворити",
+        "show_results": "Висвітити вислід",
+        "show_count_results": "Висвітити {count} висліди",
+        "sidebar": {
+            "close": "Сховати бічну панель",
+            "open": "Розгорнути бічну панель",
+            "toggle": "Перемикнути бічну панель"
+        }
     },
     "actions_name": "Дії",
     "age": "Вік",
@@ -520,7 +530,9 @@
                 "title": "Парсер Імені Файлу Сцени"
             },
             "scene_tools": "Інструменти Сцени",
-            "scene_duplicate_checker": "Перевірка сцен на дублікати"
+            "scene_duplicate_checker": "Перевірка сцен на дублікати",
+            "graphql_playground": "GraphQL ігровий майданчик",
+            "heading": "Начиння"
         },
         "ui": {
             "scene_player": {
@@ -543,7 +555,8 @@
                     "enable_chromecast": "Увімкнути Chromecast",
                     "show_scrubber": "Показати скруббер",
                     "track_activity": "Увімкнути історію відтворення сцен",
-                    "auto_start_video": "Автозапуск відео"
+                    "auto_start_video": "Автозапуск відео",
+                    "show_range_markers": "Виявити Позначки Охоплення"
                 },
                 "heading": "Плеєр сцени"
             },
@@ -697,7 +710,8 @@
                 "description": "За замовчуванням використовуються відео-прев’ю (mp4). Для меншого навантаження на CPU під час перегляду можна використовувати анімовані зображення (webp) як прев’ю. Однак їх потрібно генерувати додатково до відео-прев’ю, і вони займають більше місця на диску.",
                 "options": {
                     "animated": "Анімоване зображення",
-                    "static": "Статичне зображення"
+                    "static": "Статичне зображення",
+                    "video": "Відео"
                 },
                 "heading": "Тип попереднього перегляду"
             },
@@ -743,7 +757,15 @@
                     "toggle_sound": "Увімкнути звук"
                 }
             },
-            "title": "Користувацький інтерфейс"
+            "title": "Користувацький інтерфейс",
+            "performer_list": {
+                "heading": "Перелік виконавців",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Відображати посилання на картки виконавців"
+                    }
+                }
+            }
         },
         "plugins": {
             "hooks": "Хуки",
@@ -774,7 +796,9 @@
             "endpoint": "Кінцева точка",
             "name": "Назва",
             "graphql_endpoint": "Кінцева точка GraphQL",
-            "api_key": "API ключ"
+            "api_key": "API ключ",
+            "max_requests_per_minute": "Макс запитів у хвилину",
+            "max_requests_per_minute_description": "Викорситовує значення за замовчуванням {defaultValue} якщо встановлено в 0"
         },
         "system": {
             "transcoding": "Транскодування"
@@ -1274,7 +1298,12 @@
         "not_equals": "не є",
         "greater_than": "більше ніж",
         "includes_all": "включає все",
-        "is_null": "є null"
+        "is_null": "є null",
+        "between": "поміж",
+        "excludes": "виключення",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (за виключенням {excludedString})",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (за виключенням {excludedString}) (+{глибина, множина, =-1 {all} інші {{depth}}})",
+        "includes": "включно"
     },
     "toast": {
         "rescanning_entity": "Повторне сканування {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
@@ -1321,7 +1350,8 @@
     "created_at": "Створено",
     "criterion": {
         "greater_than": "Більше ніж",
-        "less_than": "Менше ніж"
+        "less_than": "Менше ніж",
+        "value": "Значення"
     },
     "containing_group": "Група, що містить",
     "cover_image": "Обкладинка зображення",
@@ -1329,7 +1359,8 @@
     "custom_fields": {
         "title": "Користувацькі поля",
         "field": "Поле",
-        "value": "Значення"
+        "value": "Значення",
+        "criteria_format_string": "{criterion} (своє поле) {modifierString} {valueString}"
     },
     "death_date": "Дата смерті",
     "developmentVersion": "Розробницька версія",
@@ -1416,5 +1447,8 @@
     "plays": "{value} відтворень",
     "subsidiary_studios": "Дочірні студії",
     "subsidiary_studio_count": "Кількість дочірніх студій",
-    "age_on_date": "{age} років під час зйомок"
+    "age_on_date": "{age} років під час зйомок",
+    "configuration": "Обрис",
+    "country": "Країна",
+    "custom": "Свій"
 }
