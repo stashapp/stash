@@ -293,7 +293,9 @@
                 "password_desc": "Heslo pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace",
                 "stash-box_integration": "Stash-box integrace",
                 "username": "Přihlašovací jméno",
-                "username_desc": "Přihlašovací jméno pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace"
+                "username_desc": "Přihlašovací jméno pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace",
+                "log_file_max_size": "Maximální velikost logu",
+                "log_file_max_size_desc": "Maximální velikost logu v megabytech před kompresí. 0MB pro deaktivaci. Vyžaduje restart."
             },
             "backup_directory_path": {
                 "description": "Adresář umístění záloh databáze SQLite",
