@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -15,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
+	"golang.org/x/image/draw"
 )
 
 const ffmpegImageQuality = 5
@@ -99,7 +102,8 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 		}
 
 		// AVIF cannot be read from stdin, must use file path
-		if format == "avif" {
+		// However, files in zip archives must be read from the buffer since the path is virtual
+		if format == "avif" && f.Base().ZipFileID == nil {
 			return e.ffmpegImageThumbnailFromPath(f.Base().Path, maxSize)
 		}
 	}
@@ -107,6 +111,16 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 	// Videofiles can only be thumbnailed with ffmpeg
 	if _, ok := f.(*models.VideoFile); ok {
 		return e.ffmpegImageThumbnail(buf, maxSize, format)
+	}
+
+	// AVIF cannot be piped to FFmpeg, use vips or alternative for zip files
+	// For AVIF in zip, we must avoid FFmpeg entirely
+	if format == "avif" && f.Base().ZipFileID != nil {
+		if e.vips != nil {
+			return e.vips.ImageThumbnail(buf, maxSize)
+		}
+		// If no vips, use Go image processing as fallback
+		return e.goImageThumbnail(buf, maxSize)
 	}
 
 	// vips has issues loading files from stdin on Windows
@@ -204,4 +218,50 @@ func (e *ThumbnailEncoder) getClipPreview(inPath string, outPath string, maxSize
 	}
 	args := transcoder.Transcode(inPath, thumbOptions)
 	return e.FFMpeg.Generate(context.TODO(), args)
+}
+
+// goImageThumbnail generates a thumbnail using Go's native image processing
+// This is used as a fallback for AVIF images in zip files when vips is not available
+func (e *ThumbnailEncoder) goImageThumbnail(buf *bytes.Buffer, maxSize int) ([]byte, error) {
+	// Decode the image
+	img, _, err := image.Decode(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		return nil, fmt.Errorf("decoding image: %w", err)
+	}
+
+	// Calculate thumbnail dimensions
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	// Determine scaling factor
+	var scale float64
+	if width > height {
+		scale = float64(maxSize) / float64(width)
+	} else {
+		scale = float64(maxSize) / float64(height)
+	}
+
+	// Don't upscale
+	if scale > 1.0 {
+		scale = 1.0
+	}
+
+	newWidth := int(float64(width) * scale)
+	newHeight := int(float64(height) * scale)
+
+	// Create thumbnail image
+	thumbnail := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+
+	// Use high-quality scaling
+	draw.CatmullRom.Scale(thumbnail, thumbnail.Bounds(), img, bounds, draw.Over, nil)
+
+	// Encode as JPEG
+	out := new(bytes.Buffer)
+	opts := &jpeg.Options{Quality: 95}
+	if err := jpeg.Encode(out, thumbnail, opts); err != nil {
+		return nil, fmt.Errorf("encoding thumbnail: %w", err)
+	}
+
+	return out.Bytes(), nil
 }
