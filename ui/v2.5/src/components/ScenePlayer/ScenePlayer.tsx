@@ -369,7 +369,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           },
         },
         plugins: {
-          airPlay: {},
+          airPlay: {
+            addButtonToControlBar: uiConfig?.enableChromecast ?? false,
+          },
           chromecast: {},
           vttThumbnails: {
             showTimestamp: true,
@@ -428,7 +430,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
-    }, [uiConfig?.showAbLoopControls]);
+    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
 
     useEffect(() => {
       const player = getPlayer();
