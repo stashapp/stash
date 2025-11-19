@@ -802,6 +802,18 @@
             "use_stash_hosted_funscript": {
                 "description": "Je-li povoleno, budou funscripty poskytovány přímo ze Stash do vašeho zařízení Handy bez použití serveru Handy třetí strany. Vyžaduje, aby byl Stash dostupný z vašeho zařízení Handy a vygenerovaný API klíč, pokud má stash nakonfigurované údaje.",
                 "heading": "Funscripty podávejte přímo"
+            },
+            "sfw_mode": {
+                "description": "Zapněte zda použáváte stash k ukládání SFW obsahu. Schová nebo změní některé aspekty uživatelského rozhraní související s obsahem pro dospělé.",
+                "heading": "Režim obsahu SFW"
+            },
+            "performer_list": {
+                "heading": "List účinkujicích",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Zobrazit odkazy na mřížce karet účinkujicích"
+                    }
+                }
             }
         },
         "advanced_mode": "Pokročilý mód"
@@ -963,7 +975,8 @@
         "delete_entity_simple_desc": "{count, plural, one {Opravdu chcete smazat tuto {singularEntity}?} other {Opravdu chcete smazat tyto {pluralEntity}?}}",
         "performers_found": "{count} nalezených účinkujících",
         "overwrite_filter_warning": "Uložený filtr \"{entityName}\" bude přepsán.",
-        "set_default_filter_confirm": "Chcete doopravdy nastavit tento filtr jako výchozí?"
+        "set_default_filter_confirm": "Chcete doopravdy nastavit tento filtr jako výchozí?",
+        "clear_o_history_confirm_sfw": "Opravdu chcete vymazat historii lajků?"
     },
     "chapters": "Kapitoly",
     "circumcised": "Obřezán",
@@ -1150,7 +1163,7 @@
     "setup": {
         "paths": {
             "where_can_stash_store_its_generated_content_description": "Aby Stash mohl poskytovat miniatury, náhledy a sprity generuje Stash obrázky a videa. To zahrnuje také transkódování pro nepodporované formáty souborů. Ve výchozím nastavení Stash vytvoří <code>generated</code> adresář v adresáři obsahujícím váš konfigurační soubor. Pokud chcete změnit, kam se budou tato generovaná media ukládat, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) cestu. Stash vytvoří tento adresář, pokud ještě neexistuje.",
-            "where_is_your_porn_located_description": "Přidejte adresáře obsahující vaše porno videa a obrázky. Stash použije tyto adresáře k vyhledání videí a obrázků během skenování.",
+            "where_is_your_porn_located_description": "Přidejte adresáře obsahující váše videa a obrázky. Stash použije tyto adresáře k vyhledání videí a obrázků během skenování.",
             "where_can_stash_store_blobs_description": "Kam může Stash ukládat binární data jako jsou obaly scén, účinkující, studia a obrázky tagů, buď v databázi nebo v souborovém systému. Ve výchozím nastavení bude tato data ukládat do souborového systému v podadresáři <code>blobs</code> v adresáři obsahujícím váš konfigurační soubor. Pokud to chcete změnit, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) cestu. Stash vytvoří tento adresář, pokud ještě neexistuje.",
             "path_to_cache_directory_empty_for_default": "cesta k adresáři mezipaměti (ve výchozím nastavení prázdné)",
             "path_to_generated_directory_empty_for_default": "cesta k adresáři vygenerovaných souborů (ve výchozím nastavení prázdné)",
@@ -1159,16 +1172,19 @@
             "where_can_stash_store_its_generated_content": "Kam může Stash ukládat svůj vygenerovaný obsah?",
             "where_can_stash_store_its_database_warning": "VAROVÁNÍ: Uložení databáze na jiný systém, než ze kterého se spouští Stash (např. uložení databáze na NAS při spuštění serveru Stash na jiném počítači), <strong>nepodporováno</strong>! SQLite není určen pro použití v síti a pokus o to může velmi snadno způsobit poškození celé vaší databáze.",
             "database_filename_empty_for_default": "název souboru databáze (ve výchozím nastavení prázdné)",
-            "description": "Dále musíme určit, kde najdeme vaši sbírku porna a kam uložit databázi Stash, vygenerované soubory a soubory mezipaměti. Tato nastavení lze v případě potřeby později změnit.",
+            "description": "Dále musíme určit, kde najdeme vaši sbírku obsahu a kam uložit databázi Stash, vygenerované soubory a soubory mezipaměti. Tato nastavení lze v případě potřeby později změnit.",
             "path_to_blobs_directory_empty_for_default": "cesta k adresáři blobů (ve výchozím nastavení prázdné)",
             "stash_alert": "Nebyla vybrána žádná cesta knihovny. Žádné médium nebude možné naskenovat do Stash. Jste si jisti?",
-            "where_is_your_porn_located": "Kde se nachází vaše porno?",
+            "where_is_your_porn_located": "Kde se nachází váš obsah?",
             "where_can_stash_store_cache_files_description": "Aby některé funkce, jako je živé transkódování HLS/DASH, fungovaly, vyžaduje Stash adresář mezipaměti pro dočasné soubory. Ve výchozím nastavení Stash vytvoří adresář <code>mezipaměť</code> v adresáři obsahujícím váš konfigurační soubor. Pokud to chcete změnit, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) cestu. Stash vytvoří tento adresář, pokud ještě neexistuje.",
             "where_can_stash_store_its_database": "Kde může Stash uložit svou databázi?",
             "where_can_stash_store_blobs": "Kde může Stash ukládat binární data databáze?",
             "where_can_stash_store_blobs_description_addendum": "Případně můžete tato data uložit do databáze. <strong>Poznámka:</strong> Tím se zvětší velikost souboru databáze a prodlouží se doba migrace databáze.",
-            "where_can_stash_store_its_database_description": "Stash používá databázi SQLite k ukládání metadat porna. Ve výchozím nastavení bude tento soubor vytvořen jako <code>stash-go.sqlite</code> v adresáři obsahujícím váš konfigurační soubor. Pokud to chcete změnit, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) název souboru.",
-            "store_blobs_in_database": "Uložte bloby do databáze"
+            "where_can_stash_store_its_database_description": "Stash používá databázi SQLite k ukládání metadat obsahu. Ve výchozím nastavení bude tento soubor vytvořen jako <code>stash-go.sqlite</code> v adresáři obsahujícím váš konfigurační soubor. Pokud to chcete změnit, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) název souboru.",
+            "store_blobs_in_database": "Uložte bloby do databáze",
+            "sfw_content_settings": "Používáte stash k SFW obsahu?",
+            "sfw_content_settings_description": "Stash lze použít ke správě SFW obsahu, jako jsou fotografie, umění, komiksy a další. Povolení této možnosti upraví některé vlastnosti uživatelského rozhraní tak, aby byly vhodnější pro SFW obsah.",
+            "use_sfw_content_mode": "Použít režim obsahu SFW"
         },
         "stash_setup_wizard": "Průvodce nastavením Stash",
         "success": {
@@ -1279,7 +1295,7 @@
         "syncing": "Probíhá synchronizace se serverem",
         "uploading": "Nahrávání skriptu"
     },
-    "hasMarkers": "Má značky",
+    "hasMarkers": "Značky",
     "height_cm": "Výška (cm)",
     "include_sub_studios": "Zahrnout dceřiná studia",
     "interactive": "Interaktivní",
@@ -1355,7 +1371,7 @@
     },
     "hair_color": "Barva vlasů",
     "help": "Pomoc",
-    "hasChapters": "Má kapitoly",
+    "hasChapters": "Kapitoly",
     "height": "Výška",
     "ignore_auto_tag": "Ignoruj automatické tagování",
     "instagram": "Instragram",
@@ -1548,5 +1564,10 @@
         "login": "Přihlášení",
         "username": "Uživatelské jméno",
         "internal_error": "Neočekávaná interní chyba. Podívej se do logu pro více detailů"
-    }
+    },
+    "last_o_at_sfw": "Poslední lajk",
+    "o_count_sfw": "Lajky",
+    "o_history_sfw": "Historie lajků",
+    "odate_recorded_no_sfw": "Žádný datum lajku nebyl zaznamenán",
+    "scenes_duration": "Trvání scény"
 }
