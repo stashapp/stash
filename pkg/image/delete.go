@@ -19,6 +19,7 @@ type FileDeleter struct {
 }
 
 // MarkGeneratedFiles marks for deletion the generated files for the provided image.
+// Generated files bypass trash and are permanently deleted since they can be regenerated.
 func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 	var files []string
 	thumbPath := d.Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
@@ -32,7 +33,7 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 		files = append(files, prevPath)
 	}
 
-	return d.Files(files)
+	return d.FilesWithoutTrash(files)
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.

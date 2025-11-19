@@ -105,6 +105,17 @@ func (d *Deleter) RegisterHooks(ctx context.Context) {
 // Abort should be called to restore marked files if this function returns an
 // error.
 func (d *Deleter) Files(paths []string) error {
+	return d.filesInternal(paths, false)
+}
+
+// FilesWithoutTrash designates files to be deleted, bypassing the trash directory.
+// Files will be permanently deleted even if TrashPath is configured.
+// This is useful for deleting generated files that can be easily recreated.
+func (d *Deleter) FilesWithoutTrash(paths []string) error {
+	return d.filesInternal(paths, true)
+}
+
+func (d *Deleter) filesInternal(paths []string, bypassTrash bool) error {
 	for _, p := range paths {
 		// fail silently if the file does not exist
 		if _, err := d.RenamerRemover.Stat(p); err != nil {
@@ -116,7 +127,7 @@ func (d *Deleter) Files(paths []string) error {
 			return fmt.Errorf("check file %q exists: %w", p, err)
 		}
 
-		if err := d.renameForDelete(p); err != nil {
+		if err := d.renameForDelete(p, bypassTrash); err != nil {
 			return fmt.Errorf("marking file %q for deletion: %w", p, err)
 		}
 		d.files = append(d.files, p)
@@ -131,6 +142,17 @@ func (d *Deleter) Files(paths []string) error {
 // Abort should be called to restore marked files/directories if this function returns an
 // error.
 func (d *Deleter) Dirs(paths []string) error {
+	return d.dirsInternal(paths, false)
+}
+
+// DirsWithoutTrash designates directories to be deleted, bypassing the trash directory.
+// Directories will be permanently deleted even if TrashPath is configured.
+// This is useful for deleting generated directories that can be easily recreated.
+func (d *Deleter) DirsWithoutTrash(paths []string) error {
+	return d.dirsInternal(paths, true)
+}
+
+func (d *Deleter) dirsInternal(paths []string, bypassTrash bool) error {
 	for _, p := range paths {
 		// fail silently if the file does not exist
 		if _, err := d.RenamerRemover.Stat(p); err != nil {
@@ -142,7 +164,7 @@ func (d *Deleter) Dirs(paths []string) error {
 			return fmt.Errorf("check directory %q exists: %w", p, err)
 		}
 
-		if err := d.renameForDelete(p); err != nil {
+		if err := d.renameForDelete(p, bypassTrash); err != nil {
 			return fmt.Errorf("marking directory %q for deletion: %w", p, err)
 		}
 		d.dirs = append(d.dirs, p)
@@ -195,8 +217,8 @@ func (d *Deleter) Commit() {
 	d.trashedPaths = make(map[string]string)
 }
 
-func (d *Deleter) renameForDelete(path string) error {
-	if d.TrashPath != "" {
+func (d *Deleter) renameForDelete(path string, bypassTrash bool) error {
+	if d.TrashPath != "" && !bypassTrash {
 		// Move file to trash immediately
 		trashDest, err := fsutil.MoveToTrash(path, d.TrashPath)
 		if err != nil {
@@ -207,7 +229,7 @@ func (d *Deleter) renameForDelete(path string) error {
 		return nil
 	}
 
-	// Standard behavior: rename with .delete suffix
+	// Standard behavior: rename with .delete suffix (or when bypassing trash)
 	return d.RenamerRemover.Rename(path, path+deleteFileSuffix)
 }
 
