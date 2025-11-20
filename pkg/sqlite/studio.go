@@ -44,6 +44,7 @@ type studioRow struct {
 	Favorite      bool        `db:"favorite"`
 	Details       zero.String `db:"details"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	Organized     bool        `db:"organized"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -59,6 +60,7 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Favorite = o.Favorite
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
+	r.Organized = o.Organized
 }
 
 func (r *studioRow) resolve() *models.Studio {
@@ -72,6 +74,7 @@ func (r *studioRow) resolve() *models.Studio {
 		Favorite:      r.Favorite,
 		Details:       r.Details.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
+		Organized:     r.Organized,
 	}
 
 	return ret
@@ -90,6 +93,7 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setBool("favorite", o.Favorite)
 	r.setNullString("details", o.Details)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
+	r.setBool("organized", o.Organized)
 }
 
 type studioRepositoryType struct {

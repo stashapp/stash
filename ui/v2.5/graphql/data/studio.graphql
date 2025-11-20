@@ -16,6 +16,7 @@ fragment StudioData on Studio {
     image_path
   }
   ignore_auto_tag
+  organized
   image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
