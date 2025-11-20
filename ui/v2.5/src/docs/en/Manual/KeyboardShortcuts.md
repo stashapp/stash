@@ -30,6 +30,7 @@
 | `v g` | Set view to grid |
 | `v l` | Set view to list |
 | `v w` | Set view to wall |
+| `v t` | Set view to tagger |
 | `+` | Increase zoom slider |
 | `-` | Decrease zoom slider |
 | `←` | Previous page of results |

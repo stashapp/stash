@@ -2,7 +2,10 @@ name: Build
 
 on:
   push:
-    branches: [ develop, master ]
+    branches: 
+      - develop
+      - master
+      - 'releases/**'
   pull_request:
   release:
     types: [ published ]

@@ -4,7 +4,7 @@ import { useFindSavedFilters } from "src/core/StashService";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { Button, Form, Modal } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   ISavedFilterRow,
   ICustomFilter,
@@ -277,11 +277,11 @@ interface IFrontPageConfigProps {
 export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
   onClose,
 }) => {
-  const { configuration, loading } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const ui = configuration?.ui;
 
-  const { data: allFilters, loading: loading2 } = useFindSavedFilters();
+  const { data: allFilters, loading } = useFindSavedFilters();
 
   const [isAdd, setIsAdd] = useState(false);
   const [currentContent, setCurrentContent] = useState<FrontPageContent[]>([]);
@@ -338,7 +338,7 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
     setDragIndex(undefined);
   }
 
-  if (loading || loading2) {
+  if (loading) {
     return <LoadingIndicator />;
   }
 

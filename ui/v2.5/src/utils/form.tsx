@@ -175,7 +175,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps
   ) {
     return (
-      <Form.Group controlId={field} as={Row}>
+      <Form.Group controlId={field} as={Row} data-field={field}>
         <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
         <Col {...(props?.fieldProps ?? fieldProps)}>{control}</Col>
       </Form.Group>

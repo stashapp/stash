@@ -222,7 +222,7 @@ const OverwriteAlert: React.FC<{
     <Modal show>
       <Modal.Body>
         <FormattedMessage
-          id="dialogs.overwrite_filter_confirm"
+          id="dialogs.overwrite_filter_warning"
           values={{
             entityName: overwritingFilter.name,
           }}

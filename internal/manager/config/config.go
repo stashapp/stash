@@ -43,6 +43,9 @@ const (
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
 
+	// SFWContentMode mode config key
+	SFWContentMode = "sfw_content_mode"
+
 	FFMpegPath  = "ffmpeg_path"
 	FFProbePath = "ffprobe_path"
 
@@ -249,13 +252,15 @@ const (
 	DLNAPortDefault = 1338
 
 	// Logging options
-	LogFile          = "logfile"
-	LogOut           = "logout"
-	defaultLogOut    = true
-	LogLevel         = "loglevel"
-	defaultLogLevel  = "Info"
-	LogAccess        = "logaccess"
-	defaultLogAccess = true
+	LogFile               = "logfile"
+	LogOut                = "logout"
+	defaultLogOut         = true
+	LogLevel              = "loglevel"
+	defaultLogLevel       = "Info"
+	LogAccess             = "logaccess"
+	defaultLogAccess      = true
+	LogFileMaxSize        = "logfile_max_size"
+	defaultLogFileMaxSize = 0 // megabytes, default disabled
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
@@ -628,7 +633,15 @@ func (i *Config) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-// GetStathPaths returns the configured stash library paths.
+// GetSFW returns true if SFW mode is enabled.
+// Default performer images are changed to more agnostic images when enabled.
+func (i *Config) GetSFWContentMode() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return i.getBool(SFWContentMode)
+}
+
+// GetStashPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
 func (i *Config) GetStashPaths() StashConfigs {
@@ -1623,6 +1636,16 @@ func (i *Config) GetLogLevel() string {
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Config) GetLogAccess() bool {
 	return i.getBoolDefault(LogAccess, defaultLogAccess)
+}
+
+// GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
+func (i *Config) GetLogFileMaxSize() int {
+	value := i.getInt(LogFileMaxSize)
+	if value < 0 {
+		value = defaultLogFileMaxSize
+	}
+
+	return value
 }
 
 // Max allowed graphql upload size in megabytes

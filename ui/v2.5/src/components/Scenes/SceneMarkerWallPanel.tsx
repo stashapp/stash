@@ -1,17 +1,11 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import Gallery, {
   GalleryI,
   PhotoProps,
   RenderImageProps,
 } from "react-photo-gallery";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -46,7 +40,7 @@ interface IExtraProps {
 export const MarkerWallItem: React.FC<
   RenderImageProps<IMarkerPhoto> & IExtraProps
 > = (props: RenderImageProps<IMarkerPhoto> & IExtraProps) => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
 
@@ -96,6 +90,7 @@ export const MarkerWallItem: React.FC<
         loop={video}
         muted={!video || !playSound || !active}
         autoPlay={video}
+        playsInline={video}
         key={props.photo.key}
         src={props.photo.src}
         width={width}

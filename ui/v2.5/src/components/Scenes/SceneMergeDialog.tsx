@@ -372,27 +372,32 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return (
       <>
         <ScrapedInputGroupRow
+          field="title"
           title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
+          field="code"
           title={intl.formatMessage({ id: "scene_code" })}
           result={code}
           onChange={(value) => setCode(value)}
         />
         <ScrapedStringListRow
+          field="urls"
           title={intl.formatMessage({ id: "urls" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
+          field="date"
           title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         <ScrapeDialogRow
+          field="rating"
           title={intl.formatMessage({ id: "rating" })}
           result={rating}
           renderOriginalField={() => (
@@ -404,6 +409,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setRating(value)}
         />
         <ScrapeDialogRow
+          field="o_count"
           title={intl.formatMessage({ id: "o_count" })}
           result={oCounter}
           renderOriginalField={() => (
@@ -425,6 +431,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setOCounter(value)}
         />
         <ScrapeDialogRow
+          field="play_count"
           title={intl.formatMessage({ id: "play_count" })}
           result={playCount}
           renderOriginalField={() => (
@@ -446,6 +453,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setPlayCount(value)}
         />
         <ScrapeDialogRow
+          field="play_duration"
           title={intl.formatMessage({ id: "play_duration" })}
           result={playDuration}
           renderOriginalField={() => (
@@ -469,6 +477,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setPlayDuration(value)}
         />
         <ScrapeDialogRow
+          field="galleries"
           title={intl.formatMessage({ id: "galleries" })}
           result={galleries}
           renderOriginalField={() => (
@@ -492,32 +501,38 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setGalleries(value)}
         />
         <ScrapedStudioRow
+          field="studio"
           title={intl.formatMessage({ id: "studios" })}
           result={studio}
           onChange={(value) => setStudio(value)}
         />
         <ScrapedPerformersRow
+          field="performers"
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
           ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         <ScrapedGroupsRow
+          field="groups"
           title={intl.formatMessage({ id: "groups" })}
           result={groups}
           onChange={(value) => setGroups(value)}
         />
         <ScrapedTagsRow
+          field="tags"
           title={intl.formatMessage({ id: "tags" })}
           result={tags}
           onChange={(value) => setTags(value)}
         />
         <ScrapedTextAreaRow
+          field="details"
           title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         <ScrapeDialogRow
+          field="organized"
           title={intl.formatMessage({ id: "organized" })}
           result={organized}
           renderOriginalField={() => (
@@ -539,6 +554,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setOrganized(value)}
         />
         <ScrapeDialogRow
+          field="stash_ids"
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
           renderOriginalField={() => (
@@ -550,6 +566,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setStashIDs(value)}
         />
         <ScrapedImageRow
+          field="cover_image"
           title={intl.formatMessage({ id: "cover_image" })}
           className="scene-cover"
           result={image}
