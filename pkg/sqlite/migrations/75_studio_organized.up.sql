@@ -1,0 +1,1 @@
+ALTER TABLE `studios` ADD COLUMN `organized` boolean not null default '0';
