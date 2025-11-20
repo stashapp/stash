@@ -60,6 +60,7 @@ type StudioCreateInput struct {
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+	Organized     *bool          `json:"organized"`
 }
 
 type StudioUpdateInput struct {
@@ -77,4 +78,5 @@ type StudioUpdateInput struct {
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+	Organized     *bool          `json:"organized"`
 }

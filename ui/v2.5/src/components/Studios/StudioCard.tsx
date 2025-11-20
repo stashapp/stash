@@ -6,13 +6,13 @@ import { GridCard } from "src/components/Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
-import { faTag } from "@fortawesome/free-solid-svg-icons";
+import { faTag, faBox } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -175,6 +175,23 @@ export const StudioCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderOrganized() {
+    if (studio.organized) {
+      return (
+        <OverlayTrigger
+          overlay={<Tooltip id="organised-tooltip">{"Organized"}</Tooltip>}
+          placement="bottom"
+        >
+          <div className="organized">
+            <Button className="minimal">
+              <Icon icon={faBox} />
+            </Button>
+          </div>
+        </OverlayTrigger>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       studio.scene_count ||
@@ -182,7 +199,8 @@ export const StudioCard: React.FC<IProps> = ({
       studio.gallery_count ||
       studio.group_count ||
       studio.performer_count ||
-      studio.tags.length > 0
+      studio.tags.length > 0 ||
+      studio.organized
     ) {
       return (
         <>
@@ -194,6 +212,7 @@ export const StudioCard: React.FC<IProps> = ({
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderPerformersPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {maybeRenderOrganized()}
           </ButtonGroup>
         </>
       );

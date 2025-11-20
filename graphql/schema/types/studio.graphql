@@ -8,6 +8,7 @@ type Studio {
   aliases: [String!]!
   tags: [Tag!]!
   ignore_auto_tag: Boolean!
+  organized: Boolean!
 
   image_path: String # Resolver
   scene_count(depth: Int): Int! # Resolver
@@ -42,6 +43,7 @@ input StudioCreateInput {
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+  organized: Boolean
 }
 
 input StudioUpdateInput {
@@ -60,6 +62,7 @@ input StudioUpdateInput {
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+  organized: Boolean
 }
 
 input BulkStudioUpdateInput {
@@ -73,6 +76,7 @@ input BulkStudioUpdateInput {
   details: String
   tag_ids: BulkUpdateIds
   ignore_auto_tag: Boolean
+  organized: Boolean
 }
 
 input StudioDestroyInput {
