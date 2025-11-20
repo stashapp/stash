@@ -264,6 +264,12 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 }
 
 func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
+	// Skip organized studios
+	if t.studio != nil && t.studio.Organized {
+		logger.Infof("Skipping organized studio %s", t.studio.Name)
+		return
+	}
+
 	studio, err := t.findStashBoxStudio(ctx)
 	if err != nil {
 		logger.Errorf("Error fetching studio data from stash-box: %v", err)
