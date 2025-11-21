@@ -144,7 +144,14 @@
         "play": "Reproducir",
         "reset_resume_time": "Restablecer el tiempo de reanudación",
         "reset_cover": "Restaurar portada por defecto",
-        "set_cover": "Establecer como portada"
+        "set_cover": "Establecer como portada",
+        "show_results": "Mostrar resultados",
+        "show_count_results": "Mostrar {count} resultados",
+        "sidebar": {
+            "close": "Cerrar barra lateral",
+            "open": "Abrir barra lateral",
+            "toggle": "Alternar barra lateral"
+        }
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -440,7 +447,8 @@
             "endpoint": "Terminal de red",
             "graphql_endpoint": "Terminal de red GraphQL",
             "name": "Nombre",
-            "title": "Terminal de red Stash-box"
+            "title": "Terminal de red Stash-box",
+            "max_requests_per_minute": "Máximas peticiones por minuto"
         },
         "system": {
             "transcoding": "Transcodificación"
@@ -731,7 +739,8 @@
                         "heading": "Etiqueta de VR"
                     },
                     "enable_chromecast": "Habilitar Chromecast",
-                    "show_ab_loop_controls": "Mostrar controles del plugin de bucle AB"
+                    "show_ab_loop_controls": "Mostrar controles del plugin de bucle AB",
+                    "show_range_markers": "Mostrar marcadores de rango"
                 }
             },
             "scene_wall": {
@@ -889,7 +898,7 @@
             "marker_image_previews": "Vistas previas de marcadores en formato de imagen animada",
             "marker_image_previews_tooltip": "Generar también vistas previas animadas (webp), solo requeridas cuando el tipo de vista previa de la pared de escenas/marcadores está configurado como Imagen Animada. Al navegar, consumen menos CPU que las vistas previas de video, pero se generan además de ellas y son archivos más grandes.",
             "marker_screenshots": "Capturas de pantalla de marcadores",
-            "marker_screenshots_tooltip": "Imágenes estáticas JPG de marcadores, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen estática\".",
+            "marker_screenshots_tooltip": "Imágenes estáticas JPG de marcadores",
             "markers": "Vistas previas de marcadores",
             "markers_tooltip": "Vídeos de 20 segundos de duración que comienzan a partir del tiempo seleccionado.",
             "override_preview_generation_options": "Sobrescribir opciones para la generación de vistas previas",
@@ -1045,7 +1054,7 @@
         "uploading": "Subiendo script",
         "error": "Error al conectar con Handy"
     },
-    "hasMarkers": "Tiene marcadores",
+    "hasMarkers": "Marcadores",
     "height": "Estatura",
     "help": "Ayuda",
     "ignore_auto_tag": "Ignorar Etiquetado Automático",
@@ -1082,7 +1091,7 @@
         "video_codec": "Códec de vídeo",
         "play_count": "Contador de reproducciones",
         "play_duration": "Tiempo de reproducción",
-        "o_count": "Contador de pajas"
+        "o_count": "Contador de orgasmos"
     },
     "megabits_per_second": "{value} megabits por segundo (mbps)",
     "metadata": "Metadatos",
@@ -1207,7 +1216,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "nombre para el archivo de la base de datos (en blanco para usar opción por defecto)",
-            "description": "A continuación necesitamos saber dónde se encuentra tu colección de porno, y dónde guardar la base de datos de Stash y los ficheros multimedia de soporte generados. Estos ajustes se pueden modificar posteriormente.",
+            "description": "A continuación necesitamos saber dónde se encuentra tu contenido, y dónde guardar la base de datos de Stash y los ficheros multimedia de soporte generados. Estos ajustes se pueden modificar posteriormente.",
             "path_to_generated_directory_empty_for_default": "ruta al directorio de ficheros multimedia generados (dejar en blanco para usar opción por defecto)",
             "set_up_your_paths": "Selecciona tus rutas",
             "stash_alert": "No se han seleccionado rutas para tu biblioteca. Ningún fichero multimedia podrá ser seleccionado para su inclusión en Stash. ¿Estás seguro?",
@@ -1215,8 +1224,8 @@
             "where_can_stash_store_its_database_description": "Stash emplea una base de datos SQLite para almacenar los metadatos de tu colección. Por defecto será creada como <code>stash-go.sqlite</code> en el directorio en el que se encuentra tu archivo de configuración. Si quieres cambiar esto, por favor, introduce un nombre de archivo con ruta absoluta o relativa al directorio de trabajo actual.",
             "where_can_stash_store_its_generated_content": "¿Dónde guarda Stash los ficheros multimedia de soporte generados?",
             "where_can_stash_store_its_generated_content_description": "Para poder ofrecerte miniaturas, vistas previas y conjuntos de imágenes animadas, Stash genera imágenes y vídeos. Esto incluye también transcodificaciones para formatos de vídeo no soportados. Por defecto, Stash creará el directorio <code>generated</code> en el directorio que contiene tu archivo de configuración. Si quieres cambiar dónde se almacenarán estos archivos generados, por favor, introduce una ruta absoluta o relativa (al directorio de trabajo actual). Stash creará este directorio si no existe.",
-            "where_is_your_porn_located": "¿Dónde guardas el porno?",
-            "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo.",
+            "where_is_your_porn_located": "¿Dónde guardas tu contenido?",
+            "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo.",
             "path_to_cache_directory_empty_for_default": "ruta al directorio de la caché (dejar en blanco para usar el directorio por defecto)",
             "store_blobs_in_database": "Almacenar blobs en la base de datos",
             "path_to_blobs_directory_empty_for_default": "ruta al directorio con los blobs (dejar en blanco para el valor por defecto)",
@@ -1275,7 +1284,7 @@
         "scenes_duration": "Duración de las escenas",
         "scenes_size": "Tamaño de las escenas",
         "total_play_count": "Contador total de reproducciones",
-        "total_o_count": "Total de pajas",
+        "total_o_count": "Total de orgasmos",
         "total_play_duration": "Tiempo total de reproducciones",
         "scenes_played": "Escenas reproducidas"
     },
@@ -1346,7 +1355,7 @@
         }
     },
     "file_count": "Conteo de archivos",
-    "hasChapters": "Tiene capítulos",
+    "hasChapters": "Capítulos",
     "index_of_total": "{index} de {total}",
     "last_played_at": "Última reproducción el",
     "package_manager": {
@@ -1386,8 +1395,8 @@
     "date_format": "YYYY-MM-DD",
     "datetime_format": "YYYY-MM-DD HH:MM",
     "disambiguation": "Disambiguación",
-    "o_count": "Contador de pajas",
-    "o_history": "Historial de pajas",
+    "o_count": "Contador de orgasmos",
+    "o_history": "Historial de orgasmos",
     "orientation": "Orientación",
     "penis_length_cm": "Longitud del pene (cm)",
     "play_count": "Contador de reproducciones",
@@ -1438,7 +1447,7 @@
             "saved_filter": "Filtro guardado"
         }
     },
-    "last_o_at": "Última paja a las",
+    "last_o_at": "Último orgasmo a las",
     "parent_studio": "Estudio principal",
     "primary_file": "Archivo principal",
     "recently_added_objects": "{objects} añadidas recientemente",
@@ -1476,7 +1485,7 @@
     "tag_sub_tag_tooltip": "Tiene sub-etiquetas",
     "time": "Hora",
     "type": "Tipo",
-    "odate_recorded_no": "No hay registro de pajas grabado",
+    "odate_recorded_no": "No hay registro de orgasmos grabado",
     "urls": "URLs",
     "zip_file_count": "Números de archivos zip",
     "unknown_date": "Fecha desconocida",
@@ -1501,9 +1510,17 @@
         "any": "Cualquiera",
         "any_of": "Cualquiera de",
         "none": "Ninguno",
-        "only": "Solamente"
+        "only": "Solo"
     },
     "include_sub_group_content": "Incluir contenido de subgrupos",
     "include_sub_groups": "Incluir subgrupos",
-    "eta": "Tiempo estimado"
+    "eta": "Tiempo estimado",
+    "containing_group": "Grupo contenedor",
+    "containing_group_count": "Contador del grupo contenedor",
+    "containing_groups": "Grupo de contenedores",
+    "login": {
+        "username": "Nombre de usuario",
+        "password": "Contraseña",
+        "invalid_credentials": "Nombre de usuario o contraseña incorrecto"
+    }
 }
