@@ -811,7 +811,7 @@
     },
     "country": "国",
     "cover_image": "カバー画像",
-    "created_at": "作成者：",
+    "created_at": "作成日",
     "criterion": {
         "greater_than": "より大きい",
         "less_than": "より小さい",
