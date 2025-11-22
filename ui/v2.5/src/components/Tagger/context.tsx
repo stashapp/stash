@@ -593,7 +593,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         return {
           ...r,
           performers: r.performers.map((p) => {
-            if (p.name === performer.name) {
+            if (p.remote_site_id === performer.remote_site_id) {
               return {
                 ...p,
                 stored_id: performerID,
