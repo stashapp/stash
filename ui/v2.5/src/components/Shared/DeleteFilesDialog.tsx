@@ -41,6 +41,8 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
   // Network state
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
   async function onDelete() {
     setIsDeleting(true);
     try {
@@ -53,8 +55,6 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
     }
     setIsDeleting(false);
   }
-
-  const { configuration: config } = React.useContext(ConfigurationContext);
 
   function renderDeleteFileAlert() {
     const deletedFiles = props.selected.map((f) => f.path);
