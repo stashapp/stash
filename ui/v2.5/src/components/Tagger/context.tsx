@@ -593,7 +593,12 @@ export const TaggerContext: React.FC = ({ children }) => {
         return {
           ...r,
           performers: r.performers.map((p) => {
-            if (p.remote_site_id === performer.remote_site_id) {
+            // Match by remote_site_id if available, otherwise fall back to name
+            const matches = performer.remote_site_id
+              ? p.remote_site_id === performer.remote_site_id
+              : p.name === performer.name;
+
+            if (matches) {
               return {
                 ...p,
                 stored_id: performerID,
@@ -665,7 +670,12 @@ export const TaggerContext: React.FC = ({ children }) => {
           return {
             ...r,
             performers: r.performers.map((p) => {
-              if (p.remote_site_id === performer.remote_site_id) {
+              // Match by remote_site_id if available, otherwise fall back to name
+              const matches = performer.remote_site_id
+                ? p.remote_site_id === performer.remote_site_id
+                : p.name === performer.name;
+
+              if (matches) {
                 return {
                   ...p,
                   stored_id: performerID,
