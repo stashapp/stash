@@ -574,7 +574,9 @@
                 "whitespace_chars": "Espacios en blanco",
                 "whitespace_chars_desc": "Estos caracteres se reemplazarán en el título por espacios en blanco"
             },
-            "scene_tools": "Herramientas de escenas"
+            "scene_tools": "Herramientas de escenas",
+            "graphql_playground": "Entorno de pruebas de GraphQL",
+            "heading": "Herramientas"
         },
         "ui": {
             "abbreviate_counters": {
@@ -799,6 +801,9 @@
                         "heading": "Mostrar contenido de subetiquetas"
                     }
                 }
+            },
+            "sfw_mode": {
+                "heading": "Modo de contenido SFW"
             }
         },
         "advanced_mode": "Modo avanzado"
@@ -1084,7 +1089,7 @@
         "interactive_speed": "Velocidad interactiva",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} en esta escena"
+            "age_context": "{age} {years_old} durante la producción"
         },
         "phash": "Función de hash perceptual",
         "stream": "Transmisión",
@@ -1522,5 +1527,6 @@
         "username": "Nombre de usuario",
         "password": "Contraseña",
         "invalid_credentials": "Nombre de usuario o contraseña incorrecto"
-    }
+    },
+    "age_on_date": "{age} durante la producción"
 }
