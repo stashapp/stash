@@ -150,7 +150,8 @@
         "show_results": "Resultaat tonen",
         "show_count_results": "{count} resultaten tonen",
         "play": "Afspelen",
-        "load_filter": "Laad filter"
+        "load_filter": "Laad filter",
+        "load": "Laden"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -291,7 +292,9 @@
                 "password_desc": "Wachtwoord om je verzameling te openen. Laat leeg om inloggen uit te schakelen",
                 "stash-box_integration": "Stash-boxintegratie",
                 "username": "Gebruikersnaam",
-                "username_desc": "Gebruikersnaam om je verzameling te openen. Laat leeg om inloggen uit te schakelen"
+                "username_desc": "Gebruikersnaam om je verzameling te openen. Laat leeg om inloggen uit te schakelen",
+                "log_file_max_size": "Maximale loggrootte",
+                "log_file_max_size_desc": "Maximale grootte in megabytes van het logbestand voordat het wordt gecomprimeerd. 0 MB is uitgeschakeld. Vereist herstart."
             },
             "cache_location": "Locatie van de cachemap. Vereist als je streamt via HLS (zoals op Apple apparaten) of DASH.",
             "cache_path_head": "Cache pad",
@@ -355,7 +358,7 @@
             "database": "Database",
             "ffmpeg": {
                 "download_ffmpeg": {
-                    "heading": "Download FFmpeg",
+                    "heading": "FFmpeg downloaden",
                     "description": "Downloadt FFmpeg naar de configuratiemap en wist de ffmpeg- en ffprobe-paden zodat deze uit de configuratiemap kunnen worden opgehaald."
                 },
                 "hardware_acceleration": {
@@ -536,7 +539,9 @@
             },
             "migrate_scene_screenshots": {
                 "delete_files": "Verwijder screenshotbestanden"
-            }
+            },
+            "generate_sprites_during_scan_tooltip": "De set afbeeldingen die onder de videospeler worden weergegeven voor eenvoudige navigatie.",
+            "generate_video_covers_during_scan": "Scène-covers genereren"
         },
         "tools": {
             "scene_duplicate_checker": "Scène Duplicator Checker",
@@ -592,6 +597,14 @@
                         "options": {
                             "decimal": "Decimaal",
                             "stars": "Sterren"
+                        }
+                    },
+                    "star_precision": {
+                        "options": {
+                            "full": "Vol",
+                            "half": "Half",
+                            "quarter": "Kwart",
+                            "tenth": "Tiende"
                         }
                     }
                 }
@@ -712,7 +725,8 @@
                 }
             },
             "image_wall": {
-                "margin": "Marge (pixels)"
+                "margin": "Marge (pixels)",
+                "direction": "Richting"
             }
         },
         "advanced_mode": "Geavanceerde modus"
@@ -831,7 +845,9 @@
             "transcodes": "Transcoderingen",
             "transcodes_tooltip": "MP4-conversies van niet-ondersteunde video-indelingen",
             "video_previews": "Voorbeelden",
-            "video_previews_tooltip": "Videovoorbeelden die worden afgespeeld wanneer u over een scène beweegt"
+            "video_previews_tooltip": "Videovoorbeelden die worden afgespeeld wanneer u over een scène beweegt",
+            "covers": "Scène-covers",
+            "image_thumbnails": "Afbeeldingsminiaturen"
         },
         "scenes_found": "{count} scenes gevonden",
         "scrape_entity_query": "{entity_type} Schraper Query",
@@ -844,7 +860,13 @@
             "destination": "Bestemming",
             "source": "Bron"
         },
-        "performers_found": "{count} artiesten gevonden"
+        "performers_found": "{count} artiesten gevonden",
+        "imagewall": {
+            "direction": {
+                "column": "Kolom",
+                "row": "Rij"
+            }
+        }
     },
     "dimensions": "Dimensies",
     "director": "Regisseur",
@@ -866,7 +888,11 @@
             "medium": "Medium"
         },
         "search_accuracy_label": "Zoek accuraatheid",
-        "title": "Dubbele Scènes"
+        "title": "Dubbele Scènes",
+        "duration_options": {
+            "equal": "Gelijk"
+        },
+        "select_none": "Niets selecteren"
     },
     "duplicated_phash": "Gedupliceerd (phash)",
     "duration": "Looptijd",
@@ -936,7 +962,7 @@
         "syncing": "Synchroniseren met server",
         "uploading": "Script uploaden"
     },
-    "hasMarkers": "Heeft Markeringen",
+    "hasMarkers": "Markeringen",
     "height": "Hoogte",
     "help": "Help",
     "ignore_auto_tag": "Negeer automatische tag",
@@ -1074,7 +1100,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "database bestandsnaam (leeg als standaard)",
-            "description": "Vervolgens moeten we bepalen waar we je pornocollectie kunnen vinden, waar we de stash-database en gegenereerde bestanden kunnen opslaan. Deze instellingen kunnen indien nodig later worden gewijzigd.",
+            "description": "Vervolgens moeten we bepalen waar we je collectie kunnen vinden, waar we de stash-database en gegenereerde bestanden kunnen opslaan. Deze instellingen kunnen indien nodig later worden gewijzigd.",
             "path_to_generated_directory_empty_for_default": "pad naar gegenereerde map (standaard leeg)",
             "set_up_your_paths": "Stel je paden in",
             "stash_alert": "Er zijn geen bibliotheekpaden geselecteerd. Er kan dan geen media worden gescand in Stash. Weet je zeker dat?",
@@ -1083,7 +1109,7 @@
             "where_can_stash_store_its_generated_content": "Waar kan Stash de gegenereerde inhoud opslaan?",
             "where_can_stash_store_its_generated_content_description": "Om thumbnails, previews en sprites aan te bieden, genereert Stash afbeeldingen en video's. Dit omvat ook transcodes voor niet-ondersteunde bestandsindelingen. Standaard zal Stash een <code>generated</code> directory aanmaken in de directory die uw configuratiebestand bevat. Als u wilt wijzigen waar deze gegenereerde media wordt opgeslagen, voert u een absoluut of relatief (ten opzichte van de huidige werkmap) pad in. Stash maakt deze map aan als deze nog niet bestaat.",
             "where_is_your_porn_located": "Waar staat je porno?",
-            "where_is_your_porn_located_description": "Voeg mappen toe die uw pornovideo's en afbeeldingen bevatten. Stash gebruikt deze mappen om video's en afbeeldingen te vinden tijdens het scannen."
+            "where_is_your_porn_located_description": "Voeg mappen toe die uw video's en afbeeldingen bevatten. Stash gebruikt deze mappen om video's en afbeeldingen te vinden tijdens het scannen."
         },
         "stash_setup_wizard": "Stash-installatiewizard",
         "success": {
@@ -1175,7 +1201,7 @@
         "UNCUT": "Nee"
     },
     "folder": "Folder",
-    "hasChapters": "Heeft hoofdstukken",
+    "hasChapters": "Hoofdstukken",
     "image_index": "Afbeelding #",
     "include_sub_groups": "Inclusief subgroepen",
     "index_of_total": "{index} van {total}",
@@ -1215,5 +1241,36 @@
         "refresh_tagged_studios": "Vernieuwen getagde studio's",
         "refreshing_will_update_the_data": "Vernieuwen zal de gegevens van alle getagde studio's van de stash-box bijwerken.",
         "create_or_tag_parent_studios": "Maak ontbrekende of label bestaande moederstudio's"
-    }
+    },
+    "zip_file_count": "Aantal Zipbestanden",
+    "unknown_date": "Onbekende datum",
+    "urls": "URL's",
+    "date_format": "JJJJ-MM-DD",
+    "description": "Omschrĳving",
+    "distance": "Afstand",
+    "package_manager": {
+        "description": "Omschrĳving",
+        "install": "Installeer",
+        "package": "Pakket",
+        "source": {
+            "name": "Naam"
+        },
+        "uninstall": "Verwijderen",
+        "unknown": "<onbekend>",
+        "update": "Updaten",
+        "version": "Versie"
+    },
+    "penis": "Penis",
+    "photographer": "Fotograaf",
+    "second": "Seconde",
+    "statistics": "Statistieken",
+    "time": "Tĳd",
+    "criterion_modifier_values": {
+        "none": "Geen"
+    },
+    "custom_fields": {
+        "field": "Veld",
+        "value": "Waarde"
+    },
+    "datetime_format": "YYYY-MM-DD HH:MM"
 }
