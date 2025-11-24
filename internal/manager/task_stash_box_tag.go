@@ -45,28 +45,32 @@ func (t *StashBoxBatchTagTask) Start(ctx context.Context) {
 }
 
 func (t *StashBoxBatchTagTask) Description() string {
-	if t.taskType == Performer {
+	switch t.taskType {
+	case Performer:
 		var name string
-		if t.name != nil {
+		switch {
+		case t.name != nil:
 			name = *t.name
-		} else if t.stashID != nil {
+		case t.stashID != nil:
 			name = *t.stashID
-		} else if t.performer != nil {
+		case t.performer != nil:
 			name = t.performer.Name
 		}
 		return fmt.Sprintf("Tagging performer %s from stash-box", name)
-	} else if t.taskType == Studio {
+	case Studio:
 		var name string
-		if t.name != nil {
+		switch {
+		case t.name != nil:
 			name = *t.name
-		} else if t.stashID != nil {
+		case t.stashID != nil:
 			name = *t.stashID
-		} else if t.studio != nil {
+		case t.studio != nil:
 			name = t.studio.Name
 		}
 		return fmt.Sprintf("Tagging studio %s from stash-box", name)
+	default:
+		return fmt.Sprintf("Unknown tagging task type %d from stash-box", t.taskType)
 	}
-	return fmt.Sprintf("Unknown tagging task type %d from stash-box", t.taskType)
 }
 
 func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
@@ -86,11 +90,12 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 		t.processMatchedPerformer(ctx, performer, excluded)
 	} else {
 		var name string
-		if t.name != nil {
+		switch {
+		case t.name != nil:
 			name = *t.name
-		} else if t.stashID != nil {
+		case t.stashID != nil:
 			name = *t.stashID
-		} else if t.performer != nil {
+		case t.performer != nil:
 			name = t.performer.Name
 		}
 		logger.Infof("No match found for %s", name)
@@ -295,11 +300,12 @@ func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
 		t.processMatchedStudio(ctx, studio, excluded)
 	} else {
 		var name string
-		if t.name != nil {
+		switch {
+		case t.name != nil:
 			name = *t.name
-		} else if t.stashID != nil {
+		case t.stashID != nil:
 			name = *t.stashID
-		} else if t.studio != nil {
+		case t.studio != nil:
 			name = t.studio.Name
 		}
 		logger.Infof("No match found for %s", name)
