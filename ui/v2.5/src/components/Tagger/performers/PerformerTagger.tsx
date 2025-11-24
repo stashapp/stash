@@ -672,7 +672,8 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         .filter((n) => n.length > 0);
 
       // UUID regex pattern to detect StashIDs (supports v4 and v7)
-      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
       const names: string[] = [];
       const stashIds: string[] = [];
