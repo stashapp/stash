@@ -62,7 +62,7 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 		ret.Details = *s.Details
 	}
 
-	if s.Aliases != nil && !excluded["aliases"] {
+	if s.Aliases != nil && *s.Aliases != "" && !excluded["aliases"] {
 		ret.Aliases = NewRelatedStrings(stringslice.FromString(*s.Aliases, ","))
 	}
 
