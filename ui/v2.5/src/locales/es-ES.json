@@ -195,7 +195,10 @@
             "show_male_label": "Mostrar actores",
             "source": "Fuente",
             "mark_organized_desc": "Marcar la escena como organizada tras pulsar el botón de Guardar.",
-            "mark_organized_label": "Marcar como organizado al guardar"
+            "mark_organized_label": "Marcar como organizado al guardar",
+            "errors": {
+                "blacklist_duplicate": "Elemento duplicado en la lista negra"
+            }
         },
         "noun_query": "Consulta",
         "results": {
@@ -295,7 +298,9 @@
                 "password_desc": "Contraseña para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
                 "stash-box_integration": "Integración Stash-box",
                 "username": "Usuario",
-                "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
+                "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
+                "log_file_max_size": "Tamaño máximo del registro",
+                "log_file_max_size_desc": "Tamaño máximo en megabytes del archivo de registro antes de comprimirlo. 0 MB está desactivado. Requiere reiniciar."
             },
             "backup_directory_path": {
                 "description": "Ubicación del directorio para copias de seguridad de archivos de bases de datos SQLite",
@@ -448,7 +453,8 @@
             "graphql_endpoint": "Terminal de red GraphQL",
             "name": "Nombre",
             "title": "Terminal de red Stash-box",
-            "max_requests_per_minute": "Máximas peticiones por minuto"
+            "max_requests_per_minute": "Máximas peticiones por minuto",
+            "max_requests_per_minute_description": "Utiliza el valor predeterminado {defaultValue} si se establece en 0"
         },
         "system": {
             "transcoding": "Transcodificación"
@@ -500,7 +506,7 @@
                 "heading": "Identificar",
                 "identifying_from_paths": "Identificación de las escenas que se encuentren en las siguientes rutas",
                 "identifying_scenes": "Identificando {num} {scene}",
-                "include_male_performers": "Incluir actores (varones)",
+                "include_male_performers": "Incluir actores varones",
                 "set_cover_images": "Selección automática de carátula de escena",
                 "set_organized": "Marcar escena como \"clasificada\"",
                 "source": "Fuente",
@@ -803,7 +809,16 @@
                 }
             },
             "sfw_mode": {
-                "heading": "Modo de contenido SFW"
+                "heading": "Modo de contenido SFW",
+                "description": "Actívelo si utiliza Stash para almacenar contenido SFW. Oculta o modifica algunos aspectos de la interfaz de usuario relacionados con contenido para adultos."
+            },
+            "performer_list": {
+                "heading": "Lista de actores",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Mostrar enlaces en las tarjetas de la cuadrícula de actores"
+                    }
+                }
             }
         },
         "advanced_mode": "Modo avanzado"
@@ -962,7 +977,10 @@
             "destination": "Reasignar a"
         },
         "delete_entity_simple_desc": "{count, plural, one {¿Estás seguro de que quieres eliminar esta {singularEntity}?} other {¿Estás seguro de que quieres eliminar estas {pluralEntity}?}}",
-        "reassign_entity_title": "{count, plural, one {Reasignar {singularEntity}} other {Reasignar {pluralEntity}}}"
+        "reassign_entity_title": "{count, plural, one {Reasignar {singularEntity}} other {Reasignar {pluralEntity}}}",
+        "clear_o_history_confirm_sfw": "¿Estás seguro de que quieres borrar el historial de «Me gusta»?",
+        "overwrite_filter_warning": "El filtro guardado \"{entityName}\" se sobrescribirá.",
+        "set_default_filter_confirm": "¿Estás seguro de que deseas establecer este filtro como predeterminado?"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
@@ -971,7 +989,8 @@
         "list": "Lista",
         "tagger": "Etiquetadora",
         "unknown": "Desconocido/a",
-        "wall": "Muro"
+        "wall": "Muro",
+        "label_current": "Modo de visualización: {current}"
     },
     "donate": "Donar",
     "dupe_check": {
@@ -1177,7 +1196,9 @@
         "name": "Filtro",
         "saved_filters": "Filtros guardados",
         "update_filter": "Actualizar filtro",
-        "edit_filter": "Editar filtro"
+        "edit_filter": "Editar filtro",
+        "search_term": "Término de búsqueda",
+        "more_filter_criteria": "+{count} más"
     },
     "seconds": "Segundos",
     "settings": "Preferencias",
@@ -1199,7 +1220,9 @@
         "errors": {
             "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",
             "something_went_wrong_description": "Si sospechas que puede haber un error con los datos aportados, por favor, haz clic en volver para arreglarlos. De lo contrario, abre una incidencia en {githubLink} o busca ayuda en {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}",
+            "unable_to_retrieve_system_status": "No se puede recuperar el estado del sistema: {error}",
+            "unexpected_error": "Se ha producido un error inesperado: {error}"
         },
         "folder": {
             "file_path": "Ruta relativa del fichero",
@@ -1239,7 +1262,10 @@
             "where_can_stash_store_its_database_warning": "ADVERTENCIA: ¡almacenar la base de datos en un sistema diferente al que Stash se ejecuta (por ejemplo, almacenar la base de datos en un NAS mientras se ejecuta el servidor Stash en otro equipo) no es <strong>compatible</strong>! SQLite no está diseñado para su uso a través de una red e intentar hacerlo puede corromper fácilmente toda tu base de datos.",
             "where_can_stash_store_blobs": "¿Dónde puede Stash guardar los datos binarios de la base de datos?",
             "where_can_stash_store_blobs_description": "Stash puede almacenar datos binarios como portadas de escenas, imágenes de intérpretes, estudios y etiquetas ya sea en la base de datos o en el sistema de archivos. Por defecto, almacenará estos datos en el sistema de archivos en el subdirectorio <code>blobs</code> dentro del directorio que contiene tu archivo de configuración. Si deseas cambiar esto, por favor ingresa una ruta absoluta o relativa (respecto al directorio de trabajo actual). Stash creará este directorio si aún no existe.",
-            "where_can_stash_store_cache_files_description": "Para que algunas funciones como la transcodificación en vivo de HLS/DASH funcionen, Stash requiere un directorio de caché para archivos temporales. Por defecto, Stash creará un directorio <code>cache</code> dentro del directorio que contiene tu archivo de configuración. Si deseas cambiar esto, por favor ingresa una ruta absoluta o relativa (respecto al directorio de trabajo actual). Stash creará este directorio si aún no existe."
+            "where_can_stash_store_cache_files_description": "Para que algunas funciones como la transcodificación en vivo de HLS/DASH funcionen, Stash requiere un directorio de caché para archivos temporales. Por defecto, Stash creará un directorio <code>cache</code> dentro del directorio que contiene tu archivo de configuración. Si deseas cambiar esto, por favor ingresa una ruta absoluta o relativa (respecto al directorio de trabajo actual). Stash creará este directorio si aún no existe.",
+            "sfw_content_settings": "¿Usar Stash para contenido SFW?",
+            "sfw_content_settings_description": "Stash se puede utilizar para gestionar contenido SFW, como fotografía, arte, cómics y mucho más. Al habilitar esta opción, se ajustará el comportamiento de la interfaz de usuario para que sea más adecuado para el contenido SFW.",
+            "use_sfw_content_mode": "Utilizar el modo de contenido SFW"
         },
         "stash_setup_wizard": "Asistente de configuración de Stash",
         "success": {
@@ -1483,7 +1509,8 @@
         "blank": "${path} no puede estar vacío",
         "date_invalid_form": "${path} tiene que tener el formato YYYY-MM-DD",
         "required": "${path} es un campo requerido",
-        "unique": "${path} tiene que ser único"
+        "unique": "${path} tiene que ser único",
+        "end_time_before_start_time": "El tiempo de finalización debe ser mayor o igual que el tiempo de inicio"
     },
     "subsidiary_studio_count": "Número de estudios secundarios",
     "tag_parent_tooltip": "Tiene etiquetas primarias",
@@ -1505,7 +1532,9 @@
     "custom_fields": {
         "field": "Campo",
         "value": "Valor",
-        "title": "Campos personalizados"
+        "title": "Campos personalizados",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (custom field) {modifierString} {valueString} (+{others} others)"
     },
     "sub_group_count": "Recuento de subgrupos",
     "sub_group_of": "Subgrupo de {parent}",
@@ -1526,7 +1555,19 @@
     "login": {
         "username": "Nombre de usuario",
         "password": "Contraseña",
-        "invalid_credentials": "Nombre de usuario o contraseña incorrecto"
+        "invalid_credentials": "Nombre de usuario o contraseña incorrecto",
+        "login": "Iniciar sesión",
+        "internal_error": "Error interno inesperado. Consulte los registros para obtener más detalles"
     },
-    "age_on_date": "{age} durante la producción"
+    "age_on_date": "{age} durante la producción",
+    "include_sub_studio_content": "Incluir contenido de subestudios",
+    "include_sub_tag_content": "Incluir contenido de subetiquetas",
+    "last_o_at_sfw": "Último «Me gusta» en",
+    "sort_name": "Ordenar por nombre",
+    "o_count_sfw": "Me gusta",
+    "o_history_sfw": "Historial de Me gusta",
+    "odate_recorded_no_sfw": "Sin fecha de Me gusta registrada",
+    "scenes_duration": "Duración de la escena",
+    "sub_group_order": "Orden de subgrupo",
+    "time_end": "Hora de finalización"
 }
