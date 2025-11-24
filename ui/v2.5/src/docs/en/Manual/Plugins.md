@@ -67,7 +67,7 @@ The basic structure of a plugin configuration file is as follows:
 
 ```yaml
 name: <plugin name> 
-# optional list of dependancies to be included
+# optional list of dependencies to be included
 # "#" is is part of the config - do not remove
 # requires: <plugin ID>
 description: <optional description of the plugin>
