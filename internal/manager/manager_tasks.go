@@ -441,8 +441,8 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 			}); err != nil {
 				return err
 			}
-		} else if len(input.StashIDs) > 0 {
-			// The user is batch adding performers by stash ID
+		} else if len(input.StashIDs) > 0 || len(input.Names) > 0 || len(input.PerformerNames) > 0 {
+			// The user is batch adding performers by stash ID and/or name
 			for i := range input.StashIDs {
 				stashID := input.StashIDs[i]
 				if len(stashID) > 0 {
@@ -455,8 +455,7 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 					})
 				}
 			}
-		} else if len(input.Names) > 0 || len(input.PerformerNames) > 0 {
-			// The user is batch adding performers
+
 			namesToUse := input.PerformerNames
 			if len(input.Names) > 0 {
 				namesToUse = input.Names
@@ -583,8 +582,8 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 			}); err != nil {
 				logger.Error(err.Error())
 			}
-		} else if len(input.StashIDs) > 0 {
-			// The user is batch adding studios by stash ID
+		} else if len(input.StashIDs) > 0 || len(input.Names) > 0 {
+			// The user is batch adding studios by stash ID and/or name
 			for i := range input.StashIDs {
 				stashID := input.StashIDs[i]
 				if len(stashID) > 0 {
@@ -598,8 +597,7 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 					})
 				}
 			}
-		} else if len(input.Names) > 0 {
-			// The user is batch adding studios
+
 			for i := range input.Names {
 				name := input.Names[i]
 				if len(name) > 0 {
