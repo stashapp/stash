@@ -143,6 +143,24 @@ func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, dep
 	return r.GroupCount(ctx, obj, depth)
 }
 
+func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res_scene int
+	var res_image int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByStudioID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_image, err = r.repository.Image.OCountByStudioID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_image
+	return &res, nil
+}
+
 func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {
 	if obj.ParentID == nil {
 		return nil, nil
