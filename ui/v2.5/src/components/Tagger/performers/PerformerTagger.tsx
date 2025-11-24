@@ -222,7 +222,7 @@ const PerformerBatchAddModal: React.FC<IPerformerBatchAddModal> = ({
         as="textarea"
         ref={performerInput}
         placeholder={intl.formatMessage({
-          id: "performer_tagger.performer_names_separated_by_comma",
+          id: "performer_tagger.performer_names_or_stashids_separated_by_comma",
         })}
         rows={6}
       />
@@ -666,14 +666,29 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
 
   async function batchAdd(performerInput: string) {
     if (performerInput && selectedEndpoint) {
-      const names = performerInput
+      const inputs = performerInput
         .split(",")
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
 
-      if (names.length > 0) {
+      // UUID regex pattern to detect StashIDs (supports v4 and v7)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+      const names: string[] = [];
+      const stashIds: string[] = [];
+
+      inputs.forEach((input) => {
+        if (uuidPattern.test(input)) {
+          stashIds.push(input);
+        } else {
+          names.push(input);
+        }
+      });
+
+      if (names.length > 0 || stashIds.length > 0) {
         const ret = await mutateStashBoxBatchPerformerTag({
-          names: names,
+          names: names.length > 0 ? names : undefined,
+          stash_ids: stashIds.length > 0 ? stashIds : undefined,
           endpoint: selectedEndpointIndex,
           refresh: false,
           createParent: false,

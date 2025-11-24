@@ -242,7 +242,7 @@ const StudioBatchAddModal: React.FC<IStudioBatchAddModal> = ({
         as="textarea"
         ref={studioInput}
         placeholder={intl.formatMessage({
-          id: "studio_tagger.studio_names_separated_by_comma",
+          id: "studio_tagger.studio_names_or_stashids_separated_by_comma",
         })}
         rows={6}
       />
@@ -715,14 +715,29 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
 
   async function batchAdd(studioInput: string, createParent: boolean) {
     if (studioInput && selectedEndpoint) {
-      const names = studioInput
+      const inputs = studioInput
         .split(",")
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
 
-      if (names.length > 0) {
+      // UUID regex pattern to detect StashIDs (supports v4 and v7)
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+      const names: string[] = [];
+      const stashIds: string[] = [];
+
+      inputs.forEach((input) => {
+        if (uuidPattern.test(input)) {
+          stashIds.push(input);
+        } else {
+          names.push(input);
+        }
+      });
+
+      if (names.length > 0 || stashIds.length > 0) {
         const ret = await mutateStashBoxBatchStudioTag({
-          names: names,
+          names: names.length > 0 ? names : undefined,
+          stash_ids: stashIds.length > 0 ? stashIds : undefined,
           endpoint: selectedEndpointIndex,
           refresh: false,
           exclude_fields: config?.excludedStudioFields ?? [],

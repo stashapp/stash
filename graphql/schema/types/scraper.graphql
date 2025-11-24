@@ -297,6 +297,8 @@ input StashBoxBatchTagInput {
   ids: [ID!]
   "If set, only tag these names"
   names: [String!]
+  "If set, only tag these stash ids from stash-box"
+  stash_ids: [String!]
   "If set, only tag these performer ids"
   performer_ids: [ID!] @deprecated(reason: "use ids")
   "If set, only tag these performer names"

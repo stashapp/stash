@@ -379,6 +379,8 @@ type StashBoxBatchTagInput struct {
 	Ids []string `json:"ids"`
 	// If set, only tag these names
 	Names []string `json:"names"`
+	// If set, only tag these stash ids from stash-box
+	StashIDs []string `json:"stash_ids"`
 	// If set, only tag these performer ids
 	//
 	// Deprecated: please use Ids
@@ -438,6 +440,20 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 				return nil
 			}); err != nil {
 				return err
+			}
+		} else if len(input.StashIDs) > 0 {
+			// The user is batch adding performers by stash ID
+			for i := range input.StashIDs {
+				stashID := input.StashIDs[i]
+				if len(stashID) > 0 {
+					tasks = append(tasks, StashBoxBatchTagTask{
+						stashID:        &stashID,
+						refresh:        true, // use refresh mode to query by ID
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Performer,
+					})
+				}
 			}
 		} else if len(input.Names) > 0 || len(input.PerformerNames) > 0 {
 			// The user is batch adding performers
@@ -566,6 +582,21 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 				return nil
 			}); err != nil {
 				logger.Error(err.Error())
+			}
+		} else if len(input.StashIDs) > 0 {
+			// The user is batch adding studios by stash ID
+			for i := range input.StashIDs {
+				stashID := input.StashIDs[i]
+				if len(stashID) > 0 {
+					tasks = append(tasks, StashBoxBatchTagTask{
+						stashID:        &stashID,
+						refresh:        true, // use refresh mode to query by ID
+						createParent:   input.CreateParent,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Studio,
+					})
+				}
 			}
 		} else if len(input.Names) > 0 {
 			// The user is batch adding studios

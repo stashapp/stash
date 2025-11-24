@@ -24,6 +24,7 @@ const (
 type StashBoxBatchTagTask struct {
 	box            *models.StashBox
 	name           *string
+	stashID        *string
 	performer      *models.Performer
 	studio         *models.Studio
 	refresh        bool
@@ -48,7 +49,9 @@ func (t *StashBoxBatchTagTask) Description() string {
 		var name string
 		if t.name != nil {
 			name = *t.name
-		} else {
+		} else if t.stashID != nil {
+			name = *t.stashID
+		} else if t.performer != nil {
 			name = t.performer.Name
 		}
 		return fmt.Sprintf("Tagging performer %s from stash-box", name)
@@ -56,7 +59,9 @@ func (t *StashBoxBatchTagTask) Description() string {
 		var name string
 		if t.name != nil {
 			name = *t.name
-		} else {
+		} else if t.stashID != nil {
+			name = *t.stashID
+		} else if t.studio != nil {
 			name = t.studio.Name
 		}
 		return fmt.Sprintf("Tagging studio %s from stash-box", name)
@@ -83,6 +88,8 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 		var name string
 		if t.name != nil {
 			name = *t.name
+		} else if t.stashID != nil {
+			name = *t.stashID
 		} else if t.performer != nil {
 			name = t.performer.Name
 		}
@@ -100,24 +107,32 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 
 	if t.refresh {
 		var remoteID string
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			qb := r.Performer
 
-			if !t.performer.StashIDs.Loaded() {
-				err = t.performer.LoadStashIDs(ctx, qb)
-				if err != nil {
-					return err
+		// If stashID is provided, use it directly
+		if t.stashID != nil {
+			remoteID = *t.stashID
+		} else if t.performer != nil {
+			// Otherwise, get the stashID from the performer
+			if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+				qb := r.Performer
+
+				if !t.performer.StashIDs.Loaded() {
+					err = t.performer.LoadStashIDs(ctx, qb)
+					if err != nil {
+						return err
+					}
 				}
-			}
-			for _, id := range t.performer.StashIDs.List() {
-				if id.Endpoint == t.box.Endpoint {
-					remoteID = id.StashID
+				for _, id := range t.performer.StashIDs.List() {
+					if id.Endpoint == t.box.Endpoint {
+						remoteID = id.StashID
+					}
 				}
+				return nil
+			}); err != nil {
+				return nil, err
 			}
-			return nil
-		}); err != nil {
-			return nil, err
 		}
+
 		if remoteID != "" {
 			performer, err = client.FindPerformerByID(ctx, remoteID)
 
@@ -226,7 +241,7 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 		} else {
 			logger.Infof("Updated performer %s", *p.Name)
 		}
-	} else if t.name != nil && p.Name != nil {
+	} else if (t.name != nil || t.stashID != nil) && p.Name != nil {
 		// Creating a new performer
 		newPerformer := p.ToPerformer(t.box.Endpoint, excluded)
 		image, err := p.GetImage(ctx, excluded)
@@ -282,6 +297,8 @@ func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
 		var name string
 		if t.name != nil {
 			name = *t.name
+		} else if t.stashID != nil {
+			name = *t.stashID
 		} else if t.studio != nil {
 			name = t.studio.Name
 		}
@@ -299,22 +316,30 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 
 	if t.refresh {
 		var remoteID string
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			if !t.studio.StashIDs.Loaded() {
-				err = t.studio.LoadStashIDs(ctx, r.Studio)
-				if err != nil {
-					return err
+
+		// If stashID is provided, use it directly
+		if t.stashID != nil {
+			remoteID = *t.stashID
+		} else if t.studio != nil {
+			// Otherwise, get the stashID from the studio
+			if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+				if !t.studio.StashIDs.Loaded() {
+					err = t.studio.LoadStashIDs(ctx, r.Studio)
+					if err != nil {
+						return err
+					}
 				}
-			}
-			for _, id := range t.studio.StashIDs.List() {
-				if id.Endpoint == t.box.Endpoint {
-					remoteID = id.StashID
+				for _, id := range t.studio.StashIDs.List() {
+					if id.Endpoint == t.box.Endpoint {
+						remoteID = id.StashID
+					}
 				}
+				return nil
+			}); err != nil {
+				return nil, err
 			}
-			return nil
-		}); err != nil {
-			return nil, err
 		}
+
 		if remoteID != "" {
 			studio, err = client.FindStudio(ctx, remoteID)
 		}
@@ -394,7 +419,7 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		} else {
 			logger.Infof("Updated studio %s", s.Name)
 		}
-	} else if t.name != nil && s.Name != "" {
+	} else if (t.name != nil || t.stashID != nil) && s.Name != "" {
 		// Creating a new studio
 		if s.Parent != nil && t.createParent {
 			err := t.processParentStudio(ctx, s.Parent, excluded)
