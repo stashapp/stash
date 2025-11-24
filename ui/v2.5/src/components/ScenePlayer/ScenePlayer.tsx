@@ -22,6 +22,7 @@ import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
+import "./media-session";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -397,6 +398,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             pauseBeforeLooping: false,
             createButtons: uiConfig?.showAbLoopControls ?? false,
           },
+          mediaSession: {},
         },
       };
 
@@ -873,6 +875,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       return () => player.off("ended");
     }, [getPlayer, onComplete]);
+
+    // set up mediaSession plugin
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      // set up mediasession plugin
+      player
+        .mediaSession()
+        .setMetadata(
+          scene?.title ?? "Stash",
+          scene?.studio?.name ?? "Stash",
+          scene.paths.screenshot || ""
+        );
+    }, [getPlayer, scene]);
 
     function onScrubberScroll() {
       if (started.current) {
