@@ -60,9 +60,6 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   onSetDisplayMode,
   displayModeOptions,
 }) => {
-  const minZoom = 0;
-  const maxZoom = 3;
-
   const intl = useIntl();
 
   const overlayTarget = useRef(null);
@@ -140,8 +137,6 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
                   displayMode === DisplayMode.Wall) ? (
                   <div className="zoom-slider-container">
                     <ZoomSelect
-                      minZoom={minZoom}
-                      maxZoom={maxZoom}
                       zoomIndex={zoomIndex}
                       onChangeZoom={onChangeZoom}
                     />

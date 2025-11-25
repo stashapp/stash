@@ -196,7 +196,6 @@ export const StudioList: React.FC<IStudioList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

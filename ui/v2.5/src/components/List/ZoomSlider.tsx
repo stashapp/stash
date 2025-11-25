@@ -2,19 +2,14 @@ import React, { useEffect } from "react";
 import Mousetrap from "mousetrap";
 import { Form } from "react-bootstrap";
 
-export interface IZoomSelectProps {
-  minZoom: number;
-  maxZoom: number;
-  zoomIndex: number;
-  onChangeZoom: (v: number) => void;
-}
+const minZoom = 0;
+const maxZoom = 3;
 
-export const ZoomSelect: React.FC<IZoomSelectProps> = ({
-  minZoom,
-  maxZoom,
-  zoomIndex,
-  onChangeZoom,
-}) => {
+export function useZoomKeybinds(props: {
+  zoomIndex: number | undefined;
+  onChangeZoom: (v: number) => void;
+}) {
+  const { zoomIndex, onChangeZoom } = props;
   useEffect(() => {
     Mousetrap.bind("+", () => {
       if (zoomIndex !== undefined && zoomIndex < maxZoom) {
@@ -32,7 +27,17 @@ export const ZoomSelect: React.FC<IZoomSelectProps> = ({
       Mousetrap.unbind("-");
     };
   });
+}
 
+export interface IZoomSelectProps {
+  zoomIndex: number;
+  onChangeZoom: (v: number) => void;
+}
+
+export const ZoomSelect: React.FC<IZoomSelectProps> = ({
+  zoomIndex,
+  onChangeZoom,
+}) => {
   return (
     <Form.Control
       className="zoom-slider"
