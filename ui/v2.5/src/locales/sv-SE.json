@@ -305,7 +305,9 @@
                 "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
                 "stash-box_integration": "Integration med Stash-box",
                 "username": "Användarnamn",
-                "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
+                "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering",
+                "log_file_max_size": "Maximal loggstorlek",
+                "log_file_max_size_desc": "Maximal storlek i megabytes för loggfilen innan den komprimeras. 0MB tolkas som avstängt. Kräver omstart."
             },
             "backup_directory_path": {
                 "description": "Filsökväg för SQLite-databas backupfil",
@@ -820,6 +822,10 @@
                         "heading": "Visa länkar på stjärnors kort"
                     }
                 }
+            },
+            "sfw_mode": {
+                "description": "Aktivera om stash inte används för vuxet innehåll. Döljer eller ändrar gränssnitt som är mer fokuserade på vuxet innehåll.",
+                "heading": "Vuxet Innehållsläge"
             }
         },
         "advanced_mode": "Avancerat Läge"
@@ -983,7 +989,8 @@
         "clear_o_history_confirm": "Är du säker på att du vill radera O-historiken?",
         "clear_play_history_confirm": "Är du säker på att du vill radera uppspelningshistoriken?",
         "overwrite_filter_warning": "Sparat filter \"{entityName}\" kommer skrivas över.",
-        "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?"
+        "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?",
+        "clear_o_history_confirm_sfw": "Är du säker att du vill radera gillningshistoriken?"
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1294,7 +1301,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "databasfilnamn (blank för standard)",
-            "description": "Härnäst, måste vi avgöra var Stash hittar din porrsamling, och vart databasen, de genererade filerna, och cachen ska lagras . Om det skulle behövas kan dessa inställningar ändras senare.",
+            "description": "Härnäst, måste vi avgöra var Stash hittar din media, och var databasen, de genererade filerna, och cachen ska lagras . Om det skulle behövas kan dessa inställningar ändras senare.",
             "path_to_blobs_directory_empty_for_default": "sökväg för blobmapp (tom för standard)",
             "path_to_cache_directory_empty_for_default": "sökväg till cachemappen (tomt för standard)",
             "path_to_generated_directory_empty_for_default": "sökväg till mappen för genererade filer (blank för standard)",
@@ -1307,12 +1314,15 @@
             "where_can_stash_store_cache_files": "Var kan Stash lagra cachefiler?",
             "where_can_stash_store_cache_files_description": "För att viss funktionalitet som HLS/DASH-liveomkodning ska fungera kräver Stash en cache-mapp för tillfälliga filer. Som standard kommer Stash skapa en <code>Cache</code> mapp i mappen som innehåller konfigurationsfilen. Om du vill ändra detta skriv en absolut eller relativ (till den nuvarande platsen) sökväg. Stash kommer skapa mappen om den inte redan finns på platsen.",
             "where_can_stash_store_its_database": "Var kan Stash lagra sin databas?",
-            "where_can_stash_store_its_database_description": "Stash använder en SQLite-databas för att spara metadata till din porr. Som standard kommer databasen att skapas som <code>stash-go.sqlite</code> i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till den nuvarande arbetsmappen) filnamn.",
+            "where_can_stash_store_its_database_description": "Stash använder en SQLite-databas för att spara metadata till din media. Som standard kommer databasen att skapas som <code>stash-go.sqlite</code> i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till den nuvarande arbetsmappen) filnamn.",
             "where_can_stash_store_its_database_warning": "VARNING: att lagra databasen på ett annat system än det som Stash körs ifrån (t.ex. databasen på en NAS medan Stash körs från en annan dator) är <strong>inte stöttat</strong>! SQLite är inte avsett för att använding över nätverket, och att försöka oavsett kan väldigt enkelt korrumpera hela databasen.",
             "where_can_stash_store_its_generated_content": "Var kan Stash spara sitt genererade innehåll?",
             "where_can_stash_store_its_generated_content_description": "För att kunna erbjuda miniatyrbilder, förhandsvisningar och sprites måste Stash generera bilder och videor. Detta inkluderar också omkodning av ej stöttade filformat. Som standard skapar Stash en <code>generated</code> mapp i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till din nuvarande arbetsmapp) sökväg. Stash kommer skapa denna mapp om den inte redan finns.",
-            "where_is_your_porn_located": "Var är din porr lagrad?",
-            "where_is_your_porn_located_description": "Lägg till mappar som innehåller dina porrvideor och bilder. Stash kommer använda dessa mappar för att hitta videor och bilder under skanningen."
+            "where_is_your_porn_located": "Var är din media lagrad?",
+            "where_is_your_porn_located_description": "Lägg till mappar som innehåller dina videor och bilder. Stash kommer använda dessa mappar för att hitta videor och bilder under skanningen.",
+            "sfw_content_settings": "Används stash inte för vuxet innehåll?",
+            "sfw_content_settings_description": "stash kan användas för att hantera icke-vuxen media som fotografier, konst, serietidningar e.t.c.. Aktivering av detta kommer anpassa gränssnittet till att vara mer passande för icke-vuxen media.",
+            "use_sfw_content_mode": "Använd icke-vuxet läge"
         },
         "stash_setup_wizard": "Stash Starthjälp",
         "success": {
@@ -1555,5 +1565,9 @@
         "invalid_credentials": "Ogiltigt användarnamn eller lösenord"
     },
     "age_on_date": "{age} vid produktion",
-    "scenes_duration": "Scen Speltid"
+    "scenes_duration": "Scen Speltid",
+    "last_o_at_sfw": "Senaste Gillning Vid",
+    "o_count_sfw": "Gillningar",
+    "o_history_sfw": "Gillningshistorik",
+    "odate_recorded_no_sfw": "Inget Gillningsdatum Sparat"
 }
