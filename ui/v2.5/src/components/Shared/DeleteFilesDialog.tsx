@@ -41,7 +41,8 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
   // Network state
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const context = React.useContext(ConfigurationContext);
+  const config = context?.configuration;
 
   async function onDelete() {
     setIsDeleting(true);
