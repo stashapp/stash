@@ -304,7 +304,9 @@
                 "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
                 "stash-box_integration": "Stash-box Einbindung",
                 "username": "Benutzername",
-                "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
+                "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
+                "log_file_max_size": "Maximale Log Größe",
+                "log_file_max_size_desc": "Maximale Größe, in Megabytes, von den Log Files bevor es komprimiert wird. 0MB ist deaktiviert. Benötigt Neustart."
             },
             "backup_directory_path": {
                 "description": "Verzeichnisspeicherort für SQLite-Datenbankdateisicherungen",
@@ -811,6 +813,18 @@
             "use_stash_hosted_funscript": {
                 "description": "Wenn aktiviert, werden Funscripts direkt von Stash an dein Handy-Gerät gesendet, ohne Handy-Server von Drittanbietern zu verwenden. Erfordert, dass Stash von deinem Handy-Gerät aus zugänglich ist und ein API-Schlüssel generiert wurde, falls Stash mit Zugangsdaten konfiguriert ist.",
                 "heading": "Funscripts direkt bereitstellen"
+            },
+            "performer_list": {
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Zeige den Link auf der Darsteller Gitterkarte"
+                    }
+                },
+                "heading": "Darsteller Liste"
+            },
+            "sfw_mode": {
+                "description": "Aktivieren wenn man Stash für das speichern von SFW content benutzt. Versteckt oder Ändernt ein paar NFSW eigenschaften des UI.",
+                "heading": "SFW Content Modus"
             }
         },
         "advanced_mode": "Fortgeschrittener Modus"
@@ -974,7 +988,8 @@
         "performers_found": "{count} Darsteller:innen gefunden",
         "clear_o_history_confirm": "Möchten Sie wirklich den O-Verlauf löschen?",
         "overwrite_filter_warning": "Der gespeicherte Filter \"{entityName}\" wird überschrieben.",
-        "set_default_filter_confirm": "Sind Sie sicher, dass Sie diesen Filter als Standard festlegen möchten?"
+        "set_default_filter_confirm": "Sind Sie sicher, dass Sie diesen Filter als Standard festlegen möchten?",
+        "clear_o_history_confirm_sfw": "Bist du dir sicher das du den Verlauf löschen willst?"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
@@ -1146,7 +1161,6 @@
     "name": "Name",
     "new": "Neu",
     "none": "Keiner",
-    "o_counter": "O-Zähler",
     "operations": "Operationen",
     "organized": "Organisiert",
     "pagination": {
@@ -1302,7 +1316,8 @@
             "where_is_your_porn_located": "Wo finden wir deine Porno-Kollektion?",
             "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
             "path_to_blobs_directory_empty_for_default": "Pfad zum Verzeichnis der blobs (standardmäßig leer)",
-            "store_blobs_in_database": "blobs in der Datenbank speichern"
+            "store_blobs_in_database": "blobs in der Datenbank speichern",
+            "sfw_content_settings": "Benutzt du stash auch für SFW Inhalte?"
         },
         "stash_setup_wizard": "Einrichtungshelfer für Stash",
         "success": {
@@ -1547,5 +1562,10 @@
         "username": "Benutzername"
     },
     "age_on_date": "bei Produktion",
-    "sort_name": "Namen sortieren"
+    "sort_name": "Namen sortieren",
+    "scenes_duration": "Szenen Dauer",
+    "last_o_at_sfw": "Letztes mal ein Gefällt mir gegeben am",
+    "o_count_sfw": "Gefällt mir",
+    "o_history_sfw": "Gefällt mir Verlauf",
+    "odate_recorded_no_sfw": "Kein Gefällt mir Datum vermerkt"
 }

@@ -149,7 +149,9 @@
             "close": "Закрыть панель"
         },
         "show_count_results": "Показать {count} результат(ов)",
-        "play": "Воспроизвести"
+        "play": "Воспроизвести",
+        "load": "Загрузить",
+        "load_filter": "Загрузить фильтр"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -1119,7 +1121,6 @@
     "name": "Имя",
     "new": "Новый",
     "none": "Отсутствует",
-    "o_counter": "О-Счетчик",
     "operations": "Операции",
     "organized": "Организован",
     "pagination": {
@@ -1206,7 +1207,8 @@
         "saved_filters": "Сохраненные фильтры",
         "update_filter": "Обновить фильтр",
         "edit_filter": "Изменить фильтр",
-        "more_filter_criteria": "+ещё {count}"
+        "more_filter_criteria": "+ещё {count}",
+        "search_term": "Поисковый запрос"
     },
     "seconds": "Секунды",
     "settings": "Настройки",

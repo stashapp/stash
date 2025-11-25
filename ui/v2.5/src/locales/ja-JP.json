@@ -791,6 +791,9 @@
                 "direction": "方向",
                 "heading": "画像ウォール",
                 "margin": "マージン (px単位)"
+            },
+            "performer_list": {
+                "heading": "AV女優・男優リスト"
             }
         },
         "advanced_mode": "高度なモード"
@@ -808,7 +811,7 @@
     },
     "country": "国",
     "cover_image": "カバー画像",
-    "created_at": "作成者：",
+    "created_at": "作成日",
     "criterion": {
         "greater_than": "より大きい",
         "less_than": "より小さい",
@@ -1076,7 +1079,6 @@
     "name": "名前",
     "new": "新規作成",
     "none": "なし",
-    "o_counter": "発射カウンター",
     "operations": "オペレーション",
     "organized": "分類済み",
     "pagination": {
@@ -1328,5 +1330,6 @@
         "value": "値"
     },
     "distance": "距離",
-    "age_on_date": "撮影時の年齢 {age}歳"
+    "age_on_date": "撮影時の年齢 {age}歳",
+    "containing_group": "含まれるグループ"
 }
