@@ -1,8 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import Mousetrap from "mousetrap";
-import { Button, Dropdown, Overlay, Popover } from "react-bootstrap";
+import {
+  Button,
+  ButtonGroup,
+  Dropdown,
+  Overlay,
+  OverlayTrigger,
+  Popover,
+  Tooltip,
+} from "react-bootstrap";
 import { DisplayMode } from "src/models/list-filter/types";
-import { useIntl } from "react-intl";
+import { IntlShape, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import {
   faChevronDown,
@@ -53,6 +61,10 @@ function getLabelId(option: DisplayMode) {
   return `display_mode.${displayModeId}`;
 }
 
+function getLabel(intl: IntlShape, option: DisplayMode) {
+  return intl.formatMessage({ id: getLabelId(option) });
+}
+
 export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   zoomIndex,
   onSetZoom,
@@ -95,10 +107,6 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     };
   });
 
-  function getLabel(option: DisplayMode) {
-    return intl.formatMessage({ id: getLabelId(option) });
-  }
-
   function onChangeZoom(v: number) {
     if (onSetZoom) {
       onSetZoom(v);
@@ -113,7 +121,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         variant="secondary"
         title={intl.formatMessage(
           { id: "display_mode.label_current" },
-          { current: getLabel(displayMode) }
+          { current: getLabel(intl, displayMode) }
         )}
         onClick={() => setShowOptions(!showOptions)}
       >
@@ -151,7 +159,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
                       onSetDisplayMode(option);
                     }}
                   >
-                    <Icon icon={getIcon(option)} /> {getLabel(option)}
+                    <Icon icon={getIcon(option)} /> {getLabel(intl, option)}
                   </Dropdown.Item>
                 ))}
               </div>
@@ -159,6 +167,51 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
           </div>
         )}
       </Overlay>
+    </>
+  );
+};
+
+export const ListViewButtonGroup: React.FC<IListViewOptionsProps> = ({
+  zoomIndex,
+  onSetZoom,
+  displayMode,
+  onSetDisplayMode,
+  displayModeOptions,
+}) => {
+  const intl = useIntl();
+
+  return (
+    <>
+      {displayModeOptions.length > 1 && (
+        <ButtonGroup>
+          {displayModeOptions.map((option) => (
+            <OverlayTrigger
+              key={option}
+              overlay={
+                <Tooltip id="display-mode-tooltip">
+                  {getLabel(intl, option)}
+                </Tooltip>
+              }
+            >
+              <Button
+                variant="secondary"
+                active={displayMode === option}
+                onClick={() => onSetDisplayMode(option)}
+              >
+                <Icon icon={getIcon(option)} />
+              </Button>
+            </OverlayTrigger>
+          ))}
+        </ButtonGroup>
+      )}
+      <div className="zoom-slider-container">
+        {onSetZoom &&
+        zoomIndex !== undefined &&
+        (displayMode === DisplayMode.Grid ||
+          displayMode === DisplayMode.Wall) ? (
+          <ZoomSelect zoomIndex={zoomIndex} onChangeZoom={onSetZoom} />
+        ) : null}
+      </div>
     </>
   );
 };

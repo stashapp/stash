@@ -934,6 +934,12 @@ input[type="range"].zoom-slider {
       justify-content: flex-end;
     }
   }
+
+  // set the width of the zoom-slider-container to prevent buttons moving when
+  // the slider appears/disappears
+  .zoom-slider-container {
+    min-width: 60px;
+  }
 }
 
 .sidebar-pane .filtered-list-toolbar {
