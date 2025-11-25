@@ -367,7 +367,6 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     >
       <ItemList
         view={view}
-        zoomable
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}

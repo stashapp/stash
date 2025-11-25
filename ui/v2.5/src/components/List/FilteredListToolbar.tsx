@@ -2,8 +2,8 @@ import React from "react";
 import { QueryResult } from "@apollo/client";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { ListFilter } from "./ListFilter";
-import { ListViewOptions } from "./ListViewOptions";
+import { PageSizeSelector, SearchTermInput, SortBySelect } from "./ListFilter";
+import { ListViewButtonGroup } from "./ListViewOptions";
 import {
   IListFilterOperation,
   ListOperationButtons,
@@ -11,6 +11,8 @@ import {
 import { ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IListSelect, useFilterOperations } from "./util";
+import { SavedFilterDropdown } from "./SavedFilterList";
+import { FilterButton } from "./Filters/FilterButton";
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
@@ -63,34 +65,47 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
 
   return (
     <ButtonToolbar className="filtered-list-toolbar">
+      <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
+
       <ButtonGroup>
-        {showEditFilter && (
-          <ListFilter
-            onFilterUpdate={setFilter}
-            filter={filter}
-            openFilterDialog={() => showEditFilter()}
-            view={view}
-          />
-        )}
-        <ListOperationButtons
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          otherOperations={operations}
-          itemsSelected={selectedIds.size > 0}
-          onEdit={onEdit}
-          onDelete={onDelete}
+        <SavedFilterDropdown
+          filter={filter}
+          onSetFilter={setFilter}
+          view={view}
         />
-        <ButtonGroup>
-          <ListViewOptions
-            displayMode={filter.displayMode}
-            displayModeOptions={filterOptions.displayModeOptions}
-            onSetDisplayMode={setDisplayMode}
-            zoomIndex={zoomable ? filter.zoomIndex : undefined}
-            onSetZoom={zoomable ? setZoom : undefined}
-          />
-        </ButtonGroup>
+        <FilterButton onClick={() => showEditFilter()} count={filter.count()} />
       </ButtonGroup>
-      <ButtonGroup></ButtonGroup>
+
+      <SortBySelect
+        sortBy={filter.sortBy}
+        sortDirection={filter.sortDirection}
+        options={filterOptions.sortByOptions}
+        onChangeSortBy={(e) => setFilter(filter.setSortBy(e ?? undefined))}
+        onChangeSortDirection={() => setFilter(filter.toggleSortDirection())}
+        onReshuffleRandomSort={() => setFilter(filter.reshuffleRandomSort())}
+      />
+
+      <PageSizeSelector
+        pageSize={filter.itemsPerPage}
+        setPageSize={(size) => setFilter(filter.setPageSize(size))}
+      />
+
+      <ListOperationButtons
+        onSelectAll={onSelectAll}
+        onSelectNone={onSelectNone}
+        otherOperations={operations}
+        itemsSelected={selectedIds.size > 0}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+
+      <ListViewButtonGroup
+        displayMode={filter.displayMode}
+        displayModeOptions={filterOptions.displayModeOptions}
+        onSetDisplayMode={setDisplayMode}
+        zoomIndex={zoomable ? filter.zoomIndex : undefined}
+        onSetZoom={zoomable ? setZoom : undefined}
+      />
     </ButtonToolbar>
   );
 };

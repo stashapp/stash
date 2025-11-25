@@ -77,6 +77,7 @@ import {
   ToolbarSelectionSection,
 } from "../List/ListToolbar";
 import { ListResultsHeader } from "../List/ListResultsHeader";
+import { useZoomKeybinds } from "../List/ZoomSlider";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -547,6 +548,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
+  });
+  useZoomKeybinds({
+    zoomIndex: filter.zoomIndex,
+    onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
   });
 
   const onCloseEditDelete = useCloseEditDelete({

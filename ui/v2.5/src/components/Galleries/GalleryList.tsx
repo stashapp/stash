@@ -195,7 +195,6 @@ export const GalleryList: React.FC<IGalleryList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
