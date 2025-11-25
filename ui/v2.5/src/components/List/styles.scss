@@ -918,9 +918,14 @@ input[type="range"].zoom-slider {
 
 .filtered-list-toolbar {
   align-items: center;
+  background-color: $body-bg;
   gap: 0.5rem;
   justify-content: center;
-  margin-bottom: 0.5rem;
+
+  // offset the main padding
+  margin-top: -0.5rem;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
 
   & > .btn-group {
     flex-wrap: wrap;
@@ -1091,10 +1096,6 @@ input[type="range"].zoom-slider {
   &.filtered-list-toolbar {
     flex-wrap: nowrap;
     gap: 1rem;
-    // offset the main padding
-    margin-top: -0.5rem;
-    padding-bottom: 0.5rem;
-    padding-top: 0.5rem;
     position: sticky;
     top: $navbar-height;
     z-index: 10;
@@ -1139,11 +1140,6 @@ input[type="range"].zoom-slider {
 
       .sidebar-toggle-button {
         margin-right: 0.5rem;
-      }
-
-      .selected-items-info {
-        align-items: center;
-        display: flex;
       }
 
       > div:first-child,
@@ -1432,4 +1428,40 @@ input[type="range"].zoom-slider {
 
 .duration-preset {
   cursor: pointer;
+}
+
+.selected-items-info {
+  align-items: center;
+  border: 1px solid $secondary;
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.scene-list-toolbar .selected-items-info {
+  justify-content: flex-start;
+}
+
+.item-list-container > .filtered-list-toolbar.has-selection {
+  border-radius: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  position: sticky;
+  top: $navbar-height;
+  width: fit-content;
+  z-index: 10;
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
+}
+
+.detail-body .filtered-list-toolbar.has-selection {
+  top: calc($sticky-detail-header-height + $navbar-height);
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
 }
