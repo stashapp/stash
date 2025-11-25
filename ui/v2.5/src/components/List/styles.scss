@@ -93,7 +93,8 @@
 
 // hide zoom slider in xs viewport
 @include media-breakpoint-down(xs) {
-  .display-mode-menu .zoom-slider-container {
+  .display-mode-menu .zoom-slider-container,
+  .zoom-slider-container {
     display: none;
   }
 }
