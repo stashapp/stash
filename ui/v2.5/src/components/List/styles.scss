@@ -916,6 +916,8 @@ input[type="range"].zoom-slider {
 }
 
 .filtered-list-toolbar {
+  align-items: center;
+  gap: 0.5rem;
   justify-content: center;
   margin-bottom: 0.5rem;
 
@@ -932,10 +934,6 @@ input[type="range"].zoom-slider {
       justify-content: flex-end;
     }
   }
-
-  .btn.display-mode-select {
-    margin-left: 0.5rem;
-  }
 }
 
 .sidebar-pane .filtered-list-toolbar {
@@ -944,10 +942,6 @@ input[type="range"].zoom-slider {
   & > .btn-group {
     align-items: baseline;
   }
-}
-
-.search-term-input {
-  margin-right: 0.5rem;
 }
 
 .custom-field-filter {
