@@ -20,11 +20,11 @@ class MediaSessionPlugin extends videojs.getPlugin("plugin") {
   }
 
   // manually set poster since it's only set on useEffect
-  public setMetadata(title: string, studioName: string, poster: string): void {
+  public setMetadata(title: string, artist: string, poster: string): void {
     if ("mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title,
-        artist: studioName,
+        artist,
         artwork: [
           {
             src: poster || this.player.poster() || "",

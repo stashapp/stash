@@ -882,11 +882,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (!player) return;
 
       // set up mediasession plugin
+      // get performer names as array
+      const performers = scene?.performers.map((p) => p.name).join(", ");
       player
         .mediaSession()
         .setMetadata(
           scene?.title ?? "Stash",
-          scene?.studio?.name ?? "Stash",
+          scene?.studio?.name ?? performers ?? "Stash",
           scene.paths.screenshot || ""
         );
     }, [getPlayer, scene]);
