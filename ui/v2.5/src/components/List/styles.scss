@@ -93,7 +93,8 @@
 
 // hide zoom slider in xs viewport
 @include media-breakpoint-down(xs) {
-  .display-mode-menu .zoom-slider-container {
+  .display-mode-menu .zoom-slider-container,
+  .zoom-slider-container {
     display: none;
   }
 }
@@ -916,6 +917,8 @@ input[type="range"].zoom-slider {
 }
 
 .filtered-list-toolbar {
+  align-items: center;
+  gap: 0.5rem;
   justify-content: center;
   margin-bottom: 0.5rem;
 
@@ -933,8 +936,10 @@ input[type="range"].zoom-slider {
     }
   }
 
-  .btn.display-mode-select {
-    margin-left: 0.5rem;
+  // set the width of the zoom-slider-container to prevent buttons moving when
+  // the slider appears/disappears
+  .zoom-slider-container {
+    min-width: 60px;
   }
 }
 
@@ -944,10 +949,6 @@ input[type="range"].zoom-slider {
   & > .btn-group {
     align-items: baseline;
   }
-}
-
-.search-term-input {
-  margin-right: 0.5rem;
 }
 
 .custom-field-filter {

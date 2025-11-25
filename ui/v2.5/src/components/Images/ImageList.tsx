@@ -464,7 +464,6 @@ export const ImageList: React.FC<IImageList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

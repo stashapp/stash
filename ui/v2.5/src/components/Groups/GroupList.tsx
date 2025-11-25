@@ -226,7 +226,6 @@ export const GroupList: React.FC<IGroupList> = ({
       selectable={selectable}
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

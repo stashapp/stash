@@ -138,7 +138,6 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

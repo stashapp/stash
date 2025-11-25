@@ -1,4 +1,3 @@
-import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
   useEffect,
@@ -23,17 +22,14 @@ import {
 import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
-import { FormattedMessage, useIntl } from "react-intl";
-import { SavedFilterDropdown } from "./SavedFilterList";
+import { useIntl } from "react-intl";
 import {
   faCaretDown,
   faCaretUp,
   faCheck,
   faRandom,
 } from "@fortawesome/free-solid-svg-icons";
-import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
-import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { useStopWheelScroll } from "src/utils/form";
 import { ISortByOption } from "src/models/list-filter/filter-options";
@@ -317,110 +313,4 @@ export const SortBySelect: React.FC<{
       )}
     </Dropdown>
   );
-};
-
-interface IListFilterProps {
-  onFilterUpdate: (newFilter: ListFilterModel) => void;
-  filter: ListFilterModel;
-  view?: View;
-  openFilterDialog: () => void;
-}
-
-export const ListFilter: React.FC<IListFilterProps> = ({
-  onFilterUpdate,
-  filter,
-  openFilterDialog,
-  view,
-}) => {
-  const filterOptions = filter.options;
-
-  useEffect(() => {
-    Mousetrap.bind("r", () => onReshuffleRandomSort());
-
-    return () => {
-      Mousetrap.unbind("r");
-    };
-  });
-
-  function onChangePageSize(pp: number) {
-    const newFilter = cloneDeep(filter);
-    newFilter.itemsPerPage = pp;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }
-
-  function onChangeSortDirection() {
-    const newFilter = cloneDeep(filter);
-    if (filter.sortDirection === SortDirectionEnum.Asc) {
-      newFilter.sortDirection = SortDirectionEnum.Desc;
-    } else {
-      newFilter.sortDirection = SortDirectionEnum.Asc;
-    }
-
-    onFilterUpdate(newFilter);
-  }
-
-  function onChangeSortBy(eventKey: string | null) {
-    const newFilter = cloneDeep(filter);
-    newFilter.sortBy = eventKey ?? undefined;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }
-
-  function onReshuffleRandomSort() {
-    const newFilter = cloneDeep(filter);
-    newFilter.currentPage = 1;
-    newFilter.randomSeed = -1;
-    onFilterUpdate(newFilter);
-  }
-
-  function render() {
-    return (
-      <>
-        <div className="d-flex">
-          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-        </div>
-
-        <ButtonGroup className="mr-2">
-          <SavedFilterDropdown
-            filter={filter}
-            onSetFilter={(f) => {
-              onFilterUpdate(f);
-            }}
-            view={view}
-          />
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="filter-tooltip">
-                <FormattedMessage id="search_filter.name" />
-              </Tooltip>
-            }
-          >
-            <FilterButton
-              onClick={() => openFilterDialog()}
-              count={filter.count()}
-            />
-          </OverlayTrigger>
-        </ButtonGroup>
-
-        <SortBySelect
-          className="mr-2"
-          sortBy={filter.sortBy}
-          sortDirection={filter.sortDirection}
-          options={filterOptions.sortByOptions}
-          onChangeSortBy={onChangeSortBy}
-          onChangeSortDirection={onChangeSortDirection}
-          onReshuffleRandomSort={onReshuffleRandomSort}
-        />
-
-        <PageSizeSelector
-          pageSize={filter.itemsPerPage}
-          setPageSize={onChangePageSize}
-        />
-      </>
-    );
-  }
-
-  return render();
 };

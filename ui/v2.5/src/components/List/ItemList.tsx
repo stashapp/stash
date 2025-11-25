@@ -44,6 +44,8 @@ import {
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
 import { ConfigurationContext } from "src/hooks/Config";
+import { useZoomKeybinds } from "./ZoomSlider";
+import { DisplayMode } from "src/models/list-filter/types";
 
 interface IFilteredItemList<T extends QueryResult, E extends IHasID = IHasID> {
   filterStateProps: IFilterStateHook;
@@ -113,7 +115,6 @@ export function useFilteredItemList<
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
-  zoomable?: boolean;
   otherOperations?: IItemListOperation<T>[];
   renderContent: (
     result: T,
@@ -145,7 +146,6 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
 ) => {
   const {
     view,
-    zoomable,
     otherOperations,
     renderContent,
     renderEditDialog,
@@ -215,6 +215,15 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     onSelectNone,
     pages,
     showEditFilter,
+  });
+
+  const zoomable =
+    filter.displayMode === DisplayMode.Grid ||
+    filter.displayMode === DisplayMode.Wall;
+
+  useZoomKeybinds({
+    zoomIndex: zoomable ? filter.zoomIndex : undefined,
+    onChangeZoom: (zoom) => updateFilter(filter.setZoom(zoom)),
   });
 
   useEffect(() => {
