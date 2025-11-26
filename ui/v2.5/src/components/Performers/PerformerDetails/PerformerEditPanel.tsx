@@ -321,6 +321,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       newIDs?.push({
         endpoint: (scraper as IStashBox).endpoint,
         stash_id: remoteSiteID,
+        updated_at: new Date().toISOString(),
       });
       formik.setFieldValue("stash_ids", newIDs);
     }
@@ -571,29 +572,22 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScraper(undefined);
   }
 
-  function onStashIDSelected(stashId: string, endpoint: string) {
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+
     // Check if StashID with this endpoint already exists
     const existingIndex = formik.values.stash_ids.findIndex(
-      (s) => s.endpoint === endpoint
+      (s) => s.endpoint === item.endpoint
     );
 
     let newStashIDs;
     if (existingIndex >= 0) {
       // Replace existing StashID
       newStashIDs = [...formik.values.stash_ids];
-      newStashIDs[existingIndex] = {
-        endpoint,
-        stash_id: stashId,
-      };
+      newStashIDs[existingIndex] = item;
     } else {
       // Add new StashID
-      newStashIDs = [
-        ...formik.values.stash_ids,
-        {
-          endpoint,
-          stash_id: stashId,
-        },
-      ];
+      newStashIDs = [...formik.values.stash_ids, item];
     }
 
     formik.setFieldValue("stash_ids", newStashIDs);
@@ -691,10 +685,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {maybeRenderScrapeDialog()}
       {isStashIDSearchOpen && (
         <StashBoxIDSearchModal
-          entityType="performer"
           stashBoxes={stashConfig?.general.stashBoxes ?? []}
-          onHide={() => setIsStashIDSearchOpen(false)}
-          onSelectItem={onStashIDSelected}
+          excludedStashBoxEndpoints={formik.values.stash_ids.map(
+            (s) => s.endpoint
+          )}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
         />
       )}
 
@@ -742,15 +740,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderStashIDsField(
           "stash_ids",
           "performers",
-          undefined,
+          "stash_ids",
           undefined,
           <Button
             variant="success"
             className="mr-2 py-0"
             onClick={() => setIsStashIDSearchOpen(true)}
             disabled={!stashConfig?.general.stashBoxes?.length}
+            title={intl.formatMessage({ id: "actions.add_stash_id" })}
           >
-            <Icon icon={faPlus} id="actions.add" />
+            <Icon icon={faPlus} />
           </Button>
         )}
 
