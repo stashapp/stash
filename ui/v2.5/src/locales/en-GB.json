@@ -315,6 +315,10 @@
         "description": "Directory location for SQLite database file backups",
         "heading": "Backup Directory Path"
       },
+      "delete_trash_path": {
+        "description": "Path where deleted files will be moved to instead of being permanently deleted. Leave empty to permanently delete files.",
+        "heading": "Trash Path"
+      },
       "blobs_path": {
         "description": "Where in the filesystem to store binary data. Applicable only when using the Filesystem blob storage type. WARNING: changing this requires manually moving existing data.",
         "heading": "Binary data filesystem path"
@@ -907,6 +911,7 @@
     "clear_play_history_confirm": "Are you sure you want to clear the play history?",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
+    "delete_alert_to_trash": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be moved to trash:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
     "delete_entity_simple_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}?} other {Are you sure you want to delete these {pluralEntity}?}}",
