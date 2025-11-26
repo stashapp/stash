@@ -364,7 +364,7 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
 }
 
-// If neither ids nor names are set, tag all items
+// If neither ids, names, nor stash_ids are set, tag all items
 type StashBoxBatchTagInput struct {
 	// Stash endpoint to use for the tagging - deprecated - use StashBoxEndpoint
 	Endpoint         *int    `json:"endpoint"`
@@ -375,11 +375,11 @@ type StashBoxBatchTagInput struct {
 	Refresh bool `json:"refresh"`
 	// If batch adding studios, should their parent studios also be created?
 	CreateParent bool `json:"createParent"`
-	// If set, only tag these ids
+	// If set, tag with these ids. Takes precedence over names and stash_ids
 	Ids []string `json:"ids"`
-	// If set, only tag these names
+	// If set, and ids is not set, tag by these names
 	Names []string `json:"names"`
-	// If set, only tag these stash ids from stash-box
+	// If set, and ids is not set, tag by these stash-box IDs
 	StashIDs []string `json:"stash_ids"`
 	// If set, only tag these performer ids
 	//
