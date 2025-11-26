@@ -685,20 +685,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return renderField("tag_ids", title, tagsControl());
   }
 
-  function renderStashIDSearchButton() {
-    return (
-      <Form.Group controlId="stash_id_search" className="ml-label">
-        <Button
-          variant="secondary"
-          onClick={() => setIsStashIDSearchOpen(true)}
-          disabled={!stashConfig?.general.stashBoxes?.length}
-        >
-          <FormattedMessage id="actions.add" />
-        </Button>
-      </Form.Group>
-    );
-  }
-
   return (
     <>
       {renderScrapeModal()}
@@ -753,23 +739,20 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("details", "textarea")}
         {renderTagsField()}
 
-        {formik.values.stash_ids.length === 0
-          ? renderStashIDsField(
-              "stash_ids",
-              "performers",
-              undefined,
-              undefined,
-              <Button
-                variant="secondary"
-                onClick={() => setIsStashIDSearchOpen(true)}
-                disabled={!stashConfig?.general.stashBoxes?.length}
-              >
-                <FormattedMessage id="actions.add" />
-              </Button>
-            )
-          : renderStashIDsField("stash_ids", "performers")}
-
-        {formik.values.stash_ids.length > 0 && renderStashIDSearchButton()}
+        {renderStashIDsField(
+          "stash_ids",
+          "performers",
+          undefined,
+          undefined,
+          <Button
+            variant="success"
+            className="mr-2 py-0"
+            onClick={() => setIsStashIDSearchOpen(true)}
+            disabled={!stashConfig?.general.stashBoxes?.length}
+          >
+            <Icon icon={faPlus} id="actions.add" />
+          </Button>
+        )}
 
         <hr />
 
