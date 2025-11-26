@@ -71,7 +71,8 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
-	if t.stashID != nil {
+	switch {
+	case t.stashID != nil:
 		performer, err = client.FindPerformerByID(ctx, *t.stashID)
 
 		if performer != nil && performer.RemoteMergedIntoId != nil {
@@ -85,7 +86,7 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 				performer = mergedPerformer
 			}
 		}
-	} else if t.performer != nil {
+	case t.performer != nil:
 		var remoteID string
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.Performer
@@ -121,7 +122,7 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 				}
 			}
 		}
-	} else if t.name != nil {
+	case t.name != nil:
 		performer, err = client.FindPerformerByName(ctx, *t.name)
 	}
 
@@ -297,9 +298,10 @@ func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*m
 
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
-	if t.stashID != nil {
+	switch {
+	case t.stashID != nil:
 		studio, err = client.FindStudio(ctx, *t.stashID)
-	} else if t.studio != nil {
+	case t.studio != nil:
 		var remoteID string
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			if !t.studio.StashIDs.Loaded() {
@@ -321,7 +323,7 @@ func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*m
 		if remoteID != "" {
 			studio, err = client.FindStudio(ctx, remoteID)
 		}
-	} else if t.name != nil {
+	case t.name != nil:
 		studio, err = client.FindStudio(ctx, *t.name)
 	}
 
