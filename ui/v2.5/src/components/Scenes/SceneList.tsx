@@ -73,6 +73,7 @@ import { Icon } from "../Shared/Icon";
 import useFocus from "src/utils/focus";
 import { useZoomKeybinds } from "../List/ZoomSlider";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
+import { FilterTags } from "../List/FilterTags";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -470,7 +471,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const history = useHistory();
 
   const searchFocus = useFocus();
-  const [, setSearchFocus] = searchFocus;
 
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
@@ -748,8 +748,9 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 focus={searchFocus}
               />
             </Sidebar>
-            <SidebarPaneContent>
-              
+            <SidebarPaneContent
+              onSidebarToggle={() => setShowSidebar(!showSidebar)}
+            >
               <FilteredListToolbar
                 filter={filter}
                 listSelect={listSelect}
@@ -760,6 +761,13 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 operationComponent={operations}
                 view={view}
                 zoomable
+              />
+
+              <FilterTags
+                criteria={filter.criteria}
+                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onRemoveCriterion={removeCriterion}
+                onRemoveAll={clearAllCriteria}
               />
 
               <div className="pagination-index-container">
@@ -789,15 +797,17 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
               </LoadedContent>
 
               {totalCount > filter.itemsPerPage && (
-                <div className="pagination-footer">
-                  <Pagination
-                    itemsPerPage={filter.itemsPerPage}
-                    currentPage={filter.currentPage}
-                    totalItems={totalCount}
-                    metadataByline={metadataByline}
-                    onChangePage={setPage}
-                    pagePopupPlacement="top"
-                  />
+                <div className="pagination-footer-container">
+                  <div className="pagination-footer">
+                    <Pagination
+                      itemsPerPage={filter.itemsPerPage}
+                      currentPage={filter.currentPage}
+                      totalItems={totalCount}
+                      metadataByline={metadataByline}
+                      onChangePage={setPage}
+                      pagePopupPlacement="top"
+                    />
+                  </div>
                 </div>
               )}
             </SidebarPaneContent>

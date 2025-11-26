@@ -837,6 +837,36 @@ button.btn.favorite-button {
   }
 }
 
+.sidebar-toggle-button-container {
+  height: 100%;
+  position: absolute;
+
+  .sidebar-toggle-button {
+    border-bottom: 1px solid $secondary;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 10px;
+    border-right: 1px solid $secondary;
+    border-top: 1px solid $secondary;
+    border-top-left-radius: 0;
+    border-top-right-radius: 10px;
+    margin-left: -15px;
+    opacity: 0.5;
+    position: sticky;
+    top: calc($navbar-height + 0.5rem);
+    z-index: 10;
+
+    @include media-breakpoint-down(sm) {
+      top: 0.5rem;
+    }
+  }
+}
+
+.sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+  .sidebar-toggle-button {
+    margin-left: -0.5rem;
+  }
+}
+
 .sidebar-toolbar {
   // TODO - use different colours for sidebar and toolbar
   background-color: $body-bg;

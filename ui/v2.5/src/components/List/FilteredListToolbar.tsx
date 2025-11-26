@@ -111,7 +111,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
       onEdit={onEdit}
       onDelete={onDelete}
     />
-  )
+  );
 
   return (
     <ButtonToolbar
