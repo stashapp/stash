@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
@@ -37,9 +38,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	// Populate a new performer from the input
 	newPerformer := models.NewPerformer()
 
-	newPerformer.Name = input.Name
+	newPerformer.Name = strings.TrimSpace(input.Name)
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
-	newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
+	newPerformer.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.AliasList))
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
@@ -62,17 +63,17 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.URLs = models.NewRelatedStrings([]string{})
 	if input.URL != nil {
-		newPerformer.URLs.Add(*input.URL)
+		newPerformer.URLs.Add(strings.TrimSpace(*input.URL))
 	}
 	if input.Twitter != nil {
-		newPerformer.URLs.Add(utils.URLFromHandle(*input.Twitter, twitterURL))
+		newPerformer.URLs.Add(utils.URLFromHandle(strings.TrimSpace(*input.Twitter), twitterURL))
 	}
 	if input.Instagram != nil {
-		newPerformer.URLs.Add(utils.URLFromHandle(*input.Instagram, instagramURL))
+		newPerformer.URLs.Add(utils.URLFromHandle(strings.TrimSpace(*input.Instagram), instagramURL))
 	}
 
 	if input.Urls != nil {
-		newPerformer.URLs.Add(input.Urls...)
+		newPerformer.URLs.Add(stringslice.TrimSpace(input.Urls)...)
 	}
 
 	var err error
