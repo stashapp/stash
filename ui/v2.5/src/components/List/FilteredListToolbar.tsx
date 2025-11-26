@@ -78,6 +78,7 @@ export interface IFilteredListToolbar {
   onEdit?: () => void;
   onDelete?: () => void;
   operations?: IListFilterOperation[];
+  operationComponent?: React.ReactNode;
   zoomable?: boolean;
 }
 
@@ -90,6 +91,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   onEdit,
   onDelete,
   operations,
+  operationComponent,
   zoomable = false,
 }) => {
   const filterOptions = filter.options;
@@ -99,6 +101,17 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   });
   const { selectedIds, onSelectAll, onSelectNone } = listSelect;
   const hasSelection = selectedIds.size > 0;
+
+  const renderOperations = operationComponent ?? (
+    <ListOperationButtons
+      onSelectAll={onSelectAll}
+      onSelectNone={onSelectNone}
+      otherOperations={operations}
+      itemsSelected={selectedIds.size > 0}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
+  )
 
   return (
     <ButtonToolbar
@@ -147,14 +160,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
         </>
       )}
 
-      <ListOperationButtons
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        otherOperations={operations}
-        itemsSelected={selectedIds.size > 0}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
+      {renderOperations}
 
       <ListViewButtonGroup
         displayMode={filter.displayMode}
