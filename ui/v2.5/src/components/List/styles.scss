@@ -979,14 +979,6 @@ input[type="range"].zoom-slider {
 }
 
 .sidebar {
-  // make controls slightly larger on mobile
-  // @include media-breakpoint-down(xs) {
-  //   .btn,
-  //   .form-control {
-  //     font-size: 1.25rem;
-  //   }
-  // }
-
   .sidebar-search-container {
     display: flex;
     margin-bottom: 0.5rem;
@@ -1076,7 +1068,7 @@ input[type="range"].zoom-slider {
 }
 
 // hide the search input field if the sidebar is open on smaller screens
-@media (max-width: 1400px) {
+@media (min-width: 576px) and (max-width: 1400px) {
   .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .search-term-input {
     display: none;
   }
