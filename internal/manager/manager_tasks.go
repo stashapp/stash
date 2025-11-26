@@ -395,7 +395,7 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		logger.Infof("Initiating stash-box batch performer tag")
 
-		var tasks []StashBoxBatchTagTask
+		var tasks []Task
 
 		// The gocritic linter wants to turn this ifElseChain into a switch.
 		// however, such a switch would contain quite large blocks for each section
@@ -424,12 +424,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 							// Check if the user wants to refresh existing or new items
 							hasStashID := performer.StashIDs.ForEndpoint(box.Endpoint) != nil
 							if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
-								tasks = append(tasks, StashBoxBatchTagTask{
+								tasks = append(tasks, &stashBoxBatchPerformerTagTask{
 									performer:      performer,
-									refresh:        input.Refresh,
 									box:            box,
 									excludedFields: input.ExcludeFields,
-									taskType:       Performer,
 								})
 							}
 						} else {
@@ -446,12 +444,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 			for i := range input.StashIDs {
 				stashID := input.StashIDs[i]
 				if len(stashID) > 0 {
-					tasks = append(tasks, StashBoxBatchTagTask{
+					tasks = append(tasks, &stashBoxBatchPerformerTagTask{
 						stashID:        &stashID,
-						refresh:        true, // use refresh mode to query by ID
 						box:            box,
 						excludedFields: input.ExcludeFields,
-						taskType:       Performer,
 					})
 				}
 			}
@@ -464,12 +460,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 			for i := range namesToUse {
 				name := namesToUse[i]
 				if len(name) > 0 {
-					tasks = append(tasks, StashBoxBatchTagTask{
+					tasks = append(tasks, &stashBoxBatchPerformerTagTask{
 						name:           &name,
-						refresh:        false,
 						box:            box,
 						excludedFields: input.ExcludeFields,
-						taskType:       Performer,
 					})
 				}
 			}
@@ -500,12 +494,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 						return fmt.Errorf("error loading stash ids for performer %s: %v", performer.Name, err)
 					}
 
-					tasks = append(tasks, StashBoxBatchTagTask{
+					tasks = append(tasks, &stashBoxBatchPerformerTagTask{
 						performer:      performer,
-						refresh:        input.Refresh,
 						box:            box,
 						excludedFields: input.ExcludeFields,
-						taskType:       Performer,
 					})
 				}
 				return nil
@@ -523,7 +515,7 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.Sta
 		logger.Infof("Starting stash-box batch operation for %d performers", len(tasks))
 
 		for _, task := range tasks {
-			progress.ExecuteTask(task.Description(), func() {
+			progress.ExecuteTask(task.GetDescription(), func() {
 				task.Start(ctx)
 			})
 
@@ -540,7 +532,7 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		logger.Infof("Initiating stash-box batch studio tag")
 
-		var tasks []StashBoxBatchTagTask
+		var tasks []Task
 
 		// The gocritic linter wants to turn this ifElseChain into a switch.
 		// however, such a switch would contain quite large blocks for each section
@@ -564,13 +556,11 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 							// Check if the user wants to refresh existing or new items
 							hasStashID := studio.StashIDs.ForEndpoint(box.Endpoint) != nil
 							if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
-								tasks = append(tasks, StashBoxBatchTagTask{
+								tasks = append(tasks, &stashBoxBatchStudioTagTask{
 									studio:         studio,
-									refresh:        input.Refresh,
 									createParent:   input.CreateParent,
 									box:            box,
 									excludedFields: input.ExcludeFields,
-									taskType:       Studio,
 								})
 							}
 						} else {
@@ -587,13 +577,11 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 			for i := range input.StashIDs {
 				stashID := input.StashIDs[i]
 				if len(stashID) > 0 {
-					tasks = append(tasks, StashBoxBatchTagTask{
+					tasks = append(tasks, &stashBoxBatchStudioTagTask{
 						stashID:        &stashID,
-						refresh:        true, // use refresh mode to query by ID
 						createParent:   input.CreateParent,
 						box:            box,
 						excludedFields: input.ExcludeFields,
-						taskType:       Studio,
 					})
 				}
 			}
@@ -601,13 +589,11 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 			for i := range input.Names {
 				name := input.Names[i]
 				if len(name) > 0 {
-					tasks = append(tasks, StashBoxBatchTagTask{
+					tasks = append(tasks, &stashBoxBatchStudioTagTask{
 						name:           &name,
-						refresh:        false,
 						createParent:   input.CreateParent,
 						box:            box,
 						excludedFields: input.ExcludeFields,
-						taskType:       Studio,
 					})
 				}
 			}
@@ -634,13 +620,11 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 				}
 
 				for _, studio := range studios {
-					tasks = append(tasks, StashBoxBatchTagTask{
+					tasks = append(tasks, &stashBoxBatchStudioTagTask{
 						studio:         studio,
-						refresh:        input.Refresh,
 						createParent:   input.CreateParent,
 						box:            box,
 						excludedFields: input.ExcludeFields,
-						taskType:       Studio,
 					})
 				}
 				return nil
@@ -658,7 +642,7 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 		logger.Infof("Starting stash-box batch operation for %d studios", len(tasks))
 
 		for _, task := range tasks {
-			progress.ExecuteTask(task.Description(), func() {
+			progress.ExecuteTask(task.GetDescription(), func() {
 				task.Start(ctx)
 			})
 

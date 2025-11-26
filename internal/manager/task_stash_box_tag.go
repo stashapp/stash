@@ -14,66 +14,15 @@ import (
 	"github.com/stashapp/stash/pkg/studio"
 )
 
-type StashBoxTagTaskType int
-
-const (
-	Performer StashBoxTagTaskType = iota
-	Studio
-)
-
-type StashBoxBatchTagTask struct {
+type stashBoxBatchPerformerTagTask struct {
 	box            *models.StashBox
 	name           *string
 	stashID        *string
 	performer      *models.Performer
-	studio         *models.Studio
-	refresh        bool
-	createParent   bool
 	excludedFields []string
-	taskType       StashBoxTagTaskType
 }
 
-func (t *StashBoxBatchTagTask) Start(ctx context.Context) {
-	switch t.taskType {
-	case Performer:
-		t.stashBoxPerformerTag(ctx)
-	case Studio:
-		t.stashBoxStudioTag(ctx)
-	default:
-		logger.Errorf("Error starting batch task, unknown task_type %d", t.taskType)
-	}
-}
-
-func (t *StashBoxBatchTagTask) Description() string {
-	switch t.taskType {
-	case Performer:
-		var name string
-		switch {
-		case t.name != nil:
-			name = *t.name
-		case t.stashID != nil:
-			name = *t.stashID
-		case t.performer != nil:
-			name = t.performer.Name
-		}
-		return fmt.Sprintf("Tagging performer %s from stash-box", name)
-	case Studio:
-		var name string
-		switch {
-		case t.name != nil:
-			name = *t.name
-		case t.stashID != nil:
-			name = *t.stashID
-		case t.studio != nil:
-			name = t.studio.Name
-		}
-		return fmt.Sprintf("Tagging studio %s from stash-box", name)
-	default:
-		return fmt.Sprintf("Unknown tagging task type %d from stash-box", t.taskType)
-	}
-}
-
-func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
+func (t *stashBoxBatchPerformerTagTask) Start(ctx context.Context) {
 	performer, err := t.findStashBoxPerformer(ctx)
 	if err != nil {
 		logger.Errorf("Error fetching performer data from stash-box: %v", err)
@@ -85,7 +34,6 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 		excluded[field] = true
 	}
 
-	// performer will have a value if pulling from Stash-box by Stash ID or name was successful
 	if performer != nil {
 		t.processMatchedPerformer(ctx, performer, excluded)
 	} else {
@@ -102,7 +50,20 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 	}
 }
 
-func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*models.ScrapedPerformer, error) {
+func (t *stashBoxBatchPerformerTagTask) GetDescription() string {
+	var name string
+	switch {
+	case t.name != nil:
+		name = *t.name
+	case t.stashID != nil:
+		name = *t.stashID
+	case t.performer != nil:
+		name = t.performer.Name
+	}
+	return fmt.Sprintf("Tagging performer %s from stash-box", name)
+}
+
+func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Context) (*models.ScrapedPerformer, error) {
 	var performer *models.ScrapedPerformer
 	var err error
 
@@ -110,32 +71,39 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
-	if t.refresh {
-		var remoteID string
+	if t.stashID != nil {
+		performer, err = client.FindPerformerByID(ctx, *t.stashID)
 
-		// If stashID is provided, use it directly
-		if t.stashID != nil {
-			remoteID = *t.stashID
-		} else if t.performer != nil {
-			// Otherwise, get the stashID from the performer
-			if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-				qb := r.Performer
-
-				if !t.performer.StashIDs.Loaded() {
-					err = t.performer.LoadStashIDs(ctx, qb)
-					if err != nil {
-						return err
-					}
-				}
-				for _, id := range t.performer.StashIDs.List() {
-					if id.Endpoint == t.box.Endpoint {
-						remoteID = id.StashID
-					}
-				}
-				return nil
-			}); err != nil {
+		if performer != nil && performer.RemoteMergedIntoId != nil {
+			mergedPerformer, err := t.handleMergedPerformer(ctx, performer, client)
+			if err != nil {
 				return nil, err
 			}
+
+			if mergedPerformer != nil {
+				logger.Infof("Performer id %s merged into %s, updating local performer", *t.stashID, *performer.RemoteMergedIntoId)
+				performer = mergedPerformer
+			}
+		}
+	} else if t.performer != nil {
+		var remoteID string
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+			qb := r.Performer
+
+			if !t.performer.StashIDs.Loaded() {
+				err = t.performer.LoadStashIDs(ctx, qb)
+				if err != nil {
+					return err
+				}
+			}
+			for _, id := range t.performer.StashIDs.List() {
+				if id.Endpoint == t.box.Endpoint {
+					remoteID = id.StashID
+				}
+			}
+			return nil
+		}); err != nil {
+			return nil, err
 		}
 
 		if remoteID != "" {
@@ -153,14 +121,8 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 				}
 			}
 		}
-	} else {
-		var name string
-		if t.name != nil {
-			name = *t.name
-		} else {
-			name = t.performer.Name
-		}
-		performer, err = client.FindPerformerByName(ctx, name)
+	} else if t.name != nil {
+		performer, err = client.FindPerformerByName(ctx, *t.name)
 	}
 
 	if performer != nil {
@@ -174,7 +136,7 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 	return performer, err
 }
 
-func (t *StashBoxBatchTagTask) handleMergedPerformer(ctx context.Context, performer *models.ScrapedPerformer, client *stashbox.Client) (mergedPerformer *models.ScrapedPerformer, err error) {
+func (t *stashBoxBatchPerformerTagTask) handleMergedPerformer(ctx context.Context, performer *models.ScrapedPerformer, client *stashbox.Client) (mergedPerformer *models.ScrapedPerformer, err error) {
 	mergedPerformer, err = client.FindPerformerByID(ctx, *performer.RemoteMergedIntoId)
 	if err != nil {
 		return nil, fmt.Errorf("loading merged performer %s from stashbox", *performer.RemoteMergedIntoId)
@@ -189,8 +151,7 @@ func (t *StashBoxBatchTagTask) handleMergedPerformer(ctx context.Context, perfor
 	return mergedPerformer, nil
 }
 
-func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool) {
-	// Refreshing an existing performer
+func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool) {
 	if t.performer != nil {
 		storedID, _ := strconv.Atoi(*p.StoredID)
 
@@ -200,7 +161,6 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 			return
 		}
 
-		// Start the transaction and update the performer
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Performer
@@ -212,9 +172,6 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
 
-			// if we're setting the performer's aliases, and not the name, then filter out the name
-			// from the aliases to avoid duplicates
-			// add the name to the aliases if it's not already there
 			if partial.Aliases != nil && !partial.Name.Set {
 				partial.Aliases.Values = sliceutil.Filter(partial.Aliases.Values, func(s string) bool {
 					return s != t.performer.Name
@@ -247,7 +204,6 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 			logger.Infof("Updated performer %s", *p.Name)
 		}
 	} else if (t.name != nil || t.stashID != nil) && p.Name != nil {
-		// Creating a new performer
 		newPerformer := p.ToPerformer(t.box.Endpoint, excluded)
 		image, err := p.GetImage(ctx, excluded)
 		if err != nil {
@@ -283,7 +239,16 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 	}
 }
 
-func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
+type stashBoxBatchStudioTagTask struct {
+	box            *models.StashBox
+	name           *string
+	stashID        *string
+	studio         *models.Studio
+	createParent   bool
+	excludedFields []string
+}
+
+func (t *stashBoxBatchStudioTagTask) Start(ctx context.Context) {
 	studio, err := t.findStashBoxStudio(ctx)
 	if err != nil {
 		logger.Errorf("Error fetching studio data from stash-box: %v", err)
@@ -295,7 +260,6 @@ func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
 		excluded[field] = true
 	}
 
-	// studio will have a value if pulling from Stash-box by Stash ID or name was successful
 	if studio != nil {
 		t.processMatchedStudio(ctx, studio, excluded)
 	} else {
@@ -312,7 +276,20 @@ func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
 	}
 }
 
-func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.ScrapedStudio, error) {
+func (t *stashBoxBatchStudioTagTask) GetDescription() string {
+	var name string
+	switch {
+	case t.name != nil:
+		name = *t.name
+	case t.stashID != nil:
+		name = *t.stashID
+	case t.studio != nil:
+		name = t.studio.Name
+	}
+	return fmt.Sprintf("Tagging studio %s from stash-box", name)
+}
+
+func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*models.ScrapedStudio, error) {
 	var studio *models.ScrapedStudio
 	var err error
 
@@ -320,43 +297,32 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
-	if t.refresh {
+	if t.stashID != nil {
+		studio, err = client.FindStudio(ctx, *t.stashID)
+	} else if t.studio != nil {
 		var remoteID string
-
-		// If stashID is provided, use it directly
-		if t.stashID != nil {
-			remoteID = *t.stashID
-		} else if t.studio != nil {
-			// Otherwise, get the stashID from the studio
-			if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-				if !t.studio.StashIDs.Loaded() {
-					err = t.studio.LoadStashIDs(ctx, r.Studio)
-					if err != nil {
-						return err
-					}
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+			if !t.studio.StashIDs.Loaded() {
+				err = t.studio.LoadStashIDs(ctx, r.Studio)
+				if err != nil {
+					return err
 				}
-				for _, id := range t.studio.StashIDs.List() {
-					if id.Endpoint == t.box.Endpoint {
-						remoteID = id.StashID
-					}
-				}
-				return nil
-			}); err != nil {
-				return nil, err
 			}
+			for _, id := range t.studio.StashIDs.List() {
+				if id.Endpoint == t.box.Endpoint {
+					remoteID = id.StashID
+				}
+			}
+			return nil
+		}); err != nil {
+			return nil, err
 		}
 
 		if remoteID != "" {
 			studio, err = client.FindStudio(ctx, remoteID)
 		}
-	} else {
-		var name string
-		if t.name != nil {
-			name = *t.name
-		} else {
-			name = t.studio.Name
-		}
-		studio, err = client.FindStudio(ctx, name)
+	} else if t.name != nil {
+		studio, err = client.FindStudio(ctx, *t.name)
 	}
 
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
@@ -374,8 +340,7 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 	return studio, err
 }
 
-func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *models.ScrapedStudio, excluded map[string]bool) {
-	// Refreshing an existing studio
+func (t *stashBoxBatchStudioTagTask) processMatchedStudio(ctx context.Context, s *models.ScrapedStudio, excluded map[string]bool) {
 	if t.studio != nil {
 		storedID, _ := strconv.Atoi(*s.StoredID)
 
@@ -392,7 +357,6 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 			return
 		}
 
-		// Start the transaction and update the studio
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
@@ -426,7 +390,6 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 			logger.Infof("Updated studio %s", s.Name)
 		}
 	} else if (t.name != nil || t.stashID != nil) && s.Name != "" {
-		// Creating a new studio
 		if s.Parent != nil && t.createParent {
 			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {
@@ -441,7 +404,6 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 			return
 		}
 
-		// Start the transaction and save the studio
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
@@ -470,9 +432,8 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 	}
 }
 
-func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *models.ScrapedStudio, excluded map[string]bool) error {
+func (t *stashBoxBatchStudioTagTask) processParentStudio(ctx context.Context, parent *models.ScrapedStudio, excluded map[string]bool) error {
 	if parent.StoredID == nil {
-		// The parent needs to be created
 		newParentStudio := parent.ToStudio(t.box.Endpoint, excluded)
 
 		image, err := parent.GetImage(ctx, excluded)
@@ -481,7 +442,6 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 			return err
 		}
 
-		// Start the transaction and save the studio
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
@@ -507,7 +467,6 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		}
 		return err
 	} else {
-		// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
 		storedID, _ := strconv.Atoi(*parent.StoredID)
 
 		image, err := parent.GetImage(ctx, excluded)
@@ -516,7 +475,6 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 			return err
 		}
 
-		// Start the transaction and update the studio
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
