@@ -980,12 +980,12 @@ input[type="range"].zoom-slider {
 
 .sidebar {
   // make controls slightly larger on mobile
-  @include media-breakpoint-down(xs) {
-    .btn,
-    .form-control {
-      font-size: 1.25rem;
-    }
-  }
+  // @include media-breakpoint-down(xs) {
+  //   .btn,
+  //   .form-control {
+  //     font-size: 1.25rem;
+  //   }
+  // }
 
   .sidebar-search-container {
     display: flex;

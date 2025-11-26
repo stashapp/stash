@@ -816,21 +816,6 @@ button.btn.favorite-button {
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      width: 100%;
-    }
-
-    &.hide-sidebar .sidebar {
-      margin-left: -100%;
-    }
-
-    &.hide-sidebar > :nth-child(2) {
-      width: 100%;
-    }
-  }
-  @include media-breakpoint-down(xs) {
-    display: block;
-
-    .sidebar {
       margin-bottom: $navbar-height;
       margin-top: 0;
     }
