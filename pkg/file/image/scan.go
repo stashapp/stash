@@ -9,7 +9,6 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
-	_ "github.com/gen2brain/avif"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
