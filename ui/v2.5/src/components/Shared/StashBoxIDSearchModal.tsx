@@ -20,7 +20,7 @@ import {
 import { useToast } from "src/hooks/Toast";
 import { stringToGender } from "src/utils/gender";
 
-const CLASSNAME = "StashBoxSearchModal";
+const CLASSNAME = "StashBoxIDSearchModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
 const CLASSNAME_LIST_CONTAINER = `${CLASSNAME_LIST}-container`;
 
@@ -34,10 +34,7 @@ interface IProps {
   entityType: EntityType;
   stashBoxes: GQL.StashBox[];
   onHide: () => void;
-  onSelectItem: (
-    item: GQL.ScrapedPerformer | GQL.ScrapedStudio | GQL.ScrapedScene,
-    endpoint: string
-  ) => void;
+  onSelectItem: (stashId: string, endpoint: string) => void;
 }
 
 // Shared component for rendering images
@@ -241,7 +238,7 @@ export const SceneSearchResult: React.FC<ISceneResultProps> = ({ scene }) => {
 };
 
 // Main Modal Component
-export const StashBoxSearchModal: React.FC<IProps> = ({
+export const StashBoxIDSearchModal: React.FC<IProps> = ({
   entityType,
   stashBoxes,
   onHide,
@@ -317,8 +314,8 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
       | GQL.ScrapedStudioDataFragment
       | GQL.ScrapedSceneDataFragment
   ) {
-    if (selectedStashBox) {
-      onSelectItem(item, selectedStashBox.endpoint);
+    if (selectedStashBox && item.remote_site_id) {
+      onSelectItem(item.remote_site_id, selectedStashBox.endpoint);
       onHide();
     }
   }
@@ -467,4 +464,4 @@ export const StashBoxSearchModal: React.FC<IProps> = ({
   );
 };
 
-export default StashBoxSearchModal;
+export default StashBoxIDSearchModal;

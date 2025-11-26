@@ -34,9 +34,9 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
-import StashBoxSearchModal from "src/components/Shared/StashBoxSearchModal";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 import cx from "classnames";
-import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt, faPlus } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
 import {
@@ -571,38 +571,32 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScraper(undefined);
   }
 
-  function onStashIDSelected(
-    item: GQL.ScrapedPerformer | GQL.ScrapedStudio | GQL.ScrapedScene,
-    endpoint: string
-  ) {
-    const scrapedItem = item as GQL.ScrapedPerformer;
-    if (scrapedItem.remote_site_id) {
-      // Check if StashID with this endpoint already exists
-      const existingIndex = formik.values.stash_ids.findIndex(
-        (s) => s.endpoint === endpoint
-      );
+  function onStashIDSelected(stashId: string, endpoint: string) {
+    // Check if StashID with this endpoint already exists
+    const existingIndex = formik.values.stash_ids.findIndex(
+      (s) => s.endpoint === endpoint
+    );
 
-      let newStashIDs;
-      if (existingIndex >= 0) {
-        // Replace existing StashID
-        newStashIDs = [...formik.values.stash_ids];
-        newStashIDs[existingIndex] = {
+    let newStashIDs;
+    if (existingIndex >= 0) {
+      // Replace existing StashID
+      newStashIDs = [...formik.values.stash_ids];
+      newStashIDs[existingIndex] = {
+        endpoint,
+        stash_id: stashId,
+      };
+    } else {
+      // Add new StashID
+      newStashIDs = [
+        ...formik.values.stash_ids,
+        {
           endpoint,
-          stash_id: scrapedItem.remote_site_id,
-        };
-      } else {
-        // Add new StashID
-        newStashIDs = [
-          ...formik.values.stash_ids,
-          {
-            endpoint,
-            stash_id: scrapedItem.remote_site_id,
-          },
-        ];
-      }
-
-      formik.setFieldValue("stash_ids", newStashIDs);
+          stash_id: stashId,
+        },
+      ];
     }
+
+    formik.setFieldValue("stash_ids", newStashIDs);
   }
 
   function renderButtons(classNames: string) {
@@ -710,7 +704,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {renderScrapeModal()}
       {maybeRenderScrapeDialog()}
       {isStashIDSearchOpen && (
-        <StashBoxSearchModal
+        <StashBoxIDSearchModal
           entityType="performer"
           stashBoxes={stashConfig?.general.stashBoxes ?? []}
           onHide={() => setIsStashIDSearchOpen(false)}
