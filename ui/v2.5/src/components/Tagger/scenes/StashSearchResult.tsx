@@ -21,7 +21,7 @@ import { TagSelect } from "src/components/Shared/Select";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import * as FormUtils from "src/utils/form";
-import { stringToGender } from "src/utils/gender";
+import { genderList, stringToGender } from "src/utils/gender";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
@@ -237,17 +237,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     saveScene,
   } = React.useContext(TaggerStateContext);
 
+  const performerGenders = config.performerGenders || genderList;
+
   const performers = useMemo(
     () =>
       scene.performers?.filter((p) => {
-        if (!config.showMales) {
-          return (
-            !p.gender || stringToGender(p.gender, true) !== GQL.GenderEnum.Male
-          );
-        }
-        return true;
+        const gender = p.gender ? stringToGender(p.gender, true) : undefined;
+        return !gender || performerGenders.includes(gender);
       }) ?? [],
-    [config, scene]
+    [scene, performerGenders]
   );
 
   const { createPerformerModal, createStudioModal } = React.useContext(
