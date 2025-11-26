@@ -35,6 +35,8 @@ models:
     model: github.com/stashapp/stash/internal/api.BoolMap
   PluginConfigMap:
     model: github.com/stashapp/stash/internal/api.PluginConfigMap
+  File:
+    model: github.com/stashapp/stash/internal/api.File
   VideoFile:
     fields:
       # override float fields - #1572

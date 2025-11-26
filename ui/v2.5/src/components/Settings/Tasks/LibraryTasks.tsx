@@ -7,7 +7,7 @@ import {
   mutateMetadataGenerate,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
@@ -123,7 +123,7 @@ export const LibraryTasks: React.FC = () => {
 
   type DialogOpenState = typeof dialogOpen;
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const [configRead, setConfigRead] = useState(false);
 
   useEffect(() => {
@@ -158,30 +158,6 @@ export const LibraryTasks: React.FC = () => {
       if (configuration?.defaults.generate) {
         const { generate } = configuration.defaults;
         setGenerateOptions(withoutTypename(generate));
-      }
-
-      if (configuration?.general) {
-        const { general } = configuration;
-        setGenerateOptions((existing) => ({
-          ...existing,
-          previewOptions: {
-            ...existing.previewOptions,
-            previewSegments:
-              general.previewSegments ??
-              existing.previewOptions?.previewSegments,
-            previewSegmentDuration:
-              general.previewSegmentDuration ??
-              existing.previewOptions?.previewSegmentDuration,
-            previewExcludeStart:
-              general.previewExcludeStart ??
-              existing.previewOptions?.previewExcludeStart,
-            previewExcludeEnd:
-              general.previewExcludeEnd ??
-              existing.previewOptions?.previewExcludeEnd,
-            previewPreset:
-              general.previewPreset ?? existing.previewOptions?.previewPreset,
-          },
-        }));
       }
 
       setConfigRead(true);
@@ -291,7 +267,30 @@ export const LibraryTasks: React.FC = () => {
 
   async function onGenerateClicked() {
     try {
-      await mutateMetadataGenerate(generateOptions);
+      // insert preview options here instead of loading them
+      const general = configuration?.general;
+
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        previewOptions: {
+          ...generateOptions.previewOptions,
+          previewSegments:
+            general?.previewSegments ??
+            generateOptions.previewOptions?.previewSegments,
+          previewSegmentDuration:
+            general?.previewSegmentDuration ??
+            generateOptions.previewOptions?.previewSegmentDuration,
+          previewExcludeStart:
+            general?.previewExcludeStart ??
+            generateOptions.previewOptions?.previewExcludeStart,
+          previewExcludeEnd:
+            general?.previewExcludeEnd ??
+            generateOptions.previewOptions?.previewExcludeEnd,
+          previewPreset:
+            general?.previewPreset ??
+            generateOptions.previewOptions?.previewPreset,
+        },
+      });
       Toast.success(
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },

@@ -6,6 +6,11 @@ fragment TagData on Tag {
   aliases
   ignore_auto_tag
   favorite
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
   image_path
   scene_count
   scene_count_all: scene_count(depth: -1)

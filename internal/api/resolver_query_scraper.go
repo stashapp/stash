@@ -201,7 +201,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 		}
 
 		// TODO - this should happen after any scene is scraped
-		if err := r.matchScenesRelationships(ctx, ret, *source.StashBoxEndpoint); err != nil {
+		if err := r.matchScenesRelationships(ctx, ret, b.Endpoint); err != nil {
 			return nil, err
 		}
 	default:
@@ -245,7 +245,7 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 		// just flatten the slice and pass it in
 		flat := sliceutil.Flatten(ret)
 
-		if err := r.matchScenesRelationships(ctx, flat, *source.StashBoxEndpoint); err != nil {
+		if err := r.matchScenesRelationships(ctx, flat, b.Endpoint); err != nil {
 			return nil, err
 		}
 
@@ -335,7 +335,7 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		if len(ret) > 0 {
 			if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 				for _, studio := range ret {
-					if err := match.ScrapedStudioHierarchy(ctx, r.repository.Studio, studio, *source.StashBoxEndpoint); err != nil {
+					if err := match.ScrapedStudioHierarchy(ctx, r.repository.Studio, studio, b.Endpoint); err != nil {
 						return err
 					}
 				}

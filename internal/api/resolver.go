@@ -95,6 +95,12 @@ func (r *Resolver) VideoFile() VideoFileResolver {
 func (r *Resolver) ImageFile() ImageFileResolver {
 	return &imageFileResolver{r}
 }
+func (r *Resolver) BasicFile() BasicFileResolver {
+	return &basicFileResolver{r}
+}
+func (r *Resolver) Folder() FolderResolver {
+	return &folderResolver{r}
+}
 func (r *Resolver) SavedFilter() SavedFilterResolver {
 	return &savedFilterResolver{r}
 }
@@ -125,6 +131,8 @@ type tagResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
 type imageFileResolver struct{ *Resolver }
+type basicFileResolver struct{ *Resolver }
+type folderResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
 type pluginResolver struct{ *Resolver }
 type configResultResolver struct{ *Resolver }

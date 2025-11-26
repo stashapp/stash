@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useState,
-  useMemo,
-  MouseEvent,
-  useContext,
-} from "react";
+import React, { useCallback, useState, useMemo, MouseEvent } from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -20,10 +14,10 @@ import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
-import Gallery from "react-photo-gallery";
+import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ImageGridCard } from "./ImageGridCard";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
@@ -35,11 +29,26 @@ interface IImageWallProps {
   currentPage: number;
   pageCount: number;
   handleImageOpen: (index: number) => void;
+  zoomIndex: number;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
-  const { configuration } = useContext(ConfigurationContext);
+const zoomWidths = [280, 340, 480, 640];
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
+
+const ImageWall: React.FC<IImageWallProps> = ({
+  images,
+  zoomIndex,
+  handleImageOpen,
+}) => {
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   let photos: {
     src: string;
@@ -57,8 +66,8 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
         image.paths.preview != ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files?.[0]?.width ?? 0,
+      height: image.visual_files?.[0]?.height ?? 0,
       tabIndex: index,
       key: image.id,
       loading: "lazy",
@@ -76,21 +85,53 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 300;
+    let preferredSize = zoomWidths[zoomIndex];
     let columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
   }
 
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
+
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps) => {
+      // #6165 - only use targetRowHeight in row direction
+      const maxHeight =
+        props.direction === "column"
+          ? props.photo.height
+          : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor;
+      return <ImageWallItem {...props} maxHeight={maxHeight} />;
+    },
+    [targetRowHeight]
+  );
+
   return (
-    <div className="gallery">
+    <div className="gallery" ref={containerRef}>
       {photos.length ? (
         <Gallery
           photos={photos}
-          renderImage={ImageWallItem}
+          renderImage={renderImage}
           onClick={showLightboxOnClick}
           margin={uiConfig?.imageWallOptions?.margin!}
           direction={uiConfig?.imageWallOptions?.direction!}
           columns={columns}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -211,6 +252,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
         currentPage={filter.currentPage}
         pageCount={pageCount}
         handleImageOpen={handleImageOpen}
+        zoomIndex={filter.zoomIndex}
       />
     );
   }
@@ -416,7 +458,6 @@ export const ImageList: React.FC<IImageList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

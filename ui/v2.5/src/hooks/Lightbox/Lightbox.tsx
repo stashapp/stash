@@ -19,7 +19,7 @@ import usePageVisibility from "../PageVisibility";
 import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
-import { ConfigurationContext } from "../Config";
+import { useConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
@@ -44,11 +44,13 @@ import {
   faSearchMinus,
   faTimes,
   faBars,
+  faImages,
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useDebounce } from "../debounce";
 import { isVideo } from "src/utils/visualFile";
 import { imageTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -62,6 +64,8 @@ const CLASSNAME_OPTIONS_INLINE = `${CLASSNAME_OPTIONS}-inline`;
 const CLASSNAME_RIGHT = `${CLASSNAME_HEADER}-right`;
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
 const CLASSNAME_FOOTER_LEFT = `${CLASSNAME_FOOTER}-left`;
+const CLASSNAME_FOOTER_CENTER = `${CLASSNAME_FOOTER}-center`;
+const CLASSNAME_FOOTER_RIGHT = `${CLASSNAME_FOOTER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
@@ -150,7 +154,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const [interfaceLocalForage, setInterfaceLocalForage] =
     useInterfaceLocalForage();
 
@@ -451,6 +455,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     React.createElement(image.paths.preview != "" ? "video" : "img", {
       loop: image.paths.preview != "",
       autoPlay: image.paths.preview != "",
+      playsInline: image.paths.preview != "",
       src:
         image.paths.preview != ""
           ? image.paths.preview ?? ""
@@ -933,14 +938,30 @@ export const LightboxComponent: React.FC<IProps> = ({
               </>
             )}
           </div>
-          <div>
+          <div className={CLASSNAME_FOOTER_CENTER}>
             {currentImage && (
-              <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
-                {title ?? ""}
-              </Link>
+              <>
+                <Link
+                  className="image-link"
+                  to={`/images/${currentImage.id}`}
+                  onClick={() => close()}
+                >
+                  {title ?? ""}
+                </Link>
+                {currentImage.galleries?.length ? (
+                  <Link
+                    className="image-gallery-link"
+                    to={`/galleries/${currentImage.galleries[0].id}`}
+                    onClick={() => close()}
+                  >
+                    <Icon icon={faImages} />
+                    {galleryTitle(currentImage.galleries[0])}
+                  </Link>
+                ) : null}
+              </>
             )}
           </div>
-          <div></div>
+          <div className={CLASSNAME_FOOTER_RIGHT}></div>
         </div>
       </>
     );

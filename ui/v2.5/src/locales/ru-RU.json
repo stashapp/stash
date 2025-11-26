@@ -128,7 +128,7 @@
         "assign_stashid_to_parent_studio": "Присвоить Stash ID для текущей родительской студии и обновить метаданные",
         "add_manual_date": "Добавить дату вручную",
         "add_o": "Добавить О",
-        "add_play": "Добавить проигрывание",
+        "add_play": "Добавить воспроизведение",
         "choose_date": "Выбрать дату",
         "clean_generated": "Очистить сгенерированные файлы",
         "clear_date_data": "Очистить информацию о дате",
@@ -139,7 +139,19 @@
         "reset_cover": "Восстановить обложку по умолчанию",
         "set_cover": "Установить как обложку",
         "add_sub_groups": "Добавить подгруппы",
-        "remove_from_containing_group": "Удалить из группы"
+        "remove_from_containing_group": "Удалить из группы",
+        "reset_play_duration": "Сбросить время воспроизведения",
+        "reset_resume_time": "Сбросить точку продолжения",
+        "show_results": "Показать результаты",
+        "sidebar": {
+            "toggle": "Показать/скрыть боковую панель",
+            "open": "Открыть панель",
+            "close": "Закрыть панель"
+        },
+        "show_count_results": "Показать {count} результат(ов)",
+        "play": "Воспроизвести",
+        "load": "Загрузить",
+        "load_filter": "Загрузить фильтр"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -183,7 +195,10 @@
             "show_male_label": "Показывать актеров мужского пола",
             "source": "Источник",
             "mark_organized_label": "Отметить как Организованную при сохранении",
-            "mark_organized_desc": "Сразу же отметить сцену как Организованную после нажатия кнопки Сохранить."
+            "mark_organized_desc": "Сразу же отметить сцену как Организованную после нажатия кнопки Сохранить.",
+            "errors": {
+                "blacklist_duplicate": "Дублировать элемент чёрного списка"
+            }
         },
         "noun_query": "Запрос",
         "results": {
@@ -435,7 +450,9 @@
             "endpoint": "Конечная точка",
             "graphql_endpoint": "Конечная точка GraphQL",
             "name": "Имя",
-            "title": "Конечные точки Stash-box"
+            "title": "Конечные точки Stash-box",
+            "max_requests_per_minute": "Максимальное количество запросов в минуту",
+            "max_requests_per_minute_description": "Использует значение по умолчанию {defaultValue}, если задано 0"
         },
         "system": {
             "transcoding": "Транскодирование"
@@ -541,7 +558,8 @@
                 "sprites": "Спрайты Сцен",
                 "transcodes": "Транскоды Сцен"
             },
-            "rescan": "Пересканировать файлы"
+            "rescan": "Пересканировать файлы",
+            "rescan_tooltip": "Повторно просканировать все файлы в пути. Используется для обновления метаданных и сканирования ZIP-файлов."
         },
         "tools": {
             "scene_duplicate_checker": "Проверка сцен на дубликаты",
@@ -560,7 +578,9 @@
                 "whitespace_chars": "Символы пробелов",
                 "whitespace_chars_desc": "Эти символы будут заменены пробелами в названии"
             },
-            "scene_tools": "Инструменты видео"
+            "scene_tools": "Инструменты видео",
+            "graphql_playground": "Песочница GraphQL",
+            "heading": "Инструменты"
         },
         "ui": {
             "abbreviate_counters": {
@@ -694,7 +714,7 @@
                 }
             },
             "scene_list": {
-                "heading": "Сетка",
+                "heading": "Сеточный вид",
                 "options": {
                     "show_studio_as_text": "Отображать названия студии как текст"
                 }
@@ -720,7 +740,8 @@
                         "description": "Кнопка VR будет показана только для сцен с данным тегом.",
                         "heading": "Тег VR"
                     },
-                    "disable_mobile_media_auto_rotate": "Отключить автоповорот в полноэкранном режиме на мобильных устройствах"
+                    "disable_mobile_media_auto_rotate": "Отключить автоповорот в полноэкранном режиме на мобильных устройствах",
+                    "show_range_markers": "Показать маркеры диапазона"
                 }
             },
             "scene_wall": {
@@ -883,7 +904,6 @@
             "destination": "Назначение",
             "source": "Источник"
         },
-        "overwrite_filter_confirm": "Вы уверены, что хотите перезаписать существующий сохраненный запрос {entityName}?",
         "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",
         "reassign_files": {
             "destination": "Переназначить на"
@@ -944,7 +964,9 @@
         },
         "clear_play_history_confirm": "Вы уверены, что хотите удалить историю просмотра?",
         "performers_found": "{count} исполнителей найдено",
-        "clear_o_history_confirm": "Вы уверены, что хотите очистить историю О?"
+        "clear_o_history_confirm": "Вы уверены, что хотите очистить историю О?",
+        "overwrite_filter_warning": "Сохранённый фильтр «{entityName}» будет перезаписан.",
+        "set_default_filter_confirm": "Вы уверены, что хотите установить этот фильтр по умолчанию?"
     },
     "dimensions": "Размер",
     "director": "Режиссер",
@@ -954,7 +976,8 @@
         "list": "Список",
         "tagger": "Теггер",
         "unknown": "Неизвестный",
-        "wall": "Стена"
+        "wall": "Стена",
+        "label_current": "Режим отображения: {current}"
     },
     "donate": "Пожертвование",
     "dupe_check": {
@@ -1070,7 +1093,8 @@
     "last_played_at": "Воспроизводился в последний раз",
     "library": "Библиотека",
     "loading": {
-        "generic": "Загрузка…"
+        "generic": "Загрузка…",
+        "plugins": "Загрузка плагинов…"
     },
     "marker_count": "Количество маркеров",
     "markers": "Маркеры",
@@ -1097,14 +1121,14 @@
     "name": "Имя",
     "new": "Новый",
     "none": "Отсутствует",
-    "o_counter": "О-Счетчик",
     "operations": "Операции",
     "organized": "Организован",
     "pagination": {
         "first": "Первая",
         "last": "Последняя",
         "next": "Следующая",
-        "previous": "Предыдущий"
+        "previous": "Предыдущий",
+        "current_total": "{current} из {total}"
     },
     "parent_of": "Родитель {children}",
     "parent_studios": "Родительские студии",
@@ -1182,7 +1206,9 @@
         "name": "Фильтр",
         "saved_filters": "Сохраненные фильтры",
         "update_filter": "Обновить фильтр",
-        "edit_filter": "Изменить фильтр"
+        "edit_filter": "Изменить фильтр",
+        "more_filter_criteria": "+ещё {count}",
+        "search_term": "Поисковый запрос"
     },
     "seconds": "Секунды",
     "settings": "Настройки",
@@ -1204,7 +1230,9 @@
         "errors": {
             "something_went_wrong": "О, нет! Что-то пошло не так!",
             "something_went_wrong_description": "Если это похоже на проблему с вашими входными данными, нажмите «Назад», чтобы исправить их. В противном случае сообщите об ошибке на {githubLink} или обратитесь за помощью в {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Что-то пошло не так при настройке вашей системы. Мы получили следующую ошибку: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Что-то пошло не так при настройке вашей системы. Мы получили следующую ошибку: {error}",
+            "unexpected_error": "Произошла непредвиденная ошибка: {error}",
+            "unable_to_retrieve_system_status": "Не удалось получить статус системы: {error}"
         },
         "folder": {
             "file_path": "Путь файла",
@@ -1432,7 +1460,15 @@
         "image_index_greater_than_zero": "Индекс изображения должен быть больше 0",
         "header": "Ошибка",
         "loading_type": "Ошибка загрузки {type}",
-        "something_went_wrong": "Что-то пошло по пизде."
+        "something_went_wrong": "Что-то пошло по пизде.",
+        "custom_fields": {
+            "field_name_length": "Имя поля должно содержать меньше 65 символов",
+            "field_name_required": "Имя поля обязательно",
+            "field_name_whitespace": "Имя поля не должно начинаться или заканчиваться пробелом",
+            "duplicate_field": "Имя поля должно быть уникальным"
+        },
+        "invalid_javascript_string": "Недопустимый код JavaScript: {error}",
+        "invalid_json_string": "Недопустимая JSON-строка: {error}"
     },
     "date_format": "ГГГГ-ММ-ДД",
     "datetime_format": "ГГГГ-ММ-ДД ЧЧ:ММ",
@@ -1451,7 +1487,8 @@
         "date_invalid_form": "${path} должен быть в формате ГГГГ-ММ-ДД",
         "blank": "${path} не должен быть пустым",
         "required": "${path} обязательное поле",
-        "unique": "${path} должен быть уникальным"
+        "unique": "${path} должен быть уникальным",
+        "end_time_before_start_time": "Время окончания должно быть больше или равно времени начала"
     },
     "unknown_date": "Неизвестная дата",
     "urls": "URLы",
@@ -1471,5 +1508,43 @@
     "age_on_date": "{age} на момент съемки",
     "sub_group_count": "Кол-во подгрупп",
     "sub_group": "Подгруппа",
-    "studio_tags": "Теги студии"
+    "studio_tags": "Теги студии",
+    "criterion_modifier_values": {
+        "any": "Любой",
+        "any_of": "Любой из",
+        "none": "Отсутствует",
+        "only": "Только"
+    },
+    "containing_groups": "Группы, в которые входит объект",
+    "custom_fields": {
+        "criteria_format_string": "criterion} (пользовательское поле) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (пользовательское поле) {modifierString} {valueString} (и ещё {others})",
+        "field": "Поле",
+        "title": "Настраиваемые поля",
+        "value": "Значение"
+    },
+    "containing_group": "Содержащая группа",
+    "containing_group_count": "Количество содержащих групп",
+    "time_end": "Время окончания",
+    "eta": "Ожидаемое время завершения",
+    "login": {
+        "username": "Имя пользователя",
+        "password": "Пароль",
+        "login": "Логин",
+        "internal_error": "Произошла внутренняя ошибка. Подробности смотрите в логах.",
+        "invalid_credentials": "Неверное имя пользователя или пароль"
+    },
+    "groups": "Группы",
+    "include_sub_tag_content": "Учитывать содержимое вложенных тегов",
+    "sort_name": "Сортировать по имени",
+    "include_sub_group_content": "Включать содержимое подгрупп",
+    "include_sub_studio_content": "Включить данные дочерних студий",
+    "group": "Группа",
+    "group_count": "Количество групп",
+    "group_scene_number": "Номер сцены",
+    "include_sub_groups": "Включать подгруппы",
+    "studio_count": "Количество студий",
+    "sub_group_of": "Входит в группу {parent}",
+    "sub_group_order": "Сортировка подгрупп",
+    "sub_groups": "Подгруппы"
 }

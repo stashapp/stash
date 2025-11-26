@@ -755,8 +755,6 @@ button.btn.favorite-button {
   }
 }
 
-$sidebar-width: 250px;
-
 .sidebar-pane {
   display: flex;
 
@@ -774,8 +772,9 @@ $sidebar-width: 250px;
   .sidebar {
     bottom: 0;
     left: 0;
-    margin-top: 4rem;
+    margin-top: $navbar-height;
     overflow-y: auto;
+    padding-top: 0.5rem;
     position: fixed;
     scrollbar-gutter: stable;
     top: 0;
@@ -785,6 +784,14 @@ $sidebar-width: 250px;
 
   &.hide-sidebar .sidebar {
     margin-left: -$sidebar-width;
+  }
+
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
   }
 
   > :nth-child(2) {
@@ -798,7 +805,7 @@ $sidebar-width: 250px;
     }
   }
 
-  @include media-breakpoint-up(xl) {
+  @include media-breakpoint-up(md) {
     transition: margin-left 0.1s;
 
     &:not(.hide-sidebar) {
@@ -890,8 +897,7 @@ $sticky-header-height: calc(50px + 3.3rem);
     padding-left: 0;
     position: sticky;
 
-    // sticky detail header is 50px + 3.3rem
-    top: calc(50px + 3.3rem);
+    top: calc($sticky-detail-header-height + $navbar-height);
 
     .sidebar-toolbar {
       padding-top: 15px;
@@ -904,12 +910,12 @@ $sticky-header-height: calc(50px + 3.3rem);
   }
 
   // on smaller viewports we want the sidebar to overlap content
-  @include media-breakpoint-down(lg) {
+  @include media-breakpoint-down(sm) {
     .sidebar-pane:not(.hide-sidebar) .sidebar {
       margin-right: -$sidebar-width;
     }
 
-    .sidebar-pane > :nth-child(2) {
+    .sidebar-pane > .sidebar-pane-content {
       transition: none;
     }
   }
@@ -918,7 +924,6 @@ $sticky-header-height: calc(50px + 3.3rem);
       flex: 100% 0 0;
       height: calc(100vh - 4rem);
       max-height: calc(100vh - 4rem);
-      padding-top: 0;
       top: 0;
     }
 
@@ -930,17 +935,114 @@ $sticky-header-height: calc(50px + 3.3rem);
       display: none;
     }
   }
-  @include media-breakpoint-up(xl) {
+  @include media-breakpoint-up(md) {
     .sidebar-pane:not(.hide-sidebar) {
       > :nth-child(2) {
         margin-left: 0;
       }
     }
+  }
 
-    .sidebar-pane.hide-sidebar {
-      > :nth-child(2) {
-        padding-left: 15px;
-      }
+  .sidebar-pane.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 15px;
     }
+  }
+}
+
+// Duration slider styles
+.duration-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.double-range-input-labels {
+  color: $text-color;
+  display: flex;
+  font-size: 0.875rem;
+  font-weight: 500;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+
+  input[type="text"] {
+    &:first-child {
+      text-align: left;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
+}
+
+.double-range-sliders {
+  height: 22px;
+  position: relative;
+}
+
+.double-range-slider {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-moz-range-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-ms-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+}
+
+.double-range-slider-min {
+  z-index: 1;
+}
+
+input[type="range"].double-range-slider-max {
+  z-index: 2;
+
+  // combining these into one rule doesn't work for some reason
+  &::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+
+  &::-moz-range-track {
+    background: transparent;
+  }
+
+  &::-ms-track {
+    background: transparent;
   }
 }

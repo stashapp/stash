@@ -821,7 +821,6 @@
             "destination": "Destination",
             "source": "Kilde"
         },
-        "overwrite_filter_confirm": "Er du sikker på, at du vil overskrive eksisterende gemte forespørgsel {entityName}?",
         "scene_gen": {
             "force_transcodes": "Tving omkodningsgenerering",
             "force_transcodes_tooltip": "Som standard genereres omkoder kun, når videofilen ikke understøttes i browseren. Når det er aktiveret, genereres omkoder, selv når videofilen ser ud til at være understøttet i browseren.",
@@ -1033,7 +1032,6 @@
     "name": "Navn",
     "new": "Ny",
     "none": "Ingen",
-    "o_counter": "O-tæller",
     "operations": "Operationer",
     "organized": "Organiseret",
     "pagination": {

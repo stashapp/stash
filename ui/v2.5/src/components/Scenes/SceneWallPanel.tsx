@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import Gallery, {
@@ -12,7 +6,7 @@ import Gallery, {
   PhotoProps,
   RenderImageProps,
 } from "react-photo-gallery";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -26,14 +20,22 @@ interface IScenePhoto {
   onError?: (photo: PhotoProps<IScenePhoto>) => void;
 }
 
-export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
-  props: RenderImageProps<IScenePhoto>
-) => {
+interface IExtraProps {
+  maxHeight: number;
+}
+
+export const SceneWallItem: React.FC<
+  RenderImageProps<IScenePhoto> & IExtraProps
+> = (props: RenderImageProps<IScenePhoto> & IExtraProps) => {
   const intl = useIntl();
 
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
+
+  const height = Math.min(props.maxHeight, props.photo.height);
+  const zoomFactor = height / props.photo.height;
+  const width = props.photo.width * zoomFactor;
 
   const [active, setActive] = useState(false);
 
@@ -72,8 +74,8 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
       role="button"
       style={{
         ...divStyle,
-        width: props.photo.width,
-        height: props.photo.height,
+        width,
+        height,
       }}
     >
       <ImagePreview
@@ -81,10 +83,11 @@ export const SceneWallItem: React.FC<RenderImageProps<IScenePhoto>> = (
         loop={video}
         muted={!video || !playSound || !active}
         autoPlay={video}
+        playsInline={video}
         key={props.photo.key}
         src={props.photo.src}
-        width={props.photo.width}
-        height={props.photo.height}
+        width={width}
+        height={height}
         alt={props.photo.alt}
         onMouseEnter={() => setActive(true)}
         onMouseLeave={() => setActive(false)}
@@ -126,15 +129,27 @@ function getDimensions(s: GQL.SlimSceneDataFragment) {
 interface ISceneWallProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
+  zoomIndex: number;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
 const SceneGallery = Gallery as unknown as GalleryI<IScenePhoto>;
 
-const defaultTargetRowHeight = 250;
+const breakpointZoomHeights = [
+  { minWidth: 576, heights: [100, 120, 240, 360] },
+  { minWidth: 768, heights: [120, 160, 240, 480] },
+  { minWidth: 1200, heights: [120, 160, 240, 300] },
+  { minWidth: 1400, heights: [160, 240, 300, 480] },
+];
 
-const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
+const SceneWall: React.FC<ISceneWallProps> = ({
+  scenes,
+  sceneQueue,
+  zoomIndex,
+}) => {
   const history = useHistory();
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const margin = 3;
   const direction = "row";
@@ -186,12 +201,41 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
     return Math.round(columnCount);
   }
 
-  const renderImage = useCallback((props: RenderImageProps<IScenePhoto>) => {
-    return <SceneWallItem {...props} />;
-  }, []);
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
+
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps<IScenePhoto>) => {
+      return (
+        <SceneWallItem
+          {...props}
+          maxHeight={
+            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor
+          }
+        />
+      );
+    },
+    [targetRowHeight]
+  );
 
   return (
-    <div className="scene-wall">
+    <div className={`scene-wall`} ref={containerRef}>
       {photos.length ? (
         <SceneGallery
           photos={photos}
@@ -200,7 +244,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
           margin={margin}
           direction={direction}
           columns={columns}
-          targetRowHeight={defaultTargetRowHeight}
+          targetRowHeight={targetRowHeight}
         />
       ) : null}
     </div>
@@ -210,11 +254,15 @@ const SceneWall: React.FC<ISceneWallProps> = ({ scenes, sceneQueue }) => {
 interface ISceneWallPanelProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
+  zoomIndex: number;
 }
 
 export const SceneWallPanel: React.FC<ISceneWallPanelProps> = ({
   scenes,
   sceneQueue,
+  zoomIndex,
 }) => {
-  return <SceneWall scenes={scenes} sceneQueue={sceneQueue} />;
+  return (
+    <SceneWall scenes={scenes} sceneQueue={sceneQueue} zoomIndex={zoomIndex} />
+  );
 };

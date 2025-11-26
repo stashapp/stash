@@ -262,6 +262,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		cfg.SetString(config.Cache, input.CacheLocation)
 	}
 
+	if input.SFWContentMode {
+		cfg.SetBool(config.SFWContentMode, true)
+	}
+
 	if input.StoreBlobsInDatabase {
 		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	} else {
@@ -322,6 +326,11 @@ func (s *Manager) BackupDatabase(download bool) (string, string, error) {
 		backupPath = f.Name()
 		backupName = s.Database.DatabaseBackupPath("")
 		f.Close()
+
+		// delete the temp file so that the backup operation can create it
+		if err := os.Remove(backupPath); err != nil {
+			return "", "", fmt.Errorf("could not remove temporary backup file %v: %w", backupPath, err)
+		}
 	} else {
 		backupDir := s.Config.GetBackupDirectoryPathOrDefault()
 		if backupDir != "" {

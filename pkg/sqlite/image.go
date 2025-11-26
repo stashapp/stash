@@ -177,7 +177,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 	}
 )
@@ -673,6 +673,20 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	table := qb.table()
 	joinTable := performersImagesJoinTable
 	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(imageIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+	table := qb.table()
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).Where(
+		table.Col(studioIDColumn).Eq(studioID),
+	)
 
 	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {

@@ -3,12 +3,14 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 type LogItem struct {
@@ -41,8 +43,8 @@ func NewLogger() *Logger {
 }
 
 // Init initialises the logger based on a logging configuration
-func (log *Logger) Init(logFile string, logOut bool, logLevel string) {
-	var file *os.File
+func (log *Logger) Init(logFile string, logOut bool, logLevel string, logFileMaxSize int) {
+	var logger io.WriteCloser
 	customFormatter := new(logrus.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.ForceColors = true
@@ -57,30 +59,38 @@ func (log *Logger) Init(logFile string, logOut bool, logLevel string) {
 	// the access log colouring not being applied
 	_, _ = customFormatter.Format(logrus.NewEntry(log.logger))
 
+	// if size is 0, disable rotation
 	if logFile != "" {
-		var err error
-		file, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-
-		if err != nil {
-			fmt.Printf("Could not open '%s' for log output due to error: %s\n", logFile, err.Error())
+		if logFileMaxSize == 0 {
+			var err error
+			logger, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "unable to open log file %s: %v\n", logFile, err)
+			}
+		} else {
+			logger = &lumberjack.Logger{
+				Filename: logFile,
+				MaxSize:  logFileMaxSize, // Megabytes
+				Compress: true,
+			}
 		}
 	}
 
-	if file != nil {
+	if logger != nil {
 		if logOut {
 			// log to file separately disabling colours
 			fileFormatter := new(logrus.TextFormatter)
 			fileFormatter.TimestampFormat = customFormatter.TimestampFormat
 			fileFormatter.FullTimestamp = customFormatter.FullTimestamp
 			log.logger.AddHook(&fileLogHook{
-				Writer:    file,
+				Writer:    logger,
 				Formatter: fileFormatter,
 			})
 		} else {
 			// logging to file only
 			// turn off the colouring for the file
 			customFormatter.ForceColors = false
-			log.logger.Out = file
+			log.logger.Out = logger
 		}
 	}
 

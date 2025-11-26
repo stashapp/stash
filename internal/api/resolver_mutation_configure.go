@@ -150,6 +150,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.BackupDirectoryPath, *input.BackupDirectoryPath)
 	}
 
+	existingDeleteTrashPath := c.GetDeleteTrashPath()
+	if input.DeleteTrashPath != nil && existingDeleteTrashPath != *input.DeleteTrashPath {
+		if err := validateDir(config.DeleteTrashPath, *input.DeleteTrashPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.SetString(config.DeleteTrashPath, *input.DeleteTrashPath)
+	}
+
 	existingGeneratedPath := c.GetGeneratedPath()
 	if input.GeneratedPath != nil && existingGeneratedPath != *input.GeneratedPath {
 		if err := validateDir(config.Generated, *input.GeneratedPath, false); err != nil {
@@ -334,6 +343,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		logger.SetLogLevel(*input.LogLevel)
 	}
 
+	if input.LogFileMaxSize != nil && *input.LogFileMaxSize != c.GetLogFileMaxSize() {
+		c.SetInt(config.LogFileMaxSize, *input.LogFileMaxSize)
+	}
+
 	if input.Excludes != nil {
 		for _, r := range input.Excludes {
 			_, err := regexp.Compile(r)
@@ -444,6 +457,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigInterfaceInput) (*ConfigInterfaceResult, error) {
 	c := config.GetInstance()
+
+	r.setConfigBool(config.SFWContentMode, input.SfwContentMode)
 
 	if input.MenuItems != nil {
 		c.SetInterface(config.MenuItems, input.MenuItems)

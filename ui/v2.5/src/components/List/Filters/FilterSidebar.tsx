@@ -1,54 +1,68 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { SidebarSection, SidebarToolbar } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterButton } from "./FilterButton";
 import { SearchTermInput } from "../ListFilter";
 import { SidebarSavedFilterList } from "../SavedFilterList";
 import { View } from "../views";
 import useFocus from "src/utils/focus";
 import ScreenUtils from "src/utils/screen";
 import Mousetrap from "mousetrap";
+import { Button } from "react-bootstrap";
 
-export const FilteredSidebarToolbar: React.FC<{
-  onClose?: () => void;
-}> = ({ onClose, children }) => {
-  return <SidebarToolbar onClose={onClose}>{children}</SidebarToolbar>;
-};
+const savedFiltersSectionID = "saved-filters";
 
 export const FilteredSidebarHeader: React.FC<{
   sidebarOpen: boolean;
-  onClose?: () => void;
   showEditFilter: () => void;
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   view?: View;
-}> = ({ sidebarOpen, onClose, showEditFilter, filter, setFilter, view }) => {
-  const focus = useFocus();
+  focus?: ReturnType<typeof useFocus>;
+}> = ({
+  sidebarOpen,
+  showEditFilter,
+  filter,
+  setFilter,
+  view,
+  focus: providedFocus,
+}) => {
+  const localFocus = useFocus();
+  const focus = providedFocus ?? localFocus;
   const [, setFocus] = focus;
 
   // Set the focus on the input field when the sidebar is opened
-  // Don't do this on mobile devices
+  // Don't do this on touch devices
   useEffect(() => {
-    if (sidebarOpen && !ScreenUtils.isMobile()) {
+    if (sidebarOpen && !ScreenUtils.isTouch()) {
       setFocus();
     }
   }, [sidebarOpen, setFocus]);
 
   return (
     <>
-      <FilteredSidebarToolbar onClose={onClose} />
       <div className="sidebar-search-container">
         <SearchTermInput
           filter={filter}
           onFilterUpdate={setFilter}
           focus={focus}
         />
-        <FilterButton onClick={() => showEditFilter()} filter={filter} />
       </div>
+
+      <div>
+        <Button
+          className="edit-filter-button"
+          size="sm"
+          onClick={() => showEditFilter()}
+        >
+          <FormattedMessage id="search_filter.edit_filter" />
+        </Button>
+      </div>
+
       <SidebarSection
         className="sidebar-saved-filters"
         text={<FormattedMessage id="search_filter.saved_filters" />}
+        sectionID={savedFiltersSectionID}
       >
         <SidebarSavedFilterList
           filter={filter}
@@ -65,20 +79,6 @@ export function useFilteredSidebarKeybinds(props: {
   setShowSidebar: (show: boolean) => void;
 }) {
   const { showSidebar, setShowSidebar } = props;
-
-  // Show the sidebar when the user presses the "/" key
-  useEffect(() => {
-    Mousetrap.bind("/", (e) => {
-      if (!showSidebar) {
-        setShowSidebar(true);
-        e.preventDefault();
-      }
-    });
-
-    return () => {
-      Mousetrap.unbind("/");
-    };
-  }, [showSidebar, setShowSidebar]);
 
   // Hide the sidebar when the user presses the "Esc" key
   useEffect(() => {

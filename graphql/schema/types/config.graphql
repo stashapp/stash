@@ -2,6 +2,8 @@ input SetupInput {
   "Empty to indicate $HOME/.stash/config.yml default"
   configLocation: String!
   stashes: [StashConfigInput!]!
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean
   "Empty to indicate default"
   databaseFile: String!
   "Empty to indicate default"
@@ -67,6 +69,8 @@ input ConfigGeneralInput {
   databasePath: String
   "Path to backup directory"
   backupDirectoryPath: String
+  "Path to trash directory - if set, deleted files will be moved here instead of being permanently deleted"
+  deleteTrashPath: String
   "Path to generated files"
   generatedPath: String
   "Path to import/export files"
@@ -153,6 +157,8 @@ input ConfigGeneralInput {
   logLevel: String
   "Whether to log http access"
   logAccess: Boolean
+  "Maximum log size"
+  logFileMaxSize: Int
   "True if galleries should be created from folders with images"
   createGalleriesFromFolders: Boolean
   "Regex used to identify images as gallery covers"
@@ -187,6 +193,8 @@ type ConfigGeneralResult {
   databasePath: String!
   "Path to backup directory"
   backupDirectoryPath: String!
+  "Path to trash directory - if set, deleted files will be moved here instead of being permanently deleted"
+  deleteTrashPath: String!
   "Path to generated files"
   generatedPath: String!
   "Path to import/export files"
@@ -277,6 +285,8 @@ type ConfigGeneralResult {
   logLevel: String!
   "Whether to log http access"
   logAccess: Boolean!
+  "Maximum log size"
+  logFileMaxSize: Int!
   "Array of video file extensions"
   videoExtensions: [String!]!
   "Array of image file extensions"
@@ -341,6 +351,9 @@ type ConfigImageLightboxResult {
 }
 
 input ConfigInterfaceInput {
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean
+
   "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
 
@@ -407,6 +420,9 @@ type ConfigDisableDropdownCreate {
 }
 
 type ConfigInterfaceResult {
+  "True if SFW content mode is enabled"
+  sfwContentMode: Boolean!
+
   "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
 

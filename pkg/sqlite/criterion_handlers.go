@@ -70,6 +70,17 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func joinedStringCriterionHandler(c *models.StringCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+			stringCriterionHandler(c, column)(ctx, f)
+		}
+	}
+}
+
 func enumCriterionHandler(modifier models.CriterionModifier, values []string, column string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if modifier.IsValid() {
@@ -1030,6 +1041,7 @@ type relatedFilterHandler struct {
 	relatedRepo    repository
 	relatedHandler criterionHandler
 	joinFn         func(f *filterBuilder)
+	directJoin     bool
 }
 
 func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
@@ -1043,15 +1055,21 @@ func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	if h.joinFn != nil {
+		h.joinFn(f)
+	}
+
+	if h.directJoin {
+		// rerun handler using existing filter builder
+		h.relatedHandler.handle(ctx, f)
+		return
+	}
+
 	subQuery := h.relatedRepo.newQuery()
 	selectIDs(&subQuery, subQuery.repository.tableName)
 	if err := subQuery.addFilter(ff); err != nil {
 		f.setError(err)
 		return
-	}
-
-	if h.joinFn != nil {
-		h.joinFn(f)
 	}
 
 	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.args...)

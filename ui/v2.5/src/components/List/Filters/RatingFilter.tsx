@@ -12,7 +12,7 @@ import {
   defaultRatingStarPrecision,
   defaultRatingSystemOptions,
 } from "src/utils/rating";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { RatingCriterion } from "src/models/list-filter/criteria/rating";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
@@ -77,6 +77,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 const any = "any";
@@ -87,6 +88,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -115,7 +117,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
     [noneLabel]
   );
 
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const ratingSystemOptions =
     config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
 
@@ -199,6 +201,7 @@ export const SidebarRatingFilter: React.FC<ISidebarFilter> = ({
         singleValue
         preCandidates={ratingValue === null ? ratingStars : undefined}
         preSelected={ratingValue !== null ? ratingStars : undefined}
+        sectionID={sectionID}
       />
       <div></div>
     </>

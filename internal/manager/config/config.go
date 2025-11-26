@@ -16,9 +16,9 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -42,6 +42,9 @@ const (
 	Username            = "username"
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
+
+	// SFWContentMode mode config key
+	SFWContentMode = "sfw_content_mode"
 
 	FFMpegPath  = "ffmpeg_path"
 	FFProbePath = "ffprobe_path"
@@ -249,13 +252,15 @@ const (
 	DLNAPortDefault = 1338
 
 	// Logging options
-	LogFile          = "logfile"
-	LogOut           = "logout"
-	defaultLogOut    = true
-	LogLevel         = "loglevel"
-	defaultLogLevel  = "Info"
-	LogAccess        = "logaccess"
-	defaultLogAccess = true
+	LogFile               = "logfile"
+	LogOut                = "logout"
+	defaultLogOut         = true
+	LogLevel              = "loglevel"
+	defaultLogLevel       = "Info"
+	LogAccess             = "logaccess"
+	defaultLogAccess      = true
+	LogFileMaxSize        = "logfile_max_size"
+	defaultLogFileMaxSize = 0 // megabytes, default disabled
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
@@ -266,6 +271,9 @@ const (
 	DeleteFileDefault             = "defaults.delete_file"
 	DeleteGeneratedDefault        = "defaults.delete_generated"
 	deleteGeneratedDefaultDefault = true
+
+	// Trash/Recycle Bin options
+	DeleteTrashPath = "delete_trash_path"
 
 	// Desktop Integration Options
 	NoBrowser                           = "nobrowser"
@@ -287,7 +295,7 @@ var (
 	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
-	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
+	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
 )
 
 type MissingConfigError struct {
@@ -628,7 +636,15 @@ func (i *Config) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-// GetStathPaths returns the configured stash library paths.
+// GetSFW returns true if SFW mode is enabled.
+// Default performer images are changed to more agnostic images when enabled.
+func (i *Config) GetSFWContentMode() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return i.getBool(SFWContentMode)
+}
+
+// GetStashPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
 func (i *Config) GetStashPaths() StashConfigs {
@@ -1456,6 +1472,14 @@ func (i *Config) GetDeleteGeneratedDefault() bool {
 	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
 }
 
+func (i *Config) GetDeleteTrashPath() string {
+	return i.getString(DeleteTrashPath)
+}
+
+func (i *Config) SetDeleteTrashPath(value string) {
+	i.SetString(DeleteTrashPath, value)
+}
+
 // GetDefaultIdentifySettings returns the default Identify task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
@@ -1623,6 +1647,16 @@ func (i *Config) GetLogLevel() string {
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Config) GetLogAccess() bool {
 	return i.getBoolDefault(LogAccess, defaultLogAccess)
+}
+
+// GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
+func (i *Config) GetLogFileMaxSize() int {
+	value := i.getInt(LogFileMaxSize)
+	if value < 0 {
+		value = defaultLogFileMaxSize
+	}
+
+	return value
 }
 
 // Max allowed graphql upload size in megabytes

@@ -17,7 +17,7 @@ import {
   useTagCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 import { errorToString } from "src/utils";
 import { mergeStudioStashIDs } from "./utils";
@@ -117,7 +117,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
   const stopping = useRef(false);
 
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
 
   const Scrapers = useListSceneScrapers();
@@ -173,15 +173,40 @@ export const TaggerContext: React.FC = ({ children }) => {
     setSources(stashboxSources.concat(scraperSources));
   }, [Scrapers.data, stashConfig]);
 
+  // set the current source on load
   useEffect(() => {
-    if (sources.length && !currentSource) {
-      setCurrentSource(sources[0]);
+    if (!sources.length || currentSource) {
+      return;
     }
-  }, [sources, currentSource]);
+    // First, see if we have a saved endpoint.
+    if (config.selectedEndpoint) {
+      let source = sources.find(
+        (s) => s.sourceInput.stash_box_endpoint == config.selectedEndpoint
+      );
+      if (source) {
+        setCurrentSource(source);
+        return;
+      }
+    }
+    // Otherwise, just use the first source.
+    setCurrentSource(sources[0]);
+  }, [sources, currentSource, config]);
 
+  // clear the search results when the source changes
   useEffect(() => {
     setSearchResults({});
   }, [currentSource]);
+
+  // keep selected endpoint in config in sync with current source
+  useEffect(() => {
+    const selectedEndpoint = currentSource?.sourceInput.stash_box_endpoint;
+    if (selectedEndpoint && selectedEndpoint !== config.selectedEndpoint) {
+      setConfig({
+        ...config,
+        selectedEndpoint,
+      });
+    }
+  }, [currentSource, config, setConfig]);
 
   function getPendingFingerprints() {
     const endpoint = currentSource?.sourceInput.stash_box_endpoint;
@@ -568,7 +593,12 @@ export const TaggerContext: React.FC = ({ children }) => {
         return {
           ...r,
           performers: r.performers.map((p) => {
-            if (p.name === performer.name) {
+            // Match by remote_site_id if available, otherwise fall back to name
+            const matches = performer.remote_site_id
+              ? p.remote_site_id === performer.remote_site_id
+              : p.name === performer.name;
+
+            if (matches) {
               return {
                 ...p,
                 stored_id: performerID,
@@ -680,15 +710,28 @@ export const TaggerContext: React.FC = ({ children }) => {
           return r;
         }
 
+        let resultStudio = r.studio;
+        if (resultStudio.name === studio.name) {
+          resultStudio = {
+            ...resultStudio,
+            stored_id: studioID,
+          };
+        }
+
+        // #5821 - set the stored_id of the parent studio if it matches too
+        if (resultStudio.parent?.name === studio.name) {
+          resultStudio = {
+            ...resultStudio,
+            parent: {
+              ...resultStudio.parent,
+              stored_id: studioID,
+            },
+          };
+        }
+
         return {
           ...r,
-          studio:
-            r.studio.name === studio.name
-              ? {
-                  ...r.studio,
-                  stored_id: studioID,
-                }
-              : r.studio,
+          studio: resultStudio,
         };
       });
 

@@ -14,10 +14,14 @@ type ScrapedStudio struct {
 	// Set if studio matched
 	StoredID     *string        `json:"stored_id"`
 	Name         string         `json:"name"`
-	URL          *string        `json:"url"`
+	URL          *string        `json:"url"` // deprecated
+	URLs         []string       `json:"urls"`
 	Parent       *ScrapedStudio `json:"parent"`
 	Image        *string        `json:"image"`
 	Images       []string       `json:"images"`
+	Details      *string        `json:"details"`
+	Aliases      *string        `json:"aliases"`
+	Tags         []*ScrapedTag  `json:"tags"`
 	RemoteSiteID *string        `json:"remote_site_id"`
 }
 
@@ -38,8 +42,28 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 		})
 	}
 
-	if s.URL != nil && !excluded["url"] {
-		ret.URL = *s.URL
+	// if URLs are provided, only use those
+	if len(s.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = NewRelatedStrings(s.URLs)
+		}
+	} else {
+		urls := []string{}
+		if s.URL != nil && !excluded["url"] {
+			urls = append(urls, *s.URL)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = NewRelatedStrings(urls)
+		}
+	}
+
+	if s.Details != nil && !excluded["details"] {
+		ret.Details = *s.Details
+	}
+
+	if s.Aliases != nil && *s.Aliases != "" && !excluded["aliases"] {
+		ret.Aliases = NewRelatedStrings(stringslice.FromString(*s.Aliases, ","))
 	}
 
 	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] && !excluded["parent_studio"] {
@@ -74,8 +98,36 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 		ret.Name = NewOptionalString(s.Name)
 	}
 
-	if s.URL != nil && !excluded["url"] {
-		ret.URL = NewOptionalString(*s.URL)
+	if len(s.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = &UpdateStrings{
+				Values: s.URLs,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
+	} else {
+		urls := []string{}
+		if s.URL != nil && !excluded["url"] {
+			urls = append(urls, *s.URL)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = &UpdateStrings{
+				Values: urls,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
+	}
+
+	if s.Details != nil && !excluded["details"] {
+		ret.Details = NewOptionalString(*s.Details)
+	}
+
+	if s.Aliases != nil && !excluded["aliases"] {
+		ret.Aliases = &UpdateStrings{
+			Values: stringslice.FromString(*s.Aliases, ","),
+			Mode:   RelationshipUpdateModeSet,
+		}
 	}
 
 	if s.Parent != nil && !excluded["parent"] {
@@ -395,11 +447,30 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 
 type ScrapedTag struct {
 	// Set if tag matched
-	StoredID *string `json:"stored_id"`
-	Name     string  `json:"name"`
+	StoredID     *string `json:"stored_id"`
+	Name         string  `json:"name"`
+	RemoteSiteID *string `json:"remote_site_id"`
 }
 
 func (ScrapedTag) IsScrapedContent() {}
+
+func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
+	currentTime := time.Now()
+	ret := NewTag()
+	ret.Name = t.Name
+
+	if t.RemoteSiteID != nil && endpoint != "" {
+		ret.StashIDs = NewRelatedStashIDs([]StashID{
+			{
+				Endpoint:  endpoint,
+				StashID:   *t.RemoteSiteID,
+				UpdatedAt: currentTime,
+			},
+		})
+	}
+
+	return &ret
+}
 
 func ScrapedTagSortFunction(a, b *ScrapedTag) int {
 	return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
@@ -462,6 +533,7 @@ type ScrapedGroup struct {
 	Date     *string        `json:"date"`
 	Rating   *string        `json:"rating"`
 	Director *string        `json:"director"`
+	URL      *string        `json:"url"` // included for backward compatibility
 	URLs     []string       `json:"urls"`
 	Synopsis *string        `json:"synopsis"`
 	Studio   *ScrapedStudio `json:"studio"`

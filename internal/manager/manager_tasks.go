@@ -294,6 +294,7 @@ func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 		Handlers: []file.CleanHandler{
 			&cleanHandler{},
 		},
+		TrashPath: s.Config.GetDeleteTrashPath(),
 	}
 
 	j := cleanJob{

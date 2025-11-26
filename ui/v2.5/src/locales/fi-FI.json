@@ -141,7 +141,17 @@
         "add_sub_groups": "Lisää aliryhmiä",
         "migrate_blobs": "Siirrä blobit",
         "migrate_scene_screenshots": "Siirrä kohtauksen kuvakaappaukset",
-        "reset_play_duration": "Nollaa toiston kesto"
+        "reset_play_duration": "Nollaa toiston kesto",
+        "load": "Ladataan",
+        "load_filter": "Lataa filtteri",
+        "play": "Toista",
+        "show_results": "Näytä tulokset",
+        "show_count_results": "Näytä {count} tulosta",
+        "sidebar": {
+            "close": "Sulje sivupalkki",
+            "open": "Avaa sivupalkki",
+            "toggle": "näytä/piilota sivupalkki"
+        }
     },
     "actions_name": "Toiminnot",
     "age": "Ikä",
@@ -367,10 +377,12 @@
                 },
                 "transcode": {
                     "output_args": {
-                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen tuloskenttää videota luotaessa."
+                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen tuloskenttää videota luotaessa.",
+                        "heading": "FFmpeg:n muunnoksen ulostuloparametrit"
                     },
                     "input_args": {
-                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen syöttökenttää videota luotaessa."
+                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen syöttökenttää videota luotaessa.",
+                        "heading": "FFmpeg:n muunnoksen syöteparametrit"
                     }
                 },
                 "ffmpeg_path": {
@@ -383,10 +395,12 @@
                 },
                 "live_transcode": {
                     "input_args": {
-                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen syöttökenttää, kun videota muutetaan livenä."
+                        "desc": "Edistynyt: Lisäargumentit, jotka välitetään ffmpegille ennen syöttökenttää, kun videota muutetaan livenä.",
+                        "heading": "FFmpeg:n live-muunnoksen syöteparametrit"
                     },
                     "output_args": {
-                        "desc": "Edistynyt: Lisäargumentit, jotka siirretään ffmpegille ennen lähtökenttää, kun videota muutetaan livenä."
+                        "desc": "Edistynyt: Lisäargumentit, jotka siirretään ffmpegille ennen lähtökenttää, kun videota muutetaan livenä.",
+                        "heading": "FFmpeg:n live-muunnoksen ulostuloparametrit﻿"
                     }
                 }
             },
@@ -405,7 +419,8 @@
             "funscript_heatmap_draw_range_desc": "Piirrä liikealue generoidun lämpökartan y-akselille. Olemassa olevat lämpökartat on luotava uudelleen vaihtamisen jälkeen.",
             "funscript_heatmap_draw_range": "Sisällytä alue luotuihin lämpökarttoihin",
             "gallery_cover_regex_desc": "Regexp käytetään kuvaamaan gallerian kansikuvaa",
-            "gallery_cover_regex_label": "Gallerian kansikuvio"
+            "gallery_cover_regex_label": "Gallerian kansikuvio",
+            "heatmap_generation": "Funscript-lämpökarttageneraattori﻿"
         },
         "library": {
             "exclusions": "Poisjättäminen",
@@ -435,7 +450,9 @@
             "endpoint": "Päätepiste",
             "graphql_endpoint": "GraphQL päätepiste",
             "name": "Nimi",
-            "title": "Stash-box päätepisteet"
+            "title": "Stash-box päätepisteet",
+            "max_requests_per_minute": "Enimmäispyynnöt minuutissa",
+            "max_requests_per_minute_description": "Käyttää oletusarvoa {defaultValue}, jos se on asetettu 0:ksi"
         },
         "system": {
             "transcoding": "Transkoodaus"
@@ -491,14 +508,21 @@
                 "sources": "Lähteet",
                 "strategy": "Strategia",
                 "skip_multiple_matches": "Ohita vastaavat, joilla on useampi kuin yksi tulos",
-                "skip_multiple_matches_tooltip": "Jos tämä ei ole otettu käyttöön ja palautetaan useampi kuin yksi tulos, yksi valitaan satunnaisesti vastaamaan"
+                "skip_multiple_matches_tooltip": "Jos tämä ei ole otettu käyttöön ja palautetaan useampi kuin yksi tulos, yksi valitaan satunnaisesti vastaamaan",
+                "skip_single_name_performers": "Ohita yksinimiset esiintyjät ilman tarkennusta",
+                "skip_single_name_performers_tooltip": "Jos tämä ei ole käytössä, usein geneeriset esiintyjät kuten Samantha tai Olga yhdistetään",
+                "tag_skipped_matches": "Merkitse ohitetut osumat seuraavalla",
+                "tag_skipped_matches_tooltip": "Luo tunniste, kuten 'Tunnista: Useita osumia', jota voit suodattaa Scene Tagger -näkymässä ja valita oikean osuman käsin",
+                "tag_skipped_performer_tooltip": "Luo tunniste, kuten 'Identify: Single Name Performer', jota voit suodattaa Scene Tagger -näkymässä ja valita, miten haluat käsitellä näitä esiintyjiä",
+                "tag_skipped_performers": "Merkitse ohitetut esiintyjät seuraavalla"
             },
             "import_from_exported_json": "Tuo viedystä JSON -tiedoista, jotka ovat samassa kansiossa kuin metadata. Pyyhkii olemassaolevan tietokannan.",
             "incremental_import": "Lisäävä tuonti valitusta zip -tiedostosta.",
             "job_queue": "Tehtäväjono",
             "maintenance": "Ylläpito",
             "migrate_blobs": {
-                "delete_old": "Poista vanhat tiedot"
+                "delete_old": "Poista vanhat tiedot",
+                "description": "Siirrä blobit nykyiseen blob-tallennusjärjestelmään. Tämä siirto tulisi suorittaa blob-tallennusjärjestelmän vaihdon jälkeen. Vanhojen tietojen poistaminen siirron jälkeen on valinnainen."
             },
             "migrate_hash_files": "Käytetään kun muutetaan generoitua tiedoston nimeämistiivistettä jo generoitujen tiedostojen uudelleennimeämiseen uuteen muotoon.",
             "migrations": "Migraatiot",
@@ -516,12 +540,26 @@
                 "previews_desc": "Kohtauksien esikatselut ja pienoiskuvat",
                 "blob_files": "Blob-tiedostot",
                 "description": "Poistaa luodut tiedostot ilman vastaavaa tietokantatietuetta.",
-                "image_thumbnails": "Kuvien pikkukuvat"
+                "image_thumbnails": "Kuvien pikkukuvat",
+                "image_thumbnails_desc": "Kuvien pikkukuvat ja pätkät",
+                "sprites": "Kohtauksien sprite-kuvat",
+                "transcodes": "Kohtauksien muunnokset"
             },
             "anonymising_database": "Anonymisoidaan tietokantaa",
             "anonymise_database": "Tekee kopion tietokannasta varmuuskopioiden hakemistoon anonymisoimalla kaikki arkaluontoiset tiedot. Tämä voidaan sitten tarjota muille vianmääritys- ja viankorjaustarkoituksiin. Alkuperäistä tietokantaa ei ole muokattu. Anonymisoitu tietokanta käyttää tiedostonimimuotoa {filename_format}.",
             "generate_sprites_during_scan_tooltip": "Videosoittimen alla näkyvät kuvat navigoinnin helpottamiseksi.",
-            "generate_video_covers_during_scan": "Luo kohtausten kannet"
+            "generate_video_covers_during_scan": "Luo kohtausten kannet",
+            "generate_clip_previews_during_scan": "Luo esikatselukuvat kuvaklippejä varten",
+            "generate_sprites_during_scan": "Luo pyyhkijän kuvasarjat﻿",
+            "migrate_scene_screenshots": {
+                "delete_files": "Poista näyttötallenteiden tiedostot",
+                "description": "Siirrä kohtauksen näyttökuvat uuteen blob-tallennusjärjestelmään. Tämä siirto tulisi suorittaa olemassa olevan järjestelmän päivittämisen jälkeen versioon 0.20. Vanhojen näyttökuvien poistaminen siirron jälkeen on valinnainen.",
+                "overwrite_existing": "Korvaa olemassa olevat blobit näyttötallennetiedoilla"
+            },
+            "optimise_database": "Yritä parantaa suorituskykyä analysoimalla ja koko tietokantatiedoston uudelleen rakentamalla.",
+            "optimise_database_warning": "Varoitus: tämän tehtävän ollessa käynnissä kaikki tietokantaa muokkaavat toiminnot epäonnistuvat, ja tietokannan koosta riippuen suoritus voi kestää useita minuutteja. Tarvitset lisäksi vähintään yhtä paljon vapaata levytilaa kuin tietokantasi koko on, mutta 1,5-kertainen määrä on suositeltavaa.",
+            "rescan": "Uudelleenskannaa tiedostot",
+            "rescan_tooltip": "Uudelleenskannaa kaikki tiedostot polussa. Käytetään tiedoston metatietojen pakolliseen päivitykseen ja zip-tiedostojen uudelleenskannaukseen."
         },
         "tools": {
             "scene_duplicate_checker": "Kohtauksien kaksoiskappaleiden tarkistus",
@@ -533,9 +571,16 @@
                 "ignore_organized": "Jätä järjestellyt kohtaukset huomiotta",
                 "ignored_words": "Huomiotta jätetyt sanat",
                 "matches_with": "Täsmää seuraavan kanssa {i}",
-                "whitespace_chars_desc": "Nämä merkit korvataan välilyönnillä otsikossa"
+                "whitespace_chars_desc": "Nämä merkit korvataan välilyönnillä otsikossa",
+                "escape_chars": "Käytä \\ merkin edessä, kun haluat käsitellä merkin kirjaimellisena merkkinä",
+                "filename_pattern": "Tiedostonimen malli",
+                "select_parser_recipe": "Valitse jäsentämisen ohjeistus, joka määrittää tiedon purkamisen ja käsittelyn",
+                "title": "Kohteen tiedostonimen jäsentäjä",
+                "whitespace_chars": "välilyöntimerkit"
             },
-            "scene_tools": "Kohtauksen työkalut"
+            "scene_tools": "Kohtauksen työkalut",
+            "graphql_playground": "GraphQL-kokeiluympäristö",
+            "heading": "Työkalut"
         },
         "ui": {
             "basic_settings": "Perusasetukset",
@@ -551,7 +596,8 @@
             },
             "custom_locales": {
                 "heading": "Mukautettu lokalisointi",
-                "option_label": "Mukautettu lokalisointi käytössä"
+                "option_label": "Mukautettu lokalisointi käytössä",
+                "description": "Ylikirjoita yksittäisiä paikallisia merkkijonoja. Katso https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json master-lista. Sivun lataus on tehtävä uudelleen, jotta muutokset tulevat voimaan."
             },
             "delete_options": {
                 "description": "Oletusasetukset kun poistetaan kuvia, gallerioita ja kohtauksia.",
@@ -580,7 +626,8 @@
                         "options": {
                             "full": "Kokonainen",
                             "half": "Puolikas",
-                            "quarter": "Neljäsosa"
+                            "quarter": "Neljäsosa",
+                            "tenth": "Kymmenes"
                         }
                     },
                     "type": {
@@ -590,6 +637,9 @@
                             "stars": "Tähdet"
                         }
                     }
+                },
+                "max_options_shown": {
+                    "label": "Valintavalikoissa näytettävien kohteiden enimmäismäärä"
                 }
             },
             "funscript_offset": {
@@ -687,13 +737,33 @@
                     }
                 }
             },
-            "title": "Käyttöliittymä"
+            "title": "Käyttöliittymä",
+            "abbreviate_counters": {
+                "description": "Lyhennä lukujen esitystapaa korteissa ja yksityiskohtien näkymissä, esimerkiksi luku \"1831\" esitetään muodossa \"1,8K\".",
+                "heading": "Lukujen esitysmuodon lyhentäminen"
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "Kun tämä asetus on otettu käyttöön, se näyttää laajennetut tiedot säilyttäen samalla kompaktin esityksen.",
+                    "heading": "Tiivistetyt laajennetut tiedot"
+                },
+                "enable_background_image": {
+                    "description": "Näytä taustakuva yksityiskohtasivulla.",
+                    "heading": "Ota taustakuva käyttöön"
+                },
+                "heading": "Lisätietosivu",
+                "show_all_details": {
+                    "description": "Kun tämä on otettu käyttöön, kaikki sisällön tiedot näytetään oletuksena ja jokainen tietoelementti mahtuu yhden sarakkeen alle.",
+                    "heading": "Näytä kaikki tiedot"
+                }
+            }
         },
         "advanced_mode": "Edistynyt tila",
         "plugins": {
             "installed_plugins": "Asennetut lisäosat",
             "available_plugins": "Saatavilla olevat liitännäiset",
-            "hooks": "Koukut"
+            "hooks": "Koukut",
+            "triggers_on": "Aktivoituu kun"
         }
     },
     "configuration": "Konfiguraatio",
@@ -784,7 +854,6 @@
             "destination": "Kohde",
             "source": "Lähde"
         },
-        "overwrite_filter_confirm": "Haluatko varmasti ylikirjoittaa jo olemassaolevan {entityName}?",
         "scene_gen": {
             "force_transcodes": "Pakota transkoodaus",
             "force_transcodes_tooltip": "Oletuksena transkoodaus tehdään vain, mikäli selain ei tue videotiedostoa. Jos tämä valinta on päällä, transkoodaus tehdään vaikka selain näyttäisi tukevan videotiedostoa.",
@@ -793,7 +862,7 @@
             "marker_image_previews": "Animoidut merkkien esikatselukuvat",
             "marker_image_previews_tooltip": "Animoidut merkkien WebP esikatselut, vaaditaan vain jos esikatselun tyypiksi on valittu Animoitu kuva.",
             "marker_screenshots": "Merkkien esikatselukuvat",
-            "marker_screenshots_tooltip": "Merkkien staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva.",
+            "marker_screenshots_tooltip": "Staattiset JPG-kuvat merkintöihin",
             "markers": "Merkkien esikatselut",
             "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
             "override_preview_generation_options": "Ohita Esikatselun generoinnin asetukset",
@@ -942,7 +1011,7 @@
         "interactive_speed": "Interaktiivinen nopeus",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} tässä kohtauksessa"
+            "age_context": "{age} {years_old} tuotantovaiheessa"
         },
         "phash": "PHash",
         "play_count": "Toistokerrat",
@@ -955,7 +1024,6 @@
     "name": "Nimi",
     "new": "Uusi",
     "none": "Ei mitään",
-    "o_counter": "O-Laskuri",
     "operations": "Operaatiot",
     "organized": "Järjestelty",
     "pagination": {

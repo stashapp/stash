@@ -141,7 +141,17 @@
         "reset_resume_time": "重置恢復時間",
         "set_cover": "設為封面",
         "remove_from_containing_group": "從群組中刪除",
-        "add_sub_groups": "新增子分類"
+        "add_sub_groups": "新增子分類",
+        "sidebar": {
+            "close": "關閉側邊攔",
+            "open": "開啟側邊攔",
+            "toggle": "切換側邊欄"
+        },
+        "show_results": "顯示結果",
+        "show_count_results": "顯示 {count} 筆結果",
+        "play": "播放",
+        "load": "載入",
+        "load_filter": "載入篩選結果"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -440,7 +450,9 @@
             "endpoint": "端點",
             "graphql_endpoint": "GraphQL 端點",
             "name": "名稱",
-            "title": "Stash-box 端點"
+            "title": "Stash-box 端點",
+            "max_requests_per_minute": "每分鐘請求上限",
+            "max_requests_per_minute_description": "當設為 0 時，會套用預設值 {defaultValue}"
         },
         "system": {
             "transcoding": "轉檔"
@@ -566,7 +578,9 @@
                 "whitespace_chars": "空白字元",
                 "whitespace_chars_desc": "這些字元將在標題中被空格取代"
             },
-            "scene_tools": "短片工具"
+            "scene_tools": "短片工具",
+            "heading": "工具",
+            "graphql_playground": "GraphQL 測試環境"
         },
         "ui": {
             "abbreviate_counters": {
@@ -726,7 +740,8 @@
                     },
                     "enable_chromecast": "啟用 Chromecast",
                     "show_ab_loop_controls": "顯示AB循環插件控件",
-                    "disable_mobile_media_auto_rotate": "停用行動裝置上全螢幕媒體的自動旋轉功能"
+                    "disable_mobile_media_auto_rotate": "停用行動裝置上全螢幕媒體的自動旋轉功能",
+                    "show_range_markers": "顯示範圍標記"
                 }
             },
             "scene_wall": {
@@ -790,6 +805,14 @@
             "use_stash_hosted_funscript": {
                 "description": "啟用後，funscript 將直接從 Stash 傳送至您的 Handy 裝置，而無需使用第三方 Handy 伺服器。要求可從您的 Handy 裝置存取 Stash，且如果 stash 已設定憑證，則會產生 API 金鑰。",
                 "heading": "直接為 funscript 服務"
+            },
+            "performer_list": {
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "在表演者卡片上顯示連結"
+                    }
+                },
+                "heading": "表演者清單"
             }
         },
         "advanced_mode": "進階模式"
@@ -889,7 +912,6 @@
             "destination": "目的地",
             "source": "來源"
         },
-        "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
         "reassign_entity_title": "{count, plural, one {重新指定{singularEntity}}}",
         "reassign_files": {
             "destination": "重新指定至"
@@ -950,7 +972,9 @@
         },
         "clear_o_history_confirm": "您確定要清除尻尻紀錄嗎？",
         "clear_play_history_confirm": "您確定要清除播放紀錄嗎？",
-        "performers_found": "找到{count} 個演員"
+        "performers_found": "找到{count} 個演員",
+        "set_default_filter_confirm": "是否確定設定這一個過濾條件為預設?",
+        "overwrite_filter_warning": "篩選器 \"{entityName}\" 已存在，將被覆蓋。"
     },
     "dimensions": "解析度",
     "director": "導演",
@@ -960,7 +984,8 @@
         "list": "條列顯示",
         "tagger": "標記工具",
         "unknown": "未知",
-        "wall": "預覽牆顯示"
+        "wall": "預覽牆顯示",
+        "label_current": "顯示模式：{current}"
     },
     "donate": "贊助",
     "dupe_check": {
@@ -1058,7 +1083,7 @@
         "syncing": "與伺服器同步中",
         "uploading": "上傳腳本中"
     },
-    "hasMarkers": "含有章節標記",
+    "hasMarkers": "章節標記",
     "height": "身高",
     "height_cm": "高度 (cm)",
     "help": "說明",
@@ -1090,7 +1115,7 @@
         "interactive_speed": "互動速度",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "這齣戲裡面 {age} {years_old}"
+            "age_context": "這齣戲時 {age} {years_old}"
         },
         "phash": "PHash",
         "play_count": "播放次數",
@@ -1104,7 +1129,6 @@
     "name": "名稱",
     "new": "新增",
     "none": "無",
-    "o_counter": "尻尻計數",
     "operations": "動作",
     "organized": "是否已整理",
     "pagination": {
@@ -1190,7 +1214,9 @@
         "name": "篩選",
         "saved_filters": "已儲存的過濾條件",
         "update_filter": "更新篩選",
-        "edit_filter": "編輯篩選器"
+        "edit_filter": "編輯篩選器",
+        "more_filter_criteria": "+{count} 更多",
+        "search_term": "搜尋詞組"
     },
     "seconds": "秒",
     "settings": "設定",
@@ -1236,16 +1262,16 @@
         },
         "paths": {
             "database_filename_empty_for_default": "資料庫檔案名稱（留空以使用預設）",
-            "description": "接下來，我們需要確定可以在哪裡找到你的片片，在哪裡儲存資料庫及其生成檔案等等。如果需要，您稍後可以再更改這些設定。",
+            "description": "接下來，我們需要確定可以在哪裡找到你的內容，在哪裡儲存資料庫及其生成檔案等等。如果需要，您稍後可以再更改這些設定。",
             "path_to_generated_directory_empty_for_default": "生成媒體資料夾路徑（留空以使用預設）",
             "set_up_your_paths": "設定你的路徑",
             "stash_alert": "您尚未選取任何路徑，Stash 將無法掃描你的檔案。你確定要繼續嗎？",
             "where_can_stash_store_its_database": "Stash 可以在哪裡儲存資料庫？",
-            "where_can_stash_store_its_database_description": "Stash 使用 SQLite 資料庫來儲存您片片的資料。預設情況下，Stash 將在您的設定檔路徑下以 <code>stash-go.sqlite</code> 這個檔案來儲存此資料庫內容。如果您想要更改此設定，請在此輸入您所想要的絕對或相對路徑（相對於目前工作目錄）。",
+            "where_can_stash_store_its_database_description": "Stash 使用 SQLite 資料庫來儲存您內容的資料。預設情況下，Stash 將在您的設定檔路徑下以 <code>stash-go.sqlite</code> 這個檔案來儲存此資料庫內容。如果您想要更改此設定，請在此輸入您所想要的絕對或相對路徑（相對於目前工作目錄）。",
             "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其生成內容？",
             "where_can_stash_store_its_generated_content_description": "為提供縮圖、預覽和其他預覽資料，Stash 將自動生成圖片和影片資訊。這包括不支援的檔案格式之轉檔。預設情況下，Stash 將在包含您設定檔案的資料夾中建立一個新的 <code>generated</code> 資料夾。如果要更改此生成媒體的儲存位置，請在此輸入絕對或相對路徑（相對於目前工作目錄）。如果該資料夾不存在，Stash 將自動建立此目錄。",
-            "where_is_your_porn_located": "你的片片都藏哪？",
-            "where_is_your_porn_located_description": "在此選擇你A片及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
+            "where_is_your_porn_located": "你的內容都藏哪？",
+            "where_is_your_porn_located_description": "在此選擇你視訊及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
             "path_to_blobs_directory_empty_for_default": "blobs 目錄的路徑 (預設為空)",
             "path_to_cache_directory_empty_for_default": "快取目錄的路徑 (預設為空)",
             "store_blobs_in_database": "將 blobs 儲存到資料庫",
@@ -1388,7 +1414,7 @@
     "group_count": "群組計數",
     "group_scene_number": "短片編號",
     "groups": "群組",
-    "hasChapters": "擁有章節",
+    "hasChapters": "章節",
     "history": "歷史紀錄",
     "image_index": "圖片#",
     "index_of_total": "第{index}個，共 {total}個",
@@ -1515,6 +1541,19 @@
     "custom_fields": {
         "field": "欄位",
         "title": "自訂欄位",
-        "value": "值"
-    }
+        "value": "值",
+        "criteria_format_string_others": "{criterion} (custom field) 條件：{modifierString} {valueString} (+{others} others)",
+        "criteria_format_string": "{criterion} (custom field) 條件：{modifierString} {valueString}"
+    },
+    "login": {
+        "login": "登入",
+        "username": "使用者名稱",
+        "password": "密碼",
+        "invalid_credentials": "無效的使用者名稱或是密碼",
+        "internal_error": "系統發生未預期的內部錯誤。詳情請參考日誌"
+    },
+    "sort_name": "分類名稱",
+    "eta": "預估剩餘時間",
+    "age_on_date": "在{age}歲時製作",
+    "scenes_duration": "場景持續時間"
 }

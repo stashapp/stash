@@ -149,7 +149,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
       if (filter.displayMode === DisplayMode.Wall) {
         return (
           <div className="row">
-            <div className="GalleryWall">
+            <div className={`GalleryWall zoom-${filter.zoomIndex}`}>
               {result.data.findGalleries.galleries.map((gallery) => (
                 <GalleryWallCard key={gallery.id} gallery={gallery} />
               ))}
@@ -195,7 +195,6 @@ export const GalleryList: React.FC<IGalleryList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

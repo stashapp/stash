@@ -23,6 +23,7 @@ This namespace contains the generated graphql client interface. This is a low-le
 ### `libraries`
 
 `libraries` provides access to the following UI libraries:
+
 - `ReactRouterDOM`
 - `Bootstrap`
 - `Apollo`
@@ -66,7 +67,7 @@ This namespace contains all of the components available to plugins. These includ
 
 ### `utils`
 
-This namespace provides access to the `NavUtils` and `StashService` namespaces. It also provides access to the `loadComponents` method.
+This namespace provides access to the `NavUtils` , `StashService` and `InteractiveUtils` namespaces. It also provides access to the `loadComponents` method.
 
 #### `PluginApi.utils.loadComponents`
 
@@ -80,9 +81,76 @@ In general, `PluginApi.hooks.useLoadComponents` hook should be used instead.
 
 Returns a `Promise<void>` that resolves when all of the components have been loaded.
 
+#### `PluginApi.utils.InteractiveUtils`
+This namespace provides access to `interactiveClientProvider` and `getPlayer`
+ - `getPlayer` returns the current `videojs` player object
+ - `interactiveClientProvider` takes `IInteractiveClientProvider` which allows a developer to hook into the lifecycle of funscripts.
+```ts
+  export interface IDeviceSettings {
+  connectionKey: string;
+  scriptOffset: number;
+  estimatedServerTimeOffset?: number;
+  useStashHostedFunscript?: boolean;
+  [key: string]: unknown;
+}
+
+export interface IInteractiveClientProviderOptions {
+  handyKey: string;
+  scriptOffset: number;
+  defaultClientProvider?: IInteractiveClientProvider;
+  stashConfig?: GQL.ConfigDataFragment;
+}
+export interface IInteractiveClientProvider {
+  (options: IInteractiveClientProviderOptions): IInteractiveClient;
+}
+
+/**
+ * Interface that is used for InteractiveProvider
+ */
+export interface IInteractiveClient {
+  connect(): Promise<void>;
+  handyKey: string;
+  uploadScript: (funscriptPath: string, apiKey?: string) => Promise<void>;
+  sync(): Promise<number>;
+  configure(config: Partial<IDeviceSettings>): Promise<void>;
+  play(position: number): Promise<void>;
+  pause(): Promise<void>;
+  ensurePlaying(position: number): Promise<void>;
+  setLooping(looping: boolean): Promise<void>;
+  readonly connected: boolean;
+  readonly playing: boolean;
+}
+
+```
+##### Example
+For instance say I wanted to add extra logging when `IInteractiveClient.connect()` is called.
+In my plugin you would install your own client provider as seen below
+
+```ts
+InteractiveUtils.interactiveClientProvider = (
+  opts
+) => {
+  if (!opts.defaultClientProvider) {
+    throw new Error('invalid setup');
+  }
+
+  const client = opts.defaultClientProvider(opts);
+  const connect = client.connect;
+  client.connect = async () => {
+      console.log('patching connect method');
+      return connect.call(client);
+    };
+   
+  return client;
+};
+
+```
+
+
 ### `hooks`
 
 This namespace provides access to the following core utility hooks:
+
 - `useGalleryLightbox`
 - `useLightbox`
 - `useSpriteInfo`
@@ -153,8 +221,8 @@ Returns `void`.
 - `CompressedPerformerDetailsPanel`
 - `ConstantSetting`
 - `CountrySelect`
-- `CustomFields`
 - `CustomFieldInput`
+- `CustomFields`
 - `DateInput`
 - `DetailImage`
 - `ExternalLinkButtons`
@@ -169,6 +237,9 @@ Returns `void`.
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `GroupIDSelect`
+- `GroupSelect`
+- `GroupSelect.sort`
 - `HeaderImage`
 - `HoverPopover`
 - `Icon`
@@ -176,11 +247,12 @@ Returns `void`.
 - `ImageInput`
 - `LightboxLink`
 - `LoadingIndicator`
+- `MainNavBar.MenuItems`
+- `MainNavBar.UtilityItems`
 - `ModalSetting`
-- `GroupIDSelect`
-- `GroupSelect`
-- `GroupSelect.sort`
 - `NumberSetting`
+- `Pagination`
+- `PaginationIndex`
 - `PerformerAppearsWithPanel`
 - `PerformerCard`
 - `PerformerCard.Details`
@@ -190,16 +262,17 @@ Returns `void`.
 - `PerformerCard.Title`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
-- `PerformerIDSelect`
-- `PerformerPage`
-- `PerformerSelect`
-- `PerformerSelect.sort`
 - `PerformerGalleriesPanel`
 - `PerformerGroupsPanel`
 - `PerformerHeaderImage`
+- `PerformerIDSelect`
 - `PerformerImagesPanel`
+- `PerformerPage`
 - `PerformerScenesPanel`
+- `PerformerSelect`
+- `PerformerSelect.sort`
 - `PluginRoutes`
+- `PluginSettings`
 - `RatingNumber`
 - `RatingStars`
 - `RatingSystem`
@@ -208,18 +281,20 @@ Returns `void`.
 - `SceneCard.Image`
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
+- `SceneFileInfoPanel`
 - `SceneIDSelect`
 - `ScenePage`
-- `ScenePage.Tabs`
 - `ScenePage.TabContent`
+- `ScenePage.Tabs`
 - `ScenePlayer`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
 - `Setting`
+- `SettingGroup`
 - `SettingModal`
-- `StringSetting`
 - `StringListSetting`
+- `StringSetting`
 - `StudioIDSelect`
 - `StudioSelect`
 - `StudioSelect.sort`
@@ -231,15 +306,11 @@ Returns `void`.
 - `TagCard.Overlays`
 - `TagCard.Popovers`
 - `TagCard.Title`
-- `TagLink`
-- `TabTitleCounter`
 - `TagIDSelect`
+- `TagLink`
 - `TagSelect`
 - `TagSelect.sort`
 - `TruncatedText`
-- `PluginSettings`
-- `Setting`
-- `SettingGroup`
 
 ### `PluginApi.Event`
 
@@ -248,3 +319,5 @@ Allows plugins to listen for Stash's events.
 ```js
 PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname))
 ```
+
+

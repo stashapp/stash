@@ -1,6 +1,7 @@
 # Plugins
 
 Stash supports plugins that can do the following:
+
 - perform custom tasks when triggered by the user from the Tasks page
 - perform custom tasks when triggered from specific events
 - add custom CSS to the UI
@@ -14,7 +15,7 @@ Plugin tasks can be implemented using embedded Javascript, or by calling an exte
 
 Plugins can be installed and managed from the `Settings > Plugins` page. 
 
-Scrapers are installed using the `Available Plugins` section. This section allows configuring sources from which to install plugins. The `Community (stable)` source is configured by default. This source contains plugins for the current _stable_ version of stash.
+Plugins are installed using the `Available Plugins` section. This section allows configuring sources from which to install plugins. The `Community (stable)` source is configured by default. This source contains plugins for the current _stable_ version of stash.
 
 These are the plugin sources maintained by the stashapp organisation:
 
@@ -64,8 +65,11 @@ Plugins provide tasks which can be run from the Tasks page.
 
 The basic structure of a plugin configuration file is as follows:
 
-```
-name: <plugin name>
+```yaml
+name: <plugin name> 
+# optional list of dependencies to be included
+# "#" is is part of the config - do not remove
+# requires: <plugin ID>
 description: <optional description of the plugin>
 version: <optional version tag>
 url: <optional url>
@@ -119,6 +123,8 @@ tasks:
 ```
 
 The `name`, `description`, `version` and `url` fields are displayed on the plugins page.
+
+`# requires` will make the plugin manager select plugins matching the specified IDs to be automatically installed as dependencies. Only works with plugins within the same index.
 
 The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
 
