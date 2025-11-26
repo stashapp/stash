@@ -211,6 +211,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       return;
     }
 
+    if (scenes.length === 0) {
+      return;
+    }
+
     if (loadingMulti) {
       return (
         <Button
