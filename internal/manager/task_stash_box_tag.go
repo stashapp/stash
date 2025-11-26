@@ -22,6 +22,19 @@ type stashBoxBatchPerformerTagTask struct {
 	excludedFields []string
 }
 
+func (t *stashBoxBatchPerformerTagTask) getName() string {
+	switch {
+	case t.name != nil:
+		return *t.name
+	case t.stashID != nil:
+		return *t.stashID
+	case t.performer != nil:
+		return t.performer.Name
+	default:
+		return ""
+	}
+}
+
 func (t *stashBoxBatchPerformerTagTask) Start(ctx context.Context) {
 	performer, err := t.findStashBoxPerformer(ctx)
 	if err != nil {
@@ -37,30 +50,12 @@ func (t *stashBoxBatchPerformerTagTask) Start(ctx context.Context) {
 	if performer != nil {
 		t.processMatchedPerformer(ctx, performer, excluded)
 	} else {
-		var name string
-		switch {
-		case t.name != nil:
-			name = *t.name
-		case t.stashID != nil:
-			name = *t.stashID
-		case t.performer != nil:
-			name = t.performer.Name
-		}
-		logger.Infof("No match found for %s", name)
+		logger.Infof("No match found for %s", t.getName())
 	}
 }
 
 func (t *stashBoxBatchPerformerTagTask) GetDescription() string {
-	var name string
-	switch {
-	case t.name != nil:
-		name = *t.name
-	case t.stashID != nil:
-		name = *t.stashID
-	case t.performer != nil:
-		name = t.performer.Name
-	}
-	return fmt.Sprintf("Tagging performer %s from stash-box", name)
+	return fmt.Sprintf("Tagging performer %s from stash-box", t.getName())
 }
 
 func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Context) (*models.ScrapedPerformer, error) {
@@ -249,6 +244,19 @@ type stashBoxBatchStudioTagTask struct {
 	excludedFields []string
 }
 
+func (t *stashBoxBatchStudioTagTask) getName() string {
+	switch {
+	case t.name != nil:
+		return *t.name
+	case t.stashID != nil:
+		return *t.stashID
+	case t.studio != nil:
+		return t.studio.Name
+	default:
+		return ""
+	}
+}
+
 func (t *stashBoxBatchStudioTagTask) Start(ctx context.Context) {
 	studio, err := t.findStashBoxStudio(ctx)
 	if err != nil {
@@ -264,30 +272,12 @@ func (t *stashBoxBatchStudioTagTask) Start(ctx context.Context) {
 	if studio != nil {
 		t.processMatchedStudio(ctx, studio, excluded)
 	} else {
-		var name string
-		switch {
-		case t.name != nil:
-			name = *t.name
-		case t.stashID != nil:
-			name = *t.stashID
-		case t.studio != nil:
-			name = t.studio.Name
-		}
-		logger.Infof("No match found for %s", name)
+		logger.Infof("No match found for %s", t.getName())
 	}
 }
 
 func (t *stashBoxBatchStudioTagTask) GetDescription() string {
-	var name string
-	switch {
-	case t.name != nil:
-		name = *t.name
-	case t.stashID != nil:
-		name = *t.stashID
-	case t.studio != nil:
-		name = t.studio.Name
-	}
-	return fmt.Sprintf("Tagging studio %s from stash-box", name)
+	return fmt.Sprintf("Tagging studio %s from stash-box", t.getName())
 }
 
 func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*models.ScrapedStudio, error) {

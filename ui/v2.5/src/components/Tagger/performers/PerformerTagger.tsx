@@ -25,6 +25,7 @@ import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { mergeStashIDs } from "src/utils/stashbox";
+import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { useTaggerConfig } from "../config";
 
@@ -671,20 +672,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
 
-      // UUID regex pattern to detect StashIDs (supports v4 and v7)
-      const uuidPattern =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-      const names: string[] = [];
-      const stashIds: string[] = [];
-
-      inputs.forEach((input) => {
-        if (uuidPattern.test(input)) {
-          stashIds.push(input);
-        } else {
-          names.push(input);
-        }
-      });
+      const { names, stashIds } = separateNamesAndStashIds(inputs);
 
       if (names.length > 0 || stashIds.length > 0) {
         const ret = await mutateStashBoxBatchPerformerTag({
