@@ -473,7 +473,10 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*models.
 		return &v, nil
 	}
 
-	ret, err := s.Repository.File.FindByPath(ctx, path)
+	// assume case sensitive when searching for the zip file
+	const caseSensitive = true
+
+	ret, err := s.Repository.File.FindByPath(ctx, path, caseSensitive)
 	if err != nil {
 		return nil, fmt.Errorf("getting zip file ID for %q: %w", path, err)
 	}
@@ -646,12 +649,20 @@ func modTime(info fs.FileInfo) time.Time {
 func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	defer s.incrementProgress(f)
 
+	// #1426 / #6326 - if file is in a case-insensitive filesystem, then use
+	// case insensitive searching
+	// assume case sensitive if in zip
+	caseSensitive := true
+	if f.ZipFileID == nil {
+		caseSensitive, _ = f.fs.IsPathCaseSensitive(f.Path)
+	}
+
 	var ff models.File
 	// don't use a transaction to check if new or existing
 	if err := s.withDB(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
 		var err error
-		ff, err = s.Repository.File.FindByPath(ctx, f.Path)
+		ff, err = s.Repository.File.FindByPath(ctx, f.Path, caseSensitive)
 		if err != nil {
 			return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
 		}
@@ -879,6 +890,7 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, and the filesystem is case-insensitive
 			// then treat it as a move
+			// #6326 - this should now be handled earlier, and this shouldn't be necessary
 			if caseSensitive, _ := fs.IsPathCaseSensitive(other.Base().Path); !caseSensitive {
 				// treat as a move
 				missing = append(missing, other)
@@ -1026,7 +1038,8 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 	path := base.Path
 
 	fileModTime := f.ModTime
-	updated := !fileModTime.Equal(base.ModTime)
+	// #6326 - also force a rescan if the basename changed
+	updated := !fileModTime.Equal(base.ModTime) || base.Basename != f.Basename
 	forceRescan := s.options.Rescan
 
 	if !updated && !forceRescan {
@@ -1041,6 +1054,8 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 		logger.Infof("%s has been updated: rescanning", path)
 	}
 
+	// #6326 - update basename in case it changed
+	base.Basename = f.Basename
 	base.ModTime = fileModTime
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()

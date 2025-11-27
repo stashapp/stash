@@ -265,7 +265,7 @@ func (i *Importer) populateFilesFolder(ctx context.Context) error {
 
 	for _, ref := range i.Input.ZipFiles {
 		path := ref
-		f, err := i.FileFinder.FindByPath(ctx, path)
+		f, err := i.FileFinder.FindByPath(ctx, path, true)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
 		}
