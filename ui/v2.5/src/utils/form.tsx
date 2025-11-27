@@ -362,12 +362,10 @@ export function formikUtils<V extends FormikValues>(
     field: Field,
     linkType: LinkType,
     messageID: string = field,
-    props?: IProps
+    props?: IProps,
+    addButton?: React.ReactNode
   ) {
     const values = formik.values[field] as GQL.StashIdInput[];
-    if (!values.length) {
-      return;
-    }
 
     const title = intl.formatMessage({ id: messageID });
 
@@ -377,26 +375,31 @@ export function formikUtils<V extends FormikValues>(
     };
 
     const control = (
-      <ul className="pl-0 mb-0">
-        {values.map((stashID) => {
-          return (
-            <Row as="li" key={stashID.stash_id} noGutters>
-              <Button
-                variant="danger"
-                className="mr-2 py-0"
-                title={intl.formatMessage(
-                  { id: "actions.delete_entity" },
-                  { entityType: intl.formatMessage({ id: "stash_id" }) }
-                )}
-                onClick={() => removeStashID(stashID)}
-              >
-                <Icon icon={faTrashAlt} />
-              </Button>
-              <StashIDPill stashID={stashID} linkType={linkType} />
-            </Row>
-          );
-        })}
-      </ul>
+      <>
+        {values.length > 0 && (
+          <ul className="pl-0 mb-2">
+            {values.map((stashID) => {
+              return (
+                <Row as="li" key={stashID.stash_id} noGutters>
+                  <Button
+                    variant="danger"
+                    className="mr-2 py-0"
+                    title={intl.formatMessage(
+                      { id: "actions.delete_entity" },
+                      { entityType: intl.formatMessage({ id: "stash_id" }) }
+                    )}
+                    onClick={() => removeStashID(stashID)}
+                  >
+                    <Icon icon={faTrashAlt} />
+                  </Button>
+                  <StashIDPill stashID={stashID} linkType={linkType} />
+                </Row>
+              );
+            })}
+          </ul>
+        )}
+        {addButton}
+      </>
     );
 
     return renderField(field, title, control, props);

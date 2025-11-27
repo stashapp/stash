@@ -7,6 +7,7 @@
     "add_sub_groups": "Add Sub-Groups",
     "add_o": "Add O",
     "add_play": "Add play",
+    "add_stash_id": "Add Stash ID",
     "add_to_entity": "Add to {entityType}",
     "allow": "Allow",
     "allow_temporarily": "Allow temporarily",
@@ -967,6 +968,7 @@
     "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
+    "stashid_exists_warning": "The existing stash id for this stash-box will be replaced.",
     "reassign_files": {
       "destination": "Reassign to"
     },
@@ -1451,6 +1453,12 @@
   "stash_id": "Stash ID",
   "stash_id_endpoint": "Stash ID Endpoint",
   "stash_ids": "Stash IDs",
+  "stashbox_search": {
+    "header": "Search {entityType} from StashBox",
+    "no_results": "No results found.",
+    "placeholder_name_or_id": "{entityType} name or StashID...",
+    "select_stashbox": "Select StashBox..."
+  },
   "stashbox": {
     "go_review_draft": "Go to {endpoint_name} to review draft.",
     "selected_stash_box": "Selected Stash-Box endpoint",

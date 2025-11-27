@@ -34,8 +34,9 @@ import { useConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 import cx from "classnames";
-import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt, faPlus } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
 import {
@@ -88,6 +89,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
+  const [isStashIDSearchOpen, setIsStashIDSearchOpen] =
+    useState<boolean>(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -569,6 +572,27 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScraper(undefined);
   }
 
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+
+    // Check if StashID with this endpoint already exists
+    const existingIndex = formik.values.stash_ids.findIndex(
+      (s) => s.endpoint === item.endpoint
+    );
+
+    let newStashIDs;
+    if (existingIndex >= 0) {
+      // Replace existing StashID
+      newStashIDs = [...formik.values.stash_ids];
+      newStashIDs[existingIndex] = item;
+    } else {
+      // Add new StashID
+      newStashIDs = [...formik.values.stash_ids, item];
+    }
+
+    formik.setFieldValue("stash_ids", newStashIDs);
+  }
+
   function renderButtons(classNames: string) {
     return (
       <div className={cx("details-edit", "col-xl-9", classNames)}>
@@ -659,6 +683,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     <>
       {renderScrapeModal()}
       {maybeRenderScrapeDialog()}
+      {isStashIDSearchOpen && (
+        <StashBoxIDSearchModal
+          stashBoxes={stashConfig?.general.stashBoxes ?? []}
+          excludedStashBoxEndpoints={formik.values.stash_ids.map(
+            (s) => s.endpoint
+          )}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
+        />
+      )}
 
       <Prompt
         when={formik.dirty}
@@ -701,7 +737,21 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("details", "textarea")}
         {renderTagsField()}
 
-        {renderStashIDsField("stash_ids", "performers")}
+        {renderStashIDsField(
+          "stash_ids",
+          "performers",
+          "stash_ids",
+          undefined,
+          <Button
+            variant="success"
+            className="mr-2 py-0"
+            onClick={() => setIsStashIDSearchOpen(true)}
+            disabled={!stashConfig?.general.stashBoxes?.length}
+            title={intl.formatMessage({ id: "actions.add_stash_id" })}
+          >
+            <Icon icon={faPlus} />
+          </Button>
+        )}
 
         <hr />
 
