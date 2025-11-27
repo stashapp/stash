@@ -495,21 +495,28 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*models.
 func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 	path := file.Path
 
-	// #1426 / #6326 - if folder is in a case-insensitive filesystem, then use
-	// case insensitive searching
-	// assume case sensitive if in zip
-	caseSensitive := true
-	if file.ZipFileID == nil {
-		caseSensitive, _ = file.fs.IsPathCaseSensitive(file.Path)
-	}
-
 	return s.withTxn(ctx, func(ctx context.Context) error {
 		defer s.incrementProgress(file)
 
 		// determine if folder already exists in data store (by path)
-		f, err := s.Repository.Folder.FindByPath(ctx, path, caseSensitive)
+		// assume case sensitive by default
+		f, err := s.Repository.Folder.FindByPath(ctx, path, true)
 		if err != nil {
 			return fmt.Errorf("checking for existing folder %q: %w", path, err)
+		}
+
+		// #1426 / #6326 - if folder is in a case-insensitive filesystem, then try
+		// case insensitive searching
+		// assume case sensitive if in zip
+		if f == nil && file.ZipFileID == nil {
+			caseSensitive, _ := file.fs.IsPathCaseSensitive(file.Path)
+
+			if !caseSensitive {
+				f, err = s.Repository.Folder.FindByPath(ctx, path, false)
+				if err != nil {
+					return fmt.Errorf("checking for existing folder %q: %w", path, err)
+				}
+			}
 		}
 
 		// if folder not exists, create it
@@ -668,22 +675,30 @@ func modTime(info fs.FileInfo) time.Time {
 func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	defer s.incrementProgress(f)
 
-	// #1426 / #6326 - if file is in a case-insensitive filesystem, then use
-	// case insensitive searching
-	// assume case sensitive if in zip
-	caseSensitive := true
-	if f.ZipFileID == nil {
-		caseSensitive, _ = f.fs.IsPathCaseSensitive(f.Path)
-	}
-
 	var ff models.File
+
 	// don't use a transaction to check if new or existing
 	if err := s.withDB(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
+		// assume case sensitive when searching for the file to begin with
 		var err error
-		ff, err = s.Repository.File.FindByPath(ctx, f.Path, caseSensitive)
+		ff, err = s.Repository.File.FindByPath(ctx, f.Path, true)
 		if err != nil {
 			return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
+		}
+
+		// #1426 / #6326 - if file is in a case-insensitive filesystem, then try
+		// case insensitive search
+		// assume case sensitive if in zip
+		if ff == nil && f.ZipFileID != nil {
+			caseSensitive, _ := f.fs.IsPathCaseSensitive(f.Path)
+
+			if !caseSensitive {
+				ff, err = s.Repository.File.FindByPath(ctx, f.Path, false)
+				if err != nil {
+					return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
+				}
+			}
 		}
 
 		if ff == nil {
