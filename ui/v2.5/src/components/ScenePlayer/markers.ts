@@ -158,10 +158,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       startPercent * 0.3
     }px)`;
 
-    // minimum width of 8px, using calc for percentage-based width
-    rangeDiv.style.width = `max(calc(${widthPercent}% - ${
-      widthPercent * 0.3
-    }px), 8px)`;
+    rangeDiv.style.width = `calc(${widthPercent}% - ${widthPercent * 0.3}px)`;
     rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
     rangeDiv.style.display = "none"; // Initially hidden
 
