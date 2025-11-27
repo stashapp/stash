@@ -44,7 +44,9 @@ jobs:
         version: 9
 
     - name: Build project
-      run: make CI=0 release
+      run: |
+        rm -f ui/v2.5/pnpm-workspace.yaml
+        make release
 
     - name: Install plperl in postgres container
       run: |
