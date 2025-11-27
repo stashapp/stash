@@ -142,18 +142,26 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const rangeDiv = videojs.dom.createEl("div") as HTMLDivElement;
     rangeDiv.className = "vjs-marker-range";
 
-    // start/end percent is relative to the parent element, which is the vjs-progress-control
-    // vjs-progress-control has 15px margins on each side
-    const left = seekBar.clientWidth * (marker.seconds / duration) + 15;
+    // Use percentage-based positioning for proper scaling in fullscreen mode
+    // The range marker is inside vjs-progress-control, but needs to align with
+    // vjs-progress-holder which has 15px margins on each side.
+    // We use calc() to combine percentage positioning with the fixed margin offset.
+    const startPercent = (marker.seconds / duration) * 100;
+    const widthPercent =
+      ((marker.end_seconds - marker.seconds) / duration) * 100;
 
-    // minimum width of 8px
-    const width = Math.max(
-      seekBar.clientWidth * ((marker.end_seconds - marker.seconds) / duration),
-      8
-    );
+    // left: 15px margin + percentage of the progress holder width
+    // Since progress-holder has margin: 0 15px, we need calc(15px + X% of remaining width)
+    // The progress-holder width is (100% - 30px), so the actual left position is:
+    // 15px + startPercent% * (100% - 30px) = 15px + startPercent% * 100% - startPercent% * 30px
+    rangeDiv.style.left = `calc(15px + ${startPercent}% - ${
+      startPercent * 0.3
+    }px)`;
 
-    rangeDiv.style.left = `${left}px`;
-    rangeDiv.style.width = `${width}px`;
+    // minimum width of 8px, using calc for percentage-based width
+    rangeDiv.style.width = `max(calc(${widthPercent}% - ${
+      widthPercent * 0.3
+    }px), 8px)`;
     rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
     rangeDiv.style.display = "none"; // Initially hidden
 
