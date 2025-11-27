@@ -92,6 +92,7 @@
     "@graphql-codegen/typescript-react-apollo": "^4.1.0",
     "@types/apollo-upload-client": "^18.0.0",
     "@types/crypto-js": "^4.2.2",
+    "@types/dom-screen-wake-lock": "^1.0.3",
     "@types/lodash-es": "^4.17.6",
     "@types/mousetrap": "^1.6.11",
     "@types/node": "^18.13.0",

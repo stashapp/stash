@@ -30,7 +30,7 @@ class WakeSentinelPlugin extends videojs.getPlugin("plugin") {
 
   private async acquireWakeLock(log = false): Promise<void> {
     // if wake lock failed, don't even try
-    if (this.wakeLockFail) return
+    if (this.wakeLockFail) return;
     // check for wake lock on startup
     if ("wakeLock" in navigator) {
       try {
