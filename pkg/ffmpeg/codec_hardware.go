@@ -69,7 +69,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		args = args.Output("-")
 
 		// #6064 - add timeout to context to prevent hangs
-		const hwTestTimeoutSecondsDefault = 1
+		const hwTestTimeoutSecondsDefault = 10
 		hwTestTimeoutSeconds := hwTestTimeoutSecondsDefault * time.Second
 
 		// allow timeout to be overridden with environment variable
@@ -90,7 +90,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 
 		if err := cmd.Run(); err != nil {
 			if testCtx.Err() != nil {
-				logger.Debugf("[InitHWSupport] Codec %s test timed out after %d seconds", codec, hwTestTimeoutSeconds)
+				logger.Debugf("[InitHWSupport] Codec %s test timed out after %s", codec, hwTestTimeoutSeconds)
 				continue
 			}
 
