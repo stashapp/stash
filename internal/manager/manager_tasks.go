@@ -375,19 +375,18 @@ const (
 
 // getBatchTagType determines the batch tag mode based on the input
 func (input StashBoxBatchTagInput) getBatchTagType(hasPerformerFields bool) batchTagType {
-	if len(input.Ids) > 0 {
+	switch {
+	case len(input.Ids) > 0:
 		return batchTagByIds
-	}
-	if hasPerformerFields && len(input.PerformerIds) > 0 {
+	case hasPerformerFields && len(input.PerformerIds) > 0:
 		return batchTagByIds
-	}
-	if len(input.StashIDs) > 0 || len(input.Names) > 0 {
+	case len(input.StashIDs) > 0 || len(input.Names) > 0:
 		return batchTagByNamesOrStashIds
-	}
-	if hasPerformerFields && len(input.PerformerNames) > 0 {
+	case hasPerformerFields && len(input.PerformerNames) > 0:
 		return batchTagByNamesOrStashIds
+	default:
+		return batchTagAll
 	}
-	return batchTagAll
 }
 
 // Accepts either ids, or a combination of names and stash_ids.
@@ -500,11 +499,7 @@ func (s *Manager) batchTagAllPerformers(ctx context.Context, input StashBoxBatch
 		var performers []*models.Performer
 		var err error
 
-		if input.Refresh {
-			performers, err = performerQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
-		} else {
-			performers, err = performerQuery.FindByStashIDStatus(ctx, false, box.Endpoint)
-		}
+		performers, err = performerQuery.FindByStashIDStatus(ctx, input.Refresh, box.Endpoint)
 
 		if err != nil {
 			return fmt.Errorf("error querying performers: %v", err)
@@ -641,11 +636,7 @@ func (s *Manager) batchTagAllStudios(ctx context.Context, input StashBoxBatchTag
 		var studios []*models.Studio
 		var err error
 
-		if input.Refresh {
-			studios, err = studioQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
-		} else {
-			studios, err = studioQuery.FindByStashIDStatus(ctx, false, box.Endpoint)
-		}
+		studios, err = studioQuery.FindByStashIDStatus(ctx, input.Refresh, box.Endpoint)
 
 		if err != nil {
 			return fmt.Errorf("error querying studios: %v", err)

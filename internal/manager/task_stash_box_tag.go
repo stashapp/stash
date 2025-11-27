@@ -72,6 +72,8 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
 	switch {
+	case t.name != nil:
+		performer, err = client.FindPerformerByName(ctx, *t.name)
 	case t.stashID != nil:
 		performer, err = client.FindPerformerByID(ctx, *t.stashID)
 
@@ -122,8 +124,6 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 				}
 			}
 		}
-	case t.name != nil:
-		performer, err = client.FindPerformerByName(ctx, *t.name)
 	}
 
 	if performer != nil {
@@ -303,6 +303,8 @@ func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*m
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
 	switch {
+	case t.name != nil:
+		studio, err = client.FindStudio(ctx, *t.name)
 	case t.stashID != nil:
 		studio, err = client.FindStudio(ctx, *t.stashID)
 	case t.studio != nil:
@@ -327,8 +329,6 @@ func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*m
 		if remoteID != "" {
 			studio, err = client.FindStudio(ctx, remoteID)
 		}
-	case t.name != nil:
-		studio, err = client.FindStudio(ctx, *t.name)
 	}
 
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
