@@ -956,7 +956,7 @@
     "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
-    "stashid_exists_warning": "Selecting a performer will replace the existing Stash ID for this instance.",
+    "stashid_exists_warning": "The existing stash id for this stash-box will be replaced.",
     "reassign_files": {
       "destination": "Reassign to"
     },

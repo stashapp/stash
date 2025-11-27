@@ -262,9 +262,9 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
 
         {selectedStashBox &&
           excludedStashBoxEndpoints.includes(selectedStashBox.endpoint) && (
-            <div className="text-warning mb-3">
+            <span className="saved-filter-overwrite-warning mb-3 d-block">
               <FormattedMessage id="dialogs.stashid_exists_warning" />
-            </div>
+            </span>
           )}
 
         <InputGroup>
