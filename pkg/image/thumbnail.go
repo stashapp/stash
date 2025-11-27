@@ -22,12 +22,8 @@ const ffmpegImageQuality = 5
 var vipsPath string
 var once sync.Once
 
-var (
-	ErrUnsupportedImageFormat = errors.New("unsupported image format")
-
-	// ErrNotSupportedForThumbnail is returned if the image format is not supported for thumbnail generation
-	ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
-)
+// ErrNotSupportedForThumbnail is returned if the image format is not supported for thumbnail generation
+var ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
 
 type ThumbnailEncoder struct {
 	FFMpeg             *ffmpeg.FFMpeg
@@ -100,20 +96,20 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 
 		// AVIF cannot be read from stdin, must use file path
 		if format == "avif" {
-			return e.ffmpegImageThumbnailFromPath(f.Base().Path, maxSize)
+			return e.ffmpegImageThumbnailPath(f.Base().Path, maxSize)
 		}
 	}
 
 	// Videofiles can only be thumbnailed with ffmpeg
 	if _, ok := f.(*models.VideoFile); ok {
-		return e.ffmpegImageThumbnail(buf, maxSize, format)
+		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 
 	// vips has issues loading files from stdin on Windows
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
 	} else {
-		return e.ffmpegImageThumbnail(buf, maxSize, format)
+		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 }
 
@@ -135,7 +131,7 @@ func (e *ThumbnailEncoder) GetPreview(inPath string, outPath string, maxSize int
 	return e.getClipPreview(inPath, outPath, maxSize, clipDuration, fileData.FrameRate)
 }
 
-func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int, format string) ([]byte, error) {
+func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
 	options := transcoder.ImageThumbnailOptions{
 		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
@@ -148,8 +144,8 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int
 	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
 }
 
-// ffmpegImageThumbnailFromPath generates a thumbnail from a file path (used for AVIF which can't be piped)
-func (e *ThumbnailEncoder) ffmpegImageThumbnailFromPath(inputPath string, maxSize int) ([]byte, error) {
+// ffmpegImageThumbnailPath generates a thumbnail from a file path (used for AVIF which can't be piped)
+func (e *ThumbnailEncoder) ffmpegImageThumbnailPath(inputPath string, maxSize int) ([]byte, error) {
 	options := transcoder.ImageThumbnailOptions{
 		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
