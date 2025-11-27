@@ -15,15 +15,15 @@ import { stashBoxPerformerQuery } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { stringToGender } from "src/utils/gender";
 
-const CLASSNAME = "StashBoxIDSearchModal";
-const CLASSNAME_LIST = `${CLASSNAME}-list`;
-const CLASSNAME_LIST_CONTAINER = `${CLASSNAME_LIST}-container`;
-
 interface IProps {
   stashBoxes: GQL.StashBox[];
   excludedStashBoxEndpoints?: string[];
   onSelectItem: (item?: GQL.StashIdInput) => void;
 }
+
+const CLASSNAME = "StashBoxIDSearchModal";
+const CLASSNAME_LIST = `${CLASSNAME}-list`;
+const CLASSNAME_LIST_CONTAINER = `${CLASSNAME_LIST}-container`;
 
 interface IHasRemoteSiteID {
   remote_site_id?: string | null;
@@ -146,9 +146,9 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
     null
   );
   const [query, setQuery] = useState<string>("");
-  const [results, setResults] = useState<GQL.ScrapedPerformerDataFragment[]>(
-    []
-  );
+  const [results, setResults] = useState<
+    GQL.ScrapedPerformerDataFragment[] | undefined
+  >(undefined);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -196,7 +196,7 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
   }
 
   function renderResults() {
-    if (results.length === 0) {
+    if (!results || results.length === 0) {
       return null;
     }
 
@@ -297,12 +297,12 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
           <div className="m-4 text-center">
             <LoadingIndicator inline />
           </div>
-        ) : results.length > 0 ? (
+        ) : results && results.length > 0 ? (
           renderResults()
         ) : (
-          query !== "" &&
-          !loading && (
-            <h5 className="text-center">
+          results !== undefined &&
+          results.length === 0 && (
+            <h5 className="text-center mt-4">
               <FormattedMessage id="stashbox_search.no_results" />
             </h5>
           )
