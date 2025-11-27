@@ -44,7 +44,7 @@ jobs:
         version: 9
 
     - name: Build project
-      run: make release
+      run: make CI=1 release
 
     - name: Install plperl in postgres container
       run: |
