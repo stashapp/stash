@@ -12,7 +12,7 @@ type FolderGetter interface {
 type FolderFinder interface {
 	FolderGetter
 	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*Folder, error)
-	FindByPath(ctx context.Context, path string) (*Folder, error)
+	FindByPath(ctx context.Context, path string, caseSensitive bool) (*Folder, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Folder, error)
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
 }

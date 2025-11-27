@@ -132,13 +132,13 @@ func (_m *FolderReaderWriter) FindByParentFolderID(ctx context.Context, parentFo
 	return r0, r1
 }
 
-// FindByPath provides a mock function with given fields: ctx, path
-func (_m *FolderReaderWriter) FindByPath(ctx context.Context, path string) (*models.Folder, error) {
-	ret := _m.Called(ctx, path)
+// FindByPath provides a mock function with given fields: ctx, path, caseSensitive
+func (_m *FolderReaderWriter) FindByPath(ctx context.Context, path string, caseSensitive bool) (*models.Folder, error) {
+	ret := _m.Called(ctx, path, caseSensitive)
 
 	var r0 *models.Folder
-	if rf, ok := ret.Get(0).(func(context.Context, string) *models.Folder); ok {
-		r0 = rf(ctx, path)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *models.Folder); ok {
+		r0 = rf(ctx, path, caseSensitive)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Folder)
@@ -146,8 +146,8 @@ func (_m *FolderReaderWriter) FindByPath(ctx context.Context, path string) (*mod
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, path)
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, path, caseSensitive)
 	} else {
 		r1 = ret.Error(1)
 	}

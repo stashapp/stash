@@ -281,7 +281,7 @@ func (i *Importer) populateFilesFolder(ctx context.Context) error {
 
 	if i.Input.FolderPath != "" {
 		path := i.Input.FolderPath
-		f, err := i.FolderFinder.FindByPath(ctx, path)
+		f, err := i.FolderFinder.FindByPath(ctx, path, true)
 		if err != nil {
 			return fmt.Errorf("error finding folder: %w", err)
 		}

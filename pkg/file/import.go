@@ -176,7 +176,7 @@ func (i *Importer) createFolderHierarchy(ctx context.Context, p string) (*models
 }
 
 func (i *Importer) getOrCreateFolder(ctx context.Context, path string, parent *models.Folder) (*models.Folder, error) {
-	folder, err := i.FolderStore.FindByPath(ctx, path)
+	folder, err := i.FolderStore.FindByPath(ctx, path, true)
 	if err != nil {
 		return nil, err
 	}

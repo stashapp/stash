@@ -443,7 +443,10 @@ func (s *scanJob) getFolderID(ctx context.Context, path string) (*models.FolderI
 		return &v, nil
 	}
 
-	ret, err := s.Repository.Folder.FindByPath(ctx, path)
+	// assume case sensitive when searching for the folder
+	const caseSensitive = true
+
+	ret, err := s.Repository.Folder.FindByPath(ctx, path, caseSensitive)
 	if err != nil {
 		return nil, err
 	}
@@ -492,11 +495,19 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*models.
 func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 	path := file.Path
 
+	// #1426 / #6326 - if folder is in a case-insensitive filesystem, then use
+	// case insensitive searching
+	// assume case sensitive if in zip
+	caseSensitive := true
+	if file.ZipFileID == nil {
+		caseSensitive, _ = file.fs.IsPathCaseSensitive(file.Path)
+	}
+
 	return s.withTxn(ctx, func(ctx context.Context) error {
 		defer s.incrementProgress(file)
 
 		// determine if folder already exists in data store (by path)
-		f, err := s.Repository.Folder.FindByPath(ctx, path)
+		f, err := s.Repository.Folder.FindByPath(ctx, path, caseSensitive)
 		if err != nil {
 			return fmt.Errorf("checking for existing folder %q: %w", path, err)
 		}
@@ -614,7 +625,15 @@ func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *mo
 	// update if mod time is changed
 	entryModTime := f.ModTime
 	if !entryModTime.Equal(existing.ModTime) {
+		existing.Path = f.Path
 		existing.ModTime = entryModTime
+		update = true
+	}
+
+	// #6326 - update if path has changed - should only happen if case is
+	// changed and filesystem is case insensitive
+	if existing.Path != f.Path {
+		existing.Path = f.Path
 		update = true
 	}
 
