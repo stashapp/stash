@@ -296,6 +296,9 @@ var (
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
+	// defaultExcludes contains default regex patterns to exclude from scanning
+	// @eaDir is a Synology NAS metadata folder that should be ignored
+	defaultExcludes = []string{`(?i)/@eaDir/`}
 )
 
 type MissingConfigError struct {
@@ -753,11 +756,13 @@ func (i *Config) GetDefaultScrapersPath() string {
 }
 
 func (i *Config) GetExcludes() []string {
-	return i.getStringSlice(Exclude)
+	ret := i.getStringSlice(Exclude)
+	return append(defaultExcludes, ret...)
 }
 
 func (i *Config) GetImageExcludes() []string {
-	return i.getStringSlice(ImageExclude)
+	ret := i.getStringSlice(ImageExclude)
+	return append(defaultExcludes, ret...)
 }
 
 func (i *Config) GetVideoExtensions() []string {
