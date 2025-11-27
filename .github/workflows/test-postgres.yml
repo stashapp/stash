@@ -41,10 +41,10 @@ jobs:
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
-        version: 8
+        version: 9
 
     - name: Build project
-      run: make CI=1 release
+      run: make CI=0 release
 
     - name: Install plperl in postgres container
       run: |
