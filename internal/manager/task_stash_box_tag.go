@@ -14,6 +14,11 @@ import (
 	"github.com/stashapp/stash/pkg/studio"
 )
 
+// stashBoxBatchPerformerTagTask is used to tag or create performers from stash-box.
+//
+// Two modes of operation:
+//   - Update existing performer: set performer to update from stash-box data
+//   - Create new performer: set name or stashID to search stash-box and create locally
 type stashBoxBatchPerformerTagTask struct {
 	box            *models.StashBox
 	name           *string
@@ -168,6 +173,9 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
 
+			// if we're setting the performer's aliases, and not the name, then filter out the name
+			// from the aliases to avoid duplicates
+			// add the name to the aliases if it's not already there
 			if partial.Aliases != nil && !partial.Name.Set {
 				partial.Aliases.Values = sliceutil.Filter(partial.Aliases.Values, func(s string) bool {
 					return s != t.performer.Name
@@ -199,7 +207,8 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 		} else {
 			logger.Infof("Updated performer %s", *p.Name)
 		}
-	} else if (t.name != nil || t.stashID != nil) && p.Name != nil {
+	} else {
+		// no existing performer, create a new one
 		newPerformer := p.ToPerformer(t.box.Endpoint, excluded)
 		image, err := p.GetImage(ctx, excluded)
 		if err != nil {
@@ -235,6 +244,11 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 	}
 }
 
+// stashBoxBatchStudioTagTask is used to tag or create studios from stash-box.
+//
+// Two modes of operation:
+//   - Update existing studio: set studio to update from stash-box data
+//   - Create new studio: set name or stashID to search stash-box and create locally
 type stashBoxBatchStudioTagTask struct {
 	box            *models.StashBox
 	name           *string
@@ -381,7 +395,8 @@ func (t *stashBoxBatchStudioTagTask) processMatchedStudio(ctx context.Context, s
 		} else {
 			logger.Infof("Updated studio %s", s.Name)
 		}
-	} else if (t.name != nil || t.stashID != nil) && s.Name != "" {
+	} else if s.Name != "" {
+		// no existing studio, create a new one
 		if s.Parent != nil && t.createParent {
 			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {

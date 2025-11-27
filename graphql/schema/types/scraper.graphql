@@ -281,7 +281,10 @@ type StashBoxFingerprint {
   duration: Int!
 }
 
-"If neither ids, names, nor stash_ids are set, tag all items"
+"""
+Accepts either ids, or a combination of names and stash_ids.
+If none are set, then all existing items will be tagged.
+"""
 input StashBoxBatchTagInput {
   "Stash endpoint to use for the tagging"
   endpoint: Int @deprecated(reason: "use stash_box_endpoint")
@@ -293,14 +296,17 @@ input StashBoxBatchTagInput {
   refresh: Boolean!
   "If batch adding studios, should their parent studios also be created?"
   createParent: Boolean!
-  "If set, tag with these ids. Takes precedence over names and stash_ids"
+  """
+  IDs in stash of the items to update.
+  If set, names and stash_ids fields will be ignored.
+  """
   ids: [ID!]
-  "If set, and ids is not set, tag by these names"
+  "Names of the items in the stash-box instance to search for and create"
   names: [String!]
-  "If set, and ids is not set, tag by these stash-box IDs"
+  "Stash IDs of the items in the stash-box instance to search for and create"
   stash_ids: [String!]
-  "If set, only tag these performer ids"
+  "IDs in stash of the performers to update"
   performer_ids: [ID!] @deprecated(reason: "use ids")
-  "If set, only tag these performer names"
+  "Names of the performers in the stash-box instance to search for and create"
   performer_names: [String!] @deprecated(reason: "use names")
 }
