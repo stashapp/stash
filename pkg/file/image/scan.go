@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"image"
+	"path/filepath"
+	"strings"
 
 	_ "image/gif"
 	_ "image/jpeg"
@@ -28,6 +30,11 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 	// ignore clips in non-OsFS filesystems as ffprobe cannot read them
 	// TODO - copy to temp file if not an OsFS
 	if _, isOs := fs.(*file.OsFS); !isOs {
+		// AVIF images inside zip files are not supported
+		if strings.ToLower(filepath.Ext(base.Path)) == ".avif" {
+			logger.Warnf("Skipping AVIF image in zip file: %s", base.Path)
+			return f, nil
+		}
 		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
 		return decorateFallback(fs, f)
 	}

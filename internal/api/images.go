@@ -26,6 +26,7 @@ var imageBoxExts = []string{
 	".gif",
 	".svg",
 	".webp",
+	".avif",
 }
 
 func newImageBox(box fs.FS) (*imageBox, error) {
