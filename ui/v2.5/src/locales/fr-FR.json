@@ -423,6 +423,10 @@
             "plugins_path": {
                 "description": "Emplacement du répertoire des fichiers de configuration des plugins",
                 "heading": "Chemin des plugins"
+            },
+            "delete_trash_path": {
+                "description": "Chemin où les fichiers supprimés seront déplacés au lieu d'être définitivement supprimés. Laissez ce champ vide pour supprimer définitivement les fichiers.",
+                "heading": "Chemin de la corbeille"
             }
         },
         "library": {
@@ -990,7 +994,8 @@
         "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?",
         "overwrite_filter_warning": "Le filtre enregistré \"{entityName}\" sera remplacé.",
         "set_default_filter_confirm": "Êtes-vous sûr de vouloir définir ce filtre par défaut ?",
-        "clear_o_history_confirm_sfw": "Êtes-vous sûr de vouloir effacer l'historique des \"J'aime\" ?"
+        "clear_o_history_confirm_sfw": "Êtes-vous sûr de vouloir effacer l'historique des \"J'aime\" ?",
+        "delete_alert_to_trash": "Les éléments suivants {count, plural, one {{singularEntity}} other {{pluralEntity}}} seront déplacés vers la corbeille :"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
