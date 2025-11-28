@@ -685,6 +685,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {maybeRenderScrapeDialog()}
       {isStashIDSearchOpen && (
         <StashBoxIDSearchModal
+          entityType="performer"
           stashBoxes={stashConfig?.general.stashBoxes ?? []}
           excludedStashBoxEndpoints={formik.values.stash_ids.map(
             (s) => s.endpoint

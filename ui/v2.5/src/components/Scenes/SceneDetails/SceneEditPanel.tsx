@@ -21,7 +21,7 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
@@ -41,6 +41,7 @@ import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 import { Group } from "src/components/Groups/GroupSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -76,6 +77,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [scraper, setScraper] = useState<GQL.ScraperSourceInput>();
   const [isScraperQueryModalOpen, setIsScraperQueryModalOpen] =
+    useState<boolean>(false);
+  const [isStashIDSearchOpen, setIsStashIDSearchOpen] =
     useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
   const [endpoint, setEndpoint] = useState<string>();
@@ -547,6 +550,27 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+
+    // Check if StashID with this endpoint already exists
+    const existingIndex = formik.values.stash_ids.findIndex(
+      (s) => s.endpoint === item.endpoint
+    );
+
+    let newStashIDs;
+    if (existingIndex >= 0) {
+      // Replace existing StashID
+      newStashIDs = [...formik.values.stash_ids];
+      newStashIDs[existingIndex] = item;
+    } else {
+      // Add new StashID
+      newStashIDs = [...formik.values.stash_ids, item];
+    }
+
+    formik.setFieldValue("stash_ids", newStashIDs);
+  }
+
   const image = useMemo(() => {
     if (encodingImage) {
       return (
@@ -696,6 +720,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
       {renderScrapeQueryModal()}
       {maybeRenderScrapeDialog()}
+      {isStashIDSearchOpen && (
+        <StashBoxIDSearchModal
+          entityType="scene"
+          stashBoxes={stashConfig?.general.stashBoxes ?? []}
+          excludedStashBoxEndpoints={formik.values.stash_ids.map(
+            (s) => s.endpoint
+          )}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
+        />
+      )}
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
@@ -761,7 +798,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
               "stash_ids",
               "scenes",
               "stash_ids",
-              fullWidthProps
+              fullWidthProps,
+              <Button
+                variant="success"
+                className="mr-2 py-0"
+                onClick={() => setIsStashIDSearchOpen(true)}
+                disabled={!stashConfig?.general.stashBoxes?.length}
+                title={intl.formatMessage({ id: "actions.add_stash_id" })}
+              >
+                <Icon icon={faPlus} />
+              </Button>
             )}
           </Col>
           <Col lg={5} xl={12}>
