@@ -25,6 +25,7 @@ import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { mergeStashIDs } from "src/utils/stashbox";
+import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { useTaggerConfig } from "../config";
 
@@ -222,7 +223,7 @@ const PerformerBatchAddModal: React.FC<IPerformerBatchAddModal> = ({
         as="textarea"
         ref={performerInput}
         placeholder={intl.formatMessage({
-          id: "performer_tagger.performer_names_separated_by_comma",
+          id: "performer_tagger.performer_names_or_stashids_separated_by_comma",
         })}
         rows={6}
       />
@@ -666,14 +667,17 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
 
   async function batchAdd(performerInput: string) {
     if (performerInput && selectedEndpoint) {
-      const names = performerInput
+      const inputs = performerInput
         .split(",")
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
 
-      if (names.length > 0) {
+      const { names, stashIds } = separateNamesAndStashIds(inputs);
+
+      if (names.length > 0 || stashIds.length > 0) {
         const ret = await mutateStashBoxBatchPerformerTag({
-          names: names,
+          names: names.length > 0 ? names : undefined,
+          stash_ids: stashIds.length > 0 ? stashIds : undefined,
           endpoint: selectedEndpointIndex,
           refresh: false,
           createParent: false,

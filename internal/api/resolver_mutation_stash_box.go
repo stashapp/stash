@@ -39,7 +39,7 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint) //nolint:staticcheck
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input 
 }
 
 func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint) //nolint:staticcheck
 	if err != nil {
 		return "", err
 	}
