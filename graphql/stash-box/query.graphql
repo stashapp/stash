@@ -170,6 +170,12 @@ query FindStudio($id: ID, $name: String) {
   }
 }
 
+query FindTag($id: ID, $name: String) {
+  findTag(id: $id, name: $name) {
+    ...TagFragment
+  }
+}
+
 mutation SubmitFingerprint($input: FingerprintSubmission!) {
   submitFingerprint(input: $input)
 }

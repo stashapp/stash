@@ -1,3 +1,5 @@
+import * as GQL from "src/core/generated-graphql";
+
 export const getStashIDs = (
   ids?: { stash_id: string; endpoint: string; updated_at: string }[]
 ) =>
@@ -31,4 +33,26 @@ export const separateNamesAndStashIds = (
   });
 
   return { names, stashIds };
+};
+
+/**
+ * Utility to add or update a StashID in an array.
+ * If a StashID with the same endpoint exists, it will be replaced.
+ * Otherwise, the new StashID will be appended.
+ */
+export const addUpdateStashID = (
+  existingStashIDs: GQL.StashIdInput[],
+  newItem: GQL.StashIdInput
+): GQL.StashIdInput[] => {
+  const existingIndex = existingStashIDs.findIndex(
+    (s) => s.endpoint === newItem.endpoint
+  );
+
+  if (existingIndex >= 0) {
+    const newStashIDs = [...existingStashIDs];
+    newStashIDs[existingIndex] = newItem;
+    return newStashIDs;
+  }
+
+  return [...existingStashIDs, newItem];
 };

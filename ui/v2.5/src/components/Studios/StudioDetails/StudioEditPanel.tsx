@@ -8,7 +8,7 @@ import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { Button, Form } from "react-bootstrap";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import isEqual from "lodash-es/isEqual";
@@ -153,20 +153,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   function onStashIDSelected(item?: GQL.StashIdInput) {
     if (!item) return;
-
-    const existingIndex = formik.values.stash_ids.findIndex(
-      (s) => s.endpoint === item.endpoint
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
     );
-
-    let newStashIDs;
-    if (existingIndex >= 0) {
-      newStashIDs = [...formik.values.stash_ids];
-      newStashIDs[existingIndex] = item;
-    } else {
-      newStashIDs = [...formik.values.stash_ids, item];
-    }
-
-    formik.setFieldValue("stash_ids", newStashIDs);
   }
 
   const {

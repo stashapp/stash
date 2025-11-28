@@ -16,7 +16,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { useToast } from "src/hooks/Toast";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
@@ -552,23 +552,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function onStashIDSelected(item?: GQL.StashIdInput) {
     if (!item) return;
-
-    // Check if StashID with this endpoint already exists
-    const existingIndex = formik.values.stash_ids.findIndex(
-      (s) => s.endpoint === item.endpoint
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
     );
-
-    let newStashIDs;
-    if (existingIndex >= 0) {
-      // Replace existing StashID
-      newStashIDs = [...formik.values.stash_ids];
-      newStashIDs[existingIndex] = item;
-    } else {
-      // Add new StashID
-      newStashIDs = [...formik.values.stash_ids, item];
-    }
-
-    formik.setFieldValue("stash_ids", newStashIDs);
   }
 
   const image = useMemo(() => {
