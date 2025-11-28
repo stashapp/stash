@@ -8,11 +8,47 @@ import {
   IListFilterOperation,
   ListOperationButtons,
 } from "./ListOperationButtons";
-import { ButtonGroup, ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IListSelect, useFilterOperations } from "./util";
 import { SavedFilterDropdown } from "./SavedFilterList";
 import { FilterButton } from "./Filters/FilterButton";
+import { Icon } from "../Shared/Icon";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faSquareCheck } from "@fortawesome/free-regular-svg-icons";
+import { useIntl } from "react-intl";
+import cx from "classnames";
+
+const SelectionSection: React.FC<{
+  filter: ListFilterModel;
+  selected: number;
+  onSelectAll: () => void;
+  onSelectNone: () => void;
+}> = ({ selected, onSelectAll, onSelectNone }) => {
+  const intl = useIntl();
+
+  return (
+    <div className="selected-items-info">
+      <Button
+        variant="secondary"
+        className="minimal"
+        onClick={() => onSelectNone()}
+        title={intl.formatMessage({ id: "actions.select_none" })}
+      >
+        <Icon icon={faTimes} />
+      </Button>
+      <span className="selected-count">{selected}</span>
+      <Button
+        variant="secondary"
+        className="minimal"
+        onClick={() => onSelectAll()}
+        title={intl.formatMessage({ id: "actions.select_all" })}
+      >
+        <Icon icon={faSquareCheck} />
+      </Button>
+    </div>
+  );
+};
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
@@ -62,33 +98,54 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
     setFilter,
   });
   const { selectedIds, onSelectAll, onSelectNone } = listSelect;
+  const hasSelection = selectedIds.size > 0;
 
   return (
-    <ButtonToolbar className="filtered-list-toolbar">
-      <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
-
-      <ButtonGroup>
-        <SavedFilterDropdown
+    <ButtonToolbar
+      className={cx("filtered-list-toolbar", { "has-selection": hasSelection })}
+    >
+      {hasSelection ? (
+        <SelectionSection
           filter={filter}
-          onSetFilter={setFilter}
-          view={view}
+          selected={selectedIds.size}
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
         />
-        <FilterButton onClick={() => showEditFilter()} count={filter.count()} />
-      </ButtonGroup>
+      ) : (
+        <>
+          <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
 
-      <SortBySelect
-        sortBy={filter.sortBy}
-        sortDirection={filter.sortDirection}
-        options={filterOptions.sortByOptions}
-        onChangeSortBy={(e) => setFilter(filter.setSortBy(e ?? undefined))}
-        onChangeSortDirection={() => setFilter(filter.toggleSortDirection())}
-        onReshuffleRandomSort={() => setFilter(filter.reshuffleRandomSort())}
-      />
+          <ButtonGroup>
+            <SavedFilterDropdown
+              filter={filter}
+              onSetFilter={setFilter}
+              view={view}
+            />
+            <FilterButton
+              onClick={() => showEditFilter()}
+              count={filter.count()}
+            />
+          </ButtonGroup>
 
-      <PageSizeSelector
-        pageSize={filter.itemsPerPage}
-        setPageSize={(size) => setFilter(filter.setPageSize(size))}
-      />
+          <SortBySelect
+            sortBy={filter.sortBy}
+            sortDirection={filter.sortDirection}
+            options={filterOptions.sortByOptions}
+            onChangeSortBy={(e) => setFilter(filter.setSortBy(e ?? undefined))}
+            onChangeSortDirection={() =>
+              setFilter(filter.toggleSortDirection())
+            }
+            onReshuffleRandomSort={() =>
+              setFilter(filter.reshuffleRandomSort())
+            }
+          />
+
+          <PageSizeSelector
+            pageSize={filter.itemsPerPage}
+            setPageSize={(size) => setFilter(filter.setPageSize(size))}
+          />
+        </>
+      )}
 
       <ListOperationButtons
         onSelectAll={onSelectAll}
