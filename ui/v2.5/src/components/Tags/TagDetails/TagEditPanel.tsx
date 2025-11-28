@@ -219,66 +219,68 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
       <div>
         {isNew && (
-        <h2>
-          <FormattedMessage
-            id="actions.add_entity"
-            values={{ entityType: intl.formatMessage({ id: "tag" }) }}
-          />
-        </h2>
-      )}
-
-      <Prompt
-        when={formik.dirty}
-        message={(location, action) => {
-          // Check if it's a redirect after tag creation
-          if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
-            return true;
-          }
-
-          return handleUnsavedChanges(intl, "tags", tag.id)(location);
-        }}
-      />
-
-      <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
-        {renderInputField("name")}
-        {renderInputField("sort_name", "text")}
-        {renderStringListField("aliases")}
-        {renderInputField("description", "textarea")}
-        {renderParentTagsField()}
-        {renderSubTagsField()}
-        {renderStashIDsField(
-          "stash_ids",
-          "tags",
-          "stash_ids",
-          undefined,
-          <Button
-            variant="success"
-            className="mr-2 py-0"
-            onClick={() => setIsStashIDSearchOpen(true)}
-            disabled={!stashConfig?.general.stashBoxes?.length}
-            title={intl.formatMessage({ id: "actions.add_stash_id" })}
-          >
-            <Icon icon={faPlus} />
-          </Button>
+          <h2>
+            <FormattedMessage
+              id="actions.add_entity"
+              values={{ entityType: intl.formatMessage({ id: "tag" }) }}
+            />
+          </h2>
         )}
-        <hr />
-        {renderInputField("ignore_auto_tag", "checkbox")}
-      </Form>
 
-      <DetailsEditNavbar
-        objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
-        classNames="col-xl-9 mt-3"
-        isNew={isNew}
-        isEditing
-        onToggleEdit={onCancel}
-        onSave={formik.handleSubmit}
-        saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
-        onImageChange={onImageChange}
-        onImageChangeURL={onImageLoad}
-        onClearImage={() => onImageLoad(null)}
-        onDelete={onDelete}
-        acceptSVG
-      />
+        <Prompt
+          when={formik.dirty}
+          message={(location, action) => {
+            // Check if it's a redirect after tag creation
+            if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
+              return true;
+            }
+
+            return handleUnsavedChanges(intl, "tags", tag.id)(location);
+          }}
+        />
+
+        <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
+          {renderInputField("name")}
+          {renderInputField("sort_name", "text")}
+          {renderStringListField("aliases")}
+          {renderInputField("description", "textarea")}
+          {renderParentTagsField()}
+          {renderSubTagsField()}
+          {renderStashIDsField(
+            "stash_ids",
+            "tags",
+            "stash_ids",
+            undefined,
+            <Button
+              variant="success"
+              className="mr-2 py-0"
+              onClick={() => setIsStashIDSearchOpen(true)}
+              disabled={!stashConfig?.general.stashBoxes?.length}
+              title={intl.formatMessage({ id: "actions.add_stash_id" })}
+            >
+              <Icon icon={faPlus} />
+            </Button>
+          )}
+          <hr />
+          {renderInputField("ignore_auto_tag", "checkbox")}
+        </Form>
+
+        <DetailsEditNavbar
+          objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
+          classNames="col-xl-9 mt-3"
+          isNew={isNew}
+          isEditing
+          onToggleEdit={onCancel}
+          onSave={formik.handleSubmit}
+          saveDisabled={
+            (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+          }
+          onImageChange={onImageChange}
+          onImageChangeURL={onImageLoad}
+          onClearImage={() => onImageLoad(null)}
+          onDelete={onDelete}
+          acceptSVG
+        />
       </div>
     </>
   );
