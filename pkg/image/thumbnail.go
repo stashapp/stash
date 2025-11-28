@@ -96,9 +96,13 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 
 		// AVIF cannot be read from stdin, must use file path
 		// AVIF in zip files is not supported
+		// Note: No Windows check needed here since we use file path, not stdin
 		if format == "avif" {
 			if f.Base().ZipFileID != nil {
 				return nil, fmt.Errorf("%w: AVIF in zip file", ErrNotSupportedForThumbnail)
+			}
+			if e.vips != nil {
+				return e.vips.ImageThumbnailPath(f.Base().Path, maxSize)
 			}
 			return e.ffmpegImageThumbnailPath(f.Base().Path, maxSize)
 		}
