@@ -904,7 +904,6 @@
         "no_results_found": "Nenhum resultado encontrado.",
         "number_of_performers_will_be_processed": "{performer_count} artistas serão processados",
         "performer_already_tagged": "Artista já etiquetado",
-        "performer_names_separated_by_comma": "Nomes de artistas separados por vírgula",
         "performer_selection": "Seleção de artista",
         "performer_successfully_tagged": "Artista etiquetado com sucesso:",
         "query_all_performers_in_the_database": "Todos os artistas no banco de dados",

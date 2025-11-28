@@ -1119,7 +1119,6 @@
         "no_results_found": "結果が見つかりませんでした。",
         "number_of_performers_will_be_processed": "{performer_count}人の出演者が処理されます",
         "performer_already_tagged": "出演者は既にタグ付けされています",
-        "performer_names_separated_by_comma": "出演者の名前はコンマで区切ってください",
         "performer_selection": "出演者の選択",
         "performer_successfully_tagged": "出演者のタグ付けに成功しました:",
         "query_all_performers_in_the_database": "データベース内の全出演者",

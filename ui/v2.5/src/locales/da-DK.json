@@ -1072,7 +1072,6 @@
         "no_results_found": "Ingen resultater fundet.",
         "number_of_performers_will_be_processed": "{performer_count} kunstnere vil blive behandlet",
         "performer_already_tagged": "Kunstner allerede tagget",
-        "performer_names_separated_by_comma": "Artistnavne adskilt af komma",
         "performer_selection": "Valg af kunstner",
         "performer_successfully_tagged": "Kunstner tagget med succes:",
         "query_all_performers_in_the_database": "Alle kunstnere i databasen",

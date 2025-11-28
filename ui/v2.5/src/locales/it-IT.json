@@ -977,7 +977,6 @@
         "no_results_found": "Nessun risultato trovato.",
         "number_of_performers_will_be_processed": "{performer_count} attori saranno processati",
         "performer_already_tagged": "Attore/Attrice già taggato/a",
-        "performer_names_separated_by_comma": "Nome attore/attrice separato da virgola",
         "performer_selection": "Selezione attore/attrice",
         "performer_successfully_tagged": "Attore/Attrice taggato/a con successo:",
         "query_all_performers_in_the_database": "Tutti gli attori nel database",

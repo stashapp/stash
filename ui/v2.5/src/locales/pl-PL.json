@@ -1079,7 +1079,6 @@
         "no_results_found": "Nie znaleziono wyników.",
         "number_of_performers_will_be_processed": "{performer_count} wykonawców zostanie przetworzonych",
         "performer_already_tagged": "Aktor już otagowany",
-        "performer_names_separated_by_comma": "Nazwy aktorów oddzielone przecinkami",
         "performer_selection": "Wybór aktorów",
         "performer_successfully_tagged": "Aktor pomyślnie otagowany:",
         "query_all_performers_in_the_database": "Wszyscy aktorzy w bazie danych",
