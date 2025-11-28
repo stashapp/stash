@@ -89,10 +89,12 @@ type ScanMetadataInput struct {
 	Filter *ScanMetaDataFilterInput `json:"filter"`
 }
 
-// Filter options for meta data scannning
+// ScanMetaDataFilterInput Filter options for meta data scannning
 type ScanMetaDataFilterInput struct {
 	// If set, files with a modification time before this time point are ignored by the scan
 	MinModTime *time.Time `json:"minModTime"`
+	// If set, video files with a duration lower than this threshold are ignored by the scan
+	MinDuration *float64 `json:"minDuration"`
 }
 
 func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {

@@ -533,6 +533,7 @@ type ConfigScrapingResult {
 
 type ConfigDefaultSettingsResult {
   scan: ScanMetadataOptions
+  filter: ScanMetaDataFilterOptions
   identify: IdentifyMetadataTaskOptions
   autoTag: AutoTagMetadataOptions
   generate: GenerateMetadataOptions

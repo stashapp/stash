@@ -164,6 +164,9 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     scanGenerateThumbnails
     scanGenerateClipPreviews
   }
+  filter {
+    minDuration
+  }
 
   identify {
     sources {

@@ -70,6 +70,15 @@ type GeneratePreviewOptions {
 input ScanMetaDataFilterInput {
   "If set, files with a modification time before this time point are ignored by the scan"
   minModTime: Timestamp
+  "If set, video files with a duration lower than this threshold are ignored by the scan"
+  minDuration: Float
+}
+
+type ScanMetaDataFilterOptions {
+  "If set, files with a modification time before this time point are ignored by the scan"
+  minModTime: Timestamp!
+  "If set, video files with a duration lower than this threshold are ignored by the scan"
+  minDuration: Float!
 }
 
 input ScanMetadataInput {
