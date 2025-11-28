@@ -114,11 +114,15 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 	}
 
 	// vips has issues loading files from stdin on Windows
-	if e.vips != nil && runtime.GOOS != "windows" {
-		return e.vips.ImageThumbnail(buf, maxSize)
-	} else {
-		return e.ffmpegImageThumbnail(buf, maxSize)
+	if e.vips != nil {
+		if runtime.GOOS == "windows" && f.Base().ZipFileID == nil {
+			return e.vips.ImageThumbnailPath(f.Base().Path, maxSize)
+		}
+		if runtime.GOOS != "windows" {
+			return e.vips.ImageThumbnail(buf, maxSize)
+		}
 	}
+	return e.ffmpegImageThumbnail(buf, maxSize)
 }
 
 // GetPreview returns the preview clip of the provided image clip resized to
