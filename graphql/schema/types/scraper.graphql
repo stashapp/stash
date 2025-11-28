@@ -198,6 +198,13 @@ input ScrapeSingleStudioInput {
   query: String
 }
 
+input ScrapeSingleTagInput {
+  """
+  Query can be either a name or a Stash ID
+  """
+  query: String
+}
+
 input ScrapeSinglePerformerInput {
   "Instructs to query by string"
   query: String
