@@ -3,6 +3,7 @@
 package desktop
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/kermieisinthehouse/systray"
@@ -20,7 +21,12 @@ func startSystray(exit chan int, faviconProvider FaviconProvider) {
 	// system is started from a non-terminal method, e.g. double-clicking an icon.
 	c := config.GetInstance()
 	if c.GetShowOneTimeMovedNotification() {
-		SendNotification("Stash has moved!", "Stash now runs in your tray, instead of a terminal window.")
+		// Use platform-appropriate terminology
+		location := "tray"
+		if runtime.GOOS == "darwin" {
+			location = "menu bar"
+		}
+		SendNotification("Stash has moved!", "Stash now runs in your "+location+", instead of a terminal window.")
 		c.SetBool(config.ShowOneTimeMovedNotification, false)
 		if err := c.Write(); err != nil {
 			logger.Errorf("Error while writing configuration file: %v", err)
