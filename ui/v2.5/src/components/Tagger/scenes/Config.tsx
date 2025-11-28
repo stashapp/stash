@@ -13,6 +13,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { ParseMode, TagOperation } from "../constants";
 import { TaggerStateContext } from "../context";
+import { GenderEnum } from "src/core/generated-graphql";
+import { genderList } from "src/utils/gender";
 
 const Blacklist: React.FC<{
   list: string[];
@@ -118,6 +120,26 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
   const { config, setConfig } = useContext(TaggerStateContext);
   const intl = useIntl();
 
+  function renderGenderCheckbox(gender: GenderEnum) {
+    const performerGenders = config.performerGenders || genderList.slice();
+    return (
+      <Form.Check
+        key={gender}
+        label={<FormattedMessage id={`gender_types.${gender}`} />}
+        checked={performerGenders.includes(gender)}
+        onChange={(e) => {
+          const isChecked = e.currentTarget.checked;
+          setConfig({
+            ...config,
+            performerGenders: isChecked
+              ? [...performerGenders, gender]
+              : performerGenders.filter((g) => g !== gender),
+          });
+        }}
+      />
+    );
+  }
+
   return (
     <Collapse in={show}>
       <Card>
@@ -127,18 +149,16 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
           </h4>
           <hr className="w-100" />
           <Form className="col-md-6">
-            <Form.Group controlId="tag-males" className="align-items-center">
-              <Form.Check
-                label={
-                  <FormattedMessage id="component_tagger.config.show_male_label" />
-                }
-                checked={config.showMales}
-                onChange={(e) =>
-                  setConfig({ ...config, showMales: e.currentTarget.checked })
-                }
-              />
+            <Form.Group
+              controlId="performer-genders"
+              className="align-items-center"
+            >
+              <Form.Label>
+                <FormattedMessage id="component_tagger.config.performer_genders.heading" />
+              </Form.Label>
+              {genderList.map(renderGenderCheckbox)}
               <Form.Text>
-                <FormattedMessage id="component_tagger.config.show_male_desc" />
+                <FormattedMessage id="component_tagger.config.performer_genders.description" />
               </Form.Text>
             </Form.Group>
             <Form.Group controlId="set-cover" className="align-items-center">

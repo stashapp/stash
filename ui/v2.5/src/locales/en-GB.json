@@ -190,6 +190,10 @@
       },
       "mark_organized_desc": "Immediately mark the scene as Organized after the Save button is clicked.",
       "mark_organized_label": "Mark as Organized on save",
+      "performer_genders": {
+        "heading": "Performer genders",
+        "description": "Performers with these genders will be shown when tagging scenes."
+      },
       "query_mode_auto": "Auto",
       "query_mode_auto_desc": "Uses metadata if present, or filename",
       "query_mode_dir": "Dir",
@@ -205,8 +209,6 @@
       "set_cover_label": "Set scene cover image",
       "set_tag_desc": "Attach tags to scene, either by overwriting or merging with existing tags on scene.",
       "set_tag_label": "Set tags",
-      "show_male_desc": "Toggle whether male performers will be available to tag.",
-      "show_male_label": "Show male performers",
       "source": "Source"
     },
     "noun_query": "Query",
