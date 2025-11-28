@@ -124,7 +124,7 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 		ret.Details = NewOptionalString(strings.TrimSpace(*s.Details))
 	}
 
-	if s.Aliases != nil && !excluded["aliases"] {
+	if s.Aliases != nil && *s.Aliases != "" && !excluded["aliases"] {
 		ret.Aliases = &UpdateStrings{
 			Values: stringslice.TrimSpace(stringslice.FromString(*s.Aliases, ",")),
 			Mode:   RelationshipUpdateModeSet,
