@@ -191,8 +191,6 @@
             "set_cover_label": "Seleccionar carátula de la escena",
             "set_tag_desc": "Adjuntar etiquetas a la escena, ya sea sobreescribiéndolas (elimina las que existieran previamente) o fusionando las nuevas con las que ya existían previamente.",
             "set_tag_label": "Seleccionar etiquetas",
-            "show_male_desc": "Marcar esta opción hará que los actores masculinos estén disponibles para su etiquetado.",
-            "show_male_label": "Mostrar actores",
             "source": "Fuente",
             "mark_organized_desc": "Marcar la escena como organizada tras pulsar el botón de Guardar.",
             "mark_organized_label": "Marcar como organizado al guardar",

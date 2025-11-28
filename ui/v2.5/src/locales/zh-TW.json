@@ -191,8 +191,6 @@
             "set_cover_label": "設定短片封面",
             "set_tag_desc": "選擇套用標籤時，該如何處理現有標籤。",
             "set_tag_label": "標籤設定",
-            "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
-            "show_male_label": "顯示男優",
             "source": "來源",
             "mark_organized_desc": "點選儲存後立即將短片標為已整理。",
             "mark_organized_label": "儲存時標記為已整理",

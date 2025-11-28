@@ -197,8 +197,6 @@
             "set_cover_label": "设置短片封面",
             "set_tag_desc": "通过覆盖或与短片中的现有标签合并，将标签附加到短片。",
             "set_tag_label": "设置标签",
-            "show_male_desc": "选择搜索时是否获取男演员信息.",
-            "show_male_label": "展示男演员标签",
             "source": "源",
             "mark_organized_label": "保存时标记为已整理",
             "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。",

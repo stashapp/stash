@@ -183,8 +183,6 @@
             "set_cover_label": "Sahne için kapak resmi seç",
             "set_tag_desc": "Sahneye etiket ekle (varolan etiketlerle birleştir veya üzerine yaz).",
             "set_tag_label": "Etiketleri düzenle",
-            "show_male_desc": "Erkek oyuncuları etiketleme işlemini aç/kapat.",
-            "show_male_label": "Erkek oyuncuları göster",
             "source": "Kaynak",
             "errors": {
                 "blacklist_duplicate": "Yinelenen kara liste öğesi"

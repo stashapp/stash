@@ -197,8 +197,6 @@
             "set_cover_label": "Aseta kohtauksen kansikuva",
             "set_tag_desc": "Liitä tunnisteet kohtaukseen, joko ylikirjoittamalla nykyiset tai yhdistämällä ne jo olemassa oleviin tunnisteihin.",
             "set_tag_label": "Aseta tunnisteet",
-            "show_male_desc": "Valitse käytetäänkö miesesiintyjiä automaattisessa tunnisteiden asettamisessa.",
-            "show_male_label": "Näytä miesesiintyjät",
             "source": "Lähde",
             "mark_organized_label": "Merkitse järjestetyksi kun tallennetaan",
             "mark_organized_desc": "Merkitsee kohtauksen järjestellyksi hetki kun Tallenna -painiketta on painettu.",

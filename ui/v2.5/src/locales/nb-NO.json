@@ -176,9 +176,7 @@
             "errors": {
                 "blacklist_duplicate": "Dupliser element fra svarteliste"
             },
-            "set_tag_desc": "Tilknytt tagger til scenen, enten ved å overskrive eller flette med eksisterende tagger på scenen.",
-            "show_male_label": "Vis mannlige utøvere",
-            "show_male_desc": "Angi om mannlige utøvere skal være tilgjengelige for tagging."
+            "set_tag_desc": "Tilknytt tagger til scenen, enten ved å overskrive eller flette med eksisterende tagger på scenen."
         },
         "noun_query": "Forespørsel",
         "results": {

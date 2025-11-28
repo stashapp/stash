@@ -197,8 +197,6 @@
             "set_cover_label": "영상 커버 이미지 설정",
             "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰거나 병합함으로써 태그를 영상에 추가합니다.",
             "set_tag_label": "태그 설정",
-            "show_male_desc": "남성 배우들의 태그 가능 여부 설정을 켜거나 끕니다.",
-            "show_male_label": "남성 배우 보여주기",
             "source": "출처",
             "mark_organized_desc": "저장 버튼을 클릭하면 곧바로 영상을 '정리됨' 상태로 만듭니다.",
             "mark_organized_label": "저장 시 '정리됨' 상태로 만들기",

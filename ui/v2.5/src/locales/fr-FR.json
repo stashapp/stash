@@ -200,8 +200,6 @@
             "set_cover_label": "Définir la vignette de la scène",
             "set_tag_desc": "Attache des étiquettes à la scène, en écrasant ou en fusionnant avec des étiquettes existantes.",
             "set_tag_label": "Définir les étiquettes",
-            "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
-            "show_male_label": "Montrer les performeurs masculins",
             "source": "Source",
             "errors": {
                 "blacklist_duplicate": "Élément de liste noire en double"

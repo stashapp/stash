@@ -197,8 +197,6 @@
             "set_cover_label": "Setze Cover-Bild",
             "set_tag_desc": "Hänge Tags der Szene an, entweder durch Überschreiben oder Zusammenführen mit bereits angehängten Tags.",
             "set_tag_label": "Tags anhängen",
-            "show_male_desc": "Auswahl ob männliche Darsteller der Szene hinzugefügt werden können.",
-            "show_male_label": "Männliche Darsteller anzeigen",
             "source": "Quelle",
             "mark_organized_label": "Beim speichern als organisiert markieren",
             "mark_organized_desc": "Markiere die Szene nach dem klicken auf Speichern als organisiert.",

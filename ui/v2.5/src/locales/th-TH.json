@@ -169,8 +169,6 @@
             "set_cover_label": "ตั้ง Cover รูปภาพของฉาก",
             "set_tag_desc": "แนบแท็กกับฉาก โดยเขียนทับหรือรวมกับแท็กที่มีอยู่ในฉาก",
             "set_tag_label": "ตั้งแท็ก",
-            "show_male_desc": "สลับว่าจะให้นักแสดงชายพร้อมแท็กหรือไม่",
-            "show_male_label": "โชว์นักแสดงชาย",
             "source": "ต้นทาง",
             "mark_organized_desc": "ตั้งค่า scene เป็น organized ทันทีที่กดบันทึกข้อมูล",
             "mark_organized_label": "ตั้งค่าเป็น organized เมื่อบันทึกข้อมูล"

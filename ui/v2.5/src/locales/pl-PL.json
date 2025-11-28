@@ -189,8 +189,6 @@
             "set_cover_label": "Ustawianie obrazu okładki sceny",
             "set_tag_desc": "Dołączanie tagów do sceny poprzez nadpisywanie lub łączenie z istniejącymi tagami w scenie.",
             "set_tag_label": "Ustaw tagi",
-            "show_male_desc": "Włączenie opcji tagowania wykonawców płci męskiej.",
-            "show_male_label": "Pokaż męskich aktorów",
             "source": "Źródło",
             "mark_organized_desc": "Po kliknięciu przycisku Zapisz scena zostaje natychmiast oznaczona jako zorganizowana.",
             "mark_organized_label": "Oznacz jako zorganizowane przy zapisywaniu"

@@ -184,8 +184,6 @@
             "set_cover_label": "シーンのカバー画像を設定",
             "set_tag_desc": "シーン上の既存のタグを上書きまたはマージすることで、シーンにタグを付与します。",
             "set_tag_label": "タグを設定",
-            "show_male_desc": "男優をタグ付けできるかを切り替えます。",
-            "show_male_label": "男優を表示",
             "source": "ソース",
             "mark_organized_desc": "保存ボタンをクリック後に、すぐにシーンが「分類済み」になります。",
             "mark_organized_label": "分類済みにして保存",

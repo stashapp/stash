@@ -173,8 +173,6 @@
             "set_cover_label": "Definir imagem da capa da cena",
             "set_tag_desc": "Anexar etiquetas à cena, sobrescrevendo ou mesclando com as etiquetas existentes na cena.",
             "set_tag_label": "Definir etiquetas",
-            "show_male_desc": "Define se artistas masculinos estarão disponíveis para etiquetar.",
-            "show_male_label": "Mostrar artistas masculinos",
             "source": "Fonte"
         },
         "noun_query": "Query",

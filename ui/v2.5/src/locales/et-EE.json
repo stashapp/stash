@@ -192,8 +192,6 @@
             "set_cover_label": "Määra stseeni kaanepilt",
             "set_tag_desc": "Ühenda stseenile külge silte, kas olemasolevate siltide ülekirjutamise või liitmise kaudu.",
             "set_tag_label": "Määra sildid",
-            "show_male_desc": "Vali, kas meesnäitlejad on määramiseks saadaval.",
-            "show_male_label": "Näita meesnäitlejaid",
             "source": "Allikas",
             "mark_organized_desc": "Märgi stseen koheselt Orgainiseerituks peale Salvesta nupu vajutamist.",
             "mark_organized_label": "Märgi salvestamisel Organiseerituks",

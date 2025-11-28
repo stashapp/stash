@@ -177,8 +177,6 @@
             "set_cover_label": "Imposta la copertina della scena",
             "set_tag_desc": "Attacca tag alla scena, sovrascrivendoli o unendoli a quelli esistenti sulla scena.",
             "set_tag_label": "Imposta i tags",
-            "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori maschi.",
-            "show_male_label": "Mostra attori maschi",
             "source": "Sorgente",
             "mark_organized_desc": "Contrassegna immediatamente la scena come \"ordinata\" quando si clicca sul pulsante Save.",
             "mark_organized_label": "Contrassegna come \"ordinato\" al salvataggio"

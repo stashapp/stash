@@ -200,8 +200,6 @@
             "set_cover_label": "Välj scenens miniatyrbild",
             "set_tag_desc": "Tagga scenen antingen genom att skriva över eller slå samman med de redan existerande.",
             "set_tag_label": "Tagga",
-            "show_male_desc": "Välj huruvida manliga stjärnor kommer vara tillgängliga att tagga.",
-            "show_male_label": "Visa manliga stjärnor",
             "source": "Källa",
             "errors": {
                 "blacklist_duplicate": "Duplicera svartlistat objekt"

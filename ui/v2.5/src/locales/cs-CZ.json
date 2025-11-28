@@ -186,8 +186,6 @@
             "set_cover_label": "Nastavit obrázek obalu scény",
             "set_tag_desc": "Přidat tagy ke scéně, buď přepsáním nebo sloučením existujících tagů na scéně.",
             "set_tag_label": "Nastavit tagy",
-            "show_male_desc": "Zapnout / vypnout, zda mají být mužští umělci tagováni.",
-            "show_male_label": "Ukázat mužské účinkující",
             "source": "Zdroj",
             "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
             "mark_organized_label": "Označit jako Uspořádané při uložení",

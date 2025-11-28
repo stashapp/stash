@@ -185,8 +185,6 @@
             "set_cover_label": "Scèneomslag instellen",
             "set_tag_desc": "Voorzie een scène van labels door ze te overschrijven of samen te voegen met reeds aanwezige.",
             "set_tag_label": "Labels instellen",
-            "show_male_desc": "Geef aan of mannen gelabeld mogen worden.",
-            "show_male_label": "Mannen tonen",
             "source": "Bron",
             "mark_organized_label": "Markeren als geordend na opslaan",
             "mark_organized_desc": "Markeer een scène als geordend na klikken op opslaan.",
