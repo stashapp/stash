@@ -14,15 +14,17 @@ import { Icon } from "src/components/Shared/Icon";
 import {
   stashBoxPerformerQuery,
   stashBoxSceneQuery,
+  stashBoxStudioQuery,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { stringToGender } from "src/utils/gender";
 
 type SearchResultItem =
   | GQL.ScrapedPerformerDataFragment
-  | GQL.ScrapedSceneDataFragment;
+  | GQL.ScrapedSceneDataFragment
+  | GQL.ScrapedStudioDataFragment;
 
-export type StashBoxEntityType = "performer" | "scene";
+export type StashBoxEntityType = "performer" | "scene" | "studio";
 
 interface IProps {
   entityType: StashBoxEntityType;
@@ -190,6 +192,46 @@ export const SceneSearchResult: React.FC<ISceneResultProps> = ({ scene }) => {
   );
 };
 
+// Studio Result Component
+interface IStudioResultProps {
+  studio: GQL.ScrapedStudioDataFragment;
+}
+
+const StudioSearchResultDetails: React.FC<IStudioResultProps> = ({
+  studio,
+}) => {
+  return (
+    <div className="studio-result">
+      <Row>
+        <SearchResultImage imageUrl={studio.image} />
+        <div className="col flex-column">
+          <h4 className="studio-name">
+            <span>{studio.name}</span>
+          </h4>
+          {studio.parent?.name && (
+            <h5 className="studio-parent">
+              <span>{studio.parent.name}</span>
+            </h5>
+          )}
+          {studio.urls && studio.urls.length > 0 && (
+            <div className="studio-url text-muted small">{studio.urls[0]}</div>
+          )}
+        </div>
+      </Row>
+    </div>
+  );
+};
+
+export const StudioSearchResult: React.FC<IStudioResultProps> = ({
+  studio,
+}) => {
+  return (
+    <div className="mt-3 search-item" style={{ cursor: "pointer" }}>
+      <StudioSearchResultDetails studio={studio} />
+    </div>
+  );
+};
+
 // Helper to get entity type display name for i18n
 function getEntityTypeDisplayName(entityType: StashBoxEntityType): string {
   switch (entityType) {
@@ -197,6 +239,8 @@ function getEntityTypeDisplayName(entityType: StashBoxEntityType): string {
       return "Performer";
     case "scene":
       return "Scene";
+    case "studio":
+      return "Studio";
   }
 }
 
@@ -207,6 +251,8 @@ function getFoundMessageId(entityType: StashBoxEntityType): string {
       return "dialogs.performers_found";
     case "scene":
       return "dialogs.scenes_found";
+    case "studio":
+      return "dialogs.studios_found";
   }
 }
 
@@ -264,6 +310,14 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
           setResults(queryData.data?.scrapeSingleScene ?? []);
           break;
         }
+        case "studio": {
+          const queryData = await stashBoxStudioQuery(
+            query,
+            selectedStashBox.endpoint
+          );
+          setResults(queryData.data?.scrapeSingleStudio ?? []);
+          break;
+        }
       }
     } catch (error) {
       Toast.error(error);
@@ -298,6 +352,10 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
       case "scene":
         return (
           <SceneSearchResult scene={item as GQL.ScrapedSceneDataFragment} />
+        );
+      case "studio":
+        return (
+          <StudioSearchResult studio={item as GQL.ScrapedStudioDataFragment} />
         );
     }
   }
