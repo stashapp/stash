@@ -200,6 +200,7 @@ export type CriterionType =
   | "ignore_auto_tag"
   | "file_count"
   | "stash_id_endpoint"
+  | "stash_id_count"
   | "date"
   | "created_at"
   | "updated_at"
