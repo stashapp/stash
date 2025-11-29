@@ -392,6 +392,9 @@ input ConfigInterfaceInput {
   customLocales: String
   customLocalesEnabled: Boolean
 
+  "When true, disables all customizations (plugins, CSS, JavaScript, locales) for troubleshooting"
+  disableCustomizations: Boolean
+
   "Interface language"
   language: String
 
@@ -464,6 +467,9 @@ type ConfigInterfaceResult {
   "Custom Locales"
   customLocales: String
   customLocalesEnabled: Boolean
+
+  "When true, disables all customizations (plugins, CSS, JavaScript, locales) for troubleshooting"
+  disableCustomizations: Boolean
 
   "Interface language"
   language: String

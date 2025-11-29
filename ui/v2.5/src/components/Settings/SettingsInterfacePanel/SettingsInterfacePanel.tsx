@@ -300,6 +300,16 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           />
         </SettingSection>
 
+        <SettingSection headingID="config.ui.troubleshooting.heading">
+          <BooleanSetting
+            id="disable-customizations"
+            headingID="config.ui.troubleshooting.disable_customizations.heading"
+            subHeadingID="config.ui.troubleshooting.disable_customizations.description"
+            checked={iface.disableCustomizations ?? undefined}
+            onChange={(v) => saveInterface({ disableCustomizations: v })}
+          />
+        </SettingSection>
+
         <SettingSection headingID="config.ui.scene_wall.heading">
           <BooleanSetting
             id="wall-show-title"

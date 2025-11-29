@@ -194,6 +194,7 @@ const (
 	CSSEnabled                          = "cssenabled"
 	JavascriptEnabled                   = "javascriptenabled"
 	CustomLocalesEnabled                = "customlocalesenabled"
+	DisableCustomizations               = "disable_customizations"
 
 	ShowScrubber        = "show_scrubber"
 	showScrubberDefault = true
@@ -1450,6 +1451,13 @@ func (i *Config) SetCustomLocales(customLocales string) {
 
 func (i *Config) GetCustomLocalesEnabled() bool {
 	return i.getBool(CustomLocalesEnabled)
+}
+
+// GetDisableCustomizations returns true if all customizations (plugins, custom CSS,
+// custom JavaScript, and custom locales) should be disabled. This is useful for
+// troubleshooting issues without permanently disabling individual customizations.
+func (i *Config) GetDisableCustomizations() bool {
+	return i.getBool(DisableCustomizations)
 }
 
 func (i *Config) GetHandyKey() string {
