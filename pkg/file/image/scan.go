@@ -74,6 +74,25 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 		Height:   probe.Height,
 	}
 
+	// FFprobe has a known bug where it returns 0x0 dimensions for some animated WebP files
+	// Fall back to image.DecodeConfig in this case.
+	// See: https://trac.ffmpeg.org/ticket/4907
+	if ret.Width == 0 || ret.Height == 0 {
+		logger.Warnf("FFprobe returned invalid dimensions (%dx%d) for %q, trying fallback decoder", ret.Width, ret.Height, base.Path)
+		c, format, err := decodeConfig(fs, base.Path)
+		if err != nil {
+			logger.Warnf("Fallback decoder failed for %q: %s. Proceeding with original FFprobe result", base.Path, err)
+		} else {
+			ret.Width = c.Width
+			ret.Height = c.Height
+			// Update format if it differs (fallback decoder may be more accurate)
+			if format != "" && format != ret.Format {
+				logger.Debugf("Updating format from %q to %q for %q", ret.Format, format, base.Path)
+				ret.Format = format
+			}
+		}
+	}
+
 	adjustForOrientation(fs, base.Path, ret)
 
 	return ret, nil
