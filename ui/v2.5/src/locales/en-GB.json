@@ -1061,6 +1061,8 @@
   },
   "duplicated": "Duplicated",
   "duplicated_phash": "Duplicated (pHash)",
+  "duplicated_stash_id": "Duplicated (Stash ID)",
+  "duplicated_title": "Duplicated (Title)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",

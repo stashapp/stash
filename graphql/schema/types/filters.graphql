@@ -81,6 +81,14 @@ input PHashDuplicationCriterionInput {
   distance: Int
 }
 
+input StashIDDuplicationCriterionInput {
+  duplicated: Boolean
+}
+
+input TitleDuplicationCriterionInput {
+  duplicated: Boolean
+}
+
 input StashIDCriterionInput {
   """
   If present, this value is treated as a predicate.
@@ -250,6 +258,10 @@ input SceneFilterType {
   o_counter: IntCriterionInput
   "Filter Scenes that have an exact phash match available"
   duplicated: PHashDuplicationCriterionInput
+  "Filter Scenes that have the same stash_id"
+  duplicated_stash_id: StashIDDuplicationCriterionInput
+  "Filter Scenes that have the same title"
+  duplicated_title: TitleDuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
   "Filter by orientation"

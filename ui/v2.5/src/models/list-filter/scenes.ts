@@ -31,7 +31,11 @@ import {
 } from "./criteria/phash";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
-import { StashIDCriterionOption } from "./criteria/stash-ids";
+import {
+  DuplicatedStashIDCriterionOption,
+  StashIDCriterionOption,
+} from "./criteria/stash-ids";
+import { DuplicatedTitleCriterionOption } from "./criteria/title";
 import { RatingCriterionOption } from "./criteria/rating";
 import { PathCriterionOption } from "./criteria/path";
 import { OrientationCriterionOption } from "./criteria/orientation";
@@ -100,6 +104,8 @@ const criterionOptions = [
   createStringCriterionOption("checksum", "media_info.checksum"),
   PhashCriterionOption,
   DuplicatedCriterionOption,
+  DuplicatedStashIDCriterionOption,
+  DuplicatedTitleCriterionOption,
   OrganizedCriterionOption,
   RatingCriterionOption,
   createMandatoryNumberCriterionOption("o_counter", "o_count", {
