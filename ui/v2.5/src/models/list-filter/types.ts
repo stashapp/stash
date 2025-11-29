@@ -197,6 +197,8 @@ export type CriterionType =
   | "favorite"
   | "performer_age"
   | "duplicated"
+  | "duplicated_stash_id"
+  | "duplicated_title"
   | "ignore_auto_tag"
   | "file_count"
   | "stash_id_endpoint"

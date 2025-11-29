@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { BooleanCriterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -43,19 +43,25 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
   const titleLabel = intl.formatMessage({ id: "title" });
 
   // Labels for each duplicate type
-  const labels: Record<DuplicateTypeId, string> = {
-    phash: phashLabel,
-    stash_id: stashIdLabel,
-    title: titleLabel,
-  };
+  const labels: Record<DuplicateTypeId, string> = useMemo(
+    () => ({
+      phash: phashLabel,
+      stash_id: stashIdLabel,
+      title: titleLabel,
+    }),
+    [phashLabel, stashIdLabel, titleLabel]
+  );
 
   // Get criterion for a given type
-  function getCriterion(typeId: DuplicateTypeId): BooleanCriterion | null {
-    const criteria = filter.criteriaFor(
-      DUPLICATE_TYPES[typeId].type
-    ) as BooleanCriterion[];
-    return criteria.length > 0 ? criteria[0] : null;
-  }
+  const getCriterion = useCallback(
+    (typeId: DuplicateTypeId): BooleanCriterion | null => {
+      const criteria = filter.criteriaFor(
+        DUPLICATE_TYPES[typeId].type
+      ) as BooleanCriterion[];
+      return criteria.length > 0 ? criteria[0] : null;
+    },
+    [filter]
+  );
 
   // Build selected items list
   const selected: Option[] = useMemo(() => {
@@ -73,7 +79,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
     }
 
     return result;
-  }, [filter, trueLabel, falseLabel, labels]);
+  }, [getCriterion, trueLabel, falseLabel, labels]);
 
   // Available options - show options that aren't already selected
   const options = useMemo(() => {
@@ -86,7 +92,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
     }
 
     return result;
-  }, [filter, labels]);
+  }, [getCriterion, labels]);
 
   function onToggleExpand(id: string) {
     setExpandedType(expandedType === id ? null : id);
@@ -120,10 +126,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
       text={title}
       sectionID={sectionID}
       outsideCollapse={
-        <SelectedList
-          items={selected}
-          onUnselect={(i) => onUnselect(i)}
-        />
+        <SelectedList items={selected} onUnselect={(i) => onUnselect(i)} />
       }
     >
       <div className="queryable-candidate-list">
@@ -137,7 +140,10 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
                   tabIndex={0}
                 >
                   <div className="label-group">
-                    <Icon className="fa-fw include-button single-value" icon={faPlus} />
+                    <Icon
+                      className="fa-fw include-button single-value"
+                      icon={faPlus}
+                    />
                     <span className="unselected-object-label">{opt.label}</span>
                   </div>
                 </a>
