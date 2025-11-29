@@ -3,12 +3,15 @@ import { IntlShape } from "react-intl";
 import {
   CriterionModifier,
   StashIdCriterionInput,
+  StashIdDuplicationCriterionInput,
 } from "src/core/generated-graphql";
 import { IStashIDValue } from "../types";
 import {
+  BooleanCriterionOption,
   ISavedCriterion,
   ModifierCriterion,
   ModifierCriterionOption,
+  StringCriterion,
 } from "./criterion";
 
 export const StashIDCriterionOption = new ModifierCriterionOption({
@@ -143,5 +146,23 @@ export class StashIDCriterion extends ModifierCriterion<IStashIDValue> {
       this.modifier === CriterionModifier.NotNull ||
       this.value.stashID.length > 0
     );
+  }
+}
+
+export const DuplicatedStashIDCriterionOption = new BooleanCriterionOption(
+  "duplicated_stash_id",
+  "duplicated_stash_id",
+  () => new DuplicatedStashIDCriterion()
+);
+
+export class DuplicatedStashIDCriterion extends StringCriterion {
+  constructor() {
+    super(DuplicatedStashIDCriterionOption);
+  }
+
+  public toCriterionInput(): StashIdDuplicationCriterionInput {
+    return {
+      duplicated: this.value === "true",
+    };
   }
 }
