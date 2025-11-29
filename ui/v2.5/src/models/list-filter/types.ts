@@ -118,6 +118,7 @@ export interface IOptionType {
 
 export type CriterionType =
   | "path"
+  | "filename"
   | "rating100"
   | "organized"
   | "o_counter"
