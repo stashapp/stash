@@ -27,6 +27,13 @@ interface ISidebarDuplicateFilterProps {
   sectionID?: string;
 }
 
+// i18n message IDs for each duplicate type
+const DUPLICATE_TYPE_MESSAGE_IDS: Record<DuplicateTypeId, string> = {
+  phash: "media_info.phash",
+  stash_id: "stash_id",
+  title: "title",
+};
+
 export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
   title,
   filter,
@@ -38,18 +45,12 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
 
   const trueLabel = intl.formatMessage({ id: "true" });
   const falseLabel = intl.formatMessage({ id: "false" });
-  const phashLabel = intl.formatMessage({ id: "media_info.phash" });
-  const stashIdLabel = intl.formatMessage({ id: "stash_id" });
-  const titleLabel = intl.formatMessage({ id: "title" });
 
-  // Labels for each duplicate type
-  const labels: Record<DuplicateTypeId, string> = useMemo(
-    () => ({
-      phash: phashLabel,
-      stash_id: stashIdLabel,
-      title: titleLabel,
-    }),
-    [phashLabel, stashIdLabel, titleLabel]
+  // Get label for a duplicate type
+  const getLabel = useCallback(
+    (typeId: DuplicateTypeId) =>
+      intl.formatMessage({ id: DUPLICATE_TYPE_MESSAGE_IDS[typeId] }),
+    [intl]
   );
 
   // Get criterion for a given type
@@ -73,13 +74,13 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
         const valueLabel = criterion.value === "true" ? trueLabel : falseLabel;
         result.push({
           id: typeId,
-          label: `${labels[typeId]}: ${valueLabel}`,
+          label: `${getLabel(typeId)}: ${valueLabel}`,
         });
       }
     }
 
     return result;
-  }, [getCriterion, trueLabel, falseLabel, labels]);
+  }, [getCriterion, trueLabel, falseLabel, getLabel]);
 
   // Available options - show options that aren't already selected
   const options = useMemo(() => {
@@ -87,12 +88,12 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
 
     for (const typeId of Object.keys(DUPLICATE_TYPES) as DuplicateTypeId[]) {
       if (!getCriterion(typeId)) {
-        result.push({ id: typeId, label: labels[typeId] });
+        result.push({ id: typeId, label: getLabel(typeId) });
       }
     }
 
     return result;
-  }, [getCriterion, labels]);
+  }, [getCriterion, getLabel]);
 
   function onToggleExpand(id: string) {
     setExpandedType(expandedType === id ? null : id);
