@@ -269,8 +269,10 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.CreatePe
 	}
 
 	if newObject.URLs.Loaded() {
+		urls := newObject.URLs.List()
+		utils.SortURLs(urls)
 		const startPos = 0
-		if err := performersURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+		if err := performersURLsTableMgr.insertJoins(ctx, id, startPos, urls); err != nil {
 			return err
 		}
 	}
@@ -327,6 +329,15 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		if err := performersURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
 		}
+		// Re-sort URLs after modification
+		urls, err := performersURLsTableMgr.get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		utils.SortURLs(urls)
+		if err := performersURLsTableMgr.replaceJoins(ctx, id, urls); err != nil {
+			return nil, err
+		}
 	}
 
 	if partial.TagIDs != nil {
@@ -362,7 +373,9 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Upda
 	}
 
 	if updatedObject.URLs.Loaded() {
-		if err := performersURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+		urls := updatedObject.URLs.List()
+		utils.SortURLs(urls)
+		if err := performersURLsTableMgr.replaceJoins(ctx, updatedObject.ID, urls); err != nil {
 			return err
 		}
 	}

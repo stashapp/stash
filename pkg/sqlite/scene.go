@@ -315,8 +315,10 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 	}
 
 	if newObject.URLs.Loaded() {
+		urls := newObject.URLs.List()
+		utils.SortURLs(urls)
 		const startPos = 0
-		if err := scenesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+		if err := scenesURLsTableMgr.insertJoins(ctx, id, startPos, urls); err != nil {
 			return err
 		}
 	}
@@ -379,6 +381,15 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 		if err := scenesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
 		}
+		// Re-sort URLs after modification
+		urls, err := scenesURLsTableMgr.get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		utils.SortURLs(urls)
+		if err := scenesURLsTableMgr.replaceJoins(ctx, id, urls); err != nil {
+			return nil, err
+		}
 	}
 	if partial.PerformerIDs != nil {
 		if err := scenesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
@@ -423,7 +434,9 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 	}
 
 	if updatedObject.URLs.Loaded() {
-		if err := scenesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+		urls := updatedObject.URLs.List()
+		utils.SortURLs(urls)
+		if err := scenesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, urls); err != nil {
 			return err
 		}
 	}

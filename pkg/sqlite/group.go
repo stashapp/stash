@@ -14,6 +14,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -172,8 +173,10 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 	}
 
 	if newObject.URLs.Loaded() {
+		urls := newObject.URLs.List()
+		utils.SortURLs(urls)
 		const startPos = 0
-		if err := groupsURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+		if err := groupsURLsTableMgr.insertJoins(ctx, id, startPos, urls); err != nil {
 			return err
 		}
 	}
@@ -219,6 +222,15 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 		if err := groupsURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
 		}
+		// Re-sort URLs after modification
+		urls, err := groupsURLsTableMgr.get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		utils.SortURLs(urls)
+		if err := groupsURLsTableMgr.replaceJoins(ctx, id, urls); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := qb.tagRelationshipStore.modifyRelationships(ctx, id, partial.TagIDs); err != nil {
@@ -245,7 +257,9 @@ func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) e
 	}
 
 	if updatedObject.URLs.Loaded() {
-		if err := groupsURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+		urls := updatedObject.URLs.List()
+		utils.SortURLs(urls)
+		if err := groupsURLsTableMgr.replaceJoins(ctx, updatedObject.ID, urls); err != nil {
 			return err
 		}
 	}

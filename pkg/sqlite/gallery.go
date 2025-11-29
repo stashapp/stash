@@ -12,6 +12,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -246,8 +247,10 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 	}
 
 	if newObject.URLs.Loaded() {
+		urls := newObject.URLs.List()
+		utils.SortURLs(urls)
 		const startPos = 0
-		if err := galleriesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+		if err := galleriesURLsTableMgr.insertJoins(ctx, id, startPos, urls); err != nil {
 			return err
 		}
 	}
@@ -286,7 +289,9 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 	}
 
 	if updatedObject.URLs.Loaded() {
-		if err := galleriesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+		urls := updatedObject.URLs.List()
+		utils.SortURLs(urls)
+		if err := galleriesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, urls); err != nil {
 			return err
 		}
 	}
@@ -337,6 +342,15 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 
 	if partial.URLs != nil {
 		if err := galleriesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+		// Re-sort URLs after modification
+		urls, err := galleriesURLsTableMgr.get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		utils.SortURLs(urls)
+		if err := galleriesURLsTableMgr.replaceJoins(ctx, id, urls); err != nil {
 			return nil, err
 		}
 	}
