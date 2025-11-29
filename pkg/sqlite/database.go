@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -34,36 +36,10 @@ const (
 	cacheSizeEnv = "STASH_SQLITE_CACHE_SIZE"
 )
 
-var appSchemaVersion uint = 74
+var appSchemaVersion uint = 75
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
-
-var (
-	// ErrDatabaseNotInitialized indicates that the database is not
-	// initialized, usually due to an incomplete configuration.
-	ErrDatabaseNotInitialized = errors.New("database not initialized")
-)
-
-// ErrMigrationNeeded indicates that a database migration is needed
-// before the database can be initialized
-type MigrationNeededError struct {
-	CurrentSchemaVersion  uint
-	RequiredSchemaVersion uint
-}
-
-func (e *MigrationNeededError) Error() string {
-	return fmt.Sprintf("database schema version %d does not match required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
-}
-
-type MismatchedSchemaVersionError struct {
-	CurrentSchemaVersion  uint
-	RequiredSchemaVersion uint
-}
-
-func (e *MismatchedSchemaVersionError) Error() string {
-	return fmt.Sprintf("schema version %d is incompatible with required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
-}
 
 type storeRepository struct {
 	Blobs          *BlobStore
@@ -97,7 +73,7 @@ func NewDatabase() *Database {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
 	galleryStore := NewGalleryStore(fileStore, folderStore)
-	blobStore := NewBlobStore(BlobStoreOptions{})
+	blobStore := NewBlobStore(database.BlobStoreOptions{})
 	performerStore := NewPerformerStore(blobStore)
 	studioStore := NewStudioStore(blobStore)
 	tagStore := NewTagStore(blobStore)
@@ -127,14 +103,18 @@ func NewDatabase() *Database {
 	return ret
 }
 
-func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
-	*db.Blobs = *NewBlobStore(options)
+func (db *Database) DatabaseBackend() database.DatabaseType {
+	return database.SqliteBackend
+}
+
+func (db *Database) SetBlobStoreOptions(options database.BlobStoreOptions) {
+	*db.storeRepository.Blobs = *NewBlobStore(options)
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
 func (db *Database) Ready() error {
 	if db.readDB == nil || db.writeDB == nil {
-		return ErrDatabaseNotInitialized
+		return database.ErrDatabaseNotInitialized
 	}
 
 	return nil
@@ -148,7 +128,7 @@ func (db *Database) Open(dbPath string) error {
 	db.lock()
 	defer db.unlock()
 
-	db.dbPath = dbPath
+	db.dbPath, _ = strings.CutPrefix(dbPath, string(database.SqliteBackend)+":")
 
 	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
 	if err != nil {
@@ -166,7 +146,7 @@ func (db *Database) Open(dbPath string) error {
 		}
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
-			return &MismatchedSchemaVersionError{
+			return &database.MismatchedSchemaVersionError{
 				CurrentSchemaVersion:  databaseSchemaVersion,
 				RequiredSchemaVersion: appSchemaVersion,
 			}
@@ -174,7 +154,7 @@ func (db *Database) Open(dbPath string) error {
 
 		// if migration is needed, then don't open the connection
 		if db.needsMigration() {
-			return &MigrationNeededError{
+			return &database.MigrationNeededError{
 				CurrentSchemaVersion:  databaseSchemaVersion,
 				RequiredSchemaVersion: appSchemaVersion,
 			}
