@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, FormControl } from "react-bootstrap";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import useFocus from "src/utils/focus";
@@ -63,6 +63,15 @@ export const ClearableInput: React.FC<IClearableInput> = ({
           className="clearable-text-field-clear"
         >
           <Icon icon={faTimes} />
+        </Button>
+      )}
+      {!queryClearShowing && (
+        <Button
+          variant="secondary"
+          title={intl.formatMessage({ id: "actions.clear" })}
+          className="clearable-text-field-search"
+        >
+          <Icon icon={faMagnifyingGlass} />
         </Button>
       )}
     </div>

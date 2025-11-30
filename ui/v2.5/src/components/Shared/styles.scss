@@ -539,7 +539,8 @@ div.react-datepicker {
   color: #fff;
 }
 
-.clearable-text-field-clear {
+.clearable-text-field-clear,
+.clearable-text-field-search {
   background-color: $secondary;
   bottom: 0;
   color: $muted-gray;
@@ -831,8 +832,8 @@ button.btn.favorite-button {
     .clearable-text-field {
       background-color: $textfield-bg;
     }
-
-    .clearable-text-field-clear {
+    .clearable-text-field-clear,
+    .clearable-text-field-search {
       background-color: unset;
       border: unset;
     }
