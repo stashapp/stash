@@ -4,13 +4,15 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FilterTags } from "../List/FilterTags";
 import cx from "classnames";
-import { Button, ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { SearchTermInput } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { SidebarToggleButton } from "../Shared/MySidebar";
 import { PatchComponent } from "src/patch";
+import { SavedFilterDropdown } from "./SavedFilterList";
+import { View } from "./views";
 
 export const ToolbarFilterSection: React.FC<{
   filter: ListFilterModel;
@@ -21,6 +23,7 @@ export const ToolbarFilterSection: React.FC<{
   onRemoveAllCriterion: () => void;
   onEditSearchTerm: () => void;
   onRemoveSearchTerm: () => void;
+  view?: View;
 }> = PatchComponent(
   "ToolbarFilterSection",
   ({
@@ -32,6 +35,7 @@ export const ToolbarFilterSection: React.FC<{
     onRemoveAllCriterion,
     onEditSearchTerm,
     onRemoveSearchTerm,
+    view,
   }) => {
     const { criteria, searchTerm } = filter;
 
@@ -41,10 +45,19 @@ export const ToolbarFilterSection: React.FC<{
           <SearchTermInput filter={filter} onFilterUpdate={onSetFilter} />
         </div>
         <div className="filter-section">
-          <FilterButton
-            onClick={() => onEditCriterion()}
-            count={criteria.length}
-          />
+          <ButtonGroup>
+            <SidebarToggleButton onClick={onToggleSidebar} />
+            <SavedFilterDropdown
+              filter={filter}
+              onSetFilter={onSetFilter}
+              view={view}
+              menuPortalTarget={document.body}
+            />
+            <FilterButton
+              onClick={() => onEditCriterion()}
+              count={criteria.length}
+            />
+          </ButtonGroup>
           <FilterTags
             searchTerm={searchTerm}
             criteria={criteria}
@@ -55,7 +68,6 @@ export const ToolbarFilterSection: React.FC<{
             onRemoveSearchTerm={onRemoveSearchTerm}
             truncateOnOverflow
           />
-          <SidebarToggleButton onClick={onToggleSidebar} />
         </div>
       </>
     );
@@ -65,28 +77,33 @@ export const ToolbarFilterSection: React.FC<{
 export const ToolbarSelectionSection: React.FC<{
   selected: number;
   onToggleSidebar: () => void;
+  operations?: React.ReactNode;
   onSelectAll: () => void;
   onSelectNone: () => void;
 }> = PatchComponent(
   "ToolbarSelectionSection",
-  ({ selected, onToggleSidebar, onSelectAll, onSelectNone }) => {
+  ({ selected, onToggleSidebar, operations, onSelectAll, onSelectNone }) => {
     const intl = useIntl();
 
     return (
-      <div className="selected-items-info">
-        <Button
-          variant="secondary"
-          className="minimal"
-          onClick={() => onSelectNone()}
-          title={intl.formatMessage({ id: "actions.select_none" })}
-        >
-          <Icon icon={faTimes} />
-        </Button>
-        <span>{selected} selected</span>
-        <Button variant="link" onClick={() => onSelectAll()}>
-          <FormattedMessage id="actions.select_all" />
-        </Button>
-        <SidebarToggleButton onClick={onToggleSidebar} />
+      <div className="toolbar-selection-section">
+        <div className="selected-items-info">
+          <SidebarToggleButton onClick={onToggleSidebar} />
+          <Button
+            variant="secondary"
+            className="minimal"
+            onClick={() => onSelectNone()}
+            title={intl.formatMessage({ id: "actions.select_none" })}
+          >
+            <Icon icon={faTimes} />
+          </Button>
+          <span>{selected} selected</span>
+          <Button variant="link" onClick={() => onSelectAll()}>
+            <FormattedMessage id="actions.select_all" />
+          </Button>
+        </div>
+        {operations}
+        <div className="empty-space" />
       </div>
     );
   }
@@ -114,7 +131,11 @@ export const FilteredListToolbar2: React.FC<{
       })}
     >
       {!hasSelection ? filterSection : selectionSection}
-      <div className="filtered-list-toolbar-operations">{operationSection}</div>
+      {!hasSelection ? (
+        <div className="filtered-list-toolbar-operations">
+          {operationSection}
+        </div>
+      ) : null}
     </ButtonToolbar>
   );
 };

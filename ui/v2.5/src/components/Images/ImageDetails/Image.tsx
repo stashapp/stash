@@ -34,6 +34,7 @@ import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { goBackOrReplace } from "src/utils/history";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -182,7 +183,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.goBack();
+      goBackOrReplace(history, "/images");
     }
   }
 

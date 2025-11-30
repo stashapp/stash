@@ -66,7 +66,7 @@ import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { PatchContainerComponent } from "src/patch";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
-import { ListResultsHeader } from "../List/ListResultsHeader";
+import { ListResultsHeader } from "../List/MyListResultsHeader";
 
 function useViewRandom(
   result: GQL.FindGroupsQueryResult,

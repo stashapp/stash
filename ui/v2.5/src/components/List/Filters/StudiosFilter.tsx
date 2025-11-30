@@ -98,7 +98,8 @@ export const SidebarStudiosFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   filterHook?: (f: ListFilterModel) => ListFilterModel;
-}> = ({ title, option, filter, setFilter, filterHook }) => {
+  sectionID?: string;
+}> = ({ title, option, filter, setFilter, filterHook, sectionID }) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
@@ -110,7 +111,7 @@ export const SidebarStudiosFilter: React.FC<{
     includeSubMessageID: "subsidiary_studios",
   });
 
-  return <SidebarListFilter {...state} title={title} />;
+  return <SidebarListFilter {...state} title={title} sectionID={sectionID} />;
 };
 
 export default StudiosFilter;

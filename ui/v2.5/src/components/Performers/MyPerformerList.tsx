@@ -45,7 +45,7 @@ import {
   ToolbarFilterSection,
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
-import { ListResultsHeader } from "../List/ListResultsHeader";
+import { ListResultsHeader } from "../List/MyListResultsHeader";
 import {
   createDateCriterionOption,
   createNumberCriterionOption,

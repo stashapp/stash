@@ -183,7 +183,7 @@ export class ListFilterModel {
       ret.disp = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      ret.q = params.q.trim();
+      ret.q = params.q;
     }
     if (params.p) {
       ret.p = Number.parseInt(params.p, 10);

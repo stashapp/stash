@@ -43,6 +43,7 @@ import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { goBackOrReplace } from "src/utils/history";
 import ScreenUtils from "src/utils/screen";
 
 interface IProps {
@@ -194,7 +195,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.goBack();
+      goBackOrReplace(history, "/galleries");
     }
   }
 

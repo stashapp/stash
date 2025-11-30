@@ -1,6 +1,6 @@
 import React from "react";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { Pagination, PaginationIndex } from "../List/Pagination";
+import { PaginationIndex } from "../List/Pagination";
 import { ButtonToolbar } from "react-bootstrap";
 import { ListViewOptions } from "../List/ListViewOptions";
 import { PageSizeSelector, SortBySelect } from "../List/ListFilter";
@@ -23,6 +23,15 @@ export const ListResultsHeader: React.FC<{
 }) => {
   return (
     <ButtonToolbar className={cx(className, "list-results-header")}>
+      <div>
+        <PaginationIndex
+          loading={loading}
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          metadataByline={metadataByline}
+        />
+      </div>
       <div>
         <SortBySelect
           options={filter.options.sortByOptions}
@@ -52,22 +61,6 @@ export const ListResultsHeader: React.FC<{
           onSetZoom={(zoom) => onChangeFilter(filter.setZoom(zoom))}
         />
       </div>
-      <div className="pagination-index-container">
-        <Pagination
-          currentPage={filter.currentPage}
-          itemsPerPage={filter.itemsPerPage}
-          totalItems={totalCount}
-          onChangePage={(page) => onChangeFilter(filter.changePage(page))}
-        />
-        <PaginationIndex
-          loading={loading}
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          metadataByline={metadataByline}
-        />
-      </div>
-      <div className="empty-space"></div>
     </ButtonToolbar>
   );
 };

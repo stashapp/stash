@@ -68,7 +68,7 @@ import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
 import { SidebarPerformerTagsFilter } from "../List/Filters/PerformerTagsFilter";
-import { ListResultsHeader } from "../List/ListResultsHeader";
+import { ListResultsHeader } from "../List/MyListResultsHeader";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
