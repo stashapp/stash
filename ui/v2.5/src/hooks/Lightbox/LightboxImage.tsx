@@ -103,7 +103,11 @@ interface IProps {
   onLeft: () => void;
   onRight: () => void;
   moveCarousel: (v: number) => void;
-  releaseCarousel: (ev: React.TouchEvent, swipeDuration: number) => void;
+  releaseCarousel: (
+    ev: React.PointerEvent,
+    swipeDuration: number,
+    cancelled: boolean
+  ) => void;
   isVideo: boolean;
 }
 
@@ -130,7 +134,6 @@ export const LightboxImage: React.FC<IProps> = ({
   isVideo,
 }) => {
   const [defaultZoom, setDefaultZoom] = useState<number | null>(null);
-  const [moving, setMoving] = useState(false);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
   const [imageWidth, setImageWidth] = useState(width);
@@ -139,10 +142,12 @@ export const LightboxImage: React.FC<IProps> = ({
   const [containerRef, { width: boxWidth, height: boxHeight }] =
     useContainerDimensions();
 
-  const mouseDownEvent = useRef<MouseEvent>();
   const resetPositionRef = useRef(resetPosition);
 
-  const startPoints = useRef<number[]>([0, 0]);
+  // Panning and swipe navigation are tracked in startPoint. Pinch zoom is
+  // tracked in prevDiff. They are undefined if no action of that type is in
+  // progress.
+  const startPoint = useRef<number[] | undefined>();
   const startTime = useRef<number>(0);
   const pointerCache = useRef<React.PointerEvent[]>([]);
   const prevDiff = useRef<number | undefined>();
@@ -450,120 +455,6 @@ export const LightboxImage: React.FC<IProps> = ({
     debouncedScrollReset();
   }
 
-  function onImageMouseOver(ev: React.MouseEvent) {
-    if (!moving) return;
-
-    if (!ev.buttons) {
-      setMoving(false);
-      return;
-    }
-
-    const deltaX = ev.pageX - startPoints.current[0];
-    const deltaY = ev.pageY - startPoints.current[1];
-    startPoints.current = [ev.pageX, ev.pageY];
-
-    const newPositionX = Math.max(
-      panBounds.minX,
-      Math.min(panBounds.maxX, positionX + deltaX)
-    );
-    const newPositionY = Math.max(
-      panBounds.minY,
-      Math.min(panBounds.maxY, positionY + deltaY)
-    );
-
-    setPositionX(newPositionX);
-    setPositionY(newPositionY);
-  }
-
-  function onImageMouseDown(ev: React.MouseEvent) {
-    startPoints.current = [ev.pageX, ev.pageY];
-    startTime.current = ev.timeStamp;
-    setMoving(true);
-
-    mouseDownEvent.current = ev.nativeEvent;
-  }
-
-  function onImageMouseUp(ev: React.MouseEvent) {
-    if (ev.button !== 0) return;
-
-    if (
-      !mouseDownEvent.current ||
-      ev.timeStamp - mouseDownEvent.current.timeStamp > 200
-    ) {
-      // not a click - ignore
-      return;
-    }
-
-    // must be a click
-    if (
-      ev.pageX !== startPoints.current[0] ||
-      ev.pageY !== startPoints.current[1]
-    ) {
-      return;
-    }
-
-    if (ev.nativeEvent.offsetX >= (ev.target as HTMLElement).offsetWidth / 2) {
-      onRight();
-    } else {
-      onLeft();
-    }
-  }
-
-  const onTouchStart = useCallback(
-    (ev: TouchEvent) => {
-      ev.preventDefault();
-      if (ev.touches.length === 1) {
-        startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
-        startTime.current = ev.timeStamp;
-        setMoving(true);
-      }
-    },
-    [startPoints, startTime, setMoving]
-  );
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) {
-      return;
-    }
-    container.addEventListener("touchstart", onTouchStart);
-    return () => {
-      container.removeEventListener("touchstart", onTouchStart);
-    };
-  }, [containerRef, onTouchStart]);
-
-  function onTouchMove(ev: React.TouchEvent) {
-    if (!moving) return;
-
-    if (ev.touches.length === 1) {
-      const deltaX = ev.touches[0].pageX - startPoints.current[0];
-      const deltaY = ev.touches[0].pageY - startPoints.current[1];
-      startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
-
-      if (panBounds.minX != panBounds.maxX) {
-        const newPositionX = Math.max(
-          panBounds.minX,
-          Math.min(panBounds.maxX, positionX + deltaX)
-        );
-        const newPositionY = Math.max(
-          panBounds.minY,
-          Math.min(panBounds.maxY, positionY + deltaY)
-        );
-
-        setPositionX(newPositionX);
-        setPositionY(newPositionY);
-      } else {
-        moveCarousel(deltaX);
-      }
-    }
-  }
-
-  function onTouchEnd(ev: React.TouchEvent) {
-    if (ev.changedTouches.length === 1 && ev.touches.length === 0) {
-      releaseCarousel(ev, ev.timeStamp - startTime.current);
-    }
-  }
-
   function onPointerDown(ev: React.PointerEvent) {
     // replace pointer event with the same id, if applicable
     pointerCache.current = pointerCache.current.filter(
@@ -572,13 +463,73 @@ export const LightboxImage: React.FC<IProps> = ({
 
     pointerCache.current.push(ev);
     prevDiff.current = undefined;
+
+    startTime.current = ev.timeStamp;
+    if (pointerCache.current.length === 1) {
+      startPoint.current = [ev.clientX, ev.clientY];
+    } else if (
+      pointerCache.current.length === 2 &&
+      startPoint.current !== undefined
+    ) {
+      const centerX = Math.abs(ev.clientX + startPoint.current[0]) / 2;
+      const centerY = Math.abs(ev.clientY + startPoint.current[1]) / 2;
+      startPoint.current = [centerX, centerY];
+    }
   }
 
   function onPointerUp(ev: React.PointerEvent) {
+    let found = false;
+
     for (let i = 0; i < pointerCache.current.length; i++) {
       if (pointerCache.current[i].pointerId === ev.pointerId) {
         pointerCache.current.splice(i, 1);
+        found = true;
         break;
+      }
+    }
+
+    if (!found || pointerCache.current.length !== 0) {
+      if (pointerCache.current.length === 1) {
+        // If we are transitioning from pinch zoom to pan, reset this
+        // so we don't pan relative to the old center point.
+        startPoint.current = [
+          pointerCache.current[0].clientX,
+          pointerCache.current[0].clientY,
+        ];
+      }
+      return;
+    }
+
+    if (ev.pointerType === "touch" && startPoint.current !== null) {
+      // Swipe navigation
+      releaseCarousel(ev, ev.timeStamp - startTime.current, false);
+    }
+
+    if (
+      ev.button === 0 &&
+      ev.timeStamp - startTime.current <= 200 &&
+      startPoint.current !== undefined &&
+      ev.clientX === startPoint.current[0] &&
+      ev.clientY === startPoint.current[1]
+    ) {
+      // Click or tap navigation
+
+      if (ev.clientX >= window.innerWidth / 2) {
+        onRight();
+      } else {
+        onLeft();
+      }
+    }
+  }
+
+  function onPointerCancel(ev: React.PointerEvent) {
+    for (let i = 0; i < pointerCache.current.length; i++) {
+      if (pointerCache.current[i].pointerId === ev.pointerId) {
+        pointerCache.current.splice(i, 1);
+        if (ev.pointerType === "touch" && pointerCache.current.length === 0) {
+          releaseCarousel(ev, ev.timeStamp - startTime.current, true);
+        }
+        return;
       }
     }
   }
@@ -588,19 +539,25 @@ export const LightboxImage: React.FC<IProps> = ({
     const cachedIndex = pointerCache.current.findIndex(
       (c) => c.pointerId === ev.pointerId
     );
-    if (cachedIndex !== -1) {
-      pointerCache.current[cachedIndex] = ev;
-    }
 
-    if (defaultZoom === null) return;
+    if (cachedIndex === -1 || defaultZoom === null) return;
 
-    // compare the difference between the two pointers
-    if (pointerCache.current.length === 2) {
+    pointerCache.current[cachedIndex] = ev;
+
+    if (pointerCache.current.length === 2 && startPoint.current !== undefined) {
+      // Pinch zoom
+
+      // compare the difference between the two pointers
       const ev1 = pointerCache.current[0];
       const ev2 = pointerCache.current[1];
       const diffX = Math.abs(ev1.clientX - ev2.clientX);
       const diffY = Math.abs(ev1.clientY - ev2.clientY);
       const diff = Math.sqrt(diffX ** 2 + diffY ** 2);
+      const centerX = Math.abs(ev1.clientX + ev2.clientX) / 2;
+      const centerY = Math.abs(ev1.clientY + ev2.clientY) / 2;
+      const deltaX = centerX - startPoint.current[0];
+      const deltaY = centerY - startPoint.current[1];
+      startPoint.current = [centerX, centerY];
 
       if (prevDiff.current !== undefined) {
         const diffDiff = diff - prevDiff.current;
@@ -609,11 +566,62 @@ export const LightboxImage: React.FC<IProps> = ({
         let newZoom = diffDiff > 0 ? zoom * factor : zoom / factor;
         setZoom(newZoom);
         const bounds = calcPanBounds(defaultZoom * newZoom);
-        setPositionX(Math.max(bounds.minX, Math.min(bounds.maxX, positionX)));
-        setPositionY(Math.max(bounds.minY, Math.min(bounds.maxY, positionY)));
+
+        const newPositionX = Math.max(
+          bounds.minX,
+          Math.min(
+            bounds.maxX,
+            (diffDiff > 0 ? positionX * factor : positionX / factor) + deltaX
+          )
+        );
+        const newPositionY = Math.max(
+          bounds.minY,
+          Math.min(
+            bounds.maxY,
+            (diffDiff > 0 ? positionY * factor : positionY / factor) + deltaY
+          )
+        );
+
+        setPositionX(newPositionX);
+        setPositionY(newPositionY);
       }
 
       prevDiff.current = diff;
+    } else if (
+      pointerCache.current.length === 1 &&
+      startPoint.current !== undefined &&
+      pointerCache.current[0].pointerType === "touch" &&
+      panBounds.minX === panBounds.maxX
+    ) {
+      // Swipe navigation (touch only, and only when panning is not possible)
+      const deltaX = ev.clientX - startPoint.current[0];
+      startPoint.current = [ev.clientX, ev.clientY];
+      moveCarousel(deltaX);
+    } else if (
+      pointerCache.current.length === 1 &&
+      startPoint.current !== undefined
+    ) {
+      // Panning
+
+      if (!ev.buttons) {
+        return;
+      }
+
+      const deltaX = ev.clientX - startPoint.current[0];
+      const deltaY = ev.clientY - startPoint.current[1];
+      startPoint.current = [ev.clientX, ev.clientY];
+
+      const newPositionX = Math.max(
+        panBounds.minX,
+        Math.min(panBounds.maxX, positionX + deltaX)
+      );
+      const newPositionY = Math.max(
+        panBounds.minY,
+        Math.min(panBounds.maxY, positionY + deltaY)
+      );
+
+      setPositionX(newPositionX);
+      setPositionY(newPositionY);
     }
   }
 
@@ -627,8 +635,10 @@ export const LightboxImage: React.FC<IProps> = ({
       })}
       style={{ touchAction: "none" }}
       onWheel={(e) => onContainerScroll(e)}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
     >
       {defaultZoom ? (
         <picture>
@@ -648,12 +658,6 @@ export const LightboxImage: React.FC<IProps> = ({
             alt=""
             draggable={false}
             onWheel={current ? (e) => onImageScroll(e) : undefined}
-            onMouseDown={onImageMouseDown}
-            onMouseUp={onImageMouseUp}
-            onMouseMove={onImageMouseOver}
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerMove={onPointerMove}
           />
         </picture>
       ) : undefined}
