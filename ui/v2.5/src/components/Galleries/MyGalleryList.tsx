@@ -26,7 +26,7 @@ import {
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import {
@@ -53,7 +53,12 @@ import {
   createStringCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
-import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFilter,
+  faPencil,
+  faPlus,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { TaggerContext } from "../Tagger/context";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -206,80 +211,86 @@ const SidebarContent: React.FC<{
       />
 
       <MyGalleriesFilterSidebarSections>
-        <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          data-type={StudiosCriterionOption.type}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarPerformersFilter
-          title={<FormattedMessage id="performers" />}
-          data-type={PerformersCriterionOption.type}
-          option={PerformersCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarPerformerTagsFilter
-          title={<FormattedMessage id="performer_tags" />}
-          data-type={PerformerTagsCriterionOption.type}
-          option={PerformerTagsCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarTagsFilter
-          title={<FormattedMessage id="tags" />}
-          data-type={TagsCriterionOption.type}
-          option={TagsCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarDateFilter
-          title={<FormattedMessage id="date" />}
-          data-type={DateCriterionOption.type}
-          option={DateCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarPathFilter
-          title={<FormattedMessage id="path" />}
-          data-type={PathCriterionOption.type}
-          option={PathCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarNumberFilter
-          title={<FormattedMessage id="file_count" />}
-          data-type={fileCountCriterionOption.type}
-          option={fileCountCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarRatingFilter
-          title={<FormattedMessage id="rating" />}
-          data-type={RatingCriterionOption.type}
-          option={RatingCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStringFilter
-          title={<FormattedMessage id="url" />}
-          data-type={UrlCriterionOption.type}
-          option={UrlCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarBooleanFilter
-          title={<FormattedMessage id="organized" />}
-          data-type={OrganizedCriterionOption.type}
-          option={OrganizedCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <div className="sidebar-filters">
+          <div className="sidebar-section-header">
+            <Icon icon={faFilter} />
+            <FormattedMessage id="filters" />
+          </div>
+          <SidebarStudiosFilter
+            title={<FormattedMessage id="studios" />}
+            data-type={StudiosCriterionOption.type}
+            option={StudiosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+          <SidebarPerformersFilter
+            title={<FormattedMessage id="performers" />}
+            data-type={PerformersCriterionOption.type}
+            option={PerformersCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+          <SidebarPerformerTagsFilter
+            title={<FormattedMessage id="performer_tags" />}
+            data-type={PerformerTagsCriterionOption.type}
+            option={PerformerTagsCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+          <SidebarTagsFilter
+            title={<FormattedMessage id="tags" />}
+            data-type={TagsCriterionOption.type}
+            option={TagsCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+          <SidebarDateFilter
+            title={<FormattedMessage id="date" />}
+            data-type={DateCriterionOption.type}
+            option={DateCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarPathFilter
+            title={<FormattedMessage id="path" />}
+            data-type={PathCriterionOption.type}
+            option={PathCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarNumberFilter
+            title={<FormattedMessage id="file_count" />}
+            data-type={fileCountCriterionOption.type}
+            option={fileCountCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarRatingFilter
+            title={<FormattedMessage id="rating" />}
+            data-type={RatingCriterionOption.type}
+            option={RatingCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStringFilter
+            title={<FormattedMessage id="url" />}
+            data-type={UrlCriterionOption.type}
+            option={UrlCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarBooleanFilter
+            title={<FormattedMessage id="organized" />}
+            data-type={OrganizedCriterionOption.type}
+            option={OrganizedCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+        </div>
       </MyGalleriesFilterSidebarSections>
 
       <div className="sidebar-footer">

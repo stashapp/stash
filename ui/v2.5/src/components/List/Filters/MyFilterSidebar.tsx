@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { SidebarSection } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/MySidebar";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SearchTermInput } from "../ListFilter";
 import { SidebarSavedFilterList } from "../SavedFilterList";
@@ -9,6 +9,8 @@ import useFocus from "src/utils/focus";
 import ScreenUtils from "src/utils/screen";
 import Mousetrap from "mousetrap";
 import { Button } from "react-bootstrap";
+import { Icon } from "src/components/Shared/Icon";
+import { faBookmark } from "@fortawesome/free-solid-svg-icons";
 
 export const FilteredSidebarHeader: React.FC<{
   sidebarOpen: boolean;
@@ -47,16 +49,17 @@ export const FilteredSidebarHeader: React.FC<{
         />
       </div>
 
-      <SidebarSection
-        className="sidebar-saved-filters"
-        text={<FormattedMessage id="search_filter.saved_filters" />}
-      >
+      <div className="sidebar-saved-filters">
+        <div className="sidebar-section-header">
+          <Icon icon={faBookmark} />
+          <FormattedMessage id="search_filter.saved_filters" />
+        </div>
         <SidebarSavedFilterList
           filter={filter}
           onSetFilter={setFilter}
           view={view}
         />
-      </SidebarSection>
+      </div>
     </>
   );
 };

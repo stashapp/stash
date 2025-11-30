@@ -15,7 +15,7 @@ import { useDebounce } from "src/hooks/debounce";
 import useFocus from "src/utils/focus";
 import cx from "classnames";
 import ScreenUtils from "src/utils/screen";
-import { SidebarSection } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/MySidebar";
 import { TruncatedInlineText } from "src/components/Shared/TruncatedText";
 
 interface ISelectedItem {

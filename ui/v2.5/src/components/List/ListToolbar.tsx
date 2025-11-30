@@ -9,7 +9,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { SearchTermInput } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
-import { SidebarToggleButton } from "../Shared/Sidebar";
+import { SidebarToggleButton } from "../Shared/MySidebar";
 import { PatchComponent } from "src/patch";
 
 export const ToolbarFilterSection: React.FC<{

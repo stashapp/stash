@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { SidebarSection } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/MySidebar";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SearchTermInput } from "../ListFilter";
 import { SidebarSavedFilterList } from "../SavedFilterList";

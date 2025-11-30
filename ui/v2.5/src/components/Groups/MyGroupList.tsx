@@ -25,7 +25,7 @@ import {
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
 import cx from "classnames";
 import {
   FilteredSidebarHeader,
@@ -40,7 +40,12 @@ import {
   createStringCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
-import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFilter,
+  faPencil,
+  faPlus,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { EditGroupsDialog } from "./EditGroupsDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -178,56 +183,62 @@ const SidebarContent: React.FC<{
       />
 
       <MyGroupsFilterSidebarSections>
-        <SidebarPerformersFilter
-          title={<FormattedMessage id="performers" />}
-          option={PerformersCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarTagsFilter
-          title={<FormattedMessage id="tags" />}
-          option={TagsCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarDateFilter
-          title={<FormattedMessage id="date" />}
-          data-type={DateCriterionOption.type}
-          option={DateCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarRatingFilter
-          title={<FormattedMessage id="rating" />}
-          option={RatingCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStringFilter
-          title={<FormattedMessage id="url" />}
-          data-type={UrlCriterionOption.type}
-          option={UrlCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarNumberFilter
-          title={<FormattedMessage id="containing_group_count" />}
-          option={containingGroupCountCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarNumberFilter
-          title={<FormattedMessage id="sub_group_count" />}
-          option={subGroupCountCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <div className="sidebar-filters">
+          <div className="sidebar-section-header">
+            <Icon icon={faFilter} />
+            <FormattedMessage id="filters" />
+          </div>
+          <SidebarPerformersFilter
+            title={<FormattedMessage id="performers" />}
+            option={PerformersCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStudiosFilter
+            title={<FormattedMessage id="studios" />}
+            option={StudiosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarTagsFilter
+            title={<FormattedMessage id="tags" />}
+            option={TagsCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarDateFilter
+            title={<FormattedMessage id="date" />}
+            data-type={DateCriterionOption.type}
+            option={DateCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarRatingFilter
+            title={<FormattedMessage id="rating" />}
+            option={RatingCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStringFilter
+            title={<FormattedMessage id="url" />}
+            data-type={UrlCriterionOption.type}
+            option={UrlCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarNumberFilter
+            title={<FormattedMessage id="containing_group_count" />}
+            option={containingGroupCountCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarNumberFilter
+            title={<FormattedMessage id="sub_group_count" />}
+            option={subGroupCountCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+        </div>
       </MyGroupsFilterSidebarSections>
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>

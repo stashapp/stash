@@ -28,7 +28,7 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
@@ -52,7 +52,12 @@ import {
   createStringCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import useFocus from "src/utils/myFocus";
-import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFilter,
+  faPencil,
+  faPlus,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { TaggerContext } from "../Tagger/context";
 import { GenderCriterionOption } from "src/models/list-filter/criteria/gender";
 import { SidebarGenderFilter } from "../List/Filters/GenderFilter";
@@ -329,106 +334,112 @@ const SidebarContent: React.FC<{
         focus={focus}
       />
       <MyPerformersFilterSidebarSections>
-        <SidebarStudiosFilter
-          title={<FormattedMessage id="studios" />}
-          data-type={StudiosCriterionOption.type}
-          option={StudiosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarTagsFilter
-          title={<FormattedMessage id="tags" />}
-          data-type={TagsCriterionOption.type}
-          option={TagsCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-          filterHook={filterHook}
-        />
-        <SidebarGenderFilter
-          title={<FormattedMessage id="gender" />}
-          data-type={GenderCriterionOption.type}
-          option={GenderCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarNumberFilter
-          title={<FormattedMessage id="age" />}
-          data-type={AgeCriterionOption.type}
-          option={AgeCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarDateFilter
-          title={<FormattedMessage id="death_date" />}
-          data-type={DeathDateCriterionOption.type}
-          option={DeathDateCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarCountryFilter
-          title={<FormattedMessage id="country" />}
-          data-type={CountryCriterionOption.type}
-          option={CountryCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStringFilter
-          title={<FormattedMessage id="piercings" />}
-          data-type={PiercingsCriterionOption.type}
-          option={PiercingsCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStringFilter
-          title={<FormattedMessage id="tattoos" />}
-          data-type={TattoosCriterionOption.type}
-          option={TattoosCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarRatingFilter
-          title={<FormattedMessage id="rating" />}
-          data-type={RatingCriterionOption.type}
-          option={RatingCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStringFilter
-          title={<FormattedMessage id="url" />}
-          data-type={UrlCriterionOption.type}
-          option={UrlCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarNumberFilter
-          title={<FormattedMessage id="scene_count" />}
-          data-type={SceneCountCriterionOption.type}
-          option={SceneCountCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarNumberFilter
-          title={<FormattedMessage id="gallery_count" />}
-          data-type={GalleryCountCriterionOption.type}
-          option={GalleryCountCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarBooleanFilter
-          title={<FormattedMessage id="favourite" />}
-          data-type={FavoritePerformerCriterionOption.type}
-          option={FavoritePerformerCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
-        <SidebarStashIDFilter
-          title={<FormattedMessage id="stash_id" />}
-          data-type={StashIDCriterionOption.type}
-          option={StashIDCriterionOption}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <div className="sidebar-filters">
+          <div className="sidebar-section-header">
+            <Icon icon={faFilter} />
+            <FormattedMessage id="filters" />
+          </div>
+          <SidebarStudiosFilter
+            title={<FormattedMessage id="studios" />}
+            data-type={StudiosCriterionOption.type}
+            option={StudiosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+          <SidebarTagsFilter
+            title={<FormattedMessage id="tags" />}
+            data-type={TagsCriterionOption.type}
+            option={TagsCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+          <SidebarGenderFilter
+            title={<FormattedMessage id="gender" />}
+            data-type={GenderCriterionOption.type}
+            option={GenderCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarNumberFilter
+            title={<FormattedMessage id="age" />}
+            data-type={AgeCriterionOption.type}
+            option={AgeCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarDateFilter
+            title={<FormattedMessage id="death_date" />}
+            data-type={DeathDateCriterionOption.type}
+            option={DeathDateCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarCountryFilter
+            title={<FormattedMessage id="country" />}
+            data-type={CountryCriterionOption.type}
+            option={CountryCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStringFilter
+            title={<FormattedMessage id="piercings" />}
+            data-type={PiercingsCriterionOption.type}
+            option={PiercingsCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStringFilter
+            title={<FormattedMessage id="tattoos" />}
+            data-type={TattoosCriterionOption.type}
+            option={TattoosCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarRatingFilter
+            title={<FormattedMessage id="rating" />}
+            data-type={RatingCriterionOption.type}
+            option={RatingCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStringFilter
+            title={<FormattedMessage id="url" />}
+            data-type={UrlCriterionOption.type}
+            option={UrlCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarNumberFilter
+            title={<FormattedMessage id="scene_count" />}
+            data-type={SceneCountCriterionOption.type}
+            option={SceneCountCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarNumberFilter
+            title={<FormattedMessage id="gallery_count" />}
+            data-type={GalleryCountCriterionOption.type}
+            option={GalleryCountCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarBooleanFilter
+            title={<FormattedMessage id="favourite" />}
+            data-type={FavoritePerformerCriterionOption.type}
+            option={FavoritePerformerCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+          <SidebarStashIDFilter
+            title={<FormattedMessage id="stash_id" />}
+            data-type={StashIDCriterionOption.type}
+            option={StashIDCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+          />
+        </div>
       </MyPerformersFilterSidebarSections>
 
       <div className="sidebar-footer">

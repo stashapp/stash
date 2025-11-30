@@ -10,7 +10,7 @@ import { PhashCriterion } from "../../../models/list-filter/criteria/phash";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { NumberField } from "src/utils/form";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarSection } from "src/components/Shared/Sidebar";
+import { SidebarSection } from "src/components/Shared/MySidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierControls } from "./StringFilter";
