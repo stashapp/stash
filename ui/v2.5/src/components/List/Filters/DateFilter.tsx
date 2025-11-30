@@ -98,7 +98,6 @@ export const DateSelectedItems: React.FC<IDateSelectedItemsProps> = ({
   onChangedModifierSelect,
   onClear,
 }) => {
-  console.log("criterion?.value.value", criterion?.value.value);
   if (
     criterion?.modifier !== CriterionModifier.IsNull &&
     criterion?.modifier !== CriterionModifier.NotNull &&
