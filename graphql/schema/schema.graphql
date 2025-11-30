@@ -40,6 +40,15 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  "Get scene recommendations based on user interest"
+  sceneRecommendations(limit: Int): SceneRecommendationsResultType!
+
+  "Get scene recommendations based on a specific scene"
+  sceneRecommendationsForScene(
+    scene_id: ID!
+    limit: Int
+  ): SceneRecommendationsResultType!
+
   """
   Returns any groups of scenes that are perceptual duplicates within the queried distance
   and the difference between their duration is smaller than durationDiff
@@ -87,6 +96,15 @@ type Query {
     performer_ids: [Int!] @deprecated(reason: "use ids")
     ids: [ID!]
   ): FindPerformersResultType!
+
+  "Get performer recommendations based on user interest"
+  performerRecommendations(limit: Int): PerformerRecommendationsResultType!
+
+  "Get performer recommendations based on a specific performer"
+  performerRecommendationsForPerformer(
+    performer_id: ID!
+    limit: Int
+  ): PerformerRecommendationsResultType!
 
   "Find a studio by ID"
   findStudio(id: ID!): Studio

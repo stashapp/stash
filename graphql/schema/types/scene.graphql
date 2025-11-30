@@ -213,6 +213,16 @@ type FindScenesResultType {
   scenes: [Scene!]!
 }
 
+type SceneRecommendation {
+  scene: Scene!
+  score: Float!
+  reasons: [String!]!
+}
+
+type SceneRecommendationsResultType {
+  recommendations: [SceneRecommendation!]!
+}
+
 input SceneParserInput {
   ignoreWords: [String!]
   whitespaceCharacters: String

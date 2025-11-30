@@ -185,3 +185,13 @@ type FindPerformersResultType {
   count: Int!
   performers: [Performer!]!
 }
+
+type PerformerRecommendation {
+  performer: Performer!
+  score: Float!
+  reasons: [String!]!
+}
+
+type PerformerRecommendationsResultType {
+  recommendations: [PerformerRecommendation!]!
+}
