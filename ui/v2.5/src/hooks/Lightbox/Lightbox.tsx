@@ -139,14 +139,15 @@ const LightboxCarousel = forwardRef(function (
   }
 
   function handleReleaseCarousel(
-    event: React.TouchEvent,
-    swipeDuration: number
+    event: React.PointerEvent,
+    swipeDuration: number,
+    cancelled: boolean
   ) {
     const cappedDuration = Math.max(50, Math.min(500, swipeDuration)) / 1000;
     const adjustedShift = carouselShift / (2 * cappedDuration);
-    if (adjustedShift < -window.innerWidth / 2) {
+    if (!cancelled && adjustedShift < -window.innerWidth / 2) {
       handleRight();
-    } else if (adjustedShift > window.innerWidth / 2) {
+    } else if (!cancelled && adjustedShift > window.innerWidth / 2) {
       handleLeft();
     }
     setCarouselShift(0);
