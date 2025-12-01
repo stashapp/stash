@@ -53,6 +53,7 @@ import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { goBackOrReplace } from "src/utils/history";
+import ScreenUtils from "src/utils/screen";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -212,6 +213,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const [dropdownWidths, setDropdownWidths] = useState<number[]>([]);
 
   const autoCollapseTabs = useCallback(() => {
+    if (ScreenUtils.isMobile()) return;
+    
     const nav = tabNavRef.current;
     const dropdown = dropDownRef.current;
     if (nav == null || dropdown == null) {
@@ -224,6 +227,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     const maxHeight = 40;
     let navChildren = nav.children;
     let dropdownChildren = dropdownTabs.children;
+    // check to see when overflow results in new row on nav-bar
     if (height >= maxHeight) {
       dropdown.classList.remove("d-none");
 
