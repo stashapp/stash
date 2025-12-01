@@ -213,8 +213,6 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const [dropdownWidths, setDropdownWidths] = useState<number[]>([]);
 
   const autoCollapseTabs = useCallback(() => {
-    if (ScreenUtils.isMobile()) return;
-    
     const nav = tabNavRef.current;
     const dropdown = dropDownRef.current;
     if (nav == null || dropdown == null) {
@@ -224,7 +222,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     let height = nav.clientHeight;
     const dropdownTabs = dropdown.children[1];
 
-    const maxHeight = 40;
+    const maxHeight = !ScreenUtils.isMobile() ? 40 : 45;
     let navChildren = nav.children;
     let dropdownChildren = dropdownTabs.children;
     // check to see when overflow results in new row on nav-bar

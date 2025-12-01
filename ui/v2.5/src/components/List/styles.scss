@@ -1459,3 +1459,9 @@ input[type="range"].zoom-slider {
     transition: none;
   }
 }
+
+@media (max-width: 575.98px) and (orientation: portrait) {
+  .row .nav-tabs .nav-link {
+    width: max-content;
+  }
+}
