@@ -10,22 +10,25 @@ class WakeSentinelPlugin extends videojs.getPlugin("plugin") {
     document.addEventListener("visibilitychange", async () => {
       if (document.visibilityState === "visible") {
         // reacquire the wake lock when the page becomes visible
-        await this.acquireWakeLock(false);
+        await this.acquireWakeLock();
       }
     });
 
+    // acquire wake lock on ready and play
     player.ready(async () => {
       player.addClass("vjs-wake-sentinel");
       await this.acquireWakeLock(true);
     });
+    player.on("play", () => this.acquireWakeLock());
 
-    player.on("play", () => {
-      this.acquireWakeLock(false);
-    });
+    // release wake lock on pause, dispose and end
+    player.on("pause", () => this.releaseWakeLock());
+    player.on("dispose", () => this.releaseWakeLock());
+    player.on("ended", () => this.releaseWakeLock());
+  }
 
-    player.on("pause", () => {
-      this.wakeLock?.release();
-    });
+  private async releaseWakeLock(): Promise<void> {
+    this.wakeLock?.release().then(() => (this.wakeLock = null));
   }
 
   private async acquireWakeLock(log = false): Promise<void> {
@@ -35,13 +38,16 @@ class WakeSentinelPlugin extends videojs.getPlugin("plugin") {
     if ("wakeLock" in navigator) {
       try {
         this.wakeLock = await navigator.wakeLock.request("screen");
-        if (log) console.log("Screen Wake Lock is active!");
       } catch (err) {
         if (log) console.error("Failed to obtain Screen Wake Lock:", err);
         this.wakeLockFail = true;
       }
     } else {
-      if (log) console.warn("Screen Wake Lock API not supported.");
+      if (log) {
+        console.warn(
+          "Screen Wake Lock API not supported. Secure context (https or localhost) and modern browser required."
+        );
+      }
       this.wakeLockFail = true;
     }
   }
