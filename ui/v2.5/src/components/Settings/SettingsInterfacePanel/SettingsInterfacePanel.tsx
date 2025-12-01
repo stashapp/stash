@@ -599,6 +599,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               saveLightboxSettings({ scrollAttemptsBeforeChange: v })
             }
           />
+
+          <BooleanSetting
+            id="lightbox_disable_animation"
+            headingID="dialogs.lightbox.disable_animation"
+            checked={iface.imageLightbox?.disableAnimation ?? false}
+            onChange={(v) => saveLightboxSettings({ disableAnimation: v })}
+          />
         </SettingSection>
 
         <SettingSection headingID="config.ui.detail.heading">
