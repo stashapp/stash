@@ -20,7 +20,6 @@ import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
 import {
-  faBookmark,
   faFilter,
   faPencil,
   faPlay,

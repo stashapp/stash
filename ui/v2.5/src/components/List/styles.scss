@@ -1119,9 +1119,9 @@ input[type="range"].zoom-slider {
   top: $navbar-height;
   z-index: 10;
 
-    @include media-breakpoint-down(xs) {
-      top: 0;
-    }
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
 
   // hide drop down menu items for play and create new
   // when the buttons are visible
@@ -1143,80 +1143,80 @@ input[type="range"].zoom-slider {
     }
   }
 
-    .toolbar-selection-section,
-    div.filter-section {
-      border: 1px solid $secondary;
-      border-radius: 0.25rem;
-      flex-grow: 1;
-      overflow-x: hidden;
+  .toolbar-selection-section,
+  div.filter-section {
+    border: 1px solid $secondary;
+    border-radius: 0.25rem;
+    flex-grow: 1;
+    overflow-x: hidden;
+  }
+
+  div.toolbar-selection-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+
+    .sidebar-toggle-button {
+      margin-right: 0.5rem;
     }
 
-    div.toolbar-selection-section {
+    .selected-items-info {
+      align-items: center;
       display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      justify-content: center;
-
-      .sidebar-toggle-button {
-        margin-right: 0.5rem;
-      }
-
-      .selected-items-info {
-        align-items: center;
-        display: flex;
-      }
-
-      > div:first-child,
-      > div:last-child {
-        flex: 1;
-      }
-
-      > div:last-child {
-        display: flex;
-        justify-content: flex-end;
-      }
-
-      .scene-list-operations {
-        display: flex;
-      }
-
-      // on smaller viewports move the operation buttons to the right
-      @include media-breakpoint-down(md) {
-        div.scene-list-operations {
-          flex: 1;
-          justify-content: flex-end;
-          order: 3;
-        }
-
-        > div:last-child {
-          flex: 0;
-          order: 2;
-        }
-      }
     }
 
-    // on larger viewports, move the operation buttons to the center
-    @include media-breakpoint-up(lg) {
-      div.toolbar-selection-section div.scene-list-operations {
-        justify-content: center;
+    > div:first-child,
+    > div:last-child {
+      flex: 1;
+    }
 
-        > .btn-group {
-          gap: 0.5rem;
-        }
-      }
+    > div:last-child {
+      display: flex;
+      justify-content: flex-end;
+    }
 
-      div.toolbar-selection-section .empty-space {
+    .scene-list-operations {
+      display: flex;
+    }
+
+    // on smaller viewports move the operation buttons to the right
+    @include media-breakpoint-down(md) {
+      div.scene-list-operations {
         flex: 1;
+        justify-content: flex-end;
         order: 3;
       }
+
+      > div:last-child {
+        flex: 0;
+        order: 2;
+      }
+    }
+  }
+
+  // on larger viewports, move the operation buttons to the center
+  @include media-breakpoint-up(lg) {
+    div.toolbar-selection-section div.scene-list-operations {
+      justify-content: center;
+
+      > .btn-group {
+        gap: 0.5rem;
+      }
     }
 
-    .search-container {
-      border-right: 1px solid $secondary;
-      display: flex;
-      margin-right: -0.5rem;
-      min-width: calc($sidebar-width - 15px);
-      padding-right: 10px;
+    div.toolbar-selection-section .empty-space {
+      flex: 1;
+      order: 3;
+    }
+  }
+
+  .search-container {
+    border-right: 1px solid $secondary;
+    display: flex;
+    margin-right: -0.5rem;
+    min-width: calc($sidebar-width - 15px);
+    padding-right: 10px;
 
     .search-term-input {
       margin-right: 0;

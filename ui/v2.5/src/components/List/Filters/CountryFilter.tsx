@@ -3,59 +3,11 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import {
   CriterionOption,
-  ModifierCriterion,
 } from "../../../models/list-filter/criteria/criterion";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
 import { getCountries } from "src/utils/country";
-
-interface ICountryFilterProps {
-  criterion: ModifierCriterion<string>;
-  onValueChanged: (value: string) => void;
-}
-
-export const CountryFilter: React.FC<ICountryFilterProps> = ({
-  criterion,
-  onValueChanged,
-}) => {
-  const intl = useIntl();
-
-  const countryOptions = useMemo(() => {
-    return getCountries(intl.locale).map((country) => ({
-      id: country.value,
-      label: country.label,
-    }));
-  }, [intl.locale]);
-
-  const selectedOptions = useMemo(() => {
-    return countryOptions.filter((option) => criterion.value === option.id);
-  }, [countryOptions, criterion.value]);
-
-  const availableOptions = useMemo(() => {
-    return countryOptions.filter((option) => criterion.value !== option.id);
-  }, [countryOptions, criterion.value]);
-
-  function onSelect(item: Option) {
-    onValueChanged(item.id);
-  }
-
-  function onUnselect(item: Option) {
-    onValueChanged("");
-  }
-
-  return (
-    <div className="country-filter">
-      {/* <SidebarListFilter
-        candidates={availableOptions}
-        onSelect={onSelect}
-        onUnselect={onUnselect}
-        selected={selectedOptions}
-        singleValue={true}
-      /> */}
-    </div>
-  );
-};
 
 interface ISidebarFilter {
   title?: React.ReactNode;
@@ -86,7 +38,7 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
     if (!criterion) return [];
 
     if (criterion.modifier === CriterionModifier.Equals) {
-      return options.filter((option) => criterion.value === option.id);
+      return options.filter((o) => criterion.value === o.id);
     }
 
     return [];

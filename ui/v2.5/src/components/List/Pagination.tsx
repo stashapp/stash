@@ -263,7 +263,10 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = PatchComponent(
 
     return (
       <span className="filter-container text-muted paginationIndex center-text">
-        <b>{intl.formatNumber(firstItemCount)}-{intl.formatNumber(lastItemCount)}</b> of <b>{intl.formatNumber(totalItems)}</b>
+        <b>
+          {intl.formatNumber(firstItemCount)}-{intl.formatNumber(lastItemCount)}
+        </b>{" "}
+        of <b>{intl.formatNumber(totalItems)}</b>
         <br />
         {metadataByline}
       </span>

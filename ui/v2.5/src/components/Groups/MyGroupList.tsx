@@ -54,15 +54,12 @@ import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import {
-  PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { SidebarStringFilter } from "../List/Filters/StringFilter";
-import { SidebarPathFilter } from "../List/Filters/PathFilter";
-import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { PatchContainerComponent } from "src/patch";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
@@ -143,7 +140,6 @@ export const MyGroupsFilterSidebarSections = PatchContainerComponent(
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
-  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   showEditFilter: (editingCriterion?: string) => void;
   sidebarOpen: boolean;
@@ -153,7 +149,6 @@ const SidebarContent: React.FC<{
 }> = ({
   filter,
   setFilter,
-  filterHook,
   view,
   showEditFilter,
   sidebarOpen,
@@ -257,13 +252,12 @@ interface IOperations {
 }
 
 const GroupListOperations: React.FC<{
-  items: number;
   hasSelection: boolean;
   operations: IOperations[];
   onEdit: () => void;
   onDelete: () => void;
   onCreateNew: () => void;
-}> = ({ items, hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
+}> = ({ hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
   const intl = useIntl();
 
   return (
@@ -504,7 +498,6 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
           <SidebarContent
             filter={filter}
             setFilter={setFilter}
-            filterHook={filterHook}
             showEditFilter={showEditFilter}
             view={view}
             sidebarOpen={showSidebar}
@@ -542,7 +535,6 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
             }
             operationSection={
               <GroupListOperations
-                items={items.length}
                 hasSelection={hasSelection}
                 operations={otherOperations}
                 onEdit={onEdit}

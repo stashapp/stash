@@ -12,7 +12,6 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { SidebarSection } from "src/components/Shared/MySidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
-import { ModifierControls } from "./StringFilter";
 import { ModifierSelectorButtons } from "../ModifierSelect";
 
 interface IDateFilterProps {

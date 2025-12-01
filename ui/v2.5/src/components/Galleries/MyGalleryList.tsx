@@ -70,14 +70,6 @@ import { SidebarDateFilter } from "../List/Filters/DateFilter";
 import { SidebarPerformerTagsFilter } from "../List/Filters/PerformerTagsFilter";
 import { ListResultsHeader } from "../List/MyListResultsHeader";
 
-function getItems(result: GQL.FindGalleriesQueryResult) {
-  return result?.data?.findGalleries?.galleries ?? [];
-}
-
-function getCount(result: GQL.FindGalleriesQueryResult) {
-  return result?.data?.findGalleries?.count ?? 0;
-}
-
 function useViewRandom(
   result: GQL.FindGalleriesQueryResult,
   filter: ListFilterModel
@@ -310,13 +302,12 @@ interface IOperations {
 }
 
 const GalleryListOperations: React.FC<{
-  items: number;
   hasSelection: boolean;
   operations: IOperations[];
   onEdit: () => void;
   onDelete: () => void;
   onCreateNew: () => void;
-}> = ({ items, hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
+}> = ({ hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
   const intl = useIntl();
 
   return (
@@ -595,7 +586,6 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
               }
               operationSection={
                 <GalleryListOperations
-                  items={items.length}
                   hasSelection={hasSelection}
                   operations={otherOperations}
                   onEdit={onEdit}
