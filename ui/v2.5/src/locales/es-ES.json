@@ -151,7 +151,8 @@
             "close": "Cerrar barra lateral",
             "open": "Abrir barra lateral",
             "toggle": "Alternar barra lateral"
-        }
+        },
+        "add_stash_id": "Añadir ID de Stash"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -196,6 +197,10 @@
             "mark_organized_label": "Marcar como organizado al guardar",
             "errors": {
                 "blacklist_duplicate": "Elemento duplicado en la lista negra"
+            },
+            "performer_genders": {
+                "heading": "Géneros de los actores",
+                "description": "Los actores con estos géneros se mostrarán al etiquetar escenas."
             }
         },
         "noun_query": "Consulta",
@@ -414,6 +419,10 @@
             "plugins_path": {
                 "description": "Ubicación del directorio de los archivos de configuración de complementos",
                 "heading": "Ruta de complementos"
+            },
+            "delete_trash_path": {
+                "description": "Ruta a la que se moverán los archivos eliminados en lugar de eliminarlos permanentemente. Déjela vacía para eliminar los archivos de forma permanente.",
+                "heading": "Ruta de la papelera"
             }
         },
         "library": {
@@ -978,7 +987,9 @@
         "reassign_entity_title": "{count, plural, one {Reasignar {singularEntity}} other {Reasignar {pluralEntity}}}",
         "clear_o_history_confirm_sfw": "¿Estás seguro de que quieres borrar el historial de «Me gusta»?",
         "overwrite_filter_warning": "El filtro guardado \"{entityName}\" se sobrescribirá.",
-        "set_default_filter_confirm": "¿Estás seguro de que deseas establecer este filtro como predeterminado?"
+        "set_default_filter_confirm": "¿Estás seguro de que deseas establecer este filtro como predeterminado?",
+        "delete_alert_to_trash": "Los siguientes {count, plural, one {{singularEntity}} other {{pluralEntity}}} se moverán a la papelera:",
+        "stashid_exists_warning": "Se sustituirá el identificador de stash existente para este stash-box."
     },
     "dimensions": "Dimensiones",
     "director": "Director",
@@ -1173,7 +1184,8 @@
         "untagged_performers": "Actrices/actores no etiquetadas/os",
         "update_performer": "Actualizar actriz/actor",
         "update_performers": "Actualizar actrices/actores",
-        "updating_untagged_performers_description": "Actualizar las actrices/actores no etiquetados intentará seleccionar cualquier actriz/actor que carecen de un StashID y actualizará los metadatos."
+        "updating_untagged_performers_description": "Actualizar las actrices/actores no etiquetados intentará seleccionar cualquier actriz/actor que carecen de un StashID y actualizará los metadatos.",
+        "performer_names_or_stashids_separated_by_comma": "Nombres de actores o StashIDs separados por comas"
     },
     "performer_tags": "Etiquetas de actriz/actor",
     "performers": "Actrices/Actores",
@@ -1464,7 +1476,8 @@
         "refresh_tagged_studios": "Recargar estudios etiquetados",
         "studio_selection": "Selección de estudio",
         "batch_update_studios": "Actualizar estudios en lote",
-        "network_error": "Error de red"
+        "network_error": "Error de red",
+        "studio_names_or_stashids_separated_by_comma": "Nombres de estudio o StashID separados por comas"
     },
     "weight_kg": "Peso (kg)",
     "penis_length": "Longitud del pene",
@@ -1503,7 +1516,7 @@
     "second": "Segundo",
     "validation": {
         "blank": "${path} no puede estar vacío",
-        "date_invalid_form": "${path} tiene que tener el formato YYYY-MM-DD",
+        "date_invalid_form": "${path} debe estar en formato AAAA, AAAA-MM o AAAA-MM-DD.",
         "required": "${path} es un campo requerido",
         "unique": "${path} tiene que ser único",
         "end_time_before_start_time": "El tiempo de finalización debe ser mayor o igual que el tiempo de inicio"
@@ -1565,5 +1578,11 @@
     "odate_recorded_no_sfw": "Sin fecha de Me gusta registrada",
     "scenes_duration": "Duración de la escena",
     "sub_group_order": "Orden de subgrupo",
-    "time_end": "Hora de finalización"
+    "time_end": "Hora de finalización",
+    "stashbox_search": {
+        "header": "Buscar {entityType} en StashBox",
+        "no_results": "No se han encontrado resultados.",
+        "placeholder_name_or_id": "Nombre de {entityType} o StashID...",
+        "select_stashbox": "Seleccionar StashBox..."
+    }
 }
