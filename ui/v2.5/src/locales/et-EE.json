@@ -151,7 +151,8 @@
         "show_results": "Näita tulemusi",
         "show_count_results": "Näita {count} tulemust",
         "load": "Lae",
-        "load_filter": "Lae filter"
+        "load_filter": "Lae filter",
+        "add_stash_id": "Lisa Stash ID"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -197,6 +198,10 @@
             "mark_organized_label": "Märgi salvestamisel Organiseerituks",
             "errors": {
                 "blacklist_duplicate": "Dubleeritud musta nimekirja ese"
+            },
+            "performer_genders": {
+                "heading": "Näitlejate sood",
+                "description": "Tähe märgistades näidatakse nendest lugudest näitlejaid."
             }
         },
         "noun_query": "Päring",
@@ -415,6 +420,10 @@
             "plugins_path": {
                 "description": "Plugina konfiguratsioonifailide asukoht kataloogis",
                 "heading": "Pluginate Tee"
+            },
+            "delete_trash_path": {
+                "description": "Tee, kuhu liigutatakse kustutatud failide lõpliku kustutamise asemel. Jäta tühjaks, et alati faile lõplikult kustutada.",
+                "heading": "Prügi Tee"
             }
         },
         "library": {
@@ -982,7 +991,9 @@
         "clear_play_history_confirm": "Kas oled kindel, et soovid puhastada vaatamise ajaloo?",
         "set_default_filter_confirm": "Kas oled kindel, et soovid määrata seda filtrit vaikimisi valikuks?",
         "overwrite_filter_warning": "Salvestatud filter \"{entityName}\" kirjutatakse üle.",
-        "clear_o_history_confirm_sfw": "Kas oled kindel, et tahad meeldimiste ajalugu tühjendada?"
+        "clear_o_history_confirm_sfw": "Kas oled kindel, et tahad meeldimiste ajalugu tühjendada?",
+        "delete_alert_to_trash": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} liigutatakse prügilasse:",
+        "stashid_exists_warning": "Olemasolev stash id asendatakse selle stash-kasti jaoks."
     },
     "dimensions": "Dimensioonid",
     "director": "Režissöör",
@@ -1207,7 +1218,8 @@
         "untagged_performers": "Märkimata näitlejad",
         "update_performer": "Uuenda Näitlejat",
         "update_performers": "Uuenda Näitlejaid",
-        "updating_untagged_performers_description": "Märgistamata esinejate värskendamisel püütakse leida vasteid esinejatele, kellel puudub stashid, ja värskendatakse metaandmeid."
+        "updating_untagged_performers_description": "Märgistamata esinejate värskendamisel püütakse leida vasteid esinejatele, kellel puudub stashid, ja värskendatakse metaandmeid.",
+        "performer_names_or_stashids_separated_by_comma": "Näitlejate nimed või StashID-d eraldatud komadega"
     },
     "performer_tags": "Näitleja Sildid",
     "performers": "Näitlejad",
@@ -1404,7 +1416,7 @@
     "updated_at": "Viimati Uuendatud",
     "url": "URL",
     "validation": {
-        "date_invalid_form": "${path} peab olema AAAA-KK-PP vormis",
+        "date_invalid_form": "${path} peab olema AAAA, AAAA-KK või AAAA-KK-PP vormis",
         "required": "${path} on nõutud väli",
         "blank": "${path} ei tohi olla tühi",
         "unique": "${path} peab olema kordumatu",
@@ -1498,7 +1510,8 @@
         "refreshing_will_update_the_data": "Värskendamisel värskendatakse kõigi stash-boxi eksemplari märgistatud stuudiote andmeid.",
         "status_tagging_studios": "Staatus: Stuudiote märgistamine",
         "tag_status": "Märke Staatus",
-        "updating_untagged_studios_description": "Märgistamata stuudiote värskendamisel püütakse sobitada kõik stuudiod, millel puudub stashid, ja värskendatakse metaandmeid."
+        "updating_untagged_studios_description": "Märgistamata stuudiote värskendamisel püütakse sobitada kõik stuudiod, millel puudub stashid, ja värskendatakse metaandmeid.",
+        "studio_names_or_stashids_separated_by_comma": "Stuudio nimes või StashID-d eraldatud komadega"
     },
     "urls": "URLid",
     "video_codec": "Video Koodek",
@@ -1565,5 +1578,11 @@
     "last_o_at_sfw": "Viimane Meeldimine",
     "o_count_sfw": "Meeldimisi",
     "o_history_sfw": "Meeldimiste Ajalugu",
-    "odate_recorded_no_sfw": "Meeldimise Kuupäeva Pole Salvestatud"
+    "odate_recorded_no_sfw": "Meeldimise Kuupäeva Pole Salvestatud",
+    "stashbox_search": {
+        "header": "Otsi {entityType} StashBoxist",
+        "no_results": "Vasteid ei leitud.",
+        "placeholder_name_or_id": "{entityType} nimi või StashID...",
+        "select_stashbox": "Vali StashBox..."
+    }
 }
