@@ -28,6 +28,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const SidebarOrientationFilter: React.FC<ISidebarFilter> = ({
@@ -35,6 +36,7 @@ export const SidebarOrientationFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -113,6 +115,7 @@ export const SidebarOrientationFilter: React.FC<ISidebarFilter> = ({
         onUnselect={onUnselect}
         selected={selected}
         singleValue={false}
+        sectionID={sectionID}
       />
     </>
   );

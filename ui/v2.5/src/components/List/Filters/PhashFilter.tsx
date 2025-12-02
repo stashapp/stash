@@ -10,7 +10,7 @@ import { PhashCriterion } from "../../../models/list-filter/criteria/phash";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { NumberField } from "src/utils/form";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarSection } from "src/components/Shared/MySidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierControls } from "./StringFilter";
@@ -190,6 +190,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
@@ -197,6 +198,7 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const {
     criterion,
@@ -230,6 +232,7 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
+      sectionID={sectionID}
       outsideCollapse={
         <PhashSelectedItems
           criterion={criterion}

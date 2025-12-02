@@ -1,9 +1,7 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
-import {
-  CriterionOption,
-} from "../../../models/list-filter/criteria/criterion";
+import { CriterionOption } from "../../../models/list-filter/criteria/criterion";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";

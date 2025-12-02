@@ -28,7 +28,7 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";

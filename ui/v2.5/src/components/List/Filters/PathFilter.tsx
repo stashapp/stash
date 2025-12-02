@@ -10,7 +10,7 @@ import {
   CriterionOption,
 } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarSection } from "src/components/Shared/MySidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import {
   useModifierCriterion,
   SelectedItems,
@@ -62,6 +62,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
@@ -69,6 +70,7 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
   const { configuration } = React.useContext(ConfigurationContext);
@@ -91,6 +93,7 @@ export const SidebarPathFilter: React.FC<ISidebarFilter> = ({
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
+      sectionID={sectionID}
       outsideCollapse={
         <SelectedItems
           criterion={criterion}

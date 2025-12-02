@@ -7,7 +7,7 @@ import {
   ModifierCriterion,
 } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarSection } from "src/components/Shared/MySidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierSelectorButtons } from "../ModifierSelect";
@@ -191,6 +191,7 @@ interface ISidebarFilter {
   setFilter: (f: ListFilterModel) => void;
   placeholder?: string;
   modifier?: CriterionModifier;
+  sectionID?: string;
 }
 
 export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
@@ -199,6 +200,7 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
   filter,
   setFilter,
   placeholder,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -214,6 +216,7 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
+      sectionID={sectionID}
       outsideCollapse={
         <SelectedItems
           criterion={criterion}

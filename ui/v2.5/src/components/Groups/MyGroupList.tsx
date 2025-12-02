@@ -25,7 +25,7 @@ import {
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import cx from "classnames";
 import {
   FilteredSidebarHeader,
@@ -53,9 +53,7 @@ import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
-import {
-  TagsCriterionOption,
-} from "src/models/list-filter/criteria/tags";
+import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";

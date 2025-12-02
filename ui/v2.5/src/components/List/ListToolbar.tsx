@@ -9,7 +9,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { SearchTermInput } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
-import { SidebarToggleButton } from "../Shared/MySidebar";
+import { SidebarToggleButton } from "../Shared/Sidebar";
 import { PatchComponent } from "src/patch";
 import { SavedFilterDropdown } from "./SavedFilterList";
 import { View } from "./views";

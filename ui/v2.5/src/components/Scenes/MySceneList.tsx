@@ -38,7 +38,13 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
@@ -259,8 +265,8 @@ const SceneList: React.FC<{
   return null;
 };
 
-export const MyScenesFilterSidebarSections = PatchContainerComponent(
-  "MyFilteredSceneList.SidebarSections"
+export const ScenesFilterSidebarSections = PatchContainerComponent(
+  "FilteredSceneList.SidebarSections"
 );
 
 const SidebarContent: React.FC<{
@@ -304,7 +310,7 @@ const SidebarContent: React.FC<{
         focus={focus}
       />
 
-      <MyScenesFilterSidebarSections>
+      <ScenesFilterSidebarSections>
         <div className="sidebar-filters">
           <div className="sidebar-section-header">
             <Icon icon={faFilter} />
@@ -318,6 +324,7 @@ const SidebarContent: React.FC<{
               filter={filter}
               setFilter={setFilter}
               filterHook={filterHook}
+              sectionID="studios"
             />
           )}
           <SidebarPerformersFilter
@@ -327,6 +334,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="performers"
           />
           <SidebarPerformerTagsFilter
             title={<FormattedMessage id="performer_tags" />}
@@ -335,6 +343,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="performer_tags"
           />
           <SidebarTagsFilter
             title={<FormattedMessage id="tags" />}
@@ -343,6 +352,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="tags"
           />
           <SidebarDateFilter
             title={<FormattedMessage id="date" />}
@@ -350,6 +360,7 @@ const SidebarContent: React.FC<{
             option={DateCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="date"
           />
           <SidebarRatingFilter
             title={<FormattedMessage id="rating" />}
@@ -357,12 +368,14 @@ const SidebarContent: React.FC<{
             option={RatingCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="rating"
           />
           <SidebarOrientationFilter
             title={<FormattedMessage id="orientation" />}
             option={OrientationCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="orientation"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="url" />}
@@ -370,6 +383,7 @@ const SidebarContent: React.FC<{
             option={UrlCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="url"
           />
           <SidebarPathFilter
             title={<FormattedMessage id="path" />}
@@ -377,6 +391,7 @@ const SidebarContent: React.FC<{
             option={PathCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="path"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="file_count" />}
@@ -384,6 +399,7 @@ const SidebarContent: React.FC<{
             option={fileCountCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="file_count"
           />
           <SidebarPhashFilter
             title={<FormattedMessage id="media_info.phash" />}
@@ -391,6 +407,7 @@ const SidebarContent: React.FC<{
             option={PhashCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="phash"
           />
           <SidebarBooleanFilter
             title={<FormattedMessage id="duplicated_phash" />}
@@ -398,6 +415,7 @@ const SidebarContent: React.FC<{
             option={DuplicatedCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="duplicated_phash"
           />
           <SidebarBooleanFilter
             title={<FormattedMessage id="organized" />}
@@ -405,6 +423,7 @@ const SidebarContent: React.FC<{
             option={OrganizedCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="organized"
           />
           <SidebarStashIDFilter
             title={<FormattedMessage id="stash_id" />}
@@ -412,9 +431,10 @@ const SidebarContent: React.FC<{
             option={StashIDCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="stash_id"
           />
         </div>
-      </MyScenesFilterSidebarSections>
+      </ScenesFilterSidebarSections>
 
       <div className="sidebar-footer">
         <Button className="sidebar-close-button" onClick={onClose}>
@@ -452,7 +472,7 @@ const SceneListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div>
+    <div className="scene-list-operations">
       <ButtonGroup>
         {!!items && (
           <Button
@@ -493,7 +513,10 @@ const SceneListOperations: React.FC<{
           </>
         )}
 
-        <OperationDropdown className="scene-list-operations">
+        <OperationDropdown
+          className="scene-list-operations"
+          menuPortalTarget={document.body}
+        >
           {operations.map((o) => {
             if (o.isDisplayed && !o.isDisplayed()) {
               return null;
@@ -522,7 +545,7 @@ interface IFilteredScenes {
   fromGroupId?: string;
 }
 
-export const MyFilteredSceneList = (props: IFilteredScenes) => {
+export const FilteredSceneList = (props: IFilteredScenes) => {
   const intl = useIntl();
   const history = useHistory();
 
@@ -536,6 +559,8 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
     showSidebar,
     setShowSidebar,
     loading: sidebarStateLoading,
+    sectionOpen,
+    setSectionOpen,
   } = useSidebarState(view);
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
@@ -615,7 +640,7 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
 
   const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
 
-  const playRandom = usePlayRandom(filter, totalCount);
+  const playRandom = usePlayRandom(effectiveFilter, totalCount);
   const playSelected = usePlaySelected(selectedIds);
   const playFirst = usePlayFirst();
 
@@ -763,6 +788,18 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <SceneListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onPlay={onPlay}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <TaggerContext>
       <div
@@ -772,97 +809,93 @@ export const MyFilteredSceneList = (props: IFilteredScenes) => {
       >
         {modal}
 
-        <SidebarPane hideSidebar={!showSidebar}>
-          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent
-              filter={filter}
-              setFilter={setFilter}
-              filterHook={filterHook}
-              showEditFilter={showEditFilter}
-              view={view}
-              sidebarOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              count={cachedResult.loading ? undefined : totalCount}
-              focus={searchFocus}
-            />
-          </Sidebar>
-          <div>
-            <FilteredListToolbar2
-              className="scene-list-toolbar"
-              hasSelection={hasSelection}
-              filterSection={
-                <ToolbarFilterSection
-                  filter={filter}
-                  onSetFilter={setFilter}
-                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                  onEditCriterion={(c) =>
-                    showEditFilter(c?.criterionOption.type)
-                  }
-                  onRemoveCriterion={removeCriterion}
-                  onRemoveAllCriterion={() => clearAllCriteria(true)}
-                  onEditSearchTerm={() => {
-                    setShowSidebar(true);
-                    setSearchFocus(true);
-                  }}
-                  onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
-                />
-              }
-              selectionSection={
-                <ToolbarSelectionSection
-                  selected={selectedIds.size}
-                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                  onSelectAll={() => onSelectAll()}
-                  onSelectNone={() => onSelectNone()}
-                />
-              }
-              operationSection={
-                <SceneListOperations
-                  items={items.length}
-                  hasSelection={hasSelection}
-                  operations={otherOperations}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onPlay={onPlay}
-                  onCreateNew={onCreateNew}
-                />
-              }
-            />
-
-            <ListResultsHeader
-              loading={cachedResult.loading}
-              filter={filter}
-              totalCount={totalCount}
-              metadataByline={metadataByline}
-              onChangeFilter={(newFilter) => setFilter(newFilter)}
-            />
-
-            <LoadedContent loading={result.loading} error={result.error}>
-              <SceneList
-                filter={effectiveFilter}
-                scenes={items}
-                selectedIds={selectedIds}
-                onSelectChange={onSelectChange}
-                fromGroupId={fromGroupId}
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
               />
-            </LoadedContent>
+            </Sidebar>
+            <SidebarPaneContent>
+              <FilteredListToolbar2
+                className="scene-list-toolbar"
+                hasSelection={hasSelection}
+                filterSection={
+                  <ToolbarFilterSection
+                    filter={filter}
+                    onSetFilter={setFilter}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onEditCriterion={(c) =>
+                      showEditFilter(c?.criterionOption.type)
+                    }
+                    onRemoveCriterion={removeCriterion}
+                    onRemoveAllCriterion={() => clearAllCriteria(true)}
+                    onEditSearchTerm={() => {
+                      setShowSidebar(true);
+                      setSearchFocus(true);
+                    }}
+                    onRemoveSearchTerm={() =>
+                      setFilter(filter.clearSearchTerm())
+                    }
+                    // view={view}
+                  />
+                }
+                selectionSection={
+                  <ToolbarSelectionSection
+                    selected={selectedIds.size}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onSelectAll={() => onSelectAll()}
+                    onSelectNone={() => onSelectNone()}
+                    operations={operations}
+                  />
+                }
+                operationSection={operations}
+              />
 
-            {totalCount > filter.itemsPerPage && (
-              <div className="pagination-footer">
-                <Pagination
-                  itemsPerPage={filter.itemsPerPage}
-                  currentPage={filter.currentPage}
-                  totalItems={totalCount}
-                  metadataByline={metadataByline}
-                  onChangePage={setPage}
-                  pagePopupPlacement="top"
+              <ListResultsHeader
+                loading={cachedResult.loading}
+                filter={filter}
+                totalCount={totalCount}
+                metadataByline={metadataByline}
+                onChangeFilter={(newFilter) => setFilter(newFilter)}
+              />
+
+              <LoadedContent loading={result.loading} error={result.error}>
+                <SceneList
+                  filter={effectiveFilter}
+                  scenes={items}
+                  selectedIds={selectedIds}
+                  onSelectChange={onSelectChange}
+                  fromGroupId={fromGroupId}
                 />
-              </div>
-            )}
-          </div>
-        </SidebarPane>
+              </LoadedContent>
+
+              {totalCount > filter.itemsPerPage && (
+                <div className="pagination-footer">
+                  <Pagination
+                    itemsPerPage={filter.itemsPerPage}
+                    currentPage={filter.currentPage}
+                    totalItems={totalCount}
+                    metadataByline={metadataByline}
+                    onChangePage={setPage}
+                    pagePopupPlacement="top"
+                  />
+                </div>
+              )}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
       </div>
     </TaggerContext>
   );
 };
 
-export default MyFilteredSceneList;
+export default FilteredSceneList;

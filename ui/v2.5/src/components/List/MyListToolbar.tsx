@@ -9,7 +9,7 @@ import { FilterButton } from "../List/Filters/FilterButton";
 import { Icon } from "../Shared/Icon";
 import { SearchTermInput } from "../List/ListFilter";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
-import { SidebarToggleButton } from "../Shared/MySidebar";
+import { SidebarToggleButton } from "../Shared/Sidebar";
 import { PatchComponent } from "src/patch";
 
 export const ToolbarFilterSection: React.FC<{
@@ -62,15 +62,25 @@ export const ToolbarFilterSection: React.FC<{
 export const ToolbarSelectionSection: React.FC<{
   selected: number;
   onToggleSidebar: () => void;
+  operations?: React.ReactNode;
   onSelectAll: () => void;
   onSelectNone: () => void;
 }> = PatchComponent(
   "ToolbarSelectionSection",
-  ({ selected, onToggleSidebar, onSelectAll, onSelectNone }) => {
+  ({ selected, onToggleSidebar, operations, onSelectAll, onSelectNone }) => {
     const intl = useIntl();
 
     return (
-      <div className="selected-items-info">
+      <div className="toolbar-selection-section">
+        <div className="selected-items-info">
+          <SidebarToggleButton onClick={onToggleSidebar} />
+          <Button variant="link" onClick={() => onSelectAll()}>
+            <FormattedMessage id="actions.select_all" />
+          </Button>
+        </div>
+        {operations}
+        <div className="empty-space" />
+        <span>{selected} selected</span>
         <Button
           variant="secondary"
           className="minimal"
@@ -79,11 +89,6 @@ export const ToolbarSelectionSection: React.FC<{
         >
           <Icon icon={faTimes} />
         </Button>
-        <span>{selected} selected</span>
-        <Button variant="link" onClick={() => onSelectAll()}>
-          <FormattedMessage id="actions.select_all" />
-        </Button>
-        <SidebarToggleButton onClick={onToggleSidebar} />
       </div>
     );
   }

@@ -26,7 +26,7 @@ import {
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/MySidebar";
+import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import {

@@ -5,7 +5,7 @@ import {
   GroupsCriterionOption,
 } from "src/models/list-filter/criteria/groups";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { MyFilteredSceneList } from "src/components/Scenes/MySceneList";
+import { FilteredSceneList } from "src/components/Scenes/MySceneList";
 import { View } from "src/components/List/views";
 
 interface IGroupScenesPanel {
@@ -64,7 +64,7 @@ export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
 
   if (group && group.id) {
     return (
-      <MyFilteredSceneList
+      <FilteredSceneList
         filterHook={filterHook}
         defaultSort="group_scene_number"
         alterQuery={active}

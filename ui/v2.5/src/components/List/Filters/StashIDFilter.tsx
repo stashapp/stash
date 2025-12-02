@@ -9,7 +9,7 @@ import {
 import { StashIDCriterion } from "../../../models/list-filter/criteria/stash-ids";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarSection } from "src/components/Shared/MySidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierControls } from "./StringFilter";
@@ -180,6 +180,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const SidebarStashIDFilter: React.FC<ISidebarFilter> = ({
@@ -187,6 +188,7 @@ export const SidebarStashIDFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const {
     criterion,
@@ -220,6 +222,7 @@ export const SidebarStashIDFilter: React.FC<ISidebarFilter> = ({
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
+      sectionID={sectionID}
       outsideCollapse={
         <StashIDSelectedItems
           criterion={criterion}

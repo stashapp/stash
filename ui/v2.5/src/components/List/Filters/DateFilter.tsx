@@ -9,7 +9,7 @@ import {
 } from "../../../models/list-filter/criteria/criterion";
 import { DateInput } from "src/components/Shared/DateInput";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SidebarSection } from "src/components/Shared/MySidebar";
+import { SidebarSection } from "src/components/Shared/Sidebar";
 import { SelectedItem } from "./SidebarListFilter";
 import { cloneDeep } from "lodash-es";
 import { ModifierSelectorButtons } from "../ModifierSelect";
@@ -153,6 +153,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const DateFilter: React.FC<IDateFilterProps> = ({
@@ -245,6 +246,7 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -289,6 +291,7 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
+      sectionID={sectionID}
       outsideCollapse={
         <DateSelectedItems
           criterion={criterion}
