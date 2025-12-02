@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"image"
 	"path/filepath"
@@ -19,6 +20,8 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
+var ErrUnsupportedAVIFInZip = errors.New("AVIF images in zip files is unsupported")
+
 // Decorator adds image specific fields to a File.
 type Decorator struct {
 	FFProbe *ffmpeg.FFProbe
@@ -32,8 +35,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 	if _, isOs := fs.(*file.OsFS); !isOs {
 		// AVIF images inside zip files are not supported
 		if strings.ToLower(filepath.Ext(base.Path)) == ".avif" {
-			logger.Warnf("Skipping AVIF image in zip file: %s", base.Path)
-			return f, nil
+			return nil, fmt.Errorf("%w: %s", ErrUnsupportedAVIFInZip, base.Path)
 		}
 		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
 		return decorateFallback(fs, f)
