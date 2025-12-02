@@ -151,7 +151,8 @@
         },
         "show_results": "Visa resultat",
         "load": "Ladda",
-        "load_filter": "Ladda filter"
+        "load_filter": "Ladda filter",
+        "add_stash_id": "Lägg till Stash ID"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -203,6 +204,10 @@
             "source": "Källa",
             "errors": {
                 "blacklist_duplicate": "Duplicera svartlistat objekt"
+            },
+            "performer_genders": {
+                "heading": "Stjärnors kön",
+                "description": "Stjärnor med dessa kön kommer visas när scener taggas."
             }
         },
         "noun_query": "Query",
@@ -421,6 +426,10 @@
             "plugins_path": {
                 "description": "Sökväg till pluginkonfigurationsfiler",
                 "heading": "Pluginsökväg"
+            },
+            "delete_trash_path": {
+                "description": "Sökväg dit raderade filer kommer flyttas till instället för att permanent raderas. Lämna blankt för att permanent radera filer.",
+                "heading": "Skräpsökväg"
             }
         },
         "library": {
@@ -922,7 +931,8 @@
                 "label": "Bläddringsläge",
                 "pan_y": "Panorera Y",
                 "zoom": "Zooma"
-            }
+            },
+            "disable_animation": "Stäng av övergångsanimationen mellan bilder"
         },
         "merge": {
             "destination": "Destination",
@@ -988,7 +998,9 @@
         "clear_play_history_confirm": "Är du säker på att du vill radera uppspelningshistoriken?",
         "overwrite_filter_warning": "Sparat filter \"{entityName}\" kommer skrivas över.",
         "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?",
-        "clear_o_history_confirm_sfw": "Är du säker att du vill radera gillningshistoriken?"
+        "clear_o_history_confirm_sfw": "Är du säker att du vill radera gillningshistoriken?",
+        "delete_alert_to_trash": "De följande {count, plural, one {{singularEntity}} other {{pluralEntity}}} kommer flyttas till skräpet:",
+        "stashid_exists_warning": "Det existerande stash id:et för denna stash-box kommer ersättas."
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1218,7 +1230,8 @@
         "untagged_performers": "Ej taggade stjärnor",
         "update_performer": "Uppdatera stjärna",
         "update_performers": "Uppdatera stjärnor",
-        "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan."
+        "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan.",
+        "performer_names_or_stashids_separated_by_comma": "Stjärnors namn eller StashID separerade med komma"
     },
     "performer_tags": "Stjärntagg",
     "performers": "Stjärnor",
@@ -1413,7 +1426,8 @@
         "untagged_studios": "Otaggade studior",
         "update_studio": "Uppdatera Studio",
         "update_studios": "Uppdatera Studior",
-        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar Stash ID och uppdatera metadata."
+        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar Stash ID och uppdatera metadata.",
+        "studio_names_or_stashids_separated_by_comma": "Studionamn eller StashID separerade med komma"
     },
     "studios": "Studior",
     "sub_tag_count": "Antal Underordnade Taggar",
@@ -1453,7 +1467,7 @@
     "url": "URL",
     "urls": "URL:er",
     "validation": {
-        "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ-MM-DD",
+        "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ, ÅÅÅÅ-MM, eller ÅÅÅÅ-MM-DD",
         "required": "${path} är ett obligatoriskt fält",
         "unique": "${path} måste vara unik",
         "blank": "${path} får inte lämnas tom",
@@ -1565,5 +1579,11 @@
     "last_o_at_sfw": "Senaste Gillning Vid",
     "o_count_sfw": "Gillningar",
     "o_history_sfw": "Gillningshistorik",
-    "odate_recorded_no_sfw": "Inget Gillningsdatum Sparat"
+    "odate_recorded_no_sfw": "Inget Gillningsdatum Sparat",
+    "stashbox_search": {
+        "header": "Sök {entityType} från StashBox",
+        "no_results": "Inga resultat hittades.",
+        "placeholder_name_or_id": "{entityType} namn eller StashID...",
+        "select_stashbox": "Välj StashBox..."
+    }
 }
