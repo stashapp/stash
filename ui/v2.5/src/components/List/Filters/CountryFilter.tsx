@@ -12,6 +12,7 @@ interface ISidebarFilter {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  sectionID?: string;
 }
 
 export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
@@ -19,6 +20,7 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
   option,
   filter,
   setFilter,
+  sectionID,
 }) => {
   const intl = useIntl();
 
@@ -90,6 +92,7 @@ export const SidebarCountryFilter: React.FC<ISidebarFilter> = ({
         onUnselect={onUnselect}
         selected={selected}
         singleValue={true}
+        sectionID={sectionID}
       />
     </>
   );

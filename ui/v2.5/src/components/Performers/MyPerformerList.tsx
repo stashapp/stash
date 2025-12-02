@@ -28,7 +28,13 @@ import {
   OperationDropdownItem,
 } from "../List/ListOperationButtons";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import cx from "classnames";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
@@ -346,6 +352,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="studios"
           />
           <SidebarTagsFilter
             title={<FormattedMessage id="tags" />}
@@ -354,6 +361,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="tags"
           />
           <SidebarGenderFilter
             title={<FormattedMessage id="gender" />}
@@ -361,6 +369,7 @@ const SidebarContent: React.FC<{
             option={GenderCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="gender"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="age" />}
@@ -368,6 +377,7 @@ const SidebarContent: React.FC<{
             option={AgeCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="age"
           />
           <SidebarDateFilter
             title={<FormattedMessage id="death_date" />}
@@ -375,6 +385,7 @@ const SidebarContent: React.FC<{
             option={DeathDateCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="death_date"
           />
           <SidebarCountryFilter
             title={<FormattedMessage id="country" />}
@@ -382,6 +393,7 @@ const SidebarContent: React.FC<{
             option={CountryCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="country"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="piercings" />}
@@ -389,6 +401,7 @@ const SidebarContent: React.FC<{
             option={PiercingsCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="piercings"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="tattoos" />}
@@ -396,6 +409,7 @@ const SidebarContent: React.FC<{
             option={TattoosCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="tattoos"
           />
           <SidebarRatingFilter
             title={<FormattedMessage id="rating" />}
@@ -403,6 +417,7 @@ const SidebarContent: React.FC<{
             option={RatingCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="rating"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="url" />}
@@ -410,6 +425,7 @@ const SidebarContent: React.FC<{
             option={UrlCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="url"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="scene_count" />}
@@ -417,6 +433,7 @@ const SidebarContent: React.FC<{
             option={SceneCountCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="scene_count"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="gallery_count" />}
@@ -424,6 +441,7 @@ const SidebarContent: React.FC<{
             option={GalleryCountCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="gallery_count"
           />
           <SidebarBooleanFilter
             title={<FormattedMessage id="favourite" />}
@@ -431,6 +449,7 @@ const SidebarContent: React.FC<{
             option={FavoritePerformerCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="favourite"
           />
           <SidebarStashIDFilter
             title={<FormattedMessage id="stash_id" />}
@@ -438,6 +457,7 @@ const SidebarContent: React.FC<{
             option={StashIDCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="stash_id"
           />
         </div>
       </MyPerformersFilterSidebarSections>
@@ -469,7 +489,7 @@ const PerformerListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div>
+    <div className="performer-list-operations">
       <ButtonGroup>
         {!hasSelection && (
           <Button
@@ -500,7 +520,10 @@ const PerformerListOperations: React.FC<{
           </>
         )}
 
-        <OperationDropdown className="performer-list-operations">
+        <OperationDropdown
+          className="performer-list-operations"
+          menuPortalTarget={document.body}
+        >
           {operations.map((o) => {
             if (o.isDisplayed && !o.isDisplayed()) {
               return null;
@@ -543,6 +566,8 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
     showSidebar,
     setShowSidebar,
     loading: sidebarStateLoading,
+    sectionOpen,
+    setSectionOpen,
   } = useSidebarState(view);
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
@@ -694,6 +719,17 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <PerformerListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <TaggerContext>
       <div
@@ -703,21 +739,22 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
       >
         {modal}
 
-        <SidebarPane hideSidebar={!showSidebar}>
-          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent
-              filter={filter}
-              setFilter={setFilter}
-              filterHook={filterHook}
-              showEditFilter={showEditFilter}
-              view={view}
-              sidebarOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              count={cachedResult.loading ? undefined : totalCount}
-              focus={searchFocus}
-            />
-          </Sidebar>
-          <div>
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
+              />
+            </Sidebar>
+            <SidebarPaneContent>
             <FilteredListToolbar2
               className="performer-list-toolbar"
               hasSelection={hasSelection}
@@ -738,24 +775,16 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
                   onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
                 />
               }
-              selectionSection={
-                <ToolbarSelectionSection
-                  selected={selectedIds.size}
-                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                  onSelectAll={() => onSelectAll()}
-                  onSelectNone={() => onSelectNone()}
-                />
-              }
-              operationSection={
-                <PerformerListOperations
-                  items={items.length}
-                  hasSelection={hasSelection}
-                  operations={otherOperations}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onCreateNew={onCreateNew}
-                />
-              }
+            selectionSection={
+              <ToolbarSelectionSection
+                selected={selectedIds.size}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onSelectAll={() => onSelectAll()}
+                onSelectNone={() => onSelectNone()}
+                operations={operations}
+              />
+            }
+            operationSection={operations}
             />
 
             <ListResultsHeader
@@ -784,10 +813,11 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
                   onChangePage={setPage}
                   pagePopupPlacement="top"
                 />
-              </div>
-            )}
-          </div>
-        </SidebarPane>
+            </div>
+          )}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
       </div>
     </TaggerContext>
   );

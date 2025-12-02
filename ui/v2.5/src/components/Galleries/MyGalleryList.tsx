@@ -26,7 +26,13 @@ import {
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import {
@@ -215,6 +221,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="studios"
           />
           <SidebarPerformersFilter
             title={<FormattedMessage id="performers" />}
@@ -223,6 +230,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="performers"
           />
           <SidebarPerformerTagsFilter
             title={<FormattedMessage id="performer_tags" />}
@@ -231,6 +239,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="performer_tags"
           />
           <SidebarTagsFilter
             title={<FormattedMessage id="tags" />}
@@ -239,6 +248,7 @@ const SidebarContent: React.FC<{
             filter={filter}
             setFilter={setFilter}
             filterHook={filterHook}
+            sectionID="tags"
           />
           <SidebarDateFilter
             title={<FormattedMessage id="date" />}
@@ -246,6 +256,7 @@ const SidebarContent: React.FC<{
             option={DateCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="date"
           />
           <SidebarPathFilter
             title={<FormattedMessage id="path" />}
@@ -253,6 +264,7 @@ const SidebarContent: React.FC<{
             option={PathCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="path"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="file_count" />}
@@ -260,6 +272,7 @@ const SidebarContent: React.FC<{
             option={fileCountCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="file_count"
           />
           <SidebarRatingFilter
             title={<FormattedMessage id="rating" />}
@@ -267,6 +280,7 @@ const SidebarContent: React.FC<{
             option={RatingCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="rating"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="url" />}
@@ -274,6 +288,7 @@ const SidebarContent: React.FC<{
             option={UrlCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="url"
           />
           <SidebarBooleanFilter
             title={<FormattedMessage id="organized" />}
@@ -281,6 +296,7 @@ const SidebarContent: React.FC<{
             option={OrganizedCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="organized"
           />
         </div>
       </MyGalleriesFilterSidebarSections>
@@ -302,16 +318,17 @@ interface IOperations {
 }
 
 const GalleryListOperations: React.FC<{
+  items: number;
   hasSelection: boolean;
   operations: IOperations[];
   onEdit: () => void;
   onDelete: () => void;
   onCreateNew: () => void;
-}> = ({ hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
+}> = ({ items, hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
   const intl = useIntl();
 
   return (
-    <div>
+    <div className="gallery-list-operations">
       <ButtonGroup>
         {!hasSelection && (
           <Button
@@ -342,7 +359,10 @@ const GalleryListOperations: React.FC<{
           </>
         )}
 
-        <OperationDropdown className="gallery-list-operations">
+        <OperationDropdown
+          className="gallery-list-operations"
+          menuPortalTarget={document.body}
+        >
           {operations.map((o) => {
             if (o.isDisplayed && !o.isDisplayed()) {
               return null;
@@ -384,6 +404,8 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
     showSidebar,
     setShowSidebar,
     loading: sidebarStateLoading,
+    sectionOpen,
+    setSectionOpen,
   } = useSidebarState(view);
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
@@ -532,6 +554,17 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <GalleryListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <TaggerContext>
       <div
@@ -541,21 +574,22 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
       >
         {modal}
 
-        <SidebarPane hideSidebar={!showSidebar}>
-          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent
-              filter={filter}
-              setFilter={setFilter}
-              filterHook={filterHook}
-              showEditFilter={showEditFilter}
-              view={view}
-              sidebarOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              count={cachedResult.loading ? undefined : totalCount}
-              focus={searchFocus}
-            />
-          </Sidebar>
-          <div>
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
+              />
+            </Sidebar>
+            <SidebarPaneContent>
             <FilteredListToolbar2
               className="gallery-list-toolbar"
               hasSelection={hasSelection}
@@ -582,17 +616,10 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
                   onToggleSidebar={() => setShowSidebar(!showSidebar)}
                   onSelectAll={() => onSelectAll()}
                   onSelectNone={() => onSelectNone()}
+                  operations={operations}
                 />
               }
-              operationSection={
-                <GalleryListOperations
-                  hasSelection={hasSelection}
-                  operations={otherOperations}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onCreateNew={onCreateNew}
-                />
-              }
+              operationSection={operations}
             />
 
             <ListResultsHeader
@@ -622,8 +649,9 @@ export const MyFilteredGalleryList = (props: IFilteredGalleries) => {
                 />
               </div>
             )}
-          </div>
-        </SidebarPane>
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
       </div>
     </TaggerContext>
   );

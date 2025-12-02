@@ -25,7 +25,13 @@ import {
   ToolbarSelectionSection,
 } from "../List/MyListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
-import { Sidebar, SidebarPane, useSidebarState } from "../Shared/Sidebar";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
 import cx from "classnames";
 import {
   FilteredSidebarHeader,
@@ -186,18 +192,21 @@ const SidebarContent: React.FC<{
             option={PerformersCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="performers"
           />
           <SidebarStudiosFilter
             title={<FormattedMessage id="studios" />}
             option={StudiosCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="studios"
           />
           <SidebarTagsFilter
             title={<FormattedMessage id="tags" />}
             option={TagsCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="tags"
           />
           <SidebarDateFilter
             title={<FormattedMessage id="date" />}
@@ -205,12 +214,14 @@ const SidebarContent: React.FC<{
             option={DateCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="date"
           />
           <SidebarRatingFilter
             title={<FormattedMessage id="rating" />}
             option={RatingCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="rating"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="url" />}
@@ -218,18 +229,21 @@ const SidebarContent: React.FC<{
             option={UrlCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="url"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="containing_group_count" />}
             option={containingGroupCountCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="containing_group_count"
           />
           <SidebarNumberFilter
             title={<FormattedMessage id="sub_group_count" />}
             option={subGroupCountCriterionOption}
             filter={filter}
             setFilter={setFilter}
+            sectionID="sub_group_count"
           />
         </div>
       </MyGroupsFilterSidebarSections>
@@ -250,16 +264,17 @@ interface IOperations {
 }
 
 const GroupListOperations: React.FC<{
+  items: number;
   hasSelection: boolean;
   operations: IOperations[];
   onEdit: () => void;
   onDelete: () => void;
   onCreateNew: () => void;
-}> = ({ hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
+}> = ({ items, hasSelection, operations, onEdit, onDelete, onCreateNew }) => {
   const intl = useIntl();
 
   return (
-    <div>
+    <div className="group-list-operations">
       <ButtonGroup>
         {!hasSelection && (
           <Button
@@ -290,7 +305,10 @@ const GroupListOperations: React.FC<{
           </>
         )}
 
-        <OperationDropdown className="group-list-operations">
+        <OperationDropdown
+          className="group-list-operations"
+          menuPortalTarget={document.body}
+        >
           {operations.map((o) => {
             if (o.isDisplayed && !o.isDisplayed()) {
               return null;
@@ -335,6 +353,8 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
     showSidebar,
     setShowSidebar,
     loading: sidebarStateLoading,
+    sectionOpen,
+    setSectionOpen,
   } = useSidebarState(view);
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
@@ -483,6 +503,17 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
   // render
   if (filterLoading || sidebarStateLoading) return null;
 
+  const operations = (
+    <GroupListOperations
+      items={items.length}
+      hasSelection={hasSelection}
+      operations={otherOperations}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onCreateNew={onCreateNew}
+    />
+  );
+
   return (
     <div
       className={cx("item-list-container group-list", {
@@ -491,20 +522,21 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
     >
       {modal}
 
-      <SidebarPane hideSidebar={!showSidebar}>
-        <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-          <SidebarContent
-            filter={filter}
-            setFilter={setFilter}
-            showEditFilter={showEditFilter}
-            view={view}
-            sidebarOpen={showSidebar}
-            onClose={() => setShowSidebar(false)}
-            count={cachedResult.loading ? undefined : totalCount}
-            focus={searchFocus}
-          />
-        </Sidebar>
-        <div>
+      <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+        <SidebarPane hideSidebar={!showSidebar}>
+          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+            <SidebarContent
+              filter={filter}
+              setFilter={setFilter}
+              showEditFilter={showEditFilter}
+              view={view}
+              sidebarOpen={showSidebar}
+              onClose={() => setShowSidebar(false)}
+              count={cachedResult.loading ? undefined : totalCount}
+              focus={searchFocus}
+            />
+          </Sidebar>
+          <SidebarPaneContent>
           <FilteredListToolbar2
             className="group-list-toolbar"
             hasSelection={hasSelection}
@@ -529,17 +561,10 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onSelectAll={() => onSelectAll()}
                 onSelectNone={() => onSelectNone()}
+                operations={operations}
               />
             }
-            operationSection={
-              <GroupListOperations
-                hasSelection={hasSelection}
-                operations={otherOperations}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onCreateNew={onCreateNew}
-              />
-            }
+            operationSection={operations}
           />
 
           <ListResultsHeader
@@ -571,8 +596,9 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
               />
             </div>
           )}
-        </div>
-      </SidebarPane>
+          </SidebarPaneContent>
+        </SidebarPane>
+      </SidebarStateContext.Provider>
     </div>
   );
 };
