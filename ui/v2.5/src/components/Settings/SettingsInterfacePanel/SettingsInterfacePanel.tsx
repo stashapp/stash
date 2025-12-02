@@ -521,8 +521,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               </option>
             ))}
           </SelectSetting>
-        </SettingSection>
-
+      </SettingSection>
         <SettingSection headingID="config.ui.image_lightbox.heading">
           <NumberSetting
             headingID="config.ui.slideshow_delay.heading"
@@ -778,6 +777,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               ))}
             </SelectSetting>
           )}
+          <BooleanSetting
+            id="auto_convert_metric_measurements"
+            headingID="config.ui.editing.auto_convert_metric_measurements.heading"
+            subHeadingID="config.ui.editing.auto_convert_metric_measurements.description"
+            checked={ui.autoConvertMetricMeasurements ?? undefined}
+            onChange={(v) => saveUI({ autoConvertMetricMeasurements: v })}
+          />        
         </SettingSection>
 
         <SettingSection headingID="config.ui.custom_css.heading">
