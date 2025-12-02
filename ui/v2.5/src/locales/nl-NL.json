@@ -151,7 +151,8 @@
         "show_count_results": "{count} resultaten tonen",
         "play": "Afspelen",
         "load_filter": "Laad filter",
-        "load": "Laden"
+        "load": "Laden",
+        "add_stash_id": "Stash ID toevoegen"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -890,7 +891,8 @@
         "duration_options": {
             "equal": "Gelijk"
         },
-        "select_none": "Niets selecteren"
+        "select_none": "Niets selecteren",
+        "select_options": "Selecteer Opties…"
     },
     "duplicated_phash": "Gedupliceerd (phash)",
     "duration": "Looptijd",
@@ -1270,5 +1272,7 @@
         "field": "Veld",
         "value": "Waarde"
     },
-    "datetime_format": "YYYY-MM-DD HH:MM"
+    "datetime_format": "YYYY-MM-DD HH:MM",
+    "sub_group": "Subgroep",
+    "sub_groups": "Subgroepen"
 }
