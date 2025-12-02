@@ -23,17 +23,5 @@ func ParseDateStringAsTime(dateString string) (time.Time, error) {
 		return t, nil
 	}
 
-	// Support partial dates: year-month format
-	t, e = time.Parse("2006-01", dateString)
-	if e == nil {
-		return t, nil
-	}
-
-	// Support partial dates: year only format
-	t, e = time.Parse("2006", dateString)
-	if e == nil {
-		return t, nil
-	}
-
 	return time.Time{}, fmt.Errorf("ParseDateStringAsTime failed: dateString <%s>", dateString)
 }
