@@ -22,7 +22,7 @@ type Date struct {
 	Precision DatePrecision
 }
 
-var dateFormatPrecision []string = []string{
+var dateFormatPrecision = []string{
 	"2006-01-02",
 	"2006-01",
 	"2006",
