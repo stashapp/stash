@@ -13,6 +13,7 @@ type ConfigImageLightboxResult struct {
 	ResetZoomOnNav             *bool                     `json:"resetZoomOnNav"`
 	ScrollMode                 *ImageLightboxScrollMode  `json:"scrollMode"`
 	ScrollAttemptsBeforeChange int                       `json:"scrollAttemptsBeforeChange"`
+	DisableAnimation           *bool                     `json:"disableAnimation"`
 }
 
 type ImageLightboxDisplayMode string

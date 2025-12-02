@@ -209,6 +209,7 @@ const (
 	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
 	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
+	ImageLightboxDisableAnimation           = "image_lightbox.disable_animation"
 
 	UI = "ui"
 
@@ -1295,6 +1296,10 @@ func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	}
 	if v := i.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
+	}
+	if v := i.with(ImageLightboxDisableAnimation); v != nil {
+		value := v.Bool(ImageLightboxDisableAnimation)
+		ret.DisableAnimation = &value
 	}
 
 	return ret

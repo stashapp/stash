@@ -339,6 +339,7 @@ input ConfigImageLightboxInput {
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
   scrollAttemptsBeforeChange: Int
+  disableAnimation: Boolean
 }
 
 type ConfigImageLightboxResult {
@@ -348,6 +349,7 @@ type ConfigImageLightboxResult {
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
   scrollAttemptsBeforeChange: Int!
+  disableAnimation: Boolean
 }
 
 input ConfigInterfaceInput {

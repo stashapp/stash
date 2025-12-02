@@ -938,6 +938,7 @@
     },
     "lightbox": {
       "delay": "Delay (Sec)",
+      "disable_animation": "Disable transition animation between images",
       "display_mode": {
         "fit_horizontally": "Fit horizontally",
         "fit_to_screen": "Fit to screen",
