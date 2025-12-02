@@ -15,7 +15,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -192,10 +191,8 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 	}
 
 	if newObject.URLs.Loaded() {
-		urls := newObject.URLs.List()
-		utils.SortURLs(urls)
 		const startPos = 0
-		if err := studiosURLsTableMgr.insertJoins(ctx, id, startPos, urls); err != nil {
+		if err := studiosURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -244,15 +241,6 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		if err := studiosURLsTableMgr.modifyJoins(ctx, input.ID, input.URLs.Values, input.URLs.Mode); err != nil {
 			return nil, err
 		}
-		// Re-sort URLs after modification
-		urls, err := studiosURLsTableMgr.get(ctx, input.ID)
-		if err != nil {
-			return nil, err
-		}
-		utils.SortURLs(urls)
-		if err := studiosURLsTableMgr.replaceJoins(ctx, input.ID, urls); err != nil {
-			return nil, err
-		}
 	}
 
 	if err := qb.tagRelationshipStore.modifyRelationships(ctx, input.ID, input.TagIDs); err != nil {
@@ -284,9 +272,7 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 	}
 
 	if updatedObject.URLs.Loaded() {
-		urls := updatedObject.URLs.List()
-		utils.SortURLs(urls)
-		if err := studiosURLsTableMgr.replaceJoins(ctx, updatedObject.ID, urls); err != nil {
+		if err := studiosURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
 			return err
 		}
 	}

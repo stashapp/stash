@@ -11,7 +11,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
@@ -252,10 +251,8 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 	}
 
 	if newObject.URLs.Loaded() {
-		urls := newObject.URLs.List()
-		utils.SortURLs(urls)
 		const startPos = 0
-		if err := imagesURLsTableMgr.insertJoins(ctx, id, startPos, urls); err != nil {
+		if err := imagesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -312,15 +309,6 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		if err := imagesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
 		}
-		// Re-sort URLs after modification
-		urls, err := imagesURLsTableMgr.get(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		utils.SortURLs(urls)
-		if err := imagesURLsTableMgr.replaceJoins(ctx, id, urls); err != nil {
-			return nil, err
-		}
 	}
 	if partial.PerformerIDs != nil {
 		if err := imagesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
@@ -351,9 +339,7 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 	}
 
 	if updatedObject.URLs.Loaded() {
-		urls := updatedObject.URLs.List()
-		utils.SortURLs(urls)
-		if err := imagesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, urls); err != nil {
+		if err := imagesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
 			return err
 		}
 	}
