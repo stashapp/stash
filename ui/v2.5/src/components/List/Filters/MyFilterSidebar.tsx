@@ -11,6 +11,7 @@ import Mousetrap from "mousetrap";
 import { Button } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import { faBookmark } from "@fortawesome/free-solid-svg-icons";
+import { FilterMode } from "src/core/generated-graphql";
 
 export const FilteredSidebarHeader: React.FC<{
   sidebarOpen: boolean;
@@ -30,6 +31,18 @@ export const FilteredSidebarHeader: React.FC<{
   const localFocus = useFocus();
   const focus = providedFocus ?? localFocus;
   const [, setFocus] = focus;
+  // TODO consider updating this logic to use the actions.search message along with coresponding messages for the content types
+  const placeholderMap: Record<FilterMode, string> = {
+    [FilterMode.Scenes]: "Search scenes...",
+    [FilterMode.Performers]: "Search performers...",
+    [FilterMode.Studios]: "Search studios...",
+    [FilterMode.Galleries]: "Search galleries",
+    [FilterMode.SceneMarkers]: "Search scene markers...",
+    [FilterMode.Movies]: "Search movies...",
+    [FilterMode.Groups]: "Search groups...",
+    [FilterMode.Tags]: "Search tags...",
+    [FilterMode.Images]: "Search images...",
+  };
 
   // Set the focus on the input field when the sidebar is opened
   // Don't do this on touch devices
@@ -46,6 +59,7 @@ export const FilteredSidebarHeader: React.FC<{
           filter={filter}
           onFilterUpdate={setFilter}
           focus={focus}
+          placeholder={placeholderMap[filter.mode]}
         />
       </div>
 

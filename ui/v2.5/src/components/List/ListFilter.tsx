@@ -63,7 +63,8 @@ export const SearchTermInput: React.FC<{
   filter: ListFilterModel;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   focus?: ReturnType<typeof useFocus>;
-}> = ({ filter, onFilterUpdate, focus: providedFocus }) => {
+  placeholder?: string;
+}> = ({ filter, onFilterUpdate, focus: providedFocus, placeholder }) => {
   const intl = useIntl();
   const [localInput, setLocalInput] = useState(filter.searchTerm);
 
@@ -101,13 +102,14 @@ export const SearchTermInput: React.FC<{
     searchCallback(value);
   }
 
+  console.log("placeholder", placeholder);
   return (
     <ClearableInput
       className="search-term-input"
       focus={focus}
       value={localInput}
       setValue={onSetQuery}
-      placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+      placeholder={placeholder ?? `${intl.formatMessage({ id: "actions.search" })}…`}
     />
   );
 };

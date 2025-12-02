@@ -74,13 +74,13 @@ export const ToolbarSelectionSection: React.FC<{
       <div className="toolbar-selection-section">
         <div className="selected-items-info">
           <SidebarToggleButton onClick={onToggleSidebar} />
-          <Button variant="link" onClick={() => onSelectAll()}>
-            <FormattedMessage id="actions.select_all" />
-          </Button>
+          <span>{selected} selected</span>
         </div>
         {operations}
         <div className="empty-space" />
-        <span>{selected} selected</span>
+        <Button variant="link" onClick={() => onSelectAll()}>
+            <FormattedMessage id="actions.select_all" />
+        </Button>
         <Button
           variant="secondary"
           className="minimal"
