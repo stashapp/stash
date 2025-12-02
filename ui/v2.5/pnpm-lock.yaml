@@ -216,6 +216,9 @@ importers:
       '@types/crypto-js':
         specifier: ^4.2.2
         version: 4.2.2
+      '@types/dom-screen-wake-lock':
+        specifier: ^1.0.3
+        version: 1.0.3
       '@types/lodash-es':
         specifier: ^4.17.6
         version: 4.17.12
@@ -1906,6 +1909,9 @@ packages:
 
   '@types/crypto-js@4.2.2':
     resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+
+  '@types/dom-screen-wake-lock@1.0.3':
+    resolution: {integrity: sha512-3Iten7X3Zgwvk6kh6/NRdwN7WbZ760YgFCsF5AxDifltUQzW1RaW+WRmcVtgwFzLjaNu64H+0MPJ13yRa8g3Dw==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -7314,6 +7320,8 @@ snapshots:
   '@types/cookie@0.3.3': {}
 
   '@types/crypto-js@4.2.2': {}
+
+  '@types/dom-screen-wake-lock@1.0.3': {}
 
   '@types/estree@1.0.8': {}
 

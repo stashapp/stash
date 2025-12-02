@@ -23,6 +23,7 @@ import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
 import "./media-session";
+import "./wake-sentinel";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -399,6 +400,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             createButtons: uiConfig?.showAbLoopControls ?? false,
           },
           mediaSession: {},
+          wakeSentinel: {},
         },
       };
 
