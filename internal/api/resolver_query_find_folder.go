@@ -25,7 +25,7 @@ func (r *queryResolver) FindFolder(ctx context.Context, id *string, path *string
 				return err
 			}
 		case path != nil:
-			ret, err = qb.FindByPath(ctx, *path)
+			ret, err = qb.FindByPath(ctx, *path, true)
 			if err == nil && ret == nil {
 				return errors.New("folder not found")
 			}
