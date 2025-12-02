@@ -107,7 +107,9 @@ export const SceneWallItem: React.FC<
               />
             )}
             <TruncatedText text={performers.join(", ")} />
-            <div>{scene.date && TextUtils.formatDate(intl, scene.date)}</div>
+            <div>
+              {scene.date && TextUtils.formatFuzzyDate(intl, scene.date)}
+            </div>
           </Link>
         </footer>
       </div>

@@ -1,6 +1,6 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import {
@@ -35,6 +35,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -319,13 +320,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
           <div className="image-subheader">
             <span className="date" data-value={image.date}>
-              {!!image.date && (
-                <FormattedDate
-                  value={image.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
+              {!!image.date && <FormattedDate value={image.date} />}
             </span>
             {resolution ? (
               <span className="resolution" data-value={resolution}>

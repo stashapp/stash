@@ -6,7 +6,7 @@ import React, {
   useRef,
   useLayoutEffect,
 } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
@@ -51,6 +51,7 @@ import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -613,13 +614,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
 
           <div className="scene-subheader">
             <span className="date" data-value={scene.date}>
-              {!!scene.date && (
-                <FormattedDate
-                  value={scene.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
+              {!!scene.date && <FormattedDate value={scene.date} />}
             </span>
             <VideoFrameRateResolution
               width={file?.width}
