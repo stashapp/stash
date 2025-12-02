@@ -102,7 +102,6 @@ export const SearchTermInput: React.FC<{
     searchCallback(value);
   }
 
-  console.log("placeholder", placeholder);
   return (
     <ClearableInput
       className="search-term-input"
