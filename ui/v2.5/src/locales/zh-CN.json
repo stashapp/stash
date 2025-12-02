@@ -151,7 +151,8 @@
         "show_results": "显示结果",
         "show_count_results": "显示{count}个结果",
         "load": "加载",
-        "load_filter": "加载过滤器"
+        "load_filter": "加载过滤器",
+        "add_stash_id": "添加Stash编号"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -202,6 +203,10 @@
             "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。",
             "errors": {
                 "blacklist_duplicate": "重复黑名单项目"
+            },
+            "performer_genders": {
+                "heading": "演员性别",
+                "description": "这些性别的演员在标记场景时会被展示。"
             }
         },
         "noun_query": "查询",
@@ -420,6 +425,10 @@
             "plugins_path": {
                 "heading": "插件文件路径",
                 "description": "插件配置文件目录"
+            },
+            "delete_trash_path": {
+                "description": "删除的文件将被移动到的路径，而不是永久删除。留空将永久删除文件。",
+                "heading": "回收站路径"
             }
         },
         "library": {
@@ -921,7 +930,8 @@
                 "label": "卷屏模式",
                 "pan_y": "垂直卷动",
                 "zoom": "放大"
-            }
+            },
+            "disable_animation": "禁用图片之间的切换动画"
         },
         "merge": {
             "destination": "目标",
@@ -987,7 +997,9 @@
         "clear_play_history_confirm": "真的确定要清空播放历史?",
         "set_default_filter_confirm": "你确定要设置这个过滤器为默认吗？",
         "overwrite_filter_warning": "已保存的过滤器 \"{entityName}\" 将被覆盖。",
-        "clear_o_history_confirm_sfw": "你确定要清除点赞的历史?"
+        "clear_o_history_confirm_sfw": "你确定要清除点赞的历史?",
+        "delete_alert_to_trash": "如下的{count, plural, one {{singularEntity}} other {{pluralEntity}}} 将会被移动到回收站：",
+        "stashid_exists_warning": "此stash-box已存在的stash编号将会被取代。"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -1212,7 +1224,8 @@
         "untagged_performers": "未标签的演员",
         "update_performer": "更新演员资料",
         "update_performers": "更新演员们资料",
-        "updating_untagged_performers_description": "更新尚未标记的演员，会尝试搜寻没有stashid的演员并更新其元数据。"
+        "updating_untagged_performers_description": "更新尚未标记的演员，会尝试搜寻没有stashid的演员并更新其元数据。",
+        "performer_names_or_stashids_separated_by_comma": "用逗号分隔的演员名称或Stash编号"
     },
     "performer_tags": "演员标签",
     "performers": "演员",
@@ -1409,7 +1422,7 @@
     "updated_at": "更新于",
     "url": "链接",
     "validation": {
-        "date_invalid_form": "${path} 的格式必须为 YYYY-MM-DD",
+        "date_invalid_form": "${path} 的格式必须为四位年份(YYYY)、四位年份-两位月份(YYYY-MM)或四位年份-两位月份-两位日期(YYYY-MM-DD)",
         "required": "${path} 是必填字段",
         "blank": "${path}不能为空",
         "unique": "${path}不能相同",
@@ -1456,7 +1469,8 @@
         "refreshing_will_update_the_data": "刷新后将更新所有已在此stash-box实例被标记的工作室。",
         "create_or_tag_parent_studios": "创建缺失的上级工作室或标记已存在的上级工作室",
         "any_names_entered_will_be_queried": "任何输入的名字将会从远程的Stash-Box实例查询并且加入（如果找到）。只有完全符合的名字才会视为匹配。",
-        "studio_selection": "工作室选择"
+        "studio_selection": "工作室选择",
+        "studio_names_or_stashids_separated_by_comma": "逗号分隔的工作室名称或Stash编号"
     },
     "subsidiary_studio_count": "子工作室数量",
     "urls": "链接",
@@ -1565,5 +1579,11 @@
     "last_o_at_sfw": "最近一次点赞在",
     "o_count_sfw": "点赞",
     "o_history_sfw": "点赞历史",
-    "odate_recorded_no_sfw": "没有已记录的点赞日期"
+    "odate_recorded_no_sfw": "没有已记录的点赞日期",
+    "stashbox_search": {
+        "header": "在StashBox 搜索{entityType}",
+        "no_results": "没有结果被找到。",
+        "placeholder_name_or_id": "{entityType} 名称或Stash编号……",
+        "select_stashbox": "选择StashBox……"
+    }
 }
