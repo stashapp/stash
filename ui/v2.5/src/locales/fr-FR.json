@@ -931,7 +931,8 @@
                 "label": "Mode de défilement",
                 "pan_y": "Panoramique Y",
                 "zoom": "Zoom"
-            }
+            },
+            "disable_animation": "Désactiver l'animation de transition entre les images"
         },
         "merge": {
             "destination": "Destination",
