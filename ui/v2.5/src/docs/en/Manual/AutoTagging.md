@@ -2,6 +2,8 @@
 
 Auto Tag automatically assigns Performers, Studios, and Tags to your media based on their names found in file paths or filenames. This task works for scenes, images, and galleries.
 
+This task is part of the advanced settings mode.
+
 ## Rules
 
 > **Important:** Auto Tag only works for names that already exist in your Stash database. It does not create new Performers, Studios, or Tags.
