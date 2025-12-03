@@ -363,12 +363,12 @@ func (r *queryResolver) ScrapeSingleTag(ctx context.Context, source scraper.Sour
 		client := r.newStashBoxClient(*b)
 
 		var ret []*models.ScrapedTag
-		out, err := client.FindTag(ctx, *input.Query)
+		out, err := client.QueryTag(ctx, *input.Query)
 
 		if err != nil {
 			return nil, err
 		} else if out != nil {
-			ret = append(ret, out)
+			ret = append(ret, out...)
 		}
 
 		if len(ret) > 0 {
@@ -389,7 +389,7 @@ func (r *queryResolver) ScrapeSingleTag(ctx context.Context, source scraper.Sour
 		return nil, nil
 	}
 
-	return nil, errors.New("stash_box_index must be set")
+	return nil, errors.New("stash_box_endpoint must be set")
 }
 
 func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scraper.Source, input ScrapeSinglePerformerInput) ([]*models.ScrapedPerformer, error) {
