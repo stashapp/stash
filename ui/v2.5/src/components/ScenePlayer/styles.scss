@@ -133,7 +133,7 @@ $sceneTabWidth: 450px;
 
     &.vjs-icon-play-circle::after,
     &.vjs-icon-cancel::after {
-      background-color: rgba(80, 80, 80, 0.9);
+      background-color: rgb(255 255 255 / 70%);
       border-radius: 8px;
       content: "";
       height: 2.5rem;
