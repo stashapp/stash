@@ -443,10 +443,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
       // player re-initialization when toggling autostart (which would interrupt playback)
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-      uiConfig?.showAbLoopControls,
-      uiConfig?.enableChromecast,
-    ]);
+    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
 
     useEffect(() => {
       const player = getPlayer();
