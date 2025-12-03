@@ -80,21 +80,25 @@ export function useListContextOptional<T extends IHasID = IHasID>() {
 
 interface IQueryResultContextOptions<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 > {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
 }
 
 export interface IQueryResultContextState<
   T extends QueryResult = QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 > {
   effectiveFilter: ListFilterModel;
   result: T;
   cachedResult: T;
+  metadataInfo?: M;
   items: E[];
   totalCount: number;
 }
@@ -104,15 +108,23 @@ export const QueryResultStateContext =
 
 export const QueryResultContext = <
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 >(
-  props: IQueryResultContextOptions<T, E> & {
+  props: IQueryResultContextOptions<T, E, M> & {
     children?:
-      | ((props: IQueryResultContextState<T, E>) => React.ReactNode)
+      | ((props: IQueryResultContextState<T, E, M>) => React.ReactNode)
       | React.ReactNode;
   }
 ) => {
-  const { filterHook, useResult, getItems, getCount, children } = props;
+  const {
+    filterHook,
+    useResult,
+    useMetadataInfo,
+    getItems,
+    getCount,
+    children,
+  } = props;
 
   const { filter } = useFilter();
   const effectiveFilter = useMemo(() => {
@@ -122,9 +134,17 @@ export const QueryResultContext = <
     return filter;
   }, [filter, filterHook]);
 
+  // metadata filter is the effective filter with the sort, page size and page number removed
+  const metadataFilter = useMemo(
+    () => effectiveFilter.metadataInfo(),
+    [effectiveFilter]
+  );
+
   const result = useResult(effectiveFilter);
 
-  // use cached query result for pagination and metadata rendering
+  const metadataInfo = useMetadataInfo?.(metadataFilter);
+
+  // use cached query result for pagination
   const cachedResult = useCachedQueryResult(effectiveFilter, result);
 
   const items = useMemo(() => getItems(result), [getItems, result]);
@@ -133,12 +153,13 @@ export const QueryResultContext = <
     [getCount, cachedResult]
   );
 
-  const state: IQueryResultContextState<T, E> = {
+  const state: IQueryResultContextState<T, E, M> = {
     effectiveFilter,
     result,
     cachedResult,
     items,
     totalCount,
+    metadataInfo,
   };
 
   return (
@@ -154,7 +175,8 @@ export const QueryResultContext = <
 
 export function useQueryResultContext<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 >() {
   const context = React.useContext(QueryResultStateContext);
 
@@ -164,5 +186,5 @@ export function useQueryResultContext<
     );
   }
 
-  return context as IQueryResultContextState<T, E>;
+  return context as IQueryResultContextState<T, E, M>;
 }

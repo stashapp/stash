@@ -112,7 +112,7 @@ export function useFilteredItemList<
   };
 }
 
-interface IItemListProps<T extends QueryResult, E extends IHasID> {
+interface IItemListProps<T extends QueryResult, E extends IHasID, M = unknown> {
   view?: View;
   otherOperations?: IItemListOperation<T>[];
   renderContent: (
@@ -123,7 +123,7 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
     onChangePage: (page: number) => void,
     pageCount: number
   ) => React.ReactNode;
-  renderMetadataByline?: (data: T) => React.ReactNode;
+  renderMetadataByline?: (data: T, metadataInfo?: M) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
@@ -140,8 +140,8 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
   renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
 }
 
-export const ItemList = <T extends QueryResult, E extends IHasID>(
-  props: IItemListProps<T, E>
+export const ItemList = <T extends QueryResult, E extends IHasID, M = unknown>(
+  props: IItemListProps<T, E, M>
 ) => {
   const {
     view,
@@ -155,8 +155,8 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   } = props;
 
   const { filter, setFilter: updateFilter } = useFilter();
-  const { effectiveFilter, result, cachedResult, totalCount } =
-    useQueryResultContext<T, E>();
+  const { effectiveFilter, result, metadataInfo, cachedResult, totalCount } =
+    useQueryResultContext<T, E, M>();
   const listSelect = useListContext<E>();
   const {
     selectedIds,
@@ -174,8 +174,8 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   const metadataByline = useMemo(() => {
     if (cachedResult.loading) return "";
 
-    return renderMetadataByline?.(cachedResult) ?? "";
-  }, [renderMetadataByline, cachedResult]);
+    return renderMetadataByline?.(cachedResult, metadataInfo) ?? "";
+  }, [renderMetadataByline, cachedResult, metadataInfo]);
 
   const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
@@ -369,11 +369,16 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   );
 };
 
-interface IItemListContextProps<T extends QueryResult, E extends IHasID> {
+interface IItemListContextProps<
+  T extends QueryResult,
+  E extends IHasID,
+  M = unknown
+> {
   filterMode: GQL.FilterMode;
   defaultSort?: string;
   defaultFilter?: ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -384,14 +389,19 @@ interface IItemListContextProps<T extends QueryResult, E extends IHasID> {
 
 // Provides the contexts for the ItemList component. Includes functionality to scroll
 // to top on page change.
-export const ItemListContext = <T extends QueryResult, E extends IHasID>(
-  props: PropsWithChildren<IItemListContextProps<T, E>>
+export const ItemListContext = <
+  T extends QueryResult,
+  E extends IHasID,
+  M = unknown
+>(
+  props: PropsWithChildren<IItemListContextProps<T, E, M>>
 ) => {
   const {
     filterMode,
     defaultSort,
     defaultFilter: providedDefaultFilter,
     useResult,
+    useMetadataInfo,
     getCount,
     getItems,
     view,
@@ -425,6 +435,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
         <QueryResultContext
           filterHook={filterHook}
           useResult={useResult}
+          useMetadataInfo={useMetadataInfo}
           getCount={getCount}
           getItems={getItems}
         >

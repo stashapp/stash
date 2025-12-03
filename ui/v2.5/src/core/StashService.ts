@@ -201,6 +201,15 @@ export const useFindImages = (filter?: ListFilterModel) =>
     },
   });
 
+export const useFindImagesMetadata = (filter?: ListFilterModel) =>
+  GQL.useFindImagesMetadataQuery({
+    skip: filter === undefined,
+    variables: {
+      filter: filter?.makeFindFilter(),
+      image_filter: filter?.makeFilter(),
+    },
+  });
+
 export const queryFindImages = (filter: ListFilterModel) =>
   client.query<GQL.FindImagesQuery>({
     query: GQL.FindImagesDocument,
