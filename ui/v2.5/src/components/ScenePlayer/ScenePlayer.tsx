@@ -440,10 +440,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
+      // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
+      // player re-initialization when toggling autostart (which would interrupt playback)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
       uiConfig?.showAbLoopControls,
       uiConfig?.enableChromecast,
-      interfaceConfig?.autostartVideo,
     ]);
 
     useEffect(() => {

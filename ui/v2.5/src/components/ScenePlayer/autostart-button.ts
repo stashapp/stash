@@ -35,7 +35,10 @@ class AutostartButton extends videojs.getComponent("Button") {
     }
   }
 
-  handleClick() {
+  handleClick(event: Event) {
+    // Prevent the click from bubbling up and affecting the video player
+    event.stopPropagation();
+
     this.autostartEnabled = !this.autostartEnabled;
     this.updateIcon();
     this.trigger("autostartchanged", { enabled: this.autostartEnabled });
