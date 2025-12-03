@@ -15,7 +15,6 @@ import {
   stashBoxPerformerQuery,
   stashBoxSceneQuery,
   stashBoxStudioQuery,
-  stashBoxTagQuery,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { stringToGender } from "src/utils/gender";
@@ -23,10 +22,9 @@ import { stringToGender } from "src/utils/gender";
 type SearchResultItem =
   | GQL.ScrapedPerformerDataFragment
   | GQL.ScrapedSceneDataFragment
-  | GQL.ScrapedStudioDataFragment
-  | GQL.ScrapedSceneTagDataFragment;
+  | GQL.ScrapedStudioDataFragment;
 
-export type StashBoxEntityType = "performer" | "scene" | "studio" | "tag";
+export type StashBoxEntityType = "performer" | "scene" | "studio";
 
 interface IProps {
   entityType: StashBoxEntityType;
@@ -234,27 +232,6 @@ export const StudioSearchResult: React.FC<IStudioResultProps> = ({
   );
 };
 
-// Tag Result Component
-interface ITagResultProps {
-  tag: GQL.ScrapedSceneTagDataFragment;
-}
-
-export const TagSearchResult: React.FC<ITagResultProps> = ({ tag }) => {
-  return (
-    <div className="mt-3 search-item" style={{ cursor: "pointer" }}>
-      <div className="tag-result">
-        <Row>
-          <div className="col flex-column">
-            <h4 className="tag-name">
-              <span>{tag.name}</span>
-            </h4>
-          </div>
-        </Row>
-      </div>
-    </div>
-  );
-};
-
 // Helper to get entity type display name for i18n
 function getEntityTypeDisplayName(entityType: StashBoxEntityType): string {
   switch (entityType) {
@@ -264,8 +241,6 @@ function getEntityTypeDisplayName(entityType: StashBoxEntityType): string {
       return "Scene";
     case "studio":
       return "Studio";
-    case "tag":
-      return "Tag";
   }
 }
 
@@ -278,8 +253,6 @@ function getFoundMessageId(entityType: StashBoxEntityType): string {
       return "dialogs.scenes_found";
     case "studio":
       return "dialogs.studios_found";
-    case "tag":
-      return "dialogs.tags_found";
   }
 }
 
@@ -345,14 +318,6 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
           setResults(queryData.data?.scrapeSingleStudio ?? []);
           break;
         }
-        case "tag": {
-          const queryData = await stashBoxTagQuery(
-            query,
-            selectedStashBox.endpoint
-          );
-          setResults(queryData.data?.scrapeSingleTag ?? []);
-          break;
-        }
       }
     } catch (error) {
       Toast.error(error);
@@ -391,10 +356,6 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
       case "studio":
         return (
           <StudioSearchResult studio={item as GQL.ScrapedStudioDataFragment} />
-        );
-      case "tag":
-        return (
-          <TagSearchResult tag={item as GQL.ScrapedSceneTagDataFragment} />
         );
     }
   }
