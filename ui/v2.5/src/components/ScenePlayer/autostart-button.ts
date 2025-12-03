@@ -25,7 +25,7 @@ class AutostartButton extends videojs.getComponent("Button") {
   private updateIcon() {
     this.removeClass("vjs-icon-play-circle");
     this.removeClass("vjs-icon-cancel");
-    
+
     if (this.autostartEnabled) {
       this.addClass("vjs-icon-play-circle");
       this.controlText(this.localize("Auto-start enabled (click to disable)"));
@@ -50,10 +50,9 @@ class AutostartButton extends videojs.getComponent("Button") {
 class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
   private button: AutostartButton;
   private autostartEnabled: boolean;
-  updateAutoStart: (enabled: boolean) => Promise<void> =
-    () => {
-      return Promise.resolve();
-    };
+  updateAutoStart: (enabled: boolean) => Promise<void> = () => {
+    return Promise.resolve();
+  };
 
   constructor(player: VideoJsPlayer, options?: IAutostartButtonOptions) {
     super(player, options);
@@ -122,4 +121,3 @@ declare module "video.js" {
 }
 
 export default AutostartButtonPlugin;
-

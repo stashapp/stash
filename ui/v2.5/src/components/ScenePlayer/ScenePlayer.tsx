@@ -440,7 +440,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
-    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast, interfaceConfig?.autostartVideo]);
+    }, [
+      uiConfig?.showAbLoopControls,
+      uiConfig?.enableChromecast,
+      interfaceConfig?.autostartVideo,
+    ]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -486,17 +490,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       vrMenu.setShowButton(showButton);
     }, [getPlayer, scene, vrTag]);
-
-    // Sync autostart button with config changes
-    useEffect(() => {
-      const player = getPlayer();
-      if (!player) return;
-
-      const autostartButton = player.autostartButton();
-      if (autostartButton) {
-        autostartButton.syncWithConfig(interfaceConfig?.autostartVideo ?? false);
-      }
-    }, [getPlayer, interfaceConfig?.autostartVideo]);
 
     // Player event handlers
     useEffect(() => {
@@ -862,10 +855,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       sceneSaveActivity,
     ]);
 
+    // Sync autostart button with config changes
     useEffect(() => {
       const player = getPlayer();
       if (!player) return;
-
 
       async function updateAutoStart(enabled: boolean) {
         await updateInterfaceConfig({
@@ -875,12 +868,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             },
           },
         });
-        console.log("updated interface config");
       }
-      
+
       const autostartButton = player.autostartButton();
-      autostartButton.updateAutoStart = updateAutoStart;
-    }, [getPlayer, updateInterfaceConfig]);
+      if (autostartButton) {
+        autostartButton.syncWithConfig(
+          interfaceConfig?.autostartVideo ?? false
+        );
+        autostartButton.updateAutoStart = updateAutoStart;
+      }
+    }, [getPlayer, updateInterfaceConfig, interfaceConfig?.autostartVideo]);
 
     useEffect(() => {
       const player = getPlayer();
