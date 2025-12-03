@@ -621,6 +621,10 @@
         "heading": "Custom localisation",
         "option_label": "Custom localisation enabled"
       },
+      "custom_title": {
+        "description": "Custom text to append to the page title. If empty, defaults to 'Stash'.",
+        "heading": "Custom Title"
+      },
       "delete_options": {
         "description": "Default settings when deleting images, galleries, and scenes.",
         "heading": "Delete Options",
