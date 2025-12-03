@@ -15,7 +15,7 @@ import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { useToast } from "src/hooks/Toast";
 import { Prompt } from "react-router-dom";
@@ -574,23 +574,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function onStashIDSelected(item?: GQL.StashIdInput) {
     if (!item) return;
-
-    // Check if StashID with this endpoint already exists
-    const existingIndex = formik.values.stash_ids.findIndex(
-      (s) => s.endpoint === item.endpoint
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
     );
-
-    let newStashIDs;
-    if (existingIndex >= 0) {
-      // Replace existing StashID
-      newStashIDs = [...formik.values.stash_ids];
-      newStashIDs[existingIndex] = item;
-    } else {
-      // Add new StashID
-      newStashIDs = [...formik.values.stash_ids, item];
-    }
-
-    formik.setFieldValue("stash_ids", newStashIDs);
   }
 
   function renderButtons(classNames: string) {
@@ -685,6 +672,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {maybeRenderScrapeDialog()}
       {isStashIDSearchOpen && (
         <StashBoxIDSearchModal
+          entityType="performer"
           stashBoxes={stashConfig?.general.stashBoxes ?? []}
           excludedStashBoxEndpoints={formik.values.stash_ids.map(
             (s) => s.endpoint

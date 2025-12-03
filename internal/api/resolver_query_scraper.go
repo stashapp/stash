@@ -350,7 +350,7 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		return nil, nil
 	}
 
-	return nil, errors.New("stash_box_index must be set")
+	return nil, errors.New("stash_box_endpoint must be set")
 }
 
 func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scraper.Source, input ScrapeSinglePerformerInput) ([]*models.ScrapedPerformer, error) {
