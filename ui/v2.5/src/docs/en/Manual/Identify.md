@@ -2,6 +2,8 @@
 
 The Identify task iterates through your Scenes and attempts to identify them using a selection of scraping sources. If a result is found in a source, the Scene is updated, and no further sources are checked for that scene.
 
+This task is part of the advanced settings mode.
+
 ## Rules
 
 - The task accepts one or more scraper sources, including stash-box instances and scene scrapers that support scraping via Scene Fragment. The order of the sources can be rearranged.

@@ -32,7 +32,7 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 	ret := NewStudio()
 	ret.Name = strings.TrimSpace(s.Name)
 
-	if s.RemoteSiteID != nil && endpoint != "" {
+	if s.RemoteSiteID != nil && endpoint != "" && *s.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
 				Endpoint:  endpoint,
@@ -141,7 +141,7 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 		}
 	}
 
-	if s.RemoteSiteID != nil && endpoint != "" {
+	if s.RemoteSiteID != nil && endpoint != "" && *s.RemoteSiteID != "" {
 		ret.StashIDs = &UpdateStashIDs{
 			StashIDs: existingStashIDs,
 			Mode:     RelationshipUpdateModeSet,
@@ -306,7 +306,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		}
 	}
 
-	if p.RemoteSiteID != nil && endpoint != "" {
+	if p.RemoteSiteID != nil && endpoint != "" && *p.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
 				Endpoint:  endpoint,
@@ -435,7 +435,7 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 		}
 	}
 
-	if p.RemoteSiteID != nil && endpoint != "" {
+	if p.RemoteSiteID != nil && endpoint != "" && *p.RemoteSiteID != "" {
 		ret.StashIDs = &UpdateStashIDs{
 			StashIDs: existingStashIDs,
 			Mode:     RelationshipUpdateModeSet,
@@ -464,7 +464,7 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	ret := NewTag()
 	ret.Name = t.Name
 
-	if t.RemoteSiteID != nil && endpoint != "" {
+	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
 				Endpoint:  endpoint,

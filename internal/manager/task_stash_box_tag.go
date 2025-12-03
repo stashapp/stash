@@ -88,7 +88,7 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 				performer = mergedPerformer
 			}
 		}
-	case t.performer != nil:
+	case t.performer != nil: // tagging or updating existing performer
 		var remoteID string
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.Performer
@@ -123,6 +123,9 @@ func (t *stashBoxBatchPerformerTagTask) findStashBoxPerformer(ctx context.Contex
 					performer = mergedPerformer
 				}
 			}
+		} else {
+			// find by performer name instead
+			performer, err = client.FindPerformerByName(ctx, t.performer.Name)
 		}
 	}
 
@@ -328,6 +331,9 @@ func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*m
 
 		if remoteID != "" {
 			studio, err = client.FindStudio(ctx, remoteID)
+		} else {
+			// find by studio name instead
+			studio, err = client.FindStudio(ctx, t.studio.Name)
 		}
 	}
 
