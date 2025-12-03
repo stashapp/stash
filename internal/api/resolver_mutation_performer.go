@@ -554,7 +554,7 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 
 	// ensure destination is not in source list
 	if slices.Contains(srcIDs, destID) {
-		return nil, errors.New("destination scene cannot be in source list")
+		return nil, errors.New("destination performer cannot be in source list")
 	}
 
 	var values *models.PerformerPartial
@@ -597,7 +597,7 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 
 		sources, err := qb.FindMany(ctx, srcIDs)
 		if err != nil {
-			return fmt.Errorf("finding source scenes: %w", err)
+			return fmt.Errorf("finding source performers: %w", err)
 		}
 
 		for _, src := range sources {
