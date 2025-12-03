@@ -21,7 +21,7 @@ import { TagSelect } from "src/components/Shared/Select";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import * as FormUtils from "src/utils/form";
-import { stringToGender } from "src/utils/gender";
+import { genderList, stringToGender } from "src/utils/gender";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
@@ -237,17 +237,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     saveScene,
   } = React.useContext(TaggerStateContext);
 
+  const performerGenders = config.performerGenders || genderList;
+
   const performers = useMemo(
     () =>
       scene.performers?.filter((p) => {
-        if (!config.showMales) {
-          return (
-            !p.gender || stringToGender(p.gender, true) !== GQL.GenderEnum.Male
-          );
-        }
-        return true;
+        const gender = p.gender ? stringToGender(p.gender, true) : undefined;
+        return !gender || performerGenders.includes(gender);
       }) ?? [],
-    [config, scene]
+    [scene, performerGenders]
   );
 
   const { createPerformerModal, createStudioModal } = React.useContext(
@@ -715,6 +713,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   async function onCreateTag(t: GQL.ScrapedTag) {
     const toCreate: GQL.TagCreateInput = { name: t.name };
+
+    // If the tag has a remote_site_id and we have an endpoint, include the stash_id
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
+    if (t.remote_site_id && endpoint) {
+      toCreate.stash_ids = [
+        {
+          endpoint: endpoint,
+          stash_id: t.remote_site_id,
+        },
+      ];
+    }
+
     const newTagID = await createNewTag(t, toCreate);
     if (newTagID !== undefined) {
       setTagIDs([...tagIDs, newTagID]);

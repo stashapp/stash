@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useState,
-  useMemo,
-  MouseEvent,
-  useContext,
-} from "react";
+import React, { useCallback, useState, useMemo, MouseEvent } from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -23,7 +17,7 @@ import "flexbin/flexbin.css";
 import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ImageGridCard } from "./ImageGridCard";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
@@ -51,7 +45,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   zoomIndex,
   handleImageOpen,
 }) => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -72,8 +66,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
         image.paths.preview != ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
-      width: image.visual_files[0].width,
-      height: image.visual_files[0].height,
+      width: image.visual_files?.[0]?.width ?? 0,
+      height: image.visual_files?.[0]?.height ?? 0,
       tabIndex: index,
       key: image.id,
       loading: "lazy",
@@ -116,15 +110,13 @@ const ImageWall: React.FC<IImageWallProps> = ({
 
   const renderImage = useCallback(
     (props: RenderImageProps) => {
-      return (
-        <ImageWallItem
-          {...props}
-          maxHeight={
-            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
-            maxHeightFactor
-          }
-        />
-      );
+      // #6165 - only use targetRowHeight in row direction
+      const maxHeight =
+        props.direction === "column"
+          ? props.photo.height
+          : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor;
+      return <ImageWallItem {...props} maxHeight={maxHeight} />;
     },
     [targetRowHeight]
   );
@@ -466,7 +458,6 @@ export const ImageList: React.FC<IImageList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

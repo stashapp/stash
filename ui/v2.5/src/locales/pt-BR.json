@@ -689,7 +689,6 @@
             "destination": "Destino",
             "source": "Fonte"
         },
-        "overwrite_filter_confirm": "Tem certeza de que deseja sobrescrever a consulta salva existente {entityName}?",
         "scene_gen": {
             "force_transcodes": "Forçar geração de transcodificação",
             "force_transcodes_tooltip": "Por padrão, transcodificações são geradas apenas quando o arquivo de vídeo não é suportado pelo navegador. Quando ativado, transcodificações serão geradas mesmo quando o vídeo parecer ser suportado no navegador.",
@@ -865,7 +864,6 @@
     "name": "Nome",
     "new": "Novo",
     "none": "Nenhum",
-    "o_counter": "O-contador",
     "operations": "Operações",
     "organized": "Organizado",
     "pagination": {

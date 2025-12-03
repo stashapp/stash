@@ -23,6 +23,7 @@ This namespace contains the generated graphql client interface. This is a low-le
 ### `libraries`
 
 `libraries` provides access to the following UI libraries:
+
 - `ReactRouterDOM`
 - `Bootstrap`
 - `Apollo`
@@ -149,6 +150,7 @@ InteractiveUtils.interactiveClientProvider = (
 ### `hooks`
 
 This namespace provides access to the following core utility hooks:
+
 - `useGalleryLightbox`
 - `useLightbox`
 - `useSpriteInfo`

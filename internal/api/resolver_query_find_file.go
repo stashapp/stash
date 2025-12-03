@@ -29,7 +29,7 @@ func (r *queryResolver) FindFile(ctx context.Context, id *string, path *string) 
 				ret = files[0]
 			}
 		case path != nil:
-			ret, err = qb.FindByPath(ctx, *path)
+			ret, err = qb.FindByPath(ctx, *path, true)
 			if err == nil && ret == nil {
 				return errors.New("file not found")
 			}

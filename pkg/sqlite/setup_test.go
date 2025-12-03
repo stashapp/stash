@@ -1770,6 +1770,24 @@ func getStudioBoolValue(index int) bool {
 	return index == 1
 }
 
+func getStudioEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("studio", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
+}
+
+func getStudioStringList(index int, field string) []string {
+	v := getStudioEmptyString(index, field)
+	if v == "" {
+		return []string{}
+	}
+
+	return []string{v}
+}
+
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(ctx context.Context, n int, o int) error {
 	sqb := db.Studio
@@ -1790,7 +1808,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
 			Name:          name,
-			URL:           getStudioStringValue(index, urlField),
+			URLs:          models.NewRelatedStrings(getStudioStringList(i, urlField)),
 			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 			TagIDs:        models.NewRelatedIDs(tids),

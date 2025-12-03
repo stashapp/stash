@@ -141,7 +141,15 @@
         "set_cover": "カバーをセット",
         "view_history": "履歴を表示する",
         "reset_resume_time": "再開時間をリセットする",
-        "reset_cover": "標準カバーに復元"
+        "reset_cover": "標準カバーに復元",
+        "sidebar": {
+            "close": "サイドバーを閉じる",
+            "open": "サイドバーを開く",
+            "toggle": "サイドバーを切り替え"
+        },
+        "play": "再生",
+        "show_results": "結果を表示",
+        "show_count_results": "{count}件の結果を表示"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -435,7 +443,8 @@
             "endpoint": "エンドポイント",
             "graphql_endpoint": "GraphQL エンドポイント",
             "name": "名前",
-            "title": "Stash-box エンドポイント"
+            "title": "Stash-box エンドポイント",
+            "max_requests_per_minute": "1分あたりの最大リクエスト数"
         },
         "system": {
             "transcoding": "トランスコード"
@@ -718,8 +727,11 @@
                     "disable_mobile_media_auto_rotate": "モバイル機器でフル画面再生時の画面回転を無効化",
                     "enable_chromecast": "クロームキャスト機能の有効化",
                     "vr_tag": {
-                        "heading": "VRタッグ"
-                    }
+                        "heading": "VRタッグ",
+                        "description": "VRボタンはこのタグがついたシーンにのみ表示されます。"
+                    },
+                    "show_ab_loop_controls": "ABループプラグインのコントロールを表示",
+                    "show_range_markers": "範囲マーカーを表示"
                 }
             },
             "scene_wall": {
@@ -779,6 +791,9 @@
                 "direction": "方向",
                 "heading": "画像ウォール",
                 "margin": "マージン (px単位)"
+            },
+            "performer_list": {
+                "heading": "AV女優・男優リスト"
             }
         },
         "advanced_mode": "高度なモード"
@@ -796,7 +811,7 @@
     },
     "country": "国",
     "cover_image": "カバー画像",
-    "created_at": "作成者：",
+    "created_at": "作成日",
     "criterion": {
         "greater_than": "より大きい",
         "less_than": "より小さい",
@@ -862,7 +877,8 @@
                 "label": "スクロールモード",
                 "pan_y": "Yにパン",
                 "zoom": "拡大"
-            }
+            },
+            "page_header": "ページ {page} / {total}"
         },
         "merge": {
             "destination": "宛先",
@@ -873,7 +889,6 @@
             "destination": "場所",
             "source": "ソース"
         },
-        "overwrite_filter_confirm": "本当に保存されているクエリ「{entityName}」を上書きしてもよろしいですか？",
         "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",
         "reassign_files": {
             "destination": "次に再割り当て:"
@@ -911,7 +926,10 @@
             "transcodes": "トランスコード",
             "transcodes_tooltip": "サポートされていない動画フォーマットをMP4に変換します",
             "video_previews": "プレビュー",
-            "video_previews_tooltip": "シーンにマウスカーソルを置いた時に再生されるビデオプレビュー"
+            "video_previews_tooltip": "シーンにマウスカーソルを置いた時に再生されるビデオプレビュー",
+            "clip_previews": "画像のプレビュー",
+            "covers": "シーンカバー",
+            "image_thumbnails": "サムネ画像"
         },
         "scenes_found": "{count}シーンが見つかりました",
         "scrape_entity_query": "{entity_type}スクレイプクエリ",
@@ -919,7 +937,9 @@
         "scrape_results_existing": "存在します",
         "scrape_results_scraped": "スクレイプ済み",
         "set_image_url_title": "画像URL",
-        "unsaved_changes": "変更が保存されていません。本当に移動してよろしいですか？"
+        "unsaved_changes": "変更が保存されていません。本当に移動してよろしいですか？",
+        "clear_play_history_confirm": "再生履歴を本当に削除しますか？",
+        "performers_found": "{count}人の出演者が見つかりました"
     },
     "dimensions": "寸法",
     "director": "監督",
@@ -1059,7 +1079,6 @@
     "name": "名前",
     "new": "新規作成",
     "none": "なし",
-    "o_counter": "発射カウンター",
     "operations": "オペレーション",
     "organized": "分類済み",
     "pagination": {
@@ -1299,6 +1318,18 @@
     "date_format": "YYYY -MM-DD",
     "datetime_format": "YYYY-MM-DD HH:MM",
     "criterion_modifier_values": {
-        "none": "ない"
-    }
+        "none": "ない",
+        "only": "のみ"
+    },
+    "connection_monitor": {
+        "websocket_connection_failed": "WebSocket接続ができません：詳細はブラウザのコンソールを確認してください"
+    },
+    "custom_fields": {
+        "field": "フィールド",
+        "title": "カスタムフィールド",
+        "value": "値"
+    },
+    "distance": "距離",
+    "age_on_date": "撮影時の年齢 {age}歳",
+    "containing_group": "含まれるグループ"
 }

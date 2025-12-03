@@ -369,7 +369,6 @@ export const PerformerList: React.FC<IPerformerList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

@@ -141,7 +141,17 @@
         "add_play": "Lisa mängimine",
         "clear_date_data": "Eemalda kuupäeva andmed",
         "view_history": "Vaata ajalugu",
-        "remove_from_containing_group": "Eemalda Grupist"
+        "remove_from_containing_group": "Eemalda Grupist",
+        "sidebar": {
+            "open": "Ava külgriba",
+            "close": "Sulge külgriba",
+            "toggle": "Lülita külgriba sisse/välja"
+        },
+        "play": "Esita",
+        "show_results": "Näita tulemusi",
+        "show_count_results": "Näita {count} tulemust",
+        "load": "Lae",
+        "load_filter": "Lae filter"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -289,7 +299,9 @@
                 "password_desc": "Parool Stashi pääsemiseks. Jäta tühjaks, kui soovid sisselogimise keelata",
                 "stash-box_integration": "Stash-kasti integratsioon",
                 "username": "Kasutajanimi",
-                "username_desc": "Kasutajanimi Stashi pääsemiseks. Jäta tühjaks, kui soovid sisselogimise keelata"
+                "username_desc": "Kasutajanimi Stashi pääsemiseks. Jäta tühjaks, kui soovid sisselogimise keelata",
+                "log_file_max_size": "Maksimaalne logi suurus",
+                "log_file_max_size_desc": "Maksimaalne logifaili suurus megabaitides enne tihendamist. 0MB on väljalülitatud. Nõuab taaskäivitust."
             },
             "backup_directory_path": {
                 "description": "Failitee SQLite andmebaasi varundusfailide jaoks",
@@ -441,7 +453,9 @@
             "endpoint": "Lõpp-punkt",
             "graphql_endpoint": "GraphQL lõpp-punkt",
             "name": "Nimi",
-            "title": "Stash-kasti Lõpp-punktid"
+            "title": "Stash-kasti Lõpp-punktid",
+            "max_requests_per_minute": "Maksimaalne arv päringuid minutis",
+            "max_requests_per_minute_description": "Kasutab vaikimisi väärtust {defaultValue}, kui on 0"
         },
         "system": {
             "transcoding": "Ümbertöötlemine"
@@ -567,7 +581,9 @@
                 "whitespace_chars": "Tühikumärgid",
                 "whitespace_chars_desc": "Need märgid asendatakse pealkirjas tühikutega"
             },
-            "scene_tools": "Stseeni Tööriistad"
+            "scene_tools": "Stseeni Tööriistad",
+            "graphql_playground": "GraphQL mänguplats",
+            "heading": "Tööriistad"
         },
         "ui": {
             "abbreviate_counters": {
@@ -732,7 +748,8 @@
                     "vr_tag": {
                         "description": "VR-nupp kuvatakse ainult selle sildiga stseenide puhul.",
                         "heading": "VR Silt"
-                    }
+                    },
+                    "show_range_markers": "Näita Vahemiku Märke"
                 }
             },
             "scene_wall": {
@@ -791,6 +808,18 @@
                     "heading": "Kompaktselt laiendatud detailid"
                 },
                 "heading": "Detailide Leht"
+            },
+            "performer_list": {
+                "heading": "Näitlejate nimekiri",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Kuva linke näitlejate ruudustiku kaartidel"
+                    }
+                }
+            },
+            "sfw_mode": {
+                "description": "Luba, kui kasutad stashi SFW sisu jaoks. Peidab või muudab kasutajaliidese mõningaid täiskasvanutele mõeldud sisuga seotud aspekte.",
+                "heading": "SFW Sisu Režiim"
             }
         },
         "advanced_mode": "Täpsem Režiim"
@@ -900,7 +929,6 @@
             "destination": "Sihtkoht",
             "source": "Allikas"
         },
-        "overwrite_filter_confirm": "Oled kindel, et tahad üle kirjutada juba eksisteerivat päringut {entityName}?",
         "reassign_entity_title": "{count, plural, one {Määra Ümber {singularEntity}} other {Määra Ümber {pluralEntity}-d/id}}",
         "reassign_files": {
             "destination": "Määra Ümber"
@@ -953,7 +981,10 @@
         "unsaved_changes": "Salvestamata muudatused. Kas soovid kindlasti lahkuda?",
         "performers_found": "Leiti {count} esinejat",
         "clear_o_history_confirm": "Kas oled kindel, et soovid puhastada O ajaloo?",
-        "clear_play_history_confirm": "Kas oled kindel, et soovid puhastada vaatamise ajaloo?"
+        "clear_play_history_confirm": "Kas oled kindel, et soovid puhastada vaatamise ajaloo?",
+        "set_default_filter_confirm": "Kas oled kindel, et soovid määrata seda filtrit vaikimisi valikuks?",
+        "overwrite_filter_warning": "Salvestatud filter \"{entityName}\" kirjutatakse üle.",
+        "clear_o_history_confirm_sfw": "Kas oled kindel, et tahad meeldimiste ajalugu tühjendada?"
     },
     "dimensions": "Dimensioonid",
     "director": "Režissöör",
@@ -963,7 +994,8 @@
         "list": "Nimekiri",
         "tagger": "Sildistaja",
         "unknown": "Teadmata",
-        "wall": "Sein"
+        "wall": "Sein",
+        "label_current": "Kuvarežiim: {current}"
     },
     "donate": "Anneta",
     "dupe_check": {
@@ -1047,7 +1079,7 @@
     "filters": "Filtrid",
     "folder": "Kaust",
     "framerate": "Kaadrisagedus",
-    "frames_per_second": "{value} fps",
+    "frames_per_second": "{value} kaadrit sekundis",
     "front_page": {
         "types": {
             "premade_filter": "Eelsätestatud Filter",
@@ -1076,8 +1108,8 @@
         "syncing": "Serveriga sünkroniseerimine",
         "uploading": "Skripti üleslaadimine"
     },
-    "hasChapters": "Sisaldab Episoode",
-    "hasMarkers": "On Markereid",
+    "hasChapters": "Peatükid",
+    "hasMarkers": "Markerid",
     "height": "Pikkus",
     "height_cm": "Pikkus (cm)",
     "help": "Abi",
@@ -1110,7 +1142,7 @@
         "interactive_speed": "Interaktiivne kiirus",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} selles stseenis {years_old}"
+            "age_context": "{age} {years_old} filmimisel"
         },
         "phash": "PHash",
         "play_count": "Esituste Arv",
@@ -1124,7 +1156,6 @@
     "name": "Nimi",
     "new": "Uus",
     "none": "Puudub",
-    "o_counter": "O-Loendur",
     "operations": "Operatsioonid",
     "organized": "Organiseeritud",
     "pagination": {
@@ -1210,7 +1241,9 @@
         "edit_filter": "Muuda Filtrit",
         "name": "Filter",
         "saved_filters": "Salvestatud filtrid",
-        "update_filter": "Uuenda Filtrit"
+        "update_filter": "Uuenda Filtrit",
+        "more_filter_criteria": "+{count} rohkem",
+        "search_term": "Otsi sõnet"
     },
     "second": "Sekund",
     "seconds": "Sekundit",
@@ -1257,7 +1290,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "andmebaasi failinimi (vaikimisi tühi)",
-            "description": "Järgmisena peame kindlaks määrama, kust leida su pornokogu ja kuhu salvestada stashi andmebaas, genereeritud failid ja cache. Neid sätteid saab hiljem vajadusel muuta.",
+            "description": "Järgmisena peame kindlaks määrama, kust leida su sisu ja kuhu salvestada stashi andmebaas, genereeritud failid ja cache. Neid sätteid saab hiljem vajadusel muuta.",
             "path_to_cache_directory_empty_for_default": "tee cache kaustani (tühi vaikeseadeks)",
             "path_to_generated_directory_empty_for_default": "genereeritud kataloogi tee (vaikimisi tühi)",
             "set_up_your_paths": "Seadista oma failiteed",
@@ -1268,14 +1301,17 @@
             "where_can_stash_store_cache_files": "Kus saab Stash hoida cache faile?",
             "where_can_stash_store_cache_files_description": "Mõne funktsionaalsuse, nagu HLS/DASH reaalas transkodeerimine, töötamiseks vajab Stash cache kausta ajutiste failide jaoks. Vaikimisi loob Stash <code>cache</code> kausta mis asub konfiguratsioonifailiga samas kaustas. Kui tahad seda muuta, palun sisesta absoluutne või relatiivne (töökaustaga) tee. Stash loob selle kausta kui seda juba ei eksisteeri.",
             "where_can_stash_store_its_database": "Kuhu saab Stash oma andmebaasi salvestada?",
-            "where_can_stash_store_its_database_description": "Stash kasutab su porno metaandmete salvestamiseks SQLite'i andmebaasi. Vaikimisi luuakse see konfiguratsioonifaili sisaldavasse kataloogi kui <code>stash-go.sqlite</code>. Kui soovid seda muuta, sisesta absoluutne või suhteline failinimi (praeguse töökataloogi suhtes).",
+            "where_can_stash_store_its_database_description": "Stash kasutab su sisu metaandmete salvestamiseks SQLite'i andmebaasi. Vaikimisi luuakse see konfiguratsioonifaili sisaldavasse kataloogi kui <code>stash-go.sqlite</code>. Kui soovid seda muuta, sisesta absoluutne või suhteline failinimi (praeguse töökataloogi suhtes).",
             "where_can_stash_store_its_database_warning": "HOIATUS: hoides andmebaasi erineval süsteemil kui millel Stash jookseb (nt hoides andmebaasi NASil kui Stash jookseb teisel arvutil) on <strong>mitte toetatud</strong>! SQLite ei ole mõeldud kasutamiseks üle võrgu ja selle proovimine võib väga kergesti viia andmebaasi korrupeerumiseni.",
             "where_can_stash_store_its_generated_content": "Kus saab Stash oma genereeritud sisu salvestada?",
             "where_can_stash_store_its_generated_content_description": "Pisipiltide, eelvaadete ja spraitide pakkumiseks loob Stash pilte ja videoid. See hõlmab ka toetamata failivormingute ümbertöötlemist. Vaikimisi loob Stash konfiguratsioonifaili sisaldavas kaustas <code>genereeritud</code> kausta. Kui soovid muuta seda, kus see loodud meedium salvestatakse, sisesta absoluutne või suhteline failitee (praeguse töökataloogi suhtes). Stash loob selle kausta, kui seda veel pole.",
-            "where_is_your_porn_located": "Kus su porno asub?",
-            "where_is_your_porn_located_description": "Lisage oma pornovideoid ja pilte sisaldavad kataloogid. Stash kasutab neid katalooge skanimise ajal videote ja piltide otsimiseks.",
+            "where_is_your_porn_located": "Kus su sisu asub?",
+            "where_is_your_porn_located_description": "Lisage oma videoid ja pilte sisaldavad kataloogid. Stash kasutab neid katalooge skanimise ajal videote ja piltide otsimiseks.",
             "path_to_blobs_directory_empty_for_default": "blobsi kataloogi tee (vaikimisi tühi)",
-            "store_blobs_in_database": "Salvesta blobid andmebaasi"
+            "store_blobs_in_database": "Salvesta blobid andmebaasi",
+            "sfw_content_settings": "Kasutad stashi SFW sisu jaoks?",
+            "sfw_content_settings_description": "stashi saab kasutada SFW-sisu, näiteks fotograafia, kunsti, koomiksite ja muu haldamiseks. Selle valiku lubamine muudab kasutajaliidese käitumist SFW-sisu jaoks sobivamaks.",
+            "use_sfw_content_mode": "Kasuta SFW sisu režiimi"
         },
         "stash_setup_wizard": "Stashi Ülessättimise Viisard",
         "success": {
@@ -1515,7 +1551,23 @@
     "custom_fields": {
         "field": "Väli",
         "title": "Kohandatud Väli",
-        "value": "Väärtus"
+        "value": "Väärtus",
+        "criteria_format_string_others": "{criterion} (kohandatud väli) {modifierString} {valueString} (+{others} teist)",
+        "criteria_format_string": "{criterion} (kohandatud väli) {modifierString} {valueString}"
     },
-    "eta": "ETA"
+    "eta": "ETA",
+    "login": {
+        "username": "Kasutajanimi",
+        "password": "Parool",
+        "internal_error": "Ootamatu sisemine viga. Vaata logisid rohkemate detailide jaoks",
+        "invalid_credentials": "Vale kasutajanimi või parool",
+        "login": "Logi Sisse"
+    },
+    "age_on_date": "{age} filmimisel",
+    "sort_name": "Sorteeritud Nimi",
+    "scenes_duration": "Stseeni Pikkus",
+    "last_o_at_sfw": "Viimane Meeldimine",
+    "o_count_sfw": "Meeldimisi",
+    "o_history_sfw": "Meeldimiste Ajalugu",
+    "odate_recorded_no_sfw": "Meeldimise Kuupäeva Pole Salvestatud"
 }

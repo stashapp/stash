@@ -17,6 +17,7 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
 import { StudioCardGrid } from "./StudioCardGrid";
 import { View } from "../List/views";
+import { EditStudiosDialog } from "./EditStudiosDialog";
 
 function getItems(result: GQL.FindStudiosQueryResult) {
   return result?.data?.findStudios?.studios ?? [];
@@ -161,6 +162,13 @@ export const StudioList: React.FC<IStudioList> = ({
     );
   }
 
+  function renderEditDialog(
+    selectedStudios: GQL.SlimStudioDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return <EditStudiosDialog selected={selectedStudios} onClose={onClose} />;
+  }
+
   function renderDeleteDialog(
     selectedStudios: GQL.SlimStudioDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -188,11 +196,11 @@ export const StudioList: React.FC<IStudioList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
       />
     </ItemListContext>

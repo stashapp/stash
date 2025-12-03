@@ -141,7 +141,17 @@
         "remove_from_containing_group": "Von Gruppe entfernen",
         "reset_play_duration": "Spieldauer zurücksetzten",
         "reset_resume_time": "Fortschritt zurücksetzten",
-        "add_sub_groups": "Untergruppen hinzufügen"
+        "add_sub_groups": "Untergruppen hinzufügen",
+        "play": "Abspielen",
+        "sidebar": {
+            "toggle": "Seitenleiste umschalten",
+            "close": "Seitenleiste schließen",
+            "open": "Seitenleiste öffnen"
+        },
+        "show_count_results": "Zeige {count} Ergebnisse",
+        "show_results": "Ergebnisse anzeigen",
+        "load_filter": "Filter laden",
+        "load": "Laden"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -294,7 +304,9 @@
                 "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
                 "stash-box_integration": "Stash-box Einbindung",
                 "username": "Benutzername",
-                "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
+                "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
+                "log_file_max_size": "Maximale Log Größe",
+                "log_file_max_size_desc": "Maximale Größe, in Megabytes, von den Log Files bevor es komprimiert wird. 0MB ist deaktiviert. Benötigt Neustart."
             },
             "backup_directory_path": {
                 "description": "Verzeichnisspeicherort für SQLite-Datenbankdateisicherungen",
@@ -446,7 +458,9 @@
             "endpoint": "Endpunkt",
             "graphql_endpoint": "GraphQL-Endpunkt",
             "name": "Name",
-            "title": "Stash-Box-Endpunkte"
+            "title": "Stash-Box-Endpunkte",
+            "max_requests_per_minute": "Max requests pro Minute",
+            "max_requests_per_minute_description": "Verwendet default Wert  {defaultValue} wenn auf 0 gesetzt"
         },
         "system": {
             "transcoding": "Transcodierung"
@@ -572,7 +586,9 @@
                 "whitespace_chars": "Zwischenraumzeichen",
                 "whitespace_chars_desc": "Diese Zeichen werden im Titel durch Zwischenraumzeichen ersetzt"
             },
-            "scene_tools": "Szenen-Tools"
+            "scene_tools": "Szenen-Tools",
+            "heading": "Werkzeuge",
+            "graphql_playground": "GraphQL-Spielplatz"
         },
         "ui": {
             "abbreviate_counters": {
@@ -737,7 +753,8 @@
                     },
                     "show_ab_loop_controls": "Die Steuerungselemente des AB-Loop-Plugins anzeigen",
                     "disable_mobile_media_auto_rotate": "Deaktiviere das automatische Drehen von Vollbildmedien auf Mobilgeräten",
-                    "enable_chromecast": "Chromecast aktivieren"
+                    "enable_chromecast": "Chromecast aktivieren",
+                    "show_range_markers": "Zeige Range der Markierungen"
                 }
             },
             "scene_wall": {
@@ -796,6 +813,18 @@
             "use_stash_hosted_funscript": {
                 "description": "Wenn aktiviert, werden Funscripts direkt von Stash an dein Handy-Gerät gesendet, ohne Handy-Server von Drittanbietern zu verwenden. Erfordert, dass Stash von deinem Handy-Gerät aus zugänglich ist und ein API-Schlüssel generiert wurde, falls Stash mit Zugangsdaten konfiguriert ist.",
                 "heading": "Funscripts direkt bereitstellen"
+            },
+            "performer_list": {
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Zeige den Link auf der Darsteller Gitterkarte"
+                    }
+                },
+                "heading": "Darsteller Liste"
+            },
+            "sfw_mode": {
+                "description": "Aktivieren wenn man Stash für das speichern von SFW content benutzt. Versteckt oder Ändernt ein paar NFSW eigenschaften des UI.",
+                "heading": "SFW Content Modus"
             }
         },
         "advanced_mode": "Fortgeschrittener Modus"
@@ -905,7 +934,6 @@
             "destination": "Ziel",
             "source": "Quelle"
         },
-        "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
         "reassign_entity_title": "{count, plural, one {Weise {singularEntity} neu zu} other {Weise {pluralEntity} neu zu}}}",
         "reassign_files": {
             "destination": "Neu zuweisen an"
@@ -958,7 +986,10 @@
         "unsaved_changes": "Nicht gespeicherte Änderungen. Bist du sicher dass du die Seite verlassen willst?",
         "clear_play_history_confirm": "Bist du sicher, dass du den Wiedergabeverlauf löschen möchtest?",
         "performers_found": "{count} Darsteller:innen gefunden",
-        "clear_o_history_confirm": "Möchten Sie wirklich den O-Verlauf löschen?"
+        "clear_o_history_confirm": "Möchten Sie wirklich den O-Verlauf löschen?",
+        "overwrite_filter_warning": "Der gespeicherte Filter \"{entityName}\" wird überschrieben.",
+        "set_default_filter_confirm": "Sind Sie sicher, dass Sie diesen Filter als Standard festlegen möchten?",
+        "clear_o_history_confirm_sfw": "Bist du dir sicher das du den Verlauf löschen willst?"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
@@ -968,7 +999,8 @@
         "list": "Liste",
         "tagger": "Tagger",
         "unknown": "Unbekannt",
-        "wall": "Wand"
+        "wall": "Wand",
+        "label_current": "Anzeigemodus: {current}"
     },
     "donate": "Spenden",
     "dupe_check": {
@@ -1115,7 +1147,7 @@
         "interactive_speed": "Interaktive Geschwindigkeit",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} in dieser Szene"
+            "age_context": "{age} {years_old} bei der Produktion"
         },
         "phash": "PHashwert",
         "play_count": "Anzahl Wiedergaben",
@@ -1129,7 +1161,6 @@
     "name": "Name",
     "new": "Neu",
     "none": "Keiner",
-    "o_counter": "O-Zähler",
     "operations": "Operationen",
     "organized": "Organisiert",
     "pagination": {
@@ -1218,7 +1249,9 @@
         "edit_filter": "Filter editieren",
         "name": "Filter",
         "saved_filters": "Gespeicherte Filter",
-        "update_filter": "Filter aktualisieren"
+        "update_filter": "Filter aktualisieren",
+        "more_filter_criteria": "+{count} mehr",
+        "search_term": "Suchbegriff"
     },
     "second": "Sekunde",
     "seconds": "Sekunden",
@@ -1283,7 +1316,8 @@
             "where_is_your_porn_located": "Wo finden wir deine Porno-Kollektion?",
             "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
             "path_to_blobs_directory_empty_for_default": "Pfad zum Verzeichnis der blobs (standardmäßig leer)",
-            "store_blobs_in_database": "blobs in der Datenbank speichern"
+            "store_blobs_in_database": "blobs in der Datenbank speichern",
+            "sfw_content_settings": "Benutzt du stash auch für SFW Inhalte?"
         },
         "stash_setup_wizard": "Einrichtungshelfer für Stash",
         "success": {
@@ -1484,7 +1518,9 @@
     "custom_fields": {
         "title": "Benutzerdefinierte Felder",
         "value": "Wert",
-        "field": "Feld"
+        "field": "Feld",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (custom field) {modifierString} {valueString} (+{others} others)"
     },
     "distance": "Distanz",
     "group_count": "Gruppenanzahl",
@@ -1517,5 +1553,19 @@
     "tag_sub_tag_tooltip": "Hat Untertags",
     "include_sub_groups": "Untergruppen einbeziehen",
     "studio_and_parent": "Studio & Mutterstudio",
-    "eta": "Edited to add"
+    "eta": "Edited to add",
+    "login": {
+        "login": "Login",
+        "internal_error": "Unvorhergesehener interner Fehler. Weitere Details in den Logs",
+        "password": "Passwort",
+        "invalid_credentials": "Ungültiger Nutzername oder Passwort",
+        "username": "Benutzername"
+    },
+    "age_on_date": "bei Produktion",
+    "sort_name": "Namen sortieren",
+    "scenes_duration": "Szenen Dauer",
+    "last_o_at_sfw": "Letztes mal ein Gefällt mir gegeben am",
+    "o_count_sfw": "Gefällt mir",
+    "o_history_sfw": "Gefällt mir Verlauf",
+    "odate_recorded_no_sfw": "Kein Gefällt mir Datum vermerkt"
 }

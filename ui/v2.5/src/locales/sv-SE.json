@@ -141,7 +141,17 @@
         "add_sub_groups": "Lägg Till Undergrupper",
         "remove_from_containing_group": "Ta bort från Grupp",
         "reset_resume_time": "Återställ återupptagningstid",
-        "set_cover": "Välj som Omslag"
+        "set_cover": "Välj som Omslag",
+        "play": "Spela",
+        "show_count_results": "Visa {count} resultat",
+        "sidebar": {
+            "toggle": "Ändra sidolisten",
+            "close": "Stäng sidolisten",
+            "open": "Öppna sidolisten"
+        },
+        "show_results": "Visa resultat",
+        "load": "Ladda",
+        "load_filter": "Ladda filter"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -447,7 +457,9 @@
             "endpoint": "Adress",
             "graphql_endpoint": "GraphQL-adress",
             "name": "Namn",
-            "title": "Stash-box Adresser"
+            "title": "Stash-box Adresser",
+            "max_requests_per_minute": "Högsta antal förfrågningar per minut",
+            "max_requests_per_minute_description": "Använder standardvärdet {defaultValue} om detta är 0"
         },
         "system": {
             "transcoding": "Omkodning"
@@ -573,7 +585,9 @@
                 "whitespace_chars": "Blankstegstecken",
                 "whitespace_chars_desc": "Dessa tecken kommer ersättas med blanksteg i titeln"
             },
-            "scene_tools": "Scenverktyg"
+            "scene_tools": "Scenverktyg",
+            "graphql_playground": "GraphQL lekplats",
+            "heading": "Verktyg"
         },
         "ui": {
             "abbreviate_counters": {
@@ -798,6 +812,14 @@
             "use_stash_hosted_funscript": {
                 "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet och att en API-nyckel är genererad om stash har lösenord aktiverat.",
                 "heading": "Skicka funscripts direkt"
+            },
+            "performer_list": {
+                "heading": "Lista av stjärnor",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Visa länkar på stjärnors kort"
+                    }
+                }
             }
         },
         "advanced_mode": "Avancerat Läge"
@@ -907,7 +929,6 @@
             "destination": "Mål",
             "source": "Källa"
         },
-        "overwrite_filter_confirm": "Är du säker på att du vill skriva över existerande sökning {entityName}?",
         "performers_found": "{count} stjärnor hittade",
         "reassign_entity_title": "{count, plural, one {Omplacera {singularEntity}} other {Omplacera {pluralEntity}}}",
         "reassign_files": {
@@ -960,7 +981,9 @@
         "set_image_url_title": "URL till bild",
         "unsaved_changes": "Osparade ändringar. Är du säker att du vill lämna?",
         "clear_o_history_confirm": "Är du säker på att du vill radera O-historiken?",
-        "clear_play_history_confirm": "Är du säker på att du vill radera uppspelningshistoriken?"
+        "clear_play_history_confirm": "Är du säker på att du vill radera uppspelningshistoriken?",
+        "overwrite_filter_warning": "Sparat filter \"{entityName}\" kommer skrivas över.",
+        "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?"
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -970,7 +993,8 @@
         "list": "Lista",
         "tagger": "Taggaren",
         "unknown": "Okänd",
-        "wall": "Vägg"
+        "wall": "Vägg",
+        "label_current": "Visningsläge: {current}"
     },
     "donate": "Donera",
     "dupe_check": {
@@ -1083,8 +1107,8 @@
         "syncing": "Synkar med server",
         "uploading": "Laddar upp skript"
     },
-    "hasChapters": "Har Kapitel",
-    "hasMarkers": "Har Markörer",
+    "hasChapters": "Kapitel",
+    "hasMarkers": "Markörer",
     "height": "Längd",
     "height_cm": "Längd (cm)",
     "help": "Hjälp",
@@ -1118,7 +1142,7 @@
         "interactive_speed": "Interaktiv Hastighet",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} i den här scenen"
+            "age_context": "{age} {years_old} vid produktion"
         },
         "phash": "PHash",
         "play_count": "Visningar",
@@ -1132,7 +1156,6 @@
     "name": "Namn",
     "new": "Ny",
     "none": "Ingen",
-    "o_counter": "O-räknare",
     "operations": "Operationer",
     "organized": "Organiserad",
     "pagination": {
@@ -1222,7 +1245,9 @@
         "edit_filter": "Ändra Filter",
         "name": "Filter",
         "saved_filters": "Sparade filter",
-        "update_filter": "Uppdatera filter"
+        "update_filter": "Uppdatera filter",
+        "more_filter_criteria": "+{count} fler",
+        "search_term": "Sökterm"
     },
     "second": "Sekund",
     "seconds": "Sekunder",
@@ -1516,8 +1541,19 @@
     "custom_fields": {
         "field": "Fält",
         "title": "Skäddarsydda Fält",
-        "value": "Värde"
+        "value": "Värde",
+        "criteria_format_string": "{criterion} (eget fält) {modifierString} {valueString}",
+        "criteria_format_string_others": "{criterion} (eget fält) {modifierString} {valueString} (+{others} andra)"
     },
     "eta": "Uppskattad återstående tid",
-    "sort_name": "Sorteringsnamn"
+    "sort_name": "Sorteringsnamn",
+    "login": {
+        "username": "Användarnamn",
+        "password": "Lösenord",
+        "internal_error": "Oväntad internt fel. Se loggen för mer information",
+        "login": "Inlogg",
+        "invalid_credentials": "Ogiltigt användarnamn eller lösenord"
+    },
+    "age_on_date": "{age} vid produktion",
+    "scenes_duration": "Scen Speltid"
 }

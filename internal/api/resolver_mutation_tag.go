@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -32,12 +33,20 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	// Populate a new tag from the input
 	newTag := models.NewTag()
 
-	newTag.Name = input.Name
+	newTag.Name = strings.TrimSpace(input.Name)
 	newTag.SortName = translator.string(input.SortName)
-	newTag.Aliases = models.NewRelatedStrings(input.Aliases)
+	newTag.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.Aliases))
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
+
+	var stashIDInputs models.StashIDInputs
+	for _, sid := range input.StashIds {
+		if sid != nil {
+			stashIDInputs = append(stashIDInputs, *sid)
+		}
+	}
+	newTag.StashIDs = models.NewRelatedStashIDs(stashIDInputs.ToStashIDs())
 
 	var err error
 
@@ -109,6 +118,14 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	updatedTag.Description = translator.optionalString(input.Description, "description")
 
 	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
+
+	var updateStashIDInputs models.StashIDInputs
+	for _, sid := range input.StashIds {
+		if sid != nil {
+			updateStashIDInputs = append(updateStashIDInputs, *sid)
+		}
+	}
+	updatedTag.StashIDs = translator.updateStashIDs(updateStashIDInputs, "stash_ids")
 
 	updatedTag.ParentIDs, err = translator.updateIds(input.ParentIds, "parent_ids")
 	if err != nil {

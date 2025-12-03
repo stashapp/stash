@@ -63,6 +63,7 @@ export function renderScrapedGenderRow(
 ) {
   return (
     <ScrapeDialogRow
+      field="gender"
       title={title}
       result={result}
       renderOriginalField={() => renderScrapedGender(result)}
@@ -113,6 +114,7 @@ export function renderScrapedCircumcisedRow(
   return (
     <ScrapeDialogRow
       title={title}
+      field="circumcised"
       result={result}
       renderOriginalField={() => renderScrapedCircumcised(result)}
       renderNewField={() =>
@@ -146,6 +148,22 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       return;
     }
 
+    // #6257 - it is possible (though unsupported) to have multiple stash IDs for the same
+    // endpoint; in that case, we should prefer the one matching the scraped remote site ID
+    // if it exists
+    const stashIDs = (props.performer.stash_ids ?? []).filter(
+      (s) => s.endpoint === endpoint
+    );
+    if (stashIDs.length > 1 && props.scraped.remote_site_id) {
+      const matchingID = stashIDs.find(
+        (s) => s.stash_id === props.scraped.remote_site_id
+      );
+      if (matchingID) {
+        return matchingID.stash_id;
+      }
+    }
+
+    // otherwise, return the first stash ID for the endpoint
     return props.performer.stash_ids?.find((s) => s.endpoint === endpoint)
       ?.stash_id;
   }
@@ -385,16 +403,19 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     return (
       <>
         <ScrapedInputGroupRow
+          field="name"
           title={intl.formatMessage({ id: "name" })}
           result={name}
           onChange={(value) => setName(value)}
         />
         <ScrapedInputGroupRow
+          field="disambiguation"
           title={intl.formatMessage({ id: "disambiguation" })}
           result={disambiguation}
           onChange={(value) => setDisambiguation(value)}
         />
         <ScrapedTextAreaRow
+          field="aliases"
           title={intl.formatMessage({ id: "aliases" })}
           result={aliases}
           onChange={(value) => setAliases(value)}
@@ -405,46 +426,55 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           (value) => setGender(value)
         )}
         <ScrapedInputGroupRow
+          field="birthdate"
           title={intl.formatMessage({ id: "birthdate" })}
           result={birthdate}
           onChange={(value) => setBirthdate(value)}
         />
         <ScrapedInputGroupRow
+          field="death_date"
           title={intl.formatMessage({ id: "death_date" })}
           result={deathDate}
           onChange={(value) => setDeathDate(value)}
         />
         <ScrapedInputGroupRow
+          field="ethnicity"
           title={intl.formatMessage({ id: "ethnicity" })}
           result={ethnicity}
           onChange={(value) => setEthnicity(value)}
         />
         <ScrapedCountryRow
+          field="country"
           title={intl.formatMessage({ id: "country" })}
           result={country}
           onChange={(value) => setCountry(value)}
         />
         <ScrapedInputGroupRow
+          field="hair_color"
           title={intl.formatMessage({ id: "hair_color" })}
           result={hairColor}
           onChange={(value) => setHairColor(value)}
         />
         <ScrapedInputGroupRow
+          field="eye_color"
           title={intl.formatMessage({ id: "eye_color" })}
           result={eyeColor}
           onChange={(value) => setEyeColor(value)}
         />
         <ScrapedInputGroupRow
+          field="weight"
           title={intl.formatMessage({ id: "weight" })}
           result={weight}
           onChange={(value) => setWeight(value)}
         />
         <ScrapedInputGroupRow
+          field="height"
           title={intl.formatMessage({ id: "height" })}
           result={height}
           onChange={(value) => setHeight(value)}
         />
         <ScrapedInputGroupRow
+          field="penis_length"
           title={intl.formatMessage({ id: "penis_length" })}
           result={penisLength}
           onChange={(value) => setPenisLength(value)}
@@ -455,42 +485,50 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           (value) => setCircumcised(value)
         )}
         <ScrapedInputGroupRow
+          field="measurements"
           title={intl.formatMessage({ id: "measurements" })}
           result={measurements}
           onChange={(value) => setMeasurements(value)}
         />
         <ScrapedInputGroupRow
+          field="fake_tits"
           title={intl.formatMessage({ id: "fake_tits" })}
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
         />
         <ScrapedInputGroupRow
+          field="career_length"
           title={intl.formatMessage({ id: "career_length" })}
           result={careerLength}
           onChange={(value) => setCareerLength(value)}
         />
         <ScrapedTextAreaRow
+          field="tattoos"
           title={intl.formatMessage({ id: "tattoos" })}
           result={tattoos}
           onChange={(value) => setTattoos(value)}
         />
         <ScrapedTextAreaRow
+          field="piercings"
           title={intl.formatMessage({ id: "piercings" })}
           result={piercings}
           onChange={(value) => setPiercings(value)}
         />
         <ScrapedStringListRow
+          field="urls"
           title={intl.formatMessage({ id: "urls" })}
           result={urls}
           onChange={(value) => setURLs(value)}
         />
         <ScrapedTextAreaRow
+          field="details"
           title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         {scrapedTagsRow}
         <ScrapedImagesRow
+          field="image"
           title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"
           result={image}
@@ -498,6 +536,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setImage(value)}
         />
         <ScrapedInputGroupRow
+          field="remote_site_id"
           title={intl.formatMessage({ id: "stash_id" })}
           result={remoteSiteID}
           locked

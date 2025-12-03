@@ -900,6 +900,66 @@ func TestTagUpdateAlias(t *testing.T) {
 	}
 }
 
+func TestTagStashIDs(t *testing.T) {
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		// create tag to test against
+		const name = "TestTagStashIDs"
+		tag := models.Tag{
+			Name: name,
+		}
+		err := qb.Create(ctx, &tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		testStashIDReaderWriter(ctx, t, qb, tag.ID)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestTagFindByStashID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		// create tag to test against
+		const name = "TestTagFindByStashID"
+		const stashID = "stashid"
+		const endpoint = "endpoint"
+		tag := models.Tag{
+			Name:     name,
+			StashIDs: models.NewRelatedStashIDs([]models.StashID{{StashID: stashID, Endpoint: endpoint}}),
+		}
+		err := qb.Create(ctx, &tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		// find by stash ID
+		tags, err := qb.FindByStashID(ctx, models.StashID{StashID: stashID, Endpoint: endpoint})
+		if err != nil {
+			return fmt.Errorf("Error finding by stash ID: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tag.ID, tags[0].ID)
+
+		// find by non-existent stash ID
+		tags, err = qb.FindByStashID(ctx, models.StashID{StashID: "nonexistent", Endpoint: endpoint})
+		if err != nil {
+			return fmt.Errorf("Error finding by stash ID: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 0)
+
+		return nil
+	})
+}
+
 func TestTagMerge(t *testing.T) {
 	assert := assert.New(t)
 
@@ -931,6 +991,8 @@ func TestTagMerge(t *testing.T) {
 			tagIdxWithGallery,
 			tagIdx1WithGallery,
 			tagIdx2WithGallery,
+			tagIdx1WithGroup,
+			tagIdx2WithGroup,
 		}
 		var srcIDs []int
 		for _, idx := range srcIdxs {
@@ -1023,6 +1085,18 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		assert.Contains(studioTagIDs, destID)
+
+		// ensure group points to new tag
+		group, err := db.Group.Find(ctx, groupIDs[groupIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+		if err := group.LoadTagIDs(ctx, db.Group); err != nil {
+			return err
+		}
+		groupTagIDs := group.TagIDs.List()
+
+		assert.Contains(groupTagIDs, destID)
 
 		return nil
 	}); err != nil {

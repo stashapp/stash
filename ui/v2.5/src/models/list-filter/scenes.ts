@@ -46,13 +46,14 @@ const sortByOptions = [
   "framerate",
   "bitrate",
   "last_played_at",
-  "last_o_at",
   "resume_time",
   "play_duration",
   "play_count",
   "interactive",
   "interactive_speed",
   "perceptual_similarity",
+  "performer_age",
+  "studio",
   ...MediaSortByOptions,
 ]
   .map(ListFilterOptions.createSortBy)
@@ -60,6 +61,12 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
+      sfwMessageID: "o_count_sfw",
+    },
+    {
+      messageID: "last_o_at",
+      value: "last_o_at",
+      sfwMessageID: "last_o_at_sfw",
     },
     {
       messageID: "group_scene_number",
@@ -77,6 +84,12 @@ const displayModeOptions = [
   DisplayMode.Tagger,
 ];
 
+export const PerformerAgeCriterionOption =
+  createMandatoryNumberCriterionOption("performer_age");
+
+export const DurationCriterionOption =
+  createDurationCriterionOption("duration");
+
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
@@ -89,14 +102,16 @@ const criterionOptions = [
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
   RatingCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   createMandatoryNumberCriterionOption("framerate"),
   createMandatoryNumberCriterionOption("bitrate"),
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
-  createDurationCriterionOption("duration"),
+  DurationCriterionOption,
   createDurationCriterionOption("resume_time"),
   createDurationCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
@@ -108,7 +123,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
-  createMandatoryNumberCriterionOption("performer_age"),
+  PerformerAgeCriterionOption,
   PerformerFavoriteCriterionOption,
   // StudioTagsCriterionOption,
   StudiosCriterionOption,

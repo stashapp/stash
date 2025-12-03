@@ -1,7 +1,6 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -14,7 +13,7 @@ import {
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
@@ -50,6 +49,7 @@ interface ICriterionList {
   optionSelected: (o?: CriterionOption) => void;
   onRemoveCriterion: (c: string) => void;
   onTogglePin: (c: CriterionOption) => void;
+  externallySelected?: boolean;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
@@ -62,7 +62,11 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   optionSelected,
   onRemoveCriterion,
   onTogglePin,
+  externallySelected = false,
 }) => {
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
+
   const prevCriterion = usePrevious(currentCriterion);
 
   const scrolled = useRef(false);
@@ -101,14 +105,19 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     // scrolling to the current criterion doesn't work well when the
     // dialog is already open, so limit to when we click on the
     // criterion from the external tags
-    if (!scrolled.current && type && criteriaRefs[type]?.current) {
+    if (
+      externallySelected &&
+      !scrolled.current &&
+      type &&
+      criteriaRefs[type]?.current
+    ) {
       criteriaRefs[type].current!.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
       scrolled.current = true;
     }
-  }, [currentCriterion, criteriaRefs, type]);
+  }, [externallySelected, currentCriterion, criteriaRefs, type]);
 
   function getReleventCriterion(t: CriterionType) {
     if (currentCriterion?.criterionOption.type === t) {
@@ -141,7 +150,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               className="collapse-icon fa-fw"
               icon={type === c.type ? faChevronDown : faChevronRight}
             />
-            <FormattedMessage id={c.messageID} />
+            <FormattedMessage
+              id={!sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID}
+            />
           </span>
           {criteria.some((cc) => c.type === cc) && (
             <Button
@@ -226,7 +237,8 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const Toast = useToast();
   const intl = useIntl();
 
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
@@ -258,10 +270,16 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       .filter((c) => !c.hidden)
       .sort((a, b) => {
         return intl
-          .formatMessage({ id: a.messageID })
-          .localeCompare(intl.formatMessage({ id: b.messageID }));
+          .formatMessage({
+            id: !sfwContentMode ? a.messageID : a.sfwMessageID ?? a.messageID,
+          })
+          .localeCompare(
+            intl.formatMessage({
+              id: !sfwContentMode ? b.messageID : b.sfwMessageID ?? b.messageID,
+            })
+          );
       });
-  }, [intl, filterOptions.criterionOptions]);
+  }, [intl, sfwContentMode, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -295,11 +313,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
     return criterionOptions.filter((c) => {
       return intl
-        .formatMessage({ id: c.messageID })
+        .formatMessage({
+          id: !sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID,
+        })
         .toLowerCase()
         .includes(trimmedSearch);
     });
-  }, [intl, searchValue, criterionOptions]);
+  }, [intl, sfwContentMode, searchValue, criterionOptions]);
 
   const pinnedFilters = useMemo(
     () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],
@@ -510,7 +530,10 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       <Modal
         show={!showSaveDialog && !showLoadDialog}
         onHide={() => onCancel()}
-        className="edit-filter-dialog"
+        // need sfw mode class because dialog is outside body
+        className={cx("edit-filter-dialog", {
+          "sfw-content-mode": sfwContentMode,
+        })}
       >
         <Modal.Header>
           <div>
@@ -549,6 +572,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               selected={criterion?.criterionOption}
               onRemoveCriterion={(c) => removeCriterionString(c)}
               onTogglePin={(c) => onTogglePinFilter(c)}
+              externallySelected={!!editingCriterion}
             />
             {criteria.length > 0 && (
               <div>

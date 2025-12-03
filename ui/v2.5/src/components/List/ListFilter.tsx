@@ -1,4 +1,3 @@
-import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
   useEffect,
@@ -23,20 +22,18 @@ import {
 import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
-import { FormattedMessage, useIntl } from "react-intl";
-import { SavedFilterDropdown } from "./SavedFilterList";
+import { useIntl } from "react-intl";
 import {
   faCaretDown,
   faCaretUp,
   faCheck,
   faRandom,
 } from "@fortawesome/free-solid-svg-icons";
-import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
-import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { useStopWheelScroll } from "src/utils/form";
 import { ISortByOption } from "src/models/list-filter/filter-options";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
@@ -249,14 +246,24 @@ export const SortBySelect: React.FC<{
   onReshuffleRandomSort,
 }) => {
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
 
   const currentSortBy = options.find((o) => o.value === sortBy);
+  const currentSortByMessageID = currentSortBy
+    ? !sfwContentMode
+      ? currentSortBy.messageID
+      : currentSortBy.sfwMessageID ?? currentSortBy.messageID
+    : "";
 
   function renderSortByOptions() {
     return options
       .map((o) => {
+        const messageID = !sfwContentMode
+          ? o.messageID
+          : o.sfwMessageID ?? o.messageID;
         return {
-          message: intl.formatMessage({ id: o.messageID }),
+          message: intl.formatMessage({ id: messageID }),
           value: o.value,
         };
       })
@@ -267,6 +274,7 @@ export const SortBySelect: React.FC<{
           key={option.value}
           className="bg-secondary text-white"
           eventKey={option.value}
+          data-value={option.value}
         >
           {option.message}
         </Dropdown.Item>
@@ -274,11 +282,11 @@ export const SortBySelect: React.FC<{
   }
 
   return (
-    <Dropdown as={ButtonGroup} className={className}>
+    <Dropdown as={ButtonGroup} className={`${className ?? ""} sort-by-select`}>
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy
-            ? intl.formatMessage({ id: currentSortBy.messageID })
+            ? intl.formatMessage({ id: currentSortByMessageID })
             : ""}
         </Dropdown.Toggle>
       </InputGroup.Prepend>
@@ -317,116 +325,4 @@ export const SortBySelect: React.FC<{
       )}
     </Dropdown>
   );
-};
-
-interface IListFilterProps {
-  onFilterUpdate: (newFilter: ListFilterModel) => void;
-  filter: ListFilterModel;
-  view?: View;
-  openFilterDialog: () => void;
-  withSidebar?: boolean;
-}
-
-export const ListFilter: React.FC<IListFilterProps> = ({
-  onFilterUpdate,
-  filter,
-  openFilterDialog,
-  view,
-  withSidebar,
-}) => {
-  const filterOptions = filter.options;
-
-  useEffect(() => {
-    Mousetrap.bind("r", () => onReshuffleRandomSort());
-
-    return () => {
-      Mousetrap.unbind("r");
-    };
-  });
-
-  function onChangePageSize(pp: number) {
-    const newFilter = cloneDeep(filter);
-    newFilter.itemsPerPage = pp;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }
-
-  function onChangeSortDirection() {
-    const newFilter = cloneDeep(filter);
-    if (filter.sortDirection === SortDirectionEnum.Asc) {
-      newFilter.sortDirection = SortDirectionEnum.Desc;
-    } else {
-      newFilter.sortDirection = SortDirectionEnum.Asc;
-    }
-
-    onFilterUpdate(newFilter);
-  }
-
-  function onChangeSortBy(eventKey: string | null) {
-    const newFilter = cloneDeep(filter);
-    newFilter.sortBy = eventKey ?? undefined;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }
-
-  function onReshuffleRandomSort() {
-    const newFilter = cloneDeep(filter);
-    newFilter.currentPage = 1;
-    newFilter.randomSeed = -1;
-    onFilterUpdate(newFilter);
-  }
-
-  function render() {
-    return (
-      <>
-        {!withSidebar && (
-          <div className="d-flex">
-            <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-          </div>
-        )}
-
-        {!withSidebar && (
-          <ButtonGroup className="mr-2">
-            <SavedFilterDropdown
-              filter={filter}
-              onSetFilter={(f) => {
-                onFilterUpdate(f);
-              }}
-              view={view}
-            />
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id="filter-tooltip">
-                  <FormattedMessage id="search_filter.name" />
-                </Tooltip>
-              }
-            >
-              <FilterButton
-                onClick={() => openFilterDialog()}
-                count={filter.count()}
-              />
-            </OverlayTrigger>
-          </ButtonGroup>
-        )}
-
-        <SortBySelect
-          className="mr-2"
-          sortBy={filter.sortBy}
-          sortDirection={filter.sortDirection}
-          options={filterOptions.sortByOptions}
-          onChangeSortBy={onChangeSortBy}
-          onChangeSortDirection={onChangeSortDirection}
-          onReshuffleRandomSort={onReshuffleRandomSort}
-        />
-
-        <PageSizeSelector
-          pageSize={filter.itemsPerPage}
-          setPageSize={onChangePageSize}
-        />
-      </>
-    );
-  }
-
-  return render();
 };

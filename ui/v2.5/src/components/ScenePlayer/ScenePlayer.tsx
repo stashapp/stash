@@ -1,7 +1,6 @@
 import React, {
   KeyboardEvent,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -23,6 +22,8 @@ import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
+import "./media-session";
+import "./wake-sentinel";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -31,7 +32,7 @@ import {
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   ConnectionState,
   InteractiveContext,
@@ -240,7 +241,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     onNext,
     onPrevious,
   }) => {
-    const { configuration } = useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
     const uiConfig = configuration?.ui;
     const videoRef = useRef<HTMLDivElement>(null);
@@ -370,7 +371,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           },
         },
         plugins: {
-          airPlay: {},
+          airPlay: {
+            addButtonToControlBar: uiConfig?.enableChromecast ?? false,
+          },
           chromecast: {},
           vttThumbnails: {
             showTimestamp: true,
@@ -396,6 +399,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             pauseBeforeLooping: false,
             createButtons: uiConfig?.showAbLoopControls ?? false,
           },
+          mediaSession: {},
+          wakeSentinel: {},
         },
       };
 
@@ -429,7 +434,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
-    }, [uiConfig?.showAbLoopControls]);
+    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -872,6 +877,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       return () => player.off("ended");
     }, [getPlayer, onComplete]);
+
+    // set up mediaSession plugin
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      // set up mediasession plugin
+      // get performer names as array
+      const performers = scene?.performers.map((p) => p.name).join(", ");
+      player
+        .mediaSession()
+        .setMetadata(
+          scene?.title ?? "Stash",
+          scene?.studio?.name ?? performers ?? "Stash",
+          scene.paths.screenshot || ""
+        );
+    }, [getPlayer, scene]);
 
     function onScrubberScroll() {
       if (started.current) {

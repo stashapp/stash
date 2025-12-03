@@ -228,21 +228,16 @@ export const RatingStars = PatchComponent(
       );
     };
 
-    const maybeRenderStarRatingNumber = () => {
+    const maybeGetStarRatingNumber = () => {
       const ratingFraction = getCurrentSelectedRating();
       if (
         !ratingFraction ||
         (ratingFraction.rating == 0 && ratingFraction.fraction == 0)
       ) {
-        return;
+        return "";
       }
 
-      return (
-        <span className="star-rating-number">
-          {ratingFraction.rating + ratingFraction.fraction}
-          {suffix}
-        </span>
-      );
+      return ratingFraction.rating + ratingFraction.fraction + suffix;
     };
 
     const precisionClassName = `rating-stars-precision-${props.precision}`;
@@ -252,7 +247,7 @@ export const RatingStars = PatchComponent(
         {Array.from(Array(max)).map((value, index) =>
           renderRatingButton(index + 1)
         )}
-        {maybeRenderStarRatingNumber()}
+        <span className="star-rating-number">{maybeGetStarRatingNumber()}</span>
       </div>
     );
   }

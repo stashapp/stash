@@ -16,6 +16,7 @@ import { MarkerWallPanel } from "./SceneMarkerWallPanel";
 import { View } from "../List/views";
 import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
 import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
+import { EditSceneMarkersDialog } from "./EditSceneMarkersDialog";
 
 function getItems(result: GQL.FindSceneMarkersQueryResult) {
   return result?.data?.findSceneMarkers?.scene_markers ?? [];
@@ -114,6 +115,15 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
     }
   }
 
+  function renderEditDialog(
+    selectedMarkers: GQL.SceneMarkerDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return (
+      <EditSceneMarkersDialog selected={selectedMarkers} onClose={onClose} />
+    );
+  }
+
   function renderDeleteDialog(
     selectedSceneMarkers: GQL.SceneMarkerDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -138,11 +148,11 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
       selectable
     >
       <ItemList
-        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
       />
     </ItemListContext>

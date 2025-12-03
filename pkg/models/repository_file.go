@@ -13,9 +13,9 @@ type FileGetter interface {
 // FileFinder provides methods to find files.
 type FileFinder interface {
 	FileGetter
-	FindAllByPath(ctx context.Context, path string) ([]File, error)
+	FindAllByPath(ctx context.Context, path string, caseSensitive bool) ([]File, error)
 	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
-	FindByPath(ctx context.Context, path string) (File, error)
+	FindByPath(ctx context.Context, path string, caseSensitive bool) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]File, error)
 	FindByFileInfo(ctx context.Context, info fs.FileInfo, size int64) ([]File, error)

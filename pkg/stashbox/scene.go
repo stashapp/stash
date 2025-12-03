@@ -205,7 +205,8 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 
 	for _, t := range s.Tags {
 		st := &models.ScrapedTag{
-			Name: t.Name,
+			Name:         t.Name,
+			RemoteSiteID: &t.ID,
 		}
 		ss.Tags = append(ss.Tags, st)
 	}
@@ -242,8 +243,9 @@ type SceneDraft struct {
 	Performers []*models.Performer
 	// StashIDs must be loaded
 	Studio *models.Studio
-	Tags   []*models.Tag
-	Cover  []byte
+	// StashIDs must be loaded
+	Tags  []*models.Tag
+	Cover []byte
 }
 
 func (c Client) SubmitSceneDraft(ctx context.Context, d SceneDraft) (*string, error) {
@@ -347,7 +349,17 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	var tags []*graphql.DraftEntityInput
 	sceneTags := d.Tags
 	for _, tag := range sceneTags {
-		tags = append(tags, &graphql.DraftEntityInput{Name: tag.Name})
+		tagDraft := graphql.DraftEntityInput{Name: tag.Name}
+
+		stashIDs := tag.StashIDs.List()
+		for _, stashID := range stashIDs {
+			if stashID.Endpoint == endpoint {
+				tagDraft.ID = &stashID.StashID
+				break
+			}
+		}
+
+		tags = append(tags, &tagDraft)
 	}
 	draft.Tags = tags
 

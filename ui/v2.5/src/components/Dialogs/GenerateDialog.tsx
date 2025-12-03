@@ -6,7 +6,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { Manual } from "../Help/Manual";
 import { withoutTypename } from "src/utils/data";
 import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
@@ -25,7 +25,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   onClose,
   type,
 }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   function getDefaultOptions(): GQL.GenerateMetadataInput {
     return {

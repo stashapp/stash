@@ -1078,7 +1078,6 @@
             "destination": "ปลายทาง",
             "source": "ต้นทาง"
         },
-        "overwrite_filter_confirm": "คุณแน่ใจว่าต้องการเขียนทับเงื่อนไขการค้นหา{entityName}ใช่หรือไม่?",
         "reassign_files": {
             "destination": "ย้ายไปที่"
         },
@@ -1303,7 +1302,6 @@
     "name": "ชื่อเรื่อง",
     "new": "เพิ่ม",
     "none": "ไม่มี",
-    "o_counter": "O-Counter",
     "o_history": "ประวัติ O",
     "organized": "จัดระเบียบแล้ว",
     "disambiguation": "แก้ความกำกวม",

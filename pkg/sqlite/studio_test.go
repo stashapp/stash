@@ -82,6 +82,14 @@ func TestStudioQueryNameOr(t *testing.T) {
 	})
 }
 
+func loadStudioRelationships(ctx context.Context, t *testing.T, s *models.Studio) error {
+	if err := s.LoadURLs(ctx, db.Studio); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func TestStudioQueryNameAndUrl(t *testing.T) {
 	const studioIdx = 1
 	studioName := getStudioStringValue(studioIdx, "Name")
@@ -107,9 +115,16 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
-		assert.Len(t, studios, 1)
+		if !assert.Len(t, studios, 1) {
+			return nil
+		}
+
+		if err := studios[0].LoadURLs(ctx, db.Studio); err != nil {
+			t.Errorf("Error loading studio relationships: %v", err)
+		}
+
 		assert.Equal(t, studioName, studios[0].Name)
-		assert.Equal(t, studioUrl, studios[0].URL)
+		assert.Equal(t, []string{studioUrl}, studios[0].URLs.List())
 
 		return nil
 	})
@@ -145,9 +160,13 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		for _, studio := range studios {
+			if err := studio.LoadURLs(ctx, db.Studio); err != nil {
+				t.Errorf("Error loading studio relationships: %v", err)
+			}
+
 			verifyString(t, studio.Name, nameCriterion)
 			urlCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyString(t, studio.URL, urlCriterion)
+			verifyStringList(t, studio.URLs.List(), urlCriterion)
 		}
 
 		return nil
@@ -659,7 +678,11 @@ func TestStudioQueryURL(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, g *models.Studio) {
 		t.Helper()
-		verifyString(t, g.URL, urlCriterion)
+		if err := g.LoadURLs(ctx, db.Studio); err != nil {
+			t.Errorf("Error loading studio relationships: %v", err)
+			return
+		}
+		verifyStringList(t, g.URLs.List(), urlCriterion)
 	}
 
 	verifyStudioQuery(t, filter, verifyFn)

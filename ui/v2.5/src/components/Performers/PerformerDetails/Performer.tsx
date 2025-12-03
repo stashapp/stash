@@ -16,7 +16,7 @@ import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import {
   CompressedPerformerDetailsPanel,
@@ -48,6 +48,8 @@ import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 import { PatchComponent } from "src/patch";
 import { ILightboxImage } from "src/hooks/Lightbox/types";
+import { goBackOrReplace } from "src/utils/history";
+import { OCounterButton } from "src/components/Shared/CountButton";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -239,7 +241,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
     const intl = useIntl();
 
     // Configuration settings
-    const { configuration } = React.useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const uiConfig = configuration?.ui;
     const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
     const enableBackgroundImage =
@@ -352,7 +354,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
         return;
       }
 
-      history.goBack();
+      goBackOrReplace(history, "/performers");
     }
 
     function toggleEditing(value?: boolean) {
@@ -444,12 +446,17 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
                   </span>
                 </DetailTitle>
                 <AliasList aliases={performer.alias_list} />
-                <RatingSystem
-                  value={performer.rating100}
-                  onSetRating={(value) => setRating(value)}
-                  clickToRate
-                  withoutContext
-                />
+                <div className="quality-group">
+                  <RatingSystem
+                    value={performer.rating100}
+                    onSetRating={(value) => setRating(value)}
+                    clickToRate
+                    withoutContext
+                  />
+                  {!!performer.o_counter && (
+                    <OCounterButton value={performer.o_counter} />
+                  )}
+                </div>
                 {!isEditing && (
                   <PerformerDetailsPanel
                     performer={performer}

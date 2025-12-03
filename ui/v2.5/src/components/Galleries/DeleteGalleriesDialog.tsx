@@ -4,7 +4,7 @@ import { useGalleryDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
@@ -33,7 +33,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
     { count: props.selected.length, singularEntity, pluralEntity }
   );
 
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const [deleteFile, setDeleteFile] = useState<boolean>(
     config?.defaults.deleteFile ?? false
@@ -84,6 +84,11 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       return;
     }
 
+    const deleteTrashPath = config?.general.deleteTrashPath;
+    const deleteAlertId = deleteTrashPath
+      ? "dialogs.delete_alert_to_trash"
+      : "dialogs.delete_alert";
+
     return (
       <div className="delete-dialog alert alert-danger text-break">
         <p className="font-weight-bold">
@@ -93,7 +98,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
               singularEntity: intl.formatMessage({ id: "file" }),
               pluralEntity: intl.formatMessage({ id: "files" }),
             }}
-            id="dialogs.delete_alert"
+            id={deleteAlertId}
           />
         </p>
         <ul>

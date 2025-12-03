@@ -135,7 +135,8 @@
         "optimise_database": "Ottimizza il Database",
         "reload": "Ricarica",
         "remove_date": "Rimuovi la data",
-        "view_history": "Visualizza cronologia"
+        "view_history": "Visualizza cronologia",
+        "add_sub_groups": "Aggiungi Sottogruppi"
     },
     "actions_name": "Azioni",
     "age": "Età",
@@ -744,7 +745,6 @@
             "destination": "Destinazione",
             "source": "Origine"
         },
-        "overwrite_filter_confirm": "Sei sicuro di voler sovrascrivere le esistenti query salvate {entityName}?",
         "reassign_entity_title": "{count, plural, one {Riassegna {singularEntity}} other {Riassegna {pluralEntity}}}",
         "reassign_files": {
             "destination": "Riassegna a"
@@ -937,7 +937,6 @@
     "name": "Nome",
     "new": "Nuovo",
     "none": "Nessuno/a",
-    "o_counter": "Contatore-O",
     "operations": "Operazioni",
     "organized": "Ordinato",
     "pagination": {
