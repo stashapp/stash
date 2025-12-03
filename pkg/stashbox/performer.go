@@ -125,8 +125,8 @@ func translateGender(gender *graphql.GenderEnum) *string {
 	return nil
 }
 
-func formatMeasurements(m graphql.MeasurementsFragment) *string {
-	if m.BandSize != nil && m.CupSize != nil && m.Hip != nil && m.Waist != nil {
+func formatMeasurements(m *graphql.MeasurementsFragment) *string {
+	if m != nil && m.BandSize != nil && m.CupSize != nil && m.Hip != nil && m.Waist != nil {
 		ret := fmt.Sprintf("%d%s-%d-%d", *m.BandSize, *m.CupSize, *m.Waist, *m.Hip)
 		return &ret
 	}
@@ -209,7 +209,7 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		Name:               &p.Name,
 		Disambiguation:     p.Disambiguation,
 		Country:            p.Country,
-		Measurements:       formatMeasurements(*p.Measurements),
+		Measurements:       formatMeasurements(p.Measurements),
 		CareerLength:       formatCareerLength(p.CareerStartYear, p.CareerEndYear),
 		Tattoos:            formatBodyModifications(p.Tattoos),
 		Piercings:          formatBodyModifications(p.Piercings),
