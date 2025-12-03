@@ -103,7 +103,6 @@ $sceneTabWidth: 450px;
   .vjs-autostart-button {
     cursor: pointer;
 
-    // use repeat/loop icon
     &.vjs-icon-play-circle::before {
       align-items: center;
       background-color: rgba(80, 80, 80, 0.9);
