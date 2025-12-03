@@ -483,6 +483,19 @@ export function useCachedQueryResult<T extends QueryResult>(
   return cachedResult;
 }
 
+// used to generate a metadata info filter that only updates when necessary
+export function useMetadataFilter(filter: ListFilterModel) {
+  const lastValue = usePrevious(filter);
+
+  return useMemo(() => {
+    if (!lastValue || !totalCountImpacted(lastValue!, filter)) {
+      return filter.metadataInfo();
+    }
+
+    return lastValue;
+  }, [filter, lastValue]);
+}
+
 export interface IQueryResultHook<
   T extends QueryResult,
   E extends IHasID = IHasID

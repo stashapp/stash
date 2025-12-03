@@ -1,5 +1,10 @@
 import React, { useMemo } from "react";
-import { IListSelect, useCachedQueryResult, useListSelect } from "./util";
+import {
+  IListSelect,
+  useCachedQueryResult,
+  useListSelect,
+  useMetadataFilter,
+} from "./util";
 import { isFunction } from "lodash-es";
 import { IHasID } from "src/utils/data";
 import { useFilter } from "./FilterProvider";
@@ -135,10 +140,7 @@ export const QueryResultContext = <
   }, [filter, filterHook]);
 
   // metadata filter is the effective filter with the sort, page size and page number removed
-  const metadataFilter = useMemo(
-    () => effectiveFilter.metadataInfo(),
-    [effectiveFilter]
-  );
+  const metadataFilter = useMetadataFilter(effectiveFilter);
 
   const result = useResult(effectiveFilter);
 
