@@ -186,11 +186,11 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 				}
 			}
 
-			if err := performer.ValidateUpdate(ctx, t.performer.ID, &partial, qb); err != nil {
+			if err := performer.ValidateUpdate(ctx, t.performer.ID, partial, qb); err != nil {
 				return err
 			}
 
-			if _, err := qb.UpdatePartial(ctx, t.performer.ID, &partial); err != nil {
+			if _, err := qb.UpdatePartial(ctx, t.performer.ID, partial); err != nil {
 				return err
 			}
 

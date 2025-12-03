@@ -134,7 +134,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	if translator.hasField("urls") {
 		// ensure url not included in the input
-		if err := r.validateNoLegacyURLs(translator); err != nil {
+		if err := validateNoLegacyURLs(translator); err != nil {
 			return nil, err
 		}
 
@@ -211,7 +211,7 @@ func (r *mutationResolver) BulkStudioUpdate(ctx context.Context, input BulkStudi
 
 	if translator.hasField("urls") {
 		// ensure url/twitter/instagram are not included in the input
-		if err := r.validateNoLegacyURLs(translator); err != nil {
+		if err := validateNoLegacyURLs(translator); err != nil {
 			return nil, err
 		}
 

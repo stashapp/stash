@@ -154,7 +154,7 @@ func validateNoLegacyURLs(translator changesetTranslator) error {
 	return nil
 }
 
-func (r *mutationResolver) handleLegacyURLs(ctx context.Context, performerID int, legacyURLs *LegacyURLs, updatedPerformer *models.PerformerPartial) error {
+func (r *mutationResolver) handleLegacyURLs(ctx context.Context, performerID int, legacyURLs legacyPerformerURLs, updatedPerformer *models.PerformerPartial) error {
 	qb := r.repository.Performer
 
 	// we need to be careful with URL/Twitter/Instagram
@@ -229,17 +229,25 @@ func (r *mutationResolver) handleLegacyURLs(ctx context.Context, performerID int
 	return nil
 }
 
-type LegacyURLs struct {
+type legacyPerformerURLs struct {
 	URL       models.OptionalString
 	Twitter   models.OptionalString
 	Instagram models.OptionalString
 }
 
-func (u *LegacyURLs) AnySet() bool {
+func (u *legacyPerformerURLs) AnySet() bool {
 	return u.URL.Set || u.Twitter.Set || u.Instagram.Set
 }
 
-func performerPartialFromInput(input models.PerformerUpdateInput, translator changesetTranslator) (*models.PerformerPartial, *LegacyURLs, error) {
+func legacyPerformerURLsFromInput(input models.PerformerUpdateInput, translator changesetTranslator) legacyPerformerURLs {
+	return legacyPerformerURLs{
+		URL:       translator.optionalString(input.URL, "url"),
+		Twitter:   translator.optionalString(input.Twitter, "twitter"),
+		Instagram: translator.optionalString(input.Instagram, "instagram"),
+	}
+}
+
+func performerPartialFromInput(input models.PerformerUpdateInput, translator changesetTranslator) (*models.PerformerPartial, error) {
 	// Populate performer from the input
 	updatedPerformer := models.NewPerformerPartial()
 
@@ -269,25 +277,19 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 	if translator.hasField("urls") {
 		// ensure url/twitter/instagram are not included in the input
 		if err := validateNoLegacyURLs(translator); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		updatedPerformer.URLs = translator.updateStrings(input.Urls, "urls")
 	}
 
-	var legacyURLs = LegacyURLs{
-		URL:       translator.optionalString(input.URL, "url"),
-		Twitter:   translator.optionalString(input.Twitter, "twitter"),
-		Instagram: translator.optionalString(input.Instagram, "instagram"),
-	}
-
 	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
 	if err != nil {
-		return nil, nil, fmt.Errorf("converting birthdate: %w", err)
+		return nil, fmt.Errorf("converting birthdate: %w", err)
 	}
 	updatedPerformer.DeathDate, err = translator.optionalDate(input.DeathDate, "death_date")
 	if err != nil {
-		return nil, nil, fmt.Errorf("converting death date: %w", err)
+		return nil, fmt.Errorf("converting death date: %w", err)
 	}
 
 	// prefer height_cm over height
@@ -302,7 +304,7 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 
 	updatedPerformer.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
 	if err != nil {
-		return nil, nil, fmt.Errorf("converting tag ids: %w", err)
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
 	updatedPerformer.CustomFields = input.CustomFields
@@ -310,7 +312,7 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 	updatedPerformer.CustomFields.Full = convertMapJSONNumbers(updatedPerformer.CustomFields.Full)
 	updatedPerformer.CustomFields.Partial = convertMapJSONNumbers(updatedPerformer.CustomFields.Partial)
 
-	return &updatedPerformer, &legacyURLs, nil
+	return &updatedPerformer, nil
 }
 
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
@@ -323,10 +325,12 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedPerformer, legacyURLs, err := performerPartialFromInput(input, translator)
+	updatedPerformer, err := performerPartialFromInput(input, translator)
 	if err != nil {
 		return nil, err
 	}
+
+	legacyURLs := legacyPerformerURLsFromInput(input, translator)
 
 	var imageData []byte
 	imageIncluded := translator.hasField("image")
@@ -347,11 +351,11 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			}
 		}
 
-		if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
+		if err := performer.ValidateUpdate(ctx, performerID, *updatedPerformer, qb); err != nil {
 			return err
 		}
 
-		_, err = qb.UpdatePartial(ctx, performerID, updatedPerformer)
+		_, err = qb.UpdatePartial(ctx, performerID, *updatedPerformer)
 		if err != nil {
 			return err
 		}
@@ -415,7 +419,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		updatedPerformer.URLs = translator.updateStringsBulk(input.Urls, "urls")
 	}
 
-	var legacyURLs = LegacyURLs{
+	legacyURLs := legacyPerformerURLs{
 		URL:       translator.optionalString(input.URL, "url"),
 		Twitter:   translator.optionalString(input.Twitter, "twitter"),
 		Instagram: translator.optionalString(input.Instagram, "instagram"),
@@ -453,16 +457,16 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 		for _, performerID := range performerIDs {
 			if legacyURLs.AnySet() {
-				if err := r.handleLegacyURLs(ctx, performerID, &legacyURLs, &updatedPerformer); err != nil {
+				if err := r.handleLegacyURLs(ctx, performerID, legacyURLs, &updatedPerformer); err != nil {
 					return err
 				}
 			}
 
-			if err := performer.ValidateUpdate(ctx, performerID, &updatedPerformer, qb); err != nil {
+			if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 				return err
 			}
 
-			performer, err := qb.UpdatePartial(ctx, performerID, &updatedPerformer)
+			performer, err := qb.UpdatePartial(ctx, performerID, updatedPerformer)
 			if err != nil {
 				return err
 			}
@@ -555,18 +559,18 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 
 	var values *models.PerformerPartial
 	var imageData []byte
-	var legacyURLs *LegacyURLs
 
 	if input.Values != nil {
 		translator := changesetTranslator{
 			inputMap: getNamedUpdateInputMap(ctx, "input.values"),
 		}
 
-		values, legacyURLs, err = performerPartialFromInput(*input.Values, translator)
+		values, err = performerPartialFromInput(*input.Values, translator)
 		if err != nil {
 			return nil, err
 		}
-		if legacyURLs != nil && legacyURLs.AnySet() {
+		legacyURLs := legacyPerformerURLsFromInput(*input.Values, translator)
+		if legacyURLs.AnySet() {
 			return nil, errors.New("Merging legacy performer URLs is not supported")
 		}
 
@@ -588,7 +592,7 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 
 		dest, err = qb.Find(ctx, destID)
 		if err != nil {
-			return fmt.Errorf("finding destination scene ID %d: %w", destID, err)
+			return fmt.Errorf("finding destination performer ID %d: %w", destID, err)
 		}
 
 		sources, err := qb.FindMany(ctx, srcIDs)
@@ -602,7 +606,7 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 			}
 		}
 
-		if _, err := qb.UpdatePartial(ctx, destID, values); err != nil {
+		if _, err := qb.UpdatePartial(ctx, destID, *values); err != nil {
 			return fmt.Errorf("updating performer: %w", err)
 		}
 

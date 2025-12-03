@@ -138,7 +138,7 @@ type performerRowRecord struct {
 	updateRecord
 }
 
-func (r *performerRowRecord) fromPartial(o *models.PerformerPartial) {
+func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
@@ -302,7 +302,7 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.CreatePe
 	return nil
 }
 
-func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial *models.PerformerPartial) (*models.Performer, error) {
+func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial models.PerformerPartial) (*models.Performer, error) {
 	r := performerRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
@@ -916,6 +916,8 @@ func (qb *PerformerStore) Merge(ctx context.Context, source []int, destination i
 	}
 
 	args = append(args, destination)
+
+	// for each table, update source performer ids to destination performer id, ignoring duplicates
 	for table, idColumn := range performerTables {
 		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
 SET performer_id = ?

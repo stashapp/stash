@@ -590,11 +590,11 @@ func (_m *PerformerReaderWriter) UpdateImage(ctx context.Context, performerID in
 }
 
 // UpdatePartial provides a mock function with given fields: ctx, id, updatedPerformer
-func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, updatedPerformer *models.PerformerPartial) (*models.Performer, error) {
+func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, updatedPerformer models.PerformerPartial) (*models.Performer, error) {
 	ret := _m.Called(ctx, id, updatedPerformer)
 
 	var r0 *models.Performer
-	if rf, ok := ret.Get(0).(func(context.Context, int, *models.PerformerPartial) *models.Performer); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.PerformerPartial) *models.Performer); ok {
 		r0 = rf(ctx, id, updatedPerformer)
 	} else {
 		if ret.Get(0) != nil {
@@ -603,7 +603,7 @@ func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, upda
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, *models.PerformerPartial) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.PerformerPartial) error); ok {
 		r1 = rf(ctx, id, updatedPerformer)
 	} else {
 		r1 = ret.Error(1)
