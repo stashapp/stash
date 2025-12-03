@@ -389,91 +389,109 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     return (
       <>
         <ScrapedInputGroupRow
+          field="name"
           title={intl.formatMessage({ id: "name" })}
           result={name}
           onChange={(value) => setName(value)}
         />
         <ScrapedInputGroupRow
+          field="disambiguation"
           title={intl.formatMessage({ id: "disambiguation" })}
           result={disambiguation}
           onChange={(value) => setDisambiguation(value)}
         />
         <ScrapedTextAreaRow
+          field="aliases"
           title={intl.formatMessage({ id: "aliases" })}
           result={aliases}
           onChange={(value) => setAliases(value)}
         />
         <ScrapedInputGroupRow
+          field="birthdate"
           title={intl.formatMessage({ id: "birthdate" })}
           result={birthdate}
           onChange={(value) => setBirthdate(value)}
         />
         <ScrapedInputGroupRow
+          field="death_date"
           title={intl.formatMessage({ id: "death_date" })}
           result={deathDate}
           onChange={(value) => setDeathDate(value)}
         />
         <ScrapedInputGroupRow
+          field="ethnicity"
           title={intl.formatMessage({ id: "ethnicity" })}
           result={ethnicity}
           onChange={(value) => setEthnicity(value)}
         />
         <ScrapedInputGroupRow
+          field="country"
           title={intl.formatMessage({ id: "country" })}
           result={country}
           onChange={(value) => setCountry(value)}
         />
         <ScrapedInputGroupRow
+          field="hair_color"
           title={intl.formatMessage({ id: "hair_color" })}
           result={hairColor}
           onChange={(value) => setHairColor(value)}
         />
         <ScrapedInputGroupRow
+          field="eye_color"
           title={intl.formatMessage({ id: "eye_color" })}
           result={eyeColor}
           onChange={(value) => setEyeColor(value)}
         />
         <ScrapedInputGroupRow
+          field="height"
           title={intl.formatMessage({ id: "height" })}
           result={height}
           onChange={(value) => setHeight(value)}
         />
         <ScrapedInputGroupRow
+          field="weight"
           title={intl.formatMessage({ id: "weight" })}
           result={weight}
           onChange={(value) => setWeight(value)}
         />
         <ScrapedInputGroupRow
+          field="penis_length"
           title={intl.formatMessage({ id: "penis_length" })}
           result={penisLength}
           onChange={(value) => setPenisLength(value)}
         />
         <ScrapedInputGroupRow
+          field="measurements"
           title={intl.formatMessage({ id: "measurements" })}
           result={measurements}
           onChange={(value) => setMeasurements(value)}
         />
         <ScrapedInputGroupRow
+          field="fake_tits"
           title={intl.formatMessage({ id: "fake_tits" })}
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
         />
         <ScrapedInputGroupRow
+          field="career_length"
           title={intl.formatMessage({ id: "career_length" })}
           result={careerLength}
           onChange={(value) => setCareerLength(value)}
         />
         <ScrapedTextAreaRow
+          field="tattoos"
           title={intl.formatMessage({ id: "tattoos" })}
           result={tattoos}
           onChange={(value) => setTattoos(value)}
         />
         <ScrapedTextAreaRow
+          field="piercings"
           title={intl.formatMessage({ id: "piercings" })}
           result={piercings}
           onChange={(value) => setPiercings(value)}
         />
         <ScrapedStringListRow
+          field="urls"
           title={intl.formatMessage({ id: "urls" })}
           result={urls}
           onChange={(value) => setURLs(value)}
@@ -489,16 +507,19 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           (value) => setCircumcised(value)
         )}
         <ScrapedTagsRow
+          field="tags"
           title={intl.formatMessage({ id: "tags" })}
           result={tags}
           onChange={(value) => setTags(value)}
         />
         <ScrapedTextAreaRow
+          field="details"
           title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         <ScrapedImageRow
+          field="image"
           title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"
           result={image}
