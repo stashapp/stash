@@ -279,6 +279,7 @@ const SidebarContent: React.FC<{
   showEditFilter: (editingCriterion?: string) => void;
   count?: number;
   focus?: ReturnType<typeof useFocus>;
+  clearAllCriteria: () => void;
 }> = ({
   filter,
   setFilter,
@@ -289,6 +290,7 @@ const SidebarContent: React.FC<{
   onClose,
   count,
   focus,
+  clearAllCriteria,
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
@@ -441,6 +443,17 @@ const SidebarContent: React.FC<{
           <FormattedMessage id={showResultsId} values={{ count }} />
         </Button>
       </div>
+      <div className="clear-all-filters">
+        <Button
+          className="clear-all-filters-button"
+          variant="secondary"
+          onClick={() => clearAllCriteria()}
+          // TODO: add message
+          title="Clear All Filters"
+        >
+          <FormattedMessage id="Clear All Filters" />
+        </Button>
+      </div>
     </>
   );
 };
@@ -472,7 +485,7 @@ const SceneListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div className="scene-list-operations">
+    <div className="list-operations">
       <ButtonGroup>
         {!!items && (
           <Button
@@ -514,7 +527,7 @@ const SceneListOperations: React.FC<{
         )}
 
         <OperationDropdown
-          className="scene-list-operations"
+          className="list-operations"
           menuPortalTarget={document.body}
         >
           {operations.map((o) => {
@@ -822,6 +835,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
                 onClose={() => setShowSidebar(false)}
                 count={cachedResult.loading ? undefined : totalCount}
                 focus={searchFocus}
+                clearAllCriteria={() => clearAllCriteria(true)}
               />
             </Sidebar>
             <SidebarPaneContent>

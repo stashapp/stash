@@ -108,7 +108,9 @@ export const SearchTermInput: React.FC<{
       focus={focus}
       value={localInput}
       setValue={onSetQuery}
-      placeholder={placeholder ?? `${intl.formatMessage({ id: "actions.search" })}…`}
+      placeholder={
+        placeholder ?? `${intl.formatMessage({ id: "actions.search" })}…`
+      }
     />
   );
 };

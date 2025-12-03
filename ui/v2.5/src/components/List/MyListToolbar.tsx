@@ -79,7 +79,7 @@ export const ToolbarSelectionSection: React.FC<{
         {operations}
         <div className="empty-space" />
         <Button variant="link" onClick={() => onSelectAll()}>
-            <FormattedMessage id="actions.select_all" />
+          <FormattedMessage id="actions.select_all" />
         </Button>
         <Button
           variant="secondary"

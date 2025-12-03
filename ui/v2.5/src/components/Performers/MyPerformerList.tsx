@@ -307,6 +307,7 @@ const SidebarContent: React.FC<{
   showEditFilter: (editingCriterion?: string) => void;
   count?: number;
   focus?: ReturnType<typeof useFocus>;
+  clearAllCriteria: () => void;
 }> = ({
   filter,
   setFilter,
@@ -317,6 +318,7 @@ const SidebarContent: React.FC<{
   onClose,
   count,
   focus,
+  clearAllCriteria,
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
@@ -467,6 +469,17 @@ const SidebarContent: React.FC<{
           <FormattedMessage id={showResultsId} values={{ count }} />
         </Button>
       </div>
+      <div className="clear-all-filters">
+        <Button
+          className="clear-all-filters-button"
+          variant="secondary"
+          onClick={() => clearAllCriteria()}
+          // TODO: add message
+          title="Clear All Filters"
+        >
+          <FormattedMessage id="Clear All Filters" />
+        </Button>
+      </div>
     </>
   );
 };
@@ -489,7 +502,7 @@ const PerformerListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div className="performer-list-operations">
+    <div className="list-operations">
       <ButtonGroup>
         {!hasSelection && (
           <Button
@@ -521,7 +534,7 @@ const PerformerListOperations: React.FC<{
         )}
 
         <OperationDropdown
-          className="performer-list-operations"
+          className="list-operations"
           menuPortalTarget={document.body}
         >
           {operations.map((o) => {
@@ -752,69 +765,72 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
                 onClose={() => setShowSidebar(false)}
                 count={cachedResult.loading ? undefined : totalCount}
                 focus={searchFocus}
+                clearAllCriteria={() => clearAllCriteria(true)}
               />
             </Sidebar>
             <SidebarPaneContent>
-            <FilteredListToolbar2
-              className="performer-list-toolbar"
-              hasSelection={hasSelection}
-              filterSection={
-                <ToolbarFilterSection
-                  filter={filter}
-                  onSetFilter={setFilter}
-                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                  onEditCriterion={(c) =>
-                    showEditFilter(c?.criterionOption.type)
-                  }
-                  onRemoveCriterion={removeCriterion}
-                  onRemoveAllCriterion={() => clearAllCriteria(true)}
-                  onEditSearchTerm={() => {
-                    setShowSidebar(true);
-                    setSearchFocus(true);
-                  }}
-                  onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
-                />
-              }
-            selectionSection={
-              <ToolbarSelectionSection
-                selected={selectedIds.size}
-                onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onSelectAll={() => onSelectAll()}
-                onSelectNone={() => onSelectNone()}
-                operations={operations}
+              <FilteredListToolbar2
+                className="performer-list-toolbar"
+                hasSelection={hasSelection}
+                filterSection={
+                  <ToolbarFilterSection
+                    filter={filter}
+                    onSetFilter={setFilter}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onEditCriterion={(c) =>
+                      showEditFilter(c?.criterionOption.type)
+                    }
+                    onRemoveCriterion={removeCriterion}
+                    onRemoveAllCriterion={() => clearAllCriteria(true)}
+                    onEditSearchTerm={() => {
+                      setShowSidebar(true);
+                      setSearchFocus(true);
+                    }}
+                    onRemoveSearchTerm={() =>
+                      setFilter(filter.clearSearchTerm())
+                    }
+                  />
+                }
+                selectionSection={
+                  <ToolbarSelectionSection
+                    selected={selectedIds.size}
+                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                    onSelectAll={() => onSelectAll()}
+                    onSelectNone={() => onSelectNone()}
+                    operations={operations}
+                  />
+                }
+                operationSection={operations}
               />
-            }
-            operationSection={operations}
-            />
 
-            <ListResultsHeader
-              loading={cachedResult.loading}
-              filter={filter}
-              totalCount={totalCount}
-              onChangeFilter={(newFilter) => setFilter(newFilter)}
-            />
-
-            <LoadedContent loading={result.loading} error={result.error}>
-              <PerformerListContent
-                filter={effectiveFilter}
-                performers={items}
-                selectedIds={selectedIds}
-                onSelectChange={onSelectChange}
-                extraCriteria={extraCriteria}
+              <ListResultsHeader
+                loading={cachedResult.loading}
+                filter={filter}
+                totalCount={totalCount}
+                onChangeFilter={(newFilter) => setFilter(newFilter)}
               />
-            </LoadedContent>
 
-            {totalCount > filter.itemsPerPage && (
-              <div className="pagination-footer">
-                <Pagination
-                  itemsPerPage={filter.itemsPerPage}
-                  currentPage={filter.currentPage}
-                  totalItems={totalCount}
-                  onChangePage={setPage}
-                  pagePopupPlacement="top"
+              <LoadedContent loading={result.loading} error={result.error}>
+                <PerformerListContent
+                  filter={effectiveFilter}
+                  performers={items}
+                  selectedIds={selectedIds}
+                  onSelectChange={onSelectChange}
+                  extraCriteria={extraCriteria}
                 />
-            </div>
-          )}
+              </LoadedContent>
+
+              {totalCount > filter.itemsPerPage && (
+                <div className="pagination-footer">
+                  <Pagination
+                    itemsPerPage={filter.itemsPerPage}
+                    currentPage={filter.currentPage}
+                    totalItems={totalCount}
+                    onChangePage={setPage}
+                    pagePopupPlacement="top"
+                  />
+                </div>
+              )}
             </SidebarPaneContent>
           </SidebarPane>
         </SidebarStateContext.Provider>

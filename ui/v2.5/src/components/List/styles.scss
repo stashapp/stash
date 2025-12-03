@@ -1126,6 +1126,7 @@ input[type="range"].zoom-slider {
   // hide drop down menu items for play and create new
   // when the buttons are visible
   @include media-breakpoint-up(sm) {
+    .list-operations,
     .scene-list-operations {
       .play-item,
       .create-new-item {
@@ -1176,12 +1177,14 @@ input[type="range"].zoom-slider {
       justify-content: flex-end;
     }
 
+    .list-operations,
     .scene-list-operations {
       display: flex;
     }
 
     // on smaller viewports move the operation buttons to the right
     @include media-breakpoint-down(md) {
+      .list-operations,
       div.scene-list-operations {
         flex: 1;
         justify-content: flex-end;
@@ -1197,6 +1200,7 @@ input[type="range"].zoom-slider {
 
   // on larger viewports, move the operation buttons to the center
   @include media-breakpoint-up(lg) {
+    div.toolbar-selection-section .list-operations,
     div.toolbar-selection-section div.scene-list-operations {
       justify-content: center;
 

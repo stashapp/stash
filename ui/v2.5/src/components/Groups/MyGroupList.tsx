@@ -150,6 +150,7 @@ const SidebarContent: React.FC<{
   onClose?: () => void;
   count?: number;
   focus?: ReturnType<typeof useFocus>;
+  clearAllCriteria: () => void;
 }> = ({
   filter,
   setFilter,
@@ -159,6 +160,7 @@ const SidebarContent: React.FC<{
   onClose,
   count,
   focus,
+  clearAllCriteria,
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
@@ -252,6 +254,17 @@ const SidebarContent: React.FC<{
           <FormattedMessage id={showResultsId} values={{ count }} />
         </Button>
       </div>
+      <div className="clear-all-filters">
+        <Button
+          className="clear-all-filters-button"
+          variant="secondary"
+          onClick={() => clearAllCriteria()}
+          // TODO: add message
+          title="Clear All Filters"
+        >
+          <FormattedMessage id="Clear All Filters" />
+        </Button>
+      </div>
     </>
   );
 };
@@ -274,7 +287,7 @@ const GroupListOperations: React.FC<{
   const intl = useIntl();
 
   return (
-    <div className="group-list-operations">
+    <div className="list-operations">
       <ButtonGroup>
         {!hasSelection && (
           <Button
@@ -306,7 +319,7 @@ const GroupListOperations: React.FC<{
         )}
 
         <OperationDropdown
-          className="group-list-operations"
+          className="list-operations"
           menuPortalTarget={document.body}
         >
           {operations.map((o) => {
@@ -534,68 +547,71 @@ export const MyFilteredGroupList: React.FC<IFilteredGroups> = (props) => {
               onClose={() => setShowSidebar(false)}
               count={cachedResult.loading ? undefined : totalCount}
               focus={searchFocus}
+              clearAllCriteria={() => clearAllCriteria(true)}
             />
           </Sidebar>
           <SidebarPaneContent>
-          <FilteredListToolbar2
-            className="group-list-toolbar"
-            hasSelection={hasSelection}
-            filterSection={
-              <ToolbarFilterSection
-                filter={filter}
-                onSetFilter={setFilter}
-                onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onEditCriterion={(c) => showEditFilter(c?.criterionOption.type)}
-                onRemoveCriterion={removeCriterion}
-                onRemoveAllCriterion={() => clearAllCriteria(true)}
-                onEditSearchTerm={() => {
-                  setShowSidebar(true);
-                  setSearchFocus(true);
-                }}
-                onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
-              />
-            }
-            selectionSection={
-              <ToolbarSelectionSection
-                selected={selectedIds.size}
-                onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                onSelectAll={() => onSelectAll()}
-                onSelectNone={() => onSelectNone()}
-                operations={operations}
-              />
-            }
-            operationSection={operations}
-          />
-
-          <ListResultsHeader
-            loading={cachedResult.loading}
-            filter={filter}
-            totalCount={totalCount}
-            onChangeFilter={(newFilter) => setFilter(newFilter)}
-          />
-
-          <LoadedContent loading={result.loading} error={result.error}>
-            <GroupListContent
-              filter={effectiveFilter}
-              groups={items}
-              selectedIds={selectedIds}
-              onSelectChange={onSelectChange}
-              fromGroupId={fromGroupId}
-              onMove={onMove}
+            <FilteredListToolbar2
+              className="group-list-toolbar"
+              hasSelection={hasSelection}
+              filterSection={
+                <ToolbarFilterSection
+                  filter={filter}
+                  onSetFilter={setFilter}
+                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                  onEditCriterion={(c) =>
+                    showEditFilter(c?.criterionOption.type)
+                  }
+                  onRemoveCriterion={removeCriterion}
+                  onRemoveAllCriterion={() => clearAllCriteria(true)}
+                  onEditSearchTerm={() => {
+                    setShowSidebar(true);
+                    setSearchFocus(true);
+                  }}
+                  onRemoveSearchTerm={() => setFilter(filter.clearSearchTerm())}
+                />
+              }
+              selectionSection={
+                <ToolbarSelectionSection
+                  selected={selectedIds.size}
+                  onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                  onSelectAll={() => onSelectAll()}
+                  onSelectNone={() => onSelectNone()}
+                  operations={operations}
+                />
+              }
+              operationSection={operations}
             />
-          </LoadedContent>
 
-          {totalCount > filter.itemsPerPage && (
-            <div className="pagination-footer">
-              <Pagination
-                itemsPerPage={filter.itemsPerPage}
-                currentPage={filter.currentPage}
-                totalItems={totalCount}
-                onChangePage={setPage}
-                pagePopupPlacement="top"
+            <ListResultsHeader
+              loading={cachedResult.loading}
+              filter={filter}
+              totalCount={totalCount}
+              onChangeFilter={(newFilter) => setFilter(newFilter)}
+            />
+
+            <LoadedContent loading={result.loading} error={result.error}>
+              <GroupListContent
+                filter={effectiveFilter}
+                groups={items}
+                selectedIds={selectedIds}
+                onSelectChange={onSelectChange}
+                fromGroupId={fromGroupId}
+                onMove={onMove}
               />
-            </div>
-          )}
+            </LoadedContent>
+
+            {totalCount > filter.itemsPerPage && (
+              <div className="pagination-footer">
+                <Pagination
+                  itemsPerPage={filter.itemsPerPage}
+                  currentPage={filter.currentPage}
+                  totalItems={totalCount}
+                  onChangePage={setPage}
+                  pagePopupPlacement="top"
+                />
+              </div>
+            )}
           </SidebarPaneContent>
         </SidebarPane>
       </SidebarStateContext.Provider>

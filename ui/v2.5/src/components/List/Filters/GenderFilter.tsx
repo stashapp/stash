@@ -191,7 +191,7 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
         selected={selected}
         singleValue={false}
         sectionID={sectionID}
-      /> 
+      />
     </>
   );
 };
