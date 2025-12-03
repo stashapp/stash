@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
-import localForage from "localforage";
-
-const AUTOSTART_KEY = "video-autostart-enabled";
 
 interface IAutostartButtonOptions {
   enabled?: boolean;
@@ -53,15 +50,15 @@ class AutostartButton extends videojs.getComponent("Button") {
 class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
   private button: AutostartButton;
   private autostartEnabled: boolean;
-  private loaded: boolean = false;
+  updateAutoStart: (enabled: boolean) => Promise<void> =
+    () => {
+      return Promise.resolve();
+    };
 
   constructor(player: VideoJsPlayer, options?: IAutostartButtonOptions) {
     super(player, options);
 
     this.autostartEnabled = options?.enabled ?? false;
-    
-    // Load the saved preference immediately
-    this.loadPreference();
 
     this.button = new AutostartButton(player, {
       autostartEnabled: this.autostartEnabled,
@@ -72,20 +69,9 @@ class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
     });
   }
 
-  private async loadPreference() {
-    const value = await localForage.getItem<boolean>(AUTOSTART_KEY);
-    if (value !== null) {
-      this.autostartEnabled = value;
-      if (this.button) {
-        this.button.setEnabled(value);
-      }
-    }
-    this.loaded = true;
-  }
-
   private ready() {
     // Add button to control bar, before the fullscreen button
-    const controlBar = this.player.controlBar;
+    const { controlBar } = this.player;
     const fullscreenToggle = controlBar.getChild("fullscreenToggle");
     if (fullscreenToggle) {
       controlBar.addChild(this.button);
@@ -97,7 +83,7 @@ class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
     // Listen for changes
     this.button.on("autostartchanged", (_, data: { enabled: boolean }) => {
       this.autostartEnabled = data.enabled;
-      localForage.setItem(AUTOSTART_KEY, data.enabled);
+      this.updateAutoStart(this.autostartEnabled);
     });
   }
 
@@ -105,12 +91,20 @@ class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
     return this.autostartEnabled;
   }
 
-  public async getEnabled(): Promise<boolean> {
-    // Wait for the preference to be loaded if it hasn't been yet
-    if (!this.loaded) {
-      await this.loadPreference();
-    }
+  public getEnabled(): boolean {
     return this.autostartEnabled;
+  }
+
+  public setEnabled(enabled: boolean) {
+    this.autostartEnabled = enabled;
+    this.button.setEnabled(enabled);
+  }
+
+  public syncWithConfig(configEnabled: boolean) {
+    // Sync button state with external config changes
+    if (this.autostartEnabled !== configEnabled) {
+      this.setEnabled(configEnabled);
+    }
   }
 }
 

@@ -29,6 +29,7 @@ import cx from "classnames";
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
+  useConfigureInterface,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
@@ -250,6 +251,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const sceneId = useRef<string>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
+    const [updateInterfaceConfig] = useConfigureInterface();
 
     const [time, setTime] = useState(0);
     const [ready, setReady] = useState(false);
@@ -438,7 +440,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
-    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
+    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast, interfaceConfig?.autostartVideo]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -484,6 +486,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       vrMenu.setShowButton(showButton);
     }, [getPlayer, scene, vrTag]);
+
+    // Sync autostart button with config changes
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      const autostartButton = player.autostartButton();
+      if (autostartButton) {
+        autostartButton.syncWithConfig(interfaceConfig?.autostartVideo ?? false);
+      }
+    }, [getPlayer, interfaceConfig?.autostartVideo]);
 
     // Player event handlers
     useEffect(() => {
@@ -699,19 +712,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       // Check the autostart button plugin for user preference
       const autostartButton = player.autostartButton();
-      autostartButton.getEnabled().then((buttonEnabled) => {
-        auto.current =
-          autoplay ||
-          buttonEnabled ||
-          (interfaceConfig?.autostartVideo ?? false) ||
-          _initialTimestamp > 0;
-        
-        // Trigger autoplay if conditions are met and player is ready
-        if (auto.current && ready && player.paused()) {
-          player.play();
-          auto.current = false;
-        }
-      });
+      const buttonEnabled = autostartButton.getEnabled();
+      auto.current =
+        autoplay ||
+        buttonEnabled ||
+        (interfaceConfig?.autostartVideo ?? false) ||
+        _initialTimestamp > 0;
 
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);
@@ -855,6 +861,26 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       sceneIncrementPlayCount,
       sceneSaveActivity,
     ]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+
+      async function updateAutoStart(enabled: boolean) {
+        await updateInterfaceConfig({
+          variables: {
+            input: {
+              autostartVideo: enabled,
+            },
+          },
+        });
+        console.log("updated interface config");
+      }
+      
+      const autostartButton = player.autostartButton();
+      autostartButton.updateAutoStart = updateAutoStart;
+    }, [getPlayer, updateInterfaceConfig]);
 
     useEffect(() => {
       const player = getPlayer();

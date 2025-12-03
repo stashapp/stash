@@ -133,17 +133,17 @@ $sceneTabWidth: 450px;
 
     &.vjs-icon-play-circle::after,
     &.vjs-icon-cancel::after {
+      background-color: rgba(80, 80, 80, 0.9);
+      border-radius: 8px;
       content: "";
+      height: 2.5rem;
+      left: 50%;
+      opacity: 0.7;
       position: absolute;
       top: 50%;
-      left: 50%;
-      width: 1rem;
-      height: 2.5rem;
-      background-color: rgba(80, 80, 80, 0.9);
       transform: translate(-50%, -50%) rotate(90deg);
-      opacity: 0.7;
+      width: 1rem;
       z-index: 1;
-      border-radius: 8px;
     }
 
     &:hover {
