@@ -712,6 +712,10 @@ button.btn.favorite-button {
 
 .custom-fields {
   width: 100%;
+
+  .detail-item {
+    max-width: 100%;
+  }
 }
 
 .custom-fields .detail-item .detail-item-title {
@@ -719,6 +723,14 @@ button.btn.favorite-button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.custom-fields .detail-item .detail-item-value {
+  word-break: break-word;
+
+  .TruncatedText {
+    white-space: pre-line;
+  }
 }
 
 .custom-fields-input > .collapse-button {
