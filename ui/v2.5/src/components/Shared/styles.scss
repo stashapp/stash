@@ -816,24 +816,39 @@ button.btn.favorite-button {
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      width: 100%;
-    }
-
-    &.hide-sidebar .sidebar {
-      margin-left: -100%;
-    }
-
-    &.hide-sidebar > :nth-child(2) {
-      width: 100%;
-    }
-  }
-  @include media-breakpoint-down(xs) {
-    display: block;
-
-    .sidebar {
       margin-bottom: $navbar-height;
       margin-top: 0;
     }
+  }
+}
+
+.sidebar-toggle-button-container {
+  height: 100%;
+  position: absolute;
+
+  .sidebar-toggle-button {
+    border-bottom: 1px solid $secondary;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 10px;
+    border-right: 1px solid $secondary;
+    border-top: 1px solid $secondary;
+    border-top-left-radius: 0;
+    border-top-right-radius: 10px;
+    margin-left: -15px;
+    opacity: 0.5;
+    position: sticky;
+    top: calc($navbar-height + 0.5rem);
+    z-index: 10;
+
+    @include media-breakpoint-down(sm) {
+      top: 0.5rem;
+    }
+  }
+}
+
+.sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+  .sidebar-toggle-button {
+    margin-left: -0.5rem;
   }
 }
 
@@ -884,6 +899,14 @@ button.btn.favorite-button {
 $sticky-header-height: calc(50px + 3.3rem);
 
 // special case for sidebar in details view
+.detail-body .sidebar-toggle-button-container .sidebar-toggle-button {
+  top: calc($sticky-header-height + 0.5rem);
+
+  @include media-breakpoint-down(sm) {
+    top: 0.5rem;
+  }
+}
+
 .detail-body {
   .sidebar {
     // required for sticky to work
@@ -921,18 +944,10 @@ $sticky-header-height: calc(50px + 3.3rem);
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      flex: 100% 0 0;
-      height: calc(100vh - 4rem);
-      max-height: calc(100vh - 4rem);
+      // flex: 100% 0 0;
+      height: calc(100vh - $navbar-height);
+      max-height: calc(100vh - $navbar-height);
       top: 0;
-    }
-
-    .sidebar-pane:not(.hide-sidebar) .sidebar {
-      margin-right: -100%;
-    }
-
-    .sidebar-pane.hide-sidebar .sidebar {
-      display: none;
     }
   }
   @include media-breakpoint-up(md) {

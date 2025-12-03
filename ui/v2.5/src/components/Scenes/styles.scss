@@ -964,3 +964,25 @@ input[type="range"].blue-slider {
   // TODO - this will need to be rolled out to other tables
   max-height: calc(100dvh - 210px);
 }
+
+.scene-list .filtered-list-toolbar {
+  // hide play and create new buttons on xs screens
+  // show these in the drop down menu instead
+  @include media-breakpoint-down(xs) {
+    .play-button,
+    .create-new-button {
+      display: none;
+    }
+  }
+}
+
+// hide drop down menu items for play and create new
+// when the buttons are visible
+@include media-breakpoint-up(sm) {
+  .scene-list-operations-dropdown {
+    .dropdown-item.play-item,
+    .dropdown-item.create-new-item {
+      display: none;
+    }
+  }
+}
