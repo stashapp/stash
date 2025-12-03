@@ -344,4 +344,6 @@ input CustomFieldsInput {
   full: Map
   "If populated, only the keys in this map will be updated"
   partial: Map
+  "Remove any keys in this list"
+  remove: [String!]
 }

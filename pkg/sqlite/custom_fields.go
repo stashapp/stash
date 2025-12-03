@@ -41,23 +41,43 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 	case values.Partial != nil:
 		partial = true
 		valMap = values.Partial
-	default:
-		return nil
 	}
 
-	if err := s.validateCustomFields(valMap); err != nil {
+	if valMap != nil {
+		if err := s.validateCustomFields(valMap, values.Remove); err != nil {
+			return err
+		}
+
+		if err := s.setCustomFields(ctx, id, valMap, partial); err != nil {
+			return err
+		}
+	}
+
+	if err := s.deleteCustomFields(ctx, id, values.Remove); err != nil {
 		return err
 	}
 
-	return s.setCustomFields(ctx, id, valMap, partial)
+	return nil
 }
 
-func (s *customFieldsStore) validateCustomFields(values map[string]interface{}) error {
+func (s *customFieldsStore) validateCustomFields(values map[string]interface{}, deleteKeys []string) error {
+	// if values is nil, nothing to validate
+	if values == nil {
+		return nil
+	}
+
 	// ensure that custom field names are valid
 	// no leading or trailing whitespace, no empty strings
 	for k := range values {
 		if err := s.validateCustomFieldName(k); err != nil {
 			return fmt.Errorf("custom field name %q: %w", k, err)
+		}
+	}
+
+	// ensure delete keys are not also in values
+	for _, k := range deleteKeys {
+		if _, ok := values[k]; ok {
+			return fmt.Errorf("custom field name %q cannot be in both values and delete keys", k)
 		}
 	}
 
@@ -125,6 +145,22 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 
 	if _, err := exec(ctx, q.Rows(r...)); err != nil {
 		return fmt.Errorf("inserting custom fields: %w", err)
+	}
+
+	return nil
+}
+
+func (s *customFieldsStore) deleteCustomFields(ctx context.Context, id int, keys []string) error {
+	if len(keys) == 0 {
+		return nil
+	}
+
+	q := dialect.Delete(s.table).
+		Where(s.fk.Eq(id)).
+		Where(goqu.I("field").In(keys))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("deleting custom fields: %w", err)
 	}
 
 	return nil
