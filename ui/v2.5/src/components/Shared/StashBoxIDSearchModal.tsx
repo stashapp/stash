@@ -232,15 +232,15 @@ export const StudioSearchResult: React.FC<IStudioResultProps> = ({
   );
 };
 
-// Helper to get entity type display name for i18n
-function getEntityTypeDisplayName(entityType: StashBoxEntityType): string {
+// Helper to get entity type message id for i18n
+function getEntityTypeMessageId(entityType: StashBoxEntityType): string {
   switch (entityType) {
     case "performer":
-      return "Performer";
+      return "performer";
     case "scene":
-      return "Scene";
+      return "scene";
     case "studio":
-      return "Studio";
+      return "studio";
   }
 }
 
@@ -384,7 +384,9 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
     );
   }
 
-  const entityTypeDisplayName = getEntityTypeDisplayName(entityType);
+  const entityTypeDisplayName = intl.formatMessage({
+    id: getEntityTypeMessageId(entityType),
+  });
 
   return (
     <ModalComponent
