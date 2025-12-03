@@ -16,6 +16,7 @@ import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
+import "./autostart-button";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
 import "./vtt-thumbnails";
@@ -389,6 +390,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           skipButtons: {},
           trackActivity: {},
           vrMenu: {},
+          autostartButton: {
+            enabled: interfaceConfig?.autostartVideo ?? false,
+          },
           abLoopPlugin: {
             start: 0,
             end: false,
@@ -675,11 +679,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         }
       }
 
-      auto.current =
-        autoplay ||
-        (interfaceConfig?.autostartVideo ?? false) ||
-        _initialTimestamp > 0;
-
       const alwaysStartFromBeginning =
         uiConfig?.alwaysStartFromBeginning ?? false;
       const resumeTime = scene.resume_time ?? 0;
@@ -697,6 +696,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       player.load();
       player.focus();
+
+      // Check the autostart button plugin for user preference
+      const autostartButton = player.autostartButton();
+      autostartButton.getEnabled().then((buttonEnabled) => {
+        auto.current =
+          autoplay ||
+          buttonEnabled ||
+          (interfaceConfig?.autostartVideo ?? false) ||
+          _initialTimestamp > 0;
+        
+        // Trigger autoplay if conditions are met and player is ready
+        if (auto.current && ready && player.paused()) {
+          player.play();
+          auto.current = false;
+        }
+      });
 
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);

@@ -100,6 +100,38 @@ $sceneTabWidth: 450px;
     width: 1.6em;
   }
 
+  .vjs-autostart-button {
+    cursor: pointer;
+
+    // use repeat/loop icon
+    &.vjs-icon-play-circle::before {
+      align-items: center;
+      background-color: rgba(80, 80, 80, 0.9);
+      border-radius: 50%;
+      color: #fff;
+      content: "\f101";
+      font-size: 1em;
+      line-height: 1;
+      padding: 0.3em;
+    }
+
+    &.vjs-icon-cancel::before {
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      color: rgba(80, 80, 80, 0.9);
+      content: "\f103"; 
+      font-size: 1em;
+      line-height: 1;
+      padding: 0.3em;
+    }
+
+
+    &:hover {
+      text-shadow: 0 0 1em rgba(255, 255, 255, 0.75);
+  }
+
+
   .vjs-touch-overlay .vjs-play-control {
     z-index: 1;
   }
