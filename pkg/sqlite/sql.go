@@ -99,7 +99,8 @@ func getSort(sort string, direction string, tableName string) string {
 		}
 		return getRandomSort(tableName, direction, seed)
 	case strings.Compare(sort, "random") == 0:
-		return getRandomSort(tableName, direction, rand.Uint64())
+		// return getRandomSort(tableName, direction, rand.Uint64())
+		return getRandomSortNative(tableName, direction, 0)
 	default:
 		colName := getColumn(tableName, sort)
 		if strings.Contains(sort, ".") {
@@ -131,6 +132,26 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 	// since sqlite converts overflowing numbers to reals, a custom db function that uses uints with overflow should be faster,
 	// however in practice the overhead of calling a custom function vastly outweighs the benefits
 	return fmt.Sprintf(" ORDER BY mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
+}
+
+func getRandomSortNative(tableName string, direction string, seed uint64) string {
+	// For seeded random (reproducible), use a hash-based approach with smaller multipliers
+	// to avoid integer overflow in SQLite which would cause precision loss
+	if seed != 0 {
+		// cap seed at 10^6 for smaller numbers
+		seed %= 1e6
+
+		colName := getColumn(tableName, "id")
+
+		// Use smaller prime multipliers to avoid overflow
+		// This provides pseudo-random ordering that's reproducible with the same seed
+		// The formula: ((id * seed) % largePrime + id) % anotherPrime
+		return fmt.Sprintf(" ORDER BY ((%[1]s * %[2]d) %% 999983 + %[1]s) %% 999979 %[3]s", colName, seed, direction)
+	}
+
+	// For unseeded random (non-reproducible), use SQLite's native RANDOM() function
+	// which provides true randomness without overflow issues
+	return fmt.Sprintf(" ORDER BY RANDOM() %s", direction)
 }
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {

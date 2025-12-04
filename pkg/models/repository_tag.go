@@ -25,6 +25,8 @@ type TagFinder interface {
 	FindByStudioID(ctx context.Context, studioID int) ([]*Tag, error)
 	FindByName(ctx context.Context, name string, nocase bool) (*Tag, error)
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Tag, error)
+	// FindFavoriteTagIDs returns IDs of all favorited tags
+	FindFavoriteTagIDs(ctx context.Context) ([]int, error)
 }
 
 // TagQueryer provides methods to query tags.
