@@ -8,6 +8,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import {
   ISavedFilterRow,
   ICustomFilter,
+  IAIRecommendationFilter,
   FrontPageContent,
   generatePremadeFrontPageContent,
   getFrontPageContent,
@@ -253,6 +254,14 @@ const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
             asCustomFilter.message.values
           );
         return asCustomFilter.title ?? "";
+      case "AIRecommendation":
+        const asAIFilter = props.content as IAIRecommendationFilter;
+        if (asAIFilter.message)
+          return intl.formatMessage(
+            { id: asAIFilter.message.id },
+            asAIFilter.message.values
+          );
+        return asAIFilter.title ?? "";
     }
   }
 

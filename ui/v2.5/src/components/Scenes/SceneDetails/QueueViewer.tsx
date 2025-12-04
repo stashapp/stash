@@ -7,6 +7,7 @@ import { FormattedNumber, useIntl } from "react-intl";
 import {
   faChevronDown,
   faChevronUp,
+  faLightbulb,
   faRandom,
   faStepBackward,
   faStepForward,
@@ -16,7 +17,7 @@ import {
 import { objectTitle } from "src/core/files";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { INamedObject } from "src/utils/navigation";
-import { queryFindScenes } from "src/core/StashService";
+import { queryFindScenes, querySceneRecommendationsForScene } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { CriterionModifier, FilterMode } from "src/core/generated-graphql";
 import Slider from "@ant-design/react-slick";
@@ -32,6 +33,7 @@ import TextUtils from "src/utils/text";
 enum DiscoverFilterType {
   Performer = "PERFORMER",
   Queue = "QUEUE",
+  Similar = "SIMILAR",
   Studio = "STUDIO",
 }
 
@@ -80,6 +82,8 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
       return <Icon icon={faUser} />;
     } else if (option.type === DiscoverFilterType.Studio) {
       return <Icon icon={faVideo} />;
+    } else if (option.type === DiscoverFilterType.Similar) {
+      return <Icon icon={faLightbulb} />;
     }
   }
 
@@ -109,12 +113,19 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
       return;
     }
 
+    const similarLabel = intl.formatMessage({ id: "similar" });
+
     let position = 1;
     let options: IDiscoverFilterOption[] = [
       {
         id: position++,
         label: queueLabel,
         type: DiscoverFilterType.Queue,
+      },
+      {
+        id: position++,
+        label: similarLabel,
+        type: DiscoverFilterType.Similar,
       },
     ];
 
@@ -138,7 +149,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
       });
     });
     setDiscoverFilterOptions(options);
-  }, [currentScene, queueLabel]);
+  }, [currentScene, intl, queueLabel]);
 
   return (
     <div className="discover-filter-container">
@@ -258,7 +269,31 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     return SceneQueue.fromListFilterModel(scenefilter);
   }
 
+  async function generateSimilarQueue(sceneId: string) {
+    setShowQueue(false);
+    try {
+      const result = await querySceneRecommendationsForScene(sceneId, 50);
+      const recommendations = result.data?.sceneRecommendationsForScene?.recommendations ?? [];
+      const similarScenes = recommendations.map((r) => r.scene) as QueuedScene[];
+      const sceneIDs = similarScenes.map((s) => s.id);
+      const queue = SceneQueue.fromSceneIDList(sceneIDs);
+      setNewQueue(queue);
+      setDiscoverScenes(similarScenes);
+    } catch (e) {
+      console.error("Error fetching similar scenes:", e);
+      setDiscoverScenes([]);
+    }
+  }
+
   async function generateDiscoverQueue(option: IDiscoverFilterOption) {
+    // Handle Similar filter type separately
+    if (option.type === DiscoverFilterType.Similar) {
+      if (currentID) {
+        await generateSimilarQueue(currentID);
+      }
+      return;
+    }
+
     setShowQueue(false);
     const sceneQueue = buildDiscoverQueueFilter(option);
     setNewQueue(sceneQueue);

@@ -31,11 +31,19 @@ export interface ICustomFilter extends ITypename {
   direction: SortDirectionEnum;
 }
 
+export interface IAIRecommendationFilter extends ITypename {
+  __typename: "AIRecommendation";
+  message?: IMessage;
+  title?: string;
+  mode: FilterMode;
+  limit: number;
+}
+
 export type DefaultFilters = {
   [P in View]?: SavedFilterDataFragment;
 };
 
-export type FrontPageContent = ISavedFilterRow | ICustomFilter;
+export type FrontPageContent = ISavedFilterRow | ICustomFilter | IAIRecommendationFilter;
 
 export const defaultMaxOptionsShown = 200;
 
@@ -160,8 +168,24 @@ export function generateDefaultFrontPageContent(intl: IntlShape) {
   ];
 }
 
+function aiRecommendedScenes(
+  intl: IntlShape,
+  limit: number
+): IAIRecommendationFilter {
+  return {
+    __typename: "AIRecommendation",
+    message: {
+      id: "recommended_scenes",
+      values: { count: limit.toString() },
+    },
+    mode: FilterMode.Scenes,
+    limit,
+  };
+}
+
 export function generatePremadeFrontPageContent(intl: IntlShape) {
   return [
+    aiRecommendedScenes(intl, 100),
     recentlyReleased(intl, FilterMode.Scenes, "scenes"),
     recentlyAdded(intl, FilterMode.Scenes, "scenes"),
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),

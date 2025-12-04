@@ -189,6 +189,12 @@ export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
     variables: { filter },
   });
 
+export const querySceneRecommendationsForScene = (sceneId: string, limit?: number) =>
+  client.query<GQL.SceneRecommendationsForSceneQuery>({
+    query: GQL.SceneRecommendationsForSceneDocument,
+    variables: { sceneId, limit },
+  });
+
 export const useFindImage = (id: string) =>
   GQL.useFindImageQuery({ variables: { id } });
 

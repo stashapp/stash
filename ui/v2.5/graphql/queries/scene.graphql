@@ -90,6 +90,30 @@ query SceneStreams($id: ID!) {
   }
 }
 
+query SceneRecommendations($limit: Int) {
+  sceneRecommendations(limit: $limit) {
+    recommendations {
+      score
+      reasons
+      scene {
+        ...SlimSceneData
+      }
+    }
+  }
+}
+
+query SceneRecommendationsForScene($sceneId: ID!, $limit: Int) {
+  sceneRecommendationsForScene(scene_id: $sceneId, limit: $limit) {
+    recommendations {
+      score
+      reasons
+      scene {
+        ...SlimSceneData
+      }
+    }
+  }
+}
+
 query FindScenesForSelect(
   $filter: FindFilterType
   $scene_filter: SceneFilterType
