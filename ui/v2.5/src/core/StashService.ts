@@ -2329,6 +2329,23 @@ export const stashBoxSceneQuery = (query: string, stashBoxEndpoint: string) =>
     }
   );
 
+export const stashBoxTagQuery = (
+  query: string | null,
+  stashBoxEndpoint: string
+) =>
+  client.query<GQL.ScrapeSingleTagQuery, GQL.ScrapeSingleTagQueryVariables>({
+    query: GQL.ScrapeSingleTagDocument,
+    variables: {
+      source: {
+        stash_box_endpoint: stashBoxEndpoint,
+      },
+      input: {
+        query: query,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const mutateStashBoxBatchPerformerTag = (
   input: GQL.StashBoxBatchTagInput
 ) =>

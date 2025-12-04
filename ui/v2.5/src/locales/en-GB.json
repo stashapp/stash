@@ -1016,6 +1016,7 @@
     },
     "scenes_found": "{count} scenes found",
     "studios_found": "{count} studios found",
+    "tags_found": "{count} tags found",
     "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
