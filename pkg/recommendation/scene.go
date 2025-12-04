@@ -322,7 +322,7 @@ func (r *SceneRecommender) getDiscoveryCandidates(ctx context.Context, profile *
 			Tags: &models.HierarchicalMultiCriterionInput{
 				Value:    tagIDs,
 				Modifier: models.CriterionModifierIncludes,
-				Depth:    intPtr(0),
+				Depth:    intPtr(-1),
 			},
 			PlayCount: &models.IntCriterionInput{
 				Value:    0,
@@ -391,7 +391,7 @@ func (r *SceneRecommender) getDiscoveryCandidates(ctx context.Context, profile *
 			Studios: &models.HierarchicalMultiCriterionInput{
 				Value:    studioIDs,
 				Modifier: models.CriterionModifierIncludes,
-				Depth:    intPtr(0),
+				Depth:    intPtr(-1),
 			},
 			PlayCount: &models.IntCriterionInput{
 				Value:    0,
@@ -451,7 +451,7 @@ func (r *SceneRecommender) getDiscoveryCandidates(ctx context.Context, profile *
 			Tags: &models.HierarchicalMultiCriterionInput{
 				Value:    tagIDs,
 				Modifier: models.CriterionModifierIncludes,
-				Depth:    intPtr(0),
+				Depth:    intPtr(-1),
 			},
 			PlayCount: &models.IntCriterionInput{
 				Value:    0,
