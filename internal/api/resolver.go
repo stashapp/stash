@@ -110,6 +110,9 @@ func (r *Resolver) Plugin() PluginResolver {
 func (r *Resolver) ConfigResult() ConfigResultResolver {
 	return &configResultResolver{r}
 }
+func (r *Resolver) ConfigDisableDropdownCreate() ConfigDisableDropdownCreateResolver {
+	return &configDisableDropdownCreateResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
@@ -136,6 +139,7 @@ type folderResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
 type pluginResolver struct{ *Resolver }
 type configResultResolver struct{ *Resolver }
+type configDisableDropdownCreateResolver struct{ *Resolver }
 
 func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return r.repository.WithTxn(ctx, fn)

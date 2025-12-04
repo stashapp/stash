@@ -66,6 +66,9 @@ models:
     model: github.com/stashapp/stash/internal/manager/config.ImageLightboxScrollMode
   ConfigDisableDropdownCreate:
     model: github.com/stashapp/stash/internal/manager/config.ConfigDisableDropdownCreate
+    fields:
+      gallery:
+        resolver: true
   ScanMetadataOptions:
     model:  github.com/stashapp/stash/internal/manager/config.ScanMetadataOptions
   CleanGeneratedInput:
