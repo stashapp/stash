@@ -929,7 +929,6 @@ $sticky-header-height: calc(50px + 3.3rem);
     align-self: flex-start;
 
     // take a further 15px padding to match the detail body
-    height: calc(100vh - $sticky-header-height - 15px);
     margin-top: -15px;
     max-height: calc(100vh - $sticky-header-height - 15px);
     overflow-y: auto;
@@ -941,6 +940,10 @@ $sticky-header-height: calc(50px + 3.3rem);
     .sidebar-toolbar {
       padding-top: 15px;
     }
+  }
+
+  .sidebar-pane:not(.hide-sidebar) .sidebar {
+    height: calc(100vh - $sticky-header-height - 15px);
   }
 
   .sidebar-pane.hide-sidebar .sidebar {
