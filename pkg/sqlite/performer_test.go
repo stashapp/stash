@@ -445,7 +445,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		url            = "url"
 		twitter        = "twitter"
 		instagram      = "instagram"
-		urls           = []string{instagram, twitter, url} // sorted alphabetically
+		urls           = []string{url, twitter, instagram}
 		rating         = 3
 		ethnicity      = "ethnicity"
 		country        = "country"

@@ -1,14 +1,8 @@
 /**
  * Extracts the sortable portion of a URL by removing the protocol and www. prefix
  */
-function urlSortKey(url: string): string {
-  let key = url;
-  // Remove http:// or https://
-  key = key.replace(/^https?:\/\//, "");
-  // Remove www. prefix
-  key = key.replace(/^www\./, "");
-  return key.toLowerCase();
-}
+const urlSortKey = (url: string): string =>
+  url.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, "");
 
 /**
  * Sorts a list of URLs alphabetically by their base URL,
