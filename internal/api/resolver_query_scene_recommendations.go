@@ -23,6 +23,7 @@ func (r *queryResolver) SceneRecommendations(ctx context.Context, limit *int) (*
 			r.repository.Scene,
 			r.repository.Scene,
 			r.repository.Scene,
+			r.repository.Tag,
 		)
 
 		recommendations, err := recommender.RecommendScenes(ctx, limitValue)
@@ -69,6 +70,7 @@ func (r *queryResolver) SceneRecommendationsForScene(ctx context.Context, sceneI
 			r.repository.Scene,
 			r.repository.Scene,
 			r.repository.Scene,
+			r.repository.Tag,
 		)
 
 		recommendations, err := recommender.RecommendScenesForScene(ctx, idInt, limitValue)

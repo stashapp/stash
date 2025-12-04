@@ -450,6 +450,29 @@ func (_m *TagReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]
 	return r0, r1
 }
 
+// FindFavoriteTagIDs provides a mock function with given fields: ctx
+func (_m *TagReaderWriter) FindFavoriteTagIDs(ctx context.Context) ([]int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context) []int); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ctx, ids
 func (_m *TagReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, ids)

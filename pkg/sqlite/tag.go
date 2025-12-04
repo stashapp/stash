@@ -482,6 +482,22 @@ func (qb *TagStore) FindByStudioID(ctx context.Context, studioID int) ([]*models
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) FindFavoriteTagIDs(ctx context.Context) ([]int, error) {
+	query := `SELECT id FROM tags WHERE favorite = 1`
+	var ret []int
+	if err := tagRepository.queryFunc(ctx, query, nil, false, func(r *sqlx.Rows) error {
+		var id int
+		if err := r.Scan(&id); err != nil {
+			return err
+		}
+		ret = append(ret, id)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 func (qb *TagStore) FindByName(ctx context.Context, name string, nocase bool) (*models.Tag, error) {
 	// query := "SELECT * FROM tags WHERE name = ?"
 	// if nocase {
