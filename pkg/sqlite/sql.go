@@ -99,8 +99,8 @@ func getSort(sort string, direction string, tableName string) string {
 		}
 		return getRandomSort(tableName, direction, seed)
 	case strings.Compare(sort, "random") == 0:
-		// return getRandomSort(tableName, direction, rand.Uint64())
-		return getRandomSortNative(tableName, direction, 0)
+		return getRandomSort(tableName, direction, rand.Uint64())
+		// return getRandomSortNative(tableName, direction, 0)
 	default:
 		colName := getColumn(tableName, sort)
 		if strings.Contains(sort, ".") {
@@ -134,7 +134,7 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 	return fmt.Sprintf(" ORDER BY mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
 }
 
-func getRandomSortNative(tableName string, direction string, seed uint64) string {
+func getRandomSortForDevTesting(tableName string, direction string, seed uint64) string {
 	// For seeded random (reproducible), use a hash-based approach with smaller multipliers
 	// to avoid integer overflow in SQLite which would cause precision loss
 	if seed != 0 {
