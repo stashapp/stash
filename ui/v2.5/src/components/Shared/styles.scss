@@ -920,6 +920,11 @@ $sticky-header-height: calc(50px + 3.3rem);
 }
 
 .detail-body {
+  .sidebar-pane {
+    position: sticky;
+    top: calc($sticky-detail-header-height + $navbar-height);
+  }
+
   .sidebar {
     // required for sticky to work
     align-self: flex-start;
@@ -955,6 +960,10 @@ $sticky-header-height: calc(50px + 3.3rem);
     }
   }
   @include media-breakpoint-down(xs) {
+    .sidebar-pane {
+      top: 0;
+    }
+
     .sidebar {
       // flex: 100% 0 0;
       height: calc(100vh - $navbar-height);
