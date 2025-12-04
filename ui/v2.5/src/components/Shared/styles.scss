@@ -828,7 +828,6 @@ button.btn.favorite-button {
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      margin-bottom: $navbar-height;
       margin-top: 0;
     }
   }
@@ -920,12 +919,16 @@ $sticky-header-height: calc(50px + 3.3rem);
 }
 
 .detail-body {
+  .sidebar-pane {
+    position: sticky;
+    top: calc($sticky-detail-header-height + $navbar-height);
+  }
+
   .sidebar {
     // required for sticky to work
     align-self: flex-start;
 
     // take a further 15px padding to match the detail body
-    height: calc(100vh - $sticky-header-height - 15px);
     margin-top: -15px;
     max-height: calc(100vh - $sticky-header-height - 15px);
     overflow-y: auto;
@@ -937,6 +940,10 @@ $sticky-header-height: calc(50px + 3.3rem);
     .sidebar-toolbar {
       padding-top: 15px;
     }
+  }
+
+  .sidebar-pane:not(.hide-sidebar) .sidebar {
+    height: calc(100vh - $sticky-header-height - 15px);
   }
 
   .sidebar-pane.hide-sidebar .sidebar {
@@ -955,6 +962,10 @@ $sticky-header-height: calc(50px + 3.3rem);
     }
   }
   @include media-breakpoint-down(xs) {
+    .sidebar-pane {
+      top: 0;
+    }
+
     .sidebar {
       // flex: 100% 0 0;
       height: calc(100vh - $navbar-height);
