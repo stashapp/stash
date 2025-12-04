@@ -828,7 +828,6 @@ button.btn.favorite-button {
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      margin-bottom: $navbar-height;
       margin-top: 0;
     }
   }
