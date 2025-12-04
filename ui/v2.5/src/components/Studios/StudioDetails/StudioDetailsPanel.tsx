@@ -47,10 +47,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
-  const sortedURLs = useMemo(
-    () => sortURLs(studio.urls ?? []),
-    [studio.urls]
-  );
+  const sortedURLs = useMemo(() => sortURLs(studio.urls ?? []), [studio.urls]);
 
   function renderURLs() {
     if (!sortedURLs.length) {
