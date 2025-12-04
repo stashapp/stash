@@ -16,6 +16,7 @@ import { UAParser } from "ua-parser-js";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
+import "./settings-menu";
 import "./persist-volume";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
@@ -376,7 +377,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             showTimestamp: true,
           },
           markers: {},
-          sourceSelector: {},
+          settingsMenu: {},
           persistVolume: {},
           bigButtons: {},
           seekButtons: {
@@ -605,8 +606,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       }
 
       const { duration } = file;
-      const sourceSelector = player.sourceSelector();
-      sourceSelector.setSources(
+      const settingsMenu = player.settingsMenu();
+      settingsMenu.setSources(
         scene.sceneStreams
           .filter((stream) => {
             const src = new URL(stream.url);
@@ -657,7 +658,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           if (setAsDefault) {
             hasDefault = true;
           }
-          sourceSelector.addTextTrack(
+          settingsMenu.addTextTrack(
             {
               src: `${scene.paths.caption}?lang=${lang}&type=${caption.caption_type}`,
               kind: "captions",
