@@ -219,8 +219,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		// paths since they must not be relative. The config file property is
 		// resolved to an absolute path when stash is run normally, so convert
 		// relative paths to absolute paths during setup.
-		configFile, _ := filepath.Abs(input.ConfigLocation)
-
+		// #6287 - this should no longer be necessary since the ffmpeg code
+		// converts to absolute paths. Converting the config location to
+		// absolute means that scraper and plugin paths default to absolute
+		// which we don't want.
+		configFile := input.ConfigLocation
 		configDir := filepath.Dir(configFile)
 
 		if exists, _ := fsutil.DirExists(configDir); !exists {
