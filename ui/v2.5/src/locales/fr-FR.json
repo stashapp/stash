@@ -1000,7 +1000,9 @@
         "set_default_filter_confirm": "Êtes-vous sûr de vouloir définir ce filtre par défaut ?",
         "clear_o_history_confirm_sfw": "Êtes-vous sûr de vouloir effacer l'historique des \"J'aime\" ?",
         "delete_alert_to_trash": "Les éléments suivants {count, plural, one {{singularEntity}} other {{pluralEntity}}} seront déplacés vers la corbeille :",
-        "stashid_exists_warning": "L'identifiant Stash existant pour cette Stash-Box sera remplacé."
+        "stashid_exists_warning": "L'identifiant Stash existant pour cette Stash-Box sera remplacé.",
+        "studios_found": "{count} studios trouvés",
+        "tags_found": "{count} étiquettes trouvées"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
