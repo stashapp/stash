@@ -6,10 +6,6 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 )
 
-func (r *configDisableDropdownCreateResolver) Gallery(ctx context.Context, obj *config.ConfigDisableDropdownCreate) (bool, error) {
-	return obj.Gallery, nil
-}
-
 func (r *configResultResolver) Plugins(ctx context.Context, obj *ConfigResult, include []string) (map[string]map[string]interface{}, error) {
 	if len(include) == 0 {
 		ret := config.GetInstance().GetAllPluginConfiguration()
