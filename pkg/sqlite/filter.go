@@ -127,20 +127,27 @@ func (j join) toSQL() string {
 
 type joins []join
 
+// addUnique only adds if not already present
+// returns true if added
+func (j *joins) addUnique(newJoin join) bool {
+	found := false
+	for _, jj := range *j {
+		if jj.equals(newJoin) {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		*j = append(*j, newJoin)
+	}
+	return !found
+}
+
 func (j *joins) add(newJoins ...join) {
 	// only add if not already joined
 	for _, newJoin := range newJoins {
-		found := false
-		for _, jj := range *j {
-			if jj.equals(newJoin) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			*j = append(*j, newJoin)
-		}
+		j.addUnique(newJoin)
 	}
 }
 

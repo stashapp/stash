@@ -132,9 +132,10 @@ func (qb *queryBuilder) join(table, as, onClause string) {
 }
 
 func (qb *queryBuilder) addJoins(joins ...join) {
-	qb.joins.add(joins...)
 	for _, j := range joins {
-		qb.args = append(qb.args, j.args...)
+		if qb.joins.addUnique(j) {
+			qb.args = append(qb.args, j.args...)
+		}
 	}
 }
 
