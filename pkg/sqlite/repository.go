@@ -119,13 +119,12 @@ func (r *repository) queryFunc(ctx context.Context, query string, args []interfa
 	return nil
 }
 
+// queryStruct executes a query and scans the result into the provided struct.
+// Unlike the other query methods, this will return an error if no rows are found.
 func (r *repository) queryStruct(ctx context.Context, query string, args []interface{}, out interface{}) error {
-	if err := r.queryFunc(ctx, query, args, true, func(rows *sqlx.Rows) error {
-		if err := rows.StructScan(out); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	// changed from queryFunc, since it was not logging the performance correctly,
+	// since the query doesn't actually execute until Scan is called
+	if err := dbWrapper.Get(ctx, out, query, args...); err != nil {
 		return fmt.Errorf("executing query: %s [%v]: %w", query, args, err)
 	}
 
