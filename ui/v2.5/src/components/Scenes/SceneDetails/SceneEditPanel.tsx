@@ -42,6 +42,7 @@ import { Group } from "src/components/Groups/GroupSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
+import { sortURLs } from "src/utils/url";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -138,7 +139,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     () => ({
       title: scene.title ?? "",
       code: scene.code ?? "",
-      urls: scene.urls ?? [],
+      urls: sortURLs(scene.urls ?? []),
       date: scene.date ?? "",
       director: scene.director ?? "",
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),

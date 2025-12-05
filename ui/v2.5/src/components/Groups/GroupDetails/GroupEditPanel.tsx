@@ -28,6 +28,7 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { Group } from "src/components/Groups/GroupSelect";
 import { RelatedGroupTable, IRelatedGroupEntry } from "./RelatedGroupTable";
+import { sortURLs } from "src/utils/url";
 
 interface IGroupEditPanel {
   group: Partial<GQL.GroupDataFragment>;
@@ -97,7 +98,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       return { group_id: m.group.id, description: m.description ?? "" };
     }),
     director: group?.director ?? "",
-    urls: group?.urls ?? [],
+    urls: sortURLs(group?.urls ?? []),
     synopsis: group?.synopsis ?? "",
   };
 

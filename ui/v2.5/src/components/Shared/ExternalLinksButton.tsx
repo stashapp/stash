@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import ReactDOM from "react-dom";
 import { PatchComponent } from "src/patch";
+import { sortURLs } from "src/utils/url";
 
 export const ExternalLinksButton: React.FC<{
   icon?: IconDefinition;
@@ -16,14 +17,16 @@ export const ExternalLinksButton: React.FC<{
 }> = PatchComponent(
   "ExternalLinksButton",
   ({ urls, icon = faLink, className = "", openIfSingle = false }) => {
-    if (!urls.length) {
+    const sortedUrls = useMemo(() => sortURLs(urls), [urls]);
+
+    if (!sortedUrls.length) {
       return null;
     }
 
     const Menu = () =>
       ReactDOM.createPortal(
         <Dropdown.Menu>
-          {urls.map((url) => (
+          {sortedUrls.map((url) => (
             <Dropdown.Item
               key={url}
               as={ExternalLink}
