@@ -110,6 +110,7 @@ export class ListFilterModel {
     clone.sortBy = undefined;
     clone.randomSeed = -1;
     clone.currentPage = 1;
+    clone.sortDirection = DEFAULT_PARAMS.sortDirection;
     clone.itemsPerPage = 0;
     clone.zoomIndex = 1;
     clone.displayMode = DEFAULT_PARAMS.displayMode;
