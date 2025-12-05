@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const maxGraveyardSize = 10
@@ -179,7 +178,8 @@ func (m *Manager) dispatch(ctx context.Context, j *Job) (done chan struct{}) {
 	j.StartTime = &t
 	j.Status = StatusRunning
 
-	ctx, cancelFunc := context.WithCancel(utils.ValueOnlyContext{Context: ctx})
+	// create a cancellable context for the job that is not canceled by the outer context
+	ctx, cancelFunc := context.WithCancel(context.WithoutCancel(ctx))
 	j.cancelFunc = cancelFunc
 
 	done = make(chan struct{})
