@@ -96,7 +96,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 }
 
 func (r *repository) queryFunc(ctx context.Context, query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
-	rows, err := dbWrapper.Queryx(ctx, query, args...)
+	rows, err := dbWrapper.QueryxContext(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
