@@ -23,6 +23,8 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { TagMergeModal } from "./TagMergeDialog";
+import { Tag } from "./TagSelect";
 import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
 import { View } from "../List/views";
@@ -59,6 +61,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
 
   const intl = useIntl();
   const history = useHistory();
+  const [mergeTags, setMergeTags] = useState<Tag[] | undefined>(undefined);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
@@ -66,6 +69,11 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     {
       text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+      onClick: merge,
+      isDisplayed: showWhenSelected,
     },
     {
       text: intl.formatMessage({ id: "actions.export" }),
@@ -110,6 +118,16 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
         history.push(`/tags/${id}`);
       }
     }
+  }
+
+  async function merge(
+    result: GQL.FindTagsQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    const selected =
+      result.data?.findTags.tags.filter((t) => selectedIds.has(t.id)) ?? [];
+    setMergeTags(selected);
   }
 
   async function onExport() {
@@ -165,6 +183,23 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
   ) {
+    function renderMergeDialog() {
+      if (mergeTags) {
+        return (
+          <TagMergeModal
+            tags={mergeTags}
+            onClose={(mergedID?: string) => {
+              setMergeTags(undefined);
+              if (mergedID) {
+                history.push(NavUtils.makeTagScenesUrl({ id: mergedID }));
+              }
+            }}
+            show
+          />
+        );
+      }
+    }
+
     function maybeRenderExportDialog() {
       if (isExportDialogOpen) {
         return (
@@ -317,6 +352,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     }
     return (
       <>
+        {renderMergeDialog()}
         {maybeRenderExportDialog()}
         {renderTags()}
       </>
