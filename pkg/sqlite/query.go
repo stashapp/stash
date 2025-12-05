@@ -24,8 +24,8 @@ type queryBuilder struct {
 	sortAndPagination string
 }
 
-func (qb queryBuilder) body() string {
-	return fmt.Sprintf("SELECT %s FROM %s%s", strings.Join(qb.columns, ", "), qb.from, qb.joins.toSQL())
+func (qb queryBuilder) body(includeSortPagination bool) string {
+	return fmt.Sprintf("SELECT %s FROM %s%s", strings.Join(qb.columns, ", "), qb.from, qb.joins.toSQL(includeSortPagination))
 }
 
 func (qb *queryBuilder) addColumn(column string) {
@@ -33,7 +33,7 @@ func (qb *queryBuilder) addColumn(column string) {
 }
 
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {
-	body := qb.body()
+	body := qb.body(includeSortPagination)
 
 	withClause := ""
 	if len(qb.withClauses) > 0 {
@@ -59,12 +59,14 @@ func (qb queryBuilder) findIDs(ctx context.Context) ([]int, error) {
 }
 
 func (qb queryBuilder) executeFind(ctx context.Context) ([]int, int, error) {
-	body := qb.body()
+	const includeSortPagination = true
+	body := qb.body(includeSortPagination)
 	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
 }
 
 func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
-	body := qb.body()
+	const includeSortPagination = false
+	body := qb.body(includeSortPagination)
 
 	withClause := ""
 	if len(qb.withClauses) > 0 {
@@ -122,6 +124,18 @@ func (qb *queryBuilder) hasJoin(alias string) bool {
 
 func (qb *queryBuilder) join(table, as, onClause string) {
 	newJoin := join{
+		table:    table,
+		as:       as,
+		onClause: onClause,
+		joinType: "LEFT",
+	}
+
+	qb.joins.add(newJoin)
+}
+
+func (qb *queryBuilder) joinSort(table, as, onClause string) {
+	newJoin := join{
+		sort:     true,
 		table:    table,
 		as:       as,
 		onClause: onClause,

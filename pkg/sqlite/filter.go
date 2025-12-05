@@ -96,6 +96,9 @@ type join struct {
 	onClause string
 	joinType string
 	args     []interface{}
+
+	// if true, indicates this is required for sorting only
+	sort bool
 }
 
 // equals returns true if the other join alias/table is equal to this one
@@ -131,9 +134,13 @@ type joins []join
 // returns true if added
 func (j *joins) addUnique(newJoin join) bool {
 	found := false
-	for _, jj := range *j {
+	for i, jj := range *j {
 		if jj.equals(newJoin) {
 			found = true
+			// if sort is false on the new join, but true on the existing, set the false
+			if !newJoin.sort && jj.sort {
+				(*j)[i].sort = false
+			}
 			break
 		}
 	}
@@ -151,13 +158,17 @@ func (j *joins) add(newJoins ...join) {
 	}
 }
 
-func (j *joins) toSQL() string {
+func (j *joins) toSQL(includeSortPagination bool) string {
 	if len(*j) == 0 {
 		return ""
 	}
 
 	var ret []string
 	for _, jj := range *j {
+		// skip sort-only joins if not including sort/pagination
+		if !includeSortPagination && jj.sort {
+			continue
+		}
 		ret = append(ret, jj.toSQL())
 	}
 
