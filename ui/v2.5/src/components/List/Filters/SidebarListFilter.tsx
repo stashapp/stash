@@ -25,6 +25,7 @@ interface ISelectedItem {
   onClick: () => void;
   // true if the object is a special modifier value
   modifier?: boolean;
+  icon?: React.ReactNode;
 }
 
 export const SelectedItem: React.FC<ISelectedItem> = ({
@@ -33,6 +34,7 @@ export const SelectedItem: React.FC<ISelectedItem> = ({
   excluded = false,
   onClick,
   modifier = false,
+  icon,
 }) => {
   const iconClassName = excluded ? "exclude-icon" : "include-button";
   const spanClassName = excluded
@@ -40,7 +42,7 @@ export const SelectedItem: React.FC<ISelectedItem> = ({
     : "selected-object-label";
   const [hovered, setHovered] = useState(false);
 
-  const icon = useMemo(() => {
+  const statusIcon = useMemo(() => {
     if (!hovered) {
       return excluded ? faTimesCircle : faCheckCircle;
     }
@@ -72,7 +74,8 @@ export const SelectedItem: React.FC<ISelectedItem> = ({
         tabIndex={0}
       >
         <div className="label-group">
-          <Icon className={`fa-fw ${iconClassName}`} icon={icon} />
+          <Icon className={`fa-fw ${iconClassName}`} icon={statusIcon} />
+          {icon}
           <TruncatedInlineText className={spanClassName} text={label} />
         </div>
       </a>
@@ -87,6 +90,7 @@ const CandidateItem: React.FC<{
   canExclude?: boolean;
   modifier?: boolean;
   singleValue?: boolean;
+  icon?: React.ReactNode;
 }> = ({
   onSelect,
   label,
@@ -94,6 +98,7 @@ const CandidateItem: React.FC<{
   modifier = false,
   singleValue = false,
   className,
+  icon,
 }) => {
   const singleValueClass = singleValue ? "single-value" : "";
   const includeIcon = (
@@ -119,6 +124,7 @@ const CandidateItem: React.FC<{
       >
         <div className="label-group">
           {includeIcon}
+          {icon}
           <TruncatedInlineText
             className="unselected-object-label"
             text={label}
@@ -152,6 +158,7 @@ export type Option<T = unknown> = {
   value?: T;
   label: string;
   canExclude?: boolean; // defaults to true
+  icon?: React.ReactNode; // optional icon to display before the label
 };
 
 export const SelectedList: React.FC<{
@@ -172,6 +179,7 @@ export const SelectedList: React.FC<{
           label={p.label}
           excluded={excluded}
           onClick={() => onUnselect(p)}
+          icon={p.icon}
         />
       ))}
     </ul>
@@ -253,6 +261,7 @@ export const CandidateList: React.FC<
             label={p.label}
             canExclude={canExclude && (p.canExclude ?? true)}
             singleValue={singleValue}
+            icon={p.icon}
           />
         ))}
       </ul>

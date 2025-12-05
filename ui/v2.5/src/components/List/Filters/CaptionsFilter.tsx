@@ -1,26 +1,25 @@
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption } from "src/models/list-filter/criteria/criterion";
-import { CountryCriterion } from "src/models/list-filter/criteria/country";
+import {
+  CriterionOption,
+} from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { getCountries } from "src/utils/country";
+import { languageMap } from "src/utils/caption";
+import {
+  CaptionCriterion,
+} from "src/models/list-filter/criteria/captions";
 
-// Create a flag icon element using flag-icons CSS library
-function createFlagIcon(countryCode: string): React.ReactNode {
-  if (!countryCode || countryCode.length !== 2) return null;
-  
-  const code = countryCode.toLowerCase();
-  return (
-    <span
-      className={`fi fi-${code}`}
-      style={{ marginRight: "0.5em", fontSize: "1em" }}
-    />
-  );
-}
+// Get language options from the languageMap
+const languageOptions = Array.from(languageMap.entries()).map(
+  ([code, name]) => ({
+    code,
+    name,
+  })
+);
 
-function useCountryFilterState(props: {
+function useCaptionsFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
@@ -30,27 +29,18 @@ function useCountryFilterState(props: {
 
   const [query, setQuery] = useState("");
 
-  // Get country options based on locale with flag icons
-  const countryOptions = useMemo(() => {
-    return getCountries(intl.locale).map((country) => ({
-      id: country.value,
-      label: country.label,
-      icon: createFlagIcon(country.value),
-    }));
-  }, [intl.locale]);
-
   // Get or create criterion
   const criterion = useMemo(() => {
     const ret = filter.criteria.find(
       (c) => c.criterionOption.type === option.type
     );
-    if (ret) return ret as CountryCriterion;
+    if (ret) return ret as CaptionCriterion;
 
-    return filter.makeCriterion(option.type) as CountryCriterion;
+    return filter.makeCriterion(option.type) as CaptionCriterion;
   }, [filter, option]);
 
   const setCriterion = useCallback(
-    (c: CountryCriterion) => {
+    (c: CaptionCriterion) => {
       const newCriteria = filter.criteria.filter(
         (cc) => cc.criterionOption.type !== option.type
       );
@@ -72,7 +62,7 @@ function useCountryFilterState(props: {
     };
   }, [modifier]);
 
-  // Build selected items list (for included countries)
+  // Build selected items list (for included languages)
   const selected = useMemo(() => {
     const modifierValues: Option[] = Object.entries(selectedModifiers)
       .filter((v) => v[1])
@@ -84,50 +74,64 @@ function useCountryFilterState(props: {
         className: "modifier-object",
       }));
 
-    // If a country is selected and it's included (not excluded), add it
+    // If a language is selected and it's included (not excluded), add it with "(includes)" prefix
     if (
       criterion.value &&
-      modifier === CriterionModifier.Equals
+      modifier === CriterionModifier.Includes
     ) {
-      const country = countryOptions.find((c) => c.id === criterion.value);
-      if (country) {
-        modifierValues.push({
-          id: criterion.value,
-          label: country.label,
-          icon: country.icon,
-        });
-      }
+      // Add the includes modifier indicator
+      modifierValues.push({
+        id: "includes_modifier",
+        label: `(${intl.formatMessage({
+          id: "criterion_modifier.includes",
+          defaultMessage: "includes",
+        })})`,
+        className: "modifier-object",
+      });
+      // Add the language value
+      modifierValues.push({
+        id: criterion.value,
+        label: criterion.value,
+      });
     }
 
     return modifierValues;
-  }, [intl, selectedModifiers, criterion.value, modifier, countryOptions]);
+  }, [intl, selectedModifiers, criterion.value, modifier]);
 
   // Build excluded items list
   const excluded = useMemo(() => {
+    const excludedItems: Option[] = [];
+    
     if (
       criterion.value &&
-      modifier === CriterionModifier.NotEquals
+      modifier === CriterionModifier.Excludes
     ) {
-      const country = countryOptions.find((c) => c.id === criterion.value);
-      if (country) {
-        return [{
-          id: criterion.value,
-          label: country.label,
-          icon: country.icon,
-        }];
-      }
+      // Add the excludes modifier indicator
+      excludedItems.push({
+        id: "excludes_modifier",
+        label: `(${intl.formatMessage({
+          id: "criterion_modifier.excludes",
+          defaultMessage: "excludes",
+        })})`,
+        className: "modifier-object",
+      });
+      // Add the language value
+      excludedItems.push({
+        id: criterion.value,
+        label: criterion.value,
+      });
     }
-    return [];
-  }, [criterion.value, modifier, countryOptions]);
+    return excludedItems;
+  }, [criterion.value, modifier, intl]);
 
-  // Build candidates list (country options)
+  // Build candidates list (language options)
   const candidates = useMemo(() => {
     const modifierCandidates: Option[] = [];
 
-    // Show modifier options when no country selected
+    // Show modifier options when no language selected
     if (
-      (modifier === CriterionModifier.Equals ||
-        modifier === CriterionModifier.NotEquals) &&
+      (modifier === CriterionModifier.Includes ||
+        modifier === CriterionModifier.Excludes) &&
       !criterion.value
     ) {
       modifierCandidates.push({
@@ -148,7 +152,7 @@ function useCountryFilterState(props: {
       });
     }
 
-    // Don't show country options if modifier is any/none
+    // Don't show language options if modifier is any/none
     if (
       modifier === CriterionModifier.IsNull ||
       modifier === CriterionModifier.NotNull
@@ -156,26 +160,25 @@ function useCountryFilterState(props: {
       return modifierCandidates;
     }
 
-    // Filter countries by query and exclude already selected
-    const filteredCountries = countryOptions.filter((country) => {
-      if (criterion.value === country.id) return false;
+    // Filter languages by query and exclude already selected
+    const filteredLanguages = languageOptions.filter((lang) => {
+      if (criterion.value === lang.name) return false;
       if (!query) return true;
-      return country.label.toLowerCase().includes(query.toLowerCase());
+      return lang.name.toLowerCase().includes(query.toLowerCase());
     });
 
     return modifierCandidates.concat(
-      filteredCountries.map((country) => ({
-        id: country.id,
-        label: country.label,
+      filteredLanguages.map((lang) => ({
+        id: lang.name,
+        label: lang.name,
         canExclude: true,
-        icon: country.icon,
       }))
     );
-  }, [modifier, criterion.value, query, intl, countryOptions]);
+  }, [modifier, criterion.value, query, intl]);
 
   const onSelect = useCallback(
     (v: Option, exclude: boolean) => {
-      const newCriterion = criterion.clone() as CountryCriterion;
+      const newCriterion = criterion.clone() as CaptionCriterion;
 
       if (v.className === "modifier-object") {
         if (v.id === "any") {
@@ -189,11 +192,11 @@ function useCountryFilterState(props: {
         return;
       }
 
-      // Set the country value with appropriate modifier
+      // Set the language value with appropriate modifier
       newCriterion.value = v.id;
       newCriterion.modifier = exclude
-        ? CriterionModifier.NotEquals
-        : CriterionModifier.Equals;
+        ? CriterionModifier.Excludes
+        : CriterionModifier.Includes;
       setCriterion(newCriterion);
     },
     [criterion, setCriterion]
@@ -201,19 +204,19 @@ function useCountryFilterState(props: {
 
   const onUnselect = useCallback(
     (v: Option, exclude: boolean) => {
-      const newCriterion = criterion.clone() as CountryCriterion;
+      const newCriterion = criterion.clone() as CaptionCriterion;
 
       if (v.className === "modifier-object") {
-        // Reset to default modifier
-        newCriterion.modifier = CriterionModifier.Equals;
+        // Reset to default modifier and clear value
+        newCriterion.modifier = CriterionModifier.Includes;
         newCriterion.value = "";
         setCriterion(newCriterion);
         return;
       }
 
-      // Clear the country value
+      // Clear the language value
       newCriterion.value = "";
-      newCriterion.modifier = CriterionModifier.Equals;
+      newCriterion.modifier = CriterionModifier.Includes;
       setCriterion(newCriterion);
     },
     [criterion, setCriterion]
@@ -231,14 +234,14 @@ function useCountryFilterState(props: {
   };
 }
 
-export const SidebarCountryFilter: React.FC<{
+export const SidebarCaptionsFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   sectionID?: string;
 }> = ({ title, option, filter, setFilter, sectionID }) => {
-  const state = useCountryFilterState({
+  const state = useCaptionsFilterState({
     filter,
     setFilter,
     option,
@@ -254,4 +257,5 @@ export const SidebarCountryFilter: React.FC<{
   );
 };
 
-export default SidebarCountryFilter;
+export default SidebarCaptionsFilter;
+

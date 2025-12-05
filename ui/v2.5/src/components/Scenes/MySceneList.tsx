@@ -94,6 +94,10 @@ import { SidebarDateFilter } from "../List/Filters/DateFilter";
 import { SidebarOrientationFilter } from "../List/Filters/OrientationFilter";
 import { OrientationCriterionOption } from "src/models/list-filter/criteria/orientation";
 import { SidebarPerformerTagsFilter } from "../List/Filters/PerformerTagsFilter";
+import { SidebarCaptionsFilter } from "../List/Filters/CaptionsFilter";
+import { CaptionsCriterionOption } from "src/models/list-filter/criteria/captions";
+import { SidebarResolutionFilter } from "../List/Filters/ResolutionFilter";
+import { ResolutionCriterionOption } from "src/models/list-filter/criteria/resolution";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -372,12 +376,26 @@ const SidebarContent: React.FC<{
             setFilter={setFilter}
             sectionID="rating"
           />
+          <SidebarCaptionsFilter
+            title={<FormattedMessage id="captions" />}
+            option={CaptionsCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            sectionID="captions"
+          />
           <SidebarOrientationFilter
             title={<FormattedMessage id="orientation" />}
             option={OrientationCriterionOption}
             filter={filter}
             setFilter={setFilter}
             sectionID="orientation"
+          />
+          <SidebarResolutionFilter
+            title={<FormattedMessage id="resolution" />}
+            option={ResolutionCriterionOption}
+            filter={filter}
+            setFilter={setFilter}
+            sectionID="resolution"
           />
           <SidebarStringFilter
             title={<FormattedMessage id="url" />}

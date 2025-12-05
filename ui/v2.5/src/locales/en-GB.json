@@ -156,6 +156,15 @@
   "actions_name": "Actions",
   "age": "Age",
   "age_on_date": "{age} at production",
+  "age_ranges": {
+    "18_25": "18-25",
+    "26_35": "26-35",
+    "36_45": "36-45",
+    "46_55": "46-55",
+    "56_65": "56-65",
+    "65_plus": "65+",
+    "custom": "Custom age..."
+  },
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",
@@ -840,8 +849,10 @@
   "cover_image": "Cover Image",
   "created_at": "Created At",
   "criterion": {
+    "from": "From",
     "greater_than": "Greater than",
     "less_than": "Less than",
+    "to": "To",
     "value": "Value"
   },
   "criterion_modifier": {
@@ -879,6 +890,17 @@
   },
   "date": "Date",
   "date_format": "YYYY-MM-DD",
+  "date_presets": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "this_week": "This week",
+    "last_7_days": "Last 7 days",
+    "this_month": "This month",
+    "last_30_days": "Last 30 days",
+    "this_year": "This year",
+    "last_year": "Last year",
+    "custom": "Custom date..."
+  },
   "datetime_format": "YYYY-MM-DD HH:MM",
   "death_date": "Death Date",
   "death_year": "Death Year",

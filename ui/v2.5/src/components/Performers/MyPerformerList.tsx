@@ -82,6 +82,7 @@ import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
+import { SidebarAgeFilter } from "../List/Filters/AgeFilter";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];
@@ -373,7 +374,7 @@ const SidebarContent: React.FC<{
             setFilter={setFilter}
             sectionID="gender"
           />
-          <SidebarNumberFilter
+          <SidebarAgeFilter
             title={<FormattedMessage id="age" />}
             data-type={AgeCriterionOption.type}
             option={AgeCriterionOption}
