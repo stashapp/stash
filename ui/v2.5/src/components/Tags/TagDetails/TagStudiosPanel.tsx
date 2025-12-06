@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
-import { StudioList } from "src/components/Studios/StudioList";
+import { StudioList } from "src/components/Studios/MyStudioList";
 
 interface ITagStudiosPanel {
   active: boolean;

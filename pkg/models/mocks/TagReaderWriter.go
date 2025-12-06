@@ -768,3 +768,26 @@ func (_m *TagReaderWriter) UpdatePartial(ctx context.Context, id int, updateTag 
 
 	return r0, r1
 }
+
+// GetFacets provides a mock function with given fields: ctx, tagFilter, limit
+func (_m *TagReaderWriter) GetFacets(ctx context.Context, tagFilter *models.TagFilterType, limit int) (*models.TagFacets, error) {
+	ret := _m.Called(ctx, tagFilter, limit)
+
+	var r0 *models.TagFacets
+	if rf, ok := ret.Get(0).(func(context.Context, *models.TagFilterType, int) *models.TagFacets); ok {
+		r0 = rf(ctx, tagFilter, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.TagFacets)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.TagFilterType, int) error); ok {
+		r1 = rf(ctx, tagFilter, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

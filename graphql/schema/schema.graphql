@@ -147,6 +147,63 @@ type Query {
     ids: [ID!]
   ): FindTagsResultType!
 
+  # Facets - aggregated counts for filtering
+  """
+  Get facet counts for scenes based on current filter.
+  Returns counts for each filter dimension, allowing the UI to show
+  how many results each filter option would return.
+  """
+  sceneFacets(
+    "Scene filter to apply when calculating facets"
+    scene_filter: SceneFilterType
+    "Maximum facets to return per category (default: 100)"
+    limit: Int
+    "Include performer_tags facet (expensive, default: false)"
+    include_performer_tags: Boolean
+    "Include captions facet (expensive, default: false)"
+    include_captions: Boolean
+  ): SceneFacetsResult!
+
+  """
+  Get facet counts for performers based on current filter.
+  """
+  performerFacets(
+    performer_filter: PerformerFilterType
+    limit: Int
+  ): PerformerFacetsResult!
+
+  """
+  Get facet counts for galleries based on current filter.
+  """
+  galleryFacets(
+    gallery_filter: GalleryFilterType
+    limit: Int
+  ): GalleryFacetsResult!
+
+  """
+  Get facet counts for groups based on current filter.
+  """
+  groupFacets(
+    group_filter: GroupFilterType
+    limit: Int
+  ): GroupFacetsResult!
+
+  """
+  Get facet counts for studios based on current filter.
+  """
+  studioFacets(
+    studio_filter: StudioFilterType
+    limit: Int
+  ): StudioFacetsResult!
+
+  """
+  Get facet counts for tags based on current filter.
+  """
+  tagFacets(
+    tag_filter: TagFilterType
+    limit: Int
+  ): TagFacetsResult!
+
   "Retrieve random scene markers for the wall"
   markerWall(q: String): [SceneMarker!]!
   "Retrieve random scenes for the wall"

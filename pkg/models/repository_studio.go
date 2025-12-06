@@ -25,6 +25,11 @@ type StudioQueryer interface {
 	QueryCount(ctx context.Context, studioFilter *StudioFilterType, findFilter *FindFilterType) (int, error)
 }
 
+// StudioFaceter provides methods to get facet counts for studios.
+type StudioFaceter interface {
+	GetFacets(ctx context.Context, studioFilter *StudioFilterType, limit int) (*StudioFacets, error)
+}
+
 type StudioAutoTagQueryer interface {
 	StudioQueryer
 	AliasLoader
@@ -73,6 +78,7 @@ type StudioReader interface {
 	StudioQueryer
 	StudioAutoTagQueryer
 	StudioCounter
+	StudioFaceter
 
 	AliasLoader
 	StashIDLoader

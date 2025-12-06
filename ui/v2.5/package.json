@@ -12,6 +12,9 @@
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "eslint --cache src/",
     "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "eslint": "eslint",
     "prettier": "prettier",
     "stylelint": "stylelint",
@@ -130,6 +133,10 @@
     "typescript": "~4.8.4",
     "vite": "^4.5.14",
     "vite-plugin-compression": "^0.5.1",
-    "vite-tsconfig-paths": "^4.0.5"
+    "vite-tsconfig-paths": "^4.0.5",
+    "vitest": "^1.6.0",
+    "@testing-library/react": "^12.1.5",
+    "@testing-library/jest-dom": "^6.4.2",
+    "jsdom": "^24.0.0"
   }
 }

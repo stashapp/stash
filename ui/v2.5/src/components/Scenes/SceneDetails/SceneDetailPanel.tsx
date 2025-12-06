@@ -83,7 +83,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   );
 
   const tags = useMemo(() => {
-    const limit = 160;
+    const limit = 145;
     if (props.scene.tags.length === 0) return;
     const sceneTags = props.scene.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />

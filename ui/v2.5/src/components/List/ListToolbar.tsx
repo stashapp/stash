@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FilterTags } from "../List/FilterTags";
+import { FilterTags } from "../List/MyFilterTags";
 import cx from "classnames";
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";

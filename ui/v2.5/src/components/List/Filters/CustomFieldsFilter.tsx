@@ -10,7 +10,7 @@ import { ModifierSelect } from "../ModifierSelect";
 import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { faCheck, faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FilterTag } from "../FilterTags";
+import { FilterTag } from "../MyFilterTags";
 import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 
 interface ICustomFieldCriterionEditor {

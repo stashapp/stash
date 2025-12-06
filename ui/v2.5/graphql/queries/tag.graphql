@@ -25,3 +25,16 @@ query FindTagsForSelect(
     }
   }
 }
+
+# Lightweight query for sidebar filter - minimal data for fast loading
+query FindTagsForFilter(
+  $filter: FindFilterType
+  $tag_filter: TagFilterType
+) {
+  findTags(filter: $filter, tag_filter: $tag_filter) {
+    count
+    tags {
+      ...FilterTagData
+    }
+  }
+}

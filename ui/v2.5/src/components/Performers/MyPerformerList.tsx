@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -81,7 +81,28 @@ import { PiercingsCriterionOption } from "src/models/list-filter/criteria/pierci
 import { SidebarNumberFilter } from "../List/Filters/NumberFilter";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
+import { SidebarGroupsFilter } from "../List/Filters/GroupsFilter";
 import { SidebarDateFilter } from "../List/Filters/DateFilter";
+import { SidebarAgeFilter } from "../List/Filters/AgeFilter";
+import {
+  SidebarFilterSelector,
+  FilterWrapper,
+} from "../List/Filters/SidebarFilterSelector";
+import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import {
+  createMandatoryTimestampCriterionOption,
+  createMandatoryNumberCriterionOption,
+  createBooleanCriterionOption,
+} from "src/models/list-filter/criteria/criterion";
+import { CircumcisedCriterionOption } from "src/models/list-filter/criteria/circumcised";
+import { SidebarCircumcisedFilter } from "../List/Filters/CircumcisedFilter";
+import { GroupsCriterionOption } from "src/models/list-filter/criteria/groups";
+import { PerformerIsMissingCriterionOption } from "src/models/list-filter/criteria/is-missing";
+import { SidebarIsMissingFilter } from "../List/Filters/IsMissingFilter";
+import {
+  usePerformerFacetCounts,
+  FacetCountsContext,
+} from "src/hooks/useFacetCounts";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];
@@ -297,6 +318,61 @@ export const MyPerformersFilterSidebarSections = PatchContainerComponent(
   "MyFilteredPerformerList.SidebarSections"
 );
 
+// Define available filters for performers sidebar
+const performerFilterDefinitions: SidebarFilterDefinition[] = [
+  // Tier 1: Primary filters (visible by default)
+  { id: "rating", messageId: "rating", defaultVisible: true },
+  { id: "favorite", messageId: "favourite", defaultVisible: true },
+  { id: "tags", messageId: "tags", defaultVisible: true },
+  { id: "studios", messageId: "studios", defaultVisible: true },
+  { id: "groups", messageId: "groups", defaultVisible: false },
+  { id: "gender", messageId: "gender", defaultVisible: true },
+  { id: "age", messageId: "age", defaultVisible: true },
+  { id: "country", messageId: "country", defaultVisible: true },
+
+  // Tier 2: Physical attributes
+  { id: "ethnicity", messageId: "ethnicity", defaultVisible: false },
+  { id: "circumcised", messageId: "circumcised", defaultVisible: false },
+  { id: "hair_color", messageId: "hair_color", defaultVisible: false },
+  { id: "eye_color", messageId: "eye_color", defaultVisible: false },
+  { id: "height_cm", messageId: "height", defaultVisible: false },
+  { id: "weight", messageId: "weight", defaultVisible: false },
+  { id: "penis_length", messageId: "penis_length", defaultVisible: false },
+  { id: "measurements", messageId: "measurements", defaultVisible: false },
+  { id: "fake_tits", messageId: "fake_tits", defaultVisible: false },
+  { id: "tattoos", messageId: "tattoos", defaultVisible: false },
+  { id: "piercings", messageId: "piercings", defaultVisible: false },
+
+  // Tier 3: Dates
+  { id: "birthdate", messageId: "birthdate", defaultVisible: false },
+  { id: "death_date", messageId: "death_date", defaultVisible: false },
+  { id: "birth_year", messageId: "birth_year", defaultVisible: false },
+  { id: "death_year", messageId: "death_year", defaultVisible: false },
+  { id: "career_length", messageId: "career_length", defaultVisible: false },
+
+  // Tier 4: Library stats
+  { id: "scene_count", messageId: "scene_count", defaultVisible: false },
+  { id: "image_count", messageId: "image_count", defaultVisible: false },
+  { id: "gallery_count", messageId: "gallery_count", defaultVisible: false },
+  { id: "tag_count", messageId: "tag_count", defaultVisible: false },
+  { id: "play_count", messageId: "play_count", defaultVisible: false },
+  { id: "o_counter", messageId: "o_count", defaultVisible: false },
+
+  // Tier 5: Metadata
+  { id: "name", messageId: "name", defaultVisible: false },
+  { id: "aliases", messageId: "aliases", defaultVisible: false },
+  { id: "disambiguation", messageId: "disambiguation", defaultVisible: false },
+  { id: "details", messageId: "details", defaultVisible: false },
+  { id: "url", messageId: "url", defaultVisible: false },
+
+  // Tier 6: System
+  { id: "is_missing", messageId: "isMissing", defaultVisible: false },
+  { id: "ignore_auto_tag", messageId: "ignore_auto_tag", defaultVisible: false },
+  { id: "created_at", messageId: "created_at", defaultVisible: false },
+  { id: "updated_at", messageId: "updated_at", defaultVisible: false },
+  { id: "stash_id", messageId: "stash_id", defaultVisible: false },
+];
+
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
@@ -308,6 +384,7 @@ const SidebarContent: React.FC<{
   count?: number;
   focus?: ReturnType<typeof useFocus>;
   clearAllCriteria: () => void;
+  onFilterEditModeChange?: (isEditMode: boolean) => void;
 }> = ({
   filter,
   setFilter,
@@ -319,17 +396,40 @@ const SidebarContent: React.FC<{
   count,
   focus,
   clearAllCriteria,
+  onFilterEditModeChange,
 }) => {
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
+  // Criterion options
   const UrlCriterionOption = createStringCriterionOption("url");
   const AgeCriterionOption = createNumberCriterionOption("age");
-
   const DeathDateCriterionOption = createDateCriterionOption("death_date");
+  const BirthdateCriterionOption = createDateCriterionOption("birthdate");
+  const BirthYearCriterionOption = createNumberCriterionOption("birth_year");
+  const DeathYearCriterionOption = createNumberCriterionOption("death_year");
+  const CareerLengthCriterionOption = createStringCriterionOption("career_length");
   const SceneCountCriterionOption = createNumberCriterionOption("scene_count");
-  const GalleryCountCriterionOption =
-    createNumberCriterionOption("gallery_count");
+  const ImageCountCriterionOption = createNumberCriterionOption("image_count");
+  const GalleryCountCriterionOption = createNumberCriterionOption("gallery_count");
+  const TagCountCriterionOption = createMandatoryNumberCriterionOption("tag_count");
+  const PlayCountCriterionOption = createMandatoryNumberCriterionOption("play_count");
+  const OCounterCriterionOption = createNumberCriterionOption("o_counter", "o_count");
+  const NameCriterionOption = createStringCriterionOption("name");
+  const AliasesCriterionOption = createStringCriterionOption("aliases");
+  const DisambiguationCriterionOption = createStringCriterionOption("disambiguation");
+  const DetailsCriterionOption = createStringCriterionOption("details");
+  const EthnicityCriterionOption = createStringCriterionOption("ethnicity");
+  const HairColorCriterionOption = createStringCriterionOption("hair_color");
+  const EyeColorCriterionOption = createStringCriterionOption("eye_color");
+  const HeightCriterionOption = createNumberCriterionOption("height_cm", "height");
+  const WeightCriterionOption = createNumberCriterionOption("weight");
+  const PenisLengthCriterionOption = createNumberCriterionOption("penis_length");
+  const MeasurementsCriterionOption = createStringCriterionOption("measurements");
+  const FakeTitsCriterionOption = createStringCriterionOption("fake_tits");
+  const IgnoreAutoTagCriterionOption = createBooleanCriterionOption("ignore_auto_tag");
+  const CreatedAtCriterionOption = createMandatoryTimestampCriterionOption("created_at");
+  const UpdatedAtCriterionOption = createMandatoryTimestampCriterionOption("updated_at");
 
   return (
     <>
@@ -343,124 +443,394 @@ const SidebarContent: React.FC<{
       />
       <MyPerformersFilterSidebarSections>
         <div className="sidebar-filters">
-          <div className="sidebar-section-header">
-            <Icon icon={faFilter} />
-            <FormattedMessage id="filters" />
-          </div>
-          <SidebarStudiosFilter
-            title={<FormattedMessage id="studios" />}
-            data-type={StudiosCriterionOption.type}
-            option={StudiosCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            filterHook={filterHook}
-            sectionID="studios"
-          />
-          <SidebarTagsFilter
-            title={<FormattedMessage id="tags" />}
-            data-type={TagsCriterionOption.type}
-            option={TagsCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            filterHook={filterHook}
-            sectionID="tags"
-          />
-          <SidebarGenderFilter
-            title={<FormattedMessage id="gender" />}
-            data-type={GenderCriterionOption.type}
-            option={GenderCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="gender"
-          />
-          <SidebarNumberFilter
-            title={<FormattedMessage id="age" />}
-            data-type={AgeCriterionOption.type}
-            option={AgeCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="age"
-          />
-          <SidebarDateFilter
-            title={<FormattedMessage id="death_date" />}
-            data-type={DeathDateCriterionOption.type}
-            option={DeathDateCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="death_date"
-          />
-          <SidebarCountryFilter
-            title={<FormattedMessage id="country" />}
-            data-type={CountryCriterionOption.type}
-            option={CountryCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="country"
-          />
-          <SidebarStringFilter
-            title={<FormattedMessage id="piercings" />}
-            data-type={PiercingsCriterionOption.type}
-            option={PiercingsCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="piercings"
-          />
-          <SidebarStringFilter
-            title={<FormattedMessage id="tattoos" />}
-            data-type={TattoosCriterionOption.type}
-            option={TattoosCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="tattoos"
-          />
-          <SidebarRatingFilter
-            title={<FormattedMessage id="rating" />}
-            data-type={RatingCriterionOption.type}
-            option={RatingCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="rating"
-          />
-          <SidebarStringFilter
-            title={<FormattedMessage id="url" />}
-            data-type={UrlCriterionOption.type}
-            option={UrlCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="url"
-          />
-          <SidebarNumberFilter
-            title={<FormattedMessage id="scene_count" />}
-            data-type={SceneCountCriterionOption.type}
-            option={SceneCountCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="scene_count"
-          />
-          <SidebarNumberFilter
-            title={<FormattedMessage id="gallery_count" />}
-            data-type={GalleryCountCriterionOption.type}
-            option={GalleryCountCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="gallery_count"
-          />
-          <SidebarBooleanFilter
-            title={<FormattedMessage id="favourite" />}
-            data-type={FavoritePerformerCriterionOption.type}
-            option={FavoritePerformerCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="favourite"
-          />
-          <SidebarStashIDFilter
-            title={<FormattedMessage id="stash_id" />}
-            data-type={StashIDCriterionOption.type}
-            option={StashIDCriterionOption}
-            filter={filter}
-            setFilter={setFilter}
-            sectionID="stash_id"
-          />
+          <SidebarFilterSelector
+            viewName="performers"
+            filterDefinitions={performerFilterDefinitions}
+            headerContent={
+              <>
+                <Icon icon={faFilter} />
+                <FormattedMessage id="filters" />
+              </>
+            }
+            onEditModeChange={onFilterEditModeChange}
+          >
+            {/* Tier 1: Primary Filters */}
+            <FilterWrapper filterId="rating">
+              <SidebarRatingFilter
+                title={<FormattedMessage id="rating" />}
+                option={RatingCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="rating"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="favorite">
+              <SidebarBooleanFilter
+                title={<FormattedMessage id="favourite" />}
+                option={FavoritePerformerCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="favourite"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="tags">
+              <SidebarTagsFilter
+                title={<FormattedMessage id="tags" />}
+                option={TagsCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                sectionID="tags"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="studios">
+              <SidebarStudiosFilter
+                title={<FormattedMessage id="studios" />}
+                option={StudiosCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                sectionID="studios"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="groups">
+              <SidebarGroupsFilter
+                title={<FormattedMessage id="groups" />}
+                option={GroupsCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                sectionID="groups"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="gender">
+              <SidebarGenderFilter
+                title={<FormattedMessage id="gender" />}
+                option={GenderCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="gender"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="age">
+              <SidebarAgeFilter
+                title={<FormattedMessage id="age" />}
+                option={AgeCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="age"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="country">
+              <SidebarCountryFilter
+                title={<FormattedMessage id="country" />}
+                option={CountryCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="country"
+              />
+            </FilterWrapper>
+
+            {/* Tier 2: Physical Attributes */}
+            <FilterWrapper filterId="ethnicity">
+              <SidebarStringFilter
+                title={<FormattedMessage id="ethnicity" />}
+                option={EthnicityCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="ethnicity"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="circumcised">
+              <SidebarCircumcisedFilter
+                title={<FormattedMessage id="circumcised" />}
+                option={CircumcisedCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="circumcised"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="hair_color">
+              <SidebarStringFilter
+                title={<FormattedMessage id="hair_color" />}
+                option={HairColorCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="hair_color"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="eye_color">
+              <SidebarStringFilter
+                title={<FormattedMessage id="eye_color" />}
+                option={EyeColorCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="eye_color"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="height_cm">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="height" />}
+                option={HeightCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="height_cm"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="weight">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="weight" />}
+                option={WeightCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="weight"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="penis_length">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="penis_length" />}
+                option={PenisLengthCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="penis_length"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="measurements">
+              <SidebarStringFilter
+                title={<FormattedMessage id="measurements" />}
+                option={MeasurementsCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="measurements"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="fake_tits">
+              <SidebarStringFilter
+                title={<FormattedMessage id="fake_tits" />}
+                option={FakeTitsCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="fake_tits"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="tattoos">
+              <SidebarStringFilter
+                title={<FormattedMessage id="tattoos" />}
+                option={TattoosCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="tattoos"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="piercings">
+              <SidebarStringFilter
+                title={<FormattedMessage id="piercings" />}
+                option={PiercingsCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="piercings"
+              />
+            </FilterWrapper>
+
+            {/* Tier 3: Dates */}
+            <FilterWrapper filterId="birthdate">
+              <SidebarDateFilter
+                title={<FormattedMessage id="birthdate" />}
+                option={BirthdateCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="birthdate"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="death_date">
+              <SidebarDateFilter
+                title={<FormattedMessage id="death_date" />}
+                option={DeathDateCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="death_date"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="birth_year">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="birth_year" />}
+                option={BirthYearCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="birth_year"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="death_year">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="death_year" />}
+                option={DeathYearCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="death_year"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="career_length">
+              <SidebarStringFilter
+                title={<FormattedMessage id="career_length" />}
+                option={CareerLengthCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="career_length"
+              />
+            </FilterWrapper>
+
+            {/* Tier 4: Library Stats */}
+            <FilterWrapper filterId="scene_count">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="scene_count" />}
+                option={SceneCountCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="scene_count"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="image_count">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="image_count" />}
+                option={ImageCountCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="image_count"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="gallery_count">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="gallery_count" />}
+                option={GalleryCountCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="gallery_count"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="tag_count">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="tag_count" />}
+                option={TagCountCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="tag_count"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="play_count">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="play_count" />}
+                option={PlayCountCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="play_count"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="o_counter">
+              <SidebarNumberFilter
+                title={<FormattedMessage id="o_count" />}
+                option={OCounterCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="o_counter"
+              />
+            </FilterWrapper>
+
+            {/* Tier 5: Metadata */}
+            <FilterWrapper filterId="name">
+              <SidebarStringFilter
+                title={<FormattedMessage id="name" />}
+                option={NameCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="name"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="aliases">
+              <SidebarStringFilter
+                title={<FormattedMessage id="aliases" />}
+                option={AliasesCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="aliases"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="disambiguation">
+              <SidebarStringFilter
+                title={<FormattedMessage id="disambiguation" />}
+                option={DisambiguationCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="disambiguation"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="details">
+              <SidebarStringFilter
+                title={<FormattedMessage id="details" />}
+                option={DetailsCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="details"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="url">
+              <SidebarStringFilter
+                title={<FormattedMessage id="url" />}
+                option={UrlCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="url"
+              />
+            </FilterWrapper>
+
+            {/* Tier 6: System */}
+            <FilterWrapper filterId="is_missing">
+              <SidebarIsMissingFilter
+                title={<FormattedMessage id="isMissing" />}
+                option={PerformerIsMissingCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="is_missing"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="ignore_auto_tag">
+              <SidebarBooleanFilter
+                title={<FormattedMessage id="ignore_auto_tag" />}
+                option={IgnoreAutoTagCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="ignore_auto_tag"
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="created_at">
+              <SidebarDateFilter
+                title={<FormattedMessage id="created_at" />}
+                option={CreatedAtCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="created_at"
+                isTime
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="updated_at">
+              <SidebarDateFilter
+                title={<FormattedMessage id="updated_at" />}
+                option={UpdatedAtCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="updated_at"
+                isTime
+              />
+            </FilterWrapper>
+            <FilterWrapper filterId="stash_id">
+              <SidebarStashIDFilter
+                title={<FormattedMessage id="stash_id" />}
+                option={StashIDCriterionOption}
+                filter={filter}
+                setFilter={setFilter}
+                sectionID="stash_id"
+              />
+            </FilterWrapper>
+          </SidebarFilterSelector>
         </div>
       </MyPerformersFilterSidebarSections>
 
@@ -474,7 +844,6 @@ const SidebarContent: React.FC<{
           className="clear-all-filters-button"
           variant="secondary"
           onClick={() => clearAllCriteria()}
-          // TODO: add message
           title="Clear All Filters"
         >
           <FormattedMessage id="Clear All Filters" />
@@ -579,9 +948,32 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
     showSidebar,
     setShowSidebar,
     loading: sidebarStateLoading,
-    sectionOpen,
-    setSectionOpen,
+    sectionOpen: baseSectionOpen,
+    setSectionOpen: baseSetSectionOpen,
   } = useSidebarState(view);
+
+  // Track filter customization edit mode
+  const [isFilterEditMode, setIsFilterEditMode] = useState(false);
+
+  // When in filter edit mode, close all sections and prevent opening
+  const sectionOpen = useMemo(() => {
+    if (isFilterEditMode) {
+      const closedSections: Record<string, boolean> = {};
+      Object.keys(baseSectionOpen).forEach((key) => {
+        closedSections[key] = false;
+      });
+      return closedSections;
+    }
+    return baseSectionOpen;
+  }, [isFilterEditMode, baseSectionOpen]);
+
+  const setSectionOpen = useCallback(
+    (section: string, open: boolean) => {
+      if (isFilterEditMode) return;
+      baseSetSectionOpen(section, open);
+    },
+    [isFilterEditMode, baseSetSectionOpen]
+  );
 
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
@@ -625,6 +1017,12 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
   useFilteredSidebarKeybinds({
     showSidebar,
     setShowSidebar,
+  });
+
+  // Fetch facet counts for sidebar filters
+  const { counts: facetCounts, loading: facetLoading } = usePerformerFacetCounts(filter, {
+    isOpen: showSidebar ?? false,
+    debounceMs: 300,
   });
 
   useEffect(() => {
@@ -752,12 +1150,14 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
       >
         {modal}
 
-        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen, disabled: isFilterEditMode }}>
+          <FacetCountsContext.Provider value={{ counts: facetCounts, loading: facetLoading }}>
           <SidebarPane hideSidebar={!showSidebar}>
             <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
               <SidebarContent
                 filter={filter}
                 setFilter={setFilter}
+                onFilterEditModeChange={setIsFilterEditMode}
                 filterHook={filterHook}
                 showEditFilter={showEditFilter}
                 view={view}
@@ -833,6 +1233,7 @@ export const MyFilteredPerformerList = (props: IFilteredPerformers) => {
               )}
             </SidebarPaneContent>
           </SidebarPane>
+          </FacetCountsContext.Provider>
         </SidebarStateContext.Provider>
       </div>
     </TaggerContext>

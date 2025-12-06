@@ -36,6 +36,11 @@ type SceneQueryer interface {
 	QueryCount(ctx context.Context, sceneFilter *SceneFilterType, findFilter *FindFilterType) (int, error)
 }
 
+// SceneFaceter provides methods to get facet counts for scenes.
+type SceneFaceter interface {
+	GetFacets(ctx context.Context, sceneFilter *SceneFilterType, limit int, options SceneFacetOptions) (*SceneFacets, error)
+}
+
 // SceneCounter provides methods to count scenes.
 type SceneCounter interface {
 	Count(ctx context.Context) (int, error)
@@ -91,6 +96,7 @@ type SceneReader interface {
 	SceneFinder
 	SceneQueryer
 	SceneCounter
+	SceneFaceter
 
 	URLLoader
 	ViewDateReader

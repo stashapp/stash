@@ -26,6 +26,11 @@ type PerformerQueryer interface {
 	QueryCount(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
 }
 
+// PerformerFaceter provides methods to get facet counts for performers.
+type PerformerFaceter interface {
+	GetFacets(ctx context.Context, performerFilter *PerformerFilterType, limit int) (*PerformerFacets, error)
+}
+
 type PerformerAutoTagQueryer interface {
 	PerformerQueryer
 	AliasLoader
@@ -74,6 +79,7 @@ type PerformerReader interface {
 	PerformerQueryer
 	PerformerAutoTagQueryer
 	PerformerCounter
+	PerformerFaceter
 
 	AliasLoader
 	StashIDLoader

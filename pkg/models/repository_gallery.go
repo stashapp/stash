@@ -29,6 +29,11 @@ type GalleryQueryer interface {
 	QueryCount(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) (int, error)
 }
 
+// GalleryFaceter provides methods to get facet counts for galleries.
+type GalleryFaceter interface {
+	GetFacets(ctx context.Context, galleryFilter *GalleryFilterType, limit int) (*GalleryFacets, error)
+}
+
 // GalleryCounter provides methods to count galleries.
 type GalleryCounter interface {
 	Count(ctx context.Context) (int, error)
@@ -62,6 +67,7 @@ type GalleryReader interface {
 	GalleryFinder
 	GalleryQueryer
 	GalleryCounter
+	GalleryFaceter
 
 	URLLoader
 	FileIDLoader

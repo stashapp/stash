@@ -14,6 +14,7 @@ interface IProps {
   outsideCollapse?: React.ReactNode;
   onOpenChanged?: (o: boolean) => void;
   open?: boolean;
+  disabled?: boolean;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
@@ -22,6 +23,7 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
   const [open, setOpen] = useState(props.open ?? false);
 
   function toggleOpen() {
+    if (props.disabled) return;
     const nv = !open;
     setOpen(nv);
     props.onOpenChanged?.(nv);
