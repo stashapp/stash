@@ -977,7 +977,7 @@
             "image_thumbnails": "이미지 썸네일",
             "phash_tooltip": "중복 방지와 영상 식별에 사용됩니다"
         },
-        "scenes_found": "{count}개의 영상을 찾았습니다",
+        "scenes_found": "{count}개 영상 발견됨",
         "scrape_entity_query": "{entity_type} 스크레이핑 쿼리",
         "scrape_entity_title": "{entity_type} 스크레이핑 결과",
         "scrape_results_existing": "존재",
@@ -999,7 +999,9 @@
         "set_default_filter_confirm": "정말로 이 필터를 기본값으로 설정하시겠습니까?",
         "clear_o_history_confirm_sfw": "정말 좋아요 기록을 삭제하시겠습니까?",
         "delete_alert_to_trash": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}가 휴지통으로 옮겨질 것입니다:",
-        "stashid_exists_warning": "이 Stash-Box의 기존 Stash ID가 교체될 것입니다."
+        "stashid_exists_warning": "이 Stash-Box의 기존 Stash ID가 교체될 것입니다.",
+        "studios_found": "{count}개 스튜디오 발견됨",
+        "tags_found": "{count}개 태그 발견됨"
     },
     "dimensions": "해상도",
     "director": "감독",
