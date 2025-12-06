@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GalleryList } from "src/components/Galleries/MyGalleryList";
+import { EnhancedGalleryList as GalleryList } from "src/extensions/facets/enhanced";
 import { useStudioFilterHook } from "src/core/studios";
 import { View } from "src/components/List/views";
 

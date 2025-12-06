@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
-import { GalleryList } from "src/components/Galleries/MyGalleryList";
+import { EnhancedGalleryList as GalleryList } from "src/extensions/facets/enhanced";
 import { View } from "src/components/List/views";
 
 interface ITagGalleriesPanel {

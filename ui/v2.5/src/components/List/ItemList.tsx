@@ -14,7 +14,7 @@ import {
   EditFilterDialog,
   useShowEditFilter,
 } from "src/components/List/EditFilterDialog";
-import { FilterTags } from "./MyFilterTags";
+import { FilterTags } from "src/extensions/ui";
 import { View } from "./views";
 import { IHasID } from "src/utils/data";
 import {

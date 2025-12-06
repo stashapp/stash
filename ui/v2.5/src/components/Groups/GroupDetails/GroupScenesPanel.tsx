@@ -5,7 +5,7 @@ import {
   GroupsCriterionOption,
 } from "src/models/list-filter/criteria/groups";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilteredSceneList } from "src/components/Scenes/MySceneList";
+import { FilteredSceneList } from "src/extensions/facets/enhanced";
 import { View } from "src/components/List/views";
 
 interface IGroupScenesPanel {

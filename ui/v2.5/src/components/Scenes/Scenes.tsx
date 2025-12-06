@@ -5,7 +5,7 @@ import { useTitleProps } from "src/hooks/title";
 import { lazyComponent } from "src/utils/lazyComponent";
 import { View } from "../List/views";
 
-const SceneList = lazyComponent(() => import("./MySceneList"));
+const SceneList = lazyComponent(() => import("src/extensions/lists/SceneList"));
 const SceneMarkerList = lazyComponent(() => import("./SceneMarkerList"));
 const Scene = lazyComponent(() => import("./SceneDetails/Scene"));
 const SceneCreate = lazyComponent(() => import("./SceneDetails/SceneCreate"));

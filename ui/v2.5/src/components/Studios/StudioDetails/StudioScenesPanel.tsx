@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { FilteredSceneList } from "src/components/Scenes/MySceneList";
+import { FilteredSceneList } from "src/extensions/facets/enhanced";
 import { useStudioFilterHook } from "src/core/studios";
 import { View } from "src/components/List/views";
 

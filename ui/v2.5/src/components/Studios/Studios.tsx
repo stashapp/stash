@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Studio from "./StudioDetails/Studio";
 import StudioCreate from "./StudioDetails/StudioCreate";
-import { StudioList } from "./MyStudioList";
+import { EnhancedStudioList as StudioList } from "src/extensions/facets/enhanced";
 import { View } from "../List/views";
 
 const Studios: React.FC = () => {

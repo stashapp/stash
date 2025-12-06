@@ -1,0 +1,56 @@
+/**
+ * Facets Extension Styles
+ * 
+ * Styles for the facets/aggregation counting feature.
+ */
+
+// Facet count badge
+.ext-facet-count {
+  background-color: var(--ext-facet-count-bg);
+  border-radius: 10px;
+  color: var(--ext-facet-count-color);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: auto;
+  min-width: 24px;
+  padding: 2px 6px;
+  text-align: center;
+  transition: background-color var(--ext-transition-fast);
+
+  &:hover {
+    background-color: var(--ext-facet-count-hover-bg);
+  }
+
+  &.loading {
+    animation: ext-pulse 1.5s infinite;
+  }
+}
+
+// Facet filter row with count
+.ext-facet-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 4px 0;
+
+  .ext-facet-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Loading animation
+@keyframes ext-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
