@@ -597,3 +597,26 @@ func (_m *PerformerReaderWriter) UpdatePartial(ctx context.Context, id int, upda
 
 	return r0, r1
 }
+
+// GetFacets provides a mock function with given fields: ctx, performerFilter, limit
+func (_m *PerformerReaderWriter) GetFacets(ctx context.Context, performerFilter *models.PerformerFilterType, limit int) (*models.PerformerFacets, error) {
+	ret := _m.Called(ctx, performerFilter, limit)
+
+	var r0 *models.PerformerFacets
+	if rf, ok := ret.Get(0).(func(context.Context, *models.PerformerFilterType, int) *models.PerformerFacets); ok {
+		r0 = rf(ctx, performerFilter, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.PerformerFacets)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.PerformerFilterType, int) error); ok {
+		r1 = rf(ctx, performerFilter, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

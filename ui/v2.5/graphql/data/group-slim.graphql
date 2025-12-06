@@ -14,4 +14,15 @@ fragment SelectGroupData on Group {
     name
   }
   front_image_path
+  scene_count
+  scene_count_all: scene_count(depth: -1)
+  performer_count
+  sub_group_count
+}
+
+# Minimal fragment for sidebar filter - only essential fields for fast loading
+fragment FilterGroupData on Group {
+  id
+  name
+  aliases
 }

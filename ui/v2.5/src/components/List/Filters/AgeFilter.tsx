@@ -367,12 +367,14 @@ interface ICustomAgeInputProps {
   criterion: NumberCriterion;
   onValueChanged: (value: INumberValue) => void;
   onModifierChanged: (m: CriterionModifier) => void;
+  onCancel: () => void;
 }
 
 const CustomAgeInput: React.FC<ICustomAgeInputProps> = ({
   criterion,
   onValueChanged,
   onModifierChanged,
+  onCancel,
 }) => {
   const intl = useIntl();
   const { value, modifier } = criterion;
@@ -453,6 +455,13 @@ const CustomAgeInput: React.FC<ICustomAgeInputProps> = ({
           />
         </Form.Group>
       )}
+      <button
+        type="button"
+        className="custom-cancel-button"
+        onClick={onCancel}
+      >
+        ✕
+      </button>
     </div>
   );
 };
@@ -479,6 +488,7 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
       criterion={state.criterion}
       onValueChanged={state.onCustomValueChanged}
       onModifierChanged={state.onCustomModifierChanged}
+      onCancel={() => state.setShowCustom(false)}
     />
   ) : null;
 

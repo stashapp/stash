@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
+import React, { ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
@@ -6,26 +6,40 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { languageMap } from "src/utils/caption";
+import { languageData, getLanguageCode } from "src/utils/caption";
 import {
   CaptionCriterion,
 } from "src/models/list-filter/criteria/captions";
+import { FacetCountsContext } from "src/hooks/useFacetCounts";
 
-// Get language options from the languageMap
-const languageOptions = Array.from(languageMap.entries()).map(
-  ([code, name]) => ({
-    code,
-    name,
-  })
-);
+// Create language code badge element
+function createCodeBadge(code: string): React.ReactNode {
+  if (!code) return null;
+  return (
+    <span 
+      style={{ 
+        marginRight: "0.5em",
+        fontSize: "0.7em",
+        fontWeight: 600,
+        padding: "0.15em 0.4em",
+        borderRadius: "3px",
+        backgroundColor: "rgba(255,255,255,0.15)",
+        textTransform: "uppercase",
+      }}
+    >
+      {code}
+    </span>
+  );
+}
 
 function useCaptionsFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  counts?: Map<string, number>;
 }) {
   const intl = useIntl();
-  const { option, filter, setFilter } = props;
+  const { option, filter, setFilter, counts } = props;
 
   const [query, setQuery] = useState("");
 
@@ -74,24 +88,13 @@ function useCaptionsFilterState(props: {
         className: "modifier-object",
       }));
 
-    // If a language is selected and it's included (not excluded), add it with "(includes)" prefix
-    if (
-      criterion.value &&
-      modifier === CriterionModifier.Includes
-    ) {
-      // Add the includes modifier indicator
-      modifierValues.push({
-        id: "includes_modifier",
-        label: `(${intl.formatMessage({
-          id: "criterion_modifier.includes",
-          defaultMessage: "includes",
-        })})`,
-        className: "modifier-object",
-      });
-      // Add the language value
+    // If a language is selected and it's included, add it
+    if (criterion.value && modifier === CriterionModifier.Includes) {
+      const code = getLanguageCode(criterion.value);
       modifierValues.push({
         id: criterion.value,
         label: criterion.value,
+        icon: createCodeBadge(code),
       });
     }
 
@@ -100,29 +103,18 @@ function useCaptionsFilterState(props: {
 
   // Build excluded items list
   const excluded = useMemo(() => {
-    const excludedItems: Option[] = [];
-    
-    if (
-      criterion.value &&
-      modifier === CriterionModifier.Excludes
-    ) {
-      // Add the excludes modifier indicator
-      excludedItems.push({
-        id: "excludes_modifier",
-        label: `(${intl.formatMessage({
-          id: "criterion_modifier.excludes",
-          defaultMessage: "excludes",
-        })})`,
-        className: "modifier-object",
-      });
-      // Add the language value
-      excludedItems.push({
+    // If a language is selected and it's excluded, add it
+    // (the exclude icon is already shown by the list component)
+    if (criterion.value && modifier === CriterionModifier.Excludes) {
+      const code = getLanguageCode(criterion.value);
+      return [{
         id: criterion.value,
         label: criterion.value,
-      });
+        icon: createCodeBadge(code),
+      }];
     }
-    return excludedItems;
-  }, [criterion.value, modifier, intl]);
+    return [];
+  }, [criterion.value, modifier]);
 
   // Build candidates list (language options)
   const candidates = useMemo(() => {
@@ -161,20 +153,42 @@ function useCaptionsFilterState(props: {
     }
 
     // Filter languages by query and exclude already selected
-    const filteredLanguages = languageOptions.filter((lang) => {
+    // Also filter out zero-count languages when counts are available
+    const hasLoadedCounts = counts && counts.size > 0;
+    const filteredLanguages = languageData.filter((lang) => {
       if (criterion.value === lang.name) return false;
-      if (!query) return true;
-      return lang.name.toLowerCase().includes(query.toLowerCase());
+      if (!query) {
+        // When no query, filter by count if available
+        if (hasLoadedCounts) {
+          const count = counts.get(lang.code.toLowerCase());
+          return count !== undefined && count > 0;
+        }
+        return true;
+      }
+      const matchesQuery = lang.name.toLowerCase().includes(query.toLowerCase()) ||
+             lang.code.toLowerCase().includes(query.toLowerCase());
+      if (!matchesQuery) return false;
+      // Even with query, filter by count if available
+      if (hasLoadedCounts) {
+        const count = counts.get(lang.code.toLowerCase());
+        return count !== undefined && count > 0;
+      }
+      return true;
     });
 
     return modifierCandidates.concat(
-      filteredLanguages.map((lang) => ({
-        id: lang.name,
-        label: lang.name,
-        canExclude: true,
-      }))
+      filteredLanguages.map((lang) => {
+        const count = counts?.get(lang.code.toLowerCase());
+        return {
+          id: lang.name,
+          label: lang.name,
+          canExclude: true,
+          icon: createCodeBadge(lang.code.toUpperCase()),
+          count,
+        };
+      })
     );
-  }, [modifier, criterion.value, query, intl]);
+  }, [modifier, criterion.value, query, intl, counts]);
 
   const onSelect = useCallback(
     (v: Option, exclude: boolean) => {
@@ -241,10 +255,15 @@ export const SidebarCaptionsFilter: React.FC<{
   setFilter: (f: ListFilterModel) => void;
   sectionID?: string;
 }> = ({ title, option, filter, setFilter, sectionID }) => {
+  // Get facet counts from context - include loading state to avoid stale data filtering
+  const { counts: facetCounts, loading: facetsLoading } = useContext(FacetCountsContext);
+
   const state = useCaptionsFilterState({
     filter,
     setFilter,
     option,
+    // Pass empty map when loading to prevent filtering with stale data
+    counts: facetsLoading ? new Map() : facetCounts.captions,
   });
 
   return (

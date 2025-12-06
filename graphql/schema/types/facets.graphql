@@ -1,0 +1,169 @@
+# Facet count types for aggregated filtering
+# These types support efficient faceted search by returning counts for all filter options in a single query
+
+"""
+A count for an entity (tag, performer, studio, etc.) within the current filter context
+"""
+type FacetCount {
+  id: ID!
+  label: String!
+  count: Int!
+}
+
+"""
+A count for a resolution value within the current filter context
+"""
+type ResolutionFacetCount {
+  resolution: ResolutionEnum!
+  count: Int!
+}
+
+"""
+A count for an orientation value within the current filter context
+"""
+type OrientationFacetCount {
+  orientation: OrientationEnum!
+  count: Int!
+}
+
+"""
+A count for a gender value within the current filter context
+"""
+type GenderFacetCount {
+  gender: GenderEnum!
+  count: Int!
+}
+
+"""
+A count for a boolean value within the current filter context
+"""
+type BooleanFacetCount {
+  value: Boolean!
+  count: Int!
+}
+
+"""
+A count for a rating value (1-5 stars, stored as 20-100) within the current filter context
+"""
+type RatingFacetCount {
+  rating: Int!
+  count: Int!
+}
+
+"""
+A count for a circumcised value within the current filter context
+"""
+type CircumcisedFacetCount {
+  value: CircumisedEnum!
+  count: Int!
+}
+
+"""
+A count for a caption language within the current filter context
+"""
+type CaptionFacetCount {
+  language: String!
+  count: Int!
+}
+
+"""
+Facet counts for scene filtering.
+Returns counts for various dimensions to enable efficient faceted search.
+"""
+type SceneFacetsResult {
+  "Counts per tag (ordered by count descending)"
+  tags: [FacetCount!]!
+  "Counts per performer (ordered by count descending)"
+  performers: [FacetCount!]!
+  "Counts per studio (ordered by count descending)"
+  studios: [FacetCount!]!
+  "Counts per group (ordered by count descending)"
+  groups: [FacetCount!]!
+  "Counts per performer tag (ordered by count descending)"
+  performer_tags: [FacetCount!]!
+  "Counts per resolution"
+  resolutions: [ResolutionFacetCount!]!
+  "Counts per orientation"
+  orientations: [OrientationFacetCount!]!
+  "Counts for organized true/false"
+  organized: [BooleanFacetCount!]!
+  "Counts for interactive true/false"
+  interactive: [BooleanFacetCount!]!
+  "Counts per rating (1-5 stars)"
+  ratings: [RatingFacetCount!]!
+  "Counts per caption language"
+  captions: [CaptionFacetCount!]!
+}
+
+"""
+Facet counts for performer filtering.
+"""
+type PerformerFacetsResult {
+  "Counts per tag (ordered by count descending)"
+  tags: [FacetCount!]!
+  "Counts per studio (ordered by count descending)"
+  studios: [FacetCount!]!
+  "Counts per gender"
+  genders: [GenderFacetCount!]!
+  "Counts per country"
+  countries: [FacetCount!]!
+  "Counts per circumcised value"
+  circumcised: [CircumcisedFacetCount!]!
+  "Counts for favorite true/false"
+  favorite: [BooleanFacetCount!]!
+  "Counts per rating (1-5 stars)"
+  ratings: [RatingFacetCount!]!
+}
+
+"""
+Facet counts for gallery filtering.
+"""
+type GalleryFacetsResult {
+  "Counts per tag (ordered by count descending)"
+  tags: [FacetCount!]!
+  "Counts per performer (ordered by count descending)"
+  performers: [FacetCount!]!
+  "Counts per studio (ordered by count descending)"
+  studios: [FacetCount!]!
+  "Counts for organized true/false"
+  organized: [BooleanFacetCount!]!
+  "Counts per rating (1-5 stars)"
+  ratings: [RatingFacetCount!]!
+}
+
+"""
+Facet counts for group filtering.
+"""
+type GroupFacetsResult {
+  "Counts per tag (ordered by count descending)"
+  tags: [FacetCount!]!
+  "Counts per performer (ordered by count descending)"
+  performers: [FacetCount!]!
+  "Counts per studio (ordered by count descending)"
+  studios: [FacetCount!]!
+}
+
+"""
+Facet counts for studio filtering.
+"""
+type StudioFacetsResult {
+  "Counts per tag (ordered by count descending)"
+  tags: [FacetCount!]!
+  "Counts per parent studio (ordered by count descending)"
+  parents: [FacetCount!]!
+  "Counts for favorite true/false"
+  favorite: [BooleanFacetCount!]!
+}
+
+"""
+Facet counts for tag filtering.
+"""
+type TagFacetsResult {
+  "Counts per parent tag (ordered by count descending)"
+  parents: [FacetCount!]!
+  "Counts per child tag (ordered by count descending)"
+  children: [FacetCount!]!
+  "Counts for favorite true/false"
+  favorite: [BooleanFacetCount!]!
+}
+

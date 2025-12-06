@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useMemo } from "react";
+import React, { ReactNode, useCallback, useContext, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,11 +6,25 @@ import {
   faTransgenderAlt,
   faMars,
 } from "@fortawesome/free-solid-svg-icons";
-import { CriterionModifier } from "src/core/generated-graphql";
+import {
+  CriterionModifier,
+  GenderEnum,
+} from "src/core/generated-graphql";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { GenderCriterion } from "src/models/list-filter/criteria/gender";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
+import { FacetCountsContext } from "src/hooks/useFacetCounts";
+
+// Map string IDs to GenderEnum values
+const genderIdToEnum: Record<string, GenderEnum> = {
+  "Male": GenderEnum.Male,
+  "Female": GenderEnum.Female,
+  "Transgender Male": GenderEnum.TransgenderMale,
+  "Transgender Female": GenderEnum.TransgenderFemale,
+  "Intersex": GenderEnum.Intersex,
+  "Non-Binary": GenderEnum.NonBinary,
+};
 
 // Create a gender icon element
 function createGenderIcon(genderId: string): React.ReactNode {
@@ -20,18 +34,18 @@ function createGenderIcon(genderId: string): React.ReactNode {
   switch (genderId) {
     case "Male":
       icon = faMars;
-      color = "#6fa8dc"; // blue
+      color = "#6fa8dc";
       break;
     case "Female":
       icon = faVenus;
-      color = "#e06666"; // pink/red
+      color = "#e06666";
       break;
     case "Transgender Male":
     case "Transgender Female":
     case "Intersex":
     case "Non-Binary":
       icon = faTransgenderAlt;
-      color = "#9966cc"; // purple
+      color = "#9966cc";
       break;
     default:
       return null;
@@ -50,45 +64,52 @@ function useGenderFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  counts?: Map<GenderEnum, number>;
 }) {
   const intl = useIntl();
-  const { option, filter, setFilter } = props;
+  const { option, filter, setFilter, counts } = props;
 
-  // Gender options with icons
+  // Gender options with icons and counts
   const genderOptions = useMemo(() => {
     return [
       {
         id: "Male",
         label: intl.formatMessage({ id: "gender_types.MALE" }),
         icon: createGenderIcon("Male"),
+        count: counts?.get(GenderEnum.Male),
       },
       {
         id: "Female",
         label: intl.formatMessage({ id: "gender_types.FEMALE" }),
         icon: createGenderIcon("Female"),
+        count: counts?.get(GenderEnum.Female),
       },
       {
         id: "Transgender Male",
         label: intl.formatMessage({ id: "gender_types.TRANSGENDER_MALE" }),
         icon: createGenderIcon("Transgender Male"),
+        count: counts?.get(GenderEnum.TransgenderMale),
       },
       {
         id: "Transgender Female",
         label: intl.formatMessage({ id: "gender_types.TRANSGENDER_FEMALE" }),
         icon: createGenderIcon("Transgender Female"),
+        count: counts?.get(GenderEnum.TransgenderFemale),
       },
       {
         id: "Intersex",
         label: intl.formatMessage({ id: "gender_types.INTERSEX" }),
         icon: createGenderIcon("Intersex"),
+        count: counts?.get(GenderEnum.Intersex),
       },
       {
         id: "Non-Binary",
         label: intl.formatMessage({ id: "gender_types.NON_BINARY" }),
         icon: createGenderIcon("Non-Binary"),
+        count: counts?.get(GenderEnum.NonBinary),
       },
     ];
-  }, [intl]);
+  }, [intl, counts]);
 
   const criteria = filter.criteriaFor(option.type) as GenderCriterion[];
   const criterion = useMemo(() => {
@@ -130,7 +151,6 @@ function useGenderFilterState(props: {
         className: "modifier-object",
       }));
 
-    // If genders are selected with Includes modifier, add them
     if (modifier === CriterionModifier.Includes && value.length > 0) {
       value.forEach((genderId) => {
         const gender = genderOptions.find((g) => g.id === genderId);
@@ -148,21 +168,20 @@ function useGenderFilterState(props: {
   }, [intl, selectedModifiers, modifier, value, genderOptions]);
 
   // Build excluded items list
-  const excluded = useMemo(() => {
+  const excluded: Option[] = useMemo(() => {
     if (modifier === CriterionModifier.Excludes && value.length > 0) {
-      return value
-        .map((genderId) => {
-          const gender = genderOptions.find((g) => g.id === genderId);
-          if (gender) {
-            return {
-              id: genderId,
-              label: gender.label,
-              icon: gender.icon,
-            };
-          }
-          return null;
-        })
-        .filter((g): g is Option => g !== null);
+      const result: Option[] = [];
+      value.forEach((genderId) => {
+        const gender = genderOptions.find((g) => g.id === genderId);
+        if (gender) {
+          result.push({
+            id: genderId,
+            label: gender.label,
+            icon: gender.icon,
+          });
+        }
+      });
+      return result;
     }
     return [];
   }, [modifier, value, genderOptions]);
@@ -171,7 +190,6 @@ function useGenderFilterState(props: {
   const candidates = useMemo(() => {
     const modifierCandidates: Option[] = [];
 
-    // Show modifier options when no specific genders are selected
     if (
       (modifier === CriterionModifier.Includes ||
         modifier === CriterionModifier.Excludes) &&
@@ -195,7 +213,6 @@ function useGenderFilterState(props: {
       });
     }
 
-    // Don't show gender options if modifier is any/none
     if (
       modifier === CriterionModifier.IsNull ||
       modifier === CriterionModifier.NotNull
@@ -203,9 +220,12 @@ function useGenderFilterState(props: {
       return modifierCandidates;
     }
 
-    // Filter genders to exclude already selected ones
+    // Filter genders to exclude already selected ones and zero-count options
+    const hasLoadedCounts = counts && counts.size > 0;
     const filteredGenders = genderOptions.filter((gender) => {
-      return !value.includes(gender.id);
+      if (value.includes(gender.id)) return false;
+      if (!hasLoadedCounts) return true; // No counts loaded yet, show all
+      return gender.count !== undefined && gender.count > 0;
     });
 
     return modifierCandidates.concat(
@@ -214,6 +234,7 @@ function useGenderFilterState(props: {
         label: gender.label,
         canExclude: true,
         icon: gender.icon,
+        count: gender.count,
       }))
     );
   }, [modifier, value, intl, genderOptions]);
@@ -223,7 +244,6 @@ function useGenderFilterState(props: {
       const newCriterion = criterion.clone() as GenderCriterion;
 
       if (v.className === "modifier-object") {
-        // Handle modifier selection
         if (v.id === "any") {
           newCriterion.modifier = CriterionModifier.NotNull;
           newCriterion.value = [];
@@ -232,35 +252,27 @@ function useGenderFilterState(props: {
           newCriterion.value = [];
         }
       } else {
-        // Handle gender selection
         if (exclude) {
-          // If currently including, switch to excluding
           if (newCriterion.modifier === CriterionModifier.Includes) {
             newCriterion.modifier = CriterionModifier.Excludes;
             newCriterion.value = [v.id];
           } else if (newCriterion.modifier === CriterionModifier.Excludes) {
-            // Add to excluded list
             if (!newCriterion.value.includes(v.id)) {
               newCriterion.value = [...newCriterion.value, v.id];
             }
           } else {
-            // Start new exclude
             newCriterion.modifier = CriterionModifier.Excludes;
             newCriterion.value = [v.id];
           }
         } else {
-          // Include
           if (newCriterion.modifier === CriterionModifier.Excludes) {
-            // Switch from exclude to include
             newCriterion.modifier = CriterionModifier.Includes;
             newCriterion.value = [v.id];
           } else if (newCriterion.modifier === CriterionModifier.Includes) {
-            // Add to included list
             if (!newCriterion.value.includes(v.id)) {
               newCriterion.value = [...newCriterion.value, v.id];
             }
           } else {
-            // Start new include
             newCriterion.modifier = CriterionModifier.Includes;
             newCriterion.value = [v.id];
           }
@@ -275,18 +287,14 @@ function useGenderFilterState(props: {
   const onUnselect = useCallback(
     (v: Option, exclude: boolean) => {
       if (v.className === "modifier-object") {
-        // Clear modifier
         setCriterion(null);
         return;
       }
 
       const newCriterion = criterion.clone() as GenderCriterion;
-
-      // Remove from current selection
       newCriterion.value = newCriterion.value.filter((id) => id !== v.id);
 
       if (newCriterion.value.length === 0) {
-        // Reset to default
         setCriterion(null);
       } else {
         setCriterion(newCriterion);
@@ -320,7 +328,16 @@ export const SidebarGenderFilter: React.FC<ISidebarFilter> = ({
   setFilter,
   sectionID,
 }) => {
-  const state = useGenderFilterState({ option, filter, setFilter });
+  // Get facet counts from context - include loading state to avoid stale data filtering
+  const { counts: facetCounts, loading: facetsLoading } = useContext(FacetCountsContext);
+  
+  const state = useGenderFilterState({ 
+    option, 
+    filter, 
+    setFilter, 
+    // Pass undefined counts when loading to prevent filtering with stale data
+    counts: facetsLoading ? new Map() : facetCounts.genders 
+  });
 
   return (
     <SidebarListFilter

@@ -1,27 +1,48 @@
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
+import React, { ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTv } from "@fortawesome/free-solid-svg-icons";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { resolutionStrings } from "src/utils/resolution";
+import { resolutionStrings, stringToResolution } from "src/utils/resolution";
 import { ResolutionCriterion } from "src/models/list-filter/criteria/resolution";
+import { FacetCountsContext } from "src/hooks/useFacetCounts";
 
-// Resolution options from the resolution utility
-const resolutionOptions = resolutionStrings.map((res) => ({
-  id: res,
-  label: res,
-}));
+function createResolutionIcon(): React.ReactNode {
+  return (
+    <FontAwesomeIcon
+      icon={faTv}
+      style={{ marginRight: "0.5em", opacity: 0.7 }}
+      fixedWidth
+    />
+  );
+}
 
 function useResolutionFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
+  counts?: Map<string, number>;
 }) {
   const intl = useIntl();
-  const { option, filter, setFilter } = props;
+  const { option, filter, setFilter, counts } = props;
 
   const [query, setQuery] = useState("");
+
+  // Resolution options with counts from facets
+  const resolutionOptions = useMemo(() => {
+    return resolutionStrings.map((res) => {
+      const resEnum = stringToResolution(res);
+      const count = resEnum ? counts?.get(resEnum) : undefined;
+      return {
+        id: res,
+        label: res,
+        count,
+      };
+    });
+  }, [counts]);
 
   // Get or create criterion
   const criterion = useMemo(() => {
@@ -29,7 +50,6 @@ function useResolutionFilterState(props: {
       (c) => c.criterionOption.type === option.type
     );
     if (ret) return ret as ResolutionCriterion;
-
     return filter.makeCriterion(option.type) as ResolutionCriterion;
   }, [filter, option]);
 
@@ -38,9 +58,7 @@ function useResolutionFilterState(props: {
       const newCriteria = filter.criteria.filter(
         (cc) => cc.criterionOption.type !== option.type
       );
-
       if (c.isValid()) newCriteria.push(c);
-
       setFilter(filter.setCriteria(newCriteria));
     },
     [option.type, setFilter, filter]
@@ -48,7 +66,6 @@ function useResolutionFilterState(props: {
 
   const { modifier } = criterion;
 
-  // Get modifier label for display
   const getModifierLabel = useCallback(
     (mod: CriterionModifier) => {
       switch (mod) {
@@ -86,25 +103,22 @@ function useResolutionFilterState(props: {
   const selected = useMemo(() => {
     const selectedItems: Option[] = [];
 
-    // If filter is active (has value in criterion), show modifier and value
     if (criterion.value) {
-      // Add the modifier indicator
       selectedItems.push({
         id: "modifier",
         label: `(${getModifierLabel(modifier)})`,
         className: "modifier-object",
       });
-      // Add the resolution value
       selectedItems.push({
         id: criterion.value,
         label: criterion.value,
+        icon: createResolutionIcon(),
       });
-    }
-    // If there's a pending resolution (selected but no modifier yet), show it
-    else if (pendingResolution) {
+    } else if (pendingResolution) {
       selectedItems.push({
         id: pendingResolution,
         label: pendingResolution,
+        icon: createResolutionIcon(),
       });
     }
 
@@ -113,7 +127,6 @@ function useResolutionFilterState(props: {
 
   // Build candidates list (resolution options or modifier options)
   const candidates = useMemo(() => {
-    // If a resolution is pending (selected but no modifier yet), show modifier options
     if (pendingResolution) {
       return [
         {
@@ -143,28 +156,31 @@ function useResolutionFilterState(props: {
       ];
     }
 
-    // If filter is already active, don't show any candidates
     if (criterion.value) {
       return [];
     }
 
-    // Show resolution options (no modifier options until resolution is selected)
+    // Filter out zero-count options
+    const hasLoadedCounts = counts && counts.size > 0;
     const filteredResolutions = resolutionOptions.filter((res) => {
-      if (!query) return true;
-      return res.label.toLowerCase().includes(query.toLowerCase());
+      const matchesQuery = !query || res.label.toLowerCase().includes(query.toLowerCase());
+      if (!matchesQuery) return false;
+      if (!hasLoadedCounts) return true;
+      return res.count !== undefined && res.count > 0;
     });
 
     return filteredResolutions.map((res) => ({
       id: res.id,
       label: res.label,
+      icon: createResolutionIcon(),
       canExclude: false,
+      count: res.count,
     }));
-  }, [criterion.value, query, getModifierLabel, pendingResolution]);
+  }, [criterion.value, query, getModifierLabel, pendingResolution, resolutionOptions]);
 
   const onSelect = useCallback(
     (v: Option, exclude: boolean) => {
       if (v.className === "modifier-object") {
-        // User selected a modifier after choosing a resolution
         if (pendingResolution) {
           const newCriterion = criterion.clone() as ResolutionCriterion;
           newCriterion.value = pendingResolution;
@@ -191,7 +207,6 @@ function useResolutionFilterState(props: {
         return;
       }
 
-      // User selected a resolution - store it as pending and wait for modifier
       setPendingResolution(v.id);
     },
     [criterion, setCriterion, pendingResolution]
@@ -200,7 +215,6 @@ function useResolutionFilterState(props: {
   const onUnselect = useCallback(
     (v: Option, exclude: boolean) => {
       if (v.className === "modifier-object") {
-        // Clicking on modifier clears the filter
         const newCriterion = criterion.clone() as ResolutionCriterion;
         newCriterion.modifier = CriterionModifier.Equals;
         newCriterion.value = "";
@@ -209,7 +223,6 @@ function useResolutionFilterState(props: {
         return;
       }
 
-      // Clear the resolution value or pending resolution
       if (criterion.value) {
         const newCriterion = criterion.clone() as ResolutionCriterion;
         newCriterion.value = "";
@@ -240,10 +253,15 @@ export const SidebarResolutionFilter: React.FC<{
   setFilter: (f: ListFilterModel) => void;
   sectionID?: string;
 }> = ({ title, option, filter, setFilter, sectionID }) => {
+  // Get facet counts from context - include loading state to avoid stale data filtering
+  const { counts: facetCounts, loading: facetsLoading } = useContext(FacetCountsContext);
+  
   const state = useResolutionFilterState({
     filter,
     setFilter,
     option,
+    // Pass empty map when loading to prevent filtering with stale data
+    counts: facetsLoading ? new Map() : facetCounts.resolutions,
   });
 
   return (
@@ -257,4 +275,3 @@ export const SidebarResolutionFilter: React.FC<{
 };
 
 export default SidebarResolutionFilter;
-

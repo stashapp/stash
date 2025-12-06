@@ -24,6 +24,11 @@ type GroupQueryer interface {
 	QueryCount(ctx context.Context, groupFilter *GroupFilterType, findFilter *FindFilterType) (int, error)
 }
 
+// GroupFaceter provides methods to get facet counts for groups.
+type GroupFaceter interface {
+	GetFacets(ctx context.Context, groupFilter *GroupFilterType, limit int) (*GroupFacets, error)
+}
+
 // GroupCounter provides methods to count groups.
 type GroupCounter interface {
 	Count(ctx context.Context) (int, error)
@@ -64,6 +69,7 @@ type GroupReader interface {
 	GroupFinder
 	GroupQueryer
 	GroupCounter
+	GroupFaceter
 	URLLoader
 	TagIDLoader
 	ContainingGroupLoader

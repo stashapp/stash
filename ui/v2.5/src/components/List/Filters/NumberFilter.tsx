@@ -19,6 +19,258 @@ import { ModifierSelectorButtons } from "../ModifierSelect";
 import { NumberField } from "src/utils/form";
 
 // ============================================================================
+// PRESET CONFIGURATIONS FOR NUMBER FILTERS
+// ============================================================================
+
+interface NumberPreset {
+  id: string;
+  label: string;
+  modifier: CriterionModifier;
+  value: number;
+  value2?: number;
+}
+
+// Preset configurations for different filter types
+const presetConfigs: Record<string, NumberPreset[]> = {
+  // =========================================================================
+  // COUNT PRESETS (for performers, tags, studios, etc.)
+  // =========================================================================
+  scene_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-10", label: "1-10", modifier: CriterionModifier.Between, value: 1, value2: 10 },
+    { id: "11-50", label: "11-50", modifier: CriterionModifier.Between, value: 11, value2: 50 },
+    { id: "51-100", label: "51-100", modifier: CriterionModifier.Between, value: 51, value2: 100 },
+    { id: "101-500", label: "101-500", modifier: CriterionModifier.Between, value: 101, value2: 500 },
+    { id: "500+", label: "500+", modifier: CriterionModifier.GreaterThan, value: 500 },
+  ],
+  image_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-100", label: "1-100", modifier: CriterionModifier.Between, value: 1, value2: 100 },
+    { id: "101-1000", label: "101-1K", modifier: CriterionModifier.Between, value: 101, value2: 1000 },
+    { id: "1001-10000", label: "1K-10K", modifier: CriterionModifier.Between, value: 1001, value2: 10000 },
+    { id: "10001-50000", label: "10K-50K", modifier: CriterionModifier.Between, value: 10001, value2: 50000 },
+    { id: "50000+", label: "50K+", modifier: CriterionModifier.GreaterThan, value: 50000 },
+  ],
+  gallery_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-10", label: "1-10", modifier: CriterionModifier.Between, value: 1, value2: 10 },
+    { id: "11-50", label: "11-50", modifier: CriterionModifier.Between, value: 11, value2: 50 },
+    { id: "51-100", label: "51-100", modifier: CriterionModifier.Between, value: 51, value2: 100 },
+    { id: "101-500", label: "101-500", modifier: CriterionModifier.Between, value: 101, value2: 500 },
+    { id: "500+", label: "500+", modifier: CriterionModifier.GreaterThan, value: 500 },
+  ],
+  performer_count: [
+    { id: "0", label: "Solo", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1", label: "1", modifier: CriterionModifier.Equals, value: 1 },
+    { id: "2", label: "2", modifier: CriterionModifier.Equals, value: 2 },
+    { id: "3-5", label: "3-5", modifier: CriterionModifier.Between, value: 3, value2: 5 },
+    { id: "6+", label: "6+", modifier: CriterionModifier.GreaterThan, value: 5 },
+  ],
+  tag_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-5", label: "1-5", modifier: CriterionModifier.Between, value: 1, value2: 5 },
+    { id: "6-10", label: "6-10", modifier: CriterionModifier.Between, value: 6, value2: 10 },
+    { id: "11-20", label: "11-20", modifier: CriterionModifier.Between, value: 11, value2: 20 },
+    { id: "20+", label: "20+", modifier: CriterionModifier.GreaterThan, value: 20 },
+  ],
+  studio_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-5", label: "1-5", modifier: CriterionModifier.Between, value: 1, value2: 5 },
+    { id: "6-10", label: "6-10", modifier: CriterionModifier.Between, value: 6, value2: 10 },
+    { id: "10+", label: "10+", modifier: CriterionModifier.GreaterThan, value: 10 },
+  ],
+  group_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-5", label: "1-5", modifier: CriterionModifier.Between, value: 1, value2: 5 },
+    { id: "6-10", label: "6-10", modifier: CriterionModifier.Between, value: 6, value2: 10 },
+    { id: "10+", label: "10+", modifier: CriterionModifier.GreaterThan, value: 10 },
+  ],
+  marker_count: [
+    { id: "0", label: "None", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-5", label: "1-5", modifier: CriterionModifier.Between, value: 1, value2: 5 },
+    { id: "6-10", label: "6-10", modifier: CriterionModifier.Between, value: 6, value2: 10 },
+    { id: "10+", label: "10+", modifier: CriterionModifier.GreaterThan, value: 10 },
+  ],
+  file_count: [
+    { id: "1", label: "Single", modifier: CriterionModifier.Equals, value: 1 },
+    { id: "2+", label: "Multiple", modifier: CriterionModifier.GreaterThan, value: 1 },
+    { id: "5+", label: "5+", modifier: CriterionModifier.GreaterThan, value: 4 },
+  ],
+  // Group-specific counts
+  containing_group_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1", label: "1", modifier: CriterionModifier.Equals, value: 1 },
+    { id: "2+", label: "2+", modifier: CriterionModifier.GreaterThan, value: 1 },
+    { id: "5+", label: "5+", modifier: CriterionModifier.GreaterThan, value: 4 },
+  ],
+  sub_group_count: [
+    { id: "0", label: "0", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1-5", label: "1-5", modifier: CriterionModifier.Between, value: 1, value2: 5 },
+    { id: "6-10", label: "6-10", modifier: CriterionModifier.Between, value: 6, value2: 10 },
+    { id: "10+", label: "10+", modifier: CriterionModifier.GreaterThan, value: 10 },
+  ],
+
+  // =========================================================================
+  // PLAY/ACTIVITY PRESETS
+  // =========================================================================
+  play_count: [
+    { id: "unplayed", label: "Unplayed", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "watched", label: "Watched", modifier: CriterionModifier.GreaterThan, value: 0 },
+    { id: "2+", label: "2+", modifier: CriterionModifier.GreaterThan, value: 1 },
+    { id: "5+", label: "5+", modifier: CriterionModifier.GreaterThan, value: 4 },
+    { id: "10+", label: "10+", modifier: CriterionModifier.GreaterThan, value: 9 },
+  ],
+  o_counter: [
+    { id: "none", label: "None", modifier: CriterionModifier.Equals, value: 0 },
+    { id: "1+", label: "1+", modifier: CriterionModifier.GreaterThan, value: 0 },
+    { id: "5+", label: "5+", modifier: CriterionModifier.GreaterThan, value: 4 },
+    { id: "10+", label: "10+", modifier: CriterionModifier.GreaterThan, value: 9 },
+  ],
+
+  // =========================================================================
+  // RATING PRESETS (1-100 scale)
+  // =========================================================================
+  rating100: [
+    { id: "1star", label: "★", modifier: CriterionModifier.Between, value: 1, value2: 29 },
+    { id: "2star", label: "★★", modifier: CriterionModifier.Between, value: 30, value2: 49 },
+    { id: "3star", label: "★★★", modifier: CriterionModifier.Between, value: 50, value2: 69 },
+    { id: "4star", label: "★★★★", modifier: CriterionModifier.Between, value: 70, value2: 89 },
+    { id: "5star", label: "★★★★★", modifier: CriterionModifier.Between, value: 90, value2: 100 },
+  ],
+
+  // =========================================================================
+  // VIDEO TECHNICAL PRESETS
+  // =========================================================================
+  framerate: [
+    { id: "24", label: "24 fps", modifier: CriterionModifier.Equals, value: 24 },
+    { id: "25", label: "25 fps", modifier: CriterionModifier.Equals, value: 25 },
+    { id: "30", label: "30 fps", modifier: CriterionModifier.Equals, value: 30 },
+    { id: "50", label: "50 fps", modifier: CriterionModifier.Equals, value: 50 },
+    { id: "60", label: "60 fps", modifier: CriterionModifier.Equals, value: 60 },
+    { id: "60+", label: "60+ fps", modifier: CriterionModifier.GreaterThan, value: 60 },
+  ],
+  // Bitrate in bits per second
+  bitrate: [
+    { id: "low", label: "Low (<5 Mbps)", modifier: CriterionModifier.LessThan, value: 5000000 },
+    { id: "medium", label: "Medium (5-15 Mbps)", modifier: CriterionModifier.Between, value: 5000000, value2: 15000000 },
+    { id: "high", label: "High (15-30 Mbps)", modifier: CriterionModifier.Between, value: 15000000, value2: 30000000 },
+    { id: "ultra", label: "Ultra (30+ Mbps)", modifier: CriterionModifier.GreaterThan, value: 30000000 },
+  ],
+  interactive_speed: [
+    { id: "slow", label: "Slow (<50)", modifier: CriterionModifier.LessThan, value: 50 },
+    { id: "medium", label: "Medium (50-150)", modifier: CriterionModifier.Between, value: 50, value2: 150 },
+    { id: "fast", label: "Fast (150-250)", modifier: CriterionModifier.Between, value: 150, value2: 250 },
+    { id: "veryfast", label: "Very Fast (250+)", modifier: CriterionModifier.GreaterThan, value: 250 },
+  ],
+
+  // =========================================================================
+  // PERFORMER PHYSICAL PRESETS
+  // =========================================================================
+  // Height in cm
+  height_cm: [
+    { id: "petite", label: "Petite (<155 cm)", modifier: CriterionModifier.LessThan, value: 155 },
+    { id: "short", label: "Short (155-165 cm)", modifier: CriterionModifier.Between, value: 155, value2: 165 },
+    { id: "average", label: "Average (165-175 cm)", modifier: CriterionModifier.Between, value: 165, value2: 175 },
+    { id: "tall", label: "Tall (175-185 cm)", modifier: CriterionModifier.Between, value: 175, value2: 185 },
+    { id: "verytall", label: "Very Tall (185+ cm)", modifier: CriterionModifier.GreaterThan, value: 185 },
+  ],
+  // Weight in kg
+  weight: [
+    { id: "light", label: "<50 kg", modifier: CriterionModifier.LessThan, value: 50 },
+    { id: "50-60", label: "50-60 kg", modifier: CriterionModifier.Between, value: 50, value2: 60 },
+    { id: "60-70", label: "60-70 kg", modifier: CriterionModifier.Between, value: 60, value2: 70 },
+    { id: "70-80", label: "70-80 kg", modifier: CriterionModifier.Between, value: 70, value2: 80 },
+    { id: "80-90", label: "80-90 kg", modifier: CriterionModifier.Between, value: 80, value2: 90 },
+    { id: "90+", label: "90+ kg", modifier: CriterionModifier.GreaterThan, value: 90 },
+  ],
+  penis_length: [
+    { id: "small", label: "<12 cm", modifier: CriterionModifier.LessThan, value: 12 },
+    { id: "average", label: "12-15 cm", modifier: CriterionModifier.Between, value: 12, value2: 15 },
+    { id: "large", label: "15-18 cm", modifier: CriterionModifier.Between, value: 15, value2: 18 },
+    { id: "xlarge", label: "18-21 cm", modifier: CriterionModifier.Between, value: 18, value2: 21 },
+    { id: "xxlarge", label: "21+ cm", modifier: CriterionModifier.GreaterThan, value: 21 },
+  ],
+
+  // =========================================================================
+  // AGE PRESETS
+  // =========================================================================
+  age: [
+    { id: "18-19", label: "18-19", modifier: CriterionModifier.Between, value: 18, value2: 19 },
+    { id: "20s", label: "20s", modifier: CriterionModifier.Between, value: 20, value2: 29 },
+    { id: "30s", label: "30s", modifier: CriterionModifier.Between, value: 30, value2: 39 },
+    { id: "40s", label: "40s", modifier: CriterionModifier.Between, value: 40, value2: 49 },
+    { id: "50s", label: "50s", modifier: CriterionModifier.Between, value: 50, value2: 59 },
+    { id: "60+", label: "60+", modifier: CriterionModifier.GreaterThan, value: 59 },
+  ],
+  performer_age: [
+    { id: "18-19", label: "18-19", modifier: CriterionModifier.Between, value: 18, value2: 19 },
+    { id: "20s", label: "20s", modifier: CriterionModifier.Between, value: 20, value2: 29 },
+    { id: "30s", label: "30s", modifier: CriterionModifier.Between, value: 30, value2: 39 },
+    { id: "40s", label: "40s", modifier: CriterionModifier.Between, value: 40, value2: 49 },
+    { id: "50+", label: "50+", modifier: CriterionModifier.GreaterThan, value: 49 },
+  ],
+  birth_year: [
+    { id: "2000s", label: "2000s", modifier: CriterionModifier.Between, value: 2000, value2: 2009 },
+    { id: "1990s", label: "1990s", modifier: CriterionModifier.Between, value: 1990, value2: 1999 },
+    { id: "1980s", label: "1980s", modifier: CriterionModifier.Between, value: 1980, value2: 1989 },
+    { id: "1970s", label: "1970s", modifier: CriterionModifier.Between, value: 1970, value2: 1979 },
+    { id: "1960s", label: "1960s", modifier: CriterionModifier.Between, value: 1960, value2: 1969 },
+    { id: "pre1960", label: "Pre-1960", modifier: CriterionModifier.LessThan, value: 1960 },
+  ],
+  death_year: [
+    { id: "2020s", label: "2020s", modifier: CriterionModifier.Between, value: 2020, value2: 2029 },
+    { id: "2010s", label: "2010s", modifier: CriterionModifier.Between, value: 2010, value2: 2019 },
+    { id: "2000s", label: "2000s", modifier: CriterionModifier.Between, value: 2000, value2: 2009 },
+    { id: "1990s", label: "1990s", modifier: CriterionModifier.Between, value: 1990, value2: 1999 },
+    { id: "pre1990", label: "Pre-1990", modifier: CriterionModifier.LessThan, value: 1990 },
+  ],
+};
+
+// Get presets for a filter type
+function getPresets(filterType: string): NumberPreset[] {
+  // Check for exact match first
+  if (presetConfigs[filterType]) {
+    return presetConfigs[filterType];
+  }
+
+  // Check for partial matches (e.g., "scene_count" in "performer_scene_count")
+  const partialMatches: [string, string[]][] = [
+    ["scene_count", ["scene_count"]],
+    ["image_count", ["image_count"]],
+    ["gallery_count", ["gallery_count"]],
+    ["performer_count", ["performer_count"]],
+    ["tag_count", ["tag_count"]],
+    ["studio_count", ["studio_count"]],
+    ["group_count", ["group_count", "sub_group", "containing_group"]],
+    ["marker_count", ["marker_count"]],
+    ["file_count", ["file_count"]],
+    ["play_count", ["play_count"]],
+    ["o_counter", ["o_counter", "o_count"]],
+    ["rating100", ["rating"]],
+    ["framerate", ["framerate", "frame_rate"]],
+    ["bitrate", ["bitrate", "bit_rate"]],
+    ["interactive_speed", ["interactive_speed"]],
+    ["height_cm", ["height"]],
+    ["weight", ["weight"]],
+    ["penis_length", ["penis_length"]],
+    ["age", ["age"]],
+    ["performer_age", ["performer_age"]],
+    ["birth_year", ["birth_year"]],
+    ["death_year", ["death_year"]],
+  ];
+
+  for (const [presetKey, patterns] of partialMatches) {
+    for (const pattern of patterns) {
+      if (filterType.includes(pattern)) {
+        return presetConfigs[presetKey];
+      }
+    }
+  }
+
+  return [];
+}
+
+// ============================================================================
 // LEGACY EXPORTS FOR BACKWARDS COMPATIBILITY
 // ============================================================================
 
@@ -298,6 +550,7 @@ function useNumberFilterState(props: {
 
   const [inputValue, setInputValue] = useState("");
   const [inputValue2, setInputValue2] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
 
   const criterion = useMemo(() => {
     const ret = filter.criteria.find(
@@ -410,12 +663,45 @@ function useNumberFilterState(props: {
     return items;
   }, [intl, selectedModifiers, getValueLabel]);
 
-  // Build candidates list (modifier options)
+  // Get presets for this filter type
+  const presets = useMemo(() => getPresets(option.type), [option.type]);
+
+  // Check if a preset matches the current filter state
+  const matchesPreset = useCallback(
+    (preset: NumberPreset): boolean => {
+      if (modifier !== preset.modifier) return false;
+      if (value.value !== preset.value) return false;
+      if (preset.value2 !== undefined && value.value2 !== preset.value2) return false;
+      return true;
+    },
+    [modifier, value]
+  );
+
+  // Check if current value matches any preset
+  const activePreset = useMemo((): string | null => {
+    if (!hasActiveValue) return null;
+    
+    for (const preset of presets) {
+      if (matchesPreset(preset)) {
+        return preset.id;
+      }
+    }
+    
+    // Has a value but doesn't match any preset = custom
+    return "custom";
+  }, [hasActiveValue, presets, matchesPreset]);
+
+  // Build candidates list (modifier options + presets + custom)
   const candidates = useMemo(() => {
     const items: Option[] = [];
 
+    // Don't show candidates if any/none is selected
+    if (selectedModifiers.any || selectedModifiers.none) {
+      return items;
+    }
+
     // Show modifier options when nothing is selected
-    if (!selectedModifiers.any && !selectedModifiers.none && !hasActiveValue) {
+    if (!hasActiveValue) {
       if (supportsNotNull) {
         items.push({
           id: "any",
@@ -438,8 +724,32 @@ function useNumberFilterState(props: {
       }
     }
 
+    // Add presets as quick options (excluding the active one)
+    if (presets.length > 0) {
+      presets
+        .filter((preset) => preset.id !== activePreset)
+        .forEach((preset) => {
+          items.push({
+            id: `preset_${preset.id}`,
+            label: preset.label,
+            className: "preset-option",
+            canExclude: false,
+          });
+        });
+    }
+
+    // Add custom option if not already in custom mode
+    if (activePreset !== "custom") {
+      items.push({
+        id: "custom",
+        label: intl.formatMessage({ id: "actions.custom", defaultMessage: "Custom..." }),
+        className: "preset-option",
+        canExclude: false,
+      });
+    }
+
     return items;
-  }, [intl, selectedModifiers, hasActiveValue, supportsIsNull, supportsNotNull]);
+  }, [intl, selectedModifiers, hasActiveValue, supportsIsNull, supportsNotNull, presets, activePreset]);
 
   const onSelect = useCallback(
     (v: Option, _exclude: boolean) => {
@@ -454,9 +764,24 @@ function useNumberFilterState(props: {
           newCriterion.value = { value: undefined, value2: undefined };
         }
         setCriterion(newCriterion);
+        setShowCustom(false);
+      } else if (v.id === "custom") {
+        // Show custom input
+        setShowCustom(true);
+      } else if (v.className === "preset-option" && v.id.startsWith("preset_")) {
+        // Handle preset selection
+        const presetId = v.id.replace("preset_", "");
+        const preset = presets.find((p) => p.id === presetId);
+        if (preset) {
+          const newCriterion = cloneDeep(criterion);
+          newCriterion.modifier = preset.modifier;
+          newCriterion.value = { value: preset.value, value2: preset.value2 };
+          setCriterion(newCriterion);
+          setShowCustom(false);
+        }
       }
     },
-    [criterion, setCriterion]
+    [criterion, setCriterion, presets]
   );
 
   const onUnselect = useCallback(
@@ -467,6 +792,7 @@ function useNumberFilterState(props: {
         setCriterion(null);
         setInputValue("");
         setInputValue2("");
+        setShowCustom(false);
       }
     },
     [setCriterion]
@@ -513,6 +839,8 @@ function useNumberFilterState(props: {
     defaultModifier,
     selectedModifiers,
     hasActiveValue,
+    showCustom,
+    setShowCustom,
   };
 }
 
@@ -633,19 +961,38 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
   // Disable input when any/none modifier is selected
   const inputDisabled = state.selectedModifiers.any || state.selectedModifiers.none;
 
-  const numberInput = (
-    <NumberInput
-      inputValue={state.inputValue}
-      setInputValue={state.setInputValue}
-      inputValue2={state.inputValue2}
-      setInputValue2={state.setInputValue2}
-      onSubmit={state.onInputSubmit}
-      modifiers={state.numberModifiers}
-      defaultModifier={state.defaultModifier}
-      placeholder={placeholder}
-      disabled={inputDisabled}
-    />
+  // Handle submit and close the custom input
+  const handleCustomSubmit = useCallback(
+    (value1: string, value2: string, modifier: CriterionModifier) => {
+      state.onInputSubmit(value1, value2, modifier);
+      state.setShowCustom(false);
+    },
+    [state]
   );
+
+  // Custom input shown when "Custom..." is selected
+  const customInput = state.showCustom ? (
+    <div className="custom-number-input">
+      <NumberInput
+        inputValue={state.inputValue}
+        setInputValue={state.setInputValue}
+        inputValue2={state.inputValue2}
+        setInputValue2={state.setInputValue2}
+        onSubmit={handleCustomSubmit}
+        modifiers={state.numberModifiers}
+        defaultModifier={state.defaultModifier}
+        placeholder={placeholder}
+        disabled={inputDisabled}
+      />
+      <button
+        type="button"
+        className="custom-cancel-button"
+        onClick={() => state.setShowCustom(false)}
+      >
+        ✕
+      </button>
+    </div>
+  ) : null;
 
   return (
     <SidebarListFilter
@@ -657,7 +1004,7 @@ export const SidebarNumberFilter: React.FC<ISidebarFilter> = ({
       canExclude={false}
       singleValue={true}
       sectionID={sectionID}
-      preCandidates={numberInput}
+      preCandidates={customInput}
     />
   );
 };

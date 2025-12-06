@@ -561,3 +561,26 @@ func (_m *GroupReaderWriter) UpdatePartial(ctx context.Context, id int, updatedG
 
 	return r0, r1
 }
+
+// GetFacets provides a mock function with given fields: ctx, groupFilter, limit
+func (_m *GroupReaderWriter) GetFacets(ctx context.Context, groupFilter *models.GroupFilterType, limit int) (*models.GroupFacets, error) {
+	ret := _m.Called(ctx, groupFilter, limit)
+
+	var r0 *models.GroupFacets
+	if rf, ok := ret.Get(0).(func(context.Context, *models.GroupFilterType, int) *models.GroupFacets); ok {
+		r0 = rf(ctx, groupFilter, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.GroupFacets)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.GroupFilterType, int) error); ok {
+		r1 = rf(ctx, groupFilter, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

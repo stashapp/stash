@@ -430,12 +430,14 @@ interface ICustomDateInputProps {
   criterion: ModifierCriterion<IDateValue>;
   onValueChanged: (value: IDateValue) => void;
   onModifierChanged: (m: CriterionModifier) => void;
+  isTime?: boolean;
 }
 
 const CustomDateInput: React.FC<ICustomDateInputProps> = ({
   criterion,
   onValueChanged,
   onModifierChanged,
+  isTime = false,
 }) => {
   const intl = useIntl();
   const { value, modifier } = criterion;
@@ -483,6 +485,7 @@ const CustomDateInput: React.FC<ICustomDateInputProps> = ({
               ? intl.formatMessage({ id: "criterion.from" })
               : intl.formatMessage({ id: "criterion.value" })
           }
+          isTime={isTime}
         />
       </Form.Group>
       {showSecondInput && (
@@ -491,6 +494,7 @@ const CustomDateInput: React.FC<ICustomDateInputProps> = ({
             value={value?.value2 ?? ""}
             onValueChange={(v) => onChanged(v, "value2")}
             placeholder={intl.formatMessage({ id: "criterion.to" })}
+            isTime={isTime}
           />
         </Form.Group>
       )}
@@ -504,6 +508,7 @@ interface ISidebarFilter {
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
   sectionID?: string;
+  isTime?: boolean;
 }
 
 export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
@@ -512,15 +517,26 @@ export const SidebarDateFilter: React.FC<ISidebarFilter> = ({
   filter,
   setFilter,
   sectionID,
+  isTime = false,
 }) => {
   const state = useDateFilterState({ option, filter, setFilter });
 
   const customInput = state.showCustom ? (
-    <CustomDateInput
-      criterion={state.criterion}
-      onValueChanged={state.onCustomValueChanged}
-      onModifierChanged={state.onCustomModifierChanged}
-    />
+    <div className="custom-date-input-wrapper">
+      <CustomDateInput
+        criterion={state.criterion}
+        onValueChanged={state.onCustomValueChanged}
+        onModifierChanged={state.onCustomModifierChanged}
+        isTime={isTime}
+      />
+      <button
+        type="button"
+        className="custom-cancel-button"
+        onClick={() => state.setShowCustom(false)}
+      >
+        ✕
+      </button>
+    </div>
   ) : null;
 
   return (

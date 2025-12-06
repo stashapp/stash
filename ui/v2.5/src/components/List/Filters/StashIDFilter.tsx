@@ -137,6 +137,41 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
 // NEW IMPROVED SIDEBAR STASH ID FILTER
 // ============================================================================
 
+// Known stash-box URL patterns
+const STASHBOX_URL_PATTERNS = [
+  // Standard stash-box URLs: https://stashdb.org/performers/uuid
+  /^https?:\/\/([^/]+)\/(performers|scenes|studios|tags|galleries|groups|movies)\/([a-f0-9-]+)/i,
+  // Direct UUID URLs: https://stashdb.org/uuid
+  /^https?:\/\/([^/]+)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i,
+];
+
+// Parse a stash-box URL and extract endpoint and stash ID
+function parseStashBoxURL(input: string): { endpoint: string; stashID: string } | null {
+  const trimmed = input.trim();
+  
+  for (const pattern of STASHBOX_URL_PATTERNS) {
+    const match = trimmed.match(pattern);
+    if (match) {
+      // First pattern: [full, endpoint, type, uuid]
+      // Second pattern: [full, endpoint, uuid]
+      const endpoint = match[1];
+      const stashID = match[3] || match[2];
+      
+      // Validate it looks like a UUID
+      if (/^[a-f0-9-]+$/i.test(stashID) && stashID.length >= 32) {
+        return { endpoint, stashID };
+      }
+    }
+  }
+  
+  return null;
+}
+
+// Check if input looks like a URL
+function looksLikeURL(input: string): boolean {
+  return /^https?:\/\//i.test(input.trim());
+}
+
 // Create icon for stash ID value
 function createStashIDIcon(): React.ReactNode {
   return (
@@ -383,7 +418,7 @@ function getModifierLabel(intl: IntlShape, modifier: CriterionModifier): string 
   return labels[modifier] || modifier;
 }
 
-// Stash ID input component
+// Stash ID input component with URL paste support
 interface IStashIDInputProps {
   inputEndpoint: string;
   setInputEndpoint: (value: string) => void;
@@ -405,6 +440,7 @@ const StashIDInput: React.FC<IStashIDInputProps> = ({
   const [selectedModifier, setSelectedModifier] = useState(
     CriterionModifier.Equals
   );
+  const [urlParsed, setUrlParsed] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputStashID.trim()) {
@@ -415,6 +451,49 @@ const StashIDInput: React.FC<IStashIDInputProps> = ({
       );
     }
   };
+
+  // Handle paste event to detect URLs
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      const pastedText = e.clipboardData.getData("text");
+      
+      if (looksLikeURL(pastedText)) {
+        const parsed = parseStashBoxURL(pastedText);
+        if (parsed) {
+          e.preventDefault();
+          setInputEndpoint(parsed.endpoint);
+          setInputStashID(parsed.stashID);
+          setUrlParsed(true);
+          // Auto-clear the "URL parsed" message after 3 seconds
+          setTimeout(() => setUrlParsed(false), 3000);
+        }
+      }
+    },
+    [setInputEndpoint, setInputStashID]
+  );
+
+  // Handle change to detect URLs typed/pasted without using paste event
+  const handleStashIDChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      
+      // Check if it looks like a URL was pasted
+      if (looksLikeURL(value)) {
+        const parsed = parseStashBoxURL(value);
+        if (parsed) {
+          setInputEndpoint(parsed.endpoint);
+          setInputStashID(parsed.stashID);
+          setUrlParsed(true);
+          setTimeout(() => setUrlParsed(false), 3000);
+          return;
+        }
+      }
+      
+      setInputStashID(value);
+      setUrlParsed(false);
+    },
+    [setInputEndpoint, setInputStashID]
+  );
 
   const modifiers = [CriterionModifier.Equals, CriterionModifier.NotEquals];
 
@@ -430,6 +509,7 @@ const StashIDInput: React.FC<IStashIDInputProps> = ({
           defaultMessage: "Endpoint (optional)",
         })}
         disabled={disabled}
+        className="endpoint-input"
       />
       <InputGroup className="stash-id-input-group">
         <InputGroup.Prepend>
@@ -459,15 +539,30 @@ const StashIDInput: React.FC<IStashIDInputProps> = ({
         <Form.Control
           type="text"
           value={inputStashID}
-          onChange={(e) => setInputStashID(e.target.value)}
+          onChange={handleStashIDChange}
+          onPaste={handlePaste}
           onKeyDown={handleKeyDown}
           placeholder={intl.formatMessage({
-            id: "stash_id",
-            defaultMessage: "Stash ID",
+            id: "dialogs.stash_id_filter.placeholder",
+            defaultMessage: "Stash ID or paste URL",
           })}
           disabled={disabled}
         />
       </InputGroup>
+      {urlParsed && (
+        <div className="url-parsed-hint">
+          ✓ {intl.formatMessage({ 
+            id: "dialogs.stash_id_filter.url_parsed", 
+            defaultMessage: "URL parsed automatically" 
+          })}
+        </div>
+      )}
+      <div className="stash-id-hint">
+        {intl.formatMessage({ 
+          id: "dialogs.stash_id_filter.hint", 
+          defaultMessage: "Tip: Paste a stash-box URL to auto-fill" 
+        })}
+      </div>
     </div>
   );
 };

@@ -34,6 +34,11 @@ type TagQueryer interface {
 	Query(ctx context.Context, tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 }
 
+// TagFaceter provides methods to get facet counts for tags.
+type TagFaceter interface {
+	GetFacets(ctx context.Context, tagFilter *TagFilterType, limit int) (*TagFacets, error)
+}
+
 type TagAutoTagQueryer interface {
 	TagQueryer
 	AliasLoader
@@ -86,6 +91,7 @@ type TagReader interface {
 	TagQueryer
 	TagAutoTagQueryer
 	TagCounter
+	TagFaceter
 
 	AliasLoader
 	TagRelationLoader

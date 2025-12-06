@@ -101,7 +101,7 @@ function createRatingIcon(): React.ReactNode {
   return (
     <FontAwesomeIcon
       icon={faStar}
-      style={{ marginRight: "0.5em", color: "#f5c518", opacity: 0.9 }}
+      style={{ marginRight: "0.5em", color: "#f5c518", opacity: 0.7 }}
       fixedWidth
     />
   );

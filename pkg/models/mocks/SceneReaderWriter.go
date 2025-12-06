@@ -1384,3 +1384,26 @@ func (_m *SceneReaderWriter) Wall(ctx context.Context, q *string) ([]*models.Sce
 
 	return r0, r1
 }
+
+// GetFacets provides a mock function with given fields: ctx, sceneFilter, limit, options
+func (_m *SceneReaderWriter) GetFacets(ctx context.Context, sceneFilter *models.SceneFilterType, limit int, options models.SceneFacetOptions) (*models.SceneFacets, error) {
+	ret := _m.Called(ctx, sceneFilter, limit, options)
+
+	var r0 *models.SceneFacets
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneFilterType, int, models.SceneFacetOptions) *models.SceneFacets); ok {
+		r0 = rf(ctx, sceneFilter, limit, options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SceneFacets)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneFilterType, int, models.SceneFacetOptions) error); ok {
+		r1 = rf(ctx, sceneFilter, limit, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

@@ -63,4 +63,5 @@ fragment SelectGalleryData on Gallery {
   folder {
     path
   }
+  image_count
 }

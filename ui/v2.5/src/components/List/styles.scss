@@ -584,6 +584,29 @@ input[type="range"].zoom-slider {
     .object-count {
       color: $text-muted;
       font-size: 12px;
+
+      &.zero-count {
+        opacity: 0.4;
+      }
+
+      &.count-loading {
+        opacity: 0.5;
+        
+        .count-loading-dots {
+          display: inline-block;
+          animation: pulse-loading 1.5s ease-in-out infinite;
+          letter-spacing: 1px;
+        }
+      }
+    }
+  }
+
+  @keyframes pulse-loading {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.8;
     }
   }
 
@@ -608,6 +631,20 @@ input[type="range"].zoom-slider {
   margin-bottom: 0.5rem;
 }
 
+.sidebar-list-filter .candidates-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  
+  .spinner-border {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-width: 0.15rem;
+  }
+}
+
 .sidebar-list-filter ul {
   list-style-type: none;
   margin-bottom: 0.25rem;
@@ -623,6 +660,25 @@ input[type="range"].zoom-slider {
     .selected-object-label,
     .unselected-object-label {
       opacity: 0.6;
+    }
+  }
+
+  // Consistent text color for all labels
+  .unselected-object-label,
+  .selected-object-label,
+  .excluded-object-label {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .preset-option {
+    .unselected-object-label {
+      // Preset options use standard text color like other options
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+
+    &:hover .unselected-object-label {
+      color: #fff;
     }
   }
 
@@ -650,8 +706,10 @@ input[type="range"].zoom-slider {
       }
 
       .selected-object-label,
-      .excluded-object-label {
+      .excluded-object-label,
+      .unselected-object-label {
         font-size: 16px;
+        color: rgba(255, 255, 255, 0.9);
       }
     }
 
@@ -713,6 +771,23 @@ input[type="range"].zoom-slider {
       align-items: center;
       display: flex;
       overflow: hidden;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
+    }
+
+    .object-count {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.75rem;
+      min-width: 1.5rem;
+      text-align: center;
     }
   }
 }
@@ -781,12 +856,89 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-list-filter .multi-string-input {
+  margin-bottom: 0.5rem;
+
+  .string-input-group {
+    margin-bottom: 0.25rem;
+  }
+
+  .mode-toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    padding: 0;
+    background-color: $secondary;
+    border: 1px solid $secondary;
+    border-right: none;
+    border-radius: 0.25rem 0 0 0.25rem;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &.include-mode {
+      color: $success;
+
+      &:hover {
+        background-color: rgba($success, 0.2);
+      }
+    }
+
+    &.exclude-mode {
+      color: $danger;
+
+      &:hover {
+        background-color: rgba($danger, 0.2);
+      }
+    }
+  }
+
+  .input-hint {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: right;
+  }
+}
+
+.sidebar-list-filter .excluded-item {
+  .selected-object-label {
+    color: $danger;
+    text-decoration: line-through;
+    opacity: 0.8;
+  }
+}
+
+.sidebar-list-filter .custom-date-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+
+  .custom-cancel-button {
+    align-self: flex-end;
+    padding: 0.125rem 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
 .sidebar-list-filter .custom-date-input,
 .sidebar-list-filter .custom-age-input {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-bottom: 0.5rem;
 
   .modifier-select {
     margin-bottom: 0;
@@ -805,6 +957,22 @@ input[type="range"].zoom-slider {
       background-color: $secondary;
       border-color: $secondary;
       color: #fff;
+    }
+  }
+
+  .custom-cancel-button {
+    align-self: flex-end;
+    padding: 0.125rem 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 }
@@ -879,6 +1047,29 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-list-filter .custom-number-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+
+  .custom-cancel-button {
+    align-self: flex-end;
+    padding: 0.125rem 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
 .sidebar-list-filter .rating-stars-input {
   margin-bottom: 0.5rem;
   padding: 0.375rem;
@@ -897,7 +1088,41 @@ input[type="range"].zoom-slider {
   gap: 0.25rem;
   margin-bottom: 0.5rem;
 
-  > .form-control {
+  .phash-text-input {
+    background-color: $secondary;
+    border-color: $secondary;
+    color: #fff;
+    font-family: monospace;
+    font-size: 0.85rem;
+
+    &:focus {
+      background-color: $secondary;
+      border-color: $secondary;
+      color: #fff;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+      font-family: inherit;
+    }
+  }
+
+  .phash-hint {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 0.25rem 0;
+  }
+}
+
+.sidebar-list-filter .custom-distance-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+
+  .phash-text-input,
+  .form-control {
     background-color: $secondary;
     border-color: $secondary;
     color: #fff;
@@ -913,45 +1138,24 @@ input[type="range"].zoom-slider {
     }
   }
 
-  .phash-input-group {
-    display: flex;
-    flex-wrap: nowrap;
+  .phash-text-input {
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
 
-    .input-group-prepend {
-      flex-shrink: 0;
-    }
+  .custom-cancel-button {
+    align-self: flex-end;
+    padding: 0.125rem 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
 
-    .modifier-dropdown-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      background-color: $secondary;
-      border-color: $secondary;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-
-      .dropdown-icon {
-        font-size: 0.7rem;
-        opacity: 0.7;
-      }
-    }
-
-    .form-control {
-      flex: 1;
-      min-width: 0;
-      background-color: $secondary;
-      border-color: $secondary;
-      color: #fff;
-
-      &:focus {
-        background-color: $secondary;
-        border-color: $secondary;
-        color: #fff;
-      }
-
-      &::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-      }
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
     }
   }
 }
@@ -962,7 +1166,8 @@ input[type="range"].zoom-slider {
   gap: 0.25rem;
   margin-bottom: 0.5rem;
 
-  > .form-control {
+  > .form-control,
+  .endpoint-input {
     background-color: $secondary;
     border-color: $secondary;
     color: #fff;
@@ -1017,6 +1222,29 @@ input[type="range"].zoom-slider {
       &::placeholder {
         color: rgba(255, 255, 255, 0.5);
       }
+    }
+  }
+
+  .url-parsed-hint {
+    font-size: 0.75rem;
+    color: $success;
+    text-align: center;
+    padding: 0.25rem 0;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .stash-id-hint {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 }
@@ -1100,6 +1328,73 @@ input[type="range"].zoom-slider {
   .folder-list {
     max-height: 200px;
     overflow-y: auto;
+  }
+}
+
+.sidebar-list-filter .path-browse-input,
+.sidebar-list-filter .path-regex-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+
+  .path-input-group {
+    .input-group-prepend {
+      flex: 0 0 auto;
+
+      .dropdown {
+        display: flex;
+      }
+
+      .modifier-dropdown-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        border-radius: 0.2rem;
+
+        .dropdown-icon {
+          font-size: 0.7rem;
+          margin-left: 0.25rem;
+          opacity: 0.7;
+        }
+
+        &::after {
+          display: none;
+        }
+      }
+    }
+
+    .form-control {
+      background-color: $secondary;
+      border-color: $secondary;
+      color: #fff;
+
+      &:focus {
+        background-color: $secondary;
+        border-color: $secondary;
+        color: #fff;
+      }
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+
+  .custom-cancel-button {
+    align-self: flex-end;
+    padding: 0.125rem 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
   }
 }
 
@@ -1689,6 +1984,142 @@ input[type="range"].zoom-slider {
   }
 }
 
+// Enhanced filter tag styling
+.filter-tags {
+  .tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.15s ease;
+
+    .filter-tag-icon {
+      opacity: 0.7;
+      font-size: 0.85em;
+    }
+
+    .filter-tag-modifier {
+      font-weight: 600;
+      font-size: 0.85em;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .filter-tag-label {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .filter-tag-value-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .depth-indicator {
+      font-size: 0.75em;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      margin-left: 0.15rem;
+    }
+
+    .excluded-values {
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    // Modifier-based colors
+    &.modifier-includes {
+      background-color: #2d6a4f;
+      border: 1px solid #40916c;
+
+      &:hover {
+        background-color: #40916c;
+      }
+    }
+
+    &.modifier-excludes {
+      background-color: #9d0208;
+      border: 1px solid #d00000;
+
+      &:hover {
+        background-color: #d00000;
+      }
+
+      .filter-tag-modifier {
+        color: #ffccd5;
+      }
+    }
+
+    &.modifier-null {
+      background-color: #495057;
+      border: 1px solid #6c757d;
+      font-style: italic;
+
+      &:hover {
+        background-color: #6c757d;
+      }
+    }
+
+    &.modifier-not-null {
+      background-color: #0077b6;
+      border: 1px solid #00b4d8;
+
+      &:hover {
+        background-color: #00b4d8;
+      }
+    }
+
+    // Search term tag
+    &.search-term-filter-tag {
+      background-color: #7b2cbf;
+      border: 1px solid #9d4edd;
+
+      &:hover {
+        background-color: #9d4edd;
+      }
+
+      .filter-tag-icon {
+        opacity: 1;
+      }
+    }
+
+    // Default tag style (for non-modifier tags)
+    &.filter-tag-default:not(.modifier-includes):not(.modifier-excludes):not(.modifier-null):not(.modifier-not-null) {
+      background-color: $muted-gray;
+    }
+  }
+
+  // More tags popover
+  .more-tags {
+    background-color: #343a40;
+    border: 1px dashed #6c757d;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #495057;
+    }
+  }
+}
+
+// More filter tags popover content
+.more-filter-tags-popover {
+  .more-filter-tags-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem;
+
+    .tag-item {
+      margin: 0;
+    }
+  }
+}
+
 // TODO - remove scene-list-toolbar when all lists use the new toolbar
 .detail-body .filtered-list-toolbar {
   top: calc($sticky-detail-header-height + $navbar-height);
@@ -1845,5 +2276,143 @@ input[type="range"].zoom-slider {
 @media (max-width: 575.98px) and (orientation: portrait) {
   .row .nav-tabs .nav-link {
     width: max-content;
+  }
+}
+
+// Sidebar Filter Selector
+.sidebar-filters > .sidebar-section-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-bottom: 0.25rem;
+
+  .sidebar-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+  }
+
+  .sidebar-filter-selector-button {
+    margin-left: auto;
+    padding: 0.25rem 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    &.active {
+      color: $success;
+    }
+  }
+}
+
+// Filter wrapper for edit mode
+.filter-wrapper {
+  position: relative;
+
+  .filter-visibility-indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 10;
+  }
+
+  // Hide chevron icon when in edit mode
+  .collapse-button .fa-icon {
+    display: none;
+  }
+
+  &.filter-hidden {
+    opacity: 0.5;
+
+    .sidebar-section .sidebar-section-toggle {
+      text-decoration: line-through;
+    }
+  }
+}
+
+// Custom duration filter inputs
+.sidebar-list-filter .custom-duration-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+
+  .modifier-select .form-control,
+  .form-group .form-control {
+    background-color: $secondary;
+    border-color: $secondary;
+    color: #fff;
+
+    &:focus {
+      background-color: $secondary;
+      border-color: $secondary;
+      color: #fff;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .form-group {
+    margin-bottom: 0;
+
+    input {
+      background-color: $secondary;
+      border-color: $secondary;
+      color: #fff;
+
+      &:focus {
+        background-color: $secondary;
+        border-color: $secondary;
+        color: #fff;
+      }
+    }
+  }
+
+  .custom-cancel-button {
+    align-self: flex-end;
+    padding: 0.125rem 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+// Filter visibility toggle in edit mode
+.filter-visibility-toggle {
+  padding: 0.25rem;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.25rem;
+
+  &.visible {
+    color: $success;
+
+    &:hover {
+      color: lighten($success, 10%);
+      background: rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  &.hidden {
+    color: rgba(255, 255, 255, 0.4);
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.7);
+      background: rgba(0, 0, 0, 0.5);
+    }
   }
 }

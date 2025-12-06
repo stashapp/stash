@@ -25,3 +25,16 @@ query FindGroupsForSelect(
     }
   }
 }
+
+# Lightweight query for sidebar filter - minimal data for fast loading
+query FindGroupsForFilter(
+  $filter: FindFilterType
+  $group_filter: GroupFilterType
+) {
+  findGroups(filter: $filter, group_filter: $group_filter) {
+    count
+    groups {
+      ...FilterGroupData
+    }
+  }
+}

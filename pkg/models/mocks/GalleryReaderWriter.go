@@ -706,3 +706,26 @@ func (_m *GalleryReaderWriter) UpdatePartial(ctx context.Context, id int, update
 
 	return r0, r1
 }
+
+// GetFacets provides a mock function with given fields: ctx, galleryFilter, limit
+func (_m *GalleryReaderWriter) GetFacets(ctx context.Context, galleryFilter *models.GalleryFilterType, limit int) (*models.GalleryFacets, error) {
+	ret := _m.Called(ctx, galleryFilter, limit)
+
+	var r0 *models.GalleryFacets
+	if rf, ok := ret.Get(0).(func(context.Context, *models.GalleryFilterType, int) *models.GalleryFacets); ok {
+		r0 = rf(ctx, galleryFilter, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.GalleryFacets)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.GalleryFilterType, int) error); ok {
+		r1 = rf(ctx, galleryFilter, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

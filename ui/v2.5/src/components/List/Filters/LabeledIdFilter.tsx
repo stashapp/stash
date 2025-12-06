@@ -340,11 +340,11 @@ export function useQueryState(
   }
 ) {
   const [query, setQuery] = useState("");
-  const { results: queryResults } = useCacheResults(
+  const { results: queryResults, loading } = useCacheResults(
     useQuery({ q: query, filter, filterHook: options?.filterHook, skip })
   );
 
-  return { query, setQuery, queryResults };
+  return { query, setQuery, queryResults, loading };
 }
 
 export function useCandidates(props: {
@@ -418,6 +418,7 @@ export function useCandidates(props: {
       (results ?? []).map((r) => ({
         id: r.id,
         label: r.label,
+        count: r.count,
       }))
     );
   }, [
@@ -460,7 +461,7 @@ export function useLabeledIdFilterState(props: {
   // defer querying until the user opens the filter
   const [skip, setSkip] = useState(true);
 
-  const { query, setQuery, queryResults } = useQueryState(
+  const { query, setQuery, queryResults, loading } = useQueryState(
     useQuery,
     filter,
     skip,
@@ -502,6 +503,7 @@ export function useLabeledIdFilterState(props: {
     query,
     setQuery,
     onOpen,
+    loading,
   };
 }
 

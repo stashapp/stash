@@ -1,20 +1,18 @@
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
+import React, { ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import {
   CriterionModifier,
-  StudioDataFragment,
+  FilterStudioDataFragment,
   StudioFilterType,
-  useFindStudiosForSelectQuery,
+  useFindStudiosForFilterQuery,
 } from "src/core/generated-graphql";
+import { FacetCountsContext } from "src/hooks/useFacetCounts";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import {
   StudiosCriterion,
   ParentStudiosCriterion,
 } from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
-import {
-  CriterionOption,
-  ModifierCriterion,
-} from "src/models/list-filter/criteria/criterion";
+import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
   IUseQueryHookProps,
@@ -37,13 +35,7 @@ function queryVariables(query: string, f?: ListFilterModel) {
 
   if (f) {
     const filterOutput = f.makeFilter();
-
-    // always remove studio filter from the filter
-    // since modifier is includes
     delete filterOutput.studios;
-
-    // TODO - look for same in AND?
-
     setObjectFilter(studioFilter, f.mode, filterOutput, "studios");
   }
 
@@ -52,26 +44,24 @@ function queryVariables(query: string, f?: ListFilterModel) {
 
 function sortResults(
   query: string,
-  studios: Pick<StudioDataFragment, "id" | "name" | "aliases">[]
+  studios: FilterStudioDataFragment[]
 ) {
   return sortByRelevance(
     query,
     studios ?? [],
     (s) => s.name,
     (s) => s.aliases
-  ).map((p) => {
-    return {
-      id: p.id,
-      label: p.name,
-    };
-  });
+  ).map((p) => ({
+    id: p.id,
+    label: p.name,
+  }));
 }
 
 function useStudioQueryFilter(props: IUseQueryHookProps) {
   const { q: query, filter: f, skip, filterHook } = props;
   const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
 
-  const { data, loading } = useFindStudiosForSelectQuery({
+  const { data, loading } = useFindStudiosForFilterQuery({
     variables: queryVariables(query, appliedFilter),
     skip,
   });
@@ -110,6 +100,9 @@ export const SidebarStudiosFilter: React.FC<{
   filterHook?: (f: ListFilterModel) => ListFilterModel;
   sectionID?: string;
 }> = ({ title, option, filter, setFilter, filterHook, sectionID }) => {
+  // Get facet counts from context
+  const { counts: facetCounts, loading: facetsLoading } = useContext(FacetCountsContext);
+  
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
@@ -121,7 +114,64 @@ export const SidebarStudiosFilter: React.FC<{
     includeSubMessageID: "subsidiary_studios",
   });
 
-  return <SidebarListFilter {...state} title={title} sectionID={sectionID} />;
+  // Build candidates list
+  // Strategy: When facets are loaded and no search query, USE facet results as candidates
+  // (since facets returns the TOP N most relevant items by count).
+  // When user searches, use search results merged with facet counts.
+  const candidatesWithCounts: Option[] = useMemo(() => {
+    const hasValidFacets = facetCounts.studios.size > 0 && !facetsLoading;
+    const hasSearchQuery = state.query && state.query.length > 0;
+    
+    // Extract modifier options from candidates
+    const modifierOptions = state.candidates.filter(c => c.className === "modifier-object");
+    
+    // Get selected IDs to exclude from candidates
+    const selectedIds = new Set(state.selected.map(s => s.id));
+    
+    if (hasValidFacets && !hasSearchQuery) {
+      // No search query: Use facet results directly as candidates (with labels from facets)
+      const facetCandidates: Option[] = [];
+      facetCounts.studios.forEach((facetData, id) => {
+        if (selectedIds.has(id) || facetData.count === 0) return;
+        facetCandidates.push({
+          id,
+          label: facetData.label,
+          count: facetData.count,
+        });
+      });
+      facetCandidates.sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
+      return [...modifierOptions, ...facetCandidates];
+    } else {
+      // With search query OR facets not loaded: Use search results with counts merged
+      return state.candidates
+        .map((c) => {
+          if (c.className === "modifier-object") return c;
+          const facetData = hasValidFacets ? facetCounts.studios.get(c.id) : undefined;
+          return { ...c, count: facetData?.count };
+        })
+        .filter((c) => {
+          if (c.className === "modifier-object") return true;
+          if (!hasValidFacets) return true;
+          return c.count !== 0;
+        });
+    }
+  }, [state.candidates, state.selected, state.query, facetCounts, facetsLoading]);
+
+  const onOpen = useCallback(() => {
+    state.onOpen?.();
+  }, [state.onOpen]);
+
+  return (
+    <SidebarListFilter
+      {...state}
+      candidates={candidatesWithCounts}
+      title={title}
+      sectionID={sectionID}
+      onOpen={onOpen}
+      loading={state.loading}
+      countsLoading={facetsLoading}
+    />
+  );
 };
 
 // Hook for non-hierarchical ILabeledIdCriterion (like ParentStudiosCriterion)
@@ -133,7 +183,6 @@ function useParentStudiosFilterState(props: {
   const intl = useIntl();
   const { option, filter, setFilter } = props;
 
-  // defer querying until the user opens the filter
   const [skip, setSkip] = useState(true);
   const [query, setQuery] = useState("");
 
@@ -141,13 +190,11 @@ function useParentStudiosFilterState(props: {
     useStudioQueryFilter({ q: query, skip })
   );
 
-  // Get or create criterion
   const criterion = useMemo(() => {
     const ret = filter.criteria.find(
       (c) => c.criterionOption.type === option.type
     );
     if (ret) return ret as ParentStudiosCriterion;
-
     return filter.makeCriterion(option.type) as ParentStudiosCriterion;
   }, [filter, option]);
 
@@ -156,9 +203,7 @@ function useParentStudiosFilterState(props: {
       const newCriteria = filter.criteria.filter(
         (cc) => cc.criterionOption.type !== option.type
       );
-
       if (c.isValid()) newCriteria.push(c);
-
       setFilter(filter.setCriteria(newCriteria));
     },
     [option.type, setFilter, filter]
@@ -166,7 +211,6 @@ function useParentStudiosFilterState(props: {
 
   const { modifier } = criterion;
 
-  // Build selected modifiers
   const selectedModifiers = useMemo(() => {
     return {
       any: modifier === CriterionModifier.NotNull,
@@ -174,7 +218,6 @@ function useParentStudiosFilterState(props: {
     };
   }, [modifier]);
 
-  // Build selected items list
   const selected = useMemo(() => {
     const modifierValues: Option[] = Object.entries(selectedModifiers)
       .filter((v) => v[1])
@@ -186,7 +229,6 @@ function useParentStudiosFilterState(props: {
         className: "modifier-object",
       }));
 
-    // ILabeledIdCriterion stores value as ILabeledId[] directly
     return modifierValues.concat(
       (criterion.value || []).map((s: ILabeledId) => ({
         id: s.id,
@@ -195,14 +237,12 @@ function useParentStudiosFilterState(props: {
     );
   }, [intl, selectedModifiers, criterion.value]);
 
-  // Build candidates list
   const candidates = useMemo(() => {
     if (
       !queryResults ||
       modifier === CriterionModifier.IsNull ||
       modifier === CriterionModifier.NotNull
     ) {
-      // Show modifier options when no items selected
       const modifierCandidates: Option[] = [];
 
       if (
@@ -230,13 +270,11 @@ function useParentStudiosFilterState(props: {
       return modifierCandidates;
     }
 
-    // Filter out already selected items
     const selectedIds = new Set(criterion.value.map((v: ILabeledId) => v.id));
     const filteredResults = queryResults.filter(
       (p: ILabeledId) => !selectedIds.has(p.id)
     );
 
-    // Add modifier options if no items selected yet
     const modifierCandidates: Option[] = [];
     if (
       modifier === CriterionModifier.Includes &&
@@ -282,7 +320,6 @@ function useParentStudiosFilterState(props: {
         return;
       }
 
-      // Add to value array
       newCriterion.value = [...criterion.value, { id: v.id, label: v.label }];
       setCriterion(newCriterion);
     },
@@ -294,13 +331,11 @@ function useParentStudiosFilterState(props: {
       const newCriterion = criterion.clone() as ParentStudiosCriterion;
 
       if (v.className === "modifier-object") {
-        // Reset to default modifier
         newCriterion.modifier = CriterionModifier.Includes;
         setCriterion(newCriterion);
         return;
       }
 
-      // Remove from value array
       newCriterion.value = criterion.value.filter(
         (i: ILabeledId) => i.id !== v.id
       );
@@ -326,7 +361,6 @@ function useParentStudiosFilterState(props: {
   };
 }
 
-// Sidebar filter for parent studios (non-hierarchical ILabeledIdCriterion)
 export const SidebarParentStudiosFilter: React.FC<{
   title?: ReactNode;
   option: CriterionOption;

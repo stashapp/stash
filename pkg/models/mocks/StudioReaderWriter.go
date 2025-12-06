@@ -505,3 +505,26 @@ func (_m *StudioReaderWriter) UpdatePartial(ctx context.Context, updatedStudio m
 
 	return r0, r1
 }
+
+// GetFacets provides a mock function with given fields: ctx, studioFilter, limit
+func (_m *StudioReaderWriter) GetFacets(ctx context.Context, studioFilter *models.StudioFilterType, limit int) (*models.StudioFacets, error) {
+	ret := _m.Called(ctx, studioFilter, limit)
+
+	var r0 *models.StudioFacets
+	if rf, ok := ret.Get(0).(func(context.Context, *models.StudioFilterType, int) *models.StudioFacets); ok {
+		r0 = rf(ctx, studioFilter, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.StudioFacets)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.StudioFilterType, int) error); ok {
+		r1 = rf(ctx, studioFilter, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

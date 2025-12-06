@@ -1,14 +1,40 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useContext, useMemo } from "react";
 import { useIntl } from "react-intl";
-import { CriterionModifier } from "src/core/generated-graphql";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMobileAlt, faDesktop, faSquare } from "@fortawesome/free-solid-svg-icons";
 import {
-  CriterionOption,
-  ModifierCriterion,
-} from "../../../models/list-filter/criteria/criterion";
+  CriterionModifier,
+} from "src/core/generated-graphql";
+import { CriterionOption } from "../../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { OrientationCriterion } from "src/models/list-filter/criteria/orientation";
-import { orientationStrings } from "src/utils/orientation";
+import { orientationStrings, stringToOrientation } from "src/utils/orientation";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
+import { FacetCountsContext } from "src/hooks/useFacetCounts";
+
+function createOrientationIcon(orientation: string): React.ReactNode {
+  let icon;
+  switch (orientation.toLowerCase()) {
+    case "portrait":
+      icon = faMobileAlt;
+      break;
+    case "landscape":
+      icon = faDesktop;
+      break;
+    case "square":
+      icon = faSquare;
+      break;
+    default:
+      icon = faDesktop;
+  }
+  return (
+    <FontAwesomeIcon
+      icon={icon}
+      style={{ marginRight: "0.5em", opacity: 0.7 }}
+      fixedWidth
+    />
+  );
+}
 
 interface IOrientationFilterProps {
   criterion: OrientationCriterion;
@@ -39,13 +65,25 @@ export const SidebarOrientationFilter: React.FC<ISidebarFilter> = ({
   sectionID,
 }) => {
   const intl = useIntl();
+  
+  // Get facet counts from context - include loading state to avoid stale data filtering
+  const { counts: facetCounts, loading: facetsLoading } = useContext(FacetCountsContext);
 
   const options = useMemo(() => {
-    return orientationStrings.map((orientation) => ({
-      id: orientation,
-      label: orientation,
-    }));
-  }, [intl]);
+    return orientationStrings.map((orientation) => {
+      const orientationEnum = stringToOrientation(orientation);
+      // Don't show counts when loading to prevent stale data filtering
+      const count = (orientationEnum && !facetsLoading)
+        ? facetCounts.orientations.get(orientationEnum)
+        : undefined;
+      return {
+        id: orientation,
+        label: orientation,
+        icon: createOrientationIcon(orientation),
+        count,
+      };
+    });
+  }, [facetCounts, facetsLoading]);
 
   const criteria = filter.criteriaFor(option.type) as OrientationCriterion[];
   const criterion = criteria.length > 0 ? criteria[0] : null;
@@ -69,11 +107,9 @@ export const SidebarOrientationFilter: React.FC<ISidebarFilter> = ({
     if (criterion && criterion.modifier === CriterionModifier.Includes) {
       const currentValues = criterion.value;
       if (!currentValues.includes(item.id)) {
-        // Add to selection
         newCriterion.value = [...currentValues, item.id];
       }
     } else {
-      // Start new selection
       newCriterion.modifier = CriterionModifier.Includes;
       newCriterion.value = [item.id];
     }
@@ -99,24 +135,27 @@ export const SidebarOrientationFilter: React.FC<ISidebarFilter> = ({
     setFilter(filter.replaceCriteria(option.type, [newCriterion]));
   }
 
-  // handle filtering of selected options
+  // Filter out selected options and zero-count options
   const candidates = useMemo(() => {
-    return options.filter(
-      (p) => selected.find((s) => s.id === p.id) === undefined
-    );
-  }, [options, selected]);
+    // Only filter by counts if facets have loaded AND are not currently loading
+    const hasValidCounts = facetCounts.orientations.size > 0 && !facetsLoading;
+    
+    return options.filter((p) => {
+      if (selected.find((s) => s.id === p.id)) return false;
+      if (!hasValidCounts) return true;
+      return p.count !== undefined && p.count > 0;
+    });
+  }, [options, selected, facetCounts.orientations.size, facetsLoading]);
 
   return (
-    <>
-      <SidebarListFilter
-        title={title}
-        candidates={candidates}
-        onSelect={onSelect}
-        onUnselect={onUnselect}
-        selected={selected}
-        singleValue={false}
-        sectionID={sectionID}
-      />
-    </>
+    <SidebarListFilter
+      title={title}
+      candidates={candidates}
+      onSelect={onSelect}
+      onUnselect={onUnselect}
+      selected={selected}
+      singleValue={false}
+      sectionID={sectionID}
+    />
   );
 };

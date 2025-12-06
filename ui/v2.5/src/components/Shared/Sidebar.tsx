@@ -67,6 +67,7 @@ export const SidebarPaneContent: React.FC = ({ children }) => {
 interface IContext {
   sectionOpen: SidebarSectionStates;
   setSectionOpen: (section: string, open: boolean) => void;
+  disabled?: boolean;
 }
 
 export const SidebarStateContext = React.createContext<IContext | null>(null);
@@ -79,6 +80,7 @@ export const SidebarSection: React.FC<
     onOpen?: () => void;
     // used to store open/closed state in SidebarStateContext
     sectionID?: string;
+    disabled?: boolean;
   }>
 > = ({
   className = "",
@@ -86,6 +88,7 @@ export const SidebarSection: React.FC<
   outsideCollapse,
   onOpen,
   sectionID = "",
+  disabled: disabledProp,
   children,
 }) => {
   // this is optional
@@ -94,6 +97,9 @@ export const SidebarSection: React.FC<
     !contextState || !sectionID
       ? undefined
       : contextState.sectionOpen[sectionID] ?? undefined;
+  
+  // Use prop if provided, otherwise use context disabled state
+  const disabled = disabledProp ?? contextState?.disabled ?? false;
 
   function onOpenInternal(open: boolean) {
     if (contextState && sectionID) {
@@ -119,6 +125,7 @@ export const SidebarSection: React.FC<
       outsideCollapse={outsideCollapse}
       onOpenChanged={onOpenInternal}
       open={openState}
+      disabled={disabled}
     >
       {children}
     </CollapseButton>

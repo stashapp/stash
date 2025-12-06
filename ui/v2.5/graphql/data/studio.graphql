@@ -45,9 +45,21 @@ fragment SelectStudioData on Studio {
   aliases
   details
   image_path
+  scene_count
+  scene_count_all: scene_count(depth: -1)
+  image_count
+  gallery_count
+  performer_count
 
   parent_studio {
     id
     name
   }
+}
+
+# Minimal fragment for sidebar filter - only essential fields for fast loading
+fragment FilterStudioData on Studio {
+  id
+  name
+  aliases
 }

@@ -80,6 +80,20 @@ export const PhashFilter: React.FC<IPhashFilterProps> = ({
 // NEW IMPROVED SIDEBAR PHASH FILTER
 // ============================================================================
 
+// Distance presets with meaningful labels
+interface DistancePreset {
+  id: string;
+  label: string;
+  distance: number;
+}
+
+const distancePresets: DistancePreset[] = [
+  { id: "exact", label: "Exact (0)", distance: 0 },
+  { id: "very_similar", label: "Very Similar (≤3)", distance: 3 },
+  { id: "similar", label: "Similar (≤8)", distance: 8 },
+  { id: "loose", label: "Loose (≤16)", distance: 16 },
+];
+
 // Create icon for phash value
 function createPhashIcon(): React.ReactNode {
   return (
@@ -116,6 +130,7 @@ function usePhashFilterState(props: {
 
   const [inputValue, setInputValue] = useState("");
   const [inputDistance, setInputDistance] = useState("");
+  const [showCustomDistance, setShowCustomDistance] = useState(false);
 
   const criterion = useMemo(() => {
     const ret = filter.criteria.find(
@@ -227,12 +242,25 @@ function usePhashFilterState(props: {
     return items;
   }, [intl, selectedModifiers, getValueLabel, getModifierDisplayLabel, modifier]);
 
-  // Build candidates list (modifier options)
+  // Get active distance preset
+  const activeDistancePreset = useMemo((): string | null => {
+    if (!hasActiveValue || !value?.distance === undefined) return null;
+    
+    const preset = distancePresets.find(p => p.distance === value.distance);
+    return preset?.id || "custom";
+  }, [hasActiveValue, value]);
+
+  // Build candidates list (modifier options + distance presets)
   const candidates = useMemo(() => {
     const items: Option[] = [];
 
+    // Don't show candidates if any/none is selected
+    if (selectedModifiers.any || selectedModifiers.none) {
+      return items;
+    }
+
     // Show modifier options when nothing is selected
-    if (!selectedModifiers.any && !selectedModifiers.none && !hasActiveValue) {
+    if (!hasActiveValue) {
       items.push({
         id: "any",
         label: `(${intl.formatMessage({
@@ -251,8 +279,30 @@ function usePhashFilterState(props: {
       });
     }
 
+    // Add distance presets when phash input has a value
+    if (inputValue.trim()) {
+      distancePresets.forEach((preset) => {
+        items.push({
+          id: `distance_${preset.id}`,
+          label: preset.label,
+          className: "preset-option",
+          canExclude: false,
+        });
+      });
+
+      // Add custom distance option
+      if (!showCustomDistance) {
+        items.push({
+          id: "distance_custom",
+          label: intl.formatMessage({ id: "actions.custom", defaultMessage: "Custom distance..." }),
+          className: "preset-option",
+          canExclude: false,
+        });
+      }
+    }
+
     return items;
-  }, [intl, selectedModifiers, hasActiveValue]);
+  }, [intl, selectedModifiers, hasActiveValue, inputValue, showCustomDistance]);
 
   const onSelect = useCallback(
     (v: Option, _exclude: boolean) => {
@@ -267,9 +317,25 @@ function usePhashFilterState(props: {
           newCriterion.value = { value: "", distance: 0 };
         }
         setCriterion(newCriterion);
+        setShowCustomDistance(false);
+      } else if (v.id === "distance_custom") {
+        // Show custom distance input
+        setShowCustomDistance(true);
+      } else if (v.id.startsWith("distance_")) {
+        // Handle distance preset selection
+        const presetId = v.id.replace("distance_", "");
+        const preset = distancePresets.find(p => p.id === presetId);
+        if (preset && inputValue.trim()) {
+          const newCriterion = cloneDeep(criterion);
+          newCriterion.modifier = CriterionModifier.Equals;
+          newCriterion.value = { value: inputValue.trim(), distance: preset.distance };
+          setCriterion(newCriterion);
+          setInputValue("");
+          setShowCustomDistance(false);
+        }
       }
     },
-    [criterion, setCriterion]
+    [criterion, setCriterion, inputValue]
   );
 
   const onUnselect = useCallback(
@@ -283,6 +349,7 @@ function usePhashFilterState(props: {
         setCriterion(null);
         setInputValue("");
         setInputDistance("");
+        setShowCustomDistance(false);
       }
     },
     [setCriterion]
@@ -319,84 +386,95 @@ function usePhashFilterState(props: {
     onInputSubmit,
     selectedModifiers,
     hasActiveValue,
+    showCustomDistance,
+    setShowCustomDistance,
   };
 }
 
-// Phash input component
+// Phash input component - just the phash value input
 interface IPhashInputProps {
   inputValue: string;
   setInputValue: (value: string) => void;
-  inputDistance: string;
-  setInputDistance: (value: string) => void;
-  onSubmit: (phashValue: string, distance: number, notEquals: boolean) => void;
   disabled?: boolean;
 }
 
 const PhashInput: React.FC<IPhashInputProps> = ({
   inputValue,
   setInputValue,
-  inputDistance,
-  setInputDistance,
-  onSubmit,
   disabled,
 }) => {
   const intl = useIntl();
-  const [selectedModifier, setSelectedModifier] = useState(
-    CriterionModifier.Equals
+
+  return (
+    <div className="phash-input-container">
+      <Form.Control
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder={intl.formatMessage({
+          id: "media_info.phash",
+          defaultMessage: "Enter PHash value...",
+        })}
+        disabled={disabled}
+        className="phash-text-input"
+      />
+      {inputValue.trim() && (
+        <div className="phash-hint">
+          {intl.formatMessage({ 
+            id: "dialogs.phash_filter.hint", 
+            defaultMessage: "Select a distance threshold below" 
+          })}
+        </div>
+      )}
+    </div>
   );
+};
+
+// Custom distance input component
+interface ICustomDistanceInputProps {
+  inputValue: string;
+  setInputValue: (value: string) => void;
+  inputDistance: string;
+  setInputDistance: (value: string) => void;
+  onSubmit: (phashValue: string, distance: number, notEquals: boolean) => void;
+  onCancel: () => void;
+  disabled?: boolean;
+}
+
+const CustomDistanceInput: React.FC<ICustomDistanceInputProps> = ({
+  inputValue,
+  setInputValue,
+  inputDistance,
+  setInputDistance,
+  onSubmit,
+  onCancel,
+  disabled,
+}) => {
+  const intl = useIntl();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
       const distance = parseInt(inputDistance, 10) || 0;
-      onSubmit(
-        inputValue,
-        distance,
-        selectedModifier === CriterionModifier.NotEquals
-      );
+      onSubmit(inputValue, distance, false);
+    }
+    if (e.key === "Escape") {
+      onCancel();
     }
   };
 
-  const modifiers = [CriterionModifier.Equals, CriterionModifier.NotEquals];
-
   return (
-    <div className="phash-input-container">
-      <InputGroup className="phash-input-group">
-        <InputGroup.Prepend>
-          <Dropdown>
-            <Dropdown.Toggle
-              variant="secondary"
-              disabled={disabled}
-              className="modifier-dropdown-toggle"
-            >
-              {getModifierLabel(intl, selectedModifier)}
-              <Icon icon={faChevronDown} className="dropdown-icon" />
-            </Dropdown.Toggle>
-            <Dropdown.Menu className="bg-secondary text-white">
-              {modifiers.map((m) => (
-                <Dropdown.Item
-                  key={m}
-                  className="bg-secondary text-white"
-                  active={m === selectedModifier}
-                  onClick={() => setSelectedModifier(m)}
-                >
-                  {getModifierLabel(intl, m)}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        </InputGroup.Prepend>
-        <Form.Control
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={intl.formatMessage({
-            id: "media_info.phash",
-            defaultMessage: "PHash",
-          })}
-          disabled={disabled}
-        />
-      </InputGroup>
+    <div className="custom-distance-input">
+      <Form.Control
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder={intl.formatMessage({
+          id: "media_info.phash",
+          defaultMessage: "PHash",
+        })}
+        disabled={disabled}
+        className="phash-text-input"
+      />
       <Form.Control
         type="number"
         min={0}
@@ -405,10 +483,18 @@ const PhashInput: React.FC<IPhashInputProps> = ({
         onKeyDown={handleKeyDown}
         placeholder={intl.formatMessage({
           id: "distance",
-          defaultMessage: "Distance (0)",
+          defaultMessage: "Distance (0-32)",
         })}
         disabled={disabled}
+        autoFocus
       />
+      <button
+        type="button"
+        className="custom-cancel-button"
+        onClick={onCancel}
+      >
+        ✕
+      </button>
     </div>
   );
 };
@@ -433,13 +519,21 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
   // Disable input when any/none modifier is selected
   const inputDisabled = state.selectedModifiers.any || state.selectedModifiers.none;
 
-  const phashInput = (
-    <PhashInput
+  // Show either the simple phash input or the custom distance input
+  const inputSection = state.showCustomDistance ? (
+    <CustomDistanceInput
       inputValue={state.inputValue}
       setInputValue={state.setInputValue}
       inputDistance={state.inputDistance}
       setInputDistance={state.setInputDistance}
       onSubmit={state.onInputSubmit}
+      onCancel={() => state.setShowCustomDistance(false)}
+      disabled={inputDisabled}
+    />
+  ) : (
+    <PhashInput
+      inputValue={state.inputValue}
+      setInputValue={state.setInputValue}
       disabled={inputDisabled}
     />
   );
@@ -454,7 +548,7 @@ export const SidebarPhashFilter: React.FC<ISidebarFilter> = ({
       canExclude={false}
       singleValue={true}
       sectionID={sectionID}
-      preCandidates={phashInput}
+      preCandidates={inputSection}
     />
   );
 };

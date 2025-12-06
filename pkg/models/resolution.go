@@ -189,3 +189,14 @@ var streamingResolutionMax = map[StreamingResolutionEnum]int{
 func (e StreamingResolutionEnum) GetMaxResolution() int {
 	return streamingResolutionMax[e]
 }
+
+// ResolutionFromHeight returns the ResolutionEnum that matches the given height.
+// Returns empty string if no matching resolution is found.
+func ResolutionFromHeight(height int) ResolutionEnum {
+	for res, r := range resolutionRanges {
+		if height >= r.min && height <= r.max {
+			return res
+		}
+	}
+	return ""
+}

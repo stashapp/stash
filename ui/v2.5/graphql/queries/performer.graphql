@@ -37,3 +37,16 @@ query FindPerformersForSelect(
     }
   }
 }
+
+# Lightweight query for sidebar filter - minimal data for fast loading
+query FindPerformersForFilter(
+  $filter: FindFilterType
+  $performer_filter: PerformerFilterType
+) {
+  findPerformers(filter: $filter, performer_filter: $performer_filter) {
+    count
+    performers {
+      ...FilterPerformerData
+    }
+  }
+}

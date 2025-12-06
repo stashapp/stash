@@ -188,7 +188,7 @@ export const StringFilter: React.FC<IStringFilterProps> = ({
 };
 
 // ============================================================================
-// NEW IMPROVED SIDEBAR STRING FILTER
+// NEW IMPROVED SIDEBAR STRING FILTER WITH MULTI-VALUE SUPPORT
 // ============================================================================
 
 // Get modifier label for display
@@ -215,7 +215,44 @@ function createStringIcon(): React.ReactNode {
   );
 }
 
-function useStringFilterState(props: {
+// Escape special regex characters in a string
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Convert multiple values to a regex pattern
+function valuesToRegex(values: string[]): string {
+  if (values.length === 0) return "";
+  if (values.length === 1) return escapeRegex(values[0]);
+  // Case-insensitive OR pattern
+  return `(?i)(${values.map(escapeRegex).join("|")})`;
+}
+
+// Parse a regex pattern back to values (best effort)
+function regexToValues(regex: string): string[] {
+  if (!regex) return [];
+  
+  // Try to parse (?i)(val1|val2|val3) pattern
+  const multiMatch = regex.match(/^\(\?i\)\((.+)\)$/);
+  if (multiMatch) {
+    // Split by | but handle escaped pipes
+    const inner = multiMatch[1];
+    const values = inner.split("|").map((v) => 
+      v.replace(/\\(.)/g, "$1") // Unescape
+    );
+    return values;
+  }
+  
+  // Single value - unescape
+  return [regex.replace(/\\(.)/g, "$1")];
+}
+
+// Check if a regex pattern looks like our multi-value pattern
+function isMultiValueRegex(regex: string): boolean {
+  return /^\(\?i\)\(.+\)$/.test(regex) || !regex.includes("(");
+}
+
+function useMultiStringFilterState(props: {
   option: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
@@ -249,7 +286,6 @@ function useStringFilterState(props: {
   );
 
   const modifierCriterionOption = criterion?.modifierCriterionOption();
-  const defaultModifier = modifierCriterionOption?.defaultModifier ?? CriterionModifier.Equals;
   const modifierOptions = modifierCriterionOption?.modifierOptions ?? [];
 
   const { modifier, value } = criterion;
@@ -266,14 +302,32 @@ function useStringFilterState(props: {
     };
   }, [modifier]);
 
+  // Parse current values from the criterion
+  const currentValues = useMemo(() => {
+    if (!value || selectedModifiers.any || selectedModifiers.none) return [];
+    
+    // If using regex modifier, try to parse values
+    if (modifier === CriterionModifier.MatchesRegex || modifier === CriterionModifier.NotMatchesRegex) {
+      if (isMultiValueRegex(value)) {
+        return regexToValues(value);
+      }
+      // Complex regex - show as single value
+      return [value];
+    }
+    
+    // Single value for other modifiers
+    return value ? [value] : [];
+  }, [value, modifier, selectedModifiers]);
+
+  // Determine if values are excluded (using NotMatchesRegex or Excludes)
+  const isExcluded = useMemo(() => {
+    return modifier === CriterionModifier.NotMatchesRegex || modifier === CriterionModifier.Excludes;
+  }, [modifier]);
+
   // Determine if there's an active value filter
   const hasActiveValue = useMemo(() => {
-    return (
-      value &&
-      modifier !== CriterionModifier.IsNull &&
-      modifier !== CriterionModifier.NotNull
-    );
-  }, [value, modifier]);
+    return currentValues.length > 0;
+  }, [currentValues]);
 
   // Build selected items list
   const selected = useMemo(() => {
@@ -299,26 +353,18 @@ function useStringFilterState(props: {
       });
     }
 
-    // Add active value with its modifier
-    if (hasActiveValue) {
-      // Show modifier if not the default
-      if (modifier !== defaultModifier) {
-        items.push({
-          id: "modifier",
-          label: `(${getModifierLabel(intl, modifier)})`,
-          className: "modifier-object",
-        });
-      }
-
+    // Add each value as a separate item
+    currentValues.forEach((val, index) => {
       items.push({
-        id: "value",
-        label: value,
+        id: `value_${index}`,
+        label: val,
         icon: createStringIcon(),
+        className: isExcluded ? "excluded-item" : undefined,
       });
-    }
+    });
 
     return items;
-  }, [intl, selectedModifiers, hasActiveValue, value, modifier, defaultModifier]);
+  }, [intl, selectedModifiers, currentValues, isExcluded]);
 
   // Build candidates list (modifier options)
   const candidates = useMemo(() => {
@@ -371,47 +417,71 @@ function useStringFilterState(props: {
 
   const onUnselect = useCallback(
     (v: Option, _exclude: boolean) => {
-      if (v.id === "any" || v.id === "none" || v.id === "modifier") {
-        // Reset modifier to default
-        const newCriterion = cloneDeep(criterion);
-        newCriterion.modifier = defaultModifier;
-        if (v.id === "any" || v.id === "none") {
-          newCriterion.value = "";
+      if (v.id === "any" || v.id === "none") {
+        setCriterion(null);
+      } else if (v.id.startsWith("value_")) {
+        // Remove this specific value
+        const index = parseInt(v.id.replace("value_", ""), 10);
+        const newValues = currentValues.filter((_, i) => i !== index);
+        
+        if (newValues.length === 0) {
           setCriterion(null);
         } else {
+          const newCriterion = cloneDeep(criterion);
+          newCriterion.value = valuesToRegex(newValues);
+          // Keep the same modifier type (include/exclude)
+          if (!isExcluded) {
+            newCriterion.modifier = CriterionModifier.MatchesRegex;
+          } else {
+            newCriterion.modifier = CriterionModifier.NotMatchesRegex;
+          }
           setCriterion(newCriterion);
         }
-      } else if (v.id === "value") {
-        // Clear value
-        setCriterion(null);
-        setInputValue("");
       }
     },
-    [criterion, setCriterion, defaultModifier]
+    [criterion, setCriterion, currentValues, isExcluded]
   );
 
-  const onInputSubmit = useCallback(
-    (inputVal: string, selectedModifier: CriterionModifier) => {
-      if (!inputVal.trim()) {
-        setCriterion(null);
+  // Add a new value
+  const addValue = useCallback(
+    (newValue: string, exclude: boolean) => {
+      const trimmed = newValue.trim();
+      if (!trimmed) return;
+      
+      // Check if value already exists
+      if (currentValues.includes(trimmed)) {
+        setInputValue("");
         return;
       }
 
+      const newValues = [...currentValues, trimmed];
       const newCriterion = cloneDeep(criterion);
-      newCriterion.modifier = selectedModifier;
-      newCriterion.value = inputVal.trim();
+      newCriterion.value = valuesToRegex(newValues);
+      
+      // Set modifier based on exclude flag
+      // If we already have values with a modifier, keep that modifier unless changing modes
+      if (currentValues.length === 0) {
+        // First value - set based on exclude flag
+        newCriterion.modifier = exclude ? CriterionModifier.NotMatchesRegex : CriterionModifier.MatchesRegex;
+      } else {
+        // Keep existing modifier
+        newCriterion.modifier = isExcluded ? CriterionModifier.NotMatchesRegex : CriterionModifier.MatchesRegex;
+      }
+      
       setCriterion(newCriterion);
       setInputValue("");
     },
-    [criterion, setCriterion]
+    [criterion, setCriterion, currentValues, isExcluded]
   );
 
-  // Get available text modifiers (excluding null modifiers)
-  const textModifiers = useMemo(() => {
-    return modifierOptions.filter(
-      (m) => m !== CriterionModifier.IsNull && m !== CriterionModifier.NotNull
-    );
-  }, [modifierOptions]);
+  // Toggle between include/exclude mode
+  const toggleExclude = useCallback(() => {
+    if (currentValues.length === 0) return;
+    
+    const newCriterion = cloneDeep(criterion);
+    newCriterion.modifier = isExcluded ? CriterionModifier.MatchesRegex : CriterionModifier.NotMatchesRegex;
+    setCriterion(newCriterion);
+  }, [criterion, setCriterion, currentValues, isExcluded]);
 
   return {
     selected,
@@ -420,84 +490,80 @@ function useStringFilterState(props: {
     onUnselect,
     inputValue,
     setInputValue,
-    onInputSubmit,
-    textModifiers,
-    defaultModifier,
+    addValue,
+    toggleExclude,
     selectedModifiers,
     hasActiveValue,
+    isExcluded,
+    currentValues,
   };
 }
 
-// String input component with modifier dropdown
-interface IStringInputProps {
+// Multi-value string input component
+interface IMultiStringInputProps {
   inputValue: string;
   setInputValue: (value: string) => void;
-  onSubmit: (value: string, modifier: CriterionModifier) => void;
-  modifiers: CriterionModifier[];
-  defaultModifier: CriterionModifier;
+  onAdd: (value: string, exclude: boolean) => void;
   placeholder?: string;
   disabled?: boolean;
+  isExcluded: boolean;
+  hasValues: boolean;
+  onToggleExclude: () => void;
 }
 
-const StringInput: React.FC<IStringInputProps> = ({
+const MultiStringInput: React.FC<IMultiStringInputProps> = ({
   inputValue,
   setInputValue,
-  onSubmit,
-  modifiers,
-  defaultModifier,
+  onAdd,
   placeholder,
   disabled,
+  isExcluded,
+  hasValues,
+  onToggleExclude,
 }) => {
   const intl = useIntl();
-  const [selectedModifier, setSelectedModifier] = useState(defaultModifier);
-  const [focus] = useFocus();
+  const [inputRef, setFocus] = useFocus();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
-      onSubmit(inputValue, selectedModifier);
+      e.preventDefault();
+      // Shift+Enter to exclude
+      onAdd(inputValue, e.shiftKey);
     }
   };
 
-  const showModifierDropdown = modifiers.length > 1;
-
   return (
-    <InputGroup className="string-input-group">
-      {showModifierDropdown && (
-        <InputGroup.Prepend>
-          <Dropdown>
-            <Dropdown.Toggle
-              variant="secondary"
-              disabled={disabled}
-              className="modifier-dropdown-toggle"
+    <div className="multi-string-input">
+      <InputGroup className="string-input-group">
+        {hasValues && (
+          <InputGroup.Prepend>
+            <button
+              type="button"
+              className={`mode-toggle-button ${isExcluded ? "exclude-mode" : "include-mode"}`}
+              onClick={onToggleExclude}
+              title={isExcluded 
+                ? intl.formatMessage({ id: "criterion_modifier.excludes", defaultMessage: "Excluding" })
+                : intl.formatMessage({ id: "criterion_modifier.includes", defaultMessage: "Including" })
+              }
             >
-              {getModifierLabel(intl, selectedModifier)}
-              <Icon icon={faChevronDown} className="dropdown-icon" />
-            </Dropdown.Toggle>
-            <Dropdown.Menu className="bg-secondary text-white">
-              {modifiers.map((m) => (
-                <Dropdown.Item
-                  key={m}
-                  className="bg-secondary text-white"
-                  active={m === selectedModifier}
-                  onClick={() => setSelectedModifier(m)}
-                >
-                  {getModifierLabel(intl, m)}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        </InputGroup.Prepend>
-      )}
-      <Form.Control
-        ref={focus}
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder || intl.formatMessage({ id: "search" })}
-        disabled={disabled}
-      />
-    </InputGroup>
+              {isExcluded ? "−" : "+"}
+            </button>
+          </InputGroup.Prepend>
+        )}
+        <Form.Control
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || intl.formatMessage({ id: "actions.add_value", defaultMessage: "Add value..." })}
+          disabled={disabled}
+        />
+      </InputGroup>
+      <div className="input-hint">
+        {intl.formatMessage({ id: "dialogs.string_filter.hint", defaultMessage: "Enter to add, Shift+Enter to exclude" })}
+      </div>
+    </div>
   );
 };
 
@@ -519,20 +585,21 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
   placeholder,
   sectionID,
 }) => {
-  const state = useStringFilterState({ option, filter, setFilter });
+  const state = useMultiStringFilterState({ option, filter, setFilter });
 
   // Disable input when any/none modifier is selected
   const inputDisabled = state.selectedModifiers.any || state.selectedModifiers.none;
 
   const stringInput = (
-    <StringInput
+    <MultiStringInput
       inputValue={state.inputValue}
       setInputValue={state.setInputValue}
-      onSubmit={state.onInputSubmit}
-      modifiers={state.textModifiers}
-      defaultModifier={state.defaultModifier}
+      onAdd={state.addValue}
       placeholder={placeholder}
       disabled={inputDisabled}
+      isExcluded={state.isExcluded}
+      hasValues={state.hasActiveValue}
+      onToggleExclude={state.toggleExclude}
     />
   );
 
@@ -544,7 +611,7 @@ export const SidebarStringFilter: React.FC<ISidebarFilter> = ({
       onUnselect={state.onUnselect}
       selected={state.selected}
       canExclude={false}
-      singleValue={true}
+      singleValue={false}
       sectionID={sectionID}
       preCandidates={stringInput}
     />

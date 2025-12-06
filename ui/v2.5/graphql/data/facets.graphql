@@ -1,0 +1,177 @@
+fragment FacetCountData on FacetCount {
+  id
+  label
+  count
+}
+
+fragment BooleanFacetCountData on BooleanFacetCount {
+  value
+  count
+}
+
+fragment ResolutionFacetCountData on ResolutionFacetCount {
+  resolution
+  count
+}
+
+fragment OrientationFacetCountData on OrientationFacetCount {
+  orientation
+  count
+}
+
+fragment GenderFacetCountData on GenderFacetCount {
+  gender
+  count
+}
+
+fragment RatingFacetCountData on RatingFacetCount {
+  rating
+  count
+}
+
+fragment CircumcisedFacetCountData on CircumcisedFacetCount {
+  value
+  count
+}
+
+fragment CaptionFacetCountData on CaptionFacetCount {
+  language
+  count
+}
+
+query SceneFacets(
+  $scene_filter: SceneFilterType
+  $limit: Int
+  $include_performer_tags: Boolean
+  $include_captions: Boolean
+) {
+  sceneFacets(
+    scene_filter: $scene_filter
+    limit: $limit
+    include_performer_tags: $include_performer_tags
+    include_captions: $include_captions
+  ) {
+    tags {
+      ...FacetCountData
+    }
+    performers {
+      ...FacetCountData
+    }
+    studios {
+      ...FacetCountData
+    }
+    groups {
+      ...FacetCountData
+    }
+    performer_tags {
+      ...FacetCountData
+    }
+    resolutions {
+      ...ResolutionFacetCountData
+    }
+    orientations {
+      ...OrientationFacetCountData
+    }
+    organized {
+      ...BooleanFacetCountData
+    }
+    interactive {
+      ...BooleanFacetCountData
+    }
+    ratings {
+      ...RatingFacetCountData
+    }
+    captions {
+      ...CaptionFacetCountData
+    }
+  }
+}
+
+query PerformerFacets($performer_filter: PerformerFilterType, $limit: Int) {
+  performerFacets(performer_filter: $performer_filter, limit: $limit) {
+    tags {
+      ...FacetCountData
+    }
+    studios {
+      ...FacetCountData
+    }
+    genders {
+      ...GenderFacetCountData
+    }
+    countries {
+      ...FacetCountData
+    }
+    circumcised {
+      ...CircumcisedFacetCountData
+    }
+    favorite {
+      ...BooleanFacetCountData
+    }
+    ratings {
+      ...RatingFacetCountData
+    }
+  }
+}
+
+query GalleryFacets($gallery_filter: GalleryFilterType, $limit: Int) {
+  galleryFacets(gallery_filter: $gallery_filter, limit: $limit) {
+    tags {
+      ...FacetCountData
+    }
+    performers {
+      ...FacetCountData
+    }
+    studios {
+      ...FacetCountData
+    }
+    organized {
+      ...BooleanFacetCountData
+    }
+    ratings {
+      ...RatingFacetCountData
+    }
+  }
+}
+
+query GroupFacets($group_filter: GroupFilterType, $limit: Int) {
+  groupFacets(group_filter: $group_filter, limit: $limit) {
+    tags {
+      ...FacetCountData
+    }
+    performers {
+      ...FacetCountData
+    }
+    studios {
+      ...FacetCountData
+    }
+  }
+}
+
+query StudioFacets($studio_filter: StudioFilterType, $limit: Int) {
+  studioFacets(studio_filter: $studio_filter, limit: $limit) {
+    tags {
+      ...FacetCountData
+    }
+    parents {
+      ...FacetCountData
+    }
+    favorite {
+      ...BooleanFacetCountData
+    }
+  }
+}
+
+query TagFacets($tag_filter: TagFilterType, $limit: Int) {
+  tagFacets(tag_filter: $tag_filter, limit: $limit) {
+    parents {
+      ...FacetCountData
+    }
+    children {
+      ...FacetCountData
+    }
+    favorite {
+      ...BooleanFacetCountData
+    }
+  }
+}
+

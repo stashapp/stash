@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Spinner } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import {
   faCheckCircle,
@@ -91,6 +91,8 @@ const CandidateItem: React.FC<{
   modifier?: boolean;
   singleValue?: boolean;
   icon?: React.ReactNode;
+  count?: number;
+  countsLoading?: boolean;
 }> = ({
   onSelect,
   label,
@@ -99,6 +101,8 @@ const CandidateItem: React.FC<{
   singleValue = false,
   className,
   icon,
+  count,
+  countsLoading = false,
 }) => {
   const singleValueClass = singleValue ? "single-value" : "";
   const includeIcon = (
@@ -130,9 +134,16 @@ const CandidateItem: React.FC<{
             text={label}
           />
         </div>
-        <div>
-          {/* TODO item count */}
-          {/* <span className="object-count">{p.id}</span> */}
+        <div className="item-actions">
+          {count !== undefined ? (
+            <span className={cx("object-count", { "zero-count": count === 0 })}>
+              {count.toLocaleString()}
+            </span>
+          ) : countsLoading && !modifier ? (
+            <span className="object-count count-loading" title="Loading count...">
+              <span className="count-loading-dots">···</span>
+            </span>
+          ) : null}
           {canExclude && (
             <Button
               onClick={(e) => {
@@ -159,13 +170,16 @@ export type Option<T = unknown> = {
   label: string;
   canExclude?: boolean; // defaults to true
   icon?: React.ReactNode; // optional icon to display before the label
+  count?: number; // optional count to display after the label
 };
 
 export const SelectedList: React.FC<{
   items: Option[];
   onUnselect: (item: Option) => void;
   excluded?: boolean;
-}> = ({ items, onUnselect, excluded }) => {
+  /** Unique prefix for item keys to prevent React DOM recycling issues */
+  keyPrefix?: string;
+}> = ({ items, onUnselect, excluded, keyPrefix }) => {
   if (items.length === 0) {
     return null;
   }
@@ -174,7 +188,7 @@ export const SelectedList: React.FC<{
     <ul className={cx("selected-list", { "excluded-list": excluded })}>
       {items.map((p) => (
         <SelectedItem
-          key={p.id}
+          key={keyPrefix ? `${keyPrefix}-${p.id}` : p.id}
           className={p.className}
           label={p.label}
           excluded={excluded}
@@ -230,6 +244,10 @@ export const CandidateList: React.FC<
     onSelect: (item: Option, exclude: boolean) => void;
     canExclude?: boolean;
     singleValue?: boolean;
+    loading?: boolean;
+    countsLoading?: boolean;
+    /** Unique prefix for item keys to prevent React DOM recycling issues across filter sections */
+    keyPrefix?: string;
   } & IQueryableProps
 > = ({
   inputFocus,
@@ -239,9 +257,17 @@ export const CandidateList: React.FC<
   onSelect,
   canExclude,
   singleValue,
+  loading,
+  countsLoading,
+  keyPrefix,
 }) => {
   const showQueryField =
     inputFocus !== undefined && query !== undefined && setQuery !== undefined;
+
+  // Check if there are any non-modifier items (actual data items)
+  const hasDataItems = items.some((item) => item.className !== "modifier-object");
+  // Show loading spinner if loading and no data items yet (modifier items don't count)
+  const showLoading = loading && !hasDataItems;
 
   return (
     <div className="queryable-candidate-list">
@@ -252,19 +278,28 @@ export const CandidateList: React.FC<
           setValue={(v) => setQuery(v)}
         />
       )}
-      <ul>
-        {items.map((p) => (
-          <CandidateItem
-            key={p.id}
-            className={p.className}
-            onSelect={(exclude) => onSelect(p, exclude)}
-            label={p.label}
-            canExclude={canExclude && (p.canExclude ?? true)}
-            singleValue={singleValue}
-            icon={p.icon}
-          />
-        ))}
-      </ul>
+      {showLoading ? (
+        <div className="candidates-loading">
+          <Spinner animation="border" size="sm" />
+        </div>
+      ) : (
+        <ul>
+          {items.map((p) => (
+            <CandidateItem
+              key={keyPrefix ? `${keyPrefix}-${p.id}` : p.id}
+              className={p.className}
+              modifier={p.className === "modifier-object"}
+              onSelect={(exclude) => onSelect(p, exclude)}
+              label={p.label}
+              canExclude={canExclude && (p.canExclude ?? true)}
+              singleValue={singleValue}
+              icon={p.icon}
+              count={p.count}
+              countsLoading={countsLoading}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
@@ -287,6 +322,10 @@ export const SidebarListFilter: React.FC<{
   onOpen?: () => void;
   // used to store open/closed state in SidebarStateContext
   sectionID?: string;
+  // show loading indicator while candidates are loading
+  loading?: boolean;
+  // show loading indicator for counts (when candidates loaded but counts still loading)
+  countsLoading?: boolean;
 }> = ({
   title,
   selected,
@@ -304,6 +343,8 @@ export const SidebarListFilter: React.FC<{
   postSelected,
   onOpen,
   sectionID,
+  loading,
+  countsLoading,
 }) => {
   // TODO - sort items?
 
@@ -344,12 +385,14 @@ export const SidebarListFilter: React.FC<{
           <SelectedList
             items={selected}
             onUnselect={(i) => unselectHook(i, false)}
+            keyPrefix={sectionID ? `${sectionID}-selected` : undefined}
           />
           {excluded && (
             <SelectedList
               items={excluded}
               onUnselect={(i) => unselectHook(i, true)}
               excluded
+              keyPrefix={sectionID ? `${sectionID}-excluded` : undefined}
             />
           )}
           {postSelected ? <div className="extra">{postSelected}</div> : null}
@@ -366,6 +409,9 @@ export const SidebarListFilter: React.FC<{
         query={query}
         setQuery={setQuery}
         singleValue={singleValue}
+        loading={loading}
+        countsLoading={countsLoading}
+        keyPrefix={sectionID}
       />
       {postCandidates ? <div className="extra">{postCandidates}</div> : null}
     </SidebarSection>
