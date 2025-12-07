@@ -2,7 +2,7 @@
 
 Fork-specific features isolated from upstream Stash code for easier maintenance.
 
-**Baseline:** Stash v0.29.3 | **Upstream Filter Files:** Clean (no modifications)
+**Baseline:** Stash v0.29.3 | **Upstream:** `stashapp/stash` develop branch
 
 ## Quick Start
 
@@ -32,9 +32,9 @@ extensions/
 ├── filters/            # 29 custom filter components
 ├── hooks/              # Custom React hooks
 ├── ui/                 # Reusable UI components
-├── facets/             # Facets extension
+├── facets/             # Facets extension registration
 ├── styles/             # Custom SCSS
-├── __tests__/          # Extension tests
+├── __tests__/          # Extension tests (4 files, 52 tests)
 │
 └── docs/               # Documentation
     ├── ARCHITECTURE.md # Full architecture guide
@@ -77,7 +77,8 @@ SCSS files loaded last (can override anything):
 | Document | Purpose |
 |----------|---------|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Full architecture guide |
-| [MIGRATION-PLAN.md](docs/MIGRATION-PLAN.md) | **Remaining work to migrate all fork changes** |
+| [UPGRADE-GUIDE.md](docs/UPGRADE-GUIDE.md) | **How to upgrade from upstream** ⭐ |
+| [MIGRATION-PLAN.md](docs/MIGRATION-PLAN.md) | Migration status & patch list |
 | [BACKEND-API.md](docs/BACKEND-API.md) | Custom GraphQL endpoints & backend files |
 | [CHANGELOG.md](docs/CHANGELOG.md) | What changed from upstream |
 | [CONTRIBUTING.md](docs/CONTRIBUTING.md) | How to add features |
@@ -100,20 +101,20 @@ Since `src/components/List/Filters/` is clean:
 - All customizations are in `extensions/filters/`
 - Extension lists import from `extensions/filters`, not upstream
 
-## Migration Status
+## Migration Status ✅ Complete
 
-⚠️ **Not all fork changes are in extensions yet.** See [MIGRATION-PLAN.md](docs/MIGRATION-PLAN.md).
+All fork changes are documented. See [MIGRATION-PLAN.md](docs/MIGRATION-PLAN.md).
 
 | Category | Files | Status |
 |----------|-------|--------|
-| List components | 6 | ✅ Complete |
-| Filter components | 29 | ✅ Complete |
-| UI components | 4 | ✅ Complete |
-| Hooks | 6 | ✅ Complete |
-| SCSS | 10 | ✅ Complete (~5,700 lines) |
-| Tests | 3 | ✅ Complete |
-| Component modifications | ~40 | 📝 Need patches |
-| GraphQL | 11 | 📝 Need patches |
-| Core config | 2 | 📝 Documented |
+| List components | 6 | ✅ In extensions |
+| Filter components | 29 | ✅ In extensions |
+| UI components | 4 | ✅ In extensions |
+| Hooks | 6 | ✅ In extensions |
+| SCSS | 10 | ✅ In extensions (~5,700 lines) |
+| Tests | 4 | ✅ In extensions (52 tests) |
+| Component modifications | ~40 | ✅ Documented (12 patch files) |
+| GraphQL | 11 | ✅ Documented |
+| Core config | 2 | ✅ Documented |
 
-**Total:** ~50 files with ~8K lines still in upstream directories.
+**Upgrading?** See [UPGRADE-GUIDE.md](docs/UPGRADE-GUIDE.md) for step-by-step instructions.

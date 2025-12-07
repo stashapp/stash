@@ -11,9 +11,13 @@ All fork-specific code lives in `ui/v2.5/src/extensions/`. This isolation provid
 3. **Portable features** - Extensions can be shared or disabled
 4. **Absolute imports** - No relative path breakage on restructuring
 
-## Upstream Baseline
+## Upstream Relationship
 
-This fork is based on **Stash v0.29.3**. Files in `src/components/List/Filters/` have been reverted to the clean v0.29.3 versions - all fork modifications now live in `src/extensions/filters/`.
+- **Upstream repo:** `stashapp/stash`
+- **Upstream branch:** `develop` (main development branch)
+- **Fork baseline:** v0.29.3 (original starting point)
+
+Files in `src/components/List/Filters/` have been reverted to the clean v0.29.3 versions - all fork modifications now live in `src/extensions/filters/`.
 
 This means:
 - **Upstream filters** = Clean v0.29.3 (no fork code)
@@ -34,8 +38,18 @@ ui/v2.5/src/
     ├── index.ts             # Main entry point - exports everything
     ├── registry.tsx         # Extension registration system
     │
+    ├── components/          # Full page components & detail panels
+    │   ├── index.ts
+    │   ├── Scene/Scene.tsx  # Full scene detail page
+    │   ├── SceneDetailPanel.tsx
+    │   ├── QueueViewer.tsx
+    │   ├── GalleryDetailPanel.tsx
+    │   ├── ImageDetailPanel.tsx
+    │   ├── GalleryPopover.tsx
+    │   └── AISceneRecommendationRow.tsx
+    │
     ├── lists/               # Enhanced list components (6 files)
-    │   ├── index.ts         # Exports all lists
+    │   ├── index.ts
     │   ├── PerformerList.tsx
     │   ├── SceneList.tsx
     │   ├── GalleryList.tsx
@@ -44,60 +58,60 @@ ui/v2.5/src/
     │   └── TagList.tsx
     │
     ├── filters/             # Custom filter components (29 files)
-    │   ├── index.ts         # Exports all filters
-    │   ├── AgeFilter.tsx
-    │   ├── BooleanFilter.tsx
-    │   ├── NumberFilter.tsx
-    │   ├── StringFilter.tsx
-    │   ├── TagsFilter.tsx
-    │   └── ... (24 more)
+    │   ├── index.ts
+    │   ├── AgeFilter.tsx, BooleanFilter.tsx, ...
+    │   └── facetCandidateUtils.ts
     │
     ├── hooks/               # Custom React hooks
-    │   ├── index.ts         # Exports all hooks
+    │   ├── index.ts
     │   ├── useFacetCounts.ts
     │   ├── useSceneFacets.ts
     │   ├── useSidebarFilters.ts
     │   ├── useBatchedFilterCounts.ts
-    │   ├── useFacetsContext.tsx
-    │   └── facets/
-    │       └── index.ts     # Facet-specific exports
-    │
-    ├── facets/              # Facets extension registration
-    │   ├── index.ts         # Extension registration
-    │   ├── README.md        # Facets documentation
-    │   └── enhanced/
-    │       └── index.ts     # Enhanced* component aliases
-    │
-    ├── __tests__/           # Extension tests
-    │   ├── useFacetCounts.test.ts
-    │   ├── facetCandidateUtils.test.ts
-    │   └── GroupsFilter.test.ts
+    │   └── useFacetsContext.tsx
     │
     ├── ui/                  # Reusable UI components
     │   ├── index.ts
     │   ├── FilterTags.tsx
+    │   ├── FilterSidebar.tsx
     │   ├── ListToolbar.tsx
-    │   ├── ListResultsHeader.tsx
-    │   └── FilterSidebar.tsx
+    │   └── ListResultsHeader.tsx
+    │
+    ├── player/              # Player customizations
+    │   ├── index.ts
+    │   └── settings-menu.ts
+    │
+    ├── facets/              # Facets extension registration
+    │   ├── index.ts
+    │   └── enhanced/index.ts
     │
     ├── styles/              # Custom SCSS (~5,700 lines)
-    │   ├── index.scss            # Main entry point
-    │   ├── _variables.scss       # CSS custom properties
-    │   ├── _facets.scss          # Facet count badges
-    │   ├── _sidebar.scss         # Sidebar tweaks
-    │   ├── _filter-tags.scss     # Filter tag styling
-    │   ├── _list-components.scss # List page styles (1,726 lines)
-    │   ├── _scene-components.scss # Scene card/detail (1,305 lines)
-    │   ├── _player-components.scss # Player/scrubber (830 lines)
-    │   ├── _shared-components.scss # Shared components (1,086 lines)
-    │   ├── _gallery-components.scss # Gallery styles (528 lines)
-    │   ├── _image-components.scss # Image styles (197 lines)
-    │   └── _plex-theme*.scss     # Optional theme (disabled)
+    │   ├── index.scss
+    │   ├── _variables.scss, _facets.scss, _sidebar.scss, ...
+    │   ├── _list-components.scss    (1,726 lines)
+    │   ├── _scene-components.scss   (1,305 lines)
+    │   ├── _player-components.scss  (830 lines)
+    │   ├── _shared-components.scss  (1,086 lines)
+    │   ├── _gallery-components.scss (528 lines)
+    │   └── _image-components.scss   (197 lines)
+    │
+    ├── patches/             # Upstream modification docs (12 files)
+    │   ├── card-components.md
+    │   ├── detail-panels.md
+    │   ├── ... (10 more)
+    │   └── utils.md
+    │
+    ├── __tests__/           # Extension tests (4 files, 52 tests)
+    │   ├── useFacetCounts.test.ts
+    │   ├── facetCandidateUtils.test.ts
+    │   ├── GroupsFilter.test.ts
+    │   └── upgrade-verification.test.ts
     │
     └── docs/                # Documentation
         ├── ARCHITECTURE.md  # This file
-        ├── CHANGELOG.md     # What changed from upstream
-        └── CONTRIBUTING.md  # How to add features
+        ├── UPGRADE-GUIDE.md # How to merge upstream
+        ├── MIGRATION-PLAN.md
+        └── ... (5 more)
 ```
 
 ## Index Files
@@ -179,7 +193,6 @@ export { FilteredSceneList as SceneList, ScenesFilterSidebarSections } from "./S
 | `useSceneFacets` | Batch scene facets |
 | `useSidebarFilters` | Sidebar state management |
 | `useBatchedFilterCounts` | Batched counting |
-| `useFocus` | Focus management |
 
 ### Styles (`extensions/styles/`)
 
@@ -213,6 +226,76 @@ All ~5,700 lines of custom SCSS are extracted here. These load LAST to override 
 ```
 
 **Key point:** Upstream SCSS files are clean v0.29.3. All customizations live here.
+
+### Components (`extensions/components/`)
+
+Full page components and detail panels that replace or extend upstream components:
+
+| Component | Purpose |
+|-----------|---------|
+| `Scene/Scene.tsx` | Full scene detail page with custom layout |
+| `SceneDetailPanel.tsx` | Scene metadata panel |
+| `QueueViewer.tsx` | Play queue sidebar component |
+| `GalleryDetailPanel.tsx` | Gallery metadata panel |
+| `ImageDetailPanel.tsx` | Image metadata panel |
+| `GalleryPopover.tsx` | Gallery preview popover (hover) |
+| `AISceneRecommendationRow.tsx` | AI recommendations on front page |
+
+**Usage pattern:** Upstream files import from here instead of their original locations:
+```typescript
+// In Scenes/Scenes.tsx
+const Scene = lazyComponent(() => import("src/extensions/components/Scene/Scene"));
+
+// In Shared/TagLink.tsx
+import { GalleryPopover } from "src/extensions/components/GalleryPopover";
+```
+
+### UI (`extensions/ui/`)
+
+Reusable UI components used across multiple list pages:
+
+| Component | Purpose |
+|-----------|---------|
+| `FilterTags.tsx` | Visual filter criteria tags with remove buttons |
+| `FilterSidebar.tsx` | Sidebar header with search input |
+| `ListToolbar.tsx` | Enhanced list toolbar with actions |
+| `ListResultsHeader.tsx` | Pagination & sort controls header |
+
+**Usage:** Imported by multiple upstream files (EditFilterDialog, ItemList, ListToolbar):
+```typescript
+import { FilterTags } from "src/extensions/ui";
+```
+
+### Player (`extensions/player/`)
+
+Scene player customizations:
+
+| File | Purpose |
+|------|---------|
+| `settings-menu.ts` | Custom video player settings menu items |
+
+**Usage:** Integrated with ScenePlayer component for additional playback options.
+
+### Patches (`extensions/patches/`)
+
+Documentation of upstream file modifications that cannot be moved to extensions. These are markdown files describing the exact changes needed:
+
+| Patch File | Covers |
+|------------|--------|
+| `card-components.md` | GalleryCard, GroupCard |
+| `detail-panels.md` | Gallery, Image, Performer, Studio, Tag detail panels |
+| `frontpage.md` | Control.tsx, FrontPageConfig.tsx |
+| `graphql-frontend.md` | GraphQL schema and query additions |
+| `list-components.md` | ListFilter, ListTable, Pagination |
+| `miscellaneous.md` | Localization (en-GB.json) |
+| `models-types.md` | Type definitions, criteria files |
+| `navigation-settings.md` | MainNavbar, SceneListTable, SettingsInterfacePanel |
+| `scene-details.md` | Scene panel id attributes |
+| `scene-player.md` | ScenePlayer settings integration |
+| `shared-components.md` | ClearableInput, CollapseButton, DetailItem, GridCard, Sidebar, TagLink |
+| `utils.md` | caption.ts, screen.ts utilities |
+
+**Purpose:** After upstream merges, consult these files to re-apply necessary modifications.
 
 ## Import Patterns
 
@@ -416,8 +499,8 @@ See **[MIGRATION-PLAN.md](./MIGRATION-PLAN.md)** for remaining work.
 | UI components | ✅ Complete | 4 files in `ui/` |
 | Hooks | ✅ Complete | 7 files in `hooks/` |
 | SCSS styles | ✅ Complete | ~5,700 lines in `styles/` |
-| Tests | ✅ Complete | 3 files in `__tests__/` |
-| Component patches | 📝 In Progress | ~50 files documented in patches/ |
+| Tests | ✅ Complete | 4 files in `__tests__/` (52 tests) |
+| Component patches | ✅ Complete | ~40 files documented in 12 patch files |
 
 ### What's Fully Extracted
 
@@ -427,9 +510,12 @@ See **[MIGRATION-PLAN.md](./MIGRATION-PLAN.md)** for remaining work.
 - ✅ All custom hooks
 - ✅ All tests
 
-### What Still Needs Documentation
+### Fully Documented
 
-- Detail panel modifications (SceneDetails, PerformerDetails, etc.)
-- Player enhancements
-- Front page components
-- Core config changes
+All component modifications are documented in `extensions/patches/`:
+
+- Detail panels (`detail-panels.md`, `scene-details.md`)
+- Player enhancements (`scene-player.md`)
+- Front page components (`frontpage.md`)
+- Core config changes (`models-types.md`, `utils.md`)
+- Shared components, cards, navigation, GraphQL, and more

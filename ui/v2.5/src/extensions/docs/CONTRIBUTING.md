@@ -249,6 +249,7 @@ Extension tests are in `extensions/__tests__/`:
 | `useFacetCounts.test.ts` | 14 tests - Facet interfaces, lazy loading |
 | `facetCandidateUtils.test.ts` | 18 tests - Candidate building logic |
 | `GroupsFilter.test.ts` | 8 tests - Groups filter logic |
+| `upgrade-verification.test.ts` | 12 tests - Upgrade verification |
 
 ### 2. TypeScript Check
 

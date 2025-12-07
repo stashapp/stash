@@ -285,6 +285,7 @@ yarn test
 | `useFacetCounts.test.ts` | 14 |
 | `facetCandidateUtils.test.ts` | 18 |
 | `GroupsFilter.test.ts` | 8 |
+| `upgrade-verification.test.ts` | 12 |
 
 ## Known Issues & Solutions
 

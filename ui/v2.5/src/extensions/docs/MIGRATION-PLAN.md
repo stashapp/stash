@@ -1,6 +1,8 @@
 # Fork Migration Plan
 
-This document outlines the remaining work to fully integrate custom fork changes into the extension system.
+This document outlines how custom fork changes are integrated into the extension system.
+
+**Upstream:** `stashapp/stash` (develop branch) | **Baseline:** v0.29.3
 
 ## Current State Summary
 
@@ -192,12 +194,12 @@ See `patches/navigation-settings.md`
 
 ### 4.1 Core Files ✅ DOCUMENTED
 
-See `patches/config-extensions.md`
+> Note: Core config changes are backend-specific and documented in BACKEND-API.md
 
 | File | Changes | Status |
 |------|---------|--------|
-| `core/config.ts` | AI recommendations, sidebar filters, background images | ✅ Documented |
-| `core/StashService.ts` | Recommendations query | ✅ Documented |
+| `core/config.ts` | AI recommendations, sidebar filters, background images | ✅ Backend |
+| `core/StashService.ts` | Recommendations query | ✅ Backend |
 
 ### 4.2 Models/Types ✅ DOCUMENTED
 
@@ -313,7 +315,7 @@ See `patches/miscellaneous.md`
 - [x] Create `patches/frontpage.md`
 
 ### Phase 4: Core/Config Patches ✅ COMPLETE
-- [x] Create `patches/config-extensions.md`
+- [x] Core config changes documented (see BACKEND-API.md)
 - [x] Create `patches/models-types.md`
 - [x] Create `patches/utils.md`
 
@@ -354,18 +356,19 @@ After Phase 3 completion, **~40 component files** still show as modified vs v0.2
 |--------|--------|---------|
 | Modified upstream files | ~90 | ~40 |
 | Files in extensions/ | ~50 | ~95 |
-| Documented patches | 1 | **13** |
+| Documented patches | 1 | **12** |
 | Merge conflict risk | High | **Low** |
 
 ### Upgrade Strategy
 
-When upgrading to a new upstream version:
+**📚 See `UPGRADE-GUIDE.md` for detailed upgrade instructions and checklist.**
 
-1. **Checkout new version** - `git fetch upstream && git checkout v0.XX.X`
-2. **Cherry-pick extensions** - Extensions are self-contained, minimal conflicts
-3. **Re-apply patches** - Use documented patches in `extensions/patches/`
-4. **Regenerate GraphQL** - `yarn generate` (if graphql changed)
-5. **Run tests** - `yarn build && yarn test`
+Quick steps:
+1. `git fetch upstream && git merge upstream/develop`
+2. Check which patched files changed (use guide's checklist)
+3. Re-apply patches from `extensions/patches/`
+4. `yarn generate` (if GraphQL changed)
+5. `yarn build && yarn test`
 
 ### Patch Categories
 
@@ -382,8 +385,8 @@ When upgrading to a new upstream version:
 
 - **Phases 1-3 Complete:** All component modifications documented
 - **Pattern Used:** "Update imports" pattern (NOT re-exports) - upstream files preserved
-- **Testing:** Build and tests pass after each migration step
-- **Remaining:** Phase 4-6 (Core/Config, GraphQL, Misc) - lower priority
+- **Testing:** Build and tests pass after each migration step (52 tests)
+- **All Phases Complete:** Patches documented in `extensions/patches/`
 
 ### Files in `extensions/components/`
 
@@ -404,7 +407,6 @@ extensions/components/
 ```
 extensions/patches/
 ├── card-components.md      # GalleryCard, GroupCard changes
-├── config-extensions.md    # Core config changes
 ├── detail-panels.md        # Gallery, Image, other detail panels
 ├── frontpage.md            # Control.tsx, FrontPageConfig.tsx
 ├── graphql-frontend.md     # GraphQL schema and queries

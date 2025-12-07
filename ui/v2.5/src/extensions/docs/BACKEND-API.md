@@ -494,15 +494,14 @@ go test -v -tags=integration ./... -run Facet
 
 ## Merge Guide
 
-When merging upstream changes, use the `/patches/` directory for detailed instructions.
+When merging upstream changes, refer to the `extensions/patches/` directory for frontend patches. Backend changes require manual re-application.
 
 ### Quick Reference
 
-| Step | Resource |
-|------|----------|
-| Schema queries | `/patches/schema-queries.md` |
-| Repository interfaces | `/patches/repository-interfaces.md` |
-| Overview | `/patches/README.md` |
+For backend merge conflicts, re-add:
+1. **GraphQL queries** - Add facet queries to `schema.graphql`
+2. **Repository interfaces** - Add `*Faceter` interfaces to `repository_*.go` files
+3. **Type definitions** - Preserve `types/facets.graphql`
 
 ### 1. Preserve New Files
 
@@ -521,10 +520,7 @@ internal/api/types_facets.go
 
 If `graphql/schema/schema.graphql` conflicts:
 
-```bash
-# See full query definitions
-cat patches/schema-queries.md
-```
+The full query definitions are in `graphql/schema/schema.graphql`.
 
 Add after `findTags` query:
 ```graphql
