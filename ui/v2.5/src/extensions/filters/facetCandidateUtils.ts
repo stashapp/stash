@@ -1,4 +1,4 @@
-import { LabeledFacetCount } from "src/hooks/useFacetCounts";
+import { LabeledFacetCount } from "src/extensions/hooks/useFacetCounts";
 import { Option } from "./SidebarListFilter";
 
 export interface FacetCandidateOptions {

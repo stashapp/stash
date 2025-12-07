@@ -11,7 +11,7 @@ import {
 import {
   SidebarFilterDefinition,
   useSidebarFilters,
-} from "src/hooks/useSidebarFilters";
+} from "src/extensions/hooks/useSidebarFilters";
 
 // Context for edit mode state
 interface ISidebarFilterEditContext {

@@ -81,13 +81,13 @@ import { TaggerContext } from "src/components/Tagger/context";
 import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
 import { PathCriterionOption } from "src/models/list-filter/criteria/path";
 import { ListResultsHeader } from "src/extensions/ui";
-import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import { SidebarFilterDefinition } from "src/extensions/hooks/useSidebarFilters";
 import { createMandatoryTimestampCriterionOption } from "src/models/list-filter/criteria/criterion";
 import { GalleryIsMissingCriterionOption } from "src/models/list-filter/criteria/is-missing";
 import {
   useGalleryFacetCounts,
   FacetCountsContext,
-} from "src/hooks/useFacetCounts";
+} from "src/extensions/hooks/useFacetCounts";
 import { PerformerFavoriteCriterionOption } from "src/models/list-filter/criteria/favorite";
 import { AverageResolutionCriterionOption } from "src/models/list-filter/criteria/resolution";
 import { HasChaptersCriterionOption } from "src/models/list-filter/criteria/has-chapters";

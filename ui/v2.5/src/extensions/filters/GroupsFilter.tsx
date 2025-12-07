@@ -5,7 +5,7 @@ import {
   GroupFilterType,
   useFindGroupsForFilterQuery,
 } from "src/core/generated-graphql";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { GroupsCriterion } from "src/models/list-filter/criteria/groups";
 import { sortByRelevance } from "src/utils/query";

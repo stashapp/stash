@@ -7,7 +7,7 @@ import {
   PerformerFilterType,
   useFindPerformersForFilterQuery,
 } from "src/core/generated-graphql";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 import { ObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
 import { ListFilterModel } from "src/models/list-filter/filter";

@@ -14,7 +14,7 @@ import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { GenderCriterion } from "src/models/list-filter/criteria/gender";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 
 // Map string IDs to GenderEnum values
 const genderIdToEnum: Record<string, GenderEnum> = {

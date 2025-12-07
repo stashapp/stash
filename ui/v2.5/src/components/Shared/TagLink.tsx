@@ -14,7 +14,7 @@ import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
 import { PatchComponent } from "src/patch";
-import { GalleryPopover } from "../Galleries/GalleryPopover";
+import { GalleryPopover } from "src/extensions/components/GalleryPopover";
 
 type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;

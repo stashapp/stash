@@ -10,7 +10,7 @@ import { languageData, getLanguageCode } from "src/utils/caption";
 import {
   CaptionCriterion,
 } from "src/models/list-filter/criteria/captions";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 
 // Create language code badge element
 function createCodeBadge(code: string): React.ReactNode {

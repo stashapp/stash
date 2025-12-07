@@ -5,7 +5,7 @@ import {
   StudioFilterType,
   useFindStudiosForFilterQuery,
 } from "src/core/generated-graphql";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import {
   StudiosCriterion,

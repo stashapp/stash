@@ -80,13 +80,13 @@ import {
   ParentTagsCriterionOption,
   ChildTagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
-import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import { SidebarFilterDefinition } from "src/extensions/hooks/useSidebarFilters";
 import { createMandatoryTimestampCriterionOption } from "src/models/list-filter/criteria/criterion";
 import { TagIsMissingCriterionOption } from "src/models/list-filter/criteria/is-missing";
 import {
   useTagFacetCounts,
   FacetCountsContext,
-} from "src/hooks/useFacetCounts";
+} from "src/extensions/hooks/useFacetCounts";
 
 function useViewRandom(
   result: GQL.FindTagsQueryResult,

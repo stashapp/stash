@@ -76,13 +76,13 @@ import { FavoriteStudioCriterionOption } from "src/models/list-filter/criteria/f
 import { StashIDCriterionOption } from "src/models/list-filter/criteria/stash-ids";
 import { ParentStudiosCriterionOption } from "src/models/list-filter/criteria/studios";
 import { TaggerContext } from "src/components/Tagger/context";
-import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import { SidebarFilterDefinition } from "src/extensions/hooks/useSidebarFilters";
 import { createMandatoryTimestampCriterionOption } from "src/models/list-filter/criteria/criterion";
 import { StudioIsMissingCriterionOption } from "src/models/list-filter/criteria/is-missing";
 import {
   useStudioFacetCounts,
   FacetCountsContext,
-} from "src/hooks/useFacetCounts";
+} from "src/extensions/hooks/useFacetCounts";
 
 function useViewRandom(
   result: GQL.FindStudiosQueryResult,

@@ -150,15 +150,30 @@ Complete list page implementations extracted from `My*List` components:
 
 ## Custom Styles
 
-Located in `extensions/styles/`:
+Located in `extensions/styles/` (~5,700 lines total):
 
+### Core Styles
 | File | Purpose |
 |------|---------|
 | `_variables.scss` | CSS custom properties |
 | `_facets.scss` | Facets feature styles |
 | `_sidebar.scss` | Sidebar styles |
 | `_filter-tags.scss` | Filter tag styles |
-| `_plex-theme.scss` | Plex-inspired theme (optional) |
+
+### Component Styles (Extracted from Upstream)
+| File | Lines | Source |
+|------|-------|--------|
+| `_list-components.scss` | 1,726 | `List/styles.scss` |
+| `_scene-components.scss` | 1,305 | `Scenes/styles.scss` |
+| `_player-components.scss` | 830 | `ScenePlayer/styles.scss` |
+| `_shared-components.scss` | 1,086 | `Shared/styles.scss` |
+| `_gallery-components.scss` | 528 | `Galleries/styles.scss` |
+| `_image-components.scss` | 197 | `Images/styles.scss` |
+
+### Optional Theme
+| File | Purpose |
+|------|---------|
+| `_plex-theme.scss` | Plex-inspired theme (disabled) |
 | `_plex-theme-extended.scss` | Extended theme components |
 | `_plex-theme-desktop.scss` | Desktop responsive styles |
 

@@ -10,7 +10,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { OrientationCriterion } from "src/models/list-filter/criteria/orientation";
 import { orientationStrings, stringToOrientation } from "src/utils/orientation";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 
 function createOrientationIcon(orientation: string): React.ReactNode {
   let icon;

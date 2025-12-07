@@ -1,8 +1,8 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { HoverPopover } from "../Shared/HoverPopover";
-import { GalleryCard } from "./GalleryCard";
-import { ConfigurationContext } from "../../hooks/Config";
+import { HoverPopover } from "src/components/Shared/HoverPopover";
+import { GalleryCard } from "src/components/Galleries/GalleryCard";
+import { ConfigurationContext } from "src/hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface IGalleryPopoverCardProps {
@@ -53,3 +53,4 @@ export const GalleryPopover: React.FC<IGalleryPopoverProps> = ({
     </HoverPopover>
   );
 };
+

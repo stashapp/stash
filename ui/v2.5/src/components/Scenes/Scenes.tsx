@@ -7,7 +7,7 @@ import { View } from "../List/views";
 
 const SceneList = lazyComponent(() => import("src/extensions/lists/SceneList"));
 const SceneMarkerList = lazyComponent(() => import("./SceneMarkerList"));
-const Scene = lazyComponent(() => import("./SceneDetails/Scene"));
+const Scene = lazyComponent(() => import("src/extensions/components/Scene/Scene"));
 const SceneCreate = lazyComponent(() => import("./SceneDetails/SceneCreate"));
 
 const Scenes: React.FC = () => {

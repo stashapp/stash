@@ -22,7 +22,7 @@ import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButto
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 import { ImageEditPanel } from "./ImageEditPanel";
-import { ImageDetailPanel } from "./ImageDetailPanel";
+import { ImageDetailPanel } from "src/extensions/components";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { imagePath, imageTitle } from "src/core/files";

@@ -10,7 +10,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { CircumcisedCriterion } from "src/models/list-filter/criteria/circumcised";
 import { circumcisedStrings, stringToCircumcised } from "src/utils/circumcised";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 
 function createCircumcisedIcon(value: string): React.ReactNode {
   // Use filled circle for "cut" and outline circle for "uncut"

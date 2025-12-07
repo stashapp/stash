@@ -90,7 +90,7 @@ import { CountryCriterionOption } from "src/models/list-filter/criteria/country"
 import { TattoosCriterionOption } from "src/models/list-filter/criteria/tattoos";
 import { PiercingsCriterionOption } from "src/models/list-filter/criteria/piercings";
 import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
-import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import { SidebarFilterDefinition } from "src/extensions/hooks/useSidebarFilters";
 import {
   createMandatoryTimestampCriterionOption,
   createMandatoryNumberCriterionOption,
@@ -102,7 +102,7 @@ import { PerformerIsMissingCriterionOption } from "src/models/list-filter/criter
 import {
   usePerformerFacetCounts,
   FacetCountsContext,
-} from "src/hooks/useFacetCounts";
+} from "src/extensions/hooks/useFacetCounts";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];

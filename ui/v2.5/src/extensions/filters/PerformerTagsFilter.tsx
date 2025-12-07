@@ -5,7 +5,7 @@ import {
   TagFilterType,
   useFindTagsForFilterQuery,
 } from "src/core/generated-graphql";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";

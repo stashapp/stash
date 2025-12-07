@@ -80,7 +80,7 @@ import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
 import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { PatchContainerComponent } from "src/patch";
 import { ListResultsHeader } from "src/extensions/ui";
-import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import { SidebarFilterDefinition } from "src/extensions/hooks/useSidebarFilters";
 import {
   createMandatoryTimestampCriterionOption,
   createDurationCriterionOption,
@@ -89,7 +89,7 @@ import { GroupIsMissingCriterionOption } from "src/models/list-filter/criteria/i
 import {
   useGroupFacetCounts,
   FacetCountsContext,
-} from "src/hooks/useFacetCounts";
+} from "src/extensions/hooks/useFacetCounts";
 
 function useViewRandom(
   result: GQL.FindGroupsQueryResult,

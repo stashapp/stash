@@ -24,7 +24,7 @@ import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { useToast } from "src/hooks/Toast";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
-import { GalleryDetailPanel } from "./GalleryDetailPanel";
+import { GalleryDetailPanel } from "src/extensions/components";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";

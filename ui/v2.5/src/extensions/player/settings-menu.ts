@@ -1,3 +1,13 @@
+/**
+ * VideoJS Settings Menu Plugin
+ *
+ * Custom settings menu for the video player providing:
+ * - Quality/source selection with auto-fallback on errors
+ * - Playback speed control
+ * - Subtitle/CC track selection
+ *
+ * This plugin auto-registers when imported.
+ */
 import videojs, { VideoJsPlayer } from "video.js";
 
 // Icons as SVG data URIs
@@ -558,4 +568,5 @@ declare module "video.js" {
 }
 
 export default SettingsMenuPlugin;
+
 

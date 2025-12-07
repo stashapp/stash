@@ -2,13 +2,12 @@
  * Hook Extensions
  *
  * Custom React hooks for fork-specific functionality.
- * Re-exports from src/hooks/ for centralized access.
  */
 
-// Focus management
-export { default as useFocus, useFocusOnce } from "./useFocus";
+// Focus management - re-export from upstream utils
+export { default as useFocus, useFocusOnce } from "src/utils/focus";
 
-// Facet counting system - re-export from src/hooks
+// Facet counting system
 export {
   useSceneFacetCounts,
   usePerformerFacetCounts,
@@ -20,24 +19,27 @@ export {
   FacetCountsContext,
   useFacetCountsContext,
   type FacetCounts,
-} from "src/hooks/useFacetCounts";
+} from "./useFacetCounts";
 
-// Scene-specific facets - re-export from src/hooks
+// Scene-specific facets
 export {
   useSceneFacets,
   useGalleryFacets,
   usePerformerFacets,
-} from "src/hooks/useSceneFacets";
+} from "./useSceneFacets";
 
-// Sidebar filter state management - re-export from src/hooks
+// Sidebar filter state management
 export {
   useSidebarFilters,
   type SidebarFilterDefinition,
-} from "src/hooks/useSidebarFilters";
+} from "./useSidebarFilters";
 
-// Batched filter counts - re-export from src/hooks
+// Batched filter counts
 export {
   useBatchedFilterCounts,
   useOptimizedFilterCounts,
   type BatchedCounts,
-} from "src/hooks/useBatchedFilterCounts";
+} from "./useBatchedFilterCounts";
+
+// Facets context
+export { FacetsProvider, useFacets } from "./useFacetsContext";

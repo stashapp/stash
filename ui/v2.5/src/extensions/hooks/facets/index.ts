@@ -2,7 +2,14 @@
  * Faceted Search Hooks
  *
  * This module provides hooks for efficient faceted filtering in the UI.
- * Uses client-side batching and caching with backend aggregation support.
+ * Currently uses client-side batching and caching while awaiting
+ * a backend aggregation endpoint.
+ *
+ * Future enhancement: When the backend `sceneFacets` endpoint is implemented,
+ * these hooks will be updated to use a single GraphQL query that returns
+ * all facet counts at once, significantly improving performance.
+ *
+ * @see docs/proposals/facets-aggregation-endpoint.md (if exists)
  */
 
 export {
@@ -10,10 +17,17 @@ export {
   useGalleryFacets,
   usePerformerFacets,
   type FacetCounts,
-} from "src/extensions/hooks/useSceneFacets";
+} from "../useSceneFacets";
 
 export {
   useBatchedFilterCounts,
   useOptimizedFilterCounts,
   type BatchedCounts,
-} from "src/extensions/hooks/useBatchedFilterCounts";
+} from "../useBatchedFilterCounts";
+
+export {
+  FacetsProvider,
+  useFacets,
+  useFilterFacets,
+} from "../useFacetsContext";
+

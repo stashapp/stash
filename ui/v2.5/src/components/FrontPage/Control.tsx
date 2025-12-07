@@ -10,7 +10,7 @@ import { ImageRecommendationRow } from "../Images/ImageRecommendationRow";
 import { GroupRecommendationRow } from "../Groups/GroupRecommendationRow";
 import { PerformerRecommendationRow } from "../Performers/PerformerRecommendationRow";
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
-import { AISceneRecommendationRow } from "../Scenes/AISceneRecommendationRow";
+import { AISceneRecommendationRow } from "src/extensions/components";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";
 import { TagRecommendationRow } from "../Tags/TagRecommendationRow";
 

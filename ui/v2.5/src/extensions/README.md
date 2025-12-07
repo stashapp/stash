@@ -59,15 +59,18 @@ Full list page implementations with facet counts, custom sidebars, and extended 
 ### Filters (29)
 13 NEW + 16 enhanced filter components with facet counts, quick presets, and better UX.
 
-### Hooks
-- `useSceneFacetCounts`, `usePerformerFacetCounts`, etc.
-- `useSidebarFilters`, `useBatchedFilterCounts`
-- `useFocus`
+### Hooks (6)
+- `useFacetCounts` - Main facet counting hook
+- `useSceneFacets`, `useGalleryFacets`, `usePerformerFacets` - Batch facets
+- `useSidebarFilters` - Sidebar state management
+- `useBatchedFilterCounts` - Batched counting
+- `useFacetsContext` - Facets React context
 
-### Styles
+### Styles (~5,700 lines)
 SCSS files loaded last (can override anything):
-- `_facets.scss`, `_sidebar.scss`, `_filter-tags.scss`
-- Optional: `_plex-theme.scss` + extended
+- Component styles: `_list-`, `_scene-`, `_player-`, `_shared-`, `_gallery-`, `_image-components.scss`
+- Feature styles: `_facets.scss`, `_sidebar.scss`, `_filter-tags.scss`
+- Optional theme: `_plex-theme*.scss`
 
 ## Documentation
 
@@ -105,11 +108,12 @@ Since `src/components/List/Filters/` is clean:
 |----------|-------|--------|
 | List components | 6 | ✅ Complete |
 | Filter components | 29 | ✅ Complete |
-| UI components | 3 | ✅ Complete |
-| Hooks | 7 | 🔄 Re-exports (need move) |
-| SCSS | 6 | 🔄 Partial (~2K lines to extract) |
+| UI components | 4 | ✅ Complete |
+| Hooks | 6 | ✅ Complete |
+| SCSS | 10 | ✅ Complete (~5,700 lines) |
+| Tests | 3 | ✅ Complete |
 | Component modifications | ~40 | 📝 Need patches |
 | GraphQL | 11 | 📝 Need patches |
 | Core config | 2 | 📝 Documented |
 
-**Total:** ~90 files with ~16K lines still in upstream directories.
+**Total:** ~50 files with ~8K lines still in upstream directories.

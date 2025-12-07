@@ -94,6 +94,23 @@ internal/api/resolver_query_scene_recommendations.go
 internal/api/resolver_*_recommendations_result_type.go
 ```
 
+### Frontend Extensions
+```
+ui/v2.5/src/extensions/           # All custom frontend code (~80 files)
+├── lists/                        # List components (6 files)
+├── filters/                      # Filter components (29 files)
+├── hooks/                        # Custom hooks (7 files)
+├── ui/                           # Shared UI components
+├── styles/                       # All custom SCSS (~5,700 lines)
+│   ├── _list-components.scss
+│   ├── _scene-components.scss
+│   ├── _player-components.scss
+│   ├── _shared-components.scss
+│   ├── _gallery-components.scss
+│   └── _image-components.scss
+└── docs/                         # Documentation
+```
+
 ---
 
 ## Modified Files (May Conflict)
@@ -110,14 +127,13 @@ internal/api/resolver_*_recommendations_result_type.go
 | `pkg/models/resolution.go` | ResolutionFromHeight | `utility-additions.md` |
 | `pkg/sqlite/sql.go` | Random sort helper | `utility-additions.md` |
 
-### Frontend
-| File | Changes | Patch Doc |
-|------|---------|-----------|
-| `src/core/config.ts` | AI recommendations, sidebar filters | `config-extensions.md` |
-| `src/core/StashService.ts` | Scene recommendations query | `config-extensions.md` |
-| `src/components/List/ListToolbar.tsx` | Import from MyFilterTags | In extensions |
-| `src/components/List/MyFilterTags.tsx` | Custom filter tags | In extensions |
-| `src/components/List/MyListToolbar.tsx` | Custom list toolbar | In extensions |
-| `src/components/List/MyListResultsHeader.tsx` | Custom results header | In extensions |
-| `src/utils/myFocus.ts` | Focus hook | In extensions |
+### Frontend (Minimal - Most in Extensions)
+| File | Changes | Status |
+|------|---------|--------|
+| `src/core/config.ts` | AI recommendations, sidebar filters | See `config-extensions.md` |
+| `src/core/StashService.ts` | Scene recommendations query | See `config-extensions.md` |
+| `App.tsx` | ExtensionRegistryProvider wrapper | Keep during merge |
+| `src/index.scss` | Extensions import at end | Keep during merge |
+| Route files (`Scenes.tsx`, etc.) | Import Enhanced* components | Keep during merge |
 
+> **Note:** All SCSS modifications, filter components, list components, and hooks have been fully extracted to `extensions/` - these files are clean v0.29.3 in upstream locations.

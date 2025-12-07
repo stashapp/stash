@@ -8,7 +8,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
 import { resolutionStrings, stringToResolution } from "src/utils/resolution";
 import { ResolutionCriterion } from "src/models/list-filter/criteria/resolution";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 
 function createResolutionIcon(): React.ReactNode {
   return (

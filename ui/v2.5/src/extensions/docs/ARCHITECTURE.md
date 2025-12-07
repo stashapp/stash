@@ -58,7 +58,7 @@ ui/v2.5/src/
     │   ├── useSceneFacets.ts
     │   ├── useSidebarFilters.ts
     │   ├── useBatchedFilterCounts.ts
-    │   ├── useFocus.ts
+    │   ├── useFacetsContext.tsx
     │   └── facets/
     │       └── index.ts     # Facet-specific exports
     │
@@ -80,13 +80,19 @@ ui/v2.5/src/
     │   ├── ListResultsHeader.tsx
     │   └── FilterSidebar.tsx
     │
-    ├── styles/              # Custom SCSS
-    │   ├── index.scss
-    │   ├── _variables.scss
-    │   ├── _facets.scss
-    │   ├── _sidebar.scss
-    │   ├── _filter-tags.scss
-    │   └── _plex-theme.scss (+ extended, desktop)
+    ├── styles/              # Custom SCSS (~5,700 lines)
+    │   ├── index.scss            # Main entry point
+    │   ├── _variables.scss       # CSS custom properties
+    │   ├── _facets.scss          # Facet count badges
+    │   ├── _sidebar.scss         # Sidebar tweaks
+    │   ├── _filter-tags.scss     # Filter tag styling
+    │   ├── _list-components.scss # List page styles (1,726 lines)
+    │   ├── _scene-components.scss # Scene card/detail (1,305 lines)
+    │   ├── _player-components.scss # Player/scrubber (830 lines)
+    │   ├── _shared-components.scss # Shared components (1,086 lines)
+    │   ├── _gallery-components.scss # Gallery styles (528 lines)
+    │   ├── _image-components.scss # Image styles (197 lines)
+    │   └── _plex-theme*.scss     # Optional theme (disabled)
     │
     └── docs/                # Documentation
         ├── ARCHITECTURE.md  # This file
@@ -177,7 +183,7 @@ export { FilteredSceneList as SceneList, ScenesFilterSidebarSections } from "./S
 
 ### Styles (`extensions/styles/`)
 
-SCSS files loaded LAST to override upstream:
+All ~5,700 lines of custom SCSS are extracted here. These load LAST to override upstream:
 
 ```scss
 // extensions/styles/index.scss
@@ -185,6 +191,14 @@ SCSS files loaded LAST to override upstream:
 @import "facets";
 @import "sidebar";
 @import "filter-tags";
+
+// Component styles (extracted from upstream files)
+@import "list-components";     // From List/styles.scss
+@import "scene-components";    // From Scenes/styles.scss
+@import "player-components";   // From ScenePlayer/styles.scss
+@import "shared-components";   // From Shared/styles.scss
+@import "gallery-components";  // From Galleries/styles.scss
+@import "image-components";    // From Images/styles.scss
 
 // Optional Plex theme (currently commented out)
 // @import "plex-theme";
@@ -195,8 +209,10 @@ SCSS files loaded LAST to override upstream:
 **Wired in `src/index.scss`:**
 ```scss
 // ... upstream imports ...
-@import "src/extensions/styles/index";  // Added at end
+@import "src/extensions/styles/index";  // Added at end - loads LAST
 ```
+
+**Key point:** Upstream SCSS files are clean v0.29.3. All customizations live here.
 
 ## Import Patterns
 
@@ -389,21 +405,31 @@ go test -v -tags=integration ./pkg/sqlite/... -run Facet
 
 ## Migration Status
 
-Not all fork changes have been migrated to the extension system yet. See **[MIGRATION-PLAN.md](./MIGRATION-PLAN.md)** for:
-
-- Remaining upstream modifications (~90 files)
-- SCSS extraction strategy (~2,000 lines)
-- Component patch documentation
-- Phase-by-phase migration checklist
+See **[MIGRATION-PLAN.md](./MIGRATION-PLAN.md)** for remaining work.
 
 ### Current Migration Progress
 
-| Category | Status |
-|----------|--------|
-| List components (`lists/`) | ✅ Complete |
-| Filter components (`filters/`) | ✅ Complete |
-| UI components (`ui/`) | ✅ Complete |
-| Hooks (`hooks/`) | 🔄 Partial (re-exports from `src/hooks/`) |
-| Styles (`styles/`) | 🔄 Partial (Plex theme, facets) |
-| Component patches | 📝 Needs documentation |
-| SCSS modifications | 📝 Needs extraction |
+| Category | Status | Details |
+|----------|--------|---------|
+| List components | ✅ Complete | 6 files in `lists/` |
+| Filter components | ✅ Complete | 29 files in `filters/` |
+| UI components | ✅ Complete | 4 files in `ui/` |
+| Hooks | ✅ Complete | 7 files in `hooks/` |
+| SCSS styles | ✅ Complete | ~5,700 lines in `styles/` |
+| Tests | ✅ Complete | 3 files in `__tests__/` |
+| Component patches | 📝 In Progress | ~50 files documented in patches/ |
+
+### What's Fully Extracted
+
+- ✅ All filter components (reverted upstream to v0.29.3)
+- ✅ All list components (reverted upstream to v0.29.3)
+- ✅ All SCSS customizations (reverted upstream to v0.29.3)
+- ✅ All custom hooks
+- ✅ All tests
+
+### What Still Needs Documentation
+
+- Detail panel modifications (SceneDetails, PerformerDetails, etc.)
+- Player enhancements
+- Front page components
+- Core config changes

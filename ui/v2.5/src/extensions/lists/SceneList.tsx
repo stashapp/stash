@@ -106,7 +106,7 @@ import { StashIDCriterionOption } from "src/models/list-filter/criteria/stash-id
 import { OrientationCriterionOption } from "src/models/list-filter/criteria/orientation";
 import { CaptionsCriterionOption } from "src/models/list-filter/criteria/captions";
 import { ResolutionCriterionOption } from "src/models/list-filter/criteria/resolution";
-import { SidebarFilterDefinition } from "src/hooks/useSidebarFilters";
+import { SidebarFilterDefinition } from "src/extensions/hooks/useSidebarFilters";
 import { InteractiveCriterionOption } from "src/models/list-filter/criteria/interactive";
 import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { PerformerFavoriteCriterionOption } from "src/models/list-filter/criteria/favorite";
@@ -119,7 +119,7 @@ import { SceneIsMissingCriterionOption } from "src/models/list-filter/criteria/i
 import {
   useSceneFacetCounts,
   FacetCountsContext,
-} from "src/hooks/useFacetCounts";
+} from "src/extensions/hooks/useFacetCounts";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;

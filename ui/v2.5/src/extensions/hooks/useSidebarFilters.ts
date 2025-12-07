@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useConfigureUI } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useToast } from "./Toast";
+import { useToast } from "src/hooks/Toast";
 
 export interface SidebarFilterDefinition {
   id: string;

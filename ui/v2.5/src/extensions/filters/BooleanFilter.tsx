@@ -25,7 +25,7 @@ import {
 import { FormattedMessage, useIntl } from "react-intl";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SidebarListFilter } from "./SidebarListFilter";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
+import { FacetCountsContext } from "src/extensions/hooks/useFacetCounts";
 
 interface IBooleanFilter {
   criterion: BooleanCriterion;

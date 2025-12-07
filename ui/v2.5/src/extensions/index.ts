@@ -10,4 +10,6 @@ export * from "./ui";
 export * from "./hooks";
 export * from "./lists";
 export * from "./filters";
+export * from "./components";
+export * from "./player";
 
