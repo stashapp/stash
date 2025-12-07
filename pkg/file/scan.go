@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -719,7 +718,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 		// scan zip files with a different context that is not cancellable
 		// cancelling while scanning zip file contents results in the scan
 		// contents being partially completed
-		zipCtx := utils.ValueOnlyContext{Context: ctx}
+		zipCtx := context.WithoutCancel(ctx)
 
 		if err := s.scanZipFile(zipCtx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
