@@ -1,13 +1,12 @@
-import React, { ReactNode, useCallback, useContext, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 import {
   CriterionModifier,
-  FilterPerformerDataFragment,
-  FindPerformersForFilterQueryVariables,
+  FindPerformersForSelectQueryVariables,
+  PerformerDataFragment,
   PerformerFilterType,
-  useFindPerformersForFilterQuery,
+  useFindPerformersForSelectQuery,
 } from "src/core/generated-graphql";
-import { FacetCountsContext } from "src/hooks/useFacetCounts";
 import { ObjectsFilter } from "./SelectableFilter";
 import { sortByRelevance } from "src/utils/query";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -18,7 +17,7 @@ import {
   setObjectFilter,
   useLabeledIdFilterState,
 } from "./LabeledIdFilter";
-import { Option, SidebarListFilter } from "./SidebarListFilter";
+import { SidebarListFilter } from "./SidebarListFilter";
 
 interface IPerformersFilter {
   criterion: PerformersCriterion;
@@ -32,7 +31,7 @@ interface IHasModifier {
 function queryVariables(
   query: string,
   f?: ListFilterModel
-): FindPerformersForFilterQueryVariables {
+): FindPerformersForSelectQueryVariables {
   const performerFilter: PerformerFilterType = {};
 
   if (f) {
@@ -44,6 +43,8 @@ function queryVariables(
       CriterionModifier.Includes
     ) {
       delete filterOutput.performers;
+
+      // TODO - look for same in AND?
     }
 
     setObjectFilter(performerFilter, f.mode, filterOutput);
@@ -54,24 +55,26 @@ function queryVariables(
 
 function sortResults(
   query: string,
-  performers?: FilterPerformerDataFragment[]
+  performers?: Pick<PerformerDataFragment, "name" | "alias_list" | "id">[]
 ) {
   return sortByRelevance(
     query,
     performers ?? [],
     (p) => p.name,
     (p) => p.alias_list
-  ).map((p) => ({
-    id: p.id,
-    label: p.name,
-  }));
+  ).map((p) => {
+    return {
+      id: p.id,
+      label: p.name,
+    };
+  });
 }
 
 function usePerformerQueryFilter(props: IUseQueryHookProps) {
   const { q: query, filter: f, skip, filterHook } = props;
   const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
 
-  const { data, loading } = useFindPerformersForFilterQuery({
+  const { data, loading } = useFindPerformersForSelectQuery({
     variables: queryVariables(query, appliedFilter),
     skip,
   });
@@ -109,9 +112,6 @@ export const SidebarPerformersFilter: React.FC<{
   filterHook?: (f: ListFilterModel) => ListFilterModel;
   sectionID?: string;
 }> = ({ title, option, filter, setFilter, filterHook, sectionID }) => {
-  // Get facet counts from context
-  const { counts: facetCounts, loading: facetsLoading } = useContext(FacetCountsContext);
-  
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
@@ -120,72 +120,7 @@ export const SidebarPerformersFilter: React.FC<{
     useQuery: usePerformerQueryFilter,
   });
 
-  // Build candidates list
-  // Strategy: When facets are loaded and no search query, USE facet results as candidates
-  // (since facets returns the TOP N most relevant items by count).
-  // When user searches, use search results merged with facet counts.
-  const candidatesWithCounts: Option[] = useMemo(() => {
-    const hasValidFacets = facetCounts.performers.size > 0 && !facetsLoading;
-    const hasSearchQuery = state.query && state.query.length > 0;
-    
-    // Extract modifier options from candidates
-    const modifierOptions = state.candidates.filter(c => c.className === "modifier-object");
-    
-    // Get selected IDs to exclude from candidates
-    const selectedIds = new Set(state.selected.map(s => s.id));
-    
-    if (hasValidFacets && !hasSearchQuery) {
-      // No search query: Use facet results directly as candidates (with labels from facets)
-      const facetCandidates: Option[] = [];
-      facetCounts.performers.forEach((facetData, id) => {
-        // Skip if already selected or has zero count
-        if (selectedIds.has(id) || facetData.count === 0) return;
-        
-        facetCandidates.push({
-          id,
-          label: facetData.label,
-          count: facetData.count,
-        });
-      });
-      
-      // Sort by count descending
-      facetCandidates.sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
-      
-      return [...modifierOptions, ...facetCandidates];
-    } else {
-      // With search query OR facets not loaded: Use search results with counts merged
-      return state.candidates
-        .map((c) => {
-          if (c.className === "modifier-object") return c;
-          const facetData = hasValidFacets 
-            ? facetCounts.performers.get(c.id) 
-            : undefined;
-          return { ...c, count: facetData?.count };
-        })
-        .filter((c) => {
-          if (c.className === "modifier-object") return true;
-          if (!hasValidFacets) return true;
-          // Filter out zero counts, keep undefined (not in top N) and positive
-          return c.count !== 0;
-        });
-    }
-  }, [state.candidates, state.selected, state.query, facetCounts, facetsLoading]);
-
-  const onOpen = useCallback(() => {
-    state.onOpen?.();
-  }, [state.onOpen]);
-
-  return (
-    <SidebarListFilter
-      {...state}
-      candidates={candidatesWithCounts}
-      title={title}
-      sectionID={sectionID}
-      onOpen={onOpen}
-      loading={state.loading}
-      countsLoading={facetsLoading}
-    />
-  );
+  return <SidebarListFilter {...state} title={title} sectionID={sectionID} />;
 };
 
 export default PerformersFilter;

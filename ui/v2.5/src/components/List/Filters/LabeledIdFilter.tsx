@@ -21,9 +21,6 @@ import {
   InputMaybe,
   IntCriterionInput,
   SceneFilterType,
-  PerformerFilterType,
-  GalleryFilterType,
-  GroupFilterType,
 } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
@@ -340,11 +337,11 @@ export function useQueryState(
   }
 ) {
   const [query, setQuery] = useState("");
-  const { results: queryResults, loading } = useCacheResults(
+  const { results: queryResults } = useCacheResults(
     useQuery({ q: query, filter, filterHook: options?.filterHook, skip })
   );
 
-  return { query, setQuery, queryResults, loading };
+  return { query, setQuery, queryResults };
 }
 
 export function useCandidates(props: {
@@ -418,7 +415,6 @@ export function useCandidates(props: {
       (results ?? []).map((r) => ({
         id: r.id,
         label: r.label,
-        count: r.count,
       }))
     );
   }, [
@@ -461,7 +457,7 @@ export function useLabeledIdFilterState(props: {
   // defer querying until the user opens the filter
   const [skip, setSkip] = useState(true);
 
-  const { query, setQuery, queryResults, loading } = useQueryState(
+  const { query, setQuery, queryResults } = useQueryState(
     useQuery,
     filter,
     skip,
@@ -503,7 +499,6 @@ export function useLabeledIdFilterState(props: {
     query,
     setQuery,
     onOpen,
-    loading,
   };
 }
 
@@ -520,27 +515,14 @@ export function makeQueryVariables(query: string, extraProps: {}) {
 interface IFilterType {
   scenes_filter?: InputMaybe<SceneFilterType>;
   scene_count?: InputMaybe<IntCriterionInput>;
-  performers_filter?: InputMaybe<PerformerFilterType>;
-  performer_count?: InputMaybe<IntCriterionInput>;
-  galleries_filter?: InputMaybe<GalleryFilterType>;
-  gallery_count?: InputMaybe<IntCriterionInput>;
-  groups_filter?: InputMaybe<GroupFilterType>;
-  group_count?: InputMaybe<IntCriterionInput>;
 }
 
 export function setObjectFilter(
   out: IFilterType,
   mode: FilterMode,
-  relatedFilterOutput:
-    | SceneFilterType
-    | PerformerFilterType
-    | GalleryFilterType
-    | GroupFilterType,
-  query?: string
+  relatedFilterOutput: SceneFilterType
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
-
-  if (query === "performer_tags") return;
 
   switch (mode) {
     case FilterMode.Scenes:
@@ -551,41 +533,7 @@ export function setObjectFilter(
           value: 0,
         };
       }
-      out.scenes_filter = relatedFilterOutput as SceneFilterType;
-      break;
-    case FilterMode.Performers:
-      if (query === "studios") return;
-
-      // if empty, only get objects with performers
-      if (empty) {
-        out.performer_count = {
-          modifier: CriterionModifier.GreaterThan,
-          value: 0,
-        };
-      }
-      out.performers_filter = relatedFilterOutput as PerformerFilterType;
-      break;
-    case FilterMode.Galleries:
-      // if empty, only get objects with galleries
-      if (empty) {
-        out.gallery_count = {
-          modifier: CriterionModifier.GreaterThan,
-          value: 0,
-        };
-      }
-      out.galleries_filter = relatedFilterOutput as GalleryFilterType;
-      break;
-    case FilterMode.Groups:
-      if (query === "tags") {
-        // if empty, only get objects with groups
-        if (empty) {
-          out.group_count = {
-            modifier: CriterionModifier.GreaterThan,
-            value: 0,
-          };
-        }
-        out.groups_filter = relatedFilterOutput as GroupFilterType;
-      }
+      out.scenes_filter = relatedFilterOutput;
       break;
   }
 }

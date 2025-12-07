@@ -1,0 +1,27 @@
+/**
+ * Extension Variables
+ * 
+ * Custom CSS variables and SCSS variables for extensions.
+ * Override these to customize the look of extension components.
+ */
+
+:root {
+  // Facets sidebar
+  --ext-sidebar-width: 280px;
+  --ext-sidebar-bg: #1a1f25;
+  --ext-sidebar-border: rgba(255, 255, 255, 0.1);
+  
+  // Facet counts
+  --ext-facet-count-bg: rgba(255, 255, 255, 0.1);
+  --ext-facet-count-color: #8a9ba8;
+  --ext-facet-count-hover-bg: rgba(255, 255, 255, 0.15);
+  
+  // Filter tags
+  --ext-filter-tag-bg: #394b59;
+  --ext-filter-tag-color: #f5f8fa;
+  --ext-filter-tag-border-radius: 3px;
+  
+  // Animations
+  --ext-transition-fast: 0.15s ease;
+  --ext-transition-normal: 0.25s ease;
+}

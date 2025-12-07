@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
-import { GroupList } from "src/components/Groups/MyGroupList";
+import { EnhancedGroupList as GroupList } from "src/extensions/facets/enhanced";
 
 export const TagGroupsPanel: React.FC<{
   active: boolean;

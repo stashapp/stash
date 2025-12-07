@@ -17,7 +17,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getFilterOptions } from "src/models/list-filter/factory";
-import { FilterTags } from "./MyFilterTags";
+import { FilterTags } from "src/extensions/ui";
 import { CriterionEditor } from "./CriterionEditor";
 import { Icon } from "../Shared/Icon";
 import {

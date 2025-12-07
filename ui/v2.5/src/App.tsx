@@ -45,6 +45,9 @@ import { PluginRoutes, PluginsLoader } from "./plugins";
 
 // import plugin_api to run code
 import "./pluginApi";
+
+// Fork extensions
+import { ExtensionRegistryProvider } from "./extensions";
 import { ConnectionMonitor } from "./ConnectionMonitor";
 import { PatchFunction } from "./patch";
 
@@ -330,8 +333,9 @@ export const App: React.FC = () => {
         formats={intlFormats}
       >
         <ToastProvider>
-          <PluginsLoader>
-            <AppContainer>
+          <ExtensionRegistryProvider>
+            <PluginsLoader>
+              <AppContainer>
               <ConfigurationProvider
                 configuration={config.data?.configuration}
                 loading={config.loading}
@@ -351,7 +355,8 @@ export const App: React.FC = () => {
                 </Suspense>
               </ConfigurationProvider>
             </AppContainer>
-          </PluginsLoader>
+            </PluginsLoader>
+          </ExtensionRegistryProvider>
         </ToastProvider>
       </IntlProvider>
     </ErrorBoundary>

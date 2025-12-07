@@ -1,0 +1,850 @@
+/**
+ * Plex Theme Desktop Layouts
+ * 
+ * Responsive styles for tablet and desktop breakpoints.
+ * Contains the detailed scene/gallery/image tab layouts.
+ */
+
+// =============================================================================
+// Desktop (575.98px+)
+// =============================================================================
+
+@media (min-width: 575.98px) {
+  .image-container {
+    flex: 0 0 calc(100% - 465px);
+    max-width: calc(100% - 465px);
+  }
+
+  // Detail tabs with nav tabs
+  .main.container-fluid:has(.detail-body .nav.nav-tabs) {
+    .group-tabs,
+    .performer-tabs,
+    .studio-tabs,
+    .tag-tabs {
+      margin-left: -15px;
+      margin-right: -15px;
+    }
+
+    .detail-header {
+      border-bottom: unset;
+      padding-bottom: 2.8rem;
+
+      .detail-container {
+        padding: 0 15px;
+      }
+    }
+
+    .sticky.detail-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0;
+      top: 3.9rem;
+      z-index: 1001;
+    }
+
+    .detail-body {
+      margin-top: -51px;
+      z-index: 1000;
+
+      nav {
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.2) 60%) !important;
+        border-bottom: solid 1px var(--border-color);
+        padding-bottom: 0;
+        padding-top: 1rem;
+      }
+
+      .nav-tabs {
+        .nav-link {
+          margin: 0 2px;
+          margin-bottom: -1px;
+
+          &.active {
+            background-color: #191919;
+            border: solid 1px var(--border-color);
+            border-bottom: 0;
+            border-top-right-radius: 8px;
+            border-top-left-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+
+            .badge-pill.badge-secondary {
+              background-color: var(--plex-orange);
+              border: solid 1px var(--plex-orange);
+            }
+          }
+
+          &:hover:not(.active) {
+            border-radius: 8px;
+            border-bottom: 0;
+            padding: 4px 8px;
+            margin: 4px 2px;
+          }
+        }
+
+        .badge-pill.badge-secondary {
+          background-color: #202023;
+          border: solid 1px #202023;
+          border-radius: 0.5rem;
+          padding: 0.3em 0.6em;
+        }
+      }
+
+      .tab-content {
+        padding-right: 15px;
+        padding-left: 15px;
+      }
+    }
+  }
+
+  // Scene/Gallery/Image Tabs
+  .scene-tabs,
+  .gallery-tabs,
+  .image-tabs {
+    flex: 0 0 465px;
+    max-width: 465px;
+    border-right: solid 1px var(--border-color);
+  }
+
+  // Collapsed state
+  .row:has(.collapsed) {
+    .gallery-divider,
+    .scene-divider {
+      left: 0;
+    }
+
+    .gallery-container {
+      margin-left: 15px;
+    }
+
+    .scene-player-container {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+
+  .scene-player-container {
+    padding-right: 0;
+  }
+
+  .gallery-container,
+  .scene-player-container {
+    transition: 0.3s ease;
+  }
+
+  .gallery-container {
+    .nav-tabs {
+      margin-left: 2rem;
+
+      .nav-item .nav-link.active {
+        background-color: unset;
+        border: unset;
+        border-bottom: solid 2px var(--color-brand-accent);
+        color: var(--color-brand-accent);
+      }
+    }
+  }
+
+  .row:has(.tab-content .scene-performers) .tab-pane .row {
+    margin-right: 0;
+
+    .scene-performers {
+      margin-right: -15px;
+    }
+  }
+
+  // Dividers
+  .details-divider,
+  .gallery-divider,
+  .scene-divider {
+    position: absolute;
+    left: 465px;
+    z-index: 10;
+    max-width: unset;
+    top: 10px;
+    border-top-right-radius: 10%;
+    border-bottom-right-radius: 10%;
+    background-color: #262626;
+    border: solid 1px var(--border-color);
+    border-left: unset;
+    transition: 0.3s ease;
+
+    button {
+      color: #afafaf;
+      font-size: 16px;
+      padding: 1rem 0.3rem;
+
+      &:hover {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+  }
+
+  // Performer cards in scene tabs
+  .scene-tabs .performer-card,
+  .gallery-tabs .performer-card,
+  .image-tabs .performer-card {
+    &:hover {
+      background-color: hsla(0, 0%, 100%, 0.12);
+    }
+
+    background: #2f2e2e;
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 35px 35px;
+    border-top-left-radius: 35px 35px;
+    display: grid;
+    grid-auto-flow: column;
+    margin-right: 0;
+    overflow: unset;
+    padding: 0;
+
+    .favorite-button,
+    .rating-banner,
+    .performer-card__country-string {
+      display: none;
+    }
+
+    .card-popovers {
+      bottom: 0;
+      display: unset;
+      margin: 0;
+      position: absolute;
+      right: 0;
+
+      span {
+        display: inline;
+      }
+
+      .scene-count,
+      .group-count,
+      .image-count,
+      .gallery-count {
+        display: none;
+      }
+    }
+
+    .thumbnail-section {
+      width: 70px;
+    }
+
+    .performer-card-image {
+      border: 2px solid var(--color-brand-accent);
+      border-radius: 50%;
+      height: 70px !important;
+      min-width: unset;
+      object-position: center;
+      position: relative;
+      transition: transform 0.5s, border-width 0.5s, box-shadow 0.5s, z-index 0.5s;
+      width: 70px;
+      z-index: 1;
+
+      &:hover {
+        border-color: hsla(0, 0%, 100%, 0.6705882353);
+        border-width: 1px;
+        box-shadow: 0 5px 5px rgba(0, 0, 0, 0.7);
+        transform: scale(2) translateX(1.2rem);
+        transition: transform 0.5s 0.5s, border-width 0.5s 0.5s, box-shadow 0.5s 0.5s, z-index 0.5s 0.5s;
+        z-index: 100;
+      }
+    }
+
+    .gender-icon {
+      position: absolute;
+      top: 48px;
+    }
+
+    .performer-card__age {
+      color: #d3d0d0;
+      display: -webkit-box;
+      padding-bottom: 0.5rem;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1 !important;
+      white-space: pre-line;
+    }
+
+    .performer-card__country-flag {
+      display: unset;
+      position: absolute;
+      top: 48px;
+      left: 95px;
+      height: 15px;
+      width: 15px;
+    }
+
+    .performer-card__country-string {
+      color: #d3d0d0;
+      display: unset;
+      position: absolute;
+      top: 45px;
+      left: 112px;
+    }
+
+    .card-section {
+      left: 70px;
+      margin-left: 7px;
+      margin-right: 3px;
+      padding: 0;
+      position: absolute;
+
+      h5 {
+        font-size: 1rem;
+        margin: 0;
+        padding-top: 5px;
+      }
+    }
+  }
+
+  // Preview video transitions
+  .item-list-container .scene-card:hover .scene-card-preview-video,
+  .item-list-container .scene-card:active .scene-card-preview-video,
+  .item-list-container .gallery-card:hover .scene-card-preview-video,
+  .item-list-container .gallery-card:active .scene-card-preview-video {
+    transition-delay: 1s;
+  }
+
+  // Scrubber image scale
+  .item-list-container .grid-card.card .scene-card-preview-image .scrubber-image {
+    transform: scale(2.02) !important;
+  }
+
+  .item-list-container .grid-card.card .hover-scrubber .hover-scrubber-indicator .hover-scrubber-indicator-marker {
+    transform: scale(1.2);
+  }
+}
+
+// =============================================================================
+// Medium Desktop (768px+)
+// =============================================================================
+
+@media (min-width: 768px) {
+  .col-md-4 {
+    max-width: 550px;
+    flex: 0 0 550px;
+  }
+
+  .col-md-8 {
+    flex: 0 0 calc(100% - 550px);
+    max-width: calc(100% - 550px);
+  }
+}
+
+// =============================================================================
+// Large Desktop (1200px+)
+// =============================================================================
+
+@media (min-width: 1200px) {
+  #queue-viewer,
+  #scene-edit-details,
+  #gallery-edit-details,
+  #image-edit-details,
+  .scene-video-filter,
+  .file-info-panel,
+  .scene-markers-panel,
+  .container.gallery-scenes {
+    margin-left: -15px;
+  }
+
+  #scene-edit-details,
+  #gallery-edit-details,
+  #image-edit-details {
+    margin-top: -15px;
+  }
+
+  #queue-viewer li:hover {
+    background-color: hsla(0, 0%, 25.34%, 0.3);
+  }
+
+  #settings-container .tab-content {
+    margin-top: 1rem;
+  }
+
+  .minimal.brand-link.d-inline-block.btn.btn-primary {
+    background-color: #141414 !important;
+  }
+
+  // Scene/Gallery/Image tabs detailed styling
+  .image-tabs,
+  .gallery-tabs,
+  .scene-tabs {
+    padding-left: 0;
+    padding-right: 0;
+
+    .detail-container {
+      margin-bottom: 2.5rem;
+      padding-bottom: 0;
+
+      .image-subheader,
+      .gallery-subheader,
+      .scene-subheader {
+        position: absolute;
+        bottom: -3px;
+        right: 0;
+      }
+
+      .frame-rate {
+        display: none;
+      }
+
+      .image-toolbar,
+      .gallery-toolbar,
+      .scene-toolbar {
+        width: auto;
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        margin-bottom: 0px;
+      }
+
+      .view-count-button-container {
+        display: none;
+      }
+    }
+
+    .d-none.d-xl-block {
+      padding-right: 15px;
+    }
+
+    > div:nth-of-type(2) {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-tabs {
+      margin-bottom: 1rem;
+      position: relative;
+
+      .ml-auto.btn-group {
+        top: -40px;
+        position: absolute;
+        right: 0;
+      }
+    }
+
+    .scene-markers-panel {
+      padding-left: 15px;
+      padding-top: 10px;
+    }
+
+    .image-details > h5,
+    .gallery-details > h5,
+    .scene-details > h5 {
+      padding-bottom: 10px;
+    }
+
+    .tab-content .row .col-12 > h6 {
+      padding-top: 10px;
+    }
+
+    .scene-details > h6:first-of-type {
+      display: none;
+    }
+
+    .image-performers,
+    .gallery-performers,
+    .scene-performers {
+      justify-content: left !important;
+      margin-left: -4px;
+
+      .performer-card {
+        width: 14.5rem;
+      }
+
+      .performer-card-image {
+        height: 21.75rem;
+      }
+    }
+
+    .tab-pane #queue-viewer .queue-controls {
+      background-color: var(--nav-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-left: 15px;
+    }
+
+    #image-edit-details .edit-buttons-container,
+    #gallery-edit-details .edit-buttons-container,
+    #scene-edit-details .edit-buttons-container {
+      background-color: var(--nav-color);
+      border-bottom: 1px solid var(--border-color);
+      margin: 0;
+    }
+  }
+
+  .image-details,
+  .image-tabs .image-file-info,
+  .image-tabs #image-edit-details .form-container.px-3.row,
+  .gallery-details,
+  .scene-details,
+  .gallery-tabs .gallery-scenes,
+  .gallery-tabs .gallery-file-info,
+  .gallery-tabs #gallery-edit-details .form-container.px-3.row,
+  .scene-tabs .scene-file-info,
+  .scene-tabs #scene-edit-details .form-container.px-3.row,
+  .scene-tabs .container.scene-video-filter {
+    margin-top: 0;
+    padding-top: 10px;
+  }
+
+  .image-container .gallery-container {
+    padding-right: 0;
+    padding-left: 1em;
+  }
+
+  // Tab content at 1200px+ breakpoint
+  .main.container-fluid:has(.detail-body .nav.nav-tabs) .detail-body .tab-content {
+    padding-bottom: 0;
+  }
+}
+
+// =============================================================================
+// Mobile Styles
+// =============================================================================
+
+@media (max-width: 575.98px) and (orientation: portrait) {
+  .justify-content-center.btn-toolbar {
+    .mb-2.mr-2.d-flex {
+      width: 100%;
+      margin-right: 0 !important;
+    }
+
+    .query-text-field.bg-secondary.text-white.border-secondary.form-control {
+      width: 100%;
+    }
+
+    .mb-2:has(select.btn-secondary.form-control) {
+      display: none;
+    }
+
+    .mx-2.mb-2 {
+      display: none;
+    }
+  }
+
+  .video-js .vjs-slider:focus {
+    text-shadow: none;
+    box-shadow: none;
+  }
+
+  .video-js .vjs-vtt-thumbnail-display {
+    display: none;
+  }
+
+  .VideoPlayer.portrait .video-js {
+    height: 56.25vw;
+  }
+
+  .gallery-container .tab-content {
+    top: 3rem;
+    position: fixed;
+    height: calc(100vh - 6.5rem);
+  }
+
+  .image-tabs,
+  .gallery-tabs {
+    display: none;
+
+    .mr-auto.nav.nav-tabs {
+      display: grid;
+      grid-auto-flow: column;
+      text-align: center;
+      left: 0;
+      right: 0;
+      position: fixed;
+    }
+  }
+
+  .btn-toolbar {
+    padding-top: 1rem;
+  }
+
+  .scene-tabs {
+    max-height: 100%;
+
+    .tab-content .row {
+      margin-right: -15px;
+      margin-left: -15px;
+    }
+
+    .mr-auto.nav.nav-tabs {
+      grid-auto-flow: column;
+      background-color: #121212;
+      position: fixed;
+      top: 56.25vw;
+      right: 0;
+      left: 0;
+      padding-top: 0.1rem;
+      text-align: center;
+      z-index: 0;
+      margin-bottom: 0rem;
+      margin: 0;
+    }
+
+    .ml-auto.btn-group {
+      position: fixed;
+      right: 1rem;
+      top: calc(56.25vw + 2.7rem);
+    }
+
+    &.order-xl-first.order-last {
+      height: calc(100vh - (56.25vw + 7.5rem));
+      top: calc(56.25vw + 2.8rem);
+      background-color: #262626;
+      position: fixed;
+    }
+  }
+
+  .tab-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .row {
+      margin-right: 0;
+      margin-left: 0;
+    }
+  }
+
+  .slick-list .gallery-card {
+    .thumbnail-section {
+      height: 15rem;
+    }
+
+    .gallery-card-image {
+      height: 15rem;
+    }
+  }
+
+  .scene-card-preview,
+  .gallery-card-image,
+  .tag-card-image,
+  .image-card-preview {
+    height: auto !important;
+    width: 100%;
+  }
+
+  .gallery-card .card-section {
+    margin-top: 0;
+  }
+
+  .row.justify-content-center {
+    .grid-card a .card-section-title {
+      font-size: 16px;
+    }
+
+    .scene-card__details,
+    .gallery-card__details,
+    .gallery-card .card-section {
+      font-size: 12px;
+    }
+
+    .gallery-card .card-section {
+      margin-top: 0;
+    }
+
+    .gallery-card-image,
+    .image-card-preview {
+      height: 10rem;
+    }
+  }
+
+  .studio-card-image {
+    aspect-ratio: 16/9;
+    line-height: 0px;
+    padding: 0.5rem;
+  }
+
+  .studio-card {
+    width: 47%;
+    height: auto;
+    padding: 0;
+  }
+
+  .studio-card-header {
+    line-height: 0;
+  }
+
+  hr {
+    margin: 1px 0;
+  }
+
+  .tag-card {
+    height: auto;
+    width: 47%;
+    padding: 0;
+
+    .flex-aligned {
+      margin: 0;
+    }
+  }
+
+  .tag-card-image {
+    aspect-ratio: 16/9;
+  }
+
+  .scene-card-preview-image {
+    aspect-ratio: 16/9;
+  }
+
+  .group-card {
+    width: 47%;
+
+    .TruncatedText {
+      display: none;
+    }
+  }
+
+  .justify-content-center .studio-card {
+    width: 47%;
+  }
+
+  .performer-card-image {
+    height: 20.25rem;
+  }
+
+  .performer-card {
+    width: 13.5rem;
+    height: auto;
+    padding: 0;
+
+    .card-popovers .btn {
+      padding-left: 0.4rem;
+      padding-right: 0.4rem;
+    }
+  }
+
+  .card.performer-card {
+    padding: 0;
+  }
+
+  .nav-tabs .nav-link.active:hover {
+    outline: 0;
+    border-bottom: 2px solid;
+  }
+
+  #performer-details-tab-edit,
+  #performer-details-tab-operations {
+    display: none;
+  }
+
+  .stats-element {
+    flex-grow: 1;
+    margin: auto 0rem;
+  }
+
+  .stats {
+    margin-left: 0px;
+  }
+
+  div[data-rb-event-key="/images"],
+  div[data-rb-event-key="/scenes/markers"] {
+    display: none;
+  }
+
+  .row.justify-content-center.scene-performers {
+    max-height: 480px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    border-top: solid 2px #2d3035;
+    border-bottom: solid 2px #2d3035;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .sidebar-pane .filtered-list-toolbar:has(.filter-section) {
+    top: 0 !important;
+  }
+}
+
+// =============================================================================
+// Form Group URL Ordering
+// =============================================================================
+
+.col-xl-12 {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.row:has(label[for="urls"]) {
+  order: -1;
+}
+
+// =============================================================================
+// Tab Panes
+// =============================================================================
+
+#studio-tabs-tabpane-scenes .item-list-header,
+#studio-tabs-tabpane-galleries .item-list-header,
+#studio-tabs-tabpane-performers .item-list-header,
+#studio-tabs-tabpane-groups .item-list-header {
+  margin-top: -34px;
+  padding-bottom: 8px;
+  justify-content: right;
+}
+
+// =============================================================================
+// Item List Container Pagination
+// =============================================================================
+
+.item-list-container {
+  > .pagination.btn-group:nth-child(2),
+  > .pagination.btn-group:nth-child(3) {
+    display: none;
+  }
+}
+
+// =============================================================================
+// Popover Performer Tags
+// =============================================================================
+
+.bs-popover-bottom .performer-tag-container.row .tag-item {
+  max-width: 6.9rem;
+
+  a {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: inline-block;
+    white-space: nowrap;
+    width: 100%;
+  }
+}
+
+// =============================================================================
+// Detail Item Value Country Flag
+// =============================================================================
+
+.detail-item-value.country > .fi,
+.sticky > .performer-country > .fi {
+  border-radius: 9999px;
+  width: 1em;
+  background-size: cover;
+  padding-right: 1rem;
+}
+
+// =============================================================================
+// Scene Video Filter
+// =============================================================================
+
+.scene-video-filter .row.form-group {
+  padding: 0.2rem 0;
+}
+
+// =============================================================================
+// Tab Pane Edit Content
+// =============================================================================
+
+div.fade.tab-pane.active.show:not(:has(.gallery-viewer-container)) > div > button {
+  margin-right: 15px;
+  margin-top: 15px;
+  justify-content: center;
+  display: flex;
+  margin-left: auto;
+}
+
+div.fade.tab-pane.active.show .container .row {
+  margin: 0;
+}
+
+div.fade.tab-pane.active.show form {
+  padding-top: 15px;
+}
+

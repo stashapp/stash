@@ -115,13 +115,13 @@ export const PluginApi = {
 
     ExternalPlayerButton: () =>
       import("./components/Scenes/SceneDetails/ExternalPlayerButton"),
-    QueueViewer: () => import("./components/Scenes/SceneDetails/QueueViewer"),
+    QueueViewer: () => import("src/extensions/components/QueueViewer"),
     SceneMarkersPanel: () =>
       import("./components/Scenes/SceneDetails/SceneMarkersPanel"),
     SceneFileInfoPanel: () =>
       import("./components/Scenes/SceneDetails/SceneFileInfoPanel"),
     SceneDetailPanel: () =>
-      import("./components/Scenes/SceneDetails/SceneDetailPanel"),
+      import("src/extensions/components/SceneDetailPanel"),
     SceneHistoryPanel: () =>
       import("./components/Scenes/SceneDetails/SceneHistoryPanel"),
     SceneGroupPanel: () =>

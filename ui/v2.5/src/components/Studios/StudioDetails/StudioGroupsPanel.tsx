@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupList } from "src/components/Groups/MyGroupList";
+import { EnhancedGroupList as GroupList } from "src/extensions/facets/enhanced";
 import { useStudioFilterHook } from "src/core/studios";
 import { View } from "src/components/List/views";
 

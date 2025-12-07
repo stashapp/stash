@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
-import { GalleryList } from "./MyGalleryList";
+import { EnhancedGalleryList as GalleryList } from "src/extensions/facets/enhanced";
 import { View } from "../List/views";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ErrorMessage } from "../Shared/ErrorMessage";

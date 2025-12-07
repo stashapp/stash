@@ -16,7 +16,7 @@ import { UAParser } from "ua-parser-js";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
-import "./settings-menu";
+import "src/extensions/player/settings-menu";
 import "./persist-volume";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;

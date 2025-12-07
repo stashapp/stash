@@ -1,0 +1,1086 @@
+﻿.LoadingIndicator {
+  // fade in animation - delay showing
+  animation: fadeInAnimation ease 200ms;
+  animation-delay: 200ms;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+
+  opacity: 0;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.LoadingIndicator {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+
+  &:not(.card-based) {
+    padding-top: 2rem;
+  }
+
+  &-message {
+    margin-top: 1rem;
+  }
+
+  .spinner-border {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  &.inline {
+    display: inline;
+    height: auto;
+    margin-left: 0.5rem;
+  }
+
+  &.small .spinner-border {
+    height: 1rem;
+    width: 1rem;
+  }
+}
+
+.details-edit {
+  /*
+    The penultimate button should be wrapped in an unstyled div.
+    This allows the div to expand, to right-justify the last (save / delete) button.
+  */
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: left;
+  padding: 0;
+  row-gap: 0.5rem;
+
+  .btn {
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+}
+
+.col-md-8 .details-edit div:nth-last-child(2),
+.detail-header.edit .details-edit div:nth-last-child(2) {
+  flex: 1;
+  max-width: 100%;
+}
+
+.select-suggest {
+  &:hover {
+    cursor: text;
+  }
+}
+
+.duration-input,
+.percent-input {
+  .duration-control,
+  .percent-control {
+    min-width: 3rem;
+  }
+
+  .duration-button,
+  .percent-button {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    line-height: 10px;
+    padding: 1px 7px;
+  }
+
+  .btn + .btn {
+    margin-left: 0;
+  }
+}
+
+// z-index gets set on button groups for some reason
+.multi-set .btn-group > button.btn {
+  z-index: auto;
+}
+
+.folder-item {
+  button {
+    padding: 0;
+  }
+}
+
+.folder-list {
+  list-style-type: none;
+  margin: 0;
+  max-height: 30vw;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  padding-top: 1rem;
+
+  &-item {
+    white-space: nowrap;
+
+    .btn {
+      border: none;
+      color: white;
+      font-weight: 400;
+      padding: 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    &:last-child .btn span::before {
+      content: "Γöö \1F4C1";
+    }
+
+    .btn span::before {
+      content: "Γö£ \1F4C1";
+      display: inline-block;
+      padding-right: 1rem;
+      transform: scale(1.5);
+    }
+  }
+
+  &-parent {
+    .btn span::before {
+      visibility: hidden;
+    }
+
+    .btn-link {
+      font-weight: 500;
+    }
+  }
+}
+
+.scrape-dialog {
+  .modal-content .dialog-container {
+    max-height: calc(100vh - 14rem);
+    overflow-y: auto;
+    padding-right: 15px;
+  }
+
+  .image-selection-parent {
+    min-width: 100%;
+  }
+
+  .image-selection {
+    .select-buttons {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+
+      .image-index {
+        flex-grow: 1;
+        text-align: center;
+      }
+    }
+
+    .loading {
+      opacity: 0.5;
+    }
+
+    .LoadingIndicator {
+      height: 100%;
+      position: absolute;
+      top: 0;
+    }
+  }
+}
+
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):focus,
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #f5f8fa;
+  text-align: left;
+}
+
+button.collapse-button {
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  padding-left: 0;
+}
+
+.hover-popover-content {
+  max-width: 32rem;
+  text-align: center;
+}
+
+.ErrorMessage-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.ErrorMessage {
+  .fa-icon {
+    color: $warning;
+    font-size: 1.5em;
+    margin-right: 0.3em;
+    vertical-align: middle;
+  }
+
+  background-color: initial;
+  border-color: $danger;
+  color: $text-color;
+  margin: 1rem;
+  text-align: left;
+  width: 500px;
+
+  @include media-breakpoint-down(xs) {
+    width: 100%;
+  }
+}
+
+.grid-card {
+  a .card-section-title {
+    color: $text-color;
+    text-decoration: none;
+  }
+
+  .progress-bar {
+    background-color: #73859f80;
+    bottom: 5px;
+    display: block;
+    height: 5px;
+    position: absolute;
+    width: 100%;
+  }
+
+  .progress-indicator {
+    background-color: #137cbd;
+    height: 5px;
+  }
+
+  .card-controls {
+    align-items: center;
+    display: flex;
+    left: 0.5rem;
+
+    position: absolute;
+    top: 0.7rem;
+    z-index: 1;
+  }
+
+  .card-check,
+  .card-drag-handle {
+    height: 1.2rem;
+    opacity: 0;
+    width: 1.2rem;
+
+    @media (hover: none), (pointer: coarse) {
+      // always show card controls when hovering not supported
+      opacity: 0.25;
+    }
+  }
+
+  .card-drag-handle {
+    cursor: move;
+  }
+
+  .card-check {
+    padding-left: 15px;
+
+    &:checked {
+      opacity: 0.75;
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      // and make it bigger when hovering not supported
+      width: 1.5rem;
+    }
+  }
+
+  &:hover .card-check,
+  &:hover .card-drag-handle {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
+}
+
+.TruncatedText {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: pre-line;
+
+  &-tooltip .tooltip-inner {
+    max-width: 300px;
+    white-space: pre-line;
+  }
+
+  .file-info-panel a > & {
+    word-break: break-all;
+  }
+
+  &.inline {
+    display: inline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.RatingStars {
+  &-unfilled {
+    path {
+      fill: white;
+    }
+  }
+
+  &-filled {
+    path {
+      fill: gold;
+    }
+  }
+}
+
+.three-state-checkbox {
+  align-items: center;
+  display: flex;
+
+  button.btn {
+    font-size: 12.67px;
+    margin-left: -0.2em;
+    margin-right: 0.25rem;
+    padding: 0;
+
+    &:not(:disabled):active,
+    &:not(:disabled):active:focus,
+    &:not(:disabled):hover,
+    &:not(:disabled):not(:hover) {
+      background-color: initial;
+      box-shadow: none;
+    }
+  }
+
+  &.unset {
+    .label {
+      color: #bfccd6;
+      text-decoration: line-through;
+    }
+  }
+
+  &.checked svg {
+    color: #0f9960;
+  }
+
+  &.not-checked svg {
+    color: #db3737;
+  }
+}
+
+.input-group-prepend {
+  .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+.ModalComponent .modal-footer {
+  justify-content: space-between;
+}
+
+.scrape-url-button:disabled {
+  opacity: 0.5;
+}
+
+.string-list-input .input-group {
+  margin-bottom: 0.35rem;
+}
+
+.bulk-update-text-input {
+  button {
+    background-color: $secondary;
+    color: $text-muted;
+    font-size: $btn-font-size-sm;
+    margin: $btn-padding-y $btn-padding-x;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    z-index: 4;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &:not(:disabled):not(.disabled):active,
+    &:not(:disabled):not(.disabled):active:focus {
+      background-color: $secondary;
+      border-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  &.unset button {
+    visibility: hidden;
+  }
+}
+
+.date-input.form-control:focus {
+  // z-index gets set to 3 in input groups
+  z-index: inherit;
+}
+
+/* stylelint-disable */
+div.react-datepicker {
+  background-color: $body-bg;
+  border-color: $card-bg;
+  color: $text-color;
+
+  .react-datepicker__header,
+  .react-datepicker-time__header {
+    background-color: $secondary;
+    color: $text-color;
+    padding-top: 0.4rem;
+  }
+
+  .react-datepicker__navigation {
+    top: 0.4rem;
+  }
+
+  .react-datepicker__day {
+    color: $text-color;
+
+    &.react-datepicker__day--disabled {
+      color: $text-muted;
+    }
+
+    &:hover {
+      background: rgba(138, 155, 168, 0.15);
+    }
+  }
+
+  div.react-datepicker__time-container div.react-datepicker__time {
+    background-color: $body-bg;
+    color: $text-color;
+
+    ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+      background-color: rgba(138, 155, 168, 0.15);
+    }
+  }
+
+  .react-datepicker__day-name {
+    color: $text-color;
+  }
+
+  // replace the current month with the dropdowns
+  .react-datepicker__current-month {
+    display: none;
+  }
+
+  .react-datepicker__triangle {
+    display: none;
+  }
+
+  .react-datepicker__month-dropdown-container {
+    margin-left: 0;
+    margin-right: 0.1rem;
+  }
+
+  .react-datepicker__year-dropdown-container {
+    margin-left: 0.1rem;
+    margin-right: 0;
+  }
+
+  .react-datepicker__month-dropdown-container
+    .react-datepicker__month-read-view,
+  .react-datepicker__year-dropdown-container .react-datepicker__year-read-view {
+    font-weight: bold;
+    font-size: 0.944rem;
+
+    // react-datepicker hides these fields when the dropdown is shown
+    visibility: visible !important;
+  }
+
+  // hide the dropdown arrows
+  .react-datepicker__month-dropdown-container
+    .react-datepicker__month-read-view--down-arrow,
+  .react-datepicker__year-dropdown-container
+    .react-datepicker__year-read-view--down-arrow {
+    display: none;
+  }
+
+  .react-datepicker__year-dropdown,
+  .react-datepicker__month-dropdown {
+    background-color: $body-bg;
+
+    .react-datepicker__year-option:hover,
+    .react-datepicker__month-option:hover {
+      background-color: #8a9ba826;
+    }
+  }
+}
+
+/* stylelint-enable */
+
+#date-picker-portal .react-datepicker-popper {
+  z-index: 1600;
+}
+
+.clearable-input-group {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.clearable-text-field,
+.clearable-text-field:active,
+.clearable-text-field:focus {
+  background-color: $secondary;
+  border: 0;
+  border-color: $secondary;
+  color: #fff;
+}
+
+.clearable-text-field-clear,
+.clearable-text-field-search {
+  background-color: $secondary;
+  bottom: 0;
+  color: $muted-gray;
+  font-size: 0.875rem;
+  margin: 0.375rem 0.75rem;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 4;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled):active:focus {
+    background-color: $secondary;
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
+
+/* stylelint-disable */
+.card:has(input:checked) label,
+.card:hover label {
+  opacity: 1;
+}
+
+.checkbox-wrapper {
+  left: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  z-index: 100;
+
+  .checkbox {
+    display: table-cell;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+    width: 100%;
+  }
+
+  input[type="checkbox"] {
+    display: none;
+  }
+
+  input[type="checkbox"]:checked + label {
+    span {
+      background-color: #e5a00d;
+      border: none;
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    span:after {
+      background: #392803;
+      transition: width 150ms ease 100ms;
+      width: 10px;
+    }
+
+    span:before {
+      background: #392803;
+      transition: width 150ms ease 100ms;
+      width: 5px;
+    }
+  }
+
+  input[type="checkbox"]:checked + label:hover {
+    span {
+      background-color: #333;
+      transform: scale(1.2);
+    }
+
+    span:after {
+      background: #fff;
+      transition: width 150ms ease 100ms;
+      width: 10px;
+    }
+
+    span:before {
+      background: #fff;
+      transition: width 150ms ease 100ms;
+      width: 5px;
+    }
+  }
+
+  label {
+    color: #333;
+    cursor: pointer;
+    display: inline-block;
+    margin-bottom: 0;
+    margin-left: 0.3rem;
+    margin-top: 0.3rem;
+    opacity: 0;
+    position: relative;
+
+    span {
+      background-color: transparent;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      display: inline-block;
+      height: 25px;
+      margin-right: 10px;
+      position: relative;
+      transition: background-color 150ms 200ms,
+        transform 350ms cubic-bezier(0.78, -1.22, 0.17, 1.89);
+      transform-origin: center;
+      vertical-align: middle;
+      width: 25px;
+    }
+
+    span:before {
+      background: #fff0;
+      border-radius: 2px;
+      box-sizing: unset;
+      content: "";
+      height: 2px;
+      left: 9px;
+      position: absolute;
+      top: 13px;
+      transform: rotate(45deg);
+      transform-origin: 0% 0%;
+      transition: width 50ms ease 50ms;
+      width: 0px;
+    }
+
+    span:after {
+      background: #fff0;
+      border-radius: 2px;
+      box-sizing: unset;
+      content: "";
+      height: 2px;
+      left: 10px;
+      position: absolute;
+      transform: rotate(305deg);
+      top: 16px;
+      transform-origin: 0% 0%;
+      transition: width 50ms ease;
+      width: 0;
+    }
+  }
+
+  label:hover {
+    span:before {
+      transition: width 100ms ease;
+      width: 5px;
+    }
+
+    span:after {
+      transition: width 150ms ease 100ms;
+      width: 10px;
+    }
+  }
+}
+/* stylelint-enable */
+
+.string-list-row .input-group {
+  flex-wrap: nowrap;
+}
+
+.stash-id-pill {
+  display: inline-block;
+  font-size: 90%;
+  font-weight: 700;
+  line-height: 1;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+
+  span,
+  a {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+  }
+
+  span {
+    background-color: $primary;
+    border-radius: 0.25rem 0 0 0.25rem;
+    min-width: 5em;
+  }
+
+  a {
+    background-color: $secondary;
+    border-radius: 0 0.25rem 0.25rem 0;
+  }
+}
+
+.react-select-image-option {
+  align-items: baseline;
+  display: flex;
+}
+
+button.btn.favorite-button {
+  opacity: 1;
+  transition: opacity 0.5s;
+
+  &.not-favorite {
+    color: rgba(191, 204, 214, 0.5);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+
+    &.hide-not-favorite {
+      opacity: 0;
+    }
+  }
+
+  &.favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+  }
+
+  &:hover,
+  &:active,
+  &:focus,
+  &:active:focus {
+    background: none;
+    box-shadow: none;
+  }
+}
+
+.count-button {
+  border-radius: 5px;
+
+  &:hover {
+    background: rgba(138, 155, 168, 0.15);
+    color: #f5f8fa;
+  }
+
+  .count-icon {
+    padding-left: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .count-value {
+    padding-left: 0.25rem;
+    padding-right: 0.5rem;
+  }
+
+  button.count-icon,
+  &.increment-only button.count-value {
+    &:hover {
+      background: none;
+      color: #f5f8fa;
+    }
+  }
+
+  button.btn-secondary.count-icon,
+  button.btn-secondary.count-value {
+    &:focus {
+      border: none;
+      box-shadow: none;
+      color: #f5f8fa;
+
+      &:not(:hover) {
+        background: none;
+      }
+    }
+  }
+}
+
+.external-links-button {
+  display: inline-block;
+}
+
+.scraper-menu .dropdown-menu {
+  min-width: 250px;
+  padding-top: 0;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0;
+  }
+
+  .scraper-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .btn-group {
+      border: solid 1px $textfield-bg;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+    }
+    .clearable-text-field-clear,
+    .clearable-text-field-search {
+      background-color: unset;
+      border: unset;
+    }
+
+    .reload-button.btn {
+      border-bottom-right-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
+  }
+}
+
+.custom-fields {
+  width: 100%;
+}
+
+.custom-fields .detail-item .detail-item-title {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-fields-input > .collapse-button {
+  font-weight: 700;
+}
+
+.custom-fields-row {
+  align-items: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+
+  .form-label {
+    margin-bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  // labels with titles are styled with help cursor and dotted underline elsewhere
+  div.custom-fields-field label.form-label {
+    cursor: inherit;
+    text-decoration: inherit;
+  }
+
+  .form-control,
+  .btn {
+    font-size: 0.875rem;
+  }
+
+  &.custom-fields-new > div:not(:last-child) {
+    padding-right: 0;
+  }
+}
+
+.sidebar-pane {
+  display: flex;
+
+  .sidebar {
+    // TODO - use different colours for sidebar and toolbar
+    background-color: $body-bg;
+    border-right: 1px solid $secondary;
+    flex: $sidebar-width;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-left: 15px;
+    transition: margin-left 0.1s;
+  }
+
+  .sidebar {
+    bottom: 0;
+    left: 0;
+    margin-top: $navbar-height;
+    overflow-y: auto;
+    padding-top: 0.5rem;
+    position: fixed;
+    scrollbar-gutter: stable;
+    top: 0;
+    width: $sidebar-width;
+    z-index: 100;
+  }
+
+  &.hide-sidebar .sidebar {
+    margin-left: -$sidebar-width;
+  }
+
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
+  }
+
+  > :nth-child(2) {
+    flex-grow: 1;
+    padding-left: 0.5rem;
+  }
+
+  &.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 0;
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    transition: margin-left 0.1s;
+
+    &:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: calc($sidebar-width - 15px);
+      }
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      width: 100%;
+    }
+
+    &.hide-sidebar .sidebar {
+      margin-left: -100%;
+    }
+
+    &.hide-sidebar > :nth-child(2) {
+      width: 100%;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    display: block;
+
+    .sidebar {
+      margin-bottom: $navbar-height;
+      margin-top: 0;
+    }
+  }
+}
+
+.sidebar-toolbar {
+  // TODO - use different colours for sidebar and toolbar
+  background-color: $body-bg;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar-toolbar {
+    padding-top: 1rem;
+  }
+}
+
+.sidebar-section {
+  border-bottom: 1px solid $secondary;
+
+  .collapse-header {
+    // background-color: $secondary;
+
+    padding: 0.25rem;
+
+    .collapse-button {
+      font-weight: bold;
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  .collapse,
+  // include collapsing to allow for the transition
+  .collapsing {
+    padding-top: 0.25rem;
+  }
+}
+
+.sidebar-section:first-child .collapse-header {
+  border-top: 1px solid $secondary;
+}
+
+$sticky-header-height: calc(50px + 3.3rem);
+
+// special case for sidebar in details view
+.detail-body {
+  .sidebar {
+    // required for sticky to work
+    align-self: flex-start;
+
+    // take a further 15px padding to match the detail body
+    height: calc(100vh - $sticky-header-height - 15px);
+    margin-top: -15px;
+    max-height: calc(100vh - $sticky-header-height - 15px);
+    overflow-y: auto;
+    padding-left: 0;
+    position: sticky;
+
+    top: calc($sticky-detail-header-height + $navbar-height);
+
+    .sidebar-toolbar {
+      padding-top: 15px;
+    }
+  }
+
+  .sidebar-pane.hide-sidebar .sidebar {
+    left: -$sidebar-width;
+    margin-left: calc(-15px - $sidebar-width);
+  }
+
+  // on smaller viewports we want the sidebar to overlap content
+  @include media-breakpoint-down(sm) {
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -$sidebar-width;
+    }
+
+    .sidebar-pane > .sidebar-pane-content {
+      transition: none;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      flex: 100% 0 0;
+      height: calc(100vh - 4rem);
+      max-height: calc(100vh - 4rem);
+      top: 0;
+    }
+
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -100%;
+    }
+
+    .sidebar-pane.hide-sidebar .sidebar {
+      display: none;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    .sidebar-pane:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .sidebar-pane.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 15px;
+    }
+  }
+}

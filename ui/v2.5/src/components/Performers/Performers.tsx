@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Performer from "./PerformerDetails/Performer";
 import PerformerCreate from "./PerformerDetails/PerformerCreate";
-import { PerformerList } from "./MyPerformerList";
+import { EnhancedPerformerList as PerformerList } from "src/extensions/facets/enhanced";
 import { View } from "../List/views";
 
 const Performers: React.FC = () => {

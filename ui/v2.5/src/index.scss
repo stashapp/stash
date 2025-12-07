@@ -1740,3 +1740,6 @@ select {
 h3 .TruncatedText {
   line-height: 1.5;
 }
+
+// Extension styles - FORK ONLY: Custom styles loaded last to allow overrides
+@import "src/extensions/styles/index";

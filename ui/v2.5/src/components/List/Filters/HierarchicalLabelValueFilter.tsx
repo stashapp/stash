@@ -61,6 +61,7 @@ export const HierarchicalLabelValueFilter: React.FC<
     if (type === "children") {
       return "include-parent-tags";
     }
+    console.log(inputType);
     return "include-sub-tags";
   }
 

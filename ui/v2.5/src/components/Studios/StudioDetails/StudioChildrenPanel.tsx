@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ParentStudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { StudioList } from "../MyStudioList";
+import { EnhancedStudioList as StudioList } from "src/extensions/facets/enhanced";
 import { View } from "src/components/List/views";
 
 function useFilterHook(studio: GQL.StudioDataFragment) {

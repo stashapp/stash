@@ -1,0 +1,35 @@
+/**
+ * Extension Styles
+ * 
+ * Custom SCSS for fork-specific features.
+ * This file is imported LAST in the main index.scss,
+ * so it can override any upstream styles.
+ * 
+ * USAGE:
+ * - Add your custom styles here or import additional SCSS files
+ * - Use CSS custom properties where possible for easy theming
+ * - Prefix custom classes with "ext-" to avoid conflicts
+ * 
+ * FORK MAINTENANCE:
+ * - Only this folder contains fork-specific styles
+ * - When pulling upstream changes, this folder is unaffected
+ * - Only ONE line in index.scss imports this file
+ */
+
+// Import component-specific extension styles
+@import "variables";
+@import "facets";
+@import "sidebar";
+@import "filter-tags";
+@import "list-components";
+@import "scene-components";
+@import "player-components";
+@import "shared-components";
+@import "gallery-components";
+@import "image-components";
+
+// Plex-inspired custom theme
+// @import "plex-theme";
+// @import "plex-theme-extended";
+// @import "plex-theme-desktop";
+
