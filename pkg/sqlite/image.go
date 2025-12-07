@@ -965,10 +965,12 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		addFilesJoin := func() {
 			q.addJoins(
 				join{
+					sort:     true,
 					table:    imagesFilesTable,
 					onClause: "images_files.image_id = images.id",
 				},
 				join{
+					sort:     true,
 					table:    fileTable,
 					onClause: "images_files.file_id = files.id",
 				},
@@ -977,6 +979,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 
 		addFolderJoin := func() {
 			q.addJoins(join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "files.parent_folder_id = folders.id",
 			})

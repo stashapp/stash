@@ -518,7 +518,7 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 		} else {
 			// this will give unexpected results if the query is not filtered by a parent group and
 			// the group has multiple parents and order indexes
-			query.join(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
+			query.joinSort(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
 			query.sortAndPagination += getSort("order_index", direction, groupRelationsTable)
 		}
 	case "tag_count":

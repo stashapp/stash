@@ -800,10 +800,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	addFileTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    galleriesFilesTable,
 				onClause: "galleries_files.gallery_id = galleries.id",
 			},
 			join{
+				sort:     true,
 				table:    fileTable,
 				onClause: "galleries_files.file_id = files.id",
 			},
@@ -813,10 +815,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	addFolderTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "folders.id = galleries.folder_id",
 			},
 			join{
+				sort:     true,
 				table:    folderTable,
 				as:       "file_folder",
 				onClause: "files.parent_folder_id = file_folder.id",
