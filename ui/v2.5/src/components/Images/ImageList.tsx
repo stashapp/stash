@@ -4,7 +4,11 @@ import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindImages, useFindImages } from "src/core/StashService";
+import {
+  queryFindImages,
+  useFindImages,
+  useFindImagesMetadata,
+} from "src/core/StashService";
 import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -269,9 +273,17 @@ function getCount(result: GQL.FindImagesQueryResult) {
   return result?.data?.findImages?.count ?? 0;
 }
 
-function renderMetadataByline(result: GQL.FindImagesQueryResult) {
-  const megapixels = result?.data?.findImages?.megapixels;
-  const size = result?.data?.findImages?.filesize;
+function renderMetadataByline(
+  result: GQL.FindImagesQueryResult,
+  metadataInfo?: GQL.FindImagesMetadataQueryResult
+) {
+  const megapixels = metadataInfo?.data?.findImages?.megapixels;
+  const size = metadataInfo?.data?.findImages?.filesize;
+
+  if (metadataInfo?.loading) {
+    // return ellipsis
+    return <span className="images-stats">&nbsp;(...)</span>;
+  }
 
   if (!megapixels && !size) {
     return;
@@ -450,6 +462,7 @@ export const ImageList: React.FC<IImageList> = ({
     <ItemListContext
       filterMode={filterMode}
       useResult={useFindImages}
+      useMetadataInfo={useFindImagesMetadata}
       getItems={getItems}
       getCount={getCount}
       alterQuery={alterQuery}
