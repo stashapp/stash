@@ -76,12 +76,13 @@ ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
-	ID       int         `db:"id" goqu:"skipinsert"`
-	Title    zero.String `db:"title"`
-	Code     zero.String `db:"code"`
-	Details  zero.String `db:"details"`
-	Director zero.String `db:"director"`
-	Date     NullDate    `db:"date"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Title         zero.String `db:"title"`
+	Code          zero.String `db:"code"`
+	Details       zero.String `db:"details"`
+	Director      zero.String `db:"director"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
@@ -102,6 +103,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -127,7 +129,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Code:      r.Code.String,
 		Details:   r.Details.String,
 		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(),
+		Date:      r.Date.DatePtr(r.DatePrecision),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -159,7 +161,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
-	r.setNullDate("date", o.Date)
+	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
