@@ -1,14 +1,22 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Form, Col, Row } from "react-bootstrap";
 import { ModalComponent } from "../Modal";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { useConfigurationContext } from "src/hooks/Config";
 
+export interface IScrapeDialogContextState {
+  existingLabel?: React.ReactNode;
+  scrapedLabel?: React.ReactNode;
+}
+
+export const ScrapeDialogContext =
+  React.createContext<IScrapeDialogContextState>({});
+
 interface IScrapeDialogProps {
   title: string;
-  existingLabel?: string;
-  scrapedLabel?: string;
+  existingLabel?: React.ReactNode;
+  scrapedLabel?: React.ReactNode;
   renderScrapeRows: () => JSX.Element;
   onClose: (apply?: boolean) => void;
 }
@@ -19,6 +27,29 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
   const { sfwContentMode } = configuration.interface;
+
+  const existingLabel = useMemo(
+    () =>
+      props.existingLabel ?? (
+        <FormattedMessage id="dialogs.scrape_results_existing" />
+      ),
+    [props.existingLabel]
+  );
+  const scrapedLabel = useMemo(
+    () =>
+      props.scrapedLabel ?? (
+        <FormattedMessage id="dialogs.scrape_results_scraped" />
+      ),
+    [props.scrapedLabel]
+  );
+
+  const contextState = useMemo(
+    () => ({
+      existingLabel: existingLabel,
+      scrapedLabel: scrapedLabel,
+    }),
+    [existingLabel, scrapedLabel]
+  );
 
   return (
     <ModalComponent
@@ -42,26 +73,24 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
       }}
     >
       <div className="dialog-container">
-        <Form>
-          <Row className="px-3 pt-3">
-            <Col lg={{ span: 9, offset: 3 }}>
-              <Row>
-                <Form.Label column xs="6">
-                  {props.existingLabel ?? (
-                    <FormattedMessage id="dialogs.scrape_results_existing" />
-                  )}
-                </Form.Label>
-                <Form.Label column xs="6">
-                  {props.scrapedLabel ?? (
-                    <FormattedMessage id="dialogs.scrape_results_scraped" />
-                  )}
-                </Form.Label>
-              </Row>
-            </Col>
-          </Row>
+        <ScrapeDialogContext.Provider value={contextState}>
+          <Form>
+            <Row className="px-3 pt-3">
+              <Col lg={{ span: 9, offset: 3 }}>
+                <Row>
+                  <Form.Label column xs="6">
+                    {existingLabel}
+                  </Form.Label>
+                  <Form.Label column xs="6">
+                    {scrapedLabel}
+                  </Form.Label>
+                </Row>
+              </Col>
+            </Row>
 
-          {props.renderScrapeRows()}
-        </Form>
+            {props.renderScrapeRows()}
+          </Form>
+        </ScrapeDialogContext.Provider>
       </div>
     </ModalComponent>
   );
