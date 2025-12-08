@@ -229,7 +229,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
-  const [transition, setTransition] = useState<string | null>(null);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -312,6 +311,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   );
 
   const disableAnimation = config?.interface.imageLightbox.disableAnimation;
+  const defaultTransition = disableAnimation ? CLASSNAME_INSTANT : null;
+
+  const [transition, setTransition] = useState<string | null>(
+    defaultTransition
+  );
 
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
@@ -343,7 +347,10 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [isSwitchingPage, images, index]);
 
-  const restoreTransition = useDebounce(() => setTransition(null), 400);
+  const restoreTransition = useDebounce(
+    () => setTransition(defaultTransition),
+    400
+  );
 
   const overrideTransition = useCallback(
     (t: string) => {
@@ -453,10 +460,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
-      if (disableAnimation) {
-        setInstant();
-      }
-
       setShowChapters(false);
       setMovingLeft(true);
 
@@ -474,24 +477,12 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
-
-      if (disableAnimation) {
-        setInstant();
-      }
 
       setMovingLeft(false);
       setShowChapters(false);
@@ -517,8 +508,6 @@ export const LightboxComponent: React.FC<IProps> = ({
       isSwitchingPage,
       resetIntervalCallback,
       index,
-      disableAnimation,
-      setInstant,
     ]
   );
 
