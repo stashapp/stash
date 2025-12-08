@@ -6,12 +6,17 @@ import PerformerModal from "../PerformerModal";
 import { TaggerStateContext } from "../context";
 import { useIntl } from "react-intl";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { CreateLinkTagDialog } from "../CreateLinkTagDialog";
 
 type PerformerModalCallback = (toCreate?: GQL.PerformerCreateInput) => void;
 type StudioModalCallback = (
   toCreate?: GQL.StudioCreateInput,
   parentInput?: GQL.StudioCreateInput
 ) => void;
+type TagModalCallback = (result: {
+  create?: GQL.TagCreateInput;
+  update?: GQL.TagUpdateInput;
+}) => void;
 
 export interface ISceneTaggerModalsContextState {
   createPerformerModal: (
@@ -22,12 +27,14 @@ export interface ISceneTaggerModalsContextState {
     studio: GQL.ScrapedSceneStudioDataFragment,
     callback: StudioModalCallback
   ) => void;
+  createTagModal: (tag: GQL.ScrapedTag, callback: TagModalCallback) => void;
 }
 
 export const SceneTaggerModalsState =
   React.createContext<ISceneTaggerModalsContextState>({
     createPerformerModal: () => {},
     createStudioModal: () => {},
+    createTagModal: () => {},
   });
 
 export const SceneTaggerModals: React.FC = ({ children }) => {
@@ -45,6 +52,15 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
   >();
   const [studioCallback, setStudioCallback] = useState<
     StudioModalCallback | undefined
+  >();
+
+  const [tagToCreate, setTagToCreate] = useState<GQL.ScrapedTag | undefined>();
+  const [tagCallback, setTagCallback] = useState<
+    | ((result: {
+        create?: GQL.TagCreateInput;
+        update?: GQL.TagUpdateInput;
+      }) => void)
+    | undefined
   >();
 
   const intl = useIntl();
@@ -106,11 +122,28 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
     setStudioCallback(() => callback);
   }
 
+  function handleTagSave(result: {
+    create?: GQL.TagCreateInput;
+    update?: GQL.TagUpdateInput;
+  }) {
+    if (tagCallback) {
+      tagCallback(result);
+    }
+
+    setTagToCreate(undefined);
+    setTagCallback(undefined);
+  }
+
+  function createTagModal(tag: GQL.ScrapedTag, callback: TagModalCallback) {
+    setTagToCreate(tag);
+    setTagCallback(() => callback);
+  }
+
   const endpoint = currentSource?.sourceInput.stash_box_endpoint ?? undefined;
 
   return (
     <SceneTaggerModalsState.Provider
-      value={{ createPerformerModal, createStudioModal }}
+      value={{ createPerformerModal, createStudioModal, createTagModal }}
     >
       {performerToCreate && (
         <PerformerModal
@@ -138,6 +171,13 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
             { id: "actions.create_entity" },
             { entityType: intl.formatMessage({ id: "studio" }) }
           )}
+          endpoint={endpoint}
+        />
+      )}
+      {tagToCreate && (
+        <CreateLinkTagDialog
+          tag={tagToCreate}
+          onClose={handleTagSave}
           endpoint={endpoint}
         />
       )}
