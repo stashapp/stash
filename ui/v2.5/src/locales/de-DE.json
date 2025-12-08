@@ -987,7 +987,8 @@
         "clear_o_history_confirm": "Möchten Sie wirklich den O-Verlauf löschen?",
         "overwrite_filter_warning": "Der gespeicherte Filter \"{entityName}\" wird überschrieben.",
         "set_default_filter_confirm": "Sind Sie sicher, dass Sie diesen Filter als Standard festlegen möchten?",
-        "clear_o_history_confirm_sfw": "Bist du dir sicher das du den Verlauf löschen willst?"
+        "clear_o_history_confirm_sfw": "Bist du dir sicher das du den Verlauf löschen willst?",
+        "tags_found": "{count} Tags gefunden"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
