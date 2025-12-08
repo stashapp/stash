@@ -155,6 +155,15 @@
 }
 
 .scrape-dialog {
+  .column-label {
+    color: $muted-gray;
+    font-size: 0.85em;
+  }
+
+  .string-list-input {
+    width: 100%;
+  }
+
   .modal-content .dialog-container {
     max-height: calc(100vh - 14rem);
     overflow-y: auto;
@@ -391,8 +400,18 @@ button.collapse-button {
   opacity: 0.5;
 }
 
-.string-list-input .input-group {
-  margin-bottom: 0.35rem;
+.string-list-input {
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .input-group {
+    margin-bottom: 0.35rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .bulk-update-text-input {

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
   ScrapedImageRow,
   ScrapedStringListRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";
@@ -304,11 +304,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "scene" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
 

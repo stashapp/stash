@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,
@@ -226,10 +226,11 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "image" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
