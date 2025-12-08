@@ -100,7 +100,7 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     imageTags,
     scraped.tags
   );
@@ -218,6 +218,10 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
         />
       </>
     );
+  }
+
+  if (linkDialog) {
+    return linkDialog;
   }
 
   return (

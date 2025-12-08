@@ -98,7 +98,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     galleryTags,
     scraped.tags
   );
@@ -217,6 +217,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
         />
       </>
     );
+  }
+
+  if (linkDialog) {
+    return linkDialog;
   }
 
   return (

@@ -314,9 +314,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     props.performerTags,
-    props.scraped.tags
+    props.scraped.tags,
+    endpoint
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
@@ -540,6 +541,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
         />
       </>
     );
+  }
+
+  if (linkDialog) {
+    return linkDialog;
   }
 
   return (

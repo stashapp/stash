@@ -98,7 +98,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
     setNewObject: setNewStudio,
   });
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     groupTags,
     scraped.tags
   );
@@ -216,6 +216,10 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
         />
       </>
     );
+  }
+
+  if (linkDialog) {
+    return linkDialog;
   }
 
   return (
