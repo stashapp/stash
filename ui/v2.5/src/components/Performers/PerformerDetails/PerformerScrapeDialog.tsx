@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedImagesRow,
   ScrapeDialogRow,
@@ -10,6 +9,7 @@ import {
   ScrapedCountryRow,
   ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { Form } from "react-bootstrap";
 import {
   genderStrings,

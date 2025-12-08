@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapedTextAreaRow,
   ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import TextUtils from "src/utils/text";
 import {
   ObjectScrapeResult,

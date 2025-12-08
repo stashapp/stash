@@ -12,13 +12,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  ScrapeDialog,
   ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
