@@ -225,6 +225,7 @@
       "phash_matches": "{count} PHashes match",
       "unnamed": "Unnamed"
     },
+    "verb_link": "Link - set stash-box ID",
     "verb_match_fp": "Match Fingerprints",
     "verb_matched": "Matched",
     "verb_scrape_all": "Scrape All",
