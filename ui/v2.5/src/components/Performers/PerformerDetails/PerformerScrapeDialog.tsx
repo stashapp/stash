@@ -548,10 +548,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "performer" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };

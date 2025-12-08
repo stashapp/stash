@@ -17,13 +17,12 @@ interface IScrapeDialogProps {
   title: string;
   existingLabel?: React.ReactNode;
   scrapedLabel?: React.ReactNode;
-  renderScrapeRows: () => JSX.Element;
   onClose: (apply?: boolean) => void;
 }
 
-export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
-  props: IScrapeDialogProps
-) => {
+export const ScrapeDialog: React.FC<
+  React.PropsWithChildren<IScrapeDialogProps>
+> = (props: React.PropsWithChildren<IScrapeDialogProps>) => {
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
   const { sfwContentMode } = configuration.interface;
@@ -88,7 +87,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
               </Col>
             </Row>
 
-            {props.renderScrapeRows()}
+            {props.children}
           </Form>
         </ScrapeDialogContext.Provider>
       </div>

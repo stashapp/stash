@@ -628,7 +628,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       title={dialogTitle}
       existingLabel={destinationLabel}
       scrapedLabel={sourceLabel}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         if (!apply) {
           onClose();
@@ -636,7 +635,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onClose(createValues());
         }
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
 

@@ -304,11 +304,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "scene" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
 

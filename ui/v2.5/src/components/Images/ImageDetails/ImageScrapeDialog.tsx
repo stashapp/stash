@@ -226,10 +226,11 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "image" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };

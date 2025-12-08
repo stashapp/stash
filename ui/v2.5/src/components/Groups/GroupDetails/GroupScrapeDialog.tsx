@@ -224,10 +224,11 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "group" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
