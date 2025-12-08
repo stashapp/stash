@@ -66,12 +66,10 @@ function renderScrapedGenderRow(
       field="gender"
       title={title}
       result={result}
-      renderOriginalField={() => renderScrapedGender(result)}
-      renderNewField={() =>
-        renderScrapedGender(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderScrapedGender(result)}
+      newField={renderScrapedGender(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
     />
   );
@@ -116,12 +114,10 @@ function renderScrapedCircumcisedRow(
       title={title}
       field="circumcised"
       result={result}
-      renderOriginalField={() => renderScrapedCircumcised(result)}
-      renderNewField={() =>
-        renderScrapedCircumcised(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderScrapedCircumcised(result)}
+      newField={renderScrapedCircumcised(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
     />
   );

@@ -77,12 +77,10 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
       title={title}
       field={field}
       result={result}
-      renderOriginalField={() => renderScrapedStudio(result)}
-      renderNewField={() =>
-        renderScrapedStudio(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderScrapedStudio(result)}
+      newField={renderScrapedStudio(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
       newValues={newStudio ? [newStudio] : undefined}
       onCreateNew={() => {
@@ -125,12 +123,10 @@ export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
       title={title}
       field={field}
       result={result}
-      renderOriginalField={() => renderObjects(result)}
-      renderNewField={() =>
-        renderObjects(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderObjects(result)}
+      newField={renderObjects(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
       newValues={newObjects}
       onCreateNew={(i) => {

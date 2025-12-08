@@ -400,63 +400,59 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           field="rating"
           title={intl.formatMessage({ id: "rating" })}
           result={rating}
-          renderOriginalField={() => (
-            <RatingSystem value={rating.originalValue} disabled />
-          )}
-          renderNewField={() => (
-            <RatingSystem value={rating.newValue} disabled />
-          )}
+          originalField={<RatingSystem value={rating.originalValue} disabled />}
+          newField={<RatingSystem value={rating.newValue} disabled />}
           onChange={(value) => setRating(value)}
         />
         <ScrapeDialogRow
           field="o_count"
           title={intl.formatMessage({ id: "o_count" })}
           result={oCounter}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={oCounter.originalValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={oCounter.newValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setOCounter(value)}
         />
         <ScrapeDialogRow
           field="play_count"
           title={intl.formatMessage({ id: "play_count" })}
           result={playCount}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={playCount.originalValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={playCount.newValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setPlayCount(value)}
         />
         <ScrapeDialogRow
           field="play_duration"
           title={intl.formatMessage({ id: "play_duration" })}
           result={playDuration}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={TextUtils.secondsToTimestamp(
                 playDuration.originalValue ?? 0
@@ -465,22 +461,22 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={TextUtils.secondsToTimestamp(playDuration.newValue ?? 0)}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setPlayDuration(value)}
         />
         <ScrapeDialogRow
           field="galleries"
           title={intl.formatMessage({ id: "galleries" })}
           result={galleries}
-          renderOriginalField={() => (
+          originalField={
             <GallerySelect
               className="form-control react-select"
               ids={galleries.originalValue ?? []}
@@ -488,8 +484,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               isMulti
               isDisabled
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <GallerySelect
               className="form-control react-select"
               ids={galleries.newValue ?? []}
@@ -497,7 +493,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               isMulti
               isDisabled
             />
-          )}
+          }
           onChange={(value) => setGalleries(value)}
         />
         <ScrapedStudioRow
@@ -535,34 +531,32 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           field="organized"
           title={intl.formatMessage({ id: "organized" })}
           result={organized}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={organized.originalValue ? trueString : falseString}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={organized.newValue ? trueString : falseString}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setOrganized(value)}
         />
         <ScrapeDialogRow
           field="stash_ids"
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
-          renderOriginalField={() => (
+          originalField={
             <StashIDsField values={stashIDs?.originalValue ?? []} />
-          )}
-          renderNewField={() => (
-            <StashIDsField values={stashIDs?.newValue ?? []} />
-          )}
+          }
+          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
         />
         <ScrapedImageRow

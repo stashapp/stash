@@ -18,22 +18,6 @@ import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
 import { ScrapeResult } from "./scrapeResult";
 
-interface IScrapedFieldProps<T> {
-  result: ScrapeResult<T>;
-}
-
-interface IScrapedRowProps<T, V> extends IScrapedFieldProps<T> {
-  className?: string;
-  field: string;
-  title: string;
-  renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
-  renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
-  onChange: (value: ScrapeResult<T>) => void;
-  newValues?: V[];
-  onCreateNew?: (index: number) => void;
-  getName?: (value: V) => string;
-}
-
 function renderButtonIcon(selected: boolean) {
   const className = selected ? "text-success" : "text-muted";
 
@@ -43,6 +27,22 @@ function renderButtonIcon(selected: boolean) {
       icon={selected ? faCheck : faTimes}
     />
   );
+}
+
+interface IScrapedFieldProps<T> {
+  result: ScrapeResult<T>;
+}
+
+interface IScrapedRowProps<T, V> extends IScrapedFieldProps<T> {
+  className?: string;
+  field: string;
+  title: string;
+  originalField: JSX.Element | undefined;
+  newField: JSX.Element | undefined;
+  onChange: (value: ScrapeResult<T>) => void;
+  newValues?: V[];
+  onCreateNew?: (index: number) => void;
+  getName?: (value: V) => string;
 }
 
 export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
@@ -119,7 +119,7 @@ export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
                   {renderButtonIcon(!props.result.useNewValue)}
                 </Button>
               </InputGroup.Prepend>
-              {props.renderOriginalField(props.result)}
+              {props.originalField}
             </InputGroup>
           </Col>
           <Col xs="6">
@@ -132,7 +132,7 @@ export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
                   {renderButtonIcon(props.result.useNewValue)}
                 </Button>
               </InputGroup.Prepend>
-              {props.renderNewField(props.result)}
+              {props.newField}
             </InputGroup>
             {renderNewValues()}
           </Col>
@@ -189,13 +189,13 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
       field={props.field}
       className={props.className}
       result={props.result}
-      renderOriginalField={() => (
+      originalField={
         <ScrapedInputGroup
           placeholder={props.placeholder || props.title}
           result={props.result}
         />
-      )}
-      renderNewField={() => (
+      }
+      newField={
         <ScrapedInputGroup
           placeholder={props.placeholder || props.title}
           result={props.result}
@@ -205,7 +205,7 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
             props.onChange(props.result.cloneWithValue(value))
           }
         />
-      )}
+      }
       onChange={props.onChange}
       getName={getNameString}
     />
@@ -257,13 +257,13 @@ export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
       title={props.title}
       field={props.field}
       result={props.result}
-      renderOriginalField={() => (
+      originalField={
         <ScrapedStringList
           placeholder={props.placeholder || props.title}
           result={props.result}
         />
-      )}
-      renderNewField={() => (
+      }
+      newField={
         <ScrapedStringList
           placeholder={props.placeholder || props.title}
           result={props.result}
@@ -273,7 +273,7 @@ export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
             props.onChange(props.result.cloneWithValue(value))
           }
         />
-      )}
+      }
       onChange={props.onChange}
       getName={getNameString}
     />
@@ -305,13 +305,13 @@ export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (
       title={props.title}
       field={props.field}
       result={props.result}
-      renderOriginalField={() => (
+      originalField={
         <ScrapedTextArea
           placeholder={props.placeholder || props.title}
           result={props.result}
         />
-      )}
-      renderNewField={() => (
+      }
+      newField={
         <ScrapedTextArea
           placeholder={props.placeholder || props.title}
           result={props.result}
@@ -320,7 +320,7 @@ export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (
             props.onChange(props.result.cloneWithValue(value))
           }
         />
-      )}
+      }
       onChange={props.onChange}
       getName={getNameString}
     />
@@ -362,21 +362,21 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
       title={props.title}
       field={props.field}
       result={props.result}
-      renderOriginalField={() => (
+      originalField={
         <ScrapedImage
           result={props.result}
           className={props.className}
           placeholder={props.title}
         />
-      )}
-      renderNewField={() => (
+      }
+      newField={
         <ScrapedImage
           result={props.result}
           className={props.className}
           placeholder={props.title}
           isNew
         />
-      )}
+      }
       onChange={props.onChange}
       getName={getNameString}
     />
@@ -406,14 +406,14 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
       title={props.title}
       field={props.field}
       result={props.result}
-      renderOriginalField={() => (
+      originalField={
         <ScrapedImage
           result={props.result}
           className={props.className}
           placeholder={props.title}
         />
-      )}
-      renderNewField={() => (
+      }
+      newField={
         <div className="image-selection-parent">
           <ImageSelector
             imageClassName={props.className}
@@ -422,7 +422,7 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
             setImageIndex={onSetImageIndex}
           />
         </div>
-      )}
+      }
       onChange={props.onChange}
       getName={getNameString}
     />
@@ -450,7 +450,7 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
     title={title}
     field={field}
     result={result}
-    renderOriginalField={() => (
+    originalField={
       <FormControl
         value={
           getCountryByISO(result.originalValue, locale) ?? result.originalValue
@@ -458,8 +458,8 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
         readOnly
         className="bg-secondary text-white border-secondary"
       />
-    )}
-    renderNewField={() => (
+    }
+    newField={
       <CountrySelect
         value={result.newValue}
         disabled={locked}
@@ -472,7 +472,7 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
         isClearable={false}
         className="flex-grow-1"
       />
-    )}
+    }
     onChange={onChange}
     getName={getNameString}
   />
