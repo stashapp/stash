@@ -6,12 +6,10 @@ import {
   InputGroup,
   Button,
   FormControl,
-  Badge,
 } from "react-bootstrap";
-import { CollapseButton } from "../CollapseButton";
 import { Icon } from "../Icon";
 import clone from "lodash-es/clone";
-import { faCheck, faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "../CountrySelect";
 import { StringListInput } from "../StringListInput";
@@ -33,69 +31,25 @@ interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
 }
 
-interface IScrapedRowProps<T, V> extends IScrapedFieldProps<T> {
+interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
   className?: string;
   field: string;
   title: string;
-  originalField: JSX.Element | undefined;
-  newField: JSX.Element | undefined;
+  originalField: React.ReactNode;
+  newField: React.ReactNode;
   onChange: (value: ScrapeResult<T>) => void;
-  newValues?: V[];
-  onCreateNew?: (index: number) => void;
-  getName?: (value: V) => string;
+  newValues?: React.ReactNode;
 }
 
-export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
-  const { getName = () => "" } = props;
-
+export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
   function handleSelectClick(isNew: boolean) {
     const ret = clone(props.result);
     ret.useNewValue = isNew;
     props.onChange(ret);
   }
 
-  function hasNewValues() {
-    return props.newValues && props.newValues.length > 0 && props.onCreateNew;
-  }
-
-  if (!props.result.scraped && !hasNewValues()) {
+  if (!props.result.scraped && !props.newValues) {
     return <></>;
-  }
-
-  function renderNewValues() {
-    if (!hasNewValues()) {
-      return;
-    }
-
-    const ret = (
-      <>
-        {props.newValues!.map((t, i) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={getName(t)}
-            onClick={() => props.onCreateNew!(i)}
-          >
-            {getName(t)}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon={faPlus} />
-            </Button>
-          </Badge>
-        ))}
-      </>
-    );
-
-    const minCollapseLength = 10;
-
-    if (props.newValues!.length >= minCollapseLength) {
-      return (
-        <CollapseButton text={`Missing (${props.newValues!.length})`}>
-          {ret}
-        </CollapseButton>
-      );
-    }
-
-    return ret;
   }
 
   return (
@@ -134,7 +88,7 @@ export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
               </InputGroup.Prepend>
               {props.newField}
             </InputGroup>
-            {renderNewValues()}
+            {props.newValues}
           </Col>
         </Row>
       </Col>
@@ -165,10 +119,6 @@ const ScrapedInputGroup: React.FC<IScrapedInputGroupProps> = (props) => {
     />
   );
 };
-
-function getNameString(value: string) {
-  return value;
-}
 
 interface IScrapedInputGroupRowProps {
   title: string;
@@ -207,7 +157,6 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
         />
       }
       onChange={props.onChange}
-      getName={getNameString}
     />
   );
 };
@@ -275,7 +224,6 @@ export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
         />
       }
       onChange={props.onChange}
-      getName={getNameString}
     />
   );
 };
@@ -322,7 +270,6 @@ export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (
         />
       }
       onChange={props.onChange}
-      getName={getNameString}
     />
   );
 };
@@ -378,7 +325,6 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
         />
       }
       onChange={props.onChange}
-      getName={getNameString}
     />
   );
 };
@@ -424,7 +370,6 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
         </div>
       }
       onChange={props.onChange}
-      getName={getNameString}
     />
   );
 };
@@ -474,6 +419,5 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
       />
     }
     onChange={onChange}
-    getName={getNameString}
   />
 );

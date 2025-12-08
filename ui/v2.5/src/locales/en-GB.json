@@ -1020,6 +1020,7 @@
     "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
+    "scrape_results_missing": "Missing",
     "scrape_results_scraped": "Scraped",
     "set_default_filter_confirm": "Are you sure you want to set this filter as the default?",
     "set_image_url_title": "Image URL",

@@ -10,6 +10,58 @@ import { TagIDSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
 import { GroupSelect } from "src/components/Groups/GroupSelect";
 import { uniq } from "lodash-es";
+import { CollapseButton } from "../CollapseButton";
+import { Badge, Button } from "react-bootstrap";
+import { Icon } from "../Icon";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { useIntl } from "react-intl";
+
+interface INewScrapedObjects<T> {
+  newValues: T[];
+  onCreateNew: (value: T) => void;
+  getName: (value: T) => string;
+}
+
+export const NewScrapedObjects = <T,>(props: INewScrapedObjects<T>) => {
+  const intl = useIntl();
+
+  if (props.newValues.length === 0) {
+    return null;
+  }
+
+  const ret = (
+    <>
+      {props.newValues.map((t) => (
+        <Badge
+          className="tag-item"
+          variant="secondary"
+          key={props.getName(t)}
+          onClick={() => props.onCreateNew(t)}
+        >
+          {props.getName(t)}
+          <Button className="minimal ml-2">
+            <Icon className="fa-fw" icon={faPlus} />
+          </Button>
+        </Badge>
+      ))}
+    </>
+  );
+
+  const minCollapseLength = 10;
+
+  if (props.newValues!.length >= minCollapseLength) {
+    const missingText = intl.formatMessage({
+      id: "dialogs.scrape_results_missing",
+    });
+    return (
+      <CollapseButton text={`${missingText} (${props.newValues!.length})`}>
+        {ret}
+      </CollapseButton>
+    );
+  }
+
+  return ret;
+};
 
 interface IScrapedStudioRow {
   title: string;
@@ -82,11 +134,15 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
         onChange(result.cloneWithValue(value))
       )}
       onChange={onChange}
-      newValues={newStudio ? [newStudio] : undefined}
-      onCreateNew={() => {
-        if (onCreateNew && newStudio) onCreateNew(newStudio);
-      }}
-      getName={getObjectName}
+      newValues={
+        newStudio && onCreateNew ? (
+          <NewScrapedObjects
+            newValues={[newStudio]}
+            onCreateNew={onCreateNew}
+            getName={getObjectName}
+          />
+        ) : undefined
+      }
     />
   );
 };
@@ -128,11 +184,15 @@ export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
         onChange(result.cloneWithValue(value))
       )}
       onChange={onChange}
-      newValues={newObjects}
-      onCreateNew={(i) => {
-        if (onCreateNew) onCreateNew(newObjects![i]);
-      }}
-      getName={getName}
+      newValues={
+        onCreateNew ? (
+          <NewScrapedObjects
+            newValues={newObjects ?? []}
+            onCreateNew={onCreateNew}
+            getName={getName}
+          />
+        ) : undefined
+      }
     />
   );
 };
