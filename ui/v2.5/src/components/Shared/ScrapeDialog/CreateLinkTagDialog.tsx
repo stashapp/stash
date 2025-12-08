@@ -5,7 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { faLink } from "@fortawesome/free-solid-svg-icons";
 import { Form } from "react-bootstrap";
-import { Tag, TagSelect } from "../Tags/TagSelect";
+import { Tag, TagSelect } from "../../Tags/TagSelect";
 
 export const CreateLinkTagDialog: React.FC<{
   tag: GQL.ScrapedTag;

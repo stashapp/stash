@@ -6,7 +6,7 @@ import { sortStoredIdObjects } from "src/utils/data";
 import { Tag } from "src/components/Tags/TagSelect";
 import { useCreateScrapedTag, useLinkScrapedTag } from "./createObjects";
 import { ScrapedTagsRow } from "./ScrapedObjectsRow";
-import { CreateLinkTagDialog } from "src/components/Tagger/CreateLinkTagDialog";
+import { CreateLinkTagDialog } from "src/components/Shared/ScrapeDialog/CreateLinkTagDialog";
 import { useTagCreate, useTagUpdate } from "src/core/StashService";
 import { toastOperation, useToast } from "src/hooks/Toast";
 

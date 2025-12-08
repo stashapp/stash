@@ -6,7 +6,7 @@ import PerformerModal from "../PerformerModal";
 import { TaggerStateContext } from "../context";
 import { useIntl } from "react-intl";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
-import { CreateLinkTagDialog } from "../CreateLinkTagDialog";
+import { CreateLinkTagDialog } from "src/components/Shared/ScrapeDialog/CreateLinkTagDialog";
 
 type PerformerModalCallback = (toCreate?: GQL.PerformerCreateInput) => void;
 type StudioModalCallback = (
