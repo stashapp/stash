@@ -910,7 +910,8 @@
                 "pan_y": "Panorámica eje Y",
                 "zoom": "Zoom"
             },
-            "page_header": "Página {page} / {total}"
+            "page_header": "Página {page} / {total}",
+            "disable_animation": "Desactivar la animación de transición entre imágenes"
         },
         "merge_tags": {
             "destination": "Destino",
@@ -989,7 +990,9 @@
         "overwrite_filter_warning": "El filtro guardado \"{entityName}\" se sobrescribirá.",
         "set_default_filter_confirm": "¿Estás seguro de que deseas establecer este filtro como predeterminado?",
         "delete_alert_to_trash": "Los siguientes {count, plural, one {{singularEntity}} other {{pluralEntity}}} se moverán a la papelera:",
-        "stashid_exists_warning": "Se sustituirá el identificador de stash existente para este stash-box."
+        "stashid_exists_warning": "Se sustituirá el identificador de stash existente para este stash-box.",
+        "studios_found": "{count} estudios encontrados",
+        "tags_found": "{count} etiquetas encontradas"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
