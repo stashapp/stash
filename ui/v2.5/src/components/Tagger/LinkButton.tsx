@@ -17,7 +17,7 @@ export const LinkButton: React.FC<{
       disabled={disabled}
       operation={onLink}
       hideChildrenWhenLoading
-      title={intl.formatMessage({ id: "component_tagger.verb_link" })}
+      title={intl.formatMessage({ id: "component_tagger.verb_link_existing" })}
     >
       <Icon icon={faLink} />
     </OperationButton>

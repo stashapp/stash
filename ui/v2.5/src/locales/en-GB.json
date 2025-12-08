@@ -227,7 +227,6 @@
       "unnamed": "Unnamed"
     },
     "verb_add_as_alias": "Add scraped name as alias",
-    "verb_link": "Link - set stash-box ID",
     "verb_link_existing": "Link to existing",
     "verb_match_fp": "Match Fingerprints",
     "verb_match_tag": "Match Tag",

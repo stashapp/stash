@@ -798,6 +798,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 showTagModal(t);
                 e.stopPropagation();
               }}
+              title={intl.formatMessage({ id: "component_tagger.verb_link_existing"})}
             >
               <Icon className="fa-fw" icon={faLink} />
             </Button>
