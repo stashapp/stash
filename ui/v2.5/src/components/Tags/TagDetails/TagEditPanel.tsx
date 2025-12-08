@@ -153,9 +153,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   function onStashIDSelected(item?: GQL.StashIdInput) {
     if (!item) return;
+    const allowMultiple = true;
     formik.setFieldValue(
       "stash_ids",
-      addUpdateStashID(formik.values.stash_ids, item)
+      addUpdateStashID(formik.values.stash_ids, item, allowMultiple)
     );
   }
 
@@ -203,13 +204,11 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   // TODO: CSS class
   return (
     <>
+      {/* allow many stash-ids from the same stash box */}
       {isStashIDSearchOpen && (
         <StashBoxIDSearchModal
           entityType="tag"
           stashBoxes={stashConfig?.general.stashBoxes ?? []}
-          excludedStashBoxEndpoints={formik.values.stash_ids.map(
-            (s) => s.endpoint
-          )}
           onSelectItem={(item) => {
             onStashIDSelected(item);
             setIsStashIDSearchOpen(false);
