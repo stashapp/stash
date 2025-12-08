@@ -18,7 +18,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "../Shared/ScrapeDialog/ScrapeDialog";
+} from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";

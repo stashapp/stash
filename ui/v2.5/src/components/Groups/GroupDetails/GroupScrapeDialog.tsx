@@ -7,7 +7,7 @@ import {
   ScrapedImageRow,
   ScrapedTextAreaRow,
   ScrapedStringListRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import TextUtils from "src/utils/text";
 import {
   ObjectScrapeResult,

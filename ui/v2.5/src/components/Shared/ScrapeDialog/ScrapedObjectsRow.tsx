@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { ScrapeDialogRow } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+import { ScrapeDialogRow } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { PerformerSelect } from "src/components/Performers/PerformerSelect";
 import {
   ObjectScrapeResult,

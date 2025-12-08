@@ -6,7 +6,7 @@ import {
   ScrapedTextAreaRow,
   ScrapedImageRow,
   ScrapedStringListRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";

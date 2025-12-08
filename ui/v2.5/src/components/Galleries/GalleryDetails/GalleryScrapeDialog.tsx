@@ -6,7 +6,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,

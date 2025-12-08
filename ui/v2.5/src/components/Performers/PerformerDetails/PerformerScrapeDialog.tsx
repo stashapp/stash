@@ -9,7 +9,7 @@ import {
   ScrapedTextAreaRow,
   ScrapedCountryRow,
   ScrapedStringListRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { Form } from "react-bootstrap";
 import {
   genderStrings,
