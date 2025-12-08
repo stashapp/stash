@@ -77,10 +77,18 @@ export const ScrapeDialog: React.FC<
             <Row className="px-3 pt-3">
               <Col lg={{ span: 9, offset: 3 }}>
                 <Row>
-                  <Form.Label column xs="6">
+                  <Form.Label
+                    column
+                    lg="6"
+                    className="d-lg-block d-none column-label"
+                  >
                     {existingLabel}
                   </Form.Label>
-                  <Form.Label column xs="6">
+                  <Form.Label
+                    column
+                    lg="6"
+                    className="d-lg-block d-none column-label"
+                  >
                     {scrapedLabel}
                   </Form.Label>
                 </Row>

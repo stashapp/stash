@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Form,
   Col,
@@ -15,6 +15,7 @@ import { CountrySelect } from "../CountrySelect";
 import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
 import { ScrapeResult } from "./scrapeResult";
+import { ScrapeDialogContext } from "./ScrapeDialog";
 
 function renderButtonIcon(selected: boolean) {
   const className = selected ? "text-success" : "text-muted";
@@ -42,6 +43,8 @@ interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
 }
 
 export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
+  const { existingLabel, scrapedLabel } = useContext(ScrapeDialogContext);
+
   function handleSelectClick(isNew: boolean) {
     const ret = clone(props.result);
     ret.useNewValue = isNew;
@@ -63,7 +66,10 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
 
       <Col lg="9">
         <Row>
-          <Col xs="6">
+          <Form.Label column className="d-lg-none column-label">
+            {existingLabel}
+          </Form.Label>
+          <Col lg="6">
             <InputGroup>
               <InputGroup.Prepend className="bg-secondary text-white border-secondary">
                 <Button
@@ -76,7 +82,11 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
               {props.originalField}
             </InputGroup>
           </Col>
-          <Col xs="6">
+
+          <Form.Label column className="d-lg-none column-label">
+            {scrapedLabel}
+          </Form.Label>
+          <Col lg="6">
             <InputGroup>
               <InputGroup.Prepend>
                 <Button
