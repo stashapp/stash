@@ -42,16 +42,27 @@ export const separateNamesAndStashIds = (
  */
 export const addUpdateStashID = (
   existingStashIDs: GQL.StashIdInput[],
-  newItem: GQL.StashIdInput
+  newItem: GQL.StashIdInput,
+  allowMultiple: boolean = false
 ): GQL.StashIdInput[] => {
   const existingIndex = existingStashIDs.findIndex(
     (s) => s.endpoint === newItem.endpoint
   );
 
-  if (existingIndex >= 0) {
+  if (!allowMultiple && existingIndex >= 0) {
     const newStashIDs = [...existingStashIDs];
     newStashIDs[existingIndex] = newItem;
     return newStashIDs;
+  }
+
+  // ensure we don't add duplicates if allowMultiple is true
+  if (
+    allowMultiple &&
+    existingStashIDs.some(
+      (s) => s.endpoint === newItem.endpoint && s.stash_id === newItem.stash_id
+    )
+  ) {
+    return existingStashIDs;
   }
 
   return [...existingStashIDs, newItem];

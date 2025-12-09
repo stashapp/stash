@@ -7,6 +7,7 @@ import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
 import { faCheckCircle } from "@fortawesome/free-regular-svg-icons";
 import {
+  faLink,
   faPlus,
   faTriangleExclamation,
   faXmark,
@@ -232,6 +233,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createNewStudio,
     updateStudio,
     linkStudio,
+    updateTag,
     resolveScene,
     currentSource,
     saveScene,
@@ -248,9 +250,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     [scene, performerGenders]
   );
 
-  const { createPerformerModal, createStudioModal } = React.useContext(
-    SceneTaggerModalsState
-  );
+  const { createPerformerModal, createStudioModal, createTagModal } =
+    React.useContext(SceneTaggerModalsState);
 
   const getInitialTags = useCallback(() => {
     const stashSceneTags = stashScene.tags.map((t) => t.id);
@@ -435,6 +436,47 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createPerformerModal(t, (toCreate) => {
       if (toCreate) {
         createNewPerformer(t, toCreate);
+      }
+    });
+  }
+
+  async function onCreateTag(
+    t: GQL.ScrapedTag,
+    createInput?: GQL.TagCreateInput
+  ) {
+    const toCreate: GQL.TagCreateInput = createInput ?? { name: t.name };
+
+    // If the tag has a remote_site_id and we have an endpoint, include the stash_id
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
+    if (!createInput && t.remote_site_id && endpoint) {
+      toCreate.stash_ids = [
+        {
+          endpoint: endpoint,
+          stash_id: t.remote_site_id,
+        },
+      ];
+    }
+
+    const newTagID = await createNewTag(t, toCreate);
+    if (newTagID !== undefined) {
+      setTagIDs([...tagIDs, newTagID]);
+    }
+  }
+
+  async function onUpdateTag(
+    t: GQL.ScrapedTag,
+    updateInput: GQL.TagUpdateInput
+  ) {
+    await updateTag(t, updateInput);
+    setTagIDs([...tagIDs, updateInput.id]);
+  }
+
+  function showTagModal(t: GQL.ScrapedTag) {
+    createTagModal(t, (result) => {
+      if (result.create) {
+        onCreateTag(t, result.create);
+      } else if (result.update) {
+        onUpdateTag(t, result.update);
       }
     });
   }
@@ -711,26 +753,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     </div>
   );
 
-  async function onCreateTag(t: GQL.ScrapedTag) {
-    const toCreate: GQL.TagCreateInput = { name: t.name };
-
-    // If the tag has a remote_site_id and we have an endpoint, include the stash_id
-    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
-    if (t.remote_site_id && endpoint) {
-      toCreate.stash_ids = [
-        {
-          endpoint: endpoint,
-          stash_id: t.remote_site_id,
-        },
-      ];
-    }
-
-    const newTagID = await createNewTag(t, toCreate);
-    if (newTagID !== undefined) {
-      setTagIDs([...tagIDs, newTagID]);
-    }
-  }
-
   function maybeRenderTagsField() {
     if (!config.setTags) return;
 
@@ -764,8 +786,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }}
           >
             {t.name}
-            <Button className="minimal ml-2">
+            <Button
+              className="minimal ml-2"
+              title={intl.formatMessage({ id: "actions.create" })}
+            >
               <Icon className="fa-fw" icon={faPlus} />
+            </Button>
+            <Button
+              className="minimal"
+              onClick={(e) => {
+                showTagModal(t);
+                e.stopPropagation();
+              }}
+              title={intl.formatMessage({
+                id: "component_tagger.verb_link_existing",
+              })}
+            >
+              <Icon className="fa-fw" icon={faLink} />
             </Button>
           </Badge>
         ))}

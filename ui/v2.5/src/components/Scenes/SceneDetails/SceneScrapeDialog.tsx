@@ -131,7 +131,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     scraped.groups?.filter((t) => !t.stored_id) ?? []
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     sceneTags,
     scraped.tags,
     endpoint
@@ -296,6 +296,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
         />
       </>
     );
+  }
+
+  if (linkDialog) {
+    return linkDialog;
   }
 
   return (
