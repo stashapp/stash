@@ -152,7 +152,8 @@
         "show_count_results": "显示{count}个结果",
         "load": "加载",
         "load_filter": "加载过滤器",
-        "add_stash_id": "添加Stash编号"
+        "add_stash_id": "添加Stash编号",
+        "create_new": "新建"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -228,7 +229,10 @@
         "verb_scrape_all": "挖掘所有",
         "verb_submit_fp": "提交 {fpCount, plural, one{# 指纹} other{# 指纹}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} 未匹配的短片"
+        "verb_toggle_unmatched": "{toggle} 未匹配的短片",
+        "verb_add_as_alias": "添加刮削到的名字作为别名",
+        "verb_link_existing": "链接到已存在的",
+        "verb_match_tag": "匹配标签"
     },
     "config": {
         "about": {
@@ -999,7 +1003,9 @@
         "overwrite_filter_warning": "已保存的过滤器 \"{entityName}\" 将被覆盖。",
         "clear_o_history_confirm_sfw": "你确定要清除点赞的历史?",
         "delete_alert_to_trash": "如下的{count, plural, one {{singularEntity}} other {{pluralEntity}}} 将会被移动到回收站：",
-        "stashid_exists_warning": "此stash-box已存在的stash编号将会被取代。"
+        "stashid_exists_warning": "此stash-box已存在的stash编号将会被取代。",
+        "studios_found": "找到{count} 个工作室",
+        "tags_found": "找到{count} 个标签"
     },
     "dimensions": "大小",
     "director": "导演",
