@@ -8,6 +8,10 @@ import {
   GalleryIDSelect,
   excludeFileBasedGalleries,
 } from "../Galleries/GallerySelect";
+import { PerformerIDSelect } from "../Performers/PerformerSelect";
+import { StudioIDSelect } from "../Studios/StudioSelect";
+import { TagIDSelect } from "../Tags/TagSelect";
+import { GroupIDSelect } from "../Groups/GroupSelect";
 
 interface IMultiSetProps {
   type: "performers" | "studios" | "tags" | "groups" | "galleries";
@@ -27,32 +31,77 @@ const Select: React.FC<IMultiSetProps> = (props) => {
     props.onUpdate(items.map((i) => i.id));
   }
 
-  if (type === "galleries") {
-    return (
-      <GalleryIDSelect
-        isDisabled={disabled}
-        isMulti
-        isClearable={false}
-        onSelect={onUpdate}
-        ids={props.ids ?? []}
-        // exclude file-based galleries when setting galleries
-        extraCriteria={excludeFileBasedGalleries}
-        menuPortalTarget={props.menuPortalTarget}
-      />
-    );
+  switch (type) {
+    case "performers":
+      return (
+        <PerformerIDSelect
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      );
+    case "studios":
+      return (
+        <StudioIDSelect
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      );
+    case "tags":
+      return (
+        <TagIDSelect
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      );
+    case "groups":
+      return (
+        <GroupIDSelect
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      );
+    case "galleries":
+      return (
+        <GalleryIDSelect
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
+          // exclude file-based galleries when setting galleries
+          extraCriteria={excludeFileBasedGalleries}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      );
+    default:
+      return(
+        <FilterSelect
+          type={type}
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      )
   }
-
-  return (
-    <FilterSelect
-      type={type}
-      isDisabled={disabled}
-      isMulti
-      isClearable={false}
-      onSelect={onUpdate}
-      ids={props.ids ?? []}
-      menuPortalTarget={props.menuPortalTarget}
-    />
-  );
 };
 
 function getModeText(intl: IntlShape, mode: GQL.BulkUpdateIdMode) {

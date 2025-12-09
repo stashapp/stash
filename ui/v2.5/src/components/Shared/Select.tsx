@@ -377,17 +377,17 @@ export const TagSelect: React.FC<
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
   switch (props.type) {
     case "performers":
-      return <PerformerSelect {...props} />;
+      return <PerformerSelect {...props} creatable={false} />;
     case "studios":
-      return <StudioSelect {...props} />;
+      return <StudioSelect {...props} creatable={false} />;
     case "scenes":
-      return <SceneSelect {...props} />;
+      return <SceneSelect {...props} creatable={false} />;
     case "groups":
-      return <GroupSelect {...props} />;
+      return <GroupSelect {...props} creatable={false} />;
     case "galleries":
-      return <GallerySelect {...props} />;
+      return <GallerySelect {...props} creatable={false} />;
     default:
-      return <TagSelect {...props} />;
+      return <TagSelect {...props} creatable={false} />;
   }
 };
 
