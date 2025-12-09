@@ -54,6 +54,11 @@ func loadStudioRelationships(ctx context.Context, expected models.Studio, actual
 			return err
 		}
 	}
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Studio); err != nil {
+			return err
+		}
+	}
 	if expected.TagIDs.Loaded() {
 		if err := actual.LoadTagIDs(ctx, db.Studio); err != nil {
 			return err
@@ -95,7 +100,7 @@ func Test_StudioStore_Create(t *testing.T) {
 			models.CreateStudioInput{
 				Studio: &models.Studio{
 					Name:          name,
-					URL:           url,
+					URLs:          models.NewRelatedStrings([]string{url}),
 					Favorite:      favorite,
 					Rating:        &rating,
 					Details:       details,
@@ -221,7 +226,7 @@ func Test_StudioStore_Update(t *testing.T) {
 				Studio: &models.Studio{
 					ID:            studioIDs[studioIdxWithGallery],
 					Name:          name,
-					URL:           url,
+					URLs:          models.NewRelatedStrings([]string{url}),
 					Favorite:      favorite,
 					Rating:        &rating,
 					Details:       details,
@@ -252,6 +257,7 @@ func Test_StudioStore_Update(t *testing.T) {
 				Studio: &models.Studio{
 					ID:       studioIDs[studioIdxWithGallery],
 					Name:     name, // name is mandatory
+					URLs:     models.NewRelatedStrings([]string{}),
 					Aliases:  models.NewRelatedStrings([]string{}),
 					TagIDs:   models.NewRelatedIDs([]int{}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
@@ -357,7 +363,7 @@ func clearStudioPartial() models.StudioPartial {
 
 	// leave mandatory fields
 	return models.StudioPartial{
-		URL:      nullString,
+		URLs:     &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Aliases:  &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Rating:   nullInt,
 		Details:  nullString,
@@ -395,7 +401,10 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 			studioIDs[studioIdxWithDupName],
 			models.StudioPartial{
 				Name: models.NewOptionalString(name),
-				URL:  models.NewOptionalString(url),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Aliases: &models.UpdateStrings{
 					Values: aliases,
 					Mode:   models.RelationshipUpdateModeSet,
@@ -429,7 +438,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 			models.Studio{
 				ID:            studioIDs[studioIdxWithDupName],
 				Name:          name,
-				URL:           url,
+				URLs:          models.NewRelatedStrings([]string{url}),
 				Aliases:       models.NewRelatedStrings(aliases),
 				Favorite:      favorite,
 				Rating:        &rating,
@@ -625,14 +634,6 @@ func TestStudioQueryNameOr(t *testing.T) {
 
 		return nil
 	})
-}
-
-func loadStudioRelationships(ctx context.Context, t *testing.T, s *models.Studio) error {
-	if err := s.LoadURLs(ctx, db.Studio); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func TestStudioQueryNameAndUrl(t *testing.T) {
