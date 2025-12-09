@@ -152,7 +152,8 @@
         "play": "Lecture",
         "load": "Charger",
         "load_filter": "Charger un filtre",
-        "add_stash_id": "Ajouter un identifiant Stash"
+        "add_stash_id": "Ajouter un identifiant Stash",
+        "create_new": "Créer un nouveau"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -229,7 +230,10 @@
         "verb_scrape_all": "Extraire tout",
         "verb_submit_fp": "Soumettre {fpCount, plural, one{# Empreinte} other{# Empreintes}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} scènes incomparables"
+        "verb_toggle_unmatched": "{toggle} scènes incomparables",
+        "verb_add_as_alias": "Ajouter le nom récupéré comme alias",
+        "verb_link_existing": "Lien vers existant",
+        "verb_match_tag": "Étiquette correspondante"
     },
     "config": {
         "about": {
@@ -1002,7 +1006,8 @@
         "delete_alert_to_trash": "Les éléments suivants {count, plural, one {{singularEntity}} other {{pluralEntity}}} seront déplacés vers la corbeille :",
         "stashid_exists_warning": "L'identifiant Stash existant pour cette Stash-Box sera remplacé.",
         "studios_found": "{count} studios trouvés",
-        "tags_found": "{count} étiquettes trouvées"
+        "tags_found": "{count} étiquettes trouvées",
+        "scrape_results_missing": "Manquant"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
