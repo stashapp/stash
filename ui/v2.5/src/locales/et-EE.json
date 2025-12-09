@@ -152,7 +152,8 @@
         "show_count_results": "Näita {count} tulemust",
         "load": "Lae",
         "load_filter": "Lae filter",
-        "add_stash_id": "Lisa Stash ID"
+        "add_stash_id": "Lisa Stash ID",
+        "create_new": "Loo uus"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -223,7 +224,10 @@
         "verb_scrape_all": "Kraabi Kõikjalt",
         "verb_submit_fp": "Esita {fpCount, plural, one{# Sõrmejälg} other{# Sõrmejälge}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid"
+        "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid",
+        "verb_add_as_alias": "Lisa nimi alisena",
+        "verb_link_existing": "Ühenda eksisteerivaga",
+        "verb_match_tag": "Sobita Silt"
     },
     "config": {
         "about": {
@@ -925,7 +929,8 @@
                 "label": "Kerimisrežiim",
                 "pan_y": "Liiguta Y",
                 "zoom": "Suum"
-            }
+            },
+            "disable_animation": "Lülita piltide vahetamise animatsioon välja"
         },
         "merge": {
             "destination": "Siihtkoht",
@@ -993,7 +998,10 @@
         "overwrite_filter_warning": "Salvestatud filter \"{entityName}\" kirjutatakse üle.",
         "clear_o_history_confirm_sfw": "Kas oled kindel, et tahad meeldimiste ajalugu tühjendada?",
         "delete_alert_to_trash": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} liigutatakse prügilasse:",
-        "stashid_exists_warning": "Olemasolev stash id asendatakse selle stash-kasti jaoks."
+        "stashid_exists_warning": "Olemasolev stash id asendatakse selle stash-kasti jaoks.",
+        "studios_found": "{count} stuudiot leitud",
+        "tags_found": "{count} silti leitud",
+        "scrape_results_missing": "Puudub"
     },
     "dimensions": "Dimensioonid",
     "director": "Režissöör",
