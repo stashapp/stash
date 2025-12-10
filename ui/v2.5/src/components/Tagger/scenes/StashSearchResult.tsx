@@ -292,9 +292,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   // map of original performer to id
-  const [performerIDs, setPerformerIDs] = useState<(string | undefined)[]>(
-    getInitialPerformers()
-  );
+  const [performerIDs, setPerformerIDs, setInitialPerformerIDs] =
+    useInitialState<(string | undefined)[]>(getInitialPerformers());
 
   const [studioID, setStudioID] = useState<string | undefined>(
     getInitialStudio()
@@ -305,8 +304,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   }, [getInitialTags, setInitialTagIDs]);
 
   useEffect(() => {
-    setPerformerIDs(getInitialPerformers());
-  }, [getInitialPerformers]);
+    setInitialPerformerIDs(getInitialPerformers());
+  }, [getInitialPerformers, setInitialPerformerIDs]);
 
   useEffect(() => {
     setStudioID(getInitialStudio());
