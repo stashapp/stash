@@ -396,8 +396,16 @@ $sceneTabWidth: 450px;
     }
   }
 
-  // make controls a little more compact on smaller screens
   @media (max-width: 576px) {
+    .vjs-control-bar {
+      .vjs-autostart-button {
+        display: none;
+      }
+    }
+  }
+
+  // make controls a little more compact on smaller screens
+  @media (max-width: 768px) {
     .vjs-control-bar {
       .vjs-control {
         width: 2.5em;
