@@ -45,9 +45,13 @@ export const CreateLinkTagDialog: React.FC<{
         aliases: addAsAlias
           ? [...(existingTag.aliases || []), tag.name]
           : undefined,
+        // add stash id if applicable
         stash_ids:
           endpoint && tag.remote_site_id
-            ? [{ endpoint: endpoint!, stash_id: tag.remote_site_id }]
+            ? [
+                ...(existingTag.stash_ids || []),
+                { endpoint: endpoint!, stash_id: tag.remote_site_id },
+              ]
             : undefined,
       };
       onClose({ update: updateInput });
