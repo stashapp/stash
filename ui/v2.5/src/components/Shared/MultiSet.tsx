@@ -90,7 +90,7 @@ const Select: React.FC<IMultiSetProps> = (props) => {
         />
       );
     default:
-      return(
+      return (
         <FilterSelect
           type={type}
           isDisabled={disabled}
@@ -100,7 +100,7 @@ const Select: React.FC<IMultiSetProps> = (props) => {
           ids={props.ids ?? []}
           menuPortalTarget={props.menuPortalTarget}
         />
-      )
+      );
   }
 };
 
