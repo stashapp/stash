@@ -385,7 +385,7 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
     case "groups":
       return <GroupSelect {...props} creatable={false} />;
     case "galleries":
-      return <GallerySelect {...props} />;
+      return <GallerySelect {...props} creatable={false} />;
     default:
       return <TagSelect {...props} creatable={false} />;
   }

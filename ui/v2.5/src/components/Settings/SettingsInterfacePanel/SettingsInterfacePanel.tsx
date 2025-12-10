@@ -735,6 +735,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                 })
               }
             />
+            <BooleanSetting
+              id="disableDropdownCreate_gallery"
+              headingID="gallery"
+              checked={iface.disableDropdownCreate?.gallery ?? undefined}
+              onChange={(v) =>
+                saveInterface({
+                  disableDropdownCreate: {
+                    ...iface.disableDropdownCreate,
+                    gallery: v,
+                  },
+                })
+              }
+            />
           </div>
           <NumberSetting
             id="max_options_shown"
