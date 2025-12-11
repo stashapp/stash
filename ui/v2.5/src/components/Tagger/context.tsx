@@ -871,8 +871,7 @@ export const TaggerContext: React.FC = ({ children }) => {
     tag: GQL.ScrapedTag,
     updateInput: GQL.TagUpdateInput
   ) {
-    if (!tag.remote_site_id || !currentSource?.sourceInput.stash_box_endpoint)
-      return;
+    const hasRemoteID = !!tag.remote_site_id;
 
     try {
       await updateTag({
@@ -889,7 +888,10 @@ export const TaggerContext: React.FC = ({ children }) => {
         return {
           ...r,
           tags: r.tags.map((t) => {
-            if (t.remote_site_id === tag.remote_site_id) {
+            if (
+              (hasRemoteID && t.remote_site_id === tag.remote_site_id) ||
+              (!hasRemoteID && t.name === tag.name)
+            ) {
               return {
                 ...t,
                 stored_id: updateInput.id,
