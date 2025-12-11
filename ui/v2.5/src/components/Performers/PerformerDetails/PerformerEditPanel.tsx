@@ -694,7 +694,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("name")}
         {renderInputField("disambiguation")}
 
-        {renderStringListField("alias_list", "aliases")}
+        {renderStringListField("alias_list", "aliases", { orderable: false })}
 
         {renderSelectField("gender", stringGenderMap)}
 
