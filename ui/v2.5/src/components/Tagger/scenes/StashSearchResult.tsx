@@ -467,7 +467,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     updateInput: GQL.TagUpdateInput
   ) {
     await updateTag(t, updateInput);
-    setTagIDs([...tagIDs, updateInput.id]);
+    setTagIDs(uniq([...tagIDs, updateInput.id]));
   }
 
   function showTagModal(t: GQL.ScrapedTag) {

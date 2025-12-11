@@ -50,4 +50,10 @@ fragment SelectTagData on Tag {
     name
     sort_name
   }
+
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
 }
