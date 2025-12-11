@@ -671,14 +671,20 @@ declare namespace PluginApi {
     "GalleryCard.Image": React.FC<any>;
     "GalleryCard.Overlays": React.FC<any>;
     "GalleryCard.Popovers": React.FC<any>;
+    GalleryAddPanel: React.FC<any>;
     GalleryIDSelect: React.FC<any>;
+    GalleryImagesPanel: React.FC<any>;
+    GalleryList: React.FC<any>;
     GallerySelect: React.FC<any>;
     GroupIDSelect: React.FC<any>;
+    GroupList: React.FC<any>;
     GroupSelect: React.FC<any>;
+    GroupSubGroupsPanel: React.FC<any>;
     HeaderImage: React.FC<any>;
     HoverPopover: React.FC<any>;
     Icon: React.FC<any>;
     ImageInput: React.FC<any>;
+    ImageList: React.FC<any>;
     LightboxLink: React.FC<any>;
     LoadingIndicator: React.FC<any>;
     "MainNavBar.MenuItems": React.FC<any>;
@@ -699,6 +705,7 @@ declare namespace PluginApi {
     PerformerHeaderImage: React.FC<any>;
     PerformerIDSelect: React.FC<any>;
     PerformerImagesPanel: React.FC<any>;
+    PerformerList: React.FC<any>;
     PerformerPage: React.FC<any>;
     PerformerScenesPanel: React.FC<any>;
     PerformerSelect: React.FC<any>;
@@ -717,6 +724,9 @@ declare namespace PluginApi {
     "SceneCard.Image": React.FC<any>;
     "SceneCard.Overlays": React.FC<any>;
     "SceneCard.Popovers": React.FC<any>;
+    SceneList: React.FC<any>;
+    SceneListOperations: React.FC<any>;
+    SceneMarkerList: React.FC<any>;
     SelectSetting: React.FC<any>;
     Setting: React.FC<any>;
     SettingGroup: React.FC<any>;
@@ -724,6 +734,7 @@ declare namespace PluginApi {
     StringListSetting: React.FC<any>;
     StringSetting: React.FC<any>;
     StudioIDSelect: React.FC<any>;
+    StudioList: React.FC<any>;
     StudioSelect: React.FC<any>;
     SweatDrops: React.FC<any>;
     TabTitleCounter: React.FC<any>;
@@ -734,6 +745,7 @@ declare namespace PluginApi {
     "TagCard.Popovers": React.FC<any>;
     "TagCard.Title": React.FC<any>;
     TagLink: React.FC<any>;
+    TagList: React.FC<any>;
     TagSelect: React.FC<any>;
     TruncatedText: React.FC<any>;
   };
