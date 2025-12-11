@@ -429,9 +429,29 @@ export const useFindTags = (filter?: ListFilterModel) =>
     },
   });
 
+// Optimized query for tag list page - excludes expensive recursive *_count_all fields
+export const useFindTagsForList = (filter?: ListFilterModel) =>
+  GQL.useFindTagsForListQuery({
+    skip: filter === undefined,
+    variables: {
+      filter: filter?.makeFindFilter(),
+      tag_filter: filter?.makeFilter(),
+    },
+  });
+
 export const queryFindTags = (filter: ListFilterModel) =>
   client.query<GQL.FindTagsQuery>({
     query: GQL.FindTagsDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
+    },
+  });
+
+// Optimized query for tag list page
+export const queryFindTagsForList = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsForListQuery>({
+    query: GQL.FindTagsForListDocument,
     variables: {
       filter: filter.makeFindFilter(),
       tag_filter: filter.makeFilter(),
