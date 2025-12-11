@@ -466,7 +466,13 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", onScrapeGalleryURL, urlScrapable)}
+            {renderURLListField(
+              "urls",
+              onScrapeGalleryURL,
+              urlScrapable,
+              "urls",
+              fullWidthProps
+            )}
 
             {renderDateField("date")}
             {renderInputField("photographer")}

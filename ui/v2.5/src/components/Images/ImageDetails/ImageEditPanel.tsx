@@ -461,7 +461,13 @@ export const ImageEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", onScrapeImageURL, urlScrapable)}
+            {renderURLListField(
+              "urls",
+              onScrapeImageURL,
+              urlScrapable,
+              "urls",
+              fullWidthProps
+            )}
 
             {renderDateField("date")}
             {renderInputField("photographer")}

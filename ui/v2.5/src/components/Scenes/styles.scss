@@ -558,6 +558,10 @@ input[type="range"].blue-slider {
       top: 3rem;
     }
   }
+
+  .form-group[data-field="urls"] .string-list-input input.form-control {
+    font-size: 0.85em;
+  }
 }
 
 .scene-markers-panel {
