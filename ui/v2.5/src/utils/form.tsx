@@ -308,10 +308,15 @@ export function formikUtils<V extends FormikValues>(
     }
   }
 
+  interface IStringListProps extends IProps {
+    // defaults to true if not provided
+    orderable?: boolean;
+  }
+
   function renderStringListField(
     field: Field,
     messageID: string = field,
-    props?: IProps
+    props?: IStringListProps
   ) {
     const value = formik.values[field] as string[];
     const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
@@ -325,6 +330,7 @@ export function formikUtils<V extends FormikValues>(
         setValue={(v) => formik.setFieldValue(field, v)}
         errors={errorMsg}
         errorIdx={errorIdx}
+        orderable={props?.orderable}
       />
     );
 

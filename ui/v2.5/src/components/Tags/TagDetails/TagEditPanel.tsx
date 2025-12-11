@@ -241,7 +241,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
           {renderInputField("name")}
           {renderInputField("sort_name", "text")}
-          {renderStringListField("aliases")}
+          {renderStringListField("aliases", "aliases", { orderable: false })}
           {renderInputField("description", "textarea")}
           {renderParentTagsField()}
           {renderSubTagsField()}

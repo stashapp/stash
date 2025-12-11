@@ -412,6 +412,25 @@ button.collapse-button {
       margin-bottom: 0;
     }
   }
+
+  .btn.drag-handle {
+    display: inline-block;
+    margin: -0.25em 0.25em -0.25em -0.25em;
+    padding: 0.25em 0.5em 0.25em;
+
+    &:not(:disabled):not(.disabled) {
+      cursor: move;
+    }
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:focus:active {
+      background-color: initial;
+      border-color: initial;
+      box-shadow: initial;
+    }
+  }
 }
 
 .bulk-update-text-input {

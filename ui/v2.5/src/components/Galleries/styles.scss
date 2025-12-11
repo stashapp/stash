@@ -204,6 +204,10 @@ $galleryTabWidth: 450px;
     font-size: 1.3em;
     height: calc(1.5em + 0.75rem + 2px);
   }
+
+  .form-group[data-field="urls"] .string-list-input input.form-control {
+    font-size: 0.85em;
+  }
 }
 
 .gallery-cover {

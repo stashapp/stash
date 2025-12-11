@@ -602,6 +602,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
       xl: 12,
     },
   };
+  const urlProps = isNew
+    ? splitProps
+    : {
+        labelProps: {
+          column: true,
+          md: 3,
+          lg: 12,
+        },
+        fieldProps: {
+          md: 9,
+          lg: 12,
+        },
+      };
   const {
     renderField,
     renderInputField,
@@ -770,7 +783,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", onScrapeSceneURL, urlScrapable)}
+            {renderURLListField(
+              "urls",
+              onScrapeSceneURL,
+              urlScrapable,
+              "urls",
+              urlProps
+            )}
 
             {renderDateField("date")}
             {renderInputField("director")}
