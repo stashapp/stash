@@ -606,6 +606,9 @@ input TagFilterType {
   "Filter by autotag ignore value"
   ignore_auto_tag: Boolean
 
+  "Filter by StashID"
+  stash_id_endpoint: StashIDCriterionInput
+
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
   "Filter by related images that meet this criteria"
