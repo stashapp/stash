@@ -149,7 +149,8 @@
         },
         "play": "再生",
         "show_results": "結果を表示",
-        "show_count_results": "{count}件の結果を表示"
+        "show_count_results": "{count}件の結果を表示",
+        "load": "読み込み"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -1328,5 +1329,13 @@
     },
     "distance": "距離",
     "age_on_date": "撮影時の年齢 {age}歳",
-    "containing_group": "含まれるグループ"
+    "containing_group": "含まれるグループ",
+    "penis_length": "ペニスの長さ",
+    "parent_studio": "親スタジオ",
+    "sort_name": "ソート用の名称",
+    "groups": "グループ",
+    "include_sub_groups": "サブグループを含める",
+    "sub_groups": "サブグループ",
+    "history": "履歴",
+    "group_scene_number": "シーン番号"
 }
