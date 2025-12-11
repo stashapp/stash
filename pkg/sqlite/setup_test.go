@@ -1688,6 +1688,13 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
+func tagStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getTagStringValue(i, "stashid"),
+		Endpoint: getTagStringValue(i, "endpoint"),
+	}
+}
+
 // createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1707,6 +1714,12 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 		tag := models.Tag{
 			Name:          getTagStringValue(index, name),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
+		}
+
+		if (index+1)%5 != 0 {
+			tag.StashIDs = models.NewRelatedStashIDs([]models.StashID{
+				tagStashID(i),
+			})
 		}
 
 		err := tqb.Create(ctx, &tag)
