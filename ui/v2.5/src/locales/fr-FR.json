@@ -151,7 +151,9 @@
         "show_results": "Afficher les résultats",
         "play": "Lecture",
         "load": "Charger",
-        "load_filter": "Charger un filtre"
+        "load_filter": "Charger un filtre",
+        "add_stash_id": "Ajouter un identifiant Stash",
+        "create_new": "Créer un nouveau"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -200,11 +202,13 @@
             "set_cover_label": "Définir la vignette de la scène",
             "set_tag_desc": "Attache des étiquettes à la scène, en écrasant ou en fusionnant avec des étiquettes existantes.",
             "set_tag_label": "Définir les étiquettes",
-            "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
-            "show_male_label": "Montrer les performeurs masculins",
             "source": "Source",
             "errors": {
                 "blacklist_duplicate": "Élément de liste noire en double"
+            },
+            "performer_genders": {
+                "heading": "Genres des performeurs",
+                "description": "Les performeurs de ces genres seront affichés lors du marquage des scènes."
             }
         },
         "noun_query": "Requête",
@@ -226,7 +230,10 @@
         "verb_scrape_all": "Extraire tout",
         "verb_submit_fp": "Soumettre {fpCount, plural, one{# Empreinte} other{# Empreintes}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} scènes incomparables"
+        "verb_toggle_unmatched": "{toggle} scènes incomparables",
+        "verb_add_as_alias": "Ajouter le nom récupéré comme alias",
+        "verb_link_existing": "Lien vers existant",
+        "verb_match_tag": "Étiquette correspondante"
     },
     "config": {
         "about": {
@@ -314,11 +321,11 @@
                 "heading": "Chemin du répertoire de sauvegarde"
             },
             "blobs_path": {
-                "description": "Emplacement dans le système de fichiers pour le stockage des données binaires. Uniquement applicable lors de l'utilisation du type de stockage blob du système de fichiers. AVERTISSEMENT : La modification de ce paramètre nécessite le déplacement manuel des données existantes.",
+                "description": "Emplacement de stockage des données binaires dans le système de fichiers. Uniquement applicable lors de l'utilisation du type de stockage blob du système de fichiers. AVERTISSEMENT : La modification de ce paramètre nécessite le déplacement manuel des données existantes.",
                 "heading": "Chemin du système de fichiers des données binaires"
             },
             "blobs_storage": {
-                "description": "Emplacement où stocker les données binaires telles que les vignettes de scènes, les images de performeurs, de studios et d'étiquettes. Après avoir modifié cette valeur, les données existantes doivent être migrées à l'aide de la tâche Migrer les blobs. Voir la page Tâches de migration.",
+                "description": "Emplacement de stockage des données binaires telles que les vignettes de scènes, images de performeurs, studios et étiquettes. Après avoir modifié cette valeur, les données existantes doivent être migrées à l'aide de la tâche Migrer les blobs. Voir la page Tâches de migration.",
                 "heading": "Type d'enregistrement de données binaires"
             },
             "cache_location": "Emplacement du cache. Requis si le flux est diffusé à l'aide de HLS (comme sur les appareils Apple) ou de DASH.",
@@ -423,6 +430,10 @@
             "plugins_path": {
                 "description": "Emplacement du répertoire des fichiers de configuration des plugins",
                 "heading": "Chemin des plugins"
+            },
+            "delete_trash_path": {
+                "description": "Chemin où les fichiers supprimés seront déplacés au lieu d'être définitivement supprimés. Laissez ce champ vide pour supprimer définitivement les fichiers.",
+                "heading": "Chemin de la corbeille"
             }
         },
         "library": {
@@ -924,7 +935,8 @@
                 "label": "Mode de défilement",
                 "pan_y": "Panoramique Y",
                 "zoom": "Zoom"
-            }
+            },
+            "disable_animation": "Désactiver l'animation de transition entre les images"
         },
         "merge": {
             "destination": "Destination",
@@ -990,7 +1002,12 @@
         "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?",
         "overwrite_filter_warning": "Le filtre enregistré \"{entityName}\" sera remplacé.",
         "set_default_filter_confirm": "Êtes-vous sûr de vouloir définir ce filtre par défaut ?",
-        "clear_o_history_confirm_sfw": "Êtes-vous sûr de vouloir effacer l'historique des \"J'aime\" ?"
+        "clear_o_history_confirm_sfw": "Êtes-vous sûr de vouloir effacer l'historique des \"J'aime\" ?",
+        "delete_alert_to_trash": "Les éléments suivants {count, plural, one {{singularEntity}} other {{pluralEntity}}} seront déplacés vers la corbeille :",
+        "stashid_exists_warning": "L'identifiant Stash existant pour cette Stash-Box sera remplacé.",
+        "studios_found": "{count} studios trouvés",
+        "tags_found": "{count} étiquettes trouvées",
+        "scrape_results_missing": "Manquant"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
@@ -1208,7 +1225,6 @@
         "no_results_found": "Aucun résultat trouvé.",
         "number_of_performers_will_be_processed": "{performer_count} performeurs seront traités",
         "performer_already_tagged": "Performeur déjà étiqueté",
-        "performer_names_separated_by_comma": "Noms des performeurs séparés par une virgule",
         "performer_selection": "Sélection du performeur",
         "performer_successfully_tagged": "Performeur étiqueté avec succès :",
         "query_all_performers_in_the_database": "Tous les performeurs dans la base de données",
@@ -1221,7 +1237,8 @@
         "untagged_performers": "Performeurs non étiquetés",
         "update_performer": "Mise à jour du performeur",
         "update_performers": "Mise à jour des performeurs",
-        "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas d'identifiant Stash et actualisera les métadonnées."
+        "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas d'identifiant Stash et actualisera les métadonnées.",
+        "performer_names_or_stashids_separated_by_comma": "Noms des performeurs ou identifiants Stash séparés par des virgules"
     },
     "performer_tags": "Étiquettes de performeur",
     "performers": "Performeurs",
@@ -1410,7 +1427,6 @@
         "status_tagging_job_queued": "Statut : Étiquetage en file d'attente",
         "status_tagging_studios": "Statut : Étiquetage des studios",
         "studio_already_tagged": "Studio déjà étiqueté",
-        "studio_names_separated_by_comma": "Noms de studio séparés par une virgule",
         "studio_selection": "Sélection de studio",
         "studio_successfully_tagged": "Studio étiqueté avec succès",
         "tag_status": "Statut de l'étiquette",
@@ -1418,7 +1434,8 @@
         "untagged_studios": "Studios non étiquetés",
         "update_studio": "Actualiser le studio",
         "update_studios": "Actualiser les studios",
-        "updating_untagged_studios_description": "Une mise à jour des studios non étiquetés essaiera de faire correspondre les studios qui n'ont pas d'identifiant Stash et actualisera les métadonnées."
+        "updating_untagged_studios_description": "Une mise à jour des studios non étiquetés essaiera de faire correspondre les studios qui n'ont pas d'identifiant Stash et actualisera les métadonnées.",
+        "studio_names_or_stashids_separated_by_comma": "Noms de studios ou identifiants Stash séparés par des virgules"
     },
     "studios": "Studios",
     "sub_tag_count": "Nombre d'étiquettes affiliées",
@@ -1458,7 +1475,7 @@
     "url": "URL",
     "urls": "URLs",
     "validation": {
-        "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
+        "date_invalid_form": "${path} doit être au format AAAA, AAAA-MM, ou AAAA-MM-JJ",
         "required": "${path} est un champ requis",
         "blank": "${path} ne doit pas être vide",
         "unique": "${path} doit être unique",
@@ -1569,5 +1586,11 @@
     "last_o_at_sfw": "Dernier J'aime",
     "o_count_sfw": "J'aime",
     "odate_recorded_no_sfw": "Aucun “J’aime” daté enregistré",
-    "o_history_sfw": "Historique des \"J’aime\""
+    "o_history_sfw": "Historique des \"J’aime\"",
+    "stashbox_search": {
+        "header": "Rechercher {entityType} à partir de Stash-Box",
+        "no_results": "Aucun résultat trouvé.",
+        "placeholder_name_or_id": "{entityType} nom ou identifiant Stash...",
+        "select_stashbox": "Sélectionner une Stash-Box..."
+    }
 }

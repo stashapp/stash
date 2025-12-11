@@ -238,8 +238,6 @@
             "set_cover_label": "Tetapkan gambar cover adegan",
             "set_tag_label": "Tetapkan tag",
             "set_tag_desc": "Lampirkan tag ke adegan, baik dengan menimpa atau menggabungkan dengan tag yang sudah ada.",
-            "show_male_desc": "Baeralih apakah pemain pria dapat diberi tag.",
-            "show_male_label": "Tampilkan pemain pria",
             "source": "Sumber",
             "errors": {
                 "blacklist_duplicate": "Duplikat item daftar hitam"

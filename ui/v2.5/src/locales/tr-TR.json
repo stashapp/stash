@@ -183,8 +183,6 @@
             "set_cover_label": "Sahne için kapak resmi seç",
             "set_tag_desc": "Sahneye etiket ekle (varolan etiketlerle birleştir veya üzerine yaz).",
             "set_tag_label": "Etiketleri düzenle",
-            "show_male_desc": "Erkek oyuncuları etiketleme işlemini aç/kapat.",
-            "show_male_label": "Erkek oyuncuları göster",
             "source": "Kaynak",
             "errors": {
                 "blacklist_duplicate": "Yinelenen kara liste öğesi"
@@ -1278,8 +1276,7 @@
         "status_tagging_job_queued": "Durum: Etiketleme işi sıraya alındı",
         "any_names_entered_will_be_queried": "Girilen tüm isimler karşıdaki Stash-Box oturumundan sorgulanacak ve bulunursa eklenecektir. Yalnızca tam eşleşmeler bir eşleşme olarak kabul edilecektir.",
         "refreshing_will_update_the_data": "Yenileme işlemi stash-box oturumundaki tüm etiketli stüdyoların verilerini güncelleyecektir.",
-        "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir.",
-        "studio_names_separated_by_comma": "Virgülle ayrılmış stüdyo adları"
+        "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir."
     },
     "blobs_storage_type": {
         "database": "Veritabanı",

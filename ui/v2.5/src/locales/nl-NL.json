@@ -151,7 +151,8 @@
         "show_count_results": "{count} resultaten tonen",
         "play": "Afspelen",
         "load_filter": "Laad filter",
-        "load": "Laden"
+        "load": "Laden",
+        "add_stash_id": "Stash ID toevoegen"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -185,8 +186,6 @@
             "set_cover_label": "Scèneomslag instellen",
             "set_tag_desc": "Voorzie een scène van labels door ze te overschrijven of samen te voegen met reeds aanwezige.",
             "set_tag_label": "Labels instellen",
-            "show_male_desc": "Geef aan of mannen gelabeld mogen worden.",
-            "show_male_label": "Mannen tonen",
             "source": "Bron",
             "mark_organized_label": "Markeren als geordend na opslaan",
             "mark_organized_desc": "Markeer een scène als geordend na klikken op opslaan.",
@@ -892,7 +891,8 @@
         "duration_options": {
             "equal": "Gelijk"
         },
-        "select_none": "Niets selecteren"
+        "select_none": "Niets selecteren",
+        "select_options": "Selecteer Opties…"
     },
     "duplicated_phash": "Gedupliceerd (phash)",
     "duration": "Looptijd",
@@ -1272,5 +1272,7 @@
         "field": "Veld",
         "value": "Waarde"
     },
-    "datetime_format": "YYYY-MM-DD HH:MM"
+    "datetime_format": "YYYY-MM-DD HH:MM",
+    "sub_group": "Subgroep",
+    "sub_groups": "Subgroepen"
 }

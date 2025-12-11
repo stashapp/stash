@@ -176,9 +176,7 @@
             "errors": {
                 "blacklist_duplicate": "Dupliser element fra svarteliste"
             },
-            "set_tag_desc": "Tilknytt tagger til scenen, enten ved å overskrive eller flette med eksisterende tagger på scenen.",
-            "show_male_label": "Vis mannlige utøvere",
-            "show_male_desc": "Angi om mannlige utøvere skal være tilgjengelige for tagging."
+            "set_tag_desc": "Tilknytt tagger til scenen, enten ved å overskrive eller flette med eksisterende tagger på scenen."
         },
         "noun_query": "Forespørsel",
         "results": {
@@ -903,7 +901,6 @@
         "query_all_studios_in_the_database": "Alle studioer i databasen",
         "refreshing_will_update_the_data": "Oppdatering vil oppdatere dataene til alle taggede studioer fra stash-box-instansen.",
         "studio_already_tagged": "Studio allerede merket",
-        "studio_names_separated_by_comma": "Studionavn atskilt med komma",
         "studio_selection": "Studio utvalg",
         "studio_successfully_tagged": "Studio er tagget",
         "any_names_entered_will_be_queried": "Alle navn som legges inn vil bli spørt fra den eksterne Stash-Box-instansen og lagt til hvis de blir funnet. Bare eksakte treff vil bli ansett som treff.",
@@ -1137,7 +1134,6 @@
         "network_error": "Nettverksfeil",
         "performer_already_tagged": "Skuespilleren er allerede tagget",
         "number_of_performers_will_be_processed": "{skuespiller_antall} skuespillere vil bli behandlet",
-        "performer_names_separated_by_comma": "Skuespillernavn atskilt med komma",
         "batch_add_performers": "Batch Legg Til Skuespillere",
         "current_page": "Gjeldende side",
         "failed_to_save_performer": "Kunne ikke lagre skuespillere «{skuespiller}»",
