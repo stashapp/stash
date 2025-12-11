@@ -8,9 +8,9 @@ import { Button } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindTags,
+  queryFindTagsForList,
   mutateMetadataAutoTag,
-  useFindTags,
+  useFindTagsForList,
   useTagDestroy,
   useTagsDestroy,
 } from "src/core/StashService";
@@ -27,11 +27,11 @@ import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
 import { View } from "../List/views";
 
-function getItems(result: GQL.FindTagsQueryResult) {
+function getItems(result: GQL.FindTagsForListQueryResult) {
   return result?.data?.findTags?.tags ?? [];
 }
 
-function getCount(result: GQL.FindTagsQueryResult) {
+function getCount(result: GQL.FindTagsForListQueryResult) {
   return result?.data?.findTags?.count ?? 0;
 }
 
@@ -43,7 +43,7 @@ interface ITagList {
 export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   const Toast = useToast();
   const [deletingTag, setDeletingTag] =
-    useState<Partial<GQL.TagDataFragment> | null>(null);
+    useState<Partial<GQL.TagListDataFragment> | null>(null);
 
   const filterMode = GQL.FilterMode.Tags;
   const view = View.Tags;
@@ -79,7 +79,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   ];
 
   function addKeybinds(
-    result: GQL.FindTagsQueryResult,
+    result: GQL.FindTagsForListQueryResult,
     filter: ListFilterModel
   ) {
     Mousetrap.bind("p r", () => {
@@ -92,7 +92,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   }
 
   async function viewRandom(
-    result: GQL.FindTagsQueryResult,
+    result: GQL.FindTagsForListQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random tag
@@ -103,7 +103,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
       const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindTags(filterCopy);
+      const singleResult = await queryFindTagsForList(filterCopy);
       if (singleResult.data.findTags.tags.length === 1) {
         const { id } = singleResult.data.findTags.tags[0];
         // navigate to the tag page
@@ -122,7 +122,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     setIsExportDialogOpen(true);
   }
 
-  async function onAutoTag(tag: GQL.TagDataFragment) {
+  async function onAutoTag(tag: GQL.TagListDataFragment) {
     if (!tag) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
@@ -139,7 +139,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
         children: deletingTag?.children ?? [],
       };
       await deleteTag();
-      tagRelationHook(deletingTag as GQL.TagDataFragment, oldRelations, {
+      tagRelationHook(deletingTag as GQL.TagListDataFragment, oldRelations, {
         parents: [],
         children: [],
       });
@@ -160,7 +160,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   }
 
   function renderContent(
-    result: GQL.FindTagsQueryResult,
+    result: GQL.FindTagsForListQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
@@ -324,14 +324,14 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   }
 
   function renderEditDialog(
-    selectedTags: GQL.TagDataFragment[],
+    selectedTags: GQL.TagListDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return <EditTagsDialog selected={selectedTags} onClose={onClose} />;
   }
 
   function renderDeleteDialog(
-    selectedTags: GQL.TagDataFragment[],
+    selectedTags: GQL.TagListDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return (
@@ -357,7 +357,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   return (
     <ItemListContext
       filterMode={filterMode}
-      useResult={useFindTags}
+      useResult={useFindTagsForList}
       getItems={getItems}
       getCount={getCount}
       alterQuery={alterQuery}
