@@ -1036,6 +1036,49 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 	}, t+".stash_id")(ctx, f)
 }
 
+type stashIDsCriterionHandler struct {
+	c                 *models.StashIDsCriterionInput
+	stashIDRepository *stashIDRepository
+	stashIDTableAs    string
+	parentIDCol       string
+}
+
+func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c == nil {
+		return
+	}
+
+	stashIDRepo := h.stashIDRepository
+	t := stashIDRepo.tableName
+	if h.stashIDTableAs != "" {
+		t = h.stashIDTableAs
+	}
+
+	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
+		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+	}
+
+	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+
+	b := f
+	for _, n := range h.c.StashIDs {
+		query := &filterBuilder{}
+		v := ""
+		if n != nil {
+			v = *n
+		}
+
+		stringCriterionHandler(&models.StringCriterionInput{
+			Value:    v,
+			Modifier: h.c.Modifier,
+		}, t+".stash_id")(ctx, query)
+
+		b.or(query)
+		b = query
+	}
+}
+
 type relatedFilterHandler struct {
 	relatedIDCol   string
 	relatedRepo    repository
