@@ -48,7 +48,6 @@ import {
   yupUniqueStringList,
 } from "src/utils/yup";
 import { useTagsEdit } from "src/hooks/tagsEdit";
-import { sortURLs } from "src/utils/url";
 import { CustomFieldsInput } from "src/components/Shared/CustomFields";
 import { cloneDeep } from "@apollo/client/utilities";
 
@@ -154,7 +153,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
-    urls: sortURLs(performer.urls ?? []),
+    urls: performer.urls ?? [],
     details: performer.details ?? "",
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     ignore_auto_tag: performer.ignore_auto_tag ?? false,

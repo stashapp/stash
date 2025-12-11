@@ -31,7 +31,6 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
-import { sortURLs } from "src/utils/url";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -82,7 +81,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const initialValues = {
     title: gallery?.title ?? "",
     code: gallery?.code ?? "",
-    urls: sortURLs(gallery?.urls ?? []),
+    urls: gallery?.urls ?? [],
     date: gallery?.date ?? "",
     photographer: gallery?.photographer ?? "",
     studio_id: gallery?.studio?.id ?? null,

@@ -1,10 +1,9 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { StashIDPill } from "src/components/Shared/StashID";
 import { Link } from "react-router-dom";
-import { sortURLs } from "src/utils/url";
 
 interface IStudioDetailsPanel {
   studio: GQL.StudioDataFragment;
@@ -47,16 +46,14 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
-  const sortedURLs = useMemo(() => sortURLs(studio.urls ?? []), [studio.urls]);
-
   function renderURLs() {
-    if (!sortedURLs.length) {
+    if (!studio.urls?.length) {
       return;
     }
 
     return (
       <ul className="pl-0">
-        {sortedURLs.map((url) => (
+        {studio.urls.map((url) => (
           <li key={url}>
             <a href={url} target="_blank" rel="noreferrer">
               {url}

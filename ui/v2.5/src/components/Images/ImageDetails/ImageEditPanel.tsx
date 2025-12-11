@@ -35,7 +35,6 @@ import {
 } from "src/components/Galleries/GallerySelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
-import { sortURLs } from "src/utils/url";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -92,7 +91,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const initialValues = {
     title: image.title ?? "",
     code: image.code ?? "",
-    urls: sortURLs(image?.urls ?? []),
+    urls: image?.urls ?? [],
     date: image?.date ?? "",
     details: image.details ?? "",
     photographer: image.photographer ?? "",

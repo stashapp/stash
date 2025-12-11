@@ -21,7 +21,6 @@ import { Studio, StudioSelect } from "../StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { Icon } from "src/components/Shared/Icon";
 import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
-import { sortURLs } from "src/utils/url";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -69,7 +68,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   const initialValues = {
     id: studio.id,
     name: studio.name ?? "",
-    urls: sortURLs(studio.urls ?? []),
+    urls: studio.urls ?? [],
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
     aliases: studio.aliases ?? [],
