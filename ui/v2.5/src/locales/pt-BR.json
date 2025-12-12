@@ -142,7 +142,10 @@
         "remove_from_containing_group": "Remover do Grupo",
         "reset_play_duration": "Redefinir duração",
         "reset_resume_time": "Redefinir tempo de retomada",
-        "reset_cover": "Restaurar a capa padrão"
+        "reset_cover": "Restaurar a capa padrão",
+        "copy_to_clipboard": "Copiar para a área de transferência",
+        "encoding_image": "Codificando imagem…",
+        "reload": "Recarregar"
     },
     "actions_name": "Ações",
     "age": "Idade",
