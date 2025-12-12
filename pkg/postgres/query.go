@@ -160,7 +160,7 @@ func (qb *queryBuilder) join(table, as, onClause string) {
 
 func (qb *queryBuilder) joinSort(table, as, onClause string) {
 	newJoin := join{
-		sort:     true,
+		sort:     false, // BUG: If we use this, we need to remake getSort since we do groupby on the args.
 		table:    table,
 		as:       as,
 		onClause: onClause,
