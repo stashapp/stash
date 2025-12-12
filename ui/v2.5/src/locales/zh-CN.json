@@ -1005,7 +1005,8 @@
         "delete_alert_to_trash": "如下的{count, plural, one {{singularEntity}} other {{pluralEntity}}} 将会被移动到回收站：",
         "stashid_exists_warning": "此stash-box已存在的stash编号将会被取代。",
         "studios_found": "找到{count} 个工作室",
-        "tags_found": "找到{count} 个标签"
+        "tags_found": "找到{count} 个标签",
+        "scrape_results_missing": "丢失"
     },
     "dimensions": "大小",
     "director": "导演",
