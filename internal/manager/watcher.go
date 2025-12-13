@@ -172,6 +172,10 @@ func (s *Manager) RefreshFileWatcher() {
 			if st == nil || st.Path == "" {
 				continue
 			}
+
+			// add root watcher
+			_ = watcher.Add(st.Path)
+
 			// walk directories and add watches
 			_ = filepath.WalkDir(st.Path, func(path string, dEntry fs.DirEntry, err error) error {
 				if err != nil {
