@@ -12,3 +12,7 @@ func notifyEvents() []notify.Event {
 		notify.Write,
 	}
 }
+
+func notifyShouldScanEvent(ev notify.EventInfo) bool {
+	return true
+}

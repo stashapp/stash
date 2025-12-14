@@ -183,10 +183,12 @@ func (s *Manager) RefreshFileWatcher() {
 
 				rawPath := ev.Path()
 
-				var pptr *string
+				if !notifyShouldScanEvent(ev) {
+					continue
+				}
 
 				// Always allow directories
-				pptr = &rawPath
+				pptr := &rawPath
 
 				// The file/dir may not exist yet, so we cannot reliable use os.Stat
 				if ext := filepath.Ext(rawPath); ext != "" {
