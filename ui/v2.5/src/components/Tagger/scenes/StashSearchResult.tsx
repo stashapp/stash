@@ -294,9 +294,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const [performerIDs, setPerformerIDs, setInitialPerformerIDs] =
     useInitialState<(string | undefined)[]>(getInitialPerformers());
 
-  const [studioID, setStudioID] = useState<string | undefined>(
-    getInitialStudio()
-  );
+  const [studioID, setStudioID, setInitialStudioID] = useInitialState<
+    string | undefined
+  >(getInitialStudio());
 
   useEffect(() => {
     setInitialTagIDs(getInitialTags());
@@ -307,8 +307,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   }, [getInitialPerformers, setInitialPerformerIDs]);
 
   useEffect(() => {
-    setStudioID(getInitialStudio());
-  }, [getInitialStudio]);
+    setInitialStudioID(getInitialStudio());
+  }, [getInitialStudio, setInitialStudioID]);
 
   useEffect(() => {
     async function doResolveScene() {
