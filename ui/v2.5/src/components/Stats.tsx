@@ -4,8 +4,16 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import TextUtils from "src/utils/text";
 import { FileSize } from "./Shared/FileSize";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export const Stats: React.FC = () => {
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
+
+  const oCountID = sfwContentMode
+    ? "stats.total_o_count_sfw"
+    : "stats.total_o_count";
+
   const { data, error, loading } = useStats();
 
   if (error) return <span>{error.message}</span>;
@@ -111,7 +119,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.total_o_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="stats.total_o_count" />
+            <FormattedMessage id={oCountID} />
           </p>
         </div>
         <div className="stats-element">
