@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -120,23 +119,6 @@ func runScan(ctx context.Context, s *Manager, p string) {
 	})
 
 	s.JobManager.Add(ctx, "FS change detected - scanning...", j)
-}
-
-func notifyEvents() []notify.Event {
-	switch runtime.GOOS {
-	case "linux":
-		return []notify.Event{
-			notify.InCloseWrite,
-			notify.InMovedTo,
-			notify.Rename,
-		}
-	default:
-		return []notify.Event{
-			notify.Create,
-			notify.Rename,
-			notify.Write,
-		}
-	}
 }
 
 // RefreshFileWatcher starts a filesystem watcher for configured stash paths.
