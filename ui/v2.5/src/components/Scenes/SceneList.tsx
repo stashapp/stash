@@ -66,7 +66,7 @@ import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
-import { PatchContainerComponent } from "src/patch";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { Pagination, PaginationIndex } from "../List/Pagination";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
@@ -380,83 +380,86 @@ const SceneListOperations: React.FC<{
   onDelete: () => void;
   onPlay: () => void;
   onCreateNew: () => void;
-}> = ({
-  items,
-  hasSelection,
-  operations,
-  onEdit,
-  onDelete,
-  onPlay,
-  onCreateNew,
-}) => {
-  const intl = useIntl();
+}> = PatchComponent(
+  "SceneListOperations",
+  ({
+    items,
+    hasSelection,
+    operations,
+    onEdit,
+    onDelete,
+    onPlay,
+    onCreateNew,
+  }) => {
+    const intl = useIntl();
 
-  return (
-    <div className="scene-list-operations">
-      <ButtonGroup>
-        {!!items && (
-          <Button
-            className="play-button"
-            variant="secondary"
-            onClick={() => onPlay()}
-            title={intl.formatMessage({ id: "actions.play" })}
-          >
-            <Icon icon={faPlay} />
-          </Button>
-        )}
-        {!hasSelection && (
-          <Button
-            className="create-new-button"
-            variant="secondary"
-            onClick={() => onCreateNew()}
-            title={intl.formatMessage(
-              { id: "actions.create_entity" },
-              { entityType: intl.formatMessage({ id: "scene" }) }
-            )}
-          >
-            <Icon icon={faPlus} />
-          </Button>
-        )}
-
-        {hasSelection && (
-          <>
-            <Button variant="secondary" onClick={() => onEdit()}>
-              <Icon icon={faPencil} />
-            </Button>
+    return (
+      <div className="scene-list-operations">
+        <ButtonGroup>
+          {!!items && (
             <Button
-              variant="danger"
-              className="btn-danger-minimal"
-              onClick={() => onDelete()}
+              className="play-button"
+              variant="secondary"
+              onClick={() => onPlay()}
+              title={intl.formatMessage({ id: "actions.play" })}
             >
-              <Icon icon={faTrash} />
+              <Icon icon={faPlay} />
             </Button>
-          </>
-        )}
+          )}
+          {!hasSelection && (
+            <Button
+              className="create-new-button"
+              variant="secondary"
+              onClick={() => onCreateNew()}
+              title={intl.formatMessage(
+                { id: "actions.create_entity" },
+                { entityType: intl.formatMessage({ id: "scene" }) }
+              )}
+            >
+              <Icon icon={faPlus} />
+            </Button>
+          )}
 
-        <OperationDropdown
-          className="scene-list-operations"
-          menuClassName="scene-list-operations-dropdown"
-          menuPortalTarget={document.body}
-        >
-          {operations.map((o) => {
-            if (o.isDisplayed && !o.isDisplayed()) {
-              return null;
-            }
+          {hasSelection && (
+            <>
+              <Button variant="secondary" onClick={() => onEdit()}>
+                <Icon icon={faPencil} />
+              </Button>
+              <Button
+                variant="danger"
+                className="btn-danger-minimal"
+                onClick={() => onDelete()}
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            </>
+          )}
 
-            return (
-              <OperationDropdownItem
-                key={o.text}
-                onClick={o.onClick}
-                text={o.text}
-                className={o.className}
-              />
-            );
-          })}
-        </OperationDropdown>
-      </ButtonGroup>
-    </div>
-  );
-};
+          <OperationDropdown
+            className="scene-list-operations"
+            menuClassName="scene-list-operations-dropdown"
+            menuPortalTarget={document.body}
+          >
+            {operations.map((o) => {
+              if (o.isDisplayed && !o.isDisplayed()) {
+                return null;
+              }
+
+              return (
+                <OperationDropdownItem
+                  key={o.text}
+                  onClick={o.onClick}
+                  text={o.text}
+                  className={o.className}
+                />
+              );
+            })}
+          </OperationDropdown>
+        </ButtonGroup>
+      </div>
+    );
+  }
+);
 
 interface IFilteredScenes {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
