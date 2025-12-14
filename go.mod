@@ -68,6 +68,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+require github.com/fsnotify/fsnotify v1.9.0 // indirect
+
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/antchfx/xpath v1.2.3 // indirect
@@ -115,6 +117,7 @@ require (
 	github.com/spf13/viper v1.16.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/syncthing/notify v0.0.0-20250528144937-c7027d4f7465
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/urfave/cli/v2 v2.27.6 // indirect

@@ -2,25 +2,25 @@ package manager
 
 import (
 	"context"
-	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/stashapp/stash/pkg/file"
 	file_image "github.com/stashapp/stash/pkg/file/image"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/syncthing/notify"
 )
 
 const (
 	// How long to wait for write events to finish before scanning file
-	defaultWriteDebounce = 30
+	defaultWriteDebounce = 30 * time.Second
 	// The maximum number of tasks on a single scan
 	taskQueueSize = 200
 )
@@ -52,15 +52,6 @@ func findAssociatedVideo(eventPath string, s *Manager) *string {
 	}
 
 	return nil
-}
-
-// clearWatcherCancelLock clears the stored file watcher cancel func.
-// Caller must hold s.fileWatcherMu.
-func (s *Manager) clearWatcherCancelLock() {
-	if s.fileWatcherCancel != nil {
-		s.fileWatcherCancel()
-		s.fileWatcherCancel = nil
-	}
 }
 
 // shouldScheduleScan determines whether the raw event path should trigger a
@@ -131,14 +122,33 @@ func runScan(ctx context.Context, s *Manager, p string) {
 	s.JobManager.Add(ctx, "FS change detected - scanning...", j)
 }
 
+func notifyEvents() []notify.Event {
+	switch runtime.GOOS {
+	case "linux":
+		return []notify.Event{
+			notify.InCloseWrite,
+			notify.InMovedTo,
+			notify.Rename,
+		}
+	default:
+		return []notify.Event{
+			notify.Create,
+			notify.Rename,
+			notify.Write,
+		}
+	}
+}
+
 // RefreshFileWatcher starts a filesystem watcher for configured stash paths.
 // It will schedule a single-file scan job when files are created/modified.
 func (s *Manager) RefreshFileWatcher() {
 	// restart/cancel existing watcher if present
 	s.fileWatcherMu.Lock()
-	s.clearWatcherCancelLock()
+	if s.fileWatcherCancel != nil {
+		s.fileWatcherCancel()
+		s.fileWatcherCancel = nil
+	}
 
-	// if disabled in config, do nothing
 	if !s.Config.GetAutoScanWatch() {
 		s.fileWatcherMu.Unlock()
 		return
@@ -148,82 +158,56 @@ func (s *Manager) RefreshFileWatcher() {
 	s.fileWatcherCancel = cancel
 	s.fileWatcherMu.Unlock()
 
-	// don't block postInit on watcher startup
 	go func() {
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			logger.Errorf("could not start fsnotify watcher: %v", err)
-			// ensure we clear cancel so future restarts will try again
-			s.fileWatcherMu.Lock()
-			s.clearWatcherCancelLock()
-			s.fileWatcherMu.Unlock()
-			return
-		}
+		events := make(chan notify.EventInfo, 1024)
 
-		// ensure watcher is closed when context cancels
+		// ensure shutdown
 		go func() {
 			<-ctx.Done()
-			watcher.Close()
+			notify.Stop(events)
+			close(events)
 		}()
 
-		// add all stash dirs recursively
-		stashPaths := s.Config.GetStashPaths()
-		for _, st := range stashPaths {
+		// add recursive watches
+		for _, st := range s.Config.GetStashPaths() {
 			if st == nil || st.Path == "" {
 				continue
 			}
 
-			// add root watcher
-			_ = watcher.Add(st.Path)
+			path := filepath.Clean(st.Path) + "..."
 
-			// walk directories and add watches
-			_ = filepath.WalkDir(st.Path, func(path string, dEntry fs.DirEntry, err error) error {
-				if err != nil {
-					return nil
-				}
-				if dEntry.IsDir() {
-					_ = watcher.Add(path)
-				}
-				return nil
-			})
+			if err := notify.Watch(
+				path,
+				events,
+				notifyEvents()...,
+			); err != nil {
+				logger.Errorf("notify watch failed for %s: %v", path, err)
+				return
+			}
 		}
 
-		// debounce map to avoid repeated scans. Use timers so multiple rapid events
-		// reset the wait and only schedule a single scan when events quiet down.
-		debounce := defaultWriteDebounce * time.Second
 		var mu sync.Mutex
 		timers := make(map[string]*time.Timer)
 
-		// event loop
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case ev, ok := <-watcher.Events:
+
+			case ev, ok := <-events:
 				if !ok {
 					return
 				}
 
-				// interested in Write/Create/Rename
-				if ev.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Rename) == 0 {
-					continue
-				}
+				rawPath := ev.Path()
 
-				// schedule single-file scan job with debounce
-				rawPath := ev.Name
-
-				info, err := os.Stat(rawPath)
-				if err != nil {
-					continue
-				}
-
-				// Map events like captions/funscript to the corresponding video file
 				var pptr *string
 
-				isDir := info.IsDir()
-				if isDir {
-					pptr = &rawPath
-				} else {
+				// Always allow directories
+				pptr = &rawPath
+
+				// The file/dir may not exist yet, so we cannot reliable use os.Stat
+				if ext := filepath.Ext(rawPath); ext != "" {
 					pptr = shouldScheduleScan(rawPath, s)
 				}
 
@@ -231,34 +215,22 @@ func (s *Manager) RefreshFileWatcher() {
 					continue
 				}
 
-				// schedule actual scan to run after debounce period; bind effective path
 				p := *pptr
 
+				// Optional short debounce (burst protection)
 				mu.Lock()
 				if t, ok := timers[p]; ok {
 					t.Stop()
 				}
 
-				// capture p for closure
-				timers[p] = time.AfterFunc(debounce, func() {
+				timers[p] = time.AfterFunc(defaultWriteDebounce, func() {
 					mu.Lock()
-					defer mu.Unlock()
 					delete(timers, p)
-
-					// add watches for newly created directories
-					if isDir {
-						_ = watcher.Add(rawPath)
-					}
+					mu.Unlock()
 
 					runScan(ctx, s, p)
 				})
 				mu.Unlock()
-
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				logger.Errorf("fsnotify error: %v", err)
 			}
 		}
 	}()
