@@ -88,9 +88,17 @@ func makeScanner(s *Manager) *file.Scanner {
 // the debounce timers once the debounce period expires.
 func runScan(ctx context.Context, s *Manager, p string) {
 	// quick existence check - skip if file no longer exists
-	_, err := os.Stat(p)
+	fs, err := os.Stat(p)
 	if err != nil {
 		return
+	}
+
+	if !fs.IsDir() {
+		if updated := shouldScheduleScan(p, s); updated != nil {
+			p = *updated
+		} else {
+			return
+		}
 	}
 
 	scanner := makeScanner(s)
@@ -187,32 +195,18 @@ func (s *Manager) RefreshFileWatcher() {
 					continue
 				}
 
-				// Always allow directories
-				pptr := &rawPath
-
-				// The file/dir may not exist yet, so we cannot reliable use os.Stat
-				if ext := filepath.Ext(rawPath); ext != "" {
-					pptr = shouldScheduleScan(rawPath, s)
-				}
-
-				if pptr == nil {
-					continue
-				}
-
-				p := *pptr
-
 				// Optional short debounce (burst protection)
 				mu.Lock()
-				if t, ok := timers[p]; ok {
+				if t, ok := timers[rawPath]; ok {
 					t.Stop()
 				}
 
-				timers[p] = time.AfterFunc(defaultWriteDebounce, func() {
+				timers[rawPath] = time.AfterFunc(defaultWriteDebounce, func() {
 					mu.Lock()
-					delete(timers, p)
+					delete(timers, rawPath)
 					mu.Unlock()
 
-					runScan(ctx, s, p)
+					runScan(ctx, s, rawPath)
 				})
 				mu.Unlock()
 			}
