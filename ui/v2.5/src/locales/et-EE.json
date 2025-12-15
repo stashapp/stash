@@ -202,7 +202,7 @@
             },
             "performer_genders": {
                 "heading": "Näitlejate sood",
-                "description": "Tähe märgistades näidatakse nendest lugudest näitlejaid."
+                "description": "Stseene märgistades näidatakse nende sugudega näitlejaid."
             }
         },
         "noun_query": "Päring",
@@ -1172,7 +1172,7 @@
     "metadata": "Metaandmed",
     "name": "Nimi",
     "new": "Uus",
-    "none": "Puudub",
+    "none": "Mitte ükski",
     "operations": "Operatsioonid",
     "organized": "Organiseeritud",
     "pagination": {
@@ -1382,7 +1382,8 @@
         "scenes_played": "Mängitud Stseenid",
         "total_o_count": "Kokku O-Arv",
         "total_play_count": "Mängimiste Koguarv",
-        "total_play_duration": "Mängimiste Kogukestus"
+        "total_play_duration": "Mängimiste Kogukestus",
+        "total_o_count_sfw": "Meeldimisi kokku"
     },
     "status": "Staatus: {statusText}",
     "studio": "Stuudio",
