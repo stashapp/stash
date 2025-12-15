@@ -1393,7 +1393,8 @@
         "scenes_size": "Poids des scènes",
         "total_o_count": "Nombre total de O-",
         "total_play_count": "Nombre de visionnage total",
-        "total_play_duration": "Temps de visionnage total"
+        "total_play_duration": "Temps de visionnage total",
+        "total_o_count_sfw": "Total de J'aime"
     },
     "status": "Statut : {statusText}",
     "studio": "Studio",
