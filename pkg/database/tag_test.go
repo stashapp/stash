@@ -482,7 +482,7 @@ func TestTagQuery(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			tags, _, err := db.Tag.Query(ctx, tt.filter, tt.findFilter)
+			tags, _, err := db.Tag().Query(ctx, tt.filter, tt.findFilter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
