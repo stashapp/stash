@@ -18,10 +18,11 @@ func notifyEvents() []notify.Event {
 }
 
 func notifyShouldScanEvent(ev notify.EventInfo) bool {
-	switch ev.Event() {
-	case notify.InCreate:
-		// directories only, files fire too early
-		return ev.Event()&unix.IN_ISDIR != 0
+	event := ev.Event()
+
+	// directories only, files fire too early
+	if event&notify.InCreate != 0 {
+		return event&unix.IN_ISDIR != 0
 	}
 
 	return true
