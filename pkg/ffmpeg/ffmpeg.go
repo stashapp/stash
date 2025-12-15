@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -216,9 +217,10 @@ func (v Version) String() string {
 
 // FFMpeg provides an interface to ffmpeg.
 type FFMpeg struct {
-	ffmpeg         string
-	version        Version
-	hwCodecSupport []VideoCodec
+	ffmpeg              string
+	version             Version
+	hwCodecSupport      []VideoCodec
+	hwCodecSupportMutex sync.RWMutex
 }
 
 // Creates a new FFMpeg encoder
@@ -240,4 +242,10 @@ func (f *FFMpeg) Command(ctx context.Context, args []string) *exec.Cmd {
 
 func (f *FFMpeg) Path() string {
 	return f.ffmpeg
+}
+
+func (f *FFMpeg) getHWCodecSupport() []VideoCodec {
+	f.hwCodecSupportMutex.RLock()
+	defer f.hwCodecSupportMutex.RUnlock()
+	return f.hwCodecSupport
 }

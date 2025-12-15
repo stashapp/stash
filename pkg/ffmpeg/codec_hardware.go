@@ -36,6 +36,32 @@ const minHeight int = 480
 
 // Tests all (given) hardware codec's
 func (f *FFMpeg) InitHWSupport(ctx context.Context) {
+	// do the hardware codec tests in a separate goroutine to avoid blocking
+	done := make(chan struct{})
+	go func() {
+		f.initHWSupport(ctx)
+		close(done)
+	}()
+
+	// log if the initialization takes too long
+	const hwInitLogTimeoutSecondsDefault = 5
+	hwInitLogTimeoutSeconds := hwInitLogTimeoutSecondsDefault * time.Second
+	timer := time.NewTimer(hwInitLogTimeoutSeconds)
+
+	go func() {
+		select {
+		case <-timer.C:
+			logger.Warnf("[InitHWSupport] Hardware codec initialization is taking longer than %s...", hwInitLogTimeoutSeconds)
+			logger.Info("[InitHWSupport] Hardware encoding will not be available until initialization is complete.")
+		case <-done:
+			if !timer.Stop() {
+				<-timer.C
+			}
+		}
+	}()
+}
+
+func (f *FFMpeg) initHWSupport(ctx context.Context) {
 	var hwCodecSupport []VideoCodec
 
 	// Note that the first compatible codec is returned, so order is important
@@ -83,6 +109,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		defer cancel()
 
 		cmd := f.Command(testCtx, args)
+		cmd.WaitDelay = time.Second
 		logger.Tracef("[InitHWSupport] Testing codec %s: %v", codec, cmd.Args)
 
 		var stderr bytes.Buffer
@@ -112,6 +139,8 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 	}
 	logger.Info(outstr)
 
+	f.hwCodecSupportMutex.Lock()
+	defer f.hwCodecSupportMutex.Unlock()
 	f.hwCodecSupport = hwCodecSupport
 }
 
@@ -411,7 +440,7 @@ func (f *FFMpeg) hwMaxResFilter(toCodec VideoCodec, vf *models.VideoFile, reqHei
 
 // Return if a hardware accelerated for HLS is available
 func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
-	for _, element := range f.hwCodecSupport {
+	for _, element := range f.getHWCodecSupport() {
 		switch element {
 		case VideoCodecN264,
 			VideoCodecN264H,
@@ -429,7 +458,7 @@ func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
 
 // Return if a hardware accelerated codec for MP4 is available
 func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
-	for _, element := range f.hwCodecSupport {
+	for _, element := range f.getHWCodecSupport() {
 		switch element {
 		case VideoCodecN264,
 			VideoCodecN264H,
@@ -445,7 +474,7 @@ func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
 
 // Return if a hardware accelerated codec for WebM is available
 func (f *FFMpeg) hwCodecWEBMCompatible() *VideoCodec {
-	for _, element := range f.hwCodecSupport {
+	for _, element := range f.getHWCodecSupport() {
 		switch element {
 		case VideoCodecIVP9,
 			VideoCodecVVP9:
