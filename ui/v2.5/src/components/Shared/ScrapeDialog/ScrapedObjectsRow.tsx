@@ -184,7 +184,7 @@ export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
     field,
     result,
     onChange,
-    newObjects,
+    newObjects = [],
     onCreateNew,
     onLinkExisting,
     renderObjects,
@@ -202,7 +202,7 @@ export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
       )}
       onChange={onChange}
       newValues={
-        onCreateNew ? (
+        onCreateNew && newObjects.length > 0 ? (
           <NewScrapedObjects
             newValues={newObjects ?? []}
             onCreateNew={onCreateNew}
