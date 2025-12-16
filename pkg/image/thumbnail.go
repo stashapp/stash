@@ -36,6 +36,7 @@ type ClipPreviewOptions struct {
 	InputArgs  []string
 	OutputArgs []string
 	Preset     string
+	HWAccel    bool
 }
 
 func GetVipsPath() string {
@@ -140,7 +141,7 @@ func (e *ThumbnailEncoder) GetPreview(inPath string, outPath string, maxSize int
 	if clipDuration > 30.0 {
 		clipDuration = 30.0
 	}
-	return e.getClipPreview(inPath, outPath, maxSize, clipDuration, fileData.FrameRate)
+	return e.getClipPreview(inPath, outPath, maxSize, clipDuration, fileData.FrameRate, fileData)
 }
 
 func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
@@ -170,27 +171,30 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnailPath(inputPath string, maxSize in
 	return e.FFMpeg.GenerateOutput(context.TODO(), args, nil)
 }
 
-func (e *ThumbnailEncoder) getClipPreview(inPath string, outPath string, maxSize int, clipDuration float64, frameRate float64) error {
+func (e *ThumbnailEncoder) getClipPreview(inPath string, outPath string, maxSize int, clipDuration float64, frameRate float64, fileData *ffmpeg.VideoFile) error {
+	codec := ffmpeg.VideoCodecVP9
+	if e.ClipPreviewOptions.HWAccel {
+		codec = e.FFMpeg.HWCodecWEBMCompatible(codec)
+	}
+
 	var thumbFilter ffmpeg.VideoFilter
 	thumbFilter = thumbFilter.ScaleMaxSize(maxSize)
-
-	var thumbArgs ffmpeg.Args
-	thumbArgs = thumbArgs.VideoFilter(thumbFilter)
+	// Note: We cannot use full hardware encoding since ScaleMaxSize uses force_original_aspect_ratio
 
 	o := e.ClipPreviewOptions
 
+	thumbArgs := codec.ExtraArgsHQ(o.Preset)
+	thumbArgs = thumbArgs.VideoFilter(thumbFilter)
+
 	thumbArgs = append(thumbArgs,
-		"-pix_fmt", "yuv420p",
-		"-preset", o.Preset,
-		"-crf", "25",
-		"-threads", "4",
-		"-strict", "-2",
 		"-f", "webm",
 	)
 
 	if frameRate <= 0.01 {
 		thumbArgs = append(thumbArgs, "-vsync", "2")
 	}
+
+	extraInputArgs := e.FFMpeg.HWDeviceInit(o.InputArgs, codec, false)
 
 	thumbOptions := transcoder.TranscodeOptions{
 		OutputPath: outPath,
@@ -200,10 +204,10 @@ func (e *ThumbnailEncoder) getClipPreview(inPath string, outPath string, maxSize
 		XError:   true,
 		SlowSeek: false,
 
-		VideoCodec: ffmpeg.VideoCodecVP9,
+		VideoCodec: codec,
 		VideoArgs:  thumbArgs,
 
-		ExtraInputArgs:  o.InputArgs,
+		ExtraInputArgs:  extraInputArgs,
 		ExtraOutputArgs: o.OutputArgs,
 	}
 

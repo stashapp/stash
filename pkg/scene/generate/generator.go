@@ -48,6 +48,7 @@ type ScenePaths interface {
 type FFMpegConfig interface {
 	GetTranscodeInputArgs() []string
 	GetTranscodeOutputArgs() []string
+	GetGenerationHardwareAcceleration() bool
 }
 
 type Generator struct {

@@ -2,6 +2,8 @@ package ffmpeg
 
 import (
 	"fmt"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // VideoFilter represents video filter parameters to be passed to ffmpeg.
@@ -38,25 +40,11 @@ func (f VideoFilter) ScaleMaxSize(maxDimensions int) VideoFilter {
 
 // ScaleMax returns a VideoFilter scaling to maxSize. It will scale width if it is larger than height, otherwise it will scale height.
 func (f VideoFilter) ScaleMax(inputWidth, inputHeight, maxSize int) VideoFilter {
-	// get the smaller dimension of the input
-	videoSize := inputHeight
-	if inputWidth < videoSize {
-		videoSize = inputWidth
-	}
-
-	// if maxSize is larger than the video dimension, then no-op
-	if maxSize >= videoSize || maxSize == 0 {
+	w, h := utils.GetFFmpegScaleArgs(inputWidth, inputHeight, maxSize, utils.ScaleToMinSize)
+	if w == 0 && h == 0 {
 		return f
 	}
-
-	// we're setting either the width or height
-	// we'll set the smaller dimesion
-	if inputWidth > inputHeight {
-		// set the height
-		return f.ScaleDimensions(-2, maxSize)
-	}
-
-	return f.ScaleDimensions(maxSize, -2)
+	return f.ScaleDimensions(w, h)
 }
 
 // ScaleMaxLM scales an image to fit within specified maximum dimensions while maintaining its aspect ratio.
@@ -65,22 +53,11 @@ func (f VideoFilter) ScaleMaxLM(width int, height int, reqHeight int, maxWidth i
 		return f.ScaleMax(width, height, reqHeight)
 	}
 
-	aspectRatio := float64(width) / float64(height)
-	desiredHeight := reqHeight
-	if desiredHeight == 0 {
-		desiredHeight = height
+	w, h := utils.GetFFmpegScaleArgsForRect(width, height, reqHeight, maxWidth, maxHeight)
+	if w == 0 && h == 0 {
+		return f
 	}
-	desiredWidth := int(float64(desiredHeight) * aspectRatio)
-
-	if desiredHeight <= maxHeight && desiredWidth <= maxWidth {
-		return f.ScaleMax(width, height, reqHeight)
-	}
-
-	if float64(desiredHeight-maxHeight) > float64(desiredWidth-maxWidth) {
-		return f.ScaleDimensions(-2, maxHeight)
-	} else {
-		return f.ScaleDimensions(maxWidth, -2)
-	}
+	return f.ScaleDimensions(w, h)
 }
 
 // Fps returns a VideoFilter setting the frames per second.
