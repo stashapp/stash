@@ -149,7 +149,9 @@
         },
         "show_results": "顯示結果",
         "show_count_results": "顯示 {count} 筆結果",
-        "play": "播放"
+        "play": "播放",
+        "load": "載入",
+        "load_filter": "載入篩選結果"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -189,8 +191,6 @@
             "set_cover_label": "設定短片封面",
             "set_tag_desc": "選擇套用標籤時，該如何處理現有標籤。",
             "set_tag_label": "標籤設定",
-            "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
-            "show_male_label": "顯示男優",
             "source": "來源",
             "mark_organized_desc": "點選儲存後立即將短片標為已整理。",
             "mark_organized_label": "儲存時標記為已整理",
@@ -803,6 +803,14 @@
             "use_stash_hosted_funscript": {
                 "description": "啟用後，funscript 將直接從 Stash 傳送至您的 Handy 裝置，而無需使用第三方 Handy 伺服器。要求可從您的 Handy 裝置存取 Stash，且如果 stash 已設定憑證，則會產生 API 金鑰。",
                 "heading": "直接為 funscript 服務"
+            },
+            "performer_list": {
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "在表演者卡片上顯示連結"
+                    }
+                },
+                "heading": "表演者清單"
             }
         },
         "advanced_mode": "進階模式"
@@ -1073,7 +1081,7 @@
         "syncing": "與伺服器同步中",
         "uploading": "上傳腳本中"
     },
-    "hasMarkers": "含有章節標記",
+    "hasMarkers": "章節標記",
     "height": "身高",
     "height_cm": "高度 (cm)",
     "help": "說明",
@@ -1119,7 +1127,6 @@
     "name": "名稱",
     "new": "新增",
     "none": "無",
-    "o_counter": "尻尻計數",
     "operations": "動作",
     "organized": "是否已整理",
     "pagination": {
@@ -1161,7 +1168,6 @@
         "no_results_found": "找不到結果。",
         "number_of_performers_will_be_processed": "將自動處理 {performer_count} 個演員",
         "performer_already_tagged": "演員資料早已新增",
-        "performer_names_separated_by_comma": "演員名稱 (以逗號分隔)",
         "performer_selection": "選取演員",
         "performer_successfully_tagged": "成功新增演員資料：",
         "query_all_performers_in_the_database": "查詢所有資料庫中的演員",
@@ -1206,7 +1212,8 @@
         "saved_filters": "已儲存的過濾條件",
         "update_filter": "更新篩選",
         "edit_filter": "編輯篩選器",
-        "more_filter_criteria": "+{count} 更多"
+        "more_filter_criteria": "+{count} 更多",
+        "search_term": "搜尋詞組"
     },
     "seconds": "秒",
     "settings": "設定",
@@ -1252,16 +1259,16 @@
         },
         "paths": {
             "database_filename_empty_for_default": "資料庫檔案名稱（留空以使用預設）",
-            "description": "接下來，我們需要確定可以在哪裡找到你的片片，在哪裡儲存資料庫及其生成檔案等等。如果需要，您稍後可以再更改這些設定。",
+            "description": "接下來，我們需要確定可以在哪裡找到你的內容，在哪裡儲存資料庫及其生成檔案等等。如果需要，您稍後可以再更改這些設定。",
             "path_to_generated_directory_empty_for_default": "生成媒體資料夾路徑（留空以使用預設）",
             "set_up_your_paths": "設定你的路徑",
             "stash_alert": "您尚未選取任何路徑，Stash 將無法掃描你的檔案。你確定要繼續嗎？",
             "where_can_stash_store_its_database": "Stash 可以在哪裡儲存資料庫？",
-            "where_can_stash_store_its_database_description": "Stash 使用 SQLite 資料庫來儲存您片片的資料。預設情況下，Stash 將在您的設定檔路徑下以 <code>stash-go.sqlite</code> 這個檔案來儲存此資料庫內容。如果您想要更改此設定，請在此輸入您所想要的絕對或相對路徑（相對於目前工作目錄）。",
+            "where_can_stash_store_its_database_description": "Stash 使用 SQLite 資料庫來儲存您內容的資料。預設情況下，Stash 將在您的設定檔路徑下以 <code>stash-go.sqlite</code> 這個檔案來儲存此資料庫內容。如果您想要更改此設定，請在此輸入您所想要的絕對或相對路徑（相對於目前工作目錄）。",
             "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其生成內容？",
             "where_can_stash_store_its_generated_content_description": "為提供縮圖、預覽和其他預覽資料，Stash 將自動生成圖片和影片資訊。這包括不支援的檔案格式之轉檔。預設情況下，Stash 將在包含您設定檔案的資料夾中建立一個新的 <code>generated</code> 資料夾。如果要更改此生成媒體的儲存位置，請在此輸入絕對或相對路徑（相對於目前工作目錄）。如果該資料夾不存在，Stash 將自動建立此目錄。",
-            "where_is_your_porn_located": "你的片片都藏哪？",
-            "where_is_your_porn_located_description": "在此選擇你A片及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
+            "where_is_your_porn_located": "你的內容都藏哪？",
+            "where_is_your_porn_located_description": "在此選擇你視訊及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
             "path_to_blobs_directory_empty_for_default": "blobs 目錄的路徑 (預設為空)",
             "path_to_cache_directory_empty_for_default": "快取目錄的路徑 (預設為空)",
             "store_blobs_in_database": "將 blobs 儲存到資料庫",
@@ -1404,7 +1411,7 @@
     "group_count": "群組計數",
     "group_scene_number": "短片編號",
     "groups": "群組",
-    "hasChapters": "擁有章節",
+    "hasChapters": "章節",
     "history": "歷史紀錄",
     "image_index": "圖片#",
     "index_of_total": "第{index}個，共 {total}個",
@@ -1469,7 +1476,6 @@
         "update_studio": "更新工作室",
         "update_studios": "更新工作室",
         "updating_untagged_studios_description": "更新未標記的工作室將嘗試匹配任何缺乏stashid的工作室並更新metadata。",
-        "studio_names_separated_by_comma": "以逗號分隔的工作室名稱",
         "studio_selection": "工作室選擇",
         "studio_successfully_tagged": "工作室已成功設定標籤",
         "tag_status": "標籤狀態",
@@ -1544,5 +1550,6 @@
     },
     "sort_name": "分類名稱",
     "eta": "預估剩餘時間",
-    "age_on_date": "在{age}歲時製作"
+    "age_on_date": "在{age}歲時製作",
+    "scenes_duration": "場景持續時間"
 }

@@ -55,9 +55,14 @@ type ScrapedStudio {
   "Set if studio matched"
   stored_id: ID
   name: String!
-  url: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   parent: ScrapedStudio
   image: String
+  details: String
+  "Aliases must be comma-delimited to be parsed correctly"
+  aliases: String
+  tags: [ScrapedTag!]
 
   remote_site_id: String
 }
@@ -66,6 +71,8 @@ type ScrapedTag {
   "Set if tag matched"
   stored_id: ID
   name: String!
+  "Remote site ID, if applicable"
+  remote_site_id: String
 }
 
 type ScrapedScene {
@@ -191,6 +198,13 @@ input ScrapeSingleStudioInput {
   query: String
 }
 
+input ScrapeSingleTagInput {
+  """
+  Query can be either a name or a Stash ID
+  """
+  query: String
+}
+
 input ScrapeSinglePerformerInput {
   "Instructs to query by string"
   query: String
@@ -274,7 +288,10 @@ type StashBoxFingerprint {
   duration: Int!
 }
 
-"If neither ids nor names are set, tag all items"
+"""
+Accepts either ids, or a combination of names and stash_ids.
+If none are set, then all existing items will be tagged.
+"""
 input StashBoxBatchTagInput {
   "Stash endpoint to use for the tagging"
   endpoint: Int @deprecated(reason: "use stash_box_endpoint")
@@ -286,12 +303,17 @@ input StashBoxBatchTagInput {
   refresh: Boolean!
   "If batch adding studios, should their parent studios also be created?"
   createParent: Boolean!
-  "If set, only tag these ids"
+  """
+  IDs in stash of the items to update.
+  If set, names and stash_ids fields will be ignored.
+  """
   ids: [ID!]
-  "If set, only tag these names"
+  "Names of the items in the stash-box instance to search for and create"
   names: [String!]
-  "If set, only tag these performer ids"
+  "Stash IDs of the items in the stash-box instance to search for and create"
+  stash_ids: [String!]
+  "IDs in stash of the performers to update"
   performer_ids: [ID!] @deprecated(reason: "use ids")
-  "If set, only tag these performer names"
+  "Names of the performers in the stash-box instance to search for and create"
   performer_names: [String!] @deprecated(reason: "use names")
 }

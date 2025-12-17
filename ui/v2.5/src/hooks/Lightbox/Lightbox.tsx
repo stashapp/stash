@@ -19,7 +19,7 @@ import usePageVisibility from "../PageVisibility";
 import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
-import { ConfigurationContext } from "../Config";
+import { useConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
@@ -154,7 +154,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const [interfaceLocalForage, setInterfaceLocalForage] =
     useInterfaceLocalForage();
 
@@ -199,6 +199,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     0,
     config?.interface.imageLightbox.scrollAttemptsBeforeChange ?? 0
   );
+
+  const disableAnimation = config?.interface.imageLightbox.disableAnimation;
 
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
@@ -340,6 +342,10 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      if (disableAnimation) {
+        setInstant();
+      }
+
       setShowChapters(false);
       setMovingLeft(true);
 
@@ -357,12 +363,24 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
+    [
+      images,
+      pageCallback,
+      isSwitchingPage,
+      resetIntervalCallback,
+      index,
+      disableAnimation,
+      setInstant,
+    ]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
+
+      if (disableAnimation) {
+        setInstant();
+      }
 
       setMovingLeft(false);
       setShowChapters(false);
@@ -388,6 +406,8 @@ export const LightboxComponent: React.FC<IProps> = ({
       isSwitchingPage,
       resetIntervalCallback,
       index,
+      disableAnimation,
+      setInstant,
     ]
   );
 
@@ -455,6 +475,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     React.createElement(image.paths.preview != "" ? "video" : "img", {
       loop: image.paths.preview != "",
       autoPlay: image.paths.preview != "",
+      playsInline: image.paths.preview != "",
       src:
         image.paths.preview != ""
           ? image.paths.preview ?? ""

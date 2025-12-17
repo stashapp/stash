@@ -100,8 +100,9 @@ func (r *updateRecord) setNullTimestamp(destField string, v models.OptionalTime)
 	}
 }
 
-func (r *updateRecord) setNullDate(destField string, v models.OptionalDate) {
+func (r *updateRecord) setNullDate(destField string, precisionField string, v models.OptionalDate) {
 	if v.Set {
 		r.set(destField, NullDateFromDatePtr(v.Ptr()))
+		r.set(precisionField, datePrecisionFromDatePtr(v.Ptr()))
 	}
 }

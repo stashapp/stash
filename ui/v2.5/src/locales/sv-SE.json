@@ -149,7 +149,10 @@
             "close": "Stäng sidolisten",
             "open": "Öppna sidolisten"
         },
-        "show_results": "Visa resultat"
+        "show_results": "Visa resultat",
+        "load": "Ladda",
+        "load_filter": "Ladda filter",
+        "add_stash_id": "Lägg till Stash ID"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -198,11 +201,13 @@
             "set_cover_label": "Välj scenens miniatyrbild",
             "set_tag_desc": "Tagga scenen antingen genom att skriva över eller slå samman med de redan existerande.",
             "set_tag_label": "Tagga",
-            "show_male_desc": "Välj huruvida manliga stjärnor kommer vara tillgängliga att tagga.",
-            "show_male_label": "Visa manliga stjärnor",
             "source": "Källa",
             "errors": {
                 "blacklist_duplicate": "Duplicera svartlistat objekt"
+            },
+            "performer_genders": {
+                "heading": "Stjärnors kön",
+                "description": "Stjärnor med dessa kön kommer visas när scener taggas."
             }
         },
         "noun_query": "Query",
@@ -303,7 +308,9 @@
                 "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
                 "stash-box_integration": "Integration med Stash-box",
                 "username": "Användarnamn",
-                "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
+                "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering",
+                "log_file_max_size": "Maximal loggstorlek",
+                "log_file_max_size_desc": "Maximal storlek i megabytes för loggfilen innan den komprimeras. 0MB tolkas som avstängt. Kräver omstart."
             },
             "backup_directory_path": {
                 "description": "Filsökväg för SQLite-databas backupfil",
@@ -419,6 +426,10 @@
             "plugins_path": {
                 "description": "Sökväg till pluginkonfigurationsfiler",
                 "heading": "Pluginsökväg"
+            },
+            "delete_trash_path": {
+                "description": "Sökväg dit raderade filer kommer flyttas till instället för att permanent raderas. Lämna blankt för att permanent radera filer.",
+                "heading": "Skräpsökväg"
             }
         },
         "library": {
@@ -810,6 +821,18 @@
             "use_stash_hosted_funscript": {
                 "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet och att en API-nyckel är genererad om stash har lösenord aktiverat.",
                 "heading": "Skicka funscripts direkt"
+            },
+            "performer_list": {
+                "heading": "Lista av stjärnor",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Visa länkar på stjärnors kort"
+                    }
+                }
+            },
+            "sfw_mode": {
+                "description": "Aktivera om stash inte används för vuxet innehåll. Döljer eller ändrar gränssnitt som är mer fokuserade på vuxet innehåll.",
+                "heading": "Vuxet Innehållsläge"
             }
         },
         "advanced_mode": "Avancerat Läge"
@@ -908,7 +931,8 @@
                 "label": "Bläddringsläge",
                 "pan_y": "Panorera Y",
                 "zoom": "Zooma"
-            }
+            },
+            "disable_animation": "Stäng av övergångsanimationen mellan bilder"
         },
         "merge": {
             "destination": "Destination",
@@ -973,7 +997,10 @@
         "clear_o_history_confirm": "Är du säker på att du vill radera O-historiken?",
         "clear_play_history_confirm": "Är du säker på att du vill radera uppspelningshistoriken?",
         "overwrite_filter_warning": "Sparat filter \"{entityName}\" kommer skrivas över.",
-        "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?"
+        "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?",
+        "clear_o_history_confirm_sfw": "Är du säker att du vill radera gillningshistoriken?",
+        "delete_alert_to_trash": "De följande {count, plural, one {{singularEntity}} other {{pluralEntity}}} kommer flyttas till skräpet:",
+        "stashid_exists_warning": "Det existerande stash id:et för denna stash-box kommer ersättas."
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1097,8 +1124,8 @@
         "syncing": "Synkar med server",
         "uploading": "Laddar upp skript"
     },
-    "hasChapters": "Har Kapitel",
-    "hasMarkers": "Har Markörer",
+    "hasChapters": "Kapitel",
+    "hasMarkers": "Markörer",
     "height": "Längd",
     "height_cm": "Längd (cm)",
     "help": "Hjälp",
@@ -1146,7 +1173,6 @@
     "name": "Namn",
     "new": "Ny",
     "none": "Ingen",
-    "o_counter": "O-räknare",
     "operations": "Operationer",
     "organized": "Organiserad",
     "pagination": {
@@ -1192,7 +1218,6 @@
         "no_results_found": "Inga resultat hittades.",
         "number_of_performers_will_be_processed": "{performer_count} stjärnor kommer behandlas",
         "performer_already_tagged": "Stjärna som redan är taggad",
-        "performer_names_separated_by_comma": "Namn på stjärnor separerade med ett komma",
         "performer_selection": "Val av stjärna",
         "performer_successfully_tagged": "Lyckad taggning av stjärna:",
         "query_all_performers_in_the_database": "Alla stjärnor i databasen",
@@ -1205,7 +1230,8 @@
         "untagged_performers": "Ej taggade stjärnor",
         "update_performer": "Uppdatera stjärna",
         "update_performers": "Uppdatera stjärnor",
-        "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan."
+        "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan.",
+        "performer_names_or_stashids_separated_by_comma": "Stjärnors namn eller StashID separerade med komma"
     },
     "performer_tags": "Stjärntagg",
     "performers": "Stjärnor",
@@ -1237,7 +1263,8 @@
         "name": "Filter",
         "saved_filters": "Sparade filter",
         "update_filter": "Uppdatera filter",
-        "more_filter_criteria": "+{count} fler"
+        "more_filter_criteria": "+{count} fler",
+        "search_term": "Sökterm"
     },
     "second": "Sekund",
     "seconds": "Sekunder",
@@ -1284,7 +1311,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "databasfilnamn (blank för standard)",
-            "description": "Härnäst, måste vi avgöra var Stash hittar din porrsamling, och vart databasen, de genererade filerna, och cachen ska lagras . Om det skulle behövas kan dessa inställningar ändras senare.",
+            "description": "Härnäst, måste vi avgöra var Stash hittar din media, och var databasen, de genererade filerna, och cachen ska lagras . Om det skulle behövas kan dessa inställningar ändras senare.",
             "path_to_blobs_directory_empty_for_default": "sökväg för blobmapp (tom för standard)",
             "path_to_cache_directory_empty_for_default": "sökväg till cachemappen (tomt för standard)",
             "path_to_generated_directory_empty_for_default": "sökväg till mappen för genererade filer (blank för standard)",
@@ -1297,12 +1324,15 @@
             "where_can_stash_store_cache_files": "Var kan Stash lagra cachefiler?",
             "where_can_stash_store_cache_files_description": "För att viss funktionalitet som HLS/DASH-liveomkodning ska fungera kräver Stash en cache-mapp för tillfälliga filer. Som standard kommer Stash skapa en <code>Cache</code> mapp i mappen som innehåller konfigurationsfilen. Om du vill ändra detta skriv en absolut eller relativ (till den nuvarande platsen) sökväg. Stash kommer skapa mappen om den inte redan finns på platsen.",
             "where_can_stash_store_its_database": "Var kan Stash lagra sin databas?",
-            "where_can_stash_store_its_database_description": "Stash använder en SQLite-databas för att spara metadata till din porr. Som standard kommer databasen att skapas som <code>stash-go.sqlite</code> i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till den nuvarande arbetsmappen) filnamn.",
+            "where_can_stash_store_its_database_description": "Stash använder en SQLite-databas för att spara metadata till din media. Som standard kommer databasen att skapas som <code>stash-go.sqlite</code> i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till den nuvarande arbetsmappen) filnamn.",
             "where_can_stash_store_its_database_warning": "VARNING: att lagra databasen på ett annat system än det som Stash körs ifrån (t.ex. databasen på en NAS medan Stash körs från en annan dator) är <strong>inte stöttat</strong>! SQLite är inte avsett för att använding över nätverket, och att försöka oavsett kan väldigt enkelt korrumpera hela databasen.",
             "where_can_stash_store_its_generated_content": "Var kan Stash spara sitt genererade innehåll?",
             "where_can_stash_store_its_generated_content_description": "För att kunna erbjuda miniatyrbilder, förhandsvisningar och sprites måste Stash generera bilder och videor. Detta inkluderar också omkodning av ej stöttade filformat. Som standard skapar Stash en <code>generated</code> mapp i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till din nuvarande arbetsmapp) sökväg. Stash kommer skapa denna mapp om den inte redan finns.",
-            "where_is_your_porn_located": "Var är din porr lagrad?",
-            "where_is_your_porn_located_description": "Lägg till mappar som innehåller dina porrvideor och bilder. Stash kommer använda dessa mappar för att hitta videor och bilder under skanningen."
+            "where_is_your_porn_located": "Var är din media lagrad?",
+            "where_is_your_porn_located_description": "Lägg till mappar som innehåller dina videor och bilder. Stash kommer använda dessa mappar för att hitta videor och bilder under skanningen.",
+            "sfw_content_settings": "Används stash inte för vuxet innehåll?",
+            "sfw_content_settings_description": "stash kan användas för att hantera icke-vuxen media som fotografier, konst, serietidningar e.t.c.. Aktivering av detta kommer anpassa gränssnittet till att vara mer passande för icke-vuxen media.",
+            "use_sfw_content_mode": "Använd icke-vuxet läge"
         },
         "stash_setup_wizard": "Stash Starthjälp",
         "success": {
@@ -1389,7 +1419,6 @@
         "status_tagging_job_queued": "Status: Taggjob köat",
         "status_tagging_studios": "Status: Taggar studior",
         "studio_already_tagged": "Studio redan taggad",
-        "studio_names_separated_by_comma": "Studionamn separerade med komma",
         "studio_selection": "Studioval",
         "studio_successfully_tagged": "Studiotaggning lyckades",
         "tag_status": "Taggstatus",
@@ -1397,7 +1426,8 @@
         "untagged_studios": "Otaggade studior",
         "update_studio": "Uppdatera Studio",
         "update_studios": "Uppdatera Studior",
-        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar Stash ID och uppdatera metadata."
+        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar Stash ID och uppdatera metadata.",
+        "studio_names_or_stashids_separated_by_comma": "Studionamn eller StashID separerade med komma"
     },
     "studios": "Studior",
     "sub_tag_count": "Antal Underordnade Taggar",
@@ -1437,7 +1467,7 @@
     "url": "URL",
     "urls": "URL:er",
     "validation": {
-        "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ-MM-DD",
+        "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ, ÅÅÅÅ-MM, eller ÅÅÅÅ-MM-DD",
         "required": "${path} är ett obligatoriskt fält",
         "unique": "${path} måste vara unik",
         "blank": "${path} får inte lämnas tom",
@@ -1544,5 +1574,16 @@
         "login": "Inlogg",
         "invalid_credentials": "Ogiltigt användarnamn eller lösenord"
     },
-    "age_on_date": "{age} vid produktion"
+    "age_on_date": "{age} vid produktion",
+    "scenes_duration": "Scen Speltid",
+    "last_o_at_sfw": "Senaste Gillning Vid",
+    "o_count_sfw": "Gillningar",
+    "o_history_sfw": "Gillningshistorik",
+    "odate_recorded_no_sfw": "Inget Gillningsdatum Sparat",
+    "stashbox_search": {
+        "header": "Sök {entityType} från StashBox",
+        "no_results": "Inga resultat hittades.",
+        "placeholder_name_or_id": "{entityType} namn eller StashID...",
+        "select_stashbox": "Välj StashBox..."
+    }
 }

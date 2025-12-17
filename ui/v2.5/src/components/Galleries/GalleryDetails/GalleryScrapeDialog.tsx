@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,
@@ -98,7 +98,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     galleryTags,
     scraped.tags
   );
@@ -161,32 +161,38 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
     return (
       <>
         <ScrapedInputGroupRow
+          field="title"
           title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
+          field="code"
           title={intl.formatMessage({ id: "scene_code" })}
           result={code}
           onChange={(value) => setCode(value)}
         />
         <ScrapedStringListRow
+          field="urls"
           title={intl.formatMessage({ id: "urls" })}
           result={urls}
           onChange={(value) => setURLs(value)}
         />
         <ScrapedInputGroupRow
+          field="date"
           title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         <ScrapedInputGroupRow
+          field="photographer"
           title={intl.formatMessage({ id: "photographer" })}
           result={photographer}
           onChange={(value) => setPhotographer(value)}
         />
         <ScrapedStudioRow
+          field="studio"
           title={intl.formatMessage({ id: "studios" })}
           result={studio}
           onChange={(value) => setStudio(value)}
@@ -194,6 +200,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
           onCreateNew={createNewStudio}
         />
         <ScrapedPerformersRow
+          field="performers"
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
@@ -203,6 +210,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
         />
         {scrapedTagsRow}
         <ScrapedTextAreaRow
+          field="details"
           title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
@@ -211,16 +219,21 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
     );
   }
 
+  if (linkDialog) {
+    return linkDialog;
+  }
+
   return (
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "gallery" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };

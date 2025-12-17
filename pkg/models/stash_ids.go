@@ -79,10 +79,23 @@ func (s StashIDInputs) ToStashIDs() StashIDs {
 		return nil
 	}
 
-	ret := make(StashIDs, len(s))
-	for i, v := range s {
-		ret[i] = v.ToStashID()
+	// #2800 - deduplicate StashIDs based on endpoint and stash_id
+	ret := make(StashIDs, 0, len(s))
+	seen := make(map[string]map[string]bool)
+
+	for _, v := range s {
+		stashID := v.ToStashID()
+
+		if seen[stashID.Endpoint] == nil {
+			seen[stashID.Endpoint] = make(map[string]bool)
+		}
+
+		if !seen[stashID.Endpoint][stashID.StashID] {
+			seen[stashID.Endpoint][stashID.StashID] = true
+			ret = append(ret, stashID)
+		}
 	}
+
 	return ret
 }
 

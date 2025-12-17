@@ -3,11 +3,10 @@ import React, {
   useEffect,
   useState,
   useMemo,
-  useContext,
   useRef,
   useLayoutEffect,
 } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
@@ -32,7 +31,7 @@ import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import {
   faEllipsisV,
@@ -51,6 +50,8 @@ import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PatchComponent, PatchContainerComponent } from "src/patch";
+import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -183,7 +184,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const intl = useIntl();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
@@ -247,6 +248,12 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind("c c", () => {
+      onGenerateScreenshot(getPlayerPosition());
+    });
+    Mousetrap.bind("c d", () => {
+      onGenerateScreenshot();
+    });
 
     return () => {
       Mousetrap.unbind("a");
@@ -260,6 +267,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
       Mousetrap.unbind(",");
+      Mousetrap.unbind("c c");
+      Mousetrap.unbind("c d");
     };
   });
 
@@ -605,13 +614,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
 
           <div className="scene-subheader">
             <span className="date" data-value={scene.date}>
-              {!!scene.date && (
-                <FormattedDate
-                  value={scene.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
+              {!!scene.date && <FormattedDate value={scene.date} />}
             </span>
             <VideoFrameRateResolution
               width={file?.width}
@@ -680,7 +683,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   match,
 }) => {
   const { id } = match.params;
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
@@ -909,7 +912,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     ) {
       loadScene(queueScenes[currentQueueIndex + 1].id);
     } else {
-      history.goBack();
+      goBackOrReplace(history, "/scenes");
     }
   }
 

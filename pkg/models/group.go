@@ -23,6 +23,8 @@ type GroupFilterType struct {
 	TagCount *IntCriterionInput `json:"tag_count"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
+	// Filter by O counter
+	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by containing groups
 	ContainingGroups *HierarchicalMultiCriterionInput `json:"containing_groups"`
 	// Filter by sub groups

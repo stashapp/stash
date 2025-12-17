@@ -12,7 +12,7 @@ import Config from "./Config";
 import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
 import { SceneSearchResults } from "./StashSearchResult";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 
@@ -26,7 +26,7 @@ const Scene: React.FC<{
   const intl = useIntl();
   const { currentSource, doSceneQuery, doSceneFragmentScrape, loading } =
     useContext(TaggerStateContext);
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
@@ -208,6 +208,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
 
   function renderFragmentScrapeButton() {
     if (!currentSource?.supportSceneFragment) {
+      return;
+    }
+
+    if (scenes.length === 0) {
       return;
     }
 

@@ -55,7 +55,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 	return compoundHandler{
 		stringCriterionHandler(studioFilter.Name, studioTable+".name"),
 		stringCriterionHandler(studioFilter.Details, studioTable+".details"),
-		stringCriterionHandler(studioFilter.URL, studioTable+".url"),
+		qb.urlsCriterionHandler(studioFilter.URL),
 		intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil),
 		boolCriterionHandler(studioFilter.Favorite, studioTable+".favorite", nil),
 		boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil),
@@ -118,6 +118,9 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				studiosURLsTableMgr.join(f, "", "studios.id")
+				f.addWhere("studio_urls.url IS NULL")
 			case "image":
 				f.addWhere("studios.image_blob IS NULL")
 			case "stash_id":
@@ -200,6 +203,20 @@ func (qb *studioFilterHandler) aliasCriterionHandler(alias *models.StringCriteri
 	}
 
 	return h.handler(alias)
+}
+
+func (qb *studioFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		primaryFK:    studioIDColumn,
+		joinTable:    studioURLsTable,
+		stringColumn: studioURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			studiosURLsTableMgr.join(f, "", "studios.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *studioFilterHandler) childCountCriterionHandler(childCount *models.IntCriterionInput) criterionHandlerFunc {

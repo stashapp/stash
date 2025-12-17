@@ -1,6 +1,6 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import React, { useEffect, useMemo, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import {
@@ -29,11 +29,13 @@ import { imagePath, imageTitle } from "src/core/files";
 import { isVideo } from "src/utils/visualFile";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -47,7 +49,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const [incrementO] = useImageIncrementO(image.id);
   const [decrementO] = useImageDecrementO(image.id);
@@ -156,7 +158,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.goBack();
+      goBackOrReplace(history, "/images");
     }
   }
 
@@ -318,13 +320,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
           <div className="image-subheader">
             <span className="date" data-value={image.date}>
-              {!!image.date && (
-                <FormattedDate
-                  value={image.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
+              {!!image.date && <FormattedDate value={image.date} />}
             </span>
             {resolution ? (
               <span className="resolution" data-value={resolution}>
@@ -369,6 +365,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
           <ImageView
             loop={image.visual_files[0].__typename == "VideoFile"}
             autoPlay={image.visual_files[0].__typename == "VideoFile"}
+            playsInline={image.visual_files[0].__typename == "VideoFile"}
             controls={image.visual_files[0].__typename == "VideoFile"}
             className="m-sm-auto no-gutter image-image"
             style={

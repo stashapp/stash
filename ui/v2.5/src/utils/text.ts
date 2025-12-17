@@ -336,8 +336,10 @@ function dateTimeToString(date: Date) {
 const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
-  const birthdate = stringToDate(dateString);
-  const fromDate = fromDateString ? stringToDate(fromDateString) : new Date();
+  const birthdate = stringToFuzzyDate(dateString);
+  const fromDate = fromDateString
+    ? stringToFuzzyDate(fromDateString)
+    : new Date();
 
   if (!birthdate || !fromDate) return 0;
 
@@ -459,6 +461,38 @@ const formatDate = (intl: IntlShape, date?: string, utc = true) => {
   });
 };
 
+const formatFuzzyDate = (intl: IntlShape, date?: string, utc = true) => {
+  if (!date) {
+    return "";
+  }
+
+  // handle year or year/month dates
+  const yearMatch = date.match(/^(\d{4})$/);
+  if (yearMatch) {
+    const year = parseInt(yearMatch[1], 10);
+    return intl.formatDate(Date.UTC(year, 0), {
+      year: "numeric",
+      timeZone: utc ? "utc" : undefined,
+    });
+  }
+
+  const yearMonthMatch = date.match(/^(\d{4})-(\d{2})$/);
+  if (yearMonthMatch) {
+    const year = parseInt(yearMonthMatch[1], 10);
+    const month = parseInt(yearMonthMatch[2], 10) - 1;
+    return intl.formatDate(Date.UTC(year, month), {
+      year: "numeric",
+      month: "long",
+      timeZone: utc ? "utc" : undefined,
+    });
+  }
+
+  return intl.formatDate(date, {
+    format: "long",
+    timeZone: utc ? "utc" : undefined,
+  });
+};
+
 const formatDateTime = (intl: IntlShape, dateTime?: string, utc = false) =>
   `${formatDate(intl, dateTime, utc)} ${intl.formatTime(dateTime, {
     timeZone: utc ? "utc" : undefined,
@@ -519,6 +553,7 @@ const TextUtils = {
   sanitiseURL,
   domainFromURL,
   formatDate,
+  formatFuzzyDate,
   formatDateTime,
   secondsAsTimeString,
   abbreviateCounter,

@@ -35,10 +35,31 @@
     .rating-number .form-control {
       width: inherit;
     }
+
+    // The following min-width declarations prevent
+    // the performer's O-Count from moving around
+    // when hovering over rating stars
+    .rating-stars-precision-full .star-rating-number {
+      min-width: 0.75rem;
+    }
+
+    .rating-stars-precision-half .star-rating-number,
+    .rating-stars-precision-tenth .star-rating-number {
+      min-width: 1.45rem;
+    }
+
+    .rating-stars-precision-quarter .star-rating-number {
+      min-width: 2rem;
+    }
   }
 
   .alias {
     font-weight: bold;
+  }
+
+  .quality-group {
+    display: inline-flex;
+    margin-top: 0.25rem;
   }
 
   // the detail element ids are the same as field type name
@@ -86,6 +107,10 @@
 
   .thumbnail-section {
     position: relative;
+
+    .instagram {
+      color: pink;
+    }
   }
 
   &-image {

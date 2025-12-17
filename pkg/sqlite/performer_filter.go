@@ -447,7 +447,7 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 				return
 			}
 
-			if len(studios.Value) == 0 {
+			if len(studios.Value) == 0 && len(studios.Excludes) == 0 {
 				return
 			}
 
@@ -464,27 +464,54 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 				return
 			}
 
-			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
-			if err != nil {
-				f.setError(err)
-				return
-			}
-			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
+			if len(studios.Value) > 0 {
+				const derivedPerformerStudioTable = "performer_studio"
+				valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
+				f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
-			templStr := `SELECT performer_id FROM {primaryTable}
+				templStr := `SELECT performer_id FROM {primaryTable}
+		INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
+		INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
+
+				var unions []string
+				for _, c := range formatMaps {
+					unions = append(unions, utils.StrFormat(templStr, c))
+				}
+
+				f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
+
+				f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
+				f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
+			}
+
+			// #6412 - handle excludes as well
+			if len(studios.Excludes) > 0 {
+				excludeValuesClause, err := getHierarchicalValues(ctx, studios.Excludes, studioTable, "", "parent_id", "child_id", studios.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
+				f.addWith("exclude_studio(root_id, item_id) AS (" + excludeValuesClause + ")")
+
+				excludeTemplStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
+	INNER JOIN exclude_studio ON {primaryTable}.studio_id = exclude_studio.item_id`
 
-			var unions []string
-			for _, c := range formatMaps {
-				unions = append(unions, utils.StrFormat(templStr, c))
+				var unions []string
+				for _, c := range formatMaps {
+					unions = append(unions, utils.StrFormat(excludeTemplStr, c))
+				}
+
+				const excludePerformerStudioTable = "performer_studio_exclude"
+				f.addWith(fmt.Sprintf("%s AS (%s)", excludePerformerStudioTable, strings.Join(unions, " UNION ")))
+
+				f.addLeftJoin(excludePerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", excludePerformerStudioTable))
+				f.addWhere(fmt.Sprintf("%s.performer_id IS NULL", excludePerformerStudioTable))
 			}
-
-			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
-
-			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
-			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
 		}
 	}
 }

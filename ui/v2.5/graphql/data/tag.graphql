@@ -6,6 +6,11 @@ fragment TagData on Tag {
   aliases
   ignore_auto_tag
   favorite
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
   image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
@@ -44,5 +49,39 @@ fragment SelectTagData on Tag {
     id
     name
     sort_name
+  }
+
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
+}
+
+# Optimized fragment for tag list page - excludes expensive recursive *_count_all fields
+fragment TagListData on Tag {
+  id
+  name
+  sort_name
+  description
+  aliases
+  ignore_auto_tag
+  favorite
+  image_path
+  # Direct counts only - no recursive depth queries
+  scene_count
+  scene_marker_count
+  image_count
+  gallery_count
+  performer_count
+  studio_count
+  group_count
+
+  parents {
+    ...SlimTagData
+  }
+
+  children {
+    ...SlimTagData
   }
 }

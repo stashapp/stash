@@ -11,8 +11,9 @@ import * as GQL from "src/core/generated-graphql";
 import {
   queryFindGalleriesForSelect,
   queryFindGalleriesByIDForSelect,
+  useGalleryCreate,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -70,10 +71,14 @@ const gallerySelectSort = PatchFunction(
 const _GallerySelect: React.FC<
   IFilterProps & IFilterValueProps<Gallery> & ExtraGalleryProps
 > = (props) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const [createGallery] = useGalleryCreate();
+
+  const { configuration } = useConfigurationContext();
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
+  const defaultCreatable =
+    !configuration?.interface.disableDropdownCreate.gallery;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
@@ -203,6 +208,42 @@ const _GallerySelect: React.FC<
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
+  const onCreate = async (name: string) => {
+    const result = await createGallery({
+      variables: { input: { title: name } },
+    });
+    return {
+      value: result.data!.galleryCreate!.id,
+      item: result.data!.galleryCreate!,
+      message: "Created gallery",
+    };
+  };
+
+  const getNamedObject = (id: string, name: string): Gallery => {
+    return {
+      id,
+      title: name,
+      files: [],
+      folder: null,
+    };
+  };
+
+  const isValidNewOption = (inputValue: string, options: Gallery[]) => {
+    if (!inputValue) {
+      return false;
+    }
+
+    if (
+      options.some((o) => {
+        return galleryTitle(o).toLowerCase() === inputValue.toLowerCase();
+      })
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <FilterSelectComponent<Gallery, boolean>
       {...props}
@@ -214,12 +255,16 @@ const _GallerySelect: React.FC<
         props.className
       )}
       loadOptions={loadGalleries}
+      getNamedObject={getNamedObject}
+      isValidNewOption={isValidNewOption}
       components={{
         Option: GalleryOption,
         MultiValueLabel: GalleryMultiValueLabel,
         SingleValue: GalleryValueLabel,
       }}
       isMulti={props.isMulti ?? false}
+      creatable={props.creatable ?? defaultCreatable}
+      onCreate={onCreate}
       placeholder={
         props.noSelectionString ??
         intl.formatMessage(

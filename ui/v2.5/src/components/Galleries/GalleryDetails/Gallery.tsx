@@ -1,12 +1,12 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useHistory,
   Link,
   RouteComponentProps,
   Redirect,
 } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -41,8 +41,10 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -58,7 +60,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -167,7 +169,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.goBack();
+      goBackOrReplace(history, "/galleries");
     }
   }
 
@@ -409,11 +411,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           <div className="gallery-subheader">
             {!!gallery.date && (
               <span className="date" data-value={gallery.date}>
-                <FormattedDate
-                  value={gallery.date}
-                  format="long"
-                  timeZone="utc"
-                />
+                <FormattedDate value={gallery.date} />
               </span>
             )}
           </div>

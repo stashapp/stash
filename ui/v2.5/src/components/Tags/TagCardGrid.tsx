@@ -7,7 +7,7 @@ import {
 import { TagCard } from "./TagCard";
 
 interface ITagCardGrid {
-  tags: GQL.TagDataFragment[];
+  tags: (GQL.TagDataFragment | GQL.TagListDataFragment)[];
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;

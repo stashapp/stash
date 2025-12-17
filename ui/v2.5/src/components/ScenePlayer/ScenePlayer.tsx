@@ -1,7 +1,6 @@
 import React, {
   KeyboardEvent,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -17,21 +16,25 @@ import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
+import "./autostart-button";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
 import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
+import "./media-session";
+import "./wake-sentinel";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
+  useConfigureInterface,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   ConnectionState,
   InteractiveContext,
@@ -240,7 +243,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     onNext,
     onPrevious,
   }) => {
-    const { configuration } = useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
     const uiConfig = configuration?.ui;
     const videoRef = useRef<HTMLDivElement>(null);
@@ -248,6 +251,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const sceneId = useRef<string>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
+    const [updateInterfaceConfig] = useConfigureInterface();
 
     const [time, setTime] = useState(0);
     const [ready, setReady] = useState(false);
@@ -370,7 +374,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           },
         },
         plugins: {
-          airPlay: {},
+          airPlay: {
+            addButtonToControlBar: uiConfig?.enableChromecast ?? false,
+          },
           chromecast: {},
           vttThumbnails: {
             showTimestamp: true,
@@ -386,6 +392,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           skipButtons: {},
           trackActivity: {},
           vrMenu: {},
+          autostartButton: {
+            enabled: interfaceConfig?.autostartVideo ?? false,
+          },
           abLoopPlugin: {
             start: 0,
             end: false,
@@ -396,6 +405,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             pauseBeforeLooping: false,
             createButtons: uiConfig?.showAbLoopControls ?? false,
           },
+          mediaSession: {},
+          wakeSentinel: {},
         },
       };
 
@@ -429,7 +440,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
-    }, [uiConfig?.showAbLoopControls]);
+      // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
+      // player re-initialization when toggling autostart (which would interrupt playback)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -670,11 +684,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         }
       }
 
-      auto.current =
-        autoplay ||
-        (interfaceConfig?.autostartVideo ?? false) ||
-        _initialTimestamp > 0;
-
       const alwaysStartFromBeginning =
         uiConfig?.alwaysStartFromBeginning ?? false;
       const resumeTime = scene.resume_time ?? 0;
@@ -692,6 +701,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       player.load();
       player.focus();
+
+      // Check the autostart button plugin for user preference
+      const autostartButton = player.autostartButton();
+      const buttonEnabled = autostartButton.getEnabled();
+      auto.current =
+        autoplay ||
+        buttonEnabled ||
+        (interfaceConfig?.autostartVideo ?? false) ||
+        _initialTimestamp > 0;
 
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);
@@ -836,6 +854,30 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       sceneSaveActivity,
     ]);
 
+    // Sync autostart button with config changes
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      async function updateAutoStart(enabled: boolean) {
+        await updateInterfaceConfig({
+          variables: {
+            input: {
+              autostartVideo: enabled,
+            },
+          },
+        });
+      }
+
+      const autostartButton = player.autostartButton();
+      if (autostartButton) {
+        autostartButton.syncWithConfig(
+          interfaceConfig?.autostartVideo ?? false
+        );
+        autostartButton.updateAutoStart = updateAutoStart;
+      }
+    }, [getPlayer, updateInterfaceConfig, interfaceConfig?.autostartVideo]);
+
     useEffect(() => {
       const player = getPlayer();
       if (!player) return;
@@ -872,6 +914,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       return () => player.off("ended");
     }, [getPlayer, onComplete]);
+
+    // set up mediaSession plugin
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      // set up mediasession plugin
+      // get performer names as array
+      const performers = scene?.performers.map((p) => p.name).join(", ");
+      player
+        .mediaSession()
+        .setMetadata(
+          scene?.title ?? "Stash",
+          scene?.studio?.name ?? performers ?? "Stash",
+          scene.paths.screenshot || ""
+        );
+    }, [getPlayer, scene]);
 
     function onScrubberScroll() {
       if (started.current) {

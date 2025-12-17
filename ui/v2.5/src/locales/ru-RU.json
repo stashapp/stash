@@ -149,7 +149,9 @@
             "close": "Закрыть панель"
         },
         "show_count_results": "Показать {count} результат(ов)",
-        "play": "Воспроизвести"
+        "play": "Воспроизвести",
+        "load": "Загрузить",
+        "load_filter": "Загрузить фильтр"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -189,8 +191,6 @@
             "set_cover_label": "Выставить обложку для данной сцены",
             "set_tag_desc": "Прикрепить теги к сцене, перезаписав или соединив с существующими тегами на сцене.",
             "set_tag_label": "Установить теги",
-            "show_male_desc": "Включить или выключить доступность пометки тегами мужских актёров.",
-            "show_male_label": "Показывать актеров мужского пола",
             "source": "Источник",
             "mark_organized_label": "Отметить как Организованную при сохранении",
             "mark_organized_desc": "Сразу же отметить сцену как Организованную после нажатия кнопки Сохранить.",
@@ -1119,7 +1119,6 @@
     "name": "Имя",
     "new": "Новый",
     "none": "Отсутствует",
-    "o_counter": "О-Счетчик",
     "operations": "Операции",
     "organized": "Организован",
     "pagination": {
@@ -1161,7 +1160,6 @@
         "no_results_found": "Ничего не найдено.",
         "number_of_performers_will_be_processed": "{performer_count} актер(-ы) будут обработаны",
         "performer_already_tagged": "Актер уже помечен тегом",
-        "performer_names_separated_by_comma": "Имена актеров, разделенные запятой",
         "performer_selection": "Выбор актеров",
         "performer_successfully_tagged": "Актер успешно помечен тегом:",
         "query_all_performers_in_the_database": "Все актеры в базе данных",
@@ -1206,7 +1204,8 @@
         "saved_filters": "Сохраненные фильтры",
         "update_filter": "Обновить фильтр",
         "edit_filter": "Изменить фильтр",
-        "more_filter_criteria": "+ещё {count}"
+        "more_filter_criteria": "+ещё {count}",
+        "search_term": "Поисковый запрос"
     },
     "seconds": "Секунды",
     "settings": "Настройки",
@@ -1399,7 +1398,6 @@
         "refreshing_will_update_the_data": "Обновление затронет данные всех тегированных студий в данной инсталляции stash-box.",
         "status_tagging_studios": "Статус: Тегирование студий",
         "studio_already_tagged": "Студия уже тегирована",
-        "studio_names_separated_by_comma": "Названия студий, разделенные запятыми",
         "studio_selection": "Выбор студии",
         "studio_successfully_tagged": "Студия успешно тегирована",
         "to_use_the_studio_tagger": "Для использования тегирования студий stash-box нужно настроить.",

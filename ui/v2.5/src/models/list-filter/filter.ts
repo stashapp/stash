@@ -103,6 +103,20 @@ export class ListFilterModel {
     });
   }
 
+  // returns a clone of the filter for metadata fetching
+  // this removes the sort, page size and page number and zoom index
+  public metadataInfo() {
+    const clone = this.clone();
+    clone.sortBy = undefined;
+    clone.randomSeed = -1;
+    clone.currentPage = 1;
+    clone.sortDirection = DEFAULT_PARAMS.sortDirection;
+    clone.itemsPerPage = 0;
+    clone.zoomIndex = 1;
+    clone.displayMode = DEFAULT_PARAMS.displayMode;
+    return clone;
+  }
+
   // returns the number of filters applied
   public count() {
     // don't include search term
@@ -183,7 +197,7 @@ export class ListFilterModel {
       ret.disp = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      ret.q = params.q.trim();
+      ret.q = params.q;
     }
     if (params.p) {
       ret.p = Number.parseInt(params.p, 10);

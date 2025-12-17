@@ -1160,6 +1160,98 @@ func TestPerformerQuery(t *testing.T) {
 			[]int{performerIdx1WithScene, performerIdxWithScene},
 			false,
 		},
+		{
+			"include scene studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithScenePerformer])},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{performerIdxWithSceneStudio},
+			nil,
+			false,
+		},
+		{
+			"include image studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithImagePerformer])},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{performerIdxWithImageStudio},
+			nil,
+			false,
+		},
+		{
+			"include gallery studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithGalleryPerformer])},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{performerIdxWithGalleryStudio},
+			nil,
+			false,
+		},
+		{
+			"exclude scene studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithScenePerformer])},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			nil,
+			[]int{performerIdxWithSceneStudio},
+			false,
+		},
+		{
+			"exclude image studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithImagePerformer])},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			nil,
+			[]int{performerIdxWithImageStudio},
+			false,
+		},
+		{
+			"exclude gallery studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithGalleryPerformer])},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGalleryStudio},
+			false,
+		},
+		{
+			"include and exclude scene studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdx1WithTwoScenePerformer])},
+					Modifier: models.CriterionModifierIncludes,
+					Excludes: []string{strconv.Itoa(studioIDs[studioIdx2WithTwoScenePerformer])},
+				},
+			},
+			nil,
+			[]int{performerIdxWithTwoSceneStudio},
+			false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -2260,7 +2352,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTwoSceneStudio], lastPerformer.ID)
 
 		return nil
 	})

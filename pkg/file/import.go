@@ -120,7 +120,7 @@ func (i *Importer) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonsch
 func (i *Importer) populateZipFileID(ctx context.Context, f *models.DirEntry) error {
 	zipFilePath := i.Input.DirEntry().ZipFile
 	if zipFilePath != "" {
-		zf, err := i.ReaderWriter.FindByPath(ctx, zipFilePath)
+		zf, err := i.ReaderWriter.FindByPath(ctx, zipFilePath, true)
 		if err != nil {
 			return fmt.Errorf("error finding file by path %q: %v", zipFilePath, err)
 		}
@@ -146,7 +146,7 @@ func (i *Importer) Name() string {
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	path := i.Input.DirEntry().Path
-	existing, err := i.ReaderWriter.FindByPath(ctx, path)
+	existing, err := i.ReaderWriter.FindByPath(ctx, path, true)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (i *Importer) createFolderHierarchy(ctx context.Context, p string) (*models
 }
 
 func (i *Importer) getOrCreateFolder(ctx context.Context, path string, parent *models.Folder) (*models.Folder, error) {
-	folder, err := i.FolderStore.FindByPath(ctx, path)
+	folder, err := i.FolderStore.FindByPath(ctx, path, true)
 	if err != nil {
 		return nil, err
 	}
