@@ -13,9 +13,9 @@ import (
 const (
 	// DefaultSessionTimeout is the time after which a session is considered complete
 	// if no new requests are received.
-	// This is set high (5 minutes) because DLNA clients buffer aggressively and may not
+	// This is set high (60 minutes) because DLNA clients buffer aggressively and may not
 	// send any HTTP requests for extended periods while the user is still watching.
-	DefaultSessionTimeout = 5 * time.Minute
+	DefaultSessionTimeout = 60 * time.Minute
 
 	// monitorInterval is how often we check for expired sessions.
 	monitorInterval = 10 * time.Second
@@ -176,6 +176,8 @@ func (t *ActivityTracker) Stop() {
 	t.mutex.Unlock()
 
 	for _, session := range sessions {
+		// update the last activity time to the current time
+		session.LastActivity = time.Now()
 		t.processCompletedSession(session)
 	}
 }
@@ -184,6 +186,7 @@ func (t *ActivityTracker) Stop() {
 // Each request updates the session's LastActivity time, which is used for
 // time-based tracking of watch progress.
 func (t *ActivityTracker) RecordRequest(sceneID int, clientIP string, videoDuration float64) {
+	logger.Debugf("[DLNA Activity] Record request triggered.")
 	if !t.isEnabled() {
 		return
 	}
@@ -264,8 +267,8 @@ func (t *ActivityTracker) processCompletedSession(session *streamSession) {
 	playDuration := session.estimatedPlayDuration()
 	resumeTime := session.estimatedResumeTime()
 
-	logger.Debugf("[DLNA Activity] Session completed: scene=%d, client=%s, percent=%.1f%%, duration=%.1fs, resume=%.1fs",
-		session.SceneID, session.ClientIP, percentWatched, playDuration, resumeTime)
+	logger.Debugf("[DLNA Activity] Session completed: scene=%d, client=%s, duration=%.1fs, startTime=%s, lastActivity=%s, percent=%.1f%%, duration=%.1fs, resume=%.1fs",
+		session.SceneID, session.ClientIP, session.VideoDuration, session.StartTime.String(), session.LastActivity.String(), percentWatched, playDuration, resumeTime)
 
 	// Only save if there was meaningful activity (at least 1% watched or 5 seconds)
 	if percentWatched < 1 && playDuration < 5 {
