@@ -151,7 +151,9 @@
         "show_count_results": "Zeige {count} Ergebnisse",
         "show_results": "Ergebnisse anzeigen",
         "load_filter": "Filter laden",
-        "load": "Laden"
+        "load": "Laden",
+        "create_new": "Neu erstellen",
+        "add_stash_id": "Stash-ID hinzufügen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -202,6 +204,10 @@
             "mark_organized_desc": "Markiere die Szene nach dem klicken auf Speichern als organisiert.",
             "errors": {
                 "blacklist_duplicate": "Blacklist item duplizieren"
+            },
+            "performer_genders": {
+                "heading": "Darsteller-Geschlechter",
+                "description": "Darsteller mit diesem Geschlecht werden angezeigt, wenn Szenen getaggt werden."
             }
         },
         "noun_query": "Anfrage",
@@ -223,7 +229,10 @@
         "verb_scrape_all": "Alles Scrapen",
         "verb_submit_fp": "Übermittele {fpCount, plural, one{# Fingerabdruck} other{# Fingerabdrücke}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} nicht zugeordnete Szenen"
+        "verb_toggle_unmatched": "{toggle} nicht zugeordnete Szenen",
+        "verb_add_as_alias": "Füge Spitzname als Alias hinzu",
+        "verb_link_existing": "Link zu bereits existierendem",
+        "verb_match_tag": "Tag zuordnen"
     },
     "config": {
         "about": {
@@ -420,6 +429,10 @@
             "plugins_path": {
                 "heading": "Dateipfad für Plugins",
                 "description": "Speicherort der Plugin-Konfigurationsdateien"
+            },
+            "delete_trash_path": {
+                "description": "Pfad in den gelöschte Dateien verschoben, anstatt dauerhaft gelöscht werden. Freilassen, um Dateien permanent zu löschen.",
+                "heading": "Papierkorbverzeichnis"
             }
         },
         "library": {
@@ -921,7 +934,8 @@
                 "label": "Scroll-Modus",
                 "pan_y": "Schwenkung Y",
                 "zoom": "Zoomen"
-            }
+            },
+            "disable_animation": "Deaktivieren Übergangsanimation zwischen Bildern"
         },
         "merge": {
             "destination": "Ziel",
@@ -988,7 +1002,11 @@
         "overwrite_filter_warning": "Der gespeicherte Filter \"{entityName}\" wird überschrieben.",
         "set_default_filter_confirm": "Sind Sie sicher, dass Sie diesen Filter als Standard festlegen möchten?",
         "clear_o_history_confirm_sfw": "Bist du dir sicher das du den Verlauf löschen willst?",
-        "tags_found": "{count} Tags gefunden"
+        "tags_found": "{count} Tags gefunden",
+        "stashid_exists_warning": "Die existierende Stash ID für diese Stash-Box wird ersetzt.",
+        "studios_found": "{count} Studios gefunden",
+        "scrape_results_missing": "fehlend",
+        "delete_alert_to_trash": "Folgendes {count, plural, one {{singularEntity}} other {{pluralEntity}}} wird in den Papierkorb verschoben:"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
@@ -1112,8 +1130,8 @@
         "syncing": "Synchronisiert mit Server",
         "uploading": "Skript wird hochgeladen"
     },
-    "hasChapters": "Hat Kapitel",
-    "hasMarkers": "Hat Markierungen",
+    "hasChapters": "Kapitel",
+    "hasMarkers": "Markierungen",
     "height": "Größe",
     "height_cm": "Höhe (cm)",
     "help": "Hilfe",
@@ -1216,7 +1234,8 @@
         "untagged_performers": "Nicht getaggte Darsteller",
         "update_performer": "Darsteller aktualisieren",
         "update_performers": "Darsteller aktualisieren",
-        "updating_untagged_performers_description": "Bei der Aktualisierung von nicht getaggten Darstellern wird versucht die Metadaten alle Darsteller, welche keine StashID haben, zu aktualisieren."
+        "updating_untagged_performers_description": "Bei der Aktualisierung von nicht getaggten Darstellern wird versucht die Metadaten alle Darsteller, welche keine StashID haben, zu aktualisieren.",
+        "performer_names_or_stashids_separated_by_comma": "Darstellernamen oder StashIDs, durch Komma getrennt"
     },
     "performer_tags": "Darsteller-Tags",
     "performers": "Darsteller",
@@ -1296,7 +1315,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "Datenbank-Dateiname (Leer für Standardwert)",
-            "description": "Als nächstes müssen wir festhalten wo für deine Porno-Kollektion finden können und wo wir unsere Datenbank, generierten Hilfsdateien und Cache speichern dürfen. Diese Einstellungen lassen sich später auch noch ändern.",
+            "description": "Als nächstes müssen wir festhalten, wo wir deine Sammlung finden können und wo wir unsere Datenbank, generierten Hilfsdateien und Cache speichern dürfen. Diese Einstellungen lassen sich später auch noch ändern.",
             "path_to_cache_directory_empty_for_default": "Pfad zum Cache-Verzeichnis (leer für Voreinstellung)",
             "path_to_generated_directory_empty_for_default": "Pfad zum Ordner der Hilfsdateien (Leer für Standardwert)",
             "set_up_your_paths": "Setze die Dateipfade",
@@ -1307,15 +1326,17 @@
             "where_can_stash_store_cache_files": "Wo darf Stash Cache-Dateien zwischenspeichern?",
             "where_can_stash_store_cache_files_description": "Um einige Funktionen wie HLS/DASH Live-Transkodierung zu nutzen, muss Stash über ein Cache-Verzeichnis als temporären Zwischenspeicher verfügen. Als Voreinstellung wird Stash ein Verzeichnis <code>cache</code> im Ordner erstellen in dem auch die Konfigurationsdatei gespeichert ist. Wenn Sie dies ändern möchten, geben Sie bitte einen absoluten oder relativen Pfad an. Stash wird dieses Verzeichnis für Sie erstellen, sollte es nicht bereits existieren.",
             "where_can_stash_store_its_database": "Wo darf Stash seine Datenbank abspeichern?",
-            "where_can_stash_store_its_database_description": "Stash nutzt eine SQLite-Datenbank, um Metadaten über deine Pornosammlung zu speichern. Standardmäßig wird diese als <code>stash-go.sqlite</code> in dem Ordner gespeichert, in dem auf deine Konfigurationsdatei liegt. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad mit Dateinamen an.",
+            "where_can_stash_store_its_database_description": "Stash nutzt eine SQLite-Datenbank, um Metadaten über deine Sammlung zu speichern. Standardmäßig wird diese als <code>stash-go.sqlite</code> in dem Ordner gespeichert, in dem auf deine Konfigurationsdatei liegt. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad mit Dateinamen an.",
             "where_can_stash_store_its_database_warning": "ACHTUNG: Ein Speicherort abseits des Systems auf dem Stash ausgeführt wird (z.B. speichern der Datenbank auf einem Netzwerkspeicher während Stash auf einem anderen Computer ausgeführt wird) ist <strong>nicht unterstützt</strong>! SQLite ist nicht für Nutzung über das Netzwerk ausgelegt und der Versuch, dies zu tun, kann sehr leicht dazu führen, dass Ihre gesamte Datenbank beschädigt wird.",
             "where_can_stash_store_its_generated_content": "Wo darf Stash seine generierten Hilfsdateien abspeichern?",
             "where_can_stash_store_its_generated_content_description": "Um Thumbnails, Previews und Sprites zur Verfügung zu stellen, generiert Stash diese aus deinen Videos und Bildern. Das schließt auch Transkodierungen von nicht unterstützten Dateiformaten mit ein. Standardmäßig wird Stash diese im Ordner <code>generated</code> abspeichern, der sich am Ort der Konfigurationsdatei befindet. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad an. Stash wird den Ordner erstellen, sollte er noch nicht existieren.",
-            "where_is_your_porn_located": "Wo finden wir deine Porno-Kollektion?",
-            "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
+            "where_is_your_porn_located": "Wo finden wir deine Sammlung?",
+            "where_is_your_porn_located_description": "Füge Ordner hinzu, in denen sich deine Videos und Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
             "path_to_blobs_directory_empty_for_default": "Pfad zum Verzeichnis der blobs (standardmäßig leer)",
             "store_blobs_in_database": "blobs in der Datenbank speichern",
-            "sfw_content_settings": "Benutzt du stash auch für SFW Inhalte?"
+            "sfw_content_settings": "Benutzt du stash auch für SFW Inhalte?",
+            "sfw_content_settings_description": "Stash kann verwendet werden, um SFW Inhalte wie Fotografie, Kunst, Comics und mehr zu verwalten. Wenn du diese Option aktivierst, wird die Oberfläche für SFW Inhalte angepasst.",
+            "use_sfw_content_mode": "Benutze den Modus für SFW Inhalte"
         },
         "stash_setup_wizard": "Einrichtungshelfer für Stash",
         "success": {
@@ -1369,7 +1390,8 @@
         "scenes_played": "Szenen Abgespielt",
         "total_o_count": "Insgesamt Anzahl der Os",
         "total_play_count": "Gesamtanzahl der Wiedergaben",
-        "total_play_duration": "Spieldauer insgesamt"
+        "total_play_duration": "Spieldauer insgesamt",
+        "total_o_count_sfw": "Gefällt-Mir gesamt"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
@@ -1411,7 +1433,7 @@
     "updated_at": "Aktualisiert am",
     "url": "URL",
     "validation": {
-        "date_invalid_form": "${path} muss die Form YYYY-MM-DD haben",
+        "date_invalid_form": "${path} muss die Form YYY,YYY-MM, oder YYYY-MM-DD haben",
         "required": "${path} ist ein notwendiges Feld",
         "end_time_before_start_time": "Der Endzeitpunkt muss nach oder am Startzeitpunkt sein",
         "unique": "${path} muss einzigartig sein",
@@ -1462,7 +1484,8 @@
         "studio_successfully_tagged": "Studios erfolgreich getaggt",
         "tag_status": "Tag Status",
         "name_already_exists": "Name existiert bereits",
-        "no_results_found": "Keine Ergebnisse gefunden."
+        "no_results_found": "Keine Ergebnisse gefunden.",
+        "studio_names_or_stashids_separated_by_comma": "Studionamen oder StashID, getrennt durch Komma"
     },
     "parent_studio": "Übergeordnetes Studio",
     "package_manager": {
@@ -1564,5 +1587,11 @@
     "last_o_at_sfw": "Letztes mal ein Gefällt mir gegeben am",
     "o_count_sfw": "Gefällt mir",
     "o_history_sfw": "Gefällt mir Verlauf",
-    "odate_recorded_no_sfw": "Kein Gefällt mir Datum vermerkt"
+    "odate_recorded_no_sfw": "Kein Gefällt mir Datum vermerkt",
+    "stashbox_search": {
+        "header": "Suche {entityType} von StashBox",
+        "no_results": "Keine Ergebnisse gfunden.",
+        "placeholder_name_or_id": "{entityType} Name oder StashID...",
+        "select_stashbox": "StashBox auswählen..."
+    }
 }
