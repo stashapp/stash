@@ -152,7 +152,8 @@
             "open": "Abrir barra lateral",
             "toggle": "Alternar barra lateral"
         },
-        "add_stash_id": "Añadir ID de Stash"
+        "add_stash_id": "Añadir ID de Stash",
+        "create_new": "Crear nuevo"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -222,7 +223,10 @@
         "verb_scrape_all": "Rastrear todo",
         "verb_submit_fp": "Enviar {fpCount, plural, one{# huella dactilar} other{# huellas dactilares}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} escenas sin coincidencia"
+        "verb_toggle_unmatched": "{toggle} escenas sin coincidencia",
+        "verb_add_as_alias": "Añadir el nombre extraído como alias",
+        "verb_link_existing": "Enlace a existente",
+        "verb_match_tag": "Coincidir etiqueta"
     },
     "config": {
         "about": {
@@ -992,7 +996,8 @@
         "delete_alert_to_trash": "Los siguientes {count, plural, one {{singularEntity}} other {{pluralEntity}}} se moverán a la papelera:",
         "stashid_exists_warning": "Se sustituirá el identificador de stash existente para este stash-box.",
         "studios_found": "{count} estudios encontrados",
-        "tags_found": "{count} etiquetas encontradas"
+        "tags_found": "{count} etiquetas encontradas",
+        "scrape_results_missing": "Faltante"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
@@ -1329,7 +1334,8 @@
         "total_play_count": "Contador total de reproducciones",
         "total_o_count": "Total de orgasmos",
         "total_play_duration": "Tiempo total de reproducciones",
-        "scenes_played": "Escenas reproducidas"
+        "scenes_played": "Escenas reproducidas",
+        "total_o_count_sfw": "Total de «Me gusta»"
     },
     "status": "Estado: {statusText}",
     "studio": "Estudio",
