@@ -1387,7 +1387,8 @@
         "total_play_count": "总播放次数",
         "total_play_duration": "总播放时长",
         "scenes_played": "已播放的短片",
-        "total_o_count": "高潮总计"
+        "total_o_count": "高潮总计",
+        "total_o_count_sfw": "总点赞数"
     },
     "status": "状态：{statusText}",
     "studio": "工作室",
