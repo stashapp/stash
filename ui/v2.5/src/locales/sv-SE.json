@@ -152,7 +152,8 @@
         "show_results": "Visa resultat",
         "load": "Ladda",
         "load_filter": "Ladda filter",
-        "add_stash_id": "Lägg till Stash ID"
+        "add_stash_id": "Lägg till Stash ID",
+        "create_new": "Skapa ny"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -229,7 +230,10 @@
         "verb_scrape_all": "Skrapa alla",
         "verb_submit_fp": "Skicka {fpCount, plural, one{# Fingeravtryck} other{# Fingeravtryck}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} ej matchade scener"
+        "verb_toggle_unmatched": "{toggle} ej matchade scener",
+        "verb_add_as_alias": "Lägg til skrapat namn som alias",
+        "verb_link_existing": "Länk till existerande",
+        "verb_match_tag": "Matcha Tagg"
     },
     "config": {
         "about": {
@@ -1000,7 +1004,10 @@
         "set_default_filter_confirm": "Är du säker att du vill ställa in detta filter som standard?",
         "clear_o_history_confirm_sfw": "Är du säker att du vill radera gillningshistoriken?",
         "delete_alert_to_trash": "De följande {count, plural, one {{singularEntity}} other {{pluralEntity}}} kommer flyttas till skräpet:",
-        "stashid_exists_warning": "Det existerande stash id:et för denna stash-box kommer ersättas."
+        "stashid_exists_warning": "Det existerande stash id:et för denna stash-box kommer ersättas.",
+        "studios_found": "{count} studior hittades",
+        "tags_found": "{count} taggar hittades",
+        "scrape_results_missing": "Saknat"
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1386,7 +1393,8 @@
         "scenes_size": "Storlek på scener",
         "total_o_count": "Total O-Räkning",
         "total_play_count": "Totalt Antal Spelningar",
-        "total_play_duration": "Total Spelad Tid"
+        "total_play_duration": "Total Spelad Tid",
+        "total_o_count_sfw": "Totala Gillningar"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
