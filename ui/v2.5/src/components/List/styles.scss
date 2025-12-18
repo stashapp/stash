@@ -919,13 +919,16 @@ input[type="range"].zoom-slider {
 .filtered-list-toolbar {
   align-items: center;
   background-color: $body-bg;
+  border-radius: 0.5rem;
   gap: 0.5rem;
   justify-content: center;
 
   // offset the main padding
+  margin-left: auto;
+  margin-right: auto;
   margin-top: -0.5rem;
-  padding-bottom: 0.5rem;
-  padding-top: 0.5rem;
+  padding: 0.5rem;
+  width: fit-content;
 
   & > .btn-group {
     flex-wrap: wrap;
@@ -939,6 +942,12 @@ input[type="range"].zoom-slider {
     &:last-child {
       justify-content: flex-end;
     }
+  }
+
+  &.btn-toolbar {
+    position: sticky;
+    top: 49px;
+    z-index: 1000;
   }
 
   // set the width of the zoom-slider-container to prevent buttons moving when
