@@ -307,7 +307,8 @@ export const App: React.FC = () => {
     );
   }
 
-  const titleProps = makeTitleProps();
+  const title = config.data?.configuration.ui.title || "Stash";
+  const titleProps = makeTitleProps(title);
 
   if (!messages) {
     return null;
