@@ -351,7 +351,12 @@ export const App: React.FC = () => {
         formats={intlFormats}
       >
         <ToastProvider>
-          <PluginsLoader>
+          <PluginsLoader
+            disableCustomizations={
+              config.data?.configuration?.interface?.disableCustomizations ??
+              false
+            }
+          >
             <AppContainer>
               <ConfigurationProvider configuration={config.data!.configuration}>
                 {maybeRenderReleaseNotes()}
