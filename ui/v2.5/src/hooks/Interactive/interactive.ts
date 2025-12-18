@@ -178,6 +178,10 @@ export class Interactive {
     this._connected = await this._handy
       .setHsspSetup(funscriptUrl)
       .then((result) => result === HsspSetupResult.downloaded);
+    
+    // for some reason we need to call getStatus after setup to ensure proper state
+    // see https://github.com/defucilis/thehandy/issues/3
+    await this._handy.getStatus();
   }
 
   async sync() {
