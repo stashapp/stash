@@ -6,6 +6,7 @@ import { Option, SelectedList } from "./SidebarListFilter";
 import { DuplicatedCriterionOption } from "src/models/list-filter/criteria/phash";
 import { DuplicatedStashIDCriterionOption } from "src/models/list-filter/criteria/stash-ids";
 import { DuplicatedTitleCriterionOption } from "src/models/list-filter/criteria/title";
+import { DuplicatedURLCriterionOption } from "src/models/list-filter/criteria/url";
 import { SidebarSection } from "src/components/Shared/Sidebar";
 import { Icon } from "src/components/Shared/Icon";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -16,6 +17,7 @@ const DUPLICATE_TYPES = {
   phash: DuplicatedCriterionOption,
   stash_id: DuplicatedStashIDCriterionOption,
   title: DuplicatedTitleCriterionOption,
+  url: DuplicatedURLCriterionOption,
 } as const;
 
 type DuplicateTypeId = keyof typeof DUPLICATE_TYPES;
@@ -32,6 +34,7 @@ const DUPLICATE_TYPE_MESSAGE_IDS: Record<DuplicateTypeId, string> = {
   phash: "media_info.phash",
   stash_id: "stash_id",
   title: "title",
+  url: "url",
 };
 
 export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
