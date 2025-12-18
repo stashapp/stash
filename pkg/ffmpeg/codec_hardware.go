@@ -363,8 +363,11 @@ func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw 
 			args = args.Append("scale_qsv=format=nv12")
 		}
 	case VideoCodecRK264:
-		// For Rockchip, no extra mapping here. If there is no scale filter,
-		// leave frames in DRM_PRIME for the encoder.
+		// Full-hw decode on 10-bit sources often produces DRM_PRIME with sw_pix_fmt=nv15.
+		// h264_rkmpp does NOT accept nv15, so we must force a conversion to nv12
+		if fullhw {
+			args = args.Append("scale_rkrga=w=iw:h=ih:format=nv12")
+		}
 	}
 
 	return args
@@ -399,7 +402,7 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 		// by downloading the scaled frame to system RAM and re-uploading it.
 		// The filter chain below uses a zero-copy approach, passing the hardware-scaled
 		// frame directly to the encoder. This is more efficient but may be less stable.
-		template = "scale_rkrga=$value"
+		template = "scale_rkrga=$value:format=nv12"
 	default:
 		return VideoFilter(sargs)
 	}
