@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Button,
   Col,
@@ -69,7 +76,9 @@ const CLASSNAME_FOOTER_RIGHT = `${CLASSNAME_FOOTER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
+const CLASSNAME_SWIPE = `${CLASSNAME_CAROUSEL}-swipe`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
+const CLASSNAME_IMAGE_CONTAINER = `${CLASSNAME_CAROUSEL}-image-container`;
 const CLASSNAME_NAVBUTTON = `${CLASSNAME}-navbutton`;
 const CLASSNAME_NAV = `${CLASSNAME}-nav`;
 const CLASSNAME_NAVIMAGE = `${CLASSNAME_NAV}-image`;
@@ -81,6 +90,109 @@ const MIN_VALID_INTERVAL_SECONDS = 1;
 const MIN_ZOOM = 0.1;
 const SCROLL_ZOOM_TIMEOUT = 250;
 const ZOOM_NONE_EPSILON = 0.015;
+
+interface ILightboxCarouselProps {
+  transition: string | null;
+  currentIndex: number;
+  images: ILightboxImage[];
+  displayMode: GQL.ImageLightboxDisplayMode;
+  lightboxSettings: GQL.ConfigImageLightboxInput | undefined;
+  resetPosition?: boolean;
+  zoom: number;
+  scrollAttemptsBeforeChange: number;
+  firstScroll: React.MutableRefObject<number | null>;
+  inScrollGroup: React.MutableRefObject<boolean>;
+  movingLeft: boolean;
+  updateZoom: (v: number) => void;
+  debouncedScrollReset: () => void;
+  handleLeft: () => void;
+  handleRight: () => void;
+  overrideTransition: (t: string) => void;
+}
+
+const LightboxCarousel = forwardRef(function (
+  {
+    transition,
+    currentIndex,
+    images,
+    displayMode,
+    lightboxSettings,
+    resetPosition,
+    zoom,
+    scrollAttemptsBeforeChange,
+    firstScroll,
+    inScrollGroup,
+    movingLeft,
+    updateZoom,
+    debouncedScrollReset,
+    handleLeft,
+    handleRight,
+    overrideTransition,
+  }: ILightboxCarouselProps,
+  carouselRef: ForwardedRef<HTMLDivElement>
+) {
+  const [carouselShift, setCarouselShift] = useState(0);
+
+  function handleMoveCarousel(delta: number) {
+    overrideTransition(CLASSNAME_INSTANT);
+    setCarouselShift(carouselShift + delta);
+  }
+
+  function handleReleaseCarousel(
+    event: React.PointerEvent,
+    swipeDuration: number,
+    cancelled: boolean
+  ) {
+    const cappedDuration = Math.max(50, Math.min(500, swipeDuration)) / 1000;
+    const adjustedShift = carouselShift / (2 * cappedDuration);
+    if (!cancelled && adjustedShift < -window.innerWidth / 2) {
+      handleRight();
+    } else if (!cancelled && adjustedShift > window.innerWidth / 2) {
+      handleLeft();
+    }
+    setCarouselShift(0);
+    overrideTransition(CLASSNAME_SWIPE);
+  }
+
+  return (
+    <div
+      className={CLASSNAME_CAROUSEL + (transition ? ` ${transition}` : "")}
+      style={{ left: `calc(${currentIndex * -100}vw + ${carouselShift}px)` }}
+      ref={carouselRef}
+    >
+      {images.map((image, i) => (
+        <div className={`${CLASSNAME_IMAGE_CONTAINER}`} key={image.paths.image}>
+          {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
+            <LightboxImage
+              src={image.paths.image ?? ""}
+              width={image.visual_files?.[0]?.width ?? 0}
+              height={image.visual_files?.[0]?.height ?? 0}
+              displayMode={displayMode}
+              scaleUp={lightboxSettings?.scaleUp ?? false}
+              scrollMode={
+                lightboxSettings?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
+              }
+              resetPosition={resetPosition}
+              zoom={i === currentIndex ? zoom : 1}
+              scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
+              firstScroll={firstScroll}
+              inScrollGroup={inScrollGroup}
+              current={i === currentIndex}
+              alignBottom={movingLeft}
+              setZoom={updateZoom}
+              debouncedScrollReset={debouncedScrollReset}
+              onLeft={handleLeft}
+              onRight={handleRight}
+              isVideo={isVideo(image.visual_files?.[0] ?? {})}
+              moveCarousel={handleMoveCarousel}
+              releaseCarousel={handleReleaseCarousel}
+            />
+          ) : undefined}
+        </div>
+      ))}
+    </div>
+  );
+});
 
 interface IProps {
   images: ILightboxImage[];
@@ -117,7 +229,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
-  const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -144,7 +255,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayTarget = useRef<HTMLButtonElement | null>(null);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const clearIntervalCallback = useRef<() => void>();
@@ -201,6 +311,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   );
 
   const disableAnimation = config?.interface.imageLightbox.disableAnimation;
+  const defaultTransition = disableAnimation ? CLASSNAME_INSTANT : null;
+
+  const [transition, setTransition] = useState<string | null>(
+    defaultTransition
+  );
 
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
@@ -232,15 +347,18 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [isSwitchingPage, images, index]);
 
-  const disableInstantTransition = useDebounce(
-    () => setInstantTransition(false),
+  const restoreTransition = useDebounce(
+    () => setTransition(defaultTransition),
     400
   );
 
-  const setInstant = useCallback(() => {
-    setInstantTransition(true);
-    disableInstantTransition();
-  }, [disableInstantTransition]);
+  const overrideTransition = useCallback(
+    (t: string) => {
+      setTransition(t);
+      restoreTransition();
+    },
+    [restoreTransition]
+  );
 
   useEffect(() => {
     if (images.length < 2) return;
@@ -342,10 +460,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
-      if (disableAnimation) {
-        setInstant();
-      }
-
       setShowChapters(false);
       setMovingLeft(true);
 
@@ -363,24 +477,12 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
-
-      if (disableAnimation) {
-        setInstant();
-      }
 
       setMovingLeft(false);
       setShowChapters(false);
@@ -406,8 +508,6 @@ export const LightboxComponent: React.FC<IProps> = ({
       isSwitchingPage,
       resetIntervalCallback,
       index,
-      disableAnimation,
-      setInstant,
     ]
   );
 
@@ -422,12 +522,12 @@ export const LightboxComponent: React.FC<IProps> = ({
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (e.repeat && (e.key === "ArrowRight" || e.key === "ArrowLeft"))
-        setInstant();
+        overrideTransition(CLASSNAME_INSTANT);
       if (e.key === "ArrowLeft") handleLeft();
       else if (e.key === "ArrowRight") handleRight();
       else if (e.key === "Escape") close();
     },
-    [setInstant, handleLeft, handleRight, close]
+    [overrideTransition, handleLeft, handleRight, close]
   );
   const handleFullScreenChange = () => {
     if (clearIntervalCallback.current) {
@@ -869,45 +969,24 @@ export const LightboxComponent: React.FC<IProps> = ({
               <Icon icon={faChevronLeft} />
             </Button>
           )}
-
-          <div
-            className={cx(CLASSNAME_CAROUSEL, {
-              [CLASSNAME_INSTANT]: instantTransition,
-            })}
-            style={{ left: `${currentIndex * -100}vw` }}
-            ref={carouselRef}
-          >
-            {images.map((image, i) => (
-              <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
-                {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
-                  <LightboxImage
-                    src={image.paths.image ?? ""}
-                    width={image.visual_files?.[0]?.width ?? 0}
-                    height={image.visual_files?.[0]?.height ?? 0}
-                    displayMode={displayMode}
-                    scaleUp={lightboxSettings?.scaleUp ?? false}
-                    scrollMode={
-                      lightboxSettings?.scrollMode ??
-                      GQL.ImageLightboxScrollMode.Zoom
-                    }
-                    resetPosition={resetPosition}
-                    zoom={i === currentIndex ? zoom : 1}
-                    scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
-                    firstScroll={firstScroll}
-                    inScrollGroup={inScrollGroup}
-                    current={i === currentIndex}
-                    alignBottom={movingLeft}
-                    setZoom={updateZoom}
-                    debouncedScrollReset={debouncedScrollReset}
-                    onLeft={handleLeft}
-                    onRight={handleRight}
-                    isVideo={isVideo(image.visual_files?.[0] ?? {})}
-                  />
-                ) : undefined}
-              </div>
-            ))}
-          </div>
-
+          <LightboxCarousel
+            transition={transition}
+            currentIndex={currentIndex}
+            images={images}
+            displayMode={displayMode}
+            lightboxSettings={lightboxSettings}
+            resetPosition={resetPosition}
+            zoom={zoom}
+            scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
+            firstScroll={firstScroll}
+            inScrollGroup={inScrollGroup}
+            movingLeft={movingLeft}
+            updateZoom={updateZoom}
+            debouncedScrollReset={debouncedScrollReset}
+            handleLeft={handleLeft}
+            handleRight={handleRight}
+            overrideTransition={overrideTransition}
+          />
           {allowNavigation && (
             <Button
               variant="link"
