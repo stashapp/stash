@@ -16,6 +16,10 @@ type TitleDuplicationCriterionInput struct {
 	Duplicated *bool `json:"duplicated"`
 }
 
+type URLDuplicationCriterionInput struct {
+	Duplicated *bool `json:"duplicated"`
+}
+
 type SceneFilterType struct {
 	OperatorFilter[SceneFilterType]
 	ID       *IntCriterionInput    `json:"id"`
@@ -47,6 +51,8 @@ type SceneFilterType struct {
 	DuplicatedStashID *StashIDDuplicationCriterionInput `json:"duplicated_stash_id"`
 	// Filter Scenes that have the same title
 	DuplicatedTitle *TitleDuplicationCriterionInput `json:"duplicated_title"`
+	// Filter Scenes that have the same URL
+	DuplicatedURL *URLDuplicationCriterionInput `json:"duplicated_url"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
 	// Filter by orientation

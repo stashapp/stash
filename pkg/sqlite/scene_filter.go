@@ -158,6 +158,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.phashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable),
 		qb.stashIDDuplicatedCriterionHandler(sceneFilter.DuplicatedStashID),
 		qb.titleDuplicatedCriterionHandler(sceneFilter.DuplicatedTitle),
+		qb.urlDuplicatedCriterionHandler(sceneFilter.DuplicatedURL),
 		&dateCriterionHandler{sceneFilter.Date, "scenes.date", nil},
 		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
 		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
@@ -327,6 +328,22 @@ func (qb *sceneFilterHandler) titleDuplicatedCriterionHandler(duplicatedFilter *
 
 			// Find titles that appear on more than one scene (excluding empty titles)
 			f.addInnerJoin("(SELECT id FROM scenes WHERE title != '' AND title IS NOT NULL AND title IN (SELECT title FROM scenes WHERE title != '' AND title IS NOT NULL GROUP BY title HAVING COUNT(*) "+v+" 1))", "sctitle", "scenes.id = sctitle.id")
+		}
+	}
+}
+
+func (qb *sceneFilterHandler) urlDuplicatedCriterionHandler(duplicatedFilter *models.URLDuplicationCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if duplicatedFilter != nil && duplicatedFilter.Duplicated != nil {
+			var v string
+			if *duplicatedFilter.Duplicated {
+				v = ">"
+			} else {
+				v = "="
+			}
+
+			// Find URLs that appear on more than one scene
+			f.addInnerJoin("(SELECT scene_id FROM scene_urls INNER JOIN (SELECT url FROM scene_urls GROUP BY url HAVING COUNT(DISTINCT scene_id) "+v+" 1) dupes ON scene_urls.url = dupes.url)", "scurl", "scenes.id = scurl.scene_id")
 		}
 	}
 }

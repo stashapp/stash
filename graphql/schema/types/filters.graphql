@@ -89,6 +89,10 @@ input TitleDuplicationCriterionInput {
   duplicated: Boolean
 }
 
+input URLDuplicationCriterionInput {
+  duplicated: Boolean
+}
+
 input StashIDCriterionInput {
   """
   If present, this value is treated as a predicate.
@@ -262,6 +266,8 @@ input SceneFilterType {
   duplicated_stash_id: StashIDDuplicationCriterionInput
   "Filter Scenes that have the same title"
   duplicated_title: TitleDuplicationCriterionInput
+  "Filter Scenes that have the same URL"
+  duplicated_url: URLDuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
   "Filter by orientation"

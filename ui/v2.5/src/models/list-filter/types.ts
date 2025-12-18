@@ -199,6 +199,7 @@ export type CriterionType =
   | "duplicated"
   | "duplicated_stash_id"
   | "duplicated_title"
+  | "duplicated_url"
   | "ignore_auto_tag"
   | "file_count"
   | "stash_id_endpoint"
