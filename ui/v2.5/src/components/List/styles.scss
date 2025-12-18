@@ -726,6 +726,24 @@ input[type="range"].zoom-slider {
   min-height: 2em;
 }
 
+.duplicate-sub-options {
+  margin-left: 2rem;
+  padding-left: 0.5rem;
+
+  .duplicate-sub-option {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    height: 2em;
+    opacity: 0.8;
+    padding-left: 0.5rem;
+
+    &:hover {
+      background-color: rgba(138, 155, 168, 0.15);
+    }
+  }
+}
+
 .tilted {
   transform: rotate(45deg);
 }
