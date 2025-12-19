@@ -42,12 +42,12 @@ type StudioCounter interface {
 
 // StudioCreator provides methods to create studios.
 type StudioCreator interface {
-	Create(ctx context.Context, newStudio *Studio) error
+	Create(ctx context.Context, newStudio *CreateStudioInput) error
 }
 
 // StudioUpdater provides methods to update studios.
 type StudioUpdater interface {
-	Update(ctx context.Context, updatedStudio *Studio) error
+	Update(ctx context.Context, updatedStudio *UpdateStudioInput) error
 	UpdatePartial(ctx context.Context, updatedStudio StudioPartial) (*Studio, error)
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
 }
@@ -78,6 +78,8 @@ type StudioReader interface {
 	StashIDLoader
 	TagIDLoader
 	URLLoader
+
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Studio, error)
 	GetImage(ctx context.Context, studioID int) ([]byte, error)

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
@@ -47,6 +48,559 @@ func TestStudioFindByName(t *testing.T) {
 	})
 }
 
+func loadStudioRelationships(ctx context.Context, expected models.Studio, actual *models.Studio) error {
+	if expected.Aliases.Loaded() {
+		if err := actual.LoadAliases(ctx, db.Studio); err != nil {
+			return err
+		}
+	}
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Studio); err != nil {
+			return err
+		}
+	}
+	if expected.TagIDs.Loaded() {
+		if err := actual.LoadTagIDs(ctx, db.Studio); err != nil {
+			return err
+		}
+	}
+	if expected.StashIDs.Loaded() {
+		if err := actual.LoadStashIDs(ctx, db.Studio); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Test_StudioStore_Create(t *testing.T) {
+	var (
+		name          = "name"
+		details       = "details"
+		url           = "url"
+		rating        = 3
+		aliases       = []string{"alias1", "alias2"}
+		ignoreAutoTag = true
+		favorite      = true
+		endpoint1     = "endpoint1"
+		endpoint2     = "endpoint2"
+		stashID1      = "stashid1"
+		stashID2      = "stashid2"
+		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
+
+	tests := []struct {
+		name      string
+		newObject models.CreateStudioInput
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.CreateStudioInput{
+				Studio: &models.Studio{
+					Name:          name,
+					URLs:          models.NewRelatedStrings([]string{url}),
+					Favorite:      favorite,
+					Rating:        &rating,
+					Details:       details,
+					IgnoreAutoTag: ignoreAutoTag,
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]}),
+					Aliases:       models.NewRelatedStrings(aliases),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
+				CustomFields: testCustomFields,
+			},
+			false,
+		},
+		{
+			"invalid tag id",
+			models.CreateStudioInput{
+				Studio: &models.Studio{
+					Name:   name,
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
+			},
+			true,
+		},
+	}
+
+	qb := db.Studio
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			p := tt.newObject
+			if err := qb.Create(ctx, &p); (err != nil) != tt.wantErr {
+				t.Errorf("StudioStore.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				assert.Zero(p.ID)
+				return
+			}
+
+			assert.NotZero(p.ID)
+
+			copy := *tt.newObject.Studio
+			copy.ID = p.ID
+
+			// load relationships
+			if err := loadStudioRelationships(ctx, copy, p.Studio); err != nil {
+				t.Errorf("loadStudioRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, *p.Studio)
+
+			// ensure can find the Studio
+			found, err := qb.Find(ctx, p.ID)
+			if err != nil {
+				t.Errorf("StudioStore.Find() error = %v", err)
+			}
+
+			if !assert.NotNil(found) {
+				return
+			}
+
+			// load relationships
+			if err := loadStudioRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadStudioRelationships() error = %v", err)
+				return
+			}
+			assert.Equal(copy, *found)
+
+			// ensure custom fields are set
+			cf, err := qb.GetCustomFields(ctx, p.ID)
+			if err != nil {
+				t.Errorf("StudioStore.GetCustomFields() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.newObject.CustomFields, cf)
+
+			return
+		})
+	}
+}
+
+func Test_StudioStore_Update(t *testing.T) {
+	var (
+		name          = "name"
+		details       = "details"
+		url           = "url"
+		rating        = 3
+		aliases       = []string{"aliasX", "aliasY"}
+		ignoreAutoTag = true
+		favorite      = true
+		endpoint1     = "endpoint1"
+		endpoint2     = "endpoint2"
+		stashID1      = "stashid1"
+		stashID2      = "stashid2"
+		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
+
+	tests := []struct {
+		name          string
+		updatedObject models.UpdateStudioInput
+		wantErr       bool
+	}{
+		{
+			"full",
+			models.UpdateStudioInput{
+				Studio: &models.Studio{
+					ID:            studioIDs[studioIdxWithGallery],
+					Name:          name,
+					URLs:          models.NewRelatedStrings([]string{url}),
+					Favorite:      favorite,
+					Rating:        &rating,
+					Details:       details,
+					IgnoreAutoTag: ignoreAutoTag,
+					Aliases:       models.NewRelatedStrings(aliases),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
+			},
+			false,
+		},
+		{
+			"clear nullables",
+			models.UpdateStudioInput{
+				Studio: &models.Studio{
+					ID:       studioIDs[studioIdxWithGallery],
+					Name:     name, // name is mandatory
+					URLs:     models.NewRelatedStrings([]string{}),
+					Aliases:  models.NewRelatedStrings([]string{}),
+					TagIDs:   models.NewRelatedIDs([]int{}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				},
+			},
+			false,
+		},
+		{
+			"clear tag ids",
+			models.UpdateStudioInput{
+				Studio: &models.Studio{
+					ID:     studioIDs[sceneIdxWithTag],
+					Name:   name, // name is mandatory
+					TagIDs: models.NewRelatedIDs([]int{}),
+				},
+			},
+			false,
+		},
+		{
+			"set custom fields",
+			models.UpdateStudioInput{
+				Studio: &models.Studio{
+					ID:   studioIDs[studioIdxWithGallery],
+					Name: name, // name is mandatory
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			false,
+		},
+		{
+			"clear custom fields",
+			models.UpdateStudioInput{
+				Studio: &models.Studio{
+					ID:   studioIDs[studioIdxWithGallery],
+					Name: name, // name is mandatory
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			false,
+		},
+		{
+			"invalid tag id",
+			models.UpdateStudioInput{
+				Studio: &models.Studio{
+					ID:     studioIDs[sceneIdxWithGallery],
+					Name:   name, // name is mandatory
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
+			},
+			true,
+		},
+	}
+
+	qb := db.Studio
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			copy := *tt.updatedObject.Studio
+
+			if err := qb.Update(ctx, &tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("StudioStore.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("StudioStore.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadStudioRelationships(ctx, copy, s); err != nil {
+				t.Errorf("loadStudioRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, *s)
+
+			// ensure custom fields are correct
+			if tt.updatedObject.CustomFields.Full != nil {
+				cf, err := qb.GetCustomFields(ctx, tt.updatedObject.ID)
+				if err != nil {
+					t.Errorf("StudioStore.GetCustomFields() error = %v", err)
+					return
+				}
+
+				assert.Equal(tt.updatedObject.CustomFields.Full, cf)
+			}
+		})
+	}
+}
+
+func clearStudioPartial() models.StudioPartial {
+	nullString := models.OptionalString{Set: true, Null: true}
+	nullInt := models.OptionalInt{Set: true, Null: true}
+
+	// leave mandatory fields
+	return models.StudioPartial{
+		URLs:     &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
+		Aliases:  &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
+		Rating:   nullInt,
+		Details:  nullString,
+		TagIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		StashIDs: &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
+
+func Test_StudioStore_UpdatePartial(t *testing.T) {
+	var (
+		name          = "name"
+		details       = "details"
+		url           = "url"
+		aliases       = []string{"aliasX", "aliasY"}
+		rating        = 3
+		ignoreAutoTag = true
+		favorite      = true
+		endpoint1     = "endpoint1"
+		endpoint2     = "endpoint2"
+		stashID1      = "stashid1"
+		stashID2      = "stashid2"
+		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.StudioPartial
+		want    models.Studio
+		wantErr bool
+	}{
+		{
+			"full",
+			studioIDs[studioIdxWithDupName],
+			models.StudioPartial{
+				Name: models.NewOptionalString(name),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+				Aliases: &models.UpdateStrings{
+					Values: aliases,
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+				Favorite:      models.NewOptionalBool(favorite),
+				Rating:        models.NewOptionalInt(rating),
+				Details:       models.NewOptionalString(details),
+				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
+			},
+			models.Studio{
+				ID:            studioIDs[studioIdxWithDupName],
+				Name:          name,
+				URLs:          models.NewRelatedStrings([]string{url}),
+				Aliases:       models.NewRelatedStrings(aliases),
+				Favorite:      favorite,
+				Rating:        &rating,
+				Details:       details,
+				IgnoreAutoTag: ignoreAutoTag,
+				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
+					},
+					{
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
+					},
+				}),
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear all",
+			studioIDs[studioIdxWithTwoTags],
+			clearStudioPartial(),
+			models.Studio{
+				ID:            studioIDs[studioIdxWithTwoTags],
+				Name:          getStudioStringValue(studioIdxWithTwoTags, "Name"),
+				Favorite:      getStudioBoolValue(studioIdxWithTwoTags),
+				Aliases:       models.NewRelatedStrings([]string{}),
+				TagIDs:        models.NewRelatedIDs([]int{}),
+				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				IgnoreAutoTag: getIgnoreAutoTag(studioIdxWithTwoTags),
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.StudioPartial{Name: models.NewOptionalString(name)},
+			models.Studio{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Studio
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			tt.partial.ID = tt.id
+
+			got, err := qb.UpdatePartial(ctx, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StudioStore.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			if err := loadStudioRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadStudioRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("StudioStore.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadStudioRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadStudioRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_StudioStore_UpdatePartialCustomFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       int
+		partial  models.StudioPartial
+		expected map[string]interface{} // nil to use the partial
+	}{
+		{
+			"set custom fields",
+			studioIDs[studioIdxWithGallery],
+			models.StudioPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			nil,
+		},
+		{
+			"clear custom fields",
+			studioIDs[studioIdxWithGallery],
+			models.StudioPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			nil,
+		},
+		{
+			"partial custom fields",
+			studioIDs[studioIdxWithGallery],
+			models.StudioPartial{
+				CustomFields: models.CustomFieldsInput{
+					Partial: map[string]interface{}{
+						"string":    "bbb",
+						"new_field": "new",
+					},
+				},
+			},
+			map[string]interface{}{
+				"int":       int64(2),
+				"real":      0.7,
+				"string":    "bbb",
+				"new_field": "new",
+			},
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Studio
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			tt.partial.ID = tt.id
+
+			_, err := qb.UpdatePartial(ctx, tt.partial)
+			if err != nil {
+				t.Errorf("StudioStore.UpdatePartial() error = %v", err)
+				return
+			}
+
+			// ensure custom fields are correct
+			cf, err := qb.GetCustomFields(ctx, tt.id)
+			if err != nil {
+				t.Errorf("StudioStore.GetCustomFields() error = %v", err)
+				return
+			}
+			if tt.expected == nil {
+				assert.Equal(tt.partial.CustomFields.Full, cf)
+			} else {
+				assert.Equal(tt.expected, cf)
+			}
+		})
+	}
+}
+
 func TestStudioQueryNameOr(t *testing.T) {
 	const studio1Idx = 1
 	const studio2Idx = 2
@@ -80,14 +634,6 @@ func TestStudioQueryNameOr(t *testing.T) {
 
 		return nil
 	})
-}
-
-func loadStudioRelationships(ctx context.Context, t *testing.T, s *models.Studio) error {
-	if err := s.LoadURLs(ctx, db.Studio); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func TestStudioQueryNameAndUrl(t *testing.T) {
@@ -311,13 +857,13 @@ func TestStudioDestroyParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio, parentName, nil, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
 		parentID := createdParent.ID
-		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
+		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
@@ -373,13 +919,13 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio, parentName, nil, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
 		parentID := createdParent.ID
-		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
+		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
@@ -414,7 +960,7 @@ func TestStudioUpdateStudioImage(t *testing.T) {
 
 		// create studio to test against
 		const name = "TestStudioUpdateStudioImage"
-		created, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
@@ -578,7 +1124,7 @@ func TestStudioStashIDs(t *testing.T) {
 
 		// create studio to test against
 		const name = "TestStudioStashIDs"
-		created, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
@@ -990,7 +1536,7 @@ func TestStudioAlias(t *testing.T) {
 
 		// create studio to test against
 		const name = "TestStudioAlias"
-		created, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
