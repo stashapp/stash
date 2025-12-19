@@ -923,9 +923,11 @@ button.btn.favorite-button {
   border-bottom: 1px solid $secondary;
 
   .collapse-header {
-    // background-color: $secondary;
-
+    background-color: $body-bg;
     padding: 0.25rem;
+    position: sticky;
+    top: -0.5rem;
+    z-index: 1;
 
     .collapse-button {
       font-weight: bold;

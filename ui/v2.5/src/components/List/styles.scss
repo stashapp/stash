@@ -214,6 +214,10 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-saved-filter-list-container .saved-filter-list {
+  max-height: unset;
+}
+
 .sidebar-saved-filter-list-container .toolbar {
   align-items: center;
   display: flex;
@@ -612,8 +616,6 @@ input[type="range"].zoom-slider {
 .sidebar-list-filter ul {
   list-style-type: none;
   margin-bottom: 0.25rem;
-  max-height: 300px;
-  overflow-y: auto;
   // to prevent unnecessary vertical scrollbar
   padding-bottom: 0.15rem;
   padding-inline-start: 0;
