@@ -72,6 +72,12 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 			stashIDTableAs:    "studio_stash_ids",
 			parentIDCol:       "studios.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 studioFilter.StashIDsEndpoint,
+			stashIDRepository: &studioRepository.stashIDs,
+			stashIDTableAs:    "studio_stash_ids",
+			parentIDCol:       "studios.id",
+		},
 
 		qb.isMissingCriterionHandler(studioFilter.IsMissing),
 		qb.tagCountCriterionHandler(studioFilter.TagCount),

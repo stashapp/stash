@@ -129,8 +129,16 @@ func (u *UpdateStashIDs) Set(v StashID) {
 
 type StashIDCriterionInput struct {
 	// If present, this value is treated as a predicate.
-	// That is, it will filter based on stash_ids with the matching endpoint
+	// That is, it will filter based on stash_id with the matching endpoint
 	Endpoint *string           `json:"endpoint"`
 	StashID  *string           `json:"stash_id"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
+type StashIDsCriterionInput struct {
+	// If present, this value is treated as a predicate.
+	// That is, it will filter based on stash_ids with the matching endpoint
+	Endpoint *string           `json:"endpoint"`
+	StashIDs []*string         `json:"stash_ids"`
 	Modifier CriterionModifier `json:"modifier"`
 }
