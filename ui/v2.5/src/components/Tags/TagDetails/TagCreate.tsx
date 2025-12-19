@@ -49,6 +49,29 @@ const TagCreate: React.FC = () => {
     }
   }
 
+  async function onSaveAndNew(input: GQL.TagCreateInput) {
+    const oldRelations = {
+      parents: [],
+      children: [],
+    };
+    const result = await createTag({
+      variables: { input },
+    });
+    if (result.data?.tagCreate?.id) {
+      const created = result.data.tagCreate;
+      tagRelationHook(created, oldRelations, {
+        parents: created.parents,
+        children: created.children,
+      });
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+        )
+      );
+    }
+  }
+
   function renderImage() {
     if (image) {
       return <img className="logo" alt="" src={image} />;
@@ -70,6 +93,7 @@ const TagCreate: React.FC = () => {
         <TagEditPanel
           tag={tag}
           onSubmit={onSave}
+          onSaveAndNew={onSaveAndNew}
           onCancel={() => history.push("/tags")}
           onDelete={() => {}}
           setImage={setImage}

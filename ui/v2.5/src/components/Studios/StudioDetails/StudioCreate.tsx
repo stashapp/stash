@@ -41,6 +41,20 @@ const StudioCreate: React.FC = () => {
     }
   }
 
+  async function onSaveAndNew(input: GQL.StudioCreateInput) {
+    const result = await createStudio({
+      variables: { input },
+    });
+    if (result.data?.studioCreate?.id) {
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+        )
+      );
+    }
+  }
+
   function renderImage() {
     if (image) {
       return <img className="logo" alt="" src={image} />;
@@ -68,6 +82,7 @@ const StudioCreate: React.FC = () => {
         <StudioEditPanel
           studio={studio}
           onSubmit={onSave}
+          onSaveAndNew={onSaveAndNew}
           onCancel={() => history.push("/studios")}
           onDelete={() => {}}
           setImage={setImage}

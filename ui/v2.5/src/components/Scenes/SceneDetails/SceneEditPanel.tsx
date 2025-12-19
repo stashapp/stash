@@ -52,6 +52,7 @@ interface IProps {
   isNew?: boolean;
   isVisible: boolean;
   onSubmit: (input: GQL.SceneCreateInput) => Promise<void>;
+  onSaveAndNew?: (input: GQL.SceneCreateInput) => Promise<void>;
   onDelete?: () => void;
 }
 
@@ -61,6 +62,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   isNew = false,
   isVisible,
   onSubmit,
+  onSaveAndNew,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -272,6 +274,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    setIsLoading(true);
+    try {
+      await onSaveAndNew?.(input);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -746,6 +760,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
             >
               <FormattedMessage id="actions.save" />
             </Button>
+            {isNew && onSaveAndNew && (
+              <Button
+                className="edit-button"
+                variant="primary"
+                disabled={!isEqual(formik.errors, {})}
+                onClick={() => onSaveAndNewClick()}
+              >
+                <FormattedMessage id="actions.save_and_new" />
+              </Button>
+            )}
             {onDelete && (
               <Button
                 className="edit-button"

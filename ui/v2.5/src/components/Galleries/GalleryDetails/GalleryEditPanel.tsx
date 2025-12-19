@@ -36,6 +36,7 @@ interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
   onSubmit: (input: GQL.GalleryCreateInput) => Promise<void>;
+  onSaveAndNew?: (input: GQL.GalleryCreateInput) => Promise<void>;
   onDelete: () => void;
 }
 
@@ -43,6 +44,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   gallery,
   isVisible,
   onSubmit,
+  onSaveAndNew,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -181,6 +183,18 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    setIsLoading(true);
+    try {
+      await onSaveAndNew?.(input);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -455,6 +469,16 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             >
               <FormattedMessage id="actions.save" />
             </Button>
+            {isNew && onSaveAndNew && (
+              <Button
+                className="edit-button"
+                variant="primary"
+                disabled={!isEqual(formik.errors, {})}
+                onClick={() => onSaveAndNewClick()}
+              >
+                <FormattedMessage id="actions.save_and_new" />
+              </Button>
+            )}
             <Button
               className="edit-button"
               variant="danger"

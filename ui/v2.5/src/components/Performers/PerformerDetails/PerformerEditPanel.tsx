@@ -59,6 +59,7 @@ interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
   onSubmit: (performer: GQL.PerformerCreateInput) => Promise<void>;
+  onSaveAndNew?: (performer: GQL.PerformerCreateInput) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -78,6 +79,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isVisible,
   onSubmit,
+  onSaveAndNew,
   onCancel,
   setImage,
   setEncodingImage,
@@ -356,6 +358,23 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(false);
   }
 
+  async function onSaveAndNewClick() {
+    const { values } = formik;
+    const input = {
+      ...schema.cast(values),
+      custom_fields: customFieldInput(isNew, values.custom_fields),
+    };
+
+    setIsLoading(true);
+    try {
+      await onSaveAndNew?.(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
+
   // set up hotkeys
   useEffect(() => {
     if (isVisible) {
@@ -604,6 +623,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Button>
         </div>
         <Button
+          className="mr-2"
           variant="success"
           disabled={
             (!isNew && !formik.dirty) ||
@@ -614,6 +634,17 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         >
           <FormattedMessage id="actions.save" />
         </Button>
+        {isNew && onSaveAndNew && (
+          <Button
+            variant="success"
+            disabled={
+              !isEqual(formik.errors, {}) || customFieldsError !== undefined
+            }
+            onClick={() => onSaveAndNewClick()}
+          >
+            <FormattedMessage id="actions.save_and_new" />
+          </Button>
+        )}
       </div>
     );
   }

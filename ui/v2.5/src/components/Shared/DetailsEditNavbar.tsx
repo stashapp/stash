@@ -10,6 +10,7 @@ interface IProps {
   isEditing: boolean;
   onToggleEdit: () => void;
   onSave: () => void;
+  onSaveAndNew?: () => void;
   saveDisabled?: boolean;
   onDelete: () => void;
   onAutoTag?: () => void;
@@ -49,14 +50,25 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     if (!props.isEditing) return;
 
     return (
-      <Button
-        variant="success"
-        className="save"
-        disabled={props.saveDisabled}
-        onClick={() => props.onSave()}
-      >
-        <FormattedMessage id="actions.save" />
-      </Button>
+      <>
+        <Button
+          variant="success"
+          className="save mr-2"
+          disabled={props.saveDisabled}
+          onClick={() => props.onSave()}
+        >
+          <FormattedMessage id="actions.save" />
+        </Button>
+        {props.isNew && props.onSaveAndNew && (
+          <Button
+            variant="success"
+            disabled={props.saveDisabled}
+            onClick={() => props.onSaveAndNew!()}
+          >
+            <FormattedMessage id="actions.save_and_new" />
+          </Button>
+        )}
+      </>
     );
   }
 

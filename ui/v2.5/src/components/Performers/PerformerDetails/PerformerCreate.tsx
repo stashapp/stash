@@ -40,6 +40,22 @@ const PerformerCreate: React.FC = () => {
     }
   }
 
+  async function onSaveAndNew(input: GQL.PerformerCreateInput) {
+    const result = await createPerformer({
+      variables: { input },
+    });
+    if (result.data?.performerCreate) {
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.created_entity" },
+          {
+            entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase(),
+          }
+        )
+      );
+    }
+  }
+
   function renderPerformerImage() {
     if (encodingImage) {
       return (
@@ -75,6 +91,7 @@ const PerformerCreate: React.FC = () => {
           performer={performer}
           isVisible
           onSubmit={onSave}
+          onSaveAndNew={onSaveAndNew}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />
