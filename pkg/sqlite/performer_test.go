@@ -2524,6 +2524,86 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 	}
 }
 
+func TestPerformerQueryUnicodeSearchCaseInsensitive(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Performer
+
+		// test cases with various Unicode characters
+		testCases := []struct {
+			name          string
+			performerName string
+			searchTerm    string
+		}{
+			{
+				"Cyrillic lowercase search",
+				"Анна",
+				"анна",
+			},
+			{
+				"Cyrillic uppercase search",
+				"мария",
+				"МАРИЯ",
+			},
+			{
+				"Accented Latin lowercase",
+				"Zoë",
+				"zoë",
+			},
+			{
+				"Accented Latin uppercase",
+				"chloé",
+				"CHLOÉ",
+			},
+			{
+				"Greek lowercase search",
+				"Έλενα",
+				"έλενα",
+			},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				// create performer with unicode name
+				performer := models.Performer{
+					Name: tc.performerName,
+				}
+				err := qb.Create(ctx, &models.CreatePerformerInput{Performer: &performer})
+				if err != nil {
+					t.Fatalf("Error creating performer: %s", err.Error())
+				}
+
+				// search using different case
+				findFilter := &models.FindFilterType{
+					Q: &tc.searchTerm,
+				}
+
+				performers, _, err := qb.Query(ctx, nil, findFilter)
+				if err != nil {
+					t.Fatalf("Error querying performers: %s", err.Error())
+				}
+
+				// should find the performer regardless of case
+				found := false
+				for _, p := range performers {
+					if p.ID == performer.ID {
+						found = true
+						break
+					}
+				}
+
+				assert.True(t, found)
+
+				// clean up
+				if err := qb.Destroy(ctx, performer.ID); err != nil {
+					t.Fatalf("Error cleaning up performer: %s", err.Error())
+				}
+			})
+		}
+
+		return nil
+	})
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find
