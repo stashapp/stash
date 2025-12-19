@@ -109,7 +109,7 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error {
 	mqb := s.MarkerRepository
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
@@ -124,6 +124,10 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 
 	if deleteFile {
 		if err := s.deleteFiles(ctx, scene, fileDeleter); err != nil {
+			return err
+		}
+	} else if destroyFileEntry {
+		if err := s.destroyFileEntries(ctx, scene); err != nil {
 			return err
 		}
 	}
@@ -174,6 +178,35 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 					return err
 				}
 			}
+		}
+	}
+
+	return nil
+}
+
+// destroyFileEntries destroys file entries from the database without deleting
+// the files from the filesystem
+func (s *Service) destroyFileEntries(ctx context.Context, scene *models.Scene) error {
+	if err := scene.LoadFiles(ctx, s.Repository); err != nil {
+		return err
+	}
+
+	for _, f := range scene.Files.List() {
+		// only destroy file entries where there is no other associated scene
+		otherScenes, err := s.Repository.FindByFileID(ctx, f.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(otherScenes) > 1 {
+			// other scenes associated, don't remove
+			continue
+		}
+
+		const deleteFile = false
+		logger.Info("Destroying scene file entry: ", f.Path)
+		if err := file.Destroy(ctx, s.File, f, nil, deleteFile); err != nil {
+			return err
 		}
 	}
 
