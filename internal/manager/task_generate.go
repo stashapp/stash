@@ -411,12 +411,13 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 	}
 
-	if j.input.Markers {
+	if j.input.Markers || j.input.MarkerImagePreviews || j.input.MarkerScreenshots {
 		task := &GenerateMarkersTask{
 			repository:          r,
 			Scene:               scene,
 			Overwrite:           j.overwrite,
 			fileNamingAlgorithm: j.fileNamingAlgo,
+			VideoPreview:        j.input.Markers,
 			ImagePreview:        j.input.MarkerImagePreviews,
 			Screenshot:          j.input.MarkerScreenshots,
 
@@ -488,6 +489,9 @@ func (j *GenerateJob) queueMarkerJob(g *generate.Generator, marker *models.Scene
 		Marker:              marker,
 		Overwrite:           j.overwrite,
 		fileNamingAlgorithm: j.fileNamingAlgo,
+		VideoPreview:        j.input.Markers,
+		ImagePreview:        j.input.MarkerImagePreviews,
+		Screenshot:          j.input.MarkerScreenshots,
 		generator:           g,
 	}
 	j.totals.markers++
