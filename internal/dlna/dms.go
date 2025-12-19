@@ -278,6 +278,7 @@ type Server struct {
 	repository         Repository
 	sceneServer        sceneServer
 	ipWhitelistManager *ipWhitelistManager
+	activityTracker    *ActivityTracker
 	VideoSortOrder     string
 
 	subscribeLock sync.Mutex
@@ -596,6 +597,7 @@ func (me *Server) initMux(mux *http.ServeMux) {
 	mux.HandleFunc(resPath, func(w http.ResponseWriter, r *http.Request) {
 		sceneId := r.URL.Query().Get("scene")
 		var scene *models.Scene
+		var videoDuration float64
 		repo := me.repository
 		err := repo.WithReadTxn(r.Context(), func(ctx context.Context) error {
 			sceneIdInt, err := strconv.Atoi(sceneId)
@@ -603,6 +605,15 @@ func (me *Server) initMux(mux *http.ServeMux) {
 				return nil
 			}
 			scene, _ = repo.SceneFinder.Find(ctx, sceneIdInt)
+			if scene != nil {
+				// Load primary file to get duration for activity tracking
+				if err := scene.LoadPrimaryFile(ctx, repo.FileGetter); err != nil {
+					logger.Debugf("failed to load primary file for scene %d: %v", sceneIdInt, err)
+				}
+				if f := scene.Files.Primary(); f != nil {
+					videoDuration = f.Duration
+				}
+			}
 			return nil
 		})
 		if err != nil {
@@ -615,6 +626,14 @@ func (me *Server) initMux(mux *http.ServeMux) {
 
 		w.Header().Set("transferMode.dlna.org", "Streaming")
 		w.Header().Set("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000")
+
+		// Track activity - uses time-based tracking, updated on each request
+		if me.activityTracker != nil {
+			sceneIdInt, _ := strconv.Atoi(sceneId)
+			clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+			me.activityTracker.RecordRequest(sceneIdInt, clientIP, videoDuration)
+		}
+
 		me.sceneServer.StreamSceneDirect(scene, w, r)
 	})
 	mux.HandleFunc(rootDescPath, func(w http.ResponseWriter, r *http.Request) {
