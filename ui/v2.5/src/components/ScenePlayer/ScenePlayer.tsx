@@ -364,7 +364,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         },
         nativeControlsForTouch: false,
         playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-        inactivityTimeout: 2000,
+        inactivityTimeout: 700,
         preload: "none",
         playsinline: true,
         techOrder: ["chromecast", "html5"],
@@ -932,15 +932,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         );
     }, [getPlayer, scene]);
 
+    const pausedBeforeScrubber = useRef(true);
+
     function onScrubberScroll() {
-      if (started.current) {
-        getPlayer()?.pause();
+      const player = getPlayer();
+      if (started.current && player) {
+        pausedBeforeScrubber.current = player.paused();
+        player.pause();
       }
     }
 
     function onScrubberSeek(seconds: number) {
-      if (started.current) {
-        getPlayer()?.currentTime(seconds);
+      const player = getPlayer();
+      if (started.current && player) {
+        player.currentTime(seconds);
+        if (!pausedBeforeScrubber.current) {
+          player.play();
+        }
       } else {
         setTime(seconds);
       }
