@@ -300,7 +300,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 		// only delete if the scene has no other files
 		if len(scene.Files.List()) <= 1 {
 			logger.Infof("Deleting scene %q since it has no other related files", scene.DisplayName())
-			if err := mgr.SceneService.Destroy(ctx, scene, sceneFileDeleter, true, false, false); err != nil {
+			if err := mgr.SceneService.Destroy(ctx, scene, sceneFileDeleter, true, false); err != nil {
 				return err
 			}
 
