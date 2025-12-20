@@ -3,7 +3,11 @@
 
 package manager
 
-import "github.com/syncthing/notify"
+import (
+	"os"
+
+	"github.com/syncthing/notify"
+)
 
 func notifyEvents() []notify.Event {
 	return []notify.Event{
@@ -13,6 +17,6 @@ func notifyEvents() []notify.Event {
 	}
 }
 
-func notifyShouldScanEvent(ev notify.EventInfo) bool {
+func notifyShouldScanEvent(fs os.FileInfo, ev notify.EventInfo) bool {
 	return true
 }

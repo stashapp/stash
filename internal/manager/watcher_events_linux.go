@@ -4,8 +4,9 @@
 package manager
 
 import (
+	"os"
+
 	"github.com/syncthing/notify"
-	"golang.org/x/sys/unix"
 )
 
 func notifyEvents() []notify.Event {
@@ -17,12 +18,12 @@ func notifyEvents() []notify.Event {
 	}
 }
 
-func notifyShouldScanEvent(ev notify.EventInfo) bool {
+func notifyShouldScanEvent(fs os.FileInfo, ev notify.EventInfo) bool {
 	event := ev.Event()
 
 	// directories only, files fire too early
 	if event&notify.InCreate != 0 {
-		return event&unix.IN_ISDIR != 0
+		return fs.IsDir()
 	}
 
 	return true
