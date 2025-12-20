@@ -92,7 +92,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	}
 
 	// Determine HW support once
-		codec, fullhw := t.generator.DetermineCodecAndHW(ctx, videoFile.Path, videoFile.Width, videoFile.Height)
+	codec, fullhw := t.generator.DetermineCodecAndHW(ctx, videoFile.Path, videoFile.Width, videoFile.Height)
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 
 	// Make the folder for the scenes markers
