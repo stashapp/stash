@@ -66,13 +66,7 @@ func (g Generator) makeTranscode(lockCtx *fsutil.LockContext, hash string, gener
 
 func (g Generator) transcode(vf *ffmpeg.VideoFile, options TranscodeOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		codec := ffmpeg.VideoCodecLibX264
-		fullhw := false
-		if g.FFMpegConfig.GetGenerationHardwareAcceleration() {
-			codec = g.Encoder.HWCodecMP4Compatible(codec)
-			fullhw = codec != ffmpeg.VideoCodecLibX264 &&
-				g.Encoder.HWCanFullHWTranscode(lockCtx, codec, vf.Path, vf.Width, vf.Height, vf.Height)
-		}
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, vf.Path, vf.Width, vf.Height)
 
 		var videoFilter ffmpeg.VideoFilter
 		if options.Height != 0 {
@@ -101,13 +95,7 @@ func (g Generator) transcode(vf *ffmpeg.VideoFile, options TranscodeOptions) gen
 
 func (g Generator) transcodeVideo(vf *ffmpeg.VideoFile, options TranscodeOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		codec := ffmpeg.VideoCodecLibX264
-		fullhw := false
-		if g.FFMpegConfig.GetGenerationHardwareAcceleration() {
-			codec = g.Encoder.HWCodecMP4Compatible(codec)
-			fullhw = codec != ffmpeg.VideoCodecLibX264 &&
-				g.Encoder.HWCanFullHWTranscode(lockCtx, codec, vf.Path, vf.Width, vf.Height, vf.Height)
-		}
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, vf.Path, vf.Width, vf.Height)
 
 		var videoFilter ffmpeg.VideoFilter
 		if options.Height != 0 {

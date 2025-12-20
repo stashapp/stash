@@ -67,13 +67,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		}
 
 		// Determine HW support
-		codec := ffmpeg.VideoCodecLibX264
-		fullhw := false
-		if t.generator.FFMpegConfig.GetGenerationHardwareAcceleration() {
-			codec = t.generator.Encoder.HWCodecMP4Compatible(codec)
-			fullhw = codec != ffmpeg.VideoCodecLibX264 &&
-				t.generator.Encoder.HWCanFullHWTranscode(ctx, codec, videoFile.Path, videoFile.Width, videoFile.Height, videoFile.Height)
-		}
+		codec, fullhw := t.generator.DetermineCodecAndHW(ctx, videoFile.Path, videoFile.Width, videoFile.Height)
 
 		t.generateMarker(videoFile, scene, t.Marker, codec, fullhw)
 	}
@@ -98,14 +92,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	}
 
 	// Determine HW support once
-	codec := ffmpeg.VideoCodecLibX264
-	fullhw := false
-	if t.generator.FFMpegConfig.GetGenerationHardwareAcceleration() {
-		codec = t.generator.Encoder.HWCodecMP4Compatible(codec)
-		fullhw = codec != ffmpeg.VideoCodecLibX264 &&
-			t.generator.Encoder.HWCanFullHWTranscode(ctx, codec, videoFile.Path, videoFile.Width, videoFile.Height, videoFile.Height)
-	}
-
+		codec, fullhw := t.generator.DetermineCodecAndHW(ctx, videoFile.Path, videoFile.Width, videoFile.Height)
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 
 	// Make the folder for the scenes markers

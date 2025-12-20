@@ -106,13 +106,7 @@ func (g *Generator) previewVideo(vf *ffmpeg.VideoFile, options PreviewOptions, f
 
 		stepSize, offset := options.getStepSizeAndOffset(vf.VideoStreamDuration)
 
-		codec := ffmpeg.VideoCodecLibX264
-		fullhw := false
-		if g.FFMpegConfig.GetGenerationHardwareAcceleration() {
-			codec = g.Encoder.HWCodecMP4Compatible(codec)
-			fullhw = codec != ffmpeg.VideoCodecLibX264 &&
-				g.Encoder.HWCanFullHWTranscode(lockCtx, codec, vf.Path, vf.Width, vf.Height, vf.Height)
-		}
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, vf.Path, vf.Width, vf.Height)
 
 		segmentDuration := options.SegmentDuration
 		// TODO - move this out into calling function
@@ -161,13 +155,7 @@ func (g *Generator) previewVideo(vf *ffmpeg.VideoFile, options PreviewOptions, f
 
 func (g *Generator) previewVideoSingle(vf *ffmpeg.VideoFile, options PreviewOptions, fallback bool, useVsync2 bool) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		codec := ffmpeg.VideoCodecLibX264
-		fullhw := false
-		if g.FFMpegConfig.GetGenerationHardwareAcceleration() {
-			codec = g.Encoder.HWCodecMP4Compatible(codec)
-			fullhw = codec != ffmpeg.VideoCodecLibX264 &&
-				g.Encoder.HWCanFullHWTranscode(lockCtx, codec, vf.Path, vf.Width, vf.Height, vf.Height)
-		}
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, vf.Path, vf.Width, vf.Height)
 
 		chunkOptions := previewChunkOptions{
 			StartTime:  0,
