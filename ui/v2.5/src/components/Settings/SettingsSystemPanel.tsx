@@ -336,6 +336,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           onChange={(v) => saveGeneral({ transcodeHardwareAcceleration: v })}
         />
 
+        <BooleanSetting
+          id="hardware-encoding-generation"
+          headingID="config.general.ffmpeg.hardware_acceleration_generate.heading"
+          subHeadingID="config.general.ffmpeg.hardware_acceleration_generate.desc"
+          checked={general.generationHardwareAcceleration ?? false}
+          onChange={(v) => saveGeneral({ generationHardwareAcceleration: v })}
+        />
+
         <StringListSetting
           advanced
           id="transcode-input-args"

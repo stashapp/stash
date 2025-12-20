@@ -3,6 +3,7 @@ package generate
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -48,6 +49,7 @@ type ScenePaths interface {
 type FFMpegConfig interface {
 	GetTranscodeInputArgs() []string
 	GetTranscodeOutputArgs() []string
+	GetGenerationHardwareAcceleration() bool
 }
 
 type Generator struct {
@@ -68,6 +70,17 @@ func (g Generator) tempFile(p Paths, pattern string) (*os.File, error) {
 	}
 	_ = tmpFile.Close()
 	return tmpFile, err
+}
+
+func (g *Generator) DetermineCodecAndHW(ctx context.Context, path string, width, height int) (ffmpeg.VideoCodec, bool) {
+	codec := ffmpeg.VideoCodecLibX264
+	fullhw := false
+	if g.FFMpegConfig.GetGenerationHardwareAcceleration() {
+		codec = g.Encoder.HWCodecMP4Compatible(codec)
+		fullhw = codec != ffmpeg.VideoCodecLibX264 &&
+			g.Encoder.HWCanFullHWTranscode(ctx, codec, path, width, height, height)
+	}
+	return codec, fullhw
 }
 
 // generateFile performs a generate operation by generating a temporary file using p and pattern, then

@@ -7,6 +7,8 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -20,8 +22,8 @@ const (
 	markerScreenshotQuality = 2
 )
 
-func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) MarkerPreviewVideo(ctx context.Context, vf *models.VideoFile, hash string, seconds float64, endSeconds *float64, includeAudio bool, codec ffmpeg.VideoCodec, fullhw bool) error {
+	lockCtx := g.LockManager.ReadLock(ctx, vf.Path)
 	defer lockCtx.Cancel()
 
 	output := g.MarkerPaths.GetVideoPreviewPath(hash, int(seconds))
@@ -38,7 +40,7 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		duration = float64(*endSeconds) - seconds
 	}
 
-	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{
+	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(vf, codec, fullhw, sceneMarkerOptions{
 		Seconds:  seconds,
 		Duration: duration,
 		Audio:    includeAudio,
@@ -57,32 +59,30 @@ type sceneMarkerOptions struct {
 	Audio    bool
 }
 
-func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) generateFn {
+func (g Generator) markerPreviewVideo(vf *models.VideoFile, codec ffmpeg.VideoCodec, fullhw bool, options sceneMarkerOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		var videoFilter ffmpeg.VideoFilter
-		videoFilter = videoFilter.ScaleWidth(markerPreviewWidth)
+		_, targetHeight := utils.ScaleDimensions(vf.Width, vf.Height, markerPreviewWidth, utils.ScaleToWidth)
 
-		var videoArgs ffmpeg.Args
+		videoFilter := g.Encoder.HWMaxResFilter(codec, vf.Width, vf.Height, targetHeight, fullhw)
+
+		videoArgs := codec.ExtraArgsHQ("veryslow")
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "veryslow",
-			"-crf", "24",
+		extraInputArgs := g.Encoder.HWDeviceInit(ffmpeg.Args{}, codec, fullhw)
+		// Note: marker preview doesn't use FFMpegConfig, so no extra args
+
+		videoArgs = append(videoArgs, []string{
 			"-movflags", "+faststart",
-			"-threads", "4",
-			"-sws_flags", "lanczos",
 			"-strict", "-2",
-		)
+		}...)
 
 		trimOptions := transcoder.TranscodeOptions{
-			Duration:   options.Duration,
-			StartTime:  options.Seconds,
-			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
-			VideoArgs:  videoArgs,
+			Duration:       options.Duration,
+			StartTime:      options.Seconds,
+			OutputPath:     tmpFn,
+			VideoCodec:     codec,
+			VideoArgs:      videoArgs,
+			ExtraInputArgs: extraInputArgs,
 		}
 
 		if options.Audio {
@@ -93,14 +93,14 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 			trimOptions.AudioArgs = audioArgs
 		}
 
-		args := transcoder.Transcode(input, trimOptions)
+		args := transcoder.Transcode(vf.Path, trimOptions)
 
 		return g.generate(lockCtx, args)
 	}
 }
 
-func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash string, seconds float64) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) SceneMarkerWebp(ctx context.Context, vf *models.VideoFile, hash string, seconds float64) error {
+	lockCtx := g.LockManager.ReadLock(ctx, vf.Path)
 	defer lockCtx.Cancel()
 
 	output := g.MarkerPaths.GetWebpPreviewPath(hash, int(seconds))
@@ -110,7 +110,7 @@ func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash strin
 		}
 	}
 
-	if err := g.generateFile(lockCtx, g.MarkerPaths, webpPattern, output, g.sceneMarkerWebp(input, sceneMarkerOptions{
+	if err := g.generateFile(lockCtx, g.MarkerPaths, webpPattern, output, g.sceneMarkerWebp(vf, sceneMarkerOptions{
 		Seconds: seconds,
 	})); err != nil {
 		return err
@@ -121,7 +121,7 @@ func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash strin
 	return nil
 }
 
-func (g Generator) sceneMarkerWebp(input string, options sceneMarkerOptions) generateFn {
+func (g Generator) sceneMarkerWebp(vf *models.VideoFile, options sceneMarkerOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleWidth(markerPreviewWidth)
@@ -146,14 +146,14 @@ func (g Generator) sceneMarkerWebp(input string, options sceneMarkerOptions) gen
 			VideoArgs:  videoArgs,
 		}
 
-		args := transcoder.Transcode(input, trimOptions)
+		args := transcoder.Transcode(vf.Path, trimOptions)
 
 		return g.generate(lockCtx, args)
 	}
 }
 
-func (g Generator) SceneMarkerScreenshot(ctx context.Context, input string, hash string, seconds float64, width int) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) SceneMarkerScreenshot(ctx context.Context, vf *models.VideoFile, hash string, seconds float64, width int) error {
+	lockCtx := g.LockManager.ReadLock(ctx, vf.Path)
 	defer lockCtx.Cancel()
 
 	output := g.MarkerPaths.GetScreenshotPath(hash, int(seconds))
@@ -163,7 +163,7 @@ func (g Generator) SceneMarkerScreenshot(ctx context.Context, input string, hash
 		}
 	}
 
-	if err := g.generateFile(lockCtx, g.MarkerPaths, jpgPattern, output, g.sceneMarkerScreenshot(input, SceneMarkerScreenshotOptions{
+	if err := g.generateFile(lockCtx, g.MarkerPaths, jpgPattern, output, g.sceneMarkerScreenshot(vf.Path, SceneMarkerScreenshotOptions{
 		Seconds: seconds,
 		Width:   width,
 	})); err != nil {

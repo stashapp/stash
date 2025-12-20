@@ -89,9 +89,9 @@ func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 
 		if audioCodec == ffmpeg.MissingUnsupported {
 			// ffmpeg fails if it tries to transcode an unsupported audio codec
-			err = t.g.TranscodeVideo(ctx, videoFile.Path, sceneHash, options)
+			err = t.g.TranscodeVideo(ctx, videoFile, sceneHash, options)
 		} else {
-			err = t.g.Transcode(ctx, videoFile.Path, sceneHash, options)
+			err = t.g.Transcode(ctx, videoFile, sceneHash, options)
 		}
 	}
 

@@ -14,21 +14,21 @@ type TranscodeOptions struct {
 	Height int
 }
 
-func (g Generator) Transcode(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) Transcode(ctx context.Context, vf *ffmpeg.VideoFile, hash string, options TranscodeOptions) error {
+	lockCtx := g.LockManager.ReadLock(ctx, vf.Path)
 	defer lockCtx.Cancel()
 
-	return g.makeTranscode(lockCtx, hash, g.transcode(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcode(vf, options))
 }
 
 // TranscodeVideo transcodes the video, and removes the audio.
 // In some videos where the audio codec is not supported by ffmpeg,
 // ffmpeg fails if you try to transcode the audio
-func (g Generator) TranscodeVideo(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) TranscodeVideo(ctx context.Context, vf *ffmpeg.VideoFile, hash string, options TranscodeOptions) error {
+	lockCtx := g.LockManager.ReadLock(ctx, vf.Path)
 	defer lockCtx.Cancel()
 
-	return g.makeTranscode(lockCtx, hash, g.transcodeVideo(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcodeVideo(vf, options))
 }
 
 // TranscodeAudio will copy the video stream as is, and transcode audio.
@@ -64,30 +64,28 @@ func (g Generator) makeTranscode(lockCtx *fsutil.LockContext, hash string, gener
 	return nil
 }
 
-func (g Generator) transcode(input string, options TranscodeOptions) generateFn {
+func (g Generator) transcode(vf *ffmpeg.VideoFile, options TranscodeOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		var videoArgs ffmpeg.Args
-		if options.Width != 0 && options.Height != 0 {
-			var videoFilter ffmpeg.VideoFilter
-			videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
-			videoArgs = videoArgs.VideoFilter(videoFilter)
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, vf.Path, vf.Width, vf.Height)
+
+		var videoFilter ffmpeg.VideoFilter
+		if options.Height != 0 {
+			// TODO: We ignore options.Width?
+			videoFilter = g.Encoder.HWMaxResFilter(codec, vf.Width, vf.Height, options.Height, fullhw)
 		}
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-		)
+		videoArgs := codec.ExtraArgsHQ("superfast")
+		videoArgs = videoArgs.VideoFilter(videoFilter)
 
-		args := transcoder.Transcode(input, transcoder.TranscodeOptions{
+		extraInputArgs := g.Encoder.HWDeviceInit(g.FFMpegConfig.GetTranscodeInputArgs(), codec, fullhw)
+
+		args := transcoder.Transcode(vf.Path, transcoder.TranscodeOptions{
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: codec,
 			VideoArgs:  videoArgs,
 			AudioCodec: ffmpeg.AudioCodecAAC,
 
-			ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+			ExtraInputArgs:  extraInputArgs,
 			ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 		})
 
@@ -95,33 +93,31 @@ func (g Generator) transcode(input string, options TranscodeOptions) generateFn 
 	}
 }
 
-func (g Generator) transcodeVideo(input string, options TranscodeOptions) generateFn {
+func (g Generator) transcodeVideo(vf *ffmpeg.VideoFile, options TranscodeOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		var videoArgs ffmpeg.Args
-		if options.Width != 0 && options.Height != 0 {
-			var videoFilter ffmpeg.VideoFilter
-			videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
-			videoArgs = videoArgs.VideoFilter(videoFilter)
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, vf.Path, vf.Width, vf.Height)
+
+		var videoFilter ffmpeg.VideoFilter
+		if options.Height != 0 {
+			// TODO: We ignore options.Width?
+			videoFilter = g.Encoder.HWMaxResFilter(codec, vf.Width, vf.Height, options.Height, fullhw)
 		}
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-		)
+		videoArgs := codec.ExtraArgsHQ("superfast")
+		videoArgs = videoArgs.VideoFilter(videoFilter)
 
 		var audioArgs ffmpeg.Args
 		audioArgs = audioArgs.SkipAudio()
 
-		args := transcoder.Transcode(input, transcoder.TranscodeOptions{
+		extraInputArgs := g.Encoder.HWDeviceInit(g.FFMpegConfig.GetTranscodeInputArgs(), codec, fullhw)
+
+		args := transcoder.Transcode(vf.Path, transcoder.TranscodeOptions{
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: codec,
 			VideoArgs:  videoArgs,
 			AudioArgs:  audioArgs,
 
-			ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+			ExtraInputArgs:  extraInputArgs,
 			ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 		})
 

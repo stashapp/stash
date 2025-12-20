@@ -65,7 +65,7 @@ var (
 		SegmentType:   SegmentTypeTS,
 		ServeManifest: serveHLSManifest,
 		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
-			args = CodecInit(codec)
+			args = codec.ExtraArgs()
 			args = append(args,
 				"-flags", "+cgop",
 				"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
@@ -100,7 +100,7 @@ var (
 		SegmentType:   SegmentTypeTS,
 		ServeManifest: serveHLSManifest,
 		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
-			args = CodecInit(codec)
+			args = codec.ExtraArgs()
 			if videoOnly {
 				args = append(args, "-an")
 			} else {
@@ -137,7 +137,7 @@ var (
 				init = "init"
 			}
 
-			args = CodecInit(codec)
+			args = codec.ExtraArgs()
 			args = append(args,
 				"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
 			)
@@ -311,13 +311,13 @@ func HLSGetCodec(sm *StreamManager, name string) (codec VideoCodec) {
 	switch name {
 	case "hls":
 		codec = VideoCodecLibX264
-		if hwcodec := sm.encoder.hwCodecHLSCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
-			codec = *hwcodec
+		if sm.config.GetTranscodeHardwareAcceleration() {
+			codec = sm.encoder.HWCodecHLSCompatible(VideoCodecLibX264)
 		}
 	case "dash-v":
 		codec = VideoCodecVP9
-		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
-			codec = *hwcodec
+		if sm.config.GetTranscodeHardwareAcceleration() {
+			codec = sm.encoder.HWCodecWEBMCompatible(VideoCodecVP9)
 		}
 	case "hls-copy":
 		codec = VideoCodecCopy
@@ -335,8 +335,8 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	codec := HLSGetCodec(sm, s.streamType.Name)
 
-	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, codec, s.vf, s.maxTranscodeSize)
-	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
+	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.HWCanFullHWTranscode(sm.context, codec, s.vf.Path, s.vf.Width, s.vf.Height, s.maxTranscodeSize)
+	args = sm.encoder.HWDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 
 	if segment > 0 {
@@ -347,7 +347,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
-	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf, s.maxTranscodeSize, fullhw)
+	videoFilter := sm.encoder.HWMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize, fullhw)
 
 	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 

@@ -365,8 +365,12 @@
           "heading": "FFprobe Executable Path"
         },
         "hardware_acceleration": {
-          "desc": "Uses available hardware to encode video for live transcoding.",
-          "heading": "FFmpeg hardware encoding"
+          "desc": "Uses available hardware for live transcoding.",
+          "heading": "FFmpeg transcoding hardware acceleration"
+        },
+        "hardware_acceleration_generate": {
+          "desc": "Uses available hardware for video encoding tasks.",
+          "heading": "FFmpeg generation hardware acceleration"
         },
         "live_transcode": {
           "input_args": {

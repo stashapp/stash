@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -40,7 +41,7 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 			return
 		}
 
-		if err := t.generateVideo(videoChecksum, videoFile.VideoStreamDuration, videoFile.FrameRate); err != nil {
+		if err := t.generateVideo(videoChecksum, videoFile); err != nil {
 			logger.Errorf("error generating preview: %v", err)
 			logErrorOutput(err)
 			return
@@ -55,18 +56,17 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 	}
 }
 
-func (t *GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration float64, videoFrameRate float64) error {
-	videoFilename := t.Scene.Path
+func (t *GeneratePreviewTask) generateVideo(videoChecksum string, vf *ffmpeg.VideoFile) error {
 	useVsync2 := false
 
-	if videoFrameRate <= 0.01 {
-		logger.Errorf("[generator] Video framerate very low/high (%f) most likely vfr so using -vsync 2", videoFrameRate)
+	if vf.FrameRate <= 0.01 {
+		logger.Errorf("[generator] Video framerate very low/high (%f) most likely vfr so using -vsync 2", vf.FrameRate)
 		useVsync2 = true
 	}
 
-	if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, false, useVsync2); err != nil {
+	if err := t.generator.PreviewVideo(context.TODO(), vf, videoChecksum, t.Options, false, useVsync2); err != nil {
 		logger.Warnf("[generator] failed generating scene preview, trying fallback")
-		if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true, useVsync2); err != nil {
+		if err := t.generator.PreviewVideo(context.TODO(), vf, videoChecksum, t.Options, true, useVsync2); err != nil {
 			return err
 		}
 	}

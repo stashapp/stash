@@ -46,6 +46,7 @@ func (t *GenerateImageThumbnailTask) Start(ctx context.Context) {
 		InputArgs:  c.GetTranscodeInputArgs(),
 		OutputArgs: c.GetTranscodeOutputArgs(),
 		Preset:     c.GetPreviewPreset().String(),
+		HWAccel:    c.GetGenerationHardwareAcceleration(),
 	}
 
 	encoder := image.NewThumbnailEncoder(mgr.FFMpeg, mgr.FFProbe, clipPreviewOptions)
