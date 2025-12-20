@@ -45,10 +45,10 @@ var (
 	AudioCodecCopy    AudioCodec = "copy"
 )
 
-func (codec VideoCodec) ExtraArgs() (args Args) {
-	args = args.VideoCodec(codec)
+func (c VideoCodec) ExtraArgs() (args Args) {
+	args = args.VideoCodec(c)
 
-	switch codec {
+	switch c {
 	// CPU Codecs
 	case VideoCodecLibX264:
 		args = append(args,
@@ -117,8 +117,8 @@ func (codec VideoCodec) ExtraArgs() (args Args) {
 	return args
 }
 
-func (codec VideoCodec) ExtraArgsHQ(preset string) (args Args) {
-	switch codec {
+func (c VideoCodec) ExtraArgsHQ(preset string) (args Args) {
+	switch c {
 	// CPU Codecs
 	case VideoCodecLibX264:
 		args = append(args,
