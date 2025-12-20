@@ -34,7 +34,15 @@ export const SettingsLibraryPanel: React.FC = () => {
       <StashSetting
         value={general.stashes ?? []}
         onChange={(v) => saveGeneral({ stashes: v })}
-      />
+      >
+        <BooleanSetting
+          id="auto-watch-directories"
+          headingID="config.general.auto_watch.heading"
+          subHeadingID="config.general.auto_watch.description"
+          checked={general.autoScanWatch ?? false}
+          onChange={(v) => saveGeneral({ autoScanWatch: v })}
+        />
+      </StashSetting>
 
       <SettingSection headingID="config.library.media_content_extensions">
         <StringSetting
