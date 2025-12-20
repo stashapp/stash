@@ -150,7 +150,10 @@
         "play": "再生",
         "show_results": "結果を表示",
         "show_count_results": "{count}件の結果を表示",
-        "load": "読み込み"
+        "load": "読み込み",
+        "add_stash_id": "Stash IDを追加",
+        "create_new": "新規作成",
+        "load_filter": "フィルタを読み込む"
     },
     "actions_name": "操作",
     "age": "年齢",
