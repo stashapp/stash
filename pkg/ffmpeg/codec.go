@@ -74,7 +74,6 @@ func (codec VideoCodec) ExtraArgs() (args Args) {
 		)
 	case VideoCodecN264H:
 		args = append(args,
-			"-profile", "p7",
 			"-tune", "hq",
 			"-profile", "high",
 			"-rc", "vbr",
@@ -146,7 +145,6 @@ func (codec VideoCodec) ExtraArgsHQ(preset string) (args Args) {
 		)
 	case VideoCodecN264H:
 		args = append(args,
-			"-profile", "p7",
 			"-tune", "hq",
 			"-profile", "high",
 			"-rc", "vbr",
