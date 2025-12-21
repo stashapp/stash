@@ -8,25 +8,26 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type group struct {
+// configScraper implements the scraper interface using a config object.
+type configScraper struct {
 	config config
 
 	globalConf GlobalConfig
 }
 
-func newGroupScraper(c config, globalConfig GlobalConfig) scraper {
-	return group{
+func newConfigScraper(c config, globalConfig GlobalConfig) scraper {
+	return configScraper{
 		config:     c,
 		globalConf: globalConfig,
 	}
 }
 
-func (g group) spec() Scraper {
+func (g configScraper) spec() Scraper {
 	return g.config.spec()
 }
 
 // fragmentScraper finds an appropriate fragment scraper based on input.
-func (g group) fragmentScraper(input Input) *scraperTypeConfig {
+func (g configScraper) fragmentScraper(input Input) *scraperTypeConfig {
 	switch {
 	case input.Performer != nil:
 		return g.config.PerformerByFragment
@@ -43,7 +44,7 @@ func (g group) fragmentScraper(input Input) *scraperTypeConfig {
 	return nil
 }
 
-func (g group) viaFragment(ctx context.Context, client *http.Client, input Input) (ScrapedContent, error) {
+func (g configScraper) viaFragment(ctx context.Context, client *http.Client, input Input) (ScrapedContent, error) {
 	stc := g.fragmentScraper(input)
 	if stc == nil {
 		// If there's no performer fragment scraper in the group, we try to use
@@ -60,7 +61,7 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 	return s.scrapeByFragment(ctx, input)
 }
 
-func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+func (g configScraper) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	if g.config.SceneByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -69,7 +70,7 @@ func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
-func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (g configScraper) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if g.config.GalleryByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -78,7 +79,7 @@ func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *mod
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
-func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*models.ScrapedImage, error) {
+func (g configScraper) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*models.ScrapedImage, error) {
 	if g.config.ImageByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -104,7 +105,7 @@ func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
 	panic("loadUrlCandidates: unreachable")
 }
 
-func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty ScrapeContentType) (ScrapedContent, error) {
+func (g configScraper) viaURL(ctx context.Context, client *http.Client, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
@@ -123,7 +124,7 @@ func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty S
 	return nil, nil
 }
 
-func (g group) viaName(ctx context.Context, client *http.Client, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
+func (g configScraper) viaName(ctx context.Context, client *http.Client, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	switch ty {
 	case ScrapeContentTypePerformer:
 		if g.config.PerformerByName == nil {
@@ -144,10 +145,10 @@ func (g group) viaName(ctx context.Context, client *http.Client, name string, ty
 	return nil, fmt.Errorf("%w: cannot load %v by name", ErrNotSupported, ty)
 }
 
-func (g group) supports(ty ScrapeContentType) bool {
+func (g configScraper) supports(ty ScrapeContentType) bool {
 	return g.config.supports(ty)
 }
 
-func (g group) supportsURL(url string, ty ScrapeContentType) bool {
+func (g configScraper) supportsURL(url string, ty ScrapeContentType) bool {
 	return g.config.matchesURL(url, ty)
 }
