@@ -257,7 +257,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             className="bg-secondary text-white"
             onClick={() => onGenerate()}
           >
-            <FormattedMessage id="actions.generate" />
+            {`${intl.formatMessage({ id: "actions.generate" })}…`}
           </Dropdown.Item>
           <Dropdown.Item
             className="bg-secondary text-white"
