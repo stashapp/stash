@@ -831,14 +831,7 @@ export const useSceneResetActivity = (
   });
 
 export const useSceneGenerateScreenshot = () =>
-  GQL.useSceneGenerateScreenshotMutation({
-    update(cache, result) {
-      if (!result.data?.sceneGenerateScreenshot) return;
-
-      evictTypeFields(cache, sceneMutationImpactedTypeFields);
-      evictQueries(cache, sceneMutationImpactedQueries);
-    },
-  });
+  GQL.useSceneGenerateScreenshotMutation();
 
 export const mutateSceneSetPrimaryFile = (id: string, fileID: string) =>
   client.mutate<GQL.SceneUpdateMutation>({
