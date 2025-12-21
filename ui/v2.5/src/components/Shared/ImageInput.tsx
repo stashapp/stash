@@ -10,7 +10,7 @@ import {
 import { useIntl } from "react-intl";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
-import { faFile, faLink } from "@fortawesome/free-solid-svg-icons";
+import { faFile, faLink, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 
 interface IImageInput {
@@ -18,6 +18,7 @@ interface IImageInput {
   text?: string;
   onImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImageURL?: (url: string) => void;
+  onReset?: () => void;
   acceptSVG?: boolean;
 }
 
@@ -27,7 +28,14 @@ function acceptExtensions(acceptSVG: boolean = false) {
 
 export const ImageInput: React.FC<IImageInput> = PatchComponent(
   "ImageInput",
-  ({ isEditing, text, onImageChange, onImageURL, acceptSVG = false }) => {
+  ({
+    isEditing,
+    text,
+    onImageChange,
+    onImageURL,
+    onReset,
+    acceptSVG = false,
+  }) => {
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [url, setURL] = useState("");
     const intl = useIntl();
@@ -137,6 +145,16 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
             {text ?? intl.formatMessage({ id: "actions.set_image" })}
           </Button>
         </OverlayTrigger>
+        {onReset && (
+          <Button
+            variant="danger"
+            className="mr-2"
+            onClick={onReset}
+            title={intl.formatMessage({ id: "actions.reset_cover" })}
+          >
+            <Icon icon={faTrashAlt} />
+          </Button>
+        )}
       </>
     );
   }
