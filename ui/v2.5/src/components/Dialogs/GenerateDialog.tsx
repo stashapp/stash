@@ -14,13 +14,13 @@ import { SettingSection } from "../Settings/SettingSection";
 import { faCogs, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { SettingsContext } from "../Settings/context";
 
-interface ISceneGenerateDialog {
+interface IGenerateDialog {
   selectedIds?: string[];
   onClose: () => void;
-  type: "scene"; // TODO - add image generate
+  type: "scene" | "image";
 }
 
-export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
+export const GenerateDialog: React.FC<IGenerateDialog> = ({
   selectedIds,
   onClose,
   type,
@@ -89,6 +89,9 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   }, [configuration, configRead]);
 
   const selectionStatus = useMemo(() => {
+    const countableId =
+      type === "image" ? "countables.images" : "countables.scenes";
+
     if (selectedIds) {
       return (
         <Form.Group id="selected-generate-ids">
@@ -98,7 +101,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
               num: selectedIds.length,
               scene: intl.formatMessage(
                 {
-                  id: "countables.scenes",
+                  id: countableId,
                 },
                 {
                   count: selectedIds.length,
@@ -118,7 +121,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
             num: intl.formatMessage({ id: "all" }),
             scene: intl.formatMessage(
               {
-                id: "countables.scenes",
+                id: countableId,
               },
               {
                 count: 0,
@@ -135,13 +138,14 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         <div>{message}</div>
       </Form.Group>
     );
-  }, [selectedIds, intl]);
+  }, [selectedIds, intl, type]);
 
   async function onGenerate() {
     try {
       await mutateMetadataGenerate({
         ...options,
-        sceneIDs: selectedIds,
+        sceneIDs: type === "scene" ? selectedIds : undefined,
+        imageIDs: type === "image" ? selectedIds : undefined,
       });
       Toast.success(
         intl.formatMessage(

@@ -15,6 +15,11 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
+import { lazyComponent } from "src/utils/lazyComponent";
+
+const GenerateDialog = lazyComponent(
+  () => import("../../Dialogs/GenerateDialog")
+);
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
@@ -165,11 +170,37 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [generateImageIds, setGenerateImageIds] = useState<string[]>([]);
+
+  const [fetchGalleryImages] = GQL.useFindImagesLazyQuery();
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
       goBackOrReplace(history, "/galleries");
+    }
+  }
+
+  async function onGenerate() {
+    const result = await fetchGalleryImages({
+      variables: {
+        image_filter: {
+          galleries: {
+            modifier: GQL.CriterionModifier.Includes,
+            value: [gallery.id],
+          },
+        },
+        filter: {
+          per_page: -1,
+        },
+      },
+    });
+
+    if (result.data?.findImages?.images) {
+      const imageIds = result.data.findImages.images.map((img) => img.id);
+      setGenerateImageIds(imageIds);
+      setIsGenerateDialogOpen(true);
     }
   }
 
@@ -179,6 +210,18 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <DeleteGalleriesDialog
           selected={[{ ...gallery, image_count: NaN }]}
           onClose={onDeleteDialogClosed}
+        />
+      );
+    }
+  }
+
+  function maybeRenderGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={generateImageIds}
+          onClose={() => setIsGenerateDialogOpen(false)}
+          type="image"
         />
       );
     }
@@ -209,6 +252,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             onClick={() => onResetCover()}
           >
             <FormattedMessage id="actions.reset_cover" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => onGenerate()}
+          >
+            {`${intl.formatMessage({ id: "actions.generate" })}…`}
           </Dropdown.Item>
           <Dropdown.Item
             className="bg-secondary text-white"
@@ -387,6 +436,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderDeleteDialog()}
+      {maybeRenderGenerateDialog()}
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div>
           <div className="gallery-header-container">

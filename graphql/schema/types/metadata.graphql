@@ -19,6 +19,8 @@ input GenerateMetadataInput {
   sceneIDs: [ID!]
   "marker ids to generate for"
   markerIDs: [ID!]
+  "image ids to generate for"
+  imageIDs: [ID!]
 
   "overwrite existing media"
   overwrite: Boolean
