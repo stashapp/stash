@@ -17,7 +17,7 @@ type SceneSegment struct {
 
 type SceneSegmentPartial struct {
 	ID           int
-	SceneID      int
+	SceneID      OptionalInt
 	Title        OptionalString
 	StartSeconds OptionalFloat64
 	EndSeconds   OptionalFloat64
