@@ -1138,6 +1138,7 @@ var sceneSortOptions = sortOptions{
 	"perceptual_similarity",
 	"random",
 	"rating",
+	"resolution",
 	"studio",
 	"tag_count",
 	"title",
@@ -1236,6 +1237,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		sort = "frame_rate"
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "resolution":
+		addVideoFileTable()
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", videoFileTable, videoFileTable, getSortDirection(direction))
 	case "filesize":
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
