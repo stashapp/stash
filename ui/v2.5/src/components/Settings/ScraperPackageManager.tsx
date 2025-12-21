@@ -101,7 +101,7 @@ export const AvailableScraperPackages: React.FC = () => {
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
   // Get installed packages to filter them out from available list
-  const { data: installedData } = useInstalledScraperPackages();
+  const { data: installedData } = useInstalledScraperPackages(false);
   const installedPackageIds = new Set(
     installedData?.installedPackages?.map((p) => p.package_id) ?? []
   );

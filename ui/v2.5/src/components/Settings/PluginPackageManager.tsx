@@ -101,7 +101,7 @@ export const AvailablePluginPackages: React.FC = () => {
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
   // Get installed packages to filter them out from available list
-  const { data: installedData } = useInstalledPluginPackages();
+  const { data: installedData } = useInstalledPluginPackages(false);
   const installedPackageIds = new Set(
     installedData?.installedPackages?.map((p) => p.package_id) ?? []
   );
