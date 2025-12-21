@@ -89,7 +89,8 @@ export const GenerateDialog: React.FC<IGenerateDialog> = ({
   }, [configuration, configRead]);
 
   const selectionStatus = useMemo(() => {
-    const countableId = type === "image" ? "countables.images" : "countables.scenes";
+    const countableId =
+      type === "image" ? "countables.images" : "countables.scenes";
 
     if (selectedIds) {
       return (
