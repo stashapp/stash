@@ -687,6 +687,11 @@ div.dropdown-menu {
 
 .edit-button {
   margin-right: 10px;
+
+  // Show caret on split button dropdown toggle
+  &.btn-group .dropdown-toggle-split::after {
+    content: "";
+  }
 }
 
 .wrap-tags {

@@ -1,4 +1,4 @@
-import { Button, Modal } from "react-bootstrap";
+import { Button, Dropdown, Modal, SplitButton } from "react-bootstrap";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ImageInput } from "./ImageInput";
@@ -49,26 +49,32 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderSaveButton() {
     if (!props.isEditing) return;
 
-    return (
-      <>
-        <Button
+    if (props.isNew && props.onSaveAndNew) {
+      return (
+        <SplitButton
+          id="save-split-button"
           variant="success"
-          className="save mr-2"
+          className="save"
           disabled={props.saveDisabled}
+          title={intl.formatMessage({ id: "actions.save" })}
           onClick={() => props.onSave()}
         >
-          <FormattedMessage id="actions.save" />
-        </Button>
-        {props.isNew && props.onSaveAndNew && (
-          <Button
-            variant="success"
-            disabled={props.saveDisabled}
-            onClick={() => props.onSaveAndNew!()}
-          >
+          <Dropdown.Item onClick={() => props.onSaveAndNew!()}>
             <FormattedMessage id="actions.save_and_new" />
-          </Button>
-        )}
-      </>
+          </Dropdown.Item>
+        </SplitButton>
+      );
+    }
+
+    return (
+      <Button
+        variant="success"
+        className="save"
+        disabled={props.saveDisabled}
+        onClick={() => props.onSave()}
+      >
+        <FormattedMessage id="actions.save" />
+      </Button>
     );
   }
 

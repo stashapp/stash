@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Dropdown } from "react-bootstrap";
+import { Button, Form, Dropdown, SplitButton } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -622,27 +622,31 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="actions.clear_image" />
           </Button>
         </div>
-        <Button
-          className="mr-2"
-          variant="success"
-          disabled={
-            (!isNew && !formik.dirty) ||
-            !isEqual(formik.errors, {}) ||
-            customFieldsError !== undefined
-          }
-          onClick={() => formik.submitForm()}
-        >
-          <FormattedMessage id="actions.save" />
-        </Button>
-        {isNew && onSaveAndNew && (
-          <Button
+        {isNew && onSaveAndNew ? (
+          <SplitButton
+            id="save-split-button"
             variant="success"
             disabled={
               !isEqual(formik.errors, {}) || customFieldsError !== undefined
             }
-            onClick={() => onSaveAndNewClick()}
+            title={intl.formatMessage({ id: "actions.save" })}
+            onClick={() => formik.submitForm()}
           >
-            <FormattedMessage id="actions.save_and_new" />
+            <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+              <FormattedMessage id="actions.save_and_new" />
+            </Dropdown.Item>
+          </SplitButton>
+        ) : (
+          <Button
+            variant="success"
+            disabled={
+              (!isNew && !formik.dirty) ||
+              !isEqual(formik.errors, {}) ||
+              customFieldsError !== undefined
+            }
+            onClick={() => formik.submitForm()}
+          >
+            <FormattedMessage id="actions.save" />
           </Button>
         )}
       </div>
