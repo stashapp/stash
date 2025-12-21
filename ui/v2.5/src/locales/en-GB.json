@@ -1556,6 +1556,7 @@
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "Added generation job to queue",
+    "cover_image_reset": "Cover image will be reset on save",
     "created_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
