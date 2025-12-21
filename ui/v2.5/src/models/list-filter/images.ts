@@ -25,7 +25,13 @@ import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
-const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
+const sortByOptions = [
+  "filesize",
+  "file_count",
+  "date",
+  "resolution",
+  ...MediaSortByOptions,
+]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

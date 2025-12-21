@@ -44,6 +44,7 @@ const sortByOptions = [
   "filesize",
   "duration",
   "framerate",
+  "resolution",
   "bitrate",
   "last_played_at",
   "resume_time",

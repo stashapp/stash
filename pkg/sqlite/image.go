@@ -942,6 +942,7 @@ var imageSortOptions = sortOptions{
 	"performer_count",
 	"random",
 	"rating",
+	"resolution",
 	"tag_count",
 	"title",
 	"updated_at",
@@ -1001,6 +1002,14 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "mod_time", "filesize":
 			addFilesJoin()
 			sortClause = getSort(sort, direction, "files")
+		case "resolution":
+			addFilesJoin()
+			q.addJoins(join{
+				sort:     true,
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			})
+			sortClause = " ORDER BY MIN(image_files.width, image_files.height) " + direction
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
