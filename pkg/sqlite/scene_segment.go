@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	sceneSegmentTable   = "scene_segments"
+	sceneSegmentTable    = "scene_segments"
 	sceneSegmentIDColumn = "scene_segment_id"
 )
 
@@ -235,7 +235,7 @@ func (qb *SceneSegmentStore) FindBySceneID(ctx context.Context, sceneID int) ([]
 		Prepared(true).
 		Where(table.Col("scene_id").Eq(sceneID)).
 		Order(table.Col("start_seconds").Asc())
-	
+
 	return qb.getMany(ctx, q)
 }
 
