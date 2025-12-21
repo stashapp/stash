@@ -1,0 +1,11 @@
+query FindSceneSegments($scene_id: ID!) {
+  findSceneSegments(scene_id: $scene_id) {
+    ...SceneSegmentData
+  }
+}
+
+query FindSceneSegment($id: ID!) {
+  findSceneSegment(id: $id) {
+    ...SceneSegmentData
+  }
+}

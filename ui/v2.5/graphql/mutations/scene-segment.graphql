@@ -1,0 +1,15 @@
+mutation SceneSegmentCreate($input: SceneSegmentCreateInput!) {
+  sceneSegmentCreate(input: $input) {
+    ...SceneSegmentData
+  }
+}
+
+mutation SceneSegmentUpdate($input: SceneSegmentUpdateInput!) {
+  sceneSegmentUpdate(input: $input) {
+    ...SceneSegmentData
+  }
+}
+
+mutation SceneSegmentDestroy($id: ID!) {
+  sceneSegmentDestroy(id: $id)
+}

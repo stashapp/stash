@@ -1,0 +1,14 @@
+fragment SceneSegmentData on SceneSegment {
+  id
+  title
+  scene_id
+  start_seconds
+  end_seconds
+  created_at
+  updated_at
+
+  scene {
+    id
+    title
+  }
+}

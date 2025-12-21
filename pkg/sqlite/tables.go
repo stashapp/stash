@@ -164,6 +164,11 @@ var (
 		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),
 	}
 
+	sceneSegmentTableMgr = &table{
+		table:    goqu.T(sceneSegmentTable),
+		idColumn: goqu.T(sceneSegmentTable).Col(idColumn),
+	}
+
 	sceneMarkersTagsTableMgr = &joinTable{
 		table: table{
 			table:    sceneMarkersTagsJoinTable,
