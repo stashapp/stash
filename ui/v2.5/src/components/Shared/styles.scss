@@ -62,9 +62,22 @@
   padding: 0;
   row-gap: 0.5rem;
 
-  .btn {
+  > .btn {
     margin-right: 0.5rem;
     white-space: nowrap;
+  }
+
+  > .btn-group {
+    margin-right: 0.5rem;
+
+    .btn {
+      margin-right: 0;
+    }
+
+    // Show caret on split button dropdown toggle
+    .dropdown-toggle-split::after {
+      content: "";
+    }
   }
 }
 

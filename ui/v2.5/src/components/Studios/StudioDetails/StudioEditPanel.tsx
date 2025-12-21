@@ -25,6 +25,7 @@ import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
   onSubmit: (studio: GQL.StudioCreateInput) => Promise<void>;
+  onSaveAndNew?: (studio: GQL.StudioCreateInput) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
@@ -34,6 +35,7 @@ interface IStudioEditPanel {
 export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   studio,
   onSubmit,
+  onSaveAndNew,
   onCancel,
   onDelete,
   setImage,
@@ -136,6 +138,18 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     setIsLoading(true);
     try {
       await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    setIsLoading(true);
+    try {
+      await onSaveAndNew?.(input);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -247,6 +261,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         isEditing
         onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
+        onSaveAndNew={onSaveAndNew ? onSaveAndNewClick : undefined}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}
         onImageChangeURL={onImageLoad}

@@ -74,6 +74,22 @@ const SceneCreate: React.FC = () => {
     }
   }
 
+  async function onSaveAndNew(input: GQL.SceneCreateInput) {
+    const fileID = query.get("file_id") ?? undefined;
+    const result = await mutateCreateScene({
+      ...input,
+      file_ids: fileID ? [fileID] : undefined,
+    });
+    if (result.data?.sceneCreate?.id) {
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+        )
+      );
+    }
+  }
+
   return (
     <div className="row new-view justify-content-center" id="create-scene-page">
       <div className="col-md-8">
@@ -89,6 +105,7 @@ const SceneCreate: React.FC = () => {
           isVisible
           isNew
           onSubmit={onSave}
+          onSaveAndNew={onSaveAndNew}
         />
       </div>
     </div>

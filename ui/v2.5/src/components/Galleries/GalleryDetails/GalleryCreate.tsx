@@ -34,6 +34,20 @@ const GalleryCreate: React.FC = () => {
     }
   }
 
+  async function onSaveAndNew(input: GQL.GalleryCreateInput) {
+    const result = await createGallery({
+      variables: { input },
+    });
+    if (result.data?.galleryCreate) {
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
+        )
+      );
+    }
+  }
+
   return (
     <div className="row new-view">
       <div className="col-md-6">
@@ -47,6 +61,7 @@ const GalleryCreate: React.FC = () => {
           gallery={gallery}
           isVisible
           onSubmit={onSave}
+          onSaveAndNew={onSaveAndNew}
           onDelete={() => {}}
         />
       </div>
