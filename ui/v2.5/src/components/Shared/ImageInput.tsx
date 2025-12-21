@@ -10,7 +10,7 @@ import {
 import { useIntl } from "react-intl";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
-import { faFile, faLink, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faFile, faLink } from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 
 interface IImageInput {
@@ -146,13 +146,8 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           </Button>
         </OverlayTrigger>
         {onReset && (
-          <Button
-            variant="danger"
-            className="mr-2"
-            onClick={onReset}
-            title={intl.formatMessage({ id: "actions.reset_cover" })}
-          >
-            <Icon icon={faTrashAlt} />
+          <Button variant="danger" className="mr-2" onClick={onReset}>
+            {intl.formatMessage({ id: "actions.clear_image" })}
           </Button>
         )}
       </>
