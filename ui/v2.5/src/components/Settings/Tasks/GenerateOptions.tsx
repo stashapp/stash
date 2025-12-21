@@ -7,7 +7,7 @@ import {
 } from "../GeneratePreviewOptions";
 
 interface IGenerateOptions {
-  type?: "scene" | "image";
+  type?: "scene" | "image" | "gallery";
   selection?: boolean;
   options: GQL.GenerateMetadataInput;
   setOptions: (s: GQL.GenerateMetadataInput) => void;
@@ -27,7 +27,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
   }
 
   const showSceneOptions = !type || type === "scene";
-  const showImageOptions = !type || type === "image";
+  const showImageOptions = !type || type === "image" || type === "gallery";
 
   return (
     <>

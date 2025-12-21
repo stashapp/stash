@@ -35,10 +35,12 @@ type GenerateMetadataInput struct {
 	ImageThumbnails           bool `json:"imageThumbnails"`
 	// scene ids to generate for
 	SceneIDs []string `json:"sceneIDs"`
-	// image ids to generate for
-	ImageIDs []string `json:"imageIDs"`
 	// marker ids to generate for
 	MarkerIDs []string `json:"markerIDs"`
+	// image ids to generate for
+	ImageIDs []string `json:"imageIDs"`
+	// gallery ids to generate for
+	GalleryIDs []string `json:"galleryIDs"`
 	// overwrite existing media
 	Overwrite bool `json:"overwrite"`
 }
@@ -114,6 +116,10 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		if err != nil {
 			logger.Error(err.Error())
 		}
+		galleryIDs, err := stringslice.StringSliceToIntSlice(j.input.GalleryIDs)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 
 		g := &generate.Generator{
 			Encoder:      instance.FFMpeg,
@@ -127,7 +133,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		r := j.repository
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.Scene
-			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 && len(j.input.ImageIDs) == 0 {
+			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 && len(j.input.ImageIDs) == 0 && len(j.input.GalleryIDs) == 0 {
 				j.queueTasks(ctx, g, queue)
 			} else {
 				if len(j.input.SceneIDs) > 0 {
@@ -159,6 +165,22 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 						}
 
 						j.queueImageJob(g, i, queue)
+					}
+				}
+
+				if len(j.input.GalleryIDs) > 0 {
+					for _, galleryID := range galleryIDs {
+						imgs, err := r.Image.FindByGalleryID(ctx, galleryID)
+						if err != nil {
+							return err
+						}
+						for _, img := range imgs {
+							if err := img.LoadFiles(ctx, r.Image); err != nil {
+								return err
+							}
+
+							j.queueImageJob(g, img, queue)
+						}
 					}
 				}
 			}
