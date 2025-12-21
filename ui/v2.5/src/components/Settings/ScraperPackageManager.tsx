@@ -100,6 +100,12 @@ export const AvailableScraperPackages: React.FC = () => {
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
+  // Get installed packages to filter them out from available list
+  const { data: installedData } = useInstalledScraperPackages();
+  const installedPackageIds = new Set(
+    installedData?.installedPackages?.map((p) => p.package_id) ?? []
+  );
+
   async function onInstallPackages(packages: GQL.PackageSpecInput[]) {
     const r = await mutateInstallScraperPackages(packages);
 
@@ -114,7 +120,10 @@ export const AvailableScraperPackages: React.FC = () => {
 
   async function loadSource(source: string): Promise<RemotePackage[]> {
     const { data } = await queryAvailableScraperPackages(source);
-    return data.availablePackages;
+    // Filter out already installed packages
+    return data.availablePackages.filter(
+      (pkg) => !installedPackageIds.has(pkg.package_id)
+    );
   }
 
   function addSource(source: GQL.PackageSource) {
