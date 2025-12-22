@@ -140,4 +140,8 @@ models:
     fields:
       plugins:
         resolver: true
+  Performer:
+    fields:
+      career_length:
+        resolver: true
   
