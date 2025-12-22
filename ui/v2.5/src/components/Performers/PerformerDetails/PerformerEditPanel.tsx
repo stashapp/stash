@@ -123,7 +123,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
-    career_length: yup.string().ensure(),
     career_start: yupInputNumber().positive().nullable().defined(),
     career_end: yupInputNumber().positive().nullable().defined(),
     urls: yupUniqueStringList(intl),
@@ -154,7 +153,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     circumcised: performer.circumcised ?? null,
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
-    career_length: performer.career_length ?? "",
     career_start: performer.career_start ?? null,
     career_end: performer.career_end ?? null,
     urls: performer.urls ?? [],
@@ -256,9 +254,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.fake_tits) {
       formik.setFieldValue("fake_tits", state.fake_tits);
-    }
-    if (state.career_length) {
-      formik.setFieldValue("career_length", state.career_length);
     }
     if (state.career_start) {
       formik.setFieldValue("career_start", parseInt(state.career_start, 10));
@@ -728,7 +723,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("tattoos", "textarea")}
         {renderInputField("piercings", "textarea")}
 
-        {renderInputField("career_length")}
         {renderInputField("career_start", "number")}
         {renderInputField("career_end", "number")}
 

@@ -30,7 +30,7 @@ type Performer {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
   career_start: Int
   career_end: Int
   tattoos: String
@@ -79,7 +79,7 @@ input PerformerCreateInput {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
   career_start: Int
   career_end: Int
   tattoos: String
@@ -119,7 +119,7 @@ input PerformerUpdateInput {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
   career_start: Int
   career_end: Int
   tattoos: String
@@ -164,7 +164,7 @@ input BulkPerformerUpdateInput {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
   career_start: Int
   career_end: Int
   tattoos: String
