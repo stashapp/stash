@@ -177,6 +177,8 @@ type ScrapedPerformer struct {
 	PenisLength    *string       `json:"penis_length"`
 	Circumcised    *string       `json:"circumcised"`
 	CareerLength   *string       `json:"career_length"`
+	CareerStart    *string       `json:"career_start"`
+	CareerEnd      *string       `json:"career_end"`
 	Tattoos        *string       `json:"tattoos"`
 	Piercings      *string       `json:"piercings"`
 	Aliases        *string       `json:"aliases"`
@@ -221,6 +223,18 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 	}
 	if p.CareerLength != nil && !excluded["career_length"] {
 		ret.CareerLength = *p.CareerLength
+	}
+	if p.CareerStart != nil && !excluded["career_start"] {
+		cs, err := strconv.Atoi(*p.CareerStart)
+		if err == nil {
+			ret.CareerStart = &cs
+		}
+	}
+	if p.CareerEnd != nil && !excluded["career_end"] {
+		ce, err := strconv.Atoi(*p.CareerEnd)
+		if err == nil {
+			ret.CareerEnd = &ce
+		}
 	}
 	if p.Country != nil && !excluded["country"] {
 		ret.Country = *p.Country
