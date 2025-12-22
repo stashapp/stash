@@ -681,6 +681,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             onStashIDSelected(item);
             setIsStashIDSearchOpen(false);
           }}
+          initialQuery={performer.name ?? ""}
         />
       )}
 
