@@ -31,6 +31,8 @@ type Performer {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   alias_list: [String!]!
@@ -78,6 +80,8 @@ input PerformerCreateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   alias_list: [String!]
@@ -116,6 +120,8 @@ input PerformerUpdateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   alias_list: [String!]
@@ -159,6 +165,8 @@ input BulkPerformerUpdateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   alias_list: BulkUpdateStrings
