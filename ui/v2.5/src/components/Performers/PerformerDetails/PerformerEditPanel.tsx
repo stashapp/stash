@@ -124,6 +124,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
+    career_start: yupInputNumber().positive().nullable().defined(),
+    career_end: yupInputNumber().positive().nullable().defined(),
     urls: yupUniqueStringList(intl),
     details: yup.string().ensure(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -153,6 +155,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
+    career_start: performer.career_start ?? null,
+    career_end: performer.career_end ?? null,
     urls: performer.urls ?? [],
     details: performer.details ?? "",
     tag_ids: (performer.tags ?? []).map((t) => t.id),
@@ -255,6 +259,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.career_length) {
       formik.setFieldValue("career_length", state.career_length);
+    }
+    if (state.career_start) {
+      formik.setFieldValue("career_start", parseInt(state.career_start, 10));
+    }
+    if (state.career_end) {
+      formik.setFieldValue("career_end", parseInt(state.career_end, 10));
     }
     if (state.tattoos) {
       formik.setFieldValue("tattoos", state.tattoos);
@@ -719,6 +729,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("piercings", "textarea")}
 
         {renderInputField("career_length")}
+        {renderInputField("career_start", "number")}
+        {renderInputField("career_end", "number")}
 
         {renderURLListField("urls", onScrapePerformerURL, urlScrapable)}
 
