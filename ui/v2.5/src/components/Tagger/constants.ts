@@ -75,7 +75,8 @@ export const PERFORMER_FIELDS = [
   "fake_tits",
   "tattoos",
   "piercings",
-  "career_length",
+  "career_start",
+  "career_end",
   "urls",
   "details",
 ];

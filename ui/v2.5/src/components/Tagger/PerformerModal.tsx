@@ -240,7 +240,12 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       height_cm: Number.parseFloat(performer.height ?? "") ?? undefined,
       measurements: performer.measurements,
       fake_tits: performer.fake_tits,
-      career_length: performer.career_length,
+      career_start: performer.career_start
+        ? Number.parseInt(performer.career_start, 10)
+        : undefined,
+      career_end: performer.career_end
+        ? Number.parseInt(performer.career_end, 10)
+        : undefined,
       tattoos: performer.tattoos,
       piercings: performer.piercings,
       urls: performer.urls,
@@ -326,7 +331,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {maybeRenderField("measurements", performer.measurements)}
           {performer?.gender !== GQL.GenderEnum.Male &&
             maybeRenderField("fake_tits", performer.fake_tits)}
-          {maybeRenderField("career_length", performer.career_length)}
+          {maybeRenderField("career_start", performer.career_start)}
+          {maybeRenderField("career_end", performer.career_end)}
           {maybeRenderField("tattoos", performer.tattoos, false)}
           {maybeRenderField("piercings", performer.piercings, false)}
           {maybeRenderField("weight", performer.weight, false)}
