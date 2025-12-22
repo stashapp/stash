@@ -50,6 +50,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.PenisLength = input.PenisLength
 	newPerformer.Circumcised = input.Circumcised
 	newPerformer.CareerLength = translator.string(input.CareerLength)
+	newPerformer.CareerStart = input.CareerStart
+	newPerformer.CareerEnd = input.CareerEnd
 	newPerformer.Tattoos = translator.string(input.Tattoos)
 	newPerformer.Piercings = translator.string(input.Piercings)
 	newPerformer.Favorite = translator.bool(input.Favorite)
@@ -250,6 +252,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
+	updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
+	updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
@@ -367,6 +371,8 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
+	updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
+	updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
 
