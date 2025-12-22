@@ -222,6 +222,8 @@ type PerformerCreateInput struct {
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
+	CareerStart    *int            `json:"career_start"`
+	CareerEnd      *int            `json:"career_end"`
 	Tattoos        *string         `json:"tattoos"`
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
@@ -261,6 +263,8 @@ type PerformerUpdateInput struct {
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
+	CareerStart    *int            `json:"career_start"`
+	CareerEnd      *int            `json:"career_end"`
 	Tattoos        *string         `json:"tattoos"`
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
