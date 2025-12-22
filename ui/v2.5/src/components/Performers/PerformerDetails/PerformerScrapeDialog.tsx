@@ -272,12 +272,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [fakeTits, setFakeTits] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.fake_tits, props.scraped.fake_tits)
   );
-  const [careerLength, setCareerLength] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      props.performer.career_length,
-      props.scraped.career_length
-    )
-  );
   const [careerStart, setCareerStart] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       props.performer.career_start?.toString(),
@@ -359,7 +353,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     fakeTits,
     penisLength,
     circumcised,
-    careerLength,
     careerStart,
     careerEnd,
     tattoos,
@@ -393,7 +386,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       height: height.getNewValue(),
       measurements: measurements.getNewValue(),
       fake_tits: fakeTits.getNewValue(),
-      career_length: careerLength.getNewValue(),
       career_start: careerStart.getNewValue(),
       career_end: careerEnd.getNewValue(),
       tattoos: tattoos.getNewValue(),
@@ -508,12 +500,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           title={intl.formatMessage({ id: "fake_tits" })}
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
-        />
-        <ScrapedInputGroupRow
-          field="career_length"
-          title={intl.formatMessage({ id: "career_length" })}
-          result={careerLength}
-          onChange={(value) => setCareerLength(value)}
         />
         <ScrapedInputGroupRow
           field="career_start"
