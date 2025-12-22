@@ -31,6 +31,8 @@ type Performer {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   alias_list: [String!]!
@@ -78,6 +80,8 @@ input PerformerCreateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
@@ -117,6 +121,8 @@ input PerformerUpdateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
@@ -161,6 +167,8 @@ input BulkPerformerUpdateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
