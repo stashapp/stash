@@ -27,6 +27,8 @@ import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import * as FormUtils from "src/utils/form";
 import { CountrySelect } from "../Shared/CountrySelect";
+import { useConfigurationContext } from "src/hooks/Config";
+import cx from "classnames";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -61,6 +63,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
+
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
+
   const [tagIds, setTagIds] = useState<GQL.BulkUpdateIds>({
     mode: GQL.BulkUpdateIdMode.Add,
   });
@@ -204,7 +210,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setter: (newValue: string | undefined) => void
   ) {
     return (
-      <Form.Group controlId={name}>
+      <Form.Group controlId={name} data-field={name}>
         <Form.Label>
           <FormattedMessage id={name} />
         </Form.Label>
@@ -218,9 +224,13 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   }
 
   function render() {
+    // sfw class needs to be set because it is outside body
+
     return (
       <ModalComponent
-        dialogClassName="edit-performers-dialog"
+        dialogClassName={cx("edit-performers-dialog", {
+          "sfw-content-mode": sfwContentMode,
+        })}
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
@@ -238,7 +248,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
-        <Form.Group controlId="rating" as={Row}>
+        <Form.Group controlId="rating" as={Row} data-field={name}>
           {FormUtils.renderLabel({
             title: intl.formatMessage({ id: "rating" }),
           })}
@@ -322,7 +332,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             setPenisLength(v)
           )}
 
-          <Form.Group>
+          <Form.Group data-field="circumcised">
             <Form.Label>
               <FormattedMessage id="circumcised" />
             </Form.Label>

@@ -174,8 +174,6 @@
             "set_cover_label": "Vælg scene cover billede",
             "set_tag_desc": "Vedhæft tags til scenen, enten ved at overskrive eller flette med eksisterende tags.",
             "set_tag_label": "Sæt tags",
-            "show_male_desc": "Skift, om mandlige kunstnere vil være tilgængelige til at tagge.",
-            "show_male_label": "Vis mandlige kunstnere",
             "source": "Kilde",
             "mark_organized_desc": "Sæt scene som Organiseret efter klik på Save knappen.",
             "mark_organized_label": "Marker som Organiseret ved gem"
@@ -1032,7 +1030,6 @@
     "name": "Navn",
     "new": "Ny",
     "none": "Ingen",
-    "o_counter": "O-tæller",
     "operations": "Operationer",
     "organized": "Organiseret",
     "pagination": {
@@ -1073,7 +1070,6 @@
         "no_results_found": "Ingen resultater fundet.",
         "number_of_performers_will_be_processed": "{performer_count} kunstnere vil blive behandlet",
         "performer_already_tagged": "Kunstner allerede tagget",
-        "performer_names_separated_by_comma": "Artistnavne adskilt af komma",
         "performer_selection": "Valg af kunstner",
         "performer_successfully_tagged": "Kunstner tagget med succes:",
         "query_all_performers_in_the_database": "Alle kunstnere i databasen",

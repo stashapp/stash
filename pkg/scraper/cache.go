@@ -16,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -262,19 +261,23 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
 	}
 
-	ignoredRegex := c.compileExcludeTagPatterns()
-
-	var ignoredTags []string
-	for i, cc := range content {
-		var thisIgnoredTags []string
-		content[i], thisIgnoredTags, err = c.postScrape(ctx, cc, ignoredRegex)
-		if err != nil {
-			return nil, fmt.Errorf("error while post-scraping with scraper %s: %w", id, err)
+	pp := postScraper{
+		Cache:        c,
+		excludeTagRE: c.compileExcludeTagPatterns(),
+	}
+	if err := c.repository.WithReadTxn(ctx, func(ctx context.Context) error {
+		for i, cc := range content {
+			content[i], err = pp.postScrape(ctx, cc)
+			if err != nil {
+				return fmt.Errorf("error while post-scraping with scraper %s: %w", id, err)
+			}
 		}
-		ignoredTags = sliceutil.AppendUniques(ignoredTags, thisIgnoredTags)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
-	LogIgnoredTags(ignoredTags)
+	LogIgnoredTags(pp.ignoredTags)
 
 	return content, nil
 }

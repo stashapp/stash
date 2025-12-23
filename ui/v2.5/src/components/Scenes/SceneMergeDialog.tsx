@@ -12,13 +12,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  ScrapeDialog,
   ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "../Shared/ScrapeDialog/ScrapeDialog";
+} from "../Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
@@ -372,83 +372,87 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return (
       <>
         <ScrapedInputGroupRow
+          field="title"
           title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
+          field="code"
           title={intl.formatMessage({ id: "scene_code" })}
           result={code}
           onChange={(value) => setCode(value)}
         />
         <ScrapedStringListRow
+          field="urls"
           title={intl.formatMessage({ id: "urls" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
+          field="date"
           title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         <ScrapeDialogRow
+          field="rating"
           title={intl.formatMessage({ id: "rating" })}
           result={rating}
-          renderOriginalField={() => (
-            <RatingSystem value={rating.originalValue} disabled />
-          )}
-          renderNewField={() => (
-            <RatingSystem value={rating.newValue} disabled />
-          )}
+          originalField={<RatingSystem value={rating.originalValue} disabled />}
+          newField={<RatingSystem value={rating.newValue} disabled />}
           onChange={(value) => setRating(value)}
         />
         <ScrapeDialogRow
+          field="o_count"
           title={intl.formatMessage({ id: "o_count" })}
           result={oCounter}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={oCounter.originalValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={oCounter.newValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setOCounter(value)}
         />
         <ScrapeDialogRow
+          field="play_count"
           title={intl.formatMessage({ id: "play_count" })}
           result={playCount}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={playCount.originalValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={playCount.newValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setPlayCount(value)}
         />
         <ScrapeDialogRow
+          field="play_duration"
           title={intl.formatMessage({ id: "play_duration" })}
           result={playDuration}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={TextUtils.secondsToTimestamp(
                 playDuration.originalValue ?? 0
@@ -457,21 +461,22 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={TextUtils.secondsToTimestamp(playDuration.newValue ?? 0)}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setPlayDuration(value)}
         />
         <ScrapeDialogRow
+          field="galleries"
           title={intl.formatMessage({ id: "galleries" })}
           result={galleries}
-          renderOriginalField={() => (
+          originalField={
             <GallerySelect
               className="form-control react-select"
               ids={galleries.originalValue ?? []}
@@ -479,8 +484,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               isMulti
               isDisabled
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <GallerySelect
               className="form-control react-select"
               ids={galleries.newValue ?? []}
@@ -488,68 +493,74 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               isMulti
               isDisabled
             />
-          )}
+          }
           onChange={(value) => setGalleries(value)}
         />
         <ScrapedStudioRow
+          field="studio"
           title={intl.formatMessage({ id: "studios" })}
           result={studio}
           onChange={(value) => setStudio(value)}
         />
         <ScrapedPerformersRow
+          field="performers"
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
           ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         <ScrapedGroupsRow
+          field="groups"
           title={intl.formatMessage({ id: "groups" })}
           result={groups}
           onChange={(value) => setGroups(value)}
         />
         <ScrapedTagsRow
+          field="tags"
           title={intl.formatMessage({ id: "tags" })}
           result={tags}
           onChange={(value) => setTags(value)}
         />
         <ScrapedTextAreaRow
+          field="details"
           title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         <ScrapeDialogRow
+          field="organized"
           title={intl.formatMessage({ id: "organized" })}
           result={organized}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={organized.originalValue ? trueString : falseString}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={organized.newValue ? trueString : falseString}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setOrganized(value)}
         />
         <ScrapeDialogRow
+          field="stash_ids"
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
-          renderOriginalField={() => (
+          originalField={
             <StashIDsField values={stashIDs?.originalValue ?? []} />
-          )}
-          renderNewField={() => (
-            <StashIDsField values={stashIDs?.newValue ?? []} />
-          )}
+          }
+          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
         />
         <ScrapedImageRow
+          field="cover_image"
           title={intl.formatMessage({ id: "cover_image" })}
           className="scene-cover"
           result={image}
@@ -617,7 +628,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       title={dialogTitle}
       existingLabel={destinationLabel}
       scrapedLabel={sourceLabel}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         if (!apply) {
           onClose();
@@ -625,7 +635,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onClose(createValues());
         }
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
 

@@ -9,6 +9,7 @@ type Tag {
   created_at: Time!
   updated_at: Time!
   favorite: Boolean!
+  stash_ids: [StashID!]!
   image_path: String # Resolver
   scene_count(depth: Int): Int! # Resolver
   scene_marker_count(depth: Int): Int! # Resolver
@@ -35,6 +36,7 @@ input TagCreateInput {
   favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
+  stash_ids: [StashIDInput!]
 
   parent_ids: [ID!]
   child_ids: [ID!]
@@ -51,6 +53,7 @@ input TagUpdateInput {
   favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
+  stash_ids: [StashIDInput!]
 
   parent_ids: [ID!]
   child_ids: [ID!]

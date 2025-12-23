@@ -44,3 +44,11 @@ func UniqueFold(s []string) []string {
 	}
 	return ret
 }
+
+// TrimSpace trims whitespace from each string in a slice.
+func TrimSpace(s []string) []string {
+	for i, v := range s {
+		s[i] = strings.TrimSpace(v)
+	}
+	return s
+}

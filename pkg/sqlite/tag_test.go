@@ -343,6 +343,109 @@ func queryTags(ctx context.Context, t *testing.T, qb models.TagReader, tagFilter
 	return tags
 }
 
+func tagsToIDs(i []*models.Tag) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestTagQuery(t *testing.T) {
+	var (
+		endpoint = tagStashID(tagIdxWithPerformer).Endpoint
+		stashID  = tagStashID(tagIdxWithPerformer).StashID
+	)
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.TagFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{tagIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
+			"exclude stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer},
+			false,
+		},
+		{
+			"null stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer},
+			false,
+		},
+		{
+			"not null stash id with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{tagIdxWithPerformer},
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			tags, _, err := db.Tag.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := tagsToIDs(tags)
+			include := indexesToIDs(tagIDs, tt.includeIdxs)
+			exclude := indexesToIDs(tagIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestTagQueryIsMissingImage(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
@@ -898,6 +1001,66 @@ func TestTagUpdateAlias(t *testing.T) {
 	}); err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func TestTagStashIDs(t *testing.T) {
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		// create tag to test against
+		const name = "TestTagStashIDs"
+		tag := models.Tag{
+			Name: name,
+		}
+		err := qb.Create(ctx, &tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		testStashIDReaderWriter(ctx, t, qb, tag.ID)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestTagFindByStashID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		// create tag to test against
+		const name = "TestTagFindByStashID"
+		const stashID = "stashid"
+		const endpoint = "endpoint"
+		tag := models.Tag{
+			Name:     name,
+			StashIDs: models.NewRelatedStashIDs([]models.StashID{{StashID: stashID, Endpoint: endpoint}}),
+		}
+		err := qb.Create(ctx, &tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		// find by stash ID
+		tags, err := qb.FindByStashID(ctx, models.StashID{StashID: stashID, Endpoint: endpoint})
+		if err != nil {
+			return fmt.Errorf("Error finding by stash ID: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tag.ID, tags[0].ID)
+
+		// find by non-existent stash ID
+		tags, err = qb.FindByStashID(ctx, models.StashID{StashID: "nonexistent", Endpoint: endpoint})
+		if err != nil {
+			return fmt.Errorf("Error finding by stash ID: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 0)
+
+		return nil
+	})
 }
 
 func TestTagMerge(t *testing.T) {

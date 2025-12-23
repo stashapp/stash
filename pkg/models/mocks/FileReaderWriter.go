@@ -130,13 +130,13 @@ func (_m *FileReaderWriter) Find(ctx context.Context, id ...models.FileID) ([]mo
 	return r0, r1
 }
 
-// FindAllByPath provides a mock function with given fields: ctx, path
-func (_m *FileReaderWriter) FindAllByPath(ctx context.Context, path string) ([]models.File, error) {
-	ret := _m.Called(ctx, path)
+// FindAllByPath provides a mock function with given fields: ctx, path, caseSensitive
+func (_m *FileReaderWriter) FindAllByPath(ctx context.Context, path string, caseSensitive bool) ([]models.File, error) {
+	ret := _m.Called(ctx, path, caseSensitive)
 
 	var r0 []models.File
-	if rf, ok := ret.Get(0).(func(context.Context, string) []models.File); ok {
-		r0 = rf(ctx, path)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) []models.File); ok {
+		r0 = rf(ctx, path, caseSensitive)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.File)
@@ -144,8 +144,8 @@ func (_m *FileReaderWriter) FindAllByPath(ctx context.Context, path string) ([]m
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, path)
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, path, caseSensitive)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -222,13 +222,13 @@ func (_m *FileReaderWriter) FindByFingerprint(ctx context.Context, fp models.Fin
 	return r0, r1
 }
 
-// FindByPath provides a mock function with given fields: ctx, path
-func (_m *FileReaderWriter) FindByPath(ctx context.Context, path string) (models.File, error) {
-	ret := _m.Called(ctx, path)
+// FindByPath provides a mock function with given fields: ctx, path, caseSensitive
+func (_m *FileReaderWriter) FindByPath(ctx context.Context, path string, caseSensitive bool) (models.File, error) {
+	ret := _m.Called(ctx, path, caseSensitive)
 
 	var r0 models.File
-	if rf, ok := ret.Get(0).(func(context.Context, string) models.File); ok {
-		r0 = rf(ctx, path)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) models.File); ok {
+		r0 = rf(ctx, path, caseSensitive)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(models.File)
@@ -236,8 +236,8 @@ func (_m *FileReaderWriter) FindByPath(ctx context.Context, path string) (models
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, path)
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, path, caseSensitive)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -60,8 +60,34 @@ export const SidebarPane: React.FC<
   );
 };
 
-export const SidebarPaneContent: React.FC = ({ children }) => {
-  return <div className="sidebar-pane-content">{children}</div>;
+export const SidebarToggleButton: React.FC<{
+  onClick: () => void;
+}> = ({ onClick }) => {
+  const intl = useIntl();
+  return (
+    <div className="sidebar-toggle-button-container">
+      <Button
+        className="sidebar-toggle-button ignore-sidebar-outside-click minimal"
+        variant="secondary"
+        onClick={onClick}
+        title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
+      >
+        <Icon icon={faSliders} />
+      </Button>
+    </div>
+  );
+};
+
+export const SidebarPaneContent: React.FC<{ onSidebarToggle: () => void }> = ({
+  onSidebarToggle,
+  children,
+}) => {
+  return (
+    <div className="sidebar-pane-content">
+      <SidebarToggleButton onClick={onSidebarToggle} />
+      {children}
+    </div>
+  );
 };
 
 interface IContext {
@@ -122,22 +148,6 @@ export const SidebarSection: React.FC<
     >
       {children}
     </CollapseButton>
-  );
-};
-
-export const SidebarToggleButton: React.FC<{
-  onClick: () => void;
-}> = ({ onClick }) => {
-  const intl = useIntl();
-  return (
-    <Button
-      className="sidebar-toggle-button ignore-sidebar-outside-click"
-      variant="secondary"
-      onClick={onClick}
-      title={intl.formatMessage({ id: "actions.sidebar.toggle" })}
-    >
-      <Icon icon={faSliders} />
-    </Button>
   );
 };
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
@@ -18,6 +19,13 @@ type GenerateImageThumbnailTask struct {
 
 func (t *GenerateImageThumbnailTask) GetDescription() string {
 	return fmt.Sprintf("Generating Thumbnail for image %s", t.Image.Path)
+}
+
+func (t *GenerateImageThumbnailTask) logStderr(err error) {
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		logger.Debugf("[generator] error output: %s", exitErr.Stderr)
+	}
 }
 
 func (t *GenerateImageThumbnailTask) Start(ctx context.Context) {
@@ -46,14 +54,15 @@ func (t *GenerateImageThumbnailTask) Start(ctx context.Context) {
 	if err != nil {
 		// don't log for animated images
 		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-			logger.Errorf("[generator] getting thumbnail for image %s: %w", path, err)
+			logger.Errorf("[generator] getting thumbnail for image %s: %s", path, err.Error())
+			t.logStderr(err)
 		}
 		return
 	}
 
 	err = fsutil.WriteFile(thumbPath, data)
 	if err != nil {
-		logger.Errorf("[generator] writing thumbnail for image %s: %w", path, err)
+		logger.Errorf("[generator] writing thumbnail for image %s: %s", path, err.Error())
 		return
 	}
 }

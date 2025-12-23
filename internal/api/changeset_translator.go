@@ -98,7 +98,7 @@ func (t changesetTranslator) string(value *string) string {
 		return ""
 	}
 
-	return *value
+	return strings.TrimSpace(*value)
 }
 
 func (t changesetTranslator) optionalString(value *string, field string) models.OptionalString {
@@ -106,7 +106,12 @@ func (t changesetTranslator) optionalString(value *string, field string) models.
 		return models.OptionalString{}
 	}
 
-	return models.NewOptionalStringPtr(value)
+	if value == nil {
+		return models.NewOptionalStringPtr(nil)
+	}
+
+	trimmed := strings.TrimSpace(*value)
+	return models.NewOptionalString(trimmed)
 }
 
 func (t changesetTranslator) optionalDate(value *string, field string) (models.OptionalDate, error) {
@@ -318,8 +323,14 @@ func (t changesetTranslator) updateStrings(value []string, field string) *models
 		return nil
 	}
 
+	// Trim whitespace from each string
+	trimmedValues := make([]string, len(value))
+	for i, v := range value {
+		trimmedValues[i] = strings.TrimSpace(v)
+	}
+
 	return &models.UpdateStrings{
-		Values: value,
+		Values: trimmedValues,
 		Mode:   models.RelationshipUpdateModeSet,
 	}
 }
@@ -329,8 +340,14 @@ func (t changesetTranslator) updateStringsBulk(value *BulkUpdateStrings, field s
 		return nil
 	}
 
+	// Trim whitespace from each string
+	trimmedValues := make([]string, len(value.Values))
+	for i, v := range value.Values {
+		trimmedValues[i] = strings.TrimSpace(v)
+	}
+
 	return &models.UpdateStrings{
-		Values: value.Values,
+		Values: trimmedValues,
 		Mode:   value.Mode,
 	}
 }
@@ -448,7 +465,7 @@ func groupsDescriptionsFromGroupInput(input []*GroupDescriptionInput) ([]models.
 			GroupID: gID,
 		}
 		if v.Description != nil {
-			ret[i].Description = *v.Description
+			ret[i].Description = strings.TrimSpace(*v.Description)
 		}
 	}
 

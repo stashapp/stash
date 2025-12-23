@@ -155,6 +155,15 @@
 }
 
 .scrape-dialog {
+  .column-label {
+    color: $muted-gray;
+    font-size: 0.85em;
+  }
+
+  .string-list-input {
+    width: 100%;
+  }
+
   .modal-content .dialog-container {
     max-height: calc(100vh - 14rem);
     overflow-y: auto;
@@ -391,8 +400,37 @@ button.collapse-button {
   opacity: 0.5;
 }
 
-.string-list-input .input-group {
-  margin-bottom: 0.35rem;
+.string-list-input {
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .input-group {
+    margin-bottom: 0.35rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .btn.drag-handle {
+    display: inline-block;
+    margin: -0.25em 0.25em -0.25em -0.25em;
+    padding: 0.25em 0.5em 0.25em;
+
+    &:not(:disabled):not(.disabled) {
+      cursor: move;
+    }
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:focus:active {
+      background-color: initial;
+      border-color: initial;
+      box-shadow: initial;
+    }
+  }
 }
 
 .bulk-update-text-input {
@@ -712,6 +750,10 @@ button.btn.favorite-button {
 
 .custom-fields {
   width: 100%;
+
+  .detail-item {
+    max-width: 100%;
+  }
 }
 
 .custom-fields .detail-item .detail-item-title {
@@ -719,6 +761,14 @@ button.btn.favorite-button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.custom-fields .detail-item .detail-item-value {
+  word-break: break-word;
+
+  .TruncatedText {
+    white-space: pre-line;
+  }
 }
 
 .custom-fields-input > .collapse-button {
@@ -816,24 +866,38 @@ button.btn.favorite-button {
   }
   @include media-breakpoint-down(xs) {
     .sidebar {
-      width: 100%;
-    }
-
-    &.hide-sidebar .sidebar {
-      margin-left: -100%;
-    }
-
-    &.hide-sidebar > :nth-child(2) {
-      width: 100%;
-    }
-  }
-  @include media-breakpoint-down(xs) {
-    display: block;
-
-    .sidebar {
-      margin-bottom: $navbar-height;
       margin-top: 0;
     }
+  }
+}
+
+.sidebar-toggle-button-container {
+  height: 100%;
+  position: absolute;
+
+  .sidebar-toggle-button {
+    border-bottom: 1px solid $secondary;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 10px;
+    border-right: 1px solid $secondary;
+    border-top: 1px solid $secondary;
+    border-top-left-radius: 0;
+    border-top-right-radius: 10px;
+    margin-left: -15px;
+    opacity: 0.5;
+    position: sticky;
+    top: calc($navbar-height + 0.5rem);
+    z-index: 10;
+
+    @include media-breakpoint-down(sm) {
+      top: 0.5rem;
+    }
+  }
+}
+
+.sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+  .sidebar-toggle-button {
+    margin-left: -0.5rem;
   }
 }
 
@@ -884,13 +948,25 @@ button.btn.favorite-button {
 $sticky-header-height: calc(50px + 3.3rem);
 
 // special case for sidebar in details view
+.detail-body .sidebar-toggle-button-container .sidebar-toggle-button {
+  top: calc($sticky-header-height + 0.5rem);
+
+  @include media-breakpoint-down(sm) {
+    top: 0.5rem;
+  }
+}
+
 .detail-body {
+  .sidebar-pane {
+    position: sticky;
+    top: calc($sticky-detail-header-height + $navbar-height);
+  }
+
   .sidebar {
     // required for sticky to work
     align-self: flex-start;
 
     // take a further 15px padding to match the detail body
-    height: calc(100vh - $sticky-header-height - 15px);
     margin-top: -15px;
     max-height: calc(100vh - $sticky-header-height - 15px);
     overflow-y: auto;
@@ -902,6 +978,10 @@ $sticky-header-height: calc(50px + 3.3rem);
     .sidebar-toolbar {
       padding-top: 15px;
     }
+  }
+
+  .sidebar-pane:not(.hide-sidebar) .sidebar {
+    height: calc(100vh - $sticky-header-height - 15px);
   }
 
   .sidebar-pane.hide-sidebar .sidebar {
@@ -920,19 +1000,15 @@ $sticky-header-height: calc(50px + 3.3rem);
     }
   }
   @include media-breakpoint-down(xs) {
-    .sidebar {
-      flex: 100% 0 0;
-      height: calc(100vh - 4rem);
-      max-height: calc(100vh - 4rem);
+    .sidebar-pane {
       top: 0;
     }
 
-    .sidebar-pane:not(.hide-sidebar) .sidebar {
-      margin-right: -100%;
-    }
-
-    .sidebar-pane.hide-sidebar .sidebar {
-      display: none;
+    .sidebar {
+      // flex: 100% 0 0;
+      height: calc(100vh - $navbar-height);
+      max-height: calc(100vh - $navbar-height);
+      top: 0;
     }
   }
   @include media-breakpoint-up(md) {
@@ -947,5 +1023,143 @@ $sticky-header-height: calc(50px + 3.3rem);
     > :nth-child(2) {
       padding-left: 15px;
     }
+  }
+}
+
+// Duration slider styles
+.duration-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.double-range-input-labels {
+  color: $text-color;
+  display: flex;
+  font-size: 0.875rem;
+  font-weight: 500;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+
+  input[type="text"] {
+    &:first-child {
+      text-align: left;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
+}
+
+.double-range-sliders {
+  height: 22px;
+  position: relative;
+}
+
+.double-range-slider {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-moz-range-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-ms-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+}
+
+.double-range-slider-min {
+  z-index: 1;
+}
+
+input[type="range"].double-range-slider-max {
+  z-index: 2;
+
+  // combining these into one rule doesn't work for some reason
+  &::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+
+  &::-moz-range-track {
+    background: transparent;
+  }
+
+  &::-ms-track {
+    background: transparent;
+  }
+}
+
+// Label offset for buttons that need to align with form fields
+.ml-label {
+  @include media-breakpoint-up(sm) {
+    // sm: label is 3 of 12 columns = 25%, plus partial gutter
+    margin-left: calc(25% + 7.5px);
+  }
+  @include media-breakpoint-up(xl) {
+    // xl: label is 2 of 12 columns = 16.667%, plus partial gutter
+    margin-left: calc(16.667% + 7.5px);
+  }
+}
+
+// StashBox Search Modal
+.StashBoxSearchModal {
+  &-list {
+    list-style: none;
+    padding: 0;
+
+    li {
+      border-radius: 0.25rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(138, 155, 168, 0.1);
+      }
+
+      &.selected {
+        background-color: #e7f3ff;
+      }
+    }
+  }
+
+  &-list-container {
+    max-height: 60vh;
+    overflow-y: auto;
   }
 }

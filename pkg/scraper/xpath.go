@@ -61,7 +61,7 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCon
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, u)
 	// if these just return the return values from scraper.scrape* functions then
 	// it ends up returning ScrapedContent(nil) rather than nil
 	switch ty {
@@ -121,7 +121,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	q.setType(SearchQuery)
 
 	var content []ScrapedContent
@@ -171,7 +171,7 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -206,7 +206,7 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -230,7 +230,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeGallery(ctx, q)
 }
 
@@ -254,14 +254,14 @@ func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Ima
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeImage(ctx, q)
 }
 
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
 	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load URL %q: %w", url, err)
 	}
 
 	ret, err := html.Parse(r)
@@ -277,10 +277,11 @@ func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, err
 	return ret, err
 }
 
-func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
+func (s *xpathScraper) getXPathQuery(doc *html.Node, url string) *xpathQuery {
 	return &xpathQuery{
 		doc:     doc,
 		scraper: s,
+		url:     url,
 	}
 }
 
@@ -288,6 +289,7 @@ type xpathQuery struct {
 	doc       *html.Node
 	scraper   *xpathScraper
 	queryType QueryType
+	url       string
 }
 
 func (q *xpathQuery) getType() QueryType {
@@ -296,6 +298,10 @@ func (q *xpathQuery) getType() QueryType {
 
 func (q *xpathQuery) setType(t QueryType) {
 	q.queryType = t
+}
+
+func (q *xpathQuery) getURL() string {
+	return q.url
 }
 
 func (q *xpathQuery) runQuery(selector string) ([]string, error) {
@@ -346,5 +352,5 @@ func (q *xpathQuery) subScrape(ctx context.Context, value string) mappedQuery {
 		return nil
 	}
 
-	return q.scraper.getXPathQuery(doc)
+	return q.scraper.getXPathQuery(doc, value)
 }

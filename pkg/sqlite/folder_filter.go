@@ -9,6 +9,8 @@ import (
 
 type folderFilterHandler struct {
 	folderFilter *models.FolderFilterType
+	table        sqlTable
+	isRelated    bool
 }
 
 func (qb *folderFilterHandler) validate() error {
@@ -21,8 +23,12 @@ func (qb *folderFilterHandler) validate() error {
 		return err
 	}
 
+	if qb.isRelated && (folderFilter.GalleriesFilter != nil) {
+		return fmt.Errorf("cannot use related filters inside a related filter")
+	}
+
 	if subFilter := folderFilter.SubFilter(); subFilter != nil {
-		sqb := &folderFilterHandler{folderFilter: subFilter}
+		sqb := &folderFilterHandler{folderFilter: subFilter, isRelated: qb.isRelated}
 		if err := sqb.validate(); err != nil {
 			return err
 		}
@@ -44,7 +50,7 @@ func (qb *folderFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 
 	sf := folderFilter.SubFilter()
 	if sf != nil {
-		sub := &folderFilterHandler{sf}
+		sub := &folderFilterHandler{folderFilter: sf, table: qb.table}
 		handleSubFilter(ctx, sub, f, folderFilter.OperatorFilter)
 	}
 
@@ -52,25 +58,29 @@ func (qb *folderFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 }
 
 func (qb *folderFilterHandler) criterionHandler() criterionHandler {
+	if qb.table == "" {
+		qb.table = folderTable
+	}
+
 	folderFilter := qb.folderFilter
 	return compoundHandler{
-		stringCriterionHandler(folderFilter.Path, "folders.path"),
-		&timestampCriterionHandler{folderFilter.ModTime, "folders.mod_time", nil},
+		stringCriterionHandler(folderFilter.Path, qb.table.Col("path")),
+		&timestampCriterionHandler{folderFilter.ModTime, qb.table.Col("mod_time"), nil},
 
 		qb.parentFolderCriterionHandler(folderFilter.ParentFolder),
 		qb.zipFileCriterionHandler(folderFilter.ZipFile),
 
 		qb.galleryCountCriterionHandler(folderFilter.GalleryCount),
 
-		&timestampCriterionHandler{folderFilter.CreatedAt, "folders.created_at", nil},
-		&timestampCriterionHandler{folderFilter.UpdatedAt, "folders.updated_at", nil},
+		&timestampCriterionHandler{folderFilter.CreatedAt, qb.table.Col("created_at"), nil},
+		&timestampCriterionHandler{folderFilter.UpdatedAt, qb.table.Col("updated_at"), nil},
 
 		&relatedFilterHandler{
-			relatedIDCol:   "galleries.id",
+			relatedIDCol:   qb.table.Col("id"),
 			relatedRepo:    galleryRepository.repository,
 			relatedHandler: &galleryFilterHandler{folderFilter.GalleriesFilter},
 			joinFn: func(f *filterBuilder) {
-				folderRepository.galleries.innerJoin(f, "", "folders.id")
+				folderRepository.galleries.innerJoin(f, "", qb.table.Col("id"))
 			},
 		},
 	}
@@ -85,7 +95,7 @@ func (qb *folderFilterHandler) zipFileCriterionHandler(criterion *models.MultiCr
 					notClause = "NOT"
 				}
 
-				f.addWhere(fmt.Sprintf("folders.zip_file_id IS %s NULL", notClause))
+				f.addWhere(fmt.Sprintf("%s.zip_file_id IS %s NULL", qb.table.Name(), notClause))
 				return
 			}
 
@@ -102,9 +112,9 @@ func (qb *folderFilterHandler) zipFileCriterionHandler(criterion *models.MultiCr
 			havingClause := ""
 			switch criterion.Modifier {
 			case models.CriterionModifierIncludes:
-				whereClause = "folders.zip_file_id IN " + getInBinding(len(criterion.Value))
+				whereClause = fmt.Sprintf("%s.zip_file_id IN %s", qb.table.Name(), getInBinding(len(criterion.Value)))
 			case models.CriterionModifierExcludes:
-				whereClause = "folders.zip_file_id NOT IN " + getInBinding(len(criterion.Value))
+				whereClause = fmt.Sprintf("%s.zip_file_id NOT IN %s", qb.table.Name(), getInBinding(len(criterion.Value)))
 			}
 
 			f.addWhere(whereClause, args...)
@@ -128,8 +138,8 @@ func (qb *folderFilterHandler) parentFolderCriterionHandler(folder *models.Hiera
 		}
 
 		hh := hierarchicalMultiCriterionHandlerBuilder{
-			primaryTable: folderTable,
-			foreignTable: folderTable,
+			primaryTable: qb.table.Name(),
+			foreignTable: qb.table.Name(),
 			foreignFK:    "parent_folder_id",
 			parentFK:     "parent_folder_id",
 		}

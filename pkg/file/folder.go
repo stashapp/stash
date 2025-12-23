@@ -15,7 +15,9 @@ import (
 // Does not create any folders in the file system
 func GetOrCreateFolderHierarchy(ctx context.Context, fc models.FolderFinderCreator, path string) (*models.Folder, error) {
 	// get or create folder hierarchy
-	folder, err := fc.FindByPath(ctx, path)
+	// assume case sensitive when searching for the folder
+	const caseSensitive = true
+	folder, err := fc.FindByPath(ctx, path, caseSensitive)
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { ConfigurationContext } from "../Config";
+import { useConfigurationContext } from "../Config";
 import { useLocalForage } from "../LocalForage";
 import { Interactive as InteractiveAPI } from "./interactive";
 import InteractiveUtils, {
@@ -86,7 +86,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     { serverOffset: 0, lastSyncTime: 0 }
   );
 
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
 
   const [state, setState] = useState<ConnectionState>(ConnectionState.Missing);
   const [handyKey, setHandyKey] = useState<string | undefined>(undefined);

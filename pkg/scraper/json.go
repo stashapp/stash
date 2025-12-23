@@ -80,7 +80,7 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCont
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.getJsonQuery(doc, u)
 	// if these just return the return values from scraper.scrape* functions then
 	// it ends up returning ScrapedContent(nil) rather than nil
 	switch ty {
@@ -140,7 +140,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty ScrapeCo
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.getJsonQuery(doc, url)
 	q.setType(SearchQuery)
 
 	var content []ScrapedContent
@@ -192,7 +192,7 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.getJsonQuery(doc, url)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -227,7 +227,7 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (Scrape
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.getJsonQuery(doc, url)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -251,7 +251,7 @@ func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Imag
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.getJsonQuery(doc, url)
 	return scraper.scrapeImage(ctx, q)
 }
 
@@ -275,14 +275,15 @@ func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *model
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.getJsonQuery(doc, url)
 	return scraper.scrapeGallery(ctx, q)
 }
 
-func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {
+func (s *jsonScraper) getJsonQuery(doc string, url string) *jsonQuery {
 	return &jsonQuery{
 		doc:     doc,
 		scraper: s,
+		url:     url,
 	}
 }
 
@@ -290,6 +291,7 @@ type jsonQuery struct {
 	doc       string
 	scraper   *jsonScraper
 	queryType QueryType
+	url       string
 }
 
 func (q *jsonQuery) getType() QueryType {
@@ -298,6 +300,10 @@ func (q *jsonQuery) getType() QueryType {
 
 func (q *jsonQuery) setType(t QueryType) {
 	q.queryType = t
+}
+
+func (q *jsonQuery) getURL() string {
+	return q.url
 }
 
 func (q *jsonQuery) runQuery(selector string) ([]string, error) {
@@ -331,5 +337,5 @@ func (q *jsonQuery) subScrape(ctx context.Context, value string) mappedQuery {
 		return nil
 	}
 
-	return q.scraper.getJsonQuery(doc)
+	return q.scraper.getJsonQuery(doc, value)
 }

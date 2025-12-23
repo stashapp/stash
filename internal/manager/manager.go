@@ -219,8 +219,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		// paths since they must not be relative. The config file property is
 		// resolved to an absolute path when stash is run normally, so convert
 		// relative paths to absolute paths during setup.
-		configFile, _ := filepath.Abs(input.ConfigLocation)
-
+		// #6287 - this should no longer be necessary since the ffmpeg code
+		// converts to absolute paths. Converting the config location to
+		// absolute means that scraper and plugin paths default to absolute
+		// which we don't want.
+		configFile := input.ConfigLocation
 		configDir := filepath.Dir(configFile)
 
 		if exists, _ := fsutil.DirExists(configDir); !exists {
@@ -260,6 +263,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		cfg.SetString(config.Cache, input.CacheLocation)
+	}
+
+	if input.SFWContentMode {
+		cfg.SetBool(config.SFWContentMode, true)
 	}
 
 	if input.StoreBlobsInDatabase {
@@ -322,6 +329,11 @@ func (s *Manager) BackupDatabase(download bool) (string, string, error) {
 		backupPath = f.Name()
 		backupName = s.Database.DatabaseBackupPath("")
 		f.Close()
+
+		// delete the temp file so that the backup operation can create it
+		if err := os.Remove(backupPath); err != nil {
+			return "", "", fmt.Errorf("could not remove temporary backup file %v: %w", backupPath, err)
+		}
 	} else {
 		backupDir := s.Config.GetBackupDirectoryPathOrDefault()
 		if backupDir != "" {

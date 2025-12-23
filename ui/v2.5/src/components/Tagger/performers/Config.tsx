@@ -1,7 +1,7 @@
 import React, { Dispatch, useState } from "react";
 import { Badge, Button, Card, Collapse, Form } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 import { ITaggerConfig } from "../constants";
 import PerformerFieldSelector from "../PerformerFieldSelector";
@@ -13,7 +13,7 @@ interface IConfigProps {
 }
 
 const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
   const [showExclusionModal, setShowExclusionModal] = useState(false);
 
   const excludedFields = config.excludedPerformerFields ?? [];

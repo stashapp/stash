@@ -13,6 +13,7 @@ type ConfigImageLightboxResult struct {
 	ResetZoomOnNav             *bool                     `json:"resetZoomOnNav"`
 	ScrollMode                 *ImageLightboxScrollMode  `json:"scrollMode"`
 	ScrollAttemptsBeforeChange int                       `json:"scrollAttemptsBeforeChange"`
+	DisableAnimation           *bool                     `json:"disableAnimation"`
 }
 
 type ImageLightboxDisplayMode string
@@ -104,4 +105,5 @@ type ConfigDisableDropdownCreate struct {
 	Tag       bool `json:"tag"`
 	Studio    bool `json:"studio"`
 	Movie     bool `json:"movie"`
+	Gallery   bool `json:"gallery"`
 }

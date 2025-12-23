@@ -8,6 +8,7 @@ import { Icon } from "./Icon";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { PatchComponent } from "src/patch";
+import { TruncatedText } from "./TruncatedText";
 
 const maxFieldNameLength = 64;
 
@@ -47,7 +48,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
       id={id}
       label={field}
       labelTitle={field}
-      value={valueStr}
+      value={<TruncatedText lineCount={5} text={<>{valueStr}</>} />}
       fullWidth={true}
       showEmpty
     />

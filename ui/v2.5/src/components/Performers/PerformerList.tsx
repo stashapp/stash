@@ -22,6 +22,8 @@ import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import TextUtils from "src/utils/text";
 import { PerformerCardGrid } from "./PerformerCardGrid";
 import { View } from "../List/views";
+import { IItemListOperation } from "../List/FilteredListToolbar";
+import { PatchComponent } from "src/patch";
 
 function getItems(result: GQL.FindPerformersQueryResult) {
   return result?.data?.findPerformers?.performers ?? [];
@@ -159,184 +161,185 @@ interface IPerformerList {
   view?: View;
   alterQuery?: boolean;
   extraCriteria?: IPerformerCardExtraCriteria;
+  extraOperations?: IItemListOperation<GQL.FindPerformersQueryResult>[];
 }
 
-export const PerformerList: React.FC<IPerformerList> = ({
-  filterHook,
-  view,
-  alterQuery,
-  extraCriteria,
-}) => {
-  const intl = useIntl();
-  const history = useHistory();
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [isExportAll, setIsExportAll] = useState(false);
+export const PerformerList: React.FC<IPerformerList> = PatchComponent(
+  "PerformerList",
+  ({ filterHook, view, alterQuery, extraCriteria, extraOperations = [] }) => {
+    const intl = useIntl();
+    const history = useHistory();
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExportAll, setIsExportAll] = useState(false);
 
-  const filterMode = GQL.FilterMode.Performers;
+    const filterMode = GQL.FilterMode.Performers;
 
-  const otherOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.open_random" }),
-      onClick: openRandom,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export" }),
-      onClick: onExport,
-      isDisplayed: showWhenSelected,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export_all" }),
-      onClick: onExportAll,
-    },
-  ];
+    const otherOperations = [
+      ...extraOperations,
+      {
+        text: intl.formatMessage({ id: "actions.open_random" }),
+        onClick: openRandom,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: onExport,
+        isDisplayed: showWhenSelected,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: onExportAll,
+      },
+    ];
 
-  function addKeybinds(
-    result: GQL.FindPerformersQueryResult,
-    filter: ListFilterModel
-  ) {
-    Mousetrap.bind("p r", () => {
-      openRandom(result, filter);
-    });
+    function addKeybinds(
+      result: GQL.FindPerformersQueryResult,
+      filter: ListFilterModel
+    ) {
+      Mousetrap.bind("p r", () => {
+        openRandom(result, filter);
+      });
 
-    return () => {
-      Mousetrap.unbind("p r");
-    };
-  }
+      return () => {
+        Mousetrap.unbind("p r");
+      };
+    }
 
-  async function openRandom(
-    result: GQL.FindPerformersQueryResult,
-    filter: ListFilterModel
-  ) {
-    if (result.data?.findPerformers) {
-      const { count } = result.data.findPerformers;
-      const index = Math.floor(Math.random() * count);
-      const filterCopy = cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindPerformers(filterCopy);
-      if (singleResult.data.findPerformers.performers.length === 1) {
-        const { id } = singleResult.data.findPerformers.performers[0]!;
-        history.push(`/performers/${id}`);
+    async function openRandom(
+      result: GQL.FindPerformersQueryResult,
+      filter: ListFilterModel
+    ) {
+      if (result.data?.findPerformers) {
+        const { count } = result.data.findPerformers;
+        const index = Math.floor(Math.random() * count);
+        const filterCopy = cloneDeep(filter);
+        filterCopy.itemsPerPage = 1;
+        filterCopy.currentPage = index + 1;
+        const singleResult = await queryFindPerformers(filterCopy);
+        if (singleResult.data.findPerformers.performers.length === 1) {
+          const { id } = singleResult.data.findPerformers.performers[0]!;
+          history.push(`/performers/${id}`);
+        }
       }
     }
-  }
 
-  async function onExport() {
-    setIsExportAll(false);
-    setIsExportDialogOpen(true);
-  }
+    async function onExport() {
+      setIsExportAll(false);
+      setIsExportDialogOpen(true);
+    }
 
-  async function onExportAll() {
-    setIsExportAll(true);
-    setIsExportDialogOpen(true);
-  }
+    async function onExportAll() {
+      setIsExportAll(true);
+      setIsExportDialogOpen(true);
+    }
 
-  function renderContent(
-    result: GQL.FindPerformersQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
-  ) {
-    function maybeRenderPerformerExportDialog() {
-      if (isExportDialogOpen) {
-        return (
-          <>
-            <ExportDialog
-              exportInput={{
-                performers: {
-                  ids: Array.from(selectedIds.values()),
-                  all: isExportAll,
-                },
-              }}
-              onClose={() => setIsExportDialogOpen(false)}
+    function renderContent(
+      result: GQL.FindPerformersQueryResult,
+      filter: ListFilterModel,
+      selectedIds: Set<string>,
+      onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
+    ) {
+      function maybeRenderPerformerExportDialog() {
+        if (isExportDialogOpen) {
+          return (
+            <>
+              <ExportDialog
+                exportInput={{
+                  performers: {
+                    ids: Array.from(selectedIds.values()),
+                    all: isExportAll,
+                  },
+                }}
+                onClose={() => setIsExportDialogOpen(false)}
+              />
+            </>
+          );
+        }
+      }
+
+      function renderPerformers() {
+        if (!result.data?.findPerformers) return;
+
+        if (filter.displayMode === DisplayMode.Grid) {
+          return (
+            <PerformerCardGrid
+              performers={result.data.findPerformers.performers}
+              zoomIndex={filter.zoomIndex}
+              selectedIds={selectedIds}
+              onSelectChange={onSelectChange}
+              extraCriteria={extraCriteria}
             />
-          </>
-        );
+          );
+        }
+        if (filter.displayMode === DisplayMode.List) {
+          return (
+            <PerformerListTable
+              performers={result.data.findPerformers.performers}
+              selectedIds={selectedIds}
+              onSelectChange={onSelectChange}
+            />
+          );
+        }
+        if (filter.displayMode === DisplayMode.Tagger) {
+          return (
+            <PerformerTagger
+              performers={result.data.findPerformers.performers}
+            />
+          );
+        }
       }
+
+      return (
+        <>
+          {maybeRenderPerformerExportDialog()}
+          {renderPerformers()}
+        </>
+      );
     }
 
-    function renderPerformers() {
-      if (!result.data?.findPerformers) return;
+    function renderEditDialog(
+      selectedPerformers: GQL.SlimPerformerDataFragment[],
+      onClose: (applied: boolean) => void
+    ) {
+      return (
+        <EditPerformersDialog selected={selectedPerformers} onClose={onClose} />
+      );
+    }
 
-      if (filter.displayMode === DisplayMode.Grid) {
-        return (
-          <PerformerCardGrid
-            performers={result.data.findPerformers.performers}
-            zoomIndex={filter.zoomIndex}
-            selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-            extraCriteria={extraCriteria}
-          />
-        );
-      }
-      if (filter.displayMode === DisplayMode.List) {
-        return (
-          <PerformerListTable
-            performers={result.data.findPerformers.performers}
-            selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-          />
-        );
-      }
-      if (filter.displayMode === DisplayMode.Tagger) {
-        return (
-          <PerformerTagger performers={result.data.findPerformers.performers} />
-        );
-      }
+    function renderDeleteDialog(
+      selectedPerformers: GQL.SlimPerformerDataFragment[],
+      onClose: (confirmed: boolean) => void
+    ) {
+      return (
+        <DeleteEntityDialog
+          selected={selectedPerformers}
+          onClose={onClose}
+          singularEntity={intl.formatMessage({ id: "performer" })}
+          pluralEntity={intl.formatMessage({ id: "performers" })}
+          destroyMutation={usePerformersDestroy}
+        />
+      );
     }
 
     return (
-      <>
-        {maybeRenderPerformerExportDialog()}
-        {renderPerformers()}
-      </>
-    );
-  }
-
-  function renderEditDialog(
-    selectedPerformers: GQL.SlimPerformerDataFragment[],
-    onClose: (applied: boolean) => void
-  ) {
-    return (
-      <EditPerformersDialog selected={selectedPerformers} onClose={onClose} />
-    );
-  }
-
-  function renderDeleteDialog(
-    selectedPerformers: GQL.SlimPerformerDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) {
-    return (
-      <DeleteEntityDialog
-        selected={selectedPerformers}
-        onClose={onClose}
-        singularEntity={intl.formatMessage({ id: "performer" })}
-        pluralEntity={intl.formatMessage({ id: "performers" })}
-        destroyMutation={usePerformersDestroy}
-      />
-    );
-  }
-
-  return (
-    <ItemListContext
-      filterMode={filterMode}
-      useResult={useFindPerformers}
-      getItems={getItems}
-      getCount={getCount}
-      alterQuery={alterQuery}
-      filterHook={filterHook}
-      view={view}
-      selectable
-    >
-      <ItemList
-        zoomable
+      <ItemListContext
+        filterMode={filterMode}
+        useResult={useFindPerformers}
+        getItems={getItems}
+        getCount={getCount}
+        alterQuery={alterQuery}
+        filterHook={filterHook}
         view={view}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
-      />
-    </ItemListContext>
-  );
-};
+        selectable
+      >
+        <ItemList
+          view={view}
+          otherOperations={otherOperations}
+          addKeybinds={addKeybinds}
+          renderContent={renderContent}
+          renderEditDialog={renderEditDialog}
+          renderDeleteDialog={renderDeleteDialog}
+        />
+      </ItemListContext>
+    );
+  }
+);

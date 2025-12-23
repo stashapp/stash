@@ -15,7 +15,7 @@ import CreatableSelect from "react-select/creatable";
 import * as GQL from "src/core/generated-graphql";
 import { useMarkerStrings } from "src/core/StashService";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { useDebounce } from "src/hooks/debounce";
@@ -108,7 +108,7 @@ const getSelectedItems = (selectedItems: OnChangeValue<Option, boolean>) => {
 const LimitedSelectMenu = <T extends boolean>(
   props: MenuListProps<Option, T, GroupBase<Option>>
 ) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
 
@@ -385,7 +385,7 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
     case "groups":
       return <GroupSelect {...props} creatable={false} />;
     case "galleries":
-      return <GallerySelect {...props} />;
+      return <GallerySelect {...props} creatable={false} />;
     default:
       return <TagSelect {...props} creatable={false} />;
   }
@@ -496,6 +496,7 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
 
 type DisableOption = Option & {
   isDisabled?: boolean;
+  className?: string;
 };
 
 interface ICheckBoxSelectProps {
@@ -510,7 +511,20 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
   onChange,
 }) => {
   const Option = (props: OptionProps<DisableOption, true>) => (
-    <reactSelectComponents.Option {...props}>
+    <reactSelectComponents.Option
+      {...props}
+      className={`${props.className || ""} ${props.data.className || ""}`}
+      // data values don't seem to be included in props.innerProps by default
+      innerProps={
+        {
+          ...props.innerProps,
+          "data-value": props.data.value,
+        } as React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLDivElement>,
+          HTMLDivElement
+        >
+      }
+    >
       <input
         type="checkbox"
         disabled={props.isDisabled}

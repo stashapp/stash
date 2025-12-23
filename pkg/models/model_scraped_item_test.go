@@ -11,6 +11,7 @@ import (
 func Test_scrapedToStudioInput(t *testing.T) {
 	const name = "name"
 	url := "url"
+	url2 := "url2"
 	emptyEndpoint := ""
 	endpoint := "endpoint"
 	remoteSiteID := "remoteSiteID"
@@ -25,13 +26,33 @@ func Test_scrapedToStudioInput(t *testing.T) {
 			"set all",
 			&ScrapedStudio{
 				Name:         name,
+				URLs:         []string{url, url2},
 				URL:          &url,
 				RemoteSiteID: &remoteSiteID,
 			},
 			endpoint,
 			&Studio{
 				Name: name,
-				URL:  url,
+				URLs: NewRelatedStrings([]string{url, url2}),
+				StashIDs: NewRelatedStashIDs([]StashID{
+					{
+						Endpoint: endpoint,
+						StashID:  remoteSiteID,
+					},
+				}),
+			},
+		},
+		{
+			"set url instead of urls",
+			&ScrapedStudio{
+				Name:         name,
+				URL:          &url,
+				RemoteSiteID: &remoteSiteID,
+			},
+			endpoint,
+			&Studio{
+				Name: name,
+				URLs: NewRelatedStrings([]string{url}),
 				StashIDs: NewRelatedStashIDs([]StashID{
 					{
 						Endpoint: endpoint,
@@ -321,9 +342,12 @@ func TestScrapedStudio_ToPartial(t *testing.T) {
 			fullStudio,
 			stdArgs,
 			StudioPartial{
-				ID:       id,
-				Name:     NewOptionalString(name),
-				URL:      NewOptionalString(url),
+				ID:   id,
+				Name: NewOptionalString(name),
+				URLs: &UpdateStrings{
+					Values: []string{url},
+					Mode:   RelationshipUpdateModeSet,
+				},
 				ParentID: NewOptionalInt(parentStoredID),
 				StashIDs: &UpdateStashIDs{
 					StashIDs: append(existingStashIDs, StashID{

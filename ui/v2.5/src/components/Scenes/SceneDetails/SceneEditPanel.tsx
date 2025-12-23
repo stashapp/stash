@@ -16,12 +16,12 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { useToast } from "src/hooks/Toast";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
@@ -41,6 +41,7 @@ import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 import { Group } from "src/components/Groups/GroupSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -77,6 +78,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [scraper, setScraper] = useState<GQL.ScraperSourceInput>();
   const [isScraperQueryModalOpen, setIsScraperQueryModalOpen] =
     useState<boolean>(false);
+  const [isStashIDSearchOpen, setIsStashIDSearchOpen] =
+    useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
   const [endpoint, setEndpoint] = useState<string>();
 
@@ -103,7 +106,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setStudio(scene.studio ?? null);
   }, [scene.studio]);
 
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -547,6 +550,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
+    );
+  }
+
   const image = useMemo(() => {
     if (encodingImage) {
       return (
@@ -591,6 +602,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
       xl: 12,
     },
   };
+  const urlProps = isNew
+    ? splitProps
+    : {
+        labelProps: {
+          column: true,
+          md: 3,
+          lg: 12,
+        },
+        fieldProps: {
+          md: 9,
+          lg: 12,
+        },
+      };
   const {
     renderField,
     renderInputField,
@@ -696,6 +720,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
       {renderScrapeQueryModal()}
       {maybeRenderScrapeDialog()}
+      {isStashIDSearchOpen && (
+        <StashBoxIDSearchModal
+          entityType="scene"
+          stashBoxes={stashConfig?.general.stashBoxes ?? []}
+          excludedStashBoxEndpoints={formik.values.stash_ids.map(
+            (s) => s.endpoint
+          )}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
+        />
+      )}
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
@@ -746,7 +783,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", onScrapeSceneURL, urlScrapable)}
+            {renderURLListField(
+              "urls",
+              onScrapeSceneURL,
+              urlScrapable,
+              "urls",
+              urlProps
+            )}
 
             {renderDateField("date")}
             {renderInputField("director")}
@@ -761,7 +804,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
               "stash_ids",
               "scenes",
               "stash_ids",
-              fullWidthProps
+              fullWidthProps,
+              <Button
+                variant="success"
+                className="mr-2 py-0"
+                onClick={() => setIsStashIDSearchOpen(true)}
+                disabled={!stashConfig?.general.stashBoxes?.length}
+                title={intl.formatMessage({ id: "actions.add_stash_id" })}
+              >
+                <Icon icon={faPlus} />
+              </Button>
             )}
           </Col>
           <Col lg={5} xl={12}>

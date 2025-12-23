@@ -150,3 +150,21 @@ export const useToast = () => {
     [addToast]
   );
 };
+
+export function toastOperation(
+  toast: ReturnType<typeof useToast>,
+  o: () => Promise<void>,
+  successMessage: string
+) {
+  async function operation() {
+    try {
+      await o();
+
+      toast.success(successMessage);
+    } catch (e) {
+      toast.error(e);
+    }
+  }
+
+  return operation;
+}

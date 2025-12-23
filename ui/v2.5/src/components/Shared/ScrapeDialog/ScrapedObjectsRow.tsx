@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { ScrapeDialogRow } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+import { ScrapeDialogRow } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { PerformerSelect } from "src/components/Performers/PerformerSelect";
 import {
   ObjectScrapeResult,
@@ -10,13 +10,79 @@ import { TagIDSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
 import { GroupSelect } from "src/components/Groups/GroupSelect";
 import { uniq } from "lodash-es";
+import { CollapseButton } from "../CollapseButton";
+import { Badge, Button } from "react-bootstrap";
+import { Icon } from "../Icon";
+import { faLink, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { useIntl } from "react-intl";
+
+interface INewScrapedObjects<T> {
+  newValues: T[];
+  onCreateNew: (value: T) => void;
+  onLinkExisting?: (value: T) => void;
+  getName: (value: T) => string;
+}
+
+export const NewScrapedObjects = <T,>(props: INewScrapedObjects<T>) => {
+  const intl = useIntl();
+
+  if (props.newValues.length === 0) {
+    return null;
+  }
+
+  const ret = (
+    <>
+      {props.newValues.map((t) => (
+        <Badge
+          className="tag-item"
+          variant="secondary"
+          key={props.getName(t)}
+          onClick={() => props.onCreateNew(t)}
+        >
+          {props.getName(t)}
+          <Button className="minimal ml-2">
+            <Icon className="fa-fw" icon={faPlus} />
+          </Button>
+          {props.onLinkExisting ? (
+            <Button
+              className="minimal"
+              onClick={(e) => {
+                props.onLinkExisting?.(t);
+                e.stopPropagation();
+              }}
+            >
+              <Icon className="fa-fw" icon={faLink} />
+            </Button>
+          ) : null}
+        </Badge>
+      ))}
+    </>
+  );
+
+  const minCollapseLength = 10;
+
+  if (props.newValues!.length >= minCollapseLength) {
+    const missingText = intl.formatMessage({
+      id: "dialogs.scrape_results_missing",
+    });
+    return (
+      <CollapseButton text={`${missingText} (${props.newValues!.length})`}>
+        {ret}
+      </CollapseButton>
+    );
+  }
+
+  return ret;
+};
 
 interface IScrapedStudioRow {
   title: string;
+  field: string;
   result: ObjectScrapeResult<GQL.ScrapedStudio>;
   onChange: (value: ObjectScrapeResult<GQL.ScrapedStudio>) => void;
   newStudio?: GQL.ScrapedStudio;
   onCreateNew?: (value: GQL.ScrapedStudio) => void;
+  onLinkExisting?: (value: GQL.ScrapedStudio) => void;
 }
 
 function getObjectName<T extends { name: string }>(value: T) {
@@ -25,10 +91,12 @@ function getObjectName<T extends { name: string }>(value: T) {
 
 export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   title,
+  field,
   result,
   onChange,
   newStudio,
   onCreateNew,
+  onLinkExisting,
 }) => {
   function renderScrapedStudio(
     scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>,
@@ -41,7 +109,9 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
     const value = resultValue ? [resultValue] : [];
 
     const selectValue = value.map((p) => {
-      const aliases: string[] = [];
+      const aliases: string[] = p.aliases
+        ? p.aliases.split(",").map((a) => a.trim())
+        : [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
@@ -55,10 +125,11 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            const { id, ...data } = items[0];
+            const { id, aliases, ...data } = items[0];
             onChangeFn({
               ...data,
               stored_id: id,
+              aliases: aliases?.join(", "),
             });
           }
         }}
@@ -70,29 +141,35 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   return (
     <ScrapeDialogRow
       title={title}
+      field={field}
       result={result}
-      renderOriginalField={() => renderScrapedStudio(result)}
-      renderNewField={() =>
-        renderScrapedStudio(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderScrapedStudio(result)}
+      newField={renderScrapedStudio(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
-      newValues={newStudio ? [newStudio] : undefined}
-      onCreateNew={() => {
-        if (onCreateNew && newStudio) onCreateNew(newStudio);
-      }}
-      getName={getObjectName}
+      newValues={
+        newStudio && onCreateNew ? (
+          <NewScrapedObjects
+            newValues={[newStudio]}
+            onCreateNew={onCreateNew}
+            getName={getObjectName}
+            onLinkExisting={onLinkExisting}
+          />
+        ) : undefined
+      }
     />
   );
 };
 
 interface IScrapedObjectsRow<T> {
   title: string;
+  field: string;
   result: ScrapeResult<T[]>;
   onChange: (value: ScrapeResult<T[]>) => void;
   newObjects?: T[];
   onCreateNew?: (value: T) => void;
+  onLinkExisting?: (value: T) => void;
   renderObjects: (
     result: ScrapeResult<T[]>,
     isNew?: boolean,
@@ -104,10 +181,12 @@ interface IScrapedObjectsRow<T> {
 export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
   const {
     title,
+    field,
     result,
     onChange,
-    newObjects,
+    newObjects = [],
     onCreateNew,
+    onLinkExisting,
     renderObjects,
     getName,
   } = props;
@@ -115,19 +194,23 @@ export const ScrapedObjectsRow = <T,>(props: IScrapedObjectsRow<T>) => {
   return (
     <ScrapeDialogRow
       title={title}
+      field={field}
       result={result}
-      renderOriginalField={() => renderObjects(result)}
-      renderNewField={() =>
-        renderObjects(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderObjects(result)}
+      newField={renderObjects(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
-      newValues={newObjects}
-      onCreateNew={(i) => {
-        if (onCreateNew) onCreateNew(newObjects![i]);
-      }}
-      getName={getName}
+      newValues={
+        onCreateNew && newObjects.length > 0 ? (
+          <NewScrapedObjects
+            newValues={newObjects ?? []}
+            onCreateNew={onCreateNew}
+            onLinkExisting={onLinkExisting}
+            getName={getName}
+          />
+        ) : undefined
+      }
     />
   );
 };
@@ -139,7 +222,16 @@ type IScrapedObjectRowImpl<T> = Omit<
 
 export const ScrapedPerformersRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedPerformer> & { ageFromDate?: string | null }
-> = ({ title, result, onChange, newObjects, onCreateNew, ageFromDate }) => {
+> = ({
+  title,
+  field,
+  result,
+  onChange,
+  newObjects,
+  onCreateNew,
+  ageFromDate,
+  onLinkExisting,
+}) => {
   const performersCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
@@ -188,19 +280,29 @@ export const ScrapedPerformersRow: React.FC<
   return (
     <ScrapedObjectsRow<GQL.ScrapedPerformer>
       title={title}
+      field={field}
       result={result}
       renderObjects={renderScrapedPerformers}
       onChange={onChange}
       newObjects={performersCopy}
       onCreateNew={onCreateNew}
       getName={(value) => value.name ?? ""}
+      onLinkExisting={onLinkExisting}
     />
   );
 };
 
 export const ScrapedGroupsRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedGroup>
-> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+> = ({
+  title,
+  field,
+  result,
+  onChange,
+  newObjects,
+  onCreateNew,
+  onLinkExisting,
+}) => {
   const groupsCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
@@ -248,19 +350,29 @@ export const ScrapedGroupsRow: React.FC<
   return (
     <ScrapedObjectsRow<GQL.ScrapedGroup>
       title={title}
+      field={field}
       result={result}
       renderObjects={renderScrapedGroups}
       onChange={onChange}
       newObjects={groupsCopy}
       onCreateNew={onCreateNew}
       getName={(value) => value.name ?? ""}
+      onLinkExisting={onLinkExisting}
     />
   );
 };
 
 export const ScrapedTagsRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedTag>
-> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+> = ({
+  title,
+  field,
+  result,
+  onChange,
+  newObjects,
+  onCreateNew,
+  onLinkExisting,
+}) => {
   function renderScrapedTags(
     scrapeResult: ScrapeResult<GQL.ScrapedTag[]>,
     isNew?: boolean,
@@ -294,11 +406,13 @@ export const ScrapedTagsRow: React.FC<
   return (
     <ScrapedObjectsRow<GQL.ScrapedTag>
       title={title}
+      field={field}
       result={result}
       renderObjects={renderScrapedTags}
       onChange={onChange}
       newObjects={newObjects}
       onCreateNew={onCreateNew}
+      onLinkExisting={onLinkExisting}
       getName={getObjectName}
     />
   );

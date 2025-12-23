@@ -2,8 +2,11 @@ package image
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"image"
+	"path/filepath"
+	"strings"
 
 	_ "image/gif"
 	_ "image/jpeg"
@@ -17,6 +20,8 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
+var ErrUnsupportedAVIFInZip = errors.New("AVIF images in zip files is unsupported")
+
 // Decorator adds image specific fields to a File.
 type Decorator struct {
 	FFProbe *ffmpeg.FFProbe
@@ -28,6 +33,10 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 	// ignore clips in non-OsFS filesystems as ffprobe cannot read them
 	// TODO - copy to temp file if not an OsFS
 	if _, isOs := fs.(*file.OsFS); !isOs {
+		// AVIF images inside zip files are not supported
+		if strings.ToLower(filepath.Ext(base.Path)) == ".avif" {
+			return nil, fmt.Errorf("%w: %s", ErrUnsupportedAVIFInZip, base.Path)
+		}
 		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
 		return decorateFallback(fs, f)
 	}
@@ -50,7 +59,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 
 	isClip := true
 	// This list is derived from ffmpegImageThumbnail in pkg/image/thumbnail. If one gets updated, the other should be as well
-	for _, item := range []string{"png", "mjpeg", "webp", "bmp"} {
+	for _, item := range []string{"png", "mjpeg", "webp", "bmp", "jpegxl"} {
 		if item == probe.VideoCodec {
 			isClip = false
 		}
@@ -65,6 +74,25 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 		Format:   probe.VideoCodec,
 		Width:    probe.Width,
 		Height:   probe.Height,
+	}
+
+	// FFprobe has a known bug where it returns 0x0 dimensions for some animated WebP files
+	// Fall back to image.DecodeConfig in this case.
+	// See: https://trac.ffmpeg.org/ticket/4907
+	if ret.Width == 0 || ret.Height == 0 {
+		logger.Warnf("FFprobe returned invalid dimensions (%dx%d) for %q, trying fallback decoder", ret.Width, ret.Height, base.Path)
+		c, format, err := decodeConfig(fs, base.Path)
+		if err != nil {
+			logger.Warnf("Fallback decoder failed for %q: %s. Proceeding with original FFprobe result", base.Path, err)
+		} else {
+			ret.Width = c.Width
+			ret.Height = c.Height
+			// Update format if it differs (fallback decoder may be more accurate)
+			if format != "" && format != ret.Format {
+				logger.Debugf("Updating format from %q to %q for %q", ret.Format, format, base.Path)
+				ret.Format = format
+			}
+		}
 	}
 
 	adjustForOrientation(fs, base.Path, ret)

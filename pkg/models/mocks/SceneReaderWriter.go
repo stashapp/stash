@@ -1141,6 +1141,27 @@ func (_m *SceneReaderWriter) HasCover(ctx context.Context, sceneID int) (bool, e
 	return r0, r1
 }
 
+// OCountByGroupID provides a mock function with given fields: ctx, groupID
+func (_m *SceneReaderWriter) OCountByGroupID(ctx context.Context, groupID int) (int, error) {
+	ret := _m.Called(ctx, groupID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, groupID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, groupID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // OCountByPerformerID provides a mock function with given fields: ctx, performerID
 func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	ret := _m.Called(ctx, performerID)
@@ -1155,6 +1176,27 @@ func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerI
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// OCountByStudioID provides a mock function with given fields: ctx, studioID
+func (_m *SceneReaderWriter) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+	ret := _m.Called(ctx, studioID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, studioID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}

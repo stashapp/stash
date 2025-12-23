@@ -16,9 +16,9 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -42,6 +42,9 @@ const (
 	Username            = "username"
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
+
+	// SFWContentMode mode config key
+	SFWContentMode = "sfw_content_mode"
 
 	FFMpegPath  = "ffmpeg_path"
 	FFProbePath = "ffprobe_path"
@@ -206,6 +209,7 @@ const (
 	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
 	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
+	ImageLightboxDisableAnimation           = "image_lightbox.disable_animation"
 
 	UI = "ui"
 
@@ -215,6 +219,7 @@ const (
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
 	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
+	DisableDropdownCreateGallery   = "disable_dropdown_create.gallery"
 
 	HandyKey                       = "handy_key"
 	FunscriptOffset                = "funscript_offset"
@@ -249,13 +254,15 @@ const (
 	DLNAPortDefault = 1338
 
 	// Logging options
-	LogFile          = "logfile"
-	LogOut           = "logout"
-	defaultLogOut    = true
-	LogLevel         = "loglevel"
-	defaultLogLevel  = "Info"
-	LogAccess        = "logaccess"
-	defaultLogAccess = true
+	LogFile               = "logfile"
+	LogOut                = "logout"
+	defaultLogOut         = true
+	LogLevel              = "loglevel"
+	defaultLogLevel       = "Info"
+	LogAccess             = "logaccess"
+	defaultLogAccess      = true
+	LogFileMaxSize        = "logfile_max_size"
+	defaultLogFileMaxSize = 0 // megabytes, default disabled
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
@@ -266,6 +273,9 @@ const (
 	DeleteFileDefault             = "defaults.delete_file"
 	DeleteGeneratedDefault        = "defaults.delete_generated"
 	deleteGeneratedDefaultDefault = true
+
+	// Trash/Recycle Bin options
+	DeleteTrashPath = "delete_trash_path"
 
 	// Desktop Integration Options
 	NoBrowser                           = "nobrowser"
@@ -285,7 +295,7 @@ const (
 // slice default values
 var (
 	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
-	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp"}
+	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
 )
@@ -628,7 +638,15 @@ func (i *Config) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-// GetStathPaths returns the configured stash library paths.
+// GetSFW returns true if SFW mode is enabled.
+// Default performer images are changed to more agnostic images when enabled.
+func (i *Config) GetSFWContentMode() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return i.getBool(SFWContentMode)
+}
+
+// GetStashPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
 func (i *Config) GetStashPaths() StashConfigs {
@@ -1280,6 +1298,10 @@ func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	if v := i.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
 	}
+	if v := i.with(ImageLightboxDisableAnimation); v != nil {
+		value := v.Bool(ImageLightboxDisableAnimation)
+		ret.DisableAnimation = &value
+	}
 
 	return ret
 }
@@ -1290,6 +1312,7 @@ func (i *Config) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
 		Movie:     i.getBool(DisableDropdownCreateMovie),
+		Gallery:   i.getBool(DisableDropdownCreateGallery),
 	}
 }
 
@@ -1454,6 +1477,14 @@ func (i *Config) GetDeleteFileDefault() bool {
 
 func (i *Config) GetDeleteGeneratedDefault() bool {
 	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
+}
+
+func (i *Config) GetDeleteTrashPath() string {
+	return i.getString(DeleteTrashPath)
+}
+
+func (i *Config) SetDeleteTrashPath(value string) {
+	i.SetString(DeleteTrashPath, value)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
@@ -1623,6 +1654,16 @@ func (i *Config) GetLogLevel() string {
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Config) GetLogAccess() bool {
 	return i.getBoolDefault(LogAccess, defaultLogAccess)
+}
+
+// GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
+func (i *Config) GetLogFileMaxSize() int {
+	value := i.getInt(LogFileMaxSize)
+	if value < 0 {
+		value = defaultLogFileMaxSize
+	}
+
+	return value
 }
 
 // Max allowed graphql upload size in megabytes

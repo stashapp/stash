@@ -1,9 +1,9 @@
-import React, { useContext, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { FrontPageContent, ICustomFilter } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
 import { useFindSavedFilter } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { GalleryRecommendationRow } from "../Galleries/GalleryRecommendationRow";
 import { ImageRecommendationRow } from "../Images/ImageRecommendationRow";
@@ -12,6 +12,7 @@ import { PerformerRecommendationRow } from "../Performers/PerformerRecommendatio
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";
 import { TagRecommendationRow } from "../Tags/TagRecommendationRow";
+import { SceneMarkerRecommendationRow } from "../Scenes/SceneMarkerRecommendationRow";
 
 interface IFilter {
   mode: GQL.FilterMode;
@@ -84,6 +85,14 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
           header={header}
         />
       );
+    case GQL.FilterMode.SceneMarkers:
+      return (
+        <SceneMarkerRecommendationRow
+          isTouch={isTouch}
+          filter={filter}
+          header={header}
+        />
+      );
     default:
       return <></>;
   }
@@ -96,7 +105,7 @@ interface ISavedFilterResults {
 const SavedFilterResults: React.FC<ISavedFilterResults> = ({
   savedFilterID,
 }) => {
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const { loading, data } = useFindSavedFilter(savedFilterID.toString());
 
   const filter = useMemo(() => {
@@ -127,7 +136,7 @@ interface ICustomFilterProps {
 const CustomFilterResults: React.FC<ICustomFilterProps> = ({
   customFilter,
 }) => {
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const intl = useIntl();
 
   const filter = useMemo(() => {

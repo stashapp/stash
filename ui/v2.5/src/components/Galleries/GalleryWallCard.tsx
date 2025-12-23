@@ -102,7 +102,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
               )}
               <TruncatedText text={performers.join(", ")} />
               <div>
-                {gallery.date && TextUtils.formatDate(intl, gallery.date)}
+                {gallery.date && TextUtils.formatFuzzyDate(intl, gallery.date)}
               </div>
             </Link>
           </footer>

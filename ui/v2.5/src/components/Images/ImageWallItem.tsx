@@ -39,6 +39,7 @@ export const ImageWallItem: React.FC<RenderImageProps & IExtraProps> = (
     <ImagePreview
       loop={video}
       muted={video}
+      playsInline={video}
       autoPlay={video}
       key={props.photo.key}
       style={imgStyle}

@@ -15,7 +15,7 @@ import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { useToast } from "src/hooks/Toast";
 import { Prompt } from "react-router-dom";
@@ -30,12 +30,13 @@ import {
   stringCircumMap,
   stringToCircumcised,
 } from "src/utils/circumcised";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 import cx from "classnames";
-import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt, faPlus } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
 import {
@@ -88,6 +89,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
+  const [isStashIDSearchOpen, setIsStashIDSearchOpen] =
+    useState<boolean>(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +100,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const [scrapedPerformer, setScrapedPerformer] =
     useState<GQL.ScrapedPerformer>();
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
 
   const intl = useIntl();
 
@@ -569,6 +572,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScraper(undefined);
   }
 
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
+    );
+  }
+
   function renderButtons(classNames: string) {
     return (
       <div className={cx("details-edit", "col-xl-9", classNames)}>
@@ -659,6 +670,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     <>
       {renderScrapeModal()}
       {maybeRenderScrapeDialog()}
+      {isStashIDSearchOpen && (
+        <StashBoxIDSearchModal
+          entityType="performer"
+          stashBoxes={stashConfig?.general.stashBoxes ?? []}
+          excludedStashBoxEndpoints={formik.values.stash_ids.map(
+            (s) => s.endpoint
+          )}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
+        />
+      )}
 
       <Prompt
         when={formik.dirty}
@@ -670,7 +694,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("name")}
         {renderInputField("disambiguation")}
 
-        {renderStringListField("alias_list", "aliases")}
+        {renderStringListField("alias_list", "aliases", { orderable: false })}
 
         {renderSelectField("gender", stringGenderMap)}
 
@@ -701,7 +725,21 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("details", "textarea")}
         {renderTagsField()}
 
-        {renderStashIDsField("stash_ids", "performers")}
+        {renderStashIDsField(
+          "stash_ids",
+          "performers",
+          "stash_ids",
+          undefined,
+          <Button
+            variant="success"
+            className="mr-2 py-0"
+            onClick={() => setIsStashIDSearchOpen(true)}
+            disabled={!stashConfig?.general.stashBoxes?.length}
+            title={intl.formatMessage({ id: "actions.add_stash_id" })}
+          >
+            <Icon icon={faPlus} />
+          </Button>
+        )}
 
         <hr />
 

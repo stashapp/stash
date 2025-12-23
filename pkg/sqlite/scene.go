@@ -76,12 +76,13 @@ ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
-	ID       int         `db:"id" goqu:"skipinsert"`
-	Title    zero.String `db:"title"`
-	Code     zero.String `db:"code"`
-	Details  zero.String `db:"details"`
-	Director zero.String `db:"director"`
-	Date     NullDate    `db:"date"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Title         zero.String `db:"title"`
+	Code          zero.String `db:"code"`
+	Details       zero.String `db:"details"`
+	Director      zero.String `db:"director"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
@@ -102,6 +103,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -127,7 +129,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Code:      r.Code.String,
 		Details:   r.Details.String,
 		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(),
+		Date:      r.Date.DatePtr(r.DatePrecision),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -159,7 +161,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
-	r.setNullDate("date", o.Date)
+	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -795,6 +797,46 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, error) {
+	table := qb.table()
+	joinTable := scenesGroupsJoinTable
+	oHistoryTable := goqu.T(scenesODatesTable)
+
+	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
+		oHistoryTable,
+		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+	).InnerJoin(
+		joinTable,
+		goqu.On(
+			table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)),
+		),
+	).Where(joinTable.Col(groupIDColumn).Eq(groupID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+	table := qb.table()
+	oHistoryTable := goqu.T(scenesODatesTable)
+
+	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
+		oHistoryTable,
+		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+	).Where(table.Col(studioIDColumn).Eq(studioID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesGroupsJoinTable).Select(scenesGroupsJoinTable.Col(sceneIDColumn)).Where(
 		scenesGroupsJoinTable.Col(groupIDColumn).Eq(groupID),
@@ -1096,9 +1138,11 @@ var sceneSortOptions = sortOptions{
 	"perceptual_similarity",
 	"random",
 	"rating",
+	"studio",
 	"tag_count",
 	"title",
 	"updated_at",
+	"performer_age",
 }
 
 func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) error {
@@ -1115,10 +1159,12 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	addFileTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    scenesFilesTable,
 				onClause: "scenes_files.scene_id = scenes.id",
 			},
 			join{
+				sort:     true,
 				table:    fileTable,
 				onClause: "scenes_files.file_id = files.id",
 			},
@@ -1129,6 +1175,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    videoFileTable,
 				onClause: "video_files.file_id = scenes_files.file_id",
 			},
@@ -1138,6 +1185,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	addFolderTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "files.parent_folder_id = folders.id",
 			},
@@ -1147,10 +1195,10 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
-		query.join(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
+		query.joinSort(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, groupsScenesTable)
 	case "group_scene_number":
-		query.join(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
+		query.joinSort(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, "scene_group")
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
@@ -1168,6 +1216,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    fingerprintTable,
 				as:       "fingerprints_phash",
 				onClause: "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
@@ -1208,6 +1257,32 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesODatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
 	case "o_counter":
 		query.sortAndPagination += getCountSort(sceneTable, scenesODatesTable, sceneIDColumn, direction)
+	case "performer_age":
+		// Looking at the youngest performer by default
+		aggregation := "MIN"
+		if direction == "DESC" {
+			// When sorting by performer_'s age DESC, I should consider the oldest performer instead
+			aggregation = "MAX"
+		}
+		fallback := "NULL"
+		if direction == "ASC" {
+			// When sorting ascending, NULLs are first by default. Coalescing to the MAX int value supported by sqlite
+			fallback = "9223372036854775807"
+		}
+		query.sortAndPagination += fmt.Sprintf(
+			" ORDER BY (SELECT COALESCE(%s(JulianDay(scenes.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+			aggregation,
+			fallback,
+			performerTable,
+			performersScenesTable,
+			performerIDColumn,
+			sceneIDColumn,
+			sceneTable,
+			getSortDirection(direction),
+		)
+	case "studio":
+		query.joinSort(studioTable, "", "scenes.studio_id = studios.id")
+		query.sortAndPagination += getSort("name", direction, studioTable)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}

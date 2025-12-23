@@ -313,6 +313,7 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 		s.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
 		s.FFProbe = ffmpeg.NewFFProbe(ffprobePath)
 
-		s.FFMpeg.InitHWSupport(ctx)
+		// initialise hardware support with background context
+		s.FFMpeg.InitHWSupport(context.Background())
 	}
 }

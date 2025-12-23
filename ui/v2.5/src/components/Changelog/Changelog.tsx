@@ -34,8 +34,10 @@ import V0260 from "src/docs/en/Changelog/v0260.md";
 import V0270 from "src/docs/en/Changelog/v0270.md";
 import V0280 from "src/docs/en/Changelog/v0280.md";
 import V0290 from "src/docs/en/Changelog/v0290.md";
+import V0300 from "src/docs/en/Changelog/v0300.md";
 
-import V020ReleaseNotes from "src/docs/en/ReleaseNotes/v0290.md";
+import V0290ReleaseNotes from "src/docs/en/ReleaseNotes/v0290.md";
+
 import { MarkdownPage } from "../Shared/MarkdownPage";
 import { FormattedMessage } from "react-intl";
 
@@ -73,9 +75,9 @@ const Changelog: React.FC = () => {
   // after new release:
   // add entry to releases, using the current* fields
   // then update the current fields.
-  const currentVersion = stashVersion || "v0.29.0";
+  const currentVersion = stashVersion || "v0.30.0";
   const currentDate = buildDate;
-  const currentPage = V0290;
+  const currentPage = V0300;
 
   const releases: IStashRelease[] = [
     {
@@ -83,7 +85,12 @@ const Changelog: React.FC = () => {
       date: currentDate,
       page: currentPage,
       defaultOpen: true,
-      releaseNotes: V020ReleaseNotes,
+    },
+    {
+      version: "v0.29.3",
+      date: "2025-11-06",
+      page: V0290,
+      releaseNotes: V0290ReleaseNotes,
     },
     {
       version: "v0.28.1",

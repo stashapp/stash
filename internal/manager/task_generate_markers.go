@@ -107,6 +107,12 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene 
 	sceneHash := scene.GetHash(t.fileNamingAlgorithm)
 	seconds := float64(sceneMarker.Seconds)
 
+	// check if marker past duration
+	if seconds > float64(videoFile.Duration) {
+		logger.Warnf("[generator] scene marker at %.2f seconds exceeds video duration of %.2f seconds, skipping", seconds, float64(videoFile.Duration))
+		return
+	}
+
 	g := t.generator
 
 	if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio()); err != nil {

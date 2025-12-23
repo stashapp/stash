@@ -13,6 +13,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
   name
   id
+  aliases
   urls {
     ...URLFragment
   }
@@ -166,6 +167,21 @@ query FindSceneByID($id: ID!) {
 query FindStudio($id: ID, $name: String) {
   findStudio(id: $id, name: $name) {
     ...StudioFragment
+  }
+}
+
+query FindTag($id: ID, $name: String) {
+  findTag(id: $id, name: $name) {
+    ...TagFragment
+  }
+}
+
+query QueryTags($input: TagQueryInput!) {
+  queryTags(input: $input) {
+    count
+    tags {
+      ...TagFragment
+    }
   }
 }
 

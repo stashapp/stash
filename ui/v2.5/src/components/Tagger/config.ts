@@ -1,10 +1,10 @@
-import { useCallback, useContext } from "react";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useCallback } from "react";
+import { useConfigurationContext } from "src/hooks/Config";
 import { initialConfig, ITaggerConfig } from "./constants";
 import { useConfigureUISetting } from "src/core/StashService";
 
 export function useTaggerConfig() {
-  const { configuration: stashConfig } = useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
   const [saveUISetting] = useConfigureUISetting();
 
   const config = stashConfig?.ui.taggerConfig ?? initialConfig;

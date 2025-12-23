@@ -40,6 +40,35 @@ func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) ([]str
 	return obj.Aliases.List(), nil
 }
 
+func (r *studioResolver) URL(ctx context.Context, obj *models.Studio) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Studio)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return &urls[0], nil
+}
+
+func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Studio)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.URLs.List(), nil
+}
+
 func (r *studioResolver) Tags(ctx context.Context, obj *models.Studio) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
@@ -112,6 +141,24 @@ func (r *studioResolver) GroupCount(ctx context.Context, obj *models.Studio, dep
 // deprecated
 func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	return r.GroupCount(ctx, obj, depth)
+}
+
+func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res_scene int
+	var res_image int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByStudioID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_image, err = r.repository.Image.OCountByStudioID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_image
+	return &res, nil
 }
 
 func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {

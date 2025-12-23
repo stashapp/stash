@@ -240,6 +240,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <option value="zh-CN">简体中文 (中国)</option>
           </SelectSetting>
 
+          <BooleanSetting
+            id="sfw-content-mode"
+            headingID="config.ui.sfw_mode.heading"
+            subHeadingID="config.ui.sfw_mode.description"
+            checked={iface.sfwContentMode ?? undefined}
+            onChange={(v) => saveInterface({ sfwContentMode: v })}
+          />
+
           <div className="setting-group">
             <div className="setting">
               <div>
@@ -470,6 +478,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveUI({ showChildTagContent: v })}
           />
         </SettingSection>
+
         <SettingSection headingID="config.ui.studio_panel.heading">
           <BooleanSetting
             id="show-child-studio-content"
@@ -477,6 +486,15 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
             checked={ui.showChildStudioContent ?? undefined}
             onChange={(v) => saveUI({ showChildStudioContent: v })}
+          />
+        </SettingSection>
+
+        <SettingSection headingID="config.ui.performer_list.heading">
+          <BooleanSetting
+            id="show-links-on-grid-card"
+            headingID="config.ui.performer_list.options.show_links_on_grid_card.heading"
+            checked={ui.showLinksOnPerformerCard ?? undefined}
+            onChange={(v) => saveUI({ showLinksOnPerformerCard: v })}
           />
         </SettingSection>
 
@@ -580,6 +598,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) =>
               saveLightboxSettings({ scrollAttemptsBeforeChange: v })
             }
+          />
+
+          <BooleanSetting
+            id="lightbox_disable_animation"
+            headingID="dialogs.lightbox.disable_animation"
+            checked={iface.imageLightbox?.disableAnimation ?? false}
+            onChange={(v) => saveLightboxSettings({ disableAnimation: v })}
           />
         </SettingSection>
 
@@ -706,6 +731,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                   disableDropdownCreate: {
                     ...iface.disableDropdownCreate,
                     movie: v,
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="disableDropdownCreate_gallery"
+              headingID="gallery"
+              checked={iface.disableDropdownCreate?.gallery ?? undefined}
+              onChange={(v) =>
+                saveInterface({
+                  disableDropdownCreate: {
+                    ...iface.disableDropdownCreate,
+                    gallery: v,
                   },
                 })
               }

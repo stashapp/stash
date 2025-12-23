@@ -189,8 +189,6 @@
             "set_cover_label": "Ustawianie obrazu okładki sceny",
             "set_tag_desc": "Dołączanie tagów do sceny poprzez nadpisywanie lub łączenie z istniejącymi tagami w scenie.",
             "set_tag_label": "Ustaw tagi",
-            "show_male_desc": "Włączenie opcji tagowania wykonawców płci męskiej.",
-            "show_male_label": "Pokaż męskich aktorów",
             "source": "Źródło",
             "mark_organized_desc": "Po kliknięciu przycisku Zapisz scena zostaje natychmiast oznaczona jako zorganizowana.",
             "mark_organized_label": "Oznacz jako zorganizowane przy zapisywaniu"
@@ -1036,7 +1034,6 @@
     "name": "Nazwa",
     "new": "Dodaj",
     "none": "Brak",
-    "o_counter": "O-Licznik",
     "operations": "Operacje",
     "organized": "Uporządkowany",
     "pagination": {
@@ -1080,7 +1077,6 @@
         "no_results_found": "Nie znaleziono wyników.",
         "number_of_performers_will_be_processed": "{performer_count} wykonawców zostanie przetworzonych",
         "performer_already_tagged": "Aktor już otagowany",
-        "performer_names_separated_by_comma": "Nazwy aktorów oddzielone przecinkami",
         "performer_selection": "Wybór aktorów",
         "performer_successfully_tagged": "Aktor pomyślnie otagowany:",
         "query_all_performers_in_the_database": "Wszyscy aktorzy w bazie danych",

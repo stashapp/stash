@@ -1,16 +1,14 @@
-import React, {
-  useCallback,
-  useState,
-  useMemo,
-  MouseEvent,
-  useContext,
-} from "react";
+import React, { useCallback, useState, useMemo, MouseEvent } from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindImages, useFindImages } from "src/core/StashService";
+import {
+  queryFindImages,
+  useFindImages,
+  useFindImagesMetadata,
+} from "src/core/StashService";
 import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -23,11 +21,12 @@ import "flexbin/flexbin.css";
 import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ImageGridCard } from "./ImageGridCard";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
 import { FileSize } from "../Shared/FileSize";
+import { PatchComponent } from "src/patch";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -51,7 +50,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   zoomIndex,
   handleImageOpen,
 }) => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -275,9 +274,17 @@ function getCount(result: GQL.FindImagesQueryResult) {
   return result?.data?.findImages?.count ?? 0;
 }
 
-function renderMetadataByline(result: GQL.FindImagesQueryResult) {
-  const megapixels = result?.data?.findImages?.megapixels;
-  const size = result?.data?.findImages?.filesize;
+function renderMetadataByline(
+  result: GQL.FindImagesQueryResult,
+  metadataInfo?: GQL.FindImagesMetadataQueryResult
+) {
+  const megapixels = metadataInfo?.data?.findImages?.megapixels;
+  const size = metadataInfo?.data?.findImages?.filesize;
+
+  if (metadataInfo?.loading) {
+    // return ellipsis
+    return <span className="images-stats">&nbsp;(...)</span>;
+  }
 
   if (!megapixels && !size) {
     return;
@@ -312,167 +319,168 @@ interface IImageList {
   chapters?: GQL.GalleryChapterDataFragment[];
 }
 
-export const ImageList: React.FC<IImageList> = ({
-  filterHook,
-  view,
-  alterQuery,
-  extraOperations,
-  chapters = [],
-}) => {
-  const intl = useIntl();
-  const history = useHistory();
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [isExportAll, setIsExportAll] = useState(false);
-  const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
+export const ImageList: React.FC<IImageList> = PatchComponent(
+  "ImageList",
+  ({ filterHook, view, alterQuery, extraOperations = [], chapters = [] }) => {
+    const intl = useIntl();
+    const history = useHistory();
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExportAll, setIsExportAll] = useState(false);
+    const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
 
-  const filterMode = GQL.FilterMode.Images;
+    const filterMode = GQL.FilterMode.Images;
 
-  const otherOperations = [
-    ...(extraOperations ?? []),
-    {
-      text: intl.formatMessage({ id: "actions.view_random" }),
-      onClick: viewRandom,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export" }),
-      onClick: onExport,
-      isDisplayed: showWhenSelected,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export_all" }),
-      onClick: onExportAll,
-    },
-  ];
+    const otherOperations = [
+      ...extraOperations,
+      {
+        text: intl.formatMessage({ id: "actions.view_random" }),
+        onClick: viewRandom,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: onExport,
+        isDisplayed: showWhenSelected,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: onExportAll,
+      },
+    ];
 
-  function addKeybinds(
-    result: GQL.FindImagesQueryResult,
-    filter: ListFilterModel
-  ) {
-    Mousetrap.bind("p r", () => {
-      viewRandom(result, filter);
-    });
+    function addKeybinds(
+      result: GQL.FindImagesQueryResult,
+      filter: ListFilterModel
+    ) {
+      Mousetrap.bind("p r", () => {
+        viewRandom(result, filter);
+      });
 
-    return () => {
-      Mousetrap.unbind("p r");
-    };
-  }
+      return () => {
+        Mousetrap.unbind("p r");
+      };
+    }
 
-  async function viewRandom(
-    result: GQL.FindImagesQueryResult,
-    filter: ListFilterModel
-  ) {
-    // query for a random image
-    if (result.data?.findImages) {
-      const { count } = result.data.findImages;
+    async function viewRandom(
+      result: GQL.FindImagesQueryResult,
+      filter: ListFilterModel
+    ) {
+      // query for a random image
+      if (result.data?.findImages) {
+        const { count } = result.data.findImages;
 
-      const index = Math.floor(Math.random() * count);
-      const filterCopy = cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindImages(filterCopy);
-      if (singleResult.data.findImages.images.length === 1) {
-        const { id } = singleResult.data.findImages.images[0];
-        // navigate to the image player page
-        history.push(`/images/${id}`);
+        const index = Math.floor(Math.random() * count);
+        const filterCopy = cloneDeep(filter);
+        filterCopy.itemsPerPage = 1;
+        filterCopy.currentPage = index + 1;
+        const singleResult = await queryFindImages(filterCopy);
+        if (singleResult.data.findImages.images.length === 1) {
+          const { id } = singleResult.data.findImages.images[0];
+          // navigate to the image player page
+          history.push(`/images/${id}`);
+        }
       }
     }
-  }
 
-  async function onExport() {
-    setIsExportAll(false);
-    setIsExportDialogOpen(true);
-  }
+    async function onExport() {
+      setIsExportAll(false);
+      setIsExportDialogOpen(true);
+    }
 
-  async function onExportAll() {
-    setIsExportAll(true);
-    setIsExportDialogOpen(true);
-  }
+    async function onExportAll() {
+      setIsExportAll(true);
+      setIsExportDialogOpen(true);
+    }
 
-  function renderContent(
-    result: GQL.FindImagesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void,
-    onChangePage: (page: number) => void,
-    pageCount: number
-  ) {
-    function maybeRenderImageExportDialog() {
-      if (isExportDialogOpen) {
+    function renderContent(
+      result: GQL.FindImagesQueryResult,
+      filter: ListFilterModel,
+      selectedIds: Set<string>,
+      onSelectChange: (
+        id: string,
+        selected: boolean,
+        shiftKey: boolean
+      ) => void,
+      onChangePage: (page: number) => void,
+      pageCount: number
+    ) {
+      function maybeRenderImageExportDialog() {
+        if (isExportDialogOpen) {
+          return (
+            <ExportDialog
+              exportInput={{
+                images: {
+                  ids: Array.from(selectedIds.values()),
+                  all: isExportAll,
+                },
+              }}
+              onClose={() => setIsExportDialogOpen(false)}
+            />
+          );
+        }
+      }
+
+      function renderImages() {
+        if (!result.data?.findImages) return;
+
         return (
-          <ExportDialog
-            exportInput={{
-              images: {
-                ids: Array.from(selectedIds.values()),
-                all: isExportAll,
-              },
-            }}
-            onClose={() => setIsExportDialogOpen(false)}
+          <ImageListImages
+            filter={filter}
+            images={result.data.findImages.images}
+            onChangePage={onChangePage}
+            onSelectChange={onSelectChange}
+            pageCount={pageCount}
+            selectedIds={selectedIds}
+            slideshowRunning={slideshowRunning}
+            setSlideshowRunning={setSlideshowRunning}
+            chapters={chapters}
           />
         );
       }
-    }
-
-    function renderImages() {
-      if (!result.data?.findImages) return;
 
       return (
-        <ImageListImages
-          filter={filter}
-          images={result.data.findImages.images}
-          onChangePage={onChangePage}
-          onSelectChange={onSelectChange}
-          pageCount={pageCount}
-          selectedIds={selectedIds}
-          slideshowRunning={slideshowRunning}
-          setSlideshowRunning={setSlideshowRunning}
-          chapters={chapters}
-        />
+        <>
+          {maybeRenderImageExportDialog()}
+          {renderImages()}
+        </>
       );
     }
 
+    function renderEditDialog(
+      selectedImages: GQL.SlimImageDataFragment[],
+      onClose: (applied: boolean) => void
+    ) {
+      return <EditImagesDialog selected={selectedImages} onClose={onClose} />;
+    }
+
+    function renderDeleteDialog(
+      selectedImages: GQL.SlimImageDataFragment[],
+      onClose: (confirmed: boolean) => void
+    ) {
+      return <DeleteImagesDialog selected={selectedImages} onClose={onClose} />;
+    }
+
     return (
-      <>
-        {maybeRenderImageExportDialog()}
-        {renderImages()}
-      </>
+      <ItemListContext
+        filterMode={filterMode}
+        useResult={useFindImages}
+        useMetadataInfo={useFindImagesMetadata}
+        getItems={getItems}
+        getCount={getCount}
+        alterQuery={alterQuery}
+        filterHook={filterHook}
+        view={view}
+        selectable
+      >
+        <ItemList
+          view={view}
+          otherOperations={otherOperations}
+          addKeybinds={addKeybinds}
+          renderContent={renderContent}
+          renderEditDialog={renderEditDialog}
+          renderDeleteDialog={renderDeleteDialog}
+          renderMetadataByline={renderMetadataByline}
+        />
+      </ItemListContext>
     );
   }
-
-  function renderEditDialog(
-    selectedImages: GQL.SlimImageDataFragment[],
-    onClose: (applied: boolean) => void
-  ) {
-    return <EditImagesDialog selected={selectedImages} onClose={onClose} />;
-  }
-
-  function renderDeleteDialog(
-    selectedImages: GQL.SlimImageDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) {
-    return <DeleteImagesDialog selected={selectedImages} onClose={onClose} />;
-  }
-
-  return (
-    <ItemListContext
-      filterMode={filterMode}
-      useResult={useFindImages}
-      getItems={getItems}
-      getCount={getCount}
-      alterQuery={alterQuery}
-      filterHook={filterHook}
-      view={view}
-      selectable
-    >
-      <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
-        renderMetadataByline={renderMetadataByline}
-      />
-    </ItemListContext>
-  );
-};
+);

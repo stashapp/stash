@@ -165,6 +165,12 @@ type Query {
     input: ScrapeSingleStudioInput!
   ): [ScrapedStudio!]!
 
+  "Scrape for a single tag"
+  scrapeSingleTag(
+    source: ScraperSourceInput!
+    input: ScrapeSingleTagInput!
+  ): [ScrapedTag!]!
+
   "Scrape for a single performer"
   scrapeSinglePerformer(
     source: ScraperSourceInput!
@@ -328,6 +334,7 @@ type Mutation {
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
+  bulkSceneMarkerUpdate(input: BulkSceneMarkerUpdateInput!): [SceneMarker!]
   sceneMarkerDestroy(id: ID!): Boolean!
   sceneMarkersDestroy(ids: [ID!]!): Boolean!
 
@@ -371,6 +378,7 @@ type Mutation {
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
   studiosDestroy(ids: [ID!]!): Boolean!
+  bulkStudioUpdate(input: BulkStudioUpdateInput!): [Studio!]
 
   movieCreate(input: MovieCreateInput!): Movie
     @deprecated(reason: "Use groupCreate instead")

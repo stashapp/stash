@@ -30,32 +30,34 @@ const (
 )
 
 type performerRow struct {
-	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          null.String `db:"name"` // TODO: make schema non-nullable
-	Disambigation zero.String `db:"disambiguation"`
-	Gender        zero.String `db:"gender"`
-	Birthdate     NullDate    `db:"birthdate"`
-	Ethnicity     zero.String `db:"ethnicity"`
-	Country       zero.String `db:"country"`
-	EyeColor      zero.String `db:"eye_color"`
-	Height        null.Int    `db:"height"`
-	Measurements  zero.String `db:"measurements"`
-	FakeTits      zero.String `db:"fake_tits"`
-	PenisLength   null.Float  `db:"penis_length"`
-	Circumcised   zero.String `db:"circumcised"`
-	CareerLength  zero.String `db:"career_length"`
-	Tattoos       zero.String `db:"tattoos"`
-	Piercings     zero.String `db:"piercings"`
-	Favorite      bool        `db:"favorite"`
-	CreatedAt     Timestamp   `db:"created_at"`
-	UpdatedAt     Timestamp   `db:"updated_at"`
+	ID                 int         `db:"id" goqu:"skipinsert"`
+	Name               null.String `db:"name"` // TODO: make schema non-nullable
+	Disambigation      zero.String `db:"disambiguation"`
+	Gender             zero.String `db:"gender"`
+	Birthdate          NullDate    `db:"birthdate"`
+	BirthdatePrecision null.Int    `db:"birthdate_precision"`
+	Ethnicity          zero.String `db:"ethnicity"`
+	Country            zero.String `db:"country"`
+	EyeColor           zero.String `db:"eye_color"`
+	Height             null.Int    `db:"height"`
+	Measurements       zero.String `db:"measurements"`
+	FakeTits           zero.String `db:"fake_tits"`
+	PenisLength        null.Float  `db:"penis_length"`
+	Circumcised        zero.String `db:"circumcised"`
+	CareerLength       zero.String `db:"career_length"`
+	Tattoos            zero.String `db:"tattoos"`
+	Piercings          zero.String `db:"piercings"`
+	Favorite           bool        `db:"favorite"`
+	CreatedAt          Timestamp   `db:"created_at"`
+	UpdatedAt          Timestamp   `db:"updated_at"`
 	// expressed as 1-100
-	Rating        null.Int    `db:"rating"`
-	Details       zero.String `db:"details"`
-	DeathDate     NullDate    `db:"death_date"`
-	HairColor     zero.String `db:"hair_color"`
-	Weight        null.Int    `db:"weight"`
-	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	Rating             null.Int    `db:"rating"`
+	Details            zero.String `db:"details"`
+	DeathDate          NullDate    `db:"death_date"`
+	DeathDatePrecision null.Int    `db:"death_date_precision"`
+	HairColor          zero.String `db:"hair_color"`
+	Weight             null.Int    `db:"weight"`
+	IgnoreAutoTag      bool        `db:"ignore_auto_tag"`
 
 	// not used in resolution or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -69,6 +71,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
 	r.Birthdate = NullDateFromDatePtr(o.Birthdate)
+	r.BirthdatePrecision = datePrecisionFromDatePtr(o.Birthdate)
 	r.Ethnicity = zero.StringFrom(o.Ethnicity)
 	r.Country = zero.StringFrom(o.Country)
 	r.EyeColor = zero.StringFrom(o.EyeColor)
@@ -88,6 +91,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.DeathDate = NullDateFromDatePtr(o.DeathDate)
+	r.DeathDatePrecision = datePrecisionFromDatePtr(o.DeathDate)
 	r.HairColor = zero.StringFrom(o.HairColor)
 	r.Weight = intFromPtr(o.Weight)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -98,7 +102,7 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name.String,
 		Disambiguation: r.Disambigation.String,
-		Birthdate:      r.Birthdate.DatePtr(),
+		Birthdate:      r.Birthdate.DatePtr(r.BirthdatePrecision),
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
 		EyeColor:       r.EyeColor.String,
@@ -115,7 +119,7 @@ func (r *performerRow) resolve() *models.Performer {
 		// expressed as 1-100
 		Rating:        nullIntPtr(r.Rating),
 		Details:       r.Details.String,
-		DeathDate:     r.DeathDate.DatePtr(),
+		DeathDate:     r.DeathDate.DatePtr(r.DeathDatePrecision),
 		HairColor:     r.HairColor.String,
 		Weight:        nullIntPtr(r.Weight),
 		IgnoreAutoTag: r.IgnoreAutoTag,
@@ -142,7 +146,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
-	r.setNullDate("birthdate", o.Birthdate)
+	r.setNullDate("birthdate", "birthdate_precision", o.Birthdate)
 	r.setNullString("ethnicity", o.Ethnicity)
 	r.setNullString("country", o.Country)
 	r.setNullString("eye_color", o.EyeColor)
@@ -159,7 +163,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
-	r.setNullDate("death_date", o.DeathDate)
+	r.setNullDate("death_date", "death_date_precision", o.DeathDate)
 	r.setNullString("hair_color", o.HairColor)
 	r.setNullInt("weight", o.Weight)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
@@ -726,6 +730,28 @@ func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
+// used for sorting by total scene duration
+var selectPerformerScenesDurationSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM(video_files.duration), 0) FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_files} ON {scenes_files}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN video_files ON video_files.file_id = {scenes_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_files":      scenesFilesTable,
+	},
+)
+
+func (qb *PerformerStore) sortByScenesDuration(direction string) string {
+	// need to sum duration from all scenes for this performer
+	return " ORDER BY (" + selectPerformerScenesDurationSQL + ") " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
 	"career_length",
@@ -744,6 +770,7 @@ var performerSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"scenes_duration",
 	"tag_count",
 	"updated_at",
 	"weight",
@@ -771,6 +798,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	case "scenes_duration":
+		sortQuery += qb.sortByScenesDuration(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
