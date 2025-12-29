@@ -12,6 +12,7 @@ import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { markerTitle } from "src/core/markers";
 import { Link } from "react-router-dom";
 import { objectTitle } from "src/core/files";
+import { PatchComponent } from "src/patch";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { ScenePreview } from "./SceneCard";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -28,63 +29,66 @@ interface ISceneMarkerCardProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-const SceneMarkerCardPopovers = (props: ISceneMarkerCardProps) => {
-  function maybeRenderPerformerPopoverButton() {
-    if (props.marker.scene.performers.length <= 0) return;
+const SceneMarkerCardPopovers = PatchComponent(
+  "SceneMarkerCard.Popovers",
+  (props: ISceneMarkerCardProps) => {
+    function maybeRenderPerformerPopoverButton() {
+      if (props.marker.scene.performers.length <= 0) return;
 
-    return (
-      <PerformerPopoverButton
-        performers={props.marker.scene.performers}
-        linkType="scene_marker"
-      />
-    );
-  }
-
-  function renderTagPopoverButton() {
-    const popoverContent = [
-      <TagLink
-        key={props.marker.primary_tag.id}
-        tag={props.marker.primary_tag}
-        linkType="scene_marker"
-      />,
-    ];
-
-    props.marker.tags.map((tag) =>
-      popoverContent.push(
-        <TagLink key={tag.id} tag={tag} linkType="scene_marker" />
-      )
-    );
-
-    return (
-      <HoverPopover
-        className="tag-count"
-        placement="bottom"
-        content={popoverContent}
-      >
-        <Button className="minimal">
-          <Icon icon={faTag} />
-          <span>{popoverContent.length}</span>
-        </Button>
-      </HoverPopover>
-    );
-  }
-
-  function renderPopoverButtonGroup() {
-    if (!props.compact) {
       return (
-        <>
-          <hr />
-          <ButtonGroup className="card-popovers">
-            {maybeRenderPerformerPopoverButton()}
-            {renderTagPopoverButton()}
-          </ButtonGroup>
-        </>
+        <PerformerPopoverButton
+          performers={props.marker.scene.performers}
+          linkType="scene_marker"
+        />
       );
     }
-  }
 
-  return <>{renderPopoverButtonGroup()}</>;
-};
+    function renderTagPopoverButton() {
+      const popoverContent = [
+        <TagLink
+          key={props.marker.primary_tag.id}
+          tag={props.marker.primary_tag}
+          linkType="scene_marker"
+        />,
+      ];
+
+      props.marker.tags.map((tag) =>
+        popoverContent.push(
+          <TagLink key={tag.id} tag={tag} linkType="scene_marker" />
+        )
+      );
+
+      return (
+        <HoverPopover
+          className="tag-count"
+          placement="bottom"
+          content={popoverContent}
+        >
+          <Button className="minimal">
+            <Icon icon={faTag} />
+            <span>{popoverContent.length}</span>
+          </Button>
+        </HoverPopover>
+      );
+    }
+
+    function renderPopoverButtonGroup() {
+      if (!props.compact) {
+        return (
+          <>
+            <hr />
+            <ButtonGroup className="card-popovers">
+              {maybeRenderPerformerPopoverButton()}
+              {renderTagPopoverButton()}
+            </ButtonGroup>
+          </>
+        );
+      }
+    }
+
+    return <>{renderPopoverButtonGroup()}</>;
+  }
+);
 
 const SceneMarkerCardDetails = (props: ISceneMarkerCardProps) => {
   return (
