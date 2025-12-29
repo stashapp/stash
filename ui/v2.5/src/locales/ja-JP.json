@@ -796,6 +796,9 @@
             },
             "performer_list": {
                 "heading": "AV女優・男優リスト"
+            },
+            "sfw_mode": {
+                "description": "健全なコンテンツの為にstashを使用している場合に有効化しましょう。 アダルトコンテンツに関連したUIは隠されるか健全化されて表示されます。"
             }
         },
         "advanced_mode": "高度なモード"
@@ -1258,7 +1261,12 @@
     "stats": {
         "image_size": "画像サイズ",
         "scenes_duration": "シーンの再生時間",
-        "scenes_size": "シーンサイズ"
+        "scenes_size": "シーンサイズ",
+        "scenes_played": "再生済みシーン",
+        "total_o_count": "O-Count数",
+        "total_o_count_sfw": "健全O-Count数",
+        "total_play_count": "総再生数",
+        "total_play_duration": "総再生時間"
     },
     "status": "状態: {statusText}",
     "studio": "スタジオ",
@@ -1340,5 +1348,16 @@
     "include_sub_groups": "サブグループを含める",
     "sub_groups": "サブグループ",
     "history": "履歴",
-    "group_scene_number": "シーン番号"
+    "group_scene_number": "シーン番号",
+    "stashbox_search": {
+        "select_stashbox": "StashBoxを選択"
+    },
+    "studio_tagger": {
+        "add_new_studios": "スタジオを新規追加",
+        "current_page": "現在のページ",
+        "failed_to_save_studio": "スタジオの保存に失敗",
+        "name_already_exists": "名前が既に存在します",
+        "network_error": "ネットワークエラー",
+        "no_results_found": "結果が見付かりません"
+    }
 }
