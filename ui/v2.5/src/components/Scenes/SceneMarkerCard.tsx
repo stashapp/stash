@@ -115,49 +115,52 @@ const SceneMarkerCardDetails = PatchComponent(
   }
 );
 
-const SceneMarkerCardImage = (props: ISceneMarkerCardProps) => {
-  const { configuration } = useConfigurationContext();
+const SceneMarkerCardImage = PatchComponent(
+  "SceneMarkerCard.Image",
+  (props: ISceneMarkerCardProps) => {
+    const { configuration } = useConfigurationContext();
 
-  const file = useMemo(
-    () =>
-      props.marker.scene.files.length > 0
-        ? props.marker.scene.files[0]
-        : undefined,
-    [props.marker.scene]
-  );
+    const file = useMemo(
+      () =>
+        props.marker.scene.files.length > 0
+          ? props.marker.scene.files[0]
+          : undefined,
+      [props.marker.scene]
+    );
 
-  function isPortrait() {
-    const width = file?.width ? file.width : 0;
-    const height = file?.height ? file.height : 0;
-    return height > width;
-  }
+    function isPortrait() {
+      const width = file?.width ? file.width : 0;
+      const height = file?.height ? file.height : 0;
+      return height > width;
+    }
 
-  function maybeRenderSceneSpecsOverlay() {
+    function maybeRenderSceneSpecsOverlay() {
+      return (
+        <div className="scene-specs-overlay">
+          {props.marker.end_seconds && (
+            <span className="overlay-duration">
+              {TextUtils.secondsToTimestamp(
+                props.marker.end_seconds - props.marker.seconds
+              )}
+            </span>
+          )}
+        </div>
+      );
+    }
+
     return (
-      <div className="scene-specs-overlay">
-        {props.marker.end_seconds && (
-          <span className="overlay-duration">
-            {TextUtils.secondsToTimestamp(
-              props.marker.end_seconds - props.marker.seconds
-            )}
-          </span>
-        )}
-      </div>
+      <>
+        <ScenePreview
+          image={props.marker.screenshot ?? undefined}
+          video={props.marker.stream ?? undefined}
+          soundActive={configuration?.interface?.soundOnPreview ?? false}
+          isPortrait={isPortrait()}
+        />
+        {maybeRenderSceneSpecsOverlay()}
+      </>
     );
   }
-
-  return (
-    <>
-      <ScenePreview
-        image={props.marker.screenshot ?? undefined}
-        video={props.marker.stream ?? undefined}
-        soundActive={configuration?.interface?.soundOnPreview ?? false}
-        isPortrait={isPortrait()}
-      />
-      {maybeRenderSceneSpecsOverlay()}
-    </>
-  );
-};
+);
 
 export const SceneMarkerCard = (props: ISceneMarkerCardProps) => {
   function zoomIndex() {
