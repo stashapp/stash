@@ -162,30 +162,33 @@ const SceneMarkerCardImage = PatchComponent(
   }
 );
 
-export const SceneMarkerCard = (props: ISceneMarkerCardProps) => {
-  function zoomIndex() {
-    if (!props.compact && props.zoomIndex !== undefined) {
-      return `zoom-${props.zoomIndex}`;
+export const SceneMarkerCard = PatchComponent(
+  "SceneMarkerCard",
+  (props: ISceneMarkerCardProps) => {
+    function zoomIndex() {
+      if (!props.compact && props.zoomIndex !== undefined) {
+        return `zoom-${props.zoomIndex}`;
+      }
+
+      return "";
     }
 
-    return "";
+    return (
+      <GridCard
+        className={`scene-marker-card ${zoomIndex()}`}
+        url={NavUtils.makeSceneMarkerUrl(props.marker)}
+        title={markerTitle(props.marker)}
+        width={props.cardWidth}
+        linkClassName="scene-marker-card-link"
+        thumbnailSectionClassName="video-section"
+        resumeTime={props.marker.seconds}
+        image={<SceneMarkerCardImage {...props} />}
+        details={<SceneMarkerCardDetails {...props} />}
+        popovers={<SceneMarkerCardPopovers {...props} />}
+        selected={props.selected}
+        selecting={props.selecting}
+        onSelectedChanged={props.onSelectedChanged}
+      />
+    );
   }
-
-  return (
-    <GridCard
-      className={`scene-marker-card ${zoomIndex()}`}
-      url={NavUtils.makeSceneMarkerUrl(props.marker)}
-      title={markerTitle(props.marker)}
-      width={props.cardWidth}
-      linkClassName="scene-marker-card-link"
-      thumbnailSectionClassName="video-section"
-      resumeTime={props.marker.seconds}
-      image={<SceneMarkerCardImage {...props} />}
-      details={<SceneMarkerCardDetails {...props} />}
-      popovers={<SceneMarkerCardPopovers {...props} />}
-      selected={props.selected}
-      selecting={props.selecting}
-      onSelectedChanged={props.onSelectedChanged}
-    />
-  );
-};
+);
