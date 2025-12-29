@@ -729,6 +729,7 @@ declare namespace PluginApi {
     "SceneCard.Popovers": React.FC<any>;
     SceneList: React.FC<any>;
     SceneListOperations: React.FC<any>;
+    "SceneMarkerCard.Details": React.FC<any>;
     "SceneMarkerCard.Popovers": React.FC<any>;
     SceneMarkerList: React.FC<any>;
     SelectSetting: React.FC<any>;

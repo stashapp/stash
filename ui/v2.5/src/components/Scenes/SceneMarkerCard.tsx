@@ -90,27 +90,30 @@ const SceneMarkerCardPopovers = PatchComponent(
   }
 );
 
-const SceneMarkerCardDetails = (props: ISceneMarkerCardProps) => {
-  return (
-    <div className="scene-marker-card__details">
-      <span className="scene-marker-card__time">
-        {TextUtils.formatTimestampRange(
-          props.marker.seconds,
-          props.marker.end_seconds ?? undefined
-        )}
-      </span>
-      <TruncatedText
-        className="scene-marker-card__scene"
-        lineCount={3}
-        text={
-          <Link to={NavUtils.makeSceneMarkersSceneUrl(props.marker.scene)}>
-            {objectTitle(props.marker.scene)}
-          </Link>
-        }
-      />
-    </div>
-  );
-};
+const SceneMarkerCardDetails = PatchComponent(
+  "SceneMarkerCard.Details",
+  (props: ISceneMarkerCardProps) => {
+    return (
+      <div className="scene-marker-card__details">
+        <span className="scene-marker-card__time">
+          {TextUtils.formatTimestampRange(
+            props.marker.seconds,
+            props.marker.end_seconds ?? undefined
+          )}
+        </span>
+        <TruncatedText
+          className="scene-marker-card__scene"
+          lineCount={3}
+          text={
+            <Link to={NavUtils.makeSceneMarkersSceneUrl(props.marker.scene)}>
+              {objectTitle(props.marker.scene)}
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+);
 
 const SceneMarkerCardImage = (props: ISceneMarkerCardProps) => {
   const { configuration } = useConfigurationContext();
