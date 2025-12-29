@@ -677,6 +677,7 @@ declare namespace PluginApi {
     GalleryList: React.FC<any>;
     GallerySelect: React.FC<any>;
     GridCard: React.FC<any>;
+    GroupCard: React.FC<any>;
     GroupIDSelect: React.FC<any>;
     GroupList: React.FC<any>;
     GroupSelect: React.FC<any>;
