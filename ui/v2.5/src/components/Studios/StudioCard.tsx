@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { GridCard } from "src/components/Shared/GridCard/GridCard";
+import { PatchComponent } from "src/patch";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
@@ -70,179 +71,182 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = ({
-  studio,
-  cardWidth,
-  hideParent,
-  selecting,
-  selected,
-  zoomIndex,
-  onSelectedChanged,
-}) => {
-  const [updateStudio] = useStudioUpdate();
+export const StudioCard: React.FC<IProps> = PatchComponent(
+  "StudioCard",
+  ({
+    studio,
+    cardWidth,
+    hideParent,
+    selecting,
+    selected,
+    zoomIndex,
+    onSelectedChanged,
+  }) => {
+    const [updateStudio] = useStudioUpdate();
 
-  function onToggleFavorite(v: boolean) {
-    if (studio.id) {
-      updateStudio({
-        variables: {
-          input: {
-            id: studio.id,
-            favorite: v,
+    function onToggleFavorite(v: boolean) {
+      if (studio.id) {
+        updateStudio({
+          variables: {
+            input: {
+              id: studio.id,
+              favorite: v,
+            },
           },
-        },
-      });
+        });
+      }
     }
-  }
 
-  function maybeRenderScenesPopoverButton() {
-    if (!studio.scene_count) return;
+    function maybeRenderScenesPopoverButton() {
+      if (!studio.scene_count) return;
 
-    return (
-      <PopoverCountButton
-        className="scene-count"
-        type="scene"
-        count={studio.scene_count}
-        url={NavUtils.makeStudioScenesUrl(studio)}
-      />
-    );
-  }
-
-  function maybeRenderImagesPopoverButton() {
-    if (!studio.image_count) return;
-
-    return (
-      <PopoverCountButton
-        className="image-count"
-        type="image"
-        count={studio.image_count}
-        url={NavUtils.makeStudioImagesUrl(studio)}
-      />
-    );
-  }
-
-  function maybeRenderGalleriesPopoverButton() {
-    if (!studio.gallery_count) return;
-
-    return (
-      <PopoverCountButton
-        className="gallery-count"
-        type="gallery"
-        count={studio.gallery_count}
-        url={NavUtils.makeStudioGalleriesUrl(studio)}
-      />
-    );
-  }
-
-  function maybeRenderGroupsPopoverButton() {
-    if (!studio.group_count) return;
-
-    return (
-      <PopoverCountButton
-        className="group-count"
-        type="group"
-        count={studio.group_count}
-        url={NavUtils.makeStudioGroupsUrl(studio)}
-      />
-    );
-  }
-
-  function maybeRenderPerformersPopoverButton() {
-    if (!studio.performer_count) return;
-
-    return (
-      <PopoverCountButton
-        className="performer-count"
-        type="performer"
-        count={studio.performer_count}
-        url={NavUtils.makeStudioPerformersUrl(studio)}
-      />
-    );
-  }
-
-  function maybeRenderTagPopoverButton() {
-    if (studio.tags.length <= 0) return;
-
-    const popoverContent = studio.tags.map((tag) => (
-      <TagLink key={tag.id} linkType="studio" tag={tag} />
-    ));
-
-    return (
-      <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal tag-count">
-          <Icon icon={faTag} />
-          <span>{studio.tags.length}</span>
-        </Button>
-      </HoverPopover>
-    );
-  }
-
-  function maybeRenderOCounter() {
-    if (!studio.o_counter) return;
-
-    return <OCounterButton value={studio.o_counter} />;
-  }
-
-  function maybeRenderPopoverButtonGroup() {
-    if (
-      studio.scene_count ||
-      studio.image_count ||
-      studio.gallery_count ||
-      studio.group_count ||
-      studio.performer_count ||
-      studio.o_counter ||
-      studio.tags.length > 0
-    ) {
       return (
-        <>
-          <hr />
-          <ButtonGroup className="card-popovers">
-            {maybeRenderScenesPopoverButton()}
-            {maybeRenderGroupsPopoverButton()}
-            {maybeRenderImagesPopoverButton()}
-            {maybeRenderGalleriesPopoverButton()}
-            {maybeRenderPerformersPopoverButton()}
-            {maybeRenderTagPopoverButton()}
-            {maybeRenderOCounter()}
-          </ButtonGroup>
-        </>
+        <PopoverCountButton
+          className="scene-count"
+          type="scene"
+          count={studio.scene_count}
+          url={NavUtils.makeStudioScenesUrl(studio)}
+        />
       );
     }
-  }
 
-  return (
-    <GridCard
-      className={`studio-card zoom-${zoomIndex}`}
-      url={`/studios/${studio.id}`}
-      width={cardWidth}
-      title={studio.name}
-      linkClassName="studio-card-header"
-      image={
-        <img
-          loading="lazy"
-          className="studio-card-image"
-          alt={studio.name}
-          src={studio.image_path ?? ""}
+    function maybeRenderImagesPopoverButton() {
+      if (!studio.image_count) return;
+
+      return (
+        <PopoverCountButton
+          className="image-count"
+          type="image"
+          count={studio.image_count}
+          url={NavUtils.makeStudioImagesUrl(studio)}
         />
-      }
-      details={
-        <div className="studio-card__details">
-          {maybeRenderParent(studio, hideParent)}
-          {maybeRenderChildren(studio)}
-          <RatingBanner rating={studio.rating100} />
-        </div>
-      }
-      overlays={
-        <FavoriteIcon
-          favorite={studio.favorite}
-          onToggleFavorite={(v) => onToggleFavorite(v)}
-          size="2x"
-          className="hide-not-favorite"
+      );
+    }
+
+    function maybeRenderGalleriesPopoverButton() {
+      if (!studio.gallery_count) return;
+
+      return (
+        <PopoverCountButton
+          className="gallery-count"
+          type="gallery"
+          count={studio.gallery_count}
+          url={NavUtils.makeStudioGalleriesUrl(studio)}
         />
+      );
+    }
+
+    function maybeRenderGroupsPopoverButton() {
+      if (!studio.group_count) return;
+
+      return (
+        <PopoverCountButton
+          className="group-count"
+          type="group"
+          count={studio.group_count}
+          url={NavUtils.makeStudioGroupsUrl(studio)}
+        />
+      );
+    }
+
+    function maybeRenderPerformersPopoverButton() {
+      if (!studio.performer_count) return;
+
+      return (
+        <PopoverCountButton
+          className="performer-count"
+          type="performer"
+          count={studio.performer_count}
+          url={NavUtils.makeStudioPerformersUrl(studio)}
+        />
+      );
+    }
+
+    function maybeRenderTagPopoverButton() {
+      if (studio.tags.length <= 0) return;
+
+      const popoverContent = studio.tags.map((tag) => (
+        <TagLink key={tag.id} linkType="studio" tag={tag} />
+      ));
+
+      return (
+        <HoverPopover placement="bottom" content={popoverContent}>
+          <Button className="minimal tag-count">
+            <Icon icon={faTag} />
+            <span>{studio.tags.length}</span>
+          </Button>
+        </HoverPopover>
+      );
+    }
+
+    function maybeRenderOCounter() {
+      if (!studio.o_counter) return;
+
+      return <OCounterButton value={studio.o_counter} />;
+    }
+
+    function maybeRenderPopoverButtonGroup() {
+      if (
+        studio.scene_count ||
+        studio.image_count ||
+        studio.gallery_count ||
+        studio.group_count ||
+        studio.performer_count ||
+        studio.o_counter ||
+        studio.tags.length > 0
+      ) {
+        return (
+          <>
+            <hr />
+            <ButtonGroup className="card-popovers">
+              {maybeRenderScenesPopoverButton()}
+              {maybeRenderGroupsPopoverButton()}
+              {maybeRenderImagesPopoverButton()}
+              {maybeRenderGalleriesPopoverButton()}
+              {maybeRenderPerformersPopoverButton()}
+              {maybeRenderTagPopoverButton()}
+              {maybeRenderOCounter()}
+            </ButtonGroup>
+          </>
+        );
       }
-      popovers={maybeRenderPopoverButtonGroup()}
-      selected={selected}
-      selecting={selecting}
-      onSelectedChanged={onSelectedChanged}
-    />
-  );
-};
+    }
+
+    return (
+      <GridCard
+        className={`studio-card zoom-${zoomIndex}`}
+        url={`/studios/${studio.id}`}
+        width={cardWidth}
+        title={studio.name}
+        linkClassName="studio-card-header"
+        image={
+          <img
+            loading="lazy"
+            className="studio-card-image"
+            alt={studio.name}
+            src={studio.image_path ?? ""}
+          />
+        }
+        details={
+          <div className="studio-card__details">
+            {maybeRenderParent(studio, hideParent)}
+            {maybeRenderChildren(studio)}
+            <RatingBanner rating={studio.rating100} />
+          </div>
+        }
+        overlays={
+          <FavoriteIcon
+            favorite={studio.favorite}
+            onToggleFavorite={(v) => onToggleFavorite(v)}
+            size="2x"
+            className="hide-not-favorite"
+          />
+        }
+        popovers={maybeRenderPopoverButtonGroup()}
+        selected={selected}
+        selecting={selecting}
+        onSelectedChanged={onSelectedChanged}
+      />
+    );
+  }
+);

@@ -676,6 +676,8 @@ declare namespace PluginApi {
     GalleryImagesPanel: React.FC<any>;
     GalleryList: React.FC<any>;
     GallerySelect: React.FC<any>;
+    GridCard: React.FC<any>;
+    GroupCard: React.FC<any>;
     GroupIDSelect: React.FC<any>;
     GroupList: React.FC<any>;
     GroupSelect: React.FC<any>;
@@ -683,6 +685,7 @@ declare namespace PluginApi {
     HeaderImage: React.FC<any>;
     HoverPopover: React.FC<any>;
     Icon: React.FC<any>;
+    ImageCard: React.FC<any>;
     ImageInput: React.FC<any>;
     ImageList: React.FC<any>;
     LightboxLink: React.FC<any>;
@@ -726,6 +729,10 @@ declare namespace PluginApi {
     "SceneCard.Popovers": React.FC<any>;
     SceneList: React.FC<any>;
     SceneListOperations: React.FC<any>;
+    SceneMarkerCard: React.FC<any>;
+    "SceneMarkerCard.Details": React.FC<any>;
+    "SceneMarkerCard.Image": React.FC<any>;
+    "SceneMarkerCard.Popovers": React.FC<any>;
     SceneMarkerList: React.FC<any>;
     SelectSetting: React.FC<any>;
     Setting: React.FC<any>;
@@ -733,6 +740,8 @@ declare namespace PluginApi {
     SettingModal: React.FC<any>;
     StringListSetting: React.FC<any>;
     StringSetting: React.FC<any>;
+    StudioCard: React.FC<any>;
+    StudioDetailsPanel: React.FC<any>;
     StudioIDSelect: React.FC<any>;
     StudioList: React.FC<any>;
     StudioSelect: React.FC<any>;
