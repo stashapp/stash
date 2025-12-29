@@ -733,6 +733,7 @@ declare namespace PluginApi {
     SettingModal: React.FC<any>;
     StringListSetting: React.FC<any>;
     StringSetting: React.FC<any>;
+    StudioDetailsPanel: React.FC<any>;
     StudioIDSelect: React.FC<any>;
     StudioList: React.FC<any>;
     StudioSelect: React.FC<any>;
