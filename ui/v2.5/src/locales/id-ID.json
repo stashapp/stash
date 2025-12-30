@@ -194,6 +194,8 @@
         "total_o_count": "Total Jumlah Crot"
     },
     "studio": "Studio",
+    "studio_image": "Gambar Studio",
+    "studio_name": "Nama studio",
     "studio_tagger": {
         "add_new_studios": "Tambah Studio Baru"
     },

@@ -1117,6 +1117,8 @@
     "status": "Stato: {statusText}",
     "studio": "Studio",
     "studio_depth": "Livelli (vuoto per tutti)",
+    "studio_image": "Immagine dello studio",
+    "studio_name": "Nome dello studio",
     "studios": "Studi",
     "sub_tag_count": "Numero Sotto-Tag",
     "sub_tag_of": "Sotto-tag di {parent}",

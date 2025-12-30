@@ -1391,6 +1391,8 @@
     "status": "Status: {statusText}",
     "studio": "Studio",
     "studio_depth": "Nivåer (tom för allt)",
+    "studio_image": "Studiobild",
+    "studio_name": "Studionamn",
     "studio_tagger": {
         "add_new_studios": "Lägg Till Nya Studior",
         "any_names_entered_will_be_queried": "Skrivna namn kommer sökas i Stash-Box instansen och läggas till om de hittas. Bara exakta matchningar kommer räknas om en matchning.",

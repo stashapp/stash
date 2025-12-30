@@ -1047,5 +1047,7 @@
         "scale": "Tỉ lệ",
         "warmth": "Sự ấm áp"
     },
+    "studio_image": "Hình ảnh studio",
+    "studio_name": "Tên studio",
     "empty_server": "Thêm một số cảnh quay vào máy chủ của bạn để xem các đề xuất trên trang này."
 }

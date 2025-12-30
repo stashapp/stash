@@ -1388,6 +1388,8 @@
     "status": "Staatus: {statusText}",
     "studio": "Stuudio",
     "studio_depth": "Tasemed (tühi kõige jaoks)",
+    "studio_image": "Stuudio pilt",
+    "studio_name": "Stuudio nimi",
     "studios": "Stuudiod",
     "sub_tag_count": "Alam-Siltide Arv",
     "sub_tag_of": "{parent}-i alam-silt",

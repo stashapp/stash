@@ -945,6 +945,8 @@
         "total_play_duration": "Total Spilletid"
     },
     "studio_depth": "Nivåer (tomt for alle)",
+    "studio_image": "Studiobilde",
+    "studio_name": "Studionavn",
     "custom_fields": {
         "title": "Egendefinerte felt",
         "criteria_format_string": "{kriterium} (egendefinert felt) {modifierString} {valueString}",

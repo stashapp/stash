@@ -1534,6 +1534,8 @@
     "studio": "Studio",
     "studio_and_parent": "Studio & Nadřazené studio",
     "studio_depth": "Úrovně (prázdné pro všechny)",
+    "studio_image": "Obrázek studia",
+    "studio_name": "Název studia",
     "sub_tag_count": "Počet sub-tagů",
     "sub_tags": "Sub-Tagy",
     "years_old": "Let",

@@ -1152,6 +1152,8 @@
     "status": "Status: {statusText}",
     "studio": "Studio",
     "studio_depth": "Niveaus (leeg voor iedereen)",
+    "studio_image": "Studioafbeelding",
+    "studio_name": "Studionaam",
     "studios": "Studios",
     "sub_tag_count": "Sub-Label aantal",
     "sub_tag_of": "Sub-tag van {parent}",

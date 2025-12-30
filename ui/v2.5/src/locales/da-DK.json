@@ -1215,6 +1215,8 @@
     "status": "Status: {statusText}",
     "studio": "Studie",
     "studio_depth": "Niveauer (tom for alle)",
+    "studio_image": "Studiebillede",
+    "studio_name": "Studienavn",
     "studios": "Studier",
     "sub_tag_count": "Antal under-tags",
     "sub_tag_of": "Under-tag til {parent}",

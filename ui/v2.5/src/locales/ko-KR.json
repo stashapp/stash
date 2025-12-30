@@ -1390,6 +1390,8 @@
     "status": "상태: {statusText}",
     "studio": "스튜디오",
     "studio_depth": "수준 (빈 칸으로 두면 전체 선택)",
+    "studio_image": "스튜디오 이미지",
+    "studio_name": "스튜디오 이름",
     "studios": "스튜디오",
     "sub_tag_count": "하위 태그 개수",
     "sub_tag_of": "{parent}의 하위 태그",

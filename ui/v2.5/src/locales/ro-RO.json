@@ -485,6 +485,8 @@
     "status": "Stare: {statusText}",
     "studio": "Studio",
     "studio_depth": "Niveluri (lasați liber pentru toate)",
+    "studio_image": "Imagine studio",
+    "studio_name": "Nume studio",
     "studios": "Studiouri",
     "synopsis": "Sinopsis",
     "tag": "Etichetă",

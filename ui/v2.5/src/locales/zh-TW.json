@@ -1336,6 +1336,8 @@
     "status": "狀態：{statusText}",
     "studio": "工作室",
     "studio_depth": "深度 (留空則篩選全部)",
+    "studio_image": "工作室圖片",
+    "studio_name": "工作室名稱",
     "studios": "工作室",
     "sub_tag_count": "子標籤數量",
     "sub_tag_of": "{parent} 的子標籤",
