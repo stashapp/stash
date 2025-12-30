@@ -408,6 +408,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         }}
       />
 
+      {renderButtons("mb-3")}
+
       <Form noValidate onSubmit={formik.handleSubmit} id="studio-edit">
         {renderInputField("name")}
         {renderStringListField("aliases")}
@@ -432,9 +434,9 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         )}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}
-      </Form>
 
-      {renderButtons("mt-3")}
+        {renderButtons("mt-3")}
+      </Form>
     </>
   );
 };
