@@ -468,10 +468,12 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     return (
       <TagMergeModal
         show={isMerging}
-        onClose={(mergedID) => {
+        onClose={(mergedId) => {
           setIsMerging(false);
-          if (mergedID) {
-            history.replace(`/tags/${mergedID}`);
+          if (mergedId !== undefined && mergedId !== tag.id) {
+            // By default, the merge destination is the current tag, but
+            // the user can change it, in which case we need to redirect.
+            history.replace(`/tags/${mergedId}`);
           }
         }}
         tags={[tag]}

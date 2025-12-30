@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Icon } from "../Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
 import * as FormUtils from "src/utils/form";
-import { queryFindTag, useTagsMerge } from "src/core/StashService";
+import { useTagsMerge } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
@@ -57,9 +57,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
       });
       if (result.data?.tagsMerge) {
         Toast.success(intl.formatMessage({ id: "toast.merged_tags" }));
-        // refetch the tag
-        await queryFindTag(dest.id);
-        onClose();
+        onClose(dest.id);
       }
     } catch (e) {
       Toast.error(e);

@@ -685,7 +685,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
 
 interface IPerformerMergeModalProps {
   show: boolean;
-  onClose: (mergedID?: string) => void;
+  onClose: (mergedId?: string) => void;
   performers: GQL.SelectPerformerDataFragment[];
 }
 

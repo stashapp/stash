@@ -888,6 +888,10 @@ export const mutateSceneMerge = (
         deleteObject(cache, obj, GQL.FindSceneDocument);
       }
 
+      cache.evict({
+        id: cache.identify({ __typename: "Scene", id: destination }),
+      });
+
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
       evictQueries(cache, [
         ...sceneMutationImpactedQueries,
@@ -2018,6 +2022,8 @@ const tagMutationImpactedTypeFields = {
 };
 
 const tagMutationImpactedQueries = [
+  GQL.FindGroupsDocument, // filter by tags
+  GQL.FindSceneMarkersDocument, // filter by tags
   GQL.FindScenesDocument, // filter by tags
   GQL.FindImagesDocument, // filter by tags
   GQL.FindGalleriesDocument, // filter by tags
@@ -2125,16 +2131,14 @@ export const useTagsMerge = () =>
         deleteObject(cache, obj, GQL.FindTagDocument);
       }
 
-      updateStats(cache, "tag_count", -source.length);
+      cache.evict({
+        id: cache.identify({ __typename: "Tag", id: destination }),
+      });
 
-      const obj = { __typename: "Tag", id: destination };
-      evictTypeFields(
-        cache,
-        tagMutationImpactedTypeFields,
-        cache.identify(obj) // don't evict destination tag
-      );
-
-      evictQueries(cache, tagMutationImpactedQueries);
+      evictQueries(cache, [
+        ...tagMutationImpactedQueries,
+        GQL.StatsDocument, // tag count
+      ]);
     },
   });
 

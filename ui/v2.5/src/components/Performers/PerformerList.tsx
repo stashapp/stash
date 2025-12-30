@@ -12,7 +12,6 @@ import {
 import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import NavUtils from "src/utils/navigation";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
@@ -264,10 +263,10 @@ export const PerformerList: React.FC<IPerformerList> = ({
         return (
           <PerformerMergeModal
             performers={mergePerformers}
-            onClose={(mergedID?: string) => {
+            onClose={(mergedId?: string) => {
               setMergePerformers(undefined);
-              if (mergedID) {
-                history.push(NavUtils.makePerformerScenesUrl({ id: mergedID }));
+              if (mergedId) {
+                history.push(`/performers/${mergedId}`);
               }
             }}
             show

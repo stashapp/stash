@@ -191,7 +191,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
             onClose={(mergedID?: string) => {
               setMergeTags(undefined);
               if (mergedID) {
-                history.push(NavUtils.makeTagScenesUrl({ id: mergedID }));
+                history.push(`/tags/${mergedID}`);
               }
             }}
             show
