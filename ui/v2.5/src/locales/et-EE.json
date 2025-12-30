@@ -151,7 +151,9 @@
         "show_results": "Näita tulemusi",
         "show_count_results": "Näita {count} tulemust",
         "load": "Lae",
-        "load_filter": "Lae filter"
+        "load_filter": "Lae filter",
+        "add_stash_id": "Lisa Stash ID",
+        "create_new": "Loo uus"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -192,13 +194,15 @@
             "set_cover_label": "Määra stseeni kaanepilt",
             "set_tag_desc": "Ühenda stseenile külge silte, kas olemasolevate siltide ülekirjutamise või liitmise kaudu.",
             "set_tag_label": "Määra sildid",
-            "show_male_desc": "Vali, kas meesnäitlejad on määramiseks saadaval.",
-            "show_male_label": "Näita meesnäitlejaid",
             "source": "Allikas",
             "mark_organized_desc": "Märgi stseen koheselt Orgainiseerituks peale Salvesta nupu vajutamist.",
             "mark_organized_label": "Märgi salvestamisel Organiseerituks",
             "errors": {
                 "blacklist_duplicate": "Dubleeritud musta nimekirja ese"
+            },
+            "performer_genders": {
+                "heading": "Näitlejate sood",
+                "description": "Stseene märgistades näidatakse nende sugudega näitlejaid."
             }
         },
         "noun_query": "Päring",
@@ -220,7 +224,10 @@
         "verb_scrape_all": "Kraabi Kõikjalt",
         "verb_submit_fp": "Esita {fpCount, plural, one{# Sõrmejälg} other{# Sõrmejälge}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid"
+        "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid",
+        "verb_add_as_alias": "Lisa nimi alisena",
+        "verb_link_existing": "Ühenda eksisteerivaga",
+        "verb_match_tag": "Sobita Silt"
     },
     "config": {
         "about": {
@@ -417,6 +424,10 @@
             "plugins_path": {
                 "description": "Plugina konfiguratsioonifailide asukoht kataloogis",
                 "heading": "Pluginate Tee"
+            },
+            "delete_trash_path": {
+                "description": "Tee, kuhu liigutatakse kustutatud failide lõpliku kustutamise asemel. Jäta tühjaks, et alati faile lõplikult kustutada.",
+                "heading": "Prügi Tee"
             }
         },
         "library": {
@@ -918,7 +929,8 @@
                 "label": "Kerimisrežiim",
                 "pan_y": "Liiguta Y",
                 "zoom": "Suum"
-            }
+            },
+            "disable_animation": "Lülita piltide vahetamise animatsioon välja"
         },
         "merge": {
             "destination": "Siihtkoht",
@@ -984,7 +996,12 @@
         "clear_play_history_confirm": "Kas oled kindel, et soovid puhastada vaatamise ajaloo?",
         "set_default_filter_confirm": "Kas oled kindel, et soovid määrata seda filtrit vaikimisi valikuks?",
         "overwrite_filter_warning": "Salvestatud filter \"{entityName}\" kirjutatakse üle.",
-        "clear_o_history_confirm_sfw": "Kas oled kindel, et tahad meeldimiste ajalugu tühjendada?"
+        "clear_o_history_confirm_sfw": "Kas oled kindel, et tahad meeldimiste ajalugu tühjendada?",
+        "delete_alert_to_trash": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} liigutatakse prügilasse:",
+        "stashid_exists_warning": "Olemasolev stash id asendatakse selle stash-kasti jaoks.",
+        "studios_found": "{count} stuudiot leitud",
+        "tags_found": "{count} silti leitud",
+        "scrape_results_missing": "Puudub"
     },
     "dimensions": "Dimensioonid",
     "director": "Režissöör",
@@ -1155,7 +1172,7 @@
     "metadata": "Metaandmed",
     "name": "Nimi",
     "new": "Uus",
-    "none": "Puudub",
+    "none": "Mitte ükski",
     "operations": "Operatsioonid",
     "organized": "Organiseeritud",
     "pagination": {
@@ -1197,7 +1214,6 @@
         "no_results_found": "Tulemusi ei leitud.",
         "number_of_performers_will_be_processed": "{performer_count} näitlejat töödeldakse",
         "performer_already_tagged": "Näitleja juba märgitud",
-        "performer_names_separated_by_comma": "Esinejate nimed on eraldatud komaga",
         "performer_selection": "Näitlejate valik",
         "performer_successfully_tagged": "Näitleja edukalt märgitud:",
         "query_all_performers_in_the_database": "Kõik andmebaasis olevad näitlejad",
@@ -1210,7 +1226,8 @@
         "untagged_performers": "Märkimata näitlejad",
         "update_performer": "Uuenda Näitlejat",
         "update_performers": "Uuenda Näitlejaid",
-        "updating_untagged_performers_description": "Märgistamata esinejate värskendamisel püütakse leida vasteid esinejatele, kellel puudub stashid, ja värskendatakse metaandmeid."
+        "updating_untagged_performers_description": "Märgistamata esinejate värskendamisel püütakse leida vasteid esinejatele, kellel puudub stashid, ja värskendatakse metaandmeid.",
+        "performer_names_or_stashids_separated_by_comma": "Näitlejate nimed või StashID-d eraldatud komadega"
     },
     "performer_tags": "Näitleja Sildid",
     "performers": "Näitlejad",
@@ -1365,7 +1382,8 @@
         "scenes_played": "Mängitud Stseenid",
         "total_o_count": "Kokku O-Arv",
         "total_play_count": "Mängimiste Koguarv",
-        "total_play_duration": "Mängimiste Kogukestus"
+        "total_play_duration": "Mängimiste Kogukestus",
+        "total_o_count_sfw": "Meeldimisi kokku"
     },
     "status": "Staatus: {statusText}",
     "studio": "Stuudio",
@@ -1407,7 +1425,7 @@
     "updated_at": "Viimati Uuendatud",
     "url": "URL",
     "validation": {
-        "date_invalid_form": "${path} peab olema AAAA-KK-PP vormis",
+        "date_invalid_form": "${path} peab olema AAAA, AAAA-KK või AAAA-KK-PP vormis",
         "required": "${path} on nõutud väli",
         "blank": "${path} ei tohi olla tühi",
         "unique": "${path} peab olema kordumatu",
@@ -1487,7 +1505,6 @@
         "no_results_found": "Tulemusi ei leitud.",
         "number_of_studios_will_be_processed": "{studio_count} stuudiot töödeldakse",
         "studio_already_tagged": "Stuudio on juba märgistatud",
-        "studio_names_separated_by_comma": "Komaga eraldatud stuudionimed",
         "studio_selection": "Stuudio valik",
         "studio_successfully_tagged": "Stuudio märgistamine õnnestus",
         "query_all_studios_in_the_database": "Kõik stuudiod andmebaasis",
@@ -1502,7 +1519,8 @@
         "refreshing_will_update_the_data": "Värskendamisel värskendatakse kõigi stash-boxi eksemplari märgistatud stuudiote andmeid.",
         "status_tagging_studios": "Staatus: Stuudiote märgistamine",
         "tag_status": "Märke Staatus",
-        "updating_untagged_studios_description": "Märgistamata stuudiote värskendamisel püütakse sobitada kõik stuudiod, millel puudub stashid, ja värskendatakse metaandmeid."
+        "updating_untagged_studios_description": "Märgistamata stuudiote värskendamisel püütakse sobitada kõik stuudiod, millel puudub stashid, ja värskendatakse metaandmeid.",
+        "studio_names_or_stashids_separated_by_comma": "Stuudio nimes või StashID-d eraldatud komadega"
     },
     "urls": "URLid",
     "video_codec": "Video Koodek",
@@ -1569,5 +1587,11 @@
     "last_o_at_sfw": "Viimane Meeldimine",
     "o_count_sfw": "Meeldimisi",
     "o_history_sfw": "Meeldimiste Ajalugu",
-    "odate_recorded_no_sfw": "Meeldimise Kuupäeva Pole Salvestatud"
+    "odate_recorded_no_sfw": "Meeldimise Kuupäeva Pole Salvestatud",
+    "stashbox_search": {
+        "header": "Otsi {entityType} StashBoxist",
+        "no_results": "Vasteid ei leitud.",
+        "placeholder_name_or_id": "{entityType} nimi või StashID...",
+        "select_stashbox": "Vali StashBox..."
+    }
 }

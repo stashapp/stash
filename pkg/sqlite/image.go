@@ -34,15 +34,16 @@ type imageRow struct {
 	Title zero.String `db:"title"`
 	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating       null.Int    `db:"rating"`
-	Date         NullDate    `db:"date"`
-	Details      zero.String `db:"details"`
-	Photographer zero.String `db:"photographer"`
-	Organized    bool        `db:"organized"`
-	OCounter     int         `db:"o_counter"`
-	StudioID     null.Int    `db:"studio_id,omitempty"`
-	CreatedAt    Timestamp   `db:"created_at"`
-	UpdatedAt    Timestamp   `db:"updated_at"`
+	Rating        null.Int    `db:"rating"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
+	Details       zero.String `db:"details"`
+	Photographer  zero.String `db:"photographer"`
+	Organized     bool        `db:"organized"`
+	OCounter      int         `db:"o_counter"`
+	StudioID      null.Int    `db:"studio_id,omitempty"`
+	CreatedAt     Timestamp   `db:"created_at"`
+	UpdatedAt     Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
@@ -51,6 +52,7 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Code = zero.StringFrom(i.Code)
 	r.Rating = intFromPtr(i.Rating)
 	r.Date = NullDateFromDatePtr(i.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(i.Date)
 	r.Details = zero.StringFrom(i.Details)
 	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
@@ -74,7 +76,7 @@ func (r *imageQueryRow) resolve() *models.Image {
 		Title:        r.Title.String,
 		Code:         r.Code.String,
 		Rating:       nullIntPtr(r.Rating),
-		Date:         r.Date.DatePtr(),
+		Date:         r.Date.DatePtr(r.DatePrecision),
 		Details:      r.Details.String,
 		Photographer: r.Photographer.String,
 		Organized:    r.Organized,
@@ -103,7 +105,7 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullString("code", i.Code)
 	r.setNullInt("rating", i.Rating)
-	r.setNullDate("date", i.Date)
+	r.setNullDate("date", "date_precision", i.Date)
 	r.setNullString("details", i.Details)
 	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
@@ -965,10 +967,12 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		addFilesJoin := func() {
 			q.addJoins(
 				join{
+					sort:     true,
 					table:    imagesFilesTable,
 					onClause: "images_files.image_id = images.id",
 				},
 				join{
+					sort:     true,
 					table:    fileTable,
 					onClause: "images_files.file_id = files.id",
 				},
@@ -977,6 +981,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 
 		addFolderJoin := func() {
 			q.addJoins(join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "files.parent_folder_id = folders.id",
 			})

@@ -5,18 +5,22 @@ import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
+import { useConfigurationContext } from "src/hooks/Config";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
 import { Studio, StudioSelect } from "../StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
+import { Icon } from "src/components/Shared/Icon";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -37,8 +41,12 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const { configuration: stashConfig } = useConfigurationContext();
 
   const isNew = studio.id === undefined;
+
+  // Editing state
+  const [isStashIDSearchOpen, setIsStashIDSearchOpen] = useState(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -143,6 +151,14 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
+    );
+  }
+
   const {
     renderField,
     renderInputField,
@@ -173,6 +189,20 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   return (
     <>
+      {isStashIDSearchOpen && (
+        <StashBoxIDSearchModal
+          entityType="studio"
+          stashBoxes={stashConfig?.general.stashBoxes ?? []}
+          excludedStashBoxEndpoints={formik.values.stash_ids.map(
+            (s) => s.endpoint
+          )}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
+        />
+      )}
+
       <Prompt
         when={formik.dirty}
         message={(location, action) => {
@@ -191,7 +221,21 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}
         {renderTagsField()}
-        {renderStashIDsField("stash_ids", "studios")}
+        {renderStashIDsField(
+          "stash_ids",
+          "studios",
+          "stash_ids",
+          undefined,
+          <Button
+            variant="success"
+            className="mr-2 py-0"
+            onClick={() => setIsStashIDSearchOpen(true)}
+            disabled={!stashConfig?.general.stashBoxes?.length}
+            title={intl.formatMessage({ id: "actions.add_stash_id" })}
+          >
+            <Icon icon={faPlus} />
+          </Button>
+        )}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}
       </Form>

@@ -521,6 +521,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		r.setConfigBool(config.DisableDropdownCreateStudio, ddc.Studio)
 		r.setConfigBool(config.DisableDropdownCreateTag, ddc.Tag)
 		r.setConfigBool(config.DisableDropdownCreateMovie, ddc.Movie)
+		r.setConfigBool(config.DisableDropdownCreateGallery, ddc.Gallery)
 	}
 
 	r.setConfigString(config.HandyKey, input.HandyKey)

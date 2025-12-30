@@ -151,7 +151,9 @@
         "show_results": "Zobrazit výsledky",
         "show_count_results": "Zobrazit {count} výsledků",
         "load": "Načíst",
-        "load_filter": "Načíst filtr"
+        "load_filter": "Načíst filtr",
+        "add_stash_id": "Přidat Stash ID",
+        "create_new": "Vytvořit nový"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -186,13 +188,15 @@
             "set_cover_label": "Nastavit obrázek obalu scény",
             "set_tag_desc": "Přidat tagy ke scéně, buď přepsáním nebo sloučením existujících tagů na scéně.",
             "set_tag_label": "Nastavit tagy",
-            "show_male_desc": "Zapnout / vypnout, zda mají být mužští umělci tagováni.",
-            "show_male_label": "Ukázat mužské účinkující",
             "source": "Zdroj",
             "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
             "mark_organized_label": "Označit jako Uspořádané při uložení",
             "errors": {
                 "blacklist_duplicate": "Duplikovat položku blacklistu"
+            },
+            "performer_genders": {
+                "heading": "Pohlaví účinkujicích",
+                "description": "Účinkující s těmito pohlavími budou zobrazeni při tagování scén."
             }
         },
         "noun_query": "Dotaz",
@@ -214,7 +218,10 @@
         "verb_scrape_all": "Scrape vše",
         "verb_submit_fp": "Publikovat {fpCount, plural, one{# otisk} other{# otisky}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} neidentifikované scény"
+        "verb_toggle_unmatched": "{toggle} neidentifikované scény",
+        "verb_add_as_alias": "Přidat scrapované jméno jako alias",
+        "verb_link_existing": "Odkaz na existujicí",
+        "verb_match_tag": "Odpovídajicí tag"
     },
     "config": {
         "about": {
@@ -411,6 +418,10 @@
             "blobs_path": {
                 "description": "Kde v souborovém systému ukládat binární data. Použitelné pouze při použití uložiště typu souborového systému blobů. UPOZORNĚNÍ: převrácení těchto údajů vyžaduje ruční přesun existujících dat.",
                 "heading": "Cesta binárních dat souborového systému"
+            },
+            "delete_trash_path": {
+                "description": "Cesta, kam budou smazané soubory přesunuty, místo aby byly trvale smazány. Pro trvalé smazání souborů ponechte pole prázdné.",
+                "heading": "Cesta koše"
             }
         },
         "library": {
@@ -900,7 +911,8 @@
                 "pan_y": "Náklon Y",
                 "zoom": "Zvětšit"
             },
-            "page_header": "Stránka {page} / {total}"
+            "page_header": "Stránka {page} / {total}",
+            "disable_animation": "Zakázat animaci přechodu mezi obrázky"
         },
         "merge_tags": {
             "destination": "Cíl",
@@ -976,7 +988,12 @@
         "performers_found": "{count} nalezených účinkujících",
         "overwrite_filter_warning": "Uložený filtr \"{entityName}\" bude přepsán.",
         "set_default_filter_confirm": "Chcete doopravdy nastavit tento filtr jako výchozí?",
-        "clear_o_history_confirm_sfw": "Opravdu chcete vymazat historii lajků?"
+        "clear_o_history_confirm_sfw": "Opravdu chcete vymazat historii lajků?",
+        "delete_alert_to_trash": "Následující {count, plural, one {{singularEntity}} other {{pluralEntity}}} budou přesunuty do koše:",
+        "stashid_exists_warning": "Stávající stash id pro tento stash-box bude nahrazeno.",
+        "studios_found": "{count} studií nalezeno",
+        "tags_found": "{count} tagů nalezeno",
+        "scrape_results_missing": "Chybějící"
     },
     "chapters": "Kapitoly",
     "circumcised": "Obřezán",
@@ -1021,7 +1038,7 @@
         "required": "${path} je vyžadované pole",
         "unique": "${path} musí být jedinečná",
         "blank": "${path} nesmí být prázdná",
-        "date_invalid_form": "${path} musí být ve formátu YYYY-MM-DD (Rok-Měsíc-Den)",
+        "date_invalid_form": "${path} musí být ve formátu YYYY, YYYY-MM, nebo YYYY-MM-DD (Rok-Měsíc-Den)",
         "end_time_before_start_time": "Čas ukončení musí být větší nebo roven času zahájení"
     },
     "type": "Typ",
@@ -1152,13 +1169,13 @@
         "failed_to_save_performer": "Nepodařilo se uložit umělce „{performer}“",
         "network_error": "Chyba sítě",
         "performer_already_tagged": "Účinkujicí již byl označen",
-        "performer_names_separated_by_comma": "Jména účinkujících oddělená čárkou",
         "refreshing_will_update_the_data": "Obnovení aktualizuje data všech označených účinkujících z instance stash-boxu.",
         "status_tagging_job_queued": "Stav: Úloha tagování ve frontě",
         "name_already_exists": "Název již existuje",
         "update_performers": "Aktualizovat Účinkující",
         "updating_untagged_performers_description": "Aktualizování nepřiřazených účinkujících se pokusí nalézt všechny účinkující, kteří postrádají StashID, a aktualizovat metadata.",
-        "update_performer": "Aktualizovat Účinkující"
+        "update_performer": "Aktualizovat Účinkující",
+        "performer_names_or_stashids_separated_by_comma": "Jména účinkujících nebo Stash ID oddělené čárkou"
     },
     "setup": {
         "paths": {
@@ -1479,11 +1496,11 @@
         "status_tagging_job_queued": "Status: Úloha označování zařazena do fronty",
         "status_tagging_studios": "Status: Označování studií",
         "studio_already_tagged": "Studio již označeno",
-        "studio_names_separated_by_comma": "Názvy studií oddělené čárkou",
         "tag_status": "Status označení",
         "network_error": "Chyba sítě",
         "studio_selection": "Výběr studia",
-        "studio_successfully_tagged": "Studio úspěšně označeno"
+        "studio_successfully_tagged": "Studio úspěšně označeno",
+        "studio_names_or_stashids_separated_by_comma": "Jména studií nebo Stash ID odělená čárkou"
     },
     "synopsis": "Souhrn",
     "stashbox": {
@@ -1569,5 +1586,11 @@
     "o_count_sfw": "Lajky",
     "o_history_sfw": "Historie lajků",
     "odate_recorded_no_sfw": "Žádný datum lajku nebyl zaznamenán",
-    "scenes_duration": "Trvání scény"
+    "scenes_duration": "Trvání scény",
+    "stashbox_search": {
+        "header": "Hledej {entityType} ve StashBoxu",
+        "no_results": "Žádné výsledky nenalezeny.",
+        "placeholder_name_or_id": "{entityType} jméno nebo StashID...",
+        "select_stashbox": "Vybrat StashBox..."
+    }
 }

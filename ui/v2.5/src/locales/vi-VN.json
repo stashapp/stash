@@ -202,8 +202,6 @@
                 "blacklist_duplicate": "Các mục bị trùng lặp trong danh sách đen"
             },
             "query_mode_dir": "Danh sách",
-            "show_male_desc": "Chọn khi thẻ của nam diễn viên có sẵn để gán.",
-            "show_male_label": "Xem danh sách diễn viên nam",
             "query_mode_metadata_desc": "Chỉ dùng dữ liệu mô tả",
             "query_mode_metadata": "Thông tin mô tả"
         },

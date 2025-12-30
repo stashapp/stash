@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedImagesRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
   ScrapedStringListRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { Form } from "react-bootstrap";
 import {
   genderStrings,
@@ -66,12 +66,10 @@ export function renderScrapedGenderRow(
       field="gender"
       title={title}
       result={result}
-      renderOriginalField={() => renderScrapedGender(result)}
-      renderNewField={() =>
-        renderScrapedGender(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderScrapedGender(result)}
+      newField={renderScrapedGender(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
     />
   );
@@ -116,12 +114,10 @@ export function renderScrapedCircumcisedRow(
       title={title}
       field="circumcised"
       result={result}
-      renderOriginalField={() => renderScrapedCircumcised(result)}
-      renderNewField={() =>
-        renderScrapedCircumcised(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
+      originalField={renderScrapedCircumcised(result)}
+      newField={renderScrapedCircumcised(result, true, (value) =>
+        onChange(result.cloneWithValue(value))
+      )}
       onChange={onChange}
     />
   );
@@ -318,9 +314,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     props.performerTags,
-    props.scraped.tags
+    props.scraped.tags,
+    endpoint
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
@@ -546,16 +543,21 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     );
   }
 
+  if (linkDialog) {
+    return linkDialog;
+  }
+
   return (
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "performer" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };

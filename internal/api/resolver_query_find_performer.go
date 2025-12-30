@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *models.Performer, err error) {
@@ -26,7 +25,7 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 
 func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType, performerIDs []int, ids []string) (ret *FindPerformersResultType, err error) {
 	if len(ids) > 0 {
-		performerIDs, err = stringslice.StringSliceToIntSlice(ids)
+		performerIDs, err = handleIDList(ids, "ids")
 		if err != nil {
 			return nil, err
 		}

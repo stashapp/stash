@@ -201,6 +201,15 @@ export const useFindImages = (filter?: ListFilterModel) =>
     },
   });
 
+export const useFindImagesMetadata = (filter?: ListFilterModel) =>
+  GQL.useFindImagesMetadataQuery({
+    skip: filter === undefined,
+    variables: {
+      filter: filter?.makeFindFilter(),
+      image_filter: filter?.makeFilter(),
+    },
+  });
+
 export const queryFindImages = (filter: ListFilterModel) =>
   client.query<GQL.FindImagesQuery>({
     query: GQL.FindImagesDocument,
@@ -434,9 +443,29 @@ export const useFindTags = (filter?: ListFilterModel) =>
     },
   });
 
+// Optimized query for tag list page - excludes expensive recursive *_count_all fields
+export const useFindTagsForList = (filter?: ListFilterModel) =>
+  GQL.useFindTagsForListQuery({
+    skip: filter === undefined,
+    variables: {
+      filter: filter?.makeFindFilter(),
+      tag_filter: filter?.makeFilter(),
+    },
+  });
+
 export const queryFindTags = (filter: ListFilterModel) =>
   client.query<GQL.FindTagsQuery>({
     query: GQL.FindTagsDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
+    },
+  });
+
+// Optimized query for tag list page
+export const queryFindTagsForList = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsForListQuery>({
+    query: GQL.FindTagsForListDocument,
     variables: {
       filter: filter.makeFindFilter(),
       tag_filter: filter.makeFilter(),
@@ -2380,6 +2409,23 @@ export const stashBoxSceneQuery = (query: string, stashBoxEndpoint: string) =>
       fetchPolicy: "network-only",
     }
   );
+
+export const stashBoxTagQuery = (
+  query: string | null,
+  stashBoxEndpoint: string
+) =>
+  client.query<GQL.ScrapeSingleTagQuery, GQL.ScrapeSingleTagQueryVariables>({
+    query: GQL.ScrapeSingleTagDocument,
+    variables: {
+      source: {
+        stash_box_endpoint: stashBoxEndpoint,
+      },
+      input: {
+        query: query,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
 
 export const mutateStashBoxBatchPerformerTag = (
   input: GQL.StashBoxBatchTagInput

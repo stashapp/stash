@@ -3,7 +3,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
@@ -11,11 +12,14 @@ import Mousetrap from "mousetrap";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
+import { useConfigurationContext } from "src/hooks/Config";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { Tag, TagSelect } from "../TagSelect";
+import { Icon } from "src/components/Shared/Icon";
+import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
@@ -36,8 +40,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const { configuration: stashConfig } = useConfigurationContext();
 
   const isNew = tag.id === undefined;
+
+  // Editing state
+  const [isStashIDSearchOpen, setIsStashIDSearchOpen] = useState(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -143,6 +151,15 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  function onStashIDSelected(item?: GQL.StashIdInput) {
+    if (!item) return;
+    const allowMultiple = true;
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item, allowMultiple)
+    );
+  }
+
   const {
     renderField,
     renderInputField,
@@ -186,54 +203,84 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   // TODO: CSS class
   return (
-    <div>
-      {isNew && (
-        <h2>
-          <FormattedMessage
-            id="actions.add_entity"
-            values={{ entityType: intl.formatMessage({ id: "tag" }) }}
-          />
-        </h2>
+    <>
+      {/* allow many stash-ids from the same stash box */}
+      {isStashIDSearchOpen && (
+        <StashBoxIDSearchModal
+          entityType="tag"
+          stashBoxes={stashConfig?.general.stashBoxes ?? []}
+          onSelectItem={(item) => {
+            onStashIDSelected(item);
+            setIsStashIDSearchOpen(false);
+          }}
+        />
       )}
 
-      <Prompt
-        when={formik.dirty}
-        message={(location, action) => {
-          // Check if it's a redirect after tag creation
-          if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
-            return true;
+      <div>
+        {isNew && (
+          <h2>
+            <FormattedMessage
+              id="actions.add_entity"
+              values={{ entityType: intl.formatMessage({ id: "tag" }) }}
+            />
+          </h2>
+        )}
+
+        <Prompt
+          when={formik.dirty}
+          message={(location, action) => {
+            // Check if it's a redirect after tag creation
+            if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
+              return true;
+            }
+
+            return handleUnsavedChanges(intl, "tags", tag.id)(location);
+          }}
+        />
+
+        <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
+          {renderInputField("name")}
+          {renderInputField("sort_name", "text")}
+          {renderStringListField("aliases", "aliases", { orderable: false })}
+          {renderInputField("description", "textarea")}
+          {renderParentTagsField()}
+          {renderSubTagsField()}
+          {renderStashIDsField(
+            "stash_ids",
+            "tags",
+            "stash_ids",
+            undefined,
+            <Button
+              variant="success"
+              className="mr-2 py-0"
+              onClick={() => setIsStashIDSearchOpen(true)}
+              disabled={!stashConfig?.general.stashBoxes?.length}
+              title={intl.formatMessage({ id: "actions.add_stash_id" })}
+            >
+              <Icon icon={faPlus} />
+            </Button>
+          )}
+          <hr />
+          {renderInputField("ignore_auto_tag", "checkbox")}
+        </Form>
+
+        <DetailsEditNavbar
+          objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
+          classNames="col-xl-9 mt-3"
+          isNew={isNew}
+          isEditing
+          onToggleEdit={onCancel}
+          onSave={formik.handleSubmit}
+          saveDisabled={
+            (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
           }
-
-          return handleUnsavedChanges(intl, "tags", tag.id)(location);
-        }}
-      />
-
-      <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
-        {renderInputField("name")}
-        {renderInputField("sort_name", "text")}
-        {renderStringListField("aliases")}
-        {renderInputField("description", "textarea")}
-        {renderParentTagsField()}
-        {renderSubTagsField()}
-        {renderStashIDsField("stash_ids", "tags")}
-        <hr />
-        {renderInputField("ignore_auto_tag", "checkbox")}
-      </Form>
-
-      <DetailsEditNavbar
-        objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
-        classNames="col-xl-9 mt-3"
-        isNew={isNew}
-        isEditing
-        onToggleEdit={onCancel}
-        onSave={formik.handleSubmit}
-        saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
-        onImageChange={onImageChange}
-        onImageChangeURL={onImageLoad}
-        onClearImage={() => onImageLoad(null)}
-        onDelete={onDelete}
-        acceptSVG
-      />
-    </div>
+          onImageChange={onImageChange}
+          onImageChangeURL={onImageLoad}
+          onClearImage={() => onImageLoad(null)}
+          onDelete={onDelete}
+          acceptSVG
+        />
+      </div>
+    </>
   );
 };

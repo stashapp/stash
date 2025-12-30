@@ -177,8 +177,6 @@
             "set_cover_label": "Imposta la copertina della scena",
             "set_tag_desc": "Attacca tag alla scena, sovrascrivendoli o unendoli a quelli esistenti sulla scena.",
             "set_tag_label": "Imposta i tags",
-            "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori maschi.",
-            "show_male_label": "Mostra attori maschi",
             "source": "Sorgente",
             "mark_organized_desc": "Contrassegna immediatamente la scena come \"ordinata\" quando si clicca sul pulsante Save.",
             "mark_organized_label": "Contrassegna come \"ordinato\" al salvataggio"
@@ -977,7 +975,6 @@
         "no_results_found": "Nessun risultato trovato.",
         "number_of_performers_will_be_processed": "{performer_count} attori saranno processati",
         "performer_already_tagged": "Attore/Attrice già taggato/a",
-        "performer_names_separated_by_comma": "Nome attore/attrice separato da virgola",
         "performer_selection": "Selezione attore/attrice",
         "performer_successfully_tagged": "Attore/Attrice taggato/a con successo:",
         "query_all_performers_in_the_database": "Tutti gli attori nel database",

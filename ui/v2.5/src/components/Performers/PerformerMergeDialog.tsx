@@ -17,13 +17,13 @@ import {
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
+import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import {
-  ScrapeDialog,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "../Shared/ScrapeDialog/ScrapeDialog";
+} from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ModalComponent } from "../Shared/Modal";
 import { sortStoredIdObjects } from "src/utils/data";
 import {
@@ -671,7 +671,6 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
       title={dialogTitle}
       existingLabel={destinationLabel}
       scrapedLabel={sourceLabel}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         if (!apply) {
           onClose();
@@ -679,7 +678,9 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           onClose(createValues());
         }
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
 

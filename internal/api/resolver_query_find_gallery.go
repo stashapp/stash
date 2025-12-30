@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindGallery(ctx context.Context, id string) (ret *models.Gallery, err error) {
@@ -25,7 +24,7 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (ret *models
 }
 
 func (r *queryResolver) FindGalleries(ctx context.Context, galleryFilter *models.GalleryFilterType, filter *models.FindFilterType, ids []string) (ret *FindGalleriesResultType, err error) {
-	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
 	}

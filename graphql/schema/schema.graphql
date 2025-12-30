@@ -165,6 +165,12 @@ type Query {
     input: ScrapeSingleStudioInput!
   ): [ScrapedStudio!]!
 
+  "Scrape for a single tag"
+  scrapeSingleTag(
+    source: ScraperSourceInput!
+    input: ScrapeSingleTagInput!
+  ): [ScrapedTag!]!
+
   "Scrape for a single performer"
   scrapeSinglePerformer(
     source: ScraperSourceInput!

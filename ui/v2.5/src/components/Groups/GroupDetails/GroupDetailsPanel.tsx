@@ -65,7 +65,7 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
       />
       <DetailItem
         id="date"
-        value={group.date ? TextUtils.formatDate(intl, group.date) : ""}
+        value={group.date ? TextUtils.formatFuzzyDate(intl, group.date) : ""}
         fullWidth={fullWidth}
       />
       <DetailItem

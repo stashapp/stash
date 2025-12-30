@@ -6,7 +6,7 @@ import {
   RouteComponentProps,
   Redirect,
 } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -44,6 +44,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -410,11 +411,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           <div className="gallery-subheader">
             {!!gallery.date && (
               <span className="date" data-value={gallery.date}>
-                <FormattedDate
-                  value={gallery.date}
-                  format="long"
-                  timeZone="utc"
-                />
+                <FormattedDate value={gallery.date} />
               </span>
             )}
           </div>

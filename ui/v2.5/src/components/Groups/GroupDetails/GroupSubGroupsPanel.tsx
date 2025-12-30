@@ -18,7 +18,10 @@ import {
   SearchTermInput,
 } from "src/components/List/ListFilter";
 import { useFilter } from "src/components/List/FilterProvider";
-import { IFilteredListToolbar } from "src/components/List/FilteredListToolbar";
+import {
+  IFilteredListToolbar,
+  IItemListOperation,
+} from "src/components/List/FilteredListToolbar";
 import {
   showWhenNoneSelected,
   showWhenSelected,
@@ -28,6 +31,7 @@ import { useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { useModal } from "src/hooks/modal";
 import { AddSubGroupsDialog } from "./AddGroupsDialog";
+import { PatchComponent } from "src/patch";
 
 const useContainingGroupFilterHook = (
   group: Pick<GQL.StudioDataFragment, "id" | "name">,
@@ -99,6 +103,7 @@ const Toolbar: React.FC<IFilteredListToolbar> = ({
 interface IGroupSubGroupsPanel {
   active: boolean;
   group: GQL.GroupDataFragment;
+  extraOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
 
 const defaultFilter = (() => {
@@ -113,92 +118,99 @@ const defaultFilter = (() => {
   return ret;
 })();
 
-export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
-  active,
-  group,
-}) => {
-  const intl = useIntl();
-  const Toast = useToast();
-  const { modal, showModal, closeModal } = useModal();
+export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
+  PatchComponent(
+    "GroupSubGroupsPanel",
+    ({ active, group, extraOperations = [] }) => {
+      const intl = useIntl();
+      const Toast = useToast();
+      const { modal, showModal, closeModal } = useModal();
 
-  const [reorderSubGroups] = useReorderSubGroupsMutation();
-  const mutateRemoveSubGroups = useRemoveSubGroups();
+      const [reorderSubGroups] = useReorderSubGroupsMutation();
+      const mutateRemoveSubGroups = useRemoveSubGroups();
 
-  const filterHook = useContainingGroupFilterHook(group);
+      const filterHook = useContainingGroupFilterHook(group);
 
-  async function removeSubGroups(
-    result: GQL.FindGroupsQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
-  ) {
-    try {
-      await mutateRemoveSubGroups(group.id, Array.from(selectedIds.values()));
+      async function removeSubGroups(
+        result: GQL.FindGroupsQueryResult,
+        filter: ListFilterModel,
+        selectedIds: Set<string>
+      ) {
+        try {
+          await mutateRemoveSubGroups(
+            group.id,
+            Array.from(selectedIds.values())
+          );
 
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.removed_entity" },
-          {
-            count: selectedIds.size,
-            singularEntity: intl.formatMessage({ id: "group" }),
-            pluralEntity: intl.formatMessage({ id: "groups" }),
-          }
-        )
-      );
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
+          Toast.success(
+            intl.formatMessage(
+              { id: "toast.removed_entity" },
+              {
+                count: selectedIds.size,
+                singularEntity: intl.formatMessage({ id: "group" }),
+                pluralEntity: intl.formatMessage({ id: "groups" }),
+              }
+            )
+          );
+        } catch (e) {
+          Toast.error(e);
+        }
+      }
 
-  async function onAddSubGroups() {
-    showModal(
-      <AddSubGroupsDialog containingGroup={group} onClose={closeModal} />
-    );
-  }
+      async function onAddSubGroups() {
+        showModal(
+          <AddSubGroupsDialog containingGroup={group} onClose={closeModal} />
+        );
+      }
 
-  const otherOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.add_sub_groups" }),
-      onClick: onAddSubGroups,
-      isDisplayed: showWhenNoneSelected,
-      postRefetch: true,
-      icon: faPlus,
-      buttonVariant: "secondary",
-    },
-    {
-      text: intl.formatMessage({ id: "actions.remove_from_containing_group" }),
-      onClick: removeSubGroups,
-      isDisplayed: showWhenSelected,
-      postRefetch: true,
-      icon: faMinus,
-      buttonVariant: "danger",
-    },
-  ];
-
-  function onMove(srcIds: string[], targetId: string, after: boolean) {
-    reorderSubGroups({
-      variables: {
-        input: {
-          group_id: group.id,
-          sub_group_ids: srcIds,
-          insert_at_id: targetId,
-          insert_after: after,
+      const otherOperations = [
+        ...extraOperations,
+        {
+          text: intl.formatMessage({ id: "actions.add_sub_groups" }),
+          onClick: onAddSubGroups,
+          isDisplayed: showWhenNoneSelected,
+          postRefetch: true,
+          icon: faPlus,
+          buttonVariant: "secondary",
         },
-      },
-    });
-  }
+        {
+          text: intl.formatMessage({
+            id: "actions.remove_from_containing_group",
+          }),
+          onClick: removeSubGroups,
+          isDisplayed: showWhenSelected,
+          postRefetch: true,
+          icon: faMinus,
+          buttonVariant: "danger",
+        },
+      ];
 
-  return (
-    <>
-      {modal}
-      <GroupList
-        defaultFilter={defaultFilter}
-        filterHook={filterHook}
-        alterQuery={active}
-        fromGroupId={group.id}
-        otherOperations={otherOperations}
-        onMove={onMove}
-        renderToolbar={(props) => <Toolbar {...props} />}
-      />
-    </>
+      function onMove(srcIds: string[], targetId: string, after: boolean) {
+        reorderSubGroups({
+          variables: {
+            input: {
+              group_id: group.id,
+              sub_group_ids: srcIds,
+              insert_at_id: targetId,
+              insert_after: after,
+            },
+          },
+        });
+      }
+
+      return (
+        <>
+          {modal}
+          <GroupList
+            defaultFilter={defaultFilter}
+            filterHook={filterHook}
+            alterQuery={active}
+            fromGroupId={group.id}
+            otherOperations={otherOperations}
+            onMove={onMove}
+            renderToolbar={(props) => <Toolbar {...props} />}
+          />
+        </>
+      );
+    }
   );
-};

@@ -21,6 +21,7 @@ import {
   IFilteredListToolbar,
   IItemListOperation,
 } from "../List/FilteredListToolbar";
+import { PatchComponent } from "src/patch";
 
 const GroupExportDialog: React.FC<{
   open?: boolean;
@@ -90,150 +91,153 @@ interface IGroupList extends IGroupListContext {
   otherOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
 
-export const GroupList: React.FC<IGroupList> = ({
-  filterHook,
-  alterQuery,
-  defaultFilter,
-  view,
-  fromGroupId,
-  onMove,
-  selectable,
-  renderToolbar,
-  otherOperations: providedOperations = [],
-}) => {
-  const intl = useIntl();
-  const history = useHistory();
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [isExportAll, setIsExportAll] = useState(false);
+export const GroupList: React.FC<IGroupList> = PatchComponent(
+  "GroupList",
+  ({
+    filterHook,
+    alterQuery,
+    defaultFilter,
+    view,
+    fromGroupId,
+    onMove,
+    selectable,
+    renderToolbar,
+    otherOperations: providedOperations = [],
+  }) => {
+    const intl = useIntl();
+    const history = useHistory();
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExportAll, setIsExportAll] = useState(false);
 
-  const otherOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.view_random" }),
-      onClick: viewRandom,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export" }),
-      onClick: onExport,
-      isDisplayed: showWhenSelected,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export_all" }),
-      onClick: onExportAll,
-    },
-    ...providedOperations,
-  ];
+    const otherOperations = [
+      {
+        text: intl.formatMessage({ id: "actions.view_random" }),
+        onClick: viewRandom,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: onExport,
+        isDisplayed: showWhenSelected,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: onExportAll,
+      },
+      ...providedOperations,
+    ];
 
-  function addKeybinds(
-    result: GQL.FindGroupsQueryResult,
-    filter: ListFilterModel
-  ) {
-    Mousetrap.bind("p r", () => {
-      viewRandom(result, filter);
-    });
+    function addKeybinds(
+      result: GQL.FindGroupsQueryResult,
+      filter: ListFilterModel
+    ) {
+      Mousetrap.bind("p r", () => {
+        viewRandom(result, filter);
+      });
 
-    return () => {
-      Mousetrap.unbind("p r");
-    };
-  }
+      return () => {
+        Mousetrap.unbind("p r");
+      };
+    }
 
-  async function viewRandom(
-    result: GQL.FindGroupsQueryResult,
-    filter: ListFilterModel
-  ) {
-    // query for a random image
-    if (result.data?.findGroups) {
-      const { count } = result.data.findGroups;
+    async function viewRandom(
+      result: GQL.FindGroupsQueryResult,
+      filter: ListFilterModel
+    ) {
+      // query for a random image
+      if (result.data?.findGroups) {
+        const { count } = result.data.findGroups;
 
-      const index = Math.floor(Math.random() * count);
-      const filterCopy = cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindGroups(filterCopy);
-      if (singleResult.data.findGroups.groups.length === 1) {
-        const { id } = singleResult.data.findGroups.groups[0];
-        // navigate to the group page
-        history.push(`/groups/${id}`);
+        const index = Math.floor(Math.random() * count);
+        const filterCopy = cloneDeep(filter);
+        filterCopy.itemsPerPage = 1;
+        filterCopy.currentPage = index + 1;
+        const singleResult = await queryFindGroups(filterCopy);
+        if (singleResult.data.findGroups.groups.length === 1) {
+          const { id } = singleResult.data.findGroups.groups[0];
+          // navigate to the group page
+          history.push(`/groups/${id}`);
+        }
       }
     }
-  }
 
-  async function onExport() {
-    setIsExportAll(false);
-    setIsExportDialogOpen(true);
-  }
+    async function onExport() {
+      setIsExportAll(false);
+      setIsExportDialogOpen(true);
+    }
 
-  async function onExportAll() {
-    setIsExportAll(true);
-    setIsExportDialogOpen(true);
-  }
+    async function onExportAll() {
+      setIsExportAll(true);
+      setIsExportDialogOpen(true);
+    }
 
-  function renderContent(
-    result: GQL.FindGroupsQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
-  ) {
-    return (
-      <>
-        <GroupExportDialog
-          open={isExportDialogOpen}
-          selectedIds={selectedIds}
-          isExportAll={isExportAll}
-          onClose={() => setIsExportDialogOpen(false)}
-        />
-        {filter.displayMode === DisplayMode.Grid && (
-          <GroupCardGrid
-            groups={result.data?.findGroups.groups ?? []}
-            zoomIndex={filter.zoomIndex}
+    function renderContent(
+      result: GQL.FindGroupsQueryResult,
+      filter: ListFilterModel,
+      selectedIds: Set<string>,
+      onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
+    ) {
+      return (
+        <>
+          <GroupExportDialog
+            open={isExportDialogOpen}
             selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-            fromGroupId={fromGroupId}
-            onMove={onMove}
+            isExportAll={isExportAll}
+            onClose={() => setIsExportDialogOpen(false)}
           />
-        )}
-      </>
-    );
-  }
+          {filter.displayMode === DisplayMode.Grid && (
+            <GroupCardGrid
+              groups={result.data?.findGroups.groups ?? []}
+              zoomIndex={filter.zoomIndex}
+              selectedIds={selectedIds}
+              onSelectChange={onSelectChange}
+              fromGroupId={fromGroupId}
+              onMove={onMove}
+            />
+          )}
+        </>
+      );
+    }
 
-  function renderEditDialog(
-    selectedGroups: GQL.GroupDataFragment[],
-    onClose: (applied: boolean) => void
-  ) {
-    return <EditGroupsDialog selected={selectedGroups} onClose={onClose} />;
-  }
+    function renderEditDialog(
+      selectedGroups: GQL.GroupDataFragment[],
+      onClose: (applied: boolean) => void
+    ) {
+      return <EditGroupsDialog selected={selectedGroups} onClose={onClose} />;
+    }
 
-  function renderDeleteDialog(
-    selectedGroups: GQL.SlimGroupDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) {
+    function renderDeleteDialog(
+      selectedGroups: GQL.SlimGroupDataFragment[],
+      onClose: (confirmed: boolean) => void
+    ) {
+      return (
+        <DeleteEntityDialog
+          selected={selectedGroups}
+          onClose={onClose}
+          singularEntity={intl.formatMessage({ id: "group" })}
+          pluralEntity={intl.formatMessage({ id: "groups" })}
+          destroyMutation={useGroupsDestroy}
+        />
+      );
+    }
+
     return (
-      <DeleteEntityDialog
-        selected={selectedGroups}
-        onClose={onClose}
-        singularEntity={intl.formatMessage({ id: "group" })}
-        pluralEntity={intl.formatMessage({ id: "groups" })}
-        destroyMutation={useGroupsDestroy}
-      />
+      <GroupListContext
+        alterQuery={alterQuery}
+        filterHook={filterHook}
+        view={view}
+        defaultFilter={defaultFilter}
+        selectable={selectable}
+      >
+        <ItemList
+          view={view}
+          otherOperations={otherOperations}
+          addKeybinds={addKeybinds}
+          renderContent={renderContent}
+          renderEditDialog={renderEditDialog}
+          renderDeleteDialog={renderDeleteDialog}
+          renderToolbar={renderToolbar}
+        />
+      </GroupListContext>
     );
   }
-
-  return (
-    <GroupListContext
-      alterQuery={alterQuery}
-      filterHook={filterHook}
-      view={view}
-      defaultFilter={defaultFilter}
-      selectable={selectable}
-    >
-      <ItemList
-        view={view}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
-        renderToolbar={renderToolbar}
-      />
-    </GroupListContext>
-  );
-};
+);

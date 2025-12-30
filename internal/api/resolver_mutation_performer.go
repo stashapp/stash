@@ -307,10 +307,7 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
-	updatedPerformer.CustomFields = input.CustomFields
-	// convert json.Numbers to int/float
-	updatedPerformer.CustomFields.Full = convertMapJSONNumbers(updatedPerformer.CustomFields.Full)
-	updatedPerformer.CustomFields.Partial = convertMapJSONNumbers(updatedPerformer.CustomFields.Partial)
+	updatedPerformer.CustomFields = handleUpdateCustomFields(input.CustomFields)
 
 	return &updatedPerformer, nil
 }
@@ -447,6 +444,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	if input.CustomFields != nil {
+		updatedPerformer.CustomFields = handleUpdateCustomFields(*input.CustomFields)
 	}
 
 	ret := []*models.Performer{}

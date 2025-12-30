@@ -76,12 +76,13 @@ ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
-	ID       int         `db:"id" goqu:"skipinsert"`
-	Title    zero.String `db:"title"`
-	Code     zero.String `db:"code"`
-	Details  zero.String `db:"details"`
-	Director zero.String `db:"director"`
-	Date     NullDate    `db:"date"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Title         zero.String `db:"title"`
+	Code          zero.String `db:"code"`
+	Details       zero.String `db:"details"`
+	Director      zero.String `db:"director"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
@@ -102,6 +103,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -127,7 +129,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Code:      r.Code.String,
 		Details:   r.Details.String,
 		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(),
+		Date:      r.Date.DatePtr(r.DatePrecision),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -159,7 +161,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
-	r.setNullDate("date", o.Date)
+	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -1157,10 +1159,12 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	addFileTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    scenesFilesTable,
 				onClause: "scenes_files.scene_id = scenes.id",
 			},
 			join{
+				sort:     true,
 				table:    fileTable,
 				onClause: "scenes_files.file_id = files.id",
 			},
@@ -1171,6 +1175,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    videoFileTable,
 				onClause: "video_files.file_id = scenes_files.file_id",
 			},
@@ -1180,6 +1185,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	addFolderTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "files.parent_folder_id = folders.id",
 			},
@@ -1189,10 +1195,10 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
-		query.join(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
+		query.joinSort(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, groupsScenesTable)
 	case "group_scene_number":
-		query.join(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
+		query.joinSort(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, "scene_group")
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
@@ -1210,6 +1216,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    fingerprintTable,
 				as:       "fingerprints_phash",
 				onClause: "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
@@ -1274,7 +1281,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			getSortDirection(direction),
 		)
 	case "studio":
-		query.join(studioTable, "", "scenes.studio_id = studios.id")
+		query.joinSort(studioTable, "", "scenes.studio_id = studios.id")
 		query.sortAndPagination += getSort("name", direction, studioTable)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")

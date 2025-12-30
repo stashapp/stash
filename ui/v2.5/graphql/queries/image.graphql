@@ -9,11 +9,24 @@ query FindImages(
     image_ids: $image_ids
   ) {
     count
-    megapixels
-    filesize
     images {
       ...SlimImageData
     }
+  }
+}
+
+query FindImagesMetadata(
+  $filter: FindFilterType
+  $image_filter: ImageFilterType
+  $image_ids: [Int!]
+) {
+  findImages(
+    filter: $filter
+    image_filter: $image_filter
+    image_ids: $image_ids
+  ) {
+    megapixels
+    filesize
   }
 }
 

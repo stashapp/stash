@@ -100,6 +100,57 @@ $sceneTabWidth: 450px;
     width: 1.6em;
   }
 
+  .vjs-autostart-button {
+    cursor: pointer;
+
+    &.vjs-icon-play-circle::before {
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      color: rgba(80, 80, 80, 0.9);
+      content: "\f101";
+      font-size: 1em;
+      line-height: 1;
+      margin-left: 1rem;
+      padding: 0.3em;
+      position: relative;
+      z-index: 2;
+    }
+
+    &.vjs-icon-cancel::before {
+      align-items: center;
+      background-color: rgba(80, 80, 80, 0.9);
+      border-radius: 50%;
+      color: #fff;
+      content: "\f103";
+      font-size: 1em;
+      line-height: 1;
+      margin-right: 1rem;
+      padding: 0.3em;
+      position: relative;
+      z-index: 2;
+    }
+
+    &.vjs-icon-play-circle::after,
+    &.vjs-icon-cancel::after {
+      background-color: rgb(255 255 255 / 70%);
+      border-radius: 8px;
+      content: "";
+      height: 2.5rem;
+      left: 50%;
+      opacity: 0.7;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(90deg);
+      width: 1rem;
+      z-index: 1;
+    }
+
+    &:hover {
+      text-shadow: 0 0 1em rgba(255, 255, 255, 0.75);
+    }
+  }
+
   .vjs-touch-overlay .vjs-play-control {
     z-index: 1;
   }
@@ -344,9 +395,16 @@ $sceneTabWidth: 450px;
       }
     }
   }
+  @media (max-width: 576px) {
+    .vjs-control-bar {
+      .vjs-autostart-button {
+        display: none;
+      }
+    }
+  }
 
   // make controls a little more compact on smaller screens
-  @media (max-width: 576px) {
+  @media (max-width: 768px) {
     .vjs-control-bar {
       .vjs-control {
         width: 2.5em;

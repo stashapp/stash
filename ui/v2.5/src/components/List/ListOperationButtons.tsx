@@ -16,12 +16,13 @@ export const OperationDropdown: React.FC<
   PropsWithChildren<{
     className?: string;
     menuPortalTarget?: HTMLElement;
+    menuClassName?: string;
   }>
-> = ({ className, menuPortalTarget, children }) => {
+> = ({ className, menuPortalTarget, menuClassName, children }) => {
   if (!children) return null;
 
   const menu = (
-    <Dropdown.Menu className="bg-secondary text-white">
+    <Dropdown.Menu className={cx("bg-secondary text-white", menuClassName)}>
       {children}
     </Dropdown.Menu>
   );

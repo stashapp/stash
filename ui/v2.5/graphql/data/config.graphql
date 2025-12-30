@@ -107,6 +107,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     tag
     studio
     movie
+    gallery
   }
   handyKey
   funscriptOffset

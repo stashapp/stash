@@ -17,6 +17,8 @@ type StashBoxGraphQLClient interface {
 	FindPerformerByID(ctx context.Context, id string, interceptors ...clientv2.RequestInterceptor) (*FindPerformerByID, error)
 	FindSceneByID(ctx context.Context, id string, interceptors ...clientv2.RequestInterceptor) (*FindSceneByID, error)
 	FindStudio(ctx context.Context, id *string, name *string, interceptors ...clientv2.RequestInterceptor) (*FindStudio, error)
+	FindTag(ctx context.Context, id *string, name *string, interceptors ...clientv2.RequestInterceptor) (*FindTag, error)
+	QueryTags(ctx context.Context, input TagQueryInput, interceptors ...clientv2.RequestInterceptor) (*QueryTags, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission, interceptors ...clientv2.RequestInterceptor) (*SubmitFingerprint, error)
 	Me(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*Me, error)
 	SubmitSceneDraft(ctx context.Context, input SceneDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitSceneDraft, error)
@@ -642,6 +644,24 @@ func (t *FindStudio_FindStudio_StudioFragment_Parent) GetName() string {
 	return t.Name
 }
 
+type QueryTags_QueryTags struct {
+	Count int            "json:\"count\" graphql:\"count\""
+	Tags  []*TagFragment "json:\"tags\" graphql:\"tags\""
+}
+
+func (t *QueryTags_QueryTags) GetCount() int {
+	if t == nil {
+		t = &QueryTags_QueryTags{}
+	}
+	return t.Count
+}
+func (t *QueryTags_QueryTags) GetTags() []*TagFragment {
+	if t == nil {
+		t = &QueryTags_QueryTags{}
+	}
+	return t.Tags
+}
+
 type Me_Me struct {
 	Name string "json:\"name\" graphql:\"name\""
 }
@@ -761,6 +781,28 @@ func (t *FindStudio) GetFindStudio() *StudioFragment {
 		t = &FindStudio{}
 	}
 	return t.FindStudio
+}
+
+type FindTag struct {
+	FindTag *TagFragment "json:\"findTag,omitempty\" graphql:\"findTag\""
+}
+
+func (t *FindTag) GetFindTag() *TagFragment {
+	if t == nil {
+		t = &FindTag{}
+	}
+	return t.FindTag
+}
+
+type QueryTags struct {
+	QueryTags QueryTags_QueryTags "json:\"queryTags\" graphql:\"queryTags\""
+}
+
+func (t *QueryTags) GetQueryTags() *QueryTags_QueryTags {
+	if t == nil {
+		t = &QueryTags{}
+	}
+	return &t.QueryTags
 }
 
 type SubmitFingerprint struct {
@@ -1695,6 +1737,66 @@ func (c *Client) FindStudio(ctx context.Context, id *string, name *string, inter
 	return &res, nil
 }
 
+const FindTagDocument = `query FindTag ($id: ID, $name: String) {
+	findTag(id: $id, name: $name) {
+		... TagFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+`
+
+func (c *Client) FindTag(ctx context.Context, id *string, name *string, interceptors ...clientv2.RequestInterceptor) (*FindTag, error) {
+	vars := map[string]any{
+		"id":   id,
+		"name": name,
+	}
+
+	var res FindTag
+	if err := c.Client.Post(ctx, "FindTag", FindTagDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const QueryTagsDocument = `query QueryTags ($input: TagQueryInput!) {
+	queryTags(input: $input) {
+		count
+		tags {
+			... TagFragment
+		}
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+`
+
+func (c *Client) QueryTags(ctx context.Context, input TagQueryInput, interceptors ...clientv2.RequestInterceptor) (*QueryTags, error) {
+	vars := map[string]any{
+		"input": input,
+	}
+
+	var res QueryTags
+	if err := c.Client.Post(ctx, "QueryTags", QueryTagsDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const SubmitFingerprintDocument = `mutation SubmitFingerprint ($input: FingerprintSubmission!) {
 	submitFingerprint(input: $input)
 }
@@ -1796,6 +1898,8 @@ var DocumentOperationNames = map[string]string{
 	FindPerformerByIDDocument:             "FindPerformerByID",
 	FindSceneByIDDocument:                 "FindSceneByID",
 	FindStudioDocument:                    "FindStudio",
+	FindTagDocument:                       "FindTag",
+	QueryTagsDocument:                     "QueryTags",
 	SubmitFingerprintDocument:             "SubmitFingerprint",
 	MeDocument:                            "Me",
 	SubmitSceneDraftDocument:              "SubmitSceneDraft",

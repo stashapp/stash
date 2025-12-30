@@ -149,7 +149,8 @@
         },
         "play": "再生",
         "show_results": "結果を表示",
-        "show_count_results": "{count}件の結果を表示"
+        "show_count_results": "{count}件の結果を表示",
+        "load": "読み込み"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -184,8 +185,6 @@
             "set_cover_label": "シーンのカバー画像を設定",
             "set_tag_desc": "シーン上の既存のタグを上書きまたはマージすることで、シーンにタグを付与します。",
             "set_tag_label": "タグを設定",
-            "show_male_desc": "男優をタグ付けできるかを切り替えます。",
-            "show_male_label": "男優を表示",
             "source": "ソース",
             "mark_organized_desc": "保存ボタンをクリック後に、すぐにシーンが「分類済み」になります。",
             "mark_organized_label": "分類済みにして保存",
@@ -1119,7 +1118,6 @@
         "no_results_found": "結果が見つかりませんでした。",
         "number_of_performers_will_be_processed": "{performer_count}人の出演者が処理されます",
         "performer_already_tagged": "出演者は既にタグ付けされています",
-        "performer_names_separated_by_comma": "出演者の名前はコンマで区切ってください",
         "performer_selection": "出演者の選択",
         "performer_successfully_tagged": "出演者のタグ付けに成功しました:",
         "query_all_performers_in_the_database": "データベース内の全出演者",
@@ -1331,5 +1329,13 @@
     },
     "distance": "距離",
     "age_on_date": "撮影時の年齢 {age}歳",
-    "containing_group": "含まれるグループ"
+    "containing_group": "含まれるグループ",
+    "penis_length": "ペニスの長さ",
+    "parent_studio": "親スタジオ",
+    "sort_name": "ソート用の名称",
+    "groups": "グループ",
+    "include_sub_groups": "サブグループを含める",
+    "sub_groups": "サブグループ",
+    "history": "履歴",
+    "group_scene_number": "シーン番号"
 }
