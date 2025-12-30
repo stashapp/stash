@@ -31,7 +31,12 @@ func newJsonScraper(scraper scraperTypeConfig, client *http.Client, config confi
 }
 
 func (s *jsonScraper) getJsonScraper() *mappedScraper {
-	return s.config.JsonScrapers[s.scraper.Scraper]
+	ret, ok := s.config.JsonScrapers[s.scraper.Scraper]
+	if !ok {
+		return nil
+	}
+
+	return &ret
 }
 
 func (s *jsonScraper) scrapeURL(ctx context.Context, url string) (string, *mappedScraper, error) {

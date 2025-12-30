@@ -35,7 +35,11 @@ func newXpathScraper(scraper scraperTypeConfig, client *http.Client, config conf
 }
 
 func (s *xpathScraper) getXpathScraper() *mappedScraper {
-	return s.config.XPathScrapers[s.scraper.Scraper]
+	ret, ok := s.config.XPathScrapers[s.scraper.Scraper]
+	if !ok {
+		return nil
+	}
+	return &ret
 }
 
 func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, *mappedScraper, error) {
