@@ -1896,6 +1896,10 @@ export const mutatePerformerMerge = (
         deleteObject(cache, obj, GQL.FindPerformerDocument);
       }
 
+      cache.evict({
+        id: cache.identify({ __typename: "Performer", id: destination }),
+      });
+
       evictTypeFields(cache, performerMutationImpactedTypeFields);
       evictQueries(cache, [
         ...performerMutationImpactedQueries,
