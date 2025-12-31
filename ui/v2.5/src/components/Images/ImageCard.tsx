@@ -30,17 +30,9 @@ interface IImageCardProps {
   onPreview?: (ev: MouseEvent) => void;
 }
 
-export const ImageCard: React.FC<IImageCardProps> = PatchComponent(
-  "ImageCard",
+const ImageCardPopovers = PatchComponent(
+  "ImageCard.Popovers",
   (props: IImageCardProps) => {
-    const file = useMemo(
-      () =>
-        props.image.visual_files.length > 0
-          ? props.image.visual_files[0]
-          : undefined,
-      [props.image]
-    );
-
     function maybeRenderTagPopoverButton() {
       if (props.image.tags.length <= 0) return;
 
@@ -112,28 +104,64 @@ export const ImageCard: React.FC<IImageCardProps> = PatchComponent(
       }
     }
 
-    function maybeRenderPopoverButtonGroup() {
-      if (
-        props.image.tags.length > 0 ||
-        props.image.performers.length > 0 ||
-        props.image.o_counter ||
-        props.image.galleries.length > 0 ||
-        props.image.organized
-      ) {
-        return (
-          <>
-            <hr />
-            <ButtonGroup className="card-popovers">
-              {maybeRenderTagPopoverButton()}
-              {maybeRenderPerformerPopoverButton()}
-              {maybeRenderOCounter()}
-              {maybeRenderGallery()}
-              {maybeRenderOrganized()}
-            </ButtonGroup>
-          </>
-        );
-      }
+    if (
+      props.image.tags.length > 0 ||
+      props.image.performers.length > 0 ||
+      props.image.o_counter ||
+      props.image.galleries.length > 0 ||
+      props.image.organized
+    ) {
+      return (
+        <>
+          <hr />
+          <ButtonGroup className="card-popovers">
+            {maybeRenderTagPopoverButton()}
+            {maybeRenderPerformerPopoverButton()}
+            {maybeRenderOCounter()}
+            {maybeRenderGallery()}
+            {maybeRenderOrganized()}
+          </ButtonGroup>
+        </>
+      );
     }
+
+    return null;
+  }
+);
+
+const ImageCardDetails = PatchComponent(
+  "ImageCard.Details",
+  (props: IImageCardProps) => {
+    return (
+      <div className="image-card__details">
+        <span className="image-card__date">{props.image.date}</span>
+        <TruncatedText
+          className="image-card__description"
+          text={props.image.details}
+          lineCount={3}
+        />
+      </div>
+    );
+  }
+);
+
+const ImageCardOverlays = PatchComponent(
+  "ImageCard.Overlays",
+  (props: IImageCardProps) => {
+    return <StudioOverlay studio={props.image.studio} />;
+  }
+);
+
+const ImageCardImage = PatchComponent(
+  "ImageCard.Image",
+  (props: IImageCardProps) => {
+    const file = useMemo(
+      () =>
+        props.image.visual_files.length > 0
+          ? props.image.visual_files[0]
+          : undefined,
+      [props.image]
+    );
 
     function isPortrait() {
       const width = file?.width ? file.width : 0;
@@ -149,48 +177,44 @@ export const ImageCard: React.FC<IImageCardProps> = PatchComponent(
     const ImagePreview = video ? "video" : "img";
 
     return (
+      <>
+        <div className={cx("image-card-preview", { portrait: isPortrait() })}>
+          <ImagePreview
+            loop={video}
+            autoPlay={video}
+            playsInline={video}
+            className="image-card-preview-image"
+            alt={props.image.title ?? ""}
+            src={source}
+          />
+          {props.onPreview ? (
+            <div className="preview-button">
+              <Button onClick={props.onPreview}>
+                <Icon icon={faSearch} />
+              </Button>
+            </div>
+          ) : undefined}
+        </div>
+        <RatingBanner rating={props.image.rating100} />
+      </>
+    );
+  }
+);
+
+export const ImageCard: React.FC<IImageCardProps> = PatchComponent(
+  "ImageCard",
+  (props: IImageCardProps) => {
+    return (
       <GridCard
         className={`image-card zoom-${props.zoomIndex}`}
         url={`/images/${props.image.id}`}
         width={props.cardWidth}
         title={imageTitle(props.image)}
         linkClassName="image-card-link"
-        image={
-          <>
-            <div
-              className={cx("image-card-preview", { portrait: isPortrait() })}
-            >
-              <ImagePreview
-                loop={video}
-                autoPlay={video}
-                playsInline={video}
-                className="image-card-preview-image"
-                alt={props.image.title ?? ""}
-                src={source}
-              />
-              {props.onPreview ? (
-                <div className="preview-button">
-                  <Button onClick={props.onPreview}>
-                    <Icon icon={faSearch} />
-                  </Button>
-                </div>
-              ) : undefined}
-            </div>
-            <RatingBanner rating={props.image.rating100} />
-          </>
-        }
-        details={
-          <div className="image-card__details">
-            <span className="image-card__date">{props.image.date}</span>
-            <TruncatedText
-              className="image-card__description"
-              text={props.image.details}
-              lineCount={3}
-            />
-          </div>
-        }
-        overlays={<StudioOverlay studio={props.image.studio} />}
-        popovers={maybeRenderPopoverButtonGroup()}
+        image={<ImageCardImage {...props} />}
+        details={<ImageCardDetails {...props} />}
+        overlays={<ImageCardOverlays {...props} />}
+        popovers={<ImageCardPopovers {...props} />}
         selected={props.selected}
         selecting={props.selecting}
         onSelectedChanged={props.onSelectedChanged}
