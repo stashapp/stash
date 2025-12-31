@@ -355,10 +355,12 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     return (
       <SceneMergeModal
         show={isMerging}
-        onClose={(mergedID) => {
+        onClose={(mergedId) => {
           setIsMerging(false);
-          if (mergedID) {
-            history.replace(`/scenes/${mergedID}`);
+          if (mergedId !== undefined && mergedId !== scene.id) {
+            // By default, the merge destination is the current scene, but
+            // the user can change it, in which case we need to redirect.
+            history.replace(`/scenes/${mergedId}`);
           }
         }}
         scenes={[{ id: scene.id, title: objectTitle(scene) }]}

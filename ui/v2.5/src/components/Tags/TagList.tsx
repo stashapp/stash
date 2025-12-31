@@ -194,10 +194,10 @@ export const TagList: React.FC<ITagList> = PatchComponent(
           return (
             <TagMergeModal
               tags={mergeTags}
-              onClose={(mergedID?: string) => {
+              onClose={(mergedId?: string) => {
                 setMergeTags(undefined);
-                if (mergedID) {
-                  history.push(`/tags/${mergedID}`);
+                if (mergedId) {
+                  history.push(`/tags/${mergedId}`);
                 }
               }}
               show

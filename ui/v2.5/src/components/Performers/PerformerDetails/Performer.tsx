@@ -306,7 +306,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
             if (mergedId !== undefined && mergedId !== performer.id) {
               // By default, the merge destination is the current performer, but
               // the user can change it, in which case we need to redirect.
-              history.push(`/performers/${mergedId}`);
+              history.replace(`/performers/${mergedId}`);
             }
           }}
           performers={[performer]}
