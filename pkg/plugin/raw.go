@@ -76,6 +76,34 @@ func (t *rawPluginTask) Start() error {
 		if err != nil {
 			logger.Warnf("error marshalling raw command input")
 		}
+
+		// Defensive: ensure no invalid JSON escape sequences reach the plugin
+		// Go's json.Marshal should already produce valid JSON, but this adds a safety check
+		inStr := string(inBytes)
+		fixed := []rune{}
+		for i, ch := range inStr {
+			if ch == '\\' && i+1 < len(inStr) {
+				nextCh := rune(inStr[i+1])
+				// Valid JSON escape chars: " \ / b f n r t u
+				validEscape := false
+				for _, validCh := range "\"\\\/bfnrtu" {
+					if nextCh == validCh {
+						validEscape = true
+						break
+					}
+				}
+				if validEscape {
+					fixed = append(fixed, ch)
+				} else {
+					// Escape the backslash
+					fixed = append(fixed, '\\', ch)
+				}
+			} else {
+				fixed = append(fixed, ch)
+			}
+		}
+		inBytes = []byte(string(fixed))
+
 		if k, err := stdin.Write(inBytes); err != nil {
 			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
 		}
@@ -132,10 +160,48 @@ func (t *rawPluginTask) getOutput(output string) common.PluginOutput {
 	decodeErr := json.Unmarshal([]byte(output), &ret)
 
 	if decodeErr != nil {
+		// Attempt to fix common invalid backslash escapes in JSON output
+		fixed := fixInvalidJSONBackslashEscapes(output)
+		tryRet := common.PluginOutput{}
+		if err := json.Unmarshal([]byte(fixed), &tryRet); err == nil {
+			return tryRet
+		}
+
 		ret.Output = &output
 	}
 
 	return ret
+}
+
+// fixInvalidJSONBackslashEscapes doubles backslashes that are not part of a
+// valid JSON escape sequence so that the JSON decoder can parse outputs
+// which contain unescaped backslashes (e.g., Windows paths).
+func fixInvalidJSONBackslashEscapes(raw string) string {
+	var b strings.Builder
+	i := 0
+	for i < len(raw) {
+		if raw[i] == '\\' {
+			if i+1 >= len(raw) {
+				b.WriteString("\\\\")
+				i++
+				continue
+			}
+			next := raw[i+1]
+			switch next {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u':
+				b.WriteByte('\\')
+				b.WriteByte(next)
+			default:
+				b.WriteString("\\\\")
+				b.WriteByte(next)
+			}
+			i += 2
+		} else {
+			b.WriteByte(raw[i])
+			i++
+		}
+	}
+	return b.String()
 }
 
 func (t *rawPluginTask) Wait() {
