@@ -18,6 +18,37 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+// fixInvalidJSONBackslashEscapes doubles backslashes that are not part of a
+// valid JSON escape sequence so that the JSON decoder can parse outputs
+// which contain unescaped backslashes (e.g., Windows paths).
+func fixInvalidJSONBackslashEscapes(raw string) string {
+	var b strings.Builder
+	i := 0
+	for i < len(raw) {
+		if raw[i] == '\\' {
+			if i+1 >= len(raw) {
+				b.WriteString("\\\\")
+				i++
+				continue
+			}
+			next := raw[i+1]
+			switch next {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u':
+				b.WriteByte('\\')
+				b.WriteByte(next)
+			default:
+				b.WriteString("\\\\")
+				b.WriteByte(next)
+			}
+			i += 2
+		} else {
+			b.WriteByte(raw[i])
+			i++
+		}
+	}
+	return b.String()
+}
+
 const minimumFFProbeVersion = 5
 
 func ValidateFFProbe(ffprobePath string) error {
@@ -239,7 +270,11 @@ func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 
 	probeJSON := &FFProbeJSON{}
 	if err := json.Unmarshal(out, probeJSON); err != nil {
-		return nil, fmt.Errorf("error unmarshalling video data for <%s>: %s", videoPath, err.Error())
+		// Attempt to fix common invalid backslash escapes and retry
+		fixed := fixInvalidJSONBackslashEscapes(string(out))
+		if err2 := json.Unmarshal([]byte(fixed), probeJSON); err2 != nil {
+			return nil, fmt.Errorf("error unmarshalling video data for <%s>: %s", videoPath, err.Error())
+		}
 	}
 
 	return parse(videoPath, probeJSON)
@@ -257,7 +292,11 @@ func (f *FFProbe) GetReadFrameCount(path string) (int64, error) {
 
 	probeJSON := &FFProbeJSON{}
 	if err := json.Unmarshal(out, probeJSON); err != nil {
-		return 0, fmt.Errorf("error unmarshalling video data for <%s>: %s", path, err.Error())
+		// Attempt to fix common invalid backslash escapes and retry
+		fixed := fixInvalidJSONBackslashEscapes(string(out))
+		if err2 := json.Unmarshal([]byte(fixed), probeJSON); err2 != nil {
+			return 0, fmt.Errorf("error unmarshalling video data for <%s>: %s", path, err.Error())
+		}
 	}
 
 	fc, err := parse(path, probeJSON)

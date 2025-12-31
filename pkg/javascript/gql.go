@@ -75,7 +75,11 @@ func (g *GQL) gqlRequestFunc(vm *VM) func(query string, variables map[string]int
 		// convert to JSON
 		var obj map[string]interface{}
 		if err = json.Unmarshal([]byte(output), &obj); err != nil {
-			vm.Throw(fmt.Errorf("could not unmarshal object %s: %s", output, err.Error()))
+			// Attempt to fix common invalid backslash escapes and retry
+			fixed := fixInvalidJSONBackslashEscapes(output)
+			if err2 := json.Unmarshal([]byte(fixed), &obj); err2 != nil {
+				vm.Throw(fmt.Errorf("could not unmarshal object %s: %s", output, err.Error()))
+			}
 		}
 
 		retErr, hasErr := obj["errors"]
@@ -89,6 +93,37 @@ func (g *GQL) gqlRequestFunc(vm *VM) func(query string, variables map[string]int
 
 		return v, nil
 	}
+}
+
+// fixInvalidJSONBackslashEscapes doubles backslashes that are not part of a
+// valid JSON escape sequence so that the JSON decoder can parse outputs
+// which contain unescaped backslashes (e.g., Windows paths).
+func fixInvalidJSONBackslashEscapes(raw string) string {
+	var b strings.Builder
+	i := 0
+	for i < len(raw) {
+		if raw[i] == '\\' {
+			if i+1 >= len(raw) {
+				b.WriteString("\\\\")
+				i++
+				continue
+			}
+			next := raw[i+1]
+			switch next {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u':
+				b.WriteByte('\\')
+				b.WriteByte(next)
+			default:
+				b.WriteString("\\\\")
+				b.WriteByte(next)
+			}
+			i += 2
+		} else {
+			b.WriteByte(raw[i])
+			i++
+		}
+	}
+	return b.String()
 }
 
 func (g *GQL) AddToVM(globalName string, vm *VM) error {
