@@ -23,6 +23,8 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { TagMergeModal } from "./TagMergeDialog";
+import { Tag } from "./TagSelect";
 import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
 import { View } from "../List/views";
@@ -64,6 +66,7 @@ export const TagList: React.FC<ITagList> = PatchComponent(
 
     const intl = useIntl();
     const history = useHistory();
+    const [mergeTags, setMergeTags] = useState<Tag[] | undefined>(undefined);
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
     const [isExportAll, setIsExportAll] = useState(false);
 
@@ -72,6 +75,11 @@ export const TagList: React.FC<ITagList> = PatchComponent(
       {
         text: intl.formatMessage({ id: "actions.view_random" }),
         onClick: viewRandom,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+        onClick: merge,
+        isDisplayed: showWhenSelected,
       },
       {
         text: intl.formatMessage({ id: "actions.export" }),
@@ -116,6 +124,16 @@ export const TagList: React.FC<ITagList> = PatchComponent(
           history.push(`/tags/${id}`);
         }
       }
+    }
+
+    async function merge(
+      result: GQL.FindTagsForListQueryResult,
+      filter: ListFilterModel,
+      selectedIds: Set<string>
+    ) {
+      const selected =
+        result.data?.findTags.tags.filter((t) => selectedIds.has(t.id)) ?? [];
+      setMergeTags(selected);
     }
 
     async function onExport() {
@@ -171,6 +189,23 @@ export const TagList: React.FC<ITagList> = PatchComponent(
       selectedIds: Set<string>,
       onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
     ) {
+      function renderMergeDialog() {
+        if (mergeTags) {
+          return (
+            <TagMergeModal
+              tags={mergeTags}
+              onClose={(mergedId?: string) => {
+                setMergeTags(undefined);
+                if (mergedId) {
+                  history.push(`/tags/${mergedId}`);
+                }
+              }}
+              show
+            />
+          );
+        }
+      }
+
       function maybeRenderExportDialog() {
         if (isExportDialogOpen) {
           return (
@@ -323,6 +358,7 @@ export const TagList: React.FC<ITagList> = PatchComponent(
       }
       return (
         <>
+          {renderMergeDialog()}
           {maybeRenderExportDialog()}
           {renderTags()}
         </>

@@ -56,7 +56,7 @@ function renderScrapedGender(
   );
 }
 
-function renderScrapedGenderRow(
+export function renderScrapedGenderRow(
   title: string,
   result: ScrapeResult<string>,
   onChange: (value: ScrapeResult<string>) => void
@@ -104,7 +104,7 @@ function renderScrapedCircumcised(
   );
 }
 
-function renderScrapedCircumcisedRow(
+export function renderScrapedCircumcisedRow(
   title: string,
   result: ScrapeResult<string>,
   onChange: (value: ScrapeResult<string>) => void
