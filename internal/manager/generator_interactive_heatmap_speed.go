@@ -10,11 +10,43 @@ import (
 	"math"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
+
+// fixInvalidJSONBackslashEscapes doubles backslashes that are not part of a
+// valid JSON escape sequence so that the JSON decoder can parse outputs
+// which contain unescaped backslashes (e.g., Windows paths).
+func fixInvalidJSONBackslashEscapes(raw string) string {
+	var b strings.Builder
+	i := 0
+	for i < len(raw) {
+		if raw[i] == '\\' {
+			if i+1 >= len(raw) {
+				b.WriteString("\\\\")
+				i++
+				continue
+			}
+			next := raw[i+1]
+			switch next {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u':
+				b.WriteByte('\\')
+				b.WriteByte(next)
+			default:
+				b.WriteString("\\\\")
+				b.WriteByte(next)
+			}
+			i += 2
+		} else {
+			b.WriteByte(raw[i])
+			i++
+		}
+	}
+	return b.String()
+}
 
 type InteractiveHeatmapSpeedGenerator struct {
 	InteractiveSpeed int
@@ -98,7 +130,11 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneD
 	var funscript Script
 	err = json.Unmarshal(data, &funscript)
 	if err != nil {
-		return Script{}, err
+		// Attempt to fix common invalid backslash escapes and retry
+		fixed := fixInvalidJSONBackslashEscapes(string(data))
+		if err2 := json.Unmarshal([]byte(fixed), &funscript); err2 != nil {
+			return Script{}, err
+		}
 	}
 
 	if funscript.Actions == nil {
@@ -372,7 +408,11 @@ func LoadFunscriptData(path string) (Script, error) {
 	var funscript Script
 	err = json.Unmarshal(data, &funscript)
 	if err != nil {
-		return Script{}, err
+		// Attempt to fix common invalid backslash escapes and retry
+		fixed := fixInvalidJSONBackslashEscapes(string(data))
+		if err2 := json.Unmarshal([]byte(fixed), &funscript); err2 != nil {
+			return Script{}, err
+		}
 	}
 
 	if funscript.Actions == nil {

@@ -86,7 +86,7 @@ func (t *rawPluginTask) Start() error {
 				nextCh := rune(inStr[i+1])
 				// Valid JSON escape chars: " \ / b f n r t u
 				validEscape := false
-				for _, validCh := range "\"\\\/bfnrtu" {
+				for _, validCh := range `"\/bfnrtu` {
 					if nextCh == validCh {
 						validEscape = true
 						break
