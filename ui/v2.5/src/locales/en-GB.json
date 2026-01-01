@@ -1491,6 +1491,8 @@
   "studio_and_parent": "Studio & Parent",
   "studio_count": "Studio Count",
   "studio_depth": "Levels (empty for all)",
+  "studio_image": "Studio Image",
+  "studio_name": "Studio name",
   "studio_tagger": {
     "add_new_studios": "Add New Studios",
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
