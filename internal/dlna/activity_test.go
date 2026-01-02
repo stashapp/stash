@@ -332,13 +332,14 @@ func TestActivityTracker_SessionExpiration(t *testing.T) {
 	}
 
 	// Manually add a session
+	// Use a short video duration (1 second) so the test can verify expiration quickly.
 	now := time.Now()
 	tracker.sessions["192.168.1.100:42"] = &streamSession{
 		SceneID:       42,
 		ClientIP:      "192.168.1.100",
-		StartTime:     now.Add(-5 * time.Second),
-		LastActivity:  now.Add(-200 * time.Millisecond), // Expired
-		VideoDuration: 120.0,
+		StartTime:     now.Add(-5 * time.Second),        // Started 5 seconds ago
+		LastActivity:  now.Add(-200 * time.Millisecond), // Last activity 200ms ago (> 100ms timeout)
+		VideoDuration: 1.0,                              // Short video so timeSinceStart > videoDuration
 	}
 
 	// Verify session exists
@@ -350,6 +351,39 @@ func TestActivityTracker_SessionExpiration(t *testing.T) {
 
 	// Verify session was removed (even though DB calls were skipped)
 	assert.Len(t, tracker.sessions, 0)
+}
+
+func TestActivityTracker_SessionExpiration_StoppedEarly(t *testing.T) {
+	// Test that sessions expire when user stops watching early (before video ends)
+	// This was a bug where sessions wouldn't expire until video duration passed
+
+	config := &mockConfig{enabled: true, minPlayPercent: 10}
+	tracker := &ActivityTracker{
+		txnManager:     nil,
+		sceneWriter:    nil,
+		config:         config,
+		sessionTimeout: 100 * time.Millisecond,
+		sessions:       make(map[string]*streamSession),
+	}
+
+	// User started watching a 30-minute video but stopped after 5 seconds
+	now := time.Now()
+	tracker.sessions["192.168.1.100:42"] = &streamSession{
+		SceneID:       42,
+		ClientIP:      "192.168.1.100",
+		StartTime:     now.Add(-5 * time.Second),        // Started 5 seconds ago
+		LastActivity:  now.Add(-200 * time.Millisecond), // Last activity 200ms ago (> 100ms timeout)
+		VideoDuration: 1800.0,                           // 30 minute video - much longer than elapsed time
+	}
+
+	assert.Len(t, tracker.sessions, 1)
+
+	// Session should expire because timeSinceActivity > timeout
+	// Even though the video is 30 minutes and only 5 seconds have passed
+	tracker.processExpiredSessions()
+
+	// Verify session was expired
+	assert.Len(t, tracker.sessions, 0, "Session should expire when user stops early, not wait for video duration")
 }
 
 func TestActivityTracker_MinimumPlayPercentThreshold(t *testing.T) {
