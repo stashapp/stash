@@ -13,9 +13,9 @@ import (
 const (
 	// DefaultSessionTimeout is the time after which a session is considered complete
 	// if no new requests are received.
-	// This is set high (60 minutes) because DLNA clients buffer aggressively and may not
+	// This is set high (5 minutes) because DLNA clients buffer aggressively and may not
 	// send any HTTP requests for extended periods while the user is still watching.
-	DefaultSessionTimeout = 60 * time.Minute
+	DefaultSessionTimeout = 5 * time.Minute
 
 	// monitorInterval is how often we check for expired sessions.
 	monitorInterval = 10 * time.Second
@@ -176,8 +176,6 @@ func (t *ActivityTracker) Stop() {
 	t.mutex.Unlock()
 
 	for _, session := range sessions {
-		// update the last activity time to the current time
-		session.LastActivity = time.Now()
 		t.processCompletedSession(session)
 	}
 }
@@ -186,7 +184,6 @@ func (t *ActivityTracker) Stop() {
 // Each request updates the session's LastActivity time, which is used for
 // time-based tracking of watch progress.
 func (t *ActivityTracker) RecordRequest(sceneID int, clientIP string, videoDuration float64) {
-	logger.Debugf("[DLNA Activity] Record request triggered.")
 	if !t.isEnabled() {
 		return
 	}
@@ -236,23 +233,33 @@ func (t *ActivityTracker) processExpiredSessions() {
 
 	t.mutex.Lock()
 	for key, session := range t.sessions {
-		if now.Sub(session.LastActivity) > t.sessionTimeout {
-			// DLNA clients buffer aggressively - after initial requests, they play from cache.
-			// We assume the user kept watching until the timeout period began.
-			// So the effective "last activity" is (now - timeout), when they actually stopped.
-			//
-			// Example: Session starts at T0, client buffers file in 1s, times out after 30s.
-			// - LastActivity was T0+1s (last HTTP request)
-			// - now is T0+31s (when we detect timeout)
-			// - Actual watch time is likely T0 to T0+31s-30s = T0+1s (no improvement)
-			//
-			// Better approach: assume they watched until halfway through the timeout period.
-			// This is a heuristic that balances "still watching" vs "stopped immediately".
-			session.LastActivity = now.Add(-t.sessionTimeout / 2)
+		timeSinceStart := now.Sub(session.StartTime)
+		timeSinceActivity := now.Sub(session.LastActivity)
 
-			expiredSessions = append(expiredSessions, session)
-			delete(t.sessions, key)
+		// Must have no HTTP activity for the full timeout period
+		if timeSinceActivity <= t.sessionTimeout {
+			continue
 		}
+
+		// DLNA clients buffer aggressively - they fetch most/all of the video quickly,
+		// then play from cache with NO further HTTP requests.
+		//
+		// Two scenarios:
+		// 1. User watched the whole video: timeSinceStart >= videoDuration
+		//    -> Set LastActivity to when timeout began (they finished watching)
+		// 2. User stopped early: timeSinceStart < videoDuration
+		//    -> Keep LastActivity as-is (best estimate of when they stopped)
+
+		videoDuration := time.Duration(session.VideoDuration) * time.Second
+		if timeSinceStart >= videoDuration && videoDuration > 0 {
+			// User likely watched the whole video, then it timed out
+			// Estimate they watched until the timeout period started
+			session.LastActivity = now.Add(-t.sessionTimeout)
+		}
+		// else: User stopped early - LastActivity is already our best estimate
+
+		expiredSessions = append(expiredSessions, session)
+		delete(t.sessions, key)
 	}
 	t.mutex.Unlock()
 
