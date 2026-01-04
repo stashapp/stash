@@ -145,7 +145,15 @@
         "reset_cover": "Restaurar a capa padrão",
         "copy_to_clipboard": "Copiar para a área de transferência",
         "encoding_image": "Codificando imagem…",
-        "reload": "Recarregar"
+        "reload": "Recarregar",
+        "set_cover": "Definir como Capa",
+        "show_results": "Mostrar resultados",
+        "show_count_results": "Mostrar {count} resultados",
+        "sidebar": {
+            "close": "Fechar barra lateral",
+            "open": "Abrir barra lateral",
+            "toggle": "Alternar barra lateral"
+        }
     },
     "actions_name": "Ações",
     "age": "Idade",
@@ -1091,5 +1099,6 @@
     "videos": "Vídeos",
     "view_all": "Ver todos",
     "weight": "Peso",
-    "years_old": "anos"
+    "years_old": "anos",
+    "age_on_date": "{age} na produção"
 }
