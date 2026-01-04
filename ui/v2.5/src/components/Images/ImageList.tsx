@@ -35,6 +35,9 @@ interface IImageWallProps {
   pageCount: number;
   handleImageOpen: (index: number) => void;
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 const zoomWidths = [280, 340, 480, 640];
@@ -49,6 +52,9 @@ const ImageWall: React.FC<IImageWallProps> = ({
   images,
   zoomIndex,
   handleImageOpen,
+  selectedIds,
+  onSelectChange,
+  selecting,
 }) => {
   const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
@@ -63,6 +69,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
     height: number;
     alt?: string | undefined;
     key?: string | undefined;
+    imageId: string;
   }[] = [];
 
   images.forEach((image, index) => {
@@ -78,6 +85,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
       loading: "lazy",
       className: "gallery-image",
       alt: objectTitle(image),
+      imageId: image.id,
     };
     photos.push(imageData);
   });
@@ -121,9 +129,23 @@ const ImageWall: React.FC<IImageWallProps> = ({
           ? props.photo.height
           : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
             maxHeightFactor;
-      return <ImageWallItem {...props} maxHeight={maxHeight} />;
+      const imageId = (props.photo as { imageId: string }).imageId;
+      return (
+        <ImageWallItem
+          {...props}
+          maxHeight={maxHeight}
+          selected={selectedIds?.has(imageId)}
+          onSelectedChanged={
+            onSelectChange
+              ? (selected, shiftKey) =>
+                  onSelectChange(imageId, selected, shiftKey)
+              : undefined
+          }
+          selecting={selecting}
+        />
+      );
     },
-    [targetRowHeight]
+    [targetRowHeight, selectedIds, onSelectChange, selecting]
   );
 
   return (
@@ -258,6 +280,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
         pageCount={pageCount}
         handleImageOpen={handleImageOpen}
         zoomIndex={filter.zoomIndex}
+        selectedIds={selectedIds}
+        onSelectChange={onSelectChange}
+        selecting={!!selectedIds && selectedIds.size > 0}
       />
     );
   }

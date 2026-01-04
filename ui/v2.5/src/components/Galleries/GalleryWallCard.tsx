@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -18,6 +19,9 @@ const CLASSNAME_IMG_CONTAIN = `${CLASSNAME}-img-contain`;
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 type Orientation = "landscape" | "portrait";
@@ -26,7 +30,12 @@ function getOrientation(width: number, height: number): Orientation {
   return width > height ? "landscape" : "portrait";
 }
 
-const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
+const GalleryWallCard: React.FC<IProps> = ({
+  gallery,
+  selected,
+  onSelectedChanged,
+  selecting,
+}) => {
   const intl = useIntl();
   const [coverOrientation, setCoverOrientation] =
     React.useState<Orientation>("landscape");
@@ -58,7 +67,11 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       ? [...performerNames.slice(0, -2), performerNames.slice(-2).join(" & ")]
       : performerNames;
 
-  async function showLightboxStart() {
+  async function showLightboxStart(event?: React.MouseEvent) {
+    if (selecting && onSelectedChanged && event) {
+      onSelectedChanged(!selected, event.shiftKey);
+      return;
+    }
     if (gallery.image_count === 0) {
       return;
     }
@@ -69,15 +82,29 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const imgClassname =
     imageOrientation !== coverOrientation ? CLASSNAME_IMG_CONTAIN : "";
 
+  let shiftKey = false;
+
   return (
     <>
       <section
-        className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation}`}
-        onClick={showLightboxStart}
-        onKeyPress={showLightboxStart}
+        className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation} wall-item`}
+        onClick={(e) => showLightboxStart(e)}
+        onKeyPress={() => showLightboxStart()}
         role="button"
         tabIndex={0}
       >
+        {onSelectedChanged && (
+          <Form.Control
+            type="checkbox"
+            className="wall-item-check mousetrap"
+            checked={selected}
+            onChange={() => onSelectedChanged(!selected, shiftKey)}
+            onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+              shiftKey = event.shiftKey;
+              event.stopPropagation();
+            }}
+          />
+        )}
         <RatingSystem value={gallery.rating100} disabled withoutContext />
         <img
           loading="lazy"

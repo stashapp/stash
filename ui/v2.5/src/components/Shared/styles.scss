@@ -314,6 +314,21 @@ button.collapse-button {
   }
 }
 
+// Wall item checkbox styles
+.wall-item-check {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  opacity: 0;
+  z-index: 10;
+
+  &:checked { opacity: 0.75; }
+  @media (hover: none) { opacity: 0.25; }
+}
+.wall-item:hover .wall-item-check { opacity: 0.75; }
+
 .TruncatedText {
   -webkit-box-orient: vertical;
   display: -webkit-box;
