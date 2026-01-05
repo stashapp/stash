@@ -75,8 +75,6 @@
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
-    "merge_from": "Merge from",
-    "merge_into": "Merge into",
     "migrate_blobs": "Migrate Blobs",
     "migrate_scene_screenshots": "Migrate Scene Screenshots",
     "next_action": "Next",
@@ -972,10 +970,6 @@
       "empty_results": "Destination field values will be unchanged.",
       "source": "Source"
     },
-    "merge_tags": {
-      "destination": "Destination",
-      "source": "Source"
-    },
     "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
@@ -1565,6 +1559,7 @@
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
+    "merged_performers": "Merged performers",
     "merged_scenes": "Merged scenes",
     "merged_tags": "Merged tags",
     "reassign_past_tense": "File reassigned",

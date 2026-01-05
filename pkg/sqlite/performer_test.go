@@ -2524,6 +2524,146 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 	}
 }
 
+func TestPerformerMerge(t *testing.T) {
+	tests := []struct {
+		name    string
+		srcIdxs []int
+		destIdx int
+		wantErr bool
+	}{
+		{
+			name:    "merge into self",
+			srcIdxs: []int{performerIdx1WithDupName},
+			destIdx: performerIdx1WithDupName,
+			wantErr: true,
+		},
+		{
+			name: "merge multiple",
+			srcIdxs: []int{
+				performerIdx2WithScene,
+				performerIdxWithTwoScenes,
+				performerIdx1WithImage,
+				performerIdxWithTwoImages,
+				performerIdxWithGallery,
+				performerIdxWithTwoGalleries,
+				performerIdxWithTag,
+				performerIdxWithTwoTags,
+			},
+			destIdx: tagIdxWithPerformer,
+			wantErr: false,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			// load src tag ids to compare after merge
+			performerTagIds := make(map[int][]int)
+			for _, srcIdx := range tt.srcIdxs {
+				srcPerformer, err := qb.Find(ctx, performerIDs[srcIdx])
+				if err != nil {
+					t.Errorf("Error finding performer: %s", err.Error())
+				}
+				if err := srcPerformer.LoadTagIDs(ctx, qb); err != nil {
+					t.Errorf("Error loading performer tag IDs: %s", err.Error())
+				}
+				srcTagIDs := srcPerformer.TagIDs.List()
+				performerTagIds[srcIdx] = srcTagIDs
+			}
+
+			err := qb.Merge(ctx, indexesToIDs(tagIDs, tt.srcIdxs), tagIDs[tt.destIdx])
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Merge() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err != nil {
+				return
+			}
+
+			// ensure source performers are destroyed
+			for _, srcIdx := range tt.srcIdxs {
+				p, err := qb.Find(ctx, performerIDs[srcIdx])
+
+				// not found returns nil performer and nil error
+				if err != nil {
+					t.Errorf("Error finding performer: %s", err.Error())
+					continue
+				}
+				assert.Nil(p)
+			}
+
+			// ensure items point to new performer
+			for _, srcIdx := range tt.srcIdxs {
+				sceneIdxs := scenePerformers.reverseLookup(srcIdx)
+				for _, sceneIdx := range sceneIdxs {
+					s, err := db.Scene.Find(ctx, sceneIDs[sceneIdx])
+					if err != nil {
+						t.Errorf("Error finding scene: %s", err.Error())
+					}
+					if err := s.LoadPerformerIDs(ctx, db.Scene); err != nil {
+						t.Errorf("Error loading scene performer IDs: %s", err.Error())
+					}
+					scenePerformerIDs := s.PerformerIDs.List()
+
+					assert.Contains(scenePerformerIDs, performerIDs[tt.destIdx])
+					assert.NotContains(scenePerformerIDs, performerIDs[srcIdx])
+				}
+
+				imageIdxs := imagePerformers.reverseLookup(srcIdx)
+				for _, imageIdx := range imageIdxs {
+					i, err := db.Image.Find(ctx, imageIDs[imageIdx])
+					if err != nil {
+						t.Errorf("Error finding image: %s", err.Error())
+					}
+					if err := i.LoadPerformerIDs(ctx, db.Image); err != nil {
+						t.Errorf("Error loading image performer IDs: %s", err.Error())
+					}
+					imagePerformerIDs := i.PerformerIDs.List()
+
+					assert.Contains(imagePerformerIDs, performerIDs[tt.destIdx])
+					assert.NotContains(imagePerformerIDs, performerIDs[srcIdx])
+				}
+
+				galleryIdxs := galleryPerformers.reverseLookup(srcIdx)
+				for _, galleryIdx := range galleryIdxs {
+					g, err := db.Gallery.Find(ctx, galleryIDs[galleryIdx])
+					if err != nil {
+						t.Errorf("Error finding gallery: %s", err.Error())
+					}
+					if err := g.LoadPerformerIDs(ctx, db.Gallery); err != nil {
+						t.Errorf("Error loading gallery performer IDs: %s", err.Error())
+					}
+					galleryPerformerIDs := g.PerformerIDs.List()
+
+					assert.Contains(galleryPerformerIDs, performerIDs[tt.destIdx])
+					assert.NotContains(galleryPerformerIDs, performerIDs[srcIdx])
+				}
+			}
+
+			// ensure tags were merged
+			destPerformer, err := qb.Find(ctx, performerIDs[tt.destIdx])
+			if err != nil {
+				t.Errorf("Error finding performer: %s", err.Error())
+			}
+			if err := destPerformer.LoadTagIDs(ctx, qb); err != nil {
+				t.Errorf("Error loading performer tag IDs: %s", err.Error())
+			}
+			destTagIDs := destPerformer.TagIDs.List()
+
+			for _, srcIdx := range tt.srcIdxs {
+				for _, tagID := range performerTagIds[srcIdx] {
+					assert.Contains(destTagIDs, tagID)
+				}
+			}
+		})
+	}
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find

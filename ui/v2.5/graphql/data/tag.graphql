@@ -67,6 +67,11 @@ fragment TagListData on Tag {
   aliases
   ignore_auto_tag
   favorite
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
   image_path
   # Direct counts only - no recursive depth queries
   scene_count
