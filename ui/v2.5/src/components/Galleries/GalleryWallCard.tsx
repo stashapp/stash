@@ -92,6 +92,8 @@ const GalleryWallCard: React.FC<IProps> = ({
         onKeyPress={() => showLightboxStart()}
         role="button"
         tabIndex={0}
+        draggable={selecting || undefined}
+        onDragStart={(e) => e.preventDefault()}
       >
         {onSelectedChanged && (
           <Form.Control

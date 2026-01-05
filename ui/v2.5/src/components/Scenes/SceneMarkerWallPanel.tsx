@@ -92,6 +92,8 @@ export const MarkerWallItem: React.FC<
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
       onClick={handleClick}
+      draggable={props.selecting || undefined}
+      onDragStart={(e) => e.preventDefault()}
       style={{
         ...divStyle,
         width,

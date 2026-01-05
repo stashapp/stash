@@ -49,7 +49,13 @@ export const ImageWallItem: React.FC<RenderImageProps & IExtraProps> = (
   let shiftKey = false;
 
   return (
-    <div className="wall-item" style={divStyle} onClick={handleClick}>
+    <div
+      className="wall-item"
+      style={divStyle}
+      onClick={handleClick}
+      draggable={props.selecting || undefined}
+      onDragStart={(e) => e.preventDefault()}
+    >
       {props.onSelectedChanged && (
         <Form.Control
           type="checkbox"
