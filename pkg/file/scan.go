@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -178,7 +179,16 @@ func (s *scanJob) execute(ctx context.Context) {
 	wg.Add(1)
 
 	go func() {
-		defer wg.Done()
+		defer func() {
+			wg.Done()
+
+			// handle panics in goroutine
+			if p := recover(); p != nil {
+				logger.Errorf("panic while queuing files for scan: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
 		if err := s.queueFiles(ctx, paths); err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -204,6 +214,15 @@ func (s *scanJob) execute(ctx context.Context) {
 }
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
+	defer func() {
+		close(s.fileQueue)
+
+		if s.ProgressReports != nil {
+			s.ProgressReports.AddTotal(s.count)
+			s.ProgressReports.Definite()
+		}
+	}()
+
 	var err error
 	s.ProgressReports.ExecuteTask("Walking directory tree", func() {
 		for _, p := range paths {
@@ -213,13 +232,6 @@ func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
 			}
 		}
 	})
-
-	close(s.fileQueue)
-
-	if s.ProgressReports != nil {
-		s.ProgressReports.AddTotal(s.count)
-		s.ProgressReports.Definite()
-	}
 
 	return err
 }
