@@ -215,6 +215,7 @@
         "verb_match_fp": "Сопоставить отпечатки файла",
         "verb_matched": "Совпавший",
         "verb_scrape_all": "Убрать всё",
+        "verb_scrape_selected": "Убрать выбранное",
         "verb_submit_fp": "Отправить {fpCount, plural, one{# Совпадение} other{# совпадения}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} не назначенные сцены"

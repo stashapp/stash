@@ -204,6 +204,7 @@
         "verb_match_fp": "Порівняти відбитки",
         "verb_matched": "Співпадінь",
         "verb_scrape_all": "Скрейпити все",
+        "verb_scrape_selected": "Скрейпити вибране",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} не співпавші сцени",
         "verb_submit_fp": "Надіслати {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",

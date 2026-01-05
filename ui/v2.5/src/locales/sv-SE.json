@@ -227,6 +227,7 @@
         "verb_match_fp": "Matcha fingeravtryck",
         "verb_matched": "Matchad",
         "verb_scrape_all": "Skrapa alla",
+        "verb_scrape_selected": "Skrapa vald",
         "verb_submit_fp": "Skicka {fpCount, plural, one{# Fingeravtryck} other{# Fingeravtryck}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} ej matchade scener"

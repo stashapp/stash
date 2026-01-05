@@ -220,6 +220,7 @@
         "verb_match_fp": "huellas dactilares",
         "verb_matched": "Coincidencia",
         "verb_scrape_all": "Rastrear todo",
+        "verb_scrape_selected": "Rastrear seleccionado",
         "verb_submit_fp": "Enviar {fpCount, plural, one{# huella dactilar} other{# huellas dactilares}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} escenas sin coincidencia"

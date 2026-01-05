@@ -190,6 +190,7 @@
         "verb_match_fp": "ข้อมูลอัตลักษณ์ตรงกัน",
         "verb_matched": "ตรงกัน",
         "verb_scrape_all": "สแครปทั้งหมด",
+        "verb_scrape_selected": "สแครปที่เลือก",
         "verb_submit_fp": "ยืนยัน {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} ไม่พบฉากที่ตรงกัน"

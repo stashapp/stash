@@ -221,6 +221,7 @@
         "verb_match_fp": "Sormenjäljet täsmäävät",
         "verb_matched": "Täsmätty",
         "verb_scrape_all": "Kaavi kaikki",
+        "verb_scrape_selected": "Kaavi valittu",
         "verb_submit_fp": "Lähetä {fpCount, plural, one{# sormenjäki} other{# sormenjälkeä}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} täsmäämättömät kohtaukset"

@@ -221,6 +221,7 @@
         "verb_match_fp": "Fingerabdrücke zuordnen",
         "verb_matched": "zugeordnet",
         "verb_scrape_all": "Alles Scrapen",
+        "verb_scrape_selected": "Ausgewähltes Scrapen",
         "verb_submit_fp": "Übermittele {fpCount, plural, one{# Fingerabdruck} other{# Fingerabdrücke}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} nicht zugeordnete Szenen"

@@ -184,6 +184,7 @@
         "verb_match_fp": "Coincidència d'empremtes",
         "verb_matched": "Coincidència",
         "verb_scrape_all": "Traça-ho tot",
+        "verb_scrape_selected": "Raspar seleccionat",
         "verb_submit_fp": "Enviar {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}"
     },
     "config": {

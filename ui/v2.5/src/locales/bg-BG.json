@@ -222,6 +222,7 @@
         "verb_match_fp": "Сравни Отпечатъци",
         "verb_matched": "Сравнени",
         "verb_scrape_all": "Изтъркай Всичко",
+        "verb_scrape_selected": "Изтъркай избрано",
         "verb_submit_fp": "Подай {fpCount, plural, one{# Отпечатък} other{# Отпечатъци}}",
         "verb_toggle_unmatched": "{toggle} несъвпадаци сцени"
     },

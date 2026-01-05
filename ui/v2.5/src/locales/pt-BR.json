@@ -213,6 +213,7 @@
         "verb_match_fp": "Combine as impressões digitais",
         "verb_matched": "Combinado",
         "verb_scrape_all": "Buscar tudo",
+        "verb_scrape_selected": "Buscar selecionado",
         "verb_submit_fp": "Enviar {fpCount, plural, one{# impressão digital} other{# impressões digitais}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} cenas incomparáveis"

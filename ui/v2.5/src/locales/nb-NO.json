@@ -195,6 +195,7 @@
         "verb_match_fp": "Match Fingeravtrykk",
         "verb_matched": "Matchet",
         "verb_scrape_all": "Skrap alle",
+        "verb_scrape_selected": "Skrap valgt",
         "verb_submit_fp": "Send inn {fpCount, plural, one{# Fingeravtrykk} andre{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} vis scener uten treff"

@@ -205,6 +205,7 @@
         "verb_match_fp": "Parmak İzlerini Eşleştir",
         "verb_matched": "Eşleşti",
         "verb_scrape_all": "Tümü için Veri Topla",
+        "verb_scrape_selected": "Seçileni Topla",
         "verb_submit_fp": "{fpCount, plural, one{# Parmak izi} other{# Parmak izlerini}} gönder",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} eşleşmeyen sahneler"

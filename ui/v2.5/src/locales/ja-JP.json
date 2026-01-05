@@ -209,6 +209,7 @@
         "verb_match_fp": "ハッシュ値を突き合わせる",
         "verb_matched": "一致",
         "verb_scrape_all": "全てスクレイプ",
+        "verb_scrape_selected": "スクレイプ選択",
         "verb_submit_fp": "送信 {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} 一致しないシーン"

@@ -228,6 +228,7 @@
         "verb_match_fp": "Empreintes correspondantes",
         "verb_matched": "Associé",
         "verb_scrape_all": "Extraire tout",
+        "verb_scrape_selected": "Extraire sélectionné",
         "verb_submit_fp": "Soumettre {fpCount, plural, one{# Empreinte} other{# Empreintes}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} scènes incomparables",
