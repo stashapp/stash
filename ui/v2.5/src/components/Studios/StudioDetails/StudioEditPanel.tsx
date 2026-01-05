@@ -30,7 +30,6 @@ interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
   onSubmit: (studio: GQL.StudioCreateInput) => Promise<void>;
   onCancel: () => void;
-  onDelete: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
 }
@@ -39,7 +38,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   studio,
   onSubmit,
   onCancel,
-  onDelete,
   setImage,
   setEncodingImage,
 }) => {
