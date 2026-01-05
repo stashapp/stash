@@ -38,6 +38,7 @@ import {
   renderScrapedCircumcisedRow,
 } from "./PerformerDetails/PerformerScrapeDialog";
 import { PerformerSelect } from "./PerformerSelect";
+import { uniq } from "lodash-es";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 type CustomFieldScrapeResults = Map<string, ZeroableScrapeResult<any>>;
@@ -97,8 +98,8 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
   const [disambiguation, setDisambiguation] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.disambiguation)
   );
-  const [aliases, setAliases] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(dest.alias_list?.join(", "))
+  const [aliases, setAliases] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(dest.alias_list)
   );
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.birthdate)
@@ -204,12 +205,18 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
         !dest.disambiguation
       )
     );
-    setAliases(
-      new ScrapeResult(
-        dest.alias_list?.join(", "),
-        sources.find((s) => s.alias_list)?.alias_list.join(", "),
-        !dest.alias_list?.length
+
+    // default alias list should be the existing aliases, plus the names of all sources,
+    // plus all source aliases, deduplicated
+    const allAliases = uniq(
+      dest.alias_list.concat(
+        sources.map((s) => s.name),
+        sources.flatMap((s) => s.alias_list)
       )
+    );
+
+    setAliases(
+      new ScrapeResult(dest.alias_list, allAliases, !!allAliases.length)
     );
     setBirthdate(
       new ScrapeResult(
@@ -472,7 +479,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           result={disambiguation}
           onChange={(value) => setDisambiguation(value)}
         />
-        <ScrapedTextAreaRow
+        <ScrapedStringListRow
           field="aliases"
           title={intl.formatMessage({ id: "aliases" })}
           result={aliases}
@@ -616,8 +623,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
         disambiguation: disambiguation.getNewValue(),
         alias_list: aliases
           .getNewValue()
-          ?.split(",")
-          .map((s) => s.trim())
+          ?.map((s) => s.trim())
           .filter((s) => s.length > 0),
         birthdate: birthdate.getNewValue(),
         death_date: deathDate.getNewValue(),
