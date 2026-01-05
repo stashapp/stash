@@ -133,6 +133,7 @@ const criterionOptions = [
   GalleriesCriterionOption,
   createStringCriterionOption("url"),
   StashIDCriterionOption,
+  createMandatoryNumberCriterionOption("stash_id_count"),
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),

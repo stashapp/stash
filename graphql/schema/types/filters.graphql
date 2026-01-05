@@ -292,6 +292,8 @@ input SceneFilterType {
   performer_count: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+  "Filter by StashID count"
+  stash_id_count: IntCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by interactive"

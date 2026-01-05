@@ -122,6 +122,8 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			parentIDCol:       "scenes.id",
 		},
 
+		qb.stashIDCountCriterionHandler(sceneFilter.StashIDCount),
+
 		boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable),
 		intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable),
 
@@ -434,6 +436,16 @@ func (qb *sceneFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrite
 	}
 
 	return h.handler(tagCount)
+}
+
+func (qb *sceneFilterHandler) stashIDCountCriterionHandler(stashIDCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    "scene_stash_ids",
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(stashIDCount)
 }
 
 func (qb *sceneFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {

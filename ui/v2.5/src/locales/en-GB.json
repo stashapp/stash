@@ -1459,6 +1459,7 @@
     "welcome_to_stash": "Welcome to Stash"
   },
   "stash_id": "Stash ID",
+  "stash_id_count": "Stash ID Count",
   "stash_id_endpoint": "Stash ID Endpoint",
   "stash_ids": "Stash IDs",
   "stashbox_search": {
