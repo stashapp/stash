@@ -3,6 +3,7 @@
 package desktop
 
 import (
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -58,12 +59,12 @@ func startSystray(exit chan int, faviconProvider FaviconProvider) {
 func systrayInitialize(exit chan<- int, faviconProvider FaviconProvider) {
 	favicon := faviconProvider.GetFavicon()
 	systray.SetTemplateIcon(favicon, favicon)
-	systray.SetTooltip("🟢 Stash is Running.")
+	c := config.GetInstance()
+	systray.SetTooltip(fmt.Sprintf("🟢 Stash is Running on port %d.", c.GetPort()))
 
 	openStashButton := systray.AddMenuItem("Open Stash", "Open a browser window to Stash")
 	var menuItems []string
 	systray.AddSeparator()
-	c := config.GetInstance()
 	if !c.IsNewSystem() {
 		menuItems = c.GetMenuItems()
 		for _, item := range menuItems {
