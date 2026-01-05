@@ -118,7 +118,6 @@ interface ITaggerScene {
   index?: number;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
-  selecting?: boolean;
 }
 
 export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({

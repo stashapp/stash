@@ -13,17 +13,8 @@ import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
 import { SceneSearchResults } from "./StashSearchResult";
 import { useConfigurationContext } from "src/hooks/Config";
-import {
-  faCog,
-  faPencil,
-  faPlay,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
-import { EditScenesDialog } from "src/components/Scenes/EditScenesDialog";
-import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
-import { OperationDropdown } from "src/components/List/ListOperationButtons";
-import { useHistory } from "react-router-dom";
 
 const Scene: React.FC<{
   scene: GQL.SlimSceneDataFragment;
@@ -33,7 +24,6 @@ const Scene: React.FC<{
   showLightboxImage: (imagePath: string) => void;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
-  selecting?: boolean;
 }> = ({
   scene,
   searchResult,
@@ -42,7 +32,6 @@ const Scene: React.FC<{
   showLightboxImage,
   selected,
   onSelectedChanged,
-  selecting,
 }) => {
   const intl = useIntl();
   const { currentSource, doSceneQuery, doSceneFragmentScrape, loading } =
@@ -94,7 +83,6 @@ const Scene: React.FC<{
       index={index}
       selected={selected}
       onSelectedChanged={onSelectedChanged}
-      selecting={selecting}
     >
       {searchResult && searchResult.results?.length ? (
         <SceneSearchResults scenes={searchResult.results} target={scene} />
@@ -133,16 +121,8 @@ export const Tagger: React.FC<ITaggerProps> = ({
   const [hideUnmatched, setHideUnmatched] = useState(false);
 
   const intl = useIntl();
-  const history = useHistory();
-  const { configuration } = useConfigurationContext();
 
-  // Calculate derived values from props
-  const selecting = selectedIds.size > 0;
   const hasSelection = selectedIds.size > 0;
-  const selectedItems = useMemo(
-    () => scenes.filter((s) => selectedIds.has(s.id)),
-    [scenes, selectedIds]
-  );
 
   function handleSourceSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     setCurrentSource(sources!.find((s) => s.id === e.currentTarget.value));
@@ -331,7 +311,6 @@ export const Tagger: React.FC<ITaggerProps> = ({
               onSelectedChanged={(selected, shiftKey) =>
                 onSelectChange(s.id, selected, shiftKey)
               }
-              selecting={selecting}
             />
           ))}
         </div>
