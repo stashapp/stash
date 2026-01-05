@@ -101,7 +101,9 @@ const GalleryWallCard: React.FC<IProps> = ({
             className="wall-item-check mousetrap"
             checked={selected}
             onChange={() => onSelectedChanged(!selected, shiftKey)}
-            onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+            onClick={(
+              event: React.MouseEvent<HTMLInputElement, MouseEvent>
+            ) => {
               shiftKey = event.shiftKey;
               event.stopPropagation();
             }}

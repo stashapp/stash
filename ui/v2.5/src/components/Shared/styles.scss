@@ -324,11 +324,18 @@ button.collapse-button {
   width: 1.2rem;
   z-index: 10;
 
-  &:checked { opacity: 0.75; }
+  &:checked {
+    opacity: 0.75;
+  }
 
-  @media (hover: none) { opacity: 0.25; }
+  @media (hover: none) {
+    opacity: 0.25;
+  }
 }
-.wall-item:hover .wall-item-check { opacity: 0.75; }
+
+.wall-item:hover .wall-item-check {
+  opacity: 0.75;
+}
 
 .TruncatedText {
   -webkit-box-orient: vertical;
