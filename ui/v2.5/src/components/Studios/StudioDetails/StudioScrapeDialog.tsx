@@ -71,17 +71,11 @@ export const StudioScrapeDialog: React.FC<IStudioScrapeDialogProps> = ({
   );
 
   const [aliases, setAliases] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      studio.aliases?.join(", "),
-      scraped.aliases
-    )
+    new ScrapeResult<string>(studio.aliases?.join(", "), scraped.aliases)
   );
 
   const [remoteSiteID, setRemoteSiteID] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      getCurrentRemoteSiteID(),
-      scraped.remote_site_id
-    )
+    new ScrapeResult<string>(getCurrentRemoteSiteID(), scraped.remote_site_id)
   );
 
   const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
