@@ -69,7 +69,6 @@ const ImageWall: React.FC<IImageWallProps> = ({
     height: number;
     alt?: string | undefined;
     key?: string | undefined;
-    imageId: string;
   }[] = [];
 
   images.forEach((image, index) => {
@@ -85,7 +84,6 @@ const ImageWall: React.FC<IImageWallProps> = ({
       loading: "lazy",
       className: "gallery-image",
       alt: objectTitle(image),
-      imageId: image.id,
     };
     photos.push(imageData);
   });
@@ -129,7 +127,10 @@ const ImageWall: React.FC<IImageWallProps> = ({
           ? props.photo.height
           : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
             maxHeightFactor;
-      const { imageId } = props.photo as { imageId: string };
+      const imageId = props.photo.key;
+      if (!imageId) {
+        return null;
+      }
       return (
         <ImageWallItem
           {...props}
