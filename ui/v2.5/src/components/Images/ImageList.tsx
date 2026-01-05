@@ -129,7 +129,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
           ? props.photo.height
           : targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
             maxHeightFactor;
-      const imageId = (props.photo as { imageId: string }).imageId;
+      const { imageId } = props.photo as { imageId: string };
       return (
         <ImageWallItem
           {...props}
