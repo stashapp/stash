@@ -835,6 +835,10 @@
             "sfw_mode": {
                 "description": "Activez cette option si vous utilisez Stash pour stocker du contenu SFW. Masque ou modifie certains aspects de l'interface utilisateur liés au contenu pour adultes.",
                 "heading": "Mode contenu SFW"
+            },
+            "custom_title": {
+                "description": "Texte personnalisé à ajouter au titre de la page. Si vide, \"Stash\" par défaut.",
+                "heading": "Titre personnalisé"
             }
         },
         "advanced_mode": "Mode avancé"
@@ -1460,7 +1464,8 @@
         "started_auto_tagging": "Début de l'étiquetage automatique",
         "started_generating": "Début de la génération",
         "started_importing": "Début d'importation",
-        "updated_entity": "{entity} mis·e à jour"
+        "updated_entity": "{entity} mis·e à jour",
+        "merged_performers": "Performeurs fusionnés"
     },
     "total": "Total",
     "true": "Vrai",
