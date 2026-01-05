@@ -213,6 +213,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
             onStashIDSelected(item);
             setIsStashIDSearchOpen(false);
           }}
+          initialQuery={tag?.name ?? ""}
         />
       )}
 

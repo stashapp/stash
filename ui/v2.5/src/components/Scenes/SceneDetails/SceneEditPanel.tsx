@@ -731,6 +731,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             onStashIDSelected(item);
             setIsStashIDSearchOpen(false);
           }}
+          initialQuery={scene.title ?? ""}
         />
       )}
       <Form noValidate onSubmit={formik.handleSubmit}>

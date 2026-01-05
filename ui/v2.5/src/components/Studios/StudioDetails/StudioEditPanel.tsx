@@ -200,6 +200,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
             onStashIDSelected(item);
             setIsStashIDSearchOpen(false);
           }}
+          initialQuery={studio.name ?? ""}
         />
       )}
 
