@@ -563,7 +563,8 @@
             "optimise_database": "Forsøg forøgelse af ydelsen ved at analysere og derefter genopbygge hele database filen.",
             "optimise_database_warning": "Advarsel: mens denne opgave kører, hvilken som helst opgave der ændrer databasen vil fejle, og afhængigt af din databasestørrelse, kan det tage flere minutter at gennemføre. Det kræver også som minimum lige så meget ledig diskplads som din database er stor, men 1.5X mere anbefales.",
             "anonymise_and_download": "Laver en anonymiseret kopi af databasen og downloader den endelige fil.",
-            "generate_sprites_during_scan_tooltip": "Sættet af billeder bliver vist under afspilleren for nem navigation."
+            "generate_sprites_during_scan_tooltip": "Sættet af billeder bliver vist under afspilleren for nem navigation.",
+            "anonymise_database": "Laver en kopi af databasen til backupmappen, alle følsomme data anonymiseres. Dette kan herefter gives til andre til fejlsøgnings og debugging formål. Den originale database forbliver uændret. Den anonymiserede database bruger filnavnformatet {filename_format}."
         },
         "tools": {
             "scene_duplicate_checker": "Scene duplikatkontrol",
