@@ -290,9 +290,9 @@ export const Tagger: React.FC<ITaggerProps> = ({
           <div className="d-flex justify-content-between align-items-center flex-wrap">
             <div className="w-auto">{renderSourceSelector()}</div>
             <div className="d-flex">
-                  {maybeRenderShowHideUnmatchedButton()}
-                  {maybeRenderSubmitFingerprintsButton()}
-                  {renderFragmentScrapeButton()}
+              {maybeRenderShowHideUnmatchedButton()}
+              {maybeRenderSubmitFingerprintsButton()}
+              {renderFragmentScrapeButton()}
               {renderConfigButton()}
             </div>
           </div>
