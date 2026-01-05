@@ -152,7 +152,8 @@
         "show_count_results": "{count}개 결과 표시",
         "load": "불러오기",
         "load_filter": "필터 불러오기",
-        "add_stash_id": "Stash ID 추가"
+        "add_stash_id": "Stash ID 추가",
+        "create_new": "신규 생성"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -228,7 +229,10 @@
         "verb_scrape_all": "모두 스크레이핑하기",
         "verb_submit_fp": "{fpCount, plural, one{# 식별값} other{# 식별값들}} 제출하기",
         "verb_toggle_config": "{configuration} {toggle}",
-        "verb_toggle_unmatched": "일치하지 않는 영상 {toggle}"
+        "verb_toggle_unmatched": "일치하지 않는 영상 {toggle}",
+        "verb_add_as_alias": "스크레이핑된 이름을 별칭으로 추가",
+        "verb_link_existing": "외부 링크",
+        "verb_match_tag": "태그 비교하기"
     },
     "config": {
         "about": {
@@ -832,6 +836,10 @@
             "sfw_mode": {
                 "description": "건전한 컨텐츠를 저장하기 위해 Stash를 사용한다면 활성화하세요. 성인 컨텐츠와 관련된 UI 요소들을 숨기거나 변경시킵니다.",
                 "heading": "건전 컨텐츠 모드"
+            },
+            "custom_title": {
+                "description": "페이지 제목에 추가되는 커스텀 텍스트입니다. 공백일 경우 기본값 'Stash'가 사용됩니다.",
+                "heading": "커스텀 타이틀"
             }
         },
         "advanced_mode": "고급 설정 모드"
@@ -1001,7 +1009,8 @@
         "delete_alert_to_trash": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}가 휴지통으로 옮겨질 것입니다:",
         "stashid_exists_warning": "이 Stash-Box의 기존 Stash ID가 교체될 것입니다.",
         "studios_found": "{count}개 스튜디오 발견됨",
-        "tags_found": "{count}개 태그 발견됨"
+        "tags_found": "{count}개 태그 발견됨",
+        "scrape_results_missing": "없음"
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -1385,7 +1394,8 @@
         "scenes_played": "재생된 영상",
         "total_o_count": "싸버린 총 횟수",
         "total_play_count": "총 재생 횟수",
-        "total_play_duration": "총 재생 길이"
+        "total_play_duration": "총 재생 길이",
+        "total_o_count_sfw": "좋아요 총 횟수"
     },
     "status": "상태: {statusText}",
     "studio": "스튜디오",
