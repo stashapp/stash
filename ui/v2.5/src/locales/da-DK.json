@@ -465,7 +465,8 @@
             "graphql_endpoint": "GraphQL slutpunkt",
             "name": "Navn",
             "title": "Stash-box-endepunkter",
-            "max_requests_per_minute": "Max forespørgsler per minut"
+            "max_requests_per_minute": "Max forespørgsler per minut",
+            "max_requests_per_minute_description": "Bruger standardværdien {defaultValue} hvis sat til 0"
         },
         "system": {
             "transcoding": "Omkodning"
