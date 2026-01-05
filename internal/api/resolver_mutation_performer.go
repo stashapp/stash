@@ -596,15 +596,9 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 			return fmt.Errorf("finding destination performer ID %d: %w", destID, err)
 		}
 
-		sources, err := qb.FindMany(ctx, srcIDs)
-		if err != nil {
+		// ensure source performers exist
+		if _, err := qb.FindMany(ctx, srcIDs); err != nil {
 			return fmt.Errorf("finding source performers: %w", err)
-		}
-
-		for _, src := range sources {
-			if err := src.LoadRelationships(ctx, qb); err != nil {
-				return fmt.Errorf("loading performer relationships from %d: %w", src.ID, err)
-			}
 		}
 
 		if _, err := qb.UpdatePartial(ctx, destID, *values); err != nil {
