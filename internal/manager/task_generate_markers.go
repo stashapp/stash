@@ -18,6 +18,7 @@ type GenerateMarkersTask struct {
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
 
+	VideoPreview bool
 	ImagePreview bool
 	Screenshot   bool
 
@@ -115,9 +116,11 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene 
 
 	g := t.generator
 
-	if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio()); err != nil {
-		logger.Errorf("[generator] failed to generate marker video: %v", err)
-		logErrorOutput(err)
+	if t.VideoPreview {
+		if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio()); err != nil {
+			logger.Errorf("[generator] failed to generate marker video: %v", err)
+			logErrorOutput(err)
+		}
 	}
 
 	if t.ImagePreview {
@@ -164,7 +167,7 @@ func (t *GenerateMarkersTask) markerExists(sceneChecksum string, seconds int) bo
 		return false
 	}
 
-	videoExists := t.videoExists(sceneChecksum, seconds)
+	videoExists := !t.VideoPreview || t.videoExists(sceneChecksum, seconds)
 	imageExists := !t.ImagePreview || t.imageExists(sceneChecksum, seconds)
 	screenshotExists := !t.Screenshot || t.screenshotExists(sceneChecksum, seconds)
 
