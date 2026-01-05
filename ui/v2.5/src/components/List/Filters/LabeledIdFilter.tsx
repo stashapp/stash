@@ -18,8 +18,10 @@ import { Option } from "./SidebarListFilter";
 import {
   CriterionModifier,
   FilterMode,
+  GalleryFilterType,
   InputMaybe,
   IntCriterionInput,
+  PerformerFilterType,
   SceneFilterType,
 } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
@@ -515,12 +517,16 @@ export function makeQueryVariables(query: string, extraProps: {}) {
 interface IFilterType {
   scenes_filter?: InputMaybe<SceneFilterType>;
   scene_count?: InputMaybe<IntCriterionInput>;
+  performers_filter?: InputMaybe<PerformerFilterType>;
+  performer_count?: InputMaybe<IntCriterionInput>;
+  galleries_filter?: InputMaybe<GalleryFilterType>;
+  gallery_count?: InputMaybe<IntCriterionInput>;
 }
 
 export function setObjectFilter(
   out: IFilterType,
   mode: FilterMode,
-  relatedFilterOutput: SceneFilterType
+  relatedFilterOutput: SceneFilterType | PerformerFilterType | GalleryFilterType
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
 
@@ -533,7 +539,27 @@ export function setObjectFilter(
           value: 0,
         };
       }
-      out.scenes_filter = relatedFilterOutput;
+      out.scenes_filter = relatedFilterOutput as SceneFilterType;
+      break;
+    case FilterMode.Performers:
+      // if empty, only get objects with performers
+      if (empty) {
+        out.performer_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.performers_filter = relatedFilterOutput as PerformerFilterType;
+      break;
+    case FilterMode.Galleries:
+      // if empty, only get objects with performers
+      if (empty) {
+        out.gallery_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.galleries_filter = relatedFilterOutput as GalleryFilterType;
       break;
   }
 }
