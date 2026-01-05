@@ -16,7 +16,7 @@ import { GroupTag } from "./GroupTag";
 
 interface IProps {
   group: Pick<
-    GQL.GroupDataFragment,
+    GQL.ListGroupDataFragment,
     "id" | "name" | "containing_groups" | "sub_group_count"
   >;
 }

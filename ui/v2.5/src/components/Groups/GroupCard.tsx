@@ -36,7 +36,7 @@ const Description: React.FC<{
 };
 
 interface IProps {
-  group: GQL.GroupDataFragment;
+  group: GQL.ListGroupDataFragment;
   cardWidth?: number;
   sceneNumber?: number;
   selecting?: boolean;
