@@ -55,6 +55,7 @@ function renderScrapedCustomFieldRows(
         const fieldName = `custom_${field}`;
         return (
           <ScrapedInputGroupRow
+            className="custom-field"
             title={field}
             field={fieldName}
             key={fieldName}
@@ -668,6 +669,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
 
   return (
     <ScrapeDialog
+      className="performer-merge-dialog"
       title={dialogTitle}
       existingLabel={destinationLabel}
       scrapedLabel={sourceLabel}
@@ -793,6 +795,7 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
 
   return (
     <ModalComponent
+      dialogClassName="performer-merge-dialog"
       show={show}
       header={title}
       icon={faSignInAlt}

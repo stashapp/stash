@@ -302,3 +302,11 @@
   overflow-y: auto;
   padding-right: 1.5rem;
 }
+
+.performer-merge-dialog .custom-field {
+  // ensure we don't catch the destination/source labels
+  & > .form-label,
+  .form-control {
+    font-family: "Courier New", Courier, monospace;
+  }
+}

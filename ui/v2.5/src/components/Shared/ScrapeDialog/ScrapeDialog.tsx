@@ -14,6 +14,7 @@ export const ScrapeDialogContext =
   React.createContext<IScrapeDialogContextState>({});
 
 interface IScrapeDialogProps {
+  className?: string;
   title: string;
   existingLabel?: React.ReactNode;
   scrapedLabel?: React.ReactNode;
@@ -68,7 +69,9 @@ export const ScrapeDialog: React.FC<
       }}
       modalProps={{
         size: "lg",
-        dialogClassName: `scrape-dialog ${sfwContentMode ? "sfw-mode" : ""}`,
+        dialogClassName: `${props.className ?? ""} scrape-dialog ${
+          sfwContentMode ? "sfw-mode" : ""
+        }`,
       }}
     >
       <div className="dialog-container">
