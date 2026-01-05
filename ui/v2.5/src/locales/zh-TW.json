@@ -58,8 +58,6 @@
         "logout": "登出",
         "make_primary": "設定為主檔案",
         "merge": "合併",
-        "merge_from": "與其他項目合併",
-        "merge_into": "合併至其他項目",
         "migrate_blobs": "遷移物件檔案",
         "migrate_scene_screenshots": "遷移短片截圖",
         "next_action": "下一步",
@@ -905,10 +903,6 @@
             "destination": "目標",
             "empty_results": "目標值將保持不變。",
             "source": "源頭"
-        },
-        "merge_tags": {
-            "destination": "目的地",
-            "source": "來源"
         },
         "reassign_entity_title": "{count, plural, one {重新指定{singularEntity}}}",
         "reassign_files": {

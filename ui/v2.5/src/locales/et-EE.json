@@ -58,8 +58,6 @@
         "logout": "Logi välja",
         "make_primary": "Määra Peamiseks",
         "merge": "Liida",
-        "merge_from": "Liida teisest",
-        "merge_into": "Liida teise",
         "migrate_blobs": "Migreeri Blobid",
         "migrate_scene_screenshots": "Migreeri Stseenide Ekraanipildid",
         "next_action": "Järgmine",
@@ -935,10 +933,6 @@
         "merge": {
             "destination": "Siihtkoht",
             "empty_results": "Sihtkoha välja väärtusi ei muudeta.",
-            "source": "Allikas"
-        },
-        "merge_tags": {
-            "destination": "Sihtkoht",
             "source": "Allikas"
         },
         "reassign_entity_title": "{count, plural, one {Määra Ümber {singularEntity}} other {Määra Ümber {pluralEntity}-d/id}}",

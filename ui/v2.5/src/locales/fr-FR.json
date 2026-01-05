@@ -61,8 +61,6 @@
         "logout": "Déconnecter",
         "make_primary": "Rendre principal",
         "merge": "Fusionner",
-        "merge_from": "Fusionner depuis",
-        "merge_into": "Fusionner dans",
         "migrate_blobs": "Migrer les blobs",
         "migrate_scene_screenshots": "Migrer les vignettes de scène",
         "next_action": "Suivant",
@@ -941,10 +939,6 @@
         "merge": {
             "destination": "Destination",
             "empty_results": "Les valeurs des champs de destination seront inchangées.",
-            "source": "Source"
-        },
-        "merge_tags": {
-            "destination": "Destination",
             "source": "Source"
         },
         "performers_found": "{count} performeurs trouvés",

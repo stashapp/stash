@@ -73,8 +73,6 @@
         "logout": "Keluar",
         "make_primary": "Jadikan Utama",
         "merge": "Gabung",
-        "merge_from": "Gabung dari",
-        "merge_into": "Gabung ke",
         "migrate_blobs": "Migrasi Blob",
         "next_action": "Selanjutnya",
         "not_running": "tidak berjalan",
@@ -602,10 +600,6 @@
             "page_header": "Halaman {page} / {total}"
         },
         "merge": {
-            "destination": "Destinasi",
-            "source": "Sumber"
-        },
-        "merge_tags": {
             "destination": "Destinasi",
             "source": "Sumber"
         },

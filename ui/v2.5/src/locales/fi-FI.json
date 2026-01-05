@@ -58,8 +58,6 @@
         "logout": "Kirjaudu ulos",
         "make_primary": "Tee ensisijaikseksi",
         "merge": "Yhdistä",
-        "merge_from": "Yhdistä kohteesta",
-        "merge_into": "Yhdistä kohteeseen",
         "next_action": "Seuraava",
         "not_running": "ei käynnissä",
         "open_in_external_player": "Avaa ulkoisessa soittimessa",
@@ -865,10 +863,6 @@
             }
         },
         "merge": {
-            "destination": "Kohde",
-            "source": "Lähde"
-        },
-        "merge_tags": {
             "destination": "Kohde",
             "source": "Lähde"
         },

@@ -124,8 +124,6 @@
         "delete_generated_supporting_files": "Șterge fișierele suport generate",
         "hash_migration": "migrare hash",
         "make_primary": "Definește ca primar",
-        "merge_from": "Îmbină din",
-        "merge_into": "Îmbină în",
         "migrate_blobs": "Migrează obiect binar (blob)",
         "migrate_scene_screenshots": "Migrează Capturi Scene",
         "remove_date": "Șterge data",

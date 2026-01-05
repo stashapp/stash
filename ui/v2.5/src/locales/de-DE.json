@@ -58,8 +58,6 @@
         "logout": "Ausloggen",
         "make_primary": "Als Primärquelle festlegen",
         "merge": "Zusammenführen",
-        "merge_from": "Zusammenführen aus",
-        "merge_into": "Zusammenführen in",
         "migrate_blobs": "Blobs migrieren",
         "migrate_scene_screenshots": "Szenen-Screenshots migrieren",
         "next_action": "Nächste",
@@ -940,10 +938,6 @@
         "merge": {
             "destination": "Ziel",
             "empty_results": "Die Werte der Zielfelder bleiben unverändert.",
-            "source": "Quelle"
-        },
-        "merge_tags": {
-            "destination": "Ziel",
             "source": "Quelle"
         },
         "reassign_entity_title": "{count, plural, one {Weise {singularEntity} neu zu} other {Weise {pluralEntity} neu zu}}}",

@@ -21,7 +21,6 @@
             "import_warning": "Er du sikker på at du vil importere? Dette vil slette databasen og re-importere fra dine eksporterte metadata."
         },
         "generate_thumb_default": "Generer standard miniatyrbilde",
-        "merge_into": "Slå sammen til",
         "scrape_query": "Skrape forespørsel",
         "reset_play_duration": "Tilbakestill avspillingsvarigheten",
         "reset_resume_time": "Tilbakestill gjenoppta tid",
@@ -59,7 +58,6 @@
         "encoding_image": "Omsetter bilde til kode…",
         "merge": "Slå sammen",
         "created_entity": "Opprettet {entity_type}: {entity_name}",
-        "merge_from": "Slå sammen fra",
         "clean_generated": "Rydd opp i genererte filer",
         "clear": "Fjern",
         "clear_back_image": "Fjern bakbilde",
@@ -1043,10 +1041,6 @@
         "dont_show_until_updated": "Ikke vis før neste oppdatering",
         "export_include_related_objects": "Inkluder relaterte objekter i eksporten",
         "export_title": "Eksport",
-        "merge_tags": {
-            "destination": "Destinasjon",
-            "source": "Kilde"
-        },
         "performers_found": "{count} utøvere funnet",
         "reassign_entity_title": "{antall, flertall, én {Reassign {singularEntity}} annen {Reassign {pluralEntity}}}",
         "reassign_files": {

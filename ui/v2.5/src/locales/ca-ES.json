@@ -53,8 +53,6 @@
         "logout": "Tanca la sessió",
         "make_primary": "Fes primari",
         "merge": "Fusiona",
-        "merge_from": "Fusiona des de",
-        "merge_into": "Fusiona dins",
         "migrate_blobs": "Migra els Blobs",
         "migrate_scene_screenshots": "Migra les captures de pantalla de l'escena",
         "not_running": "sense executar",

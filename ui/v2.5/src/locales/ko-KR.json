@@ -58,8 +58,6 @@
         "logout": "로그아웃",
         "make_primary": "첫 번째로 만들기",
         "merge": "병합",
-        "merge_from": "...에서 병합",
-        "merge_into": "...로 병합",
         "migrate_blobs": "Blob 마이그레이션",
         "migrate_scene_screenshots": "영상 스크린샷 마이그레이션",
         "next_action": "다음",
@@ -940,10 +938,6 @@
                 "zoom": "확대"
             },
             "disable_animation": "이미지 간 전환 애니메이션 비활성화하기"
-        },
-        "merge_tags": {
-            "destination": "다른 태그와 합쳐질 태그",
-            "source": "다른 태그로 합쳐질 태그"
         },
         "reassign_entity_title": "{count, plural, one {{singularEntity} 재할당} other {{pluralEntity} 재할당}}",
         "scene_gen": {

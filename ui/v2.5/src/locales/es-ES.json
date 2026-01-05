@@ -58,8 +58,6 @@
         "logout": "Cerrar sesión",
         "make_primary": "Establecer como primario",
         "merge": "Unir",
-        "merge_from": "Fusionar desde (origen)",
-        "merge_into": "Fusionar en (destino)",
         "migrate_blobs": "Migrar blobs",
         "migrate_scene_screenshots": "Migrar capturas de pantalla",
         "next_action": "Próximo",
@@ -916,10 +914,6 @@
             },
             "page_header": "Página {page} / {total}",
             "disable_animation": "Desactivar la animación de transición entre imágenes"
-        },
-        "merge_tags": {
-            "destination": "Destino",
-            "source": "Fuente"
         },
         "scene_gen": {
             "force_transcodes": "Forzar generación de transcodificación",

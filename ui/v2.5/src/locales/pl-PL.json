@@ -58,8 +58,6 @@
         "logout": "Wyloguj",
         "make_primary": "Ustaw jako główny",
         "merge": "Scal",
-        "merge_from": "Scal z",
-        "merge_into": "Scal do",
         "migrate_blobs": "Migruj bloby",
         "migrate_scene_screenshots": "Migruj zrzuty ekranu ze scen",
         "next_action": "Dalej",
@@ -923,10 +921,6 @@
         "merge": {
             "destination": "Cel",
             "empty_results": "Wartości pola \"cel\" nie zostaną zmienione.",
-            "source": "Źródło"
-        },
-        "merge_tags": {
-            "destination": "Cel",
             "source": "Źródło"
         },
         "reassign_entity_title": "Przypisz {count, plural, one {{singularEntity}} other {{pluralEntity}}}",

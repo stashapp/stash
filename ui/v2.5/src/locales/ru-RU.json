@@ -58,8 +58,6 @@
         "logout": "Выйти",
         "make_primary": "Сделать основным",
         "merge": "Слияние",
-        "merge_from": "Слияние из",
-        "merge_into": "Слияние в",
         "migrate_blobs": "Перенос блоков",
         "migrate_scene_screenshots": "Перенос скриншотов сцены",
         "next_action": "Вперёд",
@@ -896,10 +894,6 @@
         "merge": {
             "destination": "Цель",
             "empty_results": "Значения в полях целевого файла останутся без изменений.",
-            "source": "Источник"
-        },
-        "merge_tags": {
-            "destination": "Назначение",
             "source": "Источник"
         },
         "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",

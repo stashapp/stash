@@ -49,8 +49,6 @@
         "import": "İçe Aktar…",
         "import_from_file": "Dosyadan içe aktar",
         "merge": "Birleştir",
-        "merge_from": "Buradan birleştir",
-        "merge_into": "Bununla birleştir",
         "next_action": "Sonraki",
         "not_running": "çalışmıyor",
         "open_random": "Rastgele Aç",
@@ -859,10 +857,6 @@
                 "zoom": "Yakınlaştırma"
             },
             "page_header": "Sayfa {page} / {total}"
-        },
-        "merge_tags": {
-            "destination": "Hedef Noktası",
-            "source": "Kaynak"
         },
         "scene_gen": {
             "force_transcodes": "Dönüştürülmüş video oluşturmayı zorla",

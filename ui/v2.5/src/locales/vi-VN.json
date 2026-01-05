@@ -70,8 +70,6 @@
         "logout": "Đăng xuất",
         "make_primary": "Chính",
         "merge": "Nối",
-        "merge_from": "Nối từ",
-        "merge_into": "Nối vào",
         "migrate_blobs": "Nối Blobs",
         "next_action": "Kế tiếp",
         "not_running": "không khởi chạy",
@@ -915,10 +913,6 @@
             "destination": "Đích đến",
             "source": "Nguồn",
             "empty_results": "Giá trị điền vào mục Đích đến sẽ không bị thay đổi."
-        },
-        "merge_tags": {
-            "destination": "Đích đến",
-            "source": "Nguồn"
         },
         "performers_found": "Đã tìm thấy {count} diễn viên",
         "reassign_entity_title": "{count, plural, one {Chỉnh lại {singularEntity}} other {Chỉnh lại {pluralEntity}}}",

@@ -58,8 +58,6 @@
         "logout": "Esci",
         "make_primary": "Rendi Primario",
         "merge": "Unisci",
-        "merge_from": "Unisci da",
-        "merge_into": "Unisci in",
         "next_action": "Prossima",
         "not_running": "non in funzione",
         "open_in_external_player": "Aprire nel lettore esterno",
@@ -738,10 +736,6 @@
             "destination": "Destinazione",
             "empty_results": "Il valore del campo destinazione rimarranno inalterati.",
             "source": "Sorgente"
-        },
-        "merge_tags": {
-            "destination": "Destinazione",
-            "source": "Origine"
         },
         "reassign_entity_title": "{count, plural, one {Riassegna {singularEntity}} other {Riassegna {pluralEntity}}}",
         "reassign_files": {

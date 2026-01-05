@@ -57,8 +57,6 @@
         "logout": "ログアウト",
         "make_primary": "メインに設定",
         "merge": "マージ",
-        "merge_from": "次からマージ：",
-        "merge_into": "次へマージ：",
         "next_action": "次へ",
         "not_running": "未実行",
         "open_in_external_player": "外部プレーヤーで開く",
@@ -888,10 +886,6 @@
         "merge": {
             "destination": "宛先",
             "empty_results": "宛先欄の値は変更されません。",
-            "source": "ソース"
-        },
-        "merge_tags": {
-            "destination": "場所",
             "source": "ソース"
         },
         "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",

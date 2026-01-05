@@ -61,8 +61,6 @@
         "logout": "Logga ut",
         "make_primary": "Gör primär",
         "merge": "Slå samman",
-        "merge_from": "Slå samman från",
-        "merge_into": "Slå samman till",
         "migrate_blobs": "Migrera Blobbar",
         "migrate_scene_screenshots": "Migrera Scenbilder",
         "next_action": "Nästa",
@@ -941,10 +939,6 @@
         "merge": {
             "destination": "Destination",
             "empty_results": "Destinationens värden kommer ej ändras.",
-            "source": "Källa"
-        },
-        "merge_tags": {
-            "destination": "Mål",
             "source": "Källa"
         },
         "performers_found": "{count} stjärnor hittade",

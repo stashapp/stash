@@ -55,8 +55,6 @@
         "logout": "Odhlásit se",
         "make_primary": "Natavit jako primární",
         "merge": "Sloučit",
-        "merge_from": "Sloučit z",
-        "merge_into": "Sloučit do",
         "next_action": "Další",
         "not_running": "neběží",
         "open_in_external_player": "Otevřít v externím přehrávači",
@@ -913,10 +911,6 @@
             },
             "page_header": "Stránka {page} / {total}",
             "disable_animation": "Zakázat animaci přechodu mezi obrázky"
-        },
-        "merge_tags": {
-            "destination": "Cíl",
-            "source": "Zdroj"
         },
         "scene_gen": {
             "force_transcodes": "Vynutit generování Transkódu",

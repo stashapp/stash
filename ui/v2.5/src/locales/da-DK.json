@@ -58,8 +58,6 @@
         "logout": "Log ud",
         "make_primary": "Gør til primær",
         "merge": "Fusioner",
-        "merge_from": "Fusioner fra",
-        "merge_into": "Fusioner til",
         "migrate_blobs": "Migrér Blobs",
         "migrate_scene_screenshots": "Migrér Scene-skærmbilleder",
         "next_action": "Næste",
@@ -886,10 +884,6 @@
                 "zoom": "Zoom"
             },
             "page_header": "Side {page} / {total}"
-        },
-        "merge_tags": {
-            "destination": "Destination",
-            "source": "Kilde"
         },
         "scene_gen": {
             "force_transcodes": "Tving omkodningsgenerering",

@@ -54,8 +54,6 @@
         "import_from_file": "Importeren uit bestand",
         "logout": "Uitloggen",
         "merge": "Samenvoegen",
-        "merge_from": "Samenvoegen uit",
-        "merge_into": "Samenvoegen naar",
         "next_action": "Volgende",
         "not_running": "niet actief",
         "open_in_external_player": "Openen in externe speler",
@@ -806,10 +804,6 @@
                 "pan_y": "Pan Y",
                 "zoom": "Zoom"
             }
-        },
-        "merge_tags": {
-            "destination": "Bestemming",
-            "source": "Afkomst"
         },
         "scene_gen": {
             "force_transcodes": "Genereren van transcode forceren",

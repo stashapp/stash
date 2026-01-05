@@ -60,8 +60,6 @@
         "logout": "Sair",
         "make_primary": "Tornar Primário",
         "merge": "Unir",
-        "merge_from": "Unir do",
-        "merge_into": "Unir em",
         "migrate_blobs": "Migrar Blobs",
         "migrate_scene_screenshots": "Migrar Print da Cena",
         "next_action": "Próximo",
@@ -711,10 +709,6 @@
                 "pan_y": "Movimentar Y",
                 "zoom": "Zoom"
             }
-        },
-        "merge_tags": {
-            "destination": "Destino",
-            "source": "Fonte"
         },
         "scene_gen": {
             "force_transcodes": "Forçar geração de transcodificação",

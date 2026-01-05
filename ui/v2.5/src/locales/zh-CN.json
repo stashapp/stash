@@ -58,8 +58,6 @@
         "logout": "登出",
         "make_primary": "作为主要文件",
         "merge": "合并",
-        "merge_from": "与其他项目合并",
-        "merge_into": "合并至其他项目",
         "migrate_blobs": "迁移数据",
         "migrate_scene_screenshots": "迁移截图",
         "next_action": "下一步",
@@ -940,10 +938,6 @@
         "merge": {
             "destination": "目标",
             "empty_results": "目标字段值将不变。",
-            "source": "源"
-        },
-        "merge_tags": {
-            "destination": "目标",
             "source": "源"
         },
         "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} 其它 {Reassign {pluralEntity}}}",
