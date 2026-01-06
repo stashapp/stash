@@ -1373,7 +1373,7 @@
         "welcome_to_stash": "Bienvenue sur Stash"
     },
     "stash_id": "identifiant Stash",
-    "stash_id_endpoint": "Point de terminaison de l'identifiant Stash",
+    "stash_id_endpoint": "URL du point de terminaison de l'identifiant Stash",
     "stash_ids": "identifiants Stash",
     "stashbox": {
         "go_review_draft": "Allez sur {endpoint_name} pour examiner l'ébauche.",
