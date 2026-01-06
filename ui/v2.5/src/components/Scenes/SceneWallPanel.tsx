@@ -13,6 +13,7 @@ import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
 import { useIntl } from "react-intl";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 
 interface IScenePhoto {
@@ -32,6 +33,12 @@ export const SceneWallItem: React.FC<
   RenderImageProps<IScenePhoto> & IExtraProps
 > = (props: RenderImageProps<IScenePhoto> & IExtraProps) => {
   const intl = useIntl();
+
+  const { dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+  });
 
   const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
@@ -85,8 +92,7 @@ export const SceneWallItem: React.FC<
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
       onClick={handleClick}
-      draggable={props.selecting || undefined}
-      onDragStart={(e) => e.preventDefault()}
+      {...dragProps}
       style={{
         ...divStyle,
         width,
