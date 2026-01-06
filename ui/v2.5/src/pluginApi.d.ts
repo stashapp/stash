@@ -699,6 +699,7 @@ declare namespace PluginApi {
     NumberSetting: React.FC<any>;
     PerformerAppearsWithPanel: React.FC<any>;
     PerformerCard: React.FC<any>;
+    PerformerCardGrid: React.FC<any>;
     "PerformerCard.Details": React.FC<any>;
     "PerformerCard.Image": React.FC<any>;
     "PerformerCard.Overlays": React.FC<any>;
