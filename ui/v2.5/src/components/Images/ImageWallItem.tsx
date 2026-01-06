@@ -1,6 +1,7 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 import type { RenderImageProps } from "react-photo-gallery";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 
 interface IExtraProps {
   maxHeight: number;
@@ -12,6 +13,12 @@ interface IExtraProps {
 export const ImageWallItem: React.FC<RenderImageProps & IExtraProps> = (
   props: RenderImageProps & IExtraProps
 ) => {
+  const { dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+  });
+
   const height = Math.min(props.maxHeight, props.photo.height);
   const zoomFactor = height / props.photo.height;
   const width = props.photo.width * zoomFactor;
@@ -53,8 +60,7 @@ export const ImageWallItem: React.FC<RenderImageProps & IExtraProps> = (
       className="wall-item"
       style={divStyle}
       onClick={handleClick}
-      draggable={props.selecting || undefined}
-      onDragStart={(e) => e.preventDefault()}
+      {...dragProps}
     >
       {props.onSelectedChanged && (
         <Form.Control
