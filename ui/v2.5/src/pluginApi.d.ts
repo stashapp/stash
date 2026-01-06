@@ -760,6 +760,7 @@ declare namespace PluginApi {
     "TagCard.Overlays": React.FC<any>;
     "TagCard.Popovers": React.FC<any>;
     "TagCard.Title": React.FC<any>;
+    TagCardGrid: React.FC<any>;
     TagLink: React.FC<any>;
     TagList: React.FC<any>;
     TagSelect: React.FC<any>;
