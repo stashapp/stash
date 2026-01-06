@@ -6,6 +6,7 @@ import {
   useCardWidth,
   useContainerDimensions,
 } from "../Shared/GridCard/GridCard";
+import { PatchComponent } from "src/patch";
 
 interface ISceneCardsGrid {
   scenes: GQL.SlimSceneDataFragment[];
@@ -18,36 +19,32 @@ interface ISceneCardsGrid {
 
 const zoomWidths = [280, 340, 480, 640];
 
-export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
-  scenes,
-  queue,
-  selectedIds,
-  zoomIndex,
-  onSelectChange,
-  fromGroupId,
-}) => {
-  const [componentRef, { width: containerWidth }] = useContainerDimensions();
+export const SceneCardsGrid: React.FC<ISceneCardsGrid> = PatchComponent(
+  "SceneCardsGrid",
+  ({ scenes, queue, selectedIds, zoomIndex, onSelectChange, fromGroupId }) => {
+    const [componentRef, { width: containerWidth }] = useContainerDimensions();
 
-  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+    const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
 
-  return (
-    <div className="row justify-content-center" ref={componentRef}>
-      {scenes.map((scene, index) => (
-        <SceneCard
-          key={scene.id}
-          width={cardWidth}
-          scene={scene}
-          queue={queue}
-          index={index}
-          zoomIndex={zoomIndex}
-          selecting={selectedIds.size > 0}
-          selected={selectedIds.has(scene.id)}
-          onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-            onSelectChange(scene.id, selected, shiftKey)
-          }
-          fromGroupId={fromGroupId}
-        />
-      ))}
-    </div>
-  );
-};
+    return (
+      <div className="row justify-content-center" ref={componentRef}>
+        {scenes.map((scene, index) => (
+          <SceneCard
+            key={scene.id}
+            width={cardWidth}
+            scene={scene}
+            queue={queue}
+            index={index}
+            zoomIndex={zoomIndex}
+            selecting={selectedIds.size > 0}
+            selected={selectedIds.has(scene.id)}
+            onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+              onSelectChange(scene.id, selected, shiftKey)
+            }
+            fromGroupId={fromGroupId}
+          />
+        ))}
+      </div>
+    );
+  }
+);

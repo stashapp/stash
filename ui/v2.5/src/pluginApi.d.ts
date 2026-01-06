@@ -727,6 +727,7 @@ declare namespace PluginApi {
     "SceneCard.Image": React.FC<any>;
     "SceneCard.Overlays": React.FC<any>;
     "SceneCard.Popovers": React.FC<any>;
+    SceneCardsGrid: React.FC<any>;
     SceneList: React.FC<any>;
     SceneListOperations: React.FC<any>;
     SceneMarkerCard: React.FC<any>;
