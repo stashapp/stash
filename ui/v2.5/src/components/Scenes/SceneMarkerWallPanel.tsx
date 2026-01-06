@@ -11,6 +11,7 @@ import { objectTitle } from "src/core/files";
 import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import NavUtils from "src/utils/navigation";
 import { markerTitle } from "src/core/markers";
@@ -44,6 +45,12 @@ interface IExtraProps {
 export const MarkerWallItem: React.FC<
   RenderImageProps<IMarkerPhoto> & IExtraProps
 > = (props: RenderImageProps<IMarkerPhoto> & IExtraProps) => {
+  const { dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+  });
+
   const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
@@ -92,8 +99,7 @@ export const MarkerWallItem: React.FC<
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
       onClick={handleClick}
-      draggable={props.selecting || undefined}
-      onDragStart={(e) => e.preventDefault()}
+      {...dragProps}
       style={{
         ...divStyle,
         width,
