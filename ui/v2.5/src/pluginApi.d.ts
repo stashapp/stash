@@ -688,7 +688,7 @@ declare namespace PluginApi {
     HoverPopover: React.FC<any>;
     Icon: React.FC<any>;
     ImageCard: React.FC<any>;
-    ImageCardGrid: React.FC<any>;
+    ImageGridCard: React.FC<any>;
     ImageInput: React.FC<any>;
     ImageList: React.FC<any>;
     LightboxLink: React.FC<any>;
