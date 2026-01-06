@@ -339,6 +339,7 @@ button.collapse-button {
 
 .wall-item:hover .wall-item-check {
   opacity: 0.75;
+  transition: opacity 0.5s;
 }
 
 .TruncatedText {
