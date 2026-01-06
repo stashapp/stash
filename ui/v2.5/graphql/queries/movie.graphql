@@ -2,7 +2,7 @@ query FindGroups($filter: FindFilterType, $group_filter: GroupFilterType) {
   findGroups(filter: $filter, group_filter: $group_filter) {
     count
     groups {
-      ...GroupData
+      ...ListGroupData
     }
   }
 }

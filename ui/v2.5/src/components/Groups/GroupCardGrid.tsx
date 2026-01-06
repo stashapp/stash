@@ -7,7 +7,7 @@ import {
 } from "../Shared/GridCard/GridCard";
 
 interface IGroupCardGrid {
-  groups: GQL.GroupDataFragment[];
+  groups: GQL.ListGroupDataFragment[];
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;

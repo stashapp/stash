@@ -199,7 +199,7 @@ export const GroupList: React.FC<IGroupList> = PatchComponent(
     }
 
     function renderEditDialog(
-      selectedGroups: GQL.GroupDataFragment[],
+      selectedGroups: GQL.ListGroupDataFragment[],
       onClose: (applied: boolean) => void
     ) {
       return <EditGroupsDialog selected={selectedGroups} onClose={onClose} />;
