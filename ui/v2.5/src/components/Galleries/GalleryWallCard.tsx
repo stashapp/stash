@@ -67,11 +67,15 @@ const GalleryWallCard: React.FC<IProps> = ({
       ? [...performerNames.slice(0, -2), performerNames.slice(-2).join(" & ")]
       : performerNames;
 
-  async function showLightboxStart(event?: React.MouseEvent) {
-    if (selecting && onSelectedChanged && event) {
+  function handleCardClick(event: React.MouseEvent) {
+    if (selecting && onSelectedChanged) {
       onSelectedChanged(!selected, event.shiftKey);
       return;
     }
+    showLightboxStart();
+  }
+
+  async function showLightboxStart() {
     if (gallery.image_count === 0) {
       return;
     }
@@ -88,7 +92,7 @@ const GalleryWallCard: React.FC<IProps> = ({
     <>
       <section
         className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation} wall-item`}
-        onClick={(e) => showLightboxStart(e)}
+        onClick={handleCardClick}
         onKeyPress={() => showLightboxStart()}
         role="button"
         tabIndex={0}
