@@ -197,6 +197,12 @@
       top: 0;
     }
   }
+
+  .studio-image {
+    max-height: 200px;
+    max-width: 100%;
+    object-fit: contain;
+  }
 }
 
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
