@@ -6,6 +6,7 @@ type Fingerprint {
 type Folder {
   id: ID!
   path: String!
+  basename: String!
 
   parent_folder_id: ID @deprecated(reason: "Use parent_folder instead")
   zip_file_id: ID @deprecated(reason: "Use zip_file instead")
