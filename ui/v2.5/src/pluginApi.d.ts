@@ -747,6 +747,7 @@ declare namespace PluginApi {
     StringListSetting: React.FC<any>;
     StringSetting: React.FC<any>;
     StudioCard: React.FC<any>;
+    StudioCardGrid: React.FC<any>;
     StudioDetailsPanel: React.FC<any>;
     StudioIDSelect: React.FC<any>;
     StudioList: React.FC<any>;
