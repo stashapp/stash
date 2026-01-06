@@ -11,6 +11,7 @@
 //go:generate go run github.com/vektah/dataloaden GroupLoader int *github.com/stashapp/stash/pkg/models.Group
 //go:generate go run github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/models.FileID github.com/stashapp/stash/pkg/models.File
 //go:generate go run github.com/vektah/dataloaden FolderLoader github.com/stashapp/stash/pkg/models.FolderID *github.com/stashapp/stash/pkg/models.Folder
+//go:generate go run github.com/vektah/dataloaden FolderParentFolderIDsLoader github.com/stashapp/stash/pkg/models.FolderID []github.com/stashapp/stash/pkg/models.FolderID
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
@@ -65,12 +66,16 @@ type Loaders struct {
 	StudioByID         *StudioLoader
 	StudioCustomFields *CustomFieldsLoader
 
-	TagByID           *TagLoader
-	TagCustomFields   *CustomFieldsLoader
+	TagByID         *TagLoader
+	TagCustomFields *CustomFieldsLoader
+
 	GroupByID         *GroupLoader
 	GroupCustomFields *CustomFieldsLoader
-	FileByID          *FileLoader
-	FolderByID        *FolderLoader
+
+	FileByID *FileLoader
+
+	FolderByID            *FolderLoader
+	FolderParentFolderIDs *FolderParentFolderIDsLoader
 }
 
 type Middleware struct {
@@ -160,6 +165,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchFolders(ctx),
+			},
+			FolderParentFolderIDs: &FolderParentFolderIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchFoldersParentFolderIDs(ctx),
 			},
 			SceneFiles: &SceneFileIDsLoader{
 				wait:     wait,
@@ -400,6 +410,17 @@ func (m Middleware) fetchFolders(ctx context.Context) func(keys []models.FolderI
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Folder.FindMany(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchFoldersParentFolderIDs(ctx context.Context) func(keys []models.FolderID) ([][]models.FolderID, []error) {
+	return func(keys []models.FolderID) (ret [][]models.FolderID, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Folder.GetManyParentFolderIDs(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

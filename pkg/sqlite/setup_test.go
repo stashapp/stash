@@ -31,7 +31,8 @@ const (
 )
 
 const (
-	folderIdxWithSubFolder = iota
+	folderIdxRoot = iota
+	folderIdxWithSubFolder
 	folderIdxWithParentFolder
 	folderIdxWithFiles
 	folderIdxInZip
@@ -359,6 +360,8 @@ func (m linkMap) reverseLookup(idx int) []int {
 
 var (
 	folderParentFolders = map[int]int{
+		folderIdxWithSubFolder:    folderIdxRoot,
+		folderIdxForObjectFiles:   folderIdxRoot,
 		folderIdxWithParentFolder: folderIdxWithSubFolder,
 		folderIdxWithSceneFiles:   folderIdxForObjectFiles,
 		folderIdxWithImageFiles:   folderIdxForObjectFiles,

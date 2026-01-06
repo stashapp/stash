@@ -20,6 +20,17 @@ func (r *folderResolver) ParentFolder(ctx context.Context, obj *models.Folder) (
 	return loaders.From(ctx).FolderByID.Load(*obj.ParentFolderID)
 }
 
+func (r *folderResolver) ParentFolders(ctx context.Context, obj *models.Folder) ([]*models.Folder, error) {
+	ids, err := loaders.From(ctx).FolderParentFolderIDs.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var errs []error
+	ret, errs := loaders.From(ctx).FolderByID.LoadAll(ids)
+	return ret, firstError(errs)
+}
+
 func (r *folderResolver) ZipFile(ctx context.Context, obj *models.Folder) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
