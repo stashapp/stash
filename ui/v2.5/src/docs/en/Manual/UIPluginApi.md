@@ -223,6 +223,7 @@ Returns `void`.
 - `CountrySelect`
 - `CustomFieldInput`
 - `CustomFields`
+- `CustomFieldsInput`
 - `DateInput`
 - `DetailImage`
 - `ExternalLinkButtons`

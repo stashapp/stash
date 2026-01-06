@@ -189,136 +189,134 @@ interface ICustomFieldsInput {
   setError: (error?: string) => void;
 }
 
-export const CustomFieldsInput: React.FC<ICustomFieldsInput> = ({
-  values,
-  error,
-  onChange,
-  setError,
-}) => {
-  const intl = useIntl();
+export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
+  "CustomFieldsInput",
+  ({ values, error, onChange, setError }) => {
+    const intl = useIntl();
 
-  const [newCustomField, setNewCustomField] = useState<ICustomField>({
-    field: "",
-    value: "",
-  });
+    const [newCustomField, setNewCustomField] = useState<ICustomField>({
+      field: "",
+      value: "",
+    });
 
-  const fields = useMemo(() => {
-    const valueCopy = cloneDeep(values);
-    if (newCustomField.field !== "" && error === undefined) {
-      delete valueCopy[newCustomField.field];
+    const fields = useMemo(() => {
+      const valueCopy = cloneDeep(values);
+      if (newCustomField.field !== "" && error === undefined) {
+        delete valueCopy[newCustomField.field];
+      }
+
+      const ret = Object.keys(valueCopy);
+      ret.sort();
+      return ret;
+    }, [values, newCustomField, error]);
+
+    function onSetNewField(v: ICustomField) {
+      // validate the field name
+      let newError = undefined;
+      if (v.field.length > maxFieldNameLength) {
+        newError = intl.formatMessage({
+          id: "errors.custom_fields.field_name_length",
+        });
+      }
+      if (v.field.trim() === "" && v.value !== "") {
+        newError = intl.formatMessage({
+          id: "errors.custom_fields.field_name_required",
+        });
+      }
+      if (v.field.trim() !== v.field) {
+        newError = intl.formatMessage({
+          id: "errors.custom_fields.field_name_whitespace",
+        });
+      }
+      if (fields.includes(v.field)) {
+        newError = intl.formatMessage({
+          id: "errors.custom_fields.duplicate_field",
+        });
+      }
+
+      const oldField = newCustomField;
+
+      setNewCustomField(v);
+
+      const valuesCopy = cloneDeep(values);
+      if (oldField.field !== "" && error === undefined) {
+        delete valuesCopy[oldField.field];
+      }
+
+      // if valid, pass up
+      if (!newError && v.field !== "") {
+        valuesCopy[v.field] = v.value;
+      }
+
+      onChange(valuesCopy);
+      setError(newError);
     }
 
-    const ret = Object.keys(valueCopy);
-    ret.sort();
-    return ret;
-  }, [values, newCustomField, error]);
-
-  function onSetNewField(v: ICustomField) {
-    // validate the field name
-    let newError = undefined;
-    if (v.field.length > maxFieldNameLength) {
-      newError = intl.formatMessage({
-        id: "errors.custom_fields.field_name_length",
-      });
-    }
-    if (v.field.trim() === "" && v.value !== "") {
-      newError = intl.formatMessage({
-        id: "errors.custom_fields.field_name_required",
-      });
-    }
-    if (v.field.trim() !== v.field) {
-      newError = intl.formatMessage({
-        id: "errors.custom_fields.field_name_whitespace",
-      });
-    }
-    if (fields.includes(v.field)) {
-      newError = intl.formatMessage({
-        id: "errors.custom_fields.duplicate_field",
-      });
+    function onAdd() {
+      const newValues = {
+        ...values,
+        [newCustomField.field]: newCustomField.value,
+      };
+      setNewCustomField({ field: "", value: "" });
+      onChange(newValues);
     }
 
-    const oldField = newCustomField;
-
-    setNewCustomField(v);
-
-    const valuesCopy = cloneDeep(values);
-    if (oldField.field !== "" && error === undefined) {
-      delete valuesCopy[oldField.field];
+    function fieldChanged(
+      currentField: string,
+      newField: string,
+      value: unknown
+    ) {
+      let newValues = cloneDeep(values);
+      delete newValues[currentField];
+      if (newField !== "") {
+        newValues[newField] = value;
+      }
+      onChange(newValues);
     }
 
-    // if valid, pass up
-    if (!newError && v.field !== "") {
-      valuesCopy[v.field] = v.value;
-    }
-
-    onChange(valuesCopy);
-    setError(newError);
-  }
-
-  function onAdd() {
-    const newValues = {
-      ...values,
-      [newCustomField.field]: newCustomField.value,
-    };
-    setNewCustomField({ field: "", value: "" });
-    onChange(newValues);
-  }
-
-  function fieldChanged(
-    currentField: string,
-    newField: string,
-    value: unknown
-  ) {
-    let newValues = cloneDeep(values);
-    delete newValues[currentField];
-    if (newField !== "") {
-      newValues[newField] = value;
-    }
-    onChange(newValues);
-  }
-
-  return (
-    <CollapseButton
-      className="custom-fields-input"
-      text={intl.formatMessage({ id: "custom_fields.title" })}
-    >
-      <Row>
-        <Col xl={12}>
-          <Row className="custom-fields-input-header">
-            <Form.Label column sm={3} xl={2}>
-              <FormattedMessage id="custom_fields.field" />
-            </Form.Label>
-            <Form.Label column sm={9} xl={7}>
-              <FormattedMessage id="custom_fields.value" />
-            </Form.Label>
-          </Row>
-          {fields.map((field) => (
-            <CustomFieldInput
-              key={field}
-              field={field}
-              value={values[field]}
-              onChange={(newField, newValue) =>
-                fieldChanged(field, newField, newValue)
-              }
-            />
-          ))}
-          <CustomFieldInput
-            field={newCustomField.field}
-            value={newCustomField.value}
-            error={error}
-            onChange={(field, value) => onSetNewField({ field, value })}
-            isNew
-          />
-        </Col>
-      </Row>
-      <Button
-        className="custom-fields-add"
-        variant="success"
-        onClick={() => onAdd()}
-        disabled={newCustomField.field === "" || error !== undefined}
+    return (
+      <CollapseButton
+        className="custom-fields-input"
+        text={intl.formatMessage({ id: "custom_fields.title" })}
       >
-        <Icon icon={faPlus} />
-      </Button>
-    </CollapseButton>
-  );
-};
+        <Row>
+          <Col xl={12}>
+            <Row className="custom-fields-input-header">
+              <Form.Label column sm={3} xl={2}>
+                <FormattedMessage id="custom_fields.field" />
+              </Form.Label>
+              <Form.Label column sm={9} xl={7}>
+                <FormattedMessage id="custom_fields.value" />
+              </Form.Label>
+            </Row>
+            {fields.map((field) => (
+              <CustomFieldInput
+                key={field}
+                field={field}
+                value={values[field]}
+                onChange={(newField, newValue) =>
+                  fieldChanged(field, newField, newValue)
+                }
+              />
+            ))}
+            <CustomFieldInput
+              field={newCustomField.field}
+              value={newCustomField.value}
+              error={error}
+              onChange={(field, value) => onSetNewField({ field, value })}
+              isNew
+            />
+          </Col>
+        </Row>
+        <Button
+          className="custom-fields-add"
+          variant="success"
+          onClick={() => onAdd()}
+          disabled={newCustomField.field === "" || error !== undefined}
+        >
+          <Icon icon={faPlus} />
+        </Button>
+      </CollapseButton>
+    );
+  }
+);
