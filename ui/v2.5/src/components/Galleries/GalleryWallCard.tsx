@@ -9,6 +9,7 @@ import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 
 const CLASSNAME = "GalleryWallCard";
@@ -42,6 +43,12 @@ const GalleryWallCard: React.FC<IProps> = ({
   const [imageOrientation, setImageOrientation] =
     React.useState<Orientation>("landscape");
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
+
+  const { dragProps } = useDragMoveSelect({
+    selecting: selecting || false,
+    selected: selected || false,
+    onSelectedChanged: onSelectedChanged,
+  });
 
   const cover = gallery?.paths.cover;
 
@@ -96,8 +103,7 @@ const GalleryWallCard: React.FC<IProps> = ({
         onKeyPress={() => showLightboxStart()}
         role="button"
         tabIndex={0}
-        draggable={selecting || undefined}
-        onDragStart={(e) => e.preventDefault()}
+        {...dragProps}
       >
         {onSelectedChanged && (
           <Form.Control
