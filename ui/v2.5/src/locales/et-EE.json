@@ -222,7 +222,6 @@
         "verb_match_fp": "Leia Sõrmejälje Kattuvusi",
         "verb_matched": "Kokkusobitatud",
         "verb_scrape_all": "Kraabi Kõikjalt",
-        "verb_scrape_selected": "Kratsi valitud",
         "verb_submit_fp": "Esita {fpCount, plural, one{# Sõrmejälg} other{# Sõrmejälge}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid",

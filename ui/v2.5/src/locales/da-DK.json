@@ -195,7 +195,6 @@
         "verb_match_fp": "Match fingeraftryk",
         "verb_matched": "Matchet",
         "verb_scrape_all": "Scrape Alle",
-        "verb_scrape_selected": "Skrab valgt",
         "verb_submit_fp": "Indsend {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} ikke matchede scener"

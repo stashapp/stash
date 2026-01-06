@@ -222,7 +222,6 @@
         "verb_match_fp": "Các dấu vân tay trùng khớp",
         "verb_matched": "Trùng khớp",
         "verb_scrape_all": "Loại bỏ tất cả",
-        "verb_scrape_selected": "Loại bỏ được chọn",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} phân cảnh không trùng khớp",
         "verb_submit_fp": "Gửi {fpCount, plural, one{# Fingerprint} other{# Fingerprint}}"

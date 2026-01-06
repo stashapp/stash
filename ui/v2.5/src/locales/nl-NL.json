@@ -210,7 +210,6 @@
         "verb_match_fp": "Overeenkomen met vingerafdrukken",
         "verb_matched": "Overeenkomstig",
         "verb_scrape_all": "Alles scrapen",
-        "verb_scrape_selected": "Geselecteerde scrapen",
         "verb_submit_fp": "{fpCount, plural, one{# vingerafdruk} other{# vingerafdrukken}} indienen",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} niet-overeenkomende scènes"

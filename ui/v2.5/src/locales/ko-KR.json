@@ -226,7 +226,6 @@
         "verb_match_fp": "식별값 비교하기",
         "verb_matched": "일치함",
         "verb_scrape_all": "모두 스크레이핑하기",
-        "verb_scrape_selected": "스크레이핑 선택",
         "verb_submit_fp": "{fpCount, plural, one{# 식별값} other{# 식별값들}} 제출하기",
         "verb_toggle_config": "{configuration} {toggle}",
         "verb_toggle_unmatched": "일치하지 않는 영상 {toggle}"

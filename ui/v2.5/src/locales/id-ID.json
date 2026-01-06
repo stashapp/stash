@@ -263,7 +263,6 @@
             "fp_found": "{fpCount, plural, =0 {Tidak ditemukan kecocokan sidik jari baru} other {# kecocokan sidik jari baru ditemukan}}"
         },
         "verb_scrape_all": "Gali Semua",
-        "verb_scrape_selected": "Gali yang Dipilih",
         "noun_query": "Kueri",
         "verb_matched": "Dicocokkan",
         "verb_toggle_unmatched": "{toggle} adegan yang tidak cocok",

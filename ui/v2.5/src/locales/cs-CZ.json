@@ -216,7 +216,6 @@
         "verb_match_fp": "Identifikovat otisky",
         "verb_matched": "Identifikováno",
         "verb_scrape_all": "Scrape vše",
-        "verb_scrape_selected": "Scrape vybrané",
         "verb_submit_fp": "Publikovat {fpCount, plural, one{# otisk} other{# otisky}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} neidentifikované scény",

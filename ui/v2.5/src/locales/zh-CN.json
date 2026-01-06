@@ -227,7 +227,6 @@
         "verb_match_fp": "匹配指纹",
         "verb_matched": "符合",
         "verb_scrape_all": "挖掘所有",
-        "verb_scrape_selected": "抓取已选择",
         "verb_submit_fp": "提交 {fpCount, plural, one{# 指纹} other{# 指纹}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} 未匹配的短片",

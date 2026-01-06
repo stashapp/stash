@@ -182,7 +182,6 @@
         "verb_match_fp": "আঙ্গুলেরছাপ মিল করুন",
         "verb_matched": "মিলিত",
         "verb_scrape_all": "সবগুলোকে উঠান",
-        "verb_scrape_selected": "নির্বাচিত সংগ্রহ করুন",
         "verb_submit_fp": "জমান {এফপিগণনা,বহু,একক{# আঙ্গুলেরছাপ } অন্য { # আঙ্গুলেরছাপ }",
         "verb_toggle_config": "{ নাড়ান} { কনফিগারেশন }",
         "verb_toggle_unmatched": "{ নাড়ান } অমিলিত দৃশ্যগুলো"

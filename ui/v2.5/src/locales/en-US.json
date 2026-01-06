@@ -26,7 +26,6 @@
     "component_tagger": {
         "config": {
             "mark_organized_label": "Mark as Organized on save"
-        },
-        "verb_scrape_selected": "Scrape Selected"
+        }
     }
 }

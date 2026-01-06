@@ -215,7 +215,6 @@
         "verb_match_fp": "特徵碼辨別",
         "verb_matched": "符合",
         "verb_scrape_all": "爬取所有",
-        "verb_scrape_selected": "爬取已選擇",
         "verb_submit_fp": "{fpCount, plural, other{提交 # 個特徵碼}}",
         "verb_toggle_config": "{toggle}{configuration}",
         "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片"

@@ -210,7 +210,6 @@
         "verb_match_fp": "Dopasuj odciski palców",
         "verb_matched": "Dopasowane",
         "verb_scrape_all": "Zbierz wszystko",
-        "verb_scrape_selected": "Zbierz wybrane",
         "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} few{# odciski palców} other{# odcisków palców}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} niedopasowane sceny"

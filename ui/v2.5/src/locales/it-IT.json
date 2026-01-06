@@ -198,7 +198,6 @@
         "verb_match_fp": "Compara Impronte",
         "verb_matched": "Comparate",
         "verb_scrape_all": "Scrape Tutto",
-        "verb_scrape_selected": "Raschia Selezionato",
         "verb_submit_fp": "Invia {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} scene non uguali"
