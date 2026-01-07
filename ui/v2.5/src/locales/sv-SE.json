@@ -835,6 +835,10 @@
             "sfw_mode": {
                 "description": "Aktivera om stash inte används för vuxet innehåll. Döljer eller ändrar gränssnitt som är mer fokuserade på vuxet innehåll.",
                 "heading": "Vuxet Innehållsläge"
+            },
+            "custom_title": {
+                "description": "Anpassad text som ska läggas till i sidtiteln. Om tomt används standardvärdet \"Stash\".",
+                "heading": "Anpassad titel"
             }
         },
         "advanced_mode": "Avancerat Läge"
@@ -1369,7 +1373,7 @@
         "welcome_to_stash": "Välkommen till Stash"
     },
     "stash_id": "Stash ID",
-    "stash_id_endpoint": "Stash ID Slutpunkt",
+    "stash_id_endpoint": "Stash ID Slutpunkt URL",
     "stash_ids": "Stash ID:er",
     "stashbox": {
         "go_review_draft": "Gå till {endpoint_name} för att granska utkast.",
@@ -1459,7 +1463,8 @@
         "started_auto_tagging": "Började auto-tagga",
         "started_generating": "Började generera",
         "started_importing": "Började importera",
-        "updated_entity": "Uppdaterade {entity}"
+        "updated_entity": "Uppdaterade {entity}",
+        "merged_performers": "Sammanslagna stjärnor"
     },
     "total": "Total",
     "true": "Sant",
