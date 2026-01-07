@@ -234,14 +234,14 @@ input[type="range"].zoom-slider {
 
   .saved-filter-item {
     cursor: pointer;
-    height: 2em;
     margin-bottom: 0.25rem;
+    min-height: 2em;
 
     a {
       align-items: center;
       display: flex;
-      height: 2em;
       justify-content: space-between;
+      min-height: 2em;
       outline: none;
 
       &:hover,
@@ -533,14 +533,14 @@ input[type="range"].zoom-slider {
   .excluded-object,
   .unselected-object {
     cursor: pointer;
-    height: 2em;
     margin-bottom: 0.25rem;
+    min-height: 2em;
 
     a {
       align-items: center;
       display: flex;
-      height: 2em;
       justify-content: space-between;
+      min-height: 2em;
       outline: none;
 
       &:hover,
@@ -639,14 +639,14 @@ input[type="range"].zoom-slider {
   .excluded-object,
   .unselected-object {
     cursor: pointer;
-    height: 2em;
     margin-bottom: 0.25rem;
+    min-height: 2em;
 
     a {
       align-items: center;
       display: flex;
-      height: 2em;
       justify-content: space-between;
+      min-height: 2em;
       outline: none;
 
       &:hover,
