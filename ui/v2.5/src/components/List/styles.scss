@@ -748,6 +748,29 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-path-filter ul {
+  .btn.expand-collapse {
+    font-size: 0.8rem;
+    padding-left: 0;
+    padding-right: 0.25rem;
+    text-align: left;
+  }
+
+  .empty .btn.expand-collapse {
+    visibility: hidden;
+  }
+
+  .unselected-object a {
+    justify-content: flex-start;
+  }
+
+  .selected-object a .selected-object-label {
+    font-size: 0.8em;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+}
+
 .tilted {
   transform: rotate(45deg);
 }
