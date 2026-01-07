@@ -18,6 +18,7 @@ import {
 import {
   faChevronDown,
   faChevronRight,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import cx from "classnames";
@@ -28,7 +29,9 @@ import {
   FolderCriterion,
   FolderCriterionOption,
 } from "src/models/list-filter/criteria/folder";
-import { SelectedList } from "./SidebarListFilter";
+import { Option, SelectedList } from "./SidebarListFilter";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Icon } from "src/components/Shared/Icon";
 
 interface IInputFilterProps {
   criterion: ModifierCriterion<CriterionValue>;
@@ -161,6 +164,7 @@ export const SidebarFolderFilter: React.FC<
     setFilter: (f: ListFilterModel) => void;
   }
 > = (props) => {
+  const intl = useIntl();
   const [skip, setSkip] = React.useState(true);
 
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
@@ -234,18 +238,56 @@ export const SidebarFolderFilter: React.FC<
     setFilter(props.filter.setCriteria(newCriteria));
   }
 
-  const onUnselect = useCallback(() => {
-    setFilter(props.filter.removeCriterion(option.type));
-  }, [props.filter, setFilter, option.type]);
+  function onSelectSubfolders() {
+    const c = criterion.clone() as FolderCriterion;
+    c.value = {
+      items: c.value?.items ?? [],
+      depth: -1,
+      excluded: c.value?.excluded ?? [],
+    };
+
+    setFilter(props.filter.replaceCriteria(option.type, [c]));
+  }
+
+  const onUnselect = useCallback(
+    (i: Option) => {
+      if (i.className === "modifier-object") {
+        // subfolders option
+        const c = criterion.clone() as FolderCriterion;
+        c.value = {
+          items: c.value?.items ?? [],
+          depth: 0,
+          excluded: c.value?.excluded ?? [],
+        };
+
+        setFilter(props.filter.replaceCriteria(option.type, [c]));
+        return;
+      }
+
+      setFilter(props.filter.removeCriterion(option.type));
+    },
+    [props.filter, setFilter, option.type, criterion]
+  );
+
+  const subDirsSelected = criterion.value?.depth === -1;
 
   const selectedList = useMemo(() => {
-    const selected = criterion.value?.items.map((item) => ({
-      id: item.id,
-      label: item.label,
-    }));
+    const selected: Option[] =
+      criterion.value?.items.map((item) => ({
+        id: item.id,
+        label: item.label,
+      })) ?? [];
+
+    if (subDirsSelected) {
+      selected.push({
+        id: "subfolders",
+        label: "(" + intl.formatMessage({ id: "sub_folders" }) + ")",
+        className: "modifier-object",
+      });
+    }
 
     return <SelectedList items={selected} onUnselect={onUnselect} />;
-  }, [criterion, onUnselect]);
+  }, [intl, subDirsSelected, criterion, onUnselect]);
 
   return (
     <SidebarSection
@@ -256,6 +298,14 @@ export const SidebarFolderFilter: React.FC<
     >
       {/* query input goes here */}
       <ul>
+        {criterion.value.items.length > 0 && !subDirsSelected && (
+          <li className="unselected-object modifier-object">
+            <a onClick={onSelectSubfolders}>
+              <Icon className={`fa-fw include-button`} icon={faPlus} />
+              (<FormattedMessage id="sub_folders" />)
+            </a>
+          </li>
+        )}
         {folderMap.map((folder) => (
           <FolderRow
             key={folder.id}
