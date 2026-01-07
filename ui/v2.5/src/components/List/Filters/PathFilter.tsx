@@ -155,7 +155,7 @@ function replaceFolder(folder: IFolder): (f: IFolder) => IFolder {
   };
 }
 
-export const SidebarPathFilter: React.FC<
+export const SidebarFolderFilter: React.FC<
   ISidebarSectionProps & {
     filter: ListFilterModel;
     setFilter: (f: ListFilterModel) => void;
