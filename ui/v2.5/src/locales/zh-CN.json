@@ -834,6 +834,10 @@
             "sfw_mode": {
                 "description": "如果使用 stash 存储SFW(工作场合安全)内容，请启用。它隐藏或更改了 UI 中与成人内容相关的某些方面。",
                 "heading": "SFW(工作场合安全)内容模式"
+            },
+            "custom_title": {
+                "description": "附加在页面标题后的自定义文本。如果是空的，默认是“Stash”。",
+                "heading": "用户标题"
             }
         },
         "advanced_mode": "高级模式"
@@ -1415,7 +1419,8 @@
         "started_auto_tagging": "自动生成标签中",
         "started_generating": "生成资料中",
         "started_importing": "导入中",
-        "updated_entity": "已更新{entity}"
+        "updated_entity": "已更新{entity}",
+        "merged_performers": "合并的表演者"
     },
     "total": "总计",
     "true": "是",
