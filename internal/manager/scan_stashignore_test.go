@@ -6,6 +6,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -41,6 +42,17 @@ func (m *mockProgressReporter) AddTotal(total int)                        {}
 func (m *mockProgressReporter) Increment()                                {}
 func (m *mockProgressReporter) Definite()                                 {}
 func (m *mockProgressReporter) ExecuteTask(description string, fn func()) { fn() }
+
+// stashIgnorePathFilter wraps StashIgnoreFilter to implement PathFilter for testing.
+// It provides a fixed library root for the filter.
+type stashIgnorePathFilter struct {
+	filter      *file.StashIgnoreFilter
+	libraryRoot string
+}
+
+func (f *stashIgnorePathFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
+	return f.filter.Accept(ctx, path, info, f.libraryRoot)
+}
 
 // createTestFileOnDisk creates a file with some content.
 func createTestFileOnDisk(t *testing.T, dir, name string) string {
@@ -134,8 +146,11 @@ temp/
 		FingerprintCalculator: &mockFingerprintCalculator{},
 	}
 
-	// Create stashignore filter.
-	stashIgnoreFilter := file.NewStashIgnoreFilter(tmpDir)
+	// Create stashignore filter with library root.
+	stashIgnoreFilter := &stashIgnorePathFilter{
+		filter:      file.NewStashIgnoreFilter(),
+		libraryRoot: tmpDir,
+	}
 
 	// Run scan.
 	ctx := context.Background()
@@ -250,8 +265,11 @@ func TestScannerWithNestedStashIgnore(t *testing.T) {
 		FingerprintCalculator: &mockFingerprintCalculator{},
 	}
 
-	// Create stashignore filter.
-	stashIgnoreFilter := file.NewStashIgnoreFilter(tmpDir)
+	// Create stashignore filter with library root.
+	stashIgnoreFilter := &stashIgnorePathFilter{
+		filter:      file.NewStashIgnoreFilter(),
+		libraryRoot: tmpDir,
+	}
 
 	// Run scan.
 	ctx := context.Background()
@@ -335,8 +353,11 @@ func TestScannerWithoutStashIgnore(t *testing.T) {
 		FingerprintCalculator: &mockFingerprintCalculator{},
 	}
 
-	// Create stashignore filter (but no .stashignore file exists).
-	stashIgnoreFilter := file.NewStashIgnoreFilter(tmpDir)
+	// Create stashignore filter with library root (but no .stashignore file exists).
+	stashIgnoreFilter := &stashIgnorePathFilter{
+		filter:      file.NewStashIgnoreFilter(),
+		libraryRoot: tmpDir,
+	}
 
 	// Run scan.
 	ctx := context.Background()
@@ -425,8 +446,11 @@ func TestScannerWithNegationPattern(t *testing.T) {
 		FingerprintCalculator: &mockFingerprintCalculator{},
 	}
 
-	// Create stashignore filter.
-	stashIgnoreFilter := file.NewStashIgnoreFilter(tmpDir)
+	// Create stashignore filter with library root.
+	stashIgnoreFilter := &stashIgnorePathFilter{
+		filter:      file.NewStashIgnoreFilter(),
+		libraryRoot: tmpDir,
+	}
 
 	// Run scan.
 	ctx := context.Background()

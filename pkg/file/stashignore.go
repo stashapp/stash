@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	ignore "github.com/sabhiram/go-gitignore"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const stashIgnoreFilename = ".stashignore"
@@ -16,9 +17,6 @@ const stashIgnoreFilename = ".stashignore"
 // StashIgnoreFilter implements PathFilter to exclude files/directories
 // based on .stashignore files with gitignore-style patterns.
 type StashIgnoreFilter struct {
-	// root is the root directory being scanned.
-	root string
-
 	// cache stores compiled ignore patterns per directory.
 	cache sync.Map // map[string]*ignoreEntry
 }
@@ -31,46 +29,36 @@ type ignoreEntry struct {
 	dir string
 }
 
-// NewStashIgnoreFilter creates a new StashIgnoreFilter for the given root directory.
-func NewStashIgnoreFilter(root string) *StashIgnoreFilter {
-	return &StashIgnoreFilter{
-		root: root,
-	}
+// NewStashIgnoreFilter creates a new StashIgnoreFilter.
+func NewStashIgnoreFilter() *StashIgnoreFilter {
+	return &StashIgnoreFilter{}
 }
 
 // Accept returns true if the path should be included in the scan.
 // It checks for .stashignore files in the directory hierarchy and
 // applies gitignore-style pattern matching.
-func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
+// The libraryRoot parameter bounds the search for .stashignore files -
+// only directories within the library root are checked.
+func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.FileInfo, libraryRoot string) bool {
 	// Always accept .stashignore files themselves so they can be read.
 	if filepath.Base(path) == stashIgnoreFilename {
 		return true
 	}
 
-	// Get the directory containing this path.
-	var dir string
-	if info.IsDir() {
-		dir = filepath.Dir(path)
-	} else {
-		dir = filepath.Dir(path)
-	}
-
-	// Collect all applicable ignore entries from root to this directory.
-	entries := f.collectIgnoreEntries(dir)
-
-	// Check if any pattern matches (and isn't negated).
-	relPath, err := filepath.Rel(f.root, path)
-	if err != nil {
-		// If we can't get relative path, accept the file.
+	// If no library root provided, accept the file (safety fallback).
+	if libraryRoot == "" {
 		return true
 	}
 
-	// Normalise to forward slashes for consistent matching.
-	relPath = filepath.ToSlash(relPath)
+	// Get the directory containing this path.
+	dir := filepath.Dir(path)
 
-	// For directories, also check with trailing slash.
-	if info.IsDir() {
-		relPath = relPath + "/"
+	// Collect all applicable ignore entries from library root to this directory.
+	entries := f.collectIgnoreEntries(dir, libraryRoot)
+
+	// If no .stashignore files found, accept the file.
+	if len(entries) == 0 {
+		return true
 	}
 
 	// Check each ignore entry in order (from root to most specific).
@@ -90,41 +78,63 @@ func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.Fil
 		if entry.patterns.MatchesPath(entryRelPath) {
 			ignored = true
 		}
-		// Check negation by testing without the directory suffix.
-		// The library handles negation internally.
 	}
 
 	return !ignored
 }
 
-// collectIgnoreEntries gathers all ignore entries from root to the given directory.
-func (f *StashIgnoreFilter) collectIgnoreEntries(dir string) []*ignoreEntry {
+// collectIgnoreEntries gathers all ignore entries from library root to the given directory.
+// It walks up the directory tree from dir to libraryRoot and returns entries in order
+// from root to most specific.
+func (f *StashIgnoreFilter) collectIgnoreEntries(dir string, libraryRoot string) []*ignoreEntry {
+	// Collect directories from library root down to current dir.
+	var dirs []string
+
+	// Clean paths for consistent comparison.
+	dir = filepath.Clean(dir)
+	libraryRoot = filepath.Clean(libraryRoot)
+
+	// Walk up from dir to library root, collecting directories.
+	current := dir
+	for {
+		// Check if we're still within the library root.
+		if !isPathInOrEqual(libraryRoot, current) {
+			break
+		}
+
+		dirs = append([]string{current}, dirs...) // Prepend to maintain root-to-leaf order.
+
+		// Stop if we've reached the library root.
+		if current == libraryRoot {
+			break
+		}
+
+		parent := filepath.Dir(current)
+		if parent == current {
+			// Reached filesystem root without finding library root.
+			break
+		}
+		current = parent
+	}
+
+	// Check each directory for .stashignore files.
 	var entries []*ignoreEntry
-
-	// Walk from root to current directory.
-	current := f.root
-	relDir, err := filepath.Rel(f.root, dir)
-	if err != nil {
-		return entries
-	}
-
-	// Check root directory first.
-	if entry := f.getOrLoadIgnoreEntry(current); entry != nil {
-		entries = append(entries, entry)
-	}
-
-	// Then check each subdirectory.
-	if relDir != "." {
-		parts := strings.Split(filepath.ToSlash(relDir), "/")
-		for _, part := range parts {
-			current = filepath.Join(current, part)
-			if entry := f.getOrLoadIgnoreEntry(current); entry != nil {
-				entries = append(entries, entry)
-			}
+	for _, d := range dirs {
+		if entry := f.getOrLoadIgnoreEntry(d); entry != nil {
+			entries = append(entries, entry)
 		}
 	}
 
 	return entries
+}
+
+// isPathInOrEqual checks if path is equal to or inside root.
+func isPathInOrEqual(root, path string) bool {
+	if path == root {
+		return true
+	}
+	// Check if path starts with root + separator.
+	return strings.HasPrefix(path, root+string(filepath.Separator))
 }
 
 // getOrLoadIgnoreEntry returns the cached ignore entry for a directory, or loads it.
@@ -140,12 +150,14 @@ func (f *StashIgnoreFilter) getOrLoadIgnoreEntry(dir string) *ignoreEntry {
 
 	// Try to load .stashignore from this directory.
 	stashIgnorePath := filepath.Join(dir, stashIgnoreFilename)
-	patterns, err := f.loadIgnoreFile(stashIgnorePath, dir)
-	if err != nil {
-		// Cache negative result.
+	patterns, err := f.loadIgnoreFile(stashIgnorePath)
+	if err != nil || patterns == nil {
+		// Cache negative result (file doesn't exist or has no patterns).
 		f.cache.Store(dir, &ignoreEntry{patterns: nil, dir: dir})
 		return nil
 	}
+
+	logger.Debugf("Loaded .stashignore from %s", dir)
 
 	entry := &ignoreEntry{
 		patterns: patterns,
@@ -156,7 +168,7 @@ func (f *StashIgnoreFilter) getOrLoadIgnoreEntry(dir string) *ignoreEntry {
 }
 
 // loadIgnoreFile loads and compiles a .stashignore file.
-func (f *StashIgnoreFilter) loadIgnoreFile(path string, dir string) (*ignore.GitIgnore, error) {
+func (f *StashIgnoreFilter) loadIgnoreFile(path string) (*ignore.GitIgnore, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -183,7 +195,8 @@ func (f *StashIgnoreFilter) loadIgnoreFile(path string, dir string) (*ignore.Git
 	}
 
 	if len(patterns) == 0 {
-		return nil, os.ErrNotExist
+		// File exists but has no patterns (e.g., only comments).
+		return nil, nil
 	}
 
 	return ignore.CompileIgnoreLines(patterns...), nil

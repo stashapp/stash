@@ -64,7 +64,7 @@ func walkAndFilter(t *testing.T, root string, filter *StashIgnoreFilter) []strin
 			return err
 		}
 
-		if filter.Accept(ctx, path, info) {
+		if filter.Accept(ctx, path, info, root) {
 			relPath, _ := filepath.Rel(root, path)
 			accepted = append(accepted, relPath)
 		} else if info.IsDir() {
@@ -111,7 +111,7 @@ func TestStashIgnore_ExactFilename(t *testing.T) {
 	// Create .stashignore that excludes exact filename.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "ignore_me.mp4\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -136,7 +136,7 @@ func TestStashIgnore_WildcardPattern(t *testing.T) {
 	// Create .stashignore that excludes by extension.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "*.tmp\n*.log\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -162,7 +162,7 @@ func TestStashIgnore_DirectoryExclusion(t *testing.T) {
 	// Create .stashignore that excludes a directory.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "excluded_dir/\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -186,7 +186,7 @@ func TestStashIgnore_NegationPattern(t *testing.T) {
 	// Create .stashignore that excludes *.tmp but keeps one.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "*.tmp\n!keep_this.tmp\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -213,7 +213,7 @@ ignore_me.mp4
 `
 	createTestFileWithContent(t, tmpDir, ".stashignore", stashignore)
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -241,7 +241,7 @@ func TestStashIgnore_NestedStashIgnoreFiles(t *testing.T) {
 	// Subdir .stashignore excludes *.log.
 	createTestFileWithContent(t, tmpDir, "subdir/.stashignore", "*.log\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	// *.tmp from root should apply everywhere.
@@ -269,7 +269,7 @@ func TestStashIgnore_PathPattern(t *testing.T) {
 	// Create .stashignore that excludes a specific path.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "subdir/skip_this.mp4\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -298,7 +298,7 @@ func TestStashIgnore_DoubleStarPattern(t *testing.T) {
 	// Create .stashignore that excludes temp directories at any level.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "**/temp/\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -323,7 +323,7 @@ func TestStashIgnore_LeadingSlashPattern(t *testing.T) {
 	// Create .stashignore that excludes only at root level.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "/ignore.mp4\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	// Only root ignore.mp4 should be excluded.
@@ -345,7 +345,7 @@ func TestStashIgnore_NoStashIgnoreFile(t *testing.T) {
 	createTestDir(t, tmpDir, "subdir")
 	createTestFile(t, tmpDir, "subdir/video3.mp4")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	// All files should be accepted.
@@ -370,7 +370,7 @@ func TestStashIgnore_HiddenDirectories(t *testing.T) {
 	// Create .stashignore that excludes hidden directories.
 	createTestFileWithContent(t, tmpDir, ".stashignore", ".*\n!.stashignore\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -393,7 +393,7 @@ func TestStashIgnore_MultiplePatternsSameLine(t *testing.T) {
 	// Each pattern should be on its own line.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "*.tmp\n*.log\n*.bak\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -414,7 +414,7 @@ func TestStashIgnore_TrailingSpaces(t *testing.T) {
 	// Pattern with trailing spaces (should be trimmed).
 	createTestFileWithContent(t, tmpDir, ".stashignore", "ignore_me.mp4   \n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -435,7 +435,7 @@ func TestStashIgnore_EscapedHash(t *testing.T) {
 	// Escaped hash should match literal # character.
 	createTestFileWithContent(t, tmpDir, ".stashignore", "\\#filename.mp4\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
@@ -457,7 +457,7 @@ func TestStashIgnore_CaseSensitiveMatching(t *testing.T) {
 	// Pattern should match exactly (case-sensitive).
 	createTestFileWithContent(t, tmpDir, ".stashignore", "video_lower.mp4\n")
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	// Only exact match is excluded.
@@ -505,7 +505,7 @@ backup/
 `
 	createTestFileWithContent(t, tmpDir, ".stashignore", stashignore)
 
-	filter := NewStashIgnoreFilter(tmpDir)
+	filter := NewStashIgnoreFilter()
 	accepted := walkAndFilter(t, tmpDir, filter)
 
 	expected := []string{
