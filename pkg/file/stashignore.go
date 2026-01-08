@@ -72,7 +72,7 @@ func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.Fil
 		}
 		entryRelPath = filepath.ToSlash(entryRelPath)
 		if info.IsDir() {
-			entryRelPath = entryRelPath + "/"
+			entryRelPath += "/"
 		}
 
 		if entry.patterns.MatchesPath(entryRelPath) {
