@@ -262,13 +262,12 @@ func (t *ActivityTracker) processExpiredSessions() {
 func (t *ActivityTracker) processCompletedSession(session *streamSession) {
 	percentWatched := session.percentWatched()
 	resumeTime := session.estimatedResumeTime()
-	elapsed := session.LastActivity.Sub(session.StartTime).Seconds()
 
-	logger.Debugf("[DLNA Activity] Session completed: scene=%d, client=%s, videoDuration=%.1fs, elapsed=%.1fs, percent=%.1f%%, resume=%.1fs",
-		session.SceneID, session.ClientIP, session.VideoDuration, elapsed, percentWatched, resumeTime)
+	logger.Debugf("[DLNA Activity] Session completed: scene=%d, client=%s, videoDuration=%.1fs, percent=%.1f%%, resume=%.1fs",
+		session.SceneID, session.ClientIP, session.VideoDuration, percentWatched, resumeTime)
 
-	// Only save if there was meaningful activity (at least 1% watched or 5 seconds elapsed)
-	if percentWatched < 1 && elapsed < 5 {
+	// Only save if there was meaningful activity (at least 1% watched)
+	if percentWatched < 1 {
 		logger.Debugf("[DLNA Activity] Session too short, skipping save")
 		return
 	}
