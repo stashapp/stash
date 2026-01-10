@@ -506,13 +506,14 @@ export const LightboxImage: React.FC<IProps> = ({
     }
 
     if (
+      ev.pointerType !== "touch" &&
       ev.button === 0 &&
       ev.timeStamp - startTime.current <= 200 &&
       startPoint.current !== undefined &&
       ev.clientX === startPoint.current[0] &&
       ev.clientY === startPoint.current[1]
     ) {
-      // Click or tap navigation
+      // Click navigation
 
       if (ev.clientX >= window.innerWidth / 2) {
         onRight();
