@@ -144,16 +144,20 @@ const LightboxCarousel = forwardRef(function (
     event: React.PointerEvent,
     swipeDuration: number,
     cancelled: boolean
-  ) {
+  ): boolean {
     const cappedDuration = Math.max(50, Math.min(500, swipeDuration)) / 1000;
     const adjustedShift = carouselShift / (2 * cappedDuration);
+    let changed = false;
     if (!cancelled && adjustedShift < -window.innerWidth / 2) {
       handleRight();
+      changed = true;
     } else if (!cancelled && adjustedShift > window.innerWidth / 2) {
       handleLeft();
+      changed = true;
     }
     setCarouselShift(0);
     overrideTransition(CLASSNAME_SWIPE);
+    return changed;
   }
 
   return (

@@ -107,7 +107,7 @@ interface IProps {
     ev: React.PointerEvent,
     swipeDuration: number,
     cancelled: boolean
-  ) => void;
+  ) => boolean;
   isVideo: boolean;
 }
 
@@ -501,8 +501,10 @@ export const LightboxImage: React.FC<IProps> = ({
     }
 
     if (ev.pointerType === "touch" && startPoint.current !== null) {
-      // Swipe navigation
-      releaseCarousel(ev, ev.timeStamp - startTime.current, false);
+      // Swipe navigation, returns true if actually moved to another image.
+      if (releaseCarousel(ev, ev.timeStamp - startTime.current, false)) {
+        return;
+      }
     }
 
     if (
