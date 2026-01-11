@@ -12,6 +12,7 @@ import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
+import * as ReactFontAwesome from "@fortawesome/react-fontawesome";
 import * as ReactSelect from "react-select";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
@@ -78,6 +79,7 @@ export const PluginApi = {
     FontAwesomeBrands,
     Mousetrap,
     MousetrapPause,
+    ReactFontAwesome,
     ReactSelect,
   },
   register: {
