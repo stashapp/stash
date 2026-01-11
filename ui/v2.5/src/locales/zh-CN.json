@@ -1392,6 +1392,8 @@
     "status": "状态：{statusText}",
     "studio": "工作室",
     "studio_depth": "深度 (为空时显示全部)",
+    "studio_image": "工作室图片",
+    "studio_name": "工作室名称",
     "studios": "工作室",
     "sub_tag_count": "子标签数量",
     "sub_tag_of": "{parent}的子标签",

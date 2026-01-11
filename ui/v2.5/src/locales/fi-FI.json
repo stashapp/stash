@@ -1185,6 +1185,8 @@
     "status": "Tila: {statusText}",
     "studio": "Studio",
     "studio_depth": "Tasot (kaikki: jätä tyhjäksi)",
+    "studio_image": "Studion kuva",
+    "studio_name": "Studion nimi",
     "studios": "Studiot",
     "sub_tag_count": "Alitunnisteiden määrä",
     "sub_tag_of": "Tunnisteen {parent} alitunniste",

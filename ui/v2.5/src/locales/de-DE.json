@@ -1374,6 +1374,8 @@
     "status": "Status: {statusText}",
     "studio": "Studio",
     "studio_depth": "Ebenen (leer für alle)",
+    "studio_image": "Studiobild",
+    "studio_name": "Studioname",
     "studios": "Studios",
     "sub_tag_count": "Anzahl an untergeordneten Tags",
     "sub_tag_of": "Sub-Tag von {parent}",

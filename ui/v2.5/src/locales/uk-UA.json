@@ -1374,6 +1374,8 @@
         "total_play_duration": "Загальна тривалість відтворення"
     },
     "studio_depth": "Рівні (залиште порожнім для всіх)",
+    "studio_image": "Зображення студії",
+    "studio_name": "Назва студії",
     "studio_count": "Кількість студій",
     "studio_and_parent": "Студія та батьківська студія",
     "sub_group_of": "Підгрупа {parent}",

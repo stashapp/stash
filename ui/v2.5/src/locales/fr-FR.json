@@ -1400,6 +1400,8 @@
     "studio": "Studio",
     "studio_and_parent": "Studio & Parent",
     "studio_depth": "Niveaux (vides pour tous)",
+    "studio_image": "Image du studio",
+    "studio_name": "Nom du studio",
     "studio_tagger": {
         "add_new_studios": "Ajouter des nouveaux studios",
         "any_names_entered_will_be_queried": "Tous les noms saisis seront interrogés depuis l'instance Stash-Box distante et ajoutés si trouvés. Seules les correspondances exactes seront considérées comme telles.",

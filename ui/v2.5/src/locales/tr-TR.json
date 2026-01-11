@@ -1198,6 +1198,8 @@
     "status": "Durum: {statusText}",
     "studio": "Stüdyo",
     "studio_depth": "Seviyeler (tümü için boş bırakın)",
+    "studio_image": "Stüdyo görseli",
+    "studio_name": "Stüdyo adı",
     "studios": "Stüdyolar",
     "sub_tag_count": "Alt Etiket Sayısı",
     "sub_tag_of": "{parent} öğesinin alt etiketi",

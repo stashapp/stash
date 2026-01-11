@@ -492,10 +492,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               )}
               {isEditing ? (
                 <StudioEditPanel
+                  key={studio.id}
                   studio={studio}
                   onSubmit={onSave}
                   onCancel={() => toggleEditing()}
-                  onDelete={onDelete}
                   setImage={setImage}
                   setEncodingImage={setEncodingImage}
                 />

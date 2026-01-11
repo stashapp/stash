@@ -1260,6 +1260,8 @@
     "status": "状態: {statusText}",
     "studio": "スタジオ",
     "studio_depth": "レベル (空白で全て)",
+    "studio_image": "スタジオ画像",
+    "studio_name": "スタジオ名",
     "studios": "スタジオ",
     "sub_tag_count": "サブタグ数",
     "sub_tag_of": "{parent}のサブタグ",

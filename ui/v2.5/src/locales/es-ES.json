@@ -1334,6 +1334,8 @@
     "status": "Estado: {statusText}",
     "studio": "Estudio",
     "studio_depth": "Niveles (en blanco para mostrar todos)",
+    "studio_image": "Imagen del estudio",
+    "studio_name": "Nombre del estudio",
     "studios": "Estudios",
     "sub_tag_count": "Número de etiquetas secundarias",
     "sub_tag_of": "Sub-etiquetas de {parent}",

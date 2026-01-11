@@ -596,6 +596,8 @@
     },
     "status": "Státusz: {statusText}",
     "studio": "Stúdió",
+    "studio_image": "Stúdió kép",
+    "studio_name": "Stúdió neve",
     "studios": "Stúdiók",
     "tag": "Címke",
     "tag_count": "Címkék Száma",

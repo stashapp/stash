@@ -1328,6 +1328,8 @@
     "status": "Статус: {statusText}",
     "studio": "Студия",
     "studio_depth": "Уровни (пусто для всех)",
+    "studio_image": "Изображение студии",
+    "studio_name": "Название студии",
     "studios": "Студии",
     "sub_tag_count": "Количество под-тегов",
     "sub_tag_of": "Под-тег от {parent}",

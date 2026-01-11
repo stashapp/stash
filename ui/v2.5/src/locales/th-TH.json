@@ -1426,6 +1426,8 @@
         "submission_successful": "การส่งข้อมูลสำเร็จ"
     },
     "studio_depth": "ระดับ (เว้นว่างเพื่อนับทั้งหมด)",
+    "studio_image": "รูปภาพสตูดิโอ",
+    "studio_name": "ชื่อสตูดิโอ",
     "type": "ประเภท",
     "url": "URL",
     "urls": "URLs",

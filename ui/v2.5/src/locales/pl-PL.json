@@ -1230,6 +1230,8 @@
     "status": "Status: {statusText}",
     "studio": "Studio",
     "studio_depth": "Poziomy (puste dla wszystkich)",
+    "studio_image": "Obraz studia",
+    "studio_name": "Nazwa studia",
     "studios": "Studia",
     "sub_tag_count": "Liczba podtagów",
     "sub_tag_of": "Podtag {parent}",
