@@ -101,6 +101,8 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = PatchComponent(
           <MarkerWallPanel
             markers={result.data.findSceneMarkers.scene_markers}
             zoomIndex={filter.zoomIndex}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
           />
         );
       }
