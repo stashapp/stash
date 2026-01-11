@@ -161,7 +161,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
     initialValues,
     enableReinitialize: true,
     validate: yupFormikValidate(schema),
-    onSubmit: (values) => onSave(schema.cast(values)),
+    onSubmit: (values) => {
+      const input = schema.cast(values);
+      // Preserve empty string for cover_image to allow clearing
+      if (values.cover_image === "") {
+        input.cover_image = "";
+      }
+      return onSave(input);
+    },
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
@@ -287,6 +294,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
+  }
+
+  function onResetCover() {
+    formik.setFieldValue("cover_image", "");
+    Toast.success(intl.formatMessage({ id: "toast.cover_image_reset" }));
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
@@ -828,6 +840,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 isEditing
                 onImageChange={onCoverImageChange}
                 onImageURL={onImageLoad}
+                onReset={scene.id ? onResetCover : undefined}
               />
             </Form.Group>
           </Col>
