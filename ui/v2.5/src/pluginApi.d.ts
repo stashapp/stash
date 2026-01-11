@@ -672,6 +672,7 @@ declare namespace PluginApi {
     "GalleryCard.Image": React.FC<any>;
     "GalleryCard.Overlays": React.FC<any>;
     "GalleryCard.Popovers": React.FC<any>;
+    GalleryCardGrid: React.FC<any>;
     GalleryAddPanel: React.FC<any>;
     GalleryIDSelect: React.FC<any>;
     GalleryImagesPanel: React.FC<any>;
@@ -679,6 +680,7 @@ declare namespace PluginApi {
     GallerySelect: React.FC<any>;
     GridCard: React.FC<any>;
     GroupCard: React.FC<any>;
+    GroupCardGrid: React.FC<any>;
     GroupIDSelect: React.FC<any>;
     GroupList: React.FC<any>;
     GroupSelect: React.FC<any>;
@@ -687,6 +689,7 @@ declare namespace PluginApi {
     HoverPopover: React.FC<any>;
     Icon: React.FC<any>;
     ImageCard: React.FC<any>;
+    ImageGridCard: React.FC<any>;
     ImageInput: React.FC<any>;
     ImageList: React.FC<any>;
     LightboxLink: React.FC<any>;
@@ -697,6 +700,7 @@ declare namespace PluginApi {
     NumberSetting: React.FC<any>;
     PerformerAppearsWithPanel: React.FC<any>;
     PerformerCard: React.FC<any>;
+    PerformerCardGrid: React.FC<any>;
     "PerformerCard.Details": React.FC<any>;
     "PerformerCard.Image": React.FC<any>;
     "PerformerCard.Overlays": React.FC<any>;
@@ -728,12 +732,14 @@ declare namespace PluginApi {
     "SceneCard.Image": React.FC<any>;
     "SceneCard.Overlays": React.FC<any>;
     "SceneCard.Popovers": React.FC<any>;
+    SceneCardsGrid: React.FC<any>;
     SceneList: React.FC<any>;
     SceneListOperations: React.FC<any>;
     SceneMarkerCard: React.FC<any>;
     "SceneMarkerCard.Details": React.FC<any>;
     "SceneMarkerCard.Image": React.FC<any>;
     "SceneMarkerCard.Popovers": React.FC<any>;
+    SceneMarkerCardsGrid: React.FC<any>;
     SceneMarkerList: React.FC<any>;
     SelectSetting: React.FC<any>;
     Setting: React.FC<any>;
@@ -742,6 +748,7 @@ declare namespace PluginApi {
     StringListSetting: React.FC<any>;
     StringSetting: React.FC<any>;
     StudioCard: React.FC<any>;
+    StudioCardGrid: React.FC<any>;
     StudioDetailsPanel: React.FC<any>;
     StudioIDSelect: React.FC<any>;
     StudioList: React.FC<any>;
@@ -754,6 +761,7 @@ declare namespace PluginApi {
     "TagCard.Overlays": React.FC<any>;
     "TagCard.Popovers": React.FC<any>;
     "TagCard.Title": React.FC<any>;
+    TagCardGrid: React.FC<any>;
     TagLink: React.FC<any>;
     TagList: React.FC<any>;
     TagSelect: React.FC<any>;

@@ -5,6 +5,7 @@ import {
   useCardWidth,
   useContainerDimensions,
 } from "../Shared/GridCard/GridCard";
+import { PatchComponent } from "src/patch";
 
 interface IGroupCardGrid {
   groups: GQL.ListGroupDataFragment[];
@@ -17,34 +18,30 @@ interface IGroupCardGrid {
 
 const zoomWidths = [210, 250, 300, 375];
 
-export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
-  groups,
-  selectedIds,
-  zoomIndex,
-  onSelectChange,
-  fromGroupId,
-  onMove,
-}) => {
-  const [componentRef, { width: containerWidth }] = useContainerDimensions();
-  const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
+export const GroupCardGrid: React.FC<IGroupCardGrid> = PatchComponent(
+  "GroupCardGrid",
+  ({ groups, selectedIds, zoomIndex, onSelectChange, fromGroupId, onMove }) => {
+    const [componentRef, { width: containerWidth }] = useContainerDimensions();
+    const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
 
-  return (
-    <div className="row justify-content-center" ref={componentRef}>
-      {groups.map((p) => (
-        <GroupCard
-          key={p.id}
-          cardWidth={cardWidth}
-          group={p}
-          zoomIndex={zoomIndex}
-          selecting={selectedIds.size > 0}
-          selected={selectedIds.has(p.id)}
-          onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-            onSelectChange(p.id, selected, shiftKey)
-          }
-          fromGroupId={fromGroupId}
-          onMove={onMove}
-        />
-      ))}
-    </div>
-  );
-};
+    return (
+      <div className="row justify-content-center" ref={componentRef}>
+        {groups.map((p) => (
+          <GroupCard
+            key={p.id}
+            cardWidth={cardWidth}
+            group={p}
+            zoomIndex={zoomIndex}
+            selecting={selectedIds.size > 0}
+            selected={selectedIds.has(p.id)}
+            onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+              onSelectChange(p.id, selected, shiftKey)
+            }
+            fromGroupId={fromGroupId}
+            onMove={onMove}
+          />
+        ))}
+      </div>
+    );
+  }
+);
