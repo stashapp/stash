@@ -40,6 +40,20 @@ const GroupCreate: React.FC = () => {
     }
   }
 
+  async function onSaveAndNew(input: GQL.GroupCreateInput) {
+    const result = await createGroup({
+      variables: { input },
+    });
+    if (result.data?.groupCreate?.id) {
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "group" }).toLocaleLowerCase() }
+        )
+      );
+    }
+  }
+
   function renderFrontImage() {
     if (frontImage) {
       return (
@@ -80,6 +94,7 @@ const GroupCreate: React.FC = () => {
         <GroupEditPanel
           group={group}
           onSubmit={onSave}
+          onSaveAndNew={onSaveAndNew}
           onCancel={() => history.push("/groups")}
           onDelete={() => {}}
           setFrontImage={setFrontImage}

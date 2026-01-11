@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Prompt } from "react-router-dom";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import { Button, Dropdown, Form, Col, Row, SplitButton } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -36,6 +36,7 @@ interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
   onSubmit: (input: GQL.GalleryCreateInput) => Promise<void>;
+  onSaveAndNew?: (input: GQL.GalleryCreateInput) => Promise<void>;
   onDelete: () => void;
 }
 
@@ -43,6 +44,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   gallery,
   isVisible,
   onSubmit,
+  onSaveAndNew,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -181,6 +183,18 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    setIsLoading(true);
+    try {
+      await onSaveAndNew?.(input);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -445,16 +459,31 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
-            <Button
-              className="edit-button"
-              variant="primary"
-              disabled={
-                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
-              }
-              onClick={() => formik.submitForm()}
-            >
-              <FormattedMessage id="actions.save" />
-            </Button>
+            {isNew && onSaveAndNew ? (
+              <SplitButton
+                id="gallery-save-split-button"
+                className="edit-button"
+                variant="primary"
+                disabled={!isEqual(formik.errors, {})}
+                title={intl.formatMessage({ id: "actions.save" })}
+                onClick={() => formik.submitForm()}
+              >
+                <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+                  <FormattedMessage id="actions.save_and_new" />
+                </Dropdown.Item>
+              </SplitButton>
+            ) : (
+              <Button
+                className="edit-button"
+                variant="primary"
+                disabled={
+                  (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+                }
+                onClick={() => formik.submitForm()}
+              >
+                <FormattedMessage id="actions.save" />
+              </Button>
+            )}
             <Button
               className="edit-button"
               variant="danger"

@@ -105,6 +105,7 @@
     "reshuffle": "Reshuffle",
     "running": "running",
     "save": "Save",
+    "save_and_new": "Save & New",
     "save_delete_settings": "Use these options by default when deleting",
     "save_filter": "Save filter",
     "scan": "Scan",
