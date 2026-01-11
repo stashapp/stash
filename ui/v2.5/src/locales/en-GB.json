@@ -1065,7 +1065,10 @@
     "select_youngest": "Select the youngest file in the duplicate group",
     "title": "Duplicate Scenes"
   },
+  "duplicated": "Duplicated",
   "duplicated_phash": "Duplicated (pHash)",
+  "duplicated_stash_id": "Duplicated (Stash ID)",
+  "duplicated_title": "Duplicated (Title)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
