@@ -200,7 +200,13 @@
             "set_cover_label": "Definir imagem da capa da cena",
             "set_tag_desc": "Anexar etiquetas à cena, sobrescrevendo ou mesclando com as etiquetas existentes na cena.",
             "set_tag_label": "Definir etiquetas",
-            "source": "Fonte"
+            "source": "Fonte",
+            "errors": {
+                "blacklist_duplicate": "Lista negra duplicada"
+            },
+            "performer_genders": {
+                "heading": "Gêneros de artistas"
+            }
         },
         "noun_query": "Query",
         "results": {
@@ -468,7 +474,10 @@
                 "source": "Fonte",
                 "source_options": "Opções de {source}",
                 "sources": "Fontes",
-                "strategy": "Estratégia"
+                "strategy": "Estratégia",
+                "skip_single_name_performers": "Pular artistas com nome único que não possuem desambiguação",
+                "skip_single_name_performers_tooltip": "Se isso não estiver ativado, artistas que costumam ser genéricos, como Samantha ou Olga, vão ser combinados",
+                "tag_skipped_performers": "Marcar artistas ignorados com"
             },
             "import_from_exported_json": "Importação de JSON exportado no diretório de metadados. Limpa o banco de dados existente.",
             "incremental_import": "Importação incremental de um arquivo zip de exportação fornecido.",
@@ -628,7 +637,10 @@
                 "description": "Slideshow está disponível em galerias quando no modo de exibição de paredão",
                 "heading": "Atraso do slideshow (segundos)"
             },
-            "title": "Interface de usuário"
+            "title": "Interface de usuário",
+            "performer_list": {
+                "heading": "Lista de artistas"
+            }
         },
         "advanced_mode": "Modo Avançado"
     },
@@ -751,7 +763,8 @@
         "scrape_results_existing": "Existem",
         "scrape_results_scraped": "Scrape finalizado",
         "set_image_url_title": "URL da imagem",
-        "unsaved_changes": "Mudanças não salvas. Você tem certeza de que quer sair?"
+        "unsaved_changes": "Mudanças não salvas. Você tem certeza de que quer sair?",
+        "performers_found": "{count} artistas encontrados"
     },
     "dimensions": "Dimensões",
     "director": "Diretor(a)",
