@@ -30,6 +30,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   maxStreamingTranscodeSize
   writeImageThumbnails
   createImageClipsFromVideos
+  autoScanWatch
   apiKey
   username
   password

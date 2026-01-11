@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/remeh/sizedwaitgroup"
@@ -69,6 +70,9 @@ type Manager struct {
 	GroupService   GroupService
 
 	scanSubs *subscriptionManager
+
+	fileWatcherCancel context.CancelFunc
+	fileWatcherMu     sync.Mutex
 }
 
 var instance *Manager

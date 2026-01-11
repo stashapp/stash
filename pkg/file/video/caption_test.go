@@ -42,7 +42,7 @@ var testCases = []testCase{
 
 func TestGenerateCaptionCandidates(t *testing.T) {
 	for _, c := range testCases {
-		assert.Equal(t, c.expectedResult, getCaptionPrefix(c.captionPath))
+		assert.Equal(t, c.expectedResult, GetCaptionPrefix(c.captionPath))
 	}
 }
 
