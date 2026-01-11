@@ -95,6 +95,7 @@ type GalleryDestroyInput struct {
 	// If true, then the zip file will be deleted if the gallery is zip-file-based.
 	// If gallery is folder-based, then any files not associated with other
 	// galleries will be deleted, along with the folder, if it is not empty.
-	DeleteFile      *bool `json:"delete_file"`
-	DeleteGenerated *bool `json:"delete_generated"`
+	DeleteFile       *bool `json:"delete_file"`
+	DeleteGenerated  *bool `json:"delete_generated"`
+	DestroyFileEntry *bool `json:"destroy_file_entry"`
 }
