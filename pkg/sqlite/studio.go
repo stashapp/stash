@@ -140,6 +140,7 @@ var (
 
 type StudioStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 	tagRelationshipStore
 
 	tableMgr *table
@@ -150,6 +151,10 @@ func NewStudioStore(blobStore *BlobStore) *StudioStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: studiosCustomFieldsTable,
+			fk:    studiosCustomFieldsTable.Col(studioIDColumn),
 		},
 		tagRelationshipStore: tagRelationshipStore{
 			idRelationshipStore: idRelationshipStore{
@@ -169,11 +174,11 @@ func (qb *StudioStore) selectDataset() *goqu.SelectDataset {
 	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) error {
+func (qb *StudioStore) Create(ctx context.Context, newObject *models.CreateStudioInput) error {
 	var err error
 
 	var r studioRow
-	r.fromStudio(*newObject)
+	r.fromStudio(*newObject.Studio)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
@@ -207,12 +212,17 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
+	const partial = false
+	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Studio = *updated
 	return nil
 }
 
@@ -253,13 +263,17 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		}
 	}
 
-	return qb.Find(ctx, input.ID)
+	if err := qb.SetCustomFields(ctx, input.ID, input.CustomFields); err != nil {
+		return nil, err
+	}
+
+	return qb.find(ctx, input.ID)
 }
 
 // This is only used by the Import/Export functionality
-func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio) error {
+func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.UpdateStudioInput) error {
 	var r studioRow
-	r.fromStudio(*updatedObject)
+	r.fromStudio(*updatedObject.Studio)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -285,6 +299,10 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 		if err := studiosStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, updatedObject.ID, updatedObject.CustomFields); err != nil {
+		return err
 	}
 
 	return nil

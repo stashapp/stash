@@ -27,9 +27,9 @@ type ScrapedStudio struct {
 
 func (ScrapedStudio) IsScrapedContent() {}
 
-func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Studio {
+func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *CreateStudioInput {
 	// Populate a new studio from the input
-	ret := NewStudio()
+	ret := NewCreateStudioInput()
 	ret.Name = strings.TrimSpace(s.Name)
 
 	if s.RemoteSiteID != nil && endpoint != "" && *s.RemoteSiteID != "" {

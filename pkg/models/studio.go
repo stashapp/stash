@@ -44,6 +44,9 @@ type StudioFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type StudioCreateInput struct {
@@ -60,6 +63,8 @@ type StudioCreateInput struct {
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 type StudioUpdateInput struct {
@@ -77,4 +82,6 @@ type StudioUpdateInput struct {
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

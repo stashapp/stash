@@ -207,6 +207,19 @@ func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []
 	return ret, nil
 }
 
+func (r *studioResolver) CustomFields(ctx context.Context, obj *models.Studio) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).StudioCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
+}
+
 // deprecated
 func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Group, err error) {
 	return r.Groups(ctx, obj)
