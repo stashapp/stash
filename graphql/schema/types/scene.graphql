@@ -71,6 +71,7 @@ type Scene {
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
   scene_markers: [SceneMarker!]!
+  scene_segments: [SceneSegment!]!
   galleries: [Gallery!]!
   studio: Studio
   groups: [SceneGroup!]!

@@ -1574,6 +1574,22 @@ export const useSceneMarkersDestroy = (
     },
   });
 
+// Scene Segment mutations
+export const useSceneSegmentCreate = () =>
+  GQL.useSceneSegmentCreateMutation({
+    refetchQueries: [GQL.FindSceneSegmentsDocument],
+  });
+
+export const useSceneSegmentUpdate = () =>
+  GQL.useSceneSegmentUpdateMutation({
+    refetchQueries: [GQL.FindSceneSegmentsDocument],
+  });
+
+export const useSceneSegmentDestroy = () =>
+  GQL.useSceneSegmentDestroyMutation({
+    refetchQueries: [GQL.FindSceneSegmentsDocument],
+  });
+
 const galleryMutationImpactedTypeFields = {
   Scene: ["galleries"],
   Performer: ["gallery_count", "performer_count"],

@@ -1,0 +1,24 @@
+type SceneSegment {
+  id: ID!
+  title: String!
+  scene_id: ID!
+  scene: Scene!
+  start_seconds: Float!
+  end_seconds: Float!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input SceneSegmentCreateInput {
+  title: String!
+  scene_id: ID!
+  start_seconds: Float!
+  end_seconds: Float!
+}
+
+input SceneSegmentUpdateInput {
+  id: ID!
+  title: String
+  start_seconds: Float
+  end_seconds: Float
+}

@@ -68,6 +68,11 @@ type Query {
     ids: [ID!]
   ): FindSceneMarkersResultType!
 
+  "Find scene segments by scene ID"
+  findSceneSegments(scene_id: ID!): [SceneSegment!]!
+  "Find a single scene segment by ID"
+  findSceneSegment(id: ID!): SceneSegment
+
   findImage(id: ID, checksum: String): Image
 
   "A function which queries Scene objects"
@@ -337,6 +342,10 @@ type Mutation {
   bulkSceneMarkerUpdate(input: BulkSceneMarkerUpdateInput!): [SceneMarker!]
   sceneMarkerDestroy(id: ID!): Boolean!
   sceneMarkersDestroy(ids: [ID!]!): Boolean!
+
+  sceneSegmentCreate(input: SceneSegmentCreateInput!): SceneSegment
+  sceneSegmentUpdate(input: SceneSegmentUpdateInput!): SceneSegment
+  sceneSegmentDestroy(id: ID!): Boolean!
 
   sceneAssignFile(input: AssignSceneFileInput!): Boolean!
 
