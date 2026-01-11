@@ -82,16 +82,6 @@ func (s *streamSession) percentWatched() float64 {
 	return timeBasedPercent
 }
 
-// estimatedPlayDuration returns the estimated play duration in seconds.
-// Uses elapsed time from session start to last activity, capped by video duration.
-func (s *streamSession) estimatedPlayDuration() float64 {
-	elapsed := s.LastActivity.Sub(s.StartTime).Seconds()
-	if s.VideoDuration > 0 && elapsed > s.VideoDuration {
-		return s.VideoDuration
-	}
-	return elapsed
-}
-
 // estimatedResumeTime calculates the estimated resume time based on elapsed time.
 // Since DLNA clients buffer aggressively, byte positions don't correlate with playback.
 // Instead, we estimate based on how long the session has been active.
@@ -271,14 +261,13 @@ func (t *ActivityTracker) processExpiredSessions() {
 // processCompletedSession saves activity data for a completed streaming session.
 func (t *ActivityTracker) processCompletedSession(session *streamSession) {
 	percentWatched := session.percentWatched()
-	playDuration := session.estimatedPlayDuration()
 	resumeTime := session.estimatedResumeTime()
 
-	logger.Debugf("[DLNA Activity] Session completed: scene=%d, client=%s, duration=%.1fs, startTime=%s, lastActivity=%s, percent=%.1f%%, duration=%.1fs, resume=%.1fs",
-		session.SceneID, session.ClientIP, session.VideoDuration, session.StartTime.String(), session.LastActivity.String(), percentWatched, playDuration, resumeTime)
+	logger.Debugf("[DLNA Activity] Session completed: scene=%d, client=%s, videoDuration=%.1fs, percent=%.1f%%, resume=%.1fs",
+		session.SceneID, session.ClientIP, session.VideoDuration, percentWatched, resumeTime)
 
-	// Only save if there was meaningful activity (at least 1% watched or 5 seconds)
-	if percentWatched < 1 && playDuration < 5 {
+	// Only save if there was meaningful activity (at least 1% watched)
+	if percentWatched < 1 {
 		logger.Debugf("[DLNA Activity] Session too short, skipping save")
 		return
 	}
@@ -289,38 +278,41 @@ func (t *ActivityTracker) processCompletedSession(session *streamSession) {
 		return
 	}
 
-	ctx := context.Background()
+	// Determine what needs to be saved
+	shouldSaveResume := resumeTime > 0
+	shouldAddView := !session.PlayCountAdded && percentWatched >= float64(t.getMinimumPlayPercent())
 
-	// Save activity (resume time and play duration)
-	if playDuration > 0 || resumeTime > 0 {
-		var resumeTimePtr *float64
-		if resumeTime > 0 {
-			resumeTimePtr = &resumeTime
-		}
-
-		if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
-			_, err := t.sceneWriter.SaveActivity(ctx, session.SceneID, resumeTimePtr, &playDuration)
-			return err
-		}); err != nil {
-			logger.Warnf("[DLNA Activity] Failed to save activity for scene %d: %v", session.SceneID, err)
-		}
+	// Nothing to save
+	if !shouldSaveResume && !shouldAddView {
+		return
 	}
 
-	// Increment play count if threshold met
-	if !session.PlayCountAdded {
-		minPercent := t.getMinimumPlayPercent()
-		if percentWatched >= float64(minPercent) {
-			if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
-				_, err := t.sceneWriter.AddViews(ctx, session.SceneID, []time.Time{time.Now()})
-				return err
-			}); err != nil {
-				logger.Warnf("[DLNA Activity] Failed to increment play count for scene %d: %v", session.SceneID, err)
-			} else {
-				logger.Debugf("[DLNA Activity] Incremented play count for scene %d (%.1f%% watched)",
-					session.SceneID, percentWatched)
-				session.PlayCountAdded = true
+	// Save everything in a single transaction
+	ctx := context.Background()
+	if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
+		// Save resume time only. DLNA clients buffer aggressively and don't report
+		// playback position, so we can't accurately track play duration - saving
+		// guesses would corrupt analytics. Resume time is still useful as a
+		// "continue watching" hint even if imprecise.
+		if shouldSaveResume {
+			if _, err := t.sceneWriter.SaveActivity(ctx, session.SceneID, &resumeTime, nil); err != nil {
+				return fmt.Errorf("save resume time: %w", err)
 			}
 		}
+
+		// Increment play count (also updates last_played_at via view date)
+		if shouldAddView {
+			if _, err := t.sceneWriter.AddViews(ctx, session.SceneID, []time.Time{time.Now()}); err != nil {
+				return fmt.Errorf("add view: %w", err)
+			}
+			session.PlayCountAdded = true
+			logger.Debugf("[DLNA Activity] Incremented play count for scene %d (%.1f%% watched)",
+				session.SceneID, percentWatched)
+		}
+
+		return nil
+	}); err != nil {
+		logger.Warnf("[DLNA Activity] Failed to save activity for scene %d: %v", session.SceneID, err)
 	}
 }
 

@@ -129,52 +129,6 @@ func TestStreamSession_PercentWatched(t *testing.T) {
 	}
 }
 
-func TestStreamSession_EstimatedPlayDuration(t *testing.T) {
-	now := time.Now()
-
-	tests := []struct {
-		name          string
-		startTime     time.Time
-		lastActivity  time.Time
-		videoDuration float64
-		expected      float64
-	}{
-		{
-			name:          "elapsed less than duration",
-			startTime:     now.Add(-30 * time.Second),
-			lastActivity:  now,
-			videoDuration: 120,
-			expected:      30.0,
-		},
-		{
-			name:          "elapsed exceeds duration - capped",
-			startTime:     now.Add(-180 * time.Second),
-			lastActivity:  now,
-			videoDuration: 120,
-			expected:      120.0,
-		},
-		{
-			name:          "no duration limit",
-			startTime:     now.Add(-300 * time.Second),
-			lastActivity:  now,
-			videoDuration: 0,
-			expected:      300.0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			session := &streamSession{
-				StartTime:     tt.startTime,
-				LastActivity:  tt.lastActivity,
-				VideoDuration: tt.videoDuration,
-			}
-			result := session.estimatedPlayDuration()
-			assert.InDelta(t, tt.expected, result, 1.0) // Allow 1 second tolerance
-		})
-	}
-}
-
 func TestStreamSession_EstimatedResumeTime(t *testing.T) {
 	now := time.Now()
 
@@ -455,12 +409,12 @@ func TestActivityTracker_ShortSessionIgnored(t *testing.T) {
 	// Verify percent watched is below threshold (1s / 120s = 0.83%)
 	assert.InDelta(t, 0.83, session.percentWatched(), 0.1)
 
-	// Verify play duration is short
-	assert.InDelta(t, 1.0, session.estimatedPlayDuration(), 0.5)
+	// Verify elapsed time is short
+	elapsed := session.LastActivity.Sub(session.StartTime).Seconds()
+	assert.InDelta(t, 1.0, elapsed, 0.5)
 
 	// Both are below the minimum thresholds (1% and 5 seconds)
 	percentWatched := session.percentWatched()
-	playDuration := session.estimatedPlayDuration()
-	shouldSkip := percentWatched < 1 && playDuration < 5
+	shouldSkip := percentWatched < 1 && elapsed < 5
 	assert.True(t, shouldSkip, "Short session should be skipped")
 }
