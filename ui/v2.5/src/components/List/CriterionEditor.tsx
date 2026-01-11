@@ -163,6 +163,10 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       );
     }
 
+    // if (criterion instanceof FolderCriterion) {
+
+    // }
+
     if (criterion instanceof ILabeledIdCriterion) {
       return (
         <LabeledIdFilter

@@ -58,7 +58,7 @@ import useFocus from "src/utils/focus";
 import { useZoomKeybinds } from "../List/ZoomSlider";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { FilterTags } from "../List/FilterTags";
-import { SidebarFolderFilter } from "../List/Filters/PathFilter";
+import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
