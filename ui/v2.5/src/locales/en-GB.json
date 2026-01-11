@@ -613,6 +613,13 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "troubleshooting": {
+        "heading": "Troubleshooting",
+        "disable_customizations": {
+          "heading": "Disable customizations",
+          "description": "Temporarily disables all plugins, custom CSS, custom JavaScript, and custom locales. Use this to troubleshoot issues without permanently disabling individual customizations. A page reload is required for changes to take effect."
+        }
+      },
       "custom_javascript": {
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
         "heading": "Custom Javascript",
