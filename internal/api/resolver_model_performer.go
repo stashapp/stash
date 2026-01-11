@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/stashapp/stash/internal/api/loaders"
@@ -107,6 +108,29 @@ func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (
 
 func (r *performerResolver) HeightCm(ctx context.Context, obj *models.Performer) (*int, error) {
 	return obj.Height, nil
+}
+
+func (r *performerResolver) CareerLength(ctx context.Context, obj *models.Performer) (*string, error) {
+	// Compute from CareerStart and CareerEnd if available
+	if obj.CareerStart != nil || obj.CareerEnd != nil {
+		var ret string
+		switch {
+		case obj.CareerEnd == nil:
+			ret = fmt.Sprintf("%d -", *obj.CareerStart)
+		case obj.CareerStart == nil:
+			ret = fmt.Sprintf("- %d", *obj.CareerEnd)
+		default:
+			ret = fmt.Sprintf("%d - %d", *obj.CareerStart, *obj.CareerEnd)
+		}
+		return &ret, nil
+	}
+
+	// Fall back to stored CareerLength for backwards compatibility
+	if obj.CareerLength != "" {
+		return &obj.CareerLength, nil
+	}
+
+	return nil, nil
 }
 
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*string, error) {

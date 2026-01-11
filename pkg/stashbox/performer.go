@@ -231,6 +231,16 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Height = &hs
 	}
 
+	if p.CareerStartYear != nil {
+		cs := strconv.Itoa(*p.CareerStartYear)
+		sp.CareerStart = &cs
+	}
+
+	if p.CareerEndYear != nil {
+		ce := strconv.Itoa(*p.CareerEndYear)
+		sp.CareerEnd = &ce
+	}
+
 	if p.BirthDate != nil {
 		sp.Birthdate = padFuzzyDate(p.BirthDate)
 	}
@@ -388,7 +398,15 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		aliases := strings.Join(performer.Aliases.List(), ",")
 		draft.Aliases = &aliases
 	}
-	if performer.CareerLength != "" {
+	// Use CareerStart and CareerEnd directly if available
+	if performer.CareerStart != nil {
+		draft.CareerStartYear = performer.CareerStart
+	}
+	if performer.CareerEnd != nil {
+		draft.CareerEndYear = performer.CareerEnd
+	}
+	// Fall back to parsing CareerLength for backwards compatibility
+	if draft.CareerStartYear == nil && draft.CareerEndYear == nil && performer.CareerLength != "" {
 		var career = strings.Split(performer.CareerLength, "-")
 		if i, err := strconv.Atoi(strings.TrimSpace(career[0])); err == nil {
 			draft.CareerStartYear = &i

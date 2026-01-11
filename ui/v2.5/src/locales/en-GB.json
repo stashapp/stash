@@ -172,7 +172,9 @@
     "filesystem": "Filesystem"
   },
   "captions": "Captions",
+  "career_end": "Career End",
   "career_length": "Career Length",
+  "career_start": "Career Start",
   "chapters": "Chapters",
   "circumcised": "Circumcised",
   "circumcised_types": {
