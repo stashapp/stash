@@ -110,15 +110,11 @@ function replaceFolder(folder: IFolder): (f: IFolder) => IFolder {
   };
 }
 
-export const SidebarFolderFilter: React.FC<
-  ISidebarSectionProps & {
-    filter: ListFilterModel;
-    setFilter: (f: ListFilterModel) => void;
-  }
-> = (props) => {
-  const intl = useIntl();
-  const [skip, setSkip] = React.useState(true);
-
+export const FolderSelector: React.FC<{
+  onSelect: (folder: IFolder) => void;
+  preListContent?: React.ReactNode;
+  skip?: boolean;
+}> = ({ onSelect, preListContent, skip = false }) => {
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
     skip,
   });
@@ -133,11 +129,6 @@ export const SidebarFolderFilter: React.FC<
   useEffect(() => {
     setFolderMap(rootFolders);
   }, [rootFolders]);
-
-  function onOpen() {
-    setSkip(false);
-    props.onOpen?.();
-  }
 
   async function onToggleExpanded(folder: IFolder) {
     setFolderMap(folderMap.map(toggleExpandedFn(folder)));
@@ -158,6 +149,35 @@ export const SidebarFolderFilter: React.FC<
         )
       );
     }
+  }
+
+  return (
+    <ul>
+      {preListContent}
+      {folderMap.map((folder) => (
+        <FolderRow
+          key={folder.id}
+          folder={folder}
+          onSelect={(f) => onSelect(f)}
+          toggleExpanded={onToggleExpanded}
+        />
+      ))}
+    </ul>
+  );
+};
+
+export const SidebarFolderFilter: React.FC<
+  ISidebarSectionProps & {
+    filter: ListFilterModel;
+    setFilter: (f: ListFilterModel) => void;
+  }
+> = (props) => {
+  const intl = useIntl();
+  const [skip, setSkip] = React.useState(true);
+
+  function onOpen() {
+    setSkip(false);
+    props.onOpen?.();
   }
 
   const option = FolderCriterionOption;
@@ -241,6 +261,15 @@ export const SidebarFolderFilter: React.FC<
     return <SelectedList items={selected} onUnselect={onUnselect} />;
   }, [intl, subDirsSelected, criterion, onUnselect]);
 
+  const modifierItem = criterion.value.items.length > 0 && !subDirsSelected && (
+    <li className="unselected-object modifier-object">
+      <a onClick={onSelectSubfolders}>
+        <Icon className={`fa-fw include-button`} icon={faPlus} />
+        (<FormattedMessage id="sub_folders" />)
+      </a>
+    </li>
+  );
+
   return (
     <SidebarSection
       {...props}
@@ -249,24 +278,11 @@ export const SidebarFolderFilter: React.FC<
       className="sidebar-list-filter sidebar-path-filter"
     >
       {/* query input goes here */}
-      <ul>
-        {criterion.value.items.length > 0 && !subDirsSelected && (
-          <li className="unselected-object modifier-object">
-            <a onClick={onSelectSubfolders}>
-              <Icon className={`fa-fw include-button`} icon={faPlus} />
-              (<FormattedMessage id="sub_folders" />)
-            </a>
-          </li>
-        )}
-        {folderMap.map((folder) => (
-          <FolderRow
-            key={folder.id}
-            folder={folder}
-            onSelect={(f) => onSelect(f)}
-            toggleExpanded={onToggleExpanded}
-          />
-        ))}
-      </ul>
+      <FolderSelector
+        skip={skip}
+        preListContent={modifierItem}
+        onSelect={(f) => onSelect(f)}
+      />
     </SidebarSection>
   );
 };
