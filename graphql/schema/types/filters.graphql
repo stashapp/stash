@@ -84,10 +84,20 @@ input PHashDuplicationCriterionInput {
 input StashIDCriterionInput {
   """
   If present, this value is treated as a predicate.
-  That is, it will filter based on stash_ids with the matching endpoint
+  That is, it will filter based on stash_id with the matching endpoint
   """
   endpoint: String
   stash_id: String
+  modifier: CriterionModifier!
+}
+
+input StashIDsCriterionInput {
+  """
+  If present, this value is treated as a predicate.
+  That is, it will filter based on stash_ids with the matching endpoint
+  """
+  endpoint: String
+  stash_ids: [String]
   modifier: CriterionModifier!
 }
 
@@ -156,6 +166,8 @@ input PerformerFilterType {
   o_counter: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by url"
@@ -292,6 +304,8 @@ input SceneFilterType {
   performer_count: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by interactive"
@@ -432,6 +446,8 @@ input StudioFilterType {
   parents: MultiCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   "Filter to only include studios with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter to only include studios missing this property"
