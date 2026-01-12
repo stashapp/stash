@@ -14,7 +14,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "./SceneMarkerWallPanel";
 import { View } from "../List/views";
-import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
+import { SceneMarkerCardGrid } from "./SceneMarkerCardGrid";
 import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
 import { EditSceneMarkersDialog } from "./EditSceneMarkersDialog";
 import { PatchComponent } from "src/patch";
@@ -109,7 +109,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = PatchComponent(
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <SceneMarkerCardsGrid
+          <SceneMarkerCardGrid
             markers={result.data.findSceneMarkers.scene_markers}
             zoomIndex={filter.zoomIndex}
             selectedIds={selectedIds}

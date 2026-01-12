@@ -7,7 +7,7 @@ import {
 } from "../Shared/GridCard/GridCard";
 import { PatchComponent } from "src/patch";
 
-interface ISceneMarkerCardsGrid {
+interface ISceneMarkerCardGrid {
   markers: GQL.SceneMarkerDataFragment[];
   selectedIds: Set<string>;
   zoomIndex: number;
@@ -16,9 +16,9 @@ interface ISceneMarkerCardsGrid {
 
 const zoomWidths = [240, 340, 480, 640];
 
-export const SceneMarkerCardsGrid: React.FC<ISceneMarkerCardsGrid> =
+export const SceneMarkerCardGrid: React.FC<ISceneMarkerCardGrid> =
   PatchComponent(
-    "SceneMarkerCardsGrid",
+    "SceneMarkerCardGrid",
     ({ markers, selectedIds, zoomIndex, onSelectChange }) => {
       const [componentRef, { width: containerWidth }] =
         useContainerDimensions();
