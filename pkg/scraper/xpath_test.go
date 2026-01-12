@@ -904,12 +904,8 @@ xPathScrapers:
 
 	client := &http.Client{}
 	ctx := context.Background()
-	s := newConfigScraper(*c, globalConfig)
-	us, ok := s.(urlScraper)
-	if !ok {
-		t.Error("couldn't convert scraper into url scraper")
-	}
-	content, err := us.viaURL(ctx, client, ts.URL, ScrapeContentTypePerformer)
+	s := scraperFromDefinition(*c, globalConfig)
+	content, err := s.viaURL(ctx, client, ts.URL, ScrapeContentTypePerformer)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
