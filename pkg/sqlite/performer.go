@@ -939,6 +939,16 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 		}
 	}
 
+	_, err := dbWrapper.Exec(ctx, "INSERT INTO "+performersAliasesTable+" (performer_id, alias) SELECT ?, name FROM "+performerTable+" WHERE id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = dbWrapper.Exec(ctx, "UPDATE "+performersAliasesTable+" SET performer_id = ? WHERE performer_id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
 	for _, id := range source {
 		err := qb.Destroy(ctx, id)
 		if err != nil {

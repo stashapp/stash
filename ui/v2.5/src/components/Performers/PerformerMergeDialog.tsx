@@ -206,13 +206,11 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
       )
     );
 
-    // default alias list should be the existing aliases, plus the names of all sources,
-    // plus all source aliases, deduplicated
+    // Default alias list should be the existing aliases, plus all source
+    // aliases, deduplicated. The backend will add the source names as
+    // aliases.
     const allAliases = uniq(
-      dest.alias_list.concat(
-        sources.map((s) => s.name),
-        sources.flatMap((s) => s.alias_list)
-      )
+      dest.alias_list.concat(sources.flatMap((s) => s.alias_list))
     );
 
     setAliases(
