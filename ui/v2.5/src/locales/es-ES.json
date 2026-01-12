@@ -224,7 +224,8 @@
         "verb_toggle_unmatched": "{toggle} escenas sin coincidencia",
         "verb_add_as_alias": "Añadir el nombre extraído como alias",
         "verb_link_existing": "Enlace a existente",
-        "verb_match_tag": "Coincidir etiqueta"
+        "verb_match_tag": "Coincidir etiqueta",
+        "verb_scrape_selected": "Proveedor de metadatos seleccionado"
     },
     "config": {
         "about": {
@@ -828,6 +829,10 @@
                         "heading": "Mostrar enlaces en las tarjetas de la cuadrícula de actores"
                     }
                 }
+            },
+            "custom_title": {
+                "description": "Texto personalizado para añadir al título de la página. Si está vacío, el valor predeterminado es «Stash».",
+                "heading": "Texto personalizado"
             }
         },
         "advanced_mode": "Modo avanzado"
@@ -1362,7 +1367,8 @@
         "image_index_too_large": "Error: El índice de imagen es mayor que el número de imágenes en la galería",
         "removed_entity": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "reassign_past_tense": "Archivo reasignado",
-        "merged_scenes": "Escenas fusionadas"
+        "merged_scenes": "Escenas fusionadas",
+        "merged_performers": "Actores fusionados"
     },
     "total": "Total",
     "true": "Sí",
@@ -1519,7 +1525,7 @@
     "second": "Segundo",
     "validation": {
         "blank": "${path} no puede estar vacío",
-        "date_invalid_form": "${path} debe estar en formato AAAA, AAAA-MM o AAAA-MM-DD.",
+        "date_invalid_form": "${path} debe estar en formato AAAA, AAAA-MM o AAAA-MM-DD",
         "required": "${path} es un campo requerido",
         "unique": "${path} tiene que ser único",
         "end_time_before_start_time": "El tiempo de finalización debe ser mayor o igual que el tiempo de inicio"
@@ -1533,7 +1539,7 @@
     "urls": "URLs",
     "zip_file_count": "Números de archivos zip",
     "unknown_date": "Fecha desconocida",
-    "stash_id_endpoint": "Punto final de identificador (ID) de Stash",
+    "stash_id_endpoint": "URL del punto final de identificador (ID) de Stash",
     "studio_and_parent": "Estudio y ancestro",
     "group": "Grupo",
     "group_count": "Recuento de grupos",
