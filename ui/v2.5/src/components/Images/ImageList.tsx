@@ -22,7 +22,7 @@ import Gallery, { RenderImageProps } from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import { useConfigurationContext } from "src/hooks/Config";
-import { ImageGridCard } from "./ImageGridCard";
+import { ImageCardGrid } from "./ImageCardGrid";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
 import { FileSize } from "../Shared/FileSize";
@@ -263,7 +263,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
 
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <ImageGridCard
+      <ImageCardGrid
         images={images}
         selectedIds={selectedIds}
         zoomIndex={filter.zoomIndex}

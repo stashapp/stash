@@ -17,8 +17,8 @@ interface IImageCardGrid {
 
 const zoomWidths = [280, 340, 480, 640];
 
-export const ImageGridCard: React.FC<IImageCardGrid> = PatchComponent(
-  "ImageGridCard",
+export const ImageCardGrid: React.FC<IImageCardGrid> = PatchComponent(
+  "ImageCardGrid",
   ({ images, selectedIds, zoomIndex, onSelectChange, onPreview }) => {
     const [componentRef, { width: containerWidth }] = useContainerDimensions();
     const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
