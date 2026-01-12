@@ -10,12 +10,12 @@ import (
 
 // configScraper implements the scraper interface using a config object.
 type configScraper struct {
-	config config
+	config Definition
 
 	globalConf GlobalConfig
 }
 
-func newConfigScraper(c config, globalConfig GlobalConfig) scraper {
+func newConfigScraper(c Definition, globalConfig GlobalConfig) scraper {
 	return configScraper{
 		config:     c,
 		globalConf: globalConfig,
@@ -27,7 +27,7 @@ func (g configScraper) spec() Scraper {
 }
 
 // fragmentScraper finds an appropriate fragment scraper based on input.
-func (g configScraper) fragmentScraper(input Input) *scraperTypeConfig {
+func (g configScraper) fragmentScraper(input Input) *ByFragmentDefinition {
 	switch {
 	case input.Performer != nil:
 		return g.config.PerformerByFragment
@@ -57,7 +57,7 @@ func (g configScraper) viaFragment(ctx context.Context, client *http.Client, inp
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*stc, client, g.globalConf)
+	s := g.config.getFragmentScraper(*stc, client, g.globalConf)
 	return s.scrapeByFragment(ctx, input)
 }
 
@@ -66,7 +66,7 @@ func (g configScraper) viaScene(ctx context.Context, client *http.Client, scene 
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.SceneByFragment, client, g.globalConf)
+	s := g.config.getFragmentScraper(*g.config.SceneByFragment, client, g.globalConf)
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
@@ -75,7 +75,7 @@ func (g configScraper) viaGallery(ctx context.Context, client *http.Client, gall
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.GalleryByFragment, client, g.globalConf)
+	s := g.config.getFragmentScraper(*g.config.GalleryByFragment, client, g.globalConf)
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
@@ -84,11 +84,11 @@ func (g configScraper) viaImage(ctx context.Context, client *http.Client, galler
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.ImageByFragment, client, g.globalConf)
+	s := g.config.getFragmentScraper(*g.config.ImageByFragment, client, g.globalConf)
 	return s.scrapeImageByImage(ctx, gallery)
 }
 
-func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
+func loadUrlCandidates(c Definition, ty ScrapeContentType) []*ByURLDefinition {
 	switch ty {
 	case ScrapeContentTypePerformer:
 		return c.PerformerByURL
@@ -109,8 +109,9 @@ func (g configScraper) viaURL(ctx context.Context, client *http.Client, url stri
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
-			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.globalConf)
-			ret, err := s.scrapeByURL(ctx, url, ty)
+			u := replaceURL(url, *scraper) // allow a URL Replace for url-queries
+			s := g.config.getURLScraper(*scraper, client, g.globalConf)
+			ret, err := s.scrapeByURL(ctx, u, ty)
 			if err != nil {
 				return nil, err
 			}
@@ -131,14 +132,14 @@ func (g configScraper) viaName(ctx context.Context, client *http.Client, name st
 			break
 		}
 
-		s := g.config.getScraper(*g.config.PerformerByName, client, g.globalConf)
+		s := g.config.getNameScraper(*g.config.PerformerByName, client, g.globalConf)
 		return s.scrapeByName(ctx, name, ty)
 	case ScrapeContentTypeScene:
 		if g.config.SceneByName == nil {
 			break
 		}
 
-		s := g.config.getScraper(*g.config.SceneByName, client, g.globalConf)
+		s := g.config.getNameScraper(*g.config.SceneByName, client, g.globalConf)
 		return s.scrapeByName(ctx, name, ty)
 	}
 

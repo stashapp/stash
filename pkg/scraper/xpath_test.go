@@ -674,10 +674,10 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 		}
 
 		if expectedName != actualName {
-			t.Errorf("Expected performer name %s, got %s", expectedName, actualName)
+			t.Errorf("Expected performer name %q, got %q", expectedName, actualName)
 		}
 		if expectedURL != actualURL {
-			t.Errorf("Expected performer URL %s, got %s", expectedName, actualName)
+			t.Errorf("Expected performer URL %q, got %q", expectedURL, actualURL)
 		}
 		i++
 	}
@@ -780,7 +780,7 @@ xPathScrapers:
         Name: //studio
 `
 
-	c := &config{}
+	c := &Definition{}
 	err := yaml.Unmarshal([]byte(yamlStr), &c)
 
 	if err != nil {
@@ -892,7 +892,7 @@ xPathScrapers:
               selector: //span
 `
 
-	c := &config{}
+	c := &Definition{}
 	err := yaml.Unmarshal([]byte(yamlStr), &c)
 
 	if err != nil {

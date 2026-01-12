@@ -14,15 +14,13 @@ import (
 )
 
 type stashScraper struct {
-	scraper      scraperTypeConfig
-	config       config
+	config       Definition
 	globalConfig GlobalConfig
 	client       *http.Client
 }
 
-func newStashScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *stashScraper {
+func newStashScraper(client *http.Client, config Definition, globalConfig GlobalConfig) *stashScraper {
 	return &stashScraper{
-		scraper:      scraper,
 		config:       config,
 		client:       client,
 		globalConfig: globalConfig,
