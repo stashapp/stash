@@ -507,7 +507,8 @@ input[type="range"].zoom-slider {
   }
 }
 
-.selectable-filter ul {
+.selectable-filter ul,
+ul.selectable-list {
   list-style-type: none;
   margin-top: 0.5rem;
   max-height: 300px;
@@ -613,7 +614,8 @@ input[type="range"].zoom-slider {
   margin-bottom: 0.5rem;
 }
 
-.sidebar-list-filter ul {
+.sidebar-list-filter ul,
+.folder-filter ul {
   list-style-type: none;
   margin-bottom: 0.25rem;
   max-height: 300px;
@@ -748,7 +750,10 @@ input[type="range"].zoom-slider {
   }
 }
 
-.sidebar-path-filter ul {
+.sidebar-folder-filter ul,
+.folder-filter ul,
+ul.selectable-list {
+  margin-top: 0;
   .btn.expand-collapse {
     font-size: 0.8rem;
     padding-left: 0;
@@ -758,10 +763,6 @@ input[type="range"].zoom-slider {
 
   .empty .btn.expand-collapse {
     visibility: hidden;
-  }
-
-  .unselected-object a {
-    justify-content: flex-start;
   }
 
   .selected-object a .selected-object-label {

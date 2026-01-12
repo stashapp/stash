@@ -453,6 +453,45 @@ export const ObjectsFilter = <
 interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
   extends IObjectsFilter<T> {}
 
+export const DepthSelector: React.FC<{
+  depth: number | undefined;
+  onDepthChanged: (depth: number) => void;
+  id: string;
+  label?: React.ReactNode;
+  placeholder?: string;
+  disabled?: boolean;
+}> = ({ depth, onDepthChanged, id, label, disabled, placeholder }) => {
+  return (
+    <Form.Group>
+      <Form.Group>
+        <Form.Check
+          id={id}
+          checked={depth !== 0}
+          label={label}
+          onChange={() => onDepthChanged(depth !== 0 ? 0 : -1)}
+          disabled={disabled}
+        />
+      </Form.Group>
+      {depth !== 0 && (
+        <Form.Group>
+          <NumberField
+            className="btn-secondary"
+            placeholder={placeholder}
+            onChange={(e) =>
+              onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
+            }
+            defaultValue={depth !== -1 ? depth : ""}
+            min="1"
+          />
+        </Form.Group>
+      )}
+    </Form.Group>
+  );
+};
+
+interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
+  extends IObjectsFilter<T> {}
+
 export const HierarchicalObjectsFilter = <
   T extends IHierarchicalLabeledIdCriterion
 >(
@@ -498,36 +537,13 @@ export const HierarchicalObjectsFilter = <
 
   return (
     <Form>
-      <Form.Group>
-        <Form.Check
-          id={criterionOptionTypeToIncludeID()}
-          checked={
-            criterion.modifier !== CriterionModifier.Equals &&
-            criterion.value.depth !== 0
-          }
-          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
-          onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
-          disabled={criterion.modifier === CriterionModifier.Equals}
-        />
-      </Form.Group>
-
-      {criterion.value.depth !== 0 && (
-        <Form.Group>
-          <NumberField
-            className="btn-secondary"
-            placeholder={intl.formatMessage(messages.studio_depth)}
-            onChange={(e) =>
-              onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
-            }
-            defaultValue={
-              criterion.value && criterion.value.depth !== -1
-                ? criterion.value.depth
-                : ""
-            }
-            min="1"
-          />
-        </Form.Group>
-      )}
+      <DepthSelector
+        depth={criterion.value.depth}
+        onDepthChanged={onDepthChanged}
+        id={criterionOptionTypeToIncludeID()}
+        label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+        placeholder={intl.formatMessage(messages.studio_depth)}
+      />
       <ObjectsFilter {...props} />
     </Form>
   );

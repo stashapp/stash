@@ -10,6 +10,7 @@ import {
 import {
   faChevronDown,
   faChevronRight,
+  faMinus,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
@@ -22,8 +23,15 @@ import {
   FolderCriterionOption,
 } from "src/models/list-filter/criteria/folder";
 import { Option, SelectedList } from "./SidebarListFilter";
-import { FormattedMessage, useIntl } from "react-intl";
+import {
+  defineMessages,
+  FormattedMessage,
+  MessageDescriptor,
+  useIntl,
+} from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
+import { Button, Form } from "react-bootstrap";
+import { DepthSelector } from "./SelectableFilter";
 
 interface IFolder extends FolderDataFragment {
   children?: IFolder[];
@@ -33,9 +41,10 @@ interface IFolder extends FolderDataFragment {
 const FolderRow: React.FC<{
   folder: IFolder;
   level?: number;
+  canExclude?: boolean;
   toggleExpanded: (folder: IFolder) => void;
-  onSelect: (folder: IFolder) => void;
-}> = ({ folder, level, toggleExpanded, onSelect }) => {
+  onSelect: (folder: IFolder, exclude?: boolean) => void;
+}> = ({ folder, level, toggleExpanded, onSelect, canExclude }) => {
   return (
     <>
       <li
@@ -47,19 +56,34 @@ const FolderRow: React.FC<{
           onKeyDown={keyboardClickHandler(() => onSelect(folder))}
           tabIndex={0}
         >
-          <span
-            className={cx({
-              empty: folder.children && folder.children.length === 0,
-            })}
-          >
-            <ExpandCollapseButton
-              collapsed={!folder.expanded}
-              setCollapsed={() => toggleExpanded(folder)}
-              collapsedIcon={faChevronRight}
-              notCollapsedIcon={faChevronDown}
-            />
+          <span>
+            <span
+              className={cx({
+                empty: folder.children && folder.children.length === 0,
+              })}
+            >
+              <ExpandCollapseButton
+                collapsed={!folder.expanded}
+                setCollapsed={() => toggleExpanded(folder)}
+                collapsedIcon={faChevronRight}
+                notCollapsedIcon={faChevronDown}
+              />
+            </span>
+            {folder.basename}
           </span>
-          {folder.basename}
+          {canExclude && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(folder, true);
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="minimal exclude-button"
+            >
+              <span className="exclude-button-text">exclude</span>
+              <Icon className="fa-fw exclude-icon" icon={faMinus} />
+            </Button>
+          )}
         </a>
       </li>
       {folder.expanded &&
@@ -70,6 +94,7 @@ const FolderRow: React.FC<{
             level={(level ?? 0) + 1}
             toggleExpanded={toggleExpanded}
             onSelect={onSelect}
+            canExclude={canExclude}
           />
         ))}
     </>
@@ -111,10 +136,11 @@ function replaceFolder(folder: IFolder): (f: IFolder) => IFolder {
 }
 
 export const FolderSelector: React.FC<{
-  onSelect: (folder: IFolder) => void;
+  onSelect: (folder: IFolder, exclude?: boolean) => void;
+  canExclude?: boolean;
   preListContent?: React.ReactNode;
   skip?: boolean;
-}> = ({ onSelect, preListContent, skip = false }) => {
+}> = ({ onSelect, preListContent, canExclude = false, skip = false }) => {
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
     skip,
   });
@@ -152,17 +178,138 @@ export const FolderSelector: React.FC<{
   }
 
   return (
-    <ul>
+    <ul className="selectable-list">
       {preListContent}
       {folderMap.map((folder) => (
         <FolderRow
           key={folder.id}
           folder={folder}
-          onSelect={(f) => onSelect(f)}
+          onSelect={(f, exclude) => onSelect(f, exclude)}
           toggleExpanded={onToggleExpanded}
+          canExclude={canExclude}
         />
       ))}
     </ul>
+  );
+};
+
+interface IInputFilterProps {
+  criterion: FolderCriterion;
+  setCriterion: (c: FolderCriterion) => void;
+}
+
+export const FolderFilter: React.FC<IInputFilterProps> = ({
+  criterion,
+  setCriterion,
+}) => {
+  const intl = useIntl();
+
+  const messages = defineMessages({
+    sub_folder_depth: {
+      id: "sub_folder_depth",
+      defaultMessage: "Levels (empty for all)",
+    },
+  });
+
+  function criterionOptionTypeToIncludeID(): string {
+    return "include-sub-folders";
+  }
+
+  function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
+    const optionType = "include_sub_folders";
+
+    return {
+      id: optionType,
+    };
+  }
+
+  function onDepthChanged(depth: number) {
+    const newValue = criterion.clone() as FolderCriterion;
+    newValue.value.depth = depth;
+    setCriterion(newValue);
+  }
+
+  function onSelect(folder: IFolder, exclude: boolean = false) {
+    // toggle selection
+    const newValue = criterion.clone() as FolderCriterion;
+
+    if (!exclude) {
+      if (newValue.value.items.find((i) => i.id === folder.id)) {
+        return;
+      }
+
+      newValue.value.items.push({ id: folder.id, label: folder.path });
+    } else {
+      if (newValue.value.excluded.find((i) => i.id === folder.id)) {
+        return;
+      }
+
+      newValue.value.excluded.push({ id: folder.id, label: folder.path });
+    }
+
+    setCriterion(newValue);
+  }
+
+  const onUnselect = useCallback(
+    (i: Option, excluded?: boolean) => {
+      const newValue = criterion.clone() as FolderCriterion;
+
+      if (!excluded) {
+        newValue.value.items = newValue.value.items.filter(
+          (item) => item.id !== i.id
+        );
+      } else {
+        newValue.value.excluded = newValue.value.excluded.filter(
+          (item) => item.id !== i.id
+        );
+      }
+      setCriterion(newValue);
+    },
+    [criterion, setCriterion]
+  );
+
+  const selectedList = useMemo(() => {
+    const selected: Option[] =
+      criterion.value?.items.map((item) => ({
+        id: item.id,
+        label: item.label,
+      })) ?? [];
+
+    return <SelectedList items={selected} onUnselect={onUnselect} />;
+  }, [criterion, onUnselect]);
+
+  const excludedList = useMemo(() => {
+    const selected: Option[] =
+      criterion.value?.excluded.map((item) => ({
+        id: item.id,
+        label: item.label,
+      })) ?? [];
+
+    return (
+      <SelectedList
+        excluded
+        items={selected}
+        onUnselect={(i) => onUnselect(i, true)}
+      />
+    );
+  }, [criterion, onUnselect]);
+
+  return (
+    <Form className="folder-filter">
+      <DepthSelector
+        depth={criterion.value.depth}
+        onDepthChanged={onDepthChanged}
+        id={criterionOptionTypeToIncludeID()}
+        label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+        placeholder={intl.formatMessage(messages.sub_folder_depth)}
+      />
+
+      <Form.Group>
+        {selectedList}
+        {excludedList}
+        <FolderSelector onSelect={onSelect} canExclude />
+      </Form.Group>
+    </Form>
   );
 };
 
@@ -192,6 +339,11 @@ export const SidebarFolderFilter: React.FC<
     const newCriterion = filter.makeCriterion(option.type) as FolderCriterion;
     return newCriterion;
   }, [option.type, filter]);
+
+  // if there are multiple values or excluded values, then we show none of the
+  // current values
+  const multipleSelected =
+    criterion.value.items.length > 1 || criterion.value.excluded.length > 0;
 
   function onSelect(folder: IFolder) {
     const c = criterion.clone() as FolderCriterion;
@@ -244,6 +396,10 @@ export const SidebarFolderFilter: React.FC<
   const subDirsSelected = criterion.value?.depth === -1;
 
   const selectedList = useMemo(() => {
+    if (multipleSelected) {
+      return null;
+    }
+
     const selected: Option[] =
       criterion.value?.items.map((item) => ({
         id: item.id,
@@ -259,23 +415,27 @@ export const SidebarFolderFilter: React.FC<
     }
 
     return <SelectedList items={selected} onUnselect={onUnselect} />;
-  }, [intl, subDirsSelected, criterion, onUnselect]);
+  }, [intl, multipleSelected, subDirsSelected, criterion, onUnselect]);
 
-  const modifierItem = criterion.value.items.length > 0 && !subDirsSelected && (
-    <li className="unselected-object modifier-object">
-      <a onClick={onSelectSubfolders}>
-        <Icon className={`fa-fw include-button`} icon={faPlus} />
-        (<FormattedMessage id="sub_folders" />)
-      </a>
-    </li>
-  );
+  const modifierItem = criterion.value.items.length > 0 &&
+    !multipleSelected &&
+    !subDirsSelected && (
+      <li className="unselected-object modifier-object">
+        <a onClick={onSelectSubfolders}>
+          <span>
+            <Icon className={`fa-fw include-button`} icon={faPlus} />
+            (<FormattedMessage id="sub_folders" />)
+          </span>
+        </a>
+      </li>
+    );
 
   return (
     <SidebarSection
       {...props}
       outsideCollapse={selectedList}
       onOpen={onOpen}
-      className="sidebar-list-filter sidebar-path-filter"
+      className="sidebar-list-filter sidebar-folder-filter"
     >
       {/* query input goes here */}
       <FolderSelector
