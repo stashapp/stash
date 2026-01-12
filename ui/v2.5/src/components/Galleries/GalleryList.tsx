@@ -13,7 +13,7 @@ import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { GalleryListTable } from "./GalleryListTable";
-import { GalleryCardGrid } from "./GalleryGridCard";
+import { GalleryCardGrid } from "./GalleryCardGrid";
 import { View } from "../List/views";
 import { PatchComponent } from "src/patch";
 import { IItemListOperation } from "../List/FilteredListToolbar";
