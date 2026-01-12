@@ -617,6 +617,7 @@ declare namespace PluginApi {
     const FontAwesomeBrands: typeof import("@fortawesome/free-brands-svg-icons");
     const Intl: typeof import("react-intl");
     const Mousetrap: typeof import("mousetrap");
+    const ReactFontAwesome: typeof import("@fortawesome/react-fontawesome");
     const ReactSelect: typeof import("react-select");
 
     // @ts-expect-error

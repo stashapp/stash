@@ -230,6 +230,7 @@
     "verb_match_tag": "Match Tag",
     "verb_matched": "Matched",
     "verb_scrape_all": "Scrape All",
+    "verb_scrape_selected": "Scrape Selected",
     "verb_submit_fp": "Submit {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} unmatched scenes"

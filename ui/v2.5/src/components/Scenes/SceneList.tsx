@@ -235,11 +235,20 @@ const SceneList: React.FC<{
         scenes={scenes}
         sceneQueue={queue}
         zoomIndex={filter.zoomIndex}
+        selectedIds={selectedIds}
+        onSelectChange={onSelectChange}
       />
     );
   }
   if (filter.displayMode === DisplayMode.Tagger) {
-    return <Tagger scenes={scenes} queue={queue} />;
+    return (
+      <Tagger
+        scenes={scenes}
+        queue={queue}
+        selectedIds={selectedIds}
+        onSelectChange={onSelectChange}
+      />
+    );
   }
 
   return null;
