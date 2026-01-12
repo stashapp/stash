@@ -231,7 +231,8 @@
         "verb_toggle_unmatched": "{toggle} ej matchade scener",
         "verb_add_as_alias": "Lägg til skrapat namn som alias",
         "verb_link_existing": "Länk till existerande",
-        "verb_match_tag": "Matcha Tagg"
+        "verb_match_tag": "Matcha Tagg",
+        "verb_scrape_selected": "Skrapa utvalda"
     },
     "config": {
         "about": {
