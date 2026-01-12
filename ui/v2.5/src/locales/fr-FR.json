@@ -231,7 +231,8 @@
         "verb_toggle_unmatched": "{toggle} scènes incomparables",
         "verb_add_as_alias": "Ajouter le nom récupéré comme alias",
         "verb_link_existing": "Lien vers existant",
-        "verb_match_tag": "Étiquette correspondante"
+        "verb_match_tag": "Étiquette correspondante",
+        "verb_scrape_selected": "Extraire la sélection"
     },
     "config": {
         "about": {
