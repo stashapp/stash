@@ -15,7 +15,7 @@ import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
-import { SceneCardsGrid } from "./SceneCardsGrid";
+import { SceneCardGrid } from "./SceneCardGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { useConfigurationContext } from "src/hooks/Config";
@@ -209,7 +209,7 @@ const SceneList: React.FC<{
 
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <SceneCardsGrid
+      <SceneCardGrid
         scenes={scenes}
         queue={queue}
         zoomIndex={filter.zoomIndex}
