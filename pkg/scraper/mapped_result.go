@@ -51,12 +51,21 @@ func (r mappedResult) stringSlice(key string) []string {
 		return nil
 	}
 
+	// need to try both []string and string
 	val, ok := v.([]string)
-	if !ok {
-		logger.Errorf("String slice field %s is %T in mappedResult", key, r[key])
+
+	if ok {
+		return val
 	}
 
-	return val
+	// try single string
+	singleVal, ok := v.(string)
+	if !ok {
+		logger.Errorf("String slice field %s is %T in mappedResult", key, r[key])
+		return nil
+	}
+
+	return []string{singleVal}
 }
 
 func (r mappedResult) IntPtr(key string) *int {

@@ -146,8 +146,14 @@ func TestMappedResultStringSlice(t *testing.T) {
 			expectedValue: nil,
 		},
 		{
-			name:          "wrong type returns nil",
+			name:          "single value converted to slice",
 			data:          mappedResult{"tags": "not a slice"},
+			key:           "tags",
+			expectedValue: []string{"not a slice"},
+		},
+		{
+			name:          "wrong type returns nil",
+			data:          mappedResult{"tags": 123},
 			key:           "tags",
 			expectedValue: nil,
 		},
