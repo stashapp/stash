@@ -627,6 +627,10 @@ input TagFilterType {
 
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+
+  "Filter by StashID"
+  stash_ids_endpoint: StashIDsCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType

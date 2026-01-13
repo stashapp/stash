@@ -1700,7 +1700,7 @@ func getTagChildCount(id int) int {
 func tagStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getTagStringValue(i, "stashid"),
-		Endpoint: getTagStringValue(i, "endpoint"),
+		Endpoint: getTagStringValue(0, "endpoint"),
 	}
 }
 

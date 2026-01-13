@@ -91,6 +91,12 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 			stashIDTableAs:    "tag_stash_ids",
 			parentIDCol:       "tags.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 tagFilter.StashIDsEndpoint,
+			stashIDRepository: &tagRepository.stashIDs,
+			stashIDTableAs:    "tag_stash_ids",
+			parentIDCol:       "tags.id",
+		},
 
 		&timestampCriterionHandler{tagFilter.CreatedAt, "tags.created_at", nil},
 		&timestampCriterionHandler{tagFilter.UpdatedAt, "tags.updated_at", nil},

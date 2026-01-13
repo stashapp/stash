@@ -356,6 +356,8 @@ func TestTagQuery(t *testing.T) {
 	var (
 		endpoint = tagStashID(tagIdxWithPerformer).Endpoint
 		stashID  = tagStashID(tagIdxWithPerformer).StashID
+		stashID2 = tagStashID(tagIdx1WithPerformer).StashID
+		stashIDs = []*string{&stashID, &stashID2}
 	)
 
 	tests := []struct {
@@ -417,6 +419,60 @@ func TestTagQuery(t *testing.T) {
 				},
 			},
 			[]int{tagIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
+			"stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			nil,
+			false,
+		},
+		{
+			"exclude stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			false,
+		},
+		{
+			"null stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
+			false,
+		},
+		{
+			"not null stash ids with endpoint",
+			nil,
+			&models.TagFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
 			nil,
 			false,
 		},
