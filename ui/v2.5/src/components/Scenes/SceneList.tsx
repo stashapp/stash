@@ -539,6 +539,27 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     setShowSidebar,
   });
 
+  const onCloseEditDelete = useCloseEditDelete({
+    closeModal,
+    onSelectNone,
+    result,
+  });
+
+  const onEdit = useCallback(() => {
+    showModal(
+      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
+    );
+  }, [showModal, selectedItems, onCloseEditDelete]);
+
+  const onDelete = useCallback(() => {
+    showModal(
+      <DeleteScenesDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
+      />
+    );
+  }, [showModal, selectedItems, onCloseEditDelete]);
+
   useEffect(() => {
     Mousetrap.bind("e", () => {
       if (hasSelection) {
@@ -560,12 +581,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   useZoomKeybinds({
     zoomIndex: filter.zoomIndex,
     onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
-  });
-
-  const onCloseEditDelete = useCloseEditDelete({
-    closeModal,
-    onSelectNone,
-    result,
   });
 
   const metadataByline = useMemo(() => {
@@ -632,21 +647,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
           }
         }}
         show
-      />
-    );
-  }
-
-  function onEdit() {
-    showModal(
-      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
-    );
-  }
-
-  function onDelete() {
-    showModal(
-      <DeleteScenesDialog
-        selected={selectedItems}
-        onClose={onCloseEditDelete}
       />
     );
   }
