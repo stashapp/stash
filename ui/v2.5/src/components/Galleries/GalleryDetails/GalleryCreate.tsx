@@ -19,26 +19,14 @@ const GalleryCreate: React.FC = () => {
 
   const [createGallery] = useGalleryCreate();
 
-  async function onSave(input: GQL.GalleryCreateInput) {
+  async function onSave(input: GQL.GalleryCreateInput, andNew?: boolean) {
     const result = await createGallery({
       variables: { input },
     });
     if (result.data?.galleryCreate) {
-      history.push(`/galleries/${result.data.galleryCreate.id}`);
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.created_entity" },
-          { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
-        )
-      );
-    }
-  }
-
-  async function onSaveAndNew(input: GQL.GalleryCreateInput) {
-    const result = await createGallery({
-      variables: { input },
-    });
-    if (result.data?.galleryCreate) {
+      if (!andNew) {
+        history.push(`/galleries/${result.data.galleryCreate.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },
@@ -61,7 +49,6 @@ const GalleryCreate: React.FC = () => {
           gallery={gallery}
           isVisible
           onSubmit={onSave}
-          onSaveAndNew={onSaveAndNew}
           onDelete={() => {}}
         />
       </div>

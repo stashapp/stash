@@ -35,8 +35,7 @@ import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
-  onSubmit: (input: GQL.GalleryCreateInput) => Promise<void>;
-  onSaveAndNew?: (input: GQL.GalleryCreateInput) => Promise<void>;
+  onSubmit: (input: GQL.GalleryCreateInput, andNew?: boolean) => Promise<void>;
   onDelete: () => void;
 }
 
@@ -44,7 +43,6 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   gallery,
   isVisible,
   onSubmit,
-  onSaveAndNew,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -179,10 +177,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return <div></div>;
   }, [gallery?.paths?.cover, intl]);
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -192,14 +190,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   async function onSaveAndNewClick() {
     const input = schema.cast(formik.values);
-    setIsLoading(true);
-    try {
-      await onSaveAndNew?.(input);
-      formik.resetForm();
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
+    onSave(input, true);
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
@@ -459,7 +450,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
-            {isNew && onSaveAndNew ? (
+            {isNew ? (
               <SplitButton
                 id="gallery-save-split-button"
                 className="edit-button"
