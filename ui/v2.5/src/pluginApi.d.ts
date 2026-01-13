@@ -773,6 +773,7 @@ declare namespace PluginApi {
     TagCardGrid: React.FC<any>;
     TagLink: React.FC<any>;
     TagList: React.FC<any>;
+    TagRecommendationRow: React.FC<any>;
     TagSelect: React.FC<any>;
     TruncatedText: React.FC<any>;
   };
