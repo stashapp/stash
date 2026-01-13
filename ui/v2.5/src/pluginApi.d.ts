@@ -685,6 +685,7 @@ declare namespace PluginApi {
     GroupCardGrid: React.FC<any>;
     GroupIDSelect: React.FC<any>;
     GroupList: React.FC<any>;
+    GroupRecommendationRow: React.FC<any>;
     GroupSelect: React.FC<any>;
     GroupSubGroupsPanel: React.FC<any>;
     HeaderImage: React.FC<any>;
