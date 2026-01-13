@@ -1015,6 +1015,8 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 	var stashIDs []*string
 	if h.c.StashID != nil {
 		stashIDs = []*string{h.c.StashID}
+	} else {
+		stashIDs = nil
 	}
 
 	convertedInput := &models.StashIDsCriterionInput{
@@ -1058,21 +1060,28 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 
 	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
 
-	b := f
-	for _, n := range h.c.StashIDs {
-		query := &filterBuilder{}
-		v := ""
-		if n != nil {
-			v = *n
-		}
-
+	if h.c.StashIDs == nil || len(h.c.StashIDs) == 0 {
 		stringCriterionHandler(&models.StringCriterionInput{
-			Value:    v,
+			Value:    "",
 			Modifier: h.c.Modifier,
-		}, t+".stash_id")(ctx, query)
+		}, t+".stash_id")(ctx, f)
+	} else {
+		b := f
+		for _, n := range h.c.StashIDs {
+			query := &filterBuilder{}
+			v := ""
+			if n != nil {
+				v = *n
+			}
 
-		b.or(query)
-		b = query
+			stringCriterionHandler(&models.StringCriterionInput{
+				Value:    v,
+				Modifier: h.c.Modifier,
+			}, t+".stash_id")(ctx, query)
+
+			b.or(query)
+			b = query
+		}
 	}
 }
 
