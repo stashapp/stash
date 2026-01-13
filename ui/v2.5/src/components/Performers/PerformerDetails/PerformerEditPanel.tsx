@@ -58,7 +58,10 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
-  onSubmit: (performer: GQL.PerformerCreateInput, andNew?: boolean) => Promise<void>;
+  onSubmit: (
+    performer: GQL.PerformerCreateInput,
+    andNew?: boolean
+  ) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
