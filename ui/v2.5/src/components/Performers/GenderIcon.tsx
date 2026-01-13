@@ -13,17 +13,25 @@ interface IIconProps {
   className?: string;
 }
 
+function genderIcon(gender: GQL.GenderEnum) {
+  switch (gender) {
+    case GQL.GenderEnum.Male:
+      return faMars;
+    case GQL.GenderEnum.Female:
+      return faVenus;
+    default:
+      return faTransgenderAlt;
+  }
+}
+
 const GenderIcon: React.FC<IIconProps> = ({ gender, className }) => {
   const intl = useIntl();
   if (gender) {
-    const icon =
-      gender === GQL.GenderEnum.Male
-        ? faMars
-        : gender === GQL.GenderEnum.Female
-        ? faVenus
-        : faTransgenderAlt;
+    const icon = genderIcon(gender);
+
     return (
       <FontAwesomeIcon
+        data-gender={gender}
         title={intl.formatMessage({ id: "gender_types." + gender })}
         className={className}
         icon={icon}
