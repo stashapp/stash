@@ -297,8 +297,8 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	var coverImageData []byte
-	coverImageProvided := input.CoverImage != nil
-	if coverImageProvided {
+	coverImageIncluded := translator.hasField("cover_image")
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -311,7 +311,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	if coverImageProvided {
+	if coverImageIncluded {
 		if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
 			return nil, err
 		}

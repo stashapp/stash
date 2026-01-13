@@ -62,6 +62,12 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
+	// if default flag is set, return the default image
+	if r.URL.Query().Get("default") == "true" {
+		utils.ServeImage(w, r, static.ReadAll(static.DefaultSceneImage))
+		return
+	}
+
 	var cover []byte
 	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
 		var err error
