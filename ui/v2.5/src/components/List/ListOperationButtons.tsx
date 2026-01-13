@@ -105,7 +105,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
-  });
+  }, [onSelectAll, onSelectNone, onInvertSelection, itemsSelected, onEdit, onDelete]);
 
   const buttons = useMemo(() => {
     const ret = (otherOperations ?? []).filter((o) => {
