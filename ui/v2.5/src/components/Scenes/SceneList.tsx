@@ -522,6 +522,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     hasSelection,
   } = listSelect;
 
@@ -540,6 +541,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   });
 
   useEffect(() => {
+    Mousetrap.bind("s a", () => onSelectAll?.());
+    Mousetrap.bind("s n", () => onSelectNone?.());
+    Mousetrap.bind("s i", () => onInvertSelection?.());
+
     Mousetrap.bind("e", () => {
       if (hasSelection) {
         onEdit?.();
@@ -553,6 +558,9 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     });
 
     return () => {
+      Mousetrap.unbind("s a");
+      Mousetrap.unbind("s n");
+      Mousetrap.unbind("s i");
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
@@ -676,6 +684,11 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       text: intl.formatMessage({ id: "actions.select_none" }),
       onClick: () => onSelectNone(),
       isDisplayed: () => hasSelection,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.invert_selection" }),
+      onClick: () => onInvertSelection(),
+      isDisplayed: () => totalCount > 0,
     },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
