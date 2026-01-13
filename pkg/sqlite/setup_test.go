@@ -1547,7 +1547,7 @@ func getIgnoreAutoTag(index int) bool {
 func performerStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getPerformerStringValue(i, "stashid"),
-		Endpoint: getPerformerStringValue(i, "endpoint"),
+		Endpoint: getPerformerStringValue(0, "endpoint"),
 	}
 }
 

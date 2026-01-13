@@ -1079,7 +1079,11 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 				Modifier: h.c.Modifier,
 			}, t+".stash_id")(ctx, query)
 
-			b.or(query)
+			if h.c.Modifier == models.CriterionModifierNotEquals {
+				b.and(query)
+			} else {
+				b.or(query)
+			}
 			b = query
 		}
 	}
