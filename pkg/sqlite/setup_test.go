@@ -1079,7 +1079,7 @@ func getObjectDate(index int) *models.Date {
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:   getSceneStringValue(i, "stashid"),
-		Endpoint:  getSceneStringValue(i, "endpoint"),
+		Endpoint:  getSceneStringValue(0, "endpoint"),
 		UpdatedAt: epochTime,
 	}
 }
