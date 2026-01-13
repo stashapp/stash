@@ -210,7 +210,7 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 	return true, nil
 }
 
-func (r *mutationResolver) DeleteFileEntries(ctx context.Context, ids []string) (ret bool, err error) {
+func (r *mutationResolver) DestroyFiles(ctx context.Context, ids []string) (ret bool, err error) {
 	fileIDs, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {
 		return false, fmt.Errorf("converting ids: %w", err)
