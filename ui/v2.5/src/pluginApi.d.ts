@@ -719,6 +719,7 @@ declare namespace PluginApi {
     PerformerImagesPanel: React.FC<any>;
     PerformerList: React.FC<any>;
     PerformerPage: React.FC<any>;
+    PerformerRecommendationRow: React.FC<any>;
     PerformerScenesPanel: React.FC<any>;
     PerformerSelect: React.FC<any>;
     PluginSettings: React.FC<any>;
