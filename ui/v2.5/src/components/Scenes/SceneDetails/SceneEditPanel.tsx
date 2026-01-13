@@ -59,8 +59,7 @@ interface IProps {
   initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
-  onSubmit: (input: GQL.SceneCreateInput) => Promise<void>;
-  onSaveAndNew?: (input: GQL.SceneCreateInput) => Promise<void>;
+  onSubmit: (input: GQL.SceneCreateInput, andNew?: boolean) => Promise<void>;
   onDelete?: () => void;
 }
 
@@ -70,7 +69,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   isNew = false,
   isVisible,
   onSubmit,
-  onSaveAndNew,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -278,10 +276,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("groups", newGroups);
   }
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -291,14 +289,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   async function onSaveAndNewClick() {
     const input = schema.cast(formik.values);
-    setIsLoading(true);
-    try {
-      await onSaveAndNew?.(input);
-      formik.resetForm();
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
+    onSave(input, true);
   }
 
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
@@ -758,7 +749,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
-            {isNew && onSaveAndNew ? (
+            {isNew ? (
               <SplitButton
                 id="scene-save-split-button"
                 className="edit-button"
