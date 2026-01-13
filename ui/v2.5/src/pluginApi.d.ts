@@ -721,6 +721,7 @@ declare namespace PluginApi {
     RatingNumber: React.FC<any>;
     RatingStars: React.FC<any>;
     RatingSystem: React.FC<any>;
+    RecommendationRow: React.FC<any>;
     SceneFileInfoPanel: React.FC<any>;
     SceneIDSelect: React.FC<any>;
     ScenePage: React.FC<any>;
