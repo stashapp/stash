@@ -1012,28 +1012,25 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		return
 	}
 
-	stashIDRepo := h.stashIDRepository
-	t := stashIDRepo.tableName
-	if h.stashIDTableAs != "" {
-		t = h.stashIDTableAs
-	}
-
-	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
-	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
-		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
-	}
-
-	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
-
-	v := ""
+	var stashIDs []*string
 	if h.c.StashID != nil {
-		v = *h.c.StashID
+		stashIDs = []*string{h.c.StashID}
 	}
 
-	stringCriterionHandler(&models.StringCriterionInput{
-		Value:    v,
+	convertedInput := &models.StashIDsCriterionInput{
+		Endpoint: h.c.Endpoint,
+		StashIDs: stashIDs,
 		Modifier: h.c.Modifier,
-	}, t+".stash_id")(ctx, f)
+	}
+
+	convertedHandler := stashIDsCriterionHandler{
+		c:                 convertedInput,
+		stashIDRepository: h.stashIDRepository,
+		stashIDTableAs:    h.stashIDTableAs,
+		parentIDCol:       h.parentIDCol,
+	}
+
+	convertedHandler.handle(ctx, f)
 }
 
 type stashIDsCriterionHandler struct {
