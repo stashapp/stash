@@ -619,6 +619,7 @@ declare namespace PluginApi {
     const Mousetrap: typeof import("mousetrap");
     const ReactFontAwesome: typeof import("@fortawesome/react-fontawesome");
     const ReactSelect: typeof import("react-select");
+    const ReactSlick: typeof import("@ant-design/react-slick");
 
     // @ts-expect-error
     import { MousetrapStatic } from "mousetrap";
