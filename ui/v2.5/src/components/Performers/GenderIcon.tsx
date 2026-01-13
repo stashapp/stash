@@ -3,6 +3,7 @@ import {
   faVenus,
   faTransgenderAlt,
   faMars,
+  faNonBinary,
 } from "@fortawesome/free-solid-svg-icons";
 import * as GQL from "src/core/generated-graphql";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,6 +20,8 @@ function genderIcon(gender: GQL.GenderEnum) {
       return faMars;
     case GQL.GenderEnum.Female:
       return faVenus;
+    case GQL.GenderEnum.NonBinary:
+      return faNonBinary;
     default:
       return faTransgenderAlt;
   }
@@ -29,13 +32,16 @@ const GenderIcon: React.FC<IIconProps> = ({ gender, className }) => {
   if (gender) {
     const icon = genderIcon(gender);
 
+    // new version of fontawesome doesn't seem to support titles on icons, so adding it
+    // to a span instead
     return (
-      <FontAwesomeIcon
-        data-gender={gender}
-        title={intl.formatMessage({ id: "gender_types." + gender })}
-        className={className}
-        icon={icon}
-      />
+      <span title={intl.formatMessage({ id: "gender_types." + gender })}>
+        <FontAwesomeIcon
+          data-gender={gender}
+          className={className}
+          icon={icon}
+        />
+      </span>
     );
   }
   return null;
