@@ -165,7 +165,7 @@ input PerformerFilterType {
   "Filter by o count"
   o_counter: IntCriterionInput
   "Filter by StashID"
-  stash_id_endpoint: StashIDCriterionInput
+  stash_id_endpoint: StashIDCriterionInput @deprecated(reason: "use stash_ids_endpoint instead")
   "Filter by StashIDs"
   stash_ids_endpoint: StashIDsCriterionInput
   # rating expressed as 1-100
@@ -303,7 +303,7 @@ input SceneFilterType {
   "Filter by performer count"
   performer_count: IntCriterionInput
   "Filter by StashID"
-  stash_id_endpoint: StashIDCriterionInput
+  stash_id_endpoint: StashIDCriterionInput @deprecated(reason: "use stash_ids_endpoint instead")
   "Filter by StashIDs"
   stash_ids_endpoint: StashIDsCriterionInput
   "Filter by url"
@@ -445,7 +445,7 @@ input StudioFilterType {
   "Filter to only include studios with this parent studio"
   parents: MultiCriterionInput
   "Filter by StashID"
-  stash_id_endpoint: StashIDCriterionInput
+  stash_id_endpoint: StashIDCriterionInput @deprecated(reason: "use stash_ids_endpoint instead")
   "Filter by StashIDs"
   stash_ids_endpoint: StashIDsCriterionInput
   "Filter to only include studios with these tags"
