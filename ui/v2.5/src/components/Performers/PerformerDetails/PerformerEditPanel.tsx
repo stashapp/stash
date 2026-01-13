@@ -58,8 +58,7 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
-  onSubmit: (performer: GQL.PerformerCreateInput) => Promise<void>;
-  onSaveAndNew?: (performer: GQL.PerformerCreateInput) => Promise<void>;
+  onSubmit: (performer: GQL.PerformerCreateInput, andNew?: boolean) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -79,7 +78,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isVisible,
   onSubmit,
-  onSaveAndNew,
   onCancel,
   setImage,
   setEncodingImage,
@@ -347,10 +345,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -364,15 +362,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...schema.cast(values),
       custom_fields: customFieldInput(isNew, values.custom_fields),
     };
-
-    setIsLoading(true);
-    try {
-      await onSaveAndNew?.(input);
-      formik.resetForm();
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
+    onSave(input, true);
   }
 
   // set up hotkeys
@@ -622,7 +612,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="actions.clear_image" />
           </Button>
         </div>
-        {isNew && onSaveAndNew ? (
+        {isNew ? (
           <SplitButton
             id="save-split-button"
             variant="success"
