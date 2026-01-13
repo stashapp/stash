@@ -695,6 +695,7 @@ declare namespace PluginApi {
     ImageCardGrid: React.FC<any>;
     ImageInput: React.FC<any>;
     ImageList: React.FC<any>;
+    ImageRecommendationRow: React.FC<any>;
     LightboxLink: React.FC<any>;
     LoadingIndicator: React.FC<any>;
     "MainNavBar.MenuItems": React.FC<any>;
