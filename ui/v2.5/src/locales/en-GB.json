@@ -117,6 +117,7 @@
     "select_entity": "Select {entityType}",
     "select_folders": "Select folders",
     "select_none": "Select None",
+    "invert_selection": "Invert Selection",
     "selective_auto_tag": "Selective Auto Tag",
     "selective_clean": "Selective Clean",
     "selective_scan": "Selective Scan",
