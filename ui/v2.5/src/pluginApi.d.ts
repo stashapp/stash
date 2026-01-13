@@ -760,6 +760,7 @@ declare namespace PluginApi {
     StudioDetailsPanel: React.FC<any>;
     StudioIDSelect: React.FC<any>;
     StudioList: React.FC<any>;
+    StudioRecommendationRow: React.FC<any>;
     StudioSelect: React.FC<any>;
     SweatDrops: React.FC<any>;
     TabTitleCounter: React.FC<any>;
