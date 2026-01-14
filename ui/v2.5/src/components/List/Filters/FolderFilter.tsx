@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FolderDataFragment,
+  useFindFoldersForQueryQuery,
   useFindRootFoldersForSelectQuery,
 } from "src/core/generated-graphql";
 import {
@@ -32,6 +33,8 @@ import {
 import { Icon } from "src/components/Shared/Icon";
 import { Button, Form } from "react-bootstrap";
 import { DepthSelector } from "./SelectableFilter";
+import ClearableInput from "src/components/Shared/ClearableInput";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface IFolder extends FolderDataFragment {
   children?: IFolder[];
@@ -136,13 +139,27 @@ function replaceFolder(folder: IFolder): (f: IFolder) => IFolder {
 }
 
 export const FolderSelector: React.FC<{
+  query?: string;
   onSelect: (folder: IFolder, exclude?: boolean) => void;
   canExclude?: boolean;
   preListContent?: React.ReactNode;
   skip?: boolean;
-}> = ({ onSelect, preListContent, canExclude = false, skip = false }) => {
+}> = ({
+  query,
+  onSelect,
+  preListContent,
+  canExclude = false,
+  skip = false,
+}) => {
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
     skip,
+  });
+
+  const { data: queryFoldersResult } = useFindFoldersForQueryQuery({
+    skip: !query,
+    variables: {
+      filter: { q: query, per_page: 200 },
+    },
   });
 
   const rootFolders: IFolder[] = useMemo(() => {
@@ -150,11 +167,82 @@ export const FolderSelector: React.FC<{
     return ret.map((f) => ({ ...f, expanded: false, children: undefined }));
   }, [rootFoldersResult]);
 
+  const queryFolders: IFolder[] = useMemo(() => {
+    // construct the folder list from the query result
+    const ret: IFolder[] = [];
+
+    (queryFoldersResult?.findFolders.folders ?? []).forEach((folder) => {
+      if (!folder.parent_folders.length) {
+        // no parents, just add it if not present
+        if (!ret.find((f) => f.id === folder.id)) {
+          ret.push({ ...folder, expanded: true, children: [] });
+        }
+        return;
+      }
+
+      // expand the parent folders
+      let currentParent: IFolder | undefined;
+      for (let i = folder.parent_folders.length - 1; i >= 0; i--) {
+        const thisFolder = folder.parent_folders[i];
+        let existing: IFolder | undefined;
+
+        if (i === folder.parent_folders.length - 1) {
+          // last parent, add the folder as root
+          existing = ret.find((f) => f.id === thisFolder.id);
+          if (!existing) {
+            existing = {
+              ...folder.parent_folders[i],
+              expanded: true,
+              children: [],
+            };
+            ret.push(existing);
+          }
+          currentParent = existing;
+          continue;
+        }
+
+        // find folder in current parent's children
+        // currentParent is guaranteed to be defined here
+        existing = currentParent!.children?.find((f) => f.id === thisFolder.id);
+        if (!existing) {
+          // add to current parent's children
+          existing = {
+            ...thisFolder,
+            expanded: true,
+            children: [],
+          };
+          currentParent!.children!.push(existing);
+        }
+        currentParent = existing;
+      }
+
+      if (!currentParent) {
+        return;
+      }
+
+      if (!currentParent.children) {
+        currentParent.children = [];
+      }
+
+      // currentParent is now the immediate parent folder
+      currentParent!.children!.push({
+        ...folder,
+        expanded: false,
+        children: undefined,
+      });
+    });
+    return ret;
+  }, [queryFoldersResult]);
+
   const [folderMap, setFolderMap] = React.useState<IFolder[]>([]);
 
   useEffect(() => {
-    setFolderMap(rootFolders);
-  }, [rootFolders]);
+    if (!query) {
+      setFolderMap(rootFolders);
+    } else {
+      setFolderMap(queryFolders);
+    }
+  }, [query, rootFolders, queryFolders]);
 
   async function onToggleExpanded(folder: IFolder) {
     setFolderMap(folderMap.map(toggleExpandedFn(folder)));
@@ -203,6 +291,8 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
   setCriterion,
 }) => {
   const intl = useIntl();
+  const [query, setQuery] = useState("");
+  const [displayQuery, onQueryChange] = useDebouncedState(query, setQuery, 250);
 
   const messages = defineMessages({
     sub_folder_depth: {
@@ -307,7 +397,12 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
       <Form.Group>
         {selectedList}
         {excludedList}
-        <FolderSelector onSelect={onSelect} canExclude />
+        <ClearableInput
+          value={displayQuery}
+          setValue={(v) => onQueryChange(v)}
+          placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+        />
+        <FolderSelector query={query} onSelect={onSelect} canExclude />
       </Form.Group>
     </Form>
   );
@@ -320,7 +415,9 @@ export const SidebarFolderFilter: React.FC<
   }
 > = (props) => {
   const intl = useIntl();
-  const [skip, setSkip] = React.useState(true);
+  const [skip, setSkip] = useState(true);
+  const [query, setQuery] = useState("");
+  const [displayQuery, onQueryChange] = useDebouncedState(query, setQuery, 250);
 
   function onOpen() {
     setSkip(false);
@@ -437,8 +534,14 @@ export const SidebarFolderFilter: React.FC<
       onOpen={onOpen}
       className="sidebar-list-filter sidebar-folder-filter"
     >
-      {/* query input goes here */}
+      <ClearableInput
+        value={displayQuery}
+        setValue={(v) => onQueryChange(v)}
+        placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+      />
+
       <FolderSelector
+        query={query}
         skip={skip}
         preListContent={modifierItem}
         onSelect={(f) => onSelect(f)}
