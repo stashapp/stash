@@ -146,8 +146,15 @@ func (f *StashIgnoreFilter) getOrLoadIgnoreEntry(dir string) *ignoreEntry {
 	// Try to load .stashignore from this directory.
 	stashIgnorePath := filepath.Join(dir, stashIgnoreFilename)
 	patterns, err := f.loadIgnoreFile(stashIgnorePath)
-	if err != nil || patterns == nil {
-		// Cache negative result (file doesn't exist or has no patterns).
+	if err != nil {
+		if !os.IsNotExist(err) {
+			logger.Warnf("Failed to load .stashignore from %s: %v", dir, err)
+		}
+		f.cache.Store(dir, &ignoreEntry{patterns: nil, dir: dir})
+		return nil
+	}
+	if patterns == nil {
+		// File exists but has no patterns (empty or only comments).
 		f.cache.Store(dir, &ignoreEntry{patterns: nil, dir: dir})
 		return nil
 	}
