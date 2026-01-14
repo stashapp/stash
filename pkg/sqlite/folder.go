@@ -20,6 +20,7 @@ const folderIDColumn = "folder_id"
 
 type folderRow struct {
 	ID             models.FolderID `db:"id" goqu:"skipinsert"`
+	Basename       string          `db:"basename"`
 	Path           string          `db:"path"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID null.Int        `db:"parent_folder_id"`
@@ -30,6 +31,8 @@ type folderRow struct {
 
 func (r *folderRow) fromFolder(o models.Folder) {
 	r.ID = o.ID
+	// derive basename from path
+	r.Basename = filepath.Base(o.Path)
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
