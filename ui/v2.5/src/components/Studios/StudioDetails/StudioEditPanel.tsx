@@ -433,7 +433,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}
       </Form>
-      
+
       {renderButtons("mt-3")}
     </>
   );
