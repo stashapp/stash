@@ -151,7 +151,9 @@
         "load": "Ladda",
         "load_filter": "Ladda filter",
         "add_stash_id": "Lägg till Stash ID",
-        "create_new": "Skapa ny"
+        "create_new": "Skapa ny",
+        "save_and_new": "Spara & ny",
+        "invert_selection": "Invertera markering"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
