@@ -8,17 +8,26 @@ import (
 	"strings"
 	"sync"
 
+	lru "github.com/hashicorp/golang-lru/v2"
 	ignore "github.com/sabhiram/go-gitignore"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
 const stashIgnoreFilename = ".stashignore"
 
+// entriesCacheSize is the size of the LRU cache for collected ignore entries.
+// This cache stores the computed list of ignore entries per directory, avoiding
+// repeated directory tree walks for files in the same directory.
+const entriesCacheSize = 500
+
 // StashIgnoreFilter implements PathFilter to exclude files/directories
 // based on .stashignore files with gitignore-style patterns.
 type StashIgnoreFilter struct {
 	// cache stores compiled ignore patterns per directory.
 	cache sync.Map // map[string]*ignoreEntry
+	// entriesCache stores collected ignore entries per (dir, libraryRoot) pair.
+	// This avoids recomputing the entry list for every file in the same directory.
+	entriesCache *lru.Cache[string, []*ignoreEntry]
 }
 
 // ignoreEntry holds the compiled ignore patterns for a directory.
@@ -31,7 +40,12 @@ type ignoreEntry struct {
 
 // NewStashIgnoreFilter creates a new StashIgnoreFilter.
 func NewStashIgnoreFilter() *StashIgnoreFilter {
-	return &StashIgnoreFilter{}
+	// Create the LRU cache for collected entries.
+	// Ignore error as it only fails if size <= 0.
+	entriesCache, _ := lru.New[string, []*ignoreEntry](entriesCacheSize)
+	return &StashIgnoreFilter{
+		entriesCache: entriesCache,
+	}
 }
 
 // Accept returns true if the path should be included in the scan.
@@ -80,16 +94,44 @@ func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.Fil
 
 // collectIgnoreEntries gathers all ignore entries from library root to the given directory.
 // It walks up the directory tree from dir to libraryRoot and returns entries in order
-// from root to most specific.
+// from root to most specific. Results are cached to avoid repeated computation for
+// files in the same directory.
 func (f *StashIgnoreFilter) collectIgnoreEntries(dir string, libraryRoot string) []*ignoreEntry {
-	// Collect directories from library root down to current dir.
-	var dirs []string
-
-	// Clean paths for consistent comparison.
+	// Clean paths for consistent comparison and cache key generation.
 	dir = filepath.Clean(dir)
 	libraryRoot = filepath.Clean(libraryRoot)
 
+	// Build cache key from dir and libraryRoot.
+	cacheKey := dir + "\x00" + libraryRoot
+
+	// Check the entries cache first.
+	if cached, ok := f.entriesCache.Get(cacheKey); ok {
+		return cached
+	}
+
+	// Try subdirectory shortcut: if parent's entries are cached, extend them.
+	if dir != libraryRoot {
+		parent := filepath.Dir(dir)
+		if isPathInOrEqual(libraryRoot, parent) {
+			parentKey := parent + "\x00" + libraryRoot
+			if parentEntries, ok := f.entriesCache.Get(parentKey); ok {
+				// Parent is cached - just check if current dir has a .stashignore.
+				entries := parentEntries
+				if entry := f.getOrLoadIgnoreEntry(dir); entry != nil {
+					// Copy parent slice and append to avoid mutating cached slice.
+					entries = make([]*ignoreEntry, len(parentEntries), len(parentEntries)+1)
+					copy(entries, parentEntries)
+					entries = append(entries, entry)
+				}
+				f.entriesCache.Add(cacheKey, entries)
+				return entries
+			}
+		}
+	}
+
+	// No cache hit - compute from scratch.
 	// Walk up from dir to library root, collecting directories.
+	var dirs []string
 	current := dir
 	for {
 		// Check if we're still within the library root.
@@ -97,7 +139,7 @@ func (f *StashIgnoreFilter) collectIgnoreEntries(dir string, libraryRoot string)
 			break
 		}
 
-		dirs = append([]string{current}, dirs...) // Prepend to maintain root-to-leaf order.
+		dirs = append(dirs, current)
 
 		// Stop if we've reached the library root.
 		if current == libraryRoot {
@@ -112,6 +154,11 @@ func (f *StashIgnoreFilter) collectIgnoreEntries(dir string, libraryRoot string)
 		current = parent
 	}
 
+	// Reverse to get root-to-leaf order.
+	for i, j := 0, len(dirs)-1; i < j; i, j = i+1, j-1 {
+		dirs[i], dirs[j] = dirs[j], dirs[i]
+	}
+
 	// Check each directory for .stashignore files.
 	var entries []*ignoreEntry
 	for _, d := range dirs {
@@ -119,6 +166,9 @@ func (f *StashIgnoreFilter) collectIgnoreEntries(dir string, libraryRoot string)
 			entries = append(entries, entry)
 		}
 	}
+
+	// Cache the result.
+	f.entriesCache.Add(cacheKey, entries)
 
 	return entries
 }
