@@ -40,11 +40,6 @@ func NewStashIgnoreFilter() *StashIgnoreFilter {
 // The libraryRoot parameter bounds the search for .stashignore files -
 // only directories within the library root are checked.
 func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.FileInfo, libraryRoot string) bool {
-	// Always accept .stashignore files themselves so they can be read.
-	if filepath.Base(path) == stashIgnoreFilename {
-		return true
-	}
-
 	// If no library root provided, accept the file (safety fallback).
 	if libraryRoot == "" {
 		return true
