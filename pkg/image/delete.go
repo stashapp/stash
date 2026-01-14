@@ -37,9 +37,8 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
-func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool, destroyFileEntry ...bool) error {
-	destroyEntry := len(destroyFileEntry) > 0 && destroyFileEntry[0]
-	return s.destroyImage(ctx, i, fileDeleter, deleteGenerated, deleteFile, destroyEntry)
+func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error {
+	return s.destroyImage(ctx, i, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 }
 
 // DestroyZipImages destroys all images in zip, optionally marking the files and generated files for deletion.
@@ -76,7 +75,8 @@ func (s *Service) DestroyZipImages(ctx context.Context, zipFile models.File, fil
 		}
 
 		const deleteFileInZip = false
-		if err := s.destroyImage(ctx, img, fileDeleter, deleteGenerated, deleteFileInZip); err != nil {
+		const destroyFileEntry = false
+		if err := s.destroyImage(ctx, img, fileDeleter, deleteGenerated, deleteFileInZip, destroyFileEntry); err != nil {
 			return nil, err
 		}
 
@@ -136,7 +136,8 @@ func (s *Service) DestroyFolderImages(ctx context.Context, folderID models.Folde
 			continue
 		}
 
-		if err := s.Destroy(ctx, img, fileDeleter, deleteGenerated, deleteFile); err != nil {
+		const destroyFileEntry = false
+		if err := s.Destroy(ctx, img, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 			return nil, err
 		}
 
@@ -147,14 +148,12 @@ func (s *Service) DestroyFolderImages(ctx context.Context, folderID models.Folde
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
-func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool, destroyFileEntry ...bool) error {
-	destroyEntry := len(destroyFileEntry) > 0 && destroyFileEntry[0]
-
+func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error {
 	if deleteFile {
 		if err := s.deleteFiles(ctx, i, fileDeleter); err != nil {
 			return err
 		}
-	} else if destroyEntry {
+	} else if destroyFileEntry {
 		if err := s.destroyFileEntries(ctx, i); err != nil {
 			return err
 		}

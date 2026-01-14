@@ -109,7 +109,7 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool, destroyFileEntry ...bool) error {
+func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error {
 	mqb := s.MarkerRepository
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
@@ -122,13 +122,11 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 		}
 	}
 
-	destroyEntry := len(destroyFileEntry) > 0 && destroyFileEntry[0]
-
 	if deleteFile {
 		if err := s.deleteFiles(ctx, scene, fileDeleter); err != nil {
 			return err
 		}
-	} else if destroyEntry {
+	} else if destroyFileEntry {
 		if err := s.destroyFileEntries(ctx, scene); err != nil {
 			return err
 		}
