@@ -788,6 +788,10 @@ func getFolderPath(index int, parentFolderIdx *int) string {
 	return path
 }
 
+func getFolderBasename(index int, parentFolderIdx *int) string {
+	return filepath.Base(getFolderPath(index, parentFolderIdx))
+}
+
 func getFolderModTime(index int) time.Time {
 	return time.Date(2000, 1, (index%10)+1, 0, 0, 0, 0, time.UTC)
 }

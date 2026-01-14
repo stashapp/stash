@@ -822,6 +822,7 @@ input FolderFilterType {
   NOT: FolderFilterType
 
   path: StringCriterionInput
+  basename: StringCriterionInput
 
   parent_folder: HierarchicalMultiCriterionInput
   zip_file: MultiCriterionInput
