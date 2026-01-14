@@ -149,11 +149,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     setIsLoading(false);
   }
 
-  async function onSaveAndNewClick() {
-    const input = schema.cast(formik.values);
-    onSave(input, true);
-  }
-
   function onImageLoad(imageData: string | null) {
     formik.setFieldValue("image", imageData);
   }
