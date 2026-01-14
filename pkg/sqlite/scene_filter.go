@@ -114,9 +114,14 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 				stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 			}
 		}),
-
 		&stashIDCriterionHandler{
 			c:                 sceneFilter.StashIDEndpoint,
+			stashIDRepository: &sceneRepository.stashIDs,
+			stashIDTableAs:    "scene_stash_ids",
+			parentIDCol:       "scenes.id",
+		},
+		&stashIDsCriterionHandler{
+			c:                 sceneFilter.StashIDsEndpoint,
 			stashIDRepository: &sceneRepository.stashIDs,
 			stashIDTableAs:    "scene_stash_ids",
 			parentIDCol:       "scenes.id",

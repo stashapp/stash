@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import Gallery, {
@@ -12,6 +13,7 @@ import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
 import { useIntl } from "react-intl";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 
 interface IScenePhoto {
@@ -22,12 +24,21 @@ interface IScenePhoto {
 
 interface IExtraProps {
   maxHeight: number;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 export const SceneWallItem: React.FC<
   RenderImageProps<IScenePhoto> & IExtraProps
 > = (props: RenderImageProps<IScenePhoto> & IExtraProps) => {
   const intl = useIntl();
+
+  const { dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+  });
 
   const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
@@ -52,6 +63,12 @@ export const SceneWallItem: React.FC<
   }
 
   var handleClick = function handleClick(event: React.MouseEvent) {
+    if (props.selecting && props.onSelectedChanged) {
+      props.onSelectedChanged(!props.selected, event.shiftKey);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
@@ -68,16 +85,32 @@ export const SceneWallItem: React.FC<
       ? [...performerNames.slice(0, -2), performerNames.slice(-2).join(" & ")]
       : performerNames;
 
+  let shiftKey = false;
+
   return (
     <div
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
+      onClick={handleClick}
+      {...dragProps}
       style={{
         ...divStyle,
         width,
         height,
       }}
     >
+      {props.onSelectedChanged && (
+        <Form.Control
+          type="checkbox"
+          className="wall-item-check mousetrap"
+          checked={props.selected}
+          onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
+          onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+            shiftKey = event.shiftKey;
+            event.stopPropagation();
+          }}
+        />
+      )}
       <ImagePreview
         loading="lazy"
         loop={video}
@@ -132,6 +165,9 @@ interface ISceneWallProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
@@ -148,6 +184,9 @@ const SceneWall: React.FC<ISceneWallProps> = ({
   scenes,
   sceneQueue,
   zoomIndex,
+  selectedIds,
+  onSelectChange,
+  selecting,
 }) => {
   const history = useHistory();
 
@@ -223,6 +262,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({
 
   const renderImage = useCallback(
     (props: RenderImageProps<IScenePhoto>) => {
+      const sceneId = props.photo.scene.id;
       return (
         <SceneWallItem
           {...props}
@@ -230,10 +270,18 @@ const SceneWall: React.FC<ISceneWallProps> = ({
             targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
             maxHeightFactor
           }
+          selected={selectedIds?.has(sceneId)}
+          onSelectedChanged={
+            onSelectChange
+              ? (selected, shiftKey) =>
+                  onSelectChange(sceneId, selected, shiftKey)
+              : undefined
+          }
+          selecting={selecting}
         />
       );
     },
-    [targetRowHeight]
+    [targetRowHeight, selectedIds, onSelectChange, selecting]
   );
 
   return (
@@ -257,14 +305,26 @@ interface ISceneWallPanelProps {
   scenes: GQL.SlimSceneDataFragment[];
   sceneQueue?: SceneQueue;
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
 export const SceneWallPanel: React.FC<ISceneWallPanelProps> = ({
   scenes,
   sceneQueue,
   zoomIndex,
+  selectedIds,
+  onSelectChange,
 }) => {
+  const selecting = !!selectedIds && selectedIds.size > 0;
   return (
-    <SceneWall scenes={scenes} sceneQueue={sceneQueue} zoomIndex={zoomIndex} />
+    <SceneWall
+      scenes={scenes}
+      sceneQueue={sceneQueue}
+      zoomIndex={zoomIndex}
+      selectedIds={selectedIds}
+      onSelectChange={onSelectChange}
+      selecting={selecting}
+    />
   );
 };

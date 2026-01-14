@@ -86,6 +86,7 @@
   }
 
   &-preview {
+    align-items: center;
     display: flex;
     justify-content: center;
     margin-bottom: 5px;
@@ -94,7 +95,6 @@
     &-image {
       height: 100%;
       object-fit: contain;
-      object-position: top;
       width: 100%;
     }
 

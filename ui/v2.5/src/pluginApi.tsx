@@ -12,7 +12,9 @@ import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
+import * as ReactFontAwesome from "@fortawesome/react-fontawesome";
 import * as ReactSelect from "react-select";
+import * as ReactSlick from "@ant-design/react-slick";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
 import Event from "./hooks/event";
@@ -78,7 +80,9 @@ export const PluginApi = {
     FontAwesomeBrands,
     Mousetrap,
     MousetrapPause,
+    ReactFontAwesome,
     ReactSelect,
+    ReactSlick,
   },
   register: {
     // register a route to be added to the main router

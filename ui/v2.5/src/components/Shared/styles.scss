@@ -62,9 +62,22 @@
   padding: 0;
   row-gap: 0.5rem;
 
-  .btn {
+  > .btn {
     margin-right: 0.5rem;
     white-space: nowrap;
+  }
+
+  > .btn-group {
+    margin-right: 0.5rem;
+
+    .btn {
+      margin-right: 0;
+    }
+
+    // Show caret on split button dropdown toggle
+    .dropdown-toggle-split::after {
+      content: "";
+    }
   }
 }
 
@@ -290,6 +303,10 @@ button.collapse-button {
     opacity: 0;
     width: 1.2rem;
 
+    &:checked {
+      opacity: 0.75;
+    }
+
     @media (hover: none), (pointer: coarse) {
       // always show card controls when hovering not supported
       opacity: 0.25;
@@ -303,10 +320,6 @@ button.collapse-button {
   .card-check {
     padding-left: 15px;
 
-    &:checked {
-      opacity: 0.75;
-    }
-
     @media (hover: none), (pointer: coarse) {
       // and make it bigger when hovering not supported
       width: 1.5rem;
@@ -318,6 +331,34 @@ button.collapse-button {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
+}
+
+.search-item-check,
+.wall-item-check {
+  height: 1.2rem;
+  width: 1.2rem;
+}
+
+// Wall item checkbox styles
+.wall-item-check {
+  left: 0.5rem;
+  opacity: 0;
+  position: absolute;
+  top: 0.5rem;
+  z-index: 10;
+
+  &:checked {
+    opacity: 0.75;
+  }
+
+  @media (hover: none) {
+    opacity: 0.25;
+  }
+}
+
+.wall-item:hover .wall-item-check {
+  opacity: 0.75;
+  transition: opacity 0.5s;
 }
 
 .TruncatedText {

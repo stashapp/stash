@@ -1,41 +1,43 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
+import { ImageCard } from "./ImageCard";
 import {
   useCardWidth,
   useContainerDimensions,
 } from "../Shared/GridCard/GridCard";
-import { StudioCard } from "./StudioCard";
 import { PatchComponent } from "src/patch";
 
-interface IStudioCardGrid {
-  studios: GQL.StudioDataFragment[];
-  fromParent: boolean | undefined;
+interface IImageCardGrid {
+  images: GQL.SlimImageDataFragment[];
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onPreview: (index: number, ev: React.MouseEvent<Element, MouseEvent>) => void;
 }
 
-const zoomWidths = [280, 340, 420, 560];
+const zoomWidths = [280, 340, 480, 640];
 
-export const StudioCardGrid: React.FC<IStudioCardGrid> = PatchComponent(
-  "StudioCardGrid",
-  ({ studios, fromParent, selectedIds, zoomIndex, onSelectChange }) => {
+export const ImageCardGrid: React.FC<IImageCardGrid> = PatchComponent(
+  "ImageCardGrid",
+  ({ images, selectedIds, zoomIndex, onSelectChange, onPreview }) => {
     const [componentRef, { width: containerWidth }] = useContainerDimensions();
     const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
 
     return (
       <div className="row justify-content-center" ref={componentRef}>
-        {studios.map((studio) => (
-          <StudioCard
-            key={studio.id}
+        {images.map((image, index) => (
+          <ImageCard
+            key={image.id}
             cardWidth={cardWidth}
-            studio={studio}
+            image={image}
             zoomIndex={zoomIndex}
-            hideParent={fromParent}
             selecting={selectedIds.size > 0}
-            selected={selectedIds.has(studio.id)}
+            selected={selectedIds.has(image.id)}
             onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-              onSelectChange(studio.id, selected, shiftKey)
+              onSelectChange(image.id, selected, shiftKey)
+            }
+            onPreview={
+              selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
             }
           />
         ))}

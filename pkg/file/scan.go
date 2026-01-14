@@ -895,7 +895,8 @@ func (s *scanJob) getFileFS(f *models.BaseFile) (models.FS, error) {
 	}
 
 	zipPath := f.ZipFile.Base().Path
-	return fs.OpenZip(zipPath, f.Size)
+	zipSize := f.ZipFile.Base().Size
+	return fs.OpenZip(zipPath, zipSize)
 }
 
 func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {

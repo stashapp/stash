@@ -22,7 +22,17 @@ const Scene: React.FC<{
   queue?: SceneQueue;
   index: number;
   showLightboxImage: (imagePath: string) => void;
-}> = ({ scene, searchResult, queue, index, showLightboxImage }) => {
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+}> = ({
+  scene,
+  searchResult,
+  queue,
+  index,
+  showLightboxImage,
+  selected,
+  onSelectedChanged,
+}) => {
   const intl = useIntl();
   const { currentSource, doSceneQuery, doSceneFragmentScrape, loading } =
     useContext(TaggerStateContext);
@@ -71,6 +81,8 @@ const Scene: React.FC<{
       showLightboxImage={showLightboxImage}
       queue={queue}
       index={index}
+      selected={selected}
+      onSelectedChanged={onSelectedChanged}
     >
       {searchResult && searchResult.results?.length ? (
         <SceneSearchResults scenes={searchResult.results} target={scene} />
@@ -82,9 +94,16 @@ const Scene: React.FC<{
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
   queue?: SceneQueue;
+  selectedIds: Set<string>;
+  onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
-export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
+export const Tagger: React.FC<ITaggerProps> = ({
+  scenes,
+  queue,
+  selectedIds,
+  onSelectChange,
+}) => {
   const {
     sources,
     setCurrentSource,
@@ -102,6 +121,8 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   const [hideUnmatched, setHideUnmatched] = useState(false);
 
   const intl = useIntl();
+
+  const hasSelection = selectedIds.size > 0;
 
   function handleSourceSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     setCurrentSource(sources!.find((s) => s.id === e.currentTarget.value));
@@ -211,7 +232,12 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       return;
     }
 
-    if (scenes.length === 0) {
+    // Use selected scenes if any, otherwise all scenes
+    const scenesToScrape = hasSelection
+      ? scenes.filter((s) => selectedIds.has(s.id))
+      : scenes;
+
+    if (scenesToScrape.length === 0) {
       return;
     }
 
@@ -232,15 +258,20 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       );
     }
 
+    // Change button text based on selection state
+    const buttonTextId = hasSelection
+      ? "component_tagger.verb_scrape_selected"
+      : "component_tagger.verb_scrape_all";
+
     return (
       <div className="ml-1">
         <OperationButton
           disabled={loading}
           operation={async () => {
-            await doMultiSceneFragmentScrape(scenes.map((s) => s.id));
+            await doMultiSceneFragmentScrape(scenesToScrape.map((s) => s.id));
           }}
         >
-          {intl.formatMessage({ id: "component_tagger.verb_scrape_all" })}
+          {intl.formatMessage({ id: buttonTextId })}
         </OperationButton>
         {multiError && (
           <>
@@ -276,6 +307,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
               index={i}
               showLightboxImage={showLightboxImage}
               queue={queue}
+              selected={selectedIds.has(s.id)}
+              onSelectedChanged={(selected, shiftKey) =>
+                onSelectChange(s.id, selected, shiftKey)
+              }
             />
           ))}
         </div>

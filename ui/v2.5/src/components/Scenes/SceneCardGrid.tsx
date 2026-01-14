@@ -1,42 +1,47 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
+import { SceneQueue } from "src/models/sceneQueue";
+import { SceneCard } from "./SceneCard";
 import {
   useCardWidth,
   useContainerDimensions,
 } from "../Shared/GridCard/GridCard";
-import { StudioCard } from "./StudioCard";
 import { PatchComponent } from "src/patch";
 
-interface IStudioCardGrid {
-  studios: GQL.StudioDataFragment[];
-  fromParent: boolean | undefined;
+interface ISceneCardGrid {
+  scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
 }
 
-const zoomWidths = [280, 340, 420, 560];
+const zoomWidths = [280, 340, 480, 640];
 
-export const StudioCardGrid: React.FC<IStudioCardGrid> = PatchComponent(
-  "StudioCardGrid",
-  ({ studios, fromParent, selectedIds, zoomIndex, onSelectChange }) => {
+export const SceneCardGrid: React.FC<ISceneCardGrid> = PatchComponent(
+  "SceneCardGrid",
+  ({ scenes, queue, selectedIds, zoomIndex, onSelectChange, fromGroupId }) => {
     const [componentRef, { width: containerWidth }] = useContainerDimensions();
+
     const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
 
     return (
       <div className="row justify-content-center" ref={componentRef}>
-        {studios.map((studio) => (
-          <StudioCard
-            key={studio.id}
-            cardWidth={cardWidth}
-            studio={studio}
+        {scenes.map((scene, index) => (
+          <SceneCard
+            key={scene.id}
+            width={cardWidth}
+            scene={scene}
+            queue={queue}
+            index={index}
             zoomIndex={zoomIndex}
-            hideParent={fromParent}
             selecting={selectedIds.size > 0}
-            selected={selectedIds.has(studio.id)}
+            selected={selectedIds.has(scene.id)}
             onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-              onSelectChange(studio.id, selected, shiftKey)
+              onSelectChange(scene.id, selected, shiftKey)
             }
+            fromGroupId={fromGroupId}
           />
         ))}
       </div>

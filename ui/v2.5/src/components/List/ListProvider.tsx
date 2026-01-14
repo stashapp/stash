@@ -63,6 +63,7 @@ const emptyState: IListContextState = {
   onSelectChange: () => {},
   onSelectAll: () => {},
   onSelectNone: () => {},
+  onInvertSelection: () => {},
   items: [],
   hasSelection: false,
   selectedItems: [],

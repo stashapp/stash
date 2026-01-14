@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import Gallery, {
   GalleryI,
@@ -10,6 +11,7 @@ import { objectTitle } from "src/core/files";
 import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import NavUtils from "src/utils/navigation";
 import { markerTitle } from "src/core/markers";
@@ -35,11 +37,20 @@ interface IMarkerPhoto {
 
 interface IExtraProps {
   maxHeight: number;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 export const MarkerWallItem: React.FC<
   RenderImageProps<IMarkerPhoto> & IExtraProps
 > = (props: RenderImageProps<IMarkerPhoto> & IExtraProps) => {
+  const { dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+  });
+
   const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
@@ -63,6 +74,12 @@ export const MarkerWallItem: React.FC<
   }
 
   var handleClick = function handleClick(event: React.MouseEvent) {
+    if (props.selecting && props.onSelectedChanged) {
+      props.onSelectedChanged(!props.selected, event.shiftKey);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
@@ -75,16 +92,32 @@ export const MarkerWallItem: React.FC<
   const title = wallItemTitle(marker);
   const tagNames = marker.tags.map((p) => p.name);
 
+  let shiftKey = false;
+
   return (
     <div
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
+      onClick={handleClick}
+      {...dragProps}
       style={{
         ...divStyle,
         width,
         height,
       }}
     >
+      {props.onSelectedChanged && (
+        <Form.Control
+          type="checkbox"
+          className="wall-item-check mousetrap"
+          checked={props.selected}
+          onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
+          onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+            shiftKey = event.shiftKey;
+            event.stopPropagation();
+          }}
+        />
+      )}
       <ImagePreview
         loading="lazy"
         loop={video}
@@ -124,6 +157,9 @@ export const MarkerWallItem: React.FC<
 interface IMarkerWallProps {
   markers: GQL.SceneMarkerDataFragment[];
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
@@ -163,7 +199,13 @@ const breakpointZoomHeights = [
   { minWidth: 1400, heights: [160, 240, 300, 480] },
 ];
 
-const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
+const MarkerWall: React.FC<IMarkerWallProps> = ({
+  markers,
+  zoomIndex,
+  selectedIds,
+  onSelectChange,
+  selecting,
+}) => {
   const history = useHistory();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -233,6 +275,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
 
   const renderImage = useCallback(
     (props: RenderImageProps<IMarkerPhoto>) => {
+      const markerId = props.photo.marker.id;
       return (
         <MarkerWallItem
           {...props}
@@ -240,10 +283,18 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
             targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
             maxHeightFactor
           }
+          selected={selectedIds?.has(markerId)}
+          onSelectedChanged={
+            onSelectChange
+              ? (selected, shiftKey) =>
+                  onSelectChange(markerId, selected, shiftKey)
+              : undefined
+          }
+          selecting={selecting}
         />
       );
     },
-    [targetRowHeight]
+    [targetRowHeight, selectedIds, onSelectChange, selecting]
   );
 
   return (
@@ -266,11 +317,24 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
 interface IMarkerWallPanelProps {
   markers: GQL.SceneMarkerDataFragment[];
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
 export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
   markers,
   zoomIndex,
+  selectedIds,
+  onSelectChange,
 }) => {
-  return <MarkerWall markers={markers} zoomIndex={zoomIndex} />;
+  const selecting = !!selectedIds && selectedIds.size > 0;
+  return (
+    <MarkerWall
+      markers={markers}
+      zoomIndex={zoomIndex}
+      selectedIds={selectedIds}
+      onSelectChange={onSelectChange}
+      selecting={selecting}
+    />
+  );
 };

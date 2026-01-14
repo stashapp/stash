@@ -28,7 +28,7 @@ import { StudioScrapeDialog } from "./StudioScrapeDialog";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
-  onSubmit: (studio: GQL.StudioCreateInput) => Promise<void>;
+  onSubmit: (studio: GQL.StudioCreateInput, andNew?: boolean) => Promise<void>;
   onCancel: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -138,15 +138,20 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     };
   });
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    onSave(input, true);
   }
 
   function onImageLoad(imageData: string | null) {
@@ -432,9 +437,9 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         )}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}
-
-        {renderButtons("mt-3")}
       </Form>
+      
+      {renderButtons("mt-3")}
     </>
   );
 };

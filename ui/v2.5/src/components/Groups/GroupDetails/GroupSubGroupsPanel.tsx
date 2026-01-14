@@ -76,7 +76,8 @@ const Toolbar: React.FC<IFilteredListToolbar> = ({
   onDelete,
   operations,
 }) => {
-  const { getSelected, onSelectAll, onSelectNone } = useListContext();
+  const { getSelected, onSelectAll, onSelectNone, onInvertSelection } =
+    useListContext();
   const { filter, setFilter } = useFilter();
 
   return (
@@ -91,6 +92,7 @@ const Toolbar: React.FC<IFilteredListToolbar> = ({
       <ListOperationButtons
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
+        onInvertSelection={onInvertSelection}
         itemsSelected={getSelected().length > 0}
         otherOperations={operations}
         onEdit={onEdit}

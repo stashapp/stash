@@ -23,7 +23,7 @@ import StashBoxIDSearchModal from "src/components/Shared/StashBoxIDSearchModal";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
-  onSubmit: (tag: GQL.TagCreateInput) => Promise<void>;
+  onSubmit: (tag: GQL.TagCreateInput, andNew?: boolean) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
@@ -122,15 +122,20 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     };
   });
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    onSave(input, true);
   }
 
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
@@ -272,6 +277,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           isEditing
           onToggleEdit={onCancel}
           onSave={formik.handleSubmit}
+          onSaveAndNew={isNew ? onSaveAndNewClick : undefined}
           saveDisabled={
             (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
           }

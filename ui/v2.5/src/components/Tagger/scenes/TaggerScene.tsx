@@ -116,6 +116,8 @@ interface ITaggerScene {
   showLightboxImage: (imagePath: string) => void;
   queue?: SceneQueue;
   index?: number;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
@@ -129,6 +131,8 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   showLightboxImage,
   queue,
   index,
+  selected,
+  onSelectedChanged,
 }) => {
   const { config } = useContext(TaggerStateContext);
   const [queryString, setQueryString] = useState<string>("");
@@ -235,10 +239,28 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
     history.push(link);
   }
 
+  let shiftKey = false;
+
   return (
     <div key={scene.id} className="mt-3 search-item">
       <div className="row">
-        <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
+        {onSelectedChanged && (
+          <div className="col-auto d-flex align-items-start pt-2 pr-2">
+            <Form.Control
+              type="checkbox"
+              className="search-item-check mousetrap"
+              checked={selected}
+              onChange={() => onSelectedChanged(!selected, shiftKey)}
+              onClick={(
+                event: React.MouseEvent<HTMLInputElement, MouseEvent>
+              ) => {
+                shiftKey = event.shiftKey;
+                event.stopPropagation();
+              }}
+            />
+          </div>
+        )}
+        <div className="col-12 col-lg overflow-hidden align-items-center d-flex flex-column flex-sm-row">
           <div className="scene-card mr-3">
             <Link to={url}>
               <ScenePreview
@@ -256,7 +278,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
             <TruncatedText text={objectTitle(scene)} lineCount={2} />
           </Link>
         </div>
-        <div className="col-md-6 my-1">
+        <div className="col-12 col-lg my-1">
           <div>
             {renderQueryForm()}
             {scrapeSceneFragment ? (

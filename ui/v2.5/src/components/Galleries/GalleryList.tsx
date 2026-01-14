@@ -13,7 +13,7 @@ import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { GalleryListTable } from "./GalleryListTable";
-import { GalleryCardGrid } from "./GalleryGridCard";
+import { GalleryCardGrid } from "./GalleryCardGrid";
 import { View } from "../List/views";
 import { PatchComponent } from "src/patch";
 import { IItemListOperation } from "../List/FilteredListToolbar";
@@ -153,7 +153,15 @@ export const GalleryList: React.FC<IGalleryList> = PatchComponent(
             <div className="row">
               <div className={`GalleryWall zoom-${filter.zoomIndex}`}>
                 {result.data.findGalleries.galleries.map((gallery) => (
-                  <GalleryWallCard key={gallery.id} gallery={gallery} />
+                  <GalleryWallCard
+                    key={gallery.id}
+                    gallery={gallery}
+                    selected={selectedIds.has(gallery.id)}
+                    onSelectedChanged={(selected, shiftKey) =>
+                      onSelectChange(gallery.id, selected, shiftKey)
+                    }
+                    selecting={selectedIds.size > 0}
+                  />
                 ))}
               </div>
             </div>

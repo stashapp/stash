@@ -193,17 +193,21 @@
   display: flex;
 }
 
-.fa-mars {
-  color: #89cff0;
-}
+.gender-icon {
+  &[data-gender="FEMALE"],
+  &[data-gender="TRANSGENDER_FEMALE"] {
+    color: #f38cac;
+  }
 
-.fa-venus {
-  color: #f38cac;
-}
+  &[data-gender="MALE"],
+  &[data-gender="TRANSGENDER_MALE"] {
+    color: #89cff0;
+  }
 
-.fa-transgender,
-.fa-transgender-alt {
-  color: #c8a2c8;
+  &[data-gender="NON_BINARY"],
+  &[data-gender="INTERSEX"] {
+    color: #c8a2c8;
+  }
 }
 
 .performer-height .height-imperial,

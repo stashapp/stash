@@ -1079,7 +1079,7 @@ func getObjectDate(index int) *models.Date {
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:   getSceneStringValue(i, "stashid"),
-		Endpoint:  getSceneStringValue(i, "endpoint"),
+		Endpoint:  getSceneStringValue(0, "endpoint"),
 		UpdatedAt: epochTime,
 	}
 }
@@ -1547,7 +1547,7 @@ func getIgnoreAutoTag(index int) bool {
 func performerStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getPerformerStringValue(i, "stashid"),
-		Endpoint: getPerformerStringValue(i, "endpoint"),
+		Endpoint: getPerformerStringValue(0, "endpoint"),
 	}
 }
 
@@ -1700,7 +1700,7 @@ func getTagChildCount(id int) int {
 func tagStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getTagStringValue(i, "stashid"),
-		Endpoint: getTagStringValue(i, "endpoint"),
+		Endpoint: getTagStringValue(0, "endpoint"),
 	}
 }
 
