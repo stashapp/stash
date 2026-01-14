@@ -1060,7 +1060,7 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 
 	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
 
-	if h.c.StashIDs == nil || len(h.c.StashIDs) == 0 {
+	if len(h.c.StashIDs) == 0 {
 		stringCriterionHandler(&models.StringCriterionInput{
 			Value:    "",
 			Modifier: h.c.Modifier,
