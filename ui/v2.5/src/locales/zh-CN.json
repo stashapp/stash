@@ -151,7 +151,9 @@
         "load": "加载",
         "load_filter": "加载过滤器",
         "add_stash_id": "添加Stash编号",
-        "create_new": "新建"
+        "create_new": "新建",
+        "save_and_new": "保存并新建",
+        "invert_selection": "反向选择"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -230,7 +232,8 @@
         "verb_toggle_unmatched": "{toggle} 未匹配的短片",
         "verb_add_as_alias": "添加刮削到的名字作为别名",
         "verb_link_existing": "链接到已存在的",
-        "verb_match_tag": "匹配标签"
+        "verb_match_tag": "匹配标签",
+        "verb_scrape_selected": "已选刮削器"
     },
     "config": {
         "about": {
