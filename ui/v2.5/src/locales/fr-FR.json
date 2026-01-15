@@ -151,7 +151,9 @@
         "load": "Charger",
         "load_filter": "Charger un filtre",
         "add_stash_id": "Ajouter un identifiant Stash",
-        "create_new": "Créer un nouveau"
+        "create_new": "Créer un nouveau",
+        "save_and_new": "Enregistrer et nouveau",
+        "invert_selection": "Inverser la sélection"
     },
     "actions_name": "Actions",
     "age": "Âge",
