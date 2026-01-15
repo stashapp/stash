@@ -29,6 +29,7 @@ type GenerateMetadataInput struct {
 	// Generate transcodes even if not required
 	ForceTranscodes           bool `json:"forceTranscodes"`
 	Phashes                   bool `json:"phashes"`
+	ImagePhashes              bool `json:"imagePhashes"`
 	InteractiveHeatmapsSpeeds bool `json:"interactiveHeatmapsSpeeds"`
 	ClipPreviews              bool `json:"clipPreviews"`
 	ImageThumbnails           bool `json:"imageThumbnails"`
@@ -73,6 +74,7 @@ type totalsGenerate struct {
 	markers                  int64
 	transcodes               int64
 	phashes                  int64
+	imagePhashes             int64
 	interactiveHeatmapSpeeds int64
 	clipPreviews             int64
 	imageThumbnails          int64
@@ -171,6 +173,9 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		}
 		if j.input.Phashes {
 			logMsg += fmt.Sprintf(" %d phashes", totals.phashes)
+		}
+		if j.input.ImagePhashes {
+			logMsg += fmt.Sprintf(" %d image phashes", totals.imagePhashes)
 		}
 		if j.input.InteractiveHeatmapsSpeeds {
 			logMsg += fmt.Sprintf(" %d heatmaps & speeds", totals.interactiveHeatmapSpeeds)
@@ -284,7 +289,7 @@ func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generato
 
 	r := j.repository
 
-	for more := j.input.ClipPreviews || j.input.ImageThumbnails; more; {
+	for more := j.input.ClipPreviews || j.input.ImageThumbnails || j.input.ImagePhashes; more; {
 		if job.IsCancelled(ctx) {
 			return
 		}
@@ -523,6 +528,25 @@ func (j *GenerateJob) queueImageJob(g *generate.Generator, image *models.Image, 
 			j.totals.clipPreviews++
 			j.totals.tasks++
 			queue <- task
+		}
+	}
+
+	if j.input.ImagePhashes {
+		// generate for all files in image
+		for _, f := range image.Files.List() {
+			if imageFile, ok := f.(*models.ImageFile); ok {
+				task := &GenerateImagePhashTask{
+					repository: j.repository,
+					File:       imageFile,
+					Overwrite:  j.overwrite,
+				}
+
+				if task.required() {
+					j.totals.imagePhashes++
+					j.totals.tasks++
+					queue <- task
+				}
+			}
 		}
 	}
 }

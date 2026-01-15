@@ -463,6 +463,29 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 		}
 	}
 
+	if t.ScanGenerateImagePhashes {
+		progress.AddTotal(1)
+		phashFn := func(ctx context.Context) {
+			mgr := GetInstance()
+			// Only generate phash for image files, not video files
+			if imageFile, ok := f.(*models.ImageFile); ok {
+				taskPhash := GenerateImagePhashTask{
+					repository: mgr.Repository,
+					File:       imageFile,
+					Overwrite:  overwrite,
+				}
+				taskPhash.Start(ctx)
+			}
+			progress.Increment()
+		}
+
+		if g.sequentialScanning {
+			phashFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), phashFn)
+		}
+	}
+
 	return nil
 }
 

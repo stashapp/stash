@@ -4,23 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/hash/videophash"
+	"github.com/stashapp/stash/pkg/hash/imagephash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type GeneratePhashTask struct {
-	repository          models.Repository
-	File                *models.VideoFile
-	Overwrite           bool
-	fileNamingAlgorithm models.HashAlgorithm
+type GenerateImagePhashTask struct {
+	repository models.Repository
+	File       *models.ImageFile
+	Overwrite  bool
 }
 
-func (t *GeneratePhashTask) GetDescription() string {
+func (t *GenerateImagePhashTask) GetDescription() string {
 	return fmt.Sprintf("Generating phash for %s", t.File.Path)
 }
 
-func (t *GeneratePhashTask) Start(ctx context.Context) {
+func (t *GenerateImagePhashTask) Start(ctx context.Context) {
 	if !t.required() {
 		return
 	}
@@ -28,7 +27,7 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	var hash int64
 	set := false
 
-	// #4393 - if there is a file with the same oshash, we can use the same phash
+	// #4393 - if there is a file with the same md5, we can use the same phash
 	// only use this if we're not overwriting
 	if !t.Overwrite {
 		existing, err := t.findExistingPhash(ctx)
@@ -42,7 +41,7 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	}
 
 	if !set {
-		generated, err := videophash.Generate(instance.FFMpeg, t.File)
+		generated, err := imagephash.Generate(t.File)
 		if err != nil {
 			logger.Errorf("Error generating phash for %q: %v", t.File.Path, err)
 			logErrorOutput(err)
@@ -65,19 +64,19 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	}
 }
 
-func (t *GeneratePhashTask) findExistingPhash(ctx context.Context) (interface{}, error) {
+func (t *GenerateImagePhashTask) findExistingPhash(ctx context.Context) (interface{}, error) {
 	r := t.repository
 	var ret interface{}
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		oshash := t.File.Fingerprints.Get(models.FingerprintTypeOshash)
+		md5 := t.File.Fingerprints.Get(models.FingerprintTypeMD5)
 
-		// find other files with the same oshash
+		// find other files with the same md5
 		files, err := r.File.FindByFingerprint(ctx, models.Fingerprint{
-			Type:        models.FingerprintTypeOshash,
-			Fingerprint: oshash,
+			Type:        models.FingerprintTypeMD5,
+			Fingerprint: md5,
 		})
 		if err != nil {
-			return fmt.Errorf("finding files by oshash: %w", err)
+			return fmt.Errorf("finding files by md5: %w", err)
 		}
 
 		// find the first file with a phash
@@ -95,7 +94,7 @@ func (t *GeneratePhashTask) findExistingPhash(ctx context.Context) (interface{},
 	return ret, nil
 }
 
-func (t *GeneratePhashTask) required() bool {
+func (t *GenerateImagePhashTask) required() bool {
 	if t.Overwrite {
 		return true
 	}

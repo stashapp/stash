@@ -5,20 +5,39 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	flag "github.com/spf13/pflag"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/hash/imagephash"
 	"github.com/stashapp/stash/pkg/hash/videophash"
 	"github.com/stashapp/stash/pkg/models"
 )
 
 func customUsage() {
 	fmt.Fprintf(os.Stderr, "Usage:\n")
-	fmt.Fprintf(os.Stderr, "%s [OPTIONS] VIDEOFILE...\n\nOptions:\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "%s [OPTIONS] FILE...\n\nOptions:\n", os.Args[0])
 	flag.PrintDefaults()
 }
 
 func printPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet *bool) error {
+	// Determine if this is a video or image file based on extension
+	ext := filepath.Ext(inputfile)
+	ext = ext[1:] // remove the leading dot
+
+	// Common image extensions
+	imageExts := map[string]bool{
+		"jpg": true, "jpeg": true, "png": true, "gif": true, "webp": true, "bmp": true,
+	}
+
+	if imageExts[ext] {
+		return printImagePhash(inputfile, quiet)
+	}
+
+	return printVideoPhash(ff, ffp, inputfile, quiet)
+}
+
+func printVideoPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet *bool) error {
 	ffvideoFile, err := ffp.NewVideoFile(inputfile)
 	if err != nil {
 		return err
@@ -46,6 +65,24 @@ func printPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet 
 	return nil
 }
 
+func printImagePhash(inputfile string, quiet *bool) error {
+	imgFile := &models.ImageFile{
+		BaseFile: &models.BaseFile{Path: inputfile},
+	}
+
+	phash, err := imagephash.Generate(imgFile)
+	if err != nil {
+		return err
+	}
+
+	if *quiet {
+		fmt.Printf("%x\n", *phash)
+	} else {
+		fmt.Printf("%x %v\n", *phash, imgFile.Path)
+	}
+	return nil
+}
+
 func getPaths() (string, string) {
 	ffmpegPath, _ := exec.LookPath("ffmpeg")
 	ffprobePath, _ := exec.LookPath("ffprobe")
@@ -67,7 +104,7 @@ func main() {
 	args := flag.Args()
 
 	if len(args) < 1 {
-		fmt.Fprintf(os.Stderr, "Missing VIDEOFILE argument.\n")
+		fmt.Fprintf(os.Stderr, "Missing FILE argument.\n")
 		flag.Usage()
 		os.Exit(2)
 	}
@@ -87,4 +124,5 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
+
 }
