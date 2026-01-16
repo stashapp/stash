@@ -151,7 +151,9 @@
         "load": "Lae",
         "load_filter": "Lae filter",
         "add_stash_id": "Lisa Stash ID",
-        "create_new": "Loo uus"
+        "create_new": "Loo uus",
+        "save_and_new": "Salvesta & Uus",
+        "invert_selection": "Inverteeri Valik"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -225,7 +227,8 @@
         "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid",
         "verb_add_as_alias": "Lisa nimi alisena",
         "verb_link_existing": "Ühenda eksisteerivaga",
-        "verb_match_tag": "Sobita Silt"
+        "verb_match_tag": "Sobita Silt",
+        "verb_scrape_selected": "Otsi Valitute Metaandmeid"
     },
     "config": {
         "about": {
@@ -829,6 +832,10 @@
             "sfw_mode": {
                 "description": "Luba, kui kasutad stashi SFW sisu jaoks. Peidab või muudab kasutajaliidese mõningaid täiskasvanutele mõeldud sisuga seotud aspekte.",
                 "heading": "SFW Sisu Režiim"
+            },
+            "custom_title": {
+                "description": "Kohandatav tekst mis lisatakse lehe tiitlile. Kui tühi, siis on vaikimisi \"Stash\".",
+                "heading": "Kohandatud Tiitel"
             }
         },
         "advanced_mode": "Täpsem Režiim"
@@ -1358,7 +1365,7 @@
         "welcome_to_stash": "Teretulemast Stashi"
     },
     "stash_id": "Stashi ID",
-    "stash_id_endpoint": "Stash ID Lõpp-punkt",
+    "stash_id_endpoint": "Stash ID Lõpp-punkti URL",
     "stash_ids": "Stashi ID-d",
     "stashbox": {
         "go_review_draft": "Mustandi ülevaatamiseks mine saidile {endpoint_name}.",
@@ -1410,7 +1417,8 @@
         "started_auto_tagging": "Alustasin automaatset märkimist",
         "started_generating": "Alustasin genereerimist",
         "started_importing": "Alustasin importimist",
-        "updated_entity": "Uuendatud {entity}"
+        "updated_entity": "Uuendatud {entity}",
+        "merged_performers": "Näitlejad kokku seotud"
     },
     "total": "Kokku",
     "true": "Tõene",
