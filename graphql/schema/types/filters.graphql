@@ -635,6 +635,8 @@ input ImageFilterType {
   id: IntCriterionInput
   "Filter by file checksum"
   checksum: StringCriterionInput
+  "Filter by file phash distance"
+  phash_distance: PhashDistanceCriterionInput
   "Filter by path"
   path: StringCriterionInput
   "Filter by file count"

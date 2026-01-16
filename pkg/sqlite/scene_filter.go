@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type sceneFilterHandler struct {
@@ -83,14 +82,27 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Phash != nil {
 				// backwards compatibility
-				qb.phashDistanceCriterionHandler(&models.PhashDistanceCriterionInput{
-					Value:    sceneFilter.Phash.Value,
-					Modifier: sceneFilter.Phash.Modifier,
-				})(ctx, f)
+				h := phashDistanceCriterionHandler{
+					joinFn: func(f *filterBuilder) {
+						qb.addSceneFilesTable(f)
+						f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+					},
+					criterion: &models.PhashDistanceCriterionInput{
+						Value:    sceneFilter.Phash.Value,
+						Modifier: sceneFilter.Phash.Modifier,
+					},
+				}
+				h.handle(ctx, f)
 			}
 		}),
 
-		qb.phashDistanceCriterionHandler(sceneFilter.PhashDistance),
+		&phashDistanceCriterionHandler{
+			joinFn: func(f *filterBuilder) {
+				qb.addSceneFilesTable(f)
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+			},
+			criterion: sceneFilter.PhashDistance,
+		},
 
 		intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil),
 		qb.oCountCriterionHandler(sceneFilter.OCounter),
@@ -540,44 +552,5 @@ func (qb *sceneFilterHandler) performerTagsCriterionHandler(tags *models.Hierarc
 		primaryTable:   sceneTable,
 		joinTable:      performersScenesTable,
 		joinPrimaryKey: sceneIDColumn,
-	}
-}
-
-func (qb *sceneFilterHandler) phashDistanceCriterionHandler(phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if phashDistance != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(phashDistance.Value)
-			distance := 0
-			if phashDistance.Distance != nil {
-				distance = *phashDistance.Distance
-			}
-
-			if distance == 0 {
-				// use the default handler
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: phashDistance.Modifier,
-				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-			}
-
-			switch {
-			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
-				// needed to avoid a type mismatch
-				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
-				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
-			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
-				// needed to avoid a type mismatch
-				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
-				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
-			default:
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: phashDistance.Modifier,
-				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-			}
-		}
 	}
 }
