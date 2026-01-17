@@ -75,7 +75,7 @@ func (d *folderRenameDetector) bestCandidate() *models.Folder {
 	return best.folder
 }
 
-func (s *scanJob) detectFolderMove(ctx context.Context, file scanFile) (*models.Folder, error) {
+func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*models.Folder, error) {
 	// in order for a folder to be considered moved, the existing folder must be
 	// missing, and the majority of the old folder's files must be present, unchanged,
 	// in the new folder.
@@ -88,7 +88,7 @@ func (s *scanJob) detectFolderMove(ctx context.Context, file scanFile) (*models.
 
 	r := s.Repository
 
-	if err := symWalk(file.fs, file.Path, func(path string, d fs.DirEntry, err error) error {
+	if err := SymWalk(file.FS, file.Path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// don't let errors prevent scanning
 			logger.Errorf("error scanning %s: %v", path, err)
@@ -111,11 +111,11 @@ func (s *scanJob) detectFolderMove(ctx context.Context, file scanFile) (*models.
 			return nil
 		}
 
-		if !s.acceptEntry(ctx, path, info) {
+		if !s.AcceptEntry(ctx, path, info) {
 			return nil
 		}
 
-		size, err := getFileSize(file.fs, path, info)
+		size, err := GetFileSize(file.FS, path, info)
 		if err != nil {
 			return fmt.Errorf("getting file size for %q: %w", path, err)
 		}
@@ -154,7 +154,7 @@ func (s *scanJob) detectFolderMove(ctx context.Context, file scanFile) (*models.
 				}
 
 				// parent folder must be missing
-				_, err = file.fs.Lstat(pf.Path)
+				_, err = file.FS.Lstat(pf.Path)
 				if err == nil {
 					// parent folder exists, not a candidate
 					detector.reject(parentFolderID)

@@ -100,6 +100,8 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		return 0, err
 	}
 
+	cfg := config.GetInstance()
+
 	scanner := &file.Scanner{
 		Repository: file.NewRepository(s.Repository),
 		FileDecorators: []file.Decorator{
@@ -118,6 +120,10 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		},
 		FingerprintCalculator: &fingerprintCalculator{s.Config},
 		FS:                    &file.OsFS{},
+		ZipFileExtensions:     cfg.GetGalleryExtensions(),
+		// ScanFilters is set in ScanJob.Execute
+		// HandlerRequiredFilters is set in ScanJob.Execute
+		Rescan: input.Rescan,
 	}
 
 	scanJob := ScanJob{

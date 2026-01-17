@@ -2,13 +2,17 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
+	"sync"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
@@ -24,14 +28,13 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-type scanner interface {
-	Scan(ctx context.Context, handlers []file.Handler, options file.ScanOptions, progressReporter file.ProgressReporter)
-}
-
 type ScanJob struct {
-	scanner       scanner
+	scanner       *file.Scanner
 	input         ScanMetadataInput
 	subscriptions *subscriptionManager
+
+	fileQueue chan file.ScannedFile
+	count     int
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
@@ -55,22 +58,22 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 
 	start := time.Now()
 
+	nTasks := cfg.GetParallelTasksWithAutoDetection()
+
 	const taskQueueSize = 200000
-	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, cfg.GetParallelTasksWithAutoDetection())
+	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
 
 	var minModTime time.Time
 	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
 		minModTime = *j.input.Filter.MinModTime
 	}
 
-	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
-		Paths:                  paths,
-		ScanFilters:            []file.PathFilter{newScanFilter(c, repo, minModTime)},
-		ZipFileExtensions:      cfg.GetGalleryExtensions(),
-		ParallelTasks:          cfg.GetParallelTasksWithAutoDetection(),
-		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
-		Rescan:                 j.input.Rescan,
-	}, progress)
+	// HACK - these should really be set in the scanner initialization
+	j.scanner.FileHandlers = getScanHandlers(j.input, taskQueue, progress)
+	j.scanner.ScanFilters = []file.PathFilter{newScanFilter(c, repo, minModTime)}
+	j.scanner.HandlerRequiredFilters = []file.Filter{newHandlerRequiredFilter(cfg, repo)}
+
+	j.runJob(ctx, paths, nTasks, progress)
 
 	taskQueue.Close()
 
@@ -84,6 +87,264 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 
 	j.subscriptions.notify()
 	return nil
+}
+
+func (j *ScanJob) runJob(ctx context.Context, paths []string, nTasks int, progress *job.Progress) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	j.fileQueue = make(chan file.ScannedFile, scanQueueSize)
+
+	go func() {
+		defer func() {
+			wg.Done()
+
+			// handle panics in goroutine
+			if p := recover(); p != nil {
+				logger.Errorf("panic while queuing files for scan: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
+		if err := j.queueFiles(ctx, paths, progress); err != nil {
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+
+			logger.Errorf("error queuing files for scan: %v", err)
+			return
+		}
+
+		logger.Infof("Finished adding files to queue. %d files queued", j.count)
+	}()
+
+	defer wg.Wait()
+
+	j.processQueue(ctx, nTasks, progress)
+}
+
+const scanQueueSize = 200000
+
+func (j *ScanJob) queueFiles(ctx context.Context, paths []string, progress *job.Progress) error {
+	fs := &file.OsFS{}
+
+	defer func() {
+		close(j.fileQueue)
+
+		progress.AddTotal(j.count)
+		progress.Definite()
+	}()
+
+	var err error
+	progress.ExecuteTask("Walking directory tree", func() {
+		for _, p := range paths {
+			err = file.SymWalk(fs, p, j.queueFileFunc(ctx, fs, nil, progress))
+			if err != nil {
+				return
+			}
+		}
+	})
+
+	return err
+}
+
+func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.ScannedFile, progress *job.Progress) fs.WalkDirFunc {
+	return func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			// don't let errors prevent scanning
+			logger.Errorf("error scanning %s: %v", path, err)
+			return nil
+		}
+
+		if err = ctx.Err(); err != nil {
+			return err
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			logger.Errorf("reading info for %q: %v", path, err)
+			return nil
+		}
+
+		if !j.scanner.AcceptEntry(ctx, path, info) {
+			if info.IsDir() {
+				logger.Debugf("Skipping directory %s", path)
+				return fs.SkipDir
+			}
+
+			logger.Debugf("Skipping file %s", path)
+			return nil
+		}
+
+		size, err := file.GetFileSize(f, path, info)
+		if err != nil {
+			return err
+		}
+
+		ff := file.ScannedFile{
+			BaseFile: &models.BaseFile{
+				DirEntry: models.DirEntry{
+					ModTime: file.ModTime(info),
+				},
+				Path:     path,
+				Basename: filepath.Base(path),
+				Size:     size,
+			},
+			FS:   f,
+			Info: info,
+		}
+
+		if zipFile != nil {
+			ff.ZipFileID = &zipFile.ID
+			ff.ZipFile = zipFile
+		}
+
+		if info.IsDir() {
+			// handle folders immediately
+			if err := j.handleFolder(ctx, ff, progress); err != nil {
+				if !errors.Is(err, context.Canceled) {
+					logger.Errorf("error processing %q: %v", path, err)
+				}
+
+				// skip the directory since we won't be able to process the files anyway
+				return fs.SkipDir
+			}
+
+			return nil
+		}
+
+		// if zip file is present, we handle immediately
+		if zipFile != nil {
+			progress.ExecuteTask("Scanning "+path, func() {
+				// don't increment progress in zip files
+				if err := j.handleFile(ctx, ff, nil); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error processing %q: %v", path, err)
+					}
+					// don't return an error, just skip the file
+				}
+			})
+
+			return nil
+		}
+
+		logger.Tracef("Queueing file %s for scanning", path)
+		j.fileQueue <- ff
+
+		j.count++
+
+		return nil
+	}
+}
+
+func (j *ScanJob) processQueue(ctx context.Context, parallelTasks int, progress *job.Progress) {
+	if parallelTasks < 1 {
+		parallelTasks = 1
+	}
+
+	wg := sizedwaitgroup.New(parallelTasks)
+
+	func() {
+		defer func() {
+			wg.Wait()
+
+			// handle panics in goroutine
+			if p := recover(); p != nil {
+				logger.Errorf("panic while scanning files: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
+		for f := range j.fileQueue {
+			logger.Tracef("Processing queued file %s", f.Path)
+			if err := ctx.Err(); err != nil {
+				return
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				j.processQueueItem(ctx, ff, progress)
+			}()
+		}
+	}()
+}
+
+func (j *ScanJob) processQueueItem(ctx context.Context, f file.ScannedFile, progress *job.Progress) {
+	progress.ExecuteTask("Scanning "+f.Path, func() {
+		var err error
+		if f.Info.IsDir() {
+			err = j.handleFolder(ctx, f, progress)
+		} else {
+			err = j.handleFile(ctx, f, progress)
+		}
+
+		if err != nil && !errors.Is(err, context.Canceled) {
+			logger.Errorf("error processing %q: %v", f.Path, err)
+		}
+	})
+}
+
+func (j *ScanJob) handleFolder(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {
+	if progress != nil {
+		defer progress.Increment()
+	}
+
+	_, err := j.scanner.ScanFolder(ctx, f)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {
+	if progress != nil {
+		defer progress.Increment()
+	}
+
+	r, err := j.scanner.ScanFile(ctx, f)
+	if err != nil {
+		return err
+	}
+
+	// handle rename should have already handled the contents of the zip file
+	// so shouldn't need to scan it again
+
+	if (r.New || r.Updated) && j.scanner.IsZipFile(f.Info.Name()) {
+		ff := r.File
+		f.BaseFile = ff.Base()
+
+		// scan zip files with a different context that is not cancellable
+		// cancelling while scanning zip file contents results in the scan
+		// contents being partially completed
+		zipCtx := context.WithoutCancel(ctx)
+
+		if err := j.scanZipFile(zipCtx, f, progress); err != nil {
+			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
+		}
+	}
+
+	return nil
+}
+
+func (j *ScanJob) scanZipFile(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {
+	zipFS, err := f.FS.OpenZip(f.Path, f.Size)
+	if err != nil {
+		if errors.Is(err, file.ErrNotReaderAt) {
+			// can't walk the zip file
+			// just return
+			logger.Debugf("Skipping zip file %q as it cannot be opened for walking", f.Path)
+			return nil
+		}
+
+		return err
+	}
+
+	defer zipFS.Close()
+
+	return file.SymWalk(zipFS, f.Path, j.queueFileFunc(ctx, zipFS, &f, progress))
 }
 
 type extensionConfig struct {
