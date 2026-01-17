@@ -3,10 +3,13 @@ package session
 import "context"
 
 type ExternalAccessConfig interface {
-	HasCredentials(ctx context.Context) (bool, error)
 	GetDangerousAllowPublicWithoutAuth() bool
 	GetSecurityTripwireAccessedFromPublicInternet() string
 	IsNewSystem() bool
+}
+
+type CredentialStore interface {
+	LoginRequired(ctx context.Context) bool
 }
 
 type SessionConfig interface {

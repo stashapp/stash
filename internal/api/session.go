@@ -103,11 +103,11 @@ func getLoginLocale(lang string) ([]byte, error) {
 	return data, nil
 }
 
-func handleLogin() http.HandlerFunc {
+func handleLogin(s manager.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
-		if hc, _ := config.GetInstance().HasCredentials(r.Context()); !hc {
+		if hc := s.LoginRequired(r.Context()); !hc {
 			if returnURL != "" {
 				http.Redirect(w, r, returnURL, http.StatusFound)
 			} else {
@@ -121,9 +121,9 @@ func handleLogin() http.HandlerFunc {
 	}
 }
 
-func handleLoginPost() http.HandlerFunc {
+func handleLoginPost(s *session.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := manager.GetInstance().SessionStore.Login(w, r)
+		err := s.Login(w, r)
 		if err != nil {
 			// always log the error
 			logger.Errorf("Error logging in: %v from IP: %s", err, r.RemoteAddr)
@@ -146,7 +146,7 @@ func handleLoginPost() http.HandlerFunc {
 	}
 }
 
-func handleLogout() http.HandlerFunc {
+func handleLogout(s *session.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := manager.GetInstance().SessionStore.Logout(w, r); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -155,7 +155,7 @@ func handleLogout() http.HandlerFunc {
 
 		// redirect to the login page if credentials are required
 		prefix := getProxyPrefix(r)
-		if hc, _ := config.GetInstance().HasCredentials(r.Context()); hc {
+		if hc := s.LoginRequired(r.Context()); hc {
 			http.Redirect(w, r, prefix+loginEndpoint, http.StatusFound)
 		} else {
 			http.Redirect(w, r, prefix+"/", http.StatusFound)

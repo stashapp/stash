@@ -16,8 +16,8 @@ func (e ExternalAccessError) Error() string {
 	return fmt.Sprintf("stash accessed from external IP %s", net.IP(e).String())
 }
 
-func CheckAllowPublicWithoutAuth(c ExternalAccessConfig, r *http.Request) error {
-	if hc, _ := c.HasCredentials(context.Background()); !hc && !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
+func CheckAllowPublicWithoutAuth(s CredentialStore, c ExternalAccessConfig, r *http.Request) error {
+	if hc := s.LoginRequired(context.Background()); !hc && !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
 		requestIPString, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
 			return fmt.Errorf("error parsing remote host (%s): %w", r.RemoteAddr, err)
@@ -60,8 +60,8 @@ func CheckAllowPublicWithoutAuth(c ExternalAccessConfig, r *http.Request) error 
 	return nil
 }
 
-func CheckExternalAccessTripwire(c ExternalAccessConfig) *ExternalAccessError {
-	if hc, _ := c.HasCredentials(context.Background()); !hc && !c.GetDangerousAllowPublicWithoutAuth() {
+func CheckExternalAccessTripwire(s CredentialStore, c ExternalAccessConfig) *ExternalAccessError {
+	if hc := s.LoginRequired(context.Background()); !hc && !c.GetDangerousAllowPublicWithoutAuth() {
 		if remoteIP := c.GetSecurityTripwireAccessedFromPublicInternet(); remoteIP != "" {
 			err := ExternalAccessError(net.ParseIP(remoteIP))
 			return &err

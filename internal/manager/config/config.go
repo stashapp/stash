@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -15,8 +14,6 @@ import (
 	"sync"
 	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
@@ -28,7 +25,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/user"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -41,9 +37,8 @@ const (
 	BlobsPath           = "blobs_path"
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
-	Username            = "username"
-	Password            = "password"
-	MaxSessionAge       = "max_session_age"
+
+	MaxSessionAge = "max_session_age"
 
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
@@ -349,6 +344,9 @@ type Config struct {
 	// configUpdates  chan int
 	certFile string
 	keyFile  string
+
+	UserStore *UserStore
+
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
 }
@@ -446,6 +444,9 @@ func (i *Config) SetInterface(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
 
+	i.setInterfaceNoLock(key, value)
+}
+func (i *Config) setInterfaceNoLock(key string, value interface{}) {
 	i.set(key, value)
 }
 
@@ -495,6 +496,10 @@ func (i *Config) Write() error {
 	i.Lock()
 	defer i.Unlock()
 
+	return i.writeNoLock()
+}
+
+func (i *Config) writeNoLock() error {
 	data, err := i.marshal()
 	if err != nil {
 		return err
@@ -1135,78 +1140,6 @@ func (i *Config) IsCreateImageClipsFromVideos() bool {
 
 func (i *Config) GetAPIKey() string {
 	return i.getString(ApiKey)
-}
-
-func (i *Config) GetUsername() string {
-	return i.getString(Username)
-}
-
-func (i *Config) GetUser(ctx context.Context, username string) (*user.User, error) {
-	// TODO - temp
-	if username == "read" {
-		return &user.User{
-			Username: username,
-			Roles:    []user.RoleEnum{user.RoleEnumRead},
-		}, nil
-	}
-
-	u := i.GetUsername()
-	if u != username {
-		return nil, user.ErrUserNotFound
-	}
-
-	return &user.User{
-		Username: u,
-		Roles:    []user.RoleEnum{user.RoleEnumAdmin},
-	}, nil
-}
-
-func (i *Config) GetPasswordHash(ctx context.Context, username string) (string, error) {
-	u := i.GetUsername()
-	if u != username {
-		return "", user.ErrUserNotFound
-	}
-
-	return i.getString(Password), nil
-}
-
-func (i *Config) GetCredentials() (string, string) {
-	if hc, _ := i.HasCredentials(context.Background()); hc {
-		return i.getString(Username), i.getString(Password)
-	}
-
-	return "", ""
-}
-
-func (i *Config) HasCredentials(ctx context.Context) (bool, error) {
-	username := i.getString(Username)
-	pwHash := i.getString(Password)
-
-	return username != "" && pwHash != "", nil
-}
-
-func hashPassword(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
-
-	return string(hash)
-}
-
-func (i *Config) ValidateCredentials(username string, password string) bool {
-	if hc, _ := i.HasCredentials(context.Background()); !hc {
-		// don't need to authenticate if no credentials saved
-		return true
-	}
-
-	// TODO - temp
-	if username == "read" {
-		return password == "read"
-	}
-
-	authUser, authPWHash := i.GetCredentials()
-
-	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
-
-	return username == authUser && err == nil
 }
 
 func stashBoxValidate(str string) bool {

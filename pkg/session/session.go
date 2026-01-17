@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/user"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type key int
@@ -47,7 +47,8 @@ func (e InvalidCredentialsError) Error() string {
 var ErrUnauthorized = errors.New("unauthorized")
 
 type Authenticator interface {
-	ValidateCredentials(username string, password string) bool
+	LoginRequired(ctx context.Context) bool
+	ValidateCredentials(ctx context.Context, username string, password string) error
 }
 
 type Store struct {
@@ -69,6 +70,10 @@ func NewStore(c SessionConfig, a Authenticator) *Store {
 	return ret
 }
 
+func (s *Store) LoginRequired(ctx context.Context) bool {
+	return s.authenticator.LoginRequired(ctx)
+}
+
 func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	// ignore error - we want a new session regardless
 	newSession, _ := s.sessionStore.Get(r, cookieName)
@@ -77,16 +82,16 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
-	if !s.authenticator.ValidateCredentials(username, password) {
+	err := s.authenticator.ValidateCredentials(r.Context(), username, password)
+	if err != nil {
 		return &InvalidCredentialsError{Username: username}
 	}
 
-	// since we only have one user, don't leak the name
-	logger.Info("User logged in")
+	logger.Infof("User %s logged in", username)
 
 	newSession.Values[userIDKey] = username
 
-	err := newSession.Save(r, w)
+	err = newSession.Save(r, w)
 	if err != nil {
 		return err
 	}
@@ -100,6 +105,8 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	userID, _ := session.Values[userIDKey].(string)
+
 	delete(session.Values, userIDKey)
 	session.Options.MaxAge = -1
 
@@ -108,8 +115,7 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// since we only have one user, don't leak the name
-	logger.Infof("User logged out")
+	logger.Infof("User %s logged out", userID)
 
 	return nil
 }
@@ -139,15 +145,15 @@ func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (string
 	return "", nil
 }
 
-func SetCurrentUser(ctx context.Context, u user.User) context.Context {
+func SetCurrentUser(ctx context.Context, u models.User) context.Context {
 	return context.WithValue(ctx, contextUser, u)
 }
 
 // GetCurrentUser gets the current user id from the provided context
-func GetCurrentUser(ctx context.Context) *user.User {
+func GetCurrentUser(ctx context.Context) *models.User {
 	userCtxVal := ctx.Value(contextUser)
 	if userCtxVal != nil {
-		currentUser := userCtxVal.(user.User)
+		currentUser := userCtxVal.(models.User)
 		return &currentUser
 	}
 
@@ -165,6 +171,7 @@ func (s *Store) Authenticate(w http.ResponseWriter, r *http.Request) (userID str
 		apiKey = r.URL.Query().Get(ApiKeyParameter)
 	}
 
+	// FIXME - handle this
 	if apiKey != "" {
 		// match against configured API and set userID to the
 		// configured username. In future, we'll want to

@@ -12,8 +12,8 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/user"
 )
 
 const (
@@ -32,16 +32,17 @@ func allowUnauthenticated(r *http.Request) bool {
 }
 
 type UserGetter interface {
-	GetUser(ctx context.Context, username string) (*user.User, error)
+	GetUser(ctx context.Context, username string) (*models.User, error)
 }
 
 func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := config.GetInstance()
+			s := c.UserStore
 
 			// error if external access tripwire activated
-			if accessErr := session.CheckExternalAccessTripwire(c); accessErr != nil {
+			if accessErr := session.CheckExternalAccessTripwire(s, c); accessErr != nil {
 				http.Error(w, tripwireActivatedErrMsg, http.StatusForbidden)
 				return
 			}
@@ -61,7 +62,9 @@ func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 				return
 			}
 
-			if err := session.CheckAllowPublicWithoutAuth(c, r); err != nil {
+			ctx := r.Context()
+
+			if err := session.CheckAllowPublicWithoutAuth(s, c, r); err != nil {
 				var accessErr session.ExternalAccessError
 				if errors.As(err, &accessErr) {
 					session.LogExternalAccessError(accessErr)
@@ -79,11 +82,23 @@ func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx := r.Context()
+			var u *models.User
+			if userID != "" {
+				u, err = g.GetUser(ctx, userID)
+				if err != nil {
+					// if we can't get the user object, we just return a forbidden error
+					logger.Errorf("Error getting user object: %v", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				if u == nil {
+					logger.Errorf("[User] cookie user %q not found", userID)
+				}
+			}
 
-			if hc, _ := c.HasCredentials(ctx); hc {
+			if hc := s.LoginRequired(ctx); hc {
 				// authentication is required
-				if userID == "" && !allowUnauthenticated(r) {
+				if u == nil && !allowUnauthenticated(r) {
 					// if graphql or a non-webpage was requested, we just return a forbidden error
 					ext := path.Ext(r.URL.Path)
 					if r.URL.Path == gqlEndpoint || (ext != "" && ext != ".html") {
@@ -110,16 +125,8 @@ func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 				}
 			}
 
-			if userID != "" {
+			if u != nil {
 				// set the user object in the context
-				u, err := g.GetUser(ctx, userID)
-				if err != nil {
-					// if we can't get the user object, we just return a forbidden error
-					logger.Errorf("Error getting user object: %v", err)
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-
 				ctx = session.SetCurrentUser(ctx, *u)
 			}
 

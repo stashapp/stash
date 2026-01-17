@@ -269,6 +269,7 @@ type Query {
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
   allMovies: [Movie!]! @deprecated(reason: "Use findGroups instead")
 
+  users: [User!]! @hasRole(role: ADMIN)
   """Returns currently authenticated user"""
   me: User
 
@@ -599,6 +600,7 @@ type Mutation {
   userCreate(input: UserCreateInput!): User @hasRole(role: ADMIN)
   userUpdate(input: UserUpdateInput!): User @hasRole(role: ADMIN)
   userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
+  changeUserPassword(input: ChangeUserPasswordInput!): Boolean! @hasRole(role: ADMIN)
   changePassword(input: UserChangePasswordInput!): Boolean!
 }
 

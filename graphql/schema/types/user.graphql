@@ -9,7 +9,10 @@ directive @isUserOwner on FIELD_DEFINITION
 
 type User {
   name: String!
-  """Should not be visible to other users"""
+  """
+  If the user has no roles, they are considered locked and cannot log in.
+  Should not be visible to other users
+  """
   roles: [RoleEnum!] @isUserOwner
   """Should not be visible to other users"""
   api_key: String @isUserOwner
@@ -23,19 +26,22 @@ input UserCreateInput {
 }
 
 input UserUpdateInput {
-  name: String
-  """Password in plain text"""
-  password: String
-  roles: [RoleEnum!]
+  existingName: String!
+  name: String!
+  roles: [RoleEnum!]!
 }
 
 input UserDestroyInput {
-    id: ID!
+    name: String!
 }
 
 input UserChangePasswordInput {
   """Password in plain text"""
-  existing_password: String
-  new_password: String!
-  reset_key: String
+  existingPassword: String!
+  newPassword: String!
+}
+
+input ChangeUserPasswordInput {
+  name: String!
+  newPassword: String!
 }

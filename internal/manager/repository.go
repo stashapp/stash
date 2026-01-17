@@ -7,7 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/user"
+	"github.com/stashapp/stash/pkg/session"
 )
 
 type SceneService interface {
@@ -49,5 +49,14 @@ type GroupService interface {
 }
 
 type UserService interface {
-	GetUser(ctx context.Context, username string) (*user.User, error)
+	session.Authenticator
+	AllUsers(ctx context.Context) ([]*models.User, error)
+	GetUser(ctx context.Context, username string) (*models.User, error)
+	LoginRequired(ctx context.Context) bool
+
+	CreateUser(ctx context.Context, u models.User, password string) error
+	UpdateUser(ctx context.Context, username string, updated models.User) error
+	ChangePassword(ctx context.Context, username, existingPassword, newPassword string) error
+	ChangeUserPassword(ctx context.Context, username string, newPassword string) error
+	DeleteUser(ctx context.Context, username string) error
 }

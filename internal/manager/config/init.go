@@ -62,6 +62,9 @@ func Initialize() (*Config, error) {
 		main:      koanf.New("."),
 		overrides: koanf.New("."),
 	}
+	cfg.UserStore = &UserStore{
+		Config: cfg,
+	}
 
 	cfg.initOverrides()
 
@@ -94,6 +97,10 @@ func Initialize() (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if err := cfg.UserStore.loadUsers(); err != nil {
+		return nil, fmt.Errorf("failed to load users: %v", err)
 	}
 
 	instance = cfg

@@ -126,7 +126,7 @@ models:
   ScraperSource:
     model: github.com/stashapp/stash/pkg/scraper.Source
   RoleEnum:
-    model: github.com/stashapp/stash/pkg/user.RoleEnum
+    model: github.com/stashapp/stash/pkg/models.RoleEnum
   IdentifySourceInput:
     model: github.com/stashapp/stash/internal/identify.Source
   IdentifyFieldOptionsInput:

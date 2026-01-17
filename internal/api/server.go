@@ -164,19 +164,22 @@ func Initialize() (*Server, error) {
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
 	groupService := mgr.GroupService
+	userService := mgr.UserService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
 		imageService:   imageService,
 		galleryService: galleryService,
 		groupService:   groupService,
+		userService:    userService,
 		hookExecutor:   pluginCache,
 	}
 
 	gqlCfg := Config{
 		Resolvers: resolver,
 		Directives: DirectiveRoot{
-			HasRole: HasRoleDirective,
+			HasRole:     HasRoleDirective,
+			IsUserOwner: IsUserOwnerDirective,
 		},
 	}
 
@@ -236,9 +239,11 @@ func Initialize() (*Server, error) {
 
 	staticLoginUI := statigz.FileServer(ui.LoginUIBox.(fs.ReadDirFS))
 
-	r.Get(loginEndpoint, handleLogin())
-	r.Post(loginEndpoint, handleLoginPost())
-	r.Get(logoutEndpoint, handleLogout())
+	sessionStore := mgr.SessionStore
+
+	r.Get(loginEndpoint, handleLogin(userService))
+	r.Post(loginEndpoint, handleLoginPost(sessionStore))
+	r.Get(logoutEndpoint, handleLogout(sessionStore))
 	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndpoint)

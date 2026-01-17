@@ -1,4 +1,4 @@
-package user
+package models
 
 import (
 	"fmt"
@@ -58,15 +58,13 @@ func (e RoleEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-func IsRole(assignedRoles []RoleEnum, requiredRole RoleEnum) bool {
-	valid := false
+type Roles []RoleEnum
 
-	for _, role := range assignedRoles {
-		if role.Implies(requiredRole) {
-			valid = true
-			break
+func (r Roles) HasRole(role RoleEnum) bool {
+	for _, r := range r {
+		if r.Implies(role) {
+			return true
 		}
 	}
-
-	return valid
+	return false
 }

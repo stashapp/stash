@@ -2,18 +2,266 @@ package user
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"slices"
+	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-type Store interface {
-	GetUser(ctx context.Context, username string) (*User, error)
-	HasCredentials(ctx context.Context) (bool, error)
-	GetPasswordHash(ctx context.Context, username string) (string, error)
+var (
+	ErrUserNotExist             = errors.New("user not found")
+	ErrEmptyUsername            = errors.New("empty username")
+	ErrUsernameHasWhitespace    = errors.New("username has leading or trailing whitespace")
+	ErrDeleteLastAdminUser      = errors.New("final admin user cannot be deleted")
+	ErrInternalError            = errors.New("internal error")
+	ErrAccessDenied             = errors.New("access denied")
+	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
+	ErrUserAlreadyExists        = errors.New("user with that username already exists")
+)
+
+type UserSource interface {
+	AllUsers(ctx context.Context) ([]*models.User, error)
+	GetUser(ctx context.Context, username string) (*models.User, error)
+	ValidateCredentials(ctx context.Context, username string, password string) bool
+
+	CreateUser(ctx context.Context, u models.User, password string) error
+	ReplaceUser(ctx context.Context, username string, updated models.User) error
+	ChangeUserPassword(ctx context.Context, username string, newPassword string) error
+	DeleteUser(ctx context.Context, username string) error
 }
 
 type Service struct {
-	Store Store
+	Store UserSource
 }
 
-func (s *Service) GetUser(ctx context.Context, username string) (*User, error) {
+func (s *Service) LoginRequired(ctx context.Context) bool {
+	u, _ := s.Store.AllUsers(ctx)
+	return len(u) > 0
+}
+
+func (s *Service) GetUser(ctx context.Context, username string) (*models.User, error) {
 	return s.Store.GetUser(ctx, username)
+}
+
+func (s *Service) AllUsers(ctx context.Context) ([]*models.User, error) {
+	return s.Store.AllUsers(ctx)
+}
+
+func (s *Service) ValidateCredentials(ctx context.Context, username string, password string) error {
+	// ensure user is not locked
+	u, err := s.GetUser(ctx, username)
+	if err != nil {
+		logger.Errorf("error getting user for credential validation: %v", err)
+		return ErrInternalError
+	}
+
+	if u == nil {
+		logger.Infof("[login attempt] user %s not found during credential validation", username)
+		return ErrAccessDenied
+	}
+
+	if len(u.Roles) == 0 {
+		logger.Infof("[login attempt] user %s is locked", username)
+		return ErrAccessDenied
+	}
+
+	if !s.Store.ValidateCredentials(ctx, username, password) {
+		logger.Infof("[login attempt] invalid credentials for user %s", username)
+		return ErrAccessDenied
+	}
+	return nil
+}
+
+func (s *Service) validateUsername(username string) error {
+	if username == "" {
+		return ErrEmptyUsername
+	}
+
+	// username must not have leading or trailing whitespace
+	trimmed := strings.TrimSpace(username)
+
+	if trimmed != username {
+		return ErrUsernameHasWhitespace
+	}
+
+	return nil
+}
+
+func (s *Service) validatePassword(password string) error {
+	if password == "" {
+		return errors.New("password cannot be empty")
+	}
+
+	// add more password validation as needed
+
+	return nil
+}
+
+func (s *Service) CreateUser(ctx context.Context, u models.User, password string) error {
+	// validate input
+	// ensure username is valid
+	if err := s.validateUsername(u.Username); err != nil {
+		return err
+	}
+
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, u.Username)
+	if err != nil {
+		return fmt.Errorf("error checking existing users: %w", err)
+	}
+
+	if existingUser != nil {
+		return ErrUserAlreadyExists
+	}
+
+	// validate password
+	if err := s.validatePassword(password); err != nil {
+		return err
+	}
+
+	// if this is the first user, make them an admin
+	users, err := s.AllUsers(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting existing users: %w", err)
+	}
+
+	if len(users) == 0 && !u.Roles.HasRole(models.RoleEnumAdmin) {
+		return errors.New("the first user must be an admin")
+	}
+
+	// create user in store
+	if err := s.Store.CreateUser(ctx, u, password); err != nil {
+		return fmt.Errorf("error creating user: %w", err)
+	}
+
+	logger.Infof("[user] created %q", u.Username)
+
+	return nil
+}
+
+func (s *Service) UpdateUser(ctx context.Context, username string, updated models.User) error {
+	// validate input
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return ErrUserNotExist
+	}
+
+	existingRoles := existingUser.Roles
+
+	// ensure username is valid
+	if username != updated.Username {
+		if err := s.validateUsername(updated.Username); err != nil {
+			return err
+		}
+
+		// ensure new username doesn't already exist
+		otherUser, err := s.GetUser(ctx, updated.Username)
+		if err != nil {
+			return fmt.Errorf("error checking existing user: %w", err)
+		}
+
+		if otherUser != nil {
+			return ErrUserAlreadyExists
+		}
+	}
+
+	// update user in store
+	if err := s.Store.ReplaceUser(ctx, username, updated); err != nil {
+		return fmt.Errorf("error updating user: %w", err)
+	}
+
+	if username != updated.Username {
+		logger.Infof("[user] updated name %q -> %q", username, updated.Username)
+	}
+
+	if !slices.Equal(existingRoles, updated.Roles) {
+		logger.Infof("[user] updated roles for user %q", updated.Username)
+	}
+
+	return nil
+}
+
+func (s *Service) ChangePassword(ctx context.Context, username, currentPassword, newPassword string) error {
+	// validate current credentials
+	if err := s.ValidateCredentials(ctx, username, currentPassword); err != nil {
+		logger.Infof("[user] failed password change attempt for %q: incorrect current password", username)
+		return ErrCurrentPasswordIncorrect
+	}
+
+	return s.ChangeUserPassword(ctx, username, newPassword)
+}
+
+func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword string) error {
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return ErrUserNotExist
+	}
+
+	// validate new password
+	if err := s.validatePassword(newPassword); err != nil {
+		return err
+	}
+
+	// change password in store
+	if err := s.Store.ChangeUserPassword(ctx, username, newPassword); err != nil {
+		return fmt.Errorf("error changing user password: %w", err)
+	}
+
+	logger.Infof("[user] changed password for %q", username)
+
+	return nil
+}
+
+func (s *Service) DeleteUser(ctx context.Context, username string) error {
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return ErrUserNotExist
+	}
+
+	// don't allow deleting last admin user
+	if existingUser.Roles.HasRole(models.RoleEnumAdmin) {
+		users, err := s.AllUsers(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting all users: %w", err)
+		}
+
+		hasAdmin := false
+		for _, u := range users {
+			if u.Username != username && u.Roles.HasRole(models.RoleEnumAdmin) {
+				hasAdmin = true
+				break
+			}
+		}
+
+		if !hasAdmin {
+			return ErrDeleteLastAdminUser
+		}
+	}
+
+	// delete user from store
+	if err := s.Store.DeleteUser(ctx, username); err != nil {
+		return fmt.Errorf("error deleting user: %w", err)
+	}
+
+	logger.Infof("[user] deleted %q", username)
+
+	return nil
 }
