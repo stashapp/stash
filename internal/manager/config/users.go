@@ -31,8 +31,8 @@ func (s *Config) GetUsername() string {
 	return s.getString(Username)
 }
 
-func (i *Config) GetPasswordHash() string {
-	return i.getString(Password)
+func (s *Config) GetPasswordHash() string {
+	return s.getString(Password)
 }
 
 func (s *UserStore) legacyUser() *StoredUser {

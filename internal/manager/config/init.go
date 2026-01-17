@@ -117,8 +117,8 @@ func InitializeEmpty() *Config {
 	return instance
 }
 
-func (i *Config) loadFromCommandLine() {
-	v := i.overrides
+func (s *Config) loadFromCommandLine() {
+	v := s.overrides
 
 	if err := v.Load(posflag.ProviderWithFlag(pflag.CommandLine, ".", v, func(f *pflag.Flag) (string, interface{}) {
 		// ignore flags that have not been changed
@@ -132,8 +132,8 @@ func (i *Config) loadFromCommandLine() {
 	}
 }
 
-func (i *Config) loadFromEnv() {
-	v := i.overrides
+func (s *Config) loadFromEnv() {
+	v := s.overrides
 
 	if err := v.Load(env.ProviderWithValue("STASH_", ".", func(key, value string) (string, interface{}) {
 		key = strings.ToLower(strings.TrimPrefix(key, "STASH_"))
@@ -147,12 +147,12 @@ func (i *Config) loadFromEnv() {
 	}
 }
 
-func (i *Config) initOverrides() {
-	i.loadFromCommandLine()
-	i.loadFromEnv()
+func (s *Config) initOverrides() {
+	s.loadFromCommandLine()
+	s.loadFromEnv()
 }
 
-func (i *Config) initConfig() error {
+func (s *Config) initConfig() error {
 	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
 
@@ -165,8 +165,8 @@ func (i *Config) initConfig() error {
 	if configFile != "" {
 		// if file does not exist, assume it is a new system
 		if exists, _ := fsutil.FileExists(configFile); !exists {
-			i.isNewSystem = true
-			i.SetConfigFile(configFile)
+			s.isNewSystem = true
+			s.SetConfigFile(configFile)
 
 			// ensure we can write to the file
 			if err := fsutil.Touch(configFile); err != nil {
@@ -179,15 +179,15 @@ func (i *Config) initConfig() error {
 			return nil
 		} else {
 			// load from provided config file
-			if err := i.loadFirstFromFiles([]string{configFile}); err != nil {
+			if err := s.loadFirstFromFiles([]string{configFile}); err != nil {
 				return err
 			}
 		}
 	} else {
 		// load from default locations
-		if err := i.loadFirstFromFiles(defaultConfigLocations); err != nil {
+		if err := s.loadFirstFromFiles(defaultConfigLocations); err != nil {
 			if errors.Is(err, errConfigNotFound) {
-				i.isNewSystem = true
+				s.isNewSystem = true
 				return nil
 			}
 
@@ -198,10 +198,10 @@ func (i *Config) initConfig() error {
 	return nil
 }
 
-func (i *Config) loadFirstFromFiles(f []string) error {
+func (s *Config) loadFirstFromFiles(f []string) error {
 	for _, ff := range f {
 		if exists, _ := fsutil.FileExists(ff); exists {
-			return i.load(ff)
+			return s.load(ff)
 		}
 	}
 

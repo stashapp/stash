@@ -270,7 +270,9 @@ type Query {
   allMovies: [Movie!]! @deprecated(reason: "Use findGroups instead")
 
   users: [User!]! @hasRole(role: ADMIN)
-  """Returns currently authenticated user"""
+  """
+  Returns currently authenticated user
+  """
   me: User
 
   # Version
@@ -289,29 +291,36 @@ type Mutation {
   "Downloads and installs ffmpeg and ffprobe binaries into the configuration directory. Returns the job ID."
   downloadFFMpeg: ID! @hasRole(role: ADMIN)
 
-  sceneCreate(input: SceneCreateInput!): Scene  @hasRole(role: MODIFY)
-  sceneUpdate(input: SceneUpdateInput!): Scene  @hasRole(role: MODIFY)
-  sceneMerge(input: SceneMergeInput!): Scene  @hasRole(role: MODIFY)
-  bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]  @hasRole(role: MODIFY)
-  sceneDestroy(input: SceneDestroyInput!): Boolean!  @hasRole(role: MODIFY)
-  scenesDestroy(input: ScenesDestroyInput!): Boolean!  @hasRole(role: MODIFY)
-  scenesUpdate(input: [SceneUpdateInput!]!): [Scene]  @hasRole(role: MODIFY)
+  sceneCreate(input: SceneCreateInput!): Scene @hasRole(role: MODIFY)
+  sceneUpdate(input: SceneUpdateInput!): Scene @hasRole(role: MODIFY)
+  sceneMerge(input: SceneMergeInput!): Scene @hasRole(role: MODIFY)
+  bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!] @hasRole(role: MODIFY)
+  sceneDestroy(input: SceneDestroyInput!): Boolean! @hasRole(role: MODIFY)
+  scenesDestroy(input: ScenesDestroyInput!): Boolean! @hasRole(role: MODIFY)
+  scenesUpdate(input: [SceneUpdateInput!]!): [Scene] @hasRole(role: MODIFY)
 
   "Increments the o-counter for a scene. Returns the new value"
-  sceneIncrementO(id: ID!): Int! @deprecated(reason: "Use sceneAddO instead") @hasRole(role: MODIFY)
+  sceneIncrementO(id: ID!): Int!
+    @deprecated(reason: "Use sceneAddO instead")
+    @hasRole(role: MODIFY)
   "Decrements the o-counter for a scene. Returns the new value"
-  sceneDecrementO(id: ID!): Int! @deprecated(reason: "Use sceneRemoveO instead") @hasRole(role: MODIFY)
+  sceneDecrementO(id: ID!): Int!
+    @deprecated(reason: "Use sceneRemoveO instead")
+    @hasRole(role: MODIFY)
 
   "Increments the o-counter for a scene. Uses the current time if none provided."
-  sceneAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult! @hasRole(role: MODIFY)
+  sceneAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+    @hasRole(role: MODIFY)
   "Decrements the o-counter for a scene, removing the last recorded time if specific time not provided. Returns the new value"
-  sceneDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult! @hasRole(role: MODIFY)
+  sceneDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+    @hasRole(role: MODIFY)
 
   "Resets the o-counter for a scene to 0. Returns the new value"
   sceneResetO(id: ID!): Int! @hasRole(role: MODIFY)
 
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
-  sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean! @hasRole(role: MODIFY)
+  sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
+    @hasRole(role: MODIFY)
 
   "Resets the resume time point and play duration"
   sceneResetActivity(
@@ -322,21 +331,27 @@ type Mutation {
 
   "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
-    @deprecated(reason: "Use sceneAddPlay instead") @hasRole(role: MODIFY)
+    @deprecated(reason: "Use sceneAddPlay instead")
+    @hasRole(role: MODIFY)
 
   "Increments the play count for the scene. Uses the current time if none provided."
-  sceneAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult! @hasRole(role: MODIFY)
+  sceneAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+    @hasRole(role: MODIFY)
   "Decrements the play count for the scene, removing the specific times or the last recorded time if not provided."
-  sceneDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult! @hasRole(role: MODIFY)
+  sceneDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+    @hasRole(role: MODIFY)
   "Resets the play count for a scene to 0. Returns the new play count value."
   sceneResetPlayCount(id: ID!): Int! @hasRole(role: MODIFY)
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
   sceneGenerateScreenshot(id: ID!, at: Float): String! @hasRole(role: ADMIN)
 
-  sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker @hasRole(role: MODIFY)
-  sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker @hasRole(role: MODIFY)
-  bulkSceneMarkerUpdate(input: BulkSceneMarkerUpdateInput!): [SceneMarker!] @hasRole(role: MODIFY)
+  sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
+    @hasRole(role: MODIFY)
+  sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
+    @hasRole(role: MODIFY)
+  bulkSceneMarkerUpdate(input: BulkSceneMarkerUpdateInput!): [SceneMarker!]
+    @hasRole(role: MODIFY)
   sceneMarkerDestroy(id: ID!): Boolean! @hasRole(role: MODIFY)
   sceneMarkersDestroy(ids: [ID!]!): Boolean! @hasRole(role: MODIFY)
 
@@ -357,42 +372,58 @@ type Mutation {
 
   galleryCreate(input: GalleryCreateInput!): Gallery @hasRole(role: MODIFY)
   galleryUpdate(input: GalleryUpdateInput!): Gallery @hasRole(role: MODIFY)
-  bulkGalleryUpdate(input: BulkGalleryUpdateInput!): [Gallery!] @hasRole(role: MODIFY)
+  bulkGalleryUpdate(input: BulkGalleryUpdateInput!): [Gallery!]
+    @hasRole(role: MODIFY)
   galleryDestroy(input: GalleryDestroyInput!): Boolean! @hasRole(role: MODIFY)
-  galleriesUpdate(input: [GalleryUpdateInput!]!): [Gallery] @hasRole(role: MODIFY)
+  galleriesUpdate(input: [GalleryUpdateInput!]!): [Gallery]
+    @hasRole(role: MODIFY)
 
   addGalleryImages(input: GalleryAddInput!): Boolean! @hasRole(role: MODIFY)
-  removeGalleryImages(input: GalleryRemoveInput!): Boolean! @hasRole(role: MODIFY)
+  removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+    @hasRole(role: MODIFY)
   setGalleryCover(input: GallerySetCoverInput!): Boolean! @hasRole(role: MODIFY)
-  resetGalleryCover(input: GalleryResetCoverInput!): Boolean! @hasRole(role: MODIFY)
+  resetGalleryCover(input: GalleryResetCoverInput!): Boolean!
+    @hasRole(role: MODIFY)
 
-  galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter @hasRole(role: MODIFY)
-  galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter @hasRole(role: MODIFY)
+  galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
+    @hasRole(role: MODIFY)
+  galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
+    @hasRole(role: MODIFY)
   galleryChapterDestroy(id: ID!): Boolean! @hasRole(role: MODIFY)
 
-  performerCreate(input: PerformerCreateInput!): Performer @hasRole(role: MODIFY)
-  performerUpdate(input: PerformerUpdateInput!): Performer @hasRole(role: MODIFY)
-  performerDestroy(input: PerformerDestroyInput!): Boolean! @hasRole(role: MODIFY)
+  performerCreate(input: PerformerCreateInput!): Performer
+    @hasRole(role: MODIFY)
+  performerUpdate(input: PerformerUpdateInput!): Performer
+    @hasRole(role: MODIFY)
+  performerDestroy(input: PerformerDestroyInput!): Boolean!
+    @hasRole(role: MODIFY)
   performersDestroy(ids: [ID!]!): Boolean! @hasRole(role: MODIFY)
-  bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!] @hasRole(role: MODIFY)
+  bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!]
+    @hasRole(role: MODIFY)
   performerMerge(input: PerformerMergeInput!): Performer! @hasRole(role: MODIFY)
 
   studioCreate(input: StudioCreateInput!): Studio @hasRole(role: MODIFY)
   studioUpdate(input: StudioUpdateInput!): Studio @hasRole(role: MODIFY)
   studioDestroy(input: StudioDestroyInput!): Boolean! @hasRole(role: MODIFY)
   studiosDestroy(ids: [ID!]!): Boolean! @hasRole(role: MODIFY)
-  bulkStudioUpdate(input: BulkStudioUpdateInput!): [Studio!] @hasRole(role: MODIFY)
+  bulkStudioUpdate(input: BulkStudioUpdateInput!): [Studio!]
+    @hasRole(role: MODIFY)
 
   movieCreate(input: MovieCreateInput!): Movie
-    @deprecated(reason: "Use groupCreate instead") @hasRole(role: MODIFY)
+    @deprecated(reason: "Use groupCreate instead")
+    @hasRole(role: MODIFY)
   movieUpdate(input: MovieUpdateInput!): Movie
-    @deprecated(reason: "Use groupUpdate instead") @hasRole(role: MODIFY)
+    @deprecated(reason: "Use groupUpdate instead")
+    @hasRole(role: MODIFY)
   movieDestroy(input: MovieDestroyInput!): Boolean!
-    @deprecated(reason: "Use groupDestroy instead") @hasRole(role: MODIFY)
+    @deprecated(reason: "Use groupDestroy instead")
+    @hasRole(role: MODIFY)
   moviesDestroy(ids: [ID!]!): Boolean!
-    @deprecated(reason: "Use groupsDestroy instead") @hasRole(role: MODIFY)
+    @deprecated(reason: "Use groupsDestroy instead")
+    @hasRole(role: MODIFY)
   bulkMovieUpdate(input: BulkMovieUpdateInput!): [Movie!]
-    @deprecated(reason: "Use bulkGroupUpdate instead") @hasRole(role: MODIFY)
+    @deprecated(reason: "Use bulkGroupUpdate instead")
+    @hasRole(role: MODIFY)
 
   groupCreate(input: GroupCreateInput!): Group @hasRole(role: MODIFY)
   groupUpdate(input: GroupUpdateInput!): Group @hasRole(role: MODIFY)
@@ -400,11 +431,14 @@ type Mutation {
   groupsDestroy(ids: [ID!]!): Boolean! @hasRole(role: MODIFY)
   bulkGroupUpdate(input: BulkGroupUpdateInput!): [Group!] @hasRole(role: MODIFY)
 
-  addGroupSubGroups(input: GroupSubGroupAddInput!): Boolean! @hasRole(role: MODIFY)
-  removeGroupSubGroups(input: GroupSubGroupRemoveInput!): Boolean! @hasRole(role: MODIFY)
+  addGroupSubGroups(input: GroupSubGroupAddInput!): Boolean!
+    @hasRole(role: MODIFY)
+  removeGroupSubGroups(input: GroupSubGroupRemoveInput!): Boolean!
+    @hasRole(role: MODIFY)
 
   "Reorder sub groups within a group. Returns true if successful."
-  reorderSubGroups(input: ReorderSubGroupsInput!): Boolean! @hasRole(role: MODIFY)
+  reorderSubGroups(input: ReorderSubGroupsInput!): Boolean!
+    @hasRole(role: MODIFY)
 
   tagCreate(input: TagCreateInput!): Tag @hasRole(role: MODIFY)
   tagUpdate(input: TagUpdateInput!): Tag @hasRole(role: MODIFY)
@@ -435,15 +469,21 @@ type Mutation {
 
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter! @hasRole(role: MODIFY)
-  destroySavedFilter(input: DestroyFilterInput!): Boolean! @hasRole(role: MODIFY)
+  destroySavedFilter(input: DestroyFilterInput!): Boolean!
+    @hasRole(role: MODIFY)
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
-    @deprecated(reason: "now uses UI config") @hasRole(role: MODIFY)
+    @deprecated(reason: "now uses UI config")
+    @hasRole(role: MODIFY)
 
   "Change general configuration options"
-  configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult! @hasRole(role: ADMIN)
-  configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult! @hasRole(role: ADMIN)
-  configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult! @hasRole(role: ADMIN)
-  configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult! @hasRole(role: ADMIN)
+  configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
+    @hasRole(role: ADMIN)
+  configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
+    @hasRole(role: ADMIN)
+  configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
+    @hasRole(role: ADMIN)
+  configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult!
+    @hasRole(role: ADMIN)
   configureDefaults(
     input: ConfigDefaultSettingsInput!
   ): ConfigDefaultSettingsResult! @hasRole(role: ADMIN)
@@ -492,12 +532,14 @@ type Mutation {
   "Migrate generated files for the current hash naming"
   migrateHashNaming: ID! @hasRole(role: ADMIN)
   "Migrates legacy scene screenshot files into the blob storage"
-  migrateSceneScreenshots(input: MigrateSceneScreenshotsInput!): ID! @hasRole(role: ADMIN)
+  migrateSceneScreenshots(input: MigrateSceneScreenshotsInput!): ID!
+    @hasRole(role: ADMIN)
   "Migrates blobs from the old storage system to the current one"
   migrateBlobs(input: MigrateBlobsInput!): ID! @hasRole(role: ADMIN)
 
   "Anonymise the database in a separate file. Optionally returns a link to download the database file"
-  anonymiseDatabase(input: AnonymiseDatabaseInput!): String @hasRole(role: ADMIN)
+  anonymiseDatabase(input: AnonymiseDatabaseInput!): String
+    @hasRole(role: ADMIN)
 
   "Optimises the database. Returns the job ID"
   optimiseDatabase: ID! @hasRole(role: ADMIN)
@@ -542,7 +584,8 @@ type Mutation {
   If an error occurs when installing a package, the job will continue to install the remaining packages.
   Returns the job ID
   """
-  installPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID! @hasRole(role: ADMIN)
+  installPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
+    @hasRole(role: ADMIN)
   """
   Updates the given packages.
   If a package is not installed, it will not be installed.
@@ -551,13 +594,15 @@ type Mutation {
   If an error occurs when updating a package, the job will continue to update the remaining packages.
   Returns the job ID.
   """
-  updatePackages(type: PackageType!, packages: [PackageSpecInput!]): ID! @hasRole(role: ADMIN)
+  updatePackages(type: PackageType!, packages: [PackageSpecInput!]): ID!
+    @hasRole(role: ADMIN)
   """
   Uninstalls the given packages.
   If an error occurs when uninstalling a package, the job will continue to uninstall the remaining packages.
   Returns the job ID
   """
-  uninstallPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID! @hasRole(role: ADMIN)
+  uninstallPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
+    @hasRole(role: ADMIN)
 
   stopJob(job_id: ID!): Boolean! @hasRole(role: ADMIN)
   stopAllJobs: Boolean! @hasRole(role: ADMIN)
@@ -568,9 +613,11 @@ type Mutation {
   ): Boolean! @hasRole(role: MODIFY)
 
   "Submit scene as draft to stash-box instance"
-  submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID @hasRole(role: MODIFY)
+  submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID
+    @hasRole(role: MODIFY)
   "Submit performer as draft to stash-box instance"
-  submitStashBoxPerformerDraft(input: StashBoxDraftSubmissionInput!): ID @hasRole(role: MODIFY)
+  submitStashBoxPerformerDraft(input: StashBoxDraftSubmissionInput!): ID
+    @hasRole(role: MODIFY)
 
   "Backup the database. Optionally returns a link to download the database file"
   backupDatabase(input: BackupDatabaseInput!): String @hasRole(role: ADMIN)
@@ -582,9 +629,11 @@ type Mutation {
   execSQL(sql: String!, args: [Any]): SQLExecResult! @hasRole(role: ADMIN)
 
   "Run batch performer tag task. Returns the job ID."
-  stashBoxBatchPerformerTag(input: StashBoxBatchTagInput!): String! @hasRole(role: ADMIN)
+  stashBoxBatchPerformerTag(input: StashBoxBatchTagInput!): String!
+    @hasRole(role: ADMIN)
   "Run batch studio tag task. Returns the job ID."
-  stashBoxBatchStudioTag(input: StashBoxBatchTagInput!): String! @hasRole(role: ADMIN)
+  stashBoxBatchStudioTag(input: StashBoxBatchTagInput!): String!
+    @hasRole(role: ADMIN)
   "Run batch tag tag task. Returns the job ID."
   stashBoxBatchTagTag(input: StashBoxBatchTagInput!): String! @hasRole(role: ADMIN)
 
@@ -595,12 +644,14 @@ type Mutation {
   "Enables an IP address for DLNA for an optional duration"
   addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean! @hasRole(role: ADMIN)
   "Removes an IP address from the temporary DLNA whitelist"
-  removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean! @hasRole(role: ADMIN)
+  removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean!
+    @hasRole(role: ADMIN)
 
   userCreate(input: UserCreateInput!): User @hasRole(role: ADMIN)
   userUpdate(input: UserUpdateInput!): User @hasRole(role: ADMIN)
   userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
-  changeUserPassword(input: ChangeUserPasswordInput!): Boolean! @hasRole(role: ADMIN)
+  changeUserPassword(input: ChangeUserPasswordInput!): Boolean!
+    @hasRole(role: ADMIN)
   changePassword(input: UserChangePasswordInput!): Boolean!
 }
 

@@ -14,13 +14,17 @@ type User {
   Should not be visible to other users
   """
   roles: [RoleEnum!] @isUserOwner
-  """Should not be visible to other users"""
+  """
+  Should not be visible to other users
+  """
   api_key: String @isUserOwner
 }
 
 input UserCreateInput {
   name: String!
-  """Password in plain text"""
+  """
+  Password in plain text
+  """
   password: String!
   roles: [RoleEnum!]!
 }
@@ -32,11 +36,13 @@ input UserUpdateInput {
 }
 
 input UserDestroyInput {
-    name: String!
+  name: String!
 }
 
 input UserChangePasswordInput {
-  """Password in plain text"""
+  """
+  Password in plain text
+  """
   existingPassword: String!
   newPassword: String!
 }
