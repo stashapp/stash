@@ -167,6 +167,13 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             headingID="dialogs.scene_gen.image_thumbnails"
             onChange={(v) => setOptions({ imageThumbnails: v })}
           />
+          <BooleanSetting
+            id="image-phash-task"
+            checked={options.imagePhashes ?? false}
+            headingID="dialogs.scene_gen.image_phash"
+            tooltipID="dialogs.scene_gen.image_phash_tooltip"
+            onChange={(v) => setOptions({ imagePhashes: v })}
+          />
         </>
       )}
       <BooleanSetting
