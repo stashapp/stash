@@ -706,6 +706,28 @@ func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
 }
 
+// used for sorting on performer latest scene
+var selectPerformerLatestSceneSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"date":              sceneDateColumn,
+	},
+)
+
+func (qb *PerformerStore) sortByLatestScene(direction string) string {
+	// need to get the latest date from scenes
+	return " ORDER BY (" + selectPerformerLatestSceneSQL + ") " + direction
+}
+
 // used for sorting on performer last view_date
 var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 	"SELECT MAX(view_date) FROM ("+
@@ -762,6 +784,7 @@ var performerSortOptions = sortOptions{
 	"images_count",
 	"last_o_at",
 	"last_played_at",
+	"latest_scene",
 	"measurements",
 	"name",
 	"o_counter",
@@ -812,6 +835,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByLastPlayedAt(direction)
 	case "last_o_at":
 		sortQuery += qb.sortByLastOAt(direction)
+	case "latest_scene":
+		sortQuery += qb.sortByLatestScene(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}

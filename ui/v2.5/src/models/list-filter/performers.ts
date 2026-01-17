@@ -31,6 +31,7 @@ const sortByOptions = [
   "penis_length",
   "play_count",
   "last_played_at",
+  "latest_scene",
   "career_length",
   "weight",
   "measurements",

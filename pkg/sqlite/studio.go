@@ -15,6 +15,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -601,12 +602,32 @@ func (qb *StudioStore) sortByScenesDuration(direction string) string {
 	) %s`, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 }
 
+// used for sorting on performer latest scene
+var selectStudioLatestSceneSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {scenes} s "+
+		"WHERE s.{studio_id} = {studios}.id"+
+		")",
+	map[string]interface{}{
+		"scenes":    sceneTable,
+		"studios":   studioTable,
+		"studio_id": studioIDColumn,
+		"date":      sceneDateColumn,
+	},
+)
+
+func (qb *StudioStore) sortByLatestScene(direction string) string {
+	// need to get the latest date from scenes
+	return " ORDER BY (" + selectStudioLatestSceneSQL + ") " + direction
+}
+
 var studioSortOptions = sortOptions{
 	"child_count",
 	"created_at",
 	"galleries_count",
 	"id",
 	"images_count",
+	"latest_scene",
 	"name",
 	"scenes_count",
 	"scenes_duration",
@@ -646,6 +667,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
+	case "latest_scene":
+		sortQuery += qb.sortByLatestScene(direction)
 	default:
 		sortQuery += getSort(sort, direction, "studios")
 	}
