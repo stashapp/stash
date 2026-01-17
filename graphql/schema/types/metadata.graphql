@@ -20,6 +20,8 @@ input GenerateMetadataInput {
 
   "scene ids to generate for"
   sceneIDs: [ID!]
+  "image ids to generate for"
+  imageIDs: [ID!]
   "marker ids to generate for"
   markerIDs: [ID!]
 

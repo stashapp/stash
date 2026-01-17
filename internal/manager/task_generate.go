@@ -35,6 +35,8 @@ type GenerateMetadataInput struct {
 	ImageThumbnails           bool `json:"imageThumbnails"`
 	// scene ids to generate for
 	SceneIDs []string `json:"sceneIDs"`
+	// image ids to generate for
+	ImageIDs []string `json:"imageIDs"`
 	// marker ids to generate for
 	MarkerIDs []string `json:"markerIDs"`
 	// overwrite existing media
@@ -84,8 +86,9 @@ type totalsGenerate struct {
 
 func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error {
 	var scenes []*models.Scene
-	var err error
 	var markers []*models.SceneMarker
+	var images []*models.Image
+	var err error
 
 	j.overwrite = j.input.Overwrite
 	j.fileNamingAlgo = config.GetInstance().GetVideoFileNamingAlgorithm()
@@ -107,6 +110,10 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		if err != nil {
 			logger.Error(err.Error())
 		}
+		imageIDs, err := stringslice.StringSliceToIntSlice(j.input.ImageIDs)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 
 		g := &generate.Generator{
 			Encoder:      instance.FFMpeg,
@@ -120,7 +127,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		r := j.repository
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.Scene
-			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 {
+			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 && len(j.input.ImageIDs) == 0 {
 				j.queueTasks(ctx, g, queue)
 			} else {
 				if len(j.input.SceneIDs) > 0 {
@@ -141,6 +148,17 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 					}
 					for _, m := range markers {
 						j.queueMarkerJob(g, m, queue)
+					}
+				}
+
+				if len(j.input.ImageIDs) > 0 {
+					images, err = r.Image.FindMany(ctx, imageIDs)
+					for _, i := range images {
+						if err := i.LoadFiles(ctx, r.Image); err != nil {
+							return err
+						}
+
+						j.queueImageJob(g, i, queue)
 					}
 				}
 			}
