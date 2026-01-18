@@ -447,3 +447,10 @@
     display: inline-block;
   }
 }
+
+.troubleshooting-mode-button {
+  bottom: 1rem;
+  left: 1rem;
+  position: fixed;
+  z-index: 100;
+}

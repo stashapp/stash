@@ -18,6 +18,7 @@ import { SettingsContext, useSettings } from "./context";
 import { SettingsLibraryPanel } from "./SettingsLibraryPanel";
 import { SettingsSecurityPanel } from "./SettingsSecurityPanel";
 import Changelog from "../Changelog/Changelog";
+import { TroubleshootingModeButton } from "../TroubleshootingMode";
 
 const validTabs = [
   "tasks",
@@ -197,6 +198,7 @@ const SettingTabs: React.FC<{ tab: TabKey }> = ({ tab }) => {
           </Tab.Content>
         </Col>
       </Row>
+      <TroubleshootingModeButton />
     </Tab.Container>
   );
 };

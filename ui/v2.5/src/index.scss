@@ -1433,3 +1433,18 @@ select {
 h3 .TruncatedText {
   line-height: 1.5;
 }
+
+// Troubleshooting Mode overlay banner
+.troubleshooting-mode-overlay {
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: $navbar-height;
+  z-index: 1040;
+
+  .alert {
+    border-radius: 0;
+    margin: 0;
+    opacity: 0.85;
+  }
+}
