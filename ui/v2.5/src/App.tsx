@@ -49,7 +49,7 @@ import { PluginRoutes, PluginsLoader } from "./plugins";
 // import plugin_api to run code
 import "./pluginApi";
 import { ConnectionMonitor } from "./ConnectionMonitor";
-import { TroubleshootingModeOverlay } from "./components/TroubleshootingMode";
+import { TroubleshootingModeOverlay } from "./components/TroubleshootingMode/TroubleshootingModeOverlay";
 import { PatchFunction } from "./patch";
 
 import moment from "moment/min/moment-with-locales";

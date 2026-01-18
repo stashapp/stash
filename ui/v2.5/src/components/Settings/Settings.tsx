@@ -18,7 +18,7 @@ import { SettingsContext, useSettings } from "./context";
 import { SettingsLibraryPanel } from "./SettingsLibraryPanel";
 import { SettingsSecurityPanel } from "./SettingsSecurityPanel";
 import Changelog from "../Changelog/Changelog";
-import { TroubleshootingModeButton } from "../TroubleshootingMode";
+import { TroubleshootingModeButton } from "../TroubleshootingMode/TroubleshootingModeButton";
 
 const validTabs = [
   "tasks",
