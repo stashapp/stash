@@ -1011,6 +1011,14 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			add, agg := getSort(sort, direction, "files")
 			sortClause = add
 			q.addGroupBy(agg...)
+		case "resolution":
+			addFilesJoin()
+			q.addJoins(join{
+				sort:     true,
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			})
+			sortClause = " ORDER BY MIN(image_files.width, image_files.height) " + direction
 		case "title":
 			addFilesJoin()
 			addFolderJoin()

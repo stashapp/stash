@@ -877,6 +877,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		groupsTagsTable:      "group_id",
 	}
 
+	// for each table, update source tag ids to destination tag id, ignoring duplicates
 	for table, idColumn := range tagTables {
 		for _, to_migrate_id := range srcArgs {
 			err := withSavepoint(ctx, func(ctx context.Context) error {

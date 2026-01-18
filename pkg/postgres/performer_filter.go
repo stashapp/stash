@@ -148,6 +148,12 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			stashIDTableAs:    "performer_stash_ids",
 			parentIDCol:       "performers.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 filter.StashIDsEndpoint,
+			stashIDRepository: &performerRepository.stashIDs,
+			stashIDTableAs:    "performer_stash_ids",
+			parentIDCol:       "performers.id",
+		},
 
 		qb.aliasCriterionHandler(filter.Aliases),
 

@@ -27,6 +27,7 @@ type PerformerStore interface {
 	GetTagIDs(ctx context.Context, id int) ([]int, error)
 	GetURLs(ctx context.Context, performerID int) ([]string, error)
 	HasImage(ctx context.Context, performerID int) (bool, error)
+	Merge(ctx context.Context, source []int, destination int) error
 	Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error)
 	QueryCount(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (int, error)
 	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error)

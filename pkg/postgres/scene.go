@@ -1255,6 +1255,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		add, agg := getSort(sort, direction, videoFileTable)
 		query.sort += add
 		query.addGroupBy(agg...)
+	case "resolution":
+		addVideoFileTable()
+		query.sort += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", videoFileTable, videoFileTable, getSortDirection(direction))
 	case "filesize":
 		addFileTable()
 		add, agg := getSort(sort, direction, fileTable)
