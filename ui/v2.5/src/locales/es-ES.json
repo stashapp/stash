@@ -151,7 +151,9 @@
             "toggle": "Alternar barra lateral"
         },
         "add_stash_id": "Añadir ID de Stash",
-        "create_new": "Crear nuevo"
+        "create_new": "Crear nuevo",
+        "save_and_new": "Guardar y nuevo",
+        "invert_selection": "Invertir selección"
     },
     "actions_name": "Acciones",
     "age": "Edad",
