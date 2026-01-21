@@ -83,6 +83,9 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
+	SpriteInterval        = "sprite_interval"
+	SpriteIntervalDefault = 0
+
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
 
@@ -974,6 +977,11 @@ func (i *Config) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
+// GetSpriteInterval returns the time to be between each scrubber sprite
+func (i *Config) GetSpriteInterval() int {
+	return i.getInt(SpriteInterval)
+}
+
 func (i *Config) GetPreviewAudio() bool {
 	return i.getBool(PreviewAudio)
 }
@@ -1852,6 +1860,8 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.setDefault(PreviewAudio, previewAudioDefault)
 	i.setDefault(SoundOnPreview, false)
+
+	i.setDefault(SpriteInterval, SpriteIntervalDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
 

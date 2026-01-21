@@ -71,9 +71,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		VideoChecksum:   videoChecksum,
 		ImageOutputPath: imageOutputPath,
 		VTTOutputPath:   vttOutputPath,
-		Rows:            rows,
 		SlowSeek:        slowSeek,
-		Columns:         cols,
 		g: &generate.Generator{
 			Encoder:      instance.FFMpeg,
 			FFMpegConfig: instance.Config,

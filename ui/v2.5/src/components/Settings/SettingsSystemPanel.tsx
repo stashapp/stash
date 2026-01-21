@@ -427,6 +427,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID=/*"config.general.preview_generation"todo*/"Scrubbersprites generation settings">
+        <NumberSetting
+          id="scrubber-sprites-interval"
+          headingID=/*"config.general.include_audio_head"todo*/"Scrubbersprite Interval"
+          subHeadingID=/*"config.general.include_audio_desc"*/"todo: explain what this does"
+          value={general.spriteInterval ?? 0}
+          onChange={(v) => saveGeneral({ spriteInterval: v })}
+        />
+      </SettingSection>
+
       <SettingSection headingID="config.general.heatmap_generation">
         <BooleanSetting
           id="heatmap-draw-range"
