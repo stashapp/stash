@@ -980,7 +980,7 @@
     "markers": "Позначки",
     "measurements": "Параметри",
     "media_info": {
-        "phash": "PHash",
+        "phash": "Перцептивний хеш",
         "stream": "Потік",
         "checksum": "Контрольна сума",
         "hash": "Хеш",
