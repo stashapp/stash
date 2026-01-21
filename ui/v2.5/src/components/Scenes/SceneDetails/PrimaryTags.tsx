@@ -4,18 +4,24 @@ import * as GQL from "src/core/generated-graphql";
 import { Button, Badge, Card } from "react-bootstrap";
 import TextUtils from "src/utils/text";
 import { markerTitle } from "src/core/markers";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IPrimaryTags {
   sceneMarkers: GQL.SceneMarkerDataFragment[];
   onClickMarker: (marker: GQL.SceneMarkerDataFragment) => void;
+  onLoopMarker: (marker: GQL.SceneMarkerDataFragment) => void;
   onEdit: (marker: GQL.SceneMarkerDataFragment) => void;
 }
 
 export const PrimaryTags: React.FC<IPrimaryTags> = ({
   sceneMarkers,
   onClickMarker,
+  onLoopMarker,
   onEdit,
 }) => {
+  const { configuration } = useConfigurationContext();
+  const showAbLoopControls = configuration?.ui?.showAbLoopControls;
+
   if (!sceneMarkers?.length) return <div />;
 
   const primaryTagNames: Record<string, string> = {};
@@ -52,10 +58,21 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
               <FormattedMessage id="actions.edit" />
             </Button>
           </div>
-          <div>
-            {TextUtils.formatTimestampRange(
-              marker.seconds,
-              marker.end_seconds ?? undefined
+          <div className="d-flex align-items-center">
+            <div>
+              {TextUtils.formatTimestampRange(
+                marker.seconds,
+                marker.end_seconds ?? undefined
+              )}
+            </div>
+            {showAbLoopControls && marker.end_seconds != null && (
+              <Button
+                variant="link"
+                className="ml-2 p-0"
+                onClick={() => onLoopMarker(marker)}
+              >
+                Loop
+              </Button>
             )}
           </div>
           <div className="card-section centered">{tags}</div>

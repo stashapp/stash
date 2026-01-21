@@ -32,7 +32,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
 import { useConfigurationContext } from "src/hooks/Config";
-import { getPlayerPosition } from "src/components/ScenePlayer/util";
+import { getPlayer, getPlayerPosition } from "src/components/ScenePlayer/util";
 import {
   faEllipsisV,
   faChevronRight,
@@ -314,6 +314,23 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     setTimestamp(marker.seconds);
   }
 
+  function onLoopMarker(marker: GQL.SceneMarkerDataFragment) {
+    if (marker.end_seconds == null) return;
+
+    setTimestamp(marker.seconds);
+    const player = getPlayer() as any;
+    const start = Math.min(marker.seconds, marker.end_seconds);
+    const end = Math.max(marker.seconds, marker.end_seconds);
+    const opts = player?.abLoopPlugin?.getOptions?.();
+
+    if (opts) {
+      opts.start = start;
+      opts.end = end;
+      opts.enabled = true;
+      player.abLoopPlugin.setOptions(opts);
+    }
+  }
+
   async function onRescan() {
     await mutateMetadataScan({
       paths: [objectPath(scene)],
@@ -561,6 +578,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
             <SceneMarkersPanel
               sceneId={scene.id}
               onClickMarker={onClickMarker}
+              onLoopMarker={onLoopMarker}
               isVisible={activeTabKey === "scene-markers-panel"}
             />
           </Tab.Pane>
