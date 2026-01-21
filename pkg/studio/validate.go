@@ -135,6 +135,7 @@ func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModi
 		}
 
 		effectiveAliases := s.Aliases.Apply(existing.Aliases.List())
+
 		if err := ValidateAliases(ctx, s.ID, effectiveAliases, qb); err != nil {
 			return err
 		}

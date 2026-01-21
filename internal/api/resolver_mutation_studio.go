@@ -38,7 +38,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
-	newStudio.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.Aliases))
+	newStudio.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.Aliases), newStudio.Name))
 	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
@@ -166,6 +166,28 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Start the transaction and update the studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
+
+		if updatedStudio.Aliases != nil {
+			s, err := qb.Find(ctx, studioID)
+			if err != nil {
+				return err
+			}
+			if s != nil {
+				if err := s.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				effectiveAliases := updatedStudio.Aliases.Apply(s.Aliases.List())
+				name := s.Name
+				if updatedStudio.Name.Set {
+					name = updatedStudio.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
+				updatedStudio.Aliases.Values = sanitized
+				updatedStudio.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
 
 		if err := studio.ValidateModify(ctx, updatedStudio, qb); err != nil {
 			return err

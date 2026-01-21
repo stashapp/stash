@@ -44,7 +44,7 @@ import {
   yupInputNumber,
   yupInputEnum,
   yupDateString,
-  yupUniqueAliases,
+  yupRequiredStringArray,
   yupUniqueStringList,
 } from "src/utils/yup";
 import { useTagsEdit } from "src/hooks/tagsEdit";
@@ -110,7 +110,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const schema = yup.object({
     name: yup.string().required(),
     disambiguation: yup.string().ensure(),
-    alias_list: yupUniqueAliases(intl, "name"),
+    alias_list: yupRequiredStringArray(intl).defined(),
     gender: yupInputEnum(GQL.GenderEnum).nullable().defined(),
     birthdate: yupDateString(intl),
     death_date: yupDateString(intl),
@@ -509,15 +509,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         ))}
         {queryableScrapers
           ? queryableScrapers.map((s) => (
-              <Dropdown.Item
-                as={Button}
-                key={s.name}
-                className="minimal"
-                onClick={() => onScraperSelected(s)}
-              >
-                {s.name}
-              </Dropdown.Item>
-            ))
+            <Dropdown.Item
+              as={Button}
+              key={s.name}
+              className="minimal"
+              onClick={() => onScraperSelected(s)}
+            >
+              {s.name}
+            </Dropdown.Item>
+          ))
           : ""}
         <Dropdown.Item
           as={Button}

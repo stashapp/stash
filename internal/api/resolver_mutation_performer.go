@@ -43,7 +43,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.Name = strings.TrimSpace(input.Name)
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
-	newPerformer.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.AliasList))
+	newPerformer.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.AliasList), newPerformer.Name))
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
@@ -348,6 +348,27 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			}
 		}
 
+		if updatedPerformer.Aliases != nil {
+			p, err := qb.Find(ctx, performerID)
+			if err != nil {
+				return err
+			}
+			if p != nil {
+				if err := p.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				effectiveAliases := updatedPerformer.Aliases.Apply(p.Aliases.List())
+				name := p.Name
+				if updatedPerformer.Name.Set {
+					name = updatedPerformer.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
+				updatedPerformer.Aliases.Values = sanitized
+				updatedPerformer.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
 		if err := performer.ValidateUpdate(ctx, performerID, *updatedPerformer, qb); err != nil {
 			return err
 		}
