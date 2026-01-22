@@ -9,10 +9,16 @@ import (
 
 	"github.com/disintegration/imaging"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/scene/generate"
+)
+
+const (
+	DefaultSpriteInterval = 30
+	MinimalSpriteCount    = 10
 )
 
 type SpriteGenerator struct {
@@ -21,8 +27,7 @@ type SpriteGenerator struct {
 	VideoChecksum   string
 	ImageOutputPath string
 	VTTOutputPath   string
-	Rows            int
-	Columns         int
+	SpriteInterval  int
 	SlowSeek        bool // use alternate seek function, very slow!
 
 	Overwrite bool
@@ -30,16 +35,21 @@ type SpriteGenerator struct {
 	g *generate.Generator
 }
 
-func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageOutputPath string, vttOutputPath string, rows int, cols int) (*SpriteGenerator, error) {
+func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageOutputPath string, vttOutputPath string) (*SpriteGenerator, error) {
 	exists, err := fsutil.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
 	}
 	slowSeek := false
-	chunkCount := rows * cols
 
+	spriteInterval := DefaultSpriteInterval
+	config := config.GetInstance()
+	if config.GetSpriteInterval() != 0 {
+		spriteInterval = config.GetSpriteInterval()
+	}
+	spriteCount := int64(math.Ceil(videoFile.VideoStreamDuration / float64(spriteInterval)))
 	// For files with small duration / low frame count  try to seek using frame number intead of seconds
-	if videoFile.VideoStreamDuration < 5 || (0 < videoFile.FrameCount && videoFile.FrameCount <= int64(chunkCount)) { // some files can have FrameCount == 0, only use SlowSeek  if duration < 5
+	if (spriteCount == 0) || (videoFile.VideoStreamDuration < float64(spriteInterval*MinimalSpriteCount)) || (0 < videoFile.FrameCount && videoFile.FrameCount <= spriteCount) { // some files can have FrameCount == 0
 		if videoFile.VideoStreamDuration <= 0 {
 			s := fmt.Sprintf("video %s: duration(%.3f)/frame count(%d) invalid, skipping sprite creation", videoFile.Path, videoFile.VideoStreamDuration, videoFile.FrameCount)
 			return nil, errors.New(s)
@@ -61,7 +71,11 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	if err != nil {
 		return nil, err
 	}
-	generator.ChunkCount = chunkCount
+	if spriteCount > int64(MinimalSpriteCount) {
+		generator.ChunkCount = int(spriteCount)
+	} else {
+		generator.ChunkCount = MinimalSpriteCount
+	}
 	if err := generator.configure(); err != nil {
 		return nil, err
 	}
@@ -71,6 +85,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		VideoChecksum:   videoChecksum,
 		ImageOutputPath: imageOutputPath,
 		VTTOutputPath:   vttOutputPath,
+		SpriteInterval:  spriteInterval,
 		SlowSeek:        slowSeek,
 		g: &generate.Generator{
 			Encoder:      instance.FFMpeg,
@@ -100,17 +115,15 @@ func (g *SpriteGenerator) generateSpriteImage() error {
 
 	if !g.SlowSeek {
 		logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
-		// generate `ChunkCount` thumbnails
-		stepSize := g.Info.VideoFile.VideoStreamDuration / float64(g.Info.ChunkCount)
 
-		for i := 0; i < g.Info.ChunkCount; i++ {
-			time := float64(i) * stepSize
-
+		time := 0.
+		for time <= g.Info.VideoFile.VideoStreamDuration {
 			img, err := g.g.SpriteScreenshot(context.TODO(), g.Info.VideoFile.Path, time)
 			if err != nil {
 				return err
 			}
 			images = append(images, img)
+			time += float64(g.SpriteInterval)
 		}
 	} else {
 		logger.Infof("[generator] generating sprite image for %s (%d frames)", g.Info.VideoFile.Path, g.Info.VideoFile.FrameCount)
@@ -148,7 +161,7 @@ func (g *SpriteGenerator) generateSpriteVTT() error {
 
 	var stepSize float64
 	if !g.SlowSeek {
-		stepSize = float64(g.Info.NthFrame) / g.Info.FrameRate
+		stepSize = float64(g.SpriteInterval)
 	} else {
 		// for files with a low framecount (<ChunkCount) g.Info.NthFrame can be zero
 		// so recalculate from scratch
@@ -156,7 +169,7 @@ func (g *SpriteGenerator) generateSpriteVTT() error {
 		stepSize /= g.Info.FrameRate
 	}
 
-	return g.g.SpriteVTT(context.TODO(), g.VTTOutputPath, g.ImageOutputPath, stepSize)
+	return g.g.SpriteVTT(context.TODO(), g.VTTOutputPath, g.ImageOutputPath, stepSize, g.Info.VideoFile.VideoStreamDuration, g.Info.ChunkCount)
 }
 
 func (g *SpriteGenerator) imageExists() bool {

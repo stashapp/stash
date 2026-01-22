@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,10 +19,6 @@ import (
 
 const (
 	spriteScreenshotWidth = 160
-
-	spriteRows   = 9
-	spriteCols   = 9
-	spriteChunks = spriteRows * spriteCols
 )
 
 func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds float64) (image.Image, error) {
@@ -74,12 +69,12 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	// Combine all of the thumbnails into a sprite image
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
-	canvasWidth := width * spriteCols
-	canvasHeight := height * spriteRows
+	canvasWidth := width * len(images)
+	canvasHeight := height
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
 	for index := 0; index < len(images); index++ {
-		x := width * (index % spriteCols)
-		y := height * int(math.Floor(float64(index)/float64(spriteRows)))
+		x := width * index
+		y := 0
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -87,14 +82,13 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	return montage
 }
 
-func (g Generator) SpriteVTT(ctx context.Context, output string, spritePath string, stepSize float64) error {
+func (g Generator) SpriteVTT(ctx context.Context, output string, spritePath string, stepSize float64, video_duration float64, number_of_sprites int) error {
 	lockCtx := g.LockManager.ReadLock(ctx, spritePath)
 	defer lockCtx.Cancel()
-
-	return g.generateFile(lockCtx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize))
+	return g.generateFile(lockCtx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize, video_duration, number_of_sprites))
 }
 
-func (g Generator) spriteVTT(spritePath string, stepSize float64) generateFn {
+func (g Generator) spriteVTT(spritePath string, stepSize float64, video_duration float64, number_of_sprites int) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		spriteImage, err := os.Open(spritePath)
 		if err != nil {
@@ -106,17 +100,20 @@ func (g Generator) spriteVTT(spritePath string, stepSize float64) generateFn {
 		if err != nil {
 			return err
 		}
-		width := image.Width / spriteCols
-		height := image.Height / spriteRows
+		width := image.Width / number_of_sprites
+		height := image.Height
 
 		vttLines := []string{"WEBVTT", ""}
-		for index := 0; index < spriteChunks; index++ {
-			x := width * (index % spriteCols)
-			y := height * int(math.Floor(float64(index)/float64(spriteRows)))
-			startTime := utils.GetVTTTime(float64(index) * stepSize)
-			endTime := utils.GetVTTTime(float64(index+1) * stepSize)
+		for index := 0; index < number_of_sprites; index++ {
+			x := width * index
+			y := 0
+			startTime := float64(index) * stepSize
+			endTime := float64(index+1) * stepSize
+			if endTime > video_duration {
+				endTime = video_duration
+			}
 
-			vttLines = append(vttLines, startTime+" --> "+endTime)
+			vttLines = append(vttLines, utils.GetVTTTime(startTime)+" --> "+utils.GetVTTTime(endTime))
 			vttLines = append(vttLines, fmt.Sprintf("%s#xywh=%d,%d,%d,%d", spriteImageName, x, y, width, height))
 			vttLines = append(vttLines, "")
 		}
