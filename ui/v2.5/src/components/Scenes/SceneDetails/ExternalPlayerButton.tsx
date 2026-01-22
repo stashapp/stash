@@ -19,8 +19,16 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
 
   const { paths } = scene;
 
-  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice))
-    return <span />;
+  // Added by Philip
+  const alwaysShow = true;
+  const { files } = scene;
+  const { path } = files[0];
+  const pathStr = path??'';
+  const fileName = pathStr.split('/').pop()?.split('\\').pop()??'';
+  // Added ends.
+
+  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice && !alwaysShow)) // Modded by Philip
+      return <span />;
 
   const { stream } = paths;
   const title = objectTitle(scene);
@@ -47,7 +55,10 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     url = streamURL
       .toString()
       .replace(new RegExp(`^${streamURL.protocol}`), "vlc-x-callback:");
+  } else if (alwaysShow) {    // Added by Philip
+    url = stream + "/org/" + encodeURIComponent(fileName); // like http://192.168.1.10:9999/scene/123/stream/org/file.mp4
   }
+  // Added ends.
 
   return (
     <Button
@@ -55,9 +66,9 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
       variant="secondary"
       title={intl.formatMessage({ id: "actions.open_in_external_player" })}
     >
-      <a href={url}>
+      <a href={url}>Open Ext.&nbsp;
         <Icon icon={faExternalLinkAlt} color="white" />
-      </a>
+      </a> &nbsp;&nbsp;
     </Button>
   );
 };

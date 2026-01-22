@@ -8,6 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	// Added by Philip
+	"os"
+	// Added ends.
+
 	"github.com/go-chi/chi/v5"
 
 	"github.com/stashapp/stash/internal/manager"
@@ -69,6 +73,8 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.mpd/{segment}_v.webm", rs.StreamDASHVideoSegment)
 		r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
 
+		r.Get("/stream/org/{streamOrgFile}", rs.StreamOrgDirect) // Added by Philip
+
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
@@ -98,6 +104,37 @@ func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	}
 	ss.StreamSceneDirect(scene, w, r)
 }
+
+// Added by Philip
+func (rs sceneRoutes) StreamOrgDirect(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	// check if it's funscript
+	aStr := strings.Split(chi.URLParam(r, "streamOrgFile"), ".")
+	// aStr := strings.Split(r.RequestURI, ".")
+	if strings.ToLower(aStr[len(aStr)-1]) == "funscript" {
+		// it's a funscript request
+		rs.Funscript(w, r)
+		return
+	}
+
+	// return 404 if the scene does not have a primary file
+	f := scene.Files.Primary()
+	if f == nil {
+		w.WriteHeader(http.StatusNotFound)
+		if _, err := w.Write([]byte("Primary file not found for streaming original file.")); err != nil {
+			logger.Warnf("[scene] error getting primary file for streaming original: $v", err)
+		}
+		return
+	}
+	// Also return 404 if the actual video file cannot be found
+	if _, err := os.Stat(f.Path); errors.Is(err, os.ErrNotExist) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	http.ServeFile(w, r, f.Path)
+}
+
+// Added ends.
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.StreamTypeMP4)
