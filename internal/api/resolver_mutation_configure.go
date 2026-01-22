@@ -289,6 +289,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 	r.setConfigInt(config.SpriteInterval, input.SpriteInterval)
 	r.setConfigInt(config.MinimumSprites, input.MinimumSprites)
+	r.setConfigInt(config.SpriteScreenshotWidth, input.SpriteScreenshotWidth)
 
 	r.setConfigBool(config.TranscodeHardwareAcceleration, input.TranscodeHardwareAcceleration)
 	if input.MaxTranscodeSize != nil {

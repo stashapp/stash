@@ -89,6 +89,9 @@ const (
 	MinimumSprites        = "minimum_sprites"
 	MinimumSpritesDefault = 10
 
+	SpriteScreenshotWidth        = "sprite_screenshot_width"
+	spriteScreenshotWidthDefault = 160
+
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
 
@@ -989,11 +992,21 @@ func (i *Config) GetSpriteInterval() int {
 	return value
 }
 
-// GetMinimumSprites return the minimum number of sprites that have to be generated
+// GetMinimumSprites returns the minimum number of sprites that have to be generated
 func (i *Config) GetMinimumSprites() int {
 	value := i.getInt(MinimumSprites)
 	if value <= 0 {
 		return MinimumSpritesDefault
+	}
+	return value
+}
+
+// GetSpriteScreenshotWidth returns the required width of the screenshots to be taken
+// during sprite generation in pixels
+func (i *Config) GetSpriteScreenshotWidth() int {
+	value := i.getInt(SpriteScreenshotWidth)
+	if value <= 0 {
+		return spriteScreenshotWidthDefault
 	}
 	return value
 }
@@ -1879,6 +1892,7 @@ func (i *Config) setDefaultValues() {
 
 	i.setDefault(SpriteInterval, SpriteIntervalDefault)
 	i.setDefault(MinimumSprites, MinimumSpritesDefault)
+	i.setDefault(SpriteScreenshotWidth, spriteScreenshotWidthDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
 

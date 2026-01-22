@@ -442,6 +442,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.minimumSprites ?? 10}
           onChange={(v) => saveGeneral({ minimumSprites: v })}
         />
+        <NumberSetting
+          id="sprite-screenshot-width"
+          headingID=/*"config.general.include_audio_head"todo*/"Sprite width"
+          subHeadingID=/*"config.general.include_audio_desc"*/"todo: explain"
+          value={general.spriteScreenshotWidth ?? 160}
+          onChange={(v) => saveGeneral({ spriteScreenshotWidth: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.heatmap_generation">

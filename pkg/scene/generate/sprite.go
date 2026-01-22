@@ -11,14 +11,11 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/utils"
-)
-
-const (
-	spriteScreenshotWidth = 160
 )
 
 func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds float64) (image.Image, error) {
@@ -28,7 +25,7 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
-		Width:      spriteScreenshotWidth,
+		Width:      config.GetInstance().GetSpriteScreenshotWidth(),
 	}
 
 	args := transcoder.ScreenshotTime(input, seconds, ssOptions)
@@ -43,7 +40,7 @@ func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
-		Width:      spriteScreenshotWidth,
+		Width:      config.GetInstance().GetSpriteScreenshotWidth(),
 	}
 
 	args := transcoder.ScreenshotFrame(input, frame, ssOptions)
