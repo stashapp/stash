@@ -18,7 +18,6 @@ import (
 
 const (
 	DefaultSpriteInterval = 30
-	MinimalSpriteCount    = 10
 )
 
 type SpriteGenerator struct {
@@ -47,9 +46,12 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	if config.GetSpriteInterval() != 0 {
 		spriteInterval = config.GetSpriteInterval()
 	}
+
+	minimumSpriteCount := config.GetMinimumSprites()
 	spriteCount := int64(math.Ceil(videoFile.VideoStreamDuration / float64(spriteInterval)))
+
 	// For files with small duration / low frame count  try to seek using frame number intead of seconds
-	if (spriteCount == 0) || (videoFile.VideoStreamDuration < float64(spriteInterval*MinimalSpriteCount)) || (0 < videoFile.FrameCount && videoFile.FrameCount <= spriteCount) { // some files can have FrameCount == 0
+	if (spriteCount == 0) || (videoFile.VideoStreamDuration < float64(spriteInterval*minimumSpriteCount)) || (0 < videoFile.FrameCount && videoFile.FrameCount <= spriteCount) { // some files can have FrameCount == 0
 		if videoFile.VideoStreamDuration <= 0 {
 			s := fmt.Sprintf("video %s: duration(%.3f)/frame count(%d) invalid, skipping sprite creation", videoFile.Path, videoFile.VideoStreamDuration, videoFile.FrameCount)
 			return nil, errors.New(s)
@@ -71,10 +73,10 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	if err != nil {
 		return nil, err
 	}
-	if spriteCount > int64(MinimalSpriteCount) {
+	if spriteCount > int64(minimumSpriteCount) {
 		generator.ChunkCount = int(spriteCount)
 	} else {
-		generator.ChunkCount = MinimalSpriteCount
+		generator.ChunkCount = minimumSpriteCount
 	}
 	if err := generator.configure(); err != nil {
 		return nil, err

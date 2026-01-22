@@ -86,6 +86,9 @@ const (
 	SpriteInterval        = "sprite_interval"
 	SpriteIntervalDefault = 0
 
+	MinimumSprites        = "minimum_sprites"
+	MinimumSpritesDefault = 10
+
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
 
@@ -982,6 +985,11 @@ func (i *Config) GetSpriteInterval() int {
 	return i.getInt(SpriteInterval)
 }
 
+// GetMinimumSprites return the minimum number of sprites that have to be generated
+func (i *Config) GetMinimumSprites() int {
+	return i.getInt(MinimumSprites)
+}
+
 func (i *Config) GetPreviewAudio() bool {
 	return i.getBool(PreviewAudio)
 }
@@ -1862,6 +1870,7 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(SoundOnPreview, false)
 
 	i.setDefault(SpriteInterval, SpriteIntervalDefault)
+	i.setDefault(MinimumSprites, MinimumSpritesDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
 

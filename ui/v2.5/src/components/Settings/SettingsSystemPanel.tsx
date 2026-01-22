@@ -435,6 +435,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.spriteInterval ?? 0}
           onChange={(v) => saveGeneral({ spriteInterval: v })}
         />
+        <NumberSetting
+          id="scrubber-sprites-minimum"
+          headingID=/*"config.general.include_audio_head"todo*/"Minimum sprites"
+          subHeadingID=/*"config.general.include_audio_desc"*/"todo: Minimum number of sprites to be generated"
+          value={general.minimumSprites ?? 10}
+          onChange={(v) => saveGeneral({ minimumSprites: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.heatmap_generation">

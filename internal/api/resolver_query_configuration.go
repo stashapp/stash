@@ -97,6 +97,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		VideoFileNamingAlgorithm:      config.GetVideoFileNamingAlgorithm(),
 		ParallelTasks:                 config.GetParallelTasks(),
 		SpriteInterval:                config.GetSpriteInterval(),
+		MinimumSprites:                config.GetMinimumSprites(),
 		PreviewAudio:                  config.GetPreviewAudio(),
 		PreviewSegments:               config.GetPreviewSegments(),
 		PreviewSegmentDuration:        config.GetPreviewSegmentDuration(),
