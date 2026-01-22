@@ -84,7 +84,7 @@ const (
 	parallelTasksDefault = 1
 
 	SpriteInterval        = "sprite_interval"
-	SpriteIntervalDefault = 0
+	SpriteIntervalDefault = 30
 
 	MinimumSprites        = "minimum_sprites"
 	MinimumSpritesDefault = 10
@@ -982,12 +982,20 @@ func (i *Config) GetParallelTasksWithAutoDetection() int {
 
 // GetSpriteInterval returns the time to be between each scrubber sprite
 func (i *Config) GetSpriteInterval() int {
-	return i.getInt(SpriteInterval)
+	value := i.getInt(SpriteInterval)
+	if value <= 0 {
+		return SpriteIntervalDefault
+	}
+	return value
 }
 
 // GetMinimumSprites return the minimum number of sprites that have to be generated
 func (i *Config) GetMinimumSprites() int {
-	return i.getInt(MinimumSprites)
+	value := i.getInt(MinimumSprites)
+	if value <= 0 {
+		return MinimumSpritesDefault
+	}
+	return value
 }
 
 func (i *Config) GetPreviewAudio() bool {

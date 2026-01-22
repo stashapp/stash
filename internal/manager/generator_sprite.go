@@ -16,10 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
-const (
-	DefaultSpriteInterval = 30
-)
-
 type SpriteGenerator struct {
 	Info *generatorInfo
 
@@ -41,13 +37,11 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	}
 	slowSeek := false
 
-	spriteInterval := DefaultSpriteInterval
 	config := config.GetInstance()
-	if config.GetSpriteInterval() != 0 {
-		spriteInterval = config.GetSpriteInterval()
-	}
 
+	spriteInterval := config.GetSpriteInterval()
 	minimumSpriteCount := config.GetMinimumSprites()
+
 	spriteCount := int64(math.Ceil(videoFile.VideoStreamDuration / float64(spriteInterval)))
 
 	// For files with small duration / low frame count  try to seek using frame number intead of seconds
