@@ -509,15 +509,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         ))}
         {queryableScrapers
           ? queryableScrapers.map((s) => (
-            <Dropdown.Item
-              as={Button}
-              key={s.name}
-              className="minimal"
-              onClick={() => onScraperSelected(s)}
-            >
-              {s.name}
-            </Dropdown.Item>
-          ))
+              <Dropdown.Item
+                as={Button}
+                key={s.name}
+                className="minimal"
+                onClick={() => onScraperSelected(s)}
+              >
+                {s.name}
+              </Dropdown.Item>
+            ))
           : ""}
         <Dropdown.Item
           as={Button}

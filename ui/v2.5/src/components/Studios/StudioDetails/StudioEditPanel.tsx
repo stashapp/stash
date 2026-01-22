@@ -103,10 +103,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     setParentStudio(
       studio.parent_studio
         ? {
-          id: studio.parent_studio.id,
-          name: studio.parent_studio.name,
-          aliases: [],
-        }
+            id: studio.parent_studio.id,
+            name: studio.parent_studio.name,
+            aliases: [],
+          }
         : null
     );
   }, [studio.parent_studio]);
