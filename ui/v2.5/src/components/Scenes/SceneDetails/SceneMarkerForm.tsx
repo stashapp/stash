@@ -11,7 +11,10 @@ import {
 } from "src/core/StashService";
 import { DurationInput } from "src/components/Shared/DurationInput";
 import { MarkerTitleSuggest } from "src/components/Shared/Select";
-import { getPlayer, getPlayerPosition } from "src/components/ScenePlayer/util";
+import {
+  getAbLoopPlugin,
+  getPlayerPosition,
+} from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
@@ -63,8 +66,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   // useMemo to only run getPlayerPosition when the input marker actually changes
   const initialValues = useMemo(() => {
     if (!marker) {
-      const player = getPlayer() as any;
-      const opts = player?.abLoopPlugin?.getOptions?.();
+      const abLoopPlugin = getAbLoopPlugin();
+      const opts = abLoopPlugin?.getOptions();
       const start = opts?.start;
       const end = opts?.end;
       const hasAbLoop = Number.isFinite(start);
