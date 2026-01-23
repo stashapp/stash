@@ -782,7 +782,7 @@
           "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on Mobile",
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
-          "show_open_original": "Show Open Original button in scene details",
+          "show_open_external": "Show 'Open In External Player' button",
           "show_scrubber": "Show Scrubber",
           "show_range_markers": "Show Range Markers",
           "track_activity": "Enable Scene Play history",

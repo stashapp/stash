@@ -55,8 +55,8 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     url = streamURL
       .toString()
       .replace(new RegExp(`^${streamURL.protocol}`), "vlc-x-callback:");
-  } else if (showOpenExternal) {    // Added by Philip
-    url = stream + "/org/" + encodeURIComponent(fileName); // like http://192.168.1.10:9999/scene/123/stream/org/file.mp4
+  } else if (showOpenExternal) {
+    url = stream + "/org/" + encodeURIComponent(fileName);
   }
 
   return (
