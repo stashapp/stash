@@ -427,25 +427,25 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID=/*"config.general.preview_generation"todo*/"Scrubbersprites generation settings">
+      <SettingSection headingID="config.general.sprite_generation_head">
         <NumberSetting
-          id="scrubber-sprites-interval"
-          headingID=/*"config.general.include_audio_head"todo*/"Scrubbersprite Interval"
-          subHeadingID=/*"config.general.include_audio_desc"*/"todo: explain what this does"
+          id="sprite-interval"
+          headingID="config.general.sprite_interval_head"
+          subHeadingID="config.general.sprite_interval_desc"
           value={general.spriteInterval ?? 0}
           onChange={(v) => saveGeneral({ spriteInterval: v })}
         />
         <NumberSetting
-          id="scrubber-sprites-minimum"
-          headingID=/*"config.general.include_audio_head"todo*/"Minimum sprites"
-          subHeadingID=/*"config.general.include_audio_desc"*/"todo: Minimum number of sprites to be generated"
+          id="minimum-sprites"
+          headingID="config.general.sprite_minimum_head"
+          subHeadingID="config.general.sprite_minimum_desc"
           value={general.minimumSprites ?? 10}
           onChange={(v) => saveGeneral({ minimumSprites: v })}
         />
         <NumberSetting
           id="sprite-screenshot-width"
-          headingID=/*"config.general.include_audio_head"todo*/"Sprite width"
-          subHeadingID=/*"config.general.include_audio_desc"*/"todo: explain"
+          headingID="config.general.sprite_screenshot_width_head"
+          subHeadingID="config.general.sprite_screenshot_width_desc"
           value={general.spriteScreenshotWidth ?? 160}
           onChange={(v) => saveGeneral({ spriteScreenshotWidth: v })}
         />
