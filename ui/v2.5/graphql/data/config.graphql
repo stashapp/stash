@@ -59,7 +59,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   liveTranscodeInputArgs
   liveTranscodeOutputArgs
   drawFunscriptHeatmapRange
-  
+
   scraperPackageSources {
     name
     url
