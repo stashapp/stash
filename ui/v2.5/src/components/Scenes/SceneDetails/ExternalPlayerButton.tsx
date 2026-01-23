@@ -18,8 +18,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
-  const uiConfig = configuration?.ui;
-  const showOpenExternal = uiConfig?.showOpenExternal ?? true;
+  const showOpenExternal = configuration?.ui?.showOpenExternal ?? true;
   const { paths } = scene;
 
   const { files } = scene;

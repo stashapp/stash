@@ -5,12 +5,9 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
-
-	// Added by Philip
-	"os"
-	// Added ends.
 
 	"github.com/go-chi/chi/v5"
 
@@ -72,8 +69,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.mpd", rs.StreamDASH)
 		r.Get("/stream.mpd/{segment}_v.webm", rs.StreamDASHVideoSegment)
 		r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
-
-		r.Get("/stream/org/{streamOrgFile}", rs.StreamOrgDirect) // Added by Philip
+		r.Get("/stream/org/{streamOrgFile}", rs.StreamOrgDirect)
 
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
@@ -105,7 +101,6 @@ func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	ss.StreamSceneDirect(scene, w, r)
 }
 
-// Added by Philip
 func (rs sceneRoutes) StreamOrgDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	// check if it's funscript
@@ -133,8 +128,6 @@ func (rs sceneRoutes) StreamOrgDirect(w http.ResponseWriter, r *http.Request) {
 	}
 	http.ServeFile(w, r, f.Path)
 }
-
-// Added ends.
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.StreamTypeMP4)
