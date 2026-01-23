@@ -462,12 +462,17 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               return <span>{TextUtils.secondsToTimestamp(v ?? 0)}</span>;
             }}
           />
-
           <BooleanSetting
             id="show-ab-loop"
             headingID="config.ui.scene_player.options.show_ab_loop_controls"
             checked={ui.showAbLoopControls ?? undefined}
             onChange={(v) => saveUI({ showAbLoopControls: v })}
+          />
+          <BooleanSetting
+            id="show-open-external"
+            headingID="config.ui.scene_player.options.show_open_external"
+            checked={ui.showOpenExternal ?? true}
+            onChange={(v) => saveUI({ showOpenExternal: v })}
           />
         </SettingSection>
         <SettingSection headingID="config.ui.tag_panel.heading">

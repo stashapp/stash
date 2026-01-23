@@ -413,6 +413,9 @@ input ConfigInterfaceInput {
   noBrowser: Boolean
   "True if we should send notifications to the desktop"
   notificationsEnabled: Boolean
+
+  "True if 'Open Org File' in scene details is shown"
+  showOpenExternal: Boolean
 }
 
 type ConfigDisableDropdownCreate {
@@ -483,6 +486,9 @@ type ConfigInterfaceResult {
   funscriptOffset: Int
   "Whether to use Stash Hosted Funscript"
   useStashHostedFunscript: Boolean
+
+  "Show 'Open Org File' in scene details"
+  showOpenExternal: Boolean
 }
 
 input ConfigDLNAInput {

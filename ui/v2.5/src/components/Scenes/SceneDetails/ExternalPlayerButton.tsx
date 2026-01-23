@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { objectTitle } from "src/core/files";
 import { SceneDataFragment } from "src/core/generated-graphql";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export interface IExternalPlayerButtonProps {
   scene: SceneDataFragment;
@@ -16,18 +17,17 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const isAndroid = /(android)/i.test(navigator.userAgent);
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
   const intl = useIntl();
-
+  const { configuration } = useConfigurationContext();
+  const interfaceConfig = configuration?.interface;
+  const uiConfig = configuration?.ui;
+  const showOpenExternal = uiConfig?.showOpenExternal??true;
   const { paths } = scene;
 
-  // Added by Philip
-  const alwaysShow = true;
   const { files } = scene;
   const { path } = files[0];
-  const pathStr = path??'';
-  const fileName = pathStr.split('/').pop()?.split('\\').pop()??'';
-  // Added ends.
-
-  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice && !alwaysShow)) // Modded by Philip
+  const fileName = path.split('/').pop()?.split('\\').pop()??'';
+  
+  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice && !showOpenExternal))
       return <span />;
 
   const { stream } = paths;
@@ -55,10 +55,9 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     url = streamURL
       .toString()
       .replace(new RegExp(`^${streamURL.protocol}`), "vlc-x-callback:");
-  } else if (alwaysShow) {    // Added by Philip
+  } else if (showOpenExternal) {    // Added by Philip
     url = stream + "/org/" + encodeURIComponent(fileName); // like http://192.168.1.10:9999/scene/123/stream/org/file.mp4
   }
-  // Added ends.
 
   return (
     <Button
@@ -66,9 +65,9 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
       variant="secondary"
       title={intl.formatMessage({ id: "actions.open_in_external_player" })}
     >
-      <a href={url}>Open Ext.&nbsp;
+      <a href={url}>
         <Icon icon={faExternalLinkAlt} color="white" />
-      </a> &nbsp;&nbsp;
+      </a>
     </Button>
   );
 };
