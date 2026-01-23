@@ -359,6 +359,13 @@
                 "heading": "Cesta ke scraperům"
             },
             "scraping": "Scrapování",
+            "sprite_generation_head": "Generování spritů",
+            "sprite_interval_desc": "Čas mezi jednotlivými generovanými sprity v sekundách. Výchozí hodnota je 60",
+            "sprite_interval_head": "Interval spritů",
+            "sprite_minimum_desc": "Minimální počet spritů, které mají být vygenerovány pro scénu",
+            "sprite_minimum_head": "Minimální počet spritů",
+            "sprite_screenshot_width_desc": "Požadovaná šířka každého spritu v pixelech.",
+            "sprite_screenshot_width_head": "Šířka spritu",
             "sqlite_location": "Umístění souboru pro databázi SQLite (vyžaduje restart). VAROVÁNÍ: Uložení databáze na jiný systém, než ze kterého je spuštěn Stash server (tj. přes síť), není podporováno!",
             "video_ext_desc": "Seznam koncovek souborů, oddělený čárkou, které budou identifikovány jako videa.",
             "video_ext_head": "Koncovky video souborů",

@@ -351,6 +351,13 @@
                 "heading": "Skraberstien"
             },
             "scraping": "Skrabning",
+            "sprite_generation_head": "Sprite-generering",
+            "sprite_interval_desc": "Tid mellem hver genereret sprite i sekunder. Standard er 60",
+            "sprite_interval_head": "Sprite-interval",
+            "sprite_minimum_desc": "Minimum antal sprites, der skal genereres for en scene",
+            "sprite_minimum_head": "Minimum sprites",
+            "sprite_screenshot_width_desc": "Ønsket bredde på hver sprite i pixels.",
+            "sprite_screenshot_width_head": "Sprite-bredde",
             "sqlite_location": "Filplacering for SQLite-databasen (kræver genstart)",
             "video_ext_desc": "Kommasepareret liste over filtypenavne, der vil blive identificeret som videoer.",
             "video_ext_head": "Videoudvidelser",

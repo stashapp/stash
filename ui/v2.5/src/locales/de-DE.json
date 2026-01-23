@@ -413,6 +413,13 @@
                 "heading": "Scraper Pfad"
             },
             "scraping": "Durchsuchen",
+            "sprite_generation_head": "Sprite-Erstellung",
+            "sprite_interval_desc": "Zeit zwischen jedem generierten Sprite in Sekunden. Standardwert ist 60",
+            "sprite_interval_head": "Sprite-Intervall",
+            "sprite_minimum_desc": "Mindestanzahl an Sprites, die für eine Szene generiert werden",
+            "sprite_minimum_head": "Minimale Sprites",
+            "sprite_screenshot_width_desc": "Gewünschte Breite jedes Sprites in Pixeln.",
+            "sprite_screenshot_width_head": "Sprite-Breite",
             "sqlite_location": "Dateispeicherort für die SQLite-Datenbank (erfordert Neustart). ACHTUNG: Ein Speicherort auf einem anderen System als dem Server auf dem Stash läuft (z.B. Netzwerkspeicher) wird nicht unterstützt!",
             "video_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Videos identifiziert werden.",
             "video_ext_head": "Videodateiformate",
