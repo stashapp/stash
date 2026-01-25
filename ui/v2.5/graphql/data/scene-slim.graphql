@@ -11,6 +11,10 @@ fragment SlimSceneData on Scene {
   organized
   interactive
   interactive_speed
+  captions {
+    language_code
+    caption_type
+  }
   resume_time
   play_duration
   play_count
