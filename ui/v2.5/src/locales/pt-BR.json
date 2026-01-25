@@ -1095,7 +1095,8 @@
         "started_auto_tagging": "Etiquetamento automático iniciado",
         "started_generating": "Geração de arquivos multimídia iniciada",
         "started_importing": "Importação iniciada",
-        "updated_entity": "{entity} atualizado(a)"
+        "updated_entity": "{entity} atualizado(a)",
+        "merged_scenes": "Cenas mescladas"
     },
     "total": "Total",
     "true": "Verdadeiro",
@@ -1107,5 +1108,8 @@
     "view_all": "Ver todos",
     "weight": "Peso",
     "years_old": "anos",
-    "age_on_date": "{age} na produção"
+    "age_on_date": "{age} na produção",
+    "weight_kg": "Peso (kg)",
+    "unknown_date": "Data desconhecida",
+    "urls": "URLs"
 }
