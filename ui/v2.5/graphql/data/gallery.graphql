@@ -22,7 +22,7 @@ fragment GalleryData on Gallery {
   folder {
     ...FolderData
   }
-
+  image_count
   chapters {
     ...GalleryChapterData
   }
