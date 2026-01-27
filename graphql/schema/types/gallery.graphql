@@ -100,6 +100,8 @@ input GalleryDestroyInput {
   """
   delete_file: Boolean
   delete_generated: Boolean
+  "If true, delete the file entry from the database if the file is not assigned to any other objects"
+  destroy_file_entry: Boolean
 }
 
 type FindGalleriesResultType {

@@ -616,6 +616,20 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "troubleshooting_mode": {
+        "button": "Troubleshooting Mode",
+        "dialog_title": "Enable Troubleshooting Mode",
+        "dialog_description": "This will temporarily disable all customizations to help diagnose issues:",
+        "dialog_item_plugins": "All plugins",
+        "dialog_item_css": "Custom CSS",
+        "dialog_item_js": "Custom JavaScript",
+        "dialog_item_locales": "Custom locales",
+        "dialog_log_level": "Log level will be set to Debug for detailed diagnostics.",
+        "dialog_reload_note": "The page will reload automatically.",
+        "enable": "Enable & Reload",
+        "overlay_message": "Troubleshooting Mode is active - all customizations are disabled",
+        "exit": "Exit"
+      },
       "custom_javascript": {
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
         "heading": "Custom Javascript",

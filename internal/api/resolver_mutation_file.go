@@ -210,6 +210,58 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 	return true, nil
 }
 
+func (r *mutationResolver) DestroyFiles(ctx context.Context, ids []string) (ret bool, err error) {
+	fileIDs, err := stringslice.StringSliceToIntSlice(ids)
+	if err != nil {
+		return false, fmt.Errorf("converting ids: %w", err)
+	}
+
+	destroyer := &file.ZipDestroyer{
+		FileDestroyer:   r.repository.File,
+		FolderDestroyer: r.repository.Folder,
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.File
+
+		for _, fileIDInt := range fileIDs {
+			fileID := models.FileID(fileIDInt)
+			f, err := qb.Find(ctx, fileID)
+			if err != nil {
+				return err
+			}
+
+			if len(f) == 0 {
+				return fmt.Errorf("file with id %d not found", fileID)
+			}
+
+			path := f[0].Base().Path
+
+			// ensure not a primary file
+			isPrimary, err := qb.IsPrimary(ctx, fileID)
+			if err != nil {
+				return fmt.Errorf("checking if file %s is primary: %w", path, err)
+			}
+
+			if isPrimary {
+				return fmt.Errorf("cannot destroy primary file entry %s", path)
+			}
+
+			// destroy DB entries only (no filesystem deletion)
+			const deleteFile = false
+			if err := destroyer.DestroyZip(ctx, f[0], nil, deleteFile); err != nil {
+				return fmt.Errorf("destroying file entry %s: %w", path, err)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSetFingerprintsInput) (bool, error) {
 	fileIDInt, err := strconv.Atoi(input.ID)
 	if err != nil {
