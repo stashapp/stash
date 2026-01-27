@@ -1076,6 +1076,13 @@ func getObjectDate(index int) *models.Date {
 	return &ret
 }
 
+func sceneStashIDs(i int) []models.StashID {
+	if i%5 == 0 {
+		return nil
+	}
+	return []models.StashID{sceneStashID(i)}
+}
+
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:   getSceneStringValue(i, "stashid"),
@@ -1174,9 +1181,7 @@ func makeScene(i int) *models.Scene {
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
 		Groups:       models.NewRelatedGroups(groups),
-		StashIDs: models.NewRelatedStashIDs([]models.StashID{
-			sceneStashID(i),
-		}),
+		StashIDs:     models.NewRelatedStashIDs(sceneStashIDs(i)),
 		PlayDuration: getScenePlayDuration(i),
 		ResumeTime:   getSceneResumeTime(i),
 	}
