@@ -71,7 +71,7 @@ func VerifyURL(rawURL string, secret []byte) (bool, error) {
 	if len(parts) < 3 || (parts[0] != "scene" && parts[0] != "image" && parts[0] != "gallery") {
 		return false, nil
 	}
-	
+
 	// For scene/image/gallery paths, the base path is /{type}/{id}/{action}
 	basePath := "/" + strings.Join([]string{parts[0], parts[1], parts[2]}, "/")
 
