@@ -415,7 +415,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
           className="bg-secondary text-white"
           onClick={() => setIsGenerateDialogOpen(true)}
         >
-          <FormattedMessage id="actions.generate" />
+          <FormattedMessage id="actions.generate" />…
         </Dropdown.Item>
         <Dropdown.Item
           key="generate-screenshot"

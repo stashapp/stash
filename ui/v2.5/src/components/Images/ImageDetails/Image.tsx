@@ -210,7 +210,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             className="bg-secondary text-white"
             onClick={() => setIsGenerateDialogOpen(true)}
           >
-            <FormattedMessage id="actions.generate" />
+            <FormattedMessage id="actions.generate" />…
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-image"
