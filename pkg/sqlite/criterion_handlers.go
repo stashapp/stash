@@ -1147,14 +1147,6 @@ func (h *phashDistanceCriterionHandler) handle(ctx context.Context, f *filterBui
 		distance = *phashDistance.Distance
 	}
 
-	if distance == 0 {
-		// use the default handler
-		intCriterionHandler(&models.IntCriterionInput{
-			Value:    int(value),
-			Modifier: phashDistance.Modifier,
-		}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-	}
-
 	switch {
 	case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
 		// needed to avoid a type mismatch
