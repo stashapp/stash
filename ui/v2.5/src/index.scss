@@ -1436,15 +1436,27 @@ h3 .TruncatedText {
 
 // Troubleshooting Mode overlay banner
 .troubleshooting-mode-overlay {
+  border: 5px solid $danger;
+  bottom: 0;
   left: 0;
+  opacity: 0.75;
+  pointer-events: none;
   position: fixed;
   right: 0;
-  top: $navbar-height;
+  top: 0;
   z-index: 1040;
 
-  .alert {
+  .troubleshooting-mode-alert {
+    align-items: baseline;
     border-radius: 0;
+    bottom: 0.5rem;
+    display: inline-flex;
     margin: 0;
-    opacity: 0.85;
+    position: fixed;
+    right: 0.5rem;
+  }
+
+  .btn {
+    pointer-events: auto;
   }
 }
