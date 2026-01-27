@@ -1454,6 +1454,16 @@ h3 .TruncatedText {
     margin: 0;
     position: fixed;
     right: 0.5rem;
+
+    @include media-breakpoint-down(xs) {
+      @media (orientation: portrait) {
+        bottom: $navbar-height;
+
+        & > span {
+          font-size: 0.75rem;
+        }
+      }
+    }
   }
 
   .btn {
