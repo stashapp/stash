@@ -373,13 +373,6 @@
                 "heading": "Caminho dos scrapers"
             },
             "scraping": "Extração",
-            "sprite_generation_head": "Geração de sprites",
-            "sprite_interval_desc": "Tempo entre cada sprite gerado em segundos. O padrão é 30",
-            "sprite_interval_head": "Intervalo de sprites",
-            "sprite_minimum_desc": "Número mínimo de sprites a serem gerados para uma cena",
-            "sprite_minimum_head": "Sprites mínimos",
-            "sprite_screenshot_width_desc": "Largura desejada de cada sprite em pixels. O padrão é 160",
-            "sprite_screenshot_width_head": "Largura do sprite",
             "sqlite_location": "Localização do arquivo para o banco de dados SQLite (requer reinicialização)",
             "video_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como vídeos.",
             "video_ext_head": "Extensões de vídeo",

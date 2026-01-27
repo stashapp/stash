@@ -412,13 +412,6 @@
                 "heading": "Ruta de Rastreadores"
             },
             "scraping": "Rastreo",
-            "sprite_generation_head": "Generación de sprites",
-            "sprite_interval_desc": "Tiempo entre cada sprite generado en segundos. El valor predeterminado es 30",
-            "sprite_interval_head": "Intervalo de sprites",
-            "sprite_minimum_desc": "Número mínimo de sprites que se generarán para una escena",
-            "sprite_minimum_head": "Sprites mínimos",
-            "sprite_screenshot_width_desc": "Ancho deseado de cada sprite en píxeles. El valor predeterminado es 160",
-            "sprite_screenshot_width_head": "Ancho del sprite",
             "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio). AVISO: Almacenar la base de datos en un sistema distinto al servidor Stash (por ejemplo a través de la red) no está soportado!",
             "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
             "video_ext_head": "Extensions de vídeo",

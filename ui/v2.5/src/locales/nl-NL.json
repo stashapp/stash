@@ -346,13 +346,6 @@
                 "heading": "Schrapers Pad"
             },
             "scraping": "Scraping",
-            "sprite_generation_head": "Sprite-generatie",
-            "sprite_interval_desc": "Tijd tussen elke gegenereerde sprite in seconden. Standaard is 30",
-            "sprite_interval_head": "Sprite-interval",
-            "sprite_minimum_desc": "Minimaal aantal sprites dat voor een scène wordt gegenereerd",
-            "sprite_minimum_head": "Minimale sprites",
-            "sprite_screenshot_width_desc": "Gewenste breedte van elke sprite in pixels. Standaard is 160",
-            "sprite_screenshot_width_head": "Spritebreedte",
             "sqlite_location": "Bestandslocatie voor de SQLite-database (herstart vereist). WAARSCHUWING: het opslaan van de database op een ander systeem dan waar de Stash-server wordt uitgevoerd (bijv. via het netwerk) wordt niet ondersteund!",
             "video_ext_desc": "Komma gescheiden lijst van bestandsextensie die worden aangemerkt als video.",
             "video_ext_head": "Video extensies",

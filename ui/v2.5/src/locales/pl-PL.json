@@ -391,13 +391,6 @@
                 "heading": "Ścieżka do zbieraczy"
             },
             "scraping": "Scrapowanie",
-            "sprite_generation_head": "Generowanie sprite’ów",
-            "sprite_interval_desc": "Czas pomiędzy każdym wygenerowanym sprite’em w sekundach. Domyślnie 30",
-            "sprite_interval_head": "Interwał sprite’ów",
-            "sprite_minimum_desc": "Minimalna liczba sprite’ów generowanych dla sceny",
-            "sprite_minimum_head": "Minimalna liczba sprite’ów",
-            "sprite_screenshot_width_desc": "Żądana szerokość każdego sprite’a w pikselach. Domyślnie 160",
-            "sprite_screenshot_width_head": "Szerokość sprite’a",
             "sqlite_location": "Lokalizacja pliku dla bazy danych SQLite (wymaga ponownego uruchomienia). UWAGA: przechowywanie bazy danych w systemie innym niż ten na którym uruchomiony jest serwer Stash (np. w lokalizacji sieciowej) nie jest wspierane!",
             "video_ext_desc": "Rozdzielona przecinkami lista rozszerzeń plików, które będą identyfikowane jako pliki wideo.",
             "video_ext_head": "Rozszerzenia wideo",

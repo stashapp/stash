@@ -360,13 +360,6 @@
                 "heading": "Kaapijoiden polku"
             },
             "scraping": "Kaapiminen",
-            "sprite_generation_head": "Spritejen luonti",
-            "sprite_interval_desc": "Aika jokaisen luodun spriten välillä sekunneissa. Oletus on 30",
-            "sprite_interval_head": "Sprite-väli",
-            "sprite_minimum_desc": "Vähimmäismäärä spritejä, jotka luodaan kohtaukselle",
-            "sprite_minimum_head": "Vähimmäismäärä spritejä",
-            "sprite_screenshot_width_desc": "Kunkin spriten haluttu leveys pikseleinä. Oletus on 160",
-            "sprite_screenshot_width_head": "Spriten leveys",
             "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen) VAROITUS: tietokannan tallentaminen eri järjestelmään kuin missä Stash on käynnissä (kuten verkon yli) ei ole tuettu!",
             "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
             "video_ext_head": "Videoiden päätteet",

@@ -245,14 +245,7 @@
                 "generate_api_key": "Generează cheie API"
             },
             "cache_path_head": "Cale Cache",
-            "calculate_md5_and_ohash_label": "Calculați MD5 pentru videouri",
-            "sprite_generation_head": "Generare de sprite-uri",
-            "sprite_interval_desc": "Timpul dintre fiecare sprite generat, în secunde. Valoarea implicită este 30",
-            "sprite_interval_head": "Interval sprite",
-            "spriteminimum_desc": "Numărul minim de sprite-uri generate pentru o scenă",
-            "sprite_minimum_head": "Sprite-uri minime",
-            "sprite_screenshot_width_desc": "Lățimea dorită a fiecărui sprite în pixeli. Valoarea implicită este 160",
-            "sprite_screenshot_width_head": "Lățimea sprite-ului"
+            "calculate_md5_and_ohash_label": "Calculați MD5 pentru videouri"
         },
         "tasks": {
             "auto_tagging": "Etichetare Automată",
