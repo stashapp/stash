@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Dropdown } from "react-bootstrap";
+import { Button, Form, Dropdown, SplitButton } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -58,7 +58,10 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
-  onSubmit: (performer: GQL.PerformerCreateInput) => Promise<void>;
+  onSubmit: (
+    performer: GQL.PerformerCreateInput,
+    andNew?: boolean
+  ) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -345,15 +348,24 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const { values } = formik;
+    const input = {
+      ...schema.cast(values),
+      custom_fields: customFieldInput(isNew, values.custom_fields),
+    };
+    onSave(input, true);
   }
 
   // set up hotkeys
@@ -603,17 +615,33 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="actions.clear_image" />
           </Button>
         </div>
-        <Button
-          variant="success"
-          disabled={
-            (!isNew && !formik.dirty) ||
-            !isEqual(formik.errors, {}) ||
-            customFieldsError !== undefined
-          }
-          onClick={() => formik.submitForm()}
-        >
-          <FormattedMessage id="actions.save" />
-        </Button>
+        {isNew ? (
+          <SplitButton
+            id="save-split-button"
+            variant="success"
+            disabled={
+              !isEqual(formik.errors, {}) || customFieldsError !== undefined
+            }
+            title={intl.formatMessage({ id: "actions.save" })}
+            onClick={() => formik.submitForm()}
+          >
+            <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+              <FormattedMessage id="actions.save_and_new" />
+            </Dropdown.Item>
+          </SplitButton>
+        ) : (
+          <Button
+            variant="success"
+            disabled={
+              (!isNew && !formik.dirty) ||
+              !isEqual(formik.errors, {}) ||
+              customFieldsError !== undefined
+            }
+            onClick={() => formik.submitForm()}
+          >
+            <FormattedMessage id="actions.save" />
+          </Button>
+        )}
       </div>
     );
   }

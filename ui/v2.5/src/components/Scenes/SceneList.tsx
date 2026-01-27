@@ -522,6 +522,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     hasSelection,
   } = listSelect;
 
@@ -538,6 +539,27 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     showSidebar,
     setShowSidebar,
   });
+
+  const onCloseEditDelete = useCloseEditDelete({
+    closeModal,
+    onSelectNone,
+    result,
+  });
+
+  const onEdit = useCallback(() => {
+    showModal(
+      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
+    );
+  }, [showModal, selectedItems, onCloseEditDelete]);
+
+  const onDelete = useCallback(() => {
+    showModal(
+      <DeleteScenesDialog
+        selected={selectedItems}
+        onClose={onCloseEditDelete}
+      />
+    );
+  }, [showModal, selectedItems, onCloseEditDelete]);
 
   useEffect(() => {
     Mousetrap.bind("e", () => {
@@ -556,16 +578,10 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
-  });
+  }, [onSelectAll, onSelectNone, hasSelection, onEdit, onDelete]);
   useZoomKeybinds({
     zoomIndex: filter.zoomIndex,
     onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
-  });
-
-  const onCloseEditDelete = useCloseEditDelete({
-    closeModal,
-    onSelectNone,
-    result,
   });
 
   const metadataByline = useMemo(() => {
@@ -636,21 +652,6 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
     );
   }
 
-  function onEdit() {
-    showModal(
-      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
-    );
-  }
-
-  function onDelete() {
-    showModal(
-      <DeleteScenesDialog
-        selected={selectedItems}
-        onClose={onCloseEditDelete}
-      />
-    );
-  }
-
   const otherOperations = [
     {
       text: intl.formatMessage({ id: "actions.play" }),
@@ -676,6 +677,11 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
       text: intl.formatMessage({ id: "actions.select_none" }),
       onClick: () => onSelectNone(),
       isDisplayed: () => hasSelection,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.invert_selection" }),
+      onClick: () => onInvertSelection(),
+      isDisplayed: () => totalCount > 0,
     },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),

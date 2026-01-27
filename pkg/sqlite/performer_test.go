@@ -1069,6 +1069,8 @@ func TestPerformerQuery(t *testing.T) {
 	var (
 		endpoint = performerStashID(performerIdxWithGallery).Endpoint
 		stashID  = performerStashID(performerIdxWithGallery).StashID
+		stashID2 = performerStashID(performerIdx1WithGallery).StashID
+		stashIDs = []*string{&stashID, &stashID2}
 	)
 
 	tests := []struct {
@@ -1130,6 +1132,60 @@ func TestPerformerQuery(t *testing.T) {
 				},
 			},
 			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
+			"exclude stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			false,
+		},
+		{
+			"null stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			false,
+		},
+		{
+			"not null stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
 			nil,
 			false,
 		},

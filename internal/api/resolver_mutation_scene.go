@@ -297,6 +297,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	var coverImageData []byte
+	coverImageIncluded := translator.hasField("cover_image")
 	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
@@ -310,21 +311,21 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
-		return nil, err
+	if coverImageIncluded {
+		if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
+			return nil, err
+		}
 	}
 
 	return scene, nil
 }
 
 func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
-	if len(coverImageData) > 0 {
-		qb := r.repository.Scene
+	qb := r.repository.Scene
 
-		// update cover table
-		if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
-			return err
-		}
+	// update cover table - empty data will clear the cover
+	if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
+		return err
 	}
 
 	return nil
@@ -440,6 +441,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
@@ -456,7 +458,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		// kill any running encoders
 		manager.KillRunningStreams(s, fileNamingAlgo)
 
-		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile)
+		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -494,6 +496,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
@@ -512,7 +515,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			// kill any running encoders
 			manager.KillRunningStreams(scene, fileNamingAlgo)
 
-			if err := r.sceneService.Destroy(ctx, scene, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			if err := r.sceneService.Destroy(ctx, scene, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 				return err
 			}
 		}

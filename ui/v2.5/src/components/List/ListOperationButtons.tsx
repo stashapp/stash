@@ -63,6 +63,7 @@ export interface IListFilterOperation {
 interface IListOperationButtonsProps {
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  onInvertSelection?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   itemsSelected?: boolean;
@@ -72,6 +73,7 @@ interface IListOperationButtonsProps {
 export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   onSelectAll,
   onSelectNone,
+  onInvertSelection,
   onEdit,
   onDelete,
   itemsSelected,
@@ -82,6 +84,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
+    Mousetrap.bind("s i", () => onInvertSelection?.());
 
     Mousetrap.bind("e", () => {
       if (itemsSelected) {
@@ -98,10 +101,18 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     return () => {
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
+      Mousetrap.unbind("s i");
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
-  });
+  }, [
+    onSelectAll,
+    onSelectNone,
+    onInvertSelection,
+    itemsSelected,
+    onEdit,
+    onDelete,
+  ]);
 
   const buttons = useMemo(() => {
     const ret = (otherOperations ?? []).filter((o) => {
@@ -185,7 +196,25 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
       }
     }
 
-    const options = [renderSelectAll(), renderSelectNone()].filter((o) => o);
+    function renderInvertSelection() {
+      if (onInvertSelection) {
+        return (
+          <Dropdown.Item
+            key="invert-selection"
+            className="bg-secondary text-white"
+            onClick={() => onInvertSelection?.()}
+          >
+            <FormattedMessage id="actions.invert_selection" />
+          </Dropdown.Item>
+        );
+      }
+    }
+
+    const options = [
+      renderSelectAll(),
+      renderSelectNone(),
+      renderInvertSelection(),
+    ].filter((o) => o);
 
     if (otherOperations) {
       otherOperations
@@ -219,7 +248,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
         {options.length > 0 ? options : undefined}
       </OperationDropdown>
     );
-  }, [otherOperations, onSelectAll, onSelectNone]);
+  }, [otherOperations, onSelectAll, onSelectNone, onInvertSelection]);
 
   // don't render anything if there are no buttons or operations
   if (buttons.length === 0 && !moreDropdown) {

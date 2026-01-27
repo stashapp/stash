@@ -73,7 +73,7 @@ export function useFilteredItemList<
   const { result, items, totalCount, pages } = queryResult;
 
   const listSelect = useListSelect(items);
-  const { onSelectAll, onSelectNone } = listSelect;
+  const { onSelectAll, onSelectNone, onInvertSelection } = listSelect;
 
   const modalState = useModal();
   const { showModal, closeModal } = modalState;
@@ -99,6 +99,7 @@ export function useFilteredItemList<
     onChangePage: setPage,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     pages,
     showEditFilter,
   });
@@ -164,6 +165,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID, M = unknown>(
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
   } = listSelect;
 
   // scroll to the top of the page when the page changes
@@ -212,6 +214,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID, M = unknown>(
     onChangePage,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     pages,
     showEditFilter,
   });

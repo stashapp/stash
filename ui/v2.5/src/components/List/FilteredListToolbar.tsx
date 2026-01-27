@@ -99,13 +99,15 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
     filter,
     setFilter,
   });
-  const { selectedIds, onSelectAll, onSelectNone } = listSelect;
+  const { selectedIds, onSelectAll, onSelectNone, onInvertSelection } =
+    listSelect;
   const hasSelection = selectedIds.size > 0;
 
   const renderOperations = operationComponent ?? (
     <ListOperationButtons
       onSelectAll={onSelectAll}
       onSelectNone={onSelectNone}
+      onInvertSelection={onInvertSelection}
       otherOperations={operations}
       itemsSelected={selectedIds.size > 0}
       onEdit={onEdit}

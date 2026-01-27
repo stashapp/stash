@@ -1,6 +1,14 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form, Col, Row, ButtonGroup } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  Form,
+  Col,
+  Row,
+  ButtonGroup,
+  SplitButton,
+} from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -51,7 +59,7 @@ interface IProps {
   initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
-  onSubmit: (input: GQL.SceneCreateInput) => Promise<void>;
+  onSubmit: (input: GQL.SceneCreateInput, andNew?: boolean) => Promise<void>;
   onDelete?: () => void;
 }
 
@@ -268,15 +276,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("groups", newGroups);
   }
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    onSave(input, true);
   }
 
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
@@ -287,6 +300,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
+  }
+
+  function onResetCover() {
+    formik.setFieldValue("cover_image", null);
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
@@ -737,16 +754,31 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
-            <Button
-              className="edit-button"
-              variant="primary"
-              disabled={
-                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
-              }
-              onClick={() => formik.submitForm()}
-            >
-              <FormattedMessage id="actions.save" />
-            </Button>
+            {isNew ? (
+              <SplitButton
+                id="scene-save-split-button"
+                className="edit-button"
+                variant="primary"
+                disabled={!isEqual(formik.errors, {})}
+                title={intl.formatMessage({ id: "actions.save" })}
+                onClick={() => formik.submitForm()}
+              >
+                <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+                  <FormattedMessage id="actions.save_and_new" />
+                </Dropdown.Item>
+              </SplitButton>
+            ) : (
+              <Button
+                className="edit-button"
+                variant="primary"
+                disabled={
+                  (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+                }
+                onClick={() => formik.submitForm()}
+              >
+                <FormattedMessage id="actions.save" />
+              </Button>
+            )}
             {onDelete && (
               <Button
                 className="edit-button"
@@ -828,6 +860,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 isEditing
                 onImageChange={onCoverImageChange}
                 onImageURL={onImageLoad}
+                onReset={scene.id ? onResetCover : undefined}
               />
             </Form.Group>
           </Col>

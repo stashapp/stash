@@ -79,6 +79,8 @@ type SceneFilterType struct {
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
+	// Filter by StashIDs Endpoint
+	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by interactive
@@ -202,15 +204,17 @@ type SceneUpdateInput struct {
 }
 
 type SceneDestroyInput struct {
-	ID              string `json:"id"`
-	DeleteFile      *bool  `json:"delete_file"`
-	DeleteGenerated *bool  `json:"delete_generated"`
+	ID               string `json:"id"`
+	DeleteFile       *bool  `json:"delete_file"`
+	DeleteGenerated  *bool  `json:"delete_generated"`
+	DestroyFileEntry *bool  `json:"destroy_file_entry"`
 }
 
 type ScenesDestroyInput struct {
-	Ids             []string `json:"ids"`
-	DeleteFile      *bool    `json:"delete_file"`
-	DeleteGenerated *bool    `json:"delete_generated"`
+	Ids              []string `json:"ids"`
+	DeleteFile       *bool    `json:"delete_file"`
+	DeleteGenerated  *bool    `json:"delete_generated"`
+	DestroyFileEntry *bool    `json:"destroy_file_entry"`
 }
 
 func NewSceneQueryResult(getter SceneGetter) *SceneQueryResult {

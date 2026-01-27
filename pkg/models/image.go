@@ -90,15 +90,17 @@ type ImageUpdateInput struct {
 }
 
 type ImageDestroyInput struct {
-	ID              string `json:"id"`
-	DeleteFile      *bool  `json:"delete_file"`
-	DeleteGenerated *bool  `json:"delete_generated"`
+	ID               string `json:"id"`
+	DeleteFile       *bool  `json:"delete_file"`
+	DeleteGenerated  *bool  `json:"delete_generated"`
+	DestroyFileEntry *bool  `json:"destroy_file_entry"`
 }
 
 type ImagesDestroyInput struct {
-	Ids             []string `json:"ids"`
-	DeleteFile      *bool    `json:"delete_file"`
-	DeleteGenerated *bool    `json:"delete_generated"`
+	Ids              []string `json:"ids"`
+	DeleteFile       *bool    `json:"delete_file"`
+	DeleteGenerated  *bool    `json:"delete_generated"`
+	DestroyFileEntry *bool    `json:"destroy_file_entry"`
 }
 
 type ImageQueryOptions struct {
