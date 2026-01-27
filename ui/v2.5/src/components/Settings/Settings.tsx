@@ -151,6 +151,7 @@ const SettingTabs: React.FC<{ tab: TabKey }> = ({ tab }) => {
                 />
               </div>
             </Nav.Item>
+            {!troubleshootingModeActive && <TroubleshootingModeButton />}
             <hr className="d-sm-none" />
           </Nav>
         </Col>
@@ -200,7 +201,6 @@ const SettingTabs: React.FC<{ tab: TabKey }> = ({ tab }) => {
           </Tab.Content>
         </Col>
       </Row>
-      {!troubleshootingModeActive && <TroubleshootingModeButton />}
     </Tab.Container>
   );
 };

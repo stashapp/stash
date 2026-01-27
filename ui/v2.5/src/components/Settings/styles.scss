@@ -453,4 +453,9 @@
   left: 1rem;
   position: fixed;
   z-index: 100;
+
+  @include media-breakpoint-down(xs) {
+    padding-left: 0.5rem;
+    position: static;
+  }
 }
