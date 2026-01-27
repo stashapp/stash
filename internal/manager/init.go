@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -23,6 +24,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/postgres"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
@@ -35,7 +37,15 @@ import (
 func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	ctx := context.TODO()
 
-	db := sqlite.NewDatabase()
+	var db database.Database
+
+	upperUrl := strings.ToUpper(cfg.GetDatabasePath())
+	if strings.HasPrefix(upperUrl, string(database.PostgresBackend)+":") {
+		db = postgres.NewDatabase()
+	} else {
+		db = sqlite.NewDatabase()
+	}
+
 	repo := db.Repository()
 
 	// start with empty paths
@@ -47,29 +57,29 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	pluginCache := plugin.NewCache(cfg)
 
 	sceneService := &scene.Service{
-		File:             db.File,
-		Repository:       db.Scene,
-		MarkerRepository: db.SceneMarker,
+		File:             db.File(),
+		Repository:       db.Scene(),
+		MarkerRepository: db.SceneMarker(),
 		PluginCache:      pluginCache,
 		Paths:            mgrPaths,
 		Config:           cfg,
 	}
 
 	imageService := &image.Service{
-		File:       db.File,
-		Repository: db.Image,
+		File:       db.File(),
+		Repository: db.Image(),
 	}
 
 	galleryService := &gallery.Service{
-		Repository:   db.Gallery,
-		ImageFinder:  db.Image,
+		Repository:   db.Gallery(),
+		ImageFinder:  db.Image(),
 		ImageService: imageService,
-		File:         db.File,
-		Folder:       db.Folder,
+		File:         db.File(),
+		Folder:       db.Folder(),
 	}
 
 	groupService := &group.Service{
-		Repository: db.Group,
+		Repository: db.Group(),
 	}
 
 	sceneServer := &SceneServer{
@@ -228,7 +238,7 @@ func (s *Manager) postInit(ctx context.Context) error {
 	}
 
 	if err := s.Database.Open(s.Config.GetDatabasePath()); err != nil {
-		var migrationNeededErr *sqlite.MigrationNeededError
+		var migrationNeededErr *database.MigrationNeededError
 		if errors.As(err, &migrationNeededErr) {
 			logger.Warn(err)
 		} else {
