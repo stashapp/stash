@@ -55,7 +55,7 @@ function Tags(props: {
 }
 
 interface IListOperationProps {
-  selected: GQL.TagDataFragment[];
+  selected: (GQL.TagDataFragment | GQL.TagListDataFragment)[];
   onClose: (applied: boolean) => void;
 }
 
@@ -134,7 +134,7 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
     let updateChildTagIds: string[] = [];
     let first = true;
 
-    state.forEach((tag: GQL.TagDataFragment) => {
+    state.forEach((tag: GQL.TagDataFragment | GQL.TagListDataFragment) => {
       getAggregateStateObject(updateState, tag, tagFields, first);
 
       const thisParents = (tag.parents ?? []).map((t) => t.id).sort();

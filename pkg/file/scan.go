@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -15,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -179,7 +179,16 @@ func (s *scanJob) execute(ctx context.Context) {
 	wg.Add(1)
 
 	go func() {
-		defer wg.Done()
+		defer func() {
+			wg.Done()
+
+			// handle panics in goroutine
+			if p := recover(); p != nil {
+				logger.Errorf("panic while queuing files for scan: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
 		if err := s.queueFiles(ctx, paths); err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -205,6 +214,15 @@ func (s *scanJob) execute(ctx context.Context) {
 }
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
+	defer func() {
+		close(s.fileQueue)
+
+		if s.ProgressReports != nil {
+			s.ProgressReports.AddTotal(s.count)
+			s.ProgressReports.Definite()
+		}
+	}()
+
 	var err error
 	s.ProgressReports.ExecuteTask("Walking directory tree", func() {
 		for _, p := range paths {
@@ -214,13 +232,6 @@ func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
 			}
 		}
 	})
-
-	close(s.fileQueue)
-
-	if s.ProgressReports != nil {
-		s.ProgressReports.AddTotal(s.count)
-		s.ProgressReports.Definite()
-	}
 
 	return err
 }
@@ -443,7 +454,10 @@ func (s *scanJob) getFolderID(ctx context.Context, path string) (*models.FolderI
 		return &v, nil
 	}
 
-	ret, err := s.Repository.Folder.FindByPath(ctx, path)
+	// assume case sensitive when searching for the folder
+	const caseSensitive = true
+
+	ret, err := s.Repository.Folder.FindByPath(ctx, path, caseSensitive)
 	if err != nil {
 		return nil, err
 	}
@@ -473,7 +487,10 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*models.
 		return &v, nil
 	}
 
-	ret, err := s.Repository.File.FindByPath(ctx, path)
+	// assume case sensitive when searching for the zip file
+	const caseSensitive = true
+
+	ret, err := s.Repository.File.FindByPath(ctx, path, caseSensitive)
 	if err != nil {
 		return nil, fmt.Errorf("getting zip file ID for %q: %w", path, err)
 	}
@@ -493,9 +510,24 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 		defer s.incrementProgress(file)
 
 		// determine if folder already exists in data store (by path)
-		f, err := s.Repository.Folder.FindByPath(ctx, path)
+		// assume case sensitive by default
+		f, err := s.Repository.Folder.FindByPath(ctx, path, true)
 		if err != nil {
 			return fmt.Errorf("checking for existing folder %q: %w", path, err)
+		}
+
+		// #1426 / #6326 - if folder is in a case-insensitive filesystem, then try
+		// case insensitive searching
+		// assume case sensitive if in zip
+		if f == nil && file.ZipFileID == nil {
+			caseSensitive, _ := file.fs.IsPathCaseSensitive(file.Path)
+
+			if !caseSensitive {
+				f, err = s.Repository.Folder.FindByPath(ctx, path, false)
+				if err != nil {
+					return fmt.Errorf("checking for existing folder %q: %w", path, err)
+				}
+			}
 		}
 
 		// if folder not exists, create it
@@ -611,7 +643,15 @@ func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *mo
 	// update if mod time is changed
 	entryModTime := f.ModTime
 	if !entryModTime.Equal(existing.ModTime) {
+		existing.Path = f.Path
 		existing.ModTime = entryModTime
+		update = true
+	}
+
+	// #6326 - update if path has changed - should only happen if case is
+	// changed and filesystem is case insensitive
+	if existing.Path != f.Path {
+		existing.Path = f.Path
 		update = true
 	}
 
@@ -647,13 +687,29 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	defer s.incrementProgress(f)
 
 	var ff models.File
+
 	// don't use a transaction to check if new or existing
 	if err := s.withDB(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
+		// assume case sensitive when searching for the file to begin with
 		var err error
-		ff, err = s.Repository.File.FindByPath(ctx, f.Path)
+		ff, err = s.Repository.File.FindByPath(ctx, f.Path, true)
 		if err != nil {
 			return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
+		}
+
+		// #1426 / #6326 - if file is in a case-insensitive filesystem, then try
+		// case insensitive search
+		// assume case sensitive if in zip
+		if ff == nil && f.ZipFileID != nil {
+			caseSensitive, _ := f.fs.IsPathCaseSensitive(f.Path)
+
+			if !caseSensitive {
+				ff, err = s.Repository.File.FindByPath(ctx, f.Path, false)
+				if err != nil {
+					return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
+				}
+			}
 		}
 
 		if ff == nil {
@@ -674,7 +730,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 		// scan zip files with a different context that is not cancellable
 		// cancelling while scanning zip file contents results in the scan
 		// contents being partially completed
-		zipCtx := utils.ValueOnlyContext{Context: ctx}
+		zipCtx := context.WithoutCancel(ctx)
 
 		if err := s.scanZipFile(zipCtx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
@@ -839,7 +895,8 @@ func (s *scanJob) getFileFS(f *models.BaseFile) (models.FS, error) {
 	}
 
 	zipPath := f.ZipFile.Base().Path
-	return fs.OpenZip(zipPath, f.Size)
+	zipSize := f.ZipFile.Base().Size
+	return fs.OpenZip(zipPath, zipSize)
 }
 
 func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {
@@ -879,6 +936,7 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, and the filesystem is case-insensitive
 			// then treat it as a move
+			// #6326 - this should now be handled earlier, and this shouldn't be necessary
 			if caseSensitive, _ := fs.IsPathCaseSensitive(other.Base().Path); !caseSensitive {
 				// treat as a move
 				missing = append(missing, other)
@@ -1026,7 +1084,8 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 	path := base.Path
 
 	fileModTime := f.ModTime
-	updated := !fileModTime.Equal(base.ModTime)
+	// #6326 - also force a rescan if the basename changed
+	updated := !fileModTime.Equal(base.ModTime) || base.Basename != f.Basename
 	forceRescan := s.options.Rescan
 
 	if !updated && !forceRescan {
@@ -1041,6 +1100,8 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 		logger.Infof("%s has been updated: rescanning", path)
 	}
 
+	// #6326 - update basename in case it changed
+	base.Basename = f.Basename
 	base.ModTime = fileModTime
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()

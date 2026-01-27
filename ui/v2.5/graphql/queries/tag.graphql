@@ -25,3 +25,13 @@ query FindTagsForSelect(
     }
   }
 }
+
+# Optimized query for tag list page - uses TagListData fragment without recursive counts
+query FindTagsForList($filter: FindFilterType, $tag_filter: TagFilterType) {
+  findTags(filter: $filter, tag_filter: $tag_filter) {
+    count
+    tags {
+      ...TagListData
+    }
+  }
+}

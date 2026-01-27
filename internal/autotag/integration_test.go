@@ -225,7 +225,7 @@ func createSceneFile(ctx context.Context, name string, folderStore models.Folder
 }
 
 func getOrCreateFolder(ctx context.Context, folderStore models.FolderFinderCreator, folderPath string) (*models.Folder, error) {
-	f, err := folderStore.FindByPath(ctx, folderPath)
+	f, err := folderStore.FindByPath(ctx, folderPath, true)
 	if err != nil {
 		return nil, fmt.Errorf("getting folder by path: %w", err)
 	}

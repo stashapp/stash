@@ -38,7 +38,7 @@ export type SelectObject = {
 
 export type Tag = Pick<
   GQL.Tag,
-  "id" | "name" | "sort_name" | "aliases" | "image_path"
+  "id" | "name" | "sort_name" | "aliases" | "image_path" | "stash_ids"
 >;
 type Option = SelectOption<Tag>;
 
@@ -198,6 +198,7 @@ const _TagSelect: React.FC<TagSelectProps> = (props) => {
       id,
       name,
       aliases: [],
+      stash_ids: [],
     };
   };
 

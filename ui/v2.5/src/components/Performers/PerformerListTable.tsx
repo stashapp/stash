@@ -116,7 +116,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <span
       title={
         performer.birthdate
-          ? TextUtils.formatDate(intl, performer.birthdate ?? undefined)
+          ? TextUtils.formatFuzzyDate(intl, performer.birthdate ?? undefined)
           : ""
       }
     >

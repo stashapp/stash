@@ -185,3 +185,10 @@ type FindPerformersResultType {
   count: Int!
   performers: [Performer!]!
 }
+
+input PerformerMergeInput {
+  source: [ID!]!
+  destination: ID!
+  # values defined here will override values in the destination
+  values: PerformerUpdateInput
+}

@@ -200,6 +200,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     config?.interface.imageLightbox.scrollAttemptsBeforeChange ?? 0
   );
 
+  const disableAnimation = config?.interface.imageLightbox.disableAnimation;
+
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
   }
@@ -340,6 +342,10 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      if (disableAnimation) {
+        setInstant();
+      }
+
       setShowChapters(false);
       setMovingLeft(true);
 
@@ -357,12 +363,24 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
+    [
+      images,
+      pageCallback,
+      isSwitchingPage,
+      resetIntervalCallback,
+      index,
+      disableAnimation,
+      setInstant,
+    ]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
+
+      if (disableAnimation) {
+        setInstant();
+      }
 
       setMovingLeft(false);
       setShowChapters(false);
@@ -388,6 +406,8 @@ export const LightboxComponent: React.FC<IProps> = ({
       isSwitchingPage,
       resetIntervalCallback,
       index,
+      disableAnimation,
+      setInstant,
     ]
   );
 

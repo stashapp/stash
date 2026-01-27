@@ -9,6 +9,8 @@ type CustomFieldsInput struct {
 	Full map[string]interface{} `json:"full"`
 	// If populated, only the keys in this map will be updated
 	Partial map[string]interface{} `json:"partial"`
+	// Remove any keys in this list
+	Remove []string `json:"remove"`
 }
 
 type CustomFieldsReader interface {

@@ -77,6 +77,8 @@ const (
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
+	sceneIdx1WithTwoStudioPerformer
+	sceneIdx2WithTwoStudioPerformer
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
@@ -138,6 +140,7 @@ const (
 	performerIdxWithSceneStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
+	performerIdxWithTwoSceneStudio
 	performerIdxWithParentTag
 	// new indexes above
 	// performers with dup names start from the end
@@ -257,6 +260,8 @@ const (
 	studioIdxWithScenePerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
+	studioIdx1WithTwoScenePerformer
+	studioIdx2WithTwoScenePerformer
 	studioIdxWithTag
 	studioIdx2WithTag
 	studioIdxWithTwoTags
@@ -384,16 +389,18 @@ var (
 	}
 
 	scenePerformers = linkMap{
-		sceneIdxWithPerformer:          {performerIdxWithScene},
-		sceneIdxWithTwoPerformers:      {performerIdx1WithScene, performerIdx2WithScene},
-		sceneIdxWithThreePerformers:    {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
-		sceneIdxWithPerformerTag:       {performerIdxWithTag},
-		sceneIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
-		sceneIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
-		sceneIdx1WithPerformer:         {performerIdxWithTwoScenes},
-		sceneIdx2WithPerformer:         {performerIdxWithTwoScenes},
-		sceneIdxWithStudioPerformer:    {performerIdxWithSceneStudio},
-		sceneIdxWithPerformerParentTag: {performerIdxWithParentTag},
+		sceneIdxWithPerformer:           {performerIdxWithScene},
+		sceneIdxWithTwoPerformers:       {performerIdx1WithScene, performerIdx2WithScene},
+		sceneIdxWithThreePerformers:     {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
+		sceneIdxWithPerformerTag:        {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:     {performerIdxWithTag, performerIdx2WithTag},
+		sceneIdxWithPerformerTwoTags:    {performerIdxWithTwoTags},
+		sceneIdx1WithPerformer:          {performerIdxWithTwoScenes},
+		sceneIdx2WithPerformer:          {performerIdxWithTwoScenes},
+		sceneIdxWithStudioPerformer:     {performerIdxWithSceneStudio},
+		sceneIdx1WithTwoStudioPerformer: {performerIdxWithTwoSceneStudio},
+		sceneIdx2WithTwoStudioPerformer: {performerIdxWithTwoSceneStudio},
+		sceneIdxWithPerformerParentTag:  {performerIdxWithParentTag},
 	}
 
 	sceneGalleries = linkMap{
@@ -406,11 +413,13 @@ var (
 	}
 
 	sceneStudios = map[int]int{
-		sceneIdxWithStudio:           studioIdxWithScene,
-		sceneIdx1WithStudio:          studioIdxWithTwoScenes,
-		sceneIdx2WithStudio:          studioIdxWithTwoScenes,
-		sceneIdxWithStudioPerformer:  studioIdxWithScenePerformer,
-		sceneIdxWithGrandChildStudio: studioIdxWithGrandParent,
+		sceneIdxWithStudio:              studioIdxWithScene,
+		sceneIdx1WithStudio:             studioIdxWithTwoScenes,
+		sceneIdx2WithStudio:             studioIdxWithTwoScenes,
+		sceneIdxWithStudioPerformer:     studioIdxWithScenePerformer,
+		sceneIdx1WithTwoStudioPerformer: studioIdx1WithTwoScenePerformer,
+		sceneIdx2WithTwoStudioPerformer: studioIdx2WithTwoScenePerformer,
+		sceneIdxWithGrandChildStudio:    studioIdxWithGrandParent,
 	}
 )
 
@@ -1070,7 +1079,7 @@ func getObjectDate(index int) *models.Date {
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:   getSceneStringValue(i, "stashid"),
-		Endpoint:  getSceneStringValue(i, "endpoint"),
+		Endpoint:  getSceneStringValue(0, "endpoint"),
 		UpdatedAt: epochTime,
 	}
 }
@@ -1538,7 +1547,7 @@ func getIgnoreAutoTag(index int) bool {
 func performerStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getPerformerStringValue(i, "stashid"),
-		Endpoint: getPerformerStringValue(i, "endpoint"),
+		Endpoint: getPerformerStringValue(0, "endpoint"),
 	}
 }
 
@@ -1688,6 +1697,13 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
+func tagStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getTagStringValue(i, "stashid"),
+		Endpoint: getTagStringValue(0, "endpoint"),
+	}
+}
+
 // createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1707,6 +1723,12 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 		tag := models.Tag{
 			Name:          getTagStringValue(index, name),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
+		}
+
+		if (index+1)%5 != 0 {
+			tag.StashIDs = models.NewRelatedStashIDs([]models.StashID{
+				tagStashID(i),
+			})
 		}
 
 		err := tqb.Create(ctx, &tag)

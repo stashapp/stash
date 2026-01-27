@@ -385,7 +385,7 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
     case "groups":
       return <GroupSelect {...props} creatable={false} />;
     case "galleries":
-      return <GallerySelect {...props} />;
+      return <GallerySelect {...props} creatable={false} />;
     default:
       return <TagSelect {...props} creatable={false} />;
   }
@@ -516,7 +516,10 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
       className={`${props.className || ""} ${props.data.className || ""}`}
       // data values don't seem to be included in props.innerProps by default
       innerProps={
-        { "data-value": props.data.value } as React.DetailedHTMLProps<
+        {
+          ...props.innerProps,
+          "data-value": props.data.value,
+        } as React.DetailedHTMLProps<
           React.HTMLAttributes<HTMLDivElement>,
           HTMLDivElement
         >

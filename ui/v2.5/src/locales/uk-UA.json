@@ -182,10 +182,8 @@
             "query_mode_dir": "Каталог",
             "query_mode_label": "Режим запиту",
             "set_tag_desc": "Додайте мітки до сцени, або замінивши, або об'єднавши з існуючими мітками на сцені.",
-            "show_male_desc": "Перемикати, чи будуть доступні чоловічі виконавці для позначення.",
             "set_cover_desc": "Замінити обкладинку сцени, якщо вона знайдена.",
             "set_cover_label": "Встановити обкладинку сцени",
-            "show_male_label": "Показати чоловічих виконавців",
             "errors": {
                 "blacklist_duplicate": "Дублікат елемента чорного списку"
             }
@@ -986,7 +984,6 @@
         "failed_to_save_studio": "Не вдалося зберегти студію \"{studio}\"",
         "number_of_studios_will_be_processed": "Будуть оброблені {studio_count} студії",
         "query_all_studios_in_the_database": "Усі студії в базі даних",
-        "studio_names_separated_by_comma": "Імена студій, розділені комою",
         "add_new_studios": "Додати нові студії",
         "name_already_exists": "Ім'я вже існує",
         "refresh_tagged_studios": "Оновити затеговані студії",
@@ -1029,7 +1026,6 @@
             "no_fields_are_excluded": "Жодне поле не виключено"
         },
         "failed_to_save_performer": "Не вдалося зберегти виконавця \"{performer}\"",
-        "performer_names_separated_by_comma": "Імена виконавців, розділені комою",
         "refreshing_will_update_the_data": "Оновлення оновить дані будь-яких виконавців, позначених мітками, з екземпляра stash-box.",
         "query_all_performers_in_the_database": "Усі виконавці в базі даних",
         "updating_untagged_performers_description": "Оновлення невідмічених виконавців спробує знайти відповідність для виконавців без stashid і оновити метадані.",

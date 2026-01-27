@@ -137,6 +137,8 @@ func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
 	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
+// getStringSearchClause returns a sqlClause for searching strings in the provided columns.
+// It is used for includes and excludes string criteria.
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {
 	var likeClauses []string
 	var args []interface{}

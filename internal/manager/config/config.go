@@ -209,6 +209,7 @@ const (
 	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
 	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
+	ImageLightboxDisableAnimation           = "image_lightbox.disable_animation"
 
 	UI = "ui"
 
@@ -218,6 +219,7 @@ const (
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
 	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
+	DisableDropdownCreateGallery   = "disable_dropdown_create.gallery"
 
 	HandyKey                       = "handy_key"
 	FunscriptOffset                = "funscript_offset"
@@ -1296,6 +1298,10 @@ func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	if v := i.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
 	}
+	if v := i.with(ImageLightboxDisableAnimation); v != nil {
+		value := v.Bool(ImageLightboxDisableAnimation)
+		ret.DisableAnimation = &value
+	}
 
 	return ret
 }
@@ -1306,6 +1312,7 @@ func (i *Config) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
 		Movie:     i.getBool(DisableDropdownCreateMovie),
+		Gallery:   i.getBool(DisableDropdownCreateGallery),
 	}
 }
 
@@ -1314,6 +1321,26 @@ func (i *Config) GetUIConfiguration() map[string]interface{} {
 	defer i.RUnlock()
 
 	return i.forKey(UI).Cut(UI).Raw()
+}
+
+// GetMinimumPlayPercent returns the minimum percentage of a video that must be
+// watched before incrementing the play count. Returns 0 if not configured.
+func (i *Config) GetMinimumPlayPercent() int {
+	uiConfig := i.GetUIConfiguration()
+	if uiConfig == nil {
+		return 0
+	}
+	if val, ok := uiConfig["minimumPlayPercent"]; ok {
+		switch v := val.(type) {
+		case int:
+			return v
+		case float64:
+			return int(v)
+		case int64:
+			return int(v)
+		}
+	}
+	return 0
 }
 
 func (i *Config) SetUIConfiguration(v map[string]interface{}) {
@@ -1606,6 +1633,22 @@ func (i *Config) GetDLNAPort() int {
 // GetDLNAPortAsString returns the port to run the DLNA server on as a string.
 func (i *Config) GetDLNAPortAsString() string {
 	return ":" + strconv.Itoa(i.GetDLNAPort())
+}
+
+// GetDLNAActivityTrackingEnabled returns true if DLNA activity tracking is enabled.
+// This uses the same "trackActivity" UI setting that controls frontend play history tracking.
+// When enabled, scenes played via DLNA will have their play count and duration tracked.
+func (i *Config) GetDLNAActivityTrackingEnabled() bool {
+	uiConfig := i.GetUIConfiguration()
+	if uiConfig == nil {
+		return true // Default to enabled
+	}
+	if val, ok := uiConfig["trackActivity"]; ok {
+		if v, ok := val.(bool); ok {
+			return v
+		}
+	}
+	return true // Default to enabled
 }
 
 // GetVideoSortOrder returns the sort order to display videos. If

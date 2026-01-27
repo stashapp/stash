@@ -100,12 +100,14 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     resetZoomOnNav
     scrollMode
     scrollAttemptsBeforeChange
+    disableAnimation
   }
   disableDropdownCreate {
     performer
     tag
     studio
     movie
+    gallery
   }
   handyKey
   funscriptOffset

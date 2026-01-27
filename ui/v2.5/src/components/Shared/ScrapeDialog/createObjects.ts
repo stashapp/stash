@@ -183,12 +183,40 @@ export function useCreateScrapedGroup(
   return useCreateObject("group", createNewGroup);
 }
 
+export function useLinkScrapedTag(
+  props: IUseCreateNewObjectProps<GQL.ScrapedTag>
+) {
+  const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+
+  function linkTag(id: string, matchedName: string, scrapedName: string) {
+    const newValue = [...(scrapeResult.newValue ?? [])];
+    newValue.push({
+      stored_id: id,
+      name: matchedName,
+    });
+
+    // add the new tag to the new tags value
+    const tagClone = scrapeResult.cloneWithValue(newValue);
+    setScrapeResult(tagClone);
+
+    // remove the tag from the list
+    const newTagsClone = newObjects.concat();
+    const pIndex = newTagsClone.findIndex((p) => p.name === scrapedName);
+    if (pIndex === -1) throw new Error("Could not find tag to remove");
+
+    newTagsClone.splice(pIndex, 1);
+
+    setNewObjects(newTagsClone);
+  }
+
+  return linkTag;
+}
+
 export function useCreateScrapedTag(
   props: IUseCreateNewObjectProps<GQL.ScrapedTag>
 ) {
   const [createTag] = useTagCreate();
-
-  const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+  const linkTag = useLinkScrapedTag(props);
 
   async function createNewTag(toCreate: GQL.ScrapedTag) {
     const input: GQL.TagCreateInput = {
@@ -208,25 +236,12 @@ export function useCreateScrapedTag(
       variables: { input },
     });
 
-    const newValue = [...(scrapeResult.newValue ?? [])];
     if (result.data?.tagCreate)
-      newValue.push({
-        stored_id: result.data.tagCreate.id,
-        name: result.data.tagCreate.name,
-      });
-
-    // add the new tag to the new tags value
-    const tagClone = scrapeResult.cloneWithValue(newValue);
-    setScrapeResult(tagClone);
-
-    // remove the tag from the list
-    const newTagsClone = newObjects.concat();
-    const pIndex = newTagsClone.findIndex((p) => p.name === toCreate.name);
-    if (pIndex === -1) throw new Error("Could not find tag to remove");
-
-    newTagsClone.splice(pIndex, 1);
-
-    setNewObjects(newTagsClone);
+      linkTag(
+        result.data.tagCreate.id,
+        result.data.tagCreate.name,
+        toCreate.name ?? ""
+      );
   }
 
   return useCreateObject("tag", createNewTag);

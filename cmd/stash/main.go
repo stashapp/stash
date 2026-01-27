@@ -76,6 +76,10 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	// initialise desktop.IsDesktop here so that it doesn't get affected by
+	// ffmpeg hardware checks later on
+	desktop.InitIsDesktop()
+
 	mgr, err := manager.Initialize(cfg, l)
 	if err != nil {
 		exitError(fmt.Errorf("manager initialization error: %w", err))

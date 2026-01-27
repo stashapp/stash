@@ -319,6 +319,7 @@ input ConfigDisableDropdownCreateInput {
   tag: Boolean
   studio: Boolean
   movie: Boolean
+  gallery: Boolean
 }
 
 enum ImageLightboxDisplayMode {
@@ -339,6 +340,7 @@ input ConfigImageLightboxInput {
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
   scrollAttemptsBeforeChange: Int
+  disableAnimation: Boolean
 }
 
 type ConfigImageLightboxResult {
@@ -348,6 +350,7 @@ type ConfigImageLightboxResult {
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
   scrollAttemptsBeforeChange: Int!
+  disableAnimation: Boolean
 }
 
 input ConfigInterfaceInput {
@@ -417,6 +420,7 @@ type ConfigDisableDropdownCreate {
   tag: Boolean!
   studio: Boolean!
   movie: Boolean!
+  gallery: Boolean!
 }
 
 type ConfigInterfaceResult {

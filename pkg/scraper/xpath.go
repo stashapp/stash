@@ -261,7 +261,7 @@ func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Ima
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
 	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load URL %q: %w", url, err)
 	}
 
 	ret, err := html.Parse(r)

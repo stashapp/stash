@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
-  ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,
@@ -100,7 +100,7 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+  const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     imageTags,
     scraped.tags
   );
@@ -220,16 +220,21 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
     );
   }
 
+  if (linkDialog) {
+    return linkDialog;
+  }
+
   return (
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
         { entity_type: intl.formatMessage({ id: "image" }) }
       )}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         onClose(apply ? makeNewScrapedItem() : undefined);
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };

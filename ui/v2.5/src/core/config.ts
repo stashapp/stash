@@ -103,6 +103,8 @@ export interface IUIConfig {
   defaultFilters?: DefaultFilters;
 
   taggerConfig?: ITaggerConfig;
+
+  title?: string;
 }
 
 export function getFrontPageContent(

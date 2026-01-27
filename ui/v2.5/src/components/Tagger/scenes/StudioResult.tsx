@@ -3,16 +3,14 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
-import { Icon } from "src/components/Shared/Icon";
-import { OperationButton } from "src/components/Shared/OperationButton";
 import { StudioSelect, SelectObject } from "src/components/Shared/Select";
 import * as GQL from "src/core/generated-graphql";
 
 import { OptionalField } from "../IncludeButton";
-import { faSave } from "@fortawesome/free-solid-svg-icons";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
+import { LinkButton } from "../LinkButton";
 
 const StudioLink: React.FC<{
   studio: GQL.ScrapedStudio | GQL.SlimStudioDataFragment;
@@ -117,21 +115,6 @@ const StudioResult: React.FC<IStudioResultProps> = ({
     );
   }
 
-  function maybeRenderLinkButton() {
-    if (endpoint && onLink) {
-      return (
-        <OperationButton
-          variant="secondary"
-          disabled={selectedID === undefined}
-          operation={onLink}
-          hideChildrenWhenLoading
-        >
-          <Icon icon={faSave} />
-        </OperationButton>
-      );
-    }
-  }
-
   const selectedSource = !selectedID ? "skip" : "existing";
 
   const safeBuildStudioScraperLink = (id: string | null | undefined) => {
@@ -169,7 +152,9 @@ const StudioResult: React.FC<IStudioResultProps> = ({
           })}
           isClearable={false}
         />
-        {maybeRenderLinkButton()}
+        {endpoint && onLink && (
+          <LinkButton disabled={selectedID === undefined} onLink={onLink} />
+        )}
       </ButtonGroup>
     </div>
   );

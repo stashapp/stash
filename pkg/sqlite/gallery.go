@@ -30,12 +30,13 @@ const (
 )
 
 type galleryRow struct {
-	ID           int         `db:"id" goqu:"skipinsert"`
-	Title        zero.String `db:"title"`
-	Code         zero.String `db:"code"`
-	Date         NullDate    `db:"date"`
-	Details      zero.String `db:"details"`
-	Photographer zero.String `db:"photographer"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Title         zero.String `db:"title"`
+	Code          zero.String `db:"code"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
+	Details       zero.String `db:"details"`
+	Photographer  zero.String `db:"photographer"`
 	// expressed as 1-100
 	Rating    null.Int  `db:"rating"`
 	Organized bool      `db:"organized"`
@@ -50,6 +51,7 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Title = zero.StringFrom(o.Title)
 	r.Code = zero.StringFrom(o.Code)
 	r.Date = NullDateFromDatePtr(o.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
 	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
@@ -74,7 +76,7 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		ID:            r.ID,
 		Title:         r.Title.String,
 		Code:          r.Code.String,
-		Date:          r.Date.DatePtr(),
+		Date:          r.Date.DatePtr(r.DatePrecision),
 		Details:       r.Details.String,
 		Photographer:  r.Photographer.String,
 		Rating:        nullIntPtr(r.Rating),
@@ -102,7 +104,7 @@ type galleryRowRecord struct {
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
 	r.setNullString("code", o.Code)
-	r.setNullDate("date", o.Date)
+	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullString("details", o.Details)
 	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
@@ -800,10 +802,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	addFileTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    galleriesFilesTable,
 				onClause: "galleries_files.gallery_id = galleries.id",
 			},
 			join{
+				sort:     true,
 				table:    fileTable,
 				onClause: "galleries_files.file_id = files.id",
 			},
@@ -813,10 +817,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	addFolderTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "folders.id = galleries.folder_id",
 			},
 			join{
+				sort:     true,
 				table:    folderTable,
 				as:       "file_folder",
 				onClause: "files.parent_folder_id = file_folder.id",

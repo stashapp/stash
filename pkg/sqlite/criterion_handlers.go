@@ -1012,6 +1012,11 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		return
 	}
 
+	// ideally, this handler should just convert to stashIDsCriterionHandler
+	// but there are some differences in how the existing handler works compared
+	// to the new code, specifically because this code uses the stringCriterionHandler.
+	// To minimise potential regressions, we'll keep the existing logic for now.
+
 	stashIDRepo := h.stashIDRepository
 	t := stashIDRepo.tableName
 	if h.stashIDTableAs != "" {
@@ -1034,6 +1039,53 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		Value:    v,
 		Modifier: h.c.Modifier,
 	}, t+".stash_id")(ctx, f)
+}
+
+type stashIDsCriterionHandler struct {
+	c                 *models.StashIDsCriterionInput
+	stashIDRepository *stashIDRepository
+	stashIDTableAs    string
+	parentIDCol       string
+}
+
+func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c == nil {
+		return
+	}
+
+	stashIDRepo := h.stashIDRepository
+	t := stashIDRepo.tableName
+	if h.stashIDTableAs != "" {
+		t = h.stashIDTableAs
+	}
+
+	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
+		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+	}
+
+	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+
+	switch h.c.Modifier {
+	case models.CriterionModifierIsNull:
+		f.addWhere(fmt.Sprintf("%s.stash_id IS NULL", t))
+	case models.CriterionModifierNotNull:
+		f.addWhere(fmt.Sprintf("%s.stash_id IS NOT NULL", t))
+	case models.CriterionModifierEquals:
+		var clauses []sqlClause
+		for _, id := range h.c.StashIDs {
+			clauses = append(clauses, makeClause(fmt.Sprintf("%s.stash_id = ?", t), id))
+		}
+		f.whereClauses = append(f.whereClauses, orClauses(clauses...))
+	case models.CriterionModifierNotEquals:
+		var clauses []sqlClause
+		for _, id := range h.c.StashIDs {
+			clauses = append(clauses, makeClause(fmt.Sprintf("%s.stash_id != ?", t), id))
+		}
+		f.whereClauses = append(f.whereClauses, andClauses(clauses...))
+	default:
+		f.setError(fmt.Errorf("invalid modifier %s for stash IDs criterion", h.c.Modifier))
+	}
 }
 
 type relatedFilterHandler struct {

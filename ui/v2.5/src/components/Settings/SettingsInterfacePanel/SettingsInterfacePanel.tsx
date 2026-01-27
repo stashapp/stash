@@ -248,6 +248,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ sfwContentMode: v })}
           />
 
+          <StringSetting
+            id="custom-title"
+            headingID="config.ui.custom_title.heading"
+            subHeadingID="config.ui.custom_title.description"
+            value={ui.title ?? ""}
+            onChange={(v) => saveUI({ title: v })}
+          />
+
           <div className="setting-group">
             <div className="setting">
               <div>
@@ -599,6 +607,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               saveLightboxSettings({ scrollAttemptsBeforeChange: v })
             }
           />
+
+          <BooleanSetting
+            id="lightbox_disable_animation"
+            headingID="dialogs.lightbox.disable_animation"
+            checked={iface.imageLightbox?.disableAnimation ?? false}
+            onChange={(v) => saveLightboxSettings({ disableAnimation: v })}
+          />
         </SettingSection>
 
         <SettingSection headingID="config.ui.detail.heading">
@@ -724,6 +739,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                   disableDropdownCreate: {
                     ...iface.disableDropdownCreate,
                     movie: v,
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="disableDropdownCreate_gallery"
+              headingID="gallery"
+              checked={iface.disableDropdownCreate?.gallery ?? undefined}
+              onChange={(v) =>
+                saveInterface({
+                  disableDropdownCreate: {
+                    ...iface.disableDropdownCreate,
+                    gallery: v,
                   },
                 })
               }

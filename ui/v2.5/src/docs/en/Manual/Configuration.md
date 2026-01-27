@@ -165,6 +165,12 @@ The following environment variables are also supported:
 |----------------------|---------|
 | `STASH_SQLITE_CACHE_SIZE` | Sets the SQLite cache size. See https://www.sqlite.org/pragma.html#pragma_cache_size. Default is `-2000` which is 2MB. |
 
+### Custom favicon
+
+You can provide a custom favicon by placing a `favicon.ico` file in the configuration directory. The configuration directory is located alongside the `config.yml` file.
+
+When a custom favicon is provided, it will be served instead of the default embedded favicon.
+
 ### Custom served folders
 
 Custom served folders are served when the server handles a request with the `/custom` URL prefix. The following is an example configuration:

@@ -493,6 +493,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		r.setConfigString(config.ImageLightboxScrollModeKey, (*string)(options.ScrollMode))
 
 		r.setConfigInt(config.ImageLightboxScrollAttemptsBeforeChange, options.ScrollAttemptsBeforeChange)
+
+		r.setConfigBool(config.ImageLightboxDisableAnimation, options.DisableAnimation)
 	}
 
 	if input.CSS != nil {
@@ -519,6 +521,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		r.setConfigBool(config.DisableDropdownCreateStudio, ddc.Studio)
 		r.setConfigBool(config.DisableDropdownCreateTag, ddc.Tag)
 		r.setConfigBool(config.DisableDropdownCreateMovie, ddc.Movie)
+		r.setConfigBool(config.DisableDropdownCreateGallery, ddc.Gallery)
 	}
 
 	r.setConfigString(config.HandyKey, input.HandyKey)

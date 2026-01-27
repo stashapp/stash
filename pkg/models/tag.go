@@ -40,6 +40,10 @@ type TagFilterType struct {
 	ChildCount *IntCriterionInput `json:"child_count"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
+	// Filter by StashIDs Endpoint
+	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
 	// Filter by related scenes that meet this criteria
 	ScenesFilter *SceneFilterType `json:"scenes_filter"`
 	// Filter by related images that meet this criteria

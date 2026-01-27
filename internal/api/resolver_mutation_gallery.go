@@ -49,6 +49,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery.Details = translator.string(input.Details)
 	newGallery.Photographer = translator.string(input.Photographer)
 	newGallery.Rating = input.Rating100
+	newGallery.Organized = translator.bool(input.Organized)
 
 	var err error
 

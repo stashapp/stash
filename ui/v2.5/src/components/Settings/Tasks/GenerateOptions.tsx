@@ -100,7 +100,6 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             id="marker-image-preview-task"
             className="sub-setting"
             checked={options.markerImagePreviews ?? false}
-            disabled={!options.markers}
             headingID="dialogs.scene_gen.marker_image_previews"
             tooltipID="dialogs.scene_gen.marker_image_previews_tooltip"
             onChange={(v) =>
@@ -112,7 +111,6 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
           <BooleanSetting
             id="marker-screenshot-task"
             checked={options.markerScreenshots ?? false}
-            disabled={!options.markers}
             headingID="dialogs.scene_gen.marker_screenshots"
             tooltipID="dialogs.scene_gen.marker_screenshots_tooltip"
             onChange={(v) => setOptions({ markerScreenshots: v })}

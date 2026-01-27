@@ -151,7 +151,8 @@
         "show_results": "결과 표시",
         "show_count_results": "{count}개 결과 표시",
         "load": "불러오기",
-        "load_filter": "필터 불러오기"
+        "load_filter": "필터 불러오기",
+        "add_stash_id": "Stash ID 추가"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -197,13 +198,15 @@
             "set_cover_label": "영상 커버 이미지 설정",
             "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰거나 병합함으로써 태그를 영상에 추가합니다.",
             "set_tag_label": "태그 설정",
-            "show_male_desc": "남성 배우들의 태그 가능 여부 설정을 켜거나 끕니다.",
-            "show_male_label": "남성 배우 보여주기",
             "source": "출처",
             "mark_organized_desc": "저장 버튼을 클릭하면 곧바로 영상을 '정리됨' 상태로 만듭니다.",
             "mark_organized_label": "저장 시 '정리됨' 상태로 만들기",
             "errors": {
                 "blacklist_duplicate": "블랙리스트 항목이 중복되었습니다"
+            },
+            "performer_genders": {
+                "heading": "배우 성별",
+                "description": "영상을 태그할 때, 이 성별에 해당하는 배우들이 표시됩니다."
             }
         },
         "noun_query": "쿼리",
@@ -304,7 +307,9 @@
                 "password_desc": "Stash에 접속하기 위한 비밀번호입니다. 로그인 과정을 생략하려면 빈 칸으로 두십시오",
                 "stash-box_integration": "Stash-box 통합",
                 "username": "아이디",
-                "username_desc": "Stash에 접속하기 위한 아이디입니다. 로그인을 생략하려면 빈 칸으로 두십시오"
+                "username_desc": "Stash에 접속하기 위한 아이디입니다. 로그인을 생략하려면 빈 칸으로 두십시오",
+                "log_file_max_size": "최대 로그 크기",
+                "log_file_max_size_desc": "압축 전 로그 파일의 최대 크기(MB)입니다. 0MB를 입력하면 비활성화됩니다. 설정 변경 후 재시작해야 합니다."
             },
             "backup_directory_path": {
                 "description": "SQLite 데이터베이스 백업 파일을 위한 폴더 경로",
@@ -420,6 +425,10 @@
             "plugins_path": {
                 "description": "플러그인 설정 파일의 폴더 위치",
                 "heading": "플러그인 경로"
+            },
+            "delete_trash_path": {
+                "description": "삭제된 파일들이 영구 삭제되는 대신에 옮겨지게 될 경로입니다. 파일들을 영구 삭제하려면 빈 칸으로 두십시오.",
+                "heading": "휴지통 경로"
             }
         },
         "library": {
@@ -819,6 +828,10 @@
                         "heading": "배우 그리드 카드에 링크 표시"
                     }
                 }
+            },
+            "sfw_mode": {
+                "description": "건전한 컨텐츠를 저장하기 위해 Stash를 사용한다면 활성화하세요. 성인 컨텐츠와 관련된 UI 요소들을 숨기거나 변경시킵니다.",
+                "heading": "건전 컨텐츠 모드"
             }
         },
         "advanced_mode": "고급 설정 모드"
@@ -887,7 +900,7 @@
         "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 삭제",
         "dont_show_until_updated": "다음 업데이트까지 보지 않기",
         "edit_entity_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정",
-        "export_include_related_objects": "내보내기 할 때 관련된 개체를 포합합니다",
+        "export_include_related_objects": "내보내기 할 때 관련된 개체를 포함합니다",
         "export_title": "내보내기",
         "imagewall": {
             "direction": {
@@ -917,7 +930,8 @@
                 "label": "스크롤 모드",
                 "pan_y": "수직 스크롤 모드",
                 "zoom": "확대"
-            }
+            },
+            "disable_animation": "이미지 간 전환 애니메이션 비활성화하기"
         },
         "merge_tags": {
             "destination": "다른 태그와 합쳐질 태그",
@@ -963,7 +977,7 @@
             "image_thumbnails": "이미지 썸네일",
             "phash_tooltip": "중복 방지와 영상 식별에 사용됩니다"
         },
-        "scenes_found": "{count}개의 영상을 찾았습니다",
+        "scenes_found": "{count}개 영상 발견됨",
         "scrape_entity_query": "{entity_type} 스크레이핑 쿼리",
         "scrape_entity_title": "{entity_type} 스크레이핑 결과",
         "scrape_results_existing": "존재",
@@ -982,7 +996,12 @@
             "destination": "~으로 재지정"
         },
         "overwrite_filter_warning": "저장된 필터 \"{entityName}\"은 덮어쓰기될 것입니다.",
-        "set_default_filter_confirm": "정말로 이 필터를 기본값으로 설정하시겠습니까?"
+        "set_default_filter_confirm": "정말로 이 필터를 기본값으로 설정하시겠습니까?",
+        "clear_o_history_confirm_sfw": "정말 좋아요 기록을 삭제하시겠습니까?",
+        "delete_alert_to_trash": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}가 휴지통으로 옮겨질 것입니다:",
+        "stashid_exists_warning": "이 Stash-Box의 기존 Stash ID가 교체될 것입니다.",
+        "studios_found": "{count}개 스튜디오 발견됨",
+        "tags_found": "{count}개 태그 발견됨"
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -1198,7 +1217,6 @@
         "no_results_found": "결과가 없습니다.",
         "number_of_performers_will_be_processed": "{performer_count}명의 배우들이 처리됩니다",
         "performer_already_tagged": "배우가 이미 태그되어 있음",
-        "performer_names_separated_by_comma": "배우 이름 (,으로 구분)",
         "performer_selection": "배우 선택",
         "performer_successfully_tagged": "배우 태깅에 성공했습니다:",
         "query_all_performers_in_the_database": "데이터베이스의 모든 배우",
@@ -1211,7 +1229,8 @@
         "untagged_performers": "태그되지 않은 배우",
         "update_performer": "배우 업데이트",
         "update_performers": "배우 업데이트",
-        "updating_untagged_performers_description": "'태그되지 않은 배우 업데이트'를 통해, Stash ID가 없는 배우들에 대한 데이터를 찾아보고, 가능하다면 이를 이용해 배우를 업데이트합니다."
+        "updating_untagged_performers_description": "'태그되지 않은 배우 업데이트'를 통해, Stash ID가 없는 배우들에 대한 데이터를 찾아보고, 가능하다면 이를 이용해 배우를 업데이트합니다.",
+        "performer_names_or_stashids_separated_by_comma": "배우 이름 또는 Stash ID (쉼표(,)로 구분)"
     },
     "performer_tags": "배우 태그",
     "performers": "배우",
@@ -1291,7 +1310,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "데이터베이스 파일 이름 (빈 칸으로 두면 기본값을 사용합니다)",
-            "description": "다음으로, 야동 위치와, Stash 데이터베이스, 생성 파일, 캐시 파일의 위치를 정해야 합니다. 이 설정은 나중에 필요할 때 언제든 바꿀 수 있습니다.",
+            "description": "다음으로, 컨텐츠를 찾을 위치를 정하고, Stash 데이터베이스, 생성 파일, 캐시 파일이 저장될 위치를 정해야 합니다. 이 설정은 나중에 필요할 때 언제든 바꿀 수 있습니다.",
             "path_to_cache_directory_empty_for_default": "캐시 폴더 경로 (빈 칸으로 두면 기본값을 사용합니다)",
             "path_to_generated_directory_empty_for_default": "생성되는 파일들을 저장할 폴더 경로 (빈 칸으로 두면 기본값을 사용합니다)",
             "set_up_your_paths": "경로를 설정하세요",
@@ -1302,14 +1321,17 @@
             "where_can_stash_store_cache_files": "어디에 캐시 파일을 저장할까요?",
             "where_can_stash_store_cache_files_description": "HLS/DASH 실시간 스트리밍과 같은 기능들이 동작하기 위해서는, 임시 파일을 저장할 캐시 폴더가 필요합니다. 기본값으로는, 설정 파일이 저장된 폴더 안에 <code>cache</code>라는 폴더가 만들어질 것입니다. 만약 이것을 바꾸고 싶다면, 절대 경로 혹은 (현재 경로의) 상대 경로를 입력해주세요. 입력된 경로에 해당 폴더가 없다면 자동으로 생성됩니다.",
             "where_can_stash_store_its_database": "어디에 Stash 데이터베이스를 저장할까요?",
-            "where_can_stash_store_its_database_description": "Stash는 야동 메타데이터를 저장할 때 SQLite 데이터베이스를 사용합니다. 기본값으로, 데이터베이스 파일은 <code>stash-go.sqlite</code>라는 이름으로 설정 파일이 포함된 폴더 안에 생성될 것입니다. 데이터베이스 파일 이름을 바꾸고 싶다면, 절대 경로 또는 (현재 경로의 )상대 경로를 입력하세요.",
+            "where_can_stash_store_its_database_description": "Stash는 SQLite 데이터베이스를 사용하여 컨텐츠의 메타데이터를 저장합니다. 기본값으로, 데이터베이스 파일은 설정 파일이 포함된 폴더 안에 <code>stash-go.sqlite</code>라는 이름으로 생성될 것입니다. 데이터베이스 파일 이름을 바꾸고 싶다면, 절대 경로 파일 이름, 혹은 (현재 경로의) 상대 경로 파일 이름을 입력하세요.",
             "where_can_stash_store_its_database_warning": "경고: Stash가 동작하는 곳이 아닌 다른 시스템에 데이터베이스를 저장하는 것은 <strong>지원되지 않습니다</strong>! (예시: 데이터베이스를 NAS에 저장하면서 Stash 서버를 다른 컴퓨터에서 돌리는 행위) SQLite는 네트워크를 넘어 사용되도록 만들어지지 않았으며, 이런 행위를 함으로써 데이터베이스가 아주 쉽게 망가지게 될 수 있습니다.",
             "where_can_stash_store_its_generated_content": "생성된 컨텐츠를 어디에 저장할까요?",
             "where_can_stash_store_its_generated_content_description": "Stash에서는 썸네일, 미리보기, 스프라이트로 사용할 이미지와 비디오 파일을 생성합니다. 여기에는 지원되지 않는 파일 형식들의 변환본도 포함됩니다. Stash에서는 기본값으로, 설정 파일이 위치한 폴더 안에 <code>generated</code> 폴더를 만들 것입니다. 생성된 미디어 파일들이 저장되는 위치를 변경하고 싶다면, 절대 경로 혹은 상대 경로(현재 폴더 기준)를 적어주세요. 적혀진 경로에 해당 폴더가 없다면 자동으로 생성됩니다.",
-            "where_is_your_porn_located": "야동이 있는 위치가 어딘가요?",
-            "where_is_your_porn_located_description": "야동 폴더를 추가하세요. 비디오와 이미지를 스캐닝할 때 사용됩니다.",
+            "where_is_your_porn_located": "컨텐츠가 있는 위치가 어딘가요?",
+            "where_is_your_porn_located_description": "영상과 이미지가 들어있는 폴더를 추가하세요. 이 폴더들을 스캔하여 비디오와 이미지를 찾을 것입니다.",
             "path_to_blobs_directory_empty_for_default": "Blob 폴더 경로 (빈 칸으로 두면 기본값을 사용합니다)",
-            "store_blobs_in_database": "데이터베이스에 Blob 저장"
+            "store_blobs_in_database": "데이터베이스에 Blob 저장",
+            "sfw_content_settings": "Stash를 성인물 등이 아닌 건전한 컨텐츠 저장 용도로 사용하시나요?",
+            "sfw_content_settings_description": "Stash는 사진, 그림, 만화 등등의 건전한 컨텐츠를 관리하기 위해 사용될 수 있습니다. 이 옵션을 활성화하면 일부 UI 동작이 건전한 컨텐츠에 더 적합하도록 조정됩니다.",
+            "use_sfw_content_mode": "건전 컨텐츠 모드 사용"
         },
         "stash_setup_wizard": "Stash 설정 마법사",
         "success": {
@@ -1405,7 +1427,7 @@
     "updated_at": "수정 날짜",
     "url": "URL",
     "validation": {
-        "date_invalid_form": "${path}는 YYYY-MM-DD 형태여야 합니다",
+        "date_invalid_form": "${path}는 YYYY, YYYY-MM, YYYY-MM-DD 형식 중 하나여야 합니다",
         "required": "${path}는 필수 항목입니다",
         "unique": "${path}은(는) 유일해야 합니다",
         "blank": "${path}를 빈 칸으로 둘 수 없습니다",
@@ -1432,7 +1454,6 @@
         "name_already_exists": "이름이 이미 존재합니다",
         "studio_already_tagged": "스튜디오가 이미 태그되었음",
         "updating_untagged_studios_description": "태그되지 않은 스튜디오를 업데이트하면, stashid가 없는 스튜디오들을 확인하고 메타데이터를 업데이트할 것입니다.",
-        "studio_names_separated_by_comma": "스튜디오 이름들 (쉼표(,)로 구분)",
         "current_page": "현재 페이지",
         "failed_to_save_studio": "\"{studio}\" 스튜디오를 저장하는 데에 실패했습니다",
         "refresh_tagged_studios": "태그된 스튜디오 새로고침",
@@ -1453,7 +1474,8 @@
         "update_studios": "스튜디오 업데이트",
         "untagged_studios": "태그되지 않은 스튜디오",
         "update_studio": "스튜디오 업데이트",
-        "studio_selection": "스튜디오 선택"
+        "studio_selection": "스튜디오 선택",
+        "studio_names_or_stashids_separated_by_comma": "스튜디오 이름 또는 StashID (쉼표로 구분)"
     },
     "audio_codec": "오디오 코덱",
     "connection_monitor": {
@@ -1555,5 +1577,15 @@
         "any_of": "해당 값 중 일부 포함"
     },
     "eta": "예상 소요 시간",
-    "scenes_duration": "영상 길이"
+    "scenes_duration": "영상 길이",
+    "last_o_at_sfw": "마지막 좋아요 날짜",
+    "o_count_sfw": "좋아요",
+    "o_history_sfw": "좋아요 기록",
+    "odate_recorded_no_sfw": "좋아요 날짜 기록 없음",
+    "stashbox_search": {
+        "header": "StashBox로부터 {entityType} 탐색",
+        "no_results": "탐색 결과가 없습니다.",
+        "placeholder_name_or_id": "({entityType} 이름 또는 StashID를 입력하세요)",
+        "select_stashbox": "StashBox 선택..."
+    }
 }

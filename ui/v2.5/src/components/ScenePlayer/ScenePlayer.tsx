@@ -16,6 +16,7 @@ import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
+import "./autostart-button";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
 import "./vtt-thumbnails";
@@ -23,10 +24,12 @@ import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
 import "./media-session";
+import "./wake-sentinel";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
+  useConfigureInterface,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
@@ -248,6 +251,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const sceneId = useRef<string>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
+    const [updateInterfaceConfig] = useConfigureInterface();
 
     const [time, setTime] = useState(0);
     const [ready, setReady] = useState(false);
@@ -360,7 +364,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         },
         nativeControlsForTouch: false,
         playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-        inactivityTimeout: 2000,
+        inactivityTimeout: 700,
         preload: "none",
         playsinline: true,
         techOrder: ["chromecast", "html5"],
@@ -388,6 +392,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           skipButtons: {},
           trackActivity: {},
           vrMenu: {},
+          autostartButton: {
+            enabled: interfaceConfig?.autostartVideo ?? false,
+          },
           abLoopPlugin: {
             start: 0,
             end: false,
@@ -399,6 +406,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             createButtons: uiConfig?.showAbLoopControls ?? false,
           },
           mediaSession: {},
+          wakeSentinel: {},
         },
       };
 
@@ -432,6 +440,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
+      // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
+      // player re-initialization when toggling autostart (which would interrupt playback)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
 
     useEffect(() => {
@@ -673,11 +684,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         }
       }
 
-      auto.current =
-        autoplay ||
-        (interfaceConfig?.autostartVideo ?? false) ||
-        _initialTimestamp > 0;
-
       const alwaysStartFromBeginning =
         uiConfig?.alwaysStartFromBeginning ?? false;
       const resumeTime = scene.resume_time ?? 0;
@@ -695,6 +701,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       player.load();
       player.focus();
+
+      // Check the autostart button plugin for user preference
+      const autostartButton = player.autostartButton();
+      const buttonEnabled = autostartButton.getEnabled();
+      auto.current =
+        autoplay ||
+        buttonEnabled ||
+        (interfaceConfig?.autostartVideo ?? false) ||
+        _initialTimestamp > 0;
 
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);
@@ -839,6 +854,30 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       sceneSaveActivity,
     ]);
 
+    // Sync autostart button with config changes
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      async function updateAutoStart(enabled: boolean) {
+        await updateInterfaceConfig({
+          variables: {
+            input: {
+              autostartVideo: enabled,
+            },
+          },
+        });
+      }
+
+      const autostartButton = player.autostartButton();
+      if (autostartButton) {
+        autostartButton.syncWithConfig(
+          interfaceConfig?.autostartVideo ?? false
+        );
+        autostartButton.updateAutoStart = updateAutoStart;
+      }
+    }, [getPlayer, updateInterfaceConfig, interfaceConfig?.autostartVideo]);
+
     useEffect(() => {
       const player = getPlayer();
       if (!player) return;
@@ -893,15 +932,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         );
     }, [getPlayer, scene]);
 
+    const pausedBeforeScrubber = useRef(true);
+
     function onScrubberScroll() {
-      if (started.current) {
-        getPlayer()?.pause();
+      const player = getPlayer();
+      if (started.current && player) {
+        pausedBeforeScrubber.current = player.paused();
+        player.pause();
       }
     }
 
     function onScrubberSeek(seconds: number) {
-      if (started.current) {
-        getPlayer()?.currentTime(seconds);
+      const player = getPlayer();
+      if (started.current && player) {
+        player.currentTime(seconds);
+        if (!pausedBeforeScrubber.current) {
+          player.play();
+        }
       } else {
         setTime(seconds);
       }

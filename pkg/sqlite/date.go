@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"gopkg.in/guregu/null.v4"
 )
 
 const sqliteDateLayout = "2006-01-02"
@@ -54,12 +55,12 @@ func (d NullDate) Value() (driver.Value, error) {
 	return d.Date.Format(sqliteDateLayout), nil
 }
 
-func (d *NullDate) DatePtr() *models.Date {
+func (d *NullDate) DatePtr(precision null.Int) *models.Date {
 	if d == nil || !d.Valid {
 		return nil
 	}
 
-	return &models.Date{Time: d.Date}
+	return &models.Date{Time: d.Date, Precision: models.DatePrecision(precision.Int64)}
 }
 
 func NullDateFromDatePtr(d *models.Date) NullDate {
@@ -67,4 +68,12 @@ func NullDateFromDatePtr(d *models.Date) NullDate {
 		return NullDate{Valid: false}
 	}
 	return NullDate{Date: d.Time, Valid: true}
+}
+
+func datePrecisionFromDatePtr(d *models.Date) null.Int {
+	if d == nil {
+		// default to day precision
+		return null.Int{}
+	}
+	return null.IntFrom(int64(d.Precision))
 }

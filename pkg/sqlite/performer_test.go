@@ -1069,6 +1069,8 @@ func TestPerformerQuery(t *testing.T) {
 	var (
 		endpoint = performerStashID(performerIdxWithGallery).Endpoint
 		stashID  = performerStashID(performerIdxWithGallery).StashID
+		stashID2 = performerStashID(performerIdx1WithGallery).StashID
+		stashIDs = []*string{&stashID, &stashID2}
 	)
 
 	tests := []struct {
@@ -1134,6 +1136,60 @@ func TestPerformerQuery(t *testing.T) {
 			false,
 		},
 		{
+			"stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
+			"exclude stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			false,
+		},
+		{
+			"null stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			false,
+		},
+		{
+			"not null stash ids with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{performerIdxWithGallery, performerIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
 			"circumcised (cut)",
 			nil,
 			&models.PerformerFilterType{
@@ -1158,6 +1214,98 @@ func TestPerformerQuery(t *testing.T) {
 			[]int{performerIdx2WithScene},
 			// performerIdxWithScene has null value
 			[]int{performerIdx1WithScene, performerIdxWithScene},
+			false,
+		},
+		{
+			"include scene studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithScenePerformer])},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{performerIdxWithSceneStudio},
+			nil,
+			false,
+		},
+		{
+			"include image studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithImagePerformer])},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{performerIdxWithImageStudio},
+			nil,
+			false,
+		},
+		{
+			"include gallery studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithGalleryPerformer])},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{performerIdxWithGalleryStudio},
+			nil,
+			false,
+		},
+		{
+			"exclude scene studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithScenePerformer])},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			nil,
+			[]int{performerIdxWithSceneStudio},
+			false,
+		},
+		{
+			"exclude image studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithImagePerformer])},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			nil,
+			[]int{performerIdxWithImageStudio},
+			false,
+		},
+		{
+			"exclude gallery studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdxWithGalleryPerformer])},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGalleryStudio},
+			false,
+		},
+		{
+			"include and exclude scene studio",
+			nil,
+			&models.PerformerFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{strconv.Itoa(studioIDs[studioIdx1WithTwoScenePerformer])},
+					Modifier: models.CriterionModifierIncludes,
+					Excludes: []string{strconv.Itoa(studioIDs[studioIdx2WithTwoScenePerformer])},
+				},
+			},
+			nil,
+			[]int{performerIdxWithTwoSceneStudio},
 			false,
 		},
 	}
@@ -2260,7 +2408,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTwoSceneStudio], lastPerformer.ID)
 
 		return nil
 	})
@@ -2427,6 +2575,146 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 			}
 			for _, e := range exclude {
 				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func TestPerformerMerge(t *testing.T) {
+	tests := []struct {
+		name    string
+		srcIdxs []int
+		destIdx int
+		wantErr bool
+	}{
+		{
+			name:    "merge into self",
+			srcIdxs: []int{performerIdx1WithDupName},
+			destIdx: performerIdx1WithDupName,
+			wantErr: true,
+		},
+		{
+			name: "merge multiple",
+			srcIdxs: []int{
+				performerIdx2WithScene,
+				performerIdxWithTwoScenes,
+				performerIdx1WithImage,
+				performerIdxWithTwoImages,
+				performerIdxWithGallery,
+				performerIdxWithTwoGalleries,
+				performerIdxWithTag,
+				performerIdxWithTwoTags,
+			},
+			destIdx: tagIdxWithPerformer,
+			wantErr: false,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			// load src tag ids to compare after merge
+			performerTagIds := make(map[int][]int)
+			for _, srcIdx := range tt.srcIdxs {
+				srcPerformer, err := qb.Find(ctx, performerIDs[srcIdx])
+				if err != nil {
+					t.Errorf("Error finding performer: %s", err.Error())
+				}
+				if err := srcPerformer.LoadTagIDs(ctx, qb); err != nil {
+					t.Errorf("Error loading performer tag IDs: %s", err.Error())
+				}
+				srcTagIDs := srcPerformer.TagIDs.List()
+				performerTagIds[srcIdx] = srcTagIDs
+			}
+
+			err := qb.Merge(ctx, indexesToIDs(tagIDs, tt.srcIdxs), tagIDs[tt.destIdx])
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Merge() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err != nil {
+				return
+			}
+
+			// ensure source performers are destroyed
+			for _, srcIdx := range tt.srcIdxs {
+				p, err := qb.Find(ctx, performerIDs[srcIdx])
+
+				// not found returns nil performer and nil error
+				if err != nil {
+					t.Errorf("Error finding performer: %s", err.Error())
+					continue
+				}
+				assert.Nil(p)
+			}
+
+			// ensure items point to new performer
+			for _, srcIdx := range tt.srcIdxs {
+				sceneIdxs := scenePerformers.reverseLookup(srcIdx)
+				for _, sceneIdx := range sceneIdxs {
+					s, err := db.Scene.Find(ctx, sceneIDs[sceneIdx])
+					if err != nil {
+						t.Errorf("Error finding scene: %s", err.Error())
+					}
+					if err := s.LoadPerformerIDs(ctx, db.Scene); err != nil {
+						t.Errorf("Error loading scene performer IDs: %s", err.Error())
+					}
+					scenePerformerIDs := s.PerformerIDs.List()
+
+					assert.Contains(scenePerformerIDs, performerIDs[tt.destIdx])
+					assert.NotContains(scenePerformerIDs, performerIDs[srcIdx])
+				}
+
+				imageIdxs := imagePerformers.reverseLookup(srcIdx)
+				for _, imageIdx := range imageIdxs {
+					i, err := db.Image.Find(ctx, imageIDs[imageIdx])
+					if err != nil {
+						t.Errorf("Error finding image: %s", err.Error())
+					}
+					if err := i.LoadPerformerIDs(ctx, db.Image); err != nil {
+						t.Errorf("Error loading image performer IDs: %s", err.Error())
+					}
+					imagePerformerIDs := i.PerformerIDs.List()
+
+					assert.Contains(imagePerformerIDs, performerIDs[tt.destIdx])
+					assert.NotContains(imagePerformerIDs, performerIDs[srcIdx])
+				}
+
+				galleryIdxs := galleryPerformers.reverseLookup(srcIdx)
+				for _, galleryIdx := range galleryIdxs {
+					g, err := db.Gallery.Find(ctx, galleryIDs[galleryIdx])
+					if err != nil {
+						t.Errorf("Error finding gallery: %s", err.Error())
+					}
+					if err := g.LoadPerformerIDs(ctx, db.Gallery); err != nil {
+						t.Errorf("Error loading gallery performer IDs: %s", err.Error())
+					}
+					galleryPerformerIDs := g.PerformerIDs.List()
+
+					assert.Contains(galleryPerformerIDs, performerIDs[tt.destIdx])
+					assert.NotContains(galleryPerformerIDs, performerIDs[srcIdx])
+				}
+			}
+
+			// ensure tags were merged
+			destPerformer, err := qb.Find(ctx, performerIDs[tt.destIdx])
+			if err != nil {
+				t.Errorf("Error finding performer: %s", err.Error())
+			}
+			if err := destPerformer.LoadTagIDs(ctx, qb); err != nil {
+				t.Errorf("Error loading performer tag IDs: %s", err.Error())
+			}
+			destTagIDs := destPerformer.TagIDs.List()
+
+			for _, srcIdx := range tt.srcIdxs {
+				for _, tagID := range performerTagIds[srcIdx] {
+					assert.Contains(destTagIDs, tagID)
+				}
 			}
 		})
 	}

@@ -146,7 +146,6 @@
             "blacklist_desc": "Els elements de la llista negra estan exclosos de les consultes. Tingueu en compte que són expressions regulars i també insensibles a majúscules i minúscules. Alguns caràcters s'han d'escapar amb una barra inversa: {chars_require_escape}",
             "set_cover_desc": "Reemplaça la portada de l'escena si se'n troba una.",
             "set_tag_label": "Estableix les etiquetes",
-            "show_male_desc": "Estableix si els intèrprets masculins estaran disponibles per etiquetar.",
             "active_instance": "Instància activa de Stash-Box:",
             "blacklist_label": "Llista negra",
             "mark_organized_desc": "Marqueu immediatament l'escena com a Organitzada després de fer clic al botó Desa.",
@@ -164,7 +163,6 @@
             "query_mode_path_desc": "Utilitza el camí complet del fitxer",
             "set_cover_label": "Estableix la imatge de la portada de l'escena",
             "set_tag_desc": "Adjunta etiquetes a l'escena, ja sigui sobreescrivint o fusionant amb etiquetes existents a l'escena.",
-            "show_male_label": "Mostra els intèrprets masculins",
             "source": "Font"
         },
         "results": {

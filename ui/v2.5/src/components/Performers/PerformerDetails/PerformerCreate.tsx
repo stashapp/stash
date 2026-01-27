@@ -23,12 +23,14 @@ const PerformerCreate: React.FC = () => {
 
   const [createPerformer] = usePerformerCreate();
 
-  async function onSave(input: GQL.PerformerCreateInput) {
+  async function onSave(input: GQL.PerformerCreateInput, andNew?: boolean) {
     const result = await createPerformer({
       variables: { input },
     });
     if (result.data?.performerCreate) {
-      history.push(`/performers/${result.data.performerCreate.id}`);
+      if (!andNew) {
+        history.push(`/performers/${result.data.performerCreate.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

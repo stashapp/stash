@@ -392,10 +392,10 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 	switch sort {
 	case "scenes_updated_at":
 		sort = "updated_at"
-		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
+		query.joinSort(sceneTable, "", "scenes.id = scene_markers.scene_id")
 		query.sortAndPagination += getSort(sort, direction, sceneTable)
 	case "title":
-		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
+		query.joinSort(tagTable, "", "scene_markers.primary_tag_id = tags.id")
 		query.sortAndPagination += " ORDER BY COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction
 	case "duration":
 		sort = "(scene_markers.end_seconds - scene_markers.seconds)"

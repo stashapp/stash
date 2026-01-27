@@ -14,6 +14,7 @@ import {
   ParentTagsCriterionOption,
 } from "./criteria/tags";
 import { FavoriteTagCriterionOption } from "./criteria/favorite";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 
 const defaultSortBy = "name";
 const sortByOptions = ["name", "random", "scenes_duration"]
@@ -58,6 +59,7 @@ const criterionOptions = [
   createStringCriterionOption("aliases"),
   createStringCriterionOption("description"),
   createBooleanCriterionOption("ignore_auto_tag"),
+  StashIDCriterionOption,
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),

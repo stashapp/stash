@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Dropdown } from "react-bootstrap";
+import { Button, Form, Dropdown, SplitButton } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -15,7 +15,7 @@ import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
 import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
+import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { useToast } from "src/hooks/Toast";
 import { Prompt } from "react-router-dom";
@@ -58,7 +58,10 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
-  onSubmit: (performer: GQL.PerformerCreateInput) => Promise<void>;
+  onSubmit: (
+    performer: GQL.PerformerCreateInput,
+    andNew?: boolean
+  ) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -345,15 +348,24 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const { values } = formik;
+    const input = {
+      ...schema.cast(values),
+      custom_fields: customFieldInput(isNew, values.custom_fields),
+    };
+    onSave(input, true);
   }
 
   // set up hotkeys
@@ -574,23 +586,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function onStashIDSelected(item?: GQL.StashIdInput) {
     if (!item) return;
-
-    // Check if StashID with this endpoint already exists
-    const existingIndex = formik.values.stash_ids.findIndex(
-      (s) => s.endpoint === item.endpoint
+    formik.setFieldValue(
+      "stash_ids",
+      addUpdateStashID(formik.values.stash_ids, item)
     );
-
-    let newStashIDs;
-    if (existingIndex >= 0) {
-      // Replace existing StashID
-      newStashIDs = [...formik.values.stash_ids];
-      newStashIDs[existingIndex] = item;
-    } else {
-      // Add new StashID
-      newStashIDs = [...formik.values.stash_ids, item];
-    }
-
-    formik.setFieldValue("stash_ids", newStashIDs);
   }
 
   function renderButtons(classNames: string) {
@@ -616,17 +615,33 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="actions.clear_image" />
           </Button>
         </div>
-        <Button
-          variant="success"
-          disabled={
-            (!isNew && !formik.dirty) ||
-            !isEqual(formik.errors, {}) ||
-            customFieldsError !== undefined
-          }
-          onClick={() => formik.submitForm()}
-        >
-          <FormattedMessage id="actions.save" />
-        </Button>
+        {isNew ? (
+          <SplitButton
+            id="save-split-button"
+            variant="success"
+            disabled={
+              !isEqual(formik.errors, {}) || customFieldsError !== undefined
+            }
+            title={intl.formatMessage({ id: "actions.save" })}
+            onClick={() => formik.submitForm()}
+          >
+            <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+              <FormattedMessage id="actions.save_and_new" />
+            </Dropdown.Item>
+          </SplitButton>
+        ) : (
+          <Button
+            variant="success"
+            disabled={
+              (!isNew && !formik.dirty) ||
+              !isEqual(formik.errors, {}) ||
+              customFieldsError !== undefined
+            }
+            onClick={() => formik.submitForm()}
+          >
+            <FormattedMessage id="actions.save" />
+          </Button>
+        )}
       </div>
     );
   }
@@ -685,6 +700,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {maybeRenderScrapeDialog()}
       {isStashIDSearchOpen && (
         <StashBoxIDSearchModal
+          entityType="performer"
           stashBoxes={stashConfig?.general.stashBoxes ?? []}
           excludedStashBoxEndpoints={formik.values.stash_ids.map(
             (s) => s.endpoint
@@ -693,6 +709,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             onStashIDSelected(item);
             setIsStashIDSearchOpen(false);
           }}
+          initialQuery={performer.name ?? ""}
         />
       )}
 
@@ -706,7 +723,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("name")}
         {renderInputField("disambiguation")}
 
-        {renderStringListField("alias_list", "aliases")}
+        {renderStringListField("alias_list", "aliases", { orderable: false })}
 
         {renderSelectField("gender", stringGenderMap)}
 

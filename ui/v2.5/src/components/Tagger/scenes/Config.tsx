@@ -124,6 +124,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
     const performerGenders = config.performerGenders || genderList.slice();
     return (
       <Form.Check
+        id={`gender-${gender}`}
         key={gender}
         label={<FormattedMessage id={`gender_types.${gender}`} />}
         checked={performerGenders.includes(gender)}

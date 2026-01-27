@@ -859,6 +859,8 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 	}
 
 	args = append(args, destination)
+
+	// for each table, update source tag ids to destination tag id, ignoring duplicates
 	for table, idColumn := range tagTables {
 		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
 SET tag_id = ?

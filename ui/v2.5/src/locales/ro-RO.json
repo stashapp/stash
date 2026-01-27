@@ -172,8 +172,6 @@
             "set_cover_label": "Setează imaginea de copertă a scenei",
             "set_tag_desc": "Atașați etichete scenei, fie prin suprascriere, fie prin fuziune cu etichetele existente pe scenă.",
             "set_tag_label": "Setați etichete",
-            "show_male_desc": "Comutați dacă interpreții de sex masculin vor fi disponibili pentru etichetare.",
-            "show_male_label": "Arată interpreți de sex masculin",
             "source": "Sursă",
             "query_mode_metadata": "Date meta",
             "mark_organized_label": "Marchează ca Organizat la salvare",

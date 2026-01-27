@@ -96,7 +96,9 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
   useEffect(() => {
     setPrimaryTag(
-      marker?.primary_tag ? { ...marker.primary_tag, aliases: [] } : undefined
+      marker?.primary_tag
+        ? { ...marker.primary_tag, aliases: [], stash_ids: [] }
+        : undefined
     );
   }, [marker?.primary_tag]);
 
@@ -105,6 +107,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       marker?.tags.map((t) => ({
         ...t,
         aliases: [],
+        stash_ids: [],
       })) ?? []
     );
   }, [marker?.tags]);

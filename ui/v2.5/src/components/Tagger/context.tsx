@@ -15,6 +15,7 @@ import {
   useStudioCreate,
   useStudioUpdate,
   useTagCreate,
+  useTagUpdate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { useConfigurationContext } from "src/hooks/Config";
@@ -55,6 +56,10 @@ export interface ITaggerContextState {
   ) => Promise<string | undefined>;
   updateStudio: (studio: GQL.StudioUpdateInput) => Promise<void>;
   linkStudio: (studio: GQL.ScrapedStudio, studioID: string) => Promise<void>;
+  updateTag: (
+    tag: GQL.ScrapedTag,
+    updateInput: GQL.TagUpdateInput
+  ) => Promise<void>;
   resolveScene: (
     sceneID: string,
     index: number,
@@ -92,6 +97,7 @@ export const TaggerStateContext = React.createContext<ITaggerContextState>({
   createNewStudio: dummyValFn,
   updateStudio: dummyFn,
   linkStudio: dummyFn,
+  updateTag: dummyFn,
   resolveScene: dummyFn,
   submitFingerprints: dummyFn,
   pendingFingerprints: [],
@@ -129,6 +135,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   const [createStudio] = useStudioCreate();
   const [updateStudio] = useStudioUpdate();
   const [updateScene] = useSceneUpdate();
+  const [updateTag] = useTagUpdate();
 
   useEffect(() => {
     if (!stashConfig || !Scrapers.data) {
@@ -860,6 +867,50 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
   }
 
+  async function updateExistingTag(
+    tag: GQL.ScrapedTag,
+    updateInput: GQL.TagUpdateInput
+  ) {
+    const hasRemoteID = !!tag.remote_site_id;
+
+    try {
+      await updateTag({
+        variables: {
+          input: updateInput,
+        },
+      });
+
+      const newSearchResults = mapResults((r) => {
+        if (!r.tags) {
+          return r;
+        }
+
+        return {
+          ...r,
+          tags: r.tags.map((t) => {
+            if (
+              (hasRemoteID && t.remote_site_id === tag.remote_site_id) ||
+              (!hasRemoteID && t.name === tag.name)
+            ) {
+              return {
+                ...t,
+                stored_id: updateInput.id,
+              };
+            }
+
+            return t;
+          }),
+        };
+      });
+
+      setSearchResults(newSearchResults);
+
+      Toast.success(<span>Updated tag</span>);
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   return (
     <TaggerStateContext.Provider
       value={{
@@ -884,6 +935,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         createNewStudio,
         updateStudio: updateExistingStudio,
         linkStudio,
+        updateTag: updateExistingTag,
         resolveScene,
         saveScene,
         submitFingerprints,

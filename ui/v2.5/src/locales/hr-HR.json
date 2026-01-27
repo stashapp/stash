@@ -199,8 +199,6 @@
             "set_cover_label": "Postavi sliku naslovnice scene",
             "set_tag_desc": "Priložite oznake sceni, bilo prepisivanjem ili spajanjem s postojećim oznakama na sceni.",
             "set_tag_label": "Postavi oznake",
-            "show_male_desc": "Uključi/isključi mogućnost označavanja muških izvođača.",
-            "show_male_label": "Prikaži muške izvođače",
             "source": "Izvor"
         },
         "noun_query": "Upit",

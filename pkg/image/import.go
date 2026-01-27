@@ -110,7 +110,7 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 
 	for _, ref := range i.Input.Files {
 		path := ref
-		f, err := i.FileFinder.FindByPath(ctx, path)
+		f, err := i.FileFinder.FindByPath(ctx, path, true)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
 		}
