@@ -252,6 +252,10 @@ Returns `void`.
 - `HoverPopover`
 - `Icon`
 - `ImageCard`
+- `ImageCard.Details`
+- `ImageCard.Image`
+- `ImageCard.Overlays`
+- `ImageCard.Popovers`
 - `ImageDetailPanel`
 - `ImageGridCard`
 - `ImageInput`
