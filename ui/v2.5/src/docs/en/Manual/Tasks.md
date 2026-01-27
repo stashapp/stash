@@ -18,10 +18,11 @@ The scan task accepts the following options:
 | Generate previews | Generates video previews (mp4) which play when hovering over a scene. |
 | Generate animated image previews* | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.|
 | Generate scrubber sprites | The set of images displayed below the video player for easy navigation. |
-| Generate perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
+| Generate video perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
+| Generate image perceptual hashes | Generates perceptual hashes for image deduplication and identification. |
 | Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
-| Rescan | By default, Stash will only rescan existing files if the file's modified date has been updated since its previous scan. Stash will rescan files in the path when this option is enabled, regardless of the file modification time. Only required Stash needs to recalculate video/image metadata, or to rescan gallery zips. |
+| Rescan | By default, Stash will only rescan existing files if the file's modified date has been updated since its previous scan. Stash will rescan files in the path when this option is enabled, regardless of the file modification time. Only required if Stash needs to recalculate video/image metadata, or to rescan gallery zips. |
 
 ## Auto Tagging
 See the [Auto Tagging](/help/AutoTagging.md) page.
@@ -31,14 +32,16 @@ See the [Scene Filename Parser](/help/SceneFilenameParser.md) page.
 
 ## Generated Content
 
-The scanning function automatically generates a screenshot of each scene. The generated content provides the following:
+The generated content provides the following:
 
+* Scene covers - screenshot of the scene used as the cover image
 * Video or image previews that are played when mousing over the scene card
-* Perceptual hashes - helps match against StashDB, and feeds the duplicate finder
+* Video Perceptual hashes - helps match against StashDB, and feeds the duplicate finder
 * Sprites (scene stills for parts of each scene) that are shown in the scene scrubber
 * Marker video previews that are shown in the markers page
 * Transcoded versions of scenes. See below
 * Image thumbnails of galleries
+* Image Perceptual hashes - can be used for identification and deduplication
 
 The generate task accepts the following options:
 
@@ -52,9 +55,11 @@ The generate task accepts the following options:
 | Marker Animated Image Previews | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
 | Marker Screenshots | Generates static JPG images for markers. Only required if Preview Type is set to Static Image. Requires Marker Previews to be enabled. | 
 | Transcodes | *Accessible in Advanced Mode* - MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
-| Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |
+| Video Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |
 | Generate heatmaps and speeds for interactive scenes | Generates heatmaps and speeds for interactive scenes. |
 | Image Clip Previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
+| Image Thumbnails | Generates thumbnails for image files. |
+| Image Perceptual hashes (for deduplication) | Generates perceptual hashes for image deduplication and identification. |
 | Overwrite existing generated files | By default, where a generated file exists, it is not regenerated. When this flag is enabled, then the generated files are regenerated. |
 
 ### Transcodes
