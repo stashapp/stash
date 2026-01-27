@@ -36,7 +36,7 @@ import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
-import GenerateDialog from "src/components/Dialogs/GenerateDialog";
+import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
 
 interface IProps {
   image: GQL.ImageDataFragment;

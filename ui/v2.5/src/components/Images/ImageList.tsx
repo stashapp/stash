@@ -27,7 +27,7 @@ import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
 import { FileSize } from "../Shared/FileSize";
 import { PatchComponent } from "src/patch";
-import GenerateDialog from "../Dialogs/GenerateDialog";
+import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { useModal } from "src/hooks/modal";
 
 interface IImageWallProps {
