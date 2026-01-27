@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/signedurl"
 )
 
 func convertVideoFile(f models.File) (*models.VideoFile, error) {
@@ -107,15 +108,29 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
+	
+	// Use configurable expiry for signed URLs (only for AirPlay-compatible formats)
+	expires := time.Now().Add(time.Duration(config.GetSignedURLExpiry()) * time.Second)
+	
+	// AirPlay-compatible formats: use signed URLs (streaming + captions)
+	streamPath, err := builder.GetSignedStreamURL(config.GetJWTSignKey(), expires)
+	if err != nil {
+		return nil, err
+	}
+	
+	captionBasePath, err := builder.GetSignedCaptionURL(config.GetJWTSignKey(), expires)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Web-only formats: use unsigned URLs (rely on cookie authentication)
 	screenshotPath := builder.GetScreenshotURL()
 	previewPath := builder.GetStreamPreviewURL()
-	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
 	webpPath := builder.GetStreamPreviewImageURL()
 	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
 	spritePath := builder.GetSpriteURL(objHash)
 	funscriptPath := builder.GetFunscriptURL()
-	captionBasePath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &ScenePathsType{
@@ -296,7 +311,22 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
 	apiKey := config.GetAPIKey()
 
-	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	endpoints, err := manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	if err != nil {
+		return nil, err
+	}
+
+	// Sign each endpoint URL
+	expires := time.Now().Add(time.Duration(config.GetSignedURLExpiry()) * time.Second)
+	for _, endpoint := range endpoints {
+		signedURL, err := signedurl.SignURL(endpoint.URL, config.GetJWTSignKey(), expires)
+		if err != nil {
+			return nil, err
+		}
+		endpoint.URL = signedURL
+	}
+
+	return endpoints, nil
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {

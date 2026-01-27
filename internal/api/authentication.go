@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/signedurl"
 )
 
 const (
@@ -29,6 +30,24 @@ func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
+func isSignedMediaRequest(r *http.Request) bool {
+	// Check if path starts with /scene/, /image/, or /gallery/
+	if !strings.HasPrefix(r.URL.Path, "/scene/") && !strings.HasPrefix(r.URL.Path, "/image/") && !strings.HasPrefix(r.URL.Path, "/gallery/") {
+		return false
+	}
+
+	// Check for signed URL parameters
+	q := r.URL.Query()
+	if q.Get(signedurl.ExpiresParam) == "" || q.Get(signedurl.SigParam) == "" {
+		return false
+	}
+
+	// Verify signature
+	c := config.GetInstance()
+	valid, err := signedurl.VerifyURL(r.URL.String(), c.GetJWTSignKey())
+	return err == nil && valid
+}
+
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +60,16 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			}
 
 			r = session.SetLocalRequest(r)
+
+			// Check for signed media requests
+			if isSignedMediaRequest(r) {
+				// Allow signed requests
+				ctx := r.Context()
+				ctx = session.SetCurrentUserID(ctx, c.GetUsername())
+				r = r.WithContext(ctx)
+				next.ServeHTTP(w, r)
+				return
+			}
 
 			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
 			if err != nil {

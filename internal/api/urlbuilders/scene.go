@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/signedurl"
 )
 
 type SceneURLBuilder struct {
@@ -35,6 +37,16 @@ func (b SceneURLBuilder) GetStreamURL(apiKey string) *url.URL {
 		u.RawQuery = v.Encode()
 	}
 	return u
+}
+
+func (b SceneURLBuilder) GetSignedStreamURL(secret []byte, expires time.Time) (string, error) {
+	rawURL := fmt.Sprintf("%s/scene/%s/stream", b.BaseURL, b.SceneID)
+	return signedurl.SignURL(rawURL, secret, expires)
+}
+
+func (b SceneURLBuilder) GetSignedCaptionURL(secret []byte, expires time.Time) (string, error) {
+	rawURL := b.GetCaptionURL()
+	return signedurl.SignURL(rawURL, secret, expires)
 }
 
 func (b SceneURLBuilder) GetStreamPreviewURL() string {

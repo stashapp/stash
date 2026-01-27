@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/signedurl"
 	"github.com/stashapp/stash/pkg/utils"
 
 	"github.com/zencoder/go-dash/v3/mpd"
@@ -434,6 +435,8 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 
 	urlQuery := url.Values{}
 	apikey := r.URL.Query().Get(apiKeyParamKey)
+	expires := r.URL.Query().Get(signedurl.ExpiresParam)
+	sig := r.URL.Query().Get(signedurl.SigParam)
 
 	if resolution != "" {
 		urlQuery.Set(resolutionParamKey, resolution)
@@ -442,6 +445,12 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	// TODO - this needs to be handled outside of this package
 	if apikey != "" {
 		urlQuery.Set(apiKeyParamKey, apikey)
+	}
+	if expires != "" {
+		urlQuery.Set(signedurl.ExpiresParam, expires)
+	}
+	if sig != "" {
+		urlQuery.Set(signedurl.SigParam, sig)
 	}
 
 	urlQueryString := ""
@@ -531,8 +540,16 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 
 	// TODO - this needs to be handled outside of this package
 	apikey := r.URL.Query().Get(apiKeyParamKey)
+	expires := r.URL.Query().Get(signedurl.ExpiresParam)
+	sig := r.URL.Query().Get(signedurl.SigParam)
 	if apikey != "" {
 		urlQuery.Set(apiKeyParamKey, apikey)
+	}
+	if expires != "" {
+		urlQuery.Set(signedurl.ExpiresParam, expires)
+	}
+	if sig != "" {
+		urlQuery.Set(signedurl.SigParam, sig)
 	}
 
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
