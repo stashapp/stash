@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"regexp"
 	"time"
@@ -119,4 +120,10 @@ func ServeImage(w http.ResponseWriter, r *http.Request, image []byte) {
 
 	w.Header().Set("Content-Type", contentType)
 	ServeStaticContent(w, r, image)
+}
+
+// GetGridSizeFromImageCount return the required size of a grid, where the number of images in width
+// equals the number of images in height, to hold 'imageCount' images
+func GetGridSizeFromImageCount(imageCount int) int {
+	return int(math.Ceil(math.Sqrt(float64(imageCount))))
 }

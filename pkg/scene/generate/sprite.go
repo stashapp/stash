@@ -66,12 +66,17 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	// Combine all of the thumbnails into a sprite image
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
-	canvasWidth := width * len(images)
-	canvasHeight := height
+	gridSize := utils.GetGridSizeFromImageCount(len(images))
+	canvasWidth := width * gridSize
+	canvasHeight := height * gridSize
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
+	row := 0
 	for index := 0; index < len(images); index++ {
-		x := width * index
-		y := 0
+		if (index > 0) && (index%gridSize == 0) {
+			row++
+		}
+		x := width * (index % gridSize)
+		y := height * row
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -97,13 +102,19 @@ func (g Generator) spriteVTT(spritePath string, stepSize float64, video_duration
 		if err != nil {
 			return err
 		}
-		width := image.Width / number_of_sprites
-		height := image.Height
+
+		gridSize := utils.GetGridSizeFromImageCount(number_of_sprites)
+		width := image.Width / gridSize
+		height := image.Height / gridSize
 
 		vttLines := []string{"WEBVTT", ""}
+		row := 0
 		for index := 0; index < number_of_sprites; index++ {
-			x := width * index
-			y := 0
+			if (index > 0) && (index%gridSize == 0) {
+				row++
+			}
+			x := width * (index % gridSize)
+			y := height * row
 			startTime := float64(index) * stepSize
 			endTime := float64(index+1) * stepSize
 			if endTime > video_duration {
