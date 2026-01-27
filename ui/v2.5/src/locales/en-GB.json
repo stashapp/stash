@@ -623,7 +623,7 @@
         "dialog_reload_note": "The page will reload automatically.",
         "enable": "Enable & Reload",
         "overlay_message": "Troubleshooting Mode is active - all customizations are disabled",
-        "exit": "Exit Troubleshooting Mode"
+        "exit": "Exit"
       },
       "custom_javascript": {
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
