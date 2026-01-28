@@ -171,36 +171,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-  const [generateImageIds, setGenerateImageIds] = useState<string[]>([]);
-
-  const [fetchGalleryImages] = GQL.useFindImagesLazyQuery();
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
       goBackOrReplace(history, "/galleries");
-    }
-  }
-
-  async function onGenerate() {
-    const result = await fetchGalleryImages({
-      variables: {
-        image_filter: {
-          galleries: {
-            modifier: GQL.CriterionModifier.Includes,
-            value: [gallery.id],
-          },
-        },
-        filter: {
-          per_page: -1,
-        },
-      },
-    });
-
-    if (result.data?.findImages?.images) {
-      const imageIds = result.data.findImages.images.map((img) => img.id);
-      setGenerateImageIds(imageIds);
-      setIsGenerateDialogOpen(true);
     }
   }
 
@@ -219,9 +194,9 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
     if (isGenerateDialogOpen) {
       return (
         <GenerateDialog
-          selectedIds={generateImageIds}
+          selectedIds={[gallery.id]}
           onClose={() => setIsGenerateDialogOpen(false)}
-          type="image"
+          type="gallery"
         />
       );
     }
@@ -255,7 +230,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           </Dropdown.Item>
           <Dropdown.Item
             className="bg-secondary text-white"
-            onClick={() => onGenerate()}
+            onClick={() => setIsGenerateDialogOpen(true)}
           >
             {`${intl.formatMessage({ id: "actions.generate" })}…`}
           </Dropdown.Item>
