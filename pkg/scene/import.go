@@ -106,6 +106,12 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 			newScene.Date = &d
 		}
 	}
+	if sceneJSON.ProductionDate != "" {
+		d, err := models.ParseDate(sceneJSON.ProductionDate)
+		if err == nil {
+			newScene.ProductionDate = &d
+		}
+	}
 	if sceneJSON.Rating != 0 {
 		newScene.Rating = &sceneJSON.Rating
 	}

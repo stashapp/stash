@@ -406,19 +406,20 @@ func (t *FingerprintFragment) GetDuration() int {
 }
 
 type SceneFragment struct {
-	ID           string                         "json:\"id\" graphql:\"id\""
-	Title        *string                        "json:\"title,omitempty\" graphql:\"title\""
-	Code         *string                        "json:\"code,omitempty\" graphql:\"code\""
-	Details      *string                        "json:\"details,omitempty\" graphql:\"details\""
-	Director     *string                        "json:\"director,omitempty\" graphql:\"director\""
-	Duration     *int                           "json:\"duration,omitempty\" graphql:\"duration\""
-	Date         *string                        "json:\"date,omitempty\" graphql:\"date\""
-	Urls         []*URLFragment                 "json:\"urls\" graphql:\"urls\""
-	Images       []*ImageFragment               "json:\"images\" graphql:\"images\""
-	Studio       *StudioFragment                "json:\"studio,omitempty\" graphql:\"studio\""
-	Tags         []*TagFragment                 "json:\"tags\" graphql:\"tags\""
-	Performers   []*PerformerAppearanceFragment "json:\"performers\" graphql:\"performers\""
-	Fingerprints []*FingerprintFragment         "json:\"fingerprints\" graphql:\"fingerprints\""
+	ID             string                         "json:\"id\" graphql:\"id\""
+	Title          *string                        "json:\"title,omitempty\" graphql:\"title\""
+	Code           *string                        "json:\"code,omitempty\" graphql:\"code\""
+	Details        *string                        "json:\"details,omitempty\" graphql:\"details\""
+	Director       *string                        "json:\"director,omitempty\" graphql:\"director\""
+	Duration       *int                           "json:\"duration,omitempty\" graphql:\"duration\""
+	Date           *string                        "json:\"date,omitempty\" graphql:\"date\""
+	ProductionDate *string                        "json:\"production_date,omitempty\" graphql:\"production_date\""
+	Urls           []*URLFragment                 "json:\"urls\" graphql:\"urls\""
+	Images         []*ImageFragment               "json:\"images\" graphql:\"images\""
+	Studio         *StudioFragment                "json:\"studio,omitempty\" graphql:\"studio\""
+	Tags           []*TagFragment                 "json:\"tags\" graphql:\"tags\""
+	Performers     []*PerformerAppearanceFragment "json:\"performers\" graphql:\"performers\""
+	Fingerprints   []*FingerprintFragment         "json:\"fingerprints\" graphql:\"fingerprints\""
 }
 
 func (t *SceneFragment) GetID() string {
@@ -462,6 +463,12 @@ func (t *SceneFragment) GetDate() *string {
 		t = &SceneFragment{}
 	}
 	return t.Date
+}
+func (t *SceneFragment) GetProductionDate() *string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.ProductionDate
 }
 func (t *SceneFragment) GetUrls() []*URLFragment {
 	if t == nil {
@@ -862,6 +869,7 @@ fragment SceneFragment on Scene {
 	director
 	duration
 	date
+	production_date
 	urls {
 		... URLFragment
 	}
@@ -998,6 +1006,7 @@ fragment SceneFragment on Scene {
 	director
 	duration
 	date
+	production_date
 	urls {
 		... URLFragment
 	}
@@ -1134,6 +1143,7 @@ fragment SceneFragment on Scene {
 	director
 	duration
 	date
+	production_date
 	urls {
 		... URLFragment
 	}
@@ -1270,6 +1280,7 @@ fragment SceneFragment on Scene {
 	director
 	duration
 	date
+	production_date
 	urls {
 		... URLFragment
 	}
@@ -1564,6 +1575,7 @@ fragment SceneFragment on Scene {
 	director
 	duration
 	date
+	production_date
 	urls {
 		... URLFragment
 	}

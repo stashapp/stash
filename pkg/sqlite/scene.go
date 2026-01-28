@@ -77,13 +77,15 @@ ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
-	ID            int         `db:"id" goqu:"skipinsert"`
-	Title         zero.String `db:"title"`
-	Code          zero.String `db:"code"`
-	Details       zero.String `db:"details"`
-	Director      zero.String `db:"director"`
-	Date          NullDate    `db:"date"`
-	DatePrecision null.Int    `db:"date_precision"`
+	ID                      int         `db:"id" goqu:"skipinsert"`
+	Title                   zero.String `db:"title"`
+	Code                    zero.String `db:"code"`
+	Details                 zero.String `db:"details"`
+	Director                zero.String `db:"director"`
+	Date                    NullDate    `db:"date"`
+	DatePrecision           null.Int    `db:"date_precision"`
+	ProductionDate          NullDate    `db:"production_date"`
+	ProductionDatePrecision null.Int    `db:"production_date_precision"`
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
@@ -105,6 +107,8 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
+	r.ProductionDate = NullDateFromDatePtr(o.ProductionDate)
+	r.ProductionDatePrecision = datePrecisionFromDatePtr(o.ProductionDate)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -125,15 +129,16 @@ type sceneQueryRow struct {
 
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Code:      r.Code.String,
-		Details:   r.Details.String,
-		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(r.DatePrecision),
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:             r.ID,
+		Title:          r.Title.String,
+		Code:           r.Code.String,
+		Details:        r.Details.String,
+		Director:       r.Director.String,
+		Date:           r.Date.DatePtr(r.DatePrecision),
+		ProductionDate: r.ProductionDate.DatePtr(r.ProductionDatePrecision),
+		Rating:         nullIntPtr(r.Rating),
+		Organized:      r.Organized,
+		StudioID:       nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		OSHash:        r.PrimaryFileOshash.String,
@@ -163,6 +168,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
 	r.setNullDate("date", "date_precision", o.Date)
+	r.setNullDate("production_date", "production_date_precision", o.ProductionDate)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -1117,6 +1123,7 @@ var sceneSortOptions = sortOptions{
 	"created_at",
 	"code",
 	"date",
+	"production_date",
 	"file_count",
 	"filesize",
 	"duration",

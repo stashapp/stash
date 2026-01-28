@@ -57,6 +57,10 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
+	newScene.ProductionDate, err = translator.datePtr(input.ProductionDate)
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	newScene.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -199,6 +203,10 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
+	}
+	updatedScene.ProductionDate, err = translator.optionalDate(input.ProductionDate, "production_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting production date: %w", err)
 	}
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
@@ -354,6 +362,10 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
+	}
+	updatedScene.ProductionDate, err = translator.optionalDate(input.ProductionDate, "production_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting production date: %w", err)
 	}
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {

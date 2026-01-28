@@ -72,6 +72,9 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.date, scraped.date)
   );
+  const [production_date, setProductionDate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(scene.production_date, scraped.production_date)
+  );
   const [director, setDirector] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.director, scraped.director)
   );
@@ -177,6 +180,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       code,
       urls,
       date,
+      production_date,
       director,
       studio,
       performers,
@@ -203,6 +207,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       code: code.getNewValue(),
       urls: urls.getNewValue(),
       date: date.getNewValue(),
+      production_date: production_date.getNewValue(),
       director: director.getNewValue(),
       studio: newStudioValue,
       performers: performers.getNewValue(),
@@ -241,6 +246,13 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
+        />
+        <ScrapedInputGroupRow
+          field="production_date"
+          title={intl.formatMessage({ id: "production_date" })}
+          placeholder="YYYY-MM-DD"
+          result={production_date}
+          onChange={(value) => setProductionDate(value)}
         />
         <ScrapedInputGroupRow
           field="director"

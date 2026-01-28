@@ -330,15 +330,16 @@ func (f stashVideoFile) SceneFileType() models.SceneFileType {
 }
 
 type scrapedSceneStash struct {
-	ID         string                   `graphql:"id" json:"id"`
-	Title      *string                  `graphql:"title" json:"title"`
-	Details    *string                  `graphql:"details" json:"details"`
-	URLs       []string                 `graphql:"urls" json:"urls"`
-	Date       *string                  `graphql:"date" json:"date"`
-	Files      []stashVideoFile         `graphql:"files" json:"files"`
-	Studio     *scrapedStudioStash      `graphql:"studio" json:"studio"`
-	Tags       []*scrapedTagStash       `graphql:"tags" json:"tags"`
-	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
+	ID             string                   `graphql:"id" json:"id"`
+	Title          *string                  `graphql:"title" json:"title"`
+	Details        *string                  `graphql:"details" json:"details"`
+	URLs           []string                 `graphql:"urls" json:"urls"`
+	Date           *string                  `graphql:"date" json:"date"`
+	ProductionDate *string                  `graphql:"production_date" json:"production_date"`
+	Files          []stashVideoFile         `graphql:"files" json:"files"`
+	Studio         *scrapedStudioStash      `graphql:"studio" json:"studio"`
+	Tags           []*scrapedTagStash       `graphql:"tags" json:"tags"`
+	Performers     []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
 func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {

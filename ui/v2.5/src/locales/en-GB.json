@@ -924,6 +924,7 @@
     "value": "Value"
   },
   "date": "Date",
+  "production_date": "Production Date",
   "date_format": "YYYY-MM-DD",
   "datetime_format": "YYYY-MM-DD HH:MM",
   "death_date": "Death Date",

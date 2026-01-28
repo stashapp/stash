@@ -381,6 +381,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
+      production_date: resolveField("production_date", stashScene.production_date, scene.production_date),
       performer_ids: uniq(
         stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
       ),
@@ -514,6 +515,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     cover_image: "cover_image",
     title: "title",
     date: "date",
+    production_date: "production_date",
     url: "url",
     details: "details",
     studio: "studio",
@@ -624,6 +626,21 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             setExclude={(v) => setExcludedField(fields.date, v)}
           >
             {scene.date}
+          </OptionalField>
+        </h5>
+      );
+    }
+  };
+
+  const maybeRenderProductionDateField = () => {
+    if (isActive && scene.production_date) {
+      return (
+        <h5>
+          <OptionalField
+            exclude={excludedFields[fields.production_date]}
+            setExclude={(v) => setExcludedField(fields.production_date, v)}
+          >
+            {scene.production_date}
           </OptionalField>
         </h5>
       );
@@ -833,6 +850,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
             {maybeRenderStudioCode()}
             {maybeRenderDateField()}
+            {maybeRenderProductionDateField()}
             {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>

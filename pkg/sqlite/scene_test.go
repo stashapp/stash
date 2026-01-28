@@ -94,7 +94,8 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date, _ = models.ParseDate("2003-02-01")
+		date, _           = models.ParseDate("2003-02-01")
+		productionDate, _ = models.ParseDate("2003-01-02")
 
 		videoFile = makeFileWithID(fileIdxStartVideoFiles)
 	)
@@ -107,20 +108,21 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"full",
 			models.Scene{
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Director:     director,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Title:          title,
+				Code:           code,
+				Details:        details,
+				Director:       director,
+				URLs:           models.NewRelatedStrings([]string{url}),
+				Date:           &date,
+				ProductionDate: &productionDate,
+				Rating:         &rating,
+				Organized:      true,
+				StudioID:       &studioIDs[studioIdxWithScene],
+				CreatedAt:      createdAt,
+				UpdatedAt:      updatedAt,
+				GalleryIDs:     models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs:   models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
 						GroupID:    groupIDs[groupIdxWithScene],
@@ -151,15 +153,16 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"with file",
 			models.Scene{
-				Title:     title,
-				Code:      code,
-				Details:   details,
-				Director:  director,
-				URLs:      models.NewRelatedStrings([]string{url}),
-				Date:      &date,
-				Rating:    &rating,
-				Organized: true,
-				StudioID:  &studioIDs[studioIdxWithScene],
+				Title:          title,
+				Code:           code,
+				Details:        details,
+				Director:       director,
+				URLs:           models.NewRelatedStrings([]string{url}),
+				Date:           &date,
+				ProductionDate: &productionDate,
+				Rating:         &rating,
+				Organized:      true,
+				StudioID:       &studioIDs[studioIdxWithScene],
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					videoFile.(*models.VideoFile),
 				}),
@@ -328,7 +331,8 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date, _ = models.ParseDate("2003-02-01")
+		date, _           = models.ParseDate("2003-02-01")
+		productionDate, _ = models.ParseDate("2003-01-02")
 	)
 
 	tests := []struct {
@@ -339,21 +343,22 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Scene{
-				ID:           sceneIDs[sceneIdxWithGallery],
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Director:     director,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				ID:             sceneIDs[sceneIdxWithGallery],
+				Title:          title,
+				Code:           code,
+				Details:        details,
+				Director:       director,
+				URLs:           models.NewRelatedStrings([]string{url}),
+				Date:           &date,
+				ProductionDate: &productionDate,
+				Rating:         &rating,
+				Organized:      true,
+				StudioID:       &studioIDs[studioIdxWithScene],
+				CreatedAt:      createdAt,
+				UpdatedAt:      updatedAt,
+				GalleryIDs:     models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs:   models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
 						GroupID:    groupIDs[groupIdxWithScene],
@@ -506,18 +511,19 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 func clearScenePartial() models.ScenePartial {
 	// leave mandatory fields
 	return models.ScenePartial{
-		Title:        models.OptionalString{Set: true, Null: true},
-		Code:         models.OptionalString{Set: true, Null: true},
-		Details:      models.OptionalString{Set: true, Null: true},
-		Director:     models.OptionalString{Set: true, Null: true},
-		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
-		Date:         models.OptionalDate{Set: true, Null: true},
-		Rating:       models.OptionalInt{Set: true, Null: true},
-		StudioID:     models.OptionalInt{Set: true, Null: true},
-		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
-		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
-		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
-		StashIDs:     &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
+		Title:          models.OptionalString{Set: true, Null: true},
+		Code:           models.OptionalString{Set: true, Null: true},
+		Details:        models.OptionalString{Set: true, Null: true},
+		Director:       models.OptionalString{Set: true, Null: true},
+		URLs:           &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
+		Date:           models.OptionalDate{Set: true, Null: true},
+		ProductionDate: models.OptionalDate{Set: true, Null: true},
+		Rating:         models.OptionalInt{Set: true, Null: true},
+		StudioID:       models.OptionalInt{Set: true, Null: true},
+		GalleryIDs:     &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		TagIDs:         &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		StashIDs:       &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
 	}
 }
 
@@ -540,7 +546,8 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date, _ = models.ParseDate("2003-02-01")
+		date, _           = models.ParseDate("2003-02-01")
+		productionDate, _ = models.ParseDate("2003-01-02")
 	)
 
 	tests := []struct {
@@ -562,12 +569,13 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					Values: []string{url},
 					Mode:   models.RelationshipUpdateModeSet,
 				},
-				Date:      models.NewOptionalDate(date),
-				Rating:    models.NewOptionalInt(rating),
-				Organized: models.NewOptionalBool(true),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithScene]),
-				CreatedAt: models.NewOptionalTime(createdAt),
-				UpdatedAt: models.NewOptionalTime(updatedAt),
+				Date:           models.NewOptionalDate(date),
+				ProductionDate: models.NewOptionalDate(productionDate),
+				Rating:         models.NewOptionalInt(rating),
+				Organized:      models.NewOptionalBool(true),
+				StudioID:       models.NewOptionalInt(studioIDs[studioIdxWithScene]),
+				CreatedAt:      models.NewOptionalTime(createdAt),
+				UpdatedAt:      models.NewOptionalTime(updatedAt),
 				GalleryIDs: &models.UpdateIDs{
 					IDs:  []int{galleryIDs[galleryIdxWithScene]},
 					Mode: models.RelationshipUpdateModeSet,
@@ -616,20 +624,21 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
-				Title:        title,
-				Code:         code,
-				Details:      details,
-				Director:     director,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Title:          title,
+				Code:           code,
+				Details:        details,
+				Director:       director,
+				URLs:           models.NewRelatedStrings([]string{url}),
+				Date:           &date,
+				ProductionDate: &productionDate,
+				Rating:         &rating,
+				Organized:      true,
+				StudioID:       &studioIDs[studioIdxWithScene],
+				CreatedAt:      createdAt,
+				UpdatedAt:      updatedAt,
+				GalleryIDs:     models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs:   models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
 						GroupID:    groupIDs[groupIdxWithScene],
@@ -3286,6 +3295,28 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 		// ensure date is null
 		for _, scene := range scenes {
 			assert.Nil(t, scene.Date)
+		}
+
+		return nil
+	})
+}
+
+func TestSceneQueryIsMissingProductionDate(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		isMissing := "production_date"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		// one in four scenes have no production date
+		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4)))
+
+		// ensure production date is null
+		for _, scene := range scenes {
+			assert.Nil(t, scene.ProductionDate)
 		}
 
 		return nil

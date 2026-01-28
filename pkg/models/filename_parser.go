@@ -8,20 +8,21 @@ type SceneParserInput struct {
 }
 
 type SceneParserResult struct {
-	Scene        *Scene          `json:"scene"`
-	Title        *string         `json:"title"`
-	Code         *string         `json:"code"`
-	Details      *string         `json:"details"`
-	Director     *string         `json:"director"`
-	URL          *string         `json:"url"`
-	Date         *string         `json:"date"`
-	Rating       *int            `json:"rating"`
-	Rating100    *int            `json:"rating100"`
-	StudioID     *string         `json:"studio_id"`
-	GalleryIds   []string        `json:"gallery_ids"`
-	PerformerIds []string        `json:"performer_ids"`
-	Movies       []*SceneMovieID `json:"movies"`
-	TagIds       []string        `json:"tag_ids"`
+	Scene          *Scene          `json:"scene"`
+	Title          *string         `json:"title"`
+	Code           *string         `json:"code"`
+	Details        *string         `json:"details"`
+	Director       *string         `json:"director"`
+	URL            *string         `json:"url"`
+	Date           *string         `json:"date"`
+	ProductionDate *string         `json:"production_date"`
+	Rating         *int            `json:"rating"`
+	Rating100      *int            `json:"rating100"`
+	StudioID       *string         `json:"studio_id"`
+	GalleryIds     []string        `json:"gallery_ids"`
+	PerformerIds   []string        `json:"performer_ids"`
+	Movies         []*SceneMovieID `json:"movies"`
+	TagIds         []string        `json:"tag_ids"`
 }
 
 type SceneMovieID struct {

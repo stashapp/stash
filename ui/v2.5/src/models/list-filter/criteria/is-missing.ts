@@ -30,6 +30,7 @@ export const SceneIsMissingCriterionOption = new IsMissingCriterionOption(
     "details",
     "url",
     "date",
+    "production_date",
     "galleries",
     "studio",
     "group",
