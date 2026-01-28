@@ -381,7 +381,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
-      production_date: resolveField("production_date", stashScene.production_date, scene.production_date),
+      production_date: resolveField(
+        "production_date",
+        stashScene.production_date,
+        scene.production_date
+      ),
       performer_ids: uniq(
         stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
       ),
