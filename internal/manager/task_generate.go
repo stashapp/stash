@@ -183,6 +183,22 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 						}
 					}
 				}
+
+				if len(j.input.GalleryIDs) > 0 {
+					for _, galleryID := range galleryIDs {
+						imgs, err := r.Image.FindByGalleryID(ctx, galleryID)
+						if err != nil {
+							return err
+						}
+						for _, img := range imgs {
+							if err := img.LoadFiles(ctx, r.Image); err != nil {
+								return err
+							}
+
+							j.queueImageJob(g, img, queue)
+						}
+					}
+				}
 			}
 
 			return nil
