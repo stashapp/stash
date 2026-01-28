@@ -12,11 +12,13 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { GalleryListTable } from "./GalleryListTable";
 import { GalleryCardGrid } from "./GalleryCardGrid";
 import { View } from "../List/views";
 import { PatchComponent } from "src/patch";
 import { IItemListOperation } from "../List/FilteredListToolbar";
+import { useModal } from "src/hooks/modal";
 
 function getItems(result: GQL.FindGalleriesQueryResult) {
   return result?.data?.findGalleries?.galleries ?? [];
@@ -40,6 +42,7 @@ export const GalleryList: React.FC<IGalleryList> = PatchComponent(
     const history = useHistory();
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
     const [isExportAll, setIsExportAll] = useState(false);
+    const { modal, showModal, closeModal } = useModal();
 
     const filterMode = GQL.FilterMode.Galleries;
 
@@ -48,6 +51,24 @@ export const GalleryList: React.FC<IGalleryList> = PatchComponent(
       {
         text: intl.formatMessage({ id: "actions.view_random" }),
         onClick: viewRandom,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.generate" })}…`,
+        onClick: (
+          _result: GQL.FindGalleriesQueryResult,
+          _filter: ListFilterModel,
+          selectedIds: Set<string>
+        ) => {
+          showModal(
+            <GenerateDialog
+              type="gallery"
+              selectedIds={Array.from(selectedIds.values())}
+              onClose={() => closeModal()}
+            />
+          );
+          return Promise.resolve();
+        },
+        isDisplayed: showWhenSelected,
       },
       {
         text: intl.formatMessage({ id: "actions.export" }),
@@ -172,6 +193,7 @@ export const GalleryList: React.FC<IGalleryList> = PatchComponent(
       return (
         <>
           {maybeRenderGalleryExportDialog()}
+          {modal}
           {renderGalleries()}
         </>
       );
