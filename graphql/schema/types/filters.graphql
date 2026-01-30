@@ -75,22 +75,19 @@ input OrientationCriterionInput {
   value: [OrientationEnum!]!
 }
 
-input PHashDuplicationCriterionInput {
+input DuplicationCriterionInput {
+  "Deprecated: Use phash field instead. Kept for backwards compatibility."
   duplicated: Boolean
-  "Currently unimplemented"
+  "Currently unimplemented. Intended for phash distance matching."
   distance: Int
-}
-
-input StashIDDuplicationCriterionInput {
-  duplicated: Boolean
-}
-
-input TitleDuplicationCriterionInput {
-  duplicated: Boolean
-}
-
-input URLDuplicationCriterionInput {
-  duplicated: Boolean
+  "Filter by phash duplication"
+  phash: Boolean
+  "Filter by URL duplication"
+  url: Boolean
+  "Filter by Stash ID duplication"
+  stash_id: Boolean
+  "Filter by title duplication"
+  title: Boolean
 }
 
 input StashIDCriterionInput {
@@ -273,14 +270,8 @@ input SceneFilterType {
   organized: Boolean
   "Filter by o-counter"
   o_counter: IntCriterionInput
-  "Filter Scenes that have an exact phash match available"
-  duplicated: PHashDuplicationCriterionInput
-  "Filter Scenes that have the same stash_id"
-  duplicated_stash_id: StashIDDuplicationCriterionInput
-  "Filter Scenes that have the same title"
-  duplicated_title: TitleDuplicationCriterionInput
-  "Filter Scenes that have the same URL"
-  duplicated_url: URLDuplicationCriterionInput
+  "Filter Scenes by duplication criteria"
+  duplicated: DuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
   "Filter by orientation"
@@ -762,8 +753,8 @@ input FileFilterType {
   "Filter by modification time"
   mod_time: TimestampCriterionInput
 
-  "Filter files that have an exact match available"
-  duplicated: PHashDuplicationCriterionInput
+  "Filter files by duplication criteria (only phash applies to files)"
+  duplicated: DuplicationCriterionInput
 
   "find files based on hash"
   hashes: [FingerprintFilterInput!]

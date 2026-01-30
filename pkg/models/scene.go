@@ -2,22 +2,19 @@ package models
 
 import "context"
 
-type PHashDuplicationCriterionInput struct {
+type DuplicationCriterionInput struct {
+	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
 	Duplicated *bool `json:"duplicated"`
-	// Currently unimplemented
+	// Currently unimplemented. Intended for phash distance matching.
 	Distance *int `json:"distance"`
-}
-
-type StashIDDuplicationCriterionInput struct {
-	Duplicated *bool `json:"duplicated"`
-}
-
-type TitleDuplicationCriterionInput struct {
-	Duplicated *bool `json:"duplicated"`
-}
-
-type URLDuplicationCriterionInput struct {
-	Duplicated *bool `json:"duplicated"`
+	// Filter by phash duplication
+	Phash *bool `json:"phash"`
+	// Filter by URL duplication
+	URL *bool `json:"url"`
+	// Filter by Stash ID duplication
+	StashID *bool `json:"stash_id"`
+	// Filter by title duplication
+	Title *bool `json:"title"`
 }
 
 type SceneFilterType struct {
@@ -45,14 +42,8 @@ type SceneFilterType struct {
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
 	OCounter *IntCriterionInput `json:"o_counter"`
-	// Filter Scenes that have an exact phash match available
-	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
-	// Filter Scenes that have the same stash_id
-	DuplicatedStashID *StashIDDuplicationCriterionInput `json:"duplicated_stash_id"`
-	// Filter Scenes that have the same title
-	DuplicatedTitle *TitleDuplicationCriterionInput `json:"duplicated_title"`
-	// Filter Scenes that have the same URL
-	DuplicatedURL *URLDuplicationCriterionInput `json:"duplicated_url"`
+	// Filter Scenes by duplication criteria
+	Duplicated *DuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
 	// Filter by orientation
