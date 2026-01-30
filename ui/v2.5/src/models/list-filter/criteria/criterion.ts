@@ -12,6 +12,7 @@ import {
 import TextUtils from "src/utils/text";
 import {
   CriterionType,
+  IDuplicationValue,
   IHierarchicalLabelValue,
   ILabeledId,
   INumberValue,
@@ -36,7 +37,8 @@ export type CriterionValue =
   | IStashIDValue
   | IDateValue
   | ITimestampValue
-  | IPhashDistanceValue;
+  | IPhashDistanceValue
+  | IDuplicationValue;
 
 export interface ISavedCriterion<T> {
   modifier: CriterionModifier;

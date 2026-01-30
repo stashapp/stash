@@ -4,12 +4,7 @@ import {
   DuplicationCriterionInput,
 } from "src/core/generated-graphql";
 import { IDuplicationValue, IPhashDistanceValue } from "../types";
-import {
-  Criterion,
-  CriterionOption,
-  ModifierCriterion,
-  ModifierCriterionOption,
-} from "./criterion";
+import { ModifierCriterion, ModifierCriterionOption } from "./criterion";
 import { IntlShape } from "react-intl";
 
 // Shared mapping of duplication field IDs to their i18n message IDs
@@ -73,29 +68,24 @@ export class PhashCriterion extends ModifierCriterion<IPhashDistanceValue> {
   }
 }
 
-export const DuplicatedCriterionOption = new CriterionOption({
+export const DuplicatedCriterionOption = new ModifierCriterionOption({
   messageID: "duplicated",
   type: "duplicated",
+  modifierOptions: [], // No modifiers for this filter
+  defaultModifier: CriterionModifier.Equals,
   makeCriterion: () => new DuplicatedCriterion(),
 });
 
-export class DuplicatedCriterion extends Criterion<IDuplicationValue> {
-  public value: IDuplicationValue = {};
-
+export class DuplicatedCriterion extends ModifierCriterion<IDuplicationValue> {
   constructor() {
-    super(DuplicatedCriterionOption);
-  }
-
-  public clone(): DuplicatedCriterion {
-    const c = new DuplicatedCriterion();
-    c.value = { ...this.value };
-    return c;
+    super(DuplicatedCriterionOption, {});
   }
 
   public cloneValues() {
     this.value = { ...this.value };
   }
 
+  // Override getLabel to provide custom formatting for duplication fields
   public getLabel(intl: IntlShape): string {
     const parts: string[] = [];
     const trueLabel = intl.formatMessage({ id: "true" });
@@ -124,7 +114,12 @@ export class DuplicatedCriterion extends Criterion<IDuplicationValue> {
     return parts.join(", ");
   }
 
-  public toCriterionInput(): DuplicationCriterionInput {
+  protected getLabelValue(_intl: IntlShape): string {
+    // Not used since we override getLabel, but required by abstract class
+    return "";
+  }
+
+  protected toCriterionInput(): DuplicationCriterionInput {
     return {
       duplicated: this.value.duplicated,
       distance: this.value.distance,
@@ -135,33 +130,27 @@ export class DuplicatedCriterion extends Criterion<IDuplicationValue> {
     };
   }
 
-  public toQueryParams(): Record<string, unknown> {
-    return {
-      duplicated: this.value,
-    };
-  }
+  // Override to handle legacy saved formats
+  public setFromSavedCriterion(criterion: unknown): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const c = criterion as any;
 
-  public fromDecodedParams(o: Record<string, unknown>): void {
-    const params = o as { duplicated?: IDuplicationValue };
-    if (params.duplicated) {
-      this.value = params.duplicated;
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public setFromSavedCriterion(criterion: any): void {
     // Handle various saved formats
-    if (criterion.value !== undefined) {
+    if (c.value !== undefined) {
       // New format: { value: { phash: true, ... } }
-      if (typeof criterion.value === "object") {
-        this.value = criterion.value as IDuplicationValue;
-      } else if (typeof criterion.value === "string") {
+      if (typeof c.value === "object") {
+        this.value = c.value as IDuplicationValue;
+      } else if (typeof c.value === "string") {
         // Legacy format: { value: "true" } - convert to phash
-        this.value = { phash: criterion.value === "true" };
+        this.value = { phash: c.value === "true" };
       }
-    } else if (typeof criterion === "object") {
+    } else if (typeof c === "object") {
       // Direct value format
-      this.value = criterion as IDuplicationValue;
+      this.value = c as IDuplicationValue;
+    }
+
+    if (c.modifier) {
+      this.modifier = c.modifier;
     }
   }
 
