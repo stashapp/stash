@@ -114,9 +114,9 @@ export class DuplicatedCriterion extends ModifierCriterion<IDuplicationValue> {
     return parts.join(", ");
   }
 
-  protected getLabelValue(_intl: IntlShape): string {
-    // Not used since we override getLabel, but required by abstract class
-    return "";
+  protected getLabelValue(intl: IntlShape): string {
+    // Required by abstract class - returns basic label when getLabel isn't overridden
+    return intl.formatMessage({ id: "duplicated" });
   }
 
   protected toCriterionInput(): DuplicationCriterionInput {
