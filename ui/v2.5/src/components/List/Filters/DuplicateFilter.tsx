@@ -1,26 +1,17 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { BooleanCriterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SelectedList } from "./SidebarListFilter";
-import { DuplicatedCriterionOption } from "src/models/list-filter/criteria/phash";
-import { DuplicatedStashIDCriterionOption } from "src/models/list-filter/criteria/stash-ids";
-import { DuplicatedTitleCriterionOption } from "src/models/list-filter/criteria/title";
-import { DuplicatedURLCriterionOption } from "src/models/list-filter/criteria/url";
+import {
+  DuplicatedCriterion,
+  DuplicatedCriterionOption,
+} from "src/models/list-filter/criteria/phash";
 import { SidebarSection } from "src/components/Shared/Sidebar";
 import { Icon } from "src/components/Shared/Icon";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { keyboardClickHandler } from "src/utils/keyboard";
 
-// Mapping of duplicate type IDs to their criterion options
-const DUPLICATE_TYPES = {
-  phash: DuplicatedCriterionOption,
-  stash_id: DuplicatedStashIDCriterionOption,
-  title: DuplicatedTitleCriterionOption,
-  url: DuplicatedURLCriterionOption,
-} as const;
-
-type DuplicateTypeId = keyof typeof DUPLICATE_TYPES;
+type DuplicateTypeId = "phash" | "stash_id" | "title" | "url";
 
 interface ISidebarDuplicateFilterProps {
   title?: React.ReactNode;
@@ -36,6 +27,13 @@ const DUPLICATE_TYPE_MESSAGE_IDS: Record<DuplicateTypeId, string> = {
   title: "title",
   url: "url",
 };
+
+const DUPLICATE_TYPE_IDS: DuplicateTypeId[] = [
+  "phash",
+  "stash_id",
+  "title",
+  "url",
+];
 
 export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
   title,
@@ -56,25 +54,34 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
     [intl]
   );
 
-  // Get criterion for a given type
-  const getCriterion = useCallback(
-    (typeId: DuplicateTypeId): BooleanCriterion | null => {
-      const criteria = filter.criteriaFor(
-        DUPLICATE_TYPES[typeId].type
-      ) as BooleanCriterion[];
-      return criteria.length > 0 ? criteria[0] : null;
+  // Get the single duplicated criterion from the filter
+  const getCriterion = useCallback((): DuplicatedCriterion | null => {
+    const criteria = filter.criteriaFor(
+      DuplicatedCriterionOption.type
+    ) as DuplicatedCriterion[];
+    return criteria.length > 0 ? criteria[0] : null;
+  }, [filter]);
+
+  // Get value for a specific type from the criterion
+  const getTypeValue = useCallback(
+    (typeId: DuplicateTypeId): boolean | undefined => {
+      const criterion = getCriterion();
+      if (!criterion) return undefined;
+      return criterion.value[typeId];
     },
-    [filter]
+    [getCriterion]
   );
 
   // Build selected items list
   const selected: Option[] = useMemo(() => {
     const result: Option[] = [];
+    const criterion = getCriterion();
+    if (!criterion) return result;
 
-    for (const typeId of Object.keys(DUPLICATE_TYPES) as DuplicateTypeId[]) {
-      const criterion = getCriterion(typeId);
-      if (criterion) {
-        const valueLabel = criterion.value === "true" ? trueLabel : falseLabel;
+    for (const typeId of DUPLICATE_TYPE_IDS) {
+      const value = criterion.value[typeId];
+      if (value !== undefined) {
+        const valueLabel = value ? trueLabel : falseLabel;
         result.push({
           id: typeId,
           label: `${getLabel(typeId)}: ${valueLabel}`,
@@ -89,14 +96,14 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
   const options = useMemo(() => {
     const result: { id: DuplicateTypeId; label: string }[] = [];
 
-    for (const typeId of Object.keys(DUPLICATE_TYPES) as DuplicateTypeId[]) {
-      if (!getCriterion(typeId)) {
+    for (const typeId of DUPLICATE_TYPE_IDS) {
+      if (getTypeValue(typeId) === undefined) {
         result.push({ id: typeId, label: getLabel(typeId) });
       }
     }
 
     return result;
-  }, [getCriterion, getLabel]);
+  }, [getTypeValue, getLabel]);
 
   function onToggleExpand(id: string) {
     setExpandedType(expandedType === id ? null : id);
@@ -104,23 +111,38 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
 
   function onUnselect(item: Option) {
     const typeId = item.id as DuplicateTypeId;
-    const criterionOption = DUPLICATE_TYPES[typeId];
-    if (criterionOption) {
-      setFilter(filter.removeCriterion(criterionOption.type));
+    const criterion = getCriterion();
+
+    if (!criterion) return;
+
+    const newCriterion = criterion.clone();
+    delete newCriterion.value[typeId];
+
+    // If no fields are set, remove the criterion entirely
+    const hasAnyValue = DUPLICATE_TYPE_IDS.some(
+      (id) => newCriterion.value[id] !== undefined
+    );
+
+    if (!hasAnyValue) {
+      setFilter(filter.removeCriterion(DuplicatedCriterionOption.type));
+    } else {
+      setFilter(
+        filter.replaceCriteria(DuplicatedCriterionOption.type, [newCriterion])
+      );
     }
     setExpandedType(null);
   }
 
-  function onSelectValue(typeId: string, value: "true" | "false") {
-    const criterionOption = DUPLICATE_TYPES[typeId as DuplicateTypeId];
-    if (!criterionOption) return;
+  function onSelectValue(typeId: string, value: boolean) {
+    const criterion = getCriterion();
+    const newCriterion = criterion
+      ? criterion.clone()
+      : (DuplicatedCriterionOption.makeCriterion() as DuplicatedCriterion);
 
-    const existingCriterion = getCriterion(typeId as DuplicateTypeId);
-    const newCriterion = existingCriterion
-      ? existingCriterion.clone()
-      : criterionOption.makeCriterion();
-    newCriterion.value = value;
-    setFilter(filter.replaceCriteria(criterionOption.type, [newCriterion]));
+    newCriterion.value[typeId as DuplicateTypeId] = value;
+    setFilter(
+      filter.replaceCriteria(DuplicatedCriterionOption.type, [newCriterion])
+    );
     setExpandedType(null);
   }
 
@@ -156,13 +178,13 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
                 <div className="duplicate-sub-options">
                   <div
                     className="duplicate-sub-option"
-                    onClick={() => onSelectValue(opt.id, "true")}
+                    onClick={() => onSelectValue(opt.id, true)}
                   >
                     {trueLabel}
                   </div>
                   <div
                     className="duplicate-sub-option"
-                    onClick={() => onSelectValue(opt.id, "false")}
+                    onClick={() => onSelectValue(opt.id, false)}
                   >
                     {falseLabel}
                   </div>
