@@ -12,6 +12,23 @@ import {
 } from "./criterion";
 import { IntlShape } from "react-intl";
 
+// Shared mapping of duplication field IDs to their i18n message IDs
+export const DUPLICATION_FIELD_MESSAGE_IDS = {
+  phash: "media_info.phash",
+  stash_id: "stash_id",
+  title: "title",
+  url: "url",
+} as const;
+
+export type DuplicationFieldId = keyof typeof DUPLICATION_FIELD_MESSAGE_IDS;
+
+export const DUPLICATION_FIELD_IDS: DuplicationFieldId[] = [
+  "phash",
+  "stash_id",
+  "title",
+  "url",
+];
+
 export const PhashCriterionOption = new ModifierCriterionOption({
   messageID: "media_info.phash",
   type: "phash_distance",
@@ -84,21 +101,14 @@ export class DuplicatedCriterion extends Criterion<IDuplicationValue> {
     const trueLabel = intl.formatMessage({ id: "true" });
     const falseLabel = intl.formatMessage({ id: "false" });
 
-    if (this.value.phash !== undefined) {
-      const label = intl.formatMessage({ id: "media_info.phash" });
-      parts.push(`${label}: ${this.value.phash ? trueLabel : falseLabel}`);
-    }
-    if (this.value.stash_id !== undefined) {
-      const label = intl.formatMessage({ id: "stash_id" });
-      parts.push(`${label}: ${this.value.stash_id ? trueLabel : falseLabel}`);
-    }
-    if (this.value.title !== undefined) {
-      const label = intl.formatMessage({ id: "title" });
-      parts.push(`${label}: ${this.value.title ? trueLabel : falseLabel}`);
-    }
-    if (this.value.url !== undefined) {
-      const label = intl.formatMessage({ id: "url" });
-      parts.push(`${label}: ${this.value.url ? trueLabel : falseLabel}`);
+    for (const fieldId of DUPLICATION_FIELD_IDS) {
+      const fieldValue = this.value[fieldId];
+      if (fieldValue !== undefined) {
+        const label = intl.formatMessage({
+          id: DUPLICATION_FIELD_MESSAGE_IDS[fieldId],
+        });
+        parts.push(`${label}: ${fieldValue ? trueLabel : falseLabel}`);
+      }
     }
 
     // Handle legacy duplicated field
@@ -156,12 +166,10 @@ export class DuplicatedCriterion extends Criterion<IDuplicationValue> {
   }
 
   public isValid(): boolean {
-    return (
-      this.value.phash !== undefined ||
-      this.value.url !== undefined ||
-      this.value.stash_id !== undefined ||
-      this.value.title !== undefined ||
-      this.value.duplicated !== undefined
+    // Check if any duplication field is set
+    const hasFieldSet = DUPLICATION_FIELD_IDS.some(
+      (fieldId) => this.value[fieldId] !== undefined
     );
+    return hasFieldSet || this.value.duplicated !== undefined;
   }
 }

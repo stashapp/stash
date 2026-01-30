@@ -223,13 +223,7 @@ func (qb *fileFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models
 		}
 
 		if phashValue != nil {
-			var v string
-			if *phashValue {
-				v = ">"
-			} else {
-				v = "="
-			}
-
+			v := getCountOperator(*phashValue)
 			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "files.id = scph.file_id")
 		}
 	}

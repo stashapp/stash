@@ -334,46 +334,34 @@ func (qb *sceneFilterHandler) duplicatedCriterionHandler(duplicatedFilter *model
 	}
 }
 
+// getCountOperator returns ">" for duplicated items (count > 1) or "=" for unique items (count = 1)
+func getCountOperator(duplicated bool) string {
+	if duplicated {
+		return ">"
+	}
+	return "="
+}
+
 func (qb *sceneFilterHandler) applyPhashDuplication(f *filterBuilder, duplicated bool) {
 	// TODO: Wishlist item: Implement Distance matching
-	var v string
-	if duplicated {
-		v = ">"
-	} else {
-		v = "="
-	}
+	v := getCountOperator(duplicated)
 	f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_files.file_id = scph.file_id")
 }
 
 func (qb *sceneFilterHandler) applyStashIDDuplication(f *filterBuilder, duplicated bool) {
-	var v string
-	if duplicated {
-		v = ">"
-	} else {
-		v = "="
-	}
+	v := getCountOperator(duplicated)
 	// Find stash_ids that appear on more than one scene
 	f.addInnerJoin("(SELECT scene_id FROM scene_stash_ids INNER JOIN (SELECT stash_id FROM scene_stash_ids GROUP BY stash_id HAVING COUNT(DISTINCT scene_id) "+v+" 1) dupes ON scene_stash_ids.stash_id = dupes.stash_id)", "scsi", "scenes.id = scsi.scene_id")
 }
 
 func (qb *sceneFilterHandler) applyTitleDuplication(f *filterBuilder, duplicated bool) {
-	var v string
-	if duplicated {
-		v = ">"
-	} else {
-		v = "="
-	}
+	v := getCountOperator(duplicated)
 	// Find titles that appear on more than one scene (excluding empty titles)
 	f.addInnerJoin("(SELECT id FROM scenes WHERE title != '' AND title IS NOT NULL AND title IN (SELECT title FROM scenes WHERE title != '' AND title IS NOT NULL GROUP BY title HAVING COUNT(*) "+v+" 1))", "sctitle", "scenes.id = sctitle.id")
 }
 
 func (qb *sceneFilterHandler) applyURLDuplication(f *filterBuilder, duplicated bool) {
-	var v string
-	if duplicated {
-		v = ">"
-	} else {
-		v = "="
-	}
+	v := getCountOperator(duplicated)
 	// Find URLs that appear on more than one scene
 	f.addInnerJoin("(SELECT scene_id FROM scene_urls INNER JOIN (SELECT url FROM scene_urls GROUP BY url HAVING COUNT(DISTINCT scene_id) "+v+" 1) dupes ON scene_urls.url = dupes.url)", "scurl", "scenes.id = scurl.scene_id")
 }

@@ -5,13 +5,14 @@ import { Option, SelectedList } from "./SidebarListFilter";
 import {
   DuplicatedCriterion,
   DuplicatedCriterionOption,
+  DuplicationFieldId,
+  DUPLICATION_FIELD_IDS,
+  DUPLICATION_FIELD_MESSAGE_IDS,
 } from "src/models/list-filter/criteria/phash";
 import { SidebarSection } from "src/components/Shared/Sidebar";
 import { Icon } from "src/components/Shared/Icon";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { keyboardClickHandler } from "src/utils/keyboard";
-
-type DuplicateTypeId = "phash" | "stash_id" | "title" | "url";
 
 interface ISidebarDuplicateFilterProps {
   title?: React.ReactNode;
@@ -19,21 +20,6 @@ interface ISidebarDuplicateFilterProps {
   setFilter: (f: ListFilterModel) => void;
   sectionID?: string;
 }
-
-// i18n message IDs for each duplicate type
-const DUPLICATE_TYPE_MESSAGE_IDS: Record<DuplicateTypeId, string> = {
-  phash: "media_info.phash",
-  stash_id: "stash_id",
-  title: "title",
-  url: "url",
-};
-
-const DUPLICATE_TYPE_IDS: DuplicateTypeId[] = [
-  "phash",
-  "stash_id",
-  "title",
-  "url",
-];
 
 export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
   title,
@@ -49,8 +35,8 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
 
   // Get label for a duplicate type
   const getLabel = useCallback(
-    (typeId: DuplicateTypeId) =>
-      intl.formatMessage({ id: DUPLICATE_TYPE_MESSAGE_IDS[typeId] }),
+    (typeId: DuplicationFieldId) =>
+      intl.formatMessage({ id: DUPLICATION_FIELD_MESSAGE_IDS[typeId] }),
     [intl]
   );
 
@@ -64,7 +50,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
 
   // Get value for a specific type from the criterion
   const getTypeValue = useCallback(
-    (typeId: DuplicateTypeId): boolean | undefined => {
+    (typeId: DuplicationFieldId): boolean | undefined => {
       const criterion = getCriterion();
       if (!criterion) return undefined;
       return criterion.value[typeId];
@@ -78,7 +64,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
     const criterion = getCriterion();
     if (!criterion) return result;
 
-    for (const typeId of DUPLICATE_TYPE_IDS) {
+    for (const typeId of DUPLICATION_FIELD_IDS) {
       const value = criterion.value[typeId];
       if (value !== undefined) {
         const valueLabel = value ? trueLabel : falseLabel;
@@ -94,9 +80,9 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
 
   // Available options - show options that aren't already selected
   const options = useMemo(() => {
-    const result: { id: DuplicateTypeId; label: string }[] = [];
+    const result: { id: DuplicationFieldId; label: string }[] = [];
 
-    for (const typeId of DUPLICATE_TYPE_IDS) {
+    for (const typeId of DUPLICATION_FIELD_IDS) {
       if (getTypeValue(typeId) === undefined) {
         result.push({ id: typeId, label: getLabel(typeId) });
       }
@@ -110,7 +96,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
   }
 
   function onUnselect(item: Option) {
-    const typeId = item.id as DuplicateTypeId;
+    const typeId = item.id as DuplicationFieldId;
     const criterion = getCriterion();
 
     if (!criterion) return;
@@ -119,7 +105,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
     delete newCriterion.value[typeId];
 
     // If no fields are set, remove the criterion entirely
-    const hasAnyValue = DUPLICATE_TYPE_IDS.some(
+    const hasAnyValue = DUPLICATION_FIELD_IDS.some(
       (id) => newCriterion.value[id] !== undefined
     );
 
@@ -139,7 +125,7 @@ export const SidebarDuplicateFilter: React.FC<ISidebarDuplicateFilterProps> = ({
       ? criterion.clone()
       : (DuplicatedCriterionOption.makeCriterion() as DuplicatedCriterion);
 
-    newCriterion.value[typeId as DuplicateTypeId] = value;
+    newCriterion.value[typeId as DuplicationFieldId] = value;
     setFilter(
       filter.replaceCriteria(DuplicatedCriterionOption.type, [newCriterion])
     );
