@@ -82,7 +82,7 @@ func (qb *fileFilterHandler) criterionHandler() criterionHandler {
 
 		qb.hashesCriterionHandler(fileFilter.Hashes),
 
-		qb.phashDuplicatedCriterionHandler(fileFilter.Duplicated),
+		qb.duplicatedCriterionHandler(fileFilter.Duplicated),
 		&timestampCriterionHandler{fileFilter.CreatedAt, "files.created_at", nil},
 		&timestampCriterionHandler{fileFilter.UpdatedAt, "files.updated_at", nil},
 
@@ -205,12 +205,26 @@ func (qb *fileFilterHandler) galleryCountCriterionHandler(c *models.IntCriterion
 	return h.handler(c)
 }
 
-func (qb *fileFilterHandler) phashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {
+func (qb *fileFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models.DuplicationCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		// TODO: Wishlist item: Implement Distance matching
-		if duplicatedFilter != nil {
+		// For files, only phash duplication applies
+		if duplicatedFilter == nil {
+			return
+		}
+
+		var phashValue *bool
+
+		// Handle legacy 'duplicated' field for backwards compatibility
+		if duplicatedFilter.Duplicated != nil && duplicatedFilter.Phash == nil {
+			phashValue = duplicatedFilter.Duplicated
+		} else if duplicatedFilter.Phash != nil {
+			phashValue = duplicatedFilter.Phash
+		}
+
+		if phashValue != nil {
 			var v string
-			if *duplicatedFilter.Duplicated {
+			if *phashValue {
 				v = ">"
 			} else {
 				v = "="
