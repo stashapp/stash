@@ -216,7 +216,9 @@ func (qb *fileFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models
 		var phashValue *bool
 
 		// Handle legacy 'duplicated' field for backwards compatibility
+		//nolint:staticcheck
 		if duplicatedFilter.Duplicated != nil && duplicatedFilter.Phash == nil {
+			//nolint:staticcheck
 			phashValue = duplicatedFilter.Duplicated
 		} else if duplicatedFilter.Phash != nil {
 			phashValue = duplicatedFilter.Phash
