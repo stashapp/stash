@@ -579,7 +579,9 @@
                 "transcodes": "短片转码"
             },
             "rescan": "重新扫描文件",
-            "rescan_tooltip": "重新扫描路径中的每个文件。用于强制更新文件元数据和重新扫描zip文件。"
+            "rescan_tooltip": "重新扫描路径中的每个文件。用于强制更新文件元数据和重新扫描zip文件。",
+            "generate_image_phashes_during_scan": "生成图像感知哈希值",
+            "generate_image_phashes_during_scan_tooltip": "用于去重和识别。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -841,6 +843,20 @@
             "custom_title": {
                 "description": "附加在页面标题后的自定义文本。如果是空的，默认是“Stash”。",
                 "heading": "用户标题"
+            },
+            "troubleshooting_mode": {
+                "button": "故障排查模式",
+                "dialog_title": "启用故障排查模式",
+                "dialog_description": "这将暂时禁用所有自定义功能，以帮助诊断问题：",
+                "dialog_item_plugins": "所有插件",
+                "dialog_item_css": "自定义CSS样式",
+                "dialog_item_js": "自定义JavaScript脚本",
+                "dialog_item_locales": "自定义本地化",
+                "dialog_log_level": "日志级别将设置为Debug（调试），以便进行详细诊断。",
+                "dialog_reload_note": "页面将自动重新加载。",
+                "enable": "启用并刷新",
+                "overlay_message": "故障排查模式已激活——所有自定义功能均被禁用",
+                "exit": "退出"
             }
         },
         "advanced_mode": "高级模式"
@@ -967,7 +983,7 @@
             "override_preview_generation_options": "覆盖预览生成选项",
             "override_preview_generation_options_desc": "覆盖此操作的“预览生成选项”。默认设置在“系统”->“生成预览”中。",
             "overwrite": "覆盖现有文件",
-            "phash": "感知识别码PHash",
+            "phash": "视频感知哈希值",
             "preview_exclude_end_time_desc": "从短片预览中排除最后 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
             "preview_exclude_end_time_head": "排除结束时间",
             "preview_exclude_start_time_desc": "从短片预览中排除最开始 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
@@ -988,7 +1004,9 @@
             "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片",
             "phash_tooltip": "针对去重和短片识别",
             "image_thumbnails": "图像缩略图",
-            "clip_previews": "图像片段预览"
+            "clip_previews": "图像片段预览",
+            "image_phash": "图像感知哈希值",
+            "image_phash_tooltip": "用于去重和识别"
         },
         "scenes_found": "找到 {count} 个短片",
         "scrape_entity_query": "{entity_type} 挖掘 查询指令",
@@ -1595,5 +1613,7 @@
         "no_results": "没有结果被找到。",
         "placeholder_name_or_id": "{entityType} 名称或Stash编号……",
         "select_stashbox": "选择StashBox……"
-    }
+    },
+    "latest_scene": "最近的场景",
+    "stash_id_count": "Stash ID 统计"
 }
