@@ -304,12 +304,14 @@ func (qb *sceneFilterHandler) duplicatedCriterionHandler(duplicatedFilter *model
 
 		// Handle legacy 'duplicated' field for backwards compatibility
 		// Only use it if set AND none of the new fields are set
+		//nolint:staticcheck
 		if duplicatedFilter.Duplicated != nil &&
 			duplicatedFilter.Phash == nil &&
 			duplicatedFilter.URL == nil &&
 			duplicatedFilter.StashID == nil &&
 			duplicatedFilter.Title == nil {
 			qb.addSceneFilesTable(f)
+			//nolint:staticcheck
 			qb.applyPhashDuplication(f, *duplicatedFilter.Duplicated)
 			return
 		}
