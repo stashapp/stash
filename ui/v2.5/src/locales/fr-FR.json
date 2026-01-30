@@ -504,7 +504,7 @@
             },
             "generate_clip_previews_during_scan": "Générer des aperçus pour les séquences d'images",
             "generate_desc": "Générer les supports images, sprites, vidéos, vtt et autres fichiers associés.",
-            "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
+            "generate_phashes_during_scan": "Générer les empreintes perceptuelles de la vidéo",
             "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification des scènes.",
             "generate_previews_during_scan": "Générer des aperçus d'images animées",
             "generate_previews_during_scan_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
@@ -580,7 +580,9 @@
             },
             "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée.",
             "rescan": "Réanalyse des fichiers",
-            "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip."
+            "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip.",
+            "generate_image_phashes_during_scan": "Générer les empreintes perceptuelles de l'image",
+            "generate_image_phashes_during_scan_tooltip": "Pour déduplication et identification."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -842,6 +844,20 @@
             "custom_title": {
                 "description": "Texte personnalisé à ajouter au titre de la page. Si vide, \"Stash\" par défaut.",
                 "heading": "Titre personnalisé"
+            },
+            "troubleshooting_mode": {
+                "button": "Mode dépannage",
+                "dialog_title": "Activer le mode dépannage",
+                "dialog_description": "Cela désactivera temporairement toutes les personnalisations afin de faciliter le diagnostic des problèmes :",
+                "dialog_item_plugins": "Tous les plugins",
+                "dialog_item_css": "CSS personnalisé",
+                "dialog_item_js": "JavaScript personnalisé",
+                "dialog_item_locales": "Paramètres régionaux personnalisés",
+                "dialog_log_level": "Le niveau de journalisation sera défini sur Débogage pour des diagnostics détaillés.",
+                "dialog_reload_note": "La page s'actualisera automatiquement.",
+                "enable": "Activer et actualiser",
+                "overlay_message": "Le mode dépannage est actif. Toutes les personnalisations sont désactivées.",
+                "exit": "Sortir"
             }
         },
         "advanced_mode": "Mode avancé"
@@ -970,7 +986,7 @@
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
             "override_preview_generation_options_desc": "Remplacer les options de génération d'aperçu pour cette opération. Les valeurs par défaut sont définies dans Système -> Génération d'aperçus.",
             "overwrite": "Remplacer les fichiers existants",
-            "phash": "Empreintes perceptuelles",
+            "phash": "Empreintes perceptuelles de vidéo",
             "preview_exclude_end_time_desc": "Exclure les x dernières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
             "preview_exclude_end_time_head": "Exclure le temps de fin",
             "preview_exclude_start_time_desc": "Exclure les x premières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
@@ -990,7 +1006,9 @@
             "video_previews": "Aperçus",
             "video_previews_tooltip": "Prévisualisation de la vidéo lors du survol d'une scène",
             "phash_tooltip": "Pour la déduplication et l'identification des scènes",
-            "image_thumbnails": "Vignettes d'images"
+            "image_thumbnails": "Vignettes d'images",
+            "image_phash": "Empreintes perceptuelles d'image",
+            "image_phash_tooltip": "Pour déduplication et identification"
         },
         "scenes_found": "{count} scènes trouvées",
         "scrape_entity_query": "Requête d'extraction {entity_type}",
@@ -1595,5 +1613,7 @@
         "no_results": "Aucun résultat trouvé.",
         "placeholder_name_or_id": "{entityType} nom ou identifiant Stash...",
         "select_stashbox": "Sélectionner une Stash-Box..."
-    }
+    },
+    "latest_scene": "Dernière scène",
+    "stash_id_count": "Nombre d'identifiants Stash"
 }
