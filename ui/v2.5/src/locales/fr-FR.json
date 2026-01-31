@@ -986,7 +986,7 @@
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
             "override_preview_generation_options_desc": "Remplacer les options de génération d'aperçu pour cette opération. Les valeurs par défaut sont définies dans Système -> Génération d'aperçus.",
             "overwrite": "Remplacer les fichiers existants",
-            "phash": "Empreintes perceptuelles de vidéo",
+            "phash": "Empreintes perceptuelles de la vidéo",
             "preview_exclude_end_time_desc": "Exclure les x dernières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
             "preview_exclude_end_time_head": "Exclure le temps de fin",
             "preview_exclude_start_time_desc": "Exclure les x premières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
@@ -1007,7 +1007,7 @@
             "video_previews_tooltip": "Prévisualisation de la vidéo lors du survol d'une scène",
             "phash_tooltip": "Pour la déduplication et l'identification des scènes",
             "image_thumbnails": "Vignettes d'images",
-            "image_phash": "Empreintes perceptuelles d'image",
+            "image_phash": "Empreintes perceptuelles de l'image",
             "image_phash_tooltip": "Pour déduplication et identification"
         },
         "scenes_found": "{count} scènes trouvées",
