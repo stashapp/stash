@@ -496,7 +496,7 @@
                 "generating_scenes": "Generando multimedia de soporte para {num} {scene}"
             },
             "generate_desc": "Generar imagen de soporte, conjuntos de imágenes, vídeo, vtt y resto de archivos.",
-            "generate_phashes_during_scan": "Generar hashes de percepción (Phashes)",
+            "generate_phashes_during_scan": "Generar hash perceptuales de vídeo",
             "generate_phashes_during_scan_tooltip": "Para búsqueda de duplicados e identificación de escenas.",
             "generate_previews_during_scan": "Generar imágenes previas animadas",
             "generate_previews_during_scan_tooltip": "También genere vistas previas animadas (webp), que solo son necesarias cuando el Tipo de vista previa de pared de escena/marcador está configurado en Imagen animada. Al navegar utilizan menos CPU que las vistas previas de vídeo, pero se generan además de ellos y son archivos de mayor tamaño.",
@@ -573,7 +573,9 @@
             "optimise_database_warning": "Advertencia: mientras se esté ejecutando esta tarea, cualquier operación que modifique la base de datos fallará, y dependiendo del tamaño de su base de datos, podría tardar varios minutos en completarse. También requiere como mínimo tanto espacio libre en disco como grande sea su base de datos, pero se recomienda 1.5 veces más.",
             "optimise_database": "Intentar mejorar el rendimiento mediante el análisis y posterior reconstrucción del archivo de base de datos completo.",
             "rescan_tooltip": "Volver a analizar todos los archivos en la ruta. Se usa para forzar la actualización de metadatos y contenidos de archivos ZIP.",
-            "rescan": "Reanalizar archivos"
+            "rescan": "Reanalizar archivos",
+            "generate_image_phashes_during_scan": "Generar hash perceptuales de imágenes",
+            "generate_image_phashes_during_scan_tooltip": "Para la deduplicación y la identificación."
         },
         "tools": {
             "scene_duplicate_checker": "Comprobación de escenas duplicadas",
@@ -835,6 +837,20 @@
             "custom_title": {
                 "description": "Texto personalizado para añadir al título de la página. Si está vacío, el valor predeterminado es «Stash».",
                 "heading": "Texto personalizado"
+            },
+            "troubleshooting_mode": {
+                "button": "Modo de resolución de problemas",
+                "dialog_title": "Habilitar modo de resolución de problemas",
+                "dialog_description": "Esto desactivará temporalmente todas las personalizaciones para ayudar a diagnosticar problemas:",
+                "dialog_item_plugins": "Todos los complementos",
+                "dialog_item_css": "CSS personalizado",
+                "dialog_item_js": "JavaScript personalizado",
+                "dialog_item_locales": "Configuraciones regionales personalizadas",
+                "dialog_log_level": "El nivel de registro se establecerá en Depuración para obtener diagnósticos detallados.",
+                "dialog_reload_note": "La página se recargará automáticamente.",
+                "enable": "Habilitar y recargar",
+                "overlay_message": "El modo de resolución de problemas está activo: todas las personalizaciones están desactivadas",
+                "exit": "Salir"
             }
         },
         "advanced_mode": "Modo avanzado"
@@ -937,7 +953,7 @@
             "override_preview_generation_options": "Sobrescribir opciones para la generación de vistas previas",
             "override_preview_generation_options_desc": "Sobrescribir opciones de generación de vistas previas para esta operación. Las opciones por defecto se configuran en Sistema -> Generación de vistas previas.",
             "overwrite": "Sobreescribir archivos generados ya existentes",
-            "phash": "Hashes perceptuales",
+            "phash": "Hashes de video perceptuales",
             "preview_exclude_end_time_desc": "Excluir los últimos X segundos de la vista previa de la escena. Puede ser un valor en segundos o un porcentaje (p.ej. 2%) de la duración total de la escena.",
             "preview_exclude_end_time_head": "Excluir desde el final del vídeo",
             "preview_exclude_start_time_desc": "Excluir los primeros X segundos de la vista previa de la escena. Puede ser un valor en segundos o un porcentaje (p.ej. 2%) de la duración total de la escena.",
@@ -959,7 +975,9 @@
             "clip_previews": "Vistas previas de clips de imagen",
             "covers": "Imagen de la escena",
             "image_thumbnails": "Miniaturas de imágenes",
-            "phash_tooltip": "Para la búsqueda de duplicados e identificación de escenas"
+            "phash_tooltip": "Para la búsqueda de duplicados e identificación de escenas",
+            "image_phash": "Hashes perceptuales de imágenes",
+            "image_phash_tooltip": "Para la deduplicación y la identificación"
         },
         "scenes_found": "{count} escenas encontradas",
         "scrape_entity_query": "Consulta de rastreo de {entity_type}",
@@ -1595,5 +1613,7 @@
         "no_results": "No se han encontrado resultados.",
         "placeholder_name_or_id": "Nombre de {entityType} o StashID...",
         "select_stashbox": "Seleccionar StashBox..."
-    }
+    },
+    "latest_scene": "Última escena",
+    "stash_id_count": "Recuento de ID de Stash"
 }
