@@ -151,7 +151,8 @@
             "close": "Fechar barra lateral",
             "open": "Abrir barra lateral",
             "toggle": "Alternar barra lateral"
-        }
+        },
+        "invert_selection": "Inverter Seleção"
     },
     "actions_name": "Ações",
     "age": "Idade",
