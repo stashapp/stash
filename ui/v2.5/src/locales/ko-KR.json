@@ -503,7 +503,7 @@
             },
             "generate_clip_previews_during_scan": "이미지 클립 미리보기 생성",
             "generate_desc": "이미지, 스프라이트, 비디오, vtt 등 파일을 생성합니다.",
-            "generate_phashes_during_scan": "해쉬 값 생성",
+            "generate_phashes_during_scan": "비디오 해쉬 값 생성",
             "generate_phashes_during_scan_tooltip": "중복된 파일 확인과 영상 식별에 사용됩니다.",
             "generate_previews_during_scan": "움직이는 이미지 미리보기 생성",
             "generate_previews_during_scan_tooltip": "애니메이션(webp) 미리보기 또한 생성합니다. 영상/마커 월의 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '애니메이션 미리보기'는 '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 '애니메이션 미리보기'가 생성되기 때문에 파일 크기가 커집니다.",
@@ -579,7 +579,9 @@
             "optimise_database_warning": "주의: 이 작업이 수행되는 동안, 데이터베이스를 수정하는 다른 모든 작업들은 실패할 것이고, 데이터베이스의 크기에 따라 작업 종료까지 몇 분이 걸릴 수 있습니다. 그리고 이 작업은 적어도 데이터베이스 크기만큼의 디스크 공간이 필요한데, 데이터베이스 크기의 1.5배의 디스크 공간을 확보하는 것을 권장합니다.",
             "optimise_database": "모든 데이터베이스 파일을 분석하고 다시 만듦으로써, 성능을 향상시키려고 시도합니다.",
             "rescan_tooltip": "경로 내의 모든 파일을 재스캔합니다. 파일 메타데이터를 강제 업데이트하고 zip 파일들을 재스캔하기 위해 사용됩니다.",
-            "rescan": "파일 재스캔"
+            "rescan": "파일 재스캔",
+            "generate_image_phashes_during_scan": "이미지 해쉬 값 생성",
+            "generate_image_phashes_during_scan_tooltip": "중복 제거 및 식별 목적."
         },
         "tools": {
             "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -841,6 +843,20 @@
             "custom_title": {
                 "description": "페이지 제목에 추가되는 커스텀 텍스트입니다. 공백일 경우 기본값 'Stash'가 사용됩니다.",
                 "heading": "커스텀 타이틀"
+            },
+            "troubleshooting_mode": {
+                "button": "트러블슈팅 모드",
+                "dialog_title": "트러블슈팅 모드 활성화",
+                "dialog_description": "문제 진단을 위해 모든 사용자 지정 설정을 일시적으로 비활성화합니다:",
+                "dialog_item_plugins": "모든 플러그인",
+                "dialog_item_css": "커스텀 CSS",
+                "dialog_item_js": "커스텀 JavaScript",
+                "dialog_item_locales": "커스텀 로케일",
+                "dialog_log_level": "상세 진단을 위해 로그 수준이 디버그(Debug)로 설정됩니다.",
+                "dialog_reload_note": "페이지를 자동으로 다시 불러옵니다.",
+                "enable": "활성화 & 다시 불러오기",
+                "overlay_message": "트러블슈팅 모드 활성화 - 모든 사용자 지정 설정이 비활성화됨",
+                "exit": "나가기"
             }
         },
         "advanced_mode": "고급 설정 모드"
@@ -960,7 +976,7 @@
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
             "override_preview_generation_options_desc": "이 작업에 대한 미리보기 생성 옵션을 재정의합니다. 기본값은 '시스템' -> '미리보기 생성'에서 설정됩니다.",
             "overwrite": "기존 파일들 덮어쓰기",
-            "phash": "해쉬",
+            "phash": "비디오 해쉬",
             "preview_exclude_end_time_desc": "영상 미리보기에서 마지막 x 초를 제외합니다. 초 단위, 혹은 전체 영상 재생 길이 중 비율(예: 2%)로 나타낼 수 있습니다.",
             "preview_exclude_end_time_head": "마지막 영상 부분 제외",
             "preview_exclude_start_time_desc": "영상 미리보기에서 처음 x 초를 제외합니다. 초 단위, 혹은 전체 영상 재생 길이 중 비율(예: 2%)로 나타낼 수 있습니다.",
@@ -980,7 +996,9 @@
             "video_previews": "미리보기",
             "video_previews_tooltip": "영상 위로 마우스를 올렸을 때 표시되는 비디오 미리보기",
             "image_thumbnails": "이미지 썸네일",
-            "phash_tooltip": "중복 방지와 영상 식별에 사용됩니다"
+            "phash_tooltip": "중복 방지와 영상 식별에 사용됩니다",
+            "image_phash": "이미지 해쉬 값",
+            "image_phash_tooltip": "중복 제거 및 식별 목적"
         },
         "scenes_found": "{count}개 영상 발견됨",
         "scrape_entity_query": "{entity_type} 스크레이핑 쿼리",
@@ -1595,5 +1613,7 @@
         "no_results": "탐색 결과가 없습니다.",
         "placeholder_name_or_id": "({entityType} 이름 또는 StashID를 입력하세요)",
         "select_stashbox": "StashBox 선택..."
-    }
+    },
+    "latest_scene": "최근 영상",
+    "stash_id_count": "Stash ID 카운트"
 }
