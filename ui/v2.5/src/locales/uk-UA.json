@@ -485,7 +485,7 @@
             },
             "generate_clip_previews_during_scan": "Генерувати попередній перегляд для кліпів із зображеннями",
             "generate_desc": "Генерувати допоміжні зображення, спрайти, відео, vtt та інші файли.",
-            "generate_phashes_during_scan": "Генерувати перцептуальні хеші",
+            "generate_phashes_during_scan": "Генерувати перцептуальні хеші відео",
             "generate_phashes_during_scan_tooltip": "Для дедуплікації та ідентифікації сцен.",
             "generate_previews_during_scan": "Генерувати анімований попередній перегляд зображень",
             "generate_sprites_during_scan": "Генерувати спрайти для смуги прокрутки",
@@ -520,7 +520,9 @@
                 "scanning_paths": "Сканування наступних шляхів"
             },
             "plugin_tasks": "Завдання плагінів",
-            "rescan": "Пересканувати файли"
+            "rescan": "Пересканувати файли",
+            "generate_image_phashes_during_scan": "Генерувати перцептуальні хеші зображень",
+            "generate_image_phashes_during_scan_tooltip": "Для дедуплікації та ідентифікації."
         },
         "library": {
             "exclusions": "Виключення",
@@ -787,6 +789,20 @@
             "sfw_mode": {
                 "description": "Увімкніть, якщо використовуєте Stash для SFW-контенту. Приховує або змінює деякі аспекти інтерфейсу, пов'язані з дорослим контентом.",
                 "heading": "Режим SFW-контенту"
+            },
+            "troubleshooting_mode": {
+                "button": "Режим діагностики",
+                "dialog_title": "Увімкнути режим діагностики",
+                "dialog_description": "Це тимчасово вимкне всі власні налаштування, щоб допомогти діагностувати проблеми:",
+                "dialog_item_plugins": "Всі плагіни",
+                "dialog_item_css": "Власний CSS",
+                "dialog_item_js": "Власний JavaScript",
+                "dialog_item_locales": "Власна локалізація",
+                "dialog_log_level": "Рівень журналу буде встановлено на Debug для детальної діагностики.",
+                "dialog_reload_note": "Сторінка автоматично перезавантажиться.",
+                "enable": "Увімкнути та перезавантажити",
+                "overlay_message": "Режим діагностики активний — всі власні налаштування вимкнено",
+                "exit": "Вийти"
             }
         },
         "plugins": {
@@ -1154,7 +1170,7 @@
             "sprites_tooltip": "Набір зображень під відеоплеєром для зручної навігації.",
             "preview_seg_count_head": "Кількість сегментів у попередньому перегляді",
             "override_preview_generation_options": "Перевизначити параметри генерації перегляду",
-            "phash": "Перцептуальні хеші",
+            "phash": "Перцептуальні хеші відео",
             "marker_screenshots_tooltip": "Статичні JPG зображення маркерів",
             "preview_exclude_start_time_head": "Виключити час на початку",
             "preview_seg_duration_head": "Тривалість сегмента попереднього перегляду",
@@ -1172,7 +1188,9 @@
             "preview_preset_head": "Шаблон кодування попереднього перегляду",
             "marker_screenshots": "Скріншоти маркерів",
             "transcodes": "Транскодування",
-            "video_previews": "Попередні перегляди"
+            "video_previews": "Попередні перегляди",
+            "image_phash": "Перцептуальні хеші зображень",
+            "image_phash_tooltip": "Для дедуплікації та ідентифікації"
         },
         "delete_entity_simple_desc": "{count, plural, one {Ви впевнені, що хочете видалити цей {singularEntity}?} other {Ви впевнені, що хочете видалити ці {pluralEntity}?}}",
         "delete_object_desc": "Ви впевнені, що хочете видалити {count, plural, one {цей {singularEntity}} other {ці {pluralEntity}}}?",
@@ -1595,5 +1613,7 @@
         "no_results": "Результатів не знайдено.",
         "placeholder_name_or_id": "Ім'я {entityType} або StashID...",
         "select_stashbox": "Оберіть StashBox..."
-    }
+    },
+    "latest_scene": "Остання сцена",
+    "stash_id_count": "Кількість Stash ID"
 }
