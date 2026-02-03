@@ -40,6 +40,7 @@ input StudioCreateInput {
   rating100: Int
   favorite: Boolean
   details: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
@@ -58,6 +59,7 @@ input StudioUpdateInput {
   rating100: Int
   favorite: Boolean
   details: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean

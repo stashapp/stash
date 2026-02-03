@@ -31,6 +31,7 @@ input TagCreateInput {
   "Value that does not appear in the UI but overrides name for sorting"
   sort_name: String
   description: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
@@ -48,6 +49,7 @@ input TagUpdateInput {
   "Value that does not appear in the UI but overrides name for sorting"
   sort_name: String
   description: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
@@ -76,6 +78,7 @@ input TagsMergeInput {
 input BulkTagUpdateInput {
   ids: [ID!]
   description: String
+  "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
   aliases: BulkUpdateStrings
   ignore_auto_tag: Boolean
   favorite: Boolean
