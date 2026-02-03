@@ -624,7 +624,12 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 			return fmt.Errorf("scene with id %d not found", destID)
 		}
 
-		return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		// only update cover image if one was provided
+		if len(coverImageData) > 0 {
+			return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
