@@ -504,7 +504,7 @@
             },
             "generate_clip_previews_during_scan": "Generera förhandsvisningar för bildklipp",
             "generate_desc": "Generera stöttande bilder, sprites, videor, vtt och andra filer.",
-            "generate_phashes_during_scan": "Generera phash",
+            "generate_phashes_during_scan": "Generera videoperceptuella hashkoder",
             "generate_phashes_during_scan_tooltip": "För deduplikation och identifiering av scener.",
             "generate_previews_during_scan": "Generera animerade bildförhandsvisningar",
             "generate_previews_during_scan_tooltip": "Generera också animerade (webp) förhandsvisningar, krävs bara när Förhandsvisning i Scen/Markörvägg är Animerad Bild. Vid surfande använder de mindre CPU än videoförhandsvisngar, men genereras bredvid de och är större filer.",
@@ -580,7 +580,9 @@
                 "transcodes": "Scenomkodningar"
             },
             "rescan": "Skanna om filer",
-            "rescan_tooltip": "Skanna om alla filer i sökvägen. Används för att tvångsuppdatera filmetadata och att skanna om zip-filer."
+            "rescan_tooltip": "Skanna om alla filer i sökvägen. Används för att tvångsuppdatera filmetadata och att skanna om zip-filer.",
+            "generate_image_phashes_during_scan": "Generera bildperceptuella hashkoder",
+            "generate_image_phashes_during_scan_tooltip": "För deduplicering och identifiering."
         },
         "tools": {
             "scene_duplicate_checker": "Scen Duplikat Kontroll",
@@ -842,6 +844,20 @@
             "custom_title": {
                 "description": "Anpassad text som ska läggas till i sidtiteln. Om tomt används standardvärdet \"Stash\".",
                 "heading": "Anpassad titel"
+            },
+            "troubleshooting_mode": {
+                "button": "Felsökningsläge",
+                "dialog_title": "Aktivera felsökningsläge",
+                "dialog_description": "Detta inaktiverar tillfälligt alla anpassningar för att hjälpa till att diagnostisera problem:",
+                "dialog_item_plugins": "Alla insticksmoduler",
+                "dialog_item_css": "Anpassad CSS",
+                "dialog_item_js": "Anpassad JavaScript",
+                "dialog_item_locales": "Anpassade lokaler",
+                "dialog_log_level": "Loggnivån kommer att ställas in på Felsökning för detaljerad diagnostik.",
+                "dialog_reload_note": "Sidan laddas om automatiskt.",
+                "enable": "Aktivera & ladda om",
+                "overlay_message": "Felsökningsläget är aktivt – alla anpassningar är inaktiverade",
+                "exit": "Avsluta"
             }
         },
         "advanced_mode": "Avancerat Läge"
@@ -970,7 +986,7 @@
             "override_preview_generation_options": "Åsidosätt Inställningar för Förhandsvisningsgeneration",
             "override_preview_generation_options_desc": "Åsidosätt inställningar för Förhandsvisningsgeneration. Standarder ställs in i System -> Förhandsvisningsgeneration.",
             "overwrite": "Ersätt existerande filer",
-            "phash": "Perceptuella hashar",
+            "phash": "Videoperceptuella hashkoder",
             "preview_exclude_end_time_desc": "Exkludera de sista x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
             "preview_exclude_end_time_head": "Exludera sluttid",
             "preview_exclude_start_time_desc": "Exkludera de första x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
@@ -990,7 +1006,9 @@
             "video_previews": "Förhandsvisning",
             "video_previews_tooltip": "Videoförhandsvisning som visas när man håller över en scen",
             "phash_tooltip": "För deduplicering och scenidentifiering",
-            "image_thumbnails": "Bildomslagsbilder"
+            "image_thumbnails": "Bildomslagsbilder",
+            "image_phash": "Bildperceptuella hashkoder",
+            "image_phash_tooltip": "För deduplicering och identifiering"
         },
         "scenes_found": "{count} scener hittades",
         "scrape_entity_query": "{entity_type} Skrapa text",
@@ -1595,5 +1613,7 @@
         "no_results": "Inga resultat hittades.",
         "placeholder_name_or_id": "{entityType} namn eller StashID...",
         "select_stashbox": "Välj StashBox..."
-    }
+    },
+    "latest_scene": "Senaste scen",
+    "stash_id_count": "Stash ID-räkning"
 }
