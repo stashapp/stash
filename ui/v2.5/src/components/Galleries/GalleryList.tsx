@@ -223,283 +223,286 @@ function useAddKeybinds(filter: ListFilterModel, count: number) {
   }, [viewRandom]);
 }
 
-export const FilteredGalleryList = (props: IGalleryList) => {
-  const intl = useIntl();
-  const history = useHistory();
-  const location = useLocation();
+export const FilteredGalleryList = PatchComponent(
+  "FilteredGalleryList",
+  (props: IGalleryList) => {
+    const intl = useIntl();
+    const history = useHistory();
+    const location = useLocation();
 
-  const searchFocus = useFocus();
+    const searchFocus = useFocus();
 
-  const { filterHook, view, alterQuery } = props;
+    const { filterHook, view, alterQuery } = props;
 
-  // States
-  const {
-    showSidebar,
-    setShowSidebar,
-    sectionOpen,
-    setSectionOpen,
-    loading: sidebarStateLoading,
-  } = useSidebarState(view);
+    // States
+    const {
+      showSidebar,
+      setShowSidebar,
+      sectionOpen,
+      setSectionOpen,
+      loading: sidebarStateLoading,
+    } = useSidebarState(view);
 
-  const { filterState, queryResult, modalState, listSelect, showEditFilter } =
-    useFilteredItemList({
-      filterStateProps: {
-        filterMode: GQL.FilterMode.Galleries,
-        view,
-        useURL: alterQuery,
-      },
-      queryResultProps: {
-        useResult: useFindGalleries,
-        getCount: (r) => r.data?.findGalleries.count ?? 0,
-        getItems: (r) => r.data?.findGalleries.galleries ?? [],
-        filterHook,
-      },
+    const { filterState, queryResult, modalState, listSelect, showEditFilter } =
+      useFilteredItemList({
+        filterStateProps: {
+          filterMode: GQL.FilterMode.Galleries,
+          view,
+          useURL: alterQuery,
+        },
+        queryResultProps: {
+          useResult: useFindGalleries,
+          getCount: (r) => r.data?.findGalleries.count ?? 0,
+          getItems: (r) => r.data?.findGalleries.galleries ?? [],
+          filterHook,
+        },
+      });
+
+    const { filter, setFilter } = filterState;
+
+    const { effectiveFilter, result, cachedResult, items, totalCount } =
+      queryResult;
+
+    const {
+      selectedIds,
+      selectedItems,
+      onSelectChange,
+      onSelectAll,
+      onSelectNone,
+      onInvertSelection,
+      hasSelection,
+    } = listSelect;
+
+    const { modal, showModal, closeModal } = modalState;
+
+    // Utility hooks
+    const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+      filter,
+      setFilter,
     });
 
-  const { filter, setFilter } = filterState;
+    useAddKeybinds(filter, totalCount);
+    useFilteredSidebarKeybinds({
+      showSidebar,
+      setShowSidebar,
+    });
 
-  const { effectiveFilter, result, cachedResult, items, totalCount } =
-    queryResult;
+    useEffect(() => {
+      Mousetrap.bind("e", () => {
+        if (hasSelection) {
+          onEdit?.();
+        }
+      });
 
-  const {
-    selectedIds,
-    selectedItems,
-    onSelectChange,
-    onSelectAll,
-    onSelectNone,
-    onInvertSelection,
-    hasSelection,
-  } = listSelect;
+      Mousetrap.bind("d d", () => {
+        if (hasSelection) {
+          onDelete?.();
+        }
+      });
 
-  const { modal, showModal, closeModal } = modalState;
+      return () => {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      };
+    });
 
-  // Utility hooks
-  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
-    filter,
-    setFilter,
-  });
+    const onCloseEditDelete = useCloseEditDelete({
+      closeModal,
+      onSelectNone,
+      result,
+    });
 
-  useAddKeybinds(filter, totalCount);
-  useFilteredSidebarKeybinds({
-    showSidebar,
-    setShowSidebar,
-  });
-
-  useEffect(() => {
-    Mousetrap.bind("e", () => {
-      if (hasSelection) {
-        onEdit?.();
+    function onCreateNew() {
+      let queryParam = new URLSearchParams(location.search).get("q");
+      let newPath = "/galleries/new";
+      if (queryParam) {
+        newPath += "?q=" + encodeURIComponent(queryParam);
       }
-    });
-
-    Mousetrap.bind("d d", () => {
-      if (hasSelection) {
-        onDelete?.();
-      }
-    });
-
-    return () => {
-      Mousetrap.unbind("e");
-      Mousetrap.unbind("d d");
-    };
-  });
-
-  const onCloseEditDelete = useCloseEditDelete({
-    closeModal,
-    onSelectNone,
-    result,
-  });
-
-  function onCreateNew() {
-    let queryParam = new URLSearchParams(location.search).get("q");
-    let newPath = "/galleries/new";
-    if (queryParam) {
-      newPath += "?q=" + encodeURIComponent(queryParam);
+      history.push(newPath);
     }
-    history.push(newPath);
-  }
 
-  const viewRandom = useViewRandom(filter, totalCount);
+    const viewRandom = useViewRandom(filter, totalCount);
 
-  function onExport(all: boolean) {
-    showModal(
-      <ExportDialog
-        exportInput={{
-          galleries: {
-            ids: Array.from(selectedIds.values()),
-            all: all,
-          },
-        }}
-        onClose={() => closeModal()}
+    function onExport(all: boolean) {
+      showModal(
+        <ExportDialog
+          exportInput={{
+            galleries: {
+              ids: Array.from(selectedIds.values()),
+              all: all,
+            },
+          }}
+          onClose={() => closeModal()}
+        />
+      );
+    }
+
+    function onEdit() {
+      showModal(
+        <EditGalleriesDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
+    }
+
+    function onDelete() {
+      showModal(
+        <DeleteGalleriesDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
+    }
+
+    function onGenerate() {
+      showModal(
+        <GenerateDialog
+          type="gallery"
+          selectedIds={Array.from(selectedIds.values())}
+          onClose={() => closeModal()}
+        />
+      );
+    }
+
+    const otherOperations = [
+      {
+        text: intl.formatMessage({ id: "actions.select_all" }),
+        onClick: () => onSelectAll(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.select_none" }),
+        onClick: () => onSelectNone(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.invert_selection" }),
+        onClick: () => onInvertSelection(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.view_random" }),
+        onClick: viewRandom,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.generate" })}…`,
+        onClick: onGenerate,
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: () => onExport(false),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: () => onExport(true),
+      },
+    ];
+
+    // render
+    if (sidebarStateLoading) return null;
+
+    const operations = (
+      <ListOperations
+        items={items.length}
+        hasSelection={hasSelection}
+        operations={otherOperations}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onCreateNew={onCreateNew}
+        entityType={intl.formatMessage({ id: "gallery" })}
+        operationsMenuClassName="gallery-list-operations-dropdown"
       />
     );
-  }
 
-  function onEdit() {
-    showModal(
-      <EditGalleriesDialog
-        selected={selectedItems}
-        onClose={onCloseEditDelete}
-      />
-    );
-  }
+    return (
+      <div
+        className={cx("item-list-container gallery-list", {
+          "hide-sidebar": !showSidebar,
+        })}
+      >
+        {modal}
 
-  function onDelete() {
-    showModal(
-      <DeleteGalleriesDialog
-        selected={selectedItems}
-        onClose={onCloseEditDelete}
-      />
-    );
-  }
-
-  function onGenerate() {
-    showModal(
-      <GenerateDialog
-        type="gallery"
-        selectedIds={Array.from(selectedIds.values())}
-        onClose={() => closeModal()}
-      />
-    );
-  }
-
-  const otherOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.select_all" }),
-      onClick: () => onSelectAll(),
-      isDisplayed: () => totalCount > 0,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.select_none" }),
-      onClick: () => onSelectNone(),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.invert_selection" }),
-      onClick: () => onInvertSelection(),
-      isDisplayed: () => totalCount > 0,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.view_random" }),
-      onClick: viewRandom,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
-      onClick: onGenerate,
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export" }),
-      onClick: () => onExport(false),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export_all" }),
-      onClick: () => onExport(true),
-    },
-  ];
-
-  // render
-  if (sidebarStateLoading) return null;
-
-  const operations = (
-    <ListOperations
-      items={items.length}
-      hasSelection={hasSelection}
-      operations={otherOperations}
-      onEdit={onEdit}
-      onDelete={onDelete}
-      onCreateNew={onCreateNew}
-      entityType={intl.formatMessage({ id: "gallery" })}
-      operationsMenuClassName="gallery-list-operations-dropdown"
-    />
-  );
-
-  return (
-    <div
-      className={cx("item-list-container gallery-list", {
-        "hide-sidebar": !showSidebar,
-      })}
-    >
-      {modal}
-
-      <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
-        <SidebarPane hideSidebar={!showSidebar}>
-          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-            <SidebarContent
-              filter={filter}
-              setFilter={setFilter}
-              filterHook={filterHook}
-              showEditFilter={showEditFilter}
-              view={view}
-              sidebarOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              count={cachedResult.loading ? undefined : totalCount}
-              focus={searchFocus}
-            />
-          </Sidebar>
-          <SidebarPaneContent
-            onSidebarToggle={() => setShowSidebar(!showSidebar)}
-          >
-            <FilteredListToolbar
-              filter={filter}
-              listSelect={listSelect}
-              setFilter={setFilter}
-              showEditFilter={showEditFilter}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              operationComponent={operations}
-              view={view}
-              zoomable
-            />
-
-            <FilterTags
-              criteria={filter.criteria}
-              onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-              onRemoveCriterion={removeCriterion}
-              onRemoveAll={clearAllCriteria}
-            />
-
-            <div className="pagination-index-container">
-              <Pagination
-                currentPage={filter.currentPage}
-                itemsPerPage={filter.itemsPerPage}
-                totalItems={totalCount}
-                onChangePage={(page) => setFilter(filter.changePage(page))}
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
               />
-              <PaginationIndex
-                loading={cachedResult.loading}
-                itemsPerPage={filter.itemsPerPage}
-                currentPage={filter.currentPage}
-                totalItems={totalCount}
+            </Sidebar>
+            <SidebarPaneContent
+              onSidebarToggle={() => setShowSidebar(!showSidebar)}
+            >
+              <FilteredListToolbar
+                filter={filter}
+                listSelect={listSelect}
+                setFilter={setFilter}
+                showEditFilter={showEditFilter}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                operationComponent={operations}
+                view={view}
+                zoomable
               />
-            </div>
 
-            <LoadedContent loading={result.loading} error={result.error}>
-              <GalleryList
-                filter={effectiveFilter}
-                galleries={items}
-                selectedIds={selectedIds}
-                onSelectChange={onSelectChange}
+              <FilterTags
+                criteria={filter.criteria}
+                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onRemoveCriterion={removeCriterion}
+                onRemoveAll={clearAllCriteria}
               />
-            </LoadedContent>
 
-            {totalCount > filter.itemsPerPage && (
-              <div className="pagination-footer-container">
-                <div className="pagination-footer">
-                  <Pagination
-                    itemsPerPage={filter.itemsPerPage}
-                    currentPage={filter.currentPage}
-                    totalItems={totalCount}
-                    onChangePage={setPage}
-                    pagePopupPlacement="top"
-                  />
-                </div>
+              <div className="pagination-index-container">
+                <Pagination
+                  currentPage={filter.currentPage}
+                  itemsPerPage={filter.itemsPerPage}
+                  totalItems={totalCount}
+                  onChangePage={(page) => setFilter(filter.changePage(page))}
+                />
+                <PaginationIndex
+                  loading={cachedResult.loading}
+                  itemsPerPage={filter.itemsPerPage}
+                  currentPage={filter.currentPage}
+                  totalItems={totalCount}
+                />
               </div>
-            )}
-          </SidebarPaneContent>
-        </SidebarPane>
-      </SidebarStateContext.Provider>
-    </div>
-  );
-};
+
+              <LoadedContent loading={result.loading} error={result.error}>
+                <GalleryList
+                  filter={effectiveFilter}
+                  galleries={items}
+                  selectedIds={selectedIds}
+                  onSelectChange={onSelectChange}
+                />
+              </LoadedContent>
+
+              {totalCount > filter.itemsPerPage && (
+                <div className="pagination-footer-container">
+                  <div className="pagination-footer">
+                    <Pagination
+                      itemsPerPage={filter.itemsPerPage}
+                      currentPage={filter.currentPage}
+                      totalItems={totalCount}
+                      onChangePage={setPage}
+                      pagePopupPlacement="top"
+                    />
+                  </div>
+                </div>
+              )}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
+      </div>
+    );
+  }
+);

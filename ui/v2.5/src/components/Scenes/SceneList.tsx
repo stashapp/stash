@@ -50,7 +50,7 @@ import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
-import { PatchContainerComponent } from "src/patch";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { Pagination, PaginationIndex } from "../List/Pagination";
 import { Button } from "react-bootstrap";
 import useFocus from "src/utils/focus";
@@ -183,59 +183,65 @@ const SceneList: React.FC<{
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
-}> = ({ scenes, filter, selectedIds, onSelectChange, fromGroupId }) => {
-  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
+}> = PatchComponent(
+  "SceneList",
+  ({ scenes, filter, selectedIds, onSelectChange, fromGroupId }) => {
+    const queue = useMemo(
+      () => SceneQueue.fromListFilterModel(filter),
+      [filter]
+    );
 
-  if (scenes.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
+    if (scenes.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
+      return null;
+    }
+
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <SceneCardGrid
+          scenes={scenes}
+          queue={queue}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+          fromGroupId={fromGroupId}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.List) {
+      return (
+        <SceneListTable
+          scenes={scenes}
+          queue={queue}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.Wall) {
+      return (
+        <SceneWallPanel
+          scenes={scenes}
+          sceneQueue={queue}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return (
+        <Tagger
+          scenes={scenes}
+          queue={queue}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
+    }
+
     return null;
   }
-
-  if (filter.displayMode === DisplayMode.Grid) {
-    return (
-      <SceneCardGrid
-        scenes={scenes}
-        queue={queue}
-        zoomIndex={filter.zoomIndex}
-        selectedIds={selectedIds}
-        onSelectChange={onSelectChange}
-        fromGroupId={fromGroupId}
-      />
-    );
-  }
-  if (filter.displayMode === DisplayMode.List) {
-    return (
-      <SceneListTable
-        scenes={scenes}
-        queue={queue}
-        selectedIds={selectedIds}
-        onSelectChange={onSelectChange}
-      />
-    );
-  }
-  if (filter.displayMode === DisplayMode.Wall) {
-    return (
-      <SceneWallPanel
-        scenes={scenes}
-        sceneQueue={queue}
-        zoomIndex={filter.zoomIndex}
-        selectedIds={selectedIds}
-        onSelectChange={onSelectChange}
-      />
-    );
-  }
-  if (filter.displayMode === DisplayMode.Tagger) {
-    return (
-      <Tagger
-        scenes={scenes}
-        queue={queue}
-        selectedIds={selectedIds}
-        onSelectChange={onSelectChange}
-      />
-    );
-  }
-
-  return null;
-};
+);
 
 const ScenesFilterSidebarSections = PatchContainerComponent(
   "FilteredSceneList.SidebarSections"
@@ -340,370 +346,381 @@ interface IFilteredScenes {
   fromGroupId?: string;
 }
 
-export const FilteredSceneList = (props: IFilteredScenes) => {
-  const intl = useIntl();
-  const history = useHistory();
-  const location = useLocation();
+export const FilteredSceneList = PatchComponent(
+  "FilteredSceneList",
+  (props: IFilteredScenes) => {
+    const intl = useIntl();
+    const history = useHistory();
+    const location = useLocation();
 
-  const searchFocus = useFocus();
+    const searchFocus = useFocus();
 
-  const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
+    const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
-  // States
-  const {
-    showSidebar,
-    setShowSidebar,
-    loading: sidebarStateLoading,
-    sectionOpen,
-    setSectionOpen,
-  } = useSidebarState(view);
+    // States
+    const {
+      showSidebar,
+      setShowSidebar,
+      loading: sidebarStateLoading,
+      sectionOpen,
+      setSectionOpen,
+    } = useSidebarState(view);
 
-  const { filterState, queryResult, modalState, listSelect, showEditFilter } =
-    useFilteredItemList({
-      filterStateProps: {
-        filterMode: GQL.FilterMode.Scenes,
-        defaultSort,
-        view,
-        useURL: alterQuery,
-      },
-      queryResultProps: {
-        useResult: useFindScenes,
-        getCount: (r) => r.data?.findScenes.count ?? 0,
-        getItems: (r) => r.data?.findScenes.scenes ?? [],
-        filterHook,
-      },
+    const { filterState, queryResult, modalState, listSelect, showEditFilter } =
+      useFilteredItemList({
+        filterStateProps: {
+          filterMode: GQL.FilterMode.Scenes,
+          defaultSort,
+          view,
+          useURL: alterQuery,
+        },
+        queryResultProps: {
+          useResult: useFindScenes,
+          getCount: (r) => r.data?.findScenes.count ?? 0,
+          getItems: (r) => r.data?.findScenes.scenes ?? [],
+          filterHook,
+        },
+      });
+
+    const { filter, setFilter } = filterState;
+
+    const { effectiveFilter, result, cachedResult, items, totalCount } =
+      queryResult;
+
+    const {
+      selectedIds,
+      selectedItems,
+      onSelectChange,
+      onSelectAll,
+      onSelectNone,
+      onInvertSelection,
+      hasSelection,
+    } = listSelect;
+
+    const { modal, showModal, closeModal } = modalState;
+
+    // Utility hooks
+    const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+      filter,
+      setFilter,
     });
 
-  const { filter, setFilter } = filterState;
+    useAddKeybinds(filter, totalCount);
+    useFilteredSidebarKeybinds({
+      showSidebar,
+      setShowSidebar,
+    });
 
-  const { effectiveFilter, result, cachedResult, items, totalCount } =
-    queryResult;
+    const onCloseEditDelete = useCloseEditDelete({
+      closeModal,
+      onSelectNone,
+      result,
+    });
 
-  const {
-    selectedIds,
-    selectedItems,
-    onSelectChange,
-    onSelectAll,
-    onSelectNone,
-    onInvertSelection,
-    hasSelection,
-  } = listSelect;
+    const onEdit = useCallback(() => {
+      showModal(
+        <EditScenesDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
+    }, [showModal, selectedItems, onCloseEditDelete]);
 
-  const { modal, showModal, closeModal } = modalState;
+    const onDelete = useCallback(() => {
+      showModal(
+        <DeleteScenesDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
+    }, [showModal, selectedItems, onCloseEditDelete]);
 
-  // Utility hooks
-  const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
-    filter,
-    setFilter,
-  });
+    useEffect(() => {
+      Mousetrap.bind("e", () => {
+        if (hasSelection) {
+          onEdit?.();
+        }
+      });
 
-  useAddKeybinds(filter, totalCount);
-  useFilteredSidebarKeybinds({
-    showSidebar,
-    setShowSidebar,
-  });
+      Mousetrap.bind("d d", () => {
+        if (hasSelection) {
+          onDelete?.();
+        }
+      });
 
-  const onCloseEditDelete = useCloseEditDelete({
-    closeModal,
-    onSelectNone,
-    result,
-  });
+      return () => {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      };
+    }, [onSelectAll, onSelectNone, hasSelection, onEdit, onDelete]);
+    useZoomKeybinds({
+      zoomIndex: filter.zoomIndex,
+      onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
+    });
 
-  const onEdit = useCallback(() => {
-    showModal(
-      <EditScenesDialog selected={selectedItems} onClose={onCloseEditDelete} />
+    const metadataByline = useMemo(() => {
+      if (cachedResult.loading) return null;
+
+      return renderMetadataByline(cachedResult) ?? null;
+    }, [cachedResult]);
+
+    const queue = useMemo(
+      () => SceneQueue.fromListFilterModel(filter),
+      [filter]
     );
-  }, [showModal, selectedItems, onCloseEditDelete]);
 
-  const onDelete = useCallback(() => {
-    showModal(
-      <DeleteScenesDialog
-        selected={selectedItems}
-        onClose={onCloseEditDelete}
-      />
-    );
-  }, [showModal, selectedItems, onCloseEditDelete]);
+    const playRandom = usePlayRandom(effectiveFilter, totalCount);
+    const playSelected = usePlaySelected(selectedIds);
+    const playFirst = usePlayFirst();
 
-  useEffect(() => {
-    Mousetrap.bind("e", () => {
-      if (hasSelection) {
-        onEdit?.();
+    function onCreateNew() {
+      let queryParam = new URLSearchParams(location.search).get("q");
+      let newPath = "/scenes/new";
+      if (queryParam) {
+        newPath += "?q=" + encodeURIComponent(queryParam);
       }
-    });
+      history.push(newPath);
+    }
 
-    Mousetrap.bind("d d", () => {
-      if (hasSelection) {
-        onDelete?.();
+    function onPlay() {
+      if (items.length === 0) {
+        return;
       }
-    });
 
-    return () => {
-      Mousetrap.unbind("e");
-      Mousetrap.unbind("d d");
-    };
-  }, [onSelectAll, onSelectNone, hasSelection, onEdit, onDelete]);
-  useZoomKeybinds({
-    zoomIndex: filter.zoomIndex,
-    onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
-  });
+      // if there are selected items, play those
+      if (hasSelection) {
+        playSelected();
+        return;
+      }
 
-  const metadataByline = useMemo(() => {
-    if (cachedResult.loading) return null;
-
-    return renderMetadataByline(cachedResult) ?? null;
-  }, [cachedResult]);
-
-  const queue = useMemo(() => SceneQueue.fromListFilterModel(filter), [filter]);
-
-  const playRandom = usePlayRandom(effectiveFilter, totalCount);
-  const playSelected = usePlaySelected(selectedIds);
-  const playFirst = usePlayFirst();
-
-  function onCreateNew() {
-    let queryParam = new URLSearchParams(location.search).get("q");
-    let newPath = "/scenes/new";
-    if (queryParam) {
-      newPath += "?q=" + encodeURIComponent(queryParam);
-    }
-    history.push(newPath);
-  }
-
-  function onPlay() {
-    if (items.length === 0) {
-      return;
+      // otherwise, play the first item in the list
+      const sceneID = items[0].id;
+      playFirst(queue, sceneID, 0);
     }
 
-    // if there are selected items, play those
-    if (hasSelection) {
-      playSelected();
-      return;
+    function onExport(all: boolean) {
+      showModal(
+        <ExportDialog
+          exportInput={{
+            scenes: {
+              ids: Array.from(selectedIds.values()),
+              all: all,
+            },
+          }}
+          onClose={() => closeModal()}
+        />
+      );
     }
 
-    // otherwise, play the first item in the list
-    const sceneID = items[0].id;
-    playFirst(queue, sceneID, 0);
-  }
+    function onMerge() {
+      const selected =
+        selectedItems.map((s) => {
+          return {
+            id: s.id,
+            title: objectTitle(s),
+          };
+        }) ?? [];
+      showModal(
+        <SceneMergeModal
+          scenes={selected}
+          onClose={(mergedID?: string) => {
+            closeModal();
+            if (mergedID) {
+              history.push(`/scenes/${mergedID}`);
+            }
+          }}
+          show
+        />
+      );
+    }
 
-  function onExport(all: boolean) {
-    showModal(
-      <ExportDialog
-        exportInput={{
-          scenes: {
-            ids: Array.from(selectedIds.values()),
-            all: all,
-          },
-        }}
-        onClose={() => closeModal()}
+    const otherOperations = [
+      {
+        text: intl.formatMessage({ id: "actions.play" }),
+        onClick: () => onPlay(),
+        isDisplayed: () => items.length > 0,
+        className: "play-item",
+      },
+      {
+        text: intl.formatMessage(
+          { id: "actions.create_entity" },
+          { entityType: intl.formatMessage({ id: "scene" }) }
+        ),
+        onClick: () => onCreateNew(),
+        isDisplayed: () => !hasSelection,
+        className: "create-new-item",
+      },
+      {
+        text: intl.formatMessage({ id: "actions.select_all" }),
+        onClick: () => onSelectAll(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.select_none" }),
+        onClick: () => onSelectNone(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.invert_selection" }),
+        onClick: () => onInvertSelection(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.play_random" }),
+        onClick: playRandom,
+        isDisplayed: () => totalCount > 1,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.generate" })}…`,
+        onClick: () =>
+          showModal(
+            <GenerateDialog
+              type="scene"
+              selectedIds={Array.from(selectedIds.values())}
+              onClose={() => closeModal()}
+            />
+          ),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.identify" })}…`,
+        onClick: () =>
+          showModal(
+            <IdentifyDialog
+              selectedIds={Array.from(selectedIds.values())}
+              onClose={() => closeModal()}
+            />
+          ),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+        onClick: () => onMerge(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: () => onExport(false),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: () => onExport(true),
+      },
+    ];
+
+    // render
+    if (sidebarStateLoading) return null;
+
+    const operations = (
+      <ListOperations
+        items={items.length}
+        hasSelection={hasSelection}
+        operations={otherOperations}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onPlay={onPlay}
+        onCreateNew={onCreateNew}
+        entityType={intl.formatMessage({ id: "scene" })}
+        operationsMenuClassName="scene-list-operations-dropdown"
       />
     );
-  }
 
-  function onMerge() {
-    const selected =
-      selectedItems.map((s) => {
-        return {
-          id: s.id,
-          title: objectTitle(s),
-        };
-      }) ?? [];
-    showModal(
-      <SceneMergeModal
-        scenes={selected}
-        onClose={(mergedID?: string) => {
-          closeModal();
-          if (mergedID) {
-            history.push(`/scenes/${mergedID}`);
-          }
-        }}
-        show
-      />
-    );
-  }
+    return (
+      <TaggerContext>
+        <div
+          className={cx("item-list-container scene-list", {
+            "hide-sidebar": !showSidebar,
+          })}
+        >
+          {modal}
 
-  const otherOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.play" }),
-      onClick: () => onPlay(),
-      isDisplayed: () => items.length > 0,
-      className: "play-item",
-    },
-    {
-      text: intl.formatMessage(
-        { id: "actions.create_entity" },
-        { entityType: intl.formatMessage({ id: "scene" }) }
-      ),
-      onClick: () => onCreateNew(),
-      isDisplayed: () => !hasSelection,
-      className: "create-new-item",
-    },
-    {
-      text: intl.formatMessage({ id: "actions.select_all" }),
-      onClick: () => onSelectAll(),
-      isDisplayed: () => totalCount > 0,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.select_none" }),
-      onClick: () => onSelectNone(),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.invert_selection" }),
-      onClick: () => onInvertSelection(),
-      isDisplayed: () => totalCount > 0,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.play_random" }),
-      onClick: playRandom,
-      isDisplayed: () => totalCount > 1,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
-      onClick: () =>
-        showModal(
-          <GenerateDialog
-            type="scene"
-            selectedIds={Array.from(selectedIds.values())}
-            onClose={() => closeModal()}
-          />
-        ),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.identify" })}…`,
-      onClick: () =>
-        showModal(
-          <IdentifyDialog
-            selectedIds={Array.from(selectedIds.values())}
-            onClose={() => closeModal()}
-          />
-        ),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
-      onClick: () => onMerge(),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export" }),
-      onClick: () => onExport(false),
-      isDisplayed: () => hasSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export_all" }),
-      onClick: () => onExport(true),
-    },
-  ];
-
-  // render
-  if (sidebarStateLoading) return null;
-
-  const operations = (
-    <ListOperations
-      items={items.length}
-      hasSelection={hasSelection}
-      operations={otherOperations}
-      onEdit={onEdit}
-      onDelete={onDelete}
-      onPlay={onPlay}
-      onCreateNew={onCreateNew}
-      entityType={intl.formatMessage({ id: "scene" })}
-      operationsMenuClassName="scene-list-operations-dropdown"
-    />
-  );
-
-  return (
-    <TaggerContext>
-      <div
-        className={cx("item-list-container scene-list", {
-          "hide-sidebar": !showSidebar,
-        })}
-      >
-        {modal}
-
-        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
-          <SidebarPane hideSidebar={!showSidebar}>
-            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-              <SidebarContent
-                filter={filter}
-                setFilter={setFilter}
-                filterHook={filterHook}
-                showEditFilter={showEditFilter}
-                view={view}
-                sidebarOpen={showSidebar}
-                onClose={() => setShowSidebar(false)}
-                count={cachedResult.loading ? undefined : totalCount}
-                focus={searchFocus}
-              />
-            </Sidebar>
-            <SidebarPaneContent
-              onSidebarToggle={() => setShowSidebar(!showSidebar)}
-            >
-              <FilteredListToolbar
-                filter={filter}
-                listSelect={listSelect}
-                setFilter={setFilter}
-                showEditFilter={showEditFilter}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                operationComponent={operations}
-                view={view}
-                zoomable
-              />
-
-              <FilterTags
-                criteria={filter.criteria}
-                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-                onRemoveCriterion={removeCriterion}
-                onRemoveAll={clearAllCriteria}
-              />
-
-              <div className="pagination-index-container">
-                <Pagination
-                  currentPage={filter.currentPage}
-                  itemsPerPage={filter.itemsPerPage}
-                  totalItems={totalCount}
-                  onChangePage={(page) => setFilter(filter.changePage(page))}
+          <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+            <SidebarPane hideSidebar={!showSidebar}>
+              <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+                <SidebarContent
+                  filter={filter}
+                  setFilter={setFilter}
+                  filterHook={filterHook}
+                  showEditFilter={showEditFilter}
+                  view={view}
+                  sidebarOpen={showSidebar}
+                  onClose={() => setShowSidebar(false)}
+                  count={cachedResult.loading ? undefined : totalCount}
+                  focus={searchFocus}
                 />
-                <PaginationIndex
-                  loading={cachedResult.loading}
-                  itemsPerPage={filter.itemsPerPage}
-                  currentPage={filter.currentPage}
-                  totalItems={totalCount}
-                  metadataByline={metadataByline}
+              </Sidebar>
+              <SidebarPaneContent
+                onSidebarToggle={() => setShowSidebar(!showSidebar)}
+              >
+                <FilteredListToolbar
+                  filter={filter}
+                  listSelect={listSelect}
+                  setFilter={setFilter}
+                  showEditFilter={showEditFilter}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                  operationComponent={operations}
+                  view={view}
+                  zoomable
                 />
-              </div>
 
-              <LoadedContent loading={result.loading} error={result.error}>
-                <SceneList
-                  filter={effectiveFilter}
-                  scenes={items}
-                  selectedIds={selectedIds}
-                  onSelectChange={onSelectChange}
-                  fromGroupId={fromGroupId}
+                <FilterTags
+                  criteria={filter.criteria}
+                  onEditCriterion={(c) =>
+                    showEditFilter(c.criterionOption.type)
+                  }
+                  onRemoveCriterion={removeCriterion}
+                  onRemoveAll={clearAllCriteria}
                 />
-              </LoadedContent>
 
-              {totalCount > filter.itemsPerPage && (
-                <div className="pagination-footer-container">
-                  <div className="pagination-footer">
-                    <Pagination
-                      itemsPerPage={filter.itemsPerPage}
-                      currentPage={filter.currentPage}
-                      totalItems={totalCount}
-                      metadataByline={metadataByline}
-                      onChangePage={setPage}
-                      pagePopupPlacement="top"
-                    />
-                  </div>
+                <div className="pagination-index-container">
+                  <Pagination
+                    currentPage={filter.currentPage}
+                    itemsPerPage={filter.itemsPerPage}
+                    totalItems={totalCount}
+                    onChangePage={(page) => setFilter(filter.changePage(page))}
+                  />
+                  <PaginationIndex
+                    loading={cachedResult.loading}
+                    itemsPerPage={filter.itemsPerPage}
+                    currentPage={filter.currentPage}
+                    totalItems={totalCount}
+                    metadataByline={metadataByline}
+                  />
                 </div>
-              )}
-            </SidebarPaneContent>
-          </SidebarPane>
-        </SidebarStateContext.Provider>
-      </div>
-    </TaggerContext>
-  );
-};
+
+                <LoadedContent loading={result.loading} error={result.error}>
+                  <SceneList
+                    filter={effectiveFilter}
+                    scenes={items}
+                    selectedIds={selectedIds}
+                    onSelectChange={onSelectChange}
+                    fromGroupId={fromGroupId}
+                  />
+                </LoadedContent>
+
+                {totalCount > filter.itemsPerPage && (
+                  <div className="pagination-footer-container">
+                    <div className="pagination-footer">
+                      <Pagination
+                        itemsPerPage={filter.itemsPerPage}
+                        currentPage={filter.currentPage}
+                        totalItems={totalCount}
+                        metadataByline={metadataByline}
+                        onChangePage={setPage}
+                        pagePopupPlacement="top"
+                      />
+                    </div>
+                  </div>
+                )}
+              </SidebarPaneContent>
+            </SidebarPane>
+          </SidebarStateContext.Provider>
+        </div>
+      </TaggerContext>
+    );
+  }
+);
 
 export default FilteredSceneList;
