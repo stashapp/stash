@@ -60,9 +60,9 @@ func authenticateHandler(g UserAuthenticator) func(http.Handler) http.Handler {
 			if apiKey != "" {
 				u, err = g.AuthenticateByAPIKey(ctx, apiKey)
 			} else {
-				userID, err := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
-				if err != nil {
-					logger.Errorf("error getting session user ID: %v", err)
+				userID, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
+				if getErr != nil {
+					logger.Errorf("error getting session user ID: %v", getErr)
 					http.Error(w, "internal server error", http.StatusInternalServerError)
 					return
 				}
