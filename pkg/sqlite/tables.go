@@ -49,6 +49,7 @@ var (
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
 	tagsStashIDsJoinTable = goqu.T("tag_stash_ids")
+	tagsCustomFieldsTable = goqu.T("tag_custom_fields")
 )
 
 var (

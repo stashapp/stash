@@ -11,17 +11,18 @@ import (
 )
 
 type Tag struct {
-	Name          string           `json:"name,omitempty"`
-	SortName      string           `json:"sort_name,omitempty"`
-	Description   string           `json:"description,omitempty"`
-	Favorite      bool             `json:"favorite,omitempty"`
-	Aliases       []string         `json:"aliases,omitempty"`
-	Image         string           `json:"image,omitempty"`
-	Parents       []string         `json:"parents,omitempty"`
-	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
-	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
-	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
-	UpdatedAt     json.JSONTime    `json:"updated_at,omitempty"`
+	Name          string                 `json:"name,omitempty"`
+	SortName      string                 `json:"sort_name,omitempty"`
+	Description   string                 `json:"description,omitempty"`
+	Favorite      bool                   `json:"favorite,omitempty"`
+	Aliases       []string               `json:"aliases,omitempty"`
+	Image         string                 `json:"image,omitempty"`
+	Parents       []string               `json:"parents,omitempty"`
+	IgnoreAutoTag bool                   `json:"ignore_auto_tag,omitempty"`
+	StashIDs      []models.StashID       `json:"stash_ids,omitempty"`
+	CreatedAt     json.JSONTime          `json:"created_at,omitempty"`
+	UpdatedAt     json.JSONTime          `json:"updated_at,omitempty"`
+	CustomFields  map[string]interface{} `json:"custom_fields,omitempty"`
 }
 
 func (s Tag) Filename() string {

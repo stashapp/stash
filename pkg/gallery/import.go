@@ -249,7 +249,9 @@ func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Ta
 		newTag := models.NewTag()
 		newTag.Name = name
 
-		err := i.TagWriter.Create(ctx, &newTag)
+		err := i.TagWriter.Create(ctx, &models.CreateTagInput{
+			Tag: &newTag,
+		})
 		if err != nil {
 			return nil, err
 		}

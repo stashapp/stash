@@ -407,7 +407,9 @@ func createTags(ctx context.Context, tagWriter models.TagCreator, names []string
 		newTag := models.NewTag()
 		newTag.Name = name
 
-		err := tagWriter.Create(ctx, &newTag)
+		err := tagWriter.Create(ctx, &models.CreateTagInput{
+			Tag: &newTag,
+		})
 		if err != nil {
 			return nil, err
 		}

@@ -24,6 +24,8 @@ type Tag {
 
   parent_count: Int! # Resolver
   child_count: Int! # Resolver
+
+  custom_fields: Map!
 }
 
 input TagCreateInput {
@@ -41,6 +43,8 @@ input TagCreateInput {
 
   parent_ids: [ID!]
   child_ids: [ID!]
+
+  custom_fields: Map
 }
 
 input TagUpdateInput {
@@ -59,6 +63,8 @@ input TagUpdateInput {
 
   parent_ids: [ID!]
   child_ids: [ID!]
+
+  custom_fields: CustomFieldsInput
 }
 
 input TagDestroyInput {

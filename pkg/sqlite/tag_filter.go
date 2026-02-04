@@ -101,6 +101,13 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{tagFilter.CreatedAt, "tags.created_at", nil},
 		&timestampCriterionHandler{tagFilter.UpdatedAt, "tags.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: tagsCustomFieldsTable.GetTable(),
+			fkCol: tagIDColumn,
+			c:     tagFilter.CustomFields,
+			idCol: "tags.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_tags.scene_id",
 			relatedRepo:    sceneRepository.repository,

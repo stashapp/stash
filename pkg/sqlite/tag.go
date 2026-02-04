@@ -157,6 +157,7 @@ var (
 
 type TagStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 
 	tableMgr *table
 }
@@ -166,6 +167,10 @@ func NewTagStore(blobStore *BlobStore) *TagStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: tagTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: tagsCustomFieldsTable,
+			fk:    tagsCustomFieldsTable.Col(tagIDColumn),
 		},
 		tableMgr: tagTableMgr,
 	}
@@ -179,9 +184,9 @@ func (qb *TagStore) selectDataset() *goqu.SelectDataset {
 	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *TagStore) Create(ctx context.Context, newObject *models.Tag) error {
+func (qb *TagStore) Create(ctx context.Context, newObject *models.CreateTagInput) error {
 	var r tagRow
-	r.fromTag(*newObject)
+	r.fromTag(*newObject.Tag)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
@@ -212,12 +217,17 @@ func (qb *TagStore) Create(ctx context.Context, newObject *models.Tag) error {
 		}
 	}
 
+	const partial = false
+	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Tag = *updated
 
 	return nil
 }
@@ -261,12 +271,16 @@ func (qb *TagStore) UpdatePartial(ctx context.Context, id int, partial models.Ta
 		}
 	}
 
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
+	}
+
 	return qb.find(ctx, id)
 }
 
-func (qb *TagStore) Update(ctx context.Context, updatedObject *models.Tag) error {
+func (qb *TagStore) Update(ctx context.Context, updatedObject *models.UpdateTagInput) error {
 	var r tagRow
-	r.fromTag(*updatedObject)
+	r.fromTag(*updatedObject.Tag)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -294,6 +308,10 @@ func (qb *TagStore) Update(ctx context.Context, updatedObject *models.Tag) error
 		if err := tagsStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, updatedObject.ID, updatedObject.CustomFields); err != nil {
+		return err
 	}
 
 	return nil
