@@ -79,20 +79,18 @@ const GalleryList: React.FC<{
     }
     if (filter.displayMode === DisplayMode.Wall) {
       return (
-        <div className="row">
-          <div className={`GalleryWall zoom-${filter.zoomIndex}`}>
-            {galleries.map((gallery) => (
-              <GalleryWallCard
-                key={gallery.id}
-                gallery={gallery}
-                selected={selectedIds.has(gallery.id)}
-                onSelectedChanged={(selected, shiftKey) =>
-                  onSelectChange(gallery.id, selected, shiftKey)
-                }
-                selecting={selectedIds.size > 0}
-              />
-            ))}
-          </div>
+        <div className={`GalleryWall zoom-${filter.zoomIndex}`}>
+          {galleries.map((gallery) => (
+            <GalleryWallCard
+              key={gallery.id}
+              gallery={gallery}
+              selected={selectedIds.has(gallery.id)}
+              onSelectedChanged={(selected, shiftKey) =>
+                onSelectChange(gallery.id, selected, shiftKey)
+              }
+              selecting={selectedIds.size > 0}
+            />
+          ))}
         </div>
       );
     }
