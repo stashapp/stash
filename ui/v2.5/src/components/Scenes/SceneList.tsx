@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindScenes, useFindScenes } from "src/core/StashService";
@@ -343,6 +343,7 @@ interface IFilteredScenes {
 export const FilteredSceneList = (props: IFilteredScenes) => {
   const intl = useIntl();
   const history = useHistory();
+  const location = useLocation();
 
   const searchFocus = useFocus();
 
@@ -459,7 +460,12 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const playFirst = usePlayFirst();
 
   function onCreateNew() {
-    history.push("/scenes/new");
+    let queryParam = new URLSearchParams(location.search).get("q");
+    let newPath = "/scenes/new";
+    if (queryParam) {
+      newPath += "?q=" + encodeURIComponent(queryParam);
+    }
+    history.push(newPath);
   }
 
   function onPlay() {
