@@ -21,6 +21,7 @@ import {
   Sidebar,
   SidebarPane,
   SidebarPaneContent,
+  SidebarStateContext,
   useSidebarState,
 } from "../Shared/Sidebar";
 import { useCloseEditDelete, useFilterOperations } from "../List/util";
@@ -234,6 +235,8 @@ export const FilteredGalleryList = (props: IGalleryList) => {
   const {
     showSidebar,
     setShowSidebar,
+    sectionOpen,
+    setSectionOpen,
     loading: sidebarStateLoading,
   } = useSidebarState(view);
 
@@ -414,81 +417,83 @@ export const FilteredGalleryList = (props: IGalleryList) => {
     >
       {modal}
 
-      <SidebarPane hideSidebar={!showSidebar}>
-        <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-          <SidebarContent
-            filter={filter}
-            setFilter={setFilter}
-            filterHook={filterHook}
-            showEditFilter={showEditFilter}
-            view={view}
-            sidebarOpen={showSidebar}
-            onClose={() => setShowSidebar(false)}
-            count={cachedResult.loading ? undefined : totalCount}
-            focus={searchFocus}
-          />
-        </Sidebar>
-        <SidebarPaneContent
-          onSidebarToggle={() => setShowSidebar(!showSidebar)}
-        >
-          <FilteredListToolbar
-            filter={filter}
-            listSelect={listSelect}
-            setFilter={setFilter}
-            showEditFilter={showEditFilter}
-            onDelete={onDelete}
-            onEdit={onEdit}
-            operationComponent={operations}
-            view={view}
-            zoomable
-          />
-
-          <FilterTags
-            criteria={filter.criteria}
-            onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-            onRemoveCriterion={removeCriterion}
-            onRemoveAll={clearAllCriteria}
-          />
-
-          <div className="pagination-index-container">
-            <Pagination
-              currentPage={filter.currentPage}
-              itemsPerPage={filter.itemsPerPage}
-              totalItems={totalCount}
-              onChangePage={(page) => setFilter(filter.changePage(page))}
+      <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+        <SidebarPane hideSidebar={!showSidebar}>
+          <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+            <SidebarContent
+              filter={filter}
+              setFilter={setFilter}
+              filterHook={filterHook}
+              showEditFilter={showEditFilter}
+              view={view}
+              sidebarOpen={showSidebar}
+              onClose={() => setShowSidebar(false)}
+              count={cachedResult.loading ? undefined : totalCount}
+              focus={searchFocus}
             />
-            <PaginationIndex
-              loading={cachedResult.loading}
-              itemsPerPage={filter.itemsPerPage}
-              currentPage={filter.currentPage}
-              totalItems={totalCount}
+          </Sidebar>
+          <SidebarPaneContent
+            onSidebarToggle={() => setShowSidebar(!showSidebar)}
+          >
+            <FilteredListToolbar
+              filter={filter}
+              listSelect={listSelect}
+              setFilter={setFilter}
+              showEditFilter={showEditFilter}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              operationComponent={operations}
+              view={view}
+              zoomable
             />
-          </div>
 
-          <LoadedContent loading={result.loading} error={result.error}>
-            <GalleryList
-              filter={effectiveFilter}
-              galleries={items}
-              selectedIds={selectedIds}
-              onSelectChange={onSelectChange}
+            <FilterTags
+              criteria={filter.criteria}
+              onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+              onRemoveCriterion={removeCriterion}
+              onRemoveAll={clearAllCriteria}
             />
-          </LoadedContent>
 
-          {totalCount > filter.itemsPerPage && (
-            <div className="pagination-footer-container">
-              <div className="pagination-footer">
-                <Pagination
-                  itemsPerPage={filter.itemsPerPage}
-                  currentPage={filter.currentPage}
-                  totalItems={totalCount}
-                  onChangePage={setPage}
-                  pagePopupPlacement="top"
-                />
-              </div>
+            <div className="pagination-index-container">
+              <Pagination
+                currentPage={filter.currentPage}
+                itemsPerPage={filter.itemsPerPage}
+                totalItems={totalCount}
+                onChangePage={(page) => setFilter(filter.changePage(page))}
+              />
+              <PaginationIndex
+                loading={cachedResult.loading}
+                itemsPerPage={filter.itemsPerPage}
+                currentPage={filter.currentPage}
+                totalItems={totalCount}
+              />
             </div>
-          )}
-        </SidebarPaneContent>
-      </SidebarPane>
+
+            <LoadedContent loading={result.loading} error={result.error}>
+              <GalleryList
+                filter={effectiveFilter}
+                galleries={items}
+                selectedIds={selectedIds}
+                onSelectChange={onSelectChange}
+              />
+            </LoadedContent>
+
+            {totalCount > filter.itemsPerPage && (
+              <div className="pagination-footer-container">
+                <div className="pagination-footer">
+                  <Pagination
+                    itemsPerPage={filter.itemsPerPage}
+                    currentPage={filter.currentPage}
+                    totalItems={totalCount}
+                    onChangePage={setPage}
+                    pagePopupPlacement="top"
+                  />
+                </div>
+              </div>
+            )}
+          </SidebarPaneContent>
+        </SidebarPane>
+      </SidebarStateContext.Provider>
     </div>
   );
 };
