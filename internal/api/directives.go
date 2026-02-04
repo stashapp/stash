@@ -17,7 +17,7 @@ func HasRoleDirective(ctx context.Context, obj interface{}, next graphql.Resolve
 		return next(ctx)
 	}
 
-	if currentUser != nil && !currentUser.Roles.HasRole(role) {
+	if !currentUser.Roles.HasRole(role) {
 		return nil, session.ErrUnauthorized
 	}
 
@@ -39,7 +39,8 @@ func IsUserOwnerDirective(ctx context.Context, obj any, next graphql.Resolver) (
 		return nil, session.ErrUnauthorized
 	}
 
-	if currentUser.Username != userObj.Username {
+	// allow admin access
+	if !currentUser.Roles.HasRole(models.RoleEnumAdmin) && currentUser.Username != userObj.Username {
 		return nil, session.ErrUnauthorized
 	}
 

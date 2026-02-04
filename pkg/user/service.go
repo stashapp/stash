@@ -16,6 +16,7 @@ var (
 	ErrEmptyUsername            = errors.New("empty username")
 	ErrUsernameHasWhitespace    = errors.New("username has leading or trailing whitespace")
 	ErrDeleteLastAdminUser      = errors.New("final admin user cannot be deleted")
+	ErrRemoveLastAdminRole      = errors.New("final admin role cannot be removed")
 	ErrInternalError            = errors.New("internal error")
 	ErrAccessDenied             = errors.New("access denied")
 	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
@@ -30,6 +31,7 @@ type UserSource interface {
 	CreateUser(ctx context.Context, u models.User, password string) error
 	ReplaceUser(ctx context.Context, username string, updated models.User) error
 	ChangeUserPassword(ctx context.Context, username string, newPassword string) error
+	ChangeUserAPIKey(ctx context.Context, username string, newAPIKey string) error
 	DeleteUser(ctx context.Context, username string) error
 }
 
@@ -50,6 +52,10 @@ func (s *Service) AllUsers(ctx context.Context) ([]*models.User, error) {
 	return s.Store.AllUsers(ctx)
 }
 
+func userIsLocked(u *models.User) bool {
+	return len(u.Roles) == 0
+}
+
 func (s *Service) ValidateCredentials(ctx context.Context, username string, password string) error {
 	// ensure user is not locked
 	u, err := s.GetUser(ctx, username)
@@ -63,7 +69,7 @@ func (s *Service) ValidateCredentials(ctx context.Context, username string, pass
 		return ErrAccessDenied
 	}
 
-	if len(u.Roles) == 0 {
+	if userIsLocked(u) {
 		logger.Infof("[login attempt] user %s is locked", username)
 		return ErrAccessDenied
 	}
@@ -73,6 +79,61 @@ func (s *Service) ValidateCredentials(ctx context.Context, username string, pass
 		return ErrAccessDenied
 	}
 	return nil
+}
+
+// AuthenticateUserByID authenticates a user by their username and returns the user object if successful.
+// This is used for session-based authentication.
+// It will return an error if the user does not exist or if the user is locked.
+func (s *Service) AuthenticateUserByID(ctx context.Context, username string) (*models.User, error) {
+	u, err := s.GetUser(ctx, username)
+	if err != nil {
+		logger.Errorf("error getting user for authentication: %v", err)
+		return nil, ErrInternalError
+	}
+
+	if u == nil {
+		logger.Infof("[authentication] user %s not found", username)
+		return nil, ErrAccessDenied
+	}
+
+	if userIsLocked(u) {
+		logger.Infof("[authentication] user %s is locked", username)
+		return nil, ErrAccessDenied
+	}
+
+	return u, nil
+}
+
+func (s *Service) AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error) {
+	username, err := GetUserIDFromAPIKey(apiKey)
+	if err != nil {
+		logger.Errorf("error getting user ID from api key: %v", err)
+		return nil, ErrInternalError
+	}
+
+	user, err := s.GetUser(ctx, username)
+	if err != nil {
+		logger.Errorf("error getting user by username: %v", err)
+		return nil, ErrInternalError
+	}
+
+	if user == nil {
+		logger.Infof("[apikey authentication] user %s not found", username)
+		return nil, ErrAccessDenied
+	}
+
+	if userIsLocked(user) {
+		logger.Infof("[apikey authentication] user %s is locked", username)
+		return nil, ErrAccessDenied
+	}
+
+	// ensure apikey matches
+	if user.ApiKey != apiKey {
+		logger.Infof("[apikey authentication] invalid api key for user %s", username)
+		return nil, ErrAccessDenied
+	}
+
+	return user, nil
 }
 
 func (s *Service) validateUsername(username string) error {
@@ -173,6 +234,27 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 		}
 	}
 
+	// validate roles
+	// don't allow removing admin from last admin user
+	if existingRoles.HasRole(models.RoleEnumAdmin) && !updated.Roles.HasRole(models.RoleEnumAdmin) {
+		users, err := s.AllUsers(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting all users: %w", err)
+		}
+
+		hasAdmin := false
+		for _, u := range users {
+			if u.Username != existingUser.Username && u.Roles.HasRole(models.RoleEnumAdmin) {
+				hasAdmin = true
+				break
+			}
+		}
+
+		if !hasAdmin {
+			return ErrRemoveLastAdminRole
+		}
+	}
+
 	// update user in store
 	if err := s.Store.ReplaceUser(ctx, username, updated); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
@@ -225,6 +307,53 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	return nil
 }
 
+func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, error) {
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return "", fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return "", ErrUserNotExist
+	}
+
+	// generate new api key
+	newAPIKey, err := generateAPIKey(username)
+	if err != nil {
+		return "", fmt.Errorf("error generating api key: %w", err)
+	}
+
+	if err := s.Store.ChangeUserAPIKey(ctx, username, newAPIKey); err != nil {
+		return "", fmt.Errorf("error updating user with new api key: %w", err)
+	}
+
+	logger.Infof("[user] generated new API key for %q", username)
+
+	return newAPIKey, nil
+}
+
+func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return ErrUserNotExist
+	}
+
+	// clear api key
+	if err := s.Store.ChangeUserAPIKey(ctx, username, ""); err != nil {
+		return fmt.Errorf("error clearing user api key: %w", err)
+	}
+
+	logger.Infof("[user] cleared API key for %q", username)
+
+	return nil
+}
+
 func (s *Service) DeleteUser(ctx context.Context, username string) error {
 	// check if user exists
 	existingUser, err := s.GetUser(ctx, username)
@@ -236,7 +365,7 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 		return ErrUserNotExist
 	}
 
-	// don't allow deleting last admin user
+	// don't allow deleting last admin user unless it is the last user
 	if existingUser.Roles.HasRole(models.RoleEnumAdmin) {
 		users, err := s.AllUsers(ctx)
 		if err != nil {
@@ -251,7 +380,8 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 			}
 		}
 
-		if !hasAdmin {
+		// allow deleting last admin if it is the only user
+		if !hasAdmin && len(users) > 1 {
 			return ErrDeleteLastAdminUser
 		}
 	}

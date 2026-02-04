@@ -160,10 +160,7 @@ func GetCurrentUser(ctx context.Context) *models.User {
 	return nil
 }
 
-func (s *Store) Authenticate(w http.ResponseWriter, r *http.Request) (userID string, err error) {
-	c := s.config
-
-	// translate api key into current user, if present
+func GetRequestApiKey(r *http.Request) string {
 	apiKey := r.Header.Get(ApiKeyHeader)
 
 	// try getting the api key as a query parameter
@@ -171,24 +168,5 @@ func (s *Store) Authenticate(w http.ResponseWriter, r *http.Request) (userID str
 		apiKey = r.URL.Query().Get(ApiKeyParameter)
 	}
 
-	// FIXME - handle this
-	if apiKey != "" {
-		// match against configured API and set userID to the
-		// configured username. In future, we'll want to
-		// get the username from the key.
-		if c.GetAPIKey() != apiKey {
-			return "", ErrUnauthorized
-		}
-
-		userID = c.GetUsername()
-	} else {
-		// handle session
-		userID, err = s.GetSessionUserID(w, r)
-	}
-
-	if err != nil {
-		return "", err
-	}
-
-	return
+	return apiKey
 }

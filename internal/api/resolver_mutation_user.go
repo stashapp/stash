@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
@@ -59,4 +60,27 @@ func (r *mutationResolver) ChangeUserPassword(ctx context.Context, input ChangeU
 	}
 
 	return true, nil
+}
+
+func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPIKeyInput) (string, error) {
+	u := session.GetCurrentUser(ctx)
+
+	if u == nil {
+		return "", fmt.Errorf("no current user in context")
+	}
+
+	if input.Clear != nil && *input.Clear {
+		err := r.userService.ClearAPIKey(ctx, u.Username)
+		if err != nil {
+			return "", err
+		}
+		return "", nil
+	}
+
+	newAPIKey, err := r.userService.GenerateAPIKey(ctx, u.Username)
+	if err != nil {
+		return "", err
+	}
+
+	return newAPIKey, nil
 }

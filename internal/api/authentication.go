@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/user"
 )
 
 const (
@@ -31,11 +32,12 @@ func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
-type UserGetter interface {
-	GetUser(ctx context.Context, username string) (*models.User, error)
+type UserAuthenticator interface {
+	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
+	AuthenticateUserByID(ctx context.Context, username string) (*models.User, error)
 }
 
-func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
+func authenticateHandler(g UserAuthenticator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := config.GetInstance()
@@ -49,10 +51,30 @@ func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 
 			r = session.SetLocalRequest(r)
 
-			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
+			// try to authenticate using api key first
+			var u *models.User
+			var err error
+			ctx := r.Context()
+
+			apiKey := session.GetRequestApiKey(r)
+			if apiKey != "" {
+				u, err = g.AuthenticateByAPIKey(ctx, apiKey)
+			} else {
+				userID, err := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
+				if err != nil {
+					logger.Errorf("error getting session user ID: %v", err)
+					http.Error(w, "internal server error", http.StatusInternalServerError)
+					return
+				}
+
+				if userID != "" {
+					u, err = g.AuthenticateUserByID(ctx, userID)
+				}
+			}
+
 			if err != nil {
-				if !errors.Is(err, session.ErrUnauthorized) {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+				if errors.Is(err, user.ErrInternalError) {
+					http.Error(w, "internal server error", http.StatusInternalServerError)
 					return
 				}
 
@@ -61,8 +83,6 @@ func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-
-			ctx := r.Context()
 
 			if err := session.CheckAllowPublicWithoutAuth(s, c, r); err != nil {
 				var accessErr session.ExternalAccessError
@@ -80,20 +100,6 @@ func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 					w.WriteHeader(http.StatusInternalServerError)
 				}
 				return
-			}
-
-			var u *models.User
-			if userID != "" {
-				u, err = g.GetUser(ctx, userID)
-				if err != nil {
-					// if we can't get the user object, we just return a forbidden error
-					logger.Errorf("Error getting user object: %v", err)
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-				if u == nil {
-					logger.Errorf("[User] cookie user %q not found", userID)
-				}
 			}
 
 			if hc := s.LoginRequired(ctx); hc {

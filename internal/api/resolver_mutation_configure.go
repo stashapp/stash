@@ -649,29 +649,6 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	return makeConfigDefaultsResult(), nil
 }
 
-func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPIKeyInput) (string, error) {
-	c := config.GetInstance()
-
-	var newAPIKey string
-	if input.Clear == nil || !*input.Clear {
-		username := c.GetUsername()
-		if username != "" {
-			var err error
-			newAPIKey, err = manager.GenerateAPIKey(username)
-			if err != nil {
-				return "", err
-			}
-		}
-	}
-
-	c.SetString(config.ApiKey, newAPIKey)
-	if err := c.Write(); err != nil {
-		return newAPIKey, err
-	}
-
-	return newAPIKey, nil
-}
-
 func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}, partial map[string]interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
 

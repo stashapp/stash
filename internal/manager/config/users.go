@@ -19,6 +19,7 @@ type StoredUser struct {
 	Username     string            `json:"username" koanf:"username"`
 	PasswordHash string            `json:"passwordhash" koanf:"passwordhash"`
 	Roles        []models.RoleEnum `json:"roles" koanf:"roles"`
+	ApiKey       string            `json:"api_key" koanf:"api_key"`
 }
 
 type UserStore struct {
@@ -38,12 +39,14 @@ func (s *Config) GetPasswordHash() string {
 func (s *UserStore) legacyUser() *StoredUser {
 	un := s.getString(Username)
 	pwHash := s.getString(Password)
+	apiKey := s.getString(ApiKey)
 
 	if un != "" && pwHash != "" {
 		return &StoredUser{
 			Username:     un,
 			PasswordHash: pwHash,
 			Roles:        []models.RoleEnum{models.RoleEnumAdmin},
+			ApiKey:       apiKey,
 		}
 	}
 
@@ -80,6 +83,7 @@ func (s *UserStore) convertUser(su StoredUser) *models.User {
 	return &models.User{
 		Username: su.Username,
 		Roles:    su.Roles,
+		ApiKey:   su.ApiKey,
 	}
 }
 
@@ -167,6 +171,22 @@ func (s *UserStore) ChangeUserPassword(ctx context.Context, username string, new
 	return s.saveUsers()
 }
 
+func (s *UserStore) ChangeUserAPIKey(ctx context.Context, username string, newAPIKey string) error {
+	s.Lock()
+	defer s.Unlock()
+
+	u := s.getUser(username)
+	if u == nil {
+		return fmt.Errorf("user not found")
+	}
+
+	updatedUser := *u
+	updatedUser.ApiKey = newAPIKey
+	s.cachedUsers[username] = updatedUser
+
+	return s.saveUsers()
+}
+
 func (s *UserStore) CreateUser(ctx context.Context, u models.User, password string) error {
 	s.Lock()
 	defer s.Unlock()
@@ -180,6 +200,7 @@ func (s *UserStore) CreateUser(ctx context.Context, u models.User, password stri
 		Username:     u.Username,
 		PasswordHash: hashPassword(password),
 		Roles:        u.Roles,
+		ApiKey:       u.ApiKey,
 	}
 
 	s.cachedUsers[u.Username] = newUser
@@ -187,6 +208,8 @@ func (s *UserStore) CreateUser(ctx context.Context, u models.User, password stri
 	return s.saveUsers()
 }
 
+// ReplaceUser replaces an existing user with updated information.
+// ApiKey is ignored and not changed by this method.
 func (s *UserStore) ReplaceUser(ctx context.Context, username string, updated models.User) error {
 	s.Lock()
 	defer s.Unlock()
@@ -200,6 +223,8 @@ func (s *UserStore) ReplaceUser(ctx context.Context, username string, updated mo
 		Username:     updated.Username,
 		PasswordHash: existingUser.PasswordHash,
 		Roles:        updated.Roles,
+		// don't allow changing apikey with this method
+		ApiKey: existingUser.ApiKey,
 	}
 
 	// if username changed, remove old entry

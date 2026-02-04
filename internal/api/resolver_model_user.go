@@ -17,7 +17,3 @@ func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.Ro
 	}
 	return ret, nil
 }
-
-func (r *userResolver) APIKey(ctx context.Context, obj *models.User) (*string, error) {
-	return nil, nil
-}
