@@ -84,7 +84,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   );
 };
 
-type ModifierValue = "any" | "none" | "any_of" | "only" | "include_subs";
+export type ModifierValue = "any" | "none" | "any_of" | "only" | "include_subs";
 
 export function getModifierCandidates(props: {
   modifier: CriterionModifier;
