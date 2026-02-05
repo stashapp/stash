@@ -1012,8 +1012,10 @@ func TestTagUpdateTagImage(t *testing.T) {
 
 		// create tag to test against
 		const name = "TestTagUpdateTagImage"
-		tag := models.Tag{
-			Name: name,
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
@@ -1032,8 +1034,10 @@ func TestTagUpdateAlias(t *testing.T) {
 
 		// create tag to test against
 		const name = "TestTagUpdateAlias"
-		tag := models.Tag{
-			Name: name,
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
@@ -1065,8 +1069,10 @@ func TestTagStashIDs(t *testing.T) {
 
 		// create tag to test against
 		const name = "TestTagStashIDs"
-		tag := models.Tag{
-			Name: name,
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
@@ -1089,9 +1095,11 @@ func TestTagFindByStashID(t *testing.T) {
 		const name = "TestTagFindByStashID"
 		const stashID = "stashid"
 		const endpoint = "endpoint"
-		tag := models.Tag{
-			Name:     name,
-			StashIDs: models.NewRelatedStashIDs([]models.StashID{{StashID: stashID, Endpoint: endpoint}}),
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name:     name,
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{{StashID: stashID, Endpoint: endpoint}}),
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {

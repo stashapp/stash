@@ -1709,6 +1709,18 @@ func tagStashID(i int) models.StashID {
 	}
 }
 
+func getTagCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getTagStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 // createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1736,7 +1748,10 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 			})
 		}
 
-		err := tqb.Create(ctx, &tag)
+		err := tqb.Create(ctx, &models.CreateTagInput{
+			Tag:          &tag,
+			CustomFields: getTagCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())

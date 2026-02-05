@@ -368,14 +368,14 @@ func Test_sceneRelationships_tags(t *testing.T) {
 
 	db := mocks.NewDatabase()
 
-	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
-		return p.Name == validName
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.CreateTagInput) bool {
+		return p.Tag.Name == validName
 	})).Run(func(args mock.Arguments) {
-		t := args.Get(1).(*models.Tag)
-		t.ID = validStoredIDInt
+		t := args.Get(1).(*models.CreateTagInput)
+		t.Tag.ID = validStoredIDInt
 	}).Return(nil)
-	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
-		return p.Name == invalidName
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.CreateTagInput) bool {
+		return p.Tag.Name == invalidName
 	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
