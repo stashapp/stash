@@ -268,7 +268,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   );
 };
 
-interface IListOperations {
+export interface IListOperations {
   text: string;
   onClick: () => void;
   isDisplayed?: () => boolean;
