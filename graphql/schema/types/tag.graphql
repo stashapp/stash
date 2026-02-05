@@ -24,7 +24,6 @@ type Tag {
 
   parent_count: Int! # Resolver
   child_count: Int! # Resolver
-
   custom_fields: Map!
 }
 

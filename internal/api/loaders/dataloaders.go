@@ -62,11 +62,11 @@ type Loaders struct {
 	StudioByID         *StudioLoader
 	StudioCustomFields *CustomFieldsLoader
 
-	TagByID            *TagLoader
-	TagCustomFields    *CustomFieldsLoader
-	GroupByID          *GroupLoader
-	FileByID   *FileLoader
-	FolderByID *FolderLoader
+	TagByID         *TagLoader
+	TagCustomFields *CustomFieldsLoader
+	GroupByID       *GroupLoader
+	FileByID        *FileLoader
+	FolderByID      *FolderLoader
 }
 
 type Middleware struct {

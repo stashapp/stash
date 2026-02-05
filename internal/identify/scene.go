@@ -167,9 +167,9 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 		} else if createMissing {
 			newTag := t.ToTag(endpoint, nil)
 
-		err := g.tagCreator.Create(ctx, &models.CreateTagInput{
-			Tag: newTag,
-		})
+			err := g.tagCreator.Create(ctx, &models.CreateTagInput{
+				Tag: newTag,
+			})
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}
