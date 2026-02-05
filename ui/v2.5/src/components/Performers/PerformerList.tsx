@@ -45,13 +45,14 @@ import { IListOperations, ListOperations } from "../List/ListOperationButtons";
 import { FilterTags } from "../List/FilterTags";
 import { Pagination, PaginationIndex } from "../List/Pagination";
 import { LoadedContent } from "../List/PagedList";
-// import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { PerformerListFilterOptions } from "src/models/list-filter/performers";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
+import { FavoritePerformerCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 
 export const FormatHeight = (height?: number | null) => {
   const intl = useIntl();
@@ -253,8 +254,6 @@ const SidebarContent: React.FC<{
   const showResultsId =
     count !== undefined ? "actions.show_count_results" : "actions.show_results";
 
-  // const hideStudios = view === View.StudioPerformers;
-
   const AgeCriterionOption = PerformerListFilterOptions.criterionOptions.find(
     (c) => c.type === "age"
   );
@@ -271,19 +270,20 @@ const SidebarContent: React.FC<{
       />
 
       <PerformerFilterSidebarSections>
-        {/* {!hideStudios && (
-          <SidebarStudiosFilter
-            filter={filter}
-            setFilter={setFilter}
-            filterHook={filterHook}
-          />
-        )} */}
         <SidebarTagsFilter
           filter={filter}
           setFilter={setFilter}
           filterHook={filterHook}
         />
         <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="favourite" />}
+          data-type={FavoritePerformerCriterionOption.type}
+          option={FavoritePerformerCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="favourite"
+        />
         <SidebarAgeFilter
           title={<FormattedMessage id="age" />}
           option={AgeCriterionOption!}
