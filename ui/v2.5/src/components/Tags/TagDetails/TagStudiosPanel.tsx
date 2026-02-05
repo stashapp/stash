@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
-import { StudioList } from "src/components/Studios/StudioList";
+import { FilteredStudioList } from "src/components/Studios/StudioList";
 
 interface ITagStudiosPanel {
   active: boolean;
@@ -15,5 +15,5 @@ export const TagStudiosPanel: React.FC<ITagStudiosPanel> = ({
   showSubTagContent,
 }) => {
   const filterHook = useTagFilterHook(tag, showSubTagContent);
-  return <StudioList filterHook={filterHook} alterQuery={active} />;
+  return <FilteredStudioList filterHook={filterHook} alterQuery={active} />;
 };
