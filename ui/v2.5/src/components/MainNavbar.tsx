@@ -139,7 +139,6 @@ const allMenuItems: IMenuItem[] = [
     href: "/performers",
     icon: faUser,
     hotkey: "g p",
-    userCreatable: true,
   },
   {
     name: "studios",
