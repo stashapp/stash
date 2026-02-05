@@ -153,7 +153,6 @@
             "query_mode_metadata": "Metaadat",
             "query_mode_path": "Elérési út",
             "source": "Forrás",
-            "show_male_label": "Férfi előadók mutatása",
             "active_instance": "Aktív stash-box példány:",
             "blacklist_desc": "A tiltólistás elemek nem látszódnak a lekérésekben. Fontos tudni, hogy a regex kifejezések érzékenyek a kis-és nagybetűkre. Bizonyos karakterek után kötelező a \\ : {chars_require_escape}",
             "mark_organized_desc": "Azonnal megjelöli a jelenetet \"Rendezettnek\", amint a \"Mentés\" gomb lenyomásra került.",
@@ -503,7 +502,6 @@
     "name": "Név",
     "new": "Új",
     "none": "Nincs",
-    "o_counter": "O-Számláló",
     "operations": "Műveletek",
     "organized": "Rendezve",
     "pagination": {

@@ -59,6 +59,10 @@ type GalleryFilterType struct {
 	StudiosFilter *StudioFilterType `json:"studios_filter"`
 	// Filter by related tags that meet this criteria
 	TagsFilter *TagFilterType `json:"tags_filter"`
+	// Filter by related files that meet this criteria
+	FilesFilter *FileFilterType `json:"files_filter"`
+	// Filter by related folders that meet this criteria
+	FoldersFilter *FolderFilterType `json:"folders_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
@@ -91,6 +95,7 @@ type GalleryDestroyInput struct {
 	// If true, then the zip file will be deleted if the gallery is zip-file-based.
 	// If gallery is folder-based, then any files not associated with other
 	// galleries will be deleted, along with the folder, if it is not empty.
-	DeleteFile      *bool `json:"delete_file"`
-	DeleteGenerated *bool `json:"delete_generated"`
+	DeleteFile       *bool `json:"delete_file"`
+	DeleteGenerated  *bool `json:"delete_generated"`
+	DestroyFileEntry *bool `json:"destroy_file_entry"`
 }

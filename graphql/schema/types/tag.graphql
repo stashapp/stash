@@ -9,6 +9,7 @@ type Tag {
   created_at: Time!
   updated_at: Time!
   favorite: Boolean!
+  stash_ids: [StashID!]!
   image_path: String # Resolver
   scene_count(depth: Int): Int! # Resolver
   scene_marker_count(depth: Int): Int! # Resolver
@@ -30,11 +31,13 @@ input TagCreateInput {
   "Value that does not appear in the UI but overrides name for sorting"
   sort_name: String
   description: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
+  stash_ids: [StashIDInput!]
 
   parent_ids: [ID!]
   child_ids: [ID!]
@@ -46,11 +49,13 @@ input TagUpdateInput {
   "Value that does not appear in the UI but overrides name for sorting"
   sort_name: String
   description: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
+  stash_ids: [StashIDInput!]
 
   parent_ids: [ID!]
   child_ids: [ID!]
@@ -73,6 +78,7 @@ input TagsMergeInput {
 input BulkTagUpdateInput {
   ids: [ID!]
   description: String
+  "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
   aliases: BulkUpdateStrings
   ignore_auto_tag: Boolean
   favorite: Boolean

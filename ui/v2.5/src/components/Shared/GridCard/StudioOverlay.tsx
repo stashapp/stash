@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IStudio {
   id: string;
@@ -11,7 +11,7 @@ interface IStudio {
 export const StudioOverlay: React.FC<{
   studio: IStudio | null | undefined;
 }> = ({ studio }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const configValue = configuration?.interface.showStudioAsText;
 

@@ -65,8 +65,11 @@ Plugins provide tasks which can be run from the Tasks page.
 
 The basic structure of a plugin configuration file is as follows:
 
-```
-name: <plugin name>
+```yaml
+name: <plugin name> 
+# optional list of dependencies to be included
+# "#" is is part of the config - do not remove
+# requires: <plugin ID>
 description: <optional description of the plugin>
 version: <optional version tag>
 url: <optional url>
@@ -120,6 +123,8 @@ tasks:
 ```
 
 The `name`, `description`, `version` and `url` fields are displayed on the plugins page.
+
+`# requires` will make the plugin manager select plugins matching the specified IDs to be automatically installed as dependencies. Only works with plugins within the same index.
 
 The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
 
@@ -235,7 +240,7 @@ hooks:
       argKey: argValue
 ```
 
-**Note:** it is possible for hooks to trigger eachother or themselves if they perform mutations. For safety, hooks will not be triggered if they have already been triggered in the context of the operation. Stash uses cookies to track this context, so it's important for plugins to send cookies when performing operations.
+**⚠️ Note:** It is possible for hooks to trigger eachother or themselves if they perform mutations. For safety, hooks will not be triggered if they have already been triggered in the context of the operation. Stash uses cookies to track this context, so it's important for plugins to send cookies when performing operations.
 
 #### Trigger types
 

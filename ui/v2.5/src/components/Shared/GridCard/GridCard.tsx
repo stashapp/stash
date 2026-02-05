@@ -15,6 +15,7 @@ import { Icon } from "../Icon";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
 import { useDebounce } from "src/hooks/debounce";
+import { PatchComponent } from "src/patch";
 
 interface ICardProps {
   className?: string;
@@ -164,106 +165,113 @@ const MoveTarget: React.FC<{ dragSide: DragSide }> = ({ dragSide }) => {
   );
 };
 
-export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
-  const { setInHandle, moveTarget, dragProps } = useDragMoveSelect({
-    selecting: props.selecting || false,
-    selected: props.selected || false,
-    onSelectedChanged: props.onSelectedChanged,
-    objectId: props.objectId,
-    onMove: props.onMove,
-  });
+export const GridCard: React.FC<ICardProps> = PatchComponent(
+  "GridCard",
+  (props: ICardProps) => {
+    const { setInHandle, moveTarget, dragProps } = useDragMoveSelect({
+      selecting: props.selecting || false,
+      selected: props.selected || false,
+      onSelectedChanged: props.onSelectedChanged,
+      objectId: props.objectId,
+      onMove: props.onMove,
+    });
 
-  function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
-    const { shiftKey } = event;
-
-    if (!props.onSelectedChanged) {
-      return;
-    }
-
-    if (props.selecting) {
-      props.onSelectedChanged(!props.selected, shiftKey);
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  }
-
-  function maybeRenderInteractiveHeatmap() {
-    if (props.interactiveHeatmap) {
-      return (
-        <img
-          loading="lazy"
-          src={props.interactiveHeatmap}
-          alt="interactive heatmap"
-          className="interactive-heatmap"
-        />
-      );
-    }
-  }
-
-  function maybeRenderProgressBar() {
-    if (
-      props.resumeTime &&
-      props.duration &&
-      props.duration > props.resumeTime
+    function handleImageClick(
+      event: React.MouseEvent<HTMLElement, MouseEvent>
     ) {
-      const percentValue = (100 / props.duration) * props.resumeTime;
-      const percentStr = percentValue + "%";
-      return (
-        <div title={Math.round(percentValue) + "%"} className="progress-bar">
-          <div style={{ width: percentStr }} className="progress-indicator" />
-        </div>
-      );
-    }
-  }
+      const { shiftKey } = event;
 
-  return (
-    <Card
-      className={cx(props.className, "grid-card")}
-      onClick={handleImageClick}
-      {...dragProps}
-      style={
-        props.width && !ScreenUtils.isMobile()
-          ? { width: `${props.width}px` }
-          : {}
+      if (!props.onSelectedChanged) {
+        return;
       }
-    >
-      {moveTarget !== undefined && <MoveTarget dragSide={moveTarget} />}
-      <Controls>
-        {props.onSelectedChanged && (
-          <Checkbox
-            selected={props.selected}
-            onSelectedChanged={props.onSelectedChanged}
+
+      if (props.selecting) {
+        props.onSelectedChanged(!props.selected, shiftKey);
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
+
+    function maybeRenderInteractiveHeatmap() {
+      if (props.interactiveHeatmap) {
+        return (
+          <img
+            loading="lazy"
+            src={props.interactiveHeatmap}
+            alt="interactive heatmap"
+            className="interactive-heatmap"
           />
-        )}
+        );
+      }
+    }
 
-        {!!props.objectId && props.onMove && (
-          <DragHandle setInHandle={setInHandle} />
-        )}
-      </Controls>
+    function maybeRenderProgressBar() {
+      if (
+        props.resumeTime &&
+        props.duration &&
+        props.duration > props.resumeTime
+      ) {
+        const percentValue = (100 / props.duration) * props.resumeTime;
+        const percentStr = percentValue + "%";
+        return (
+          <div title={Math.round(percentValue) + "%"} className="progress-bar">
+            <div style={{ width: percentStr }} className="progress-indicator" />
+          </div>
+        );
+      }
+    }
 
-      <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>
-        <Link
-          to={props.url}
-          className={props.linkClassName}
-          onClick={handleImageClick}
+    return (
+      <Card
+        className={cx(props.className, "grid-card")}
+        onClick={handleImageClick}
+        {...dragProps}
+        style={
+          props.width && !ScreenUtils.isMobile()
+            ? { width: `${props.width}px` }
+            : {}
+        }
+      >
+        {moveTarget !== undefined && <MoveTarget dragSide={moveTarget} />}
+        <Controls>
+          {props.onSelectedChanged && (
+            <Checkbox
+              selected={props.selected}
+              onSelectedChanged={props.onSelectedChanged}
+            />
+          )}
+
+          {!!props.objectId && props.onMove && (
+            <DragHandle setInHandle={setInHandle} />
+          )}
+        </Controls>
+
+        <div
+          className={cx(props.thumbnailSectionClassName, "thumbnail-section")}
         >
-          {props.image}
-        </Link>
-        {props.overlays}
-        {maybeRenderProgressBar()}
-      </div>
-      {maybeRenderInteractiveHeatmap()}
-      <div className="card-section">
-        <Link to={props.url} onClick={handleImageClick}>
-          <h5 className="card-section-title flex-aligned">
-            {props.pretitleIcon}
-            <TruncatedText text={props.title} lineCount={2} />
-          </h5>
-        </Link>
-        {props.details}
-      </div>
+          <Link
+            to={props.url}
+            className={props.linkClassName}
+            onClick={handleImageClick}
+          >
+            {props.image}
+          </Link>
+          {props.overlays}
+          {maybeRenderProgressBar()}
+        </div>
+        {maybeRenderInteractiveHeatmap()}
+        <div className="card-section">
+          <Link to={props.url} onClick={handleImageClick}>
+            <h5 className="card-section-title flex-aligned">
+              {props.pretitleIcon}
+              <TruncatedText text={props.title} lineCount={2} />
+            </h5>
+          </Link>
+          {props.details}
+        </div>
 
-      {props.popovers}
-    </Card>
-  );
-};
+        {props.popovers}
+      </Card>
+    );
+  }
+);

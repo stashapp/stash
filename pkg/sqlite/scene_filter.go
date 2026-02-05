@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type sceneFilterHandler struct {
@@ -83,14 +82,27 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Phash != nil {
 				// backwards compatibility
-				qb.phashDistanceCriterionHandler(&models.PhashDistanceCriterionInput{
-					Value:    sceneFilter.Phash.Value,
-					Modifier: sceneFilter.Phash.Modifier,
-				})(ctx, f)
+				h := phashDistanceCriterionHandler{
+					joinFn: func(f *filterBuilder) {
+						qb.addSceneFilesTable(f)
+						f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+					},
+					criterion: &models.PhashDistanceCriterionInput{
+						Value:    sceneFilter.Phash.Value,
+						Modifier: sceneFilter.Phash.Modifier,
+					},
+				}
+				h.handle(ctx, f)
 			}
 		}),
 
-		qb.phashDistanceCriterionHandler(sceneFilter.PhashDistance),
+		&phashDistanceCriterionHandler{
+			joinFn: func(f *filterBuilder) {
+				qb.addSceneFilesTable(f)
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+			},
+			criterion: sceneFilter.PhashDistance,
+		},
 
 		intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil),
 		qb.oCountCriterionHandler(sceneFilter.OCounter),
@@ -114,13 +126,20 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 				stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 			}
 		}),
-
 		&stashIDCriterionHandler{
 			c:                 sceneFilter.StashIDEndpoint,
 			stashIDRepository: &sceneRepository.stashIDs,
 			stashIDTableAs:    "scene_stash_ids",
 			parentIDCol:       "scenes.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 sceneFilter.StashIDsEndpoint,
+			stashIDRepository: &sceneRepository.stashIDs,
+			stashIDTableAs:    "scene_stash_ids",
+			parentIDCol:       "scenes.id",
+		},
+
+		qb.stashIDCountCriterionHandler(sceneFilter.StashIDCount),
 
 		boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable),
 		intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable),
@@ -200,6 +219,21 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			joinFn: func(f *filterBuilder) {
 				sceneRepository.groups.innerJoin(f, "", "scenes.id")
 			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "files.id",
+			relatedRepo:  fileRepository.repository,
+			relatedHandler: &fileFilterHandler{
+				fileFilter: sceneFilter.FilesFilter,
+				isRelated:  true,
+			},
+			joinFn: func(f *filterBuilder) {
+				qb.addFilesTable(f)
+				qb.addFoldersTable(f)
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
 		},
 
 		&relatedFilterHandler{
@@ -319,7 +353,7 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("galleries_join.scene_id IS NULL")
 			case "studio":
 				f.addWhere("scenes.studio_id IS NULL")
-			case "movie":
+			case "movie", "group":
 				sceneRepository.groups.join(f, "groups_join", "scenes.id")
 				f.addWhere("groups_join.scene_id IS NULL")
 			case "performers":
@@ -419,6 +453,16 @@ func (qb *sceneFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrite
 	}
 
 	return h.handler(tagCount)
+}
+
+func (qb *sceneFilterHandler) stashIDCountCriterionHandler(stashIDCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    "scene_stash_ids",
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(stashIDCount)
 }
 
 func (qb *sceneFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
@@ -525,44 +569,5 @@ func (qb *sceneFilterHandler) performerTagsCriterionHandler(tags *models.Hierarc
 		primaryTable:   sceneTable,
 		joinTable:      performersScenesTable,
 		joinPrimaryKey: sceneIDColumn,
-	}
-}
-
-func (qb *sceneFilterHandler) phashDistanceCriterionHandler(phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if phashDistance != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(phashDistance.Value)
-			distance := 0
-			if phashDistance.Distance != nil {
-				distance = *phashDistance.Distance
-			}
-
-			if distance == 0 {
-				// use the default handler
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: phashDistance.Modifier,
-				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-			}
-
-			switch {
-			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
-				// needed to avoid a type mismatch
-				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
-				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
-			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
-				// needed to avoid a type mismatch
-				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
-				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
-			default:
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: phashDistance.Modifier,
-				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-			}
-		}
 	}
 }

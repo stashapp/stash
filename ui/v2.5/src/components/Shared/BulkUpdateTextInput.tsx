@@ -7,6 +7,7 @@ import { Icon } from "./Icon";
 interface IBulkUpdateTextInputProps extends FormControlProps {
   valueChanged: (value: string | undefined) => void;
   unsetDisabled?: boolean;
+  as?: React.ElementType;
 }
 
 export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
@@ -24,6 +25,7 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
         {...props}
         className="input-control"
         type="text"
+        as={props.as}
         value={props.value ?? ""}
         placeholder={
           props.value === undefined

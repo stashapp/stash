@@ -77,6 +77,8 @@ const (
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
+	sceneIdx1WithTwoStudioPerformer
+	sceneIdx2WithTwoStudioPerformer
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
@@ -138,6 +140,7 @@ const (
 	performerIdxWithSceneStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
+	performerIdxWithTwoSceneStudio
 	performerIdxWithParentTag
 	// new indexes above
 	// performers with dup names start from the end
@@ -257,6 +260,8 @@ const (
 	studioIdxWithScenePerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
+	studioIdx1WithTwoScenePerformer
+	studioIdx2WithTwoScenePerformer
 	studioIdxWithTag
 	studioIdx2WithTag
 	studioIdxWithTwoTags
@@ -384,16 +389,18 @@ var (
 	}
 
 	scenePerformers = linkMap{
-		sceneIdxWithPerformer:          {performerIdxWithScene},
-		sceneIdxWithTwoPerformers:      {performerIdx1WithScene, performerIdx2WithScene},
-		sceneIdxWithThreePerformers:    {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
-		sceneIdxWithPerformerTag:       {performerIdxWithTag},
-		sceneIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
-		sceneIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
-		sceneIdx1WithPerformer:         {performerIdxWithTwoScenes},
-		sceneIdx2WithPerformer:         {performerIdxWithTwoScenes},
-		sceneIdxWithStudioPerformer:    {performerIdxWithSceneStudio},
-		sceneIdxWithPerformerParentTag: {performerIdxWithParentTag},
+		sceneIdxWithPerformer:           {performerIdxWithScene},
+		sceneIdxWithTwoPerformers:       {performerIdx1WithScene, performerIdx2WithScene},
+		sceneIdxWithThreePerformers:     {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
+		sceneIdxWithPerformerTag:        {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:     {performerIdxWithTag, performerIdx2WithTag},
+		sceneIdxWithPerformerTwoTags:    {performerIdxWithTwoTags},
+		sceneIdx1WithPerformer:          {performerIdxWithTwoScenes},
+		sceneIdx2WithPerformer:          {performerIdxWithTwoScenes},
+		sceneIdxWithStudioPerformer:     {performerIdxWithSceneStudio},
+		sceneIdx1WithTwoStudioPerformer: {performerIdxWithTwoSceneStudio},
+		sceneIdx2WithTwoStudioPerformer: {performerIdxWithTwoSceneStudio},
+		sceneIdxWithPerformerParentTag:  {performerIdxWithParentTag},
 	}
 
 	sceneGalleries = linkMap{
@@ -406,11 +413,13 @@ var (
 	}
 
 	sceneStudios = map[int]int{
-		sceneIdxWithStudio:           studioIdxWithScene,
-		sceneIdx1WithStudio:          studioIdxWithTwoScenes,
-		sceneIdx2WithStudio:          studioIdxWithTwoScenes,
-		sceneIdxWithStudioPerformer:  studioIdxWithScenePerformer,
-		sceneIdxWithGrandChildStudio: studioIdxWithGrandParent,
+		sceneIdxWithStudio:              studioIdxWithScene,
+		sceneIdx1WithStudio:             studioIdxWithTwoScenes,
+		sceneIdx2WithStudio:             studioIdxWithTwoScenes,
+		sceneIdxWithStudioPerformer:     studioIdxWithScenePerformer,
+		sceneIdx1WithTwoStudioPerformer: studioIdx1WithTwoScenePerformer,
+		sceneIdx2WithTwoStudioPerformer: studioIdx2WithTwoScenePerformer,
+		sceneIdxWithGrandChildStudio:    studioIdxWithGrandParent,
 	}
 )
 
@@ -1067,10 +1076,17 @@ func getObjectDate(index int) *models.Date {
 	return &ret
 }
 
+func sceneStashIDs(i int) []models.StashID {
+	if i%5 == 0 {
+		return nil
+	}
+	return []models.StashID{sceneStashID(i)}
+}
+
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:   getSceneStringValue(i, "stashid"),
-		Endpoint:  getSceneStringValue(i, "endpoint"),
+		Endpoint:  getSceneStringValue(0, "endpoint"),
 		UpdatedAt: epochTime,
 	}
 }
@@ -1165,9 +1181,7 @@ func makeScene(i int) *models.Scene {
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
 		Groups:       models.NewRelatedGroups(groups),
-		StashIDs: models.NewRelatedStashIDs([]models.StashID{
-			sceneStashID(i),
-		}),
+		StashIDs:     models.NewRelatedStashIDs(sceneStashIDs(i)),
 		PlayDuration: getScenePlayDuration(i),
 		ResumeTime:   getSceneResumeTime(i),
 	}
@@ -1538,7 +1552,7 @@ func getIgnoreAutoTag(index int) bool {
 func performerStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getPerformerStringValue(i, "stashid"),
-		Endpoint: getPerformerStringValue(i, "endpoint"),
+		Endpoint: getPerformerStringValue(0, "endpoint"),
 	}
 }
 
@@ -1688,6 +1702,13 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
+func tagStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getTagStringValue(i, "stashid"),
+		Endpoint: getTagStringValue(0, "endpoint"),
+	}
+}
+
 // createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1707,6 +1728,12 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 		tag := models.Tag{
 			Name:          getTagStringValue(index, name),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
+		}
+
+		if (index+1)%5 != 0 {
+			tag.StashIDs = models.NewRelatedStashIDs([]models.StashID{
+				tagStashID(i),
+			})
 		}
 
 		err := tqb.Create(ctx, &tag)
@@ -1738,7 +1765,19 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
+func getStudioCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getStudioStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
+func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int, customFields map[string]interface{}) (*models.Studio, error) {
 	studio := models.Studio{
 		Name: name,
 	}
@@ -1747,7 +1786,7 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 		studio.ParentID = parentID
 	}
 
-	err := createStudioFromModel(ctx, sqb, &studio)
+	err := createStudioFromModel(ctx, sqb, &studio, customFields)
 	if err != nil {
 		return nil, err
 	}
@@ -1755,8 +1794,11 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio) error {
-	err := sqb.Create(ctx, studio)
+func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio, customFields map[string]interface{}) error {
+	err := sqb.Create(ctx, &models.CreateStudioInput{
+		Studio:       studio,
+		CustomFields: customFields,
+	})
 
 	if err != nil {
 		return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
@@ -1768,6 +1810,24 @@ func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio 
 func getStudioBoolValue(index int) bool {
 	index = index % 2
 	return index == 1
+}
+
+func getStudioEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("studio", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
+}
+
+func getStudioStringList(index int, field string) []string {
+	v := getStudioEmptyString(index, field)
+	if v == "" {
+		return []string{}
+	}
+
+	return []string{v}
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
@@ -1790,7 +1850,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
 			Name:          name,
-			URL:           getStudioStringValue(index, urlField),
+			URLs:          models.NewRelatedStrings(getStudioStringList(i, urlField)),
 			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 			TagIDs:        models.NewRelatedIDs(tids),
@@ -1800,7 +1860,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 			alias := getStudioStringValue(i, "Alias")
 			studio.Aliases = models.NewRelatedStrings([]string{alias})
 		}
-		err := createStudioFromModel(ctx, sqb, &studio)
+		err := createStudioFromModel(ctx, sqb, &studio, getStudioCustomFields(i))
 
 		if err != nil {
 			return err

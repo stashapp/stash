@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
@@ -62,9 +63,9 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 
 	if input.Urls != nil {
-		newScene.URLs = models.NewRelatedStrings(input.Urls)
+		newScene.URLs = models.NewRelatedStrings(stringslice.TrimSpace(input.Urls))
 	} else if input.URL != nil {
-		newScene.URLs = models.NewRelatedStrings([]string{*input.URL})
+		newScene.URLs = models.NewRelatedStrings([]string{strings.TrimSpace(*input.URL)})
 	}
 
 	newScene.PerformerIDs, err = translator.relatedIds(input.PerformerIds)
@@ -296,6 +297,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	var coverImageData []byte
+	coverImageIncluded := translator.hasField("cover_image")
 	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
@@ -309,21 +311,21 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
-		return nil, err
+	if coverImageIncluded {
+		if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
+			return nil, err
+		}
 	}
 
 	return scene, nil
 }
 
 func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
-	if len(coverImageData) > 0 {
-		qb := r.repository.Scene
+	qb := r.repository.Scene
 
-		// update cover table
-		if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
-			return err
-		}
+	// update cover table - empty data will clear the cover
+	if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
+		return err
 	}
 
 	return nil
@@ -428,16 +430,18 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	}
 
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	var s *models.Scene
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
@@ -454,7 +458,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		// kill any running encoders
 		manager.KillRunningStreams(s, fileNamingAlgo)
 
-		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile)
+		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -482,15 +486,17 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 	var scenes []*models.Scene
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
@@ -509,7 +515,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			// kill any running encoders
 			manager.KillRunningStreams(scene, fileNamingAlgo)
 
-			if err := r.sceneService.Destroy(ctx, scene, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			if err := r.sceneService.Destroy(ctx, scene, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 				return err
 			}
 		}
@@ -593,8 +599,9 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	mgr := manager.GetInstance()
+	trashPath := mgr.Config.GetDeleteTrashPath()
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
 	}
@@ -617,7 +624,12 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 			return fmt.Errorf("scene with id %d not found", destID)
 		}
 
-		return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		// only update cover image if one was provided
+		if len(coverImageData) > 0 {
+			return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -650,7 +662,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	// Populate a new scene marker from the input
 	newMarker := models.NewSceneMarker()
 
-	newMarker.Title = input.Title
+	newMarker.Title = strings.TrimSpace(input.Title)
 	newMarker.Seconds = input.Seconds
 	newMarker.PrimaryTagID = primaryTagID
 	newMarker.SceneID = sceneID
@@ -736,9 +748,10 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	}
 
 	mgr := manager.GetInstance()
+	trashPath := mgr.Config.GetDeleteTrashPath()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
 	}
@@ -820,6 +833,123 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	return r.getSceneMarker(ctx, markerID)
 }
 
+func (r *mutationResolver) BulkSceneMarkerUpdate(ctx context.Context, input BulkSceneMarkerUpdateInput) ([]*models.SceneMarker, error) {
+	ids, err := stringslice.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, fmt.Errorf("converting ids: %w", err)
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	// Populate performer from the input
+	partial := models.NewSceneMarkerPartial()
+
+	partial.Title = translator.optionalString(input.Title, "title")
+
+	partial.PrimaryTagID, err = translator.optionalIntFromString(input.PrimaryTagID, "primary_tag_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting primary tag id: %w", err)
+	}
+
+	partial.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	ret := []*models.SceneMarker{}
+
+	// Start the transaction and save the performers
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneMarker
+
+		for _, id := range ids {
+			l := partial
+
+			if err := adjustMarkerPartialForTagExclusion(ctx, r.repository.SceneMarker, id, &l); err != nil {
+				return err
+			}
+
+			updated, err := qb.UpdatePartial(ctx, id, l)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, updated)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// execute post hooks outside of txn
+	var newRet []*models.SceneMarker
+	for _, m := range ret {
+		r.hookExecutor.ExecutePostHooks(ctx, m.ID, hook.SceneMarkerUpdatePost, input, translator.getFields())
+
+		m, err = r.getSceneMarker(ctx, m.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, m)
+	}
+
+	return newRet, nil
+}
+
+// adjustMarkerPartialForTagExclusion adjusts the SceneMarkerPartial to exclude the primary tag from tag updates.
+func adjustMarkerPartialForTagExclusion(ctx context.Context, r models.SceneMarkerReader, id int, partial *models.SceneMarkerPartial) error {
+	if partial.TagIDs == nil && !partial.PrimaryTagID.Set {
+		return nil
+	}
+
+	// exclude primary tag from tag updates
+	var primaryTagID int
+	if partial.PrimaryTagID.Set {
+		primaryTagID = partial.PrimaryTagID.Value
+	} else {
+		existing, err := r.Find(ctx, id)
+		if err != nil {
+			return fmt.Errorf("finding existing primary tag id: %w", err)
+		}
+
+		primaryTagID = existing.PrimaryTagID
+	}
+
+	existingTagIDs, err := r.GetTagIDs(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting existing tag ids: %w", err)
+	}
+
+	tagIDAttr := partial.TagIDs
+
+	if tagIDAttr == nil {
+		tagIDAttr = &models.UpdateIDs{
+			IDs:  existingTagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
+
+	newTagIDs := tagIDAttr.Apply(existingTagIDs)
+	// Remove primary tag from newTagIDs if present
+	newTagIDs = sliceutil.Exclude(newTagIDs, []int{primaryTagID})
+
+	if len(existingTagIDs) != len(newTagIDs) {
+		partial.TagIDs = &models.UpdateIDs{
+			IDs:  newTagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	} else {
+		// no change to tags required
+		partial.TagIDs = nil
+	}
+
+	return nil
+}
+
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
 	return r.SceneMarkersDestroy(ctx, []string{id})
 }
@@ -832,9 +962,10 @@ func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []
 
 	var markers []*models.SceneMarker
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
+		Deleter:        file.NewDeleterWithTrash(trashPath),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}

@@ -13,7 +13,7 @@ import {
   queryFindPerformersByIDForSelect,
   queryFindPerformersForSelect,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -82,12 +82,12 @@ const _PerformerSelect: React.FC<
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.performer ?? true;
+    !configuration?.interface.disableDropdownCreate.performer;
 
   async function loadPerformers(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Performers);

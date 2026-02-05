@@ -126,6 +126,13 @@ func TestToJSON(t *testing.T) {
 	db.Tag.On("GetAliases", testCtx, withParentsID).Return(nil, nil).Once()
 	db.Tag.On("GetAliases", testCtx, errParentsID).Return(nil, nil).Once()
 
+	db.Tag.On("GetStashIDs", testCtx, tagID).Return(nil, nil).Once()
+	db.Tag.On("GetStashIDs", testCtx, noImageID).Return(nil, nil).Once()
+	db.Tag.On("GetStashIDs", testCtx, errImageID).Return(nil, nil).Once()
+	// errAliasID test fails before GetStashIDs is called, so no mock needed
+	db.Tag.On("GetStashIDs", testCtx, withParentsID).Return(nil, nil).Once()
+	db.Tag.On("GetStashIDs", testCtx, errParentsID).Return(nil, nil).Once()
+
 	db.Tag.On("GetImage", testCtx, tagID).Return(imageBytes, nil).Once()
 	db.Tag.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
 	db.Tag.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()

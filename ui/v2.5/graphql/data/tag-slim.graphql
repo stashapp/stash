@@ -6,4 +6,10 @@ fragment SlimTagData on Tag {
   image_path
   parent_count
   child_count
+
+  stash_ids {
+    endpoint
+    stash_id
+    updated_at
+  }
 }

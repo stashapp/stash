@@ -276,6 +276,8 @@ export const SidebarListFilter: React.FC<{
   preCandidates?: React.ReactNode;
   postCandidates?: React.ReactNode;
   onOpen?: () => void;
+  // used to store open/closed state in SidebarStateContext
+  sectionID?: string;
 }> = ({
   title,
   selected,
@@ -292,6 +294,7 @@ export const SidebarListFilter: React.FC<{
   preSelected,
   postSelected,
   onOpen,
+  sectionID,
 }) => {
   // TODO - sort items?
 
@@ -325,6 +328,7 @@ export const SidebarListFilter: React.FC<{
     <SidebarSection
       className="sidebar-list-filter"
       text={title}
+      sectionID={sectionID}
       outsideCollapse={
         <>
           {preSelected ? <div className="extra">{preSelected}</div> : null}

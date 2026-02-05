@@ -30,6 +30,7 @@
 | `v g` | Set view to grid |
 | `v l` | Set view to list |
 | `v w` | Set view to wall |
+| `v t` | Set view to tagger |
 | `+` | Increase zoom slider |
 | `-` | Decrease zoom slider |
 | `←` | Previous page of results |
@@ -40,6 +41,7 @@
 | `Ctrl + End` | Go to last page of results |
 | `s a` | Select all on page |
 | `s n` | Unselect all |
+| `s i` | Invert selection |
 | `e` | Edit selected |
 | `d d` | Delete selected |
 
@@ -67,6 +69,9 @@
 | `r 0` | Unset rating (stars) |
 | `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
 | ``r ` `` | Unset rating (decimal) |
+| Cover generation ||
+| `c c` | Generate screenshot at current time |
+| `c d` | Generate default screenshot |
 | Playback ||
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |

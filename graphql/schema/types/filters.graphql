@@ -84,10 +84,20 @@ input PHashDuplicationCriterionInput {
 input StashIDCriterionInput {
   """
   If present, this value is treated as a predicate.
-  That is, it will filter based on stash_ids with the matching endpoint
+  That is, it will filter based on stash_id with the matching endpoint
   """
   endpoint: String
   stash_id: String
+  modifier: CriterionModifier!
+}
+
+input StashIDsCriterionInput {
+  """
+  If present, this value is treated as a predicate.
+  That is, it will filter based on stash_ids with the matching endpoint
+  """
+  endpoint: String
+  stash_ids: [String]
   modifier: CriterionModifier!
 }
 
@@ -156,6 +166,9 @@ input PerformerFilterType {
   o_counter: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by url"
@@ -292,6 +305,11 @@ input SceneFilterType {
   performer_count: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
+  "Filter by StashID count"
+  stash_id_count: IntCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by interactive"
@@ -330,6 +348,8 @@ input SceneFilterType {
   groups_filter: GroupFilterType
   "Filter by related markers that meet this criteria"
   markers_filter: SceneMarkerFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
 }
 
 input MovieFilterType {
@@ -401,6 +421,8 @@ input GroupFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+  "Filter by o-counter"
+  o_counter: IntCriterionInput
 
   "Filter by containing groups"
   containing_groups: HierarchicalMultiCriterionInput
@@ -428,6 +450,9 @@ input StudioFilterType {
   parents: MultiCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   "Filter to only include studios with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter to only include studios missing this property"
@@ -462,6 +487,8 @@ input StudioFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input GalleryFilterType {
@@ -534,6 +561,10 @@ input GalleryFilterType {
   studios_filter: StudioFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
+  "Filter by related folders that meet this criteria"
+  folders_filter: FolderFilterType
 }
 
 input TagFilterType {
@@ -598,6 +629,13 @@ input TagFilterType {
   "Filter by autotag ignore value"
   ignore_auto_tag: Boolean
 
+  "Filter by StashID"
+  stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+
+  "Filter by StashID"
+  stash_ids_endpoint: StashIDsCriterionInput
+
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
   "Filter by related images that meet this criteria"
@@ -626,6 +664,8 @@ input ImageFilterType {
   id: IntCriterionInput
   "Filter by file checksum"
   checksum: StringCriterionInput
+  "Filter by file phash distance"
+  phash_distance: PhashDistanceCriterionInput
   "Filter by path"
   path: StringCriterionInput
   "Filter by file count"
@@ -681,6 +721,8 @@ input ImageFilterType {
   studios_filter: StudioFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
 }
 
 input FileFilterType {

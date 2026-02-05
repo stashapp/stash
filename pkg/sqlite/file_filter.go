@@ -10,6 +10,8 @@ import (
 
 type fileFilterHandler struct {
 	fileFilter *models.FileFilterType
+	// if true, don't allow use of related filters
+	isRelated bool
 }
 
 func (qb *fileFilterHandler) validate() error {
@@ -22,8 +24,12 @@ func (qb *fileFilterHandler) validate() error {
 		return err
 	}
 
+	if qb.isRelated && (fileFilter.ScenesFilter != nil || fileFilter.ImagesFilter != nil || fileFilter.GalleriesFilter != nil) {
+		return fmt.Errorf("cannot use related filters inside a related filter")
+	}
+
 	if subFilter := fileFilter.SubFilter(); subFilter != nil {
-		sqb := &fileFilterHandler{fileFilter: subFilter}
+		sqb := &fileFilterHandler{fileFilter: subFilter, isRelated: qb.isRelated}
 		if err := sqb.validate(); err != nil {
 			return err
 		}
@@ -45,7 +51,7 @@ func (qb *fileFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 
 	sf := fileFilter.SubFilter()
 	if sf != nil {
-		sub := &fileFilterHandler{sf}
+		sub := &fileFilterHandler{sf, qb.isRelated}
 		handleSubFilter(ctx, sub, f, fileFilter.OperatorFilter)
 	}
 

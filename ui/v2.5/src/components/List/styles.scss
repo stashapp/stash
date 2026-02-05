@@ -91,6 +91,14 @@
   }
 }
 
+// hide zoom slider in xs viewport
+@include media-breakpoint-down(xs) {
+  .display-mode-menu .zoom-slider-container,
+  .zoom-slider-container {
+    display: none;
+  }
+}
+
 .display-mode-popover {
   padding-left: 0;
   padding-right: 0;
@@ -310,6 +318,40 @@ input[type="range"].zoom-slider {
     max-height: min(550px, calc(100vh - 12rem));
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .modal-footer {
+    justify-content: space-between;
+
+    > div > :not(:first-child) {
+      margin-left: 0.25rem;
+    }
+  }
+
+  .search-term-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    margin-left: 1.5rem;
+    margin-right: 1rem;
+
+    .search-term-input {
+      flex-basis: 75%;
+    }
+
+    @include media-breakpoint-down(xs) {
+      flex-wrap: wrap;
+
+      > span {
+        width: 100%;
+      }
+
+      .search-term-input {
+        flex-basis: 100%;
+      }
+    }
   }
 
   .filter-tags {
@@ -706,7 +748,7 @@ input[type="range"].zoom-slider {
       background-color: #202b33;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1;
     }
 
     td:first-child {
@@ -875,8 +917,15 @@ input[type="range"].zoom-slider {
 }
 
 .filtered-list-toolbar {
+  align-items: center;
+  background-color: $body-bg;
+  gap: 0.5rem;
   justify-content: center;
-  margin-bottom: 0.5rem;
+
+  // offset the main padding
+  margin-top: -0.5rem;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
 
   & > .btn-group {
     flex-wrap: wrap;
@@ -892,21 +941,11 @@ input[type="range"].zoom-slider {
     }
   }
 
-  .btn.display-mode-select {
-    margin-left: 0.5rem;
+  // set the width of the zoom-slider-container to prevent buttons moving when
+  // the slider appears/disappears
+  .zoom-slider-container {
+    min-width: 60px;
   }
-}
-
-.sidebar-pane .filtered-list-toolbar {
-  flex-wrap: nowrap;
-
-  & > .btn-group {
-    align-items: baseline;
-  }
-}
-
-.search-term-input {
-  margin-right: 0.5rem;
 }
 
 .custom-field-filter {
@@ -940,14 +979,6 @@ input[type="range"].zoom-slider {
 }
 
 .sidebar {
-  // make controls slightly larger on mobile
-  @include media-breakpoint-down(xs) {
-    .btn,
-    .form-control {
-      font-size: 1.25rem;
-    }
-  }
-
   .sidebar-search-container {
     display: flex;
     margin-bottom: 0.5rem;
@@ -986,18 +1017,22 @@ input[type="range"].zoom-slider {
   }
 }
 
-.pagination-footer {
+.pagination-footer-container {
   background-color: transparent;
   bottom: $navbar-height;
-  margin: auto;
-  padding: 0.5rem 1rem 0.75rem;
   position: sticky;
-  width: fit-content;
   z-index: 10;
 
   @include media-breakpoint-up(sm) {
     bottom: 0;
   }
+}
+
+.pagination-footer {
+  margin: auto;
+  padding: 0.5rem 1rem 0.75rem;
+
+  width: fit-content;
 
   .pagination.btn-group {
     box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
@@ -1010,5 +1045,122 @@ input[type="range"].zoom-slider {
       color: #888;
       opacity: 1;
     }
+  }
+}
+
+// on very large screens, offset the margins to center the pagination controls
+@media (min-width: 1800px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    .filter-tags,
+    .pagination-index-container,
+    .pagination-footer-container {
+      margin-left: -$sidebar-width;
+      margin-right: 0;
+    }
+  }
+}
+
+// hide sidebar Edit Filter button on larger screens
+@include media-breakpoint-up(md) {
+  .sidebar .edit-filter-button {
+    display: none;
+  }
+}
+
+// hide the search input field if the sidebar is open on smaller screens
+@media (min-width: 576px) and (max-width: 1400px) {
+  .sidebar-pane:not(.hide-sidebar) .filtered-list-toolbar .search-term-input {
+    display: none;
+  }
+}
+
+#more-criteria-popover {
+  box-shadow: 0 8px 10px 2px rgb(0 0 0 / 30%);
+  max-width: 400px;
+  padding: 0.25rem;
+}
+
+// Duration slider styles
+.duration-slider,
+.age-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.duration-label-input,
+.age-label-input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  color: $text-color;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.125rem 0.25rem;
+  width: 4rem;
+
+  &:hover {
+    border-color: $secondary;
+  }
+
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
+}
+
+.duration-preset {
+  cursor: pointer;
+}
+
+.selected-items-info {
+  align-items: center;
+  border: 1px solid $secondary;
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.scene-list-toolbar .selected-items-info,
+.gallery-list-toolbar .selected-items-info {
+  justify-content: flex-start;
+}
+
+// modify margins for toolbar within sidebar pane to accommodate toggle button
+.sidebar-pane .filtered-list-toolbar {
+  margin-left: 40px;
+  margin-right: 40px;
+}
+
+// on very large screens, offset the margins to center the toolbar
+@media (min-width: 1800px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    .filtered-list-toolbar {
+      margin-left: -$sidebar-width;
+      margin-right: 0;
+    }
+  }
+}
+
+.item-list-container .filtered-list-toolbar.has-selection {
+  border-radius: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  position: sticky;
+  top: $navbar-height;
+  width: fit-content;
+  z-index: 10;
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
+  }
+}
+
+.detail-body .filtered-list-toolbar.has-selection {
+  top: calc($sticky-detail-header-height + $navbar-height);
+
+  @include media-breakpoint-down(xs) {
+    top: 0;
   }
 }

@@ -201,7 +201,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 		}
 
 		// TODO - this should happen after any scene is scraped
-		if err := r.matchScenesRelationships(ctx, ret, *source.StashBoxEndpoint); err != nil {
+		if err := r.matchScenesRelationships(ctx, ret, b.Endpoint); err != nil {
 			return nil, err
 		}
 	default:
@@ -245,7 +245,7 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 		// just flatten the slice and pass it in
 		flat := sliceutil.Flatten(ret)
 
-		if err := r.matchScenesRelationships(ctx, flat, *source.StashBoxEndpoint); err != nil {
+		if err := r.matchScenesRelationships(ctx, flat, b.Endpoint); err != nil {
 			return nil, err
 		}
 
@@ -335,7 +335,7 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		if len(ret) > 0 {
 			if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 				for _, studio := range ret {
-					if err := match.ScrapedStudioHierarchy(ctx, r.repository.Studio, studio, *source.StashBoxEndpoint); err != nil {
+					if err := match.ScrapedStudioHierarchy(ctx, r.repository.Studio, studio, b.Endpoint); err != nil {
 						return err
 					}
 				}
@@ -350,7 +350,46 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		return nil, nil
 	}
 
-	return nil, errors.New("stash_box_index must be set")
+	return nil, errors.New("stash_box_endpoint must be set")
+}
+
+func (r *queryResolver) ScrapeSingleTag(ctx context.Context, source scraper.Source, input ScrapeSingleTagInput) ([]*models.ScrapedTag, error) {
+	if source.StashBoxIndex != nil || source.StashBoxEndpoint != nil {
+		b, err := resolveStashBox(source.StashBoxIndex, source.StashBoxEndpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		client := r.newStashBoxClient(*b)
+
+		var ret []*models.ScrapedTag
+		out, err := client.QueryTag(ctx, *input.Query)
+
+		if err != nil {
+			return nil, err
+		} else if out != nil {
+			ret = append(ret, out...)
+		}
+
+		if len(ret) > 0 {
+			if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+				for _, tag := range ret {
+					if err := match.ScrapedTag(ctx, r.repository.Tag, tag, b.Endpoint); err != nil {
+						return err
+					}
+				}
+
+				return nil
+			}); err != nil {
+				return nil, err
+			}
+			return ret, nil
+		}
+
+		return nil, nil
+	}
+
+	return nil, errors.New("stash_box_endpoint must be set")
 }
 
 func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scraper.Source, input ScrapeSinglePerformerInput) ([]*models.ScrapedPerformer, error) {

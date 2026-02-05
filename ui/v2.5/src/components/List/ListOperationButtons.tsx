@@ -1,37 +1,41 @@
-import React, { PropsWithChildren, useEffect } from "react";
-import {
-  Button,
-  ButtonGroup,
-  Dropdown,
-  OverlayTrigger,
-  Tooltip,
-} from "react-bootstrap";
+import React, { PropsWithChildren, useEffect, useMemo } from "react";
+import { Button, ButtonGroup, Dropdown } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Icon } from "../Shared/Icon";
 import {
   faEllipsisH,
+  faPencil,
   faPencilAlt,
+  faPlay,
+  faPlus,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import { createPortal } from "react-dom";
 
 export const OperationDropdown: React.FC<
   PropsWithChildren<{
     className?: string;
+    menuPortalTarget?: HTMLElement;
+    menuClassName?: string;
   }>
-> = ({ className, children }) => {
+> = ({ className, menuPortalTarget, menuClassName, children }) => {
   if (!children) return null;
+
+  const menu = (
+    <Dropdown.Menu className={cx("bg-secondary text-white", menuClassName)}>
+      {children}
+    </Dropdown.Menu>
+  );
 
   return (
     <Dropdown className={className} as={ButtonGroup}>
       <Dropdown.Toggle variant="secondary" id="more-menu">
         <Icon icon={faEllipsisH} />
       </Dropdown.Toggle>
-      <Dropdown.Menu className="bg-secondary text-white">
-        {children}
-      </Dropdown.Menu>
+      {menuPortalTarget ? createPortal(menu, menuPortalTarget) : menu}
     </Dropdown>
   );
 };
@@ -62,6 +66,7 @@ export interface IListFilterOperation {
 interface IListOperationButtonsProps {
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  onInvertSelection?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   itemsSelected?: boolean;
@@ -71,6 +76,7 @@ interface IListOperationButtonsProps {
 export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   onSelectAll,
   onSelectNone,
+  onInvertSelection,
   onEdit,
   onDelete,
   itemsSelected,
@@ -81,6 +87,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
+    Mousetrap.bind("s i", () => onInvertSelection?.());
 
     Mousetrap.bind("e", () => {
       if (itemsSelected) {
@@ -97,13 +104,21 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     return () => {
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
+      Mousetrap.unbind("s i");
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
-  });
+  }, [
+    onSelectAll,
+    onSelectNone,
+    onInvertSelection,
+    itemsSelected,
+    onEdit,
+    onDelete,
+  ]);
 
-  function maybeRenderButtons() {
-    const buttons = (otherOperations ?? []).filter((o) => {
+  const buttons = useMemo(() => {
+    const ret = (otherOperations ?? []).filter((o) => {
       if (!o.icon) {
         return false;
       }
@@ -114,16 +129,17 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
       return o.isDisplayed();
     });
+
     if (itemsSelected) {
       if (onEdit) {
-        buttons.push({
+        ret.push({
           icon: faPencilAlt,
           text: intl.formatMessage({ id: "actions.edit" }),
           onClick: onEdit,
         });
       }
       if (onDelete) {
-        buttons.push({
+        ret.push({
           icon: faTrash,
           text: intl.formatMessage({ id: "actions.delete" }),
           onClick: onDelete,
@@ -132,59 +148,76 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
       }
     }
 
-    if (buttons.length > 0) {
-      return (
-        <ButtonGroup className="ml-2">
-          {buttons.map((button) => {
-            return (
-              <OverlayTrigger
-                overlay={<Tooltip id="edit">{button.text}</Tooltip>}
-                key={button.text}
-              >
-                <Button
-                  variant={button.buttonVariant ?? "secondary"}
-                  onClick={button.onClick}
-                >
-                  {button.icon ? <Icon icon={button.icon} /> : undefined}
-                </Button>
-              </OverlayTrigger>
-            );
-          })}
-        </ButtonGroup>
-      );
-    }
-  }
+    return ret;
+  }, [otherOperations, itemsSelected, onEdit, onDelete, intl]);
 
-  function renderSelectAll() {
-    if (onSelectAll) {
-      return (
-        <Dropdown.Item
-          key="select-all"
-          className="bg-secondary text-white"
-          onClick={() => onSelectAll?.()}
-        >
-          <FormattedMessage id="actions.select_all" />
-        </Dropdown.Item>
-      );
-    }
-  }
+  const operationButtons = useMemo(() => {
+    return (
+      <>
+        {buttons.map((button) => {
+          return (
+            <Button
+              key={button.text}
+              variant={button.buttonVariant ?? "secondary"}
+              onClick={button.onClick}
+              title={button.text}
+            >
+              <Icon icon={button.icon!} />
+            </Button>
+          );
+        })}
+      </>
+    );
+  }, [buttons]);
 
-  function renderSelectNone() {
-    if (onSelectNone) {
-      return (
-        <Dropdown.Item
-          key="select-none"
-          className="bg-secondary text-white"
-          onClick={() => onSelectNone?.()}
-        >
-          <FormattedMessage id="actions.select_none" />
-        </Dropdown.Item>
-      );
+  const moreDropdown = useMemo(() => {
+    function renderSelectAll() {
+      if (onSelectAll) {
+        return (
+          <Dropdown.Item
+            key="select-all"
+            className="bg-secondary text-white"
+            onClick={() => onSelectAll?.()}
+          >
+            <FormattedMessage id="actions.select_all" />
+          </Dropdown.Item>
+        );
+      }
     }
-  }
 
-  function renderMore() {
-    const options = [renderSelectAll(), renderSelectNone()].filter((o) => o);
+    function renderSelectNone() {
+      if (onSelectNone) {
+        return (
+          <Dropdown.Item
+            key="select-none"
+            className="bg-secondary text-white"
+            onClick={() => onSelectNone?.()}
+          >
+            <FormattedMessage id="actions.select_none" />
+          </Dropdown.Item>
+        );
+      }
+    }
+
+    function renderInvertSelection() {
+      if (onInvertSelection) {
+        return (
+          <Dropdown.Item
+            key="invert-selection"
+            className="bg-secondary text-white"
+            onClick={() => onInvertSelection?.()}
+          >
+            <FormattedMessage id="actions.invert_selection" />
+          </Dropdown.Item>
+        );
+      }
+    }
+
+    const options = [
+      renderSelectAll(),
+      renderSelectNone(),
+      renderInvertSelection(),
+    ].filter((o) => o);
 
     if (otherOperations) {
       otherOperations
@@ -218,13 +251,124 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
         {options.length > 0 ? options : undefined}
       </OperationDropdown>
     );
+  }, [otherOperations, onSelectAll, onSelectNone, onInvertSelection]);
+
+  // don't render anything if there are no buttons or operations
+  if (buttons.length === 0 && !moreDropdown) {
+    return null;
   }
 
   return (
     <>
-      {maybeRenderButtons()}
-
-      <ButtonGroup className="ml-2">{renderMore()}</ButtonGroup>
+      <ButtonGroup>
+        {operationButtons}
+        {moreDropdown}
+      </ButtonGroup>
     </>
+  );
+};
+
+interface IListOperations {
+  text: string;
+  onClick: () => void;
+  isDisplayed?: () => boolean;
+  className?: string;
+}
+
+export const ListOperations: React.FC<{
+  items: number;
+  hasSelection?: boolean;
+  operations?: IListOperations[];
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onPlay?: () => void;
+  onCreateNew?: () => void;
+  entityType?: string;
+  operationsClassName?: string;
+  operationsMenuClassName?: string;
+}> = ({
+  items,
+  hasSelection = false,
+  operations = [],
+  onEdit,
+  onDelete,
+  onPlay,
+  onCreateNew,
+  entityType,
+  operationsClassName = "list-operations",
+  operationsMenuClassName,
+}) => {
+  const intl = useIntl();
+
+  return (
+    <div className="list-operations">
+      <ButtonGroup>
+        {!!items && onPlay && (
+          <Button
+            className="play-button"
+            variant="secondary"
+            onClick={() => onPlay()}
+            title={intl.formatMessage({ id: "actions.play" })}
+          >
+            <Icon icon={faPlay} />
+          </Button>
+        )}
+        {!hasSelection && onCreateNew && (
+          <Button
+            className="create-new-button"
+            variant="secondary"
+            onClick={() => onCreateNew()}
+            title={intl.formatMessage(
+              { id: "actions.create_entity" },
+              { entityType }
+            )}
+          >
+            <Icon icon={faPlus} />
+          </Button>
+        )}
+
+        {hasSelection && (onEdit || onDelete) && (
+          <>
+            {onEdit && (
+              <Button variant="secondary" onClick={() => onEdit()}>
+                <Icon icon={faPencil} />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="danger"
+                className="btn-danger-minimal"
+                onClick={() => onDelete()}
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            )}
+          </>
+        )}
+
+        {operations.length > 0 && (
+          <OperationDropdown
+            className={operationsClassName}
+            menuClassName={operationsMenuClassName}
+            menuPortalTarget={document.body}
+          >
+            {operations.map((o) => {
+              if (o.isDisplayed && !o.isDisplayed()) {
+                return null;
+              }
+
+              return (
+                <OperationDropdownItem
+                  key={o.text}
+                  onClick={o.onClick}
+                  text={o.text}
+                  className={o.className}
+                />
+              );
+            })}
+          </OperationDropdown>
+        )}
+      </ButtonGroup>
+    </div>
   );
 };

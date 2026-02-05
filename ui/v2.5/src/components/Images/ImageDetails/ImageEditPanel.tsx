@@ -320,6 +320,19 @@ export const ImageEditPanel: React.FC<IProps> = ({
       xl: 12,
     },
   };
+  const urlProps = isNew
+    ? splitProps
+    : {
+        labelProps: {
+          column: true,
+          md: 3,
+          lg: 12,
+        },
+        fieldProps: {
+          md: 9,
+          lg: 12,
+        },
+      };
   const { renderField, renderInputField, renderDateField, renderURLListField } =
     formikUtils(intl, formik, splitProps);
 
@@ -461,7 +474,13 @@ export const ImageEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", onScrapeImageURL, urlScrapable)}
+            {renderURLListField(
+              "urls",
+              onScrapeImageURL,
+              urlScrapable,
+              "urls",
+              urlProps
+            )}
 
             {renderDateField("date")}
             {renderInputField("photographer")}

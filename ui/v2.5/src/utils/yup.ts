@@ -92,45 +92,6 @@ export function yupUniqueStringList(intl: IntlShape) {
     });
 }
 
-export function yupUniqueAliases(intl: IntlShape, nameField: string) {
-  return yupRequiredStringArray(intl)
-    .defined()
-    .test({
-      name: "unique",
-      test(value) {
-        const aliases = [this.parent[nameField].toLowerCase()];
-        const dupes: number[] = [];
-        for (let i = 0; i < value.length; i++) {
-          const s = value[i].toLowerCase();
-          if (aliases.includes(s)) {
-            dupes.push(i);
-          } else {
-            aliases.push(s);
-          }
-        }
-        if (dupes.length === 0) return true;
-
-        const msg = yup.ValidationError.formatError(
-          intl.formatMessage({ id: "validation.unique" }),
-          {
-            label: this.schema.spec.label,
-            path: this.path,
-          }
-        );
-        const errors = dupes.map(
-          (i) =>
-            new yup.ValidationError(
-              msg,
-              value[i],
-              `${this.path}["${i}"]`,
-              "unique"
-            )
-        );
-        return new yup.ValidationError(errors, value, this.path, "unique");
-      },
-    });
-}
-
 export function yupDateString(intl: IntlShape) {
   return yup
     .string()
@@ -139,8 +100,22 @@ export function yupDateString(intl: IntlShape) {
       name: "date",
       test(value) {
         if (!value) return true;
-        if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-        if (Number.isNaN(Date.parse(value))) return false;
+        // Allow YYYY, YYYY-MM, or YYYY-MM-DD formats
+        if (!value.match(/^\d{4}(-\d{2}(-\d{2})?)?$/)) return false;
+        // Validate the date components
+        const parts = value.split("-");
+        const year = parseInt(parts[0], 10);
+        if (year < 1 || year > 9999) return false;
+        if (parts.length >= 2) {
+          const month = parseInt(parts[1], 10);
+          if (month < 1 || month > 12) return false;
+        }
+        if (parts.length === 3) {
+          const day = parseInt(parts[2], 10);
+          if (day < 1 || day > 31) return false;
+          // Full date - validate it parses correctly
+          if (Number.isNaN(Date.parse(value))) return false;
+        }
         return true;
       },
       message: intl.formatMessage({ id: "validation.date_invalid_form" }),

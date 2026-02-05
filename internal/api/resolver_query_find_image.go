@@ -7,7 +7,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
@@ -55,7 +54,7 @@ func (r *queryResolver) FindImages(
 	filter *models.FindFilterType,
 ) (ret *FindImagesResultType, err error) {
 	if len(ids) > 0 {
-		imageIds, err = stringslice.StringSliceToIntSlice(ids)
+		imageIds, err = handleIDList(ids, "ids")
 		if err != nil {
 			return nil, err
 		}

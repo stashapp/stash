@@ -2098,6 +2098,8 @@ func TestSceneQuery(t *testing.T) {
 	var (
 		endpoint = sceneStashID(sceneIdxWithGallery).Endpoint
 		stashID  = sceneStashID(sceneIdxWithGallery).StashID
+		stashID2 = sceneStashID(sceneIdxWithPerformer).StashID
+		stashIDs = []*string{&stashID, &stashID2}
 
 		depth = -1
 	)
@@ -2204,6 +2206,60 @@ func TestSceneQuery(t *testing.T) {
 			false,
 		},
 		{
+			"stash ids with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
+			"exclude stash ids with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					StashIDs: stashIDs,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			false,
+		},
+		{
+			"null stash ids with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			false,
+		},
+		{
+			"not null stash ids with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDsEndpoint: &models.StashIDsCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
 			"with studio id 0 including child studios",
 			nil,
 			&models.SceneFilterType{
@@ -2215,6 +2271,32 @@ func TestSceneQuery(t *testing.T) {
 			},
 			nil,
 			nil,
+			false,
+		},
+		{
+			"single stash id",
+			nil,
+			&models.SceneFilterType{
+				StashIDCount: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    1,
+				},
+			},
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+		{
+			"less than one stash id",
+			nil,
+			&models.SceneFilterType{
+				StashIDCount: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierLessThan,
+					Value:    1,
+				},
+			},
+			[]int{sceneIdxWithGroup},
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
 			false,
 		},
 	}
@@ -2656,6 +2738,21 @@ func verifyString(t *testing.T, value string, criterion models.StringCriterionIn
 		assert.Equal("", value)
 	case models.CriterionModifierNotNull:
 		assert.NotEqual("", value)
+	}
+}
+
+func verifyStringList(t *testing.T, values []string, criterion models.StringCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	switch criterion.Modifier {
+	case models.CriterionModifierIsNull:
+		assert.Empty(values)
+	case models.CriterionModifierNotNull:
+		assert.NotEmpty(values)
+	default:
+		for _, v := range values {
+			verifyString(t, v, criterion)
+		}
 	}
 }
 
@@ -4129,6 +4226,13 @@ func TestSceneQuerySorting(t *testing.T) {
 			"play_duration",
 			models.SortDirectionEnumDesc,
 			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"performer_age",
+			"performer_age",
+			models.SortDirectionEnumDesc,
+			-1,
 			-1,
 		},
 	}

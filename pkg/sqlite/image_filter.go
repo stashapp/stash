@@ -62,6 +62,15 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 
 			stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 		}),
+
+		&phashDistanceCriterionHandler{
+			joinFn: func(f *filterBuilder) {
+				imageRepository.addImagesFilesTable(f)
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "images_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+			},
+			criterion: imageFilter.PhashDistance,
+		},
+
 		stringCriterionHandler(imageFilter.Title, "images.title"),
 		stringCriterionHandler(imageFilter.Code, "images.code"),
 		stringCriterionHandler(imageFilter.Details, "images.details"),
@@ -122,6 +131,21 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			joinFn: func(f *filterBuilder) {
 				imageRepository.tags.innerJoin(f, "image_tag", "images.id")
 			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "files.id",
+			relatedRepo:  fileRepository.repository,
+			relatedHandler: &fileFilterHandler{
+				fileFilter: imageFilter.FilesFilter,
+				isRelated:  true,
+			},
+			joinFn: func(f *filterBuilder) {
+				imageRepository.addFilesTable(f)
+				imageRepository.addFoldersTable(f)
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
 		},
 	}
 }

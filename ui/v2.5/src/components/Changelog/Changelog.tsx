@@ -33,7 +33,13 @@ import V0250 from "src/docs/en/Changelog/v0250.md";
 import V0260 from "src/docs/en/Changelog/v0260.md";
 import V0270 from "src/docs/en/Changelog/v0270.md";
 import V0280 from "src/docs/en/Changelog/v0280.md";
+import V0290 from "src/docs/en/Changelog/v0290.md";
+import V0300 from "src/docs/en/Changelog/v0300.md";
+
+import V0290ReleaseNotes from "src/docs/en/ReleaseNotes/v0290.md";
+
 import { MarkdownPage } from "../Shared/MarkdownPage";
+import { FormattedMessage } from "react-intl";
 
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
@@ -63,14 +69,15 @@ const Changelog: React.FC = () => {
     date?: string;
     page: string;
     defaultOpen?: boolean;
+    releaseNotes?: string;
   }
 
   // after new release:
   // add entry to releases, using the current* fields
   // then update the current fields.
-  const currentVersion = stashVersion || "v0.28.1";
+  const currentVersion = stashVersion || "v0.30.0";
   const currentDate = buildDate;
-  const currentPage = V0280;
+  const currentPage = V0300;
 
   const releases: IStashRelease[] = [
     {
@@ -78,6 +85,17 @@ const Changelog: React.FC = () => {
       date: currentDate,
       page: currentPage,
       defaultOpen: true,
+    },
+    {
+      version: "v0.29.3",
+      date: "2025-11-06",
+      page: V0290,
+      releaseNotes: V0290ReleaseNotes,
+    },
+    {
+      version: "v0.28.1",
+      date: "2025-03-20",
+      page: V0280,
     },
     {
       version: "v0.27.2",
@@ -248,6 +266,15 @@ const Changelog: React.FC = () => {
           setOpenState={setVersionOpenState}
           defaultOpen={r.defaultOpen}
         >
+          {r.releaseNotes && (
+            <div>
+              <h3 className="mt-0">
+                <FormattedMessage id="release_notes" />
+              </h3>
+              <MarkdownPage page={r.releaseNotes} />
+              <hr />
+            </div>
+          )}
           <MarkdownPage page={r.page} />
         </Version>
       ))}

@@ -31,7 +31,7 @@ import { RelatedGroupTable, IRelatedGroupEntry } from "./RelatedGroupTable";
 
 interface IGroupEditPanel {
   group: Partial<GQL.GroupDataFragment>;
-  onSubmit: (group: GQL.GroupCreateInput) => Promise<void>;
+  onSubmit: (group: GQL.GroupCreateInput, andNew?: boolean) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setFrontImage: (image?: string | null) => void;
@@ -208,15 +208,20 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     }
   }
 
-  async function onSave(input: InputValues) {
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = schema.cast(formik.values);
+    onSave(input, true);
   }
 
   async function onScrapeGroupURL(url: string) {
@@ -462,6 +467,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         isEditing
         onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
+        onSaveAndNew={isNew ? onSaveAndNewClick : undefined}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onFrontImageChange}
         onImageChangeURL={onFrontImageLoad}

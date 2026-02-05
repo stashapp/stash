@@ -66,5 +66,13 @@
         "generate": "उत्पन्न करें",
         "preview": "पूर्वदर्शन",
         "refresh": "ताजा करें"
+    },
+    "config": {
+        "general": {
+            "blobs_storage": {
+                "heading": "rgfe"
+            },
+            "database": "डेटाबेस"
+        }
     }
 }

@@ -175,7 +175,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps
   ) {
     return (
-      <Form.Group controlId={field} as={Row}>
+      <Form.Group controlId={field} as={Row} data-field={field}>
         <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
         <Col {...(props?.fieldProps ?? fieldProps)}>{control}</Col>
       </Form.Group>
@@ -308,10 +308,15 @@ export function formikUtils<V extends FormikValues>(
     }
   }
 
+  interface IStringListProps extends IProps {
+    // defaults to true if not provided
+    orderable?: boolean;
+  }
+
   function renderStringListField(
     field: Field,
     messageID: string = field,
-    props?: IProps
+    props?: IStringListProps
   ) {
     const value = formik.values[field] as string[];
     const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
@@ -325,6 +330,7 @@ export function formikUtils<V extends FormikValues>(
         setValue={(v) => formik.setFieldValue(field, v)}
         errors={errorMsg}
         errorIdx={errorIdx}
+        orderable={props?.orderable}
       />
     );
 
@@ -362,12 +368,10 @@ export function formikUtils<V extends FormikValues>(
     field: Field,
     linkType: LinkType,
     messageID: string = field,
-    props?: IProps
+    props?: IProps,
+    addButton?: React.ReactNode
   ) {
     const values = formik.values[field] as GQL.StashIdInput[];
-    if (!values.length) {
-      return;
-    }
 
     const title = intl.formatMessage({ id: messageID });
 
@@ -377,26 +381,31 @@ export function formikUtils<V extends FormikValues>(
     };
 
     const control = (
-      <ul className="pl-0 mb-0">
-        {values.map((stashID) => {
-          return (
-            <Row as="li" key={stashID.stash_id} noGutters>
-              <Button
-                variant="danger"
-                className="mr-2 py-0"
-                title={intl.formatMessage(
-                  { id: "actions.delete_entity" },
-                  { entityType: intl.formatMessage({ id: "stash_id" }) }
-                )}
-                onClick={() => removeStashID(stashID)}
-              >
-                <Icon icon={faTrashAlt} />
-              </Button>
-              <StashIDPill stashID={stashID} linkType={linkType} />
-            </Row>
-          );
-        })}
-      </ul>
+      <>
+        {values.length > 0 && (
+          <ul className="pl-0 mb-2">
+            {values.map((stashID) => {
+              return (
+                <Row as="li" key={stashID.stash_id} noGutters>
+                  <Button
+                    variant="danger"
+                    className="mr-2 py-0"
+                    title={intl.formatMessage(
+                      { id: "actions.delete_entity" },
+                      { entityType: intl.formatMessage({ id: "stash_id" }) }
+                    )}
+                    onClick={() => removeStashID(stashID)}
+                  >
+                    <Icon icon={faTrashAlt} />
+                  </Button>
+                  <StashIDPill stashID={stashID} linkType={linkType} />
+                </Row>
+              );
+            })}
+          </ul>
+        )}
+        {addButton}
+      </>
     );
 
     return renderField(field, title, control, props);

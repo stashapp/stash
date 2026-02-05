@@ -76,6 +76,10 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	// initialise desktop.IsDesktop here so that it doesn't get affected by
+	// ffmpeg hardware checks later on
+	desktop.InitIsDesktop()
+
 	mgr, err := manager.Initialize(cfg, l)
 	if err != nil {
 		exitError(fmt.Errorf("manager initialization error: %w", err))
@@ -110,7 +114,7 @@ func main() {
 // Logs only error level message to stderr.
 func initLogTemp() *log.Logger {
 	l := log.NewLogger()
-	l.Init("", true, "Error")
+	l.Init("", true, "Error", 0)
 	logger.Logger = l
 
 	return l
@@ -118,7 +122,7 @@ func initLogTemp() *log.Logger {
 
 func initLog(cfg *config.Config) *log.Logger {
 	l := log.NewLogger()
-	l.Init(cfg.GetLogFile(), cfg.GetLogOut(), cfg.GetLogLevel())
+	l.Init(cfg.GetLogFile(), cfg.GetLogOut(), cfg.GetLogLevel(), cfg.GetLogFileMaxSize())
 	logger.Logger = l
 
 	return l

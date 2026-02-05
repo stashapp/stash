@@ -17,7 +17,7 @@ import {
   evictQueries,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import StudioConfig from "./Config";
@@ -28,6 +28,7 @@ import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { mergeStudioStashIDs } from "../utils";
+import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { useTaggerConfig } from "../config";
 
 type JobFragment = Pick<
@@ -242,7 +243,7 @@ const StudioBatchAddModal: React.FC<IStudioBatchAddModal> = ({
         as="textarea"
         ref={studioInput}
         placeholder={intl.formatMessage({
-          id: "studio_tagger.studio_names_separated_by_comma",
+          id: "studio_tagger.studio_names_or_stashids_separated_by_comma",
         })}
         rows={6}
       />
@@ -669,7 +670,7 @@ interface ITaggerProps {
 export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
@@ -715,14 +716,17 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
 
   async function batchAdd(studioInput: string, createParent: boolean) {
     if (studioInput && selectedEndpoint) {
-      const names = studioInput
+      const inputs = studioInput
         .split(",")
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
 
-      if (names.length > 0) {
+      const { names, stashIds } = separateNamesAndStashIds(inputs);
+
+      if (names.length > 0 || stashIds.length > 0) {
         const ret = await mutateStashBoxBatchStudioTag({
-          names: names,
+          names: names.length > 0 ? names : undefined,
+          stash_ids: stashIds.length > 0 ? stashIds : undefined,
           endpoint: selectedEndpointIndex,
           refresh: false,
           exclude_fields: config?.excludedStudioFields ?? [],

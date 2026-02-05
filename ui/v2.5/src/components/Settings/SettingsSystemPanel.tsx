@@ -222,6 +222,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.backupDirectoryPath ?? undefined}
           onChange={(v) => saveGeneral({ backupDirectoryPath: v })}
         />
+
+        <StringSetting
+          id="delete-trash-path"
+          headingID="config.general.delete_trash_path.heading"
+          subHeadingID="config.general.delete_trash_path.description"
+          value={general.deleteTrashPath ?? undefined}
+          onChange={(v) => saveGeneral({ deleteTrashPath: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.database">
@@ -464,6 +472,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.general.auth.log_http_desc"
           checked={general.logAccess ?? false}
           onChange={(v) => saveGeneral({ logAccess: v })}
+        />
+
+        <NumberSetting
+          id="log-file-max-size"
+          headingID="config.general.auth.log_file_max_size"
+          subHeadingID="config.general.auth.log_file_max_size_desc"
+          value={general.logFileMaxSize ?? 10}
+          onChange={(v) => saveGeneral({ logFileMaxSize: v })}
         />
       </SettingSection>
     </>

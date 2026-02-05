@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.Studio, err error) {
@@ -26,7 +25,7 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.
 }
 
 func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType, ids []string) (ret *FindStudiosResultType, err error) {
-	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
 	}

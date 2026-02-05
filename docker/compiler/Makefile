@@ -1,6 +1,6 @@
 user=stashapp
 repo=compiler
-version=11
+version=12
 
 latest:
 	docker build -t ${user}/${repo}:latest .

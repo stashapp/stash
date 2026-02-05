@@ -10,6 +10,8 @@ type StudioFilterType struct {
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
+	// Filter by StashIDs Endpoint
+	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by rating expressed as 1-100
@@ -44,12 +46,16 @@ type StudioFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type StudioCreateInput struct {
-	Name     string  `json:"name"`
-	URL      *string `json:"url"`
-	ParentID *string `json:"parent_id"`
+	Name     string   `json:"name"`
+	URL      *string  `json:"url"` // deprecated
+	Urls     []string `json:"urls"`
+	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
 	Image         *string        `json:"image"`
 	StashIds      []StashIDInput `json:"stash_ids"`
@@ -59,13 +65,16 @@ type StudioCreateInput struct {
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 type StudioUpdateInput struct {
-	ID       string  `json:"id"`
-	Name     *string `json:"name"`
-	URL      *string `json:"url"`
-	ParentID *string `json:"parent_id"`
+	ID       string   `json:"id"`
+	Name     *string  `json:"name"`
+	URL      *string  `json:"url"` // deprecated
+	Urls     []string `json:"urls"`
+	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
 	Image         *string        `json:"image"`
 	StashIds      []StashIDInput `json:"stash_ids"`
@@ -75,4 +84,6 @@ type StudioUpdateInput struct {
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

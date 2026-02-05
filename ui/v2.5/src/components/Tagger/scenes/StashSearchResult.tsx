@@ -7,6 +7,7 @@ import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
 import { faCheckCircle } from "@fortawesome/free-regular-svg-icons";
 import {
+  faLink,
   faPlus,
   faTriangleExclamation,
   faXmark,
@@ -21,7 +22,7 @@ import { TagSelect } from "src/components/Shared/Select";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import * as FormUtils from "src/utils/form";
-import { stringToGender } from "src/utils/gender";
+import { genderList, stringToGender } from "src/utils/gender";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
@@ -232,27 +233,25 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createNewStudio,
     updateStudio,
     linkStudio,
+    updateTag,
     resolveScene,
     currentSource,
     saveScene,
   } = React.useContext(TaggerStateContext);
 
+  const performerGenders = config.performerGenders || genderList;
+
   const performers = useMemo(
     () =>
       scene.performers?.filter((p) => {
-        if (!config.showMales) {
-          return (
-            !p.gender || stringToGender(p.gender, true) !== GQL.GenderEnum.Male
-          );
-        }
-        return true;
+        const gender = p.gender ? stringToGender(p.gender, true) : undefined;
+        return !gender || performerGenders.includes(gender);
       }) ?? [],
-    [config, scene]
+    [scene, performerGenders]
   );
 
-  const { createPerformerModal, createStudioModal } = React.useContext(
-    SceneTaggerModalsState
-  );
+  const { createPerformerModal, createStudioModal, createTagModal } =
+    React.useContext(SceneTaggerModalsState);
 
   const getInitialTags = useCallback(() => {
     const stashSceneTags = stashScene.tags.map((t) => t.id);
@@ -292,25 +291,24 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   // map of original performer to id
-  const [performerIDs, setPerformerIDs] = useState<(string | undefined)[]>(
-    getInitialPerformers()
-  );
+  const [performerIDs, setPerformerIDs, setInitialPerformerIDs] =
+    useInitialState<(string | undefined)[]>(getInitialPerformers());
 
-  const [studioID, setStudioID] = useState<string | undefined>(
-    getInitialStudio()
-  );
+  const [studioID, setStudioID, setInitialStudioID] = useInitialState<
+    string | undefined
+  >(getInitialStudio());
 
   useEffect(() => {
     setInitialTagIDs(getInitialTags());
   }, [getInitialTags, setInitialTagIDs]);
 
   useEffect(() => {
-    setPerformerIDs(getInitialPerformers());
-  }, [getInitialPerformers]);
+    setInitialPerformerIDs(getInitialPerformers());
+  }, [getInitialPerformers, setInitialPerformerIDs]);
 
   useEffect(() => {
-    setStudioID(getInitialStudio());
-  }, [getInitialStudio]);
+    setInitialStudioID(getInitialStudio());
+  }, [getInitialStudio, setInitialStudioID]);
 
   useEffect(() => {
     async function doResolveScene() {
@@ -437,6 +435,47 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createPerformerModal(t, (toCreate) => {
       if (toCreate) {
         createNewPerformer(t, toCreate);
+      }
+    });
+  }
+
+  async function onCreateTag(
+    t: GQL.ScrapedTag,
+    createInput?: GQL.TagCreateInput
+  ) {
+    const toCreate: GQL.TagCreateInput = createInput ?? { name: t.name };
+
+    // If the tag has a remote_site_id and we have an endpoint, include the stash_id
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
+    if (!createInput && t.remote_site_id && endpoint) {
+      toCreate.stash_ids = [
+        {
+          endpoint: endpoint,
+          stash_id: t.remote_site_id,
+        },
+      ];
+    }
+
+    const newTagID = await createNewTag(t, toCreate);
+    if (newTagID !== undefined) {
+      setTagIDs([...tagIDs, newTagID]);
+    }
+  }
+
+  async function onUpdateTag(
+    t: GQL.ScrapedTag,
+    updateInput: GQL.TagUpdateInput
+  ) {
+    await updateTag(t, updateInput);
+    setTagIDs(uniq([...tagIDs, updateInput.id]));
+  }
+
+  function showTagModal(t: GQL.ScrapedTag) {
+    createTagModal(t, (result) => {
+      if (result.create) {
+        onCreateTag(t, result.create);
+      } else if (result.update) {
+        onUpdateTag(t, result.update);
       }
     });
   }
@@ -713,14 +752,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     </div>
   );
 
-  async function onCreateTag(t: GQL.ScrapedTag) {
-    const toCreate: GQL.TagCreateInput = { name: t.name };
-    const newTagID = await createNewTag(t, toCreate);
-    if (newTagID !== undefined) {
-      setTagIDs([...tagIDs, newTagID]);
-    }
-  }
-
   function maybeRenderTagsField() {
     if (!config.setTags) return;
 
@@ -754,8 +785,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }}
           >
             {t.name}
-            <Button className="minimal ml-2">
+            <Button
+              className="minimal ml-2"
+              title={intl.formatMessage({ id: "actions.create" })}
+            >
               <Icon className="fa-fw" icon={faPlus} />
+            </Button>
+            <Button
+              className="minimal"
+              onClick={(e) => {
+                showTagModal(t);
+                e.stopPropagation();
+              }}
+              title={intl.formatMessage({
+                id: "component_tagger.verb_link_existing",
+              })}
+            >
+              <Icon className="fa-fw" icon={faLink} />
             </Button>
           </Badge>
         ))}

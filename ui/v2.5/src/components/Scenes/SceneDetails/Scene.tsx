@@ -3,12 +3,11 @@ import React, {
   useEffect,
   useState,
   useMemo,
-  useContext,
   useRef,
   useLayoutEffect,
 } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useHistory, Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -32,8 +31,11 @@ import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
-import { ConfigurationContext } from "src/hooks/Config";
-import { getPlayerPosition } from "src/components/ScenePlayer/util";
+import { useConfigurationContext } from "src/hooks/Config";
+import {
+  getAbLoopPlugin,
+  getPlayerPosition,
+} from "src/components/ScenePlayer/util";
 import {
   faEllipsisV,
   faChevronRight,
@@ -51,6 +53,9 @@ import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PatchComponent, PatchContainerComponent } from "src/patch";
+import { SceneMergeModal } from "../SceneMergeDialog";
+import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -181,9 +186,10 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
 
   const Toast = useToast();
   const intl = useIntl();
+  const history = useHistory();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
@@ -204,6 +210,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
+  const [isMerging, setIsMerging] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
@@ -247,6 +254,12 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind("c c", () => {
+      onGenerateScreenshot(getPlayerPosition());
+    });
+    Mousetrap.bind("c d", () => {
+      onGenerateScreenshot();
+    });
 
     return () => {
       Mousetrap.unbind("a");
@@ -260,6 +273,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
       Mousetrap.unbind(",");
+      Mousetrap.unbind("c c");
+      Mousetrap.unbind("c d");
     };
   });
 
@@ -299,7 +314,51 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   };
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
+    const abLoopPlugin = getAbLoopPlugin();
+    const opts = abLoopPlugin?.getOptions();
+    const start = opts?.start;
+    const end = opts?.end;
+
+    const hasLoopRange =
+      opts?.enabled &&
+      typeof start === "number" &&
+      typeof end === "number" &&
+      Number.isFinite(start) &&
+      Number.isFinite(end);
+
+    if (
+      abLoopPlugin &&
+      opts &&
+      hasLoopRange &&
+      (marker.seconds < Math.min(start as number, end as number) ||
+        marker.seconds > Math.max(start as number, end as number))
+    ) {
+      abLoopPlugin.setOptions({
+        ...opts,
+        enabled: false,
+      });
+    }
+
     setTimestamp(marker.seconds);
+  }
+
+  function onLoopMarker(marker: GQL.SceneMarkerDataFragment) {
+    if (marker.end_seconds == null) return;
+
+    setTimestamp(marker.seconds);
+    const start = Math.min(marker.seconds, marker.end_seconds);
+    const end = Math.max(marker.seconds, marker.end_seconds);
+    const abLoopPlugin = getAbLoopPlugin();
+    const opts = abLoopPlugin?.getOptions();
+
+    if (opts && abLoopPlugin) {
+      abLoopPlugin.setOptions({
+        ...opts,
+        start,
+        end,
+        enabled: true,
+      });
+    }
   }
 
   async function onRescan() {
@@ -336,6 +395,24 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     if (deleted) {
       onDelete();
     }
+  }
+
+  function maybeRenderMergeDialog() {
+    if (!scene.id) return;
+    return (
+      <SceneMergeModal
+        show={isMerging}
+        onClose={(mergedId) => {
+          setIsMerging(false);
+          if (mergedId !== undefined && mergedId !== scene.id) {
+            // By default, the merge destination is the current scene, but
+            // the user can change it, in which case we need to redirect.
+            history.replace(`/scenes/${mergedId}`);
+          }
+        }}
+        scenes={[{ id: scene.id, title: objectTitle(scene) }]}
+      />
+    );
   }
 
   function maybeRenderDeleteDialog() {
@@ -385,7 +462,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
           className="bg-secondary text-white"
           onClick={() => setIsGenerateDialogOpen(true)}
         >
-          <FormattedMessage id="actions.generate" />
+          <FormattedMessage id="actions.generate" />…
         </Dropdown.Item>
         <Dropdown.Item
           key="generate-screenshot"
@@ -410,6 +487,14 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
             <FormattedMessage id="actions.submit_stash_box" />
           </Dropdown.Item>
         )}
+        <Dropdown.Item
+          key="merge-scene"
+          className="bg-secondary text-white"
+          onClick={() => setIsMerging(true)}
+        >
+          <FormattedMessage id="actions.merge" />
+          ...
+        </Dropdown.Item>
         <Dropdown.Item
           key="delete-scene"
           className="bg-secondary text-white"
@@ -523,6 +608,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
             <SceneMarkersPanel
               sceneId={scene.id}
               onClickMarker={onClickMarker}
+              onLoopMarker={onLoopMarker}
               isVisible={activeTabKey === "scene-markers-panel"}
             />
           </Tab.Pane>
@@ -579,6 +665,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderSceneGenerateDialog()}
+      {maybeRenderMergeDialog()}
       {maybeRenderDeleteDialog()}
       <div
         className={`scene-tabs order-xl-first order-last ${
@@ -605,13 +692,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
 
           <div className="scene-subheader">
             <span className="date" data-value={scene.date}>
-              {!!scene.date && (
-                <FormattedDate
-                  value={scene.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
+              {!!scene.date && <FormattedDate value={scene.date} />}
             </span>
             <VideoFrameRateResolution
               width={file?.width}
@@ -680,7 +761,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   match,
 }) => {
   const { id } = match.params;
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
@@ -909,7 +990,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     ) {
       loadScene(queueScenes[currentQueueIndex + 1].id);
     } else {
-      history.goBack();
+      goBackOrReplace(history, "/scenes");
     }
   }
 

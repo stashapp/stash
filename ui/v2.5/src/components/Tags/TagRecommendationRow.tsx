@@ -7,6 +7,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";
 import { FormattedMessage } from "react-intl";
+import { PatchComponent } from "src/patch";
 
 interface IProps {
   isTouch: boolean;
@@ -14,38 +15,41 @@ interface IProps {
   header: string;
 }
 
-export const TagRecommendationRow: React.FC<IProps> = (props) => {
-  const result = useFindTags(props.filter);
-  const cardCount = result.data?.findTags.count;
+export const TagRecommendationRow: React.FC<IProps> = PatchComponent(
+  "TagRecommendationRow",
+  (props) => {
+    const result = useFindTags(props.filter);
+    const cardCount = result.data?.findTags.count;
 
-  if (!result.loading && !cardCount) {
-    return null;
-  }
+    if (!result.loading && !cardCount) {
+      return null;
+    }
 
-  return (
-    <RecommendationRow
-      className="tag-recommendations"
-      header={props.header}
-      link={
-        <Link to={`/tags?${props.filter.makeQueryParameters()}`}>
-          <FormattedMessage id="view_all" />
-        </Link>
-      }
-    >
-      <Slider
-        {...getSlickSliderSettings(
-          cardCount ? cardCount : props.filter.itemsPerPage,
-          props.isTouch
-        )}
+    return (
+      <RecommendationRow
+        className="tag-recommendations"
+        header={props.header}
+        link={
+          <Link to={`/tags?${props.filter.makeQueryParameters()}`}>
+            <FormattedMessage id="view_all" />
+          </Link>
+        }
       >
-        {result.loading
-          ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={`_${i}`} className="tag-skeleton skeleton-card"></div>
-            ))
-          : result.data?.findTags.tags.map((p) => (
-              <TagCard key={p.id} tag={p} zoomIndex={0} />
-            ))}
-      </Slider>
-    </RecommendationRow>
-  );
-};
+        <Slider
+          {...getSlickSliderSettings(
+            cardCount ? cardCount : props.filter.itemsPerPage,
+            props.isTouch
+          )}
+        >
+          {result.loading
+            ? [...Array(props.filter.itemsPerPage)].map((i) => (
+                <div key={`_${i}`} className="tag-skeleton skeleton-card"></div>
+              ))
+            : result.data?.findTags.tags.map((p) => (
+                <TagCard key={p.id} tag={p} zoomIndex={0} />
+              ))}
+        </Slider>
+      </RecommendationRow>
+    );
+  }
+);

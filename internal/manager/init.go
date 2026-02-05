@@ -78,7 +78,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	}
 
 	dlnaRepository := dlna.NewRepository(repo)
-	dlnaService := dlna.NewService(dlnaRepository, cfg, sceneServer)
+	dlnaService := dlna.NewService(dlnaRepository, cfg, sceneServer, repo.Scene, cfg.GetMinimumPlayPercent())
 
 	mgr := &Manager{
 		Config: cfg,
@@ -313,6 +313,7 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 		s.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
 		s.FFProbe = ffmpeg.NewFFProbe(ffprobePath)
 
-		s.FFMpeg.InitHWSupport(ctx)
+		// initialise hardware support with background context
+		s.FFMpeg.InitHWSupport(context.Background())
 	}
 }

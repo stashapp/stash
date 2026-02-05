@@ -39,7 +39,7 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint) //nolint:staticcheck
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input 
 }
 
 func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint) //nolint:staticcheck
 	if err != nil {
 		return "", err
 	}
@@ -151,6 +151,14 @@ func (r *mutationResolver) makeSceneDraft(ctx context.Context, s *models.Scene, 
 	draft.Tags, err = r.repository.Tag.FindBySceneID(ctx, s.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	// Load StashIDs for tags
+	tqb := r.repository.Tag
+	for _, t := range draft.Tags {
+		if err := t.LoadStashIDs(ctx, tqb); err != nil {
+			return nil, err
+		}
 	}
 
 	draft.Cover = cover

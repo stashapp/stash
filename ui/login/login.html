@@ -44,7 +44,8 @@
         xhr.onerror = function() {
             document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.internal_error;
         };
-        xhr.send("username=" + username + "&password=" + password + "&returnURL=" + returnURL);
+        var body = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&returnURL=" + encodeURIComponent(returnURL);
+        xhr.send(body);
     }
 </script>
 

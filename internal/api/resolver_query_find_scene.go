@@ -9,7 +9,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
@@ -83,7 +82,7 @@ func (r *queryResolver) FindScenes(
 	filter *models.FindFilterType,
 ) (ret *FindScenesResultType, err error) {
 	if len(ids) > 0 {
-		sceneIDs, err = stringslice.StringSliceToIntSlice(ids)
+		sceneIDs, err = handleIDList(ids, "ids")
 		if err != nil {
 			return nil, err
 		}

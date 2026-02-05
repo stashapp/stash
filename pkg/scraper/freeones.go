@@ -139,5 +139,5 @@ func getFreeonesScraper(globalConfig GlobalConfig) scraper {
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}
 
-	return newGroupScraper(*c, globalConfig)
+	return scraperFromDefinition(*c, globalConfig)
 }

@@ -15,7 +15,14 @@ import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "tag_count", "random", "rating"]
+const sortByOptions = [
+  "name",
+  "tag_count",
+  "random",
+  "rating",
+  "scenes_duration",
+  "latest_scene",
+]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

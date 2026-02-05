@@ -29,7 +29,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const streamURL = new URL(stream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);
-    streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(
+    streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURIComponent(
       title
     )};end`;
 

@@ -25,7 +25,7 @@ const TagCreate: React.FC = () => {
 
   const [createTag] = useTagCreate();
 
-  async function onSave(input: GQL.TagCreateInput) {
+  async function onSave(input: GQL.TagCreateInput, andNew?: boolean) {
     const oldRelations = {
       parents: [],
       children: [],
@@ -39,7 +39,9 @@ const TagCreate: React.FC = () => {
         parents: created.parents,
         children: created.children,
       });
-      history.push(`/tags/${created.id}`);
+      if (!andNew) {
+        history.push(`/tags/${created.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

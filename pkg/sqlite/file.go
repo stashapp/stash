@@ -285,7 +285,7 @@ type fileRepositoryType struct {
 var (
 	fileRepository = fileRepositoryType{
 		repository: repository{
-			tableName: sceneTable,
+			tableName: fileTable,
 			idColumn:  idColumn,
 		},
 		scenes: joinRepository{
@@ -625,9 +625,9 @@ func (qb *FileStore) find(ctx context.Context, id models.FileID) (models.File, e
 }
 
 // FindByPath returns the first file that matches the given path. Wildcard characters are supported.
-func (qb *FileStore) FindByPath(ctx context.Context, p string) (models.File, error) {
+func (qb *FileStore) FindByPath(ctx context.Context, p string, caseSensitive bool) (models.File, error) {
 
-	ret, err := qb.FindAllByPath(ctx, p)
+	ret, err := qb.FindAllByPath(ctx, p, caseSensitive)
 
 	if err != nil {
 		return nil, err
@@ -642,7 +642,7 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (models.File, err
 
 // FindAllByPath returns all the files that match the given path.
 // Wildcard characters are supported.
-func (qb *FileStore) FindAllByPath(ctx context.Context, p string) ([]models.File, error) {
+func (qb *FileStore) FindAllByPath(ctx context.Context, p string, caseSensitive bool) ([]models.File, error) {
 	// separate basename from path
 	basename := filepath.Base(p)
 	dirName := filepath.Dir(p)
@@ -657,7 +657,7 @@ func (qb *FileStore) FindAllByPath(ctx context.Context, p string) ([]models.File
 	// like uses case-insensitive matching. Only use like if wildcards are used
 	q := qb.selectDataset().Prepared(true)
 
-	if strings.Contains(basename, "%") || strings.Contains(dirName, "%") {
+	if strings.Contains(basename, "%") || strings.Contains(dirName, "%") || !caseSensitive {
 		q = q.Where(
 			folderTable.Col("path").Like(dirName),
 			table.Col("basename").Like(basename),

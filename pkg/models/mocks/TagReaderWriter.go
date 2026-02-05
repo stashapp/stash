@@ -427,6 +427,29 @@ func (_m *TagReaderWriter) FindBySceneMarkerID(ctx context.Context, sceneMarkerI
 	return r0, r1
 }
 
+// FindByStashID provides a mock function with given fields: ctx, stashID
+func (_m *TagReaderWriter) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, stashID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, models.StashID) []*models.Tag); ok {
+		r0 = rf(ctx, stashID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.StashID) error); ok {
+		r1 = rf(ctx, stashID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByStudioID provides a mock function with given fields: ctx, studioID
 func (_m *TagReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, studioID)
@@ -552,6 +575,29 @@ func (_m *TagReaderWriter) GetParentIDs(ctx context.Context, relatedID int) ([]i
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStashIDs provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetStashIDs(ctx context.Context, relatedID int) ([]models.StashID, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []models.StashID
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.StashID); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.StashID)
 		}
 	}
 

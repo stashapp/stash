@@ -204,13 +204,31 @@ $galleryTabWidth: 450px;
     font-size: 1.3em;
     height: calc(1.5em + 0.75rem + 2px);
   }
+
+  .form-group[data-field="urls"] .string-list-input input.form-control {
+    font-size: 0.85em;
+  }
+}
+
+.gallery-cover {
+  aspect-ratio: 4 / 3;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.gallery-cover img {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
 }
 
 div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
   margin: 0 auto;
-  width: 96vw;
 
   /* Prevents last row from consuming all space and stretching images to oblivion */
   &::after {

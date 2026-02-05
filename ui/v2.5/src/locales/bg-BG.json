@@ -1,0 +1,400 @@
+{
+    "actions": {
+        "add": "Добави",
+        "add_directory": "Добави Директория",
+        "add_entity": "Добави {entityType}",
+        "add_manual_date": "Добави дата ръчно",
+        "add_sub_groups": "Добави Подгрупа",
+        "add_o": "Добави О",
+        "add_play": "Добави Гледане",
+        "add_to_entity": "Добави към {entityType}",
+        "allow": "Позволи",
+        "allow_temporarily": "Позволи временно",
+        "anonymise": "Анонимизирай",
+        "apply": "Приложи",
+        "auto_tag": "Автоматично Тагване",
+        "backup": "Резервно копие",
+        "browse_for_image": "Преглеждане за картина…",
+        "cancel": "Отмяна",
+        "choose_date": "Избери дата",
+        "clean": "Изчисти",
+        "clean_generated": "Изчисти генерирани файлове",
+        "clear": "Изчисти",
+        "clear_back_image": "Изчисти задна картина",
+        "clear_date_data": "Изчисти дата на данни",
+        "clear_front_image": "Изчисти предна картина",
+        "clear_image": "Изичисти картина",
+        "close": "Затвори",
+        "confirm": "Потвърди",
+        "continue": "Продължи",
+        "copy_to_clipboard": "Копиране в буфера",
+        "create": "Създай",
+        "create_chapters": "Създай Глава",
+        "create_entity": "Създай {entityType}",
+        "create_marker": "Създай Маркер",
+        "create_parent_studio": "Създай родителско студио",
+        "created_entity": "Създаден {entity_type}: {entity_name}",
+        "customise": "Персонализирай",
+        "delete": "Изтрий",
+        "delete_entity": "Изтрий {entityType}",
+        "delete_file": "Изтрий файла",
+        "delete_file_and_funscript": "Изтрий файл (и funscript)",
+        "delete_generated_supporting_files": "Изтрий генерирани поддържащи файлове",
+        "disable": "Изключи",
+        "disallow": "Забрани",
+        "download": "Свали",
+        "download_anonymised": "Свали анонимизирана",
+        "download_backup": "Свали резевно копие",
+        "edit": "Редакция",
+        "edit_entity": "Редакция {entityType}",
+        "enable": "Активирай",
+        "encoding_image": "Кодиране на картина…",
+        "export": "Експортиране",
+        "export_all": "Експортирай всичко…",
+        "reshuffle": "Пренареди",
+        "assign_stashid_to_parent_studio": "Присвояване на Stash ID към съществуващо родителско студио и актуализиране на метаданните",
+        "find": "Намери",
+        "finish": "Приключи",
+        "from_file": "От файл…",
+        "from_url": "От URL…",
+        "full_export": "Пълен експорт",
+        "full_import": "Пълен Импорт",
+        "generate": "Генерирай",
+        "generate_thumb_default": "Генерирай тъмбнайл по подразбиране",
+        "generate_thumb_from_current": "Генерирай тъмбнайл от сегашният кадър",
+        "hash_migration": "миграция на хеш",
+        "hide": "Скрий",
+        "hide_configuration": "Скрий конфигурация",
+        "identify": "Индентифицирай",
+        "ignore": "Игнорирай",
+        "import": "Импорт…",
+        "import_from_file": "Импорт от файл",
+        "load": "Зареди",
+        "load_filter": "Зареди филтър",
+        "logout": "Изход",
+        "make_primary": "Направи Основен",
+        "merge": "Слей",
+        "merge_from": "Слей от",
+        "merge_into": "Слей към",
+        "migrate_blobs": "Мигрирай Блобове",
+        "migrate_scene_screenshots": "Мигрирай Скрийншоти от Сцени",
+        "next_action": "Следващ",
+        "not_running": "не върви",
+        "open_in_external_player": "Отвори в външет плейер",
+        "open_random": "Отвори Случайно",
+        "optimise_database": "Оптимизирай База Данни",
+        "overwrite": "Презапиши",
+        "play": "Пусни",
+        "play_random": "Пусни Случайно",
+        "play_selected": "Пусни избраните",
+        "preview": "Преглеждане",
+        "previous_action": "Назад",
+        "reassign": "Презадай",
+        "refresh": "Опресни",
+        "reload": "Презареди",
+        "reload_plugins": "Презареди плъгините",
+        "reload_scrapers": "Презареди търкачите",
+        "remove": "Премахни",
+        "remove_date": "Премахни дата",
+        "remove_from_containing_group": "Премахни от Група",
+        "remove_from_gallery": "Премахни от Галерия",
+        "rename_gen_files": "Преименувай генериран файл",
+        "rescan": "Пресканирай",
+        "reset_play_duration": "Нулирай период на пускане",
+        "reset_resume_time": "Нулирай преме за възтановяване",
+        "reset_cover": "Възтанови Първоначална Корица",
+        "running": "върви",
+        "save": "Запази",
+        "save_delete_settings": "Изполвай тези настройки по подразвиране при изтриване",
+        "save_filter": "Запази филтър",
+        "scan": "Сканирай",
+        "scrape": "Изтъркай",
+        "scrape_query": "Изтъркай със заявка",
+        "scrape_scene_fragment": "Изтъркай по частица",
+        "scrape_with": "Изтъркай чрез…",
+        "search": "Търси",
+        "select_all": "Избери Всичко",
+        "select_entity": "Избери {entityType}",
+        "select_folders": "Избери папки",
+        "select_none": "Избери Нищо",
+        "selective_auto_tag": "Избирателно Автоматично Тагване",
+        "selective_clean": "Избирателно Почистване",
+        "selective_scan": "Избирателно Сканиране",
+        "set_as_default": "Сложи по подразбиране",
+        "set_back_image": "Задна картина…",
+        "set_cover": "Сложи Като Корица",
+        "set_front_image": "Предна Картина…",
+        "set_image": "Сложи картина…",
+        "show": "Покажи",
+        "show_configuration": "Покажи Конфигурация",
+        "show_results": "Покажи резултат",
+        "show_count_results": "Покажи {count} резултати",
+        "sidebar": {
+            "close": "Затвори странично меню",
+            "open": "Отвори странично меню",
+            "toggle": "Превключи странично меню"
+        },
+        "skip": "Пропусни",
+        "split": "Раздели",
+        "stop": "Спри",
+        "submit": "Подай",
+        "submit_stash_box": "Подай към Stash-Box",
+        "submit_update": "Подай обноваване",
+        "swap": "Подмени",
+        "tasks": {
+            "clean_confirm_message": "Сигурен ли си че искаш да Изчистиш? Това ще изтрие иформацията от база данни и генерирано съдържание за всички сцени и галерий който не мога да бъдат намерени на файловата система.",
+            "dry_mode_selected": "Избрано е Сухо Пускане. Нищо няма да бъде изтрито на истина, са ще бъде записано в логовете.",
+            "import_warning": "Сигурен ли си че искаш да импортираш? Това ще изтрие базата данни и че вкара на ново твоите експортирани метаданни."
+        },
+        "temp_disable": "Спри временно…",
+        "temp_enable": "Включи временно…",
+        "unset": "Премахни",
+        "use_default": "Използвай на стойностите по подразбиране",
+        "view_history": "Виж история",
+        "view_random": "Виж Случайно"
+    },
+    "actions_name": "Действия",
+    "age": "Години",
+    "age_on_date": "{age} по време на продукция",
+    "aliases": "Псевдоними",
+    "all": "всички",
+    "also_known_as": "Също така познат/а като",
+    "appears_with": "Има Участия Със",
+    "ascending": "Възходящ",
+    "audio_codec": "Аудио Кодек",
+    "average_resolution": "Средностатистическа Резолюция",
+    "between_and": "и",
+    "birth_year": "Година на раждане",
+    "birthdate": "Дата на раждане",
+    "bitrate": "Бит Рейт",
+    "blobs_storage_type": {
+        "database": "База Данни",
+        "filesystem": "Файлова Система"
+    },
+    "captions": "Субтитри",
+    "career_length": "Подължителност на Кариера",
+    "chapters": "Глави",
+    "circumcised": "Образан",
+    "circumcised_types": {
+        "CUT": "Обрязан",
+        "UNCUT": "Необрязан"
+    },
+    "component_tagger": {
+        "config": {
+            "active_instance": "Активни инстанции на stash-box:",
+            "blacklist_desc": "Предмети от черният списък са изключени от заяки. Забележи че те са regular expressions и не гледа главни и малки букви. Някой символи трябва да пъдат escape-нати със наклонка: {chars_require_escape}",
+            "blacklist_label": "Черен списък",
+            "errors": {
+                "blacklist_duplicate": "Дубликирани предмети от черния списък"
+            },
+            "mark_organized_desc": "Веднага отбележи сцена като Организирана след като се натисне бутон Запази.",
+            "mark_organized_label": "Отбележи като Организирана на запазване",
+            "query_mode_auto": "Автоматично",
+            "query_mode_auto_desc": "Използа метаданни ако съществиват, или име на файл",
+            "query_mode_dir": "Папка",
+            "query_mode_dir_desc": "Използва само папката която съдържа видео файла",
+            "query_mode_filename": "Име на файл",
+            "query_mode_filename_desc": "Използва само име на файл",
+            "query_mode_label": "Мод на Заявки",
+            "query_mode_metadata": "Мета данни",
+            "query_mode_metadata_desc": "Използва само мета данни",
+            "query_mode_path": "Път",
+            "query_mode_path_desc": "Използва целият път на файла",
+            "set_cover_desc": "Замени корицата на сцената ако се намери такава.",
+            "set_cover_label": "Заложи картина за корица на сцена",
+            "set_tag_desc": "Закачи тагове към сцената, или чрез презаписване или чрез сливане със съществуващите тагове на сцената.",
+            "set_tag_label": "Задай тагове",
+            "source": "Източник"
+        },
+        "noun_query": "Заявка",
+        "results": {
+            "duration_off": "Продължителност не съвпада с поне {number} сек.",
+            "duration_unknown": "Неизвестна продължителност",
+            "fp_matches": "Продължителността съвпада",
+            "fp_matches_multi": "Продължителността съвпада {matchCount}/{durationsLength} отпечатъци",
+            "hash_matches": "{hash_type} съвпада",
+            "match_failed_already_tagged": "Сцената вече има тагове",
+            "match_failed_no_result": "Няма намерени резултати",
+            "match_success": "Счената е успешно тагната",
+            "phash_matches": "{count} PHashes съвпадат",
+            "unnamed": "Неименуван"
+        },
+        "verb_match_fp": "Сравни Отпечатъци",
+        "verb_matched": "Сравнени",
+        "verb_scrape_all": "Изтъркай Всичко",
+        "verb_submit_fp": "Подай {fpCount, plural, one{# Отпечатък} other{# Отпечатъци}}",
+        "verb_toggle_unmatched": "{toggle} несъвпадаци сцени"
+    },
+    "config": {
+        "about": {
+            "build_hash": "Хеш на билда:",
+            "build_time": "Време на билда:",
+            "check_for_new_version": "Проверка за нова версия",
+            "latest_version": "Последна Версия",
+            "latest_version_build_hash": "Хеш на билда на Последна Версия:",
+            "new_version_notice": "[НОВО]",
+            "release_date": "Дана за издаване:",
+            "stash_discord": "Присъедини се към нашият {url} канал",
+            "stash_home": "Stash home на {url}",
+            "stash_open_collective": "Подкрепи ни чрез {url}",
+            "stash_wiki": "Stash {url} страница",
+            "version": "Версия"
+        },
+        "advanced_mode": "Мод за Напреднали",
+        "application_paths": {
+            "heading": "Пътища на Апликация"
+        },
+        "categories": {
+            "about": "Относно",
+            "changelog": "Списък на промените",
+            "interface": "Интерфейс",
+            "logs": "Дневници",
+            "metadata_providers": "Доставчици на Мета данни",
+            "plugins": "Приставки",
+            "scraping": "Търкане",
+            "security": "Сигурност",
+            "services": "Услуги",
+            "system": "Система",
+            "tasks": "Задачи",
+            "tools": "Иструменти"
+        },
+        "dlna": {
+            "allow_temp_ip": "Позволи {tempIP}",
+            "allowed_ip_addresses": "Позволени IP адреси",
+            "allowed_ip_temporarily": "Позволени IP временно",
+            "default_ip_whitelist": "Основен IP Бъл списък",
+            "default_ip_whitelist_desc": "Основени IP адреси позволени да достигат DLNA. Изполвай {wildcard} за да позволиш всички IP адреси.",
+            "disabled_dlna_temporarily": "Временно изключено DLNA",
+            "disallowed_ip": "Непозволени IP",
+            "enabled_by_default": "Включено по подразвиране",
+            "enabled_dlna_temporarily": "Временно включено DLNA",
+            "network_interfaces": "Интерфейси",
+            "network_interfaces_desc": "Интерфейси да се достъпн DLNA сървъра. Празен лист ще ползва всички интерфейси. Изисква DLNA рестрат след промяна.",
+            "recent_ip_addresses": "Скорошни IP адреси",
+            "server_display_name": "Име за Покаване на Сървъра",
+            "server_display_name_desc": "Име за покаване на DLNA сървъра. По подразбиране {server_name} ако е празно.",
+            "server_port": "Порт на Сървъра",
+            "server_port_desc": "Порт на който да върви DLNA сървъра. Изисква рестарт на DLNA след промяна.",
+            "successfully_cancelled_temporary_behaviour": "Успешно отказано временно поведение",
+            "until_restart": "до рестартиране",
+            "video_sort_order": "Ред на Видеа по подразбиране",
+            "video_sort_order_desc": "Ред по който да реди видеа по подразбиране."
+        },
+        "general": {
+            "auth": {
+                "api_key": "API ключ",
+                "api_key_desc": "API ключ за външни системи. Нужен само когато име/парола са настроени. Името трябва да бъде запазене преди генерация на API ключ.",
+                "authentication": "Идентификация",
+                "clear_api_key": "Изчисти API ключ",
+                "credentials": {
+                    "description": "Удостоверителни данни за контрол на достъпа до stash.",
+                    "heading": "Удостоверителни данни"
+                },
+                "generate_api_key": "Генерирай API ключ",
+                "log_file": "Лог файл",
+                "log_file_desc": "Път към файла за извод на лог. Празен за да спре извод на лог. Изисква рестарт.",
+                "log_http": "Логвай http достъп",
+                "log_http_desc": "Логва http достъп на терминала. Изисква рестарт.",
+                "log_to_terminal": "Лог към терминал",
+                "log_to_terminal_desc": "Логва към терминал заедно с към файл. Винаги истина ако логване към файл е изключено. Изискава рестарт.",
+                "maximum_session_age": "Максимална Продължителност на Сесия",
+                "maximum_session_age_desc": "Максимално време на бездействие, преди сесията за вход да изтече, в секунди. Изисква рестартиране.",
+                "password": "Парола",
+                "password_desc": "Парола за достъп до Stash. Остави празно за да изключи достъп чрез потребител",
+                "stash-box_integration": "Stash-box интеграция",
+                "username": "Потребителско име",
+                "username_desc": "Потребителско име за достъп до Stash. Остави празно за да изключи достъп чрез потребител",
+                "log_file_max_size": "Максимален размер на файла",
+                "log_file_max_size_desc": "Максимален размер в мегабайти на лог файла преди компресиране. 0 MB означава деактивирано. Изисква рестартиране."
+            },
+            "backup_directory_path": {
+                "description": "Местоположение на папка за резрвни SQLite бази данни",
+                "heading": "Път към Папка за Резервни Данни"
+            },
+            "blobs_path": {
+                "description": "Къде във файловата система да се пазят бинарни данни. Позва се само ако се ползва Файлова система за блоб пазене. ВНИМАНИЕ: промяната ще изисква ръчно местене на съществуващи данни.",
+                "heading": "Път до файловата система за двоични данни"
+            }
+        },
+        "ui": {
+            "custom_locales": {
+                "option_label": "Персонализирана локализация е активирана"
+            },
+            "delete_options": {
+                "description": "Настройки по подразбиране при триене на картини, галерий и сцени.",
+                "heading": "Изтриване на настройки",
+                "options": {
+                    "delete_file": "Изтриване на файлове по подразбиране",
+                    "delete_generated_supporting_files": "Изтриване на генерираните поддържащи файлове по подразбиране"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Десктоп Интеграция",
+                "notifications_enabled": "Включване на известяването",
+                "send_desktop_notifications_for_events": "Изпащане на десктоп известявания за събития",
+                "skip_opening_browser": "Пропускане на отваряне на браузер",
+                "skip_opening_browser_on_startup": "Пропускане на автоматично отваряне на броузер по време на стартиране"
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "Когато е включена, тази настройка ще предосвати разширени детайли запавайки компактна презентация",
+                    "heading": "Компактни разширени детайли"
+                },
+                "enable_background_image": {
+                    "description": "Покажи фонова картина на станицата с детайли.",
+                    "heading": "Включи фонова картина"
+                },
+                "heading": "Станица с детайли",
+                "show_all_details": {
+                    "description": "Когато е включена, всичкото съдържание ще бъде показано по подразбиране и всеки детайл ще бъде в собствена колона",
+                    "heading": "Покажи всички детайли"
+                }
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "Премахни възможноста да се създават нови обекти от падащият селектор",
+                    "heading": "Изключи падащо създаване"
+                },
+                "heading": "Редактиране",
+                "max_options_shown": {
+                    "label": "Максимален брой неща който се показват в падащ селектор"
+                },
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Точност на звездния рейтинг",
+                        "options": {
+                            "full": "Цели",
+                            "half": "Половинки",
+                            "quarter": "Четвъртинки",
+                            "tenth": "Десетици"
+                        }
+                    },
+                    "type": {
+                        "label": "Тип система за рейтинг",
+                        "options": {
+                            "decimal": "Десетична",
+                            "stars": "Звезди"
+                        }
+                    }
+                }
+            },
+            "funscript_offset": {
+                "description": "Време за разминаване в милисекунди за пускане на интерактивни скриптове.",
+                "heading": "Funscript разминаване (ms)"
+            },
+            "handy_connection": {
+                "connect": "Свързване",
+                "server_offset": {
+                    "heading": "Сървърно разминаване"
+                },
+                "status": {
+                    "heading": "Статус на връзка с Handy"
+                },
+                "sync": "Синхронизиране"
+            },
+            "handy_connection_key": {
+                "description": "Handy connection key за ползване със интерактивни сцени. Слагането на този ключ ще позволи на Stash да сподели иформация за текущата сцена със handyfeeling.com"
+            }
+        }
+    }
+}

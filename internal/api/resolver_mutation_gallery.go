@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -43,11 +44,12 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	// Populate a new gallery from the input
 	newGallery := models.NewGallery()
 
-	newGallery.Title = input.Title
+	newGallery.Title = strings.TrimSpace(input.Title)
 	newGallery.Code = translator.string(input.Code)
 	newGallery.Details = translator.string(input.Details)
 	newGallery.Photographer = translator.string(input.Photographer)
 	newGallery.Rating = input.Rating100
+	newGallery.Organized = translator.bool(input.Organized)
 
 	var err error
 
@@ -74,9 +76,9 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	}
 
 	if input.Urls != nil {
-		newGallery.URLs = models.NewRelatedStrings(input.Urls)
+		newGallery.URLs = models.NewRelatedStrings(stringslice.TrimSpace(input.Urls))
 	} else if input.URL != nil {
-		newGallery.URLs = models.NewRelatedStrings([]string{*input.URL})
+		newGallery.URLs = models.NewRelatedStrings([]string{strings.TrimSpace(*input.URL)})
 	}
 
 	// Start the transaction and save the gallery
@@ -333,15 +335,18 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
+	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
+
 	var galleries []*models.Gallery
 	var imgsDestroyed []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: file.NewDeleter(),
+		Deleter: file.NewDeleterWithTrash(trashPath),
 		Paths:   manager.GetInstance().Paths,
 	}
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
@@ -362,7 +367,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 			galleries = append(galleries, gallery)
 
-			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile)
+			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 			if err != nil {
 				return err
 			}

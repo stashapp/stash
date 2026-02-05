@@ -292,8 +292,16 @@ func (qb *FolderStore) FindMany(ctx context.Context, ids []models.FolderID) ([]*
 	return folders, nil
 }
 
-func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*models.Folder, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(p))
+func (qb *FolderStore) FindByPath(ctx context.Context, p string, caseSensitive bool) (*models.Folder, error) {
+	// use like for case insensitive search
+	var criterion exp.BooleanExpression
+	if caseSensitive {
+		criterion = qb.table().Col("path").Eq(p)
+	} else {
+		criterion = qb.table().Col("path").ILike(p)
+	}
+
+	q := qb.selectDataset().Prepared(true).Where(criterion)
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

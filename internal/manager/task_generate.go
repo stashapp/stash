@@ -29,6 +29,7 @@ type GenerateMetadataInput struct {
 	// Generate transcodes even if not required
 	ForceTranscodes           bool `json:"forceTranscodes"`
 	Phashes                   bool `json:"phashes"`
+	ImagePhashes              bool `json:"imagePhashes"`
 	InteractiveHeatmapsSpeeds bool `json:"interactiveHeatmapsSpeeds"`
 	ClipPreviews              bool `json:"clipPreviews"`
 	ImageThumbnails           bool `json:"imageThumbnails"`
@@ -36,6 +37,10 @@ type GenerateMetadataInput struct {
 	SceneIDs []string `json:"sceneIDs"`
 	// marker ids to generate for
 	MarkerIDs []string `json:"markerIDs"`
+	// image ids to generate for
+	ImageIDs []string `json:"imageIDs"`
+	// gallery ids to generate for
+	GalleryIDs []string `json:"galleryIDs"`
 	// overwrite existing media
 	Overwrite bool `json:"overwrite"`
 }
@@ -73,6 +78,7 @@ type totalsGenerate struct {
 	markers                  int64
 	transcodes               int64
 	phashes                  int64
+	imagePhashes             int64
 	interactiveHeatmapSpeeds int64
 	clipPreviews             int64
 	imageThumbnails          int64
@@ -82,8 +88,9 @@ type totalsGenerate struct {
 
 func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error {
 	var scenes []*models.Scene
-	var err error
 	var markers []*models.SceneMarker
+	var images []*models.Image
+	var err error
 
 	j.overwrite = j.input.Overwrite
 	j.fileNamingAlgo = config.GetInstance().GetVideoFileNamingAlgorithm()
@@ -105,6 +112,14 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		if err != nil {
 			logger.Error(err.Error())
 		}
+		imageIDs, err := stringslice.StringSliceToIntSlice(j.input.ImageIDs)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		galleryIDs, err := stringslice.StringSliceToIntSlice(j.input.GalleryIDs)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 
 		g := &generate.Generator{
 			Encoder:      instance.FFMpeg,
@@ -118,7 +133,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		r := j.repository
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.Scene
-			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 {
+			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 && len(j.input.ImageIDs) == 0 && len(j.input.GalleryIDs) == 0 {
 				j.queueTasks(ctx, g, queue)
 			} else {
 				if len(j.input.SceneIDs) > 0 {
@@ -139,6 +154,33 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 					}
 					for _, m := range markers {
 						j.queueMarkerJob(g, m, queue)
+					}
+				}
+
+				if len(j.input.ImageIDs) > 0 {
+					images, err = r.Image.FindMany(ctx, imageIDs)
+					for _, i := range images {
+						if err := i.LoadFiles(ctx, r.Image); err != nil {
+							return err
+						}
+
+						j.queueImageJob(g, i, queue)
+					}
+				}
+
+				if len(j.input.GalleryIDs) > 0 {
+					for _, galleryID := range galleryIDs {
+						imgs, err := r.Image.FindByGalleryID(ctx, galleryID)
+						if err != nil {
+							return err
+						}
+						for _, img := range imgs {
+							if err := img.LoadFiles(ctx, r.Image); err != nil {
+								return err
+							}
+
+							j.queueImageJob(g, img, queue)
+						}
 					}
 				}
 			}
@@ -171,6 +213,9 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		}
 		if j.input.Phashes {
 			logMsg += fmt.Sprintf(" %d phashes", totals.phashes)
+		}
+		if j.input.ImagePhashes {
+			logMsg += fmt.Sprintf(" %d image phashes", totals.imagePhashes)
 		}
 		if j.input.InteractiveHeatmapsSpeeds {
 			logMsg += fmt.Sprintf(" %d heatmaps & speeds", totals.interactiveHeatmapSpeeds)
@@ -284,7 +329,7 @@ func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generato
 
 	r := j.repository
 
-	for more := j.input.ClipPreviews || j.input.ImageThumbnails; more; {
+	for more := j.input.ClipPreviews || j.input.ImageThumbnails || j.input.ImagePhashes; more; {
 		if job.IsCancelled(ctx) {
 			return
 		}
@@ -411,12 +456,13 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 	}
 
-	if j.input.Markers {
+	if j.input.Markers || j.input.MarkerImagePreviews || j.input.MarkerScreenshots {
 		task := &GenerateMarkersTask{
 			repository:          r,
 			Scene:               scene,
 			Overwrite:           j.overwrite,
 			fileNamingAlgorithm: j.fileNamingAlgo,
+			VideoPreview:        j.input.Markers,
 			ImagePreview:        j.input.MarkerImagePreviews,
 			Screenshot:          j.input.MarkerScreenshots,
 
@@ -488,6 +534,9 @@ func (j *GenerateJob) queueMarkerJob(g *generate.Generator, marker *models.Scene
 		Marker:              marker,
 		Overwrite:           j.overwrite,
 		fileNamingAlgorithm: j.fileNamingAlgo,
+		VideoPreview:        j.input.Markers,
+		ImagePreview:        j.input.MarkerImagePreviews,
+		Screenshot:          j.input.MarkerScreenshots,
 		generator:           g,
 	}
 	j.totals.markers++
@@ -519,6 +568,25 @@ func (j *GenerateJob) queueImageJob(g *generate.Generator, image *models.Image, 
 			j.totals.clipPreviews++
 			j.totals.tasks++
 			queue <- task
+		}
+	}
+
+	if j.input.ImagePhashes {
+		// generate for all files in image
+		for _, f := range image.Files.List() {
+			if imageFile, ok := f.(*models.ImageFile); ok {
+				task := &GenerateImagePhashTask{
+					repository: j.repository,
+					File:       imageFile,
+					Overwrite:  j.overwrite,
+				}
+
+				if task.required() {
+					j.totals.imagePhashes++
+					j.totals.tasks++
+					queue <- task
+				}
+			}
 		}
 	}
 }

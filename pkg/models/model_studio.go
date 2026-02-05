@@ -8,7 +8,6 @@ import (
 type Studio struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
-	URL       string    `json:"url"`
 	ParentID  *int      `json:"parent_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -19,8 +18,21 @@ type Studio struct {
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
+	URLs     RelatedStrings  `json:"urls"`
 	TagIDs   RelatedIDs      `json:"tag_ids"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
+}
+
+type CreateStudioInput struct {
+	*Studio
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdateStudioInput struct {
+	*Studio
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }
 
 func NewStudio() Studio {
@@ -31,11 +43,17 @@ func NewStudio() Studio {
 	}
 }
 
+func NewCreateStudioInput() CreateStudioInput {
+	s := NewStudio()
+	return CreateStudioInput{
+		Studio: &s,
+	}
+}
+
 // StudioPartial represents part of a Studio object. It is used to update the database entry.
 type StudioPartial struct {
 	ID       int
 	Name     OptionalString
-	URL      OptionalString
 	ParentID OptionalInt
 	// Rating expressed in 1-100 scale
 	Rating        OptionalInt
@@ -46,8 +64,11 @@ type StudioPartial struct {
 	IgnoreAutoTag OptionalBool
 
 	Aliases  *UpdateStrings
+	URLs     *UpdateStrings
 	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
+
+	CustomFields CustomFieldsInput
 }
 
 func NewStudioPartial() StudioPartial {
@@ -60,6 +81,12 @@ func NewStudioPartial() StudioPartial {
 func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
 	return s.Aliases.load(func() ([]string, error) {
 		return l.GetAliases(ctx, s.ID)
+	})
+}
+
+func (s *Studio) LoadURLs(ctx context.Context, l URLLoader) error {
+	return s.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, s.ID)
 	})
 }
 

@@ -1,5 +1,4 @@
-import React from "react";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import {
   defaultRatingStarPrecision,
   defaultRatingSystemOptions,
@@ -23,7 +22,7 @@ export interface IRatingSystemProps {
 export const RatingSystem = PatchComponent(
   "RatingSystem",
   (props: IRatingSystemProps) => {
-    const { configuration: config } = React.useContext(ConfigurationContext);
+    const { configuration: config } = useConfigurationContext();
     const ratingSystemOptions =
       config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
 

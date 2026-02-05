@@ -164,7 +164,7 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 
 	for _, ref := range i.Input.Files {
 		path := ref
-		f, err := i.FileFinder.FindByPath(ctx, path)
+		f, err := i.FileFinder.FindByPath(ctx, path, true)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
 		}
@@ -213,7 +213,7 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 	newStudio.Name = name
 
 	err := i.StudioWriter.Create(ctx, &newStudio)

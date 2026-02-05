@@ -68,7 +68,7 @@ jsonScrapers:
 }
 `
 
-	c := &config{}
+	c := &Definition{}
 	err := yaml.Unmarshal([]byte(yamlStr), &c)
 
 	if err != nil {

@@ -79,6 +79,10 @@ type SceneFilterType struct {
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
+	// Filter by StashIDs Endpoint
+	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
+	// Filter by StashID count
+	StashIDCount *IntCriterionInput `json:"stash_id_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by interactive
@@ -111,6 +115,8 @@ type SceneFilterType struct {
 	MoviesFilter *GroupFilterType `json:"movies_filter"`
 	// Filter by related markers that meet this criteria
 	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
+	// Filter by related files that meet this criteria
+	FilesFilter *FileFilterType `json:"files_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
@@ -200,15 +206,17 @@ type SceneUpdateInput struct {
 }
 
 type SceneDestroyInput struct {
-	ID              string `json:"id"`
-	DeleteFile      *bool  `json:"delete_file"`
-	DeleteGenerated *bool  `json:"delete_generated"`
+	ID               string `json:"id"`
+	DeleteFile       *bool  `json:"delete_file"`
+	DeleteGenerated  *bool  `json:"delete_generated"`
+	DestroyFileEntry *bool  `json:"destroy_file_entry"`
 }
 
 type ScenesDestroyInput struct {
-	Ids             []string `json:"ids"`
-	DeleteFile      *bool    `json:"delete_file"`
-	DeleteGenerated *bool    `json:"delete_generated"`
+	Ids              []string `json:"ids"`
+	DeleteFile       *bool    `json:"delete_file"`
+	DeleteGenerated  *bool    `json:"delete_generated"`
+	DestroyFileEntry *bool    `json:"destroy_file_entry"`
 }
 
 func NewSceneQueryResult(getter SceneGetter) *SceneQueryResult {

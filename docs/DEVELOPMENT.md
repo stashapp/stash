@@ -5,7 +5,8 @@
 * [Go](https://golang.org/dl/)
 * [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
   * To install, follow the [local installation instructions](https://golangci-lint.run/welcome/install/#local-installation)
-* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+* [nodejs](https://nodejs.org/en/download) - nodejs runtime
+  * corepack/[pnpm](https://pnpm.io/installation) - nodejs package manager (included with nodejs)
 
 ## Environment
 
@@ -22,32 +23,22 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 ### macOS
 
 1. If you don't have it already, install the [Homebrew package manager](https://brew.sh).
-2. Install dependencies: `brew install go git yarn gcc make node ffmpeg`
+2. Install dependencies: `brew install go git gcc make node ffmpeg`
 
 ### Linux
 
 #### Arch Linux
 
-1. Install dependencies: `sudo pacman -S go git yarn gcc make nodejs ffmpeg --needed`
+1. Install dependencies: `sudo pacman -S go git gcc make nodejs ffmpeg --needed`
 
 #### Ubuntu
 
-1. Install dependencies: `sudo apt-get install golang git yarnpkg gcc nodejs ffmpeg -y`
+1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
 
 ### OpenBSD
 
-1. Install dependencies `doas pkg_add gmake go git yarn node cmake`
-2. Compile a custom ffmpeg from ports. The default ffmpeg in OpenBSD's packages is not compiled with WebP support, which is required by Stash.
-   - If you've already installed ffmpeg, uninstall it: `doas pkg_delete ffmpeg`
-   - If you haven't already, [fetch the ports tree and verify](https://www.openbsd.org/faq/ports/ports.html#PortsFetch).
-   - Find the ffmpeg port in `/usr/ports/graphics/ffmpeg`, and patch the Makefile to include libwebp
-     - Add `webp` to `WANTLIB`
-     - Add `graphics/libwebp` to the list in `LIB_DEPENDS`
-     - Add `-lwebp -lwebpdecoder -lwebpdemux -lwebpmux` to `LIBavcodec_EXTRALIBS`
-     - Add `--enable-libweb` to the list in `CONFIGURE_ARGS`
-     - If you've already built ffmpeg from ports before, you may need to also increment `REVISION`
-     - Run `doas make install`
-   - Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866).
+1. Install dependencies `doas pkg_add gmake go git node cmake ffmpeg`
+2. Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866).
 
 NOTE: The `make` command in OpenBSD will be `gmake`. For example, `make pre-ui` will be `gmake pre-ui`.
 

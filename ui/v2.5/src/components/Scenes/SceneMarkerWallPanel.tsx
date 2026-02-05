@@ -1,21 +1,17 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import Gallery, {
   GalleryI,
   PhotoProps,
   RenderImageProps,
 } from "react-photo-gallery";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import { Link, useHistory } from "react-router-dom";
 import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
+import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import NavUtils from "src/utils/navigation";
 import { markerTitle } from "src/core/markers";
@@ -39,14 +35,31 @@ interface IMarkerPhoto {
   onError?: (photo: PhotoProps<IMarkerPhoto>) => void;
 }
 
-export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
-  props: RenderImageProps<IMarkerPhoto>
-) => {
-  const { configuration } = useContext(ConfigurationContext);
+interface IExtraProps {
+  maxHeight: number;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
+}
+
+export const MarkerWallItem: React.FC<
+  RenderImageProps<IMarkerPhoto> & IExtraProps
+> = (props: RenderImageProps<IMarkerPhoto> & IExtraProps) => {
+  const { dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+  });
+
+  const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
 
   const [active, setActive] = useState(false);
+
+  const height = Math.min(props.maxHeight, props.photo.height);
+  const zoomFactor = height / props.photo.height;
+  const width = props.photo.width * zoomFactor;
 
   type style = Record<string, string | number | undefined>;
   var divStyle: style = {
@@ -61,6 +74,12 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
   }
 
   var handleClick = function handleClick(event: React.MouseEvent) {
+    if (props.selecting && props.onSelectedChanged) {
+      props.onSelectedChanged(!props.selected, event.shiftKey);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
@@ -73,25 +92,42 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
   const title = wallItemTitle(marker);
   const tagNames = marker.tags.map((p) => p.name);
 
+  let shiftKey = false;
+
   return (
     <div
       className={cx("wall-item", { "show-title": showTitle })}
       role="button"
+      onClick={handleClick}
+      {...dragProps}
       style={{
         ...divStyle,
-        width: props.photo.width,
-        height: props.photo.height,
+        width,
+        height,
       }}
     >
+      {props.onSelectedChanged && (
+        <Form.Control
+          type="checkbox"
+          className="wall-item-check mousetrap"
+          checked={props.selected}
+          onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
+          onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+            shiftKey = event.shiftKey;
+            event.stopPropagation();
+          }}
+        />
+      )}
       <ImagePreview
         loading="lazy"
         loop={video}
         muted={!video || !playSound || !active}
         autoPlay={video}
+        playsInline={video}
         key={props.photo.key}
         src={props.photo.src}
-        width={props.photo.width}
-        height={props.photo.height}
+        width={width}
+        height={height}
         alt={props.photo.alt}
         onMouseEnter={() => setActive(true)}
         onMouseLeave={() => setActive(false)}
@@ -121,6 +157,9 @@ export const MarkerWallItem: React.FC<RenderImageProps<IMarkerPhoto>> = (
 interface IMarkerWallProps {
   markers: GQL.SceneMarkerDataFragment[];
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
+  selecting?: boolean;
 }
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
@@ -160,8 +199,16 @@ const breakpointZoomHeights = [
   { minWidth: 1400, heights: [160, 240, 300, 480] },
 ];
 
-const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
+const MarkerWall: React.FC<IMarkerWallProps> = ({
+  markers,
+  zoomIndex,
+  selectedIds,
+  onSelectChange,
+  selecting,
+}) => {
   const history = useHistory();
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const margin = 3;
   const direction = "row";
@@ -208,22 +255,50 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
     return Math.round(columnCount);
   }
 
-  function targetRowHeight(containerWidth: number) {
-    let zoomHeight = 280;
-    breakpointZoomHeights.forEach((e) => {
-      if (containerWidth >= e.minWidth) {
-        zoomHeight = e.heights[zoomIndex];
-      }
-    });
-    return zoomHeight;
-  }
+  const targetRowHeight = useCallback(
+    (containerWidth: number) => {
+      let zoomHeight = 280;
+      breakpointZoomHeights.forEach((e) => {
+        if (containerWidth >= e.minWidth) {
+          zoomHeight = e.heights[zoomIndex];
+        }
+      });
+      return zoomHeight;
+    },
+    [zoomIndex]
+  );
 
-  const renderImage = useCallback((props: RenderImageProps<IMarkerPhoto>) => {
-    return <MarkerWallItem {...props} />;
-  }, []);
+  // set the max height as a factor of the targetRowHeight
+  // this allows some images to be taller than the target row height
+  // but prevents images from becoming too tall when there is a small number of items
+  const maxHeightFactor = 1.3;
+
+  const renderImage = useCallback(
+    (props: RenderImageProps<IMarkerPhoto>) => {
+      const markerId = props.photo.marker.id;
+      return (
+        <MarkerWallItem
+          {...props}
+          maxHeight={
+            targetRowHeight(containerRef.current?.offsetWidth ?? 0) *
+            maxHeightFactor
+          }
+          selected={selectedIds?.has(markerId)}
+          onSelectedChanged={
+            onSelectChange
+              ? (selected, shiftKey) =>
+                  onSelectChange(markerId, selected, shiftKey)
+              : undefined
+          }
+          selecting={selecting}
+        />
+      );
+    },
+    [targetRowHeight, selectedIds, onSelectChange, selecting]
+  );
 
   return (
-    <div className="marker-wall">
+    <div className="marker-wall" ref={containerRef}>
       {photos.length ? (
         <MarkerGallery
           photos={photos}
@@ -242,11 +317,24 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({ markers, zoomIndex }) => {
 interface IMarkerWallPanelProps {
   markers: GQL.SceneMarkerDataFragment[];
   zoomIndex: number;
+  selectedIds?: Set<string>;
+  onSelectChange?: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
 export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
   markers,
   zoomIndex,
+  selectedIds,
+  onSelectChange,
 }) => {
-  return <MarkerWall markers={markers} zoomIndex={zoomIndex} />;
+  const selecting = !!selectedIds && selectedIds.size > 0;
+  return (
+    <MarkerWall
+      markers={markers}
+      zoomIndex={zoomIndex}
+      selectedIds={selectedIds}
+      onSelectChange={onSelectChange}
+      selecting={selecting}
+    />
+  );
 };

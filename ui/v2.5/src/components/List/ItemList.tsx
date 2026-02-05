@@ -1,7 +1,6 @@
 import React, {
   PropsWithChildren,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -43,7 +42,9 @@ import {
   IItemListOperation,
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
+import { useZoomKeybinds } from "./ZoomSlider";
+import { DisplayMode } from "src/models/list-filter/types";
 
 interface IFilteredItemList<T extends QueryResult, E extends IHasID = IHasID> {
   filterStateProps: IFilterStateHook;
@@ -55,7 +56,7 @@ export function useFilteredItemList<
   T extends QueryResult,
   E extends IHasID = IHasID
 >(props: IFilteredItemList<T, E>) {
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   // States
   const filterState = useFilterState({
@@ -72,7 +73,7 @@ export function useFilteredItemList<
   const { result, items, totalCount, pages } = queryResult;
 
   const listSelect = useListSelect(items);
-  const { onSelectAll, onSelectNone } = listSelect;
+  const { onSelectAll, onSelectNone, onInvertSelection } = listSelect;
 
   const modalState = useModal();
   const { showModal, closeModal } = modalState;
@@ -98,6 +99,7 @@ export function useFilteredItemList<
     onChangePage: setPage,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     pages,
     showEditFilter,
   });
@@ -111,9 +113,8 @@ export function useFilteredItemList<
   };
 }
 
-interface IItemListProps<T extends QueryResult, E extends IHasID> {
+interface IItemListProps<T extends QueryResult, E extends IHasID, M = unknown> {
   view?: View;
-  zoomable?: boolean;
   otherOperations?: IItemListOperation<T>[];
   renderContent: (
     result: T,
@@ -123,7 +124,7 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
     onChangePage: (page: number) => void,
     pageCount: number
   ) => React.ReactNode;
-  renderMetadataByline?: (data: T) => React.ReactNode;
+  renderMetadataByline?: (data: T, metadataInfo?: M) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
@@ -140,12 +141,11 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
   renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
 }
 
-export const ItemList = <T extends QueryResult, E extends IHasID>(
-  props: IItemListProps<T, E>
+export const ItemList = <T extends QueryResult, E extends IHasID, M = unknown>(
+  props: IItemListProps<T, E, M>
 ) => {
   const {
     view,
-    zoomable,
     otherOperations,
     renderContent,
     renderEditDialog,
@@ -156,8 +156,8 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   } = props;
 
   const { filter, setFilter: updateFilter } = useFilter();
-  const { effectiveFilter, result, cachedResult, totalCount } =
-    useQueryResultContext<T, E>();
+  const { effectiveFilter, result, metadataInfo, cachedResult, totalCount } =
+    useQueryResultContext<T, E, M>();
   const listSelect = useListContext<E>();
   const {
     selectedIds,
@@ -165,6 +165,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
   } = listSelect;
 
   // scroll to the top of the page when the page changes
@@ -175,8 +176,8 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   const metadataByline = useMemo(() => {
     if (cachedResult.loading) return "";
 
-    return renderMetadataByline?.(cachedResult) ?? "";
-  }, [renderMetadataByline, cachedResult]);
+    return renderMetadataByline?.(cachedResult, metadataInfo) ?? "";
+  }, [renderMetadataByline, cachedResult, metadataInfo]);
 
   const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
@@ -213,8 +214,18 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     onChangePage,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     pages,
     showEditFilter,
+  });
+
+  const zoomable =
+    filter.displayMode === DisplayMode.Grid ||
+    filter.displayMode === DisplayMode.Wall;
+
+  useZoomKeybinds({
+    zoomIndex: zoomable ? filter.zoomIndex : undefined,
+    onChangeZoom: (zoom) => updateFilter(filter.setZoom(zoom)),
   });
 
   useEffect(() => {
@@ -361,11 +372,16 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
   );
 };
 
-interface IItemListContextProps<T extends QueryResult, E extends IHasID> {
+interface IItemListContextProps<
+  T extends QueryResult,
+  E extends IHasID,
+  M = unknown
+> {
   filterMode: GQL.FilterMode;
   defaultSort?: string;
   defaultFilter?: ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -376,14 +392,19 @@ interface IItemListContextProps<T extends QueryResult, E extends IHasID> {
 
 // Provides the contexts for the ItemList component. Includes functionality to scroll
 // to top on page change.
-export const ItemListContext = <T extends QueryResult, E extends IHasID>(
-  props: PropsWithChildren<IItemListContextProps<T, E>>
+export const ItemListContext = <
+  T extends QueryResult,
+  E extends IHasID,
+  M = unknown
+>(
+  props: PropsWithChildren<IItemListContextProps<T, E, M>>
 ) => {
   const {
     filterMode,
     defaultSort,
     defaultFilter: providedDefaultFilter,
     useResult,
+    useMetadataInfo,
     getCount,
     getItems,
     view,
@@ -393,7 +414,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
     children,
   } = props;
 
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const emptyFilter = useMemo(
     () =>
@@ -409,12 +430,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
       new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
   );
 
-  const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(
-    emptyFilter,
-    view
-  );
-
-  if (defaultFilterLoading) return null;
+  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
 
   return (
     <FilterContext filter={filter} setFilter={setFilterState}>
@@ -422,6 +438,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
         <QueryResultContext
           filterHook={filterHook}
           useResult={useResult}
+          useMetadataInfo={useMetadataInfo}
           getCount={getCount}
           getItems={getItems}
         >

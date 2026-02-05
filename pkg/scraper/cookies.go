@@ -18,7 +18,7 @@ import (
 )
 
 // jar constructs a cookie jar from a configuration
-func (c config) jar() (*cookiejar.Jar, error) {
+func (c Definition) jar() (*cookiejar.Jar, error) {
 	opts := c.DriverOptions
 	jar, err := cookiejar.New(&cookiejar.Options{
 		PublicSuffixList: publicsuffix.List,
@@ -77,7 +77,7 @@ func randomSequence(n int) string {
 }
 
 // printCookies prints all cookies from the given cookie jar
-func printCookies(jar *cookiejar.Jar, scraperConfig config, msg string) {
+func printCookies(jar *cookiejar.Jar, scraperConfig Definition, msg string) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && !driverOptions.UseCDP {
 		var foundURLs []*url.URL

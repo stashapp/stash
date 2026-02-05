@@ -89,7 +89,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           }
           title={
             !fullWidth
-              ? TextUtils.formatDate(intl, performer.birthdate ?? undefined)
+              ? TextUtils.formatFuzzyDate(
+                  intl,
+                  performer.birthdate ?? undefined
+                )
               : ""
           }
           fullWidth={fullWidth}
@@ -218,7 +221,7 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> =
               <span className="detail-divider">/</span>
               <span
                 className="performer-age"
-                title={TextUtils.formatDate(
+                title={TextUtils.formatFuzzyDate(
                   intl,
                   performer.birthdate ?? undefined
                 )}

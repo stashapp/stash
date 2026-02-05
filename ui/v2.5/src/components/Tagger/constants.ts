@@ -1,4 +1,4 @@
-import { ScraperSourceInput } from "src/core/generated-graphql";
+import { GenderEnum, ScraperSourceInput } from "src/core/generated-graphql";
 
 export const STASH_BOX_PREFIX = "stashbox:";
 export const SCRAPER_PREFIX = "scraper:";
@@ -27,7 +27,6 @@ export const DEFAULT_EXCLUDED_STUDIO_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
-  showMales: true,
   mode: "auto",
   setCoverImage: true,
   setTags: true,
@@ -43,7 +42,7 @@ export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
 export type TagOperation = "merge" | "overwrite";
 export interface ITaggerConfig {
   blacklist: string[];
-  showMales: boolean;
+  performerGenders?: GenderEnum[];
   mode: ParseMode;
   setCoverImage: boolean;
   setTags: boolean;

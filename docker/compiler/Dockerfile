@@ -8,21 +8,20 @@ RUN mkdir -p /etc/apt/keyrings
 
 ADD https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key nodesource.gpg.key
 RUN cat nodesource.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && rm nodesource.gpg.key
-RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-
-ADD https://dl.yarnpkg.com/debian/pubkey.gpg yarn.gpg
-RUN cat yarn.gpg | gpg --dearmor -o /etc/apt/keyrings/yarn.gpg && rm yarn.gpg
-RUN echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        git make tar bash nodejs yarn zip \
+        git make tar bash nodejs zip \
         clang llvm-dev cmake patch libxml2-dev uuid-dev libssl-dev xz-utils \
         bzip2 gzip sed cpio libbz2-dev zlib1g-dev \
         gcc-mingw-w64 \
         gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
         gcc-aarch64-linux-gnu libc-dev-arm64-cross && \
     rm -rf /var/lib/apt/lists/*;
+
+# pnpm install with npm
+RUN npm install -g pnpm
 
 # FreeBSD cross-compilation setup
 # https://github.com/smartmontools/docker-build/blob/6b8c92560d17d325310ba02d9f5a4b250cb0764a/Dockerfile#L66

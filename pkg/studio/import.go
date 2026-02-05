@@ -153,7 +153,7 @@ func (i *Importer) populateParentStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createParentStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 	newStudio.Name = name
 
 	err := i.ReaderWriter.Create(ctx, &newStudio)
@@ -194,7 +194,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.studio)
+	err := i.ReaderWriter.Create(ctx, &models.CreateStudioInput{Studio: &i.studio})
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %v", err)
 	}
@@ -206,7 +206,7 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 func (i *Importer) Update(ctx context.Context, id int) error {
 	studio := i.studio
 	studio.ID = id
-	err := i.ReaderWriter.Update(ctx, &studio)
+	err := i.ReaderWriter.Update(ctx, &models.UpdateStudioInput{Studio: &studio})
 	if err != nil {
 		return fmt.Errorf("error updating existing studio: %v", err)
 	}
@@ -217,7 +217,6 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 	newStudio := models.Studio{
 		Name:          studioJSON.Name,
-		URL:           studioJSON.URL,
 		Aliases:       models.NewRelatedStrings(studioJSON.Aliases),
 		Details:       studioJSON.Details,
 		Favorite:      studioJSON.Favorite,
@@ -227,6 +226,19 @@ func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(studioJSON.StashIDs),
+	}
+
+	if len(studioJSON.URLs) > 0 {
+		newStudio.URLs = models.NewRelatedStrings(studioJSON.URLs)
+	} else {
+		urls := []string{}
+		if studioJSON.URL != "" {
+			urls = append(urls, studioJSON.URL)
+		}
+
+		if len(urls) > 0 {
+			newStudio.URLs = models.NewRelatedStrings(urls)
+		}
 	}
 
 	if studioJSON.Rating != 0 {

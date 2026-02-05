@@ -561,5 +561,7 @@ export function setObjectFilter(
       }
       out.galleries_filter = relatedFilterOutput as GalleryFilterType;
       break;
+    default:
+      throw new Error("Invalid filter mode");
   }
 }

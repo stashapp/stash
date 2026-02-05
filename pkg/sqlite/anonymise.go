@@ -102,6 +102,7 @@ func (db *Anonymiser) deleteStashIDs() error {
 		func() error { return db.truncateTable("scene_stash_ids") },
 		func() error { return db.truncateTable("studio_stash_ids") },
 		func() error { return db.truncateTable("performer_stash_ids") },
+		func() error { return db.truncateTable("tag_stash_ids") },
 	})
 }
 
@@ -619,7 +620,6 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 			query := dialect.From(table).Select(
 				table.Col(idColumn),
 				table.Col("name"),
-				table.Col("url"),
 				table.Col("details"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
@@ -630,14 +630,12 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 				var (
 					id      int
 					name    sql.NullString
-					url     sql.NullString
 					details sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&name,
-					&url,
 					&details,
 				); err != nil {
 					return err
@@ -645,7 +643,6 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
-				db.obfuscateNullString(set, "url", url)
 				db.obfuscateNullString(set, "details", details)
 
 				if len(set) > 0 {
@@ -674,6 +671,10 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 	}
 
 	if err := db.anonymiseAliases(ctx, goqu.T(studioAliasesTable), "studio_id"); err != nil {
+		return err
+	}
+
+	if err := db.anonymiseURLs(ctx, goqu.T(studioURLsTable), "studio_id"); err != nil {
 		return err
 	}
 
