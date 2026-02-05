@@ -648,6 +648,8 @@ input TagFilterType {
 
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input ImageFilterType {
