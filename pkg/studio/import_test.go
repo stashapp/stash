@@ -62,7 +62,7 @@ func TestImporterPreImport(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"})
+	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"}, customFields)
 	i.Input.ParentStudio = ""
 
 	err = i.PreImport(testCtx)
@@ -71,6 +71,7 @@ func TestImporterPreImport(t *testing.T) {
 	expectedStudio := createFullStudio(0, 0)
 	expectedStudio.ParentID = nil
 	assert.Equal(t, expectedStudio, i.studio)
+	assert.Equal(t, models.CustomFieldMap(customFields), i.customFields)
 }
 
 func TestImporterPreImportWithTag(t *testing.T) {
@@ -121,9 +122,9 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	}
 
 	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
-	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
-		t := args.Get(1).(*models.Tag)
-		t.ID = existingTagID
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.CreateTagInput")).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.CreateTagInput)
+		t.Tag.ID = existingTagID
 	}).Return(nil)
 
 	err := i.PreImport(testCtx)
@@ -156,7 +157,7 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 	}
 
 	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
-	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Return(errors.New("Create error"))
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.CreateTagInput")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
