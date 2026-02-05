@@ -1655,6 +1655,242 @@ func Test_TagStore_UpdatePartialCustomFields(t *testing.T) {
 	}
 }
 
+func TestTagQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.TagFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")},
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdxWithGallery},
+			false,
+		},
+		{
+			"includes",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdxWithGallery},
+			false,
+		},
+		{
+			"regex",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdxWithGallery},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{tagIdx2WithScene},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdx2WithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdx2WithScene},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			tags, _, err := db.Tag.Query(ctx, tt.filter, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TagStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := tagsToIDs(tags)
+			include := indexesToIDs(tagIDs, tt.includeIdxs)
+			exclude := indexesToIDs(tagIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 // TODO Destroy
 // TODO Find
 // TODO FindBySceneID
