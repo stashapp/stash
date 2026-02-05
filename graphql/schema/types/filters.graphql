@@ -644,6 +644,8 @@ input TagFilterType {
   galleries_filter: GalleryFilterType
   "Filter by related performers that meet this criteria"
   performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
