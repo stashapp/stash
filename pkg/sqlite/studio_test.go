@@ -1694,6 +1694,251 @@ func TestStudioQueryFast(t *testing.T) {
 	})
 }
 
+func studiesToIDs(i []*models.Studio) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestStudioQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.StudioFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.StudioFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getStudioStringValue(studioIdxWithTwoScenes, "custom")},
+					},
+				},
+			},
+			[]int{studioIdxWithTwoScenes},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getStudioStringValue(studioIdxWithTwoScenes, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getStudioStringValue(studioIdxWithTwoScenes, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{studioIdxWithTwoScenes},
+			false,
+		},
+		{
+			"includes",
+			&models.StudioFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getStudioStringValue(studioIdxWithTwoScenes, "custom")[9:]},
+					},
+				},
+			},
+			[]int{studioIdxWithTwoScenes},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getStudioStringValue(studioIdxWithTwoScenes, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getStudioStringValue(studioIdxWithTwoScenes, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{studioIdxWithTwoScenes},
+			false,
+		},
+		{
+			"regex",
+			&models.StudioFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*1_custom"},
+					},
+				},
+			},
+			[]int{studioIdxWithTwoScenes},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.StudioFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getStudioStringValue(studioIdxWithTwoScenes, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*1_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{studioIdxWithTwoScenes},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.StudioFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getStudioStringValue(studioIdxWithTwoScenes, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{studioIdxWithTwoScenes},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getStudioStringValue(studioIdxWithTwoScenes, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{studioIdxWithTwoScenes},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.StudioFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{studioIdxWithGroup},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getStudioStringValue(studioIdxWithGroup, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{studioIdxWithGroup},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			studios, _, err := db.Studio.Query(ctx, tt.filter, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StudioStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := studiesToIDs(studios)
+			include := indexesToIDs(studioIDs, tt.includeIdxs)
+			exclude := indexesToIDs(studioIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 // TODO Create
 // TODO Update
 // TODO Destroy
