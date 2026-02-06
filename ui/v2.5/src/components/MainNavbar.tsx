@@ -117,7 +117,6 @@ const allMenuItems: IMenuItem[] = [
     href: "/groups",
     icon: faFilm,
     hotkey: "g v",
-    userCreatable: true,
   },
   {
     name: "markers",
