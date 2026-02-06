@@ -1268,5 +1268,8 @@
     },
     "datetime_format": "YYYY-MM-DD HH:MM",
     "sub_group": "Subgroep",
-    "sub_groups": "Subgroepen"
+    "sub_groups": "Subgroepen",
+    "weight_kg": "Gewicht (kg)",
+    "type": "Type",
+    "time_end": "Eindtijd"
 }
