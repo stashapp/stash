@@ -15,43 +15,22 @@ import (
 )
 
 type jsonScraper struct {
-	scraper      scraperTypeConfig
-	config       config
+	definition   Definition
 	globalConfig GlobalConfig
 	client       *http.Client
 }
 
-func newJsonScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *jsonScraper {
-	return &jsonScraper{
-		scraper:      scraper,
-		config:       config,
-		client:       client,
-		globalConfig: globalConfig,
-	}
-}
-
-func (s *jsonScraper) getJsonScraper() *mappedScraper {
-	return s.config.JsonScrapers[s.scraper.Scraper]
-}
-
-func (s *jsonScraper) scrapeURL(ctx context.Context, url string) (string, *mappedScraper, error) {
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return "", nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+func (s *jsonScraper) getJsonScraper(name string) (*mappedScraper, error) {
+	ret, ok := s.definition.JsonScrapers[name]
+	if !ok {
+		return nil, fmt.Errorf("json scraper with name %s not found in config", name)
 	}
 
-	doc, err := s.loadURL(ctx, url)
-
-	if err != nil {
-		return "", nil, err
-	}
-
-	return doc, scraper, nil
+	return &ret, nil
 }
 
 func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
-	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
+	r, err := loadURL(ctx, url, s.client, s.definition, s.globalConfig)
 	if err != nil {
 		return "", err
 	}
@@ -66,21 +45,30 @@ func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
 		return "", errors.New("not valid json")
 	}
 
-	if s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
+	if s.definition.DebugOptions != nil && s.definition.DebugOptions.PrintHTML {
 		logger.Infof("loadURL (%s) response: \n%s", url, docStr)
 	}
 
 	return docStr, err
 }
 
-func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for url-queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
+type jsonURLScraper struct {
+	jsonScraper
+	definition ByURLDefinition
+}
+
+func (s *jsonURLScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
+	scraper, err := s.getJsonScraper(s.definition.Scraper)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc, u)
+	doc, err := s.loadURL(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc, url)
 	// if these just return the return values from scraper.scrape* functions then
 	// it ends up returning ScrapedContent(nil) rather than nil
 	switch ty {
@@ -119,11 +107,15 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCont
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
-	scraper := s.getJsonScraper()
+type jsonNameScraper struct {
+	jsonScraper
+	definition ByNameDefinition
+}
 
-	if scraper == nil {
-		return nil, fmt.Errorf("%w: name %v", ErrNotFound, s.scraper.Scraper)
+func (s *jsonNameScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
+	scraper, err := s.getJsonScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	const placeholder = "{}"
@@ -131,7 +123,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty ScrapeCo
 	// replace the placeholder string with the URL-escaped name
 	escapedName := url.QueryEscape(name)
 
-	url := s.scraper.QueryURL
+	url := s.definition.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(ctx, url)
@@ -172,18 +164,22 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty ScrapeCo
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+type jsonFragmentScraper struct {
+	jsonScraper
+	definition ByFragmentDefinition
+}
+
+func (s *jsonFragmentScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getJsonScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -196,7 +192,7 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
+func (s *jsonFragmentScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
 	switch {
 	case input.Gallery != nil:
 		return nil, fmt.Errorf("%w: cannot use a json scraper as a gallery fragment scraper", ErrNotSupported)
@@ -210,15 +206,14 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (Scrape
 
 	// construct the URL
 	queryURL := queryURLParametersFromScrapedScene(scene)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getJsonScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -231,18 +226,17 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (Scrape
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
+func (s *jsonFragmentScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromImage(image)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getJsonScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -255,18 +249,17 @@ func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Imag
 	return scraper.scrapeImage(ctx, q)
 }
 
-func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *jsonFragmentScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getJsonScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)

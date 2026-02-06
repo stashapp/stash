@@ -31,11 +31,14 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	}
 
 	// Populate a new tag from the input
-	newTag := models.NewTag()
+	newTag := models.CreateTagInput{
+		Tag: &models.Tag{},
+	}
+	*newTag.Tag = models.NewTag()
 
 	newTag.Name = strings.TrimSpace(input.Name)
 	newTag.SortName = translator.string(input.SortName)
-	newTag.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.Aliases))
+	newTag.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.Aliases), newTag.Name))
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
@@ -60,6 +63,8 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 		return nil, fmt.Errorf("converting child tag ids: %w", err)
 	}
 
+	newTag.CustomFields = convertMapJSONNumbers(input.CustomFields)
+
 	// Process the base 64 encoded image string
 	var imageData []byte
 	if input.Image != nil {
@@ -73,7 +78,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
 
-		if err := tag.ValidateCreate(ctx, newTag, qb); err != nil {
+		if err := tag.ValidateCreate(ctx, *newTag.Tag, qb); err != nil {
 			return err
 		}
 
@@ -137,6 +142,13 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		return nil, fmt.Errorf("converting child tag ids: %w", err)
 	}
 
+	if input.CustomFields != nil {
+		updatedTag.CustomFields = *input.CustomFields
+		// convert json.Numbers to int/float
+		updatedTag.CustomFields.Full = convertMapJSONNumbers(updatedTag.CustomFields.Full)
+		updatedTag.CustomFields.Partial = convertMapJSONNumbers(updatedTag.CustomFields.Partial)
+	}
+
 	var imageData []byte
 	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
@@ -150,6 +162,28 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	var t *models.Tag
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
+
+		if updatedTag.Aliases != nil {
+			t, err := qb.Find(ctx, tagID)
+			if err != nil {
+				return err
+			}
+			if t != nil {
+				if err := t.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				newAliases := updatedTag.Aliases.Apply(t.Aliases.List())
+				name := t.Name
+				if updatedTag.Name.Set {
+					name = updatedTag.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(newAliases, name)
+				updatedTag.Aliases.Values = sanitized
+				updatedTag.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
 
 		if err := tag.ValidateUpdate(ctx, tagID, updatedTag, qb); err != nil {
 			return err

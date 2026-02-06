@@ -229,6 +229,8 @@ Returns `void`.
 - `DetailImage`
 - `ExternalLinkButtons`
 - `ExternalLinksButton`
+- `FilteredGalleryList`
+- `FilteredSceneList`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -238,6 +240,7 @@ Returns `void`.
 - `GalleryCard.Popovers`
 - `GalleryCardGrid`
 - `GalleryIDSelect`
+- `GalleryList`
 - `GalleryRecommendationRow`
 - `GallerySelect`
 - `GallerySelect.sort`
@@ -308,6 +311,7 @@ Returns `void`.
 - `SceneMarkerCard.Popovers`
 - `SceneMarkerCardsGrid`
 - `SceneMarkerRecommendationRow`
+- `SceneList`
 - `ScenePage`
 - `ScenePage.TabContent`
 - `ScenePage.Tabs`

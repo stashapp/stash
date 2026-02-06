@@ -117,6 +117,13 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 				studioRepository.galleries.innerJoin(f, "", "studios.id")
 			},
 		},
+
+		&customFieldsFilterHandler{
+			table: studiosCustomFieldsTable.GetTable(),
+			fkCol: studioIDColumn,
+			c:     studioFilter.CustomFields,
+			idCol: "studios.id",
+		},
 	}
 }
 

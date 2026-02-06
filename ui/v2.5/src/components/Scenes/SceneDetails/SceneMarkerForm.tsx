@@ -11,7 +11,10 @@ import {
 } from "src/core/StashService";
 import { DurationInput } from "src/components/Shared/DurationInput";
 import { MarkerTitleSuggest } from "src/components/Shared/Select";
-import { getPlayerPosition } from "src/components/ScenePlayer/util";
+import {
+  getAbLoopPlugin,
+  getPlayerPosition,
+} from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
@@ -61,16 +64,39 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   });
 
   // useMemo to only run getPlayerPosition when the input marker actually changes
-  const initialValues = useMemo(
-    () => ({
+  const initialValues = useMemo(() => {
+    if (!marker) {
+      const abLoopPlugin = getAbLoopPlugin();
+      const opts = abLoopPlugin?.getOptions();
+      const start = opts?.start;
+      const end = opts?.end;
+      const hasAbLoop = Number.isFinite(start);
+
+      if (hasAbLoop) {
+        const current = Math.round(getPlayerPosition() ?? 0);
+        const rawEnd =
+          Number.isFinite(end) && (end as number) > 0 ? (end as number) : null;
+        const endSeconds =
+          rawEnd !== null ? rawEnd : Math.max(start as number, current);
+
+        return {
+          title: "",
+          seconds: start as number,
+          end_seconds: endSeconds,
+          primary_tag_id: "",
+          tag_ids: [],
+        };
+      }
+    }
+
+    return {
       title: marker?.title ?? "",
       seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
       end_seconds: marker?.end_seconds ?? null,
       primary_tag_id: marker?.primary_tag.id ?? "",
       tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
-    }),
-    [marker]
-  );
+    };
+  }, [marker]);
 
   type InputValues = yup.InferType<typeof schema>;
 

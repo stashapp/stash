@@ -80,6 +80,7 @@ input PerformerCreateInput {
   career_length: String
   tattoos: String
   piercings: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   alias_list: [String!]
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
@@ -118,6 +119,7 @@ input PerformerUpdateInput {
   career_length: String
   tattoos: String
   piercings: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   alias_list: [String!]
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
@@ -161,6 +163,7 @@ input BulkPerformerUpdateInput {
   career_length: String
   tattoos: String
   piercings: String
+  "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
   alias_list: BulkUpdateStrings
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")

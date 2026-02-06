@@ -1,7 +1,7 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useState } from "react";
-import { useIntl } from "react-intl";
-import { useHistory } from "react-router-dom";
+import React, { useCallback, useEffect } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -9,7 +9,7 @@ import {
   useFindPerformers,
   usePerformersDestroy,
 } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import { useFilteredItemList } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
@@ -23,16 +23,38 @@ import TextUtils from "src/utils/text";
 import { PerformerCardGrid } from "./PerformerCardGrid";
 import { PerformerMergeModal } from "./PerformerMergeDialog";
 import { View } from "../List/views";
-import { IItemListOperation } from "../List/FilteredListToolbar";
-import { PatchComponent } from "src/patch";
-
-function getItems(result: GQL.FindPerformersQueryResult) {
-  return result?.data?.findPerformers?.performers ?? [];
-}
-
-function getCount(result: GQL.FindPerformersQueryResult) {
-  return result?.data?.findPerformers?.count ?? 0;
-}
+import {
+  FilteredListToolbar,
+  IItemListOperation,
+} from "../List/FilteredListToolbar";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
+import useFocus from "src/utils/focus";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
+import { useCloseEditDelete, useFilterOperations } from "../List/util";
+import {
+  FilteredSidebarHeader,
+  useFilteredSidebarKeybinds,
+} from "../List/Filters/FilterSidebar";
+import { IListOperations, ListOperations } from "../List/ListOperationButtons";
+import { FilterTags } from "../List/FilterTags";
+import { Pagination, PaginationIndex } from "../List/Pagination";
+import { LoadedContent } from "../List/PagedList";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
+import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
+import { PerformerListFilterOptions } from "src/models/list-filter/performers";
+import { Button } from "react-bootstrap";
+import cx from "classnames";
+import { FavoritePerformerCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { SidebarOptionFilter } from "../List/Filters/OptionFilter";
+import { GenderCriterionOption } from "src/models/list-filter/criteria/gender";
 
 export const FormatHeight = (height?: number | null) => {
   const intl = useIntl();
@@ -165,193 +187,302 @@ interface IPerformerList {
   extraOperations?: IItemListOperation<GQL.FindPerformersQueryResult>[];
 }
 
-export const PerformerList: React.FC<IPerformerList> = PatchComponent(
+const PerformerList: React.FC<{
+  performers: GQL.PerformerDataFragment[];
+  filter: ListFilterModel;
+  selectedIds: Set<string>;
+  onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  extraCriteria?: IPerformerCardExtraCriteria;
+}> = PatchComponent(
   "PerformerList",
-  ({ filterHook, view, alterQuery, extraCriteria, extraOperations = [] }) => {
+  ({ performers, filter, selectedIds, onSelectChange, extraCriteria }) => {
+    if (performers.length === 0) {
+      return null;
+    }
+
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <PerformerCardGrid
+          performers={performers}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+          extraCriteria={extraCriteria}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.List) {
+      return (
+        <PerformerListTable
+          performers={performers}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return <PerformerTagger performers={performers} />;
+    }
+
+    return null;
+  }
+);
+
+const PerformerFilterSidebarSections = PatchContainerComponent(
+  "FilteredPerformerList.SidebarSections"
+);
+
+const SidebarContent: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
+  sidebarOpen: boolean;
+  onClose?: () => void;
+  showEditFilter: (editingCriterion?: string) => void;
+  count?: number;
+  focus?: ReturnType<typeof useFocus>;
+}> = ({
+  filter,
+  setFilter,
+  filterHook,
+  view,
+  showEditFilter,
+  sidebarOpen,
+  onClose,
+  count,
+  focus,
+}) => {
+  const showResultsId =
+    count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
+  const AgeCriterionOption = PerformerListFilterOptions.criterionOptions.find(
+    (c) => c.type === "age"
+  );
+
+  return (
+    <>
+      <FilteredSidebarHeader
+        sidebarOpen={sidebarOpen}
+        showEditFilter={showEditFilter}
+        filter={filter}
+        setFilter={setFilter}
+        view={view}
+        focus={focus}
+      />
+
+      <PerformerFilterSidebarSections>
+        <SidebarTagsFilter
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
+        <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="favourite" />}
+          data-type={FavoritePerformerCriterionOption.type}
+          option={FavoritePerformerCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="favourite"
+        />
+        <SidebarOptionFilter
+          title={<FormattedMessage id="gender" />}
+          option={GenderCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="gender"
+        />
+        <SidebarAgeFilter
+          title={<FormattedMessage id="age" />}
+          option={AgeCriterionOption!}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="age"
+        />
+      </PerformerFilterSidebarSections>
+
+      <div className="sidebar-footer">
+        <Button className="sidebar-close-button" onClick={onClose}>
+          <FormattedMessage id={showResultsId} values={{ count }} />
+        </Button>
+      </div>
+    </>
+  );
+};
+
+function useViewRandom(filter: ListFilterModel, count: number) {
+  const history = useHistory();
+
+  const viewRandom = useCallback(async () => {
+    // query for a random performer
+    if (count === 0) {
+      return;
+    }
+
+    const index = Math.floor(Math.random() * count);
+    const filterCopy = cloneDeep(filter);
+    filterCopy.itemsPerPage = 1;
+    filterCopy.currentPage = index + 1;
+    const singleResult = await queryFindPerformers(filterCopy);
+    if (singleResult.data.findPerformers.performers.length === 1) {
+      const { id } = singleResult.data.findPerformers.performers[0];
+      // navigate to the image player page
+      history.push(`/performers/${id}`);
+    }
+  }, [history, filter, count]);
+
+  return viewRandom;
+}
+
+function useAddKeybinds(filter: ListFilterModel, count: number) {
+  const viewRandom = useViewRandom(filter, count);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      viewRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [viewRandom]);
+}
+
+export const FilteredPerformerList = PatchComponent(
+  "FilteredPerformerList",
+  (props: IPerformerList) => {
     const intl = useIntl();
     const history = useHistory();
-    const [mergePerformers, setMergePerformers] = useState<
-      GQL.SelectPerformerDataFragment[] | undefined
-    >(undefined);
-    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-    const [isExportAll, setIsExportAll] = useState(false);
+    const location = useLocation();
 
-    const filterMode = GQL.FilterMode.Performers;
+    const searchFocus = useFocus();
 
-    const otherOperations = [
-      ...extraOperations,
-      {
-        text: intl.formatMessage({ id: "actions.open_random" }),
-        onClick: openRandom,
-      },
-      {
-        text: `${intl.formatMessage({ id: "actions.merge" })}…`,
-        onClick: merge,
-        isDisplayed: showWhenSelected,
-      },
-      {
-        text: intl.formatMessage({ id: "actions.export" }),
-        onClick: onExport,
-        isDisplayed: showWhenSelected,
-      },
-      {
-        text: intl.formatMessage({ id: "actions.export_all" }),
-        onClick: onExportAll,
-      },
-    ];
+    const {
+      filterHook,
+      view,
+      alterQuery,
+      extraCriteria,
+      extraOperations = [],
+    } = props;
 
-    function addKeybinds(
-      result: GQL.FindPerformersQueryResult,
-      filter: ListFilterModel
-    ) {
-      Mousetrap.bind("p r", () => {
-        openRandom(result, filter);
+    // States
+    const {
+      showSidebar,
+      setShowSidebar,
+      sectionOpen,
+      setSectionOpen,
+      loading: sidebarStateLoading,
+    } = useSidebarState(view);
+
+    const { filterState, queryResult, modalState, listSelect, showEditFilter } =
+      useFilteredItemList({
+        filterStateProps: {
+          filterMode: GQL.FilterMode.Performers,
+          view,
+          useURL: alterQuery,
+        },
+        queryResultProps: {
+          useResult: useFindPerformers,
+          getCount: (r) => r.data?.findPerformers.count ?? 0,
+          getItems: (r) => r.data?.findPerformers.performers ?? [],
+          filterHook,
+        },
+      });
+
+    const { filter, setFilter } = filterState;
+
+    const { effectiveFilter, result, cachedResult, items, totalCount } =
+      queryResult;
+
+    const {
+      selectedIds,
+      selectedItems,
+      onSelectChange,
+      onSelectAll,
+      onSelectNone,
+      onInvertSelection,
+      hasSelection,
+    } = listSelect;
+
+    const { modal, showModal, closeModal } = modalState;
+
+    // Utility hooks
+    const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+      filter,
+      setFilter,
+    });
+
+    useAddKeybinds(filter, totalCount);
+    useFilteredSidebarKeybinds({
+      showSidebar,
+      setShowSidebar,
+    });
+
+    useEffect(() => {
+      Mousetrap.bind("e", () => {
+        if (hasSelection) {
+          onEdit?.();
+        }
+      });
+
+      Mousetrap.bind("d d", () => {
+        if (hasSelection) {
+          onDelete?.();
+        }
       });
 
       return () => {
-        Mousetrap.unbind("p r");
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
       };
-    }
+    });
 
-    async function openRandom(
-      result: GQL.FindPerformersQueryResult,
-      filter: ListFilterModel
-    ) {
-      if (result.data?.findPerformers) {
-        const { count } = result.data.findPerformers;
-        const index = Math.floor(Math.random() * count);
-        const filterCopy = cloneDeep(filter);
-        filterCopy.itemsPerPage = 1;
-        filterCopy.currentPage = index + 1;
-        const singleResult = await queryFindPerformers(filterCopy);
-        if (singleResult.data.findPerformers.performers.length === 1) {
-          const { id } = singleResult.data.findPerformers.performers[0]!;
-          history.push(`/performers/${id}`);
-        }
+    const onCloseEditDelete = useCloseEditDelete({
+      closeModal,
+      onSelectNone,
+      result,
+    });
+
+    function onCreateNew() {
+      let queryParam = new URLSearchParams(location.search).get("q");
+      let newPath = "/performers/new";
+      if (queryParam) {
+        newPath += "?q=" + encodeURIComponent(queryParam);
       }
+      history.push(newPath);
     }
 
-    async function merge(
-      result: GQL.FindPerformersQueryResult,
-      filter: ListFilterModel,
-      selectedIds: Set<string>
-    ) {
-      const selected =
-        result.data?.findPerformers.performers.filter((p) =>
-          selectedIds.has(p.id)
-        ) ?? [];
-      setMergePerformers(selected);
-    }
+    const viewRandom = useViewRandom(filter, totalCount);
 
-    async function onExport() {
-      setIsExportAll(false);
-      setIsExportDialogOpen(true);
-    }
-
-    async function onExportAll() {
-      setIsExportAll(true);
-      setIsExportDialogOpen(true);
-    }
-
-    function renderContent(
-      result: GQL.FindPerformersQueryResult,
-      filter: ListFilterModel,
-      selectedIds: Set<string>,
-      onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
-    ) {
-      function renderMergeDialog() {
-        if (mergePerformers) {
-          return (
-            <PerformerMergeModal
-              performers={mergePerformers}
-              onClose={(mergedId?: string) => {
-                setMergePerformers(undefined);
-                if (mergedId) {
-                  history.push(`/performers/${mergedId}`);
-                }
-              }}
-              show
-            />
-          );
-        }
-      }
-
-      function maybeRenderPerformerExportDialog() {
-        if (isExportDialogOpen) {
-          return (
-            <>
-              <ExportDialog
-                exportInput={{
-                  performers: {
-                    ids: Array.from(selectedIds.values()),
-                    all: isExportAll,
-                  },
-                }}
-                onClose={() => setIsExportDialogOpen(false)}
-              />
-            </>
-          );
-        }
-      }
-
-      function renderPerformers() {
-        if (!result.data?.findPerformers) return;
-
-        if (filter.displayMode === DisplayMode.Grid) {
-          return (
-            <PerformerCardGrid
-              performers={result.data.findPerformers.performers}
-              zoomIndex={filter.zoomIndex}
-              selectedIds={selectedIds}
-              onSelectChange={onSelectChange}
-              extraCriteria={extraCriteria}
-            />
-          );
-        }
-        if (filter.displayMode === DisplayMode.List) {
-          return (
-            <PerformerListTable
-              performers={result.data.findPerformers.performers}
-              selectedIds={selectedIds}
-              onSelectChange={onSelectChange}
-            />
-          );
-        }
-        if (filter.displayMode === DisplayMode.Tagger) {
-          return (
-            <PerformerTagger
-              performers={result.data.findPerformers.performers}
-            />
-          );
-        }
-      }
-
-      return (
-        <>
-          {renderMergeDialog()}
-          {maybeRenderPerformerExportDialog()}
-          {renderPerformers()}
-        </>
+    function onExport(all: boolean) {
+      showModal(
+        <ExportDialog
+          exportInput={{
+            performers: {
+              ids: Array.from(selectedIds.values()),
+              all,
+            },
+          }}
+          onClose={() => closeModal()}
+        />
       );
     }
 
-    function renderEditDialog(
-      selectedPerformers: GQL.SlimPerformerDataFragment[],
-      onClose: (applied: boolean) => void
-    ) {
-      return (
-        <EditPerformersDialog selected={selectedPerformers} onClose={onClose} />
+    function onEdit() {
+      showModal(
+        <EditPerformersDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
       );
     }
 
-    function renderDeleteDialog(
-      selectedPerformers: GQL.SlimPerformerDataFragment[],
-      onClose: (confirmed: boolean) => void
-    ) {
-      return (
+    function onDelete() {
+      showModal(
         <DeleteEntityDialog
-          selected={selectedPerformers}
-          onClose={onClose}
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
           singularEntity={intl.formatMessage({ id: "performer" })}
           pluralEntity={intl.formatMessage({ id: "performers" })}
           destroyMutation={usePerformersDestroy}
@@ -359,26 +490,173 @@ export const PerformerList: React.FC<IPerformerList> = PatchComponent(
       );
     }
 
-    return (
-      <ItemListContext
-        filterMode={filterMode}
-        useResult={useFindPerformers}
-        getItems={getItems}
-        getCount={getCount}
-        alterQuery={alterQuery}
-        filterHook={filterHook}
-        view={view}
-        selectable
-      >
-        <ItemList
-          view={view}
-          otherOperations={otherOperations}
-          addKeybinds={addKeybinds}
-          renderContent={renderContent}
-          renderEditDialog={renderEditDialog}
-          renderDeleteDialog={renderDeleteDialog}
+    function onMerge() {
+      showModal(
+        <PerformerMergeModal
+          performers={selectedItems}
+          onClose={(mergedId?: string) => {
+            closeModal();
+            if (mergedId) {
+              history.push(`/performers/${mergedId}`);
+            }
+          }}
+          show
         />
-      </ItemListContext>
+      );
+    }
+
+    const convertedExtraOperations: IListOperations[] = extraOperations.map(
+      (o) => ({
+        ...o,
+        isDisplayed: o.isDisplayed
+          ? () => o.isDisplayed!(result, filter, selectedIds)
+          : undefined,
+        onClick: () => {
+          o.onClick(result, filter, selectedIds);
+        },
+      })
+    );
+
+    const otherOperations: IListOperations[] = [
+      ...convertedExtraOperations,
+      {
+        text: intl.formatMessage({ id: "actions.select_all" }),
+        onClick: () => onSelectAll(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.select_none" }),
+        onClick: () => onSelectNone(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.invert_selection" }),
+        onClick: () => onInvertSelection(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.open_random" }),
+        onClick: viewRandom,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+        onClick: onMerge,
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: () => onExport(false),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: () => onExport(true),
+      },
+    ];
+
+    // render
+    if (sidebarStateLoading) return null;
+
+    const operations = (
+      <ListOperations
+        items={items.length}
+        hasSelection={hasSelection}
+        operations={otherOperations}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onCreateNew={onCreateNew}
+        entityType={intl.formatMessage({ id: "gallery" })}
+        operationsMenuClassName="gallery-list-operations-dropdown"
+      />
+    );
+
+    return (
+      <div
+        className={cx("item-list-container gallery-list", {
+          "hide-sidebar": !showSidebar,
+        })}
+      >
+        {modal}
+
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
+              />
+            </Sidebar>
+            <SidebarPaneContent
+              onSidebarToggle={() => setShowSidebar(!showSidebar)}
+            >
+              <FilteredListToolbar
+                filter={filter}
+                listSelect={listSelect}
+                setFilter={setFilter}
+                showEditFilter={showEditFilter}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                operationComponent={operations}
+                view={view}
+                zoomable
+              />
+
+              <FilterTags
+                criteria={filter.criteria}
+                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onRemoveCriterion={removeCriterion}
+                onRemoveAll={clearAllCriteria}
+              />
+
+              <div className="pagination-index-container">
+                <Pagination
+                  currentPage={filter.currentPage}
+                  itemsPerPage={filter.itemsPerPage}
+                  totalItems={totalCount}
+                  onChangePage={(page) => setFilter(filter.changePage(page))}
+                />
+                <PaginationIndex
+                  loading={cachedResult.loading}
+                  itemsPerPage={filter.itemsPerPage}
+                  currentPage={filter.currentPage}
+                  totalItems={totalCount}
+                />
+              </div>
+
+              <LoadedContent loading={result.loading} error={result.error}>
+                <PerformerList
+                  filter={effectiveFilter}
+                  performers={items}
+                  selectedIds={selectedIds}
+                  onSelectChange={onSelectChange}
+                  extraCriteria={extraCriteria}
+                />
+              </LoadedContent>
+
+              {totalCount > filter.itemsPerPage && (
+                <div className="pagination-footer-container">
+                  <div className="pagination-footer">
+                    <Pagination
+                      itemsPerPage={filter.itemsPerPage}
+                      currentPage={filter.currentPage}
+                      totalItems={totalCount}
+                      onChangePage={setPage}
+                      pagePopupPlacement="top"
+                    />
+                  </div>
+                </div>
+              )}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
+      </div>
     );
   }
 );

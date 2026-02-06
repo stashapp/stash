@@ -1710,6 +1710,18 @@ func tagStashID(i int) models.StashID {
 	}
 }
 
+func getTagCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getTagStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 // createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1737,7 +1749,10 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 			})
 		}
 
-		err := tqb.Create(ctx, &tag)
+		err := tqb.Create(ctx, &models.CreateTagInput{
+			Tag:          &tag,
+			CustomFields: getTagCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -1766,7 +1781,19 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
+func getStudioCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getStudioStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
+func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int, customFields map[string]interface{}) (*models.Studio, error) {
 	studio := models.Studio{
 		Name: name,
 	}
@@ -1775,7 +1802,7 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 		studio.ParentID = parentID
 	}
 
-	err := createStudioFromModel(ctx, sqb, &studio)
+	err := createStudioFromModel(ctx, sqb, &studio, customFields)
 	if err != nil {
 		return nil, err
 	}
@@ -1783,8 +1810,11 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio) error {
-	err := sqb.Create(ctx, studio)
+func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio, customFields map[string]interface{}) error {
+	err := sqb.Create(ctx, &models.CreateStudioInput{
+		Studio:       studio,
+		CustomFields: customFields,
+	})
 
 	if err != nil {
 		return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
@@ -1846,7 +1876,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 			alias := getStudioStringValue(i, "Alias")
 			studio.Aliases = models.NewRelatedStrings([]string{alias})
 		}
-		err := createStudioFromModel(ctx, sqb, &studio)
+		err := createStudioFromModel(ctx, sqb, &studio, getStudioCustomFields(i))
 
 		if err != nil {
 			return err

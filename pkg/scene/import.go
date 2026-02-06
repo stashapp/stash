@@ -219,7 +219,7 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 	newStudio.Name = name
 
 	err := i.StudioWriter.Create(ctx, &newStudio)
@@ -555,7 +555,9 @@ func createTags(ctx context.Context, tagWriter models.TagCreator, names []string
 		newTag := models.NewTag()
 		newTag.Name = name
 
-		err := tagWriter.Create(ctx, &newTag)
+		err := tagWriter.Create(ctx, &models.CreateTagInput{
+			Tag: &newTag,
+		})
 		if err != nil {
 			return nil, err
 		}

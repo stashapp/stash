@@ -16,7 +16,7 @@ import { useToast } from "src/hooks/Toast";
 import { useConfigurationContext } from "src/hooks/Config";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
-import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
+import { yupFormikValidate, yupRequiredStringArray } from "src/utils/yup";
 import { Studio, StudioSelect } from "../StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { Icon } from "src/components/Shared/Icon";
@@ -58,7 +58,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     urls: yup.array(yup.string().required()).defined(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
-    aliases: yupUniqueAliases(intl, "name"),
+    aliases: yupRequiredStringArray(intl).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),

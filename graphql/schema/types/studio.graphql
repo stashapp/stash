@@ -26,6 +26,8 @@ type Studio {
   groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
   o_counter: Int
+
+  custom_fields: Map!
 }
 
 input StudioCreateInput {
@@ -40,9 +42,12 @@ input StudioCreateInput {
   rating100: Int
   favorite: Boolean
   details: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+
+  custom_fields: Map
 }
 
 input StudioUpdateInput {
@@ -58,9 +63,12 @@ input StudioUpdateInput {
   rating100: Int
   favorite: Boolean
   details: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+
+  custom_fields: CustomFieldsInput
 }
 
 input BulkStudioUpdateInput {

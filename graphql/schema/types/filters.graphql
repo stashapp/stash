@@ -489,6 +489,8 @@ input StudioFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input GalleryFilterType {
@@ -642,12 +644,18 @@ input TagFilterType {
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
 
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input ImageFilterType {

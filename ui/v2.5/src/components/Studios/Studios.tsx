@@ -4,11 +4,11 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Studio from "./StudioDetails/Studio";
 import StudioCreate from "./StudioDetails/StudioCreate";
-import { StudioList } from "./StudioList";
+import { FilteredStudioList } from "./StudioList";
 import { View } from "../List/views";
 
 const Studios: React.FC = () => {
-  return <StudioList view={View.Studios} />;
+  return <FilteredStudioList view={View.Studios} />;
 };
 
 const StudioRoutes: React.FC = () => {

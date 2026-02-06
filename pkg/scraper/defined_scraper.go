@@ -8,25 +8,26 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type group struct {
-	config config
+// definedScraper implements the scraper interface using a Definition object.
+type definedScraper struct {
+	config Definition
 
 	globalConf GlobalConfig
 }
 
-func newGroupScraper(c config, globalConfig GlobalConfig) scraper {
-	return group{
+func scraperFromDefinition(c Definition, globalConfig GlobalConfig) definedScraper {
+	return definedScraper{
 		config:     c,
 		globalConf: globalConfig,
 	}
 }
 
-func (g group) spec() Scraper {
+func (g definedScraper) spec() Scraper {
 	return g.config.spec()
 }
 
 // fragmentScraper finds an appropriate fragment scraper based on input.
-func (g group) fragmentScraper(input Input) *scraperTypeConfig {
+func (g definedScraper) fragmentScraper(input Input) *ByFragmentDefinition {
 	switch {
 	case input.Performer != nil:
 		return g.config.PerformerByFragment
@@ -43,7 +44,7 @@ func (g group) fragmentScraper(input Input) *scraperTypeConfig {
 	return nil
 }
 
-func (g group) viaFragment(ctx context.Context, client *http.Client, input Input) (ScrapedContent, error) {
+func (g definedScraper) viaFragment(ctx context.Context, client *http.Client, input Input) (ScrapedContent, error) {
 	stc := g.fragmentScraper(input)
 	if stc == nil {
 		// If there's no performer fragment scraper in the group, we try to use
@@ -56,38 +57,38 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*stc, client, g.globalConf)
+	s := g.config.getFragmentScraper(*stc, client, g.globalConf)
 	return s.scrapeByFragment(ctx, input)
 }
 
-func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+func (g definedScraper) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	if g.config.SceneByFragment == nil {
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.SceneByFragment, client, g.globalConf)
+	s := g.config.getFragmentScraper(*g.config.SceneByFragment, client, g.globalConf)
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
-func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (g definedScraper) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if g.config.GalleryByFragment == nil {
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.GalleryByFragment, client, g.globalConf)
+	s := g.config.getFragmentScraper(*g.config.GalleryByFragment, client, g.globalConf)
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
-func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*models.ScrapedImage, error) {
+func (g definedScraper) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*models.ScrapedImage, error) {
 	if g.config.ImageByFragment == nil {
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.ImageByFragment, client, g.globalConf)
+	s := g.config.getFragmentScraper(*g.config.ImageByFragment, client, g.globalConf)
 	return s.scrapeImageByImage(ctx, gallery)
 }
 
-func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
+func loadUrlCandidates(c Definition, ty ScrapeContentType) []*ByURLDefinition {
 	switch ty {
 	case ScrapeContentTypePerformer:
 		return c.PerformerByURL
@@ -104,12 +105,13 @@ func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
 	panic("loadUrlCandidates: unreachable")
 }
 
-func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty ScrapeContentType) (ScrapedContent, error) {
+func (g definedScraper) viaURL(ctx context.Context, client *http.Client, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
-			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.globalConf)
-			ret, err := s.scrapeByURL(ctx, url, ty)
+			u := replaceURL(url, *scraper) // allow a URL Replace for url-queries
+			s := g.config.getURLScraper(*scraper, client, g.globalConf)
+			ret, err := s.scrapeByURL(ctx, u, ty)
 			if err != nil {
 				return nil, err
 			}
@@ -123,31 +125,31 @@ func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty S
 	return nil, nil
 }
 
-func (g group) viaName(ctx context.Context, client *http.Client, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
+func (g definedScraper) viaName(ctx context.Context, client *http.Client, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	switch ty {
 	case ScrapeContentTypePerformer:
 		if g.config.PerformerByName == nil {
 			break
 		}
 
-		s := g.config.getScraper(*g.config.PerformerByName, client, g.globalConf)
+		s := g.config.getNameScraper(*g.config.PerformerByName, client, g.globalConf)
 		return s.scrapeByName(ctx, name, ty)
 	case ScrapeContentTypeScene:
 		if g.config.SceneByName == nil {
 			break
 		}
 
-		s := g.config.getScraper(*g.config.SceneByName, client, g.globalConf)
+		s := g.config.getNameScraper(*g.config.SceneByName, client, g.globalConf)
 		return s.scrapeByName(ctx, name, ty)
 	}
 
 	return nil, fmt.Errorf("%w: cannot load %v by name", ErrNotSupported, ty)
 }
 
-func (g group) supports(ty ScrapeContentType) bool {
+func (g definedScraper) supports(ty ScrapeContentType) bool {
 	return g.config.supports(ty)
 }
 
-func (g group) supportsURL(url string, ty ScrapeContentType) bool {
+func (g definedScraper) supportsURL(url string, ty ScrapeContentType) bool {
 	return g.config.matchesURL(url, ty)
 }
