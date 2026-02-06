@@ -34,6 +34,8 @@ fragment TagData on Tag {
   children {
     ...SlimTagData
   }
+
+  custom_fields
 }
 
 fragment SelectTagData on Tag {
