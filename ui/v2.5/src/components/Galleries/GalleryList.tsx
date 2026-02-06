@@ -40,7 +40,7 @@ import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { Button } from "react-bootstrap";
-import { ListOperations } from "../List/ListOperationButtons";
+import { IListOperations, ListOperations } from "../List/ListOperationButtons";
 import {
   FilteredListToolbar,
   IItemListOperation,
@@ -232,7 +232,7 @@ export const FilteredGalleryList = PatchComponent(
 
     const searchFocus = useFocus();
 
-    const { filterHook, view, alterQuery } = props;
+    const { filterHook, view, alterQuery, extraOperations = [] } = props;
 
     // States
     const {
@@ -365,7 +365,20 @@ export const FilteredGalleryList = PatchComponent(
       );
     }
 
+    const convertedExtraOperations: IListOperations[] = extraOperations.map(
+      (o) => ({
+        ...o,
+        isDisplayed: o.isDisplayed
+          ? () => o.isDisplayed!(result, filter, selectedIds)
+          : undefined,
+        onClick: () => {
+          o.onClick(result, filter, selectedIds);
+        },
+      })
+    );
+
     const otherOperations = [
+      ...convertedExtraOperations,
       {
         text: intl.formatMessage({ id: "actions.select_all" }),
         onClick: () => onSelectAll(),

@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupList } from "../GroupList";
+import { FilteredGroupList } from "../GroupList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
   ContainingGroupsCriterionOption,
@@ -75,6 +75,7 @@ const Toolbar: React.FC<IFilteredListToolbar> = ({
   onEdit,
   onDelete,
   operations,
+  operationComponent,
 }) => {
   const { getSelected, onSelectAll, onSelectNone, onInvertSelection } =
     useListContext();
@@ -89,15 +90,19 @@ const Toolbar: React.FC<IFilteredListToolbar> = ({
         pageSize={filter.itemsPerPage}
         setPageSize={(size) => setFilter(filter.setPageSize(size))}
       />
-      <ListOperationButtons
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        onInvertSelection={onInvertSelection}
-        itemsSelected={getSelected().length > 0}
-        otherOperations={operations}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
+      {operationComponent ? (
+        operationComponent
+      ) : (
+        <ListOperationButtons
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
+          onInvertSelection={onInvertSelection}
+          itemsSelected={getSelected().length > 0}
+          otherOperations={operations}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      )}
     </ButtonToolbar>
   );
 };
@@ -203,7 +208,7 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
       return (
         <>
           {modal}
-          <GroupList
+          <FilteredGroupList
             defaultFilter={defaultFilter}
             filterHook={filterHook}
             alterQuery={active}
