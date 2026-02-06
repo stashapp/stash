@@ -50,6 +50,8 @@ type TagFilterType struct {
 	ImagesFilter *ImageFilterType `json:"images_filter"`
 	// Filter by related galleries that meet this criteria
 	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related groups	that meet this criteria
+	GroupsFilter *GroupFilterType `json:"groups_filter"`
 	// Filter by related performers that meet this criteria
 	PerformersFilter *PerformerFilterType `json:"performers_filter"`
 	// Filter by related studios that meet this criteria

@@ -483,6 +483,8 @@ input StudioFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
+  "Filter by group count"
+  group_count: IntCriterionInput
   "Filter by tag count"
   tag_count: IntCriterionInput
   "Filter by url"
@@ -499,6 +501,8 @@ input StudioFilterType {
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
+  "Filter by related groups that meet this criteria"
+  groups_filter: GroupFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -658,6 +662,8 @@ input TagFilterType {
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
+  "Filter by related groups that meet this criteria"
+  groups_filter: GroupFilterType
   "Filter by related performers that meet this criteria"
   performers_filter: PerformerFilterType
   "Filter by related studios that meet this criteria"
