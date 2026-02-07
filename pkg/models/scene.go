@@ -17,6 +17,15 @@ type DuplicationCriterionInput struct {
 	Title *bool `json:"title"`
 }
 
+type FileDuplicationCriterionInput struct {
+	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
+	Duplicated *bool `json:"duplicated"`
+	// Currently unimplemented. Intended for phash distance matching.
+	Distance *int `json:"distance"`
+	// Filter by phash duplication
+	Phash *bool `json:"phash"`
+}
+
 type SceneFilterType struct {
 	OperatorFilter[SceneFilterType]
 	ID       *IntCriterionInput    `json:"id"`

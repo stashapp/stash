@@ -302,21 +302,14 @@ func (qb *sceneFilterHandler) duplicatedCriterionHandler(duplicatedFilter *model
 			return
 		}
 
-		// Handle legacy 'duplicated' field for backwards compatibility
-		// Only use it if set AND none of the new fields are set
+		// Handle legacy 'duplicated' field - treat as phash if phash not explicitly set
 		//nolint:staticcheck
-		if duplicatedFilter.Duplicated != nil &&
-			duplicatedFilter.Phash == nil &&
-			duplicatedFilter.URL == nil &&
-			duplicatedFilter.StashID == nil &&
-			duplicatedFilter.Title == nil {
-			qb.addSceneFilesTable(f)
+		if duplicatedFilter.Duplicated != nil && duplicatedFilter.Phash == nil {
 			//nolint:staticcheck
-			qb.applyPhashDuplication(f, *duplicatedFilter.Duplicated)
-			return
+			duplicatedFilter.Phash = duplicatedFilter.Duplicated
 		}
 
-		// Handle new explicit fields
+		// Handle explicit fields
 		if duplicatedFilter.Phash != nil {
 			qb.addSceneFilesTable(f)
 			qb.applyPhashDuplication(f, *duplicatedFilter.Phash)

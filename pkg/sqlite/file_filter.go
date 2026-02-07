@@ -205,7 +205,7 @@ func (qb *fileFilterHandler) galleryCountCriterionHandler(c *models.IntCriterion
 	return h.handler(c)
 }
 
-func (qb *fileFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models.DuplicationCriterionInput) criterionHandlerFunc {
+func (qb *fileFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models.FileDuplicationCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		// TODO: Wishlist item: Implement Distance matching
 		// For files, only phash duplication applies

@@ -76,8 +76,7 @@ input OrientationCriterionInput {
 }
 
 input DuplicationCriterionInput {
-  "Deprecated: Use phash field instead. Kept for backwards compatibility."
-  duplicated: Boolean
+  duplicated: Boolean @deprecated(reason: "Use phash field instead")
   "Currently unimplemented. Intended for phash distance matching."
   distance: Int
   "Filter by phash duplication"
@@ -88,6 +87,14 @@ input DuplicationCriterionInput {
   stash_id: Boolean
   "Filter by title duplication"
   title: Boolean
+}
+
+input FileDuplicationCriterionInput {
+  duplicated: Boolean @deprecated(reason: "Use phash field instead")
+  "Currently unimplemented. Intended for phash distance matching."
+  distance: Int
+  "Filter by phash duplication"
+  phash: Boolean
 }
 
 input StashIDCriterionInput {
@@ -754,7 +761,7 @@ input FileFilterType {
   mod_time: TimestampCriterionInput
 
   "Filter files by duplication criteria (only phash applies to files)"
-  duplicated: DuplicationCriterionInput
+  duplicated: FileDuplicationCriterionInput
 
   "find files based on hash"
   hashes: [FingerprintFilterInput!]
