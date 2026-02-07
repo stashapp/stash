@@ -43,10 +43,7 @@ import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
-import {
-  DurationCriterionOption,
-  PerformerAgeCriterionOption,
-} from "src/models/list-filter/scenes";
+import { PerformerAgeCriterionOption } from "src/models/list-filter/scenes";
 import { SidebarDuplicateFilter } from "../List/Filters/DuplicateFilter";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { SidebarDurationFilter } from "../List/Filters/SidebarDurationFilter";

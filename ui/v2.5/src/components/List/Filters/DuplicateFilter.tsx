@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { ListFilterModel } from "src/models/list-filter/filter";
