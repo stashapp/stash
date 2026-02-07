@@ -42,8 +42,12 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import StudiosFilter from "./Filters/StudiosFilter";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import TagsFilter from "./Filters/TagsFilter";
-import { PhashCriterion } from "src/models/list-filter/criteria/phash";
+import {
+  PhashCriterion,
+  DuplicatedCriterion,
+} from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
+import { DuplicatedFilter } from "./Filters/DuplicateFilter";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { ModifierSelectorButtons } from "./ModifierSelect";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
@@ -270,6 +274,12 @@ export const CriterionEditor: React.FC<ICriterionEditor> = ({
     if (criterion instanceof BooleanCriterion) {
       return (
         <BooleanFilter criterion={criterion} setCriterion={setCriterion} />
+      );
+    }
+
+    if (criterion instanceof DuplicatedCriterion) {
+      return (
+        <DuplicatedFilter criterion={criterion} setCriterion={setCriterion} />
       );
     }
 
