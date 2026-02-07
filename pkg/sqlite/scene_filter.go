@@ -176,6 +176,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.performerAgeCriterionHandler(sceneFilter.PerformerAge),
 		qb.phashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable),
 		&dateCriterionHandler{sceneFilter.Date, "scenes.date", nil},
+		&dateCriterionHandler{sceneFilter.Date, "scenes.production_date", nil},
 		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
 		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
 
@@ -361,6 +362,8 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
 				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
+			case "production_date":
+				f.addWhere(`scenes.production_date IS NULL OR scenes.production_date IS ""`)
 			case "tags":
 				sceneRepository.tags.join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
