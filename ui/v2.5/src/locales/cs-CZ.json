@@ -151,7 +151,9 @@
         "load": "Načíst",
         "load_filter": "Načíst filtr",
         "add_stash_id": "Přidat Stash ID",
-        "create_new": "Vytvořit nový"
+        "create_new": "Vytvořit nový",
+        "save_and_new": "Ulož & Nový",
+        "invert_selection": "Obrátit výběr"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -219,7 +221,8 @@
         "verb_toggle_unmatched": "{toggle} neidentifikované scény",
         "verb_add_as_alias": "Přidat scrapované jméno jako alias",
         "verb_link_existing": "Odkaz na existujicí",
-        "verb_match_tag": "Odpovídajicí tag"
+        "verb_match_tag": "Odpovídajicí tag",
+        "verb_scrape_selected": "Scrapovat Vybrané"
     },
     "config": {
         "about": {
@@ -485,7 +488,7 @@
                 "generating_scenes": "Generováno pro {num} {scene}"
             },
             "generate_desc": "Generovat podpůrné obrázky, sprite, video, vtt a další soubory.",
-            "generate_phashes_during_scan": "Generovat PHASHe",
+            "generate_phashes_during_scan": "Generovat percepční hashe (phash) videa",
             "generate_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci scén.",
             "generate_previews_during_scan": "Generovat animované náhledy",
             "generate_previews_during_scan_tooltip": "Vytvářet také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení nevytěžují tolik procesor než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
@@ -565,7 +568,9 @@
             "generate_clip_previews_during_scan": "Generování náhledů pro obrázkové klipy",
             "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x.",
             "rescan": "Znovu skenovat soubory",
-            "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů."
+            "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů.",
+            "generate_image_phashes_during_scan": "Generovat percepční hashe (phash) obrazu",
+            "generate_image_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci."
         },
         "tools": {
             "scene_duplicate_checker": "Detektor duplicitních scén",
@@ -823,6 +828,24 @@
                         "heading": "Zobrazit odkazy na mřížce karet účinkujicích"
                     }
                 }
+            },
+            "troubleshooting_mode": {
+                "button": "Režim řešení problémů",
+                "dialog_title": "Povolit režim řešení problémů",
+                "dialog_description": "Tím se dočasně zakážou všechny customizace, která pomohou diagnostikovat problémy:",
+                "dialog_item_plugins": "Všechna rozšíření",
+                "dialog_item_css": "Vlastní CSS",
+                "dialog_item_js": "Vlastní JavaScript",
+                "dialog_item_locales": "Vlastní locales",
+                "dialog_log_level": "Log level bude nastaven na Debug pro detailní diagnostiku.",
+                "dialog_reload_note": "Stránka se automaticky znovu načte.",
+                "enable": "Povolit a znovu načíst",
+                "overlay_message": "Režim řešení problémů je aktivní – všechny customizace jsou zakázány",
+                "exit": "Odejít"
+            },
+            "custom_title": {
+                "description": "Vlastní text, který se přidá k názvu stránky. Pokud je prázdný, výchozí nastavení je 'Stash'.",
+                "heading": "Vlastní název"
             }
         },
         "advanced_mode": "Pokročilý mód"
@@ -924,7 +947,7 @@
             "preview_exclude_start_time_desc": "Vyloučit prvních x sekund z náhledů scén. Může to být hodnota v sekundách nebo procentech (např. 2 %) z celkové doby trvání scény.",
             "preview_exclude_start_time_head": "Vyloučit čas zahájení",
             "preview_generation_options": "Možnosti generování náhledů",
-            "phash": "Percepční hashe",
+            "phash": "Percepční hashe (phash) videa",
             "preview_preset_head": "Enkódovací předvolba náhledů",
             "preview_seg_count_desc": "Počet segmentů v souborech náhledů.",
             "preview_seg_duration_desc": "Doba trvání každého segmentu náhledu v sekundách.",
@@ -949,7 +972,9 @@
             "override_preview_generation_options_desc": "Přepsat možnosti generování náhledu pro tuto operaci. Výchozí nastavení se nastavuje: Systém -> Generování náhledu.",
             "clip_previews": "Náhledy obrázkových klipů",
             "marker_screenshots_tooltip": "Statické JPG obrázky značek",
-            "overwrite": "Přepsat existující soubory"
+            "overwrite": "Přepsat existující soubory",
+            "image_phash": "Percepční hashování (phash) obrazu",
+            "image_phash_tooltip": "Pro deduplikaci a identifikaci"
         },
         "unsaved_changes": "Neuložené změny. Opravdu chcete odejít?",
         "scenes_found": "{count} nalezené scény",
@@ -1010,7 +1035,8 @@
         "rescanning_entity": "Přeskenování {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
         "removed_entity": "Odebráno {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "image_index_too_large": "Chyba: Index obrázku je větší než počet obrázků v galerii",
-        "reassign_past_tense": "Soubor byl znovu přidělen"
+        "reassign_past_tense": "Soubor byl znovu přidělen",
+        "merged_performers": "Sloučení účinkující"
     },
     "urls": "Odkazy",
     "url": "Odkaz",
@@ -1513,7 +1539,7 @@
         "websocket_connection_reestablished": "Připojení Websocket bylo obnoveno"
     },
     "o_count": "Počet O",
-    "stash_id_endpoint": "Koncový bod Stash ID",
+    "stash_id_endpoint": "URL koncového bodu (endpoint) Stash ID",
     "stash_ids": "Stash IDs",
     "statistics": "Statistiky",
     "stats": {
@@ -1523,7 +1549,8 @@
         "total_o_count": "Celkový Počet O",
         "total_play_duration": "Celková doba přehrávání",
         "scenes_size": "Velikost scén",
-        "total_play_count": "Celkový počet přehrátí"
+        "total_play_count": "Celkový počet přehrátí",
+        "total_o_count_sfw": "Celkový počet lajků"
     },
     "studio": "Studio",
     "studio_and_parent": "Studio & Nadřazené studio",
@@ -1586,5 +1613,7 @@
         "no_results": "Žádné výsledky nenalezeny.",
         "placeholder_name_or_id": "{entityType} jméno nebo StashID...",
         "select_stashbox": "Vybrat StashBox..."
-    }
+    },
+    "latest_scene": "Nejnovější scéna",
+    "stash_id_count": "Počet Stash ID"
 }
