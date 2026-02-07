@@ -59,7 +59,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 	newScene.ProductionDate, err = translator.datePtr(input.ProductionDate)
 	if err != nil {
-		return nil, fmt.Errorf("converting date: %w", err)
+		return nil, fmt.Errorf("converting production date: %w", err)
 	}
 	newScene.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
