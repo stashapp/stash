@@ -85,6 +85,12 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <FormattedMessage id="updated_at" />:{" "}
             {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
           </h6>
+          {props.scene.production_date && (
+            <h6>
+              <FormattedMessage id="production_date" />:{" "}
+              {TextUtils.formatDate(intl, props.scene.production_date)}
+            </h6>
+          )}
           {props.scene.code && (
             <h6>
               <FormattedMessage id="scene_code" />: {props.scene.code}{" "}
