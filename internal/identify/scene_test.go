@@ -183,13 +183,13 @@ func Test_sceneRelationships_performers(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		scene        *models.Scene
-		fieldOptions *FieldOptions
-		scraped      []*models.ScrapedPerformer
+		name           string
+		scene          *models.Scene
+		fieldOptions   *FieldOptions
+		scraped        []*models.ScrapedPerformer
 		allowedGenders []models.GenderEnum
-		want         []int
-		wantErr      bool
+		want           []int
+		wantErr        bool
 	}{
 		{
 			"ignore",
