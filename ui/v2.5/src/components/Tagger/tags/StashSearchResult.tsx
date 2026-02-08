@@ -33,9 +33,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const updateTag = useUpdateTag();
 
-  const handleSave = async (
-    stashboxTag: GQL.ScrapedSceneTagDataFragment
-  ) => {
+  const handleSave = async (stashboxTag: GQL.ScrapedSceneTagDataFragment) => {
     setError({});
     setSaveState("Saving tag");
 

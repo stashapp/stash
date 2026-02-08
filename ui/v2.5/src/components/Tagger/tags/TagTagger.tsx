@@ -350,10 +350,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
   }
 
   const handleBatchUpdate = (queryAll: boolean, refresh: boolean) => {
-    onBatchUpdate(
-      !queryAll ? tags.map((t) => t.id) : undefined,
-      refresh
-    );
+    onBatchUpdate(!queryAll ? tags.map((t) => t.id) : undefined, refresh);
     setShowBatchUpdate(false);
   };
 
@@ -505,10 +502,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>
-              <Link
-                to={`/tags/${tag.id}`}
-                className={`${CLASSNAME}-header`}
-              >
+              <Link to={`/tags/${tag.id}`} className={`${CLASSNAME}-header`}>
                 <h2>{tag.name}</h2>
               </Link>
               {mainContent}

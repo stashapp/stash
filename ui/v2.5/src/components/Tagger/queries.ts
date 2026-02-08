@@ -113,10 +113,7 @@ export const useUpdateTag = () => {
         if (!updatedTag.data?.tagUpdate) return;
 
         updatedTag.data.tagUpdate.stash_ids.forEach((id) => {
-          store.writeQuery<
-            GQL.FindTagsQuery,
-            GQL.FindTagsQueryVariables
-          >({
+          store.writeQuery<GQL.FindTagsQuery, GQL.FindTagsQueryVariables>({
             query: GQL.FindTagsDocument,
             variables: {
               tag_filter: {
