@@ -45,7 +45,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
             <div className="col-md-6">
               <Form.Group controlId="excluded-tag-fields">
                 <h6>
-                  <FormattedMessage id="studio_tagger.config.excluded_fields" />
+                  <FormattedMessage id="tag_tagger.config.excluded_fields" />
                 </h6>
                 <span>
                   {excludedFields.length > 0 ? (
@@ -55,17 +55,17 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                       </Badge>
                     ))
                   ) : (
-                    <FormattedMessage id="studio_tagger.config.no_fields_are_excluded" />
+                    <FormattedMessage id="tag_tagger.config.no_fields_are_excluded" />
                   )}
                 </span>
                 <Form.Text>
-                  <FormattedMessage id="studio_tagger.config.these_fields_will_not_be_changed_when_updating_studios" />
+                  <FormattedMessage id="tag_tagger.config.these_fields_will_not_be_changed_when_updating_tags" />
                 </Form.Text>
                 <Button
                   onClick={() => setShowExclusionModal(true)}
                   className="mt-2"
                 >
-                  <FormattedMessage id="studio_tagger.config.edit_excluded_fields" />
+                  <FormattedMessage id="tag_tagger.config.edit_excluded_fields" />
                 </Button>
               </Form.Group>
               <Form.Group
@@ -73,7 +73,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 className="align-items-center row no-gutters mt-4"
               >
                 <Form.Label className="mr-4">
-                  <FormattedMessage id="studio_tagger.config.active_stash-box_instance" />
+                  <FormattedMessage id="tag_tagger.config.active_stash-box_instance" />
                 </Form.Label>
                 <Form.Control
                   as="select"
@@ -84,7 +84,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 >
                   {!stashBoxes.length && (
                     <option>
-                      <FormattedMessage id="studio_tagger.config.no_instances_found" />
+                      <FormattedMessage id="tag_tagger.config.no_instances_found" />
                     </option>
                   )}
                   {stashConfig?.general.stashBoxes.map((i) => (

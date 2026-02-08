@@ -59,13 +59,13 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     if (!res?.data?.tagUpdate) {
       setError({
         message: intl.formatMessage(
-          { id: "studio_tagger.failed_to_save_studio" },
-          { studio: stashboxTag.name }
+          { id: "tag_tagger.failed_to_save_tag" },
+          { tag: stashboxTag.name }
         ),
         details:
           res?.errors?.[0]?.message === "UNIQUE constraint failed: tags.name"
             ? intl.formatMessage({
-                id: "studio_tagger.name_already_exists",
+                id: "tag_tagger.name_already_exists",
               })
             : res?.errors?.[0]?.message ?? "",
       });

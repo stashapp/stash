@@ -86,11 +86,11 @@ const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
       show
       icon={faTags}
       header={intl.formatMessage({
-        id: "studio_tagger.update_studios",
+        id: "tag_tagger.update_tags",
       })}
       accept={{
         text: intl.formatMessage({
-          id: "studio_tagger.update_studios",
+          id: "tag_tagger.update_tags",
         }),
         onClick: () => onBatchUpdate(queryAll, refresh),
       }}
@@ -104,14 +104,14 @@ const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
       <Form.Group>
         <Form.Label>
           <h6>
-            <FormattedMessage id="studio_tagger.studio_selection" />
+            <FormattedMessage id="tag_tagger.tag_selection" />
           </h6>
         </Form.Label>
         <Form.Check
           id="query-page"
           type="radio"
           name="tag-query"
-          label={<FormattedMessage id="studio_tagger.current_page" />}
+          label={<FormattedMessage id="tag_tagger.current_page" />}
           checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
@@ -120,7 +120,7 @@ const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
           type="radio"
           name="tag-query"
           label={intl.formatMessage({
-            id: "studio_tagger.query_all_studios_in_the_database",
+            id: "tag_tagger.query_all_tags_in_the_database",
           })}
           checked={queryAll}
           onChange={() => setQueryAll(true)}
@@ -129,7 +129,7 @@ const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
       <Form.Group>
         <Form.Label>
           <h6>
-            <FormattedMessage id="studio_tagger.tag_status" />
+            <FormattedMessage id="tag_tagger.tag_status" />
           </h6>
         </Form.Label>
         <Form.Check
@@ -137,33 +137,33 @@ const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
           type="radio"
           name="tag-refresh"
           label={intl.formatMessage({
-            id: "studio_tagger.untagged_studios",
+            id: "tag_tagger.untagged_tags",
           })}
           checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
-          <FormattedMessage id="studio_tagger.updating_untagged_studios_description" />
+          <FormattedMessage id="tag_tagger.updating_untagged_tags_description" />
         </Form.Text>
         <Form.Check
           id="tagged-tags"
           type="radio"
           name="tag-refresh"
           label={intl.formatMessage({
-            id: "studio_tagger.refresh_tagged_studios",
+            id: "tag_tagger.refresh_tagged_tags",
           })}
           checked={refresh}
           onChange={() => setRefresh(true)}
         />
         <Form.Text>
-          <FormattedMessage id="studio_tagger.refreshing_will_update_the_data" />
+          <FormattedMessage id="tag_tagger.refreshing_will_update_the_data" />
         </Form.Text>
       </Form.Group>
       <b>
         <FormattedMessage
-          id="studio_tagger.number_of_studios_will_be_processed"
+          id="tag_tagger.number_of_tags_will_be_processed"
           values={{
-            studio_count: tagCount,
+            tag_count: tagCount,
           }}
         />
       </b>
@@ -191,11 +191,11 @@ const TagBatchAddModal: React.FC<ITagBatchAddModal> = ({
       show
       icon={faStar}
       header={intl.formatMessage({
-        id: "studio_tagger.add_new_studios",
+        id: "tag_tagger.add_new_tags",
       })}
       accept={{
         text: intl.formatMessage({
-          id: "studio_tagger.add_new_studios",
+          id: "tag_tagger.add_new_tags",
         }),
         onClick: () => {
           if (tagInput.current) {
@@ -217,12 +217,12 @@ const TagBatchAddModal: React.FC<ITagBatchAddModal> = ({
         as="textarea"
         ref={tagInput}
         placeholder={intl.formatMessage({
-          id: "studio_tagger.studio_names_or_stashids_separated_by_comma",
+          id: "tag_tagger.tag_names_or_stashids_separated_by_comma",
         })}
         rows={6}
       />
       <Form.Text>
-        <FormattedMessage id="studio_tagger.any_names_entered_will_be_queried" />
+        <FormattedMessage id="tag_tagger.any_names_entered_will_be_queried" />
       </Form.Text>
     </ModalComponent>
   );
@@ -288,7 +288,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         setSearchErrors({
           ...searchErrors,
           [tagID]: intl.formatMessage({
-            id: "studio_tagger.network_error",
+            id: "tag_tagger.network_error",
           }),
         });
       });
@@ -377,7 +377,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         mainContent = (
           <div className="text-left">
             <h5 className="text-bold">
-              <FormattedMessage id="studio_tagger.studio_already_tagged" />
+              <FormattedMessage id="tag_tagger.tag_already_tagged" />
             </h5>
           </div>
         );
@@ -414,7 +414,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         mainContent = (
           <div className="d-flex flex-column text-left">
             <h5>
-              <FormattedMessage id="studio_tagger.studio_successfully_tagged" />
+              <FormattedMessage id="tag_tagger.tag_successfully_tagged" />
             </h5>
           </div>
         );
@@ -473,7 +473,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
       } else if (searchResults[tag.id]?.length === 0) {
         subContent = (
           <div className="text-danger font-weight-bold">
-            <FormattedMessage id="studio_tagger.no_results_found" />
+            <FormattedMessage id="tag_tagger.no_results_found" />
           </div>
         );
       }
@@ -535,10 +535,10 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
       )}
       <div className="ml-auto mb-3">
         <Button onClick={() => setShowBatchAdd(true)}>
-          <FormattedMessage id="studio_tagger.batch_add_studios" />
+          <FormattedMessage id="tag_tagger.batch_add_tags" />
         </Button>
         <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
-          <FormattedMessage id="studio_tagger.batch_update_studios" />
+          <FormattedMessage id="tag_tagger.batch_update_tags" />
         </Button>
       </div>
       <div className={CLASSNAME}>{renderTags()}</div>
@@ -643,7 +643,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
       return (
         <Form.Group className="px-4">
           <h5>
-            <FormattedMessage id="studio_tagger.status_tagging_studios" />
+            <FormattedMessage id="tag_tagger.status_tagging_tags" />
           </h5>
           {progress !== undefined && (
             <ProgressBar
@@ -660,7 +660,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
       return (
         <Form.Group className="px-4">
           <h5>
-            <FormattedMessage id="studio_tagger.status_tagging_job_queued" />
+            <FormattedMessage id="tag_tagger.status_tagging_job_queued" />
           </h5>
         </Form.Group>
       );
@@ -716,7 +716,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
         ) : (
           <div className="my-4">
             <h3 className="text-center mt-4">
-              <FormattedMessage id="studio_tagger.to_use_the_studio_tagger" />
+              <FormattedMessage id="tag_tagger.to_use_the_tag_tagger" />
             </h3>
             <h5 className="text-center">
               Please see{" "}
