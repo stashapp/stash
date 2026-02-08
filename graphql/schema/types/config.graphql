@@ -185,7 +185,7 @@ input ConfigGeneralInput {
   "Source of plugin packages"
   pluginPackageSources: [PackageSourceInput!]
 
-  "Time between two different scrubber sprites"
+  "Time between two different scrubber sprites in seconds"
   spriteInterval: Int
   "Minimum number of sprites to be generated"
   minimumSprites: Int
