@@ -463,6 +463,9 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	currentTime := time.Now()
 	ret := NewTag()
 	ret.Name = t.Name
+	ret.ParentIDs = NewRelatedIDs([]int{})
+	ret.ChildIDs = NewRelatedIDs([]int{})
+	ret.Aliases = NewRelatedStrings([]string{})
 
 	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{

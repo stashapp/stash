@@ -633,25 +633,34 @@ func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.
 }
 
 func (t *stashBoxBatchTagTagTask) processMatchedTag(ctx context.Context, s *models.ScrapedTag, excluded map[string]bool) {
+	// Determine the tag ID to update — either from the task's tag or from the
+	// StoredID set by match.ScrapedTag (when batch adding by name and the tag
+	// already exists locally).
+	tagID := 0
 	if t.tag != nil {
-		storedID := strconv.Itoa(t.tag.ID)
+		tagID = t.tag.ID
+	} else if s.StoredID != nil {
+		tagID, _ = strconv.Atoi(*s.StoredID)
+	}
 
+	if tagID > 0 {
 		r := instance.Repository
 		err := r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Tag
 
-			existingStashIDs, err := qb.GetStashIDs(ctx, t.tag.ID)
+			existingStashIDs, err := qb.GetStashIDs(ctx, tagID)
 			if err != nil {
 				return err
 			}
 
+			storedID := strconv.Itoa(tagID)
 			partial := s.ToPartial(storedID, t.box.Endpoint, excluded, existingStashIDs)
 
-			if err := tag.ValidateUpdate(ctx, t.tag.ID, partial, qb); err != nil {
+			if err := tag.ValidateUpdate(ctx, tagID, partial, qb); err != nil {
 				return err
 			}
 
-			if _, err := qb.UpdatePartial(ctx, t.tag.ID, partial); err != nil {
+			if _, err := qb.UpdatePartial(ctx, tagID, partial); err != nil {
 				return err
 			}
 
