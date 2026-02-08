@@ -17,8 +17,8 @@ import { Manual } from "src/components/Help/Manual";
 import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
-import TagConfig from "./Config";
-import { ITaggerConfig } from "../constants";
+import TaggerConfig from "../TaggerConfig";
+import { ITaggerConfig, TAG_FIELDS } from "../constants";
 import { useUpdateTag } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
@@ -696,10 +696,17 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
               </Button>
             </div>
 
-            <TagConfig
+            <TaggerConfig
               config={config}
               setConfig={setConfig}
               show={showConfig}
+              excludedFields={config.excludedTagFields ?? []}
+              onFieldsChange={(fields) =>
+                setConfig({ ...config, excludedTagFields: fields })
+              }
+              fields={TAG_FIELDS}
+              messagePrefix="tag_tagger"
+              entityUpdateMessageId="tag_tagger.config.these_fields_will_not_be_changed_when_updating_tags"
             />
             <TagTaggerList
               tags={tags}

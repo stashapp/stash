@@ -3,20 +3,34 @@ import { Badge, Button, Card, Collapse, Form } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { useConfigurationContext } from "src/hooks/Config";
 
-import { ITaggerConfig } from "../constants";
-import PerformerFieldSelector from "../PerformerFieldSelector";
+import { ITaggerConfig } from "./constants";
+import FieldSelector from "./FieldSelector";
 
-interface IConfigProps {
+interface ITaggerConfigProps {
   show: boolean;
   config: ITaggerConfig;
   setConfig: Dispatch<ITaggerConfig>;
+  excludedFields: string[];
+  onFieldsChange: (fields: string[]) => void;
+  fields: string[];
+  messagePrefix: string;
+  entityUpdateMessageId: string;
+  extraConfig?: React.ReactNode;
 }
 
-const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
+const TaggerConfig: React.FC<ITaggerConfigProps> = ({
+  show,
+  config,
+  setConfig,
+  excludedFields,
+  onFieldsChange,
+  fields,
+  messagePrefix,
+  entityUpdateMessageId,
+  extraConfig,
+}) => {
   const { configuration: stashConfig } = useConfigurationContext();
   const [showExclusionModal, setShowExclusionModal] = useState(false);
-
-  const excludedFields = config.excludedPerformerFields ?? [];
 
   const handleInstanceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedEndpoint = e.currentTarget.value;
@@ -28,8 +42,8 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
 
   const stashBoxes = stashConfig?.general.stashBoxes ?? [];
 
-  const handleFieldSelect = (fields: string[]) => {
-    setConfig({ ...config, excludedPerformerFields: fields });
+  const handleFieldSelect = (selectedFields: string[]) => {
+    onFieldsChange(selectedFields);
     setShowExclusionModal(false);
   };
 
@@ -43,9 +57,12 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
             </h4>
             <hr className="w-100" />
             <div className="col-md-6">
-              <Form.Group controlId="excluded-performer-fields">
+              {extraConfig}
+              <Form.Group controlId="excluded-fields">
                 <h6>
-                  <FormattedMessage id="performer_tagger.config.excluded_fields" />
+                  <FormattedMessage
+                    id={`${messagePrefix}.config.excluded_fields`}
+                  />
                 </h6>
                 <span>
                   {excludedFields.length > 0 ? (
@@ -55,17 +72,21 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                       </Badge>
                     ))
                   ) : (
-                    <FormattedMessage id="performer_tagger.config.no_fields_are_excluded" />
+                    <FormattedMessage
+                      id={`${messagePrefix}.config.no_fields_are_excluded`}
+                    />
                   )}
                 </span>
                 <Form.Text>
-                  <FormattedMessage id="performer_tagger.config.these_fields_will_not_be_changed_when_updating_performers" />
+                  <FormattedMessage id={entityUpdateMessageId} />
                 </Form.Text>
                 <Button
                   onClick={() => setShowExclusionModal(true)}
                   className="mt-2"
                 >
-                  <FormattedMessage id="performer_tagger.config.edit_excluded_fields" />
+                  <FormattedMessage
+                    id={`${messagePrefix}.config.edit_excluded_fields`}
+                  />
                 </Button>
               </Form.Group>
               <Form.Group
@@ -73,7 +94,9 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 className="align-items-center row no-gutters mt-4"
               >
                 <Form.Label className="mr-4">
-                  <FormattedMessage id="performer_tagger.config.active_stash-box_instance" />
+                  <FormattedMessage
+                    id={`${messagePrefix}.config.active_stash-box_instance`}
+                  />
                 </Form.Label>
                 <Form.Control
                   as="select"
@@ -84,7 +107,9 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 >
                   {!stashBoxes.length && (
                     <option>
-                      <FormattedMessage id="performer_tagger.config.no_instances_found" />
+                      <FormattedMessage
+                        id={`${messagePrefix}.config.no_instances_found`}
+                      />
                     </option>
                   )}
                   {stashConfig?.general.stashBoxes.map((i) => (
@@ -98,8 +123,9 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
           </div>
         </Card>
       </Collapse>
-      <PerformerFieldSelector
+      <FieldSelector
         show={showExclusionModal}
+        fields={fields}
         onSelect={handleFieldSelect}
         excludedFields={excludedFields}
       />
@@ -107,4 +133,4 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
   );
 };
 
-export default Config;
+export default TaggerConfig;

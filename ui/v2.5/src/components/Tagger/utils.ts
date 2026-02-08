@@ -173,26 +173,36 @@ export const parsePath = (filePath: string) => {
   return { paths, file, ext };
 };
 
-export async function mergeStudioStashIDs(
+async function mergeEntityStashIDs(
+  fetchExisting: (id: string) => Promise<GQL.StashIdInput[] | undefined>,
   id: string,
   newStashIDs: GQL.StashIdInput[]
 ) {
-  const existing = await queryFindStudio(id);
-  if (existing?.data?.findStudio?.stash_ids) {
-    return mergeStashIDs(existing.data.findStudio.stash_ids, newStashIDs);
+  const existing = await fetchExisting(id);
+  if (existing) {
+    return mergeStashIDs(existing, newStashIDs);
   }
-
   return newStashIDs;
 }
 
-export async function mergeTagStashIDs(
+export const mergeStudioStashIDs = (
   id: string,
   newStashIDs: GQL.StashIdInput[]
-) {
-  const existing = await queryFindTag(id);
-  if (existing?.data?.findTag?.stash_ids) {
-    return mergeStashIDs(existing.data.findTag.stash_ids, newStashIDs);
-  }
+) =>
+  mergeEntityStashIDs(
+    async (studioId) =>
+      (await queryFindStudio(studioId))?.data?.findStudio?.stash_ids,
+    id,
+    newStashIDs
+  );
 
-  return newStashIDs;
-}
+export const mergeTagStashIDs = (
+  id: string,
+  newStashIDs: GQL.StashIdInput[]
+) =>
+  mergeEntityStashIDs(
+    async (tagId) =>
+      (await queryFindTag(tagId))?.data?.findTag?.stash_ids,
+    id,
+    newStashIDs
+  );

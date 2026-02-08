@@ -3,25 +3,26 @@ import React, { useState } from "react";
 import { Button, Row, Col } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
-import { ModalComponent } from "../../Shared/Modal";
-import { Icon } from "../../Shared/Icon";
-import { TAG_FIELDS } from "../constants";
+import { ModalComponent } from "../Shared/Modal";
+import { Icon } from "../Shared/Icon";
 
 interface IProps {
   show: boolean;
+  fields: string[];
   excludedFields: string[];
   onSelect: (fields: string[]) => void;
 }
 
-const TagFieldSelect: React.FC<IProps> = ({
+const FieldSelector: React.FC<IProps> = ({
   show,
+  fields,
   excludedFields,
   onSelect,
 }) => {
   const intl = useIntl();
   const [excluded, setExcluded] = useState<Record<string, boolean>>(
     excludedFields
-      .filter((field) => TAG_FIELDS.includes(field))
+      .filter((field) => fields.includes(field))
       .reduce((dict, field) => ({ ...dict, [field]: true }), {})
   );
 
@@ -59,9 +60,9 @@ const TagFieldSelect: React.FC<IProps> = ({
       <div className="mb-2">
         These fields will be tagged by default. Click the button to toggle.
       </div>
-      <Row>{TAG_FIELDS.map((f) => renderField(f))}</Row>
+      <Row>{fields.map((f) => renderField(f))}</Row>
     </ModalComponent>
   );
 };
 
-export default TagFieldSelect;
+export default FieldSelector;

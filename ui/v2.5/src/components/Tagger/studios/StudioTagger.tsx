@@ -20,8 +20,8 @@ import { Manual } from "src/components/Help/Manual";
 import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
-import StudioConfig from "./Config";
-import { ITaggerConfig } from "../constants";
+import TaggerConfig from "../TaggerConfig";
+import { ITaggerConfig, STUDIO_FIELDS } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
 import { apolloError } from "src/utils";
@@ -825,10 +825,39 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
               </Button>
             </div>
 
-            <StudioConfig
+            <TaggerConfig
               config={config}
               setConfig={setConfig}
               show={showConfig}
+              excludedFields={config.excludedStudioFields ?? []}
+              onFieldsChange={(fields) =>
+                setConfig({ ...config, excludedStudioFields: fields })
+              }
+              fields={STUDIO_FIELDS}
+              messagePrefix="studio_tagger"
+              entityUpdateMessageId="studio_tagger.config.these_fields_will_not_be_changed_when_updating_studios"
+              extraConfig={
+                <Form.Group
+                  controlId="create-parent"
+                  className="align-items-center"
+                >
+                  <Form.Check
+                    label={
+                      <FormattedMessage id="studio_tagger.config.create_parent_label" />
+                    }
+                    checked={config.createParentStudios}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setConfig({
+                        ...config,
+                        createParentStudios: e.currentTarget.checked,
+                      })
+                    }
+                  />
+                  <Form.Text>
+                    <FormattedMessage id="studio_tagger.config.create_parent_desc" />
+                  </Form.Text>
+                </Form.Group>
+              }
             />
             <StudioTaggerList
               studios={studios}
