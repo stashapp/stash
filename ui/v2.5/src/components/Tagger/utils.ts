@@ -196,13 +196,9 @@ export const mergeStudioStashIDs = (
     newStashIDs
   );
 
-export const mergeTagStashIDs = (
-  id: string,
-  newStashIDs: GQL.StashIdInput[]
-) =>
+export const mergeTagStashIDs = (id: string, newStashIDs: GQL.StashIdInput[]) =>
   mergeEntityStashIDs(
-    async (tagId) =>
-      (await queryFindTag(tagId))?.data?.findTag?.stash_ids,
+    async (tagId) => (await queryFindTag(tagId))?.data?.findTag?.stash_ids,
     id,
     newStashIDs
   );
