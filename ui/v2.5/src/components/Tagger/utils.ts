@@ -1,6 +1,6 @@
 import * as GQL from "src/core/generated-graphql";
 import { ParseMode } from "./constants";
-import { queryFindStudio } from "src/core/StashService";
+import { queryFindStudio, queryFindTag } from "src/core/StashService";
 import { mergeStashIDs } from "src/utils/stashbox";
 
 const months = [
@@ -180,6 +180,18 @@ export async function mergeStudioStashIDs(
   const existing = await queryFindStudio(id);
   if (existing?.data?.findStudio?.stash_ids) {
     return mergeStashIDs(existing.data.findStudio.stash_ids, newStashIDs);
+  }
+
+  return newStashIDs;
+}
+
+export async function mergeTagStashIDs(
+  id: string,
+  newStashIDs: GQL.StashIdInput[]
+) {
+  const existing = await queryFindTag(id);
+  if (existing?.data?.findTag?.stash_ids) {
+    return mergeStashIDs(existing.data.findTag.stash_ids, newStashIDs);
   }
 
   return newStashIDs;

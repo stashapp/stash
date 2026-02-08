@@ -50,7 +50,7 @@ const sortByOptions = ["name", "random", "scenes_duration"]
     },
   ]);
 
-const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+const displayModeOptions = [DisplayMode.Grid, DisplayMode.List, DisplayMode.Tagger];
 const criterionOptions = [
   FavoriteTagCriterionOption,
   createMandatoryStringCriterionOption("name"),
