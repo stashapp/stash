@@ -31,7 +31,7 @@ Some examples:
 - `"^/stash/videos/exclude/"` will exclude all directories that match `/stash/videos/exclude/` pattern.
 - `"\\\\stash\\network\\share\\excl\\"` will exclude specific Windows network path `\\stash\network\share\excl\`.
 
-> **Note:** If a directory is excluded for images and videos, then the directory will be excluded from scans completely.
+> **⚠️ Note:** If a directory is excluded for images and videos, then the directory will be excluded from scans completely.
 
 _There is a useful [regex101](https://regex101.com/) site that can help test and experiment with regexps._
 
@@ -87,7 +87,7 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 1. High performance 4+ core cpus.
 2. Media files stored on remote/cloud filesystem.
 
-Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
+> **⚠️ Note:** If this is set too high it will decrease overall performance and causes failures (out of memory).
 
 ## Sprite generation
 
@@ -136,7 +136,7 @@ Some scrapers require a Chrome instance to function correctly. If left empty, st
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
-> **Important**: As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
+> **⚠️ Important:** As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
 
 ## Authentication
 

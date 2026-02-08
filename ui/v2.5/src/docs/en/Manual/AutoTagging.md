@@ -6,7 +6,7 @@ This task is part of the advanced settings mode.
 
 ## Rules
 
-> **Important:** Auto Tag only works for names that already exist in your Stash database. It does not create new Performers, Studios, or Tags.
+> **⚠️ Important:** Auto Tag only works for names that already exist in your Stash database. It does not create new Performers, Studios, or Tags.
 
  - Multi-word names are matched when words appear in order and are separated by any of these characters: `.`, `-`, `_`, or whitespace. These separators are treated as word boundaries.
  - Matching is case-insensitive but requires complete words within word boundaries. Partial words or misspelled words will not match.

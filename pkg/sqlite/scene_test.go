@@ -2273,6 +2273,32 @@ func TestSceneQuery(t *testing.T) {
 			nil,
 			false,
 		},
+		{
+			"single stash id",
+			nil,
+			&models.SceneFilterType{
+				StashIDCount: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    1,
+				},
+			},
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+		{
+			"less than one stash id",
+			nil,
+			&models.SceneFilterType{
+				StashIDCount: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierLessThan,
+					Value:    1,
+				},
+			},
+			[]int{sceneIdxWithGroup},
+			[]int{sceneIdxWithGallery, sceneIdxWithPerformer},
+			false,
+		},
 	}
 
 	for _, tt := range tests {

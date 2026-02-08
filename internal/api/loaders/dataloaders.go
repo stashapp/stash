@@ -59,11 +59,14 @@ type Loaders struct {
 	PerformerByID         *PerformerLoader
 	PerformerCustomFields *CustomFieldsLoader
 
-	StudioByID *StudioLoader
-	TagByID    *TagLoader
-	GroupByID  *GroupLoader
-	FileByID   *FileLoader
-	FolderByID *FolderLoader
+	StudioByID         *StudioLoader
+	StudioCustomFields *CustomFieldsLoader
+
+	TagByID         *TagLoader
+	TagCustomFields *CustomFieldsLoader
+	GroupByID       *GroupLoader
+	FileByID        *FileLoader
+	FolderByID      *FolderLoader
 }
 
 type Middleware struct {
@@ -99,6 +102,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchPerformerCustomFields(ctx),
 			},
+			StudioCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchStudioCustomFields(ctx),
+			},
 			StudioByID: &StudioLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
@@ -108,6 +116,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchTags(ctx),
+			},
+			TagCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchTagCustomFields(ctx),
 			},
 			GroupByID: &GroupLoader{
 				wait:     wait,
@@ -253,6 +266,18 @@ func (m Middleware) fetchStudios(ctx context.Context) func(keys []int) ([]*model
 	}
 }
 
+func (m Middleware) fetchStudioCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Studio.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
 func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.Tag, []error) {
 	return func(keys []int) (ret []*models.Tag, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
@@ -260,6 +285,18 @@ func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.T
 			ret, err = m.Repository.Tag.FindMany(ctx, keys)
 			return err
 		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchTagCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Tag.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
 		return ret, toErrorSlice(err)
 	}
 }

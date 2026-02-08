@@ -10,8 +10,11 @@ input GenerateMetadataInput {
   transcodes: Boolean
   "Generate transcodes even if not required"
   forceTranscodes: Boolean
+  "Generate video phashes during scan"
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  "Generate image phashes during scan"
+  imagePhashes: Boolean
   imageThumbnails: Boolean
   clipPreviews: Boolean
 
@@ -19,6 +22,10 @@ input GenerateMetadataInput {
   sceneIDs: [ID!]
   "marker ids to generate for"
   markerIDs: [ID!]
+  "image ids to generate for"
+  imageIDs: [ID!]
+  "gallery ids to generate for"
+  galleryIDs: [ID!]
 
   "overwrite existing media"
   overwrite: Boolean
@@ -85,8 +92,10 @@ input ScanMetadataInput {
   scanGenerateImagePreviews: Boolean
   "Generate sprites during scan"
   scanGenerateSprites: Boolean
-  "Generate phashes during scan"
+  "Generate video phashes during scan"
   scanGeneratePhashes: Boolean
+  "Generate image phashes during scan"
+  scanGenerateImagePhashes: Boolean
   "Generate image thumbnails during scan"
   scanGenerateThumbnails: Boolean
   "Generate image clip previews during scan"
@@ -107,8 +116,10 @@ type ScanMetadataOptions {
   scanGenerateImagePreviews: Boolean!
   "Generate sprites during scan"
   scanGenerateSprites: Boolean!
-  "Generate phashes during scan"
+  "Generate video phashes during scan"
   scanGeneratePhashes: Boolean!
+  "Generate image phashes during scan"
+  scanGenerateImagePhashes: Boolean
   "Generate image thumbnails during scan"
   scanGenerateThumbnails: Boolean!
   "Generate image clip previews during scan"

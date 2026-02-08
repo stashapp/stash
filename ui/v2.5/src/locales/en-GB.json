@@ -524,7 +524,9 @@
       },
       "generate_clip_previews_during_scan": "Generate previews for image clips",
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
-      "generate_phashes_during_scan": "Generate perceptual hashes",
+      "generate_image_phashes_during_scan": "Generate image perceptual hashes",
+      "generate_image_phashes_during_scan_tooltip": "For deduplication and identification.",
+      "generate_phashes_during_scan": "Generate video perceptual hashes",
       "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
       "generate_previews_during_scan": "Generate animated image previews",
       "generate_previews_during_scan_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
@@ -622,6 +624,20 @@
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom CSS and future releases of Stash.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "troubleshooting_mode": {
+        "button": "Troubleshooting Mode",
+        "dialog_title": "Enable Troubleshooting Mode",
+        "dialog_description": "This will temporarily disable all customizations to help diagnose issues:",
+        "dialog_item_plugins": "All plugins",
+        "dialog_item_css": "Custom CSS",
+        "dialog_item_js": "Custom JavaScript",
+        "dialog_item_locales": "Custom locales",
+        "dialog_log_level": "Log level will be set to Debug for detailed diagnostics.",
+        "dialog_reload_note": "The page will reload automatically.",
+        "enable": "Enable & Reload",
+        "overlay_message": "Troubleshooting Mode is active - all customizations are disabled",
+        "exit": "Exit"
       },
       "custom_javascript": {
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
@@ -992,6 +1008,8 @@
       "covers": "Scene covers",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
+      "image_phash": "Image perceptual hashes",
+      "image_phash_tooltip": "For deduplication and identification",
       "image_previews": "Animated Image Previews",
       "image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "image_thumbnails": "Image Thumbnails",
@@ -1005,7 +1023,7 @@
       "override_preview_generation_options": "Override Preview Generation Options",
       "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
-      "phash": "Perceptual hashes",
+      "phash": "Video perceptual hashes",
       "phash_tooltip": "For deduplication and scene identification",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
@@ -1192,6 +1210,7 @@
   "last_o_at": "Last O At",
   "last_o_at_sfw": "Last Like At",
   "last_played_at": "Last Played At",
+  "latest_scene": "Latest Scene",
   "library": "Library",
   "loading": {
     "generic": "Loading…",
@@ -1469,6 +1488,7 @@
     "welcome_to_stash": "Welcome to Stash"
   },
   "stash_id": "Stash ID",
+  "stash_id_count": "Stash ID Count",
   "stash_id_endpoint": "Stash ID Endpoint URL",
   "stash_ids": "Stash IDs",
   "stashbox_search": {

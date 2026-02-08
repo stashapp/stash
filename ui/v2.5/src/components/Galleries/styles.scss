@@ -229,7 +229,6 @@ div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
   margin: 0 auto;
-  width: 96vw;
 
   /* Prevents last row from consuming all space and stretching images to oblivion */
   &::after {

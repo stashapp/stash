@@ -154,14 +154,14 @@ func TestImporterPostImportParentMissing(t *testing.T) {
 	db.Tag.On("UpdateParentTags", testCtx, ignoreID, emptyParents).Return(nil).Once()
 	db.Tag.On("UpdateParentTags", testCtx, ignoreFoundID, []int{103}).Return(nil).Once()
 
-	db.Tag.On("Create", testCtx, mock.MatchedBy(func(t *models.Tag) bool {
-		return t.Name == "Create"
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(input *models.CreateTagInput) bool {
+		return input.Tag.Name == "Create"
 	})).Run(func(args mock.Arguments) {
-		t := args.Get(1).(*models.Tag)
-		t.ID = 100
+		input := args.Get(1).(*models.CreateTagInput)
+		input.Tag.ID = 100
 	}).Return(nil).Once()
-	db.Tag.On("Create", testCtx, mock.MatchedBy(func(t *models.Tag) bool {
-		return t.Name == "CreateError"
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(input *models.CreateTagInput) bool {
+		return input.Tag.Name == "CreateError"
 	})).Return(errors.New("failed creating parent")).Once()
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
@@ -261,11 +261,15 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	db.Tag.On("Create", testCtx, &tag).Run(func(args mock.Arguments) {
-		t := args.Get(1).(*models.Tag)
-		t.ID = tagID
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(input *models.CreateTagInput) bool {
+		return input.Tag.Name == tag.Name
+	})).Run(func(args mock.Arguments) {
+		input := args.Get(1).(*models.CreateTagInput)
+		input.Tag.ID = tagID
 	}).Return(nil).Once()
-	db.Tag.On("Create", testCtx, &tagErr).Return(errCreate).Once()
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(input *models.CreateTagInput) bool {
+		return input.Tag.Name == tagErr.Name
+	})).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, tagID, *id)
@@ -299,7 +303,10 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	tag.ID = tagID
-	db.Tag.On("Update", testCtx, &tag).Return(nil).Once()
+	tagInput := models.UpdateTagInput{
+		Tag: &tag,
+	}
+	db.Tag.On("Update", testCtx, &tagInput).Return(nil).Once()
 
 	err := i.Update(testCtx, tagID)
 	assert.Nil(t, err)
@@ -308,7 +315,10 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	tagErr.ID = errImageID
-	db.Tag.On("Update", testCtx, &tagErr).Return(errUpdate).Once()
+	errInput := models.UpdateTagInput{
+		Tag: &tagErr,
+	}
+	db.Tag.On("Update", testCtx, &errInput).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

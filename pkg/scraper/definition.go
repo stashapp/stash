@@ -11,7 +11,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type config struct {
+// Definition represents a scraper definition (typically) loaded from a YAML configuration file.
+type Definition struct {
 	ID   string
 	path string
 
@@ -19,43 +20,43 @@ type config struct {
 	Name string `yaml:"name"`
 
 	// Configuration for querying performers by name
-	PerformerByName *scraperTypeConfig `yaml:"performerByName"`
+	PerformerByName *ByNameDefinition `yaml:"performerByName"`
 
 	// Configuration for querying performers by a Performer fragment
-	PerformerByFragment *scraperTypeConfig `yaml:"performerByFragment"`
+	PerformerByFragment *ByFragmentDefinition `yaml:"performerByFragment"`
 
 	// Configuration for querying a performer by a URL
-	PerformerByURL []*scrapeByURLConfig `yaml:"performerByURL"`
+	PerformerByURL []*ByURLDefinition `yaml:"performerByURL"`
 
 	// Configuration for querying scenes by a Scene fragment
-	SceneByFragment *scraperTypeConfig `yaml:"sceneByFragment"`
+	SceneByFragment *ByFragmentDefinition `yaml:"sceneByFragment"`
 
 	// Configuration for querying gallery by a Gallery fragment
-	GalleryByFragment *scraperTypeConfig `yaml:"galleryByFragment"`
+	GalleryByFragment *ByFragmentDefinition `yaml:"galleryByFragment"`
 
 	// Configuration for querying scenes by name
-	SceneByName *scraperTypeConfig `yaml:"sceneByName"`
+	SceneByName *ByNameDefinition `yaml:"sceneByName"`
 
 	// Configuration for querying scenes by query fragment
-	SceneByQueryFragment *scraperTypeConfig `yaml:"sceneByQueryFragment"`
+	SceneByQueryFragment *ByFragmentDefinition `yaml:"sceneByQueryFragment"`
 
 	// Configuration for querying a scene by a URL
-	SceneByURL []*scrapeByURLConfig `yaml:"sceneByURL"`
+	SceneByURL []*ByURLDefinition `yaml:"sceneByURL"`
 
 	// Configuration for querying a gallery by a URL
-	GalleryByURL []*scrapeByURLConfig `yaml:"galleryByURL"`
+	GalleryByURL []*ByURLDefinition `yaml:"galleryByURL"`
 
 	// Configuration for querying an image by a URL
-	ImageByURL []*scrapeByURLConfig `yaml:"imageByURL"`
+	ImageByURL []*ByURLDefinition `yaml:"imageByURL"`
 
 	// Configuration for querying image by an Image fragment
-	ImageByFragment *scraperTypeConfig `yaml:"imageByFragment"`
+	ImageByFragment *ByFragmentDefinition `yaml:"imageByFragment"`
 
 	// Configuration for querying a movie by a URL - deprecated, use GroupByURL
-	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
+	MovieByURL []*ByURLDefinition `yaml:"movieByURL"`
 
 	// Configuration for querying a group by a URL
-	GroupByURL []*scrapeByURLConfig `yaml:"groupByURL"`
+	GroupByURL []*ByURLDefinition `yaml:"groupByURL"`
 
 	// Scraper debugging options
 	DebugOptions *scraperDebugOptions `yaml:"debug"`
@@ -73,7 +74,7 @@ type config struct {
 	DriverOptions *scraperDriverOptions `yaml:"driver"`
 }
 
-func (c config) validate() error {
+func (c Definition) validate() error {
 	if strings.TrimSpace(c.Name) == "" {
 		return errors.New("name must not be empty")
 	}
@@ -126,17 +127,13 @@ type stashServer struct {
 	ApiKey string `yaml:"apiKey"`
 }
 
-type scraperTypeConfig struct {
+type ActionDefinition struct {
 	Action  scraperAction `yaml:"action"`
 	Script  []string      `yaml:"script,flow"`
 	Scraper string        `yaml:"scraper"`
-
-	// for xpath name scraper only
-	QueryURL             string               `yaml:"queryURL"`
-	QueryURLReplacements queryURLReplacements `yaml:"queryURLReplace"`
 }
 
-func (c scraperTypeConfig) validate() error {
+func (c ActionDefinition) validate() error {
 	if !c.Action.IsValid() {
 		return fmt.Errorf("%s is not a valid scraper action", c.Action)
 	}
@@ -148,20 +145,22 @@ func (c scraperTypeConfig) validate() error {
 	return nil
 }
 
-type scrapeByURLConfig struct {
-	scraperTypeConfig `yaml:",inline"`
-	URL               []string `yaml:"url,flow"`
+type ByURLDefinition struct {
+	ActionDefinition     `yaml:",inline"`
+	URL                  []string             `yaml:"url,flow"`
+	QueryURL             string               `yaml:"queryURL"`
+	QueryURLReplacements queryURLReplacements `yaml:"queryURLReplace"`
 }
 
-func (c scrapeByURLConfig) validate() error {
+func (c ByURLDefinition) validate() error {
 	if len(c.URL) == 0 {
 		return errors.New("url is mandatory for scrape by url scrapers")
 	}
 
-	return c.scraperTypeConfig.validate()
+	return c.ActionDefinition.validate()
 }
 
-func (c scrapeByURLConfig) matchesURL(url string) bool {
+func (c ByURLDefinition) matchesURL(url string) bool {
 	for _, thisURL := range c.URL {
 		if strings.Contains(url, thisURL) {
 			return true
@@ -169,6 +168,18 @@ func (c scrapeByURLConfig) matchesURL(url string) bool {
 	}
 
 	return false
+}
+
+type ByFragmentDefinition struct {
+	ActionDefinition `yaml:",inline"`
+
+	QueryURL             string               `yaml:"queryURL"`
+	QueryURLReplacements queryURLReplacements `yaml:"queryURLReplace"`
+}
+
+type ByNameDefinition struct {
+	ActionDefinition `yaml:",inline"`
+	QueryURL         string `yaml:"queryURL"`
 }
 
 type scraperDebugOptions struct {
@@ -206,8 +217,8 @@ type scraperDriverOptions struct {
 	Headers []*header        `yaml:"headers"`
 }
 
-func loadConfigFromYAML(id string, reader io.Reader) (*config, error) {
-	ret := &config{}
+func loadConfigFromYAML(id string, reader io.Reader) (*Definition, error) {
+	ret := &Definition{}
 
 	parser := yaml.NewDecoder(reader)
 	parser.SetStrict(true)
@@ -225,7 +236,7 @@ func loadConfigFromYAML(id string, reader io.Reader) (*config, error) {
 	return ret, nil
 }
 
-func loadConfigFromYAMLFile(path string) (*config, error) {
+func loadConfigFromYAMLFile(path string) (*Definition, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -246,7 +257,7 @@ func loadConfigFromYAMLFile(path string) (*config, error) {
 	return ret, nil
 }
 
-func (c config) spec() Scraper {
+func (c Definition) spec() Scraper {
 	ret := Scraper{
 		ID:   c.ID,
 		Name: c.Name,
@@ -334,7 +345,7 @@ func (c config) spec() Scraper {
 	return ret
 }
 
-func (c config) supports(ty ScrapeContentType) bool {
+func (c Definition) supports(ty ScrapeContentType) bool {
 	switch ty {
 	case ScrapeContentTypePerformer:
 		return c.PerformerByName != nil || c.PerformerByFragment != nil || len(c.PerformerByURL) > 0
@@ -351,7 +362,7 @@ func (c config) supports(ty ScrapeContentType) bool {
 	panic("Unhandled ScrapeContentType")
 }
 
-func (c config) matchesURL(url string, ty ScrapeContentType) bool {
+func (c Definition) matchesURL(url string, ty ScrapeContentType) bool {
 	switch ty {
 	case ScrapeContentTypePerformer:
 		for _, scraper := range c.PerformerByURL {

@@ -11,7 +11,7 @@ You can add images to every gallery manually in the gallery detail page. Deletin
 
 For best results, images in zip file should be stored without compression (copy, store or no compression options depending on the software you use. Eg on linux: `zip -0 -r gallery.zip foldertozip/`). This impacts **heavily** on the zip read performance.
 
-> **:warning: Note:** AVIF files in ZIP archives are currently unsupported.
+> **⚠️ Note:** AVIF files in ZIP archives are currently unsupported.
 
 If a filename of an image in the gallery zip file ends with `cover.jpg`, it will be treated like a cover and presented first in the gallery view page and as a gallery cover in the gallery list view. If more than one images match the name the first one found in natural sort order is selected.
 

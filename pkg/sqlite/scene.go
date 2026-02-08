@@ -26,6 +26,7 @@ const (
 	sceneTable            = "scenes"
 	scenesFilesTable      = "scenes_files"
 	sceneIDColumn         = "scene_id"
+	sceneDateColumn       = "date"
 	performersScenesTable = "performers_scenes"
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"

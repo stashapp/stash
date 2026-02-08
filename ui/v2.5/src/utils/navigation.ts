@@ -342,6 +342,15 @@ const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
+const makeImagesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
+  if (!phash) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
+  const criterion = new PhashCriterion();
+  criterion.value = { value: phash };
+  filter.criteria.push(criterion);
+  return `/images?${filter.makeQueryParameters()}`;
+};
+
 const makeGalleryImagesUrl = (
   gallery: Partial<GQL.GalleryDataFragment | GQL.SlimGalleryDataFragment>,
   extraCriteria?: ModifierCriterion<CriterionValue>[]
@@ -493,6 +502,7 @@ const NavUtils = {
   makeTagGroupsUrl,
   makeScenesPHashMatchUrl,
   makeSceneMarkerUrl,
+  makeImagesPHashMatchUrl,
   makeGroupScenesUrl,
   makeChildStudiosUrl,
   makeGalleryImagesUrl,

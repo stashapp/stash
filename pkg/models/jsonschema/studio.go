@@ -25,6 +25,8 @@ type Studio struct {
 	Tags          []string         `json:"tags,omitempty"`
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
 
+	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
+
 	// deprecated - for import only
 	URL string `json:"url,omitempty"`
 }

@@ -95,6 +95,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   javascriptEnabled
   customLocales
   customLocalesEnabled
+  disableCustomizations
   language
   imageLightbox {
     slideshowDelay

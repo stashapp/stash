@@ -18,9 +18,12 @@ import { Option } from "./SidebarListFilter";
 import {
   CriterionModifier,
   FilterMode,
+  GalleryFilterType,
   InputMaybe,
   IntCriterionInput,
+  PerformerFilterType,
   SceneFilterType,
+  StudioFilterType,
 } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
@@ -82,7 +85,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   );
 };
 
-type ModifierValue = "any" | "none" | "any_of" | "only" | "include_subs";
+export type ModifierValue = "any" | "none" | "any_of" | "only" | "include_subs";
 
 export function getModifierCandidates(props: {
   modifier: CriterionModifier;
@@ -515,12 +518,22 @@ export function makeQueryVariables(query: string, extraProps: {}) {
 interface IFilterType {
   scenes_filter?: InputMaybe<SceneFilterType>;
   scene_count?: InputMaybe<IntCriterionInput>;
+  performers_filter?: InputMaybe<PerformerFilterType>;
+  performer_count?: InputMaybe<IntCriterionInput>;
+  galleries_filter?: InputMaybe<GalleryFilterType>;
+  gallery_count?: InputMaybe<IntCriterionInput>;
+  studios_filter?: InputMaybe<StudioFilterType>;
+  studio_count?: InputMaybe<IntCriterionInput>;
 }
 
 export function setObjectFilter(
   out: IFilterType,
   mode: FilterMode,
-  relatedFilterOutput: SceneFilterType
+  relatedFilterOutput:
+    | SceneFilterType
+    | PerformerFilterType
+    | GalleryFilterType
+    | StudioFilterType
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
 
@@ -533,7 +546,39 @@ export function setObjectFilter(
           value: 0,
         };
       }
-      out.scenes_filter = relatedFilterOutput;
+      out.scenes_filter = relatedFilterOutput as SceneFilterType;
       break;
+    case FilterMode.Performers:
+      // if empty, only get objects with performers
+      if (empty) {
+        out.performer_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.performers_filter = relatedFilterOutput as PerformerFilterType;
+      break;
+    case FilterMode.Galleries:
+      // if empty, only get objects with galleries
+      if (empty) {
+        out.gallery_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.galleries_filter = relatedFilterOutput as GalleryFilterType;
+      break;
+    case FilterMode.Studios:
+      // if empty, only get objects with studios
+      if (empty) {
+        out.studio_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+      }
+      out.studios_filter = relatedFilterOutput as StudioFilterType;
+      break;
+    default:
+      throw new Error("Invalid filter mode");
   }
 }

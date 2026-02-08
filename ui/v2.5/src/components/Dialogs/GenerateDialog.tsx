@@ -14,17 +14,21 @@ import { SettingSection } from "../Settings/SettingSection";
 import { faCogs, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { SettingsContext } from "../Settings/context";
 
-interface ISceneGenerateDialog {
+interface IGenerateDialog {
   selectedIds?: string[];
   onClose: () => void;
-  type: "scene"; // TODO - add image generate
+  type: "scene" | "image" | "gallery";
 }
 
-export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
+export const GenerateDialog: React.FC<IGenerateDialog> = ({
   selectedIds,
   onClose,
   type,
 }) => {
+  const sceneIDs = type === "scene" ? selectedIds : undefined;
+  const imageIDs = type === "image" ? selectedIds : undefined;
+  const galleryIDs = type === "gallery" ? selectedIds : undefined;
+
   const { configuration } = useConfigurationContext();
 
   function getDefaultOptions(): GQL.GenerateMetadataInput {
@@ -89,6 +93,13 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   }, [configuration, configRead]);
 
   const selectionStatus = useMemo(() => {
+    const countableIds: Record<typeof type, string> = {
+      scene: "countables.scenes",
+      image: "countables.images",
+      gallery: "countables.galleries",
+    };
+    const countableId = countableIds[type];
+
     if (selectedIds) {
       return (
         <Form.Group id="selected-generate-ids">
@@ -98,7 +109,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
               num: selectedIds.length,
               scene: intl.formatMessage(
                 {
-                  id: "countables.scenes",
+                  id: countableId,
                 },
                 {
                   count: selectedIds.length,
@@ -118,7 +129,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
             num: intl.formatMessage({ id: "all" }),
             scene: intl.formatMessage(
               {
-                id: "countables.scenes",
+                id: countableId,
               },
               {
                 count: 0,
@@ -135,13 +146,15 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         <div>{message}</div>
       </Form.Group>
     );
-  }, [selectedIds, intl]);
+  }, [selectedIds, intl, type]);
 
   async function onGenerate() {
     try {
       await mutateMetadataGenerate({
         ...options,
-        sceneIDs: selectedIds,
+        sceneIDs,
+        imageIDs,
+        galleryIDs,
       });
       Toast.success(
         intl.formatMessage(

@@ -450,7 +450,7 @@ func cssHandler(c *config.Config) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var paths []string
 
-		if c.GetCSSEnabled() {
+		if c.GetCSSEnabled() && !c.GetDisableCustomizations() {
 			// search for custom.css in current directory, then $HOME/.stash
 			fn := c.GetCSSPath()
 			exists, _ := fsutil.FileExists(fn)
@@ -468,7 +468,7 @@ func javascriptHandler(c *config.Config) func(w http.ResponseWriter, r *http.Req
 	return func(w http.ResponseWriter, r *http.Request) {
 		var paths []string
 
-		if c.GetJavascriptEnabled() {
+		if c.GetJavascriptEnabled() && !c.GetDisableCustomizations() {
 			// search for custom.js in current directory, then $HOME/.stash
 			fn := c.GetJavascriptPath()
 			exists, _ := fsutil.FileExists(fn)
@@ -486,7 +486,7 @@ func customLocalesHandler(c *config.Config) func(w http.ResponseWriter, r *http.
 	return func(w http.ResponseWriter, r *http.Request) {
 		buffer := bytes.Buffer{}
 
-		if c.GetCustomLocalesEnabled() {
+		if c.GetCustomLocalesEnabled() && !c.GetDisableCustomizations() {
 			// search for custom-locales.json in current directory, then $HOME/.stash
 			path := c.GetCustomLocalesPath()
 			exists, _ := fsutil.FileExists(path)

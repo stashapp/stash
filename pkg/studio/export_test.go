@@ -18,18 +18,24 @@ const (
 	errImageID            = 3
 	missingParentStudioID = 4
 	errStudioID           = 5
+	customFieldsID        = 6
 
 	parentStudioID    = 10
 	missingStudioID   = 11
 	errParentStudioID = 12
+	errCustomFieldsID = 13
 )
 
 var (
-	studioName       = "testStudio"
-	url              = "url"
-	details          = "details"
-	parentStudioName = "parentStudio"
-	autoTagIgnored   = true
+	studioName        = "testStudio"
+	url               = "url"
+	details           = "details"
+	parentStudioName  = "parentStudio"
+	autoTagIgnored    = true
+	emptyCustomFields = make(map[string]interface{})
+	customFields      = map[string]interface{}{
+		"customField1": "customValue1",
+	}
 )
 
 var studioID = 1
@@ -91,7 +97,7 @@ func createEmptyStudio(id int) models.Studio {
 	}
 }
 
-func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonschema.Studio {
+func createFullJSONStudio(parentStudio, image string, aliases []string, customFields map[string]interface{}) *jsonschema.Studio {
 	return &jsonschema.Studio{
 		Name:     studioName,
 		URLs:     []string{url},
@@ -109,6 +115,7 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		Aliases:       aliases,
 		StashIDs:      stashIDs,
 		IgnoreAutoTag: autoTagIgnored,
+		CustomFields:  customFields,
 	}
 }
 
@@ -120,16 +127,18 @@ func createEmptyJSONStudio() *jsonschema.Studio {
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
-		Aliases:  []string{},
-		URLs:     []string{},
-		StashIDs: []models.StashID{},
+		Aliases:      []string{},
+		URLs:         []string{},
+		StashIDs:     []models.StashID{},
+		CustomFields: emptyCustomFields,
 	}
 }
 
 type testScenario struct {
-	input    models.Studio
-	expected *jsonschema.Studio
-	err      bool
+	input        models.Studio
+	customFields map[string]interface{}
+	expected     *jsonschema.Studio
+	err          bool
 }
 
 var scenarios []testScenario
@@ -138,28 +147,46 @@ func initTestTable() {
 	scenarios = []testScenario{
 		{
 			createFullStudio(studioID, parentStudioID),
-			createFullJSONStudio(parentStudioName, image, []string{"alias"}),
+			emptyCustomFields,
+			createFullJSONStudio(parentStudioName, image, []string{"alias"}, emptyCustomFields),
+			false,
+		},
+		{
+			createFullStudio(customFieldsID, parentStudioID),
+			customFields,
+			createFullJSONStudio(parentStudioName, image, []string{"alias"}, customFields),
 			false,
 		},
 		{
 			createEmptyStudio(noImageID),
+			emptyCustomFields,
 			createEmptyJSONStudio(),
 			false,
 		},
 		{
 			createFullStudio(errImageID, parentStudioID),
-			createFullJSONStudio(parentStudioName, "", []string{"alias"}),
+			emptyCustomFields,
+			createFullJSONStudio(parentStudioName, "", []string{"alias"}, emptyCustomFields),
 			// failure to get image is not an error
 			false,
 		},
 		{
 			createFullStudio(missingParentStudioID, missingStudioID),
-			createFullJSONStudio("", image, []string{"alias"}),
+			emptyCustomFields,
+			createFullJSONStudio("", image, []string{"alias"}, emptyCustomFields),
 			false,
 		},
 		{
 			createFullStudio(errStudioID, errParentStudioID),
+			emptyCustomFields,
 			nil,
+			true,
+		},
+		{
+			createFullStudio(errCustomFieldsID, parentStudioID),
+			customFields,
+			nil,
+			// failure to get custom fields should cause an error
 			true,
 		},
 	}
@@ -177,12 +204,22 @@ func TestToJSON(t *testing.T) {
 	db.Studio.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
 	db.Studio.On("GetImage", testCtx, missingParentStudioID).Return(imageBytes, nil).Maybe()
 	db.Studio.On("GetImage", testCtx, errStudioID).Return(imageBytes, nil).Maybe()
+	db.Studio.On("GetImage", testCtx, customFieldsID).Return(imageBytes, nil).Once()
 
 	parentStudioErr := errors.New("error getting parent studio")
 
 	db.Studio.On("Find", testCtx, parentStudioID).Return(&parentStudio, nil)
 	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil)
 	db.Studio.On("Find", testCtx, errParentStudioID).Return(nil, parentStudioErr)
+
+	customFieldsErr := errors.New("error getting custom fields")
+
+	db.Studio.On("GetCustomFields", testCtx, studioID).Return(emptyCustomFields, nil).Once()
+	db.Studio.On("GetCustomFields", testCtx, customFieldsID).Return(customFields, nil).Once()
+	db.Studio.On("GetCustomFields", testCtx, missingParentStudioID).Return(emptyCustomFields, nil).Once()
+	db.Studio.On("GetCustomFields", testCtx, noImageID).Return(emptyCustomFields, nil).Once()
+	db.Studio.On("GetCustomFields", testCtx, errImageID).Return(emptyCustomFields, nil).Once()
+	db.Studio.On("GetCustomFields", testCtx, errCustomFieldsID).Return(nil, customFieldsErr).Once()
 
 	for i, s := range scenarios {
 		studio := s.input

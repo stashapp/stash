@@ -4,9 +4,9 @@ Stash can be integrated with stash-box which acts as a centralized metadata data
 
 ## Searching 
 
-The fingerprint search matches your current selection of files against the remote stash-box instance. Any scenes with a matching fingerprint will be returned, although there is currently no validation of fingerprints so it&rsquo;s recommended to double-check the validity before saving.
+The fingerprint search matches your current selection of files against the remote stash-box instance. Any scenes with a matching fingerprint will be returned, although there is currently no validation of fingerprints so it's recommended to double-check the validity before saving.
 
-If no fingerprint match is found it&rsquo;s possible to search by keywords. The search works by matching the query against a scene&rsquo;s _title_, _release date_, _studio name_, and _performer names_. By default the tagger uses metadata set on the file, or parses the filename, this can be changed in the config.
+If no fingerprint match is found it's possible to search by keywords. The search works by matching the query against a scene's _title_, _release date_, _studio name_, and _performer names_. By default the tagger uses metadata set on the file, or parses the filename, this can be changed in the config.
 
 An important thing to note is that it only returns a match *if all query terms are a match*. As an example, if a scene is titled `"A Trip to the Mall"` with the performer `"Jane Doe"`, a search for `"Trip to the Mall 1080p"` will *not* match, however `"trip mall doe"` would. Usually a few pieces of info is enough, for instance performer name + release date or studio name. To avoid common non-related keywords you can add them to the blacklist in the tagger config. Any items in the blacklist are stripped out of the query.
 

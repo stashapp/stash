@@ -120,7 +120,8 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 	for _, src := range sources {
 		const deleteGenerated = true
 		const deleteFile = false
-		if err := s.Destroy(ctx, src, fileDeleter, deleteGenerated, deleteFile); err != nil {
+		const destroyFileEntry = false
+		if err := s.Destroy(ctx, src, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 			return fmt.Errorf("deleting scene %d: %w", src.ID, err)
 		}
 	}

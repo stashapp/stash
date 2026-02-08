@@ -101,6 +101,13 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{tagFilter.CreatedAt, "tags.created_at", nil},
 		&timestampCriterionHandler{tagFilter.UpdatedAt, "tags.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: tagsCustomFieldsTable.GetTable(),
+			fkCol: tagIDColumn,
+			c:     tagFilter.CustomFields,
+			idCol: "tags.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_tags.scene_id",
 			relatedRepo:    sceneRepository.repository,
@@ -125,6 +132,24 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &galleryFilterHandler{tagFilter.GalleriesFilter},
 			joinFn: func(f *filterBuilder) {
 				tagRepository.galleries.innerJoin(f, "", "tags.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_tags.performer_id",
+			relatedRepo:    performerRepository.repository,
+			relatedHandler: &performerFilterHandler{tagFilter.PerformersFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.performers.innerJoin(f, "", "tags.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "studios_tags.studio_id",
+			relatedRepo:    studioRepository.repository,
+			relatedHandler: &studioFilterHandler{tagFilter.StudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.studios.innerJoin(f, "", "tags.id")
 			},
 		},
 	}
