@@ -643,7 +643,7 @@
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "선택창에서 새로운 오브젝트를 추가할 수 없도록 합니다.",
+                    "description": "선택창에서 새로운 오브젝트를 추가할 수 없도록 합니다",
                     "heading": "선택창 비활성화"
                 },
                 "heading": "수정하기",
@@ -684,7 +684,7 @@
                 "sync": "동기화"
             },
             "handy_connection_key": {
-                "description": "인터랙티브 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다.",
+                "description": "인터랙티브 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다",
                 "heading": "Handy 연결 키"
             },
             "image_lightbox": {
