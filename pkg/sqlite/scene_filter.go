@@ -176,7 +176,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.performerAgeCriterionHandler(sceneFilter.PerformerAge),
 		qb.phashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable),
 		&dateCriterionHandler{sceneFilter.Date, "scenes.date", nil},
-		&dateCriterionHandler{sceneFilter.Date, "scenes.production_date", nil},
+		&dateCriterionHandler{sceneFilter.ProductionDate, "scenes.production_date", nil},
 		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
 		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
 
