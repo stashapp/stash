@@ -477,6 +477,28 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	return &ret
 }
 
+func (t *ScrapedTag) ToPartial(storedID string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) TagPartial {
+	ret := NewTagPartial()
+
+	if t.Name != "" && !excluded["name"] {
+		ret.Name = NewOptionalString(t.Name)
+	}
+
+	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
+		ret.StashIDs = &UpdateStashIDs{
+			StashIDs: existingStashIDs,
+			Mode:     RelationshipUpdateModeSet,
+		}
+		ret.StashIDs.Set(StashID{
+			Endpoint:  endpoint,
+			StashID:   *t.RemoteSiteID,
+			UpdatedAt: time.Now(),
+		})
+	}
+
+	return ret
+}
+
 func ScrapedTagSortFunction(a, b *ScrapedTag) int {
 	return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 }
