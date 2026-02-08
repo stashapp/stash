@@ -60,9 +60,15 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	)
 
 	defaultOptions := &MetadataOptions{
-		SetOrganized:             &boolFalse,
-		SetCoverImage:            &boolFalse,
-		IncludeMalePerformers:    &boolFalse,
+		SetOrganized:  &boolFalse,
+		SetCoverImage: &boolFalse,
+		PerformerGenders: []models.GenderEnum{
+			models.GenderEnumFemale,
+			models.GenderEnumTransgenderFemale,
+			models.GenderEnumTransgenderMale,
+			models.GenderEnumIntersex,
+			models.GenderEnumNonBinary,
+		},
 		SkipSingleNamePerformers: &boolFalse,
 	}
 	sources := []ScraperSource{
@@ -216,9 +222,15 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 
 	boolFalse := false
 	defaultOptions := &MetadataOptions{
-		SetOrganized:             &boolFalse,
-		SetCoverImage:            &boolFalse,
-		IncludeMalePerformers:    &boolFalse,
+		SetOrganized:  &boolFalse,
+		SetCoverImage: &boolFalse,
+		PerformerGenders: []models.GenderEnum{
+			models.GenderEnumFemale,
+			models.GenderEnumTransgenderFemale,
+			models.GenderEnumTransgenderMale,
+			models.GenderEnumIntersex,
+			models.GenderEnumNonBinary,
+		},
 		SkipSingleNamePerformers: &boolFalse,
 	}
 	tr := &SceneIdentifier{

@@ -543,6 +543,8 @@
         "identifying_from_paths": "Identifying scenes from the following paths",
         "identifying_scenes": "Identifying {num} {scene}",
         "include_male_performers": "Include male performers",
+        "performer_genders": "Performer genders",
+        "performer_genders_desc": "Performers with selected genders will be included during identification.",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organised flag",
         "skip_multiple_matches": "Skip matches that have more than one result",
