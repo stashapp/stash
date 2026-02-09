@@ -91,6 +91,8 @@ input ConfigGeneralInput {
   ffprobePath: String
   "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean
+  "Whether to calculate SHA1 checksums for scene video files"
+  calculateSHA1: Boolean
   "Hash algorithm to use for generated file naming"
   videoFileNamingAlgorithm: HashAlgorithm
   "Number of parallel tasks to start during scan/generate"
@@ -217,6 +219,8 @@ type ConfigGeneralResult {
   ffprobePath: String!
   "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean!
+  "Whether to calculate SHA1 checksums for scene video files"
+  calculateSHA1: Boolean!
   "Hash algorithm to use for generated file naming"
   videoFileNamingAlgorithm: HashAlgorithm!
   "Number of parallel tasks to start during scan/generate"

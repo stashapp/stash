@@ -17,6 +17,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   ffmpegPath
   ffprobePath
   calculateMD5
+  calculateSHA1
   videoFileNamingAlgorithm
   parallelTasks
   previewAudio

@@ -67,6 +67,10 @@ const (
 	// for video files.
 	CalculateMD5 = "calculate_md5"
 
+	// CalculateSHA1 is the config key used to determine if SHA1 should be calculated
+	// for video files.
+	CalculateSHA1 = "calculate_sha1"
+
 	// VideoFileNamingAlgorithm is the config key used to determine what hash
 	// should be used when generating and using generated files for scenes.
 	VideoFileNamingAlgorithm = "video_file_naming_algorithm"
@@ -806,6 +810,12 @@ func (i *Config) GetLanguage() string {
 // scene video files.
 func (i *Config) IsCalculateMD5() bool {
 	return i.getBool(CalculateMD5)
+}
+
+// IsCalculateSHA1 returns true if SHA1 checksums should be generated for
+// scene video files.
+func (i *Config) IsCalculateSHA1() bool {
+	return i.getBool(CalculateSHA1)
 }
 
 // GetVideoFileNamingAlgorithm returns what hash algorithm should be used for
