@@ -318,7 +318,7 @@
                 "log_file_max_size_desc": "압축 전 로그 파일의 최대 크기(MB)입니다. 0MB를 입력하면 비활성화됩니다. 설정 변경 후 재시작해야 합니다."
             },
             "backup_directory_path": {
-                "description": "SQLite 데이터베이스 백업 파일을 위한 폴더 경로",
+                "description": "SQLite 데이터베이스 백업 파일을 위한 폴더 경로.",
                 "heading": "백업 폴더 경로"
             },
             "blobs_path": {
@@ -342,9 +342,9 @@
             "database": "데이터베이스",
             "db_path_head": "데이터베이스 경로",
             "directory_locations_to_your_content": "컨텐츠가 있는 폴더 위치",
-            "excluded_image_gallery_patterns_desc": "스캔과 데이터베이스 정리에서 제외할 이미지와 갤러리 파일/경로의 정규표현식",
+            "excluded_image_gallery_patterns_desc": "스캔과 데이터베이스 정리 작업에서 제외할 이미지와 갤러리 파일/경로의 정규표현식.",
             "excluded_image_gallery_patterns_head": "제외된 이미지/갤러리 패턴",
-            "excluded_video_patterns_desc": "스캔과 데이터베이스 정리에서 제외할 비디오 파일/경로의 정규표현식",
+            "excluded_video_patterns_desc": "스캔과 데이터베이스 정리 작업에서 제외할 비디오 파일/경로의 정규표현식.",
             "excluded_video_patterns_head": "제외된 비디오 패턴",
             "ffmpeg": {
                 "hardware_acceleration": {
@@ -376,23 +376,23 @@
                     "description": "FFmpeg를 설정 폴더에 다운로드하고 ffmpeg와 ffprobe 경로를 초기화해, Stash가 이 둘을 설정 폴더에서 찾을 수 있도록 합니다."
                 },
                 "ffmpeg_path": {
-                    "description": "ffmpeg 실행파일의 경로입니다. (ffmpeg가 포함된 폴더의 경로가 아님) 만약 비어 있다면, ffmpeg의 위치를 환경변수로부터 찾습니다. ($PATH, 설정 폴더, $HOME/.stash)",
+                    "description": "ffmpeg 실행파일의 경로입니다(ffmpeg가 포함된 폴더의 경로가 아님). 만약 비어 있다면, ffmpeg의 위치를 환경변수로부터 찾습니다($PATH, 설정 폴더, $HOME/.stash).",
                     "heading": "FFmpeg 실행파일 경로"
                 },
                 "ffprobe_path": {
-                    "description": "ffprobe 실행파일의 경로입니다. (ffprobe가 포함된 폴더의 경로가 아님) 만약 비어 있다면, ffprobe의 위치를 환경변수로부터 찾습니다. ($PATH, 설정 폴더, $HOME/.stash)",
+                    "description": "ffprobe 실행파일의 경로입니다(ffprobe가 포함된 폴더의 경로가 아님). 만약 비어 있다면, ffprobe의 위치를 환경변수로부터 찾습니다($PATH, 설정 폴더, $HOME/.stash).",
                     "heading": "FFprobe 실행파일 경로"
                 }
             },
             "funscript_heatmap_draw_range": "히트맵에 범위 포함",
             "funscript_heatmap_draw_range_desc": "히트맵의 y축에 움직임의 범위를 그립니다. 기존 히트맵은 이 설정을 바꾼 후 재생성되어야 합니다.",
-            "gallery_cover_regex_desc": "이미지를 갤러리 커버로 인식하는 데에 사용되는 정규표현식",
+            "gallery_cover_regex_desc": "이미지를 갤러리 커버로 인식하는 데에 사용되는 정규표현식.",
             "gallery_cover_regex_label": "갤러리 커버 패턴",
-            "gallery_ext_desc": "갤러리 zip 파일로 인식될 파일 확장자입니다 (쉼표로 구분합니다).",
-            "gallery_ext_head": "갤러리 zip 확장자",
+            "gallery_ext_desc": "갤러리 ZIP 파일로 인식될 파일 확장자입니다 (쉼표로 구분합니다).",
+            "gallery_ext_head": "갤러리 ZIP 확장자",
             "generated_file_naming_hash_desc": "생성되는 컨텐츠 파일 이름을 정할 때 MD5 또는 oshash를 사용합니다. 이를 변경하려면 모든 영상에 해당 MD5/osash 값이 채워져 있어야 합니다. 이 값을 변경한 후에는 기존에 생성된 파일을 마이그레이션하거나 재생성해야 합니다. 마이그레이션은 '작업' 페이지를 참조하세요.",
             "generated_file_naming_hash_head": "생성된 컨텐츠 파일 이름 해쉬",
-            "generated_files_location": "생성된 컨텐츠 파일들의 폴더 위치 (영상 마커, 영상 미리보기, 스프라이트 등등)",
+            "generated_files_location": "생성된 컨텐츠 파일들의 폴더 위치 (영상 마커, 영상 미리보기, 스프라이트 등등).",
             "generated_path_head": "생성된 컨텐츠 파일 경로",
             "hashing": "해싱",
             "heatmap_generation": "Funscript 히트맵 생성",
@@ -401,12 +401,12 @@
             "include_audio_desc": "미리보기를 생성할 때 소리를 포함합니다.",
             "include_audio_head": "소리 포함",
             "logging": "로깅",
-            "maximum_streaming_transcode_size_desc": "트랜스코딩된 스트림의 최대 크기",
+            "maximum_streaming_transcode_size_desc": "트랜스코딩된 스트림의 최대 크기.",
             "maximum_streaming_transcode_size_head": "최대 스트리밍 트랜스코드 크기",
-            "maximum_transcode_size_desc": "트랜스코드의 최대 크기",
+            "maximum_transcode_size_desc": "트랜스코드의 최대 크기.",
             "maximum_transcode_size_head": "최대 트랜스코드 크기",
             "metadata_path": {
-                "description": "전체 내보내기 또는 전체 불러오기를 실행할 때 사용되는 폴더 위치",
+                "description": "전체 내보내기 또는 전체 불러오기를 실행할 때 사용되는 폴더 위치.",
                 "heading": "메타데이터 경로"
             },
             "number_of_parallel_task_for_scan_generation_desc": "자동으로 설정하려면 0을 입력하세요. 경고: 100% CPU 활용률을 달성하는 데 필요한 작업보다 더 많은 작업을 실행하면 성능이 저하되고 잠재적으로 다른 문제가 발생할 수 있습니다.",
@@ -414,13 +414,13 @@
             "parallel_scan_head": "병렬 스캔/생성",
             "preview_generation": "미리보기 생성",
             "python_path": {
-                "description": "파이썬 실행파일의 위치입니다. (실행파일이 들어 있는 폴더가 아님) 스크립트 스크레이퍼와 플러그인의 실행에 사용됩니다. 빈 칸으로 두면, 시스템 환경 설정으로부터 위치를 받아 옵니다",
+                "description": "파이썬 실행파일의 위치입니다. (실행파일이 들어 있는 폴더가 아님) 스크립트 스크레이퍼와 플러그인의 실행에 사용됩니다. 빈 칸으로 두면, 시스템 환경 설정으로부터 위치를 받아 옵니다.",
                 "heading": "Python 실행파일 경로"
             },
             "scraper_user_agent": "스크레이퍼 사용자 에이전트",
-            "scraper_user_agent_desc": "HTTP 요청 스크레이핑 중 사용되는 사용자 에이전트 문자열",
+            "scraper_user_agent_desc": "HTTP 요청 스크레이핑 중 사용되는 사용자 에이전트 문자열.",
             "scrapers_path": {
-                "description": "스크레이퍼 설정 파일의 폴더 위치",
+                "description": "스크레이퍼 설정 파일의 폴더 위치.",
                 "heading": "스크레이퍼 경로"
             },
             "scraping": "스크레이핑",
@@ -429,7 +429,7 @@
             "video_ext_head": "비디오 확장 프로그램",
             "video_head": "비디오",
             "plugins_path": {
-                "description": "플러그인 설정 파일의 폴더 위치",
+                "description": "플러그인 설정 파일의 폴더 위치.",
                 "heading": "플러그인 경로"
             },
             "delete_trash_path": {
@@ -454,7 +454,7 @@
         "scraping": {
             "entity_metadata": "{entityType} 메타데이터",
             "entity_scrapers": "{entityType} 스크레이퍼",
-            "excluded_tag_patterns_desc": "스크레이핑 결과에서 제외할 태그 이름의 정규표현식",
+            "excluded_tag_patterns_desc": "스크레이핑 결과에서 제외할 태그 이름의 정규표현식.",
             "excluded_tag_patterns_head": "제외된 태그 패턴",
             "scraper": "스크레이퍼",
             "scrapers": "스크레이퍼",
@@ -491,7 +491,7 @@
             "auto_tagging": "자동 태깅",
             "backing_up_database": "데이터베이스 백업 중",
             "backup_and_download": "데이터베이스를 백업하고 결과 파일을 다운로드합니다.",
-            "backup_database": "백업 폴더에 {filename_format}의 파일 이름 형식으로 데이터베이스를 백업합니다",
+            "backup_database": "백업 폴더에 {filename_format}의 파일 이름 형식으로 데이터베이스를 백업합니다.",
             "cleanup_desc": "있어야 할 곳에 없는 파일이 있는지 검사한 후, 데이터베이스에서 삭제합니다. 데이터베이스의 일부 내용이 삭제될 수 있습니다.",
             "data_management": "데이터 관리",
             "defaults_set": "기본값이 설정되었습니다. '작업' 페이지의 {action} 버튼을 클릭할 때 사용됩니다.",
@@ -637,13 +637,13 @@
             "desktop_integration": {
                 "desktop_integration": "데스크탑 통합",
                 "notifications_enabled": "알림 활성화",
-                "send_desktop_notifications_for_events": "이벤트가 발생했을 때 데스크탑 알림을 보냅니다",
+                "send_desktop_notifications_for_events": "이벤트가 발생했을 때 데스크탑 알림을 보냅니다.",
                 "skip_opening_browser": "브라우저 자동 열기 해제",
-                "skip_opening_browser_on_startup": "Stash를 시작할 때 자동으로 브라우저를 열지 않습니다"
+                "skip_opening_browser_on_startup": "Stash를 시작할 때 자동으로 브라우저를 열지 않습니다."
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "선택창에서 새로운 오브젝트를 추가할 수 없도록 합니다",
+                    "description": "선택창에서 새로운 오브젝트를 추가할 수 없도록 합니다.",
                     "heading": "선택창 비활성화"
                 },
                 "heading": "수정하기",
@@ -684,7 +684,7 @@
                 "sync": "동기화"
             },
             "handy_connection_key": {
-                "description": "인터랙티브 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다",
+                "description": "인터랙티브 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다.",
                 "heading": "Handy 연결 키"
             },
             "image_lightbox": {
@@ -699,11 +699,11 @@
                 "heading": "이미지",
                 "options": {
                     "create_image_clips_from_videos": {
-                        "description": "라이브러리에서 비디오가 비활성화되었을 때, (파일이 비디오 확장자로 끝나는) 비디오 파일들은 이미지 클립으로 스캔될 것입니다.",
+                        "description": "라이브러리에서 비디오가 비활성화되었을 때, 비디오 파일들(비디오 확장자 참조)은 이미지 클립으로 스캔될 것입니다.",
                         "heading": "비디오 확장자를 이미지 클립으로 스캔"
                     },
                     "write_image_thumbnails": {
-                        "description": "즉시 생성된 경우 디스크에 이미지 썸네일 쓰기",
+                        "description": "즉시 생성된 경우 디스크에 이미지 썸네일 쓰기.",
                         "heading": "이미지 썸네일 디스크에 저장하기"
                     }
                 }
@@ -713,11 +713,11 @@
                 "heading": "언어"
             },
             "max_loop_duration": {
-                "description": "영상 플레이어가 비디오를 루프하는 최대 영상 지속 시간 - 0을 입력하면 비활성화합니다",
+                "description": "영상 플레이어가 비디오를 루프하는 최대 영상 지속 시간. 0을 입력하면 비활성화합니다.",
                 "heading": "최대 구간 길이"
             },
             "menu_items": {
-                "description": "탐색 바에 여러 종류의 컨텐츠들이 보여지게 하거나 숨깁니다",
+                "description": "탐색 바에 여러 종류의 컨텐츠들이 보여지게 하거나 숨깁니다.",
                 "heading": "메뉴 항목"
             },
             "minimum_play_percent": {
@@ -727,7 +727,7 @@
             "performers": {
                 "options": {
                     "image_location": {
-                        "description": "배우의 기본 이미지를 저장하기 위한 경로입니다. 빈 칸으로 두면 기본값을 사용합니다",
+                        "description": "배우의 기본 이미지를 저장하기 위한 경로입니다. 빈 칸으로 두면 기본값을 사용합니다.",
                         "heading": "커스텀 배우 이미지 경로"
                     }
                 }
@@ -753,11 +753,11 @@
                     "always_start_from_beginning": "항상 처음부터 비디오 시작",
                     "auto_start_video": "비디오 자동 재생",
                     "auto_start_video_on_play_selected": {
-                        "description": "대기열, 또는 '영상' 페이지에서 (랜덤)선택한 영상을 자동 재생",
+                        "description": "대기열, 또는 '영상' 페이지에서 (랜덤)선택한 영상을 자동 재생.",
                         "heading": "선택한 항목을 재생할 때 비디오 자동 시작"
                     },
                     "continue_playlist_default": {
-                        "description": "비디오가 끝나면 대기열에 있는 다음 영상을 재생합니다",
+                        "description": "비디오가 끝나면 대기열에 있는 다음 영상을 재생합니다.",
                         "heading": "플레이리스트 이어보기"
                     },
                     "show_scrubber": "스크러버 표시",
@@ -784,18 +784,18 @@
                 "heading": "전환 전 스크롤 시도 횟수"
             },
             "show_tag_card_on_hover": {
-                "description": "태그 뱃지 위에 마우스 커서를 올리면 태그 카드를 보여줍니다",
+                "description": "태그 뱃지 위에 마우스 커서를 올리면 태그 카드를 보여줍니다.",
                 "heading": "태그 카드 툴팁"
             },
             "slideshow_delay": {
-                "description": "월 보기 모드일 때 갤러리에서 슬라이드 쇼를 사용할 수 있습니다",
+                "description": "월 보기 모드일 때 갤러리에서 슬라이드 쇼를 사용할 수 있습니다.",
                 "heading": "슬라이드쇼 딜레이 (단위: 초)"
             },
             "studio_panel": {
                 "heading": "스튜디오 창",
                 "options": {
                     "show_child_studio_content": {
-                        "description": "스튜디오 창에서, 하위 스튜디오의 컨텐츠도 보여줍니다",
+                        "description": "스튜디오 창에서, 하위 스튜디오의 컨텐츠도 보여줍니다.",
                         "heading": "하위 스튜디오의 컨텐츠 보이기"
                     }
                 }
@@ -804,7 +804,7 @@
                 "heading": "태그 창",
                 "options": {
                     "show_child_tagged_content": {
-                        "description": "태그 창에서, 하위 태그들도 보여줍니다",
+                        "description": "태그 창에서, 하위 태그들도 보여줍니다.",
                         "heading": "서브태그 컨텐츠 보이기"
                     }
                 }
@@ -821,11 +821,11 @@
                 },
                 "heading": "세부사항 페이지",
                 "compact_expanded_details": {
-                    "description": "활성화되면, 더 간결한 형태로 확장된 세부사항이 보여집니다",
+                    "description": "활성화되면, 더 간결한 형태로 확장된 세부사항이 보여집니다.",
                     "heading": "확장된 세부사항들 간결화"
                 },
                 "show_all_details": {
-                    "description": "활성화되면, 모든 컨텐츠 세부사항이 기본값으로 보여지게 되고, 각각의 세부사항들이 하나의 열에 위아래로 정렬됩니다",
+                    "description": "활성화되면, 모든 컨텐츠 세부사항이 기본값으로 보여지게 되고, 각각의 세부사항들이 하나의 열에 위아래로 정렬됩니다.",
                     "heading": "모든 세부사항 보여주기"
                 }
             },
@@ -951,7 +951,7 @@
             "page_header": "{total} 페이지 중 {page} 페이지",
             "reset_zoom_on_nav": "이미지를 바꿀 때 줌 수준 초기화",
             "scale_up": {
-                "description": "작은 이미지들이 화면을 채우도록 확대합니다",
+                "description": "작은 이미지들이 화면을 채우도록 확대합니다.",
                 "label": "화면에 딱 맞춰 확대"
             },
             "scroll_mode": {
