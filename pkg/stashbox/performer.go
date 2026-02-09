@@ -398,24 +398,11 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		aliases := strings.Join(performer.Aliases.List(), ",")
 		draft.Aliases = &aliases
 	}
-	// Use CareerStart and CareerEnd directly if available
 	if performer.CareerStart != nil {
 		draft.CareerStartYear = performer.CareerStart
 	}
 	if performer.CareerEnd != nil {
 		draft.CareerEndYear = performer.CareerEnd
-	}
-	// Fall back to parsing CareerLength for backwards compatibility
-	if draft.CareerStartYear == nil && draft.CareerEndYear == nil && performer.CareerLength != "" {
-		var career = strings.Split(performer.CareerLength, "-")
-		if i, err := strconv.Atoi(strings.TrimSpace(career[0])); err == nil {
-			draft.CareerStartYear = &i
-		}
-		if len(career) == 2 {
-			if y, err := strconv.Atoi(strings.TrimSpace(career[1])); err == nil {
-				draft.CareerEndYear = &y
-			}
-		}
 	}
 
 	if len(performer.URLs.List()) > 0 {

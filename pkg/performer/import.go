@@ -205,7 +205,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		EyeColor:       performerJSON.EyeColor,
 		Measurements:   performerJSON.Measurements,
 		FakeTits:       performerJSON.FakeTits,
-		CareerLength:   performerJSON.CareerLength,
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
 		Aliases:        models.NewRelatedStrings(performerJSON.Aliases),
