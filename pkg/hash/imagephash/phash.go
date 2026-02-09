@@ -36,6 +36,10 @@ func Generate(encoder *ffmpeg.FFMpeg, imageFile *models.ImageFile) (*uint64, err
 func loadImage(encoder *ffmpeg.FFMpeg, imageFile *models.ImageFile) (image.Image, error) {
 	ext := strings.ToLower(filepath.Ext(imageFile.Path))
 	if ext == ".avif" {
+		// AVIF in zip files is not supported - ffmpeg cannot read files inside zips
+		if imageFile.Base().ZipFileID != nil {
+			return nil, fmt.Errorf("AVIF images in zip files are not supported for phash generation")
+		}
 		return loadImageFFmpeg(encoder, imageFile.Path)
 	}
 
