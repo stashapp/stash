@@ -232,12 +232,12 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 
 		if err := r.WithDB(ctx, func(ctx context.Context) error {
 			studioQuery := r.Studio
-			organized := false
+			ignoreAutoTag := false
 			perPage := -1
 			if studioId == "*" {
 				var err error
 				studios, _, err = studioQuery.Query(ctx, &models.StudioFilterType{
-					Organized: &organized,
+					IgnoreAutoTag: &ignoreAutoTag,
 				}, &models.FindFilterType{
 					PerPage: &perPage,
 				})
@@ -259,8 +259,8 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 					return fmt.Errorf("studio with id %s not found", studioId)
 				}
 
-				if studio.Organized {
-					logger.Infof("Skipping organized studio %s", studio.Name)
+				if studio.IgnoreAutoTag {
+					logger.Infof("Skipping studio %s because auto-tag is disabled", studio.Name)
 					return nil
 				}
 

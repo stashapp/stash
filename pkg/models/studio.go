@@ -34,6 +34,8 @@ type StudioFilterType struct {
 	Aliases *StringCriterionInput `json:"aliases"`
 	// Filter by subsidiary studio count
 	ChildCount *IntCriterionInput `json:"child_count"`
+	// Filter by autotag ignore value
+	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by related scenes that meet this criteria
@@ -57,14 +59,15 @@ type StudioCreateInput struct {
 	Urls     []string `json:"urls"`
 	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
-	Image     *string        `json:"image"`
-	StashIds  []StashIDInput `json:"stash_ids"`
-	Rating100 *int           `json:"rating100"`
-	Favorite  *bool          `json:"favorite"`
-	Details   *string        `json:"details"`
-	Aliases   []string       `json:"aliases"`
-	TagIds    []string       `json:"tag_ids"`
-	Organized *bool          `json:"organized"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Favorite      *bool          `json:"favorite"`
+	Details       *string        `json:"details"`
+	Aliases       []string       `json:"aliases"`
+	TagIds        []string       `json:"tag_ids"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+	Organized     *bool          `json:"organized"`
 
 	CustomFields map[string]interface{} `json:"custom_fields"`
 }
@@ -76,14 +79,15 @@ type StudioUpdateInput struct {
 	Urls     []string `json:"urls"`
 	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
-	Image     *string        `json:"image"`
-	StashIds  []StashIDInput `json:"stash_ids"`
-	Rating100 *int           `json:"rating100"`
-	Favorite  *bool          `json:"favorite"`
-	Details   *string        `json:"details"`
-	Aliases   []string       `json:"aliases"`
-	TagIds    []string       `json:"tag_ids"`
-	Organized *bool          `json:"organized"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Favorite      *bool          `json:"favorite"`
+	Details       *string        `json:"details"`
+	Aliases       []string       `json:"aliases"`
+	TagIds        []string       `json:"tag_ids"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+	Organized     *bool          `json:"organized"`
 
 	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

@@ -15,6 +15,7 @@ fragment StudioData on Studio {
     name
     image_path
   }
+  ignore_auto_tag
   organized
   image_path
   scene_count

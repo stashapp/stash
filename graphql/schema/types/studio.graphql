@@ -7,6 +7,7 @@ type Studio {
   child_studios: [Studio!]!
   aliases: [String!]!
   tags: [Tag!]!
+  ignore_auto_tag: Boolean!
   organized: Boolean!
 
   image_path: String # Resolver
@@ -45,6 +46,7 @@ input StudioCreateInput {
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
+  ignore_auto_tag: Boolean
   organized: Boolean
 
   custom_fields: Map
@@ -66,6 +68,7 @@ input StudioUpdateInput {
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
+  ignore_auto_tag: Boolean
   organized: Boolean
 
   custom_fields: CustomFieldsInput
@@ -81,6 +84,7 @@ input BulkStudioUpdateInput {
   favorite: Boolean
   details: String
   tag_ids: BulkUpdateIds
+  ignore_auto_tag: Boolean
   organized: Boolean
 }
 

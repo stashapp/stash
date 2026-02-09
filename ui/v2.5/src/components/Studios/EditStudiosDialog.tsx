@@ -23,7 +23,13 @@ interface IListOperationProps {
   onClose: (applied: boolean) => void;
 }
 
-const studioFields = ["favorite", "rating100", "details", "organized"];
+const studioFields = [
+  "favorite",
+  "rating100",
+  "details",
+  "ignore_auto_tag",
+  "organized",
+];
 
 export const EditStudiosDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -226,6 +232,16 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
             (newValue) => setUpdateField({ details: newValue }),
             true
           )}
+
+          <Form.Group controlId="ignore-auto-tags">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({ id: "ignore_auto_tag" })}
+              setChecked={(checked) =>
+                setUpdateField({ ignore_auto_tag: checked })
+              }
+              checked={updateInput.ignore_auto_tag ?? undefined}
+            />
+          </Form.Group>
 
           <Form.Group controlId="organized">
             <IndeterminateCheckbox

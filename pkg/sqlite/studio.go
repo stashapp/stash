@@ -40,10 +40,11 @@ type studioRow struct {
 	CreatedAt Timestamp   `db:"created_at"`
 	UpdatedAt Timestamp   `db:"updated_at"`
 	// expressed as 1-100
-	Rating    null.Int    `db:"rating"`
-	Favorite  bool        `db:"favorite"`
-	Details   zero.String `db:"details"`
-	Organized bool        `db:"organized"`
+	Rating        null.Int    `db:"rating"`
+	Favorite      bool        `db:"favorite"`
+	Details       zero.String `db:"details"`
+	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	Organized     bool        `db:"organized"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -58,20 +59,22 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Rating = intFromPtr(o.Rating)
 	r.Favorite = o.Favorite
 	r.Details = zero.StringFrom(o.Details)
+	r.IgnoreAutoTag = o.IgnoreAutoTag
 	r.Organized = o.Organized
 }
 
 func (r *studioRow) resolve() *models.Studio {
 	ret := &models.Studio{
-		ID:        r.ID,
-		Name:      r.Name.String,
-		ParentID:  nullIntPtr(r.ParentID),
-		CreatedAt: r.CreatedAt.Timestamp,
-		UpdatedAt: r.UpdatedAt.Timestamp,
-		Rating:    nullIntPtr(r.Rating),
-		Favorite:  r.Favorite,
-		Details:   r.Details.String,
-		Organized: r.Organized,
+		ID:            r.ID,
+		Name:          r.Name.String,
+		ParentID:      nullIntPtr(r.ParentID),
+		CreatedAt:     r.CreatedAt.Timestamp,
+		UpdatedAt:     r.UpdatedAt.Timestamp,
+		Rating:        nullIntPtr(r.Rating),
+		Favorite:      r.Favorite,
+		Details:       r.Details.String,
+		IgnoreAutoTag: r.IgnoreAutoTag,
+		Organized:     r.Organized,
 	}
 
 	return ret
@@ -89,6 +92,7 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setNullInt("rating", o.Rating)
 	r.setBool("favorite", o.Favorite)
 	r.setNullString("details", o.Details)
+	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 	r.setBool("organized", o.Organized)
 }
 
@@ -535,7 +539,7 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 
 	sq = sq.Where(
 		goqu.Or(whereClauses...),
-		table.Col("organized").Eq(0),
+		table.Col("ignore_auto_tag").Eq(0),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)

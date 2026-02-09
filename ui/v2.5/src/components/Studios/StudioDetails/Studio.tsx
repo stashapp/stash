@@ -539,7 +539,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                   onImageChange={() => {}}
                   onClearImage={() => {}}
                   onAutoTag={onAutoTag}
-                  autoTagDisabled={studio.organized}
+                  autoTagDisabled={studio.ignore_auto_tag}
                   onDelete={onDelete}
                 />
               )}

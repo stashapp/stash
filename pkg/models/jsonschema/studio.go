@@ -11,19 +11,20 @@ import (
 )
 
 type Studio struct {
-	Name         string           `json:"name,omitempty"`
-	URLs         []string         `json:"urls,omitempty"`
-	ParentStudio string           `json:"parent_studio,omitempty"`
-	Image        string           `json:"image,omitempty"`
-	CreatedAt    json.JSONTime    `json:"created_at,omitempty"`
-	UpdatedAt    json.JSONTime    `json:"updated_at,omitempty"`
-	Rating       int              `json:"rating,omitempty"`
-	Favorite     bool             `json:"favorite,omitempty"`
-	Details      string           `json:"details,omitempty"`
-	Aliases      []string         `json:"aliases,omitempty"`
-	StashIDs     []models.StashID `json:"stash_ids,omitempty"`
-	Tags         []string         `json:"tags,omitempty"`
-	Organized    bool             `json:"organized,omitempty"`
+	Name          string           `json:"name,omitempty"`
+	URLs          []string         `json:"urls,omitempty"`
+	ParentStudio  string           `json:"parent_studio,omitempty"`
+	Image         string           `json:"image,omitempty"`
+	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
+	UpdatedAt     json.JSONTime    `json:"updated_at,omitempty"`
+	Rating        int              `json:"rating,omitempty"`
+	Favorite      bool             `json:"favorite,omitempty"`
+	Details       string           `json:"details,omitempty"`
+	Aliases       []string         `json:"aliases,omitempty"`
+	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
+	Tags          []string         `json:"tags,omitempty"`
+	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+	Organized     bool             `json:"organized,omitempty"`
 
 	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 

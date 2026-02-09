@@ -18,6 +18,7 @@ fragment SlimStudioData on Studio {
     name
   }
   favorite
+  ignore_auto_tag
   organized
   o_counter
 }

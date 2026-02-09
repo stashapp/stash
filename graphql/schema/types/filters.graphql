@@ -475,6 +475,8 @@ input StudioFilterType {
   aliases: StringCriterionInput
   "Filter by subsidiary studio count"
   child_count: IntCriterionInput
+  "Filter by autotag ignore value"
+  ignore_auto_tag: Boolean
   "Filter by organized"
   organized: Boolean
   "Filter by related scenes that meet this criteria"

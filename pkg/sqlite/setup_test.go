@@ -1864,11 +1864,11 @@ func createStudios(ctx context.Context, n int, o int) error {
 		name = getStudioStringValue(index, name)
 		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
-			Name:      name,
-			URLs:      models.NewRelatedStrings(getStudioStringList(i, urlField)),
-			Favorite:  getStudioBoolValue(index),
-			Organized: getIgnoreAutoTag(i),
-			TagIDs:    models.NewRelatedIDs(tids),
+			Name:          name,
+			URLs:          models.NewRelatedStrings(getStudioStringList(i, urlField)),
+			Favorite:      getStudioBoolValue(index),
+			IgnoreAutoTag: getIgnoreAutoTag(i),
+			TagIDs:        models.NewRelatedIDs(tids),
 		}
 		// only add aliases for some scenes
 		if i == studioIdxWithGroup || i%5 == 0 {

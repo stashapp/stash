@@ -23,12 +23,13 @@ type FinderImageStashIDGetter interface {
 // ToJSON converts a Studio object into its JSON equivalent.
 func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models.Studio) (*jsonschema.Studio, error) {
 	newStudioJSON := jsonschema.Studio{
-		Name:      studio.Name,
-		Details:   studio.Details,
-		Favorite:  studio.Favorite,
-		Organized: studio.Organized,
-		CreatedAt: json.JSONTime{Time: studio.CreatedAt},
-		UpdatedAt: json.JSONTime{Time: studio.UpdatedAt},
+		Name:          studio.Name,
+		Details:       studio.Details,
+		Favorite:      studio.Favorite,
+		IgnoreAutoTag: studio.IgnoreAutoTag,
+		Organized:     studio.Organized,
+		CreatedAt:     json.JSONTime{Time: studio.CreatedAt},
+		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt},
 	}
 
 	if studio.ParentID != nil {

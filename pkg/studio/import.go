@@ -228,13 +228,14 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 
 func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 	newStudio := models.Studio{
-		Name:      studioJSON.Name,
-		Aliases:   models.NewRelatedStrings(studioJSON.Aliases),
-		Details:   studioJSON.Details,
-		Favorite:  studioJSON.Favorite,
-		Organized: studioJSON.Organized,
-		CreatedAt: studioJSON.CreatedAt.GetTime(),
-		UpdatedAt: studioJSON.UpdatedAt.GetTime(),
+		Name:          studioJSON.Name,
+		Aliases:       models.NewRelatedStrings(studioJSON.Aliases),
+		Details:       studioJSON.Details,
+		Favorite:      studioJSON.Favorite,
+		IgnoreAutoTag: studioJSON.IgnoreAutoTag,
+		Organized:     studioJSON.Organized,
+		CreatedAt:     studioJSON.CreatedAt.GetTime(),
+		UpdatedAt:     studioJSON.UpdatedAt.GetTime(),
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(studioJSON.StashIDs),
