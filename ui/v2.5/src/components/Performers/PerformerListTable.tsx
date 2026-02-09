@@ -187,8 +187,12 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <>{FormatWeight(performer.weight)}</>
   );
 
-  const CareerLengthCell = (performer: GQL.PerformerDataFragment) => (
-    <span className="ellips-data">{performer.career_length}</span>
+  const CareerStartCell = (performer: GQL.PerformerDataFragment) => (
+    <>{performer.career_start}</>
+  );
+
+  const CareerEndCell = (performer: GQL.PerformerDataFragment) => (
+    <>{performer.career_end}</>
   );
 
   const SceneCountCell = (performer: GQL.PerformerDataFragment) => (
@@ -326,10 +330,16 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       render: FakeTitsCell,
     },
     {
-      value: "career_length",
-      label: intl.formatMessage({ id: "career_length" }),
+      value: "career_start",
+      label: intl.formatMessage({ id: "career_start" }),
       defaultShow: true,
-      render: CareerLengthCell,
+      render: CareerStartCell,
+    },
+    {
+      value: "career_end",
+      label: intl.formatMessage({ id: "career_end" }),
+      defaultShow: true,
+      render: CareerEndCell,
     },
     {
       value: "scene_count",

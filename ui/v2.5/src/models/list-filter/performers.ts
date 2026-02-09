@@ -32,7 +32,7 @@ const sortByOptions = [
   "play_count",
   "last_played_at",
   "latest_scene",
-  "career_length",
+  "career_start",
   "weight",
   "measurements",
   "scenes_duration",
@@ -75,6 +75,8 @@ const numberCriteria: CriterionType[] = [
   "age",
   "weight",
   "penis_length",
+  "career_start",
+  "career_end",
 ];
 
 const stringCriteria: CriterionType[] = [
@@ -86,7 +88,6 @@ const stringCriteria: CriterionType[] = [
   "eye_color",
   "measurements",
   "fake_tits",
-  "career_length",
   "tattoos",
   "piercings",
   "aliases",

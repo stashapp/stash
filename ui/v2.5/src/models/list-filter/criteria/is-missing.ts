@@ -58,7 +58,7 @@ export const PerformerIsMissingCriterionOption = new IsMissingCriterionOption(
     "weight",
     "measurements",
     "fake_tits",
-    "career_length",
+    "career_start",
     "tattoos",
     "piercings",
     "aliases",

@@ -139,7 +139,8 @@ input PerformerFilterType {
   "Filter by ciricumcision"
   circumcised: CircumcisionCriterionInput
   "Filter by career length"
-  career_length: StringCriterionInput @deprecated(reason: "Use career_start and career_end")
+  career_length: StringCriterionInput
+    @deprecated(reason: "Use career_start and career_end")
   "Filter by career start year"
   career_start: IntCriterionInput
   "Filter by career end year"
