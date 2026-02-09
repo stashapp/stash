@@ -107,9 +107,7 @@ export const scrapedPerformerToCreateInput = (
     career_start: toCreate.career_start
       ? Number(toCreate.career_start)
       : undefined,
-    career_end: toCreate.career_end
-      ? Number(toCreate.career_end)
-      : undefined,
+    career_end: toCreate.career_end ? Number(toCreate.career_end) : undefined,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
     alias_list: aliases,

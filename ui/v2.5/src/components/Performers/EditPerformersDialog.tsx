@@ -364,11 +364,15 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("piercings", updateInput.piercings, (v) =>
             setUpdateField({ piercings: v })
           )}
-          {renderTextField("career_start", updateInput.career_start?.toString(), (v) =>
-            setUpdateField({ career_start: v ? parseInt(v) : undefined })
+          {renderTextField(
+            "career_start",
+            updateInput.career_start?.toString(),
+            (v) => setUpdateField({ career_start: v ? parseInt(v) : undefined })
           )}
-          {renderTextField("career_end", updateInput.career_end?.toString(), (v) =>
-            setUpdateField({ career_end: v ? parseInt(v) : undefined })
+          {renderTextField(
+            "career_end",
+            updateInput.career_end?.toString(),
+            (v) => setUpdateField({ career_end: v ? parseInt(v) : undefined })
           )}
 
           <Form.Group controlId="tags">
