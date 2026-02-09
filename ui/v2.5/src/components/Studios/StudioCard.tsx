@@ -189,7 +189,11 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
       if (studio.organized) {
         return (
           <OverlayTrigger
-            overlay={<Tooltip id="organized-tooltip"><FormattedMessage id="organized" /></Tooltip>}
+            overlay={
+              <Tooltip id="organized-tooltip">
+                <FormattedMessage id="organized" />
+              </Tooltip>
+            }
             placement="bottom"
           >
             <div className="organized">
