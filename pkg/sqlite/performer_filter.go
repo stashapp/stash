@@ -129,7 +129,8 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			}
 		}),
 
-		stringCriterionHandler(filter.CareerLength, tableName+".career_length"),
+		intCriterionHandler(filter.CareerStart, tableName+".career_start", nil),
+		intCriterionHandler(filter.CareerEnd, tableName+".career_end", nil),
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),

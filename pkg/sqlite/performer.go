@@ -780,7 +780,6 @@ func (qb *PerformerStore) sortByScenesDuration(direction string) string {
 
 var performerSortOptions = sortOptions{
 	"birthdate",
-	"career_length",
 	"career_start",
 	"career_end",
 	"created_at",

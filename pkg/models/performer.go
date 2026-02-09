@@ -137,7 +137,11 @@ type PerformerFilterType struct {
 	// Filter by circumcision
 	Circumcised *CircumcisionCriterionInput `json:"circumcised"`
 	// Filter by career length
-	CareerLength *StringCriterionInput `json:"career_length"`
+	CareerLength *StringCriterionInput `json:"career_length"` // deprecated
+	// Filter by career start year
+	CareerStart *IntCriterionInput `json:"career_start"`
+	// Filter by career end year
+	CareerEnd *IntCriterionInput `json:"career_end"`
 	// Filter by tattoos
 	Tattoos *StringCriterionInput `json:"tattoos"`
 	// Filter by piercings
