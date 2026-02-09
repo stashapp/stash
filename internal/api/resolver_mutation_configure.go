@@ -278,6 +278,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	r.setConfigBool(config.CalculateMD5, input.CalculateMd5)
+	r.setConfigBool(config.CalculateSHA1, input.CalculateSha1)
 	r.setConfigInt(config.ParallelTasks, input.ParallelTasks)
 	r.setConfigBool(config.PreviewAudio, input.PreviewAudio)
 	r.setConfigInt(config.PreviewSegments, input.PreviewSegments)

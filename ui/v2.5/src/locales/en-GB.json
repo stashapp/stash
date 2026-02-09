@@ -343,6 +343,8 @@
       "cache_path_head": "Cache path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
       "calculate_md5_and_ohash_label": "Calculate MD5 for videos",
+      "calculate_sha1_desc": "Calculate SHA1 checksum in addition to oshash. Enabling will cause initial scans to be slower.",
+      "calculate_sha1_label": "Calculate SHA1 for videos",
       "check_for_insecure_certificates": "Check for insecure certificates",
       "check_for_insecure_certificates_desc": "Some sites use insecure SSL certificates. When unticked the scraper skips the insecure certificates check and allows scraping of those sites. If you get a certificate error when scraping untick this.",
       "chrome_cdp_path": "Chrome CDP path",

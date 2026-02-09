@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/hash/oshash"
+	"github.com/stashapp/stash/pkg/hash/sha1"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -60,6 +61,25 @@ func (c *fingerprintCalculator) calculateMD5(o file.Opener) (*models.Fingerprint
 	}, nil
 }
 
+func (c *fingerprintCalculator) calculateSHA1(o file.Opener) (*models.Fingerprint, error) {
+	r, err := o.Open()
+	if err != nil {
+		return nil, fmt.Errorf("opening file: %w", err)
+	}
+
+	defer r.Close()
+
+	hash, err := sha1.FromReader(r)
+	if err != nil {
+		return nil, fmt.Errorf("calculating sha1: %w", err)
+	}
+
+	return &models.Fingerprint{
+		Type:        models.FingerprintTypeSHA1,
+		Fingerprint: hash,
+	}, nil
+}
+
 func (c *fingerprintCalculator) CalculateFingerprints(f *models.BaseFile, o file.Opener, useExisting bool) ([]models.Fingerprint, error) {
 	var ret []models.Fingerprint
 	calculateMD5 := true
@@ -105,6 +125,32 @@ func (c *fingerprintCalculator) CalculateFingerprints(f *models.BaseFile, o file
 			}
 
 			fp, err = c.calculateMD5(o)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		ret = append(ret, *fp)
+	}
+
+	// only calculate SHA1 for video files if enabled in config
+	if useAsVideo(f.Path) && c.Config.IsCalculateSHA1() {
+		var (
+			fp  *models.Fingerprint
+			err error
+		)
+
+		if useExisting {
+			fp = f.Fingerprints.For(models.FingerprintTypeSHA1)
+		}
+
+		if fp == nil {
+			if useExisting {
+				// log to indicate missing fingerprint is being calculated
+				logger.Infof("Calculating SHA1 for %s ...", f.Path)
+			}
+
+			fp, err = c.calculateSHA1(o)
 			if err != nil {
 				return nil, err
 			}

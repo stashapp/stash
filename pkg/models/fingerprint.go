@@ -8,6 +8,7 @@ import (
 var (
 	FingerprintTypeOshash = "oshash"
 	FingerprintTypeMD5    = "md5"
+	FingerprintTypeSHA1   = "sha1"
 	FingerprintTypePhash  = "phash"
 )
 

@@ -273,6 +273,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           onChange={(v) => saveGeneral({ calculateMD5: v })}
         />
 
+        <BooleanSetting
+          id="calculate-sha1"
+          headingID="config.general.calculate_sha1_label"
+          subHeadingID="config.general.calculate_sha1_desc"
+          checked={general.calculateSHA1 ?? false}
+          onChange={(v) => saveGeneral({ calculateSHA1: v })}
+        />
+
         <SelectSetting
           id="generated_file_naming_hash"
           headingID="config.general.generated_file_naming_hash_head"
