@@ -40,10 +40,10 @@ type studioRow struct {
 	CreatedAt Timestamp   `db:"created_at"`
 	UpdatedAt Timestamp   `db:"updated_at"`
 	// expressed as 1-100
-	Rating        null.Int    `db:"rating"`
-	Favorite      bool        `db:"favorite"`
-	Details       zero.String `db:"details"`
-	Organized bool `db:"organized"`
+	Rating    null.Int    `db:"rating"`
+	Favorite  bool        `db:"favorite"`
+	Details   zero.String `db:"details"`
+	Organized bool        `db:"organized"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -63,14 +63,14 @@ func (r *studioRow) fromStudio(o models.Studio) {
 
 func (r *studioRow) resolve() *models.Studio {
 	ret := &models.Studio{
-		ID:            r.ID,
-		Name:          r.Name.String,
-		ParentID:      nullIntPtr(r.ParentID),
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
-		Rating:        nullIntPtr(r.Rating),
-		Favorite:      r.Favorite,
-		Details:       r.Details.String,
+		ID:        r.ID,
+		Name:      r.Name.String,
+		ParentID:  nullIntPtr(r.ParentID),
+		CreatedAt: r.CreatedAt.Timestamp,
+		UpdatedAt: r.UpdatedAt.Timestamp,
+		Rating:    nullIntPtr(r.Rating),
+		Favorite:  r.Favorite,
+		Details:   r.Details.String,
 		Organized: r.Organized,
 	}
 

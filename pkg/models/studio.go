@@ -57,14 +57,14 @@ type StudioCreateInput struct {
 	Urls     []string `json:"urls"`
 	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string        `json:"image"`
-	StashIds      []StashIDInput `json:"stash_ids"`
-	Rating100     *int           `json:"rating100"`
-	Favorite      *bool          `json:"favorite"`
-	Details       *string        `json:"details"`
-	Aliases       []string       `json:"aliases"`
-	TagIds        []string       `json:"tag_ids"`
-	Organized *bool `json:"organized"`
+	Image     *string        `json:"image"`
+	StashIds  []StashIDInput `json:"stash_ids"`
+	Rating100 *int           `json:"rating100"`
+	Favorite  *bool          `json:"favorite"`
+	Details   *string        `json:"details"`
+	Aliases   []string       `json:"aliases"`
+	TagIds    []string       `json:"tag_ids"`
+	Organized *bool          `json:"organized"`
 
 	CustomFields map[string]interface{} `json:"custom_fields"`
 }
@@ -76,14 +76,14 @@ type StudioUpdateInput struct {
 	Urls     []string `json:"urls"`
 	ParentID *string  `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string        `json:"image"`
-	StashIds      []StashIDInput `json:"stash_ids"`
-	Rating100     *int           `json:"rating100"`
-	Favorite      *bool          `json:"favorite"`
-	Details       *string        `json:"details"`
-	Aliases       []string       `json:"aliases"`
-	TagIds        []string       `json:"tag_ids"`
-	Organized *bool `json:"organized"`
+	Image     *string        `json:"image"`
+	StashIds  []StashIDInput `json:"stash_ids"`
+	Rating100 *int           `json:"rating100"`
+	Favorite  *bool          `json:"favorite"`
+	Details   *string        `json:"details"`
+	Aliases   []string       `json:"aliases"`
+	TagIds    []string       `json:"tag_ids"`
+	Organized *bool          `json:"organized"`
 
 	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

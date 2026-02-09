@@ -12,10 +12,10 @@ type Studio struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	// Rating expressed in 1-100 scale
-	Rating        *int   `json:"rating"`
-	Favorite      bool   `json:"favorite"`
-	Details       string `json:"details"`
-	Organized bool `json:"organized"`
+	Rating    *int   `json:"rating"`
+	Favorite  bool   `json:"favorite"`
+	Details   string `json:"details"`
+	Organized bool   `json:"organized"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
 	URLs     RelatedStrings  `json:"urls"`
@@ -56,11 +56,11 @@ type StudioPartial struct {
 	Name     OptionalString
 	ParentID OptionalInt
 	// Rating expressed in 1-100 scale
-	Rating        OptionalInt
-	Favorite      OptionalBool
-	Details       OptionalString
-	CreatedAt     OptionalTime
-	UpdatedAt     OptionalTime
+	Rating    OptionalInt
+	Favorite  OptionalBool
+	Details   OptionalString
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
 	Organized OptionalBool
 
 	Aliases  *UpdateStrings
