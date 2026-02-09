@@ -232,7 +232,7 @@ func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 		Aliases:       models.NewRelatedStrings(studioJSON.Aliases),
 		Details:       studioJSON.Details,
 		Favorite:      studioJSON.Favorite,
-		IgnoreAutoTag: studioJSON.IgnoreAutoTag,
+		Organized: studioJSON.Organized,
 		CreatedAt:     studioJSON.CreatedAt.GetTime(),
 		UpdatedAt:     studioJSON.UpdatedAt.GetTime(),
 

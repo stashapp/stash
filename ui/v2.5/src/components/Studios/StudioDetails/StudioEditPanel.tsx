@@ -60,7 +60,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     parent_id: yup.string().required().nullable(),
     aliases: yupRequiredStringArray(intl).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
-    ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
   });
@@ -73,7 +72,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     parent_id: studio.parent_studio?.id ?? null,
     aliases: studio.aliases ?? [],
     tag_ids: (studio.tags ?? []).map((t) => t.id),
-    ignore_auto_tag: studio.ignore_auto_tag ?? false,
     stash_ids: getStashIDs(studio.stash_ids),
   };
 
@@ -242,8 +240,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
             <Icon icon={faPlus} />
           </Button>
         )}
-        <hr />
-        {renderInputField("ignore_auto_tag", "checkbox")}
       </Form>
 
       <DetailsEditNavbar

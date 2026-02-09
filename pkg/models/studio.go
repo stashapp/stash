@@ -34,8 +34,6 @@ type StudioFilterType struct {
 	Aliases *StringCriterionInput `json:"aliases"`
 	// Filter by subsidiary studio count
 	ChildCount *IntCriterionInput `json:"child_count"`
-	// Filter by autotag ignore value
-	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by related scenes that meet this criteria
@@ -66,8 +64,7 @@ type StudioCreateInput struct {
 	Details       *string        `json:"details"`
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
-	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
-	Organized     *bool          `json:"organized"`
+	Organized *bool `json:"organized"`
 
 	CustomFields map[string]interface{} `json:"custom_fields"`
 }
@@ -86,8 +83,7 @@ type StudioUpdateInput struct {
 	Details       *string        `json:"details"`
 	Aliases       []string       `json:"aliases"`
 	TagIds        []string       `json:"tag_ids"`
-	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
-	Organized     *bool          `json:"organized"`
+	Organized *bool `json:"organized"`
 
 	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

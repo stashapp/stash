@@ -23,7 +23,7 @@ type Studio struct {
 	Aliases       []string         `json:"aliases,omitempty"`
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
 	Tags          []string         `json:"tags,omitempty"`
-	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+	Organized bool `json:"organized,omitempty"`
 
 	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 
