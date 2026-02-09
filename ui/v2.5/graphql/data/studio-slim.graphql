@@ -17,5 +17,7 @@ fragment SlimStudioData on Studio {
     id
     name
   }
+  favorite
+  organized
   o_counter
 }
