@@ -143,7 +143,6 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   }
   setCoverImage
   setOrganized
-  includeMalePerformers
   performerGenders
   skipMultipleMatches
   skipMultipleMatchTag
