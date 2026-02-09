@@ -70,6 +70,13 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		newPerformerJSON.PenisLength = *performer.PenisLength
 	}
 
+	if performer.CareerStart != nil {
+		newPerformerJSON.CareerStart = performer.CareerStart
+	}
+	if performer.CareerEnd != nil {
+		newPerformerJSON.CareerEnd = performer.CareerEnd
+	}
+
 	if err := performer.LoadAliases(ctx, reader); err != nil {
 		return nil, fmt.Errorf("loading performer aliases: %w", err)
 	}

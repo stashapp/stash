@@ -281,5 +281,19 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		}
 	}
 
+	// prefer explicit career_start/career_end, fall back to parsing legacy career_length
+	if performerJSON.CareerStart != nil || performerJSON.CareerEnd != nil {
+		newPerformer.CareerStart = performerJSON.CareerStart
+		newPerformer.CareerEnd = performerJSON.CareerEnd
+	} else if performerJSON.CareerLength != "" {
+		start, end, err := ParseCareerLength(performerJSON.CareerLength)
+		if err != nil {
+			logger.Warnf("error parsing career_length %q: %v", performerJSON.CareerLength, err)
+		} else {
+			newPerformer.CareerStart = start
+			newPerformer.CareerEnd = end
+		}
+	}
+
 	return newPerformer
 }
