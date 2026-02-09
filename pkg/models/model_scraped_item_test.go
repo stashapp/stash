@@ -8,6 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func strPtr(s string) *string { return &s }
+func intPtr(i int) *int       { return &i }
+
 func Test_scrapedToStudioInput(t *testing.T) {
 	const name = "name"
 	url := "url"
@@ -183,7 +186,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Weight:         nextVal(),
 				Measurements:   nextVal(),
 				FakeTits:       nextVal(),
-				CareerLength:   nextVal(),
+				CareerLength: func() *string { _ = nextVal(); return strPtr("2005 - 2015") }(),
 				Tattoos:        nextVal(),
 				Piercings:      nextVal(),
 				Aliases:        nextVal(),
@@ -208,8 +211,9 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Weight:         nextIntVal(),
 				Measurements:   *nextVal(),
 				FakeTits:       *nextVal(),
-				CareerLength:   *nextVal(),
-				Tattoos:        *nextVal(),
+				CareerStart: intPtr(2005),
+				CareerEnd:   intPtr(2015),
+				Tattoos: func() string { _ = nextVal(); return *nextVal() }(), // skip CareerLength counter slot
 				Piercings:      *nextVal(),
 				Aliases:        NewRelatedStrings([]string{*nextVal()}),
 				URLs:           NewRelatedStrings([]string{*nextVal(), *nextVal(), *nextVal()}),
