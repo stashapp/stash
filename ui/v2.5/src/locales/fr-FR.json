@@ -288,7 +288,7 @@
             "until_restart": "jusqu'au redémarrage",
             "video_sort_order": "Ordre de tri vidéo par défaut",
             "video_sort_order_desc": "Commande pour trier les vidéos par défaut.",
-            "server_port": "Port du Serveur",
+            "server_port": "Port du serveur",
             "server_port_desc": "Port sur lequel le serveur DLNA doit fonctionner. Nécessite un redémarrage du DLNA après modification."
         },
         "general": {
@@ -319,7 +319,7 @@
                 "log_file_max_size_desc": "Taille maximale en mégaoctets du fichier journal avant compression. 0 Mo est désactivé. Nécessite un redémarrage."
             },
             "backup_directory_path": {
-                "description": "Emplacement de sauvegarde des bases de données SQLite",
+                "description": "Emplacement de sauvegarde des bases de données SQLite.",
                 "heading": "Chemin du répertoire de sauvegarde"
             },
             "blobs_path": {
@@ -338,14 +338,14 @@
             "check_for_insecure_certificates_desc": "Certains sites utilisent des certificats SSL non sécurisés. Lorsque cette option est décochée, l'extracteur de contenu ignore la vérification des certificats non sécurisés et autorise l'extraction de ces sites. Si vous obtenez une erreur de certificat lors de l'extraction, décochez cette option.",
             "chrome_cdp_path": "Chemin Chrome CDP (Chrome Debugging Protocol)",
             "chrome_cdp_path_desc": "Chemin de l'exécutable Chrome, ou adresse distante (commençant par http:// ou https://, par exemple http://localhost:9222/json/version) d'une instance de Chrome.",
-            "create_galleries_from_folders_desc": "Si vrai, crée par défaut des galeries à partir des répertoires contenant des images. Créer un fichier appelé .forcegallery ou .nogallery dans un répertoire pour forcer/empêcher cela.",
+            "create_galleries_from_folders_desc": "Si vrai, crée par défaut des galeries à partir des répertoires contenant des images. Créer un fichier appelé .forcegallery ou .nogallery dans un répertoire pour remplacer ce paramètre.",
             "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
             "database": "Base de données",
             "db_path_head": "Chemin de la base de données",
             "directory_locations_to_your_content": "Emplacements de votre contenu",
-            "excluded_image_gallery_patterns_desc": "Expressions régulières de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
+            "excluded_image_gallery_patterns_desc": "Expressions régulières de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter aux tâches de nettoyage.",
             "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclus",
-            "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
+            "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter aux tâches de nettoyage.",
             "excluded_video_patterns_head": "Modèles de vidéo exclus",
             "ffmpeg": {
                 "hardware_acceleration": {
@@ -378,22 +378,22 @@
                 },
                 "ffmpeg_path": {
                     "heading": "Chemin de l'exécutable FFmpeg",
-                    "description": "Chemin vers l'exécutable de FFmpeg (pas seulement le répertoire). Si vide, FFmpeg sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash"
+                    "description": "Chemin vers l'exécutable de FFmpeg (pas seulement le répertoire). Si vide, FFmpeg sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash."
                 },
                 "ffprobe_path": {
-                    "description": "Chemin vers l'exécutable de FFprobe (pas seulement le répertoire). Si vide, FFprobe sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash",
+                    "description": "Chemin vers l'exécutable de FFprobe (pas seulement le répertoire). Si vide, FFprobe sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash.",
                     "heading": "Chemin de l'exécutable FFprobe"
                 }
             },
             "funscript_heatmap_draw_range": "Inclure l'amplitude dans les cartes thermiques générées",
             "funscript_heatmap_draw_range_desc": "Dessiner l'étendue du mouvement sur l'axe des ordonnées de la carte thermique générée. Les cartes thermiques existantes devront être régénérées après modifications.",
-            "gallery_cover_regex_desc": "Expression régulière utilisée pour identifier une image comme vignette de la galerie",
+            "gallery_cover_regex_desc": "Expressions régulières utilisées pour identifier une image comme vignette de la galerie.",
             "gallery_cover_regex_label": "Modèle de vignette de la galerie",
-            "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives zip de la galerie.",
-            "gallery_ext_head": "Extensions zip de la galerie",
+            "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives ZIP de la galerie.",
+            "gallery_ext_head": "Extensions ZIP de la galerie",
             "generated_file_naming_hash_desc": "Utilisez MD5 ou oshash pour le nommage des fichiers générés. Le modifier exige que toutes les scènes soient renseignées avec une valeur MD5/oshash appropriée. Après avoir modifié cette valeur, les fichiers générés existants devront être migrés ou régénérés. Voir la page Tâches pour la migration.",
             "generated_file_naming_hash_head": "Empreinte pour le nommage des fichiers générés",
-            "generated_files_location": "Emplacement des fichiers générés (marqueurs de scène, aperçus de scène, sprites, etc.)",
+            "generated_files_location": "Emplacement des fichiers générés (marqueurs de scène, aperçus de scène, sprites, etc.).",
             "generated_path_head": "Chemin des fichiers générés",
             "hashing": "Hachage",
             "heatmap_generation": "Génération de la carte thermique du script interactif",
@@ -402,26 +402,26 @@
             "include_audio_desc": "Inclure le flux audio lors de la génération des aperçus.",
             "include_audio_head": "Inclure l'audio",
             "logging": "Journalisation",
-            "maximum_streaming_transcode_size_desc": "Résolution maximale pour les flux transcodés",
+            "maximum_streaming_transcode_size_desc": "Résolution maximale pour les flux transcodés.",
             "maximum_streaming_transcode_size_head": "Résolution maximale du flux transcodé",
-            "maximum_transcode_size_desc": "Résolution maximale pour les transcodes générés",
+            "maximum_transcode_size_desc": "Résolution maximale pour les transcodes générés.",
             "maximum_transcode_size_head": "Résolution maximale de transcodage",
             "metadata_path": {
-                "description": "Emplacement utilisé lors d'une exportation ou d'une importation complète",
+                "description": "Emplacement utilisé lors d'une exportation ou d'une importation complète.",
                 "heading": "Chemin des métadonnées"
             },
-            "number_of_parallel_task_for_scan_generation_desc": "Définir à 0 pour une détection automatique. Avertissement exécuter plus de tâches que ce qui est nécessaire pour atteindre une utilisation à 100% du processeur diminuera les performances et pourra causer d'autres problèmes.",
+            "number_of_parallel_task_for_scan_generation_desc": "Définir à 0 pour une détection automatique. Avertissement exécuter plus de tâches que ce qui est nécessaire pour atteindre une utilisation à 100% du CPU diminuera les performances et pourra causer d'autres problèmes.",
             "number_of_parallel_task_for_scan_generation_head": "Nombre de tâches parallèles pour l'analyse et la génération",
             "parallel_scan_head": "Analyse ou génération en parallèle",
             "preview_generation": "Génération d'aperçu",
             "python_path": {
-                "description": "Chemin de l'exécutable python (pas uniquement le répertoire). Utilisé par les extracteurs de contenu et les plugins. Si vide, python sera résolu à partir de l'environnement",
+                "description": "Chemin de l'exécutable python (pas uniquement le répertoire). Utilisé par les extracteurs de contenu et les plugins. Si vide, Python sera résolu à partir de l'environnement.",
                 "heading": "Chemin de l'exécutable Python"
             },
             "scraper_user_agent": "Agent utilisateur de l'extracteur",
-            "scraper_user_agent_desc": "Chaîne agent utilisateur utilisée par les requêtes http lors de l'extraction de contenu",
+            "scraper_user_agent_desc": "Chaîne agent utilisateur utilisée par les requêtes HTTP lors de l'extraction de contenu.",
             "scrapers_path": {
-                "description": "Emplacement des fichiers de configuration des extracteurs de contenu",
+                "description": "Emplacement des fichiers de configuration des extracteurs de contenu.",
                 "heading": "Chemin des extracteurs de contenu"
             },
             "scraping": "Extraction de données",
@@ -430,7 +430,7 @@
             "video_ext_head": "Extensions de fichiers vidéo",
             "video_head": "Vidéo",
             "plugins_path": {
-                "description": "Emplacement du répertoire des fichiers de configuration des plugins",
+                "description": "Emplacement du répertoire des fichiers de configuration des plugins.",
                 "heading": "Chemin des plugins"
             },
             "delete_trash_path": {
@@ -455,7 +455,7 @@
         "scraping": {
             "entity_metadata": "Métadonnées {entityType}",
             "entity_scrapers": "Extracteurs de {entityType}",
-            "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de l'extraction",
+            "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de l'extraction.",
             "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
             "scraper": "Extracteur",
             "scrapers": "Extracteurs",
@@ -492,7 +492,7 @@
             "auto_tagging": "Étiquetage automatique",
             "backing_up_database": "Sauvegarde de la base de données",
             "backup_and_download": "Effectue une sauvegarde de la base de données et télécharge le fichier résultant.",
-            "backup_database": "Effectue un enregistrement de la base de données dans le répertoire de sauvegarde, avec le format de nom de fichier {filename_format}",
+            "backup_database": "Effectue un enregistrement de la base de données dans le répertoire de sauvegarde, avec le format de nom de fichier {filename_format}.",
             "cleanup_desc": "Vérifier les fichiers manquants et les supprimer de la base de données. Cette action est irréversible.",
             "data_management": "Gestion des données",
             "defaults_set": "Les valeurs par défaut ont été définies et seront utilisées en cliquant sur le bouton {action} de la page Tâches.",
@@ -618,9 +618,9 @@
                 "option_label": "Activer le CSS personnalisé"
             },
             "custom_javascript": {
-                "description": "La page doit être actualisée pour que les changements prennent effet. La compatibilité entre le Javascript personnalisé et les futures versions de Stash n'est pas garantie.",
-                "heading": "Javascript personnalisé",
-                "option_label": "Activer le Javascript personnalisé"
+                "description": "La page doit être actualisée pour que les changements prennent effet. La compatibilité entre le JavaScript personnalisé et les futures versions de Stash n'est pas garantie.",
+                "heading": "JavaScript personnalisé",
+                "option_label": "Activer le JavaScript personnalisé"
             },
             "custom_locales": {
                 "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/fr-FR.json pour la liste principale. La page doit être actualisée pour que les changements prennent effet.",
@@ -638,13 +638,13 @@
             "desktop_integration": {
                 "desktop_integration": "Intégration au bureau",
                 "notifications_enabled": "Activer les notifications",
-                "send_desktop_notifications_for_events": "Envoyer des notifications sur le bureau en cas d'événements",
+                "send_desktop_notifications_for_events": "Envoyer des notifications sur le bureau en cas d'événements.",
                 "skip_opening_browser": "Ne pas ouvrir de navigateur",
-                "skip_opening_browser_on_startup": "Ignorer l'ouverture automatique du navigateur lors du démarrage"
+                "skip_opening_browser_on_startup": "Ignorer l'ouverture automatique du navigateur lors du démarrage."
             },
             "detail": {
                 "compact_expanded_details": {
-                    "description": "Activée, cette option présentera des détails plus étendus en préservant une présentation compacte",
+                    "description": "Activée, cette option présentera des détails plus étendus en préservant une présentation compacte.",
                     "heading": "Détails étendus compacts"
                 },
                 "enable_background_image": {
@@ -653,13 +653,13 @@
                 },
                 "heading": "Page Détail",
                 "show_all_details": {
-                    "description": "Activée, tous les détails du contenu seront affichés par défaut et chaque élément détaillé tiendra dans une seule colonne",
+                    "description": "Activée, tous les détails du contenu seront affichés par défaut et chaque élément détaillé tiendra dans une seule colonne.",
                     "heading": "Montrer tous les détails"
                 }
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "Supprimer la possibilité de créer de nouveaux objets à partir des sélecteurs de liste déroulante",
+                    "description": "Supprimer la possibilité de créer de nouveaux objets à partir des sélecteurs de liste déroulante.",
                     "heading": "Désactiver la création depuis la liste déroulante"
                 },
                 "heading": "Édition",
@@ -700,7 +700,7 @@
                 "sync": "Synchroniser"
             },
             "handy_connection_key": {
-                "description": "Clé de connexion Handy à utiliser pour les scènes interactives. En définissant cette clé, vous permettez à Stash de partager les informations de votre scène actuelle avec handyfeeling.com",
+                "description": "Clé de connexion Handy à utiliser pour les scènes interactives. En définissant cette clé, vous permettez à Stash de partager les informations de votre scène actuelle avec handyfeeling.com.",
                 "heading": "Clé de connexion Handy"
             },
             "image_lightbox": {
@@ -715,11 +715,11 @@
                 "heading": "Images",
                 "options": {
                     "create_image_clips_from_videos": {
-                        "description": "Lorsqu'une bibliothèque a des vidéos désactivées, les fichiers vidéo (fichiers se terminant par une extension vidéo) seront analysés comme séquences d'images.",
+                        "description": "Lorsqu'une bibliothèque a des vidéos désactivées, les fichiers vidéo (voir extension vidéo) seront analysés comme séquences d'images.",
                         "heading": "Analyser les extensions vidéo comme séquences d'images"
                     },
                     "write_image_thumbnails": {
-                        "description": "Écrire les vignettes des images sur disque lorsqu'elles sont générées à la volée",
+                        "description": "Écrire les vignettes des images sur disque lorsqu'elles sont générées à la volée.",
                         "heading": "Enregistrer les vignettes des images"
                     }
                 }
@@ -729,11 +729,11 @@
                 "heading": "Langue"
             },
             "max_loop_duration": {
-                "description": "Durée maximale de la scène pendant laquelle le lecteur bouclera la vidéo - 0 pour désactiver",
+                "description": "Durée maximale de la scène pendant laquelle le lecteur bouclera la vidéo. Définir sur 0 pour désactiver.",
                 "heading": "Durée maximale de la boucle"
             },
             "menu_items": {
-                "description": "Afficher ou masquer différents types de contenus dans la barre de navigation",
+                "description": "Afficher ou masquer différents types de contenus dans la barre de navigation.",
                 "heading": "Éléments de la barre de navigation"
             },
             "minimum_play_percent": {
@@ -743,7 +743,7 @@
             "performers": {
                 "options": {
                     "image_location": {
-                        "description": "Emplacement personnalisé pour les images de performeurs par défaut. Laisser vide pour utiliser les réglages intégrés par défaut",
+                        "description": "Emplacement personnalisé pour les images de performeurs par défaut. Laisser vide pour utiliser les réglages intégrés par défaut.",
                         "heading": "Chemin de l'image personnalisée du performeur"
                     }
                 }
@@ -769,16 +769,16 @@
                     "always_start_from_beginning": "Toujours démarrer la vidéo depuis le début",
                     "auto_start_video": "Démarrer automatiquement la vidéo",
                     "auto_start_video_on_play_selected": {
-                        "description": "Démarrage automatique des scènes vidéo lorsqu'elles sont lues à partir de la file d'attente, d'une sélection ou aléatoires à partir de la page Scènes",
+                        "description": "Démarrage automatique des scènes vidéo lorsqu'elles sont lues à partir de la file d'attente, d'une sélection ou aléatoires à partir de la page Scènes.",
                         "heading": "Démarrer automatiquement la vidéo lorsque lecture est sélectionnée"
                     },
                     "continue_playlist_default": {
-                        "description": "Lire la scène suivante de la file d'attente lorsque une vidéo se termine",
+                        "description": "Lire la scène suivante de la file d'attente lorsque une vidéo se termine.",
                         "heading": "Continuer la liste de lecture par défaut"
                     },
                     "disable_mobile_media_auto_rotate": "Désactiver la rotation automatique des médias en plein écran sur mobile",
                     "enable_chromecast": "Activer Chromecast",
-                    "show_ab_loop_controls": "Afficher les commandes du plugin AB Loop",
+                    "show_ab_loop_controls": "Afficher les commandes de boucle AB",
                     "show_scrubber": "Montrer la barre de progression",
                     "track_activity": "Activer l'historique de lecture des scènes",
                     "vr_tag": {
@@ -800,18 +800,18 @@
                 "heading": "Tentatives de défilement avant transition"
             },
             "show_tag_card_on_hover": {
-                "description": "Afficher une fiche d'identification lors du survol des badges d'étiquettes",
+                "description": "Afficher une fiche d'identification lors du survol des badges d'étiquettes.",
                 "heading": "Infobulles d'identification"
             },
             "slideshow_delay": {
-                "description": "Le diaporama est disponible dans galerie en mode de vue mural",
+                "description": "Le diaporama est disponible dans galerie en mode de vue mural.",
                 "heading": "Délai du diaporama (secondes)"
             },
             "studio_panel": {
                 "heading": "Vue studios",
                 "options": {
                     "show_child_studio_content": {
-                        "description": "Dans la vue studios, afficher également le contenu des studios affiliés",
+                        "description": "Dans la vue studios, afficher également le contenu des studios affiliés.",
                         "heading": "Afficher le contenu des studios affiliés"
                     }
                 }
@@ -820,7 +820,7 @@
                 "heading": "Vue étiquettes",
                 "options": {
                     "show_child_tagged_content": {
-                        "description": "Dans la vue étiquettes, afficher également le contenu des étiquettes affiliées",
+                        "description": "Dans la vue étiquettes, afficher également le contenu des étiquettes affiliées.",
                         "heading": "Afficher le contenu des étiquettes affiliées"
                     }
                 }
@@ -952,7 +952,7 @@
             "page_header": "Page {page} / {total}",
             "reset_zoom_on_nav": "Réinitialisation du facteur de zoom lors d'un changement d'image",
             "scale_up": {
-                "description": "Redimensionner les petites images pour les adapter à l'écran",
+                "description": "Redimensionner les petites images pour les adapter à l'écran.",
                 "label": "Mise à l'échelle"
             },
             "scroll_mode": {
