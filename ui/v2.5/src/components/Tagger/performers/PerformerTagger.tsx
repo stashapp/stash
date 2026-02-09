@@ -780,8 +780,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
                 setConfig({ ...config, excludedPerformerFields: fields })
               }
               fields={PERFORMER_FIELDS}
-              messagePrefix="performer_tagger"
-              entityUpdateMessageId="performer_tagger.config.these_fields_will_not_be_changed_when_updating_performers"
+              entityName="performers"
             />
             <PerformerTaggerList
               performers={performers}

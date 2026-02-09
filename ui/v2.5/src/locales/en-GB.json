@@ -1319,14 +1319,6 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_performers": "Batch Add Performers",
     "batch_update_performers": "Batch Update Performers",
-    "config": {
-      "active_stash-box_instance": "Active stash-box instance:",
-      "edit_excluded_fields": "Edit Excluded Fields",
-      "excluded_fields": "Excluded fields:",
-      "no_fields_are_excluded": "No fields are excluded",
-      "no_instances_found": "No instances found",
-      "these_fields_will_not_be_changed_when_updating_performers": "These fields will not be changed when updating performers."
-    },
     "current_page": "Current page",
     "failed_to_save_performer": "Failed to save performer \"{performer}\"",
     "name_already_exists": "Name already exists",
@@ -1529,14 +1521,8 @@
     "batch_add_studios": "Batch Add Studios",
     "batch_update_studios": "Batch Update Studios",
     "config": {
-      "active_stash-box_instance": "Active stash-box instance:",
       "create_parent_desc": "Create missing parent studios, or tag and update data/image for existing parent studios with exact name matches",
-      "create_parent_label": "Create parent studios",
-      "edit_excluded_fields": "Edit Excluded Fields",
-      "excluded_fields": "Excluded fields:",
-      "no_fields_are_excluded": "No fields are excluded",
-      "no_instances_found": "No instances found",
-      "these_fields_will_not_be_changed_when_updating_studios": "These fields will not be changed when updating studios."
+      "create_parent_label": "Create parent studios"
     },
     "create_or_tag_parent_studios": "Create missing or tag existing parent studios",
     "current_page": "Current page",
@@ -1583,14 +1569,6 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_tags": "Batch Add Tags",
     "batch_update_tags": "Batch Update Tags",
-    "config": {
-      "active_stash-box_instance": "Active stash-box instance:",
-      "edit_excluded_fields": "Edit Excluded Fields",
-      "excluded_fields": "Excluded fields:",
-      "no_fields_are_excluded": "No fields are excluded",
-      "no_instances_found": "No instances found",
-      "these_fields_will_not_be_changed_when_updating_tags": "These fields will not be changed when updating tags."
-    },
     "current_page": "Current page",
     "failed_to_save_tag": "Failed to save tag \"{tag}\"",
     "name_already_exists": "Name already exists",
@@ -1611,6 +1589,16 @@
     "untagged_tags": "Untagged tags",
     "update_tags": "Update Tags",
     "updating_untagged_tags_description": "Updating untagged tags will try to match any tags that lack a stashid and update the metadata."
+  },
+  "tagger": {
+    "config": {
+      "active_stash-box_instance": "Active stash-box instance:",
+      "edit_excluded_fields": "Edit Excluded Fields",
+      "excluded_fields": "Excluded fields:",
+      "fields_will_not_be_changed": "These fields will not be changed when updating {entity}.",
+      "no_fields_are_excluded": "No fields are excluded",
+      "no_instances_found": "No instances found"
+    }
   },
   "tags": "Tags",
   "tattoos": "Tattoos",

@@ -834,8 +834,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
                 setConfig({ ...config, excludedStudioFields: fields })
               }
               fields={STUDIO_FIELDS}
-              messagePrefix="studio_tagger"
-              entityUpdateMessageId="studio_tagger.config.these_fields_will_not_be_changed_when_updating_studios"
+              entityName="studios"
               extraConfig={
                 <Form.Group
                   controlId="create-parent"

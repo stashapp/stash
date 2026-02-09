@@ -705,8 +705,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
                 setConfig({ ...config, excludedTagFields: fields })
               }
               fields={TAG_FIELDS}
-              messagePrefix="tag_tagger"
-              entityUpdateMessageId="tag_tagger.config.these_fields_will_not_be_changed_when_updating_tags"
+              entityName="tags"
             />
             <TagTaggerList
               tags={tags}

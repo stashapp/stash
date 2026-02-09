@@ -13,8 +13,7 @@ interface ITaggerConfigProps {
   excludedFields: string[];
   onFieldsChange: (fields: string[]) => void;
   fields: string[];
-  messagePrefix: string;
-  entityUpdateMessageId: string;
+  entityName: string;
   extraConfig?: React.ReactNode;
 }
 
@@ -25,8 +24,7 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
   excludedFields,
   onFieldsChange,
   fields,
-  messagePrefix,
-  entityUpdateMessageId,
+  entityName,
   extraConfig,
 }) => {
   const { configuration: stashConfig } = useConfigurationContext();
@@ -60,9 +58,7 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
               {extraConfig}
               <Form.Group controlId="excluded-fields">
                 <h6>
-                  <FormattedMessage
-                    id={`${messagePrefix}.config.excluded_fields`}
-                  />
+                  <FormattedMessage id="tagger.config.excluded_fields" />
                 </h6>
                 <span>
                   {excludedFields.length > 0 ? (
@@ -72,21 +68,20 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
                       </Badge>
                     ))
                   ) : (
-                    <FormattedMessage
-                      id={`${messagePrefix}.config.no_fields_are_excluded`}
-                    />
+                    <FormattedMessage id="tagger.config.no_fields_are_excluded" />
                   )}
                 </span>
                 <Form.Text>
-                  <FormattedMessage id={entityUpdateMessageId} />
+                  <FormattedMessage
+                    id="tagger.config.fields_will_not_be_changed"
+                    values={{ entity: entityName }}
+                  />
                 </Form.Text>
                 <Button
                   onClick={() => setShowExclusionModal(true)}
                   className="mt-2"
                 >
-                  <FormattedMessage
-                    id={`${messagePrefix}.config.edit_excluded_fields`}
-                  />
+                  <FormattedMessage id="tagger.config.edit_excluded_fields" />
                 </Button>
               </Form.Group>
               <Form.Group
@@ -94,9 +89,7 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
                 className="align-items-center row no-gutters mt-4"
               >
                 <Form.Label className="mr-4">
-                  <FormattedMessage
-                    id={`${messagePrefix}.config.active_stash-box_instance`}
-                  />
+                  <FormattedMessage id="tagger.config.active_stash-box_instance" />
                 </Form.Label>
                 <Form.Control
                   as="select"
@@ -107,9 +100,7 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
                 >
                   {!stashBoxes.length && (
                     <option>
-                      <FormattedMessage
-                        id={`${messagePrefix}.config.no_instances_found`}
-                      />
+                      <FormattedMessage id="tagger.config.no_instances_found" />
                     </option>
                   )}
                   {stashConfig?.general.stashBoxes.map((i) => (
