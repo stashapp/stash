@@ -31,7 +31,7 @@ var (
 	url               = "url"
 	details           = "details"
 	parentStudioName  = "parentStudio"
-	studioOrganized    = true
+	studioOrganized   = true
 	emptyCustomFields = make(map[string]interface{})
 	customFields      = map[string]interface{}{
 		"customField1": "customValue1",
@@ -64,18 +64,18 @@ var (
 
 func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{
-		ID:            id,
-		Name:          studioName,
-		URLs:          models.NewRelatedStrings([]string{url}),
-		Details:       details,
-		Favorite:      true,
-		CreatedAt:     createTime,
-		UpdatedAt:     updateTime,
-		Rating:        &rating,
+		ID:        id,
+		Name:      studioName,
+		URLs:      models.NewRelatedStrings([]string{url}),
+		Details:   details,
+		Favorite:  true,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
+		Rating:    &rating,
 		Organized: studioOrganized,
-		Aliases:       models.NewRelatedStrings(aliases),
-		TagIDs:        models.NewRelatedIDs([]int{}),
-		StashIDs:      models.NewRelatedStashIDs(stashIDs),
+		Aliases:   models.NewRelatedStrings(aliases),
+		TagIDs:    models.NewRelatedIDs([]int{}),
+		StashIDs:  models.NewRelatedStashIDs(stashIDs),
 	}
 
 	if parentID != 0 {
@@ -109,13 +109,13 @@ func createFullJSONStudio(parentStudio, image string, aliases []string, customFi
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
-		ParentStudio:  parentStudio,
-		Image:         image,
-		Rating:        rating,
-		Aliases:       aliases,
-		StashIDs:      stashIDs,
-		Organized: studioOrganized,
-		CustomFields:  customFields,
+		ParentStudio: parentStudio,
+		Image:        image,
+		Rating:       rating,
+		Aliases:      aliases,
+		StashIDs:     stashIDs,
+		Organized:    studioOrganized,
+		CustomFields: customFields,
 	}
 }
 

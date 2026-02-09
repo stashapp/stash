@@ -75,19 +75,19 @@ func loadStudioRelationships(ctx context.Context, expected models.Studio, actual
 
 func Test_StudioStore_Create(t *testing.T) {
 	var (
-		name          = "name"
-		details       = "details"
-		url           = "url"
-		rating        = 3
-		aliases       = []string{"alias1", "alias2"}
+		name      = "name"
+		details   = "details"
+		url       = "url"
+		rating    = 3
+		aliases   = []string{"alias1", "alias2"}
 		organized = true
-		favorite      = true
-		endpoint1     = "endpoint1"
-		endpoint2     = "endpoint2"
-		stashID1      = "stashid1"
-		stashID2      = "stashid2"
-		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		favorite  = true
+		endpoint1 = "endpoint1"
+		endpoint2 = "endpoint2"
+		stashID1  = "stashid1"
+		stashID2  = "stashid2"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -99,14 +99,14 @@ func Test_StudioStore_Create(t *testing.T) {
 			"full",
 			models.CreateStudioInput{
 				Studio: &models.Studio{
-					Name:          name,
-					URLs:          models.NewRelatedStrings([]string{url}),
-					Favorite:      favorite,
-					Rating:        &rating,
-					Details:       details,
+					Name:      name,
+					URLs:      models.NewRelatedStrings([]string{url}),
+					Favorite:  favorite,
+					Rating:    &rating,
+					Details:   details,
 					Organized: organized,
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]}),
-					Aliases:       models.NewRelatedStrings(aliases),
+					TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]}),
+					Aliases:   models.NewRelatedStrings(aliases),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
 							StashID:   stashID1,
@@ -200,19 +200,19 @@ func Test_StudioStore_Create(t *testing.T) {
 
 func Test_StudioStore_Update(t *testing.T) {
 	var (
-		name          = "name"
-		details       = "details"
-		url           = "url"
-		rating        = 3
-		aliases       = []string{"aliasX", "aliasY"}
+		name      = "name"
+		details   = "details"
+		url       = "url"
+		rating    = 3
+		aliases   = []string{"aliasX", "aliasY"}
 		organized = true
-		favorite      = true
-		endpoint1     = "endpoint1"
-		endpoint2     = "endpoint2"
-		stashID1      = "stashid1"
-		stashID2      = "stashid2"
-		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		favorite  = true
+		endpoint1 = "endpoint1"
+		endpoint2 = "endpoint2"
+		stashID1  = "stashid1"
+		stashID2  = "stashid2"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -224,15 +224,15 @@ func Test_StudioStore_Update(t *testing.T) {
 			"full",
 			models.UpdateStudioInput{
 				Studio: &models.Studio{
-					ID:            studioIDs[studioIdxWithGallery],
-					Name:          name,
-					URLs:          models.NewRelatedStrings([]string{url}),
-					Favorite:      favorite,
-					Rating:        &rating,
-					Details:       details,
+					ID:        studioIDs[studioIdxWithGallery],
+					Name:      name,
+					URLs:      models.NewRelatedStrings([]string{url}),
+					Favorite:  favorite,
+					Rating:    &rating,
+					Details:   details,
 					Organized: organized,
-					Aliases:       models.NewRelatedStrings(aliases),
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+					Aliases:   models.NewRelatedStrings(aliases),
+					TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
 							StashID:   stashID1,
@@ -374,19 +374,19 @@ func clearStudioPartial() models.StudioPartial {
 
 func Test_StudioStore_UpdatePartial(t *testing.T) {
 	var (
-		name          = "name"
-		details       = "details"
-		url           = "url"
-		aliases       = []string{"aliasX", "aliasY"}
-		rating        = 3
+		name      = "name"
+		details   = "details"
+		url       = "url"
+		aliases   = []string{"aliasX", "aliasY"}
+		rating    = 3
 		organized = true
-		favorite      = true
-		endpoint1     = "endpoint1"
-		endpoint2     = "endpoint2"
-		stashID1      = "stashid1"
-		stashID2      = "stashid2"
-		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		favorite  = true
+		endpoint1 = "endpoint1"
+		endpoint2 = "endpoint2"
+		stashID1  = "stashid1"
+		stashID2  = "stashid2"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -409,9 +409,9 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 					Values: aliases,
 					Mode:   models.RelationshipUpdateModeSet,
 				},
-				Favorite:      models.NewOptionalBool(favorite),
-				Rating:        models.NewOptionalInt(rating),
-				Details:       models.NewOptionalString(details),
+				Favorite:  models.NewOptionalBool(favorite),
+				Rating:    models.NewOptionalInt(rating),
+				Details:   models.NewOptionalString(details),
 				Organized: models.NewOptionalBool(organized),
 				TagIDs: &models.UpdateIDs{
 					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]},
@@ -436,15 +436,15 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 			},
 			models.Studio{
-				ID:            studioIDs[studioIdxWithDupName],
-				Name:          name,
-				URLs:          models.NewRelatedStrings([]string{url}),
-				Aliases:       models.NewRelatedStrings(aliases),
-				Favorite:      favorite,
-				Rating:        &rating,
-				Details:       details,
+				ID:        studioIDs[studioIdxWithDupName],
+				Name:      name,
+				URLs:      models.NewRelatedStrings([]string{url}),
+				Aliases:   models.NewRelatedStrings(aliases),
+				Favorite:  favorite,
+				Rating:    &rating,
+				Details:   details,
 				Organized: organized,
-				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:   stashID1,
@@ -467,12 +467,12 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 			studioIDs[studioIdxWithTwoTags],
 			clearStudioPartial(),
 			models.Studio{
-				ID:            studioIDs[studioIdxWithTwoTags],
-				Name:          getStudioStringValue(studioIdxWithTwoTags, "Name"),
-				Favorite:      getStudioBoolValue(studioIdxWithTwoTags),
-				Aliases:       models.NewRelatedStrings([]string{}),
-				TagIDs:        models.NewRelatedIDs([]int{}),
-				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				ID:        studioIDs[studioIdxWithTwoTags],
+				Name:      getStudioStringValue(studioIdxWithTwoTags, "Name"),
+				Favorite:  getStudioBoolValue(studioIdxWithTwoTags),
+				Aliases:   models.NewRelatedStrings([]string{}),
+				TagIDs:    models.NewRelatedIDs([]int{}),
+				StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 				Organized: getIgnoreAutoTag(studioIdxWithTwoTags),
 			},
 			false,
