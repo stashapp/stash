@@ -48,7 +48,7 @@ func TestImporterPreImport(t *testing.T) {
 		Input: jsonschema.Studio{
 			Name:          studioName,
 			Image:         invalidImage,
-			IgnoreAutoTag: autoTagIgnored,
+			Organized: studioOrganized,
 		},
 	}
 
