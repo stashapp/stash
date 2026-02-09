@@ -186,7 +186,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Weight:         nextVal(),
 				Measurements:   nextVal(),
 				FakeTits:       nextVal(),
-				CareerLength: func() *string { _ = nextVal(); return strPtr("2005 - 2015") }(),
+				CareerLength:   func() *string { _ = nextVal(); return strPtr("2005 - 2015") }(),
 				Tattoos:        nextVal(),
 				Piercings:      nextVal(),
 				Aliases:        nextVal(),
@@ -211,9 +211,9 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Weight:         nextIntVal(),
 				Measurements:   *nextVal(),
 				FakeTits:       *nextVal(),
-				CareerStart: intPtr(2005),
-				CareerEnd:   intPtr(2015),
-				Tattoos: func() string { _ = nextVal(); return *nextVal() }(), // skip CareerLength counter slot
+				CareerStart:    intPtr(2005),
+				CareerEnd:      intPtr(2015),
+				Tattoos:        func() string { _ = nextVal(); return *nextVal() }(), // skip CareerLength counter slot
 				Piercings:      *nextVal(),
 				Aliases:        NewRelatedStrings([]string{*nextVal()}),
 				URLs:           NewRelatedStrings([]string{*nextVal(), *nextVal(), *nextVal()}),
