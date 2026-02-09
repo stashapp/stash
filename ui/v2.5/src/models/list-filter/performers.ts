@@ -33,6 +33,7 @@ const sortByOptions = [
   "last_played_at",
   "latest_scene",
   "career_start",
+  "career_end",
   "weight",
   "measurements",
   "scenes_duration",
