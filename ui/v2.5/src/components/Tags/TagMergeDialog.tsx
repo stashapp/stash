@@ -446,14 +446,19 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
   }, [tags]);
 
   async function loadTags() {
-    const tagIDs = src.map((s) => s.id);
-    tagIDs.push(dest!.id);
-    const query = await queryFindTagsByID(tagIDs);
-    const { tags: loadedTags } = query.data.findTags;
+    try {
+      const tagIDs = src.map((s) => s.id);
+      tagIDs.push(dest!.id);
+      const query = await queryFindTagsByID(tagIDs);
+      const { tags: loadedTags } = query.data.findTags;
 
-    setLoadedDest(loadedTags.find((s) => s.id === dest!.id));
-    setLoadedSources(loadedTags.filter((s) => s.id !== dest!.id));
-    setSecondStep(true);
+      setLoadedDest(loadedTags.find((s) => s.id === dest!.id));
+      setLoadedSources(loadedTags.filter((s) => s.id !== dest!.id));
+      setSecondStep(true);
+    } catch (e) {
+      Toast.error(e);
+      return;
+    }
   }
 
   async function onMerge(values: GQL.TagUpdateInput) {
