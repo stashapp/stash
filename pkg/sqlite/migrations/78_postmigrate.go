@@ -11,14 +11,14 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-type schema76Migrator struct {
+type schema78Migrator struct {
 	migrator
 }
 
-func post76(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 76")
+func post78(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running post-migration for schema version 78")
 
-	m := schema76Migrator{
+	m := schema78Migrator{
 		migrator: migrator{
 			db: db,
 		},
@@ -35,7 +35,7 @@ func post76(ctx context.Context, db *sqlx.DB) error {
 	return nil
 }
 
-func (m *schema76Migrator) migrateCareerLength(ctx context.Context) error {
+func (m *schema78Migrator) migrateCareerLength(ctx context.Context) error {
 	logger.Info("Migrating career_length to career_start/career_end")
 
 	const limit = 1000
@@ -107,7 +107,7 @@ func (m *schema76Migrator) migrateCareerLength(ctx context.Context) error {
 	return nil
 }
 
-func (m *schema76Migrator) updateCareerFields(tx *sqlx.Tx, id int, start *int, end *int) error {
+func (m *schema78Migrator) updateCareerFields(tx *sqlx.Tx, id int, start *int, end *int) error {
 	_, err := tx.Exec(
 		"UPDATE performers SET career_start = ?, career_end = ? WHERE id = ?",
 		start, end, id,
@@ -115,7 +115,7 @@ func (m *schema76Migrator) updateCareerFields(tx *sqlx.Tx, id int, start *int, e
 	return err
 }
 
-func (m *schema76Migrator) preserveAsCustomField(tx *sqlx.Tx, id int, value string) error {
+func (m *schema78Migrator) preserveAsCustomField(tx *sqlx.Tx, id int, value string) error {
 	// check if a career_length custom field already exists
 	var existing sql.NullString
 	err := tx.Get(&existing, "SELECT value FROM performer_custom_fields WHERE performer_id = ? AND field = 'career_length'", id)
@@ -131,7 +131,7 @@ func (m *schema76Migrator) preserveAsCustomField(tx *sqlx.Tx, id int, value stri
 	return err
 }
 
-func (m *schema76Migrator) dropCareerLength() error {
+func (m *schema78Migrator) dropCareerLength() error {
 	logger.Info("Dropping career_length column from performers table")
 	return m.execAll([]string{
 		"ALTER TABLE performers DROP COLUMN career_length",
@@ -139,5 +139,5 @@ func (m *schema76Migrator) dropCareerLength() error {
 }
 
 func init() {
-	sqlite.RegisterPostMigration(76, post76)
+	sqlite.RegisterPostMigration(78, post78)
 }
