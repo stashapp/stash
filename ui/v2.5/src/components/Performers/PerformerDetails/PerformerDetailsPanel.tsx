@@ -173,8 +173,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           fullWidth={fullWidth}
         />
         <DetailItem
-          id="career_length"
-          value={performer?.career_length}
+          id="career_start"
+          value={performer?.career_start?.toString()}
+          fullWidth={fullWidth}
+        />
+        <DetailItem
+          id="career_end"
+          value={performer?.career_end?.toString()}
           fullWidth={fullWidth}
         />
         <DetailItem id="details" value={details} fullWidth={fullWidth} />
