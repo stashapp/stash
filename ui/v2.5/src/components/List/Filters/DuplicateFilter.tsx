@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { Form } from "react-bootstrap";
+import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Option, SelectedList } from "./SidebarListFilter";
@@ -16,6 +9,7 @@ import {
   DUPLICATION_FIELD_IDS,
   DUPLICATION_FIELD_MESSAGE_IDS,
 } from "src/models/list-filter/criteria/phash";
+import { IndeterminateCheckbox } from "src/components/Shared/IndeterminateCheckbox";
 import { SidebarSection } from "src/components/Shared/Sidebar";
 import { Icon } from "src/components/Shared/Icon";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -25,43 +19,6 @@ interface IDuplicatedFilter {
   criterion: DuplicatedCriterion;
   setCriterion: (c: DuplicatedCriterion) => void;
 }
-
-const TriStateCheck: React.FC<{
-  id: string;
-  label: string;
-  value: boolean | undefined;
-  onChange: (value: boolean | undefined) => void;
-}> = ({ id, label, value, onChange }) => {
-  const ref = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.indeterminate = value === undefined;
-    }
-  }, [value]);
-
-  function onClick() {
-    // cycle: indeterminate (undefined) → checked (true) → unchecked (false) → indeterminate
-    if (value === undefined) {
-      onChange(true);
-    } else if (value === true) {
-      onChange(false);
-    } else {
-      onChange(undefined);
-    }
-  }
-
-  return (
-    <Form.Check
-      ref={ref}
-      id={id}
-      type="checkbox"
-      checked={value === true}
-      onChange={onClick}
-      label={label}
-    />
-  );
-};
 
 export const DuplicatedFilter: React.FC<IDuplicatedFilter> = ({
   criterion,
@@ -85,14 +42,14 @@ export const DuplicatedFilter: React.FC<IDuplicatedFilter> = ({
   return (
     <div className="duplicated-filter">
       {DUPLICATION_FIELD_IDS.map((fieldId) => (
-        <TriStateCheck
+        <IndeterminateCheckbox
           key={fieldId}
           id={`duplicated-${fieldId}`}
           label={intl.formatMessage({
             id: DUPLICATION_FIELD_MESSAGE_IDS[fieldId],
           })}
-          value={criterion.value[fieldId]}
-          onChange={(v) => onFieldChange(fieldId, v)}
+          checked={criterion.value[fieldId]}
+          setChecked={(v) => onFieldChange(fieldId, v)}
         />
       ))}
     </div>
