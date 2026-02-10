@@ -119,6 +119,18 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "scenes":
 				f.addLeftJoin("groups_scenes", "", "groups_scenes.group_id = groups.id")
 				f.addWhere("groups_scenes.scene_id IS NULL")
+			case "url":
+				groupsURLsTableMgr.join(f, "", "groups.id")
+				f.addWhere("group_urls.url IS NULL")
+			case "studio":
+				f.addWhere("groups.studio_id IS NULL")
+			case "performers":
+				f.addLeftJoin("groups_scenes", "gs_perf", "groups.id = gs_perf.group_id")
+				f.addLeftJoin("performers_scenes", "ps_perf", "gs_perf.scene_id = ps_perf.scene_id")
+				f.addWhere("ps_perf.performer_id IS NULL")
+			case "tags":
+				groupRepository.tags.join(f, "tags_join", "groups.id")
+				f.addWhere("tags_join.group_id IS NULL")
 			default:
 				f.addWhere("(groups." + *isMissing + " IS NULL OR TRIM(groups." + *isMissing + ") = '')")
 			}
