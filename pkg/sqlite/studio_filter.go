@@ -150,6 +150,12 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 			case "stash_id":
 				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
+			case "aliases":
+				studiosAliasesTableMgr.join(f, "", "studios.id")
+				f.addWhere("studio_aliases.alias IS NULL")
+			case "tags":
+				f.addLeftJoin(studiosTagsTable, "tags_join", "tags_join.studio_id = studios.id")
+				f.addWhere("tags_join.studio_id IS NULL")
 			default:
 				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
 			}
