@@ -164,6 +164,9 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				imagesURLsTableMgr.join(f, "", "images.id")
+				f.addWhere("image_urls.url IS NULL")
 			case "studio":
 				f.addWhere("images.studio_id IS NULL")
 			case "performers":
