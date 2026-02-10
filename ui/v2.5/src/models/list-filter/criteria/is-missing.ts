@@ -92,7 +92,19 @@ export const PerformerIsMissingCriterionOption = new IsMissingCriterionOption(
 export const GalleryIsMissingCriterionOption = new IsMissingCriterionOption(
   "isMissing",
   "is_missing",
-  ["title", "code", "details", "photographer", "url", "date", "cover", "studio", "performers", "tags", "scenes"]
+  [
+    "title",
+    "code",
+    "details",
+    "photographer",
+    "url",
+    "date",
+    "cover",
+    "studio",
+    "performers",
+    "tags",
+    "scenes",
+  ]
 );
 
 export const TagIsMissingCriterionOption = new IsMissingCriterionOption(
