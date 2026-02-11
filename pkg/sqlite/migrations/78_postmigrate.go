@@ -120,7 +120,7 @@ func (m *schema78Migrator) preserveAsCustomField(tx *sqlx.Tx, id int, value stri
 	var existing sql.NullString
 	err := tx.Get(&existing, "SELECT value FROM performer_custom_fields WHERE performer_id = ? AND field = 'career_length'", id)
 	if err == nil {
-		// already exists, skip
+		logger.Debugf("career_length custom field already exists for performer %d, skipping", id)
 		return nil
 	}
 
