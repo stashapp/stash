@@ -176,7 +176,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           id="career_length"
           value={
             performer?.career_start || performer?.career_end
-              ? `${performer.career_start ?? ""} - ${performer.career_end ?? ""}`
+              ? `${performer.career_start ?? ""} - ${
+                  performer.career_end ?? ""
+                }`
               : undefined
           }
           fullWidth={fullWidth}
