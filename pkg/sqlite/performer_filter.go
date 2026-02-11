@@ -129,6 +129,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			}
 		}),
 
+		// CareerLength filter is deprecated and non-functional (column removed in schema 78)
 		intCriterionHandler(filter.CareerStart, tableName+".career_start", nil),
 		intCriterionHandler(filter.CareerEnd, tableName+".career_end", nil),
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
