@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/plugin/hook"
@@ -56,9 +57,13 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.CareerEnd = input.CareerEnd
 	// if career_start/career_end not provided, parse deprecated career_length
 	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
-		start, end, _ := performer.ParseCareerLength(*input.CareerLength)
-		newPerformer.CareerStart = start
-		newPerformer.CareerEnd = end
+		start, end, err := performer.ParseCareerLength(*input.CareerLength)
+		if err != nil {
+			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
+		} else {
+			newPerformer.CareerStart = start
+			newPerformer.CareerEnd = end
+		}
 	}
 	newPerformer.Tattoos = translator.string(input.Tattoos)
 	newPerformer.Piercings = translator.string(input.Piercings)
@@ -273,12 +278,16 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 		updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
 		updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
-		start, end, _ := performer.ParseCareerLength(*input.CareerLength)
-		if start != nil {
-			updatedPerformer.CareerStart = models.NewOptionalInt(*start)
-		}
-		if end != nil {
-			updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
+		start, end, err := performer.ParseCareerLength(*input.CareerLength)
+		if err != nil {
+			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
+		} else {
+			if start != nil {
+				updatedPerformer.CareerStart = models.NewOptionalInt(*start)
+			}
+			if end != nil {
+				updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
+			}
 		}
 	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
@@ -441,12 +450,16 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
 		updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
-		start, end, _ := performer.ParseCareerLength(*input.CareerLength)
-		if start != nil {
-			updatedPerformer.CareerStart = models.NewOptionalInt(*start)
-		}
-		if end != nil {
-			updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
+		start, end, err := performer.ParseCareerLength(*input.CareerLength)
+		if err != nil {
+			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
+		} else {
+			if start != nil {
+				updatedPerformer.CareerStart = models.NewOptionalInt(*start)
+			}
+			if end != nil {
+				updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
+			}
 		}
 	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
