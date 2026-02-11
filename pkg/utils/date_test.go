@@ -2,6 +2,9 @@ package utils
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseDateStringAsTime(t *testing.T) {
@@ -38,6 +41,46 @@ func TestParseDateStringAsTime(t *testing.T) {
 					t.Errorf("Expected non-zero time for input %q", tt.input)
 				}
 			}
+		})
+	}
+}
+
+func TestParseYearRangeString(t *testing.T) {
+	intPtr := func(v int) *int { return &v }
+
+	tests := []struct {
+		name      string
+		input     string
+		wantStart *int
+		wantEnd   *int
+		wantErr   bool
+	}{
+		{"single year", "2005", intPtr(2005), nil, false},
+		{"year range with spaces", "2005 - 2010", intPtr(2005), intPtr(2010), false},
+		{"year range no spaces", "2005-2010", intPtr(2005), intPtr(2010), false},
+		{"year dash open", "2005 -", intPtr(2005), nil, false},
+		{"year dash open no space", "2005-", intPtr(2005), nil, false},
+		{"dash year", "- 2010", nil, intPtr(2010), false},
+		{"year present", "2005-present", intPtr(2005), nil, false},
+		{"year Present caps", "2005 - Present", intPtr(2005), nil, false},
+		{"whitespace padding", "  2005 - 2010  ", intPtr(2005), intPtr(2010), false},
+		{"empty string", "", nil, nil, true},
+		{"garbage", "not a year", nil, nil, true},
+		{"partial garbage start", "abc - 2010", nil, nil, true},
+		{"partial garbage end", "2005 - abc", nil, nil, true},
+		{"year out of range", "1800", nil, nil, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			start, end, err := ParseYearRangeString(tt.input)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantStart, start)
+			assert.Equal(t, tt.wantEnd, end)
 		})
 	}
 }

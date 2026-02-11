@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"fmt"
-
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -226,7 +224,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 	if p.CareerLength != nil && !excluded["career_length"] {
 		// parse career_length into career_start/career_end if they aren't explicitly set
 		if p.CareerStart == nil && p.CareerEnd == nil {
-			start, end, err := parseCareerLengthString(*p.CareerLength)
+			start, end, err := utils.ParseYearRangeString(*p.CareerLength)
 			if err == nil {
 				if start != nil {
 					s := strconv.Itoa(*start)
@@ -386,7 +384,7 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 	}
 	if p.CareerLength != nil && !excluded["career_length"] {
 		// parse career_length into career_start/career_end
-		start, end, err := parseCareerLengthString(*p.CareerLength)
+		start, end, err := utils.ParseYearRangeString(*p.CareerLength)
 		if err == nil {
 			if start != nil {
 				ret.CareerStart = NewOptionalInt(*start)
@@ -698,48 +696,3 @@ type ScrapedGalleryInput struct {
 	URL *string `json:"url"`
 }
 
-// parseCareerLengthString parses a career_length string like "YYYY - YYYY" into start/end year ints.
-// This is a local copy to avoid circular imports with pkg/performer.
-func parseCareerLengthString(s string) (start *int, end *int, err error) {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return nil, nil, fmt.Errorf("empty string")
-	}
-
-	lower := strings.ToLower(s)
-	lower = strings.ReplaceAll(lower, "present", "")
-
-	var parts []string
-	switch {
-	case strings.Contains(lower, " - "):
-		parts = strings.SplitN(lower, " - ", 2)
-	case strings.Contains(lower, "-"):
-		parts = strings.SplitN(lower, "-", 2)
-	default:
-		year, err := strconv.Atoi(strings.TrimSpace(lower))
-		if err != nil || year < 1900 || year > 2200 {
-			return nil, nil, fmt.Errorf("invalid year %q", s)
-		}
-		return &year, nil, nil
-	}
-
-	if startStr := strings.TrimSpace(parts[0]); startStr != "" {
-		y, err := strconv.Atoi(startStr)
-		if err != nil || y < 1900 || y > 2200 {
-			return nil, nil, fmt.Errorf("invalid start year in %q", s)
-		}
-		start = &y
-	}
-	if endStr := strings.TrimSpace(parts[1]); endStr != "" {
-		y, err := strconv.Atoi(endStr)
-		if err != nil || y < 1900 || y > 2200 {
-			return nil, nil, fmt.Errorf("invalid end year in %q", s)
-		}
-		end = &y
-	}
-
-	if start == nil && end == nil {
-		return nil, nil, fmt.Errorf("could not parse %q", s)
-	}
-	return start, end, nil
-}
