@@ -541,7 +541,9 @@
                 "tag_skipped_matches": "Étiqueter les correspondances ignorées avec",
                 "tag_skipped_matches_tooltip": "Créer une étiquette telle que \"Identifier : plusieurs correspondances\" filtrable dans la vue Étiquetage de scène et déterminer la bonne correspondance manuellement",
                 "tag_skipped_performer_tooltip": "Créer une étiquette telle que \"Identifier : Performeur à nom unique\" filtrable dans la vue Étiquetage de scène et déterminer comment les traiter",
-                "tag_skipped_performers": "Étiqueter les performeurs ignorés avec"
+                "tag_skipped_performers": "Étiqueter les performeurs ignorés avec",
+                "performer_genders": "Genres des performeurs",
+                "performer_genders_desc": "Les performeurs dont le genre a été sélectionné seront inclus lors de l'identification."
             },
             "import_from_exported_json": "Importation à partir du JSON exporté dans le répertoire des métadonnées. Efface la base de données existante.",
             "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
@@ -1619,5 +1621,8 @@
         "select_stashbox": "Sélectionner une Stash-Box..."
     },
     "latest_scene": "Dernière scène",
-    "stash_id_count": "Nombre d'identifiants Stash"
+    "stash_id_count": "Nombre d'identifiants Stash",
+    "duplicated": "Dupliqué",
+    "duplicated_stash_id": "Dupliqué (identifiant Stash)",
+    "duplicated_title": "Dupliqué (Titre)"
 }
