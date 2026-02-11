@@ -695,4 +695,3 @@ type ScrapedGalleryInput struct {
 	// deprecated
 	URL *string `json:"url"`
 }
-
