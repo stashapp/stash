@@ -328,7 +328,8 @@ func TestImportCareerFields(t *testing.T) {
 			CareerEnd:   &endYear,
 		}
 
-		p := performerJSONToPerformer(input)
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
 		assert.Equal(t, &startYear, p.CareerStart)
 		assert.Equal(t, &endYear, p.CareerEnd)
 	})
@@ -342,7 +343,8 @@ func TestImportCareerFields(t *testing.T) {
 			CareerLength: "1990 - 1995",
 		}
 
-		p := performerJSONToPerformer(input)
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
 		assert.Equal(t, &startYear, p.CareerStart)
 		assert.Equal(t, &endYear, p.CareerEnd)
 	})
@@ -354,7 +356,8 @@ func TestImportCareerFields(t *testing.T) {
 			CareerLength: "2005 - 2015",
 		}
 
-		p := performerJSONToPerformer(input)
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
 		assert.Equal(t, &startYear, p.CareerStart)
 		assert.Equal(t, &endYear, p.CareerEnd)
 	})
@@ -366,21 +369,21 @@ func TestImportCareerFields(t *testing.T) {
 			CareerLength: "2005 -",
 		}
 
-		p := performerJSONToPerformer(input)
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
 		assert.Equal(t, &startYear, p.CareerStart)
 		assert.Nil(t, p.CareerEnd)
 	})
 
-	// unparseable career_length should result in nil fields
+	// unparseable career_length should return an error
 	t.Run("legacy career_length unparseable", func(t *testing.T) {
 		input := jsonschema.Performer{
 			Name:         "test",
 			CareerLength: "not a year range",
 		}
 
-		p := performerJSONToPerformer(input)
-		assert.Nil(t, p.CareerStart)
-		assert.Nil(t, p.CareerEnd)
+		_, err := performerJSONToPerformer(input)
+		assert.NotNil(t, err)
 	})
 
 	// no career fields at all
@@ -389,7 +392,8 @@ func TestImportCareerFields(t *testing.T) {
 			Name: "test",
 		}
 
-		p := performerJSONToPerformer(input)
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
 		assert.Nil(t, p.CareerStart)
 		assert.Nil(t, p.CareerEnd)
 	})
