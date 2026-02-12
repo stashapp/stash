@@ -153,7 +153,8 @@
         "add_stash_id": "Añadir ID de Stash",
         "create_new": "Crear nuevo",
         "save_and_new": "Guardar y nuevo",
-        "invert_selection": "Invertir selección"
+        "invert_selection": "Invertir selección",
+        "select_directory": "Seleccionar directorio"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -532,7 +533,9 @@
                 "tag_skipped_performer_tooltip": "Crea una etiqueta como \"Identificar: Artista con un nombre\" que puedes filtrar en el etiquetador de escenas y elegir cómo quieres tratar a estos artistas",
                 "tag_skipped_matches": "Etiquetar coincidencias omitidas con",
                 "tag_skipped_matches_tooltip": "Cree una etiqueta como 'Identificar: coincidencias múltiples' que pueda filtrar en la vista Etiquetador de escenas y elija la coincidencia correcta manualmente",
-                "tag_skipped_performers": "Etiqueta a los intérpretes omitidos con"
+                "tag_skipped_performers": "Etiqueta a los intérpretes omitidos con",
+                "performer_genders": "Género del intérprete",
+                "performer_genders_desc": "Los artistas con los géneros seleccionados serán incluidos en la identificación."
             },
             "import_from_exported_json": "Importar desde el fichero JSON exportado en el directorio de metadatos. Borrará la base de datos existente.",
             "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
@@ -853,7 +856,10 @@
                 "exit": "Salir"
             }
         },
-        "advanced_mode": "Modo avanzado"
+        "advanced_mode": "Modo avanzado",
+        "changelog": {
+            "header": "Registro de cambios"
+        }
     },
     "configuration": "Configuración",
     "countables": {
@@ -1615,5 +1621,8 @@
         "select_stashbox": "Seleccionar StashBox..."
     },
     "latest_scene": "Última escena",
-    "stash_id_count": "Recuento de ID de Stash"
+    "stash_id_count": "Recuento de ID de Stash",
+    "duplicated": "Duplicado",
+    "duplicated_stash_id": "Duplicado (ID de Stash)",
+    "duplicated_title": "Duplicado (Título)"
 }
