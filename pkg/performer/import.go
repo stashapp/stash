@@ -43,7 +43,6 @@ func (i *Importer) PreImport(ctx context.Context) error {
 		return err
 	}
 
-	var err error
 	if len(i.Input.Image) > 0 {
 		i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
