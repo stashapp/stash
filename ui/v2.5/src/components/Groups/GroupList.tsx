@@ -36,7 +36,10 @@ import {
   FilteredSidebarHeader,
   useFilteredSidebarKeybinds,
 } from "../List/Filters/FilterSidebar";
-import { IListOperations, ListOperations } from "../List/ListOperationButtons";
+import {
+  IListFilterOperation,
+  ListOperations,
+} from "../List/ListOperationButtons";
 import cx from "classnames";
 import { FilterTags } from "../List/FilterTags";
 import { Pagination, PaginationIndex } from "../List/Pagination";
@@ -345,8 +348,8 @@ export const FilteredGroupList = PatchComponent(
       );
     }
 
-    const convertedExtraOperations: IListOperations[] = providedOperations.map(
-      (o) => ({
+    const convertedExtraOperations: IListFilterOperation[] =
+      providedOperations.map((o) => ({
         ...o,
         isDisplayed: o.isDisplayed
           ? () => o.isDisplayed!(result, filter, selectedIds)
@@ -354,8 +357,7 @@ export const FilteredGroupList = PatchComponent(
         onClick: () => {
           o.onClick(result, filter, selectedIds);
         },
-      })
-    );
+      }));
 
     const otherOperations = [
       ...convertedExtraOperations,
