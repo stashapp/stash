@@ -563,9 +563,6 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
         />
-        {/* career_start and career_end are kept as separate fields here
-            (unlike the combined display in the details panel) so users can
-            select the best value for each independently when merging. */}
         <ScrapedInputGroupRow
           field="career_start"
           title={intl.formatMessage({ id: "career_start" })}
