@@ -175,7 +175,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
         />
         <DetailItem
           id="career_length"
-          value={formatYearRange(performer?.career_start, performer?.career_end)}
+          value={formatYearRange(
+            performer?.career_start,
+            performer?.career_end
+          )}
           fullWidth={fullWidth}
         />
         <DetailItem id="details" value={details} fullWidth={fullWidth} />
