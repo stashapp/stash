@@ -134,6 +134,14 @@ export const FormatWeight = (weight?: number | null) => {
   );
 };
 
+export function formatYearRange(
+  start?: number | null,
+  end?: number | null
+): string | undefined {
+  if (!start && !end) return undefined;
+  return `${start ?? ""} - ${end ?? ""}`;
+}
+
 export const FormatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
   const intl = useIntl();
   if (!circumcised) {

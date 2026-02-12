@@ -17,6 +17,7 @@ import {
   FormatHeight,
   FormatPenisLength,
   FormatWeight,
+  formatYearRange,
 } from "./PerformerList";
 import TextUtils from "src/utils/text";
 import { getCountryByISO } from "src/utils/country";
@@ -188,11 +189,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   const CareerLengthCell = (performer: GQL.PerformerDataFragment) => (
-    <>
-      {performer.career_start || performer.career_end
-        ? `${performer.career_start ?? ""} - ${performer.career_end ?? ""}`
-        : ""}
-    </>
+    <>{formatYearRange(performer.career_start, performer.career_end) ?? ""}</>
   );
 
   const SceneCountCell = (performer: GQL.PerformerDataFragment) => (
