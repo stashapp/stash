@@ -32,7 +32,11 @@ type Importer struct {
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
-	i.performer = performerJSONToPerformer(i.Input)
+	var err error
+	i.performer, err = performerJSONToPerformer(i.Input)
+	if err != nil {
+		return err
+	}
 	i.customFields = i.Input.CustomFields
 
 	if err := i.populateTags(ctx); err != nil {
@@ -196,7 +200,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Performer {
+func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Performer, error) {
 	newPerformer := models.Performer{
 		Name:           performerJSON.Name,
 		Disambiguation: performerJSON.Disambiguation,
@@ -288,12 +292,11 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	} else if performerJSON.CareerLength != "" {
 		start, end, err := utils.ParseYearRangeString(performerJSON.CareerLength)
 		if err != nil {
-			logger.Warnf("error parsing career_length %q: %v", performerJSON.CareerLength, err)
-		} else {
-			newPerformer.CareerStart = start
-			newPerformer.CareerEnd = end
+			return models.Performer{}, fmt.Errorf("invalid career_length %q: %w", performerJSON.CareerLength, err)
 		}
+		newPerformer.CareerStart = start
+		newPerformer.CareerEnd = end
 	}
 
-	return newPerformer
+	return newPerformer, nil
 }

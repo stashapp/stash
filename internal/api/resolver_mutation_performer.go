@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/plugin/hook"
@@ -59,11 +58,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
 		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
-			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
-		} else {
-			newPerformer.CareerStart = start
-			newPerformer.CareerEnd = end
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
 		}
+		newPerformer.CareerStart = start
+		newPerformer.CareerEnd = end
 	}
 	newPerformer.Tattoos = translator.string(input.Tattoos)
 	newPerformer.Piercings = translator.string(input.Piercings)
@@ -280,14 +278,13 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
 		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
-			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
-		} else {
-			if start != nil {
-				updatedPerformer.CareerStart = models.NewOptionalInt(*start)
-			}
-			if end != nil {
-				updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
-			}
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
+		}
+		if start != nil {
+			updatedPerformer.CareerStart = models.NewOptionalInt(*start)
+		}
+		if end != nil {
+			updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
 		}
 	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
@@ -452,14 +449,13 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
 		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
-			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
-		} else {
-			if start != nil {
-				updatedPerformer.CareerStart = models.NewOptionalInt(*start)
-			}
-			if end != nil {
-				updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
-			}
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
+		}
+		if start != nil {
+			updatedPerformer.CareerStart = models.NewOptionalInt(*start)
+		}
+		if end != nil {
+			updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
 		}
 	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
