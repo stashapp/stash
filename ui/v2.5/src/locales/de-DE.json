@@ -153,7 +153,8 @@
         "create_new": "Neu erstellen",
         "add_stash_id": "Stash-ID hinzufügen",
         "save_and_new": "Speichern & Neu",
-        "invert_selection": "Invertiere Auswahl"
+        "invert_selection": "Invertiere Auswahl",
+        "select_directory": "Ordner Auswählen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -841,6 +842,9 @@
             "custom_title": {
                 "description": "Benutzerdefinierter Text, der an den Seitentitel angehängt werden soll. Falls leer, wird Standard \"Stash\" verwendet.",
                 "heading": "Benutzerdefinierter Titel"
+            },
+            "troubleshooting_mode": {
+                "exit": "Abbrechen"
             }
         },
         "advanced_mode": "Fortgeschrittener Modus"
@@ -1595,5 +1599,6 @@
         "no_results": "Keine Ergebnisse gfunden.",
         "placeholder_name_or_id": "{entityType} Name oder StashID...",
         "select_stashbox": "StashBox auswählen..."
-    }
+    },
+    "duplicated": "Dupliziert"
 }
