@@ -41,14 +41,11 @@ func ParseYearRangeString(s string) (start *int, end *int, err error) {
 	lower := strings.ToLower(s)
 	lower = strings.ReplaceAll(lower, "present", "")
 
-	// split on " - ", "-", or " -"
+	// split on "-" if it contains one
 	var parts []string
-	switch {
-	case strings.Contains(lower, " - "):
-		parts = strings.SplitN(lower, " - ", 2)
-	case strings.Contains(lower, "-"):
+	if strings.Contains(lower, "-") {
 		parts = strings.SplitN(lower, "-", 2)
-	default:
+	} else {
 		// single value, treat as start year
 		year, err := parseYear(lower)
 		if err != nil {
