@@ -57,7 +57,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.CareerEnd = input.CareerEnd
 	// if career_start/career_end not provided, parse deprecated career_length
 	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
-		start, end, err := performer.ParseCareerLength(*input.CareerLength)
+		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
 			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
 		} else {
@@ -278,7 +278,7 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 		updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
 		updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
-		start, end, err := performer.ParseCareerLength(*input.CareerLength)
+		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
 			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
 		} else {
@@ -450,7 +450,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
 		updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
-		start, end, err := performer.ParseCareerLength(*input.CareerLength)
+		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
 			logger.Warnf("could not parse deprecated career_length %q: %v", *input.CareerLength, err)
 		} else {

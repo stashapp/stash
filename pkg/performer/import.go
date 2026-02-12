@@ -286,7 +286,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		newPerformer.CareerStart = performerJSON.CareerStart
 		newPerformer.CareerEnd = performerJSON.CareerEnd
 	} else if performerJSON.CareerLength != "" {
-		start, end, err := ParseCareerLength(performerJSON.CareerLength)
+		start, end, err := utils.ParseYearRangeString(performerJSON.CareerLength)
 		if err != nil {
 			logger.Warnf("error parsing career_length %q: %v", performerJSON.CareerLength, err)
 		} else {

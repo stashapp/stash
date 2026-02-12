@@ -7,7 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
@@ -76,7 +76,7 @@ func (m *schema78Migrator) migrateCareerLength(ctx context.Context) error {
 				lastID = id
 				gotSome = true
 
-				start, end, err := performer.ParseCareerLength(careerLength)
+				start, end, err := utils.ParseYearRangeString(careerLength)
 				if err != nil {
 					logger.Warnf("Could not parse career_length %q for performer %d: %v — preserving as custom field", careerLength, id, err)
 
