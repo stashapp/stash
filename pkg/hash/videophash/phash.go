@@ -1,3 +1,4 @@
+// Package videophash provides utilities for generating perceptual hashes for video files.
 package videophash
 
 import (
