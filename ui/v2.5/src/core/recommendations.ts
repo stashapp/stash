@@ -16,7 +16,7 @@ export function getSlickSliderSettings(cardCount: number, isTouch: boolean) {
   return {
     dots: !isTouch,
     arrows: !isTouch,
-    infinite: !isTouch,
+    infinite: !isTouch && cardCount > 5,
     speed: 300,
     variableWidth: true,
     swipeToSlide: true,
@@ -26,6 +26,7 @@ export function getSlickSliderSettings(cardCount: number, isTouch: boolean) {
       {
         breakpoint: 1909,
         settings: {
+          infinite: !isTouch && cardCount > 4,
           slidesToShow: cardCount! > 4 ? 4 : cardCount,
           slidesToScroll: determineSlidesToScroll(cardCount!, 4, isTouch),
         },
@@ -33,6 +34,7 @@ export function getSlickSliderSettings(cardCount: number, isTouch: boolean) {
       {
         breakpoint: 1542,
         settings: {
+          infinite: !isTouch && cardCount > 3,
           slidesToShow: cardCount! > 3 ? 3 : cardCount,
           slidesToScroll: determineSlidesToScroll(cardCount!, 3, isTouch),
         },
@@ -40,6 +42,7 @@ export function getSlickSliderSettings(cardCount: number, isTouch: boolean) {
       {
         breakpoint: 1170,
         settings: {
+          infinite: !isTouch && cardCount > 2,
           slidesToShow: cardCount! > 2 ? 2 : cardCount,
           slidesToScroll: determineSlidesToScroll(cardCount!, 2, isTouch),
         },
@@ -47,9 +50,10 @@ export function getSlickSliderSettings(cardCount: number, isTouch: boolean) {
       {
         breakpoint: 801,
         settings: {
+          infinite: !isTouch && cardCount > 1,
           slidesToShow: 1,
           slidesToScroll: 1,
-          dots: false,
+          dots: cardCount < 6,
         },
       },
     ],
