@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "Build & Test",
+      "workflows": [
+        "ci.yml",
+        "test.yml"
+      ]
+    },
+    {
+      "name": "Deployment",
+      "workflows": [
+        "deploy.yml"
+      ]
+    }
+  ]
+}
