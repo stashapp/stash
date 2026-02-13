@@ -19,7 +19,7 @@ interface ITagModalProps {
   tag: GQL.ScrapedSceneTagDataFragment;
   modalVisible: boolean;
   closeModal: () => void;
-  onSave: (input: GQL.TagUpdateInput) => void;
+  onSave: (input: GQL.TagCreateInput) => void;
   excludedTagFields?: string[];
   header: string;
   icon: IconDefinition;
@@ -96,8 +96,7 @@ const TagModal: React.FC<ITagModalProps> = ({
       throw new Error("tag name must be set");
     }
 
-    const tagData: GQL.TagUpdateInput = {
-      id: tag.stored_id ?? "",
+    const tagData: GQL.TagCreateInput = {
       name: tag.name,
       description: tag.description ?? undefined,
       aliases: tag.aliases
@@ -106,6 +105,19 @@ const TagModal: React.FC<ITagModalProps> = ({
         .filter((a) => a),
     };
 
+    // stashid handling code
+    const remoteSiteID = tag.remote_site_id;
+    if (remoteSiteID && endpoint) {
+      tagData.stash_ids = [
+        {
+          endpoint,
+          stash_id: remoteSiteID,
+          updated_at: new Date().toISOString(),
+        },
+      ];
+    }
+
+    // handle exclusions
     excludeFields(tagData, excluded);
 
     onSave(tagData);

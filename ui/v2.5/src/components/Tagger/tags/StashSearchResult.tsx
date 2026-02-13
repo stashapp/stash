@@ -37,8 +37,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const updateTag = useUpdateTag();
 
-  const handleSave = async (input: GQL.TagUpdateInput) => {
-    const selectedTag = modalTag;
+  const handleSave = async (input: GQL.TagCreateInput) => {
     setError({});
     setModalTag(undefined);
     setSaveState("Saving tag");
@@ -48,14 +47,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       id: tag.id,
     };
 
-    if (selectedTag?.remote_site_id) {
-      updateData.stash_ids = await mergeTagStashIDs(tag.id, [
-        {
-          endpoint,
-          stash_id: selectedTag.remote_site_id,
-        },
-      ]);
-    }
+    updateData.stash_ids = await mergeTagStashIDs(
+      tag.id,
+      input.stash_ids ?? []
+    );
 
     const res = await updateTag(updateData);
 
