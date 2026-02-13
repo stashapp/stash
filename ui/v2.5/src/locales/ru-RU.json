@@ -149,7 +149,9 @@
         "show_count_results": "Показать {count} результат(ов)",
         "play": "Воспроизвести",
         "load": "Загрузить",
-        "load_filter": "Загрузить фильтр"
+        "load_filter": "Загрузить фильтр",
+        "add_stash_id": "Добавить Stash ID",
+        "create_new": "Создать новый"
     },
     "actions_name": "Действия",
     "age": "Возраст",
