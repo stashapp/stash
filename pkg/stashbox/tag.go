@@ -2,6 +2,7 @@ package stashbox
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/stashapp/stash/pkg/models"
@@ -31,10 +32,8 @@ func (c Client) findTagByID(ctx context.Context, id string) ([]*models.ScrapedTa
 		return nil, nil
 	}
 
-	return []*models.ScrapedTag{{
-		Name:         tag.FindTag.Name,
-		RemoteSiteID: &tag.FindTag.ID,
-	}}, nil
+	ret := tagFragmentToScrapedTag(*tag.FindTag)
+	return []*models.ScrapedTag{ret}, nil
 }
 
 func (c Client) queryTagsByName(ctx context.Context, name string) ([]*models.ScrapedTag, error) {
@@ -57,11 +56,23 @@ func (c Client) queryTagsByName(ctx context.Context, name string) ([]*models.Scr
 
 	var ret []*models.ScrapedTag
 	for _, t := range result.QueryTags.Tags {
-		ret = append(ret, &models.ScrapedTag{
-			Name:         t.Name,
-			RemoteSiteID: &t.ID,
-		})
+		ret = append(ret, tagFragmentToScrapedTag(*t))
 	}
 
 	return ret, nil
+}
+
+func tagFragmentToScrapedTag(t graphql.TagFragment) *models.ScrapedTag {
+	ret := &models.ScrapedTag{
+		Name:         t.Name,
+		Description:  t.Description,
+		RemoteSiteID: &t.ID,
+	}
+
+	if len(t.Aliases) > 0 {
+		aliases := strings.Join(t.Aliases, ", ")
+		ret.Aliases = &aliases
+	}
+
+	return ret
 }
