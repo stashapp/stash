@@ -84,4 +84,4 @@ export const PERFORMER_FIELDS = [
 ];
 
 export const STUDIO_FIELDS = ["name", "image", "url", "parent_studio"];
-export const TAG_FIELDS = ["name"];
+export const TAG_FIELDS = ["name", "description", "aliases"];
