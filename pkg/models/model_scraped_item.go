@@ -454,6 +454,8 @@ type ScrapedTag struct {
 	// Set if tag matched
 	StoredID     *string `json:"stored_id"`
 	Name         string  `json:"name"`
+	Description  *string `json:"description"`
+	Aliases      *string `json:"aliases"`
 	RemoteSiteID *string `json:"remote_site_id"`
 }
 
@@ -466,6 +468,18 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	ret.ParentIDs = NewRelatedIDs([]int{})
 	ret.ChildIDs = NewRelatedIDs([]int{})
 	ret.Aliases = NewRelatedStrings([]string{})
+
+	if t.Description != nil && !excluded["description"] {
+		ret.Description = *t.Description
+	}
+
+	if t.Aliases != nil && !excluded["aliases"] {
+		aliases := strings.Split(*t.Aliases, ",")
+		for i, a := range aliases {
+			aliases[i] = strings.TrimSpace(a)
+		}
+		ret.Aliases = NewRelatedStrings(aliases)
+	}
 
 	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
@@ -485,6 +499,21 @@ func (t *ScrapedTag) ToPartial(storedID string, endpoint string, excluded map[st
 
 	if t.Name != "" && !excluded["name"] {
 		ret.Name = NewOptionalString(t.Name)
+	}
+
+	if t.Description != nil && !excluded["description"] {
+		ret.Description = NewOptionalString(*t.Description)
+	}
+
+	if t.Aliases != nil && !excluded["aliases"] {
+		aliases := strings.Split(*t.Aliases, ",")
+		for i, a := range aliases {
+			aliases[i] = strings.TrimSpace(a)
+		}
+		ret.Aliases = &UpdateStrings{
+			Values: aliases,
+			Mode:   RelationshipUpdateModeSet,
+		}
 	}
 
 	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
