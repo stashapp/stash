@@ -3,6 +3,8 @@ import { Button } from "react-bootstrap";
 
 import * as GQL from "src/core/generated-graphql";
 import { useUpdateTag } from "../queries";
+import TagModal from "./TagModal";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { mergeTagStashIDs } from "../utils";
 
@@ -26,6 +28,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 }) => {
   const intl = useIntl();
 
+  const [modalTag, setModalTag] =
+    useState<GQL.ScrapedSceneTagDataFragment>();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
@@ -33,34 +37,22 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const updateTag = useUpdateTag();
 
-  const handleSave = async (stashboxTag: GQL.ScrapedSceneTagDataFragment) => {
+  const handleSave = async (input: GQL.TagUpdateInput) => {
+    const selectedTag = modalTag;
     setError({});
+    setModalTag(undefined);
     setSaveState("Saving tag");
 
     const updateData: GQL.TagUpdateInput = {
+      ...input,
       id: tag.id,
     };
 
-    if (!excludedTagFields.includes("name")) {
-      updateData.name = stashboxTag.name;
-    }
-
-    if (stashboxTag.description && !excludedTagFields.includes("description")) {
-      updateData.description = stashboxTag.description;
-    }
-
-    if (stashboxTag.aliases && !excludedTagFields.includes("aliases")) {
-      updateData.aliases = stashboxTag.aliases
-        .split(",")
-        .map((a) => a.trim())
-        .filter((a) => a.length > 0);
-    }
-
-    if (stashboxTag.remote_site_id) {
+    if (selectedTag?.remote_site_id) {
       updateData.stash_ids = await mergeTagStashIDs(tag.id, [
         {
           endpoint,
-          stash_id: stashboxTag.remote_site_id,
+          stash_id: selectedTag.remote_site_id,
         },
       ]);
     }
@@ -71,7 +63,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       setError({
         message: intl.formatMessage(
           { id: "tag_tagger.failed_to_save_tag" },
-          { tag: stashboxTag.name }
+          { tag: input.name ?? tag.name }
         ),
         details:
           res?.errors?.[0]?.message === "UNIQUE constraint failed: tags.name"
@@ -91,7 +83,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       className="StudioTagger-studio-search-item minimal col-6"
       variant="link"
       key={p.remote_site_id}
-      onClick={() => handleSave(p)}
+      onClick={() => setModalTag(p)}
     >
       <span>{p.name}</span>
     </Button>
@@ -99,6 +91,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   return (
     <>
+      {modalTag && (
+        <TagModal
+          closeModal={() => setModalTag(undefined)}
+          modalVisible={modalTag !== undefined}
+          tag={modalTag}
+          onSave={handleSave}
+          icon={faTags}
+          header="Update Tag"
+          excludedTagFields={excludedTagFields}
+          endpoint={endpoint}
+        />
+      )}
       <div className="StudioTagger-studio-search">{tags}</div>
       <div className="row no-gutters mt-2 align-items-center justify-content-end">
         {error.message && (
