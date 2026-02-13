@@ -1,3 +1,4 @@
+// Package imagephash provides utilities for generating perceptual hashes for image files.
 package imagephash
 
 import (
