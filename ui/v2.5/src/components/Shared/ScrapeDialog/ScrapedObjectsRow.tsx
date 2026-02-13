@@ -395,7 +395,13 @@ export const ScrapedTagsRow: React.FC<
         onSelect={(items) => {
           if (onChangeFn) {
             // map the id back to stored_id
-            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
+            onChangeFn(
+              items.map((p) => ({
+                ...p,
+                stored_id: p.id,
+                aliases: p.aliases.join(", "),
+              }))
+            );
           }
         }}
         ids={selectValue}

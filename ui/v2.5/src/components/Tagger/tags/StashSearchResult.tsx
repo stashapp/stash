@@ -28,8 +28,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 }) => {
   const intl = useIntl();
 
-  const [modalTag, setModalTag] =
-    useState<GQL.ScrapedSceneTagDataFragment>();
+  const [modalTag, setModalTag] = useState<GQL.ScrapedSceneTagDataFragment>();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}

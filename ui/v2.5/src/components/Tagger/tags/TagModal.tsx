@@ -39,10 +39,7 @@ const TagModal: React.FC<ITagModalProps> = ({
   const intl = useIntl();
 
   const [excluded, setExcluded] = useState<Record<string, boolean>>(
-    excludedTagFields.reduce(
-      (dict, field) => ({ ...dict, [field]: true }),
-      {}
-    )
+    excludedTagFields.reduce((dict, field) => ({ ...dict, [field]: true }), {})
   );
   const toggleField = (name: string) =>
     setExcluded({
@@ -50,10 +47,7 @@ const TagModal: React.FC<ITagModalProps> = ({
       [name]: !excluded[name],
     });
 
-  function maybeRenderField(
-    id: string,
-    text: string | null | undefined
-  ) {
+  function maybeRenderField(id: string, text: string | null | undefined) {
     if (!text) return;
 
     return (
