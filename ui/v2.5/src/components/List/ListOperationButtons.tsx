@@ -9,7 +9,6 @@ import {
   faPencil,
   faPencilAlt,
   faPlay,
-  faPlus,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -276,8 +275,6 @@ export const ListOperations: React.FC<{
   onEdit?: () => void;
   onDelete?: () => void;
   onPlay?: () => void;
-  onCreateNew?: () => void;
-  entityType?: string;
   operationsClassName?: string;
   operationsMenuClassName?: string;
 }> = ({
@@ -287,8 +284,6 @@ export const ListOperations: React.FC<{
   onEdit,
   onDelete,
   onPlay,
-  onCreateNew,
-  entityType,
   operationsClassName = "list-operations",
   operationsMenuClassName,
 }) => {
@@ -341,21 +336,6 @@ export const ListOperations: React.FC<{
         </Button>
       ) : null;
 
-    const createNewButton =
-      !hasSelection && onCreateNew ? (
-        <Button
-          className="create-new-button"
-          variant="secondary"
-          onClick={() => onCreateNew()}
-          title={intl.formatMessage(
-            { id: "actions.create_entity" },
-            { entityType }
-          )}
-        >
-          <Icon icon={faPlus} />
-        </Button>
-      ) : null;
-
     const editButton =
       hasSelection && onEdit ? (
         <Button
@@ -379,7 +359,6 @@ export const ListOperations: React.FC<{
       ) : null;
 
     addButton(playButton);
-    addButton(createNewButton);
     addButton(editButton);
     addButton(deleteButton);
 
@@ -402,17 +381,7 @@ export const ListOperations: React.FC<{
     }
 
     return ret;
-  }, [
-    operations,
-    entityType,
-    hasSelection,
-    onCreateNew,
-    onDelete,
-    onEdit,
-    onPlay,
-    items,
-    intl,
-  ]);
+  }, [operations, hasSelection, onDelete, onEdit, onPlay, items, intl]);
 
   if (dropdownOperations.length === 0 && !buttons) {
     return null;

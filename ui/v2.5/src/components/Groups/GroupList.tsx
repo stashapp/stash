@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import * as GQL from "src/core/generated-graphql";
@@ -207,8 +207,6 @@ export const FilteredGroupList = PatchComponent(
   "FilteredGroupList",
   (props: IGroupList) => {
     const intl = useIntl();
-    const history = useHistory();
-    const location = useLocation();
 
     const searchFocus = useFocus();
 
@@ -302,15 +300,6 @@ export const FilteredGroupList = PatchComponent(
       result,
     });
 
-    function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
-      let newPath = "/groups/new";
-      if (queryParam) {
-        newPath += "?q=" + encodeURIComponent(queryParam);
-      }
-      history.push(newPath);
-    }
-
     const viewRandom = useViewRandom(filter, totalCount);
 
     function onExport(all: boolean) {
@@ -401,8 +390,6 @@ export const FilteredGroupList = PatchComponent(
         operations={otherOperations}
         onEdit={onEdit}
         onDelete={onDelete}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "group" })}
         operationsMenuClassName="group-list-operations-dropdown"
       />
     );

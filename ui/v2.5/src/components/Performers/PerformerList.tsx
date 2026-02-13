@@ -1,7 +1,7 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -357,7 +357,6 @@ export const FilteredPerformerList = PatchComponent(
   (props: IPerformerList) => {
     const intl = useIntl();
     const history = useHistory();
-    const location = useLocation();
 
     const searchFocus = useFocus();
 
@@ -446,15 +445,6 @@ export const FilteredPerformerList = PatchComponent(
       onSelectNone,
       result,
     });
-
-    function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
-      let newPath = "/performers/new";
-      if (queryParam) {
-        newPath += "?q=" + encodeURIComponent(queryParam);
-      }
-      history.push(newPath);
-    }
 
     const viewRandom = useViewRandom(filter, totalCount);
 
@@ -566,8 +556,6 @@ export const FilteredPerformerList = PatchComponent(
         operations={otherOperations}
         onEdit={onEdit}
         onDelete={onDelete}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "gallery" })}
         operationsMenuClassName="gallery-list-operations-dropdown"
       />
     );

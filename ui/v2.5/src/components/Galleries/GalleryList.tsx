@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { useFilteredItemList } from "../List/ItemList";
@@ -230,8 +230,6 @@ export const FilteredGalleryList = PatchComponent(
   "FilteredGalleryList",
   (props: IGalleryList) => {
     const intl = useIntl();
-    const history = useHistory();
-    const location = useLocation();
 
     const searchFocus = useFocus();
 
@@ -314,15 +312,6 @@ export const FilteredGalleryList = PatchComponent(
       onSelectNone,
       result,
     });
-
-    function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
-      let newPath = "/galleries/new";
-      if (queryParam) {
-        newPath += "?q=" + encodeURIComponent(queryParam);
-      }
-      history.push(newPath);
-    }
 
     const viewRandom = useViewRandom(filter, totalCount);
 
@@ -426,8 +415,6 @@ export const FilteredGalleryList = PatchComponent(
         operations={otherOperations}
         onEdit={onEdit}
         onDelete={onDelete}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "gallery" })}
         operationsMenuClassName="gallery-list-operations-dropdown"
       />
     );

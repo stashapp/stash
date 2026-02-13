@@ -627,8 +627,6 @@ export const FilteredSceneList = PatchComponent(
         onEdit={onEdit}
         onDelete={onDelete}
         onPlay={onPlay}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "scene" })}
         operationsMenuClassName="scene-list-operations-dropdown"
       />
     );

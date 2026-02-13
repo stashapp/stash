@@ -103,6 +103,7 @@ const allMenuItems: IMenuItem[] = [
     href: "/scenes",
     icon: faPlayCircle,
     hotkey: "g s",
+    userCreatable: true,
   },
   {
     name: "images",
@@ -117,6 +118,7 @@ const allMenuItems: IMenuItem[] = [
     href: "/groups",
     icon: faFilm,
     hotkey: "g v",
+    userCreatable: true,
   },
   {
     name: "markers",
@@ -131,6 +133,7 @@ const allMenuItems: IMenuItem[] = [
     href: "/galleries",
     icon: faImages,
     hotkey: "g l",
+    userCreatable: true,
   },
   {
     name: "performers",
@@ -138,6 +141,7 @@ const allMenuItems: IMenuItem[] = [
     href: "/performers",
     icon: faUser,
     hotkey: "g p",
+    userCreatable: true,
   },
   {
     name: "studios",
