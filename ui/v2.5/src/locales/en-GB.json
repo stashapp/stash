@@ -496,7 +496,7 @@
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
-      "backup_and_download": "Performs a backup of the database and downloads the resulting file. WARNING: You must verify your Binary Data Storage Type within System -> Database or you risk an incomplete backup. The Database storage type must be selected and a blob migration must be performed for a full Database backup." ,
+      "backup_and_download": "Performs a backup of the database and downloads the resulting file. WARNING: Blobs must be backed up independently if binary data is stored outside the database file. See System > Database for more details." ,
       "backup_database": "Performs a backup of the database to the backups directory, with the filename format {filename_format}.",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
       "clean_generated": {
