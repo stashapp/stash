@@ -320,6 +320,23 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
             updateData.name = stashboxTag.name;
           }
 
+          if (
+            stashboxTag.description &&
+            !(config.excludedTagFields ?? []).includes("description")
+          ) {
+            updateData.description = stashboxTag.description;
+          }
+
+          if (
+            stashboxTag.aliases &&
+            !(config.excludedTagFields ?? []).includes("aliases")
+          ) {
+            updateData.aliases = stashboxTag.aliases
+              .split(",")
+              .map((a) => a.trim())
+              .filter((a) => a.length > 0);
+          }
+
           if (stashboxTag.remote_site_id) {
             updateData.stash_ids = await mergeTagStashIDs(tagID, [
               {
