@@ -10,18 +10,7 @@ import {
   useRemoveSubGroups,
   useReorderSubGroupsMutation,
 } from "src/core/StashService";
-import { ButtonToolbar } from "react-bootstrap";
-import { ListOperationButtons } from "src/components/List/ListOperationButtons";
-import { useListContext } from "src/components/List/ListProvider";
-import {
-  PageSizeSelector,
-  SearchTermInput,
-} from "src/components/List/ListFilter";
-import { useFilter } from "src/components/List/FilterProvider";
-import {
-  IFilteredListToolbar,
-  IItemListOperation,
-} from "src/components/List/FilteredListToolbar";
+import { IItemListOperation } from "src/components/List/FilteredListToolbar";
 import {
   showWhenNoneSelected,
   showWhenSelected,
@@ -32,6 +21,7 @@ import { useToast } from "src/hooks/Toast";
 import { useModal } from "src/hooks/modal";
 import { AddSubGroupsDialog } from "./AddGroupsDialog";
 import { PatchComponent } from "src/patch";
+import { View } from "src/components/List/views";
 
 const useContainingGroupFilterHook = (
   group: Pick<GQL.StudioDataFragment, "id" | "name">,
@@ -69,42 +59,6 @@ const useContainingGroupFilterHook = (
 
     return filter;
   };
-};
-
-const Toolbar: React.FC<IFilteredListToolbar> = ({
-  onEdit,
-  onDelete,
-  operations,
-  operationComponent,
-}) => {
-  const { getSelected, onSelectAll, onSelectNone, onInvertSelection } =
-    useListContext();
-  const { filter, setFilter } = useFilter();
-
-  return (
-    <ButtonToolbar className="filtered-list-toolbar">
-      <div>
-        <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
-      </div>
-      <PageSizeSelector
-        pageSize={filter.itemsPerPage}
-        setPageSize={(size) => setFilter(filter.setPageSize(size))}
-      />
-      {operationComponent ? (
-        operationComponent
-      ) : (
-        <ListOperationButtons
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          onInvertSelection={onInvertSelection}
-          itemsSelected={getSelected().length > 0}
-          otherOperations={operations}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      )}
-    </ButtonToolbar>
-  );
 };
 
 interface IGroupSubGroupsPanel {
@@ -215,7 +169,7 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
             fromGroupId={group.id}
             otherOperations={otherOperations}
             onMove={onMove}
-            renderToolbar={(props) => <Toolbar {...props} />}
+            view={View.GroupSubGroups}
           />
         </>
       );

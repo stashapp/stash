@@ -19,7 +19,6 @@ import { EditGroupsDialog } from "./EditGroupsDialog";
 import { View } from "../List/views";
 import {
   FilteredListToolbar,
-  IFilteredListToolbar,
   IItemListOperation,
 } from "../List/FilteredListToolbar";
 import { PatchComponent, PatchContainerComponent } from "src/patch";
@@ -161,7 +160,6 @@ interface IGroupListContext {
 interface IGroupList extends IGroupListContext {
   fromGroupId?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
-  renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
   otherOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
 
@@ -218,8 +216,11 @@ export const FilteredGroupList = PatchComponent(
       fromGroupId,
       otherOperations: providedOperations = [],
       defaultFilter,
-      renderToolbar,
     } = props;
+
+    const withSidebar = view !== View.GroupSubGroups;
+    const filterable = view !== View.GroupSubGroups;
+    const sortable = view !== View.GroupSubGroups;
 
     // States
     const {
@@ -394,18 +395,6 @@ export const FilteredGroupList = PatchComponent(
       />
     );
 
-    const filterListToolbarProps: IFilteredListToolbar = {
-      filter,
-      setFilter,
-      listSelect,
-      showEditFilter,
-      view: view,
-      operationComponent: operations,
-      zoomable: true,
-      onEdit: onEdit,
-      onDelete: onDelete,
-    };
-
     const listContextState: IListContextState = {
       selectable: true,
       items,
@@ -416,6 +405,75 @@ export const FilteredGroupList = PatchComponent(
       filter,
       setFilter,
     };
+
+    const content = (
+      <>
+        <FilteredListToolbar
+          filter={filter}
+          listSelect={listSelect}
+          setFilter={setFilter}
+          showEditFilter={showEditFilter}
+          onDelete={onDelete}
+          onEdit={onEdit}
+          operationComponent={operations}
+          view={view}
+          zoomable
+          filterable={filterable}
+          sortable={sortable}
+        />
+
+        <FilterTags
+          criteria={filter.criteria}
+          onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+          onRemoveCriterion={removeCriterion}
+          onRemoveAll={clearAllCriteria}
+        />
+
+        <div className="pagination-index-container">
+          <Pagination
+            currentPage={filter.currentPage}
+            itemsPerPage={filter.itemsPerPage}
+            totalItems={totalCount}
+            onChangePage={(page) => setFilter(filter.changePage(page))}
+          />
+          <PaginationIndex
+            loading={cachedResult.loading}
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+          />
+        </div>
+
+        <LoadedContent loading={result.loading} error={result.error}>
+          <GroupList
+            filter={effectiveFilter}
+            groups={items}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+            fromGroupId={fromGroupId}
+            onMove={onMove}
+          />
+        </LoadedContent>
+
+        {totalCount > filter.itemsPerPage && (
+          <div className="pagination-footer-container">
+            <div className="pagination-footer">
+              <Pagination
+                itemsPerPage={filter.itemsPerPage}
+                currentPage={filter.currentPage}
+                totalItems={totalCount}
+                onChangePage={setPage}
+                pagePopupPlacement="top"
+              />
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    if (!withSidebar) {
+      return content;
+    }
 
     return (
       <ListStateContext.Provider value={listContextState}>
@@ -450,62 +508,7 @@ export const FilteredGroupList = PatchComponent(
                 <SidebarPaneContent
                   onSidebarToggle={() => setShowSidebar(!showSidebar)}
                 >
-                  {renderToolbar ? (
-                    renderToolbar(filterListToolbarProps)
-                  ) : (
-                    <FilteredListToolbar {...filterListToolbarProps} />
-                  )}
-
-                  <FilterTags
-                    criteria={filter.criteria}
-                    onEditCriterion={(c) =>
-                      showEditFilter(c.criterionOption.type)
-                    }
-                    onRemoveCriterion={removeCriterion}
-                    onRemoveAll={clearAllCriteria}
-                  />
-
-                  <div className="pagination-index-container">
-                    <Pagination
-                      currentPage={filter.currentPage}
-                      itemsPerPage={filter.itemsPerPage}
-                      totalItems={totalCount}
-                      onChangePage={(page) =>
-                        setFilter(filter.changePage(page))
-                      }
-                    />
-                    <PaginationIndex
-                      loading={cachedResult.loading}
-                      itemsPerPage={filter.itemsPerPage}
-                      currentPage={filter.currentPage}
-                      totalItems={totalCount}
-                    />
-                  </div>
-
-                  <LoadedContent loading={result.loading} error={result.error}>
-                    <GroupList
-                      filter={effectiveFilter}
-                      groups={items}
-                      selectedIds={selectedIds}
-                      onSelectChange={onSelectChange}
-                      fromGroupId={fromGroupId}
-                      onMove={onMove}
-                    />
-                  </LoadedContent>
-
-                  {totalCount > filter.itemsPerPage && (
-                    <div className="pagination-footer-container">
-                      <div className="pagination-footer">
-                        <Pagination
-                          itemsPerPage={filter.itemsPerPage}
-                          currentPage={filter.currentPage}
-                          totalItems={totalCount}
-                          onChangePage={setPage}
-                          pagePopupPlacement="top"
-                        />
-                      </div>
-                    </div>
-                  )}
+                  {content}
                 </SidebarPaneContent>
               </SidebarPane>
             </SidebarStateContext.Provider>
