@@ -128,8 +128,10 @@ func (t *StudioFragment) GetImages() []*ImageFragment {
 }
 
 type TagFragment struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
+	Name        string   "json:\"name\" graphql:\"name\""
+	ID          string   "json:\"id\" graphql:\"id\""
+	Description *string  "json:\"description,omitempty\" graphql:\"description\""
+	Aliases     []string "json:\"aliases\" graphql:\"aliases\""
 }
 
 func (t *TagFragment) GetName() string {
@@ -143,6 +145,18 @@ func (t *TagFragment) GetID() string {
 		t = &TagFragment{}
 	}
 	return t.ID
+}
+func (t *TagFragment) GetDescription() *string {
+	if t == nil {
+		t = &TagFragment{}
+	}
+	return t.Description
+}
+func (t *TagFragment) GetAliases() []string {
+	if t == nil {
+		t = &TagFragment{}
+	}
+	return t.Aliases
 }
 
 type MeasurementsFragment struct {
@@ -849,6 +863,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -985,6 +1001,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -1279,6 +1297,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -1413,6 +1433,8 @@ const FindTagDocument = `query FindTag ($id: ID, $name: String) {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 `
 
@@ -1445,6 +1467,8 @@ const QueryTagsDocument = `query QueryTags ($input: TagQueryInput!) {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 `
 
