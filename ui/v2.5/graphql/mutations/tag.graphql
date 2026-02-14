@@ -24,8 +24,14 @@ mutation BulkTagUpdate($input: BulkTagUpdateInput!) {
   }
 }
 
-mutation TagsMerge($source: [ID!]!, $destination: ID!) {
-  tagsMerge(input: { source: $source, destination: $destination }) {
+mutation TagsMerge(
+  $source: [ID!]!
+  $destination: ID!
+  $values: TagUpdateInput
+) {
+  tagsMerge(
+    input: { source: $source, destination: $destination, values: $values }
+  ) {
     ...TagData
   }
 }

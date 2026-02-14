@@ -147,6 +147,9 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 	if source.Options.IncludeMalePerformers != nil {
 		options.IncludeMalePerformers = source.Options.IncludeMalePerformers
 	}
+	if source.Options.PerformerGenders != nil {
+		options.PerformerGenders = source.Options.PerformerGenders
+	}
 	if source.Options.SkipMultipleMatches != nil {
 		options.SkipMultipleMatches = source.Options.SkipMultipleMatches
 	}
@@ -204,13 +207,23 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
 	}
 
-	includeMalePerformers := true
-	if options.IncludeMalePerformers != nil {
-		includeMalePerformers = *options.IncludeMalePerformers
+	// Determine allowed genders for performer filtering
+	var allowedGenders []models.GenderEnum
+	if options.PerformerGenders != nil {
+		// New field takes precedence
+		allowedGenders = options.PerformerGenders
+	} else if options.IncludeMalePerformers != nil && !*options.IncludeMalePerformers {
+		// Legacy: if includeMalePerformers is false, include all genders except male
+		for _, g := range models.AllGenderEnum {
+			if g != models.GenderEnumMale {
+				allowedGenders = append(allowedGenders, g)
+			}
+		}
 	}
+	// nil allowedGenders means include all performers
 
 	addSkipSingleNamePerformerTag := false
-	performerIDs, err := rel.performers(ctx, !includeMalePerformers)
+	performerIDs, err := rel.performers(ctx, allowedGenders)
 	if err != nil {
 		if errors.Is(err, ErrSkipSingleNamePerformer) {
 			addSkipSingleNamePerformerTag = true

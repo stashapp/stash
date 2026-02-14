@@ -4121,7 +4121,7 @@ func TestSceneQueryPhashDuplicated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
 		duplicated := true
-		phashCriterion := models.PHashDuplicationCriterionInput{
+		phashCriterion := models.DuplicationCriterionInput{
 			Duplicated: &duplicated,
 		}
 

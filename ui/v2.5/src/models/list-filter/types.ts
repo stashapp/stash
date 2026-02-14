@@ -47,9 +47,15 @@ export interface IRangeValue<V> {
 export type INumberValue = IRangeValue<number>;
 export type IDateValue = IRangeValue<string>;
 export type ITimestampValue = IRangeValue<string>;
-export interface IPHashDuplicationValue {
-  duplicated: boolean;
-  distance?: number; // currently not implemented
+export interface IDuplicationValue {
+  // Deprecated: Use phash field instead. Kept for backwards compatibility.
+  duplicated?: boolean;
+  // Currently not implemented. Intended for phash distance matching.
+  distance?: number;
+  phash?: boolean;
+  url?: boolean;
+  stash_id?: boolean;
+  title?: boolean;
 }
 
 export interface IStashIDValue {

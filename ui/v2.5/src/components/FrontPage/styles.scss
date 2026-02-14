@@ -496,6 +496,6 @@
 // HACK: compatibility with existing behaviour after removed width from zoom-1 class
 // this should really be changed to use the specific card types instead of a generic zoom-1 class,
 // but this is a quick fix to prevent breaking existing styles
-.recommendation-row .zoom-1 {
+.recommendation-row .card.zoom-1 {
   width: 320px;
 }

@@ -2,10 +2,28 @@ package models
 
 import "context"
 
-type PHashDuplicationCriterionInput struct {
+type DuplicationCriterionInput struct {
+	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
 	Duplicated *bool `json:"duplicated"`
-	// Currently unimplemented
+	// Currently unimplemented. Intended for phash distance matching.
 	Distance *int `json:"distance"`
+	// Filter by phash duplication
+	Phash *bool `json:"phash"`
+	// Filter by URL duplication
+	URL *bool `json:"url"`
+	// Filter by Stash ID duplication
+	StashID *bool `json:"stash_id"`
+	// Filter by title duplication
+	Title *bool `json:"title"`
+}
+
+type FileDuplicationCriterionInput struct {
+	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
+	Duplicated *bool `json:"duplicated"`
+	// Currently unimplemented. Intended for phash distance matching.
+	Distance *int `json:"distance"`
+	// Filter by phash duplication
+	Phash *bool `json:"phash"`
 }
 
 type SceneFilterType struct {
@@ -33,8 +51,8 @@ type SceneFilterType struct {
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
 	OCounter *IntCriterionInput `json:"o_counter"`
-	// Filter Scenes that have an exact phash match available
-	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
+	// Filter Scenes by duplication criteria
+	Duplicated *DuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
 	// Filter by orientation

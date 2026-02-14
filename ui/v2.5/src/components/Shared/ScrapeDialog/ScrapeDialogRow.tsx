@@ -14,7 +14,7 @@ import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "../CountrySelect";
 import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
-import { ScrapeResult } from "./scrapeResult";
+import { CustomFieldScrapeResults, ScrapeResult } from "./scrapeResult";
 import { ScrapeDialogContext } from "./ScrapeDialog";
 
 function renderButtonIcon(selected: boolean) {
@@ -431,3 +431,30 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
     onChange={onChange}
   />
 );
+
+export const ScrapedCustomFieldRows: React.FC<{
+  results: CustomFieldScrapeResults;
+  onChange: (newCustomFields: CustomFieldScrapeResults) => void;
+}> = ({ results, onChange }) => {
+  return (
+    <>
+      {Array.from(results.entries()).map(([field, result]) => {
+        const fieldName = `custom_${field}`;
+        return (
+          <ScrapedInputGroupRow
+            className="custom-field"
+            title={field}
+            field={fieldName}
+            key={fieldName}
+            result={result}
+            onChange={(newResult) => {
+              const newResults = new Map(results);
+              newResults.set(field, newResult);
+              onChange(newResults);
+            }}
+          />
+        );
+      })}
+    </>
+  );
+};

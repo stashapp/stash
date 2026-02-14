@@ -4,20 +4,20 @@
 
 Setting the language affects the formatting of numbers and dates.
 
-## SFW Content Mode
+## SFW content mode
 
-SFW Content Mode is used to indicate that the content being managed is _not_ adult content. 
+SFW content mode is used to indicate that the content being managed is _not_ adult content. 
 
-When SFW Content Mode is enabled, the following changes are made to the UI:
+When SFW content mode is enabled, the following changes are made to the UI:
 - default performer images are changed to less adult-oriented images
 - certain adult-specific metadata fields are hidden (e.g. performer genital fields)
 - `O`-Counter is replaced with `Like`-counter
 
-## Scene/Marker Wall Preview Type
+## Scene/Marker Wall Preview type
 
 The Scene Wall and Marker pages display scene preview videos (mp4) by default. This can be changed to animated image (webp) or static image. 
 
-> **⚠️ Note:** scene/marker preview videos must be generated to see them in the applicable wall page if Video preview type is selected. Likewise, if Animated Image is selected, then Image Previews must be generated.
+> **⚠️ Note:** scene/marker preview videos must be generated to see them in the applicable wall page if Video preview type is selected. Likewise, if Animated image is selected, then Image Previews must be generated.
 
 ## Show Studios as text
 
@@ -33,7 +33,7 @@ The maximum loop duration option allows looping of shorter videos. Set this valu
 
 The "Track Activity" option allows tracking of scene play count and duration, and sets the resume point when a scene video is not finished.
 
-The "Minimum Play Percent" gives the minimum proportion of a video that must be played before the play count of the scene is incremented.
+The "Minimum play percent" gives the minimum proportion of a video that must be played before the play count of the scene is incremented.
 
 By default, when a scene has a resume point, the scene player will automatically seek to this point when the scene is played. Setting "Always start video from beginning" to true disables this behaviour.
 
@@ -43,15 +43,15 @@ The stash UI can be customised using custom CSS. See [here](https://docs.stashap
 
 There is also a [collection of community-created themes](https://docs.stashapp.cc/themes/list/#browse-themes) available.
 
-## Custom Javascript
+## Custom JavaScript
 
-Stash supports the injection of custom javascript to assist with theming or adding additional functionality. Be aware that bad Javascript could break the UI or worse.
+Stash supports the injection of custom JavaScript to assist with theming or adding additional functionality. Be aware that bad JavaScript could break the UI or worse.
 
 ## Custom Locales
 
 The localisation strings can be customised. The master list of default (en-GB) locale strings can be found [here](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json). The custom locale format is the same as this json file.
 
-For example, to override the `actions.add_directory` label (which is `Add Directory` by default), you would have the following in the custom locale:
+For example, to override the `actions.add_directory` label (which is `Add directory` by default), you would have the following in the custom locale:
 
 ```
 {

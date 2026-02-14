@@ -15,4 +15,4 @@ Where `{language_code}` is defined by the [ISO-6399-1](https://en.wikipedia.org/
 
 Scenes with captions can be filtered with the `captions` criterion.
 
-> **⚠️ Note:** If the caption file was added after the scene was initially added during scan, you will need to run a Selective Scan task for it to show up.
+> **⚠️ Note:** If the caption file was added after the scene was initially added during scan, you will need to run a Selective scan task for it to show up.

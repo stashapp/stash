@@ -1,16 +1,16 @@
 # Auto Tag
 
-Auto Tag automatically assigns Performers, Studios, and Tags to your media based on their names found in file paths or filenames. This task works for scenes, images, and galleries.
+Auto tag automatically assigns Performers, Studios, and Tags to your media based on their names found in file paths or filenames. This task works for scenes, images, and galleries.
 
 This task is part of the advanced settings mode.
 
 ## Rules
 
-> **⚠️ Important:** Auto Tag only works for names that already exist in your Stash database. It does not create new Performers, Studios, or Tags.
+> **⚠️ Important:** Auto tag only works for names that already exist in your Stash database. It does not create new Performers, Studios, or Tags.
 
  - Multi-word names are matched when words appear in order and are separated by any of these characters: `.`, `-`, `_`, or whitespace. These separators are treated as word boundaries.
  - Matching is case-insensitive but requires complete words within word boundaries. Partial words or misspelled words will not match.
- - Auto Tag does not match performer aliases. Aliases will not be considered during matching.
+ - Auto tag does not match performer aliases. Aliases will not be considered during matching.
 
 ### Examples (performer "Jane Doe")
 
@@ -35,14 +35,14 @@ This task is part of the advanced settings mode.
 
 ### Organized flag
 
-Scenes, images, and galleries that have the Organized flag added to them will not be modified by Auto Tag. You can also use Organized flag status as a filter.
+Scenes, images, and galleries that have the Organized flag added to them will not be modified by Auto tag. You can also use Organized flag status as a filter.
 
-### Ignore Auto Tag flag
+### Ignore Auto tag flag
 
-Performers or Tags that have Ignore Auto Tag flag added to them will be skipped by the Auto Tag task.
+Performers or Tags that have Ignore Auto tag flag added to them will be skipped by the Auto tag task.
 
 ## Running task
 
-- **Auto Tag:** You can run the Auto Tag task on your entire library from the Tasks page.
-- **Selective Auto Tag:** You can run the Auto Tag task on specific directories from the Tasks page.
-- **Individual pages:** You can run Auto Tag tasks for specific Performers, Studios, and Tags from their respective pages.
+- **Auto tag:** You can run the Auto tag task on your entire library from the Tasks page.
+- **Selective auto tag:** You can run the Auto tag task on specific directories from the Tasks page.
+- **Individual pages:** You can run Auto tag tasks for specific Performers, Studios, and Tags from their respective pages.

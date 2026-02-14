@@ -1,7 +1,7 @@
 {
   "actions": {
     "add": "Add",
-    "add_directory": "Add Directory",
+    "add_directory": "Add directory",
     "add_entity": "Add {entityType}",
     "add_manual_date": "Add manual date",
     "add_sub_groups": "Add Sub-Groups",
@@ -14,7 +14,7 @@
     "anonymise": "Anonymise",
     "apply": "Apply",
     "assign_stashid_to_parent_studio": "Assign Stash ID to existing parent studio and update metadata",
-    "auto_tag": "Auto Tag",
+    "auto_tag": "Auto tag",
     "backup": "Backup",
     "browse_for_image": "Browse for image…",
     "cancel": "Cancel",
@@ -47,7 +47,7 @@
     "disallow": "Disallow",
     "download": "Download",
     "download_anonymised": "Download anonymised",
-    "download_backup": "Download Backup",
+    "download_backup": "Download backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
     "enable": "Enable",
@@ -58,8 +58,8 @@
     "finish": "Finish",
     "from_file": "From file…",
     "from_url": "From URL…",
-    "full_export": "Full Export",
-    "full_import": "Full Import",
+    "full_export": "Full export",
+    "full_import": "Full import",
     "generate": "Generate",
     "generate_thumb_default": "Generate default thumbnail",
     "generate_thumb_from_current": "Generate thumbnail from current",
@@ -75,13 +75,13 @@
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
-    "migrate_blobs": "Migrate Blobs",
-    "migrate_scene_screenshots": "Migrate Scene Screenshots",
+    "migrate_blobs": "Migrate blobs",
+    "migrate_scene_screenshots": "Migrate scene screenshots",
     "next_action": "Next",
     "not_running": "not running",
     "open_in_external_player": "Open in external player",
     "open_random": "Open Random",
-    "optimise_database": "Optimise Database",
+    "optimise_database": "Optimise database",
     "overwrite": "Overwrite",
     "play": "Play",
     "play_random": "Play Random",
@@ -115,13 +115,14 @@
     "scrape_with": "Scrape with…",
     "search": "Search",
     "select_all": "Select All",
+    "select_directory": "Select directory",
     "select_entity": "Select {entityType}",
     "select_folders": "Select folders",
     "select_none": "Select None",
     "invert_selection": "Invert Selection",
-    "selective_auto_tag": "Selective Auto Tag",
-    "selective_clean": "Selective Clean",
-    "selective_scan": "Selective Scan",
+    "selective_auto_tag": "Selective auto tag",
+    "selective_clean": "Selective clean",
+    "selective_scan": "Selective scan",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_cover": "Set as Cover",
@@ -252,7 +253,7 @@
       "stash_wiki": "Stash {url} page",
       "version": "Version"
     },
-    "advanced_mode": "Advanced Mode",
+    "advanced_mode": "Advanced mode",
     "application_paths": {
       "heading": "Application Paths"
     },
@@ -270,11 +271,14 @@
       "tasks": "Tasks",
       "tools": "Tools"
     },
+    "changelog": {
+      "header": "Changelog"
+    },
     "dlna": {
       "allow_temp_ip": "Allow {tempIP}",
       "allowed_ip_addresses": "Allowed IP addresses",
       "allowed_ip_temporarily": "Allowed IP temporarily",
-      "default_ip_whitelist": "Default IP Whitelist",
+      "default_ip_whitelist": "Default IP whitelist",
       "default_ip_whitelist_desc": "Default IP addresses allow to access DLNA. Use {wildcard} to allow all IP addresses.",
       "disabled_dlna_temporarily": "Disabled DLNA temporarily",
       "disallowed_ip": "Disallowed IP",
@@ -283,35 +287,35 @@
       "network_interfaces": "Interfaces",
       "network_interfaces_desc": "Interfaces to expose DLNA server on. An empty list results in running on all interfaces. Requires DLNA restart after changing.",
       "recent_ip_addresses": "Recent IP addresses",
-      "server_display_name": "Server Display Name",
+      "server_display_name": "Server display name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
-      "server_port": "Server Port",
+      "server_port": "Server port",
       "server_port_desc": "Port to run the DLNA server on. Requires DLNA restart after changing.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
       "until_restart": "until restart",
-      "video_sort_order": "Default Video Sort Order",
+      "video_sort_order": "Default video sort order",
       "video_sort_order_desc": "Order to sort videos by default."
     },
     "general": {
       "auth": {
-        "api_key": "API Key",
+        "api_key": "API key",
         "api_key_desc": "API key for external systems. Only required when username/password is configured. Username must be saved before generating API key.",
         "authentication": "Authentication",
         "clear_api_key": "Clear API key",
         "credentials": {
-          "description": "Credentials to restrict access to stash.",
+          "description": "Credentials to restrict access to Stash.",
           "heading": "Credentials"
         },
         "generate_api_key": "Generate API key",
         "log_file": "Log file",
         "log_file_desc": "Path to the file to output logging to. Blank to disable file logging. Requires restart.",
-        "log_http": "Log http access",
-        "log_http_desc": "Logs http access to the terminal. Requires restart.",
+        "log_http": "Log HTTP access",
+        "log_http_desc": "Logs HTTP access to the terminal. Requires restart.",
         "log_to_terminal": "Log to terminal",
         "log_to_terminal_desc": "Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart.",
         "log_file_max_size": "Maximum log size",
         "log_file_max_size_desc": "Maximum size in megabytes of the log file before it is compressed. 0MB is disabled. Requires restart.",
-        "maximum_session_age": "Maximum Session Age",
+        "maximum_session_age": "Maximum session age",
         "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds. Requires restart.",
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
@@ -320,50 +324,50 @@
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
       "backup_directory_path": {
-        "description": "Directory location for SQLite database file backups",
-        "heading": "Backup Directory Path"
+        "description": "Directory location for SQLite database file backups.",
+        "heading": "Backup directory path"
       },
       "delete_trash_path": {
         "description": "Path where deleted files will be moved to instead of being permanently deleted. Leave empty to permanently delete files.",
-        "heading": "Trash Path"
+        "heading": "Trash path"
       },
       "blobs_path": {
         "description": "Where in the filesystem to store binary data. Applicable only when using the Filesystem blob storage type. WARNING: changing this requires manually moving existing data.",
         "heading": "Binary data filesystem path"
       },
       "blobs_storage": {
-        "description": "Where to store binary data such as scene covers, performer, studio and tag images. After changing this value, the existing data must be migrated using the Migrate Blobs tasks. See Tasks page for migration.",
+        "description": "Where to store binary data such as scene covers, performer, studio and tag images. After changing this value, the existing data must be migrated using the Migrate blobs tasks. See Tasks page for migration.",
         "heading": "Binary data storage type"
       },
       "cache_location": "Directory location of the cache. Required if streaming using HLS (such as on Apple devices) or DASH.",
-      "cache_path_head": "Cache Path",
+      "cache_path_head": "Cache path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
       "calculate_md5_and_ohash_label": "Calculate MD5 for videos",
       "check_for_insecure_certificates": "Check for insecure certificates",
-      "check_for_insecure_certificates_desc": "Some sites use insecure ssl certificates. When unticked the scraper skips the insecure certificates check and allows scraping of those sites. If you get a certificate error when scraping untick this.",
+      "check_for_insecure_certificates_desc": "Some sites use insecure SSL certificates. When unticked the scraper skips the insecure certificates check and allows scraping of those sites. If you get a certificate error when scraping untick this.",
       "chrome_cdp_path": "Chrome CDP path",
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
-      "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images by default. Create a File called .forcegallery or .nogallery in a folder to enforce/prevent this.",
+      "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images by default. Create a file called .forcegallery or .nogallery in a folder to override this setting.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "database": "Database",
-      "db_path_head": "Database Path",
+      "db_path_head": "Database path",
       "directory_locations_to_your_content": "Directory locations to your content",
-      "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
-      "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
-      "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
-      "excluded_video_patterns_head": "Excluded Video Patterns",
+      "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean tasks.",
+      "excluded_image_gallery_patterns_head": "Excluded image/gallery patterns",
+      "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean tasks.",
+      "excluded_video_patterns_head": "Excluded video patterns",
       "ffmpeg": {
         "download_ffmpeg": {
           "description": "Downloads FFmpeg into the configuration directory and clears the ffmpeg and ffprobe paths to resolve from the configuration directory.",
           "heading": "Download FFmpeg"
         },
         "ffmpeg_path": {
-          "description": "Path to the ffmpeg executable (not just the folder). If empty, ffmpeg will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
-          "heading": "FFmpeg Executable Path"
+          "description": "Path to the ffmpeg executable (not just the folder). If empty, ffmpeg will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash.",
+          "heading": "FFmpeg executable path"
         },
         "ffprobe_path": {
-          "description": "Path to the ffprobe executable (not just the folder). If empty, ffprobe will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
-          "heading": "FFprobe Executable Path"
+          "description": "Path to the ffprobe executable (not just the folder). If empty, ffprobe will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash.",
+          "heading": "FFprobe executable path"
         },
         "hardware_acceleration": {
           "desc": "Uses available hardware to encode video for live transcoding.",
@@ -372,66 +376,66 @@
         "live_transcode": {
           "input_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video.",
-            "heading": "FFmpeg Live Transcode Input Args"
+            "heading": "FFmpeg live transcode input arguments"
           },
           "output_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video.",
-            "heading": "FFmpeg Live Transcode Output Args"
+            "heading": "FFmpeg live transcode output arguments"
           }
         },
         "transcode": {
           "input_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video.",
-            "heading": "FFmpeg Transcode Input Args"
+            "heading": "FFmpeg transcode input arguments"
           },
           "output_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video.",
-            "heading": "FFmpeg Transcode Output Args"
+            "heading": "FFmpeg transcode output arguments"
           }
         }
       },
       "funscript_heatmap_draw_range": "Include range in generated heatmaps",
       "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
-      "gallery_cover_regex_desc": "Regexp used to identify an image as gallery cover",
+      "gallery_cover_regex_desc": "Regexps used to identify an image as gallery cover.",
       "gallery_cover_regex_label": "Gallery cover pattern",
-      "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
-      "gallery_ext_head": "Gallery zip Extensions",
+      "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery ZIP files.",
+      "gallery_ext_head": "Gallery ZIP extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
       "generated_file_naming_hash_head": "Generated file naming hash",
-      "generated_files_location": "Directory location for the generated files (scene markers, scene previews, sprites, etc)",
-      "generated_path_head": "Generated Path",
+      "generated_files_location": "Directory location for the generated files (scene markers, scene previews, sprites, etc).",
+      "generated_path_head": "Generated path",
       "hashing": "Hashing",
       "heatmap_generation": "Funscript Heatmap Generation",
       "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
-      "image_ext_head": "Image Extensions",
+      "image_ext_head": "Image extensions",
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
-      "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams",
+      "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams.",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
-      "maximum_transcode_size_desc": "Maximum size for generated transcodes",
+      "maximum_transcode_size_desc": "Maximum size for generated transcodes.",
       "maximum_transcode_size_head": "Maximum transcode size",
       "metadata_path": {
-        "description": "Directory location used when performing a full export or import",
-        "heading": "Metadata Path"
+        "description": "Directory location used when performing a full export or import.",
+        "heading": "Metadata path"
       },
-      "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
+      "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% CPU utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
       "plugins_path": {
-        "description": "Directory location of plugin configuration files",
-        "heading": "Plugins Path"
+        "description": "Directory location of plugin configuration files.",
+        "heading": "Plugins path"
       },
       "preview_generation": "Preview Generation",
       "python_path": {
-        "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, python will be resolved from the environment",
-        "heading": "Python Executable Path"
+        "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, Python will be resolved from the environment.",
+        "heading": "Python executable path"
       },
-      "scraper_user_agent": "Scraper User Agent",
-      "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
+      "scraper_user_agent": "Scraper User-Agent",
+      "scraper_user_agent_desc": "User-Agent string used during scrape HTTP requests.",
       "scrapers_path": {
-        "description": "Directory location of scraper configuration files",
-        "heading": "Scrapers Path"
+        "description": "Directory location of scraper configuration files.",
+        "heading": "Scrapers path"
       },
       "scraping": "Scraping",
       "sprite_generation_head": "Sprite generation",
@@ -445,16 +449,16 @@
       "use_custom_sprite_generation_head": "Use custom sprite generation",
       "use_custom_sprite_generation_desc": "Enable the custom sprite generation according to the settings below",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
-      "video_ext_head": "Video Extensions",
+      "video_ext_head": "Video extensions",
       "video_head": "Video"
     },
     "library": {
       "exclusions": "Exclusions",
-      "gallery_and_image_options": "Gallery and Image options",
-      "media_content_extensions": "Media content extensions"
+      "gallery_and_image_options": "Gallery and Image Options",
+      "media_content_extensions": "Media Content Extensions"
     },
     "logs": {
-      "log_level": "Log Level"
+      "log_level": "Log level"
     },
     "plugins": {
       "available_plugins": "Available Plugins",
@@ -466,8 +470,8 @@
       "available_scrapers": "Available Scrapers",
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} scrapers",
-      "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results",
-      "excluded_tag_patterns_head": "Excluded Tag Patterns",
+      "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results.",
+      "excluded_tag_patterns_head": "Excluded tag patterns",
       "installed_scrapers": "Installed Scrapers",
       "scraper": "Scraper",
       "scrapers": "Scrapers",
@@ -495,25 +499,25 @@
       "anonymise_database": "Makes a copy of the database to the backups directory, anonymising all sensitive data. This can then be provided to others for troubleshooting and debugging purposes. The original database is not modified. Anonymised database uses the filename format {filename_format}.",
       "anonymising_database": "Anonymising database",
       "auto_tag": {
-        "auto_tagging_all_paths": "Auto Tagging all paths",
-        "auto_tagging_paths": "Auto Tagging the following paths"
+        "auto_tagging_all_paths": "Auto tagging all paths",
+        "auto_tagging_paths": "Auto tagging the following paths"
       },
-      "auto_tag_based_on_filenames": "Auto-tag content based on file paths.",
-      "auto_tagging": "Auto Tagging",
+      "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
+      "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
-      "backup_database": "Performs a backup of the database to the backups directory, with the filename format {filename_format}",
+      "backup_database": "Performs a backup of the database to the backups directory, with the filename format {filename_format}.",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
       "clean_generated": {
         "blob_files": "Blob files",
         "description": "Removes generated files without a corresponding database entry.",
-        "image_thumbnails": "Image Thumbnails",
+        "image_thumbnails": "Image thumbnails",
         "image_thumbnails_desc": "Image thumbnails and clips",
-        "markers": "Marker Previews",
-        "previews": "Scene Previews",
+        "markers": "Marker previews",
+        "previews": "Scene previews",
         "previews_desc": "Scene previews and thumbnails",
-        "sprites": "Scene Sprites",
-        "transcodes": "Scene Transcodes"
+        "sprites": "Scene sprites",
+        "transcodes": "Scene transcodes"
       },
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
@@ -531,7 +535,7 @@
       "generate_phashes_during_scan": "Generate video perceptual hashes",
       "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
       "generate_previews_during_scan": "Generate animated image previews",
-      "generate_previews_during_scan_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
+      "generate_previews_during_scan_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview type is set to Animated image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "generate_sprites_during_scan": "Generate scrubber sprites",
       "generate_sprites_during_scan_tooltip": "The set of images displayed below the video player for easy navigation.",
       "generate_thumbnails_during_scan": "Generate thumbnails for images",
@@ -552,6 +556,8 @@
         "identifying_from_paths": "Identifying scenes from the following paths",
         "identifying_scenes": "Identifying {num} {scene}",
         "include_male_performers": "Include male performers",
+        "performer_genders": "Performer genders",
+        "performer_genders_desc": "Performers with selected genders will be included during identification.",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organised flag",
         "skip_multiple_matches": "Skip matches that have more than one result",
@@ -598,7 +604,7 @@
     "tools": {
       "graphql_playground": "GraphQL playground",
       "heading": "Tools",
-      "scene_duplicate_checker": "Scene Duplicate Checker",
+      "scene_duplicate_checker": "Scene duplicate checker",
       "scene_filename_parser": {
         "add_field": "Add Field",
         "capitalize_title": "Capitalize title",
@@ -610,7 +616,7 @@
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
-        "title": "Scene Filename Parser",
+        "title": "Scene filename parser",
         "whitespace_chars": "Whitespace characters",
         "whitespace_chars_desc": "These characters will be replaced with whitespace in the title"
       },
@@ -628,8 +634,8 @@
         "option_label": "Custom CSS enabled"
       },
       "troubleshooting_mode": {
-        "button": "Troubleshooting Mode",
-        "dialog_title": "Enable Troubleshooting Mode",
+        "button": "Troubleshooting mode",
+        "dialog_title": "Enable troubleshooting mode",
         "dialog_description": "This will temporarily disable all customizations to help diagnose issues:",
         "dialog_item_plugins": "All plugins",
         "dialog_item_css": "Custom CSS",
@@ -638,22 +644,22 @@
         "dialog_log_level": "Log level will be set to Debug for detailed diagnostics.",
         "dialog_reload_note": "The page will reload automatically.",
         "enable": "Enable & Reload",
-        "overlay_message": "Troubleshooting Mode is active - all customizations are disabled",
+        "overlay_message": "Troubleshooting mode is active - all customizations are disabled",
         "exit": "Exit"
       },
       "custom_javascript": {
-        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
-        "heading": "Custom Javascript",
-        "option_label": "Custom Javascript enabled"
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom JavaScript and future releases of Stash.",
+        "heading": "Custom JavaScript",
+        "option_label": "Custom JavaScript enabled"
       },
       "custom_locales": {
         "description": "Override individual locale strings. See https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for the master list. Page must be reloaded for changes to take effect.",
-        "heading": "Custom localisation",
+        "heading": "Custom Localisation",
         "option_label": "Custom localisation enabled"
       },
       "custom_title": {
         "description": "Custom text to append to the page title. If empty, defaults to 'Stash'.",
-        "heading": "Custom Title"
+        "heading": "Custom title"
       },
       "delete_options": {
         "description": "Default settings when deleting images, galleries, and scenes.",
@@ -665,14 +671,14 @@
       },
       "desktop_integration": {
         "desktop_integration": "Desktop Integration",
-        "notifications_enabled": "Enable Notifications",
-        "send_desktop_notifications_for_events": "Send desktop notifications for events",
-        "skip_opening_browser": "Skip Opening Browser",
-        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
+        "notifications_enabled": "Enable notifications",
+        "send_desktop_notifications_for_events": "Send desktop notifications for events.",
+        "skip_opening_browser": "Skip opening browser",
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup."
       },
       "detail": {
         "compact_expanded_details": {
-          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
+          "description": "When enabled, this option will present expanded details while maintaining a compact presentation.",
           "heading": "Compact expanded details"
         },
         "enable_background_image": {
@@ -681,13 +687,13 @@
         },
         "heading": "Detail Page",
         "show_all_details": {
-          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
+          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column.",
           "heading": "Show all details"
         }
       },
       "editing": {
         "disable_dropdown_create": {
-          "description": "Remove the ability to create new objects from the dropdown selectors",
+          "description": "Remove the ability to create new objects from the dropdown selectors.",
           "heading": "Disable dropdown create"
         },
         "heading": "Editing",
@@ -705,7 +711,7 @@
             }
           },
           "type": {
-            "label": "Rating System Type",
+            "label": "Rating system type",
             "options": {
               "decimal": "Decimal",
               "stars": "Stars"
@@ -715,7 +721,7 @@
       },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
-        "heading": "Funscript Offset (ms)"
+        "heading": "Funscript offset (ms)"
       },
       "handy_connection": {
         "connect": "Connect",
@@ -728,8 +734,8 @@
         "sync": "Sync"
       },
       "handy_connection_key": {
-        "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
-        "heading": "Handy Connection Key"
+        "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com.",
+        "heading": "Handy connection key"
       },
       "image_lightbox": {
         "heading": "Image Lightbox"
@@ -743,11 +749,11 @@
         "heading": "Images",
         "options": {
           "create_image_clips_from_videos": {
-            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip.",
-            "heading": "Scan Video Extensions as Image Clip"
+            "description": "When a library has Videos disabled, video files (see Video extensions) will be scanned as image clips.",
+            "heading": "Scan video extensions as image clips"
           },
           "write_image_thumbnails": {
-            "description": "Write image thumbnails to disk when generated on-the-fly",
+            "description": "Write image thumbnails to disk when generated on-the-fly.",
             "heading": "Write image thumbnails"
           }
         }
@@ -757,31 +763,31 @@
         "heading": "Language"
       },
       "max_loop_duration": {
-        "description": "Maximum scene duration where scene player will loop the video - 0 to disable",
+        "description": "Maximum scene duration where scene player will loop the video. Set 0 to disable.",
         "heading": "Maximum loop duration"
       },
       "menu_items": {
-        "description": "Show or hide different types of content on the navigation bar",
-        "heading": "Menu Items"
+        "description": "Show or hide different types of content on the navigation bar.",
+        "heading": "Menu items"
       },
       "minimum_play_percent": {
         "description": "The percentage of time in which a scene must be played before its play count is incremented.",
-        "heading": "Minimum Play Percent"
+        "heading": "Minimum play percent"
       },
       "performers": {
         "options": {
           "image_location": {
-            "description": "Custom path for default performer images. Leave empty to use in-built defaults",
-            "heading": "Custom Performer Image Path"
+            "description": "Custom path for default performer images. Leave empty to use built-in defaults.",
+            "heading": "Custom performer image path"
           }
         }
       },
       "preview_type": {
         "description": "The default option is video (mp4) previews. For less CPU usage when browsing, you can use the animated image (webp) previews. However they must be generated in addition to the video previews and are larger files.",
-        "heading": "Preview Type",
+        "heading": "Preview type",
         "options": {
-          "animated": "Animated Image",
-          "static": "Static Image",
+          "animated": "Animated image",
+          "static": "Static image",
           "video": "Video"
         }
       },
@@ -797,22 +803,22 @@
           "always_start_from_beginning": "Always start video from beginning",
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
-            "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page",
+            "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page.",
             "heading": "Auto-start video when playing selected"
           },
           "continue_playlist_default": {
-            "description": "Play next scene in queue when video finishes",
+            "description": "Play next scene in queue when video finishes.",
             "heading": "Continue playlist by default"
           },
-          "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on Mobile",
+          "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on mobile",
           "enable_chromecast": "Enable Chromecast",
-          "show_ab_loop_controls": "Show AB Loop plugin controls",
-          "show_scrubber": "Show Scrubber",
-          "show_range_markers": "Show Range Markers",
-          "track_activity": "Enable Scene Play history",
+          "show_ab_loop_controls": "Show AB loop controls",
+          "show_scrubber": "Show scrubber",
+          "show_range_markers": "Show range markers",
+          "track_activity": "Enable scene play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
-            "heading": "VR Tag"
+            "heading": "VR tag"
           }
         }
       },
@@ -829,27 +835,27 @@
       },
       "sfw_mode": {
         "description": "Enable if using stash to store SFW content. Hides or changes some adult-content-related aspects of the UI.",
-        "heading": "SFW Content Mode"
+        "heading": "SFW content mode"
       },
       "show_tag_card_on_hover": {
-        "description": "Show tag card when hovering tag badges",
+        "description": "Show tag card when hovering tag badges.",
         "heading": "Tag card tooltips"
       },
       "slideshow_delay": {
-        "description": "Slideshow is available in galleries when in wall view mode",
-        "heading": "Slideshow Delay (seconds)"
+        "description": "Slideshow is available in galleries when in wall view mode.",
+        "heading": "Slideshow delay (seconds)"
       },
       "studio_panel": {
-        "heading": "Studio view",
+        "heading": "Studio View",
         "options": {
           "show_child_studio_content": {
-            "description": "In the studio view, display content from the sub-studios as well",
+            "description": "In the studio view, display content from the sub-studios as well.",
             "heading": "Display sub-studios content"
           }
         }
       },
       "performer_list": {
-        "heading": "Performer list",
+        "heading": "Performer List",
         "options": {
           "show_links_on_grid_card": {
             "heading": "Display links on performer grid cards"
@@ -857,17 +863,17 @@
         }
       },
       "tag_panel": {
-        "heading": "Tag view",
+        "heading": "Tag View",
         "options": {
           "show_child_tagged_content": {
-            "description": "In the tag view, display content from the subtags as well",
-            "heading": "Display subtag content"
+            "description": "In the tag view, display content from the sub-tags as well.",
+            "heading": "Display sub-tag content"
           }
         }
       },
       "title": "User Interface",
       "use_stash_hosted_funscript": {
-        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device, and that an API key is generated if stash has credentials configured.",
+        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device, and that an API key is generated if Stash has credentials configured.",
         "heading": "Serve funscripts directly"
       }
     }
@@ -976,19 +982,19 @@
       "display_mode": {
         "fit_horizontally": "Fit horizontally",
         "fit_to_screen": "Fit to screen",
-        "label": "Display Mode",
+        "label": "Display mode",
         "original": "Original"
       },
       "options": "Options",
       "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
-        "description": "Scale smaller images up to fill screen",
+        "description": "Scale smaller images up to fill screen.",
         "label": "Scale up to fit"
       },
       "scroll_mode": {
         "description": "Hold shift to temporarily use other mode.",
-        "label": "Scroll Mode",
+        "label": "Scroll mode",
         "pan_y": "Pan Y",
         "zoom": "Zoom"
       }
@@ -1006,24 +1012,24 @@
       "destination": "Reassign to"
     },
     "scene_gen": {
-      "clip_previews": "Image Clip Previews",
+      "clip_previews": "Image clip previews",
       "covers": "Scene covers",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_phash": "Image perceptual hashes",
       "image_phash_tooltip": "For deduplication and identification",
-      "image_previews": "Animated Image Previews",
-      "image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
-      "image_thumbnails": "Image Thumbnails",
+      "image_previews": "Animated image previews",
+      "image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview type is set to Animated image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
+      "image_thumbnails": "Image thumbnails",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
-      "marker_image_previews": "Marker Animated Image Previews",
-      "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
-      "marker_screenshots": "Marker Screenshots",
+      "marker_image_previews": "Marker animated image previews",
+      "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview type is set to Animated image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
+      "marker_screenshots": "Marker screenshots",
       "marker_screenshots_tooltip": "Marker static JPG images",
-      "markers": "Marker Previews",
+      "markers": "Marker previews",
       "markers_tooltip": "20 second videos which begin at the given timecode.",
-      "override_preview_generation_options": "Override Preview Generation Options",
-      "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
+      "override_preview_generation_options": "Override preview generation options",
+      "override_preview_generation_options_desc": "Override preview generation options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
       "phash": "Video perceptual hashes",
       "phash_tooltip": "For deduplication and scene identification",
@@ -1031,7 +1037,7 @@
       "preview_exclude_end_time_head": "Exclude end time",
       "preview_exclude_start_time_desc": "Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_start_time_head": "Exclude start time",
-      "preview_generation_options": "Preview Generation Options",
+      "preview_generation_options": "Preview generation options",
       "preview_options": "Preview Options",
       "preview_preset_desc": "The preset regulates size, quality and encoding time of preview generation. Presets beyond “slow” have diminishing returns and are not recommended.",
       "preview_preset_head": "Preview encoding preset",
@@ -1039,7 +1045,7 @@
       "preview_seg_count_head": "Number of segments in preview",
       "preview_seg_duration_desc": "Duration of each preview segment, in seconds.",
       "preview_seg_duration_head": "Preview segment duration",
-      "sprites": "Scene Scrubber Sprites",
+      "sprites": "Scene scrubber sprites",
       "sprites_tooltip": "The set of images displayed below the video player for easy navigation.",
       "transcodes": "Transcodes",
       "transcodes_tooltip": "MP4 transcodes will be pre-generated for all content; useful for slow CPUs but requires much more disk space",
@@ -1095,7 +1101,10 @@
     "select_youngest": "Select the youngest file in the duplicate group",
     "title": "Duplicate Scenes"
   },
+  "duplicated": "Duplicated",
   "duplicated_phash": "Duplicated (pHash)",
+  "duplicated_stash_id": "Duplicated (Stash ID)",
+  "duplicated_title": "Duplicated (Title)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
@@ -1192,7 +1201,7 @@
   "height_cm": "Height (cm)",
   "help": "Help",
   "history": "History",
-  "ignore_auto_tag": "Ignore Auto Tag",
+  "ignore_auto_tag": "Ignore auto tag",
   "image": "Image",
   "image_count": "Image Count",
   "image_index": "Image #",
@@ -1261,16 +1270,16 @@
   "organized": "Organised",
   "orientation": "Orientation",
   "package_manager": {
-    "add_source": "Add Source",
-    "check_for_updates": "Check for Updates",
+    "add_source": "Add source",
+    "check_for_updates": "Check for updates",
     "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
     "confirm_uninstall": "Are you sure you want to uninstall {number} packages?",
     "description": "Description",
-    "edit_source": "Edit Source",
+    "edit_source": "Edit source",
     "hide_unselected": "Hide unselected",
     "install": "Install",
-    "installed_version": "Installed Version",
-    "latest_version": "Latest Version",
+    "installed_version": "Installed version",
+    "latest_version": "Latest version",
     "no_packages": "No packages found",
     "no_sources": "No sources configured",
     "no_upgradable": "No upgradable packages found",
@@ -1281,7 +1290,7 @@
     "source": {
       "local_path": {
         "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually.",
-        "heading": "Local Path"
+        "heading": "Local path"
       },
       "name": "Name",
       "url": "Source URL"

@@ -19,6 +19,7 @@ import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import {
+  ScrapedCustomFieldRows,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
@@ -27,9 +28,9 @@ import {
 import { ModalComponent } from "../Shared/Modal";
 import { sortStoredIdObjects } from "src/utils/data";
 import {
+  CustomFieldScrapeResults,
   ObjectListScrapeResult,
   ScrapeResult,
-  ZeroableScrapeResult,
   hasScrapedValues,
 } from "../Shared/ScrapeDialog/scrapeResult";
 import { ScrapedTagsRow } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
@@ -39,39 +40,6 @@ import {
 } from "./PerformerDetails/PerformerScrapeDialog";
 import { PerformerSelect } from "./PerformerSelect";
 import { uniq } from "lodash-es";
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type CustomFieldScrapeResults = Map<string, ZeroableScrapeResult<any>>;
-
-// There are a bunch of similar functions in PerformerScrapeDialog, but since we don't support
-// scraping custom fields, this one is only needed here. The `renderScraped` naming is kept the same
-// for consistency.
-function renderScrapedCustomFieldRows(
-  results: CustomFieldScrapeResults,
-  onChange: (newCustomFields: CustomFieldScrapeResults) => void
-) {
-  return (
-    <>
-      {Array.from(results.entries()).map(([field, result]) => {
-        const fieldName = `custom_${field}`;
-        return (
-          <ScrapedInputGroupRow
-            className="custom-field"
-            title={field}
-            field={fieldName}
-            key={fieldName}
-            result={result}
-            onChange={(newResult) => {
-              const newResults = new Map(results);
-              newResults.set(field, newResult);
-              onChange(newResults);
-            }}
-          />
-        );
-      })}
-    </>
-  );
-}
 
 type MergeOptions = {
   values: GQL.PerformerUpdateInput;
@@ -604,10 +572,12 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           result={image}
           onChange={(value) => setImage(value)}
         />
-        {hasCustomFieldValues &&
-          renderScrapedCustomFieldRows(customFields, (newCustomFields) =>
-            setCustomFields(newCustomFields)
-          )}
+        {hasCustomFieldValues && (
+          <ScrapedCustomFieldRows
+            results={customFields}
+            onChange={(newCustomFields) => setCustomFields(newCustomFields)}
+          />
+        )}
       </>
     );
   }

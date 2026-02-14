@@ -472,6 +472,14 @@ export const queryFindTagsForList = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindTagsByID = (tagIDs: string[]) =>
+  client.query<GQL.FindTagsQuery>({
+    query: GQL.FindTagsDocument,
+    variables: {
+      ids: tagIDs,
+    },
+  });
+
 export const queryFindTagsByIDForSelect = (tagIDs: string[]) =>
   client.query<GQL.FindTagsForSelectQuery>({
     query: GQL.FindTagsForSelectDocument,

@@ -221,10 +221,10 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 			logMsg += fmt.Sprintf(" %d heatmaps & speeds", totals.interactiveHeatmapSpeeds)
 		}
 		if j.input.ClipPreviews {
-			logMsg += fmt.Sprintf(" %d Image Clip Previews", totals.clipPreviews)
+			logMsg += fmt.Sprintf(" %d image clip previews", totals.clipPreviews)
 		}
 		if j.input.ImageThumbnails {
-			logMsg += fmt.Sprintf(" %d Image Thumbnails", totals.imageThumbnails)
+			logMsg += fmt.Sprintf(" %d image thumbnails", totals.imageThumbnails)
 		}
 		if logMsg == "Generating" {
 			logMsg = "Nothing selected to generate"
