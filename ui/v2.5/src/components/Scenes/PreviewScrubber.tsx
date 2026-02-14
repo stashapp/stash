@@ -67,13 +67,15 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
 
     const clientRect = imageParent.getBoundingClientRect();
     const scale = scaleToFit(sprite, clientRect);
+    const spriteSheet = new Image();
+    spriteSheet.src = sprite.url;
 
     setStyle({
-      backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
-      backgroundImage: `url(${sprite.url})`,
-      width: `${sprite.w}px`,
-      height: `${sprite.h}px`,
-      transform: `scale(${scale})`,
+      backgroundPosition: `${-sprite.x * scale}px ${-sprite.y * scale}px`,
+      backgroundImage: `url(${spriteSheet.src})`,
+      backgroundSize: `${spriteSheet.naturalWidth * scale}px ${spriteSheet.naturalHeight * scale}px`,
+      width: `${sprite.w * scale}px`,
+      height: `${sprite.h * scale}px`,
     });
   }, [sprite]);
 
