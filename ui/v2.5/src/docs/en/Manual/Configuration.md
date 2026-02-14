@@ -91,6 +91,10 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 ## Sprite generation
 
+### User custom sprite generation
+
+If this setting is disabled, all the settings below will be ignored and the default sprite generation settings are used. This needs to be enabled for the options, explained below, to take effect.
+
 ### Sprite interval
 
 This represents the time in seconds between each sprite to be generated. The default value is 30 seconds and setting this to `0`
