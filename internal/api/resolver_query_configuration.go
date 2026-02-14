@@ -96,6 +96,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		CalculateMd5:                  config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:      config.GetVideoFileNamingAlgorithm(),
 		ParallelTasks:                 config.GetParallelTasks(),
+		UseCustomSpriteGeneration:     config.GetUseCustomSpriteGeneration(),
 		SpriteInterval:                config.GetSpriteInterval(),
 		SpriteScreenshotWidth:         config.GetSpriteScreenshotWidth(),
 		MinimumSprites:                config.GetMinimumSprites(),

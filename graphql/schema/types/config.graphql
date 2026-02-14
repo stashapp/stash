@@ -185,6 +185,8 @@ input ConfigGeneralInput {
   "Source of plugin packages"
   pluginPackageSources: [PackageSourceInput!]
 
+  "Wether to use the custom sprite generation options or not"
+  useCustomSpriteGeneration: Boolean
   "Time between two different scrubber sprites in seconds"
   spriteInterval: Int
   "Minimum number of sprites to be generated"
@@ -294,6 +296,8 @@ type ConfigGeneralResult {
   logAccess: Boolean!
   "Maximum log size"
   logFileMaxSize: Int!
+  "Wether to use the custom sprite generation options or not"
+  useCustomSpriteGeneration: Boolean!
   "Time between two different scrubber sprites"
   spriteInterval: Int!
   "Minimum number of sprites to be generated"

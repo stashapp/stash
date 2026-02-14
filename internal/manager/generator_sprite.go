@@ -22,7 +22,7 @@ type SpriteGenerator struct {
 	VideoChecksum   string
 	ImageOutputPath string
 	VTTOutputPath   string
-	SpriteInterval  int
+	SpriteInterval  float64
 	SlowSeek        bool // use alternate seek function, very slow!
 
 	Overwrite bool
@@ -39,13 +39,19 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 
 	config := config.GetInstance()
 
-	spriteInterval := config.GetSpriteInterval()
-	minimumSpriteCount := config.GetMinimumSprites()
-
-	spriteCount := int64(math.Ceil(videoFile.VideoStreamDuration / float64(spriteInterval)))
+	spriteCount := int64(81)
+	minimumSpriteCount := 0
+	spriteInterval := float64(0)
+	if config.GetUseCustomSpriteGeneration() {
+		spriteInterval = float64(config.GetSpriteInterval())
+		minimumSpriteCount = config.GetMinimumSprites()
+		spriteCount = int64(math.Ceil(videoFile.VideoStreamDuration / float64(spriteInterval)))
+	} else {
+		spriteInterval = videoFile.VideoStreamDuration / float64(spriteCount)
+	}
 
 	// For files with small duration / low frame count  try to seek using frame number intead of seconds
-	if (spriteCount == 0) || (videoFile.VideoStreamDuration < float64(spriteInterval*minimumSpriteCount)) || (0 < videoFile.FrameCount && videoFile.FrameCount <= spriteCount) { // some files can have FrameCount == 0
+	if (spriteCount < 1) || (videoFile.VideoStreamDuration < spriteInterval*float64(minimumSpriteCount)) || (0 < videoFile.FrameCount && videoFile.FrameCount <= spriteCount) { // some files can have FrameCount == 0
 		if videoFile.VideoStreamDuration <= 0 {
 			s := fmt.Sprintf("video %s: duration(%.3f)/frame count(%d) invalid, skipping sprite creation", videoFile.Path, videoFile.VideoStreamDuration, videoFile.FrameCount)
 			return nil, errors.New(s)

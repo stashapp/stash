@@ -83,6 +83,9 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
+	UseCustomSpriteGeneration        = "use_custom_sprite_generation"
+	UseCustomSpriteGenerationDefault = false
+
 	SpriteInterval        = "sprite_interval"
 	SpriteIntervalDefault = 30
 
@@ -984,6 +987,12 @@ func (i *Config) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
+// GetUseCustomSpriteGeneration return true, if the sprite generation settings should be used
+func (i *Config) GetUseCustomSpriteGeneration() bool {
+	value := i.getBool(UseCustomSpriteGeneration)
+	return value
+}
+
 // GetSpriteInterval returns the time to be between each scrubber sprite
 func (i *Config) GetSpriteInterval() int {
 	value := i.getInt(SpriteInterval)
@@ -1006,7 +1015,7 @@ func (i *Config) GetMinimumSprites() int {
 // during sprite generation in pixels
 func (i *Config) GetSpriteScreenshotWidth() int {
 	value := i.getInt(SpriteScreenshotWidth)
-	if value <= 0 {
+	if value <= 0 || i.GetUseCustomSpriteGeneration() == false {
 		return spriteScreenshotWidthDefault
 	}
 	return value
@@ -1898,6 +1907,7 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewAudio, previewAudioDefault)
 	i.setDefault(SoundOnPreview, false)
 
+	i.setDefault(UseCustomSpriteGeneration, UseCustomSpriteGenerationDefault)
 	i.setDefault(SpriteInterval, SpriteIntervalDefault)
 	i.setDefault(MinimumSprites, MinimumSpritesDefault)
 	i.setDefault(SpriteScreenshotWidth, spriteScreenshotWidthDefault)

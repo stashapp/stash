@@ -428,6 +428,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingSection>
 
       <SettingSection headingID="config.general.sprite_generation_head">
+        <BooleanSetting
+          id="use-custom-sprite-generation"
+          headingID="config.general.use_custom_sprite_generation_head"
+          subHeadingID="config.general.use_custom_sprite_generation_desc"
+          checked={general.useCustomSpriteGeneration ?? false}
+          onChange={(v) => saveGeneral({ useCustomSpriteGeneration: v })}
+        />
         <NumberSetting
           id="sprite-interval"
           headingID="config.general.sprite_interval_head"

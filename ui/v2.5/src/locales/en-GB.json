@@ -442,6 +442,8 @@
       "sprite_screenshot_width_desc": "Desired width of each sprite in pixels. Default is 160",
       "sprite_screenshot_width_head": "Sprite width",
       "sqlite_location": "File location for the SQLite database (requires restart). WARNING: storing the database on a different system to where the Stash server is run from (i.e. over the network) is unsupported!",
+      "use_custom_sprite_generation_head": "Use custom sprite generation",
+      "use_custom_sprite_generation_desc": "Enable the custom sprite generation according to the settings below",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
       "video_head": "Video"
