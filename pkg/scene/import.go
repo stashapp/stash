@@ -457,7 +457,7 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 		if err := i.ReaderWriter.SetCustomFields(ctx, id, models.CustomFieldsInput{
 			Full: i.customFields,
 		}); err != nil {
-			return fmt.Errorf("error setting tag custom fields: %v", err)
+			return fmt.Errorf("error setting scene custom fields: %v", err)
 		}
 	}
 
