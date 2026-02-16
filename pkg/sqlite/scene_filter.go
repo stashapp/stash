@@ -179,6 +179,13 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
 		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: scenesCustomFieldsTable.GetTable(),
+			fkCol: sceneIDColumn,
+			c:     sceneFilter.CustomFields,
+			idCol: "scenes.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.gallery_id",
 			relatedRepo:    galleryRepository.repository,

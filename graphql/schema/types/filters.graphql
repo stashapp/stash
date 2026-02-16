@@ -366,6 +366,8 @@ input SceneFilterType {
   markers_filter: SceneMarkerFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input MovieFilterType {

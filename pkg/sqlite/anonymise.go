@@ -332,6 +332,10 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 		return err
 	}
 
+	if err := db.anonymiseCustomFields(ctx, goqu.T(scenesCustomFieldsTable.GetTable()), "scene_id"); err != nil {
+		return err
+	}
+
 	return nil
 }
 

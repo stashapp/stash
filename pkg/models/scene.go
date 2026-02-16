@@ -139,6 +139,9 @@ type SceneFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type SceneQueryOptions struct {
@@ -192,7 +195,8 @@ type SceneCreateInput struct {
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
-	FileIds []string `json:"file_ids"`
+	FileIds      []string       `json:"file_ids"`
+	CustomFields map[string]any `json:"custom_fields,omitempty"`
 }
 
 type SceneUpdateInput struct {
@@ -221,6 +225,7 @@ type SceneUpdateInput struct {
 	PlayDuration  *float64       `json:"play_duration"`
 	PlayCount     *int           `json:"play_count"`
 	PrimaryFileID *string        `json:"primary_file_id"`
+	CustomFields  *CustomFieldsInput
 }
 
 type SceneDestroyInput struct {
