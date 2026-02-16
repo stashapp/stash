@@ -4826,6 +4826,253 @@ func TestSceneStore_SaveActivity(t *testing.T) {
 	}
 }
 
+func TestSceneQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getSceneStringValue(sceneIdxWithGallery, "custom")},
+					},
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.SceneFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getSceneTitle(sceneIdxWithGallery),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getSceneStringValue(sceneIdxWithGallery, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"includes",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getSceneStringValue(sceneIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.SceneFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getSceneTitle(sceneIdxWithGallery),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getSceneStringValue(sceneIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"regex",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			[]int{sceneIdxWithTwoPerformerTag},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.SceneFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getSceneTitle(sceneIdxWithTwoPerformerTag),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{sceneIdxWithTwoPerformerTag},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.SceneFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getSceneTitle(sceneIdxWithGallery),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.SceneFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getSceneTitle(sceneIdxWithGallery),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.SceneFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getSceneTitle(sceneIdxWithPerformer),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{sceneIdxWithPerformer},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			result, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: tt.filter,
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil {
+				return
+			}
+
+			scenes, err := result.Resolve(ctx)
+			if err != nil {
+				t.Errorf("SceneStore.Query().Resolve() error = %v", err)
+				return
+			}
+
+			ids := scenesToIDs(scenes)
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 // TODO Count
 // TODO SizeCount
 
