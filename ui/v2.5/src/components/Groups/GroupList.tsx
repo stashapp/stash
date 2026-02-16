@@ -47,11 +47,6 @@ import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
 import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { Button } from "react-bootstrap";
-import { IListContextState, ListStateContext } from "../List/ListProvider";
-import {
-  FilterStateContext,
-  IFilterContextState,
-} from "../List/FilterProvider";
 
 const GroupList: React.FC<{
   groups: GQL.ListGroupDataFragment[];
@@ -395,17 +390,6 @@ export const FilteredGroupList = PatchComponent(
       />
     );
 
-    const listContextState: IListContextState = {
-      selectable: true,
-      items,
-      ...listSelect,
-    };
-
-    const filterStateContext: IFilterContextState = {
-      filter,
-      setFilter,
-    };
-
     const content = (
       <>
         <FilteredListToolbar
@@ -476,38 +460,36 @@ export const FilteredGroupList = PatchComponent(
     }
 
     return (
+      <div
         className={cx("item-list-container group-list", {
+          "hide-sidebar": !showSidebar,
+        })}
+      >
+        {modal}
 
-            <SidebarStateContext.Provider
-              value={{ sectionOpen, setSectionOpen }}
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
+              />
+            </Sidebar>
+            <SidebarPaneContent
+              onSidebarToggle={() => setShowSidebar(!showSidebar)}
             >
-              <SidebarPane hideSidebar={!showSidebar}>
-                <Sidebar
-                  hide={!showSidebar}
-                  onHide={() => setShowSidebar(false)}
-                >
-                  <SidebarContent
-                    filter={filter}
-                    setFilter={setFilter}
-                    filterHook={filterHook}
-                    showEditFilter={showEditFilter}
-                    view={view}
-                    sidebarOpen={showSidebar}
-                    onClose={() => setShowSidebar(false)}
-                    count={cachedResult.loading ? undefined : totalCount}
-                    focus={searchFocus}
-                  />
-                </Sidebar>
-                <SidebarPaneContent
-                  onSidebarToggle={() => setShowSidebar(!showSidebar)}
-                >
-                  {content}
-                </SidebarPaneContent>
-              </SidebarPane>
-            </SidebarStateContext.Provider>
-          </div>
-        </FilterStateContext.Provider>
-      </ListStateContext.Provider>
+              {content}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
+      </div>
     );
   }
 );
