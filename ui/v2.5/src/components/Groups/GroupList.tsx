@@ -476,14 +476,7 @@ export const FilteredGroupList = PatchComponent(
     }
 
     return (
-      <ListStateContext.Provider value={listContextState}>
-        <FilterStateContext.Provider value={filterStateContext}>
-          <div
-            className={cx("item-list-container gallery-list", {
-              "hide-sidebar": !showSidebar,
-            })}
-          >
-            {modal}
+        className={cx("item-list-container group-list", {
 
             <SidebarStateContext.Provider
               value={{ sectionOpen, setSectionOpen }}
