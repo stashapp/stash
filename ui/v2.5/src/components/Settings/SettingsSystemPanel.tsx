@@ -428,12 +428,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingSection>
 
       <SettingSection headingID="config.general.sprite_generation_head">
+        <NumberSetting
+          id="sprite-screenshot-width"
+          headingID="config.general.sprite_screenshot_width_head"
+          subHeadingID="config.general.sprite_screenshot_width_desc"
+          value={general.spriteScreenshotWidth ?? 160}
+          onChange={(v) => saveGeneral({ spriteScreenshotWidth: v })}
+        />
         <BooleanSetting
-          id="use-custom-sprite-generation"
-          headingID="config.general.use_custom_sprite_generation_head"
-          subHeadingID="config.general.use_custom_sprite_generation_desc"
-          checked={general.useCustomSpriteGeneration ?? false}
-          onChange={(v) => saveGeneral({ useCustomSpriteGeneration: v })}
+          id="use-custom-sprite-interval"
+          headingID="config.general.use_custom_sprite_interval_head"
+          subHeadingID="config.general.use_custom_sprite_interval_desc"
+          checked={general.useCustomSpriteInterval ?? false}
+          onChange={(v) => saveGeneral({ useCustomSpriteInterval: v })}
         />
         <NumberSetting
           id="sprite-interval"
@@ -450,11 +457,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
           onChange={(v) => saveGeneral({ minimumSprites: v })}
         />
         <NumberSetting
-          id="sprite-screenshot-width"
-          headingID="config.general.sprite_screenshot_width_head"
-          subHeadingID="config.general.sprite_screenshot_width_desc"
-          value={general.spriteScreenshotWidth ?? 160}
-          onChange={(v) => saveGeneral({ spriteScreenshotWidth: v })}
+          id="maximum-sprites"
+          headingID="config.general.sprite_maximum_head"
+          subHeadingID="config.general.sprite_maximum_desc"
+          value={general.maximumSprites ?? 10}
+          onChange={(v) => saveGeneral({ maximumSprites: v })}
         />
       </SettingSection>
 

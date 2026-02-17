@@ -39,9 +39,10 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logLevel
   logAccess
   logFileMaxSize
-  useCustomSpriteGeneration
+  useCustomSpriteInterval
   spriteInterval
   minimumSprites
+  maximumSprites
   spriteScreenshotWidth
   createGalleriesFromFolders
   galleryCoverRegex

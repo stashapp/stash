@@ -91,26 +91,31 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 ## Sprite generation
 
-### User custom sprite generation
-
-If this setting is disabled, all the settings below will be ignored and the default sprite generation settings are used. This needs to be enabled for the options, explained below, to take effect.
-
-### Sprite interval
-
-This represents the time in seconds between each sprite to be generated. The default value is 30 seconds and setting this to `0`
-will fallback to the default value. If a Scene is too short to generate at least `Minimum sprites` the value will be ignored and
-`Minimum sprites` will be generated.
-
-### Minimum sprites
-
-The minimal number of distinct sprites that will be generated for a scene. `Sprite interval` will be ignored if necessary.
-Setting this to `0` will fallback to the default of `10`
-
 ### Sprite width
 
 Fixed width of a generated sprite. A fitting height will be chosen automatically.
 Setting this to `0` will fallback to the default of `160`.
 Althought it is possible to set this value to anything bigger than `0` it is recommended to set it to `160` at least.
+
+### Use custom sprite generation
+
+If this setting is disabled, the settings below will be ignored and the default sprite generation settings are used.
+
+### Sprite interval
+
+This represents the time in seconds between each sprite to be generated. This value will be adjusted if necessary to fit within the bounds of the `Minimum Sprites` and `Maximum Sprites` settings.
+
+Setting this to `0` means that the sprite interval will be calculated based on the value of the `Minimum Sprites` field.
+
+### Minimum sprites
+
+The minimal number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
+Setting this to `0` will fallback to the default of `10`
+
+### Maximum sprites
+
+The maximum number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
+Setting this to `0` indicates there is no maximum.
 
 ## Hardware accelerated live transcoding
 
