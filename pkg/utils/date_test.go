@@ -83,3 +83,26 @@ func TestParseYearRangeString(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatYearRange(t *testing.T) {
+	intPtr := func(v int) *int { return &v }
+
+	tests := []struct {
+		name  string
+		start *int
+		end   *int
+		want  string
+	}{
+		{"both nil", nil, nil, ""},
+		{"only start", intPtr(2005), nil, "2005 -"},
+		{"only end", nil, intPtr(2010), "- 2010"},
+		{"start and end", intPtr(2005), intPtr(2010), "2005 - 2010"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FormatYearRange(tt.start, tt.end)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

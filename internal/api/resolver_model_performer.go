@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/stashapp/stash/internal/api/loaders"
@@ -11,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer) ([]string, error) {
@@ -115,15 +115,7 @@ func (r *performerResolver) CareerLength(ctx context.Context, obj *models.Perfor
 		return nil, nil
 	}
 
-	var ret string
-	switch {
-	case obj.CareerEnd == nil:
-		ret = fmt.Sprintf("%d -", *obj.CareerStart)
-	case obj.CareerStart == nil:
-		ret = fmt.Sprintf("- %d", *obj.CareerEnd)
-	default:
-		ret = fmt.Sprintf("%d - %d", *obj.CareerStart, *obj.CareerEnd)
-	}
+	ret := utils.FormatYearRange(obj.CareerStart, obj.CareerEnd)
 	return &ret, nil
 }
 

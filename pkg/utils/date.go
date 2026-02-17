@@ -91,3 +91,16 @@ func parseYear(s string) (int, error) {
 	}
 	return year, nil
 }
+
+func FormatYearRange(start *int, end *int) string {
+	switch {
+	case start == nil && end == nil:
+		return ""
+	case end == nil:
+		return fmt.Sprintf("%d -", *start)
+	case start == nil:
+		return fmt.Sprintf("- %d", *end)
+	default:
+		return fmt.Sprintf("%d - %d", *start, *end)
+	}
+}
