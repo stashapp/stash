@@ -1624,5 +1624,7 @@
     "stash_id_count": "Кількість Stash ID",
     "duplicated_stash_id": "Дубльований (ідентифікатор Stash)",
     "duplicated_title": "Дубльовано (Назва)",
-    "duplicated": "Дубльовано"
+    "duplicated": "Дубльовано",
+    "career_end": "Кінець кар'єри",
+    "career_start": "Початок кар'єри"
 }
