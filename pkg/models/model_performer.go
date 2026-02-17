@@ -19,7 +19,8 @@ type Performer struct {
 	FakeTits       string          `json:"fake_tits"`
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
-	CareerLength   string          `json:"career_length"`
+	CareerStart    *int            `json:"career_start"`
+	CareerEnd      *int            `json:"career_end"`
 	Tattoos        string          `json:"tattoos"`
 	Piercings      string          `json:"piercings"`
 	Favorite       bool            `json:"favorite"`
@@ -75,7 +76,8 @@ type PerformerPartial struct {
 	FakeTits       OptionalString
 	PenisLength    OptionalFloat64
 	Circumcised    OptionalString
-	CareerLength   OptionalString
+	CareerStart    OptionalInt
+	CareerEnd      OptionalInt
 	Tattoos        OptionalString
 	Piercings      OptionalString
 	Favorite       OptionalBool

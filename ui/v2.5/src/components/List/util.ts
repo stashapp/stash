@@ -139,6 +139,7 @@ function useEmptyFilter(props: {
 
 export interface IFilterStateHook {
   filterMode: GQL.FilterMode;
+  defaultFilter?: ListFilterModel;
   defaultSort?: string;
   view?: View;
   useURL?: boolean;
@@ -149,7 +150,14 @@ export function useFilterState(
     config?: GQL.ConfigDataFragment;
   }
 ) {
-  const { filterMode, defaultSort, config, view, useURL } = props;
+  const {
+    filterMode,
+    defaultSort,
+    config,
+    view,
+    useURL,
+    defaultFilter: propDefaultFilter,
+  } = props;
 
   const [filter, setFilterState] = useState<ListFilterModel>(
     () =>
@@ -158,10 +166,13 @@ export function useFilterState(
 
   const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
 
-  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
+  const { defaultFilter: defaultFilterFromConfig } = useDefaultFilter(
+    emptyFilter,
+    view
+  );
 
   const { setFilter } = useFilterURL(filter, setFilterState, {
-    defaultFilter,
+    defaultFilter: propDefaultFilter ?? defaultFilterFromConfig,
     active: useURL,
   });
 

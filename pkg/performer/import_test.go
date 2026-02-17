@@ -315,3 +315,86 @@ func TestUpdate(t *testing.T) {
 
 	db.AssertExpectations(t)
 }
+
+func TestImportCareerFields(t *testing.T) {
+	startYear := 2005
+	endYear := 2015
+
+	// explicit career_start/career_end should be used directly
+	t.Run("explicit fields", func(t *testing.T) {
+		input := jsonschema.Performer{
+			Name:        "test",
+			CareerStart: &startYear,
+			CareerEnd:   &endYear,
+		}
+
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
+		assert.Equal(t, &startYear, p.CareerStart)
+		assert.Equal(t, &endYear, p.CareerEnd)
+	})
+
+	// explicit fields take priority over legacy career_length
+	t.Run("explicit fields override legacy", func(t *testing.T) {
+		input := jsonschema.Performer{
+			Name:         "test",
+			CareerStart:  &startYear,
+			CareerEnd:    &endYear,
+			CareerLength: "1990 - 1995",
+		}
+
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
+		assert.Equal(t, &startYear, p.CareerStart)
+		assert.Equal(t, &endYear, p.CareerEnd)
+	})
+
+	// legacy career_length should be parsed when explicit fields are absent
+	t.Run("legacy career_length fallback", func(t *testing.T) {
+		input := jsonschema.Performer{
+			Name:         "test",
+			CareerLength: "2005 - 2015",
+		}
+
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
+		assert.Equal(t, &startYear, p.CareerStart)
+		assert.Equal(t, &endYear, p.CareerEnd)
+	})
+
+	// legacy career_length with only start year
+	t.Run("legacy career_length start only", func(t *testing.T) {
+		input := jsonschema.Performer{
+			Name:         "test",
+			CareerLength: "2005 -",
+		}
+
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
+		assert.Equal(t, &startYear, p.CareerStart)
+		assert.Nil(t, p.CareerEnd)
+	})
+
+	// unparseable career_length should return an error
+	t.Run("legacy career_length unparseable", func(t *testing.T) {
+		input := jsonschema.Performer{
+			Name:         "test",
+			CareerLength: "not a year range",
+		}
+
+		_, err := performerJSONToPerformer(input)
+		assert.NotNil(t, err)
+	})
+
+	// no career fields at all
+	t.Run("no career fields", func(t *testing.T) {
+		input := jsonschema.Performer{
+			Name: "test",
+		}
+
+		p, err := performerJSONToPerformer(input)
+		assert.Nil(t, err)
+		assert.Nil(t, p.CareerStart)
+		assert.Nil(t, p.CareerEnd)
+	})
+}

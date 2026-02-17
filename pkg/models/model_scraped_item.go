@@ -176,7 +176,9 @@ type ScrapedPerformer struct {
 	FakeTits       *string       `json:"fake_tits"`
 	PenisLength    *string       `json:"penis_length"`
 	Circumcised    *string       `json:"circumcised"`
-	CareerLength   *string       `json:"career_length"`
+	CareerLength   *string       `json:"career_length"` // deprecated: use CareerStart/CareerEnd
+	CareerStart    *int          `json:"career_start"`
+	CareerEnd      *int          `json:"career_end"`
 	Tattoos        *string       `json:"tattoos"`
 	Piercings      *string       `json:"piercings"`
 	Aliases        *string       `json:"aliases"`
@@ -219,8 +221,16 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.DeathDate = &date
 		}
 	}
-	if p.CareerLength != nil && !excluded["career_length"] {
-		ret.CareerLength = *p.CareerLength
+
+	// assume that career length is _not_ populated in favour of start/end
+
+	if p.CareerStart != nil && !excluded["career_start"] {
+		cs := *p.CareerStart
+		ret.CareerStart = &cs
+	}
+	if p.CareerEnd != nil && !excluded["career_end"] {
+		ce := *p.CareerEnd
+		ret.CareerEnd = &ce
 	}
 	if p.Country != nil && !excluded["country"] {
 		ret.Country = *p.Country
@@ -356,7 +366,16 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 		}
 	}
 	if p.CareerLength != nil && !excluded["career_length"] {
-		ret.CareerLength = NewOptionalString(*p.CareerLength)
+		// parse career_length into career_start/career_end
+		start, end, err := utils.ParseYearRangeString(*p.CareerLength)
+		if err == nil {
+			if start != nil {
+				ret.CareerStart = NewOptionalInt(*start)
+			}
+			if end != nil {
+				ret.CareerEnd = NewOptionalInt(*end)
+			}
+		}
 	}
 	if p.Country != nil && !excluded["country"] {
 		ret.Country = NewOptionalString(*p.Country)

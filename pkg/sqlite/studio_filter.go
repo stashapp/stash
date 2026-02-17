@@ -84,6 +84,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		qb.sceneCountCriterionHandler(studioFilter.SceneCount),
 		qb.imageCountCriterionHandler(studioFilter.ImageCount),
 		qb.galleryCountCriterionHandler(studioFilter.GalleryCount),
+		qb.groupCountCriterionHandler(studioFilter.GroupCount),
 		qb.parentCriterionHandler(studioFilter.Parents),
 		qb.aliasCriterionHandler(studioFilter.Aliases),
 		qb.tagsCriterionHandler(studioFilter.Tags),
@@ -115,6 +116,15 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &galleryFilterHandler{studioFilter.GalleriesFilter},
 			joinFn: func(f *filterBuilder) {
 				studioRepository.galleries.innerJoin(f, "", "studios.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "groups.id",
+			relatedRepo:    groupRepository.repository,
+			relatedHandler: &groupFilterHandler{studioFilter.GroupsFilter},
+			joinFn: func(f *filterBuilder) {
+				studioRepository.groups.innerJoin(f, "", "studios.id")
 			},
 		},
 
@@ -173,6 +183,17 @@ func (qb *studioFilterHandler) galleryCountCriterionHandler(galleryCount *models
 		if galleryCount != nil {
 			f.addLeftJoin("galleries", "", "galleries.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct galleries.id)", *galleryCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func (qb *studioFilterHandler) groupCountCriterionHandler(groupCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if groupCount != nil {
+			f.addLeftJoin("groups", "", "groups.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct groups.id)", *groupCount)
 
 			f.addHaving(clause, args...)
 		}

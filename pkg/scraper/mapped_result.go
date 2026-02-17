@@ -140,6 +140,8 @@ func (r mappedResult) scrapedPerformer() *models.ScrapedPerformer {
 		PenisLength:    r.stringPtr("PenisLength"),
 		Circumcised:    r.stringPtr("Circumcised"),
 		CareerLength:   r.stringPtr("CareerLength"),
+		CareerStart:    r.IntPtr("CareerStart"),
+		CareerEnd:      r.IntPtr("CareerEnd"),
 		Tattoos:        r.stringPtr("Tattoos"),
 		Piercings:      r.stringPtr("Piercings"),
 		Aliases:        r.stringPtr("Aliases"),

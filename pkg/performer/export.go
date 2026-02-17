@@ -30,7 +30,6 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		EyeColor:       performer.EyeColor,
 		Measurements:   performer.Measurements,
 		FakeTits:       performer.FakeTits,
-		CareerLength:   performer.CareerLength,
 		Tattoos:        performer.Tattoos,
 		Piercings:      performer.Piercings,
 		Favorite:       performer.Favorite,
@@ -69,6 +68,13 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 
 	if performer.PenisLength != nil {
 		newPerformerJSON.PenisLength = *performer.PenisLength
+	}
+
+	if performer.CareerStart != nil {
+		newPerformerJSON.CareerStart = performer.CareerStart
+	}
+	if performer.CareerEnd != nil {
+		newPerformerJSON.CareerEnd = performer.CareerEnd
 	}
 
 	if err := performer.LoadAliases(ctx, reader); err != nil {

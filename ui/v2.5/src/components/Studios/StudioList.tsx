@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -199,8 +199,6 @@ export const FilteredStudioList = PatchComponent(
   "FilteredStudioList",
   (props: IStudioList) => {
     const intl = useIntl();
-    const history = useHistory();
-    const location = useLocation();
 
     const searchFocus = useFocus();
 
@@ -283,15 +281,6 @@ export const FilteredStudioList = PatchComponent(
       onSelectNone,
       result,
     });
-
-    function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
-      let newPath = "/studios/new";
-      if (queryParam) {
-        newPath += "?q=" + encodeURIComponent(queryParam);
-      }
-      history.push(newPath);
-    }
 
     const viewRandom = useViewRandom(filter, totalCount);
 
@@ -378,8 +367,6 @@ export const FilteredStudioList = PatchComponent(
         operations={otherOperations}
         onEdit={onEdit}
         onDelete={onDelete}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "studio" })}
         operationsMenuClassName="studio-list-operations-dropdown"
       />
     );

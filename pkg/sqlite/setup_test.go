@@ -1513,13 +1513,26 @@ func getPerformerDeathDate(index int) *models.Date {
 	return &ret
 }
 
-func getPerformerCareerLength(index int) *string {
+func getPerformerCareerStart(index int) *int {
 	if index%5 == 0 {
 		return nil
 	}
 
-	ret := fmt.Sprintf("20%2d", index)
+	ret := 2000 + index
 	return &ret
+}
+
+func getPerformerCareerEnd(index int) *int {
+	if index%5 == 0 {
+		return nil
+	}
+
+	// only set career_end for even indices
+	if index%2 == 0 {
+		ret := 2010 + index
+		return &ret
+	}
+	return nil
 }
 
 func getPerformerPenisLength(index int) *float64 {
@@ -1615,10 +1628,8 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			TagIDs:        models.NewRelatedIDs(tids),
 		}
 
-		careerLength := getPerformerCareerLength(i)
-		if careerLength != nil {
-			performer.CareerLength = *careerLength
-		}
+		performer.CareerStart = getPerformerCareerStart(i)
+		performer.CareerEnd = getPerformerCareerEnd(i)
 
 		if (index+1)%5 != 0 {
 			performer.StashIDs = models.NewRelatedStashIDs([]models.StashID{

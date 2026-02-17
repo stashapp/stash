@@ -166,6 +166,8 @@ export type CriterionType =
   | "penis_length"
   | "circumcised"
   | "career_length"
+  | "career_start"
+  | "career_end"
   | "tattoos"
   | "piercings"
   | "aliases"

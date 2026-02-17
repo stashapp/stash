@@ -28,6 +28,8 @@ type StudioFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	// Filter by group count
+	GroupCount *IntCriterionInput `json:"group_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by studio aliases
@@ -42,6 +44,8 @@ type StudioFilterType struct {
 	ImagesFilter *ImageFilterType `json:"images_filter"`
 	// Filter by related galleries that meet this criteria
 	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related groups that meet this criteria
+	GroupsFilter *GroupFilterType `json:"groups_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
