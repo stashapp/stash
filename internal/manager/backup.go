@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type databaseBackupZip struct {
@@ -90,6 +91,8 @@ func (s *Manager) BackupDatabase(download bool, includeBlobs bool) (string, stri
 
 	zipFileName := backupName + ".zip"
 	zipFilePath := filepath.Join(zipFileDir, zipFileName)
+
+	logger.Debugf("Preparing zip file for database backup at %v", zipFilePath)
 
 	zf, err := os.Create(zipFilePath)
 	if err != nil {
