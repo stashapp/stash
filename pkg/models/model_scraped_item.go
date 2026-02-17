@@ -176,9 +176,9 @@ type ScrapedPerformer struct {
 	FakeTits       *string       `json:"fake_tits"`
 	PenisLength    *string       `json:"penis_length"`
 	Circumcised    *string       `json:"circumcised"`
-	CareerLength   *string       `json:"career_length"`
-	CareerStart    *string       `json:"career_start"`
-	CareerEnd      *string       `json:"career_end"`
+	CareerLength   *string       `json:"career_length"` // deprecated: use CareerStart/CareerEnd
+	CareerStart    *int          `json:"career_start"`
+	CareerEnd      *int          `json:"career_end"`
 	Tattoos        *string       `json:"tattoos"`
 	Piercings      *string       `json:"piercings"`
 	Aliases        *string       `json:"aliases"`
@@ -221,33 +221,16 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.DeathDate = &date
 		}
 	}
-	if p.CareerLength != nil && !excluded["career_length"] {
-		// parse career_length into career_start/career_end if they aren't explicitly set
-		if p.CareerStart == nil && p.CareerEnd == nil {
-			start, end, err := utils.ParseYearRangeString(*p.CareerLength)
-			if err == nil {
-				if start != nil {
-					s := strconv.Itoa(*start)
-					p.CareerStart = &s
-				}
-				if end != nil {
-					e := strconv.Itoa(*end)
-					p.CareerEnd = &e
-				}
-			}
-		}
-	}
+
+	// assume that career length is _not_ populated in favour of start/end
+
 	if p.CareerStart != nil && !excluded["career_start"] {
-		cs, err := strconv.Atoi(*p.CareerStart)
-		if err == nil {
-			ret.CareerStart = &cs
-		}
+		cs := *p.CareerStart
+		ret.CareerStart = &cs
 	}
 	if p.CareerEnd != nil && !excluded["career_end"] {
-		ce, err := strconv.Atoi(*p.CareerEnd)
-		if err == nil {
-			ret.CareerEnd = &ce
-		}
+		ce := *p.CareerEnd
+		ret.CareerEnd = &ce
 	}
 	if p.Country != nil && !excluded["country"] {
 		ret.Country = *p.Country

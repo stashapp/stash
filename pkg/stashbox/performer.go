@@ -232,12 +232,12 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	if p.CareerStartYear != nil {
-		cs := strconv.Itoa(*p.CareerStartYear)
+		cs := *p.CareerStartYear
 		sp.CareerStart = &cs
 	}
 
 	if p.CareerEndYear != nil {
-		ce := strconv.Itoa(*p.CareerEndYear)
+		ce := *p.CareerEndYear
 		sp.CareerEnd = &ce
 	}
 

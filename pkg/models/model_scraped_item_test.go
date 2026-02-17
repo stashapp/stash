@@ -8,8 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func strPtr(s string) *string { return &s }
-func intPtr(i int) *int       { return &i }
+func intPtr(i int) *int { return &i }
 
 func Test_scrapedToStudioInput(t *testing.T) {
 	const name = "name"
@@ -127,9 +126,10 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 	endpoint := "endpoint"
 	remoteSiteID := "remoteSiteID"
 
-	var stringValues []string
-	for i := 0; i < 20; i++ {
-		stringValues = append(stringValues, strconv.Itoa(i))
+	const nValues = 19
+	stringValues := make([]string, nValues)
+	for i := 0; i < nValues; i++ {
+		stringValues[i] = strconv.Itoa(i)
 	}
 
 	upTo := 0
@@ -186,7 +186,8 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Weight:         nextVal(),
 				Measurements:   nextVal(),
 				FakeTits:       nextVal(),
-				CareerLength:   func() *string { _ = nextVal(); return strPtr("2005 - 2015") }(),
+				CareerStart:    intPtr(2005),
+				CareerEnd:      intPtr(2015),
 				Tattoos:        nextVal(),
 				Piercings:      nextVal(),
 				Aliases:        nextVal(),
@@ -213,7 +214,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				FakeTits:       *nextVal(),
 				CareerStart:    intPtr(2005),
 				CareerEnd:      intPtr(2015),
-				Tattoos:        func() string { _ = nextVal(); return *nextVal() }(), // skip CareerLength counter slot
+				Tattoos:        *nextVal(), // skip CareerLength counter slot
 				Piercings:      *nextVal(),
 				Aliases:        NewRelatedStrings([]string{*nextVal()}),
 				URLs:           NewRelatedStrings([]string{*nextVal(), *nextVal(), *nextVal()}),
