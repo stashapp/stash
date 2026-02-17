@@ -258,7 +258,8 @@ const BackupDialog: React.FC<{
         <SettingSection>
           <BooleanSetting
             id="backup-include-blobs"
-            checked={includeBlobs}
+            // if includeBlobsDefault is false, then blobs are in the database, so we check the box and disable it
+            checked={includeBlobs || !includeBlobsDefault}
             headingID="config.tasks.backup_database.include_blobs"
             onChange={(v) => setIncludeBlobs(v)}
             // if includeBlobsDefault is false, then blobs are in the database
