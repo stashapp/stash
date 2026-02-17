@@ -19,7 +19,7 @@ enum ScrapeContentType {
 
 "Scraped Content is the forming union over the different scrapers"
 union ScrapedContent =
-  | ScrapedStudio
+    ScrapedStudio
   | ScrapedTag
   | ScrapedScene
   | ScrapedGallery
