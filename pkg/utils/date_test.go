@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestParseDateStringAsTime(t *testing.T) {
@@ -75,10 +74,10 @@ func TestParseYearRangeString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			start, end, err := ParseYearRangeString(tt.input)
 			if tt.wantErr {
-				require.Error(t, err)
+				assert.Error(t, err)
 				return
 			}
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.wantStart, start)
 			assert.Equal(t, tt.wantEnd, end)
 		})
