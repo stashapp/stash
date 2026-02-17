@@ -499,7 +499,17 @@
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
-      "backup_database": "Performs a backup of the database to the backups directory, with the filename format {filename_format}.",
+      "backup_database": {
+        "description": "Performs a backup of the database and blob files.",
+        "destination": "Destination",
+        "download": "Download backup",
+        "include_blobs": "Include blobs in backup",
+        "include_blobs_desc": "Disable to only backup the SQLite database file.",
+        "sqlite": "Backup file will be a copy of the SQLite database file, with the filename {filename_format}",
+        "to_directory": "To {directory}",
+        "warning_blobs": "Blob files will not be included in the backup. This means that to succesfully restore from the backup, the blob files must be present in the blob storage location.",
+        "zip": "SQLite database file and blob files will be zipped into a single file, with the filename {filename_format}"
+      },
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
       "clean_generated": {
         "blob_files": "Blob files",
