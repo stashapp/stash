@@ -287,9 +287,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if input.PreviewPreset != nil {
 		c.SetString(config.PreviewPreset, input.PreviewPreset.String())
 	}
-	r.setConfigBool(config.UseCustomSpriteGeneration, input.UseCustomSpriteGeneration)
-	r.setConfigInt(config.SpriteInterval, input.SpriteInterval)
+	r.setConfigBool(config.UseCustomSpriteInterval, input.UseCustomSpriteInterval)
+	r.setConfigFloat(config.SpriteInterval, input.SpriteInterval)
 	r.setConfigInt(config.MinimumSprites, input.MinimumSprites)
+	r.setConfigInt(config.MaximumSprites, input.MaximumSprites)
 	r.setConfigInt(config.SpriteScreenshotWidth, input.SpriteScreenshotWidth)
 
 	r.setConfigBool(config.TranscodeHardwareAcceleration, input.TranscodeHardwareAcceleration)

@@ -185,14 +185,17 @@ input ConfigGeneralInput {
   "Source of plugin packages"
   pluginPackageSources: [PackageSourceInput!]
 
-  "Wether to use the custom sprite generation options or not"
-  useCustomSpriteGeneration: Boolean
-  "Time between two different scrubber sprites in seconds"
-  spriteInterval: Int
-  "Minimum number of sprites to be generated"
-  minimumSprites: Int
   "Width of each sprite in pixels"
   spriteScreenshotWidth: Int
+
+  "True if sprite generation should use the sprite interval and min/max sprites settings instead of the default"
+  useCustomSpriteInterval: Boolean
+  "Time between two different scrubber sprites in seconds - only used if useCustomSpriteInterval is true"
+  spriteInterval: Float
+  "Minimum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  minimumSprites: Int
+  "Minimum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  maximumSprites: Int
 }
 
 type ConfigGeneralResult {
@@ -296,12 +299,14 @@ type ConfigGeneralResult {
   logAccess: Boolean!
   "Maximum log size"
   logFileMaxSize: Int!
-  "Wether to use the custom sprite generation options or not"
-  useCustomSpriteGeneration: Boolean!
-  "Time between two different scrubber sprites"
-  spriteInterval: Int!
-  "Minimum number of sprites to be generated"
+  "True if sprite generation should use the sprite interval and min/max sprites settings instead of the default"
+  useCustomSpriteInterval: Boolean!
+  "Time between two different scrubber sprites in seconds - only used if useCustomSpriteInterval is true"
+  spriteInterval: Float!
+  "Minimum number of sprites to be generated - only used if useCustomSpriteInterval is true"
   minimumSprites: Int!
+  "Maximum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  maximumSprites: Int!
   "Width of the each sprite in pixels"
   spriteScreenshotWidth: Int!
   "Array of video file extensions"

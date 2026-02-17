@@ -83,14 +83,17 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
-	UseCustomSpriteGeneration        = "use_custom_sprite_generation"
-	UseCustomSpriteGenerationDefault = false
+	UseCustomSpriteInterval        = "use_custom_sprite_interval"
+	UseCustomSpriteIntervalDefault = false
 
 	SpriteInterval        = "sprite_interval"
 	SpriteIntervalDefault = 30
 
 	MinimumSprites        = "minimum_sprites"
 	MinimumSpritesDefault = 10
+
+	MaximumSprites        = "maximum_sprites"
+	MaximumSpritesDefault = 500
 
 	SpriteScreenshotWidth        = "sprite_screenshot_width"
 	spriteScreenshotWidthDefault = 160
@@ -987,22 +990,23 @@ func (i *Config) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
-// GetUseCustomSpriteGeneration return true, if the sprite generation settings should be used
-func (i *Config) GetUseCustomSpriteGeneration() bool {
-	value := i.getBool(UseCustomSpriteGeneration)
+// GetUseCustomSpriteInterval returns true if the sprite minimum, maximum, and interval settings
+// should be used instead of the default
+func (i *Config) GetUseCustomSpriteInterval() bool {
+	value := i.getBool(UseCustomSpriteInterval)
 	return value
 }
 
-// GetSpriteInterval returns the time to be between each scrubber sprite
-func (i *Config) GetSpriteInterval() int {
-	value := i.getInt(SpriteInterval)
-	if value <= 0 {
-		return SpriteIntervalDefault
-	}
+// GetSpriteInterval returns the time (in seconds) to be between each scrubber sprite
+// A value of 0 indicates that the sprite interval should be automatically determined
+// based on the minimum sprite setting.
+func (i *Config) GetSpriteInterval() float64 {
+	value := i.getFloat64(SpriteInterval)
 	return value
 }
 
 // GetMinimumSprites returns the minimum number of sprites that have to be generated
+// A value of 0 will be overridden with the default of 10.
 func (i *Config) GetMinimumSprites() int {
 	value := i.getInt(MinimumSprites)
 	if value <= 0 {
@@ -1011,11 +1015,19 @@ func (i *Config) GetMinimumSprites() int {
 	return value
 }
 
+// GetMaximumSprites returns the maximum number of sprites that can be generated
+// A value of 0 indicates no maximum.
+func (i *Config) GetMaximumSprites() int {
+	value := i.getInt(MaximumSprites)
+	return value
+}
+
 // GetSpriteScreenshotWidth returns the required width of the screenshots to be taken
-// during sprite generation in pixels
+// during sprite generation in pixels. A value of 0 will mean that the default
+// width will be used.
 func (i *Config) GetSpriteScreenshotWidth() int {
 	value := i.getInt(SpriteScreenshotWidth)
-	if value <= 0 || i.GetUseCustomSpriteGeneration() == false {
+	if value <= 0 {
 		return spriteScreenshotWidthDefault
 	}
 	return value
@@ -1907,9 +1919,10 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewAudio, previewAudioDefault)
 	i.setDefault(SoundOnPreview, false)
 
-	i.setDefault(UseCustomSpriteGeneration, UseCustomSpriteGenerationDefault)
+	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
 	i.setDefault(SpriteInterval, SpriteIntervalDefault)
 	i.setDefault(MinimumSprites, MinimumSpritesDefault)
+	i.setDefault(MaximumSprites, MaximumSpritesDefault)
 	i.setDefault(SpriteScreenshotWidth, spriteScreenshotWidthDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
