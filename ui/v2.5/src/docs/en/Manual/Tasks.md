@@ -85,3 +85,19 @@ The import and export tasks read and write JSON files to the configured metadata
 > **⚠️ Note:** The full import task wipes the current database completely before importing.
 
 See the [JSON Specification](/help/JSONSpec.md) page for details on the exported JSON format.
+
+## Backing up
+
+The backup task creates a backup of the stash database and (optionally) blob files. The backup can either be downloaded or output into the backup directory (under `Settings > Paths`) or the database directory if the backup directory is not configured.
+
+For a full backup, the database file and all blob files must be copied. The backup is stored as a zip file, with the database file at the root of the zip and the blob files in a `blobs` directory.
+
+> **⚠️ Note:** generated files are not included in the backup, so these will need to be regenerated when restoring with an empty system from backup.
+
+For database-only backups, only the database file is copied into the destination. This is useful for quick backups before performing risky operations, or for users who do not use filesystem blob storage.
+
+## Restoring from backup
+
+Restoring from backup is currently a manual process. The database backup zip file must be unzipped, and the database file and blob files (if applicable) copied into the database and blob directories respectively. Stash should then be restarted to load the restored database.
+
+> **⚠️ Note:** the filename for a database-only backup is not the same as the original database file, so the database file from the backup must be renamed to match the original database filename before copying it into the database directory. The original database filename can be found in `Settings > Paths > Database path`.

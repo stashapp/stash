@@ -688,7 +688,14 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
 
       <SettingSection headingID="actions.backup">
         <Setting
-          headingID="actions.backup"
+          heading={
+            <>
+              <FormattedMessage id="actions.backup" />
+              <ManualLink tab="Tasks">
+                <Icon icon={faQuestionCircle} />
+              </ManualLink>
+            </>
+          }
           subHeading={intl.formatMessage({
             id: "config.tasks.backup_database.description",
           })}
