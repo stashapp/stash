@@ -206,8 +206,6 @@ func Test_PerformerStore_Create(t *testing.T) {
 			}
 
 			assert.Equal(tt.newObject.CustomFields, cf)
-
-			return
 		})
 	}
 }
@@ -1772,6 +1770,106 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 		return nil
 	})
+}
+
+func TestPerformerQueryLegacyCareerLength(t *testing.T) {
+	const value = "2002 - 2012"
+
+	tests := []struct {
+		name            string
+		c               models.StringCriterionInput
+		careerStartCrit *models.IntCriterionInput
+		careerEndCrit   *models.IntCriterionInput
+		err             bool
+	}{
+		{
+			name: "valid format",
+			c: models.StringCriterionInput{
+				Value:    value,
+				Modifier: models.CriterionModifierEquals,
+			},
+			careerStartCrit: &models.IntCriterionInput{
+				Value:    2002,
+				Modifier: models.CriterionModifierEquals,
+			},
+			careerEndCrit: &models.IntCriterionInput{
+				Value:    2012,
+				Modifier: models.CriterionModifierEquals,
+			},
+			err: false,
+		},
+		{
+			name: "invalid format",
+			c: models.StringCriterionInput{
+				Value:    "invalid format",
+				Modifier: models.CriterionModifierEquals,
+			},
+			err: true,
+		},
+		{
+			name: "is null",
+			c: models.StringCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			careerStartCrit: &models.IntCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			careerEndCrit: &models.IntCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			err: false,
+		},
+		{
+			name: "not null",
+			c: models.StringCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			careerStartCrit: &models.IntCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			careerEndCrit: &models.IntCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			err: false,
+		},
+		{
+			name: "invalid modifier",
+			c: models.StringCriterionInput{
+				Value:    value,
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+			err: true,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			performers, _, err := qb.Query(ctx, &models.PerformerFilterType{
+				CareerLength: &tt.c,
+			}, nil)
+
+			if err != nil && !tt.err {
+				t.Errorf("Error querying performer: %s", err.Error())
+			} else if err == nil && tt.err {
+				t.Errorf("Expected error but got none")
+			}
+
+			if err != nil || tt.err {
+				return
+			}
+
+			if len(performers) == 0 {
+				t.Errorf("Expected to find performers but found none")
+			}
+
+			for _, performer := range performers {
+				verifyIntPtr(t, performer.CareerStart, *tt.careerStartCrit)
+				verifyIntPtr(t, performer.CareerEnd, *tt.careerEndCrit)
+			}
+		})
+	}
 }
 
 func TestPerformerQueryCareerStart(t *testing.T) {
