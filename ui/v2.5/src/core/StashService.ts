@@ -2248,6 +2248,18 @@ export const mutateDeleteFiles = (ids: string[]) =>
     },
   });
 
+export const mutateRevealFileInFileManager = (id: string) =>
+  client.mutate<GQL.RevealFileInFileManagerMutation>({
+    mutation: GQL.RevealFileInFileManagerDocument,
+    variables: { id },
+  });
+
+export const mutateRevealFolderInFileManager = (id: string) =>
+  client.mutate<GQL.RevealFolderInFileManagerMutation>({
+    mutation: GQL.RevealFolderInFileManagerDocument,
+    variables: { id },
+  });
+
 /// Scrapers
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();

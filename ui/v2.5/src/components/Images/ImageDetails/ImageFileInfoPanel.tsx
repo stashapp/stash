@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedTime } from "react-intl";
+import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { Icon } from "src/components/Shared/Icon";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
 import * as GQL from "src/core/generated-graphql";
-import { mutateImageSetPrimaryFile } from "src/core/StashService";
+import {
+  mutateImageSetPrimaryFile,
+  mutateRevealFileInFileManager,
+} from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { TextField, URLField, URLsField } from "src/utils/field";
@@ -47,12 +52,18 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
           internal
         />
-        <URLField
-          id="path"
-          url={`file://${props.file.path}`}
-          value={`file://${props.file.path}`}
-          truncate
-        />
+        <TextField id="path">
+          <span className="d-flex align-items-center">
+            <TruncatedText text={props.file.path} />
+            <Button
+              className="minimal ml-1"
+              title="Reveal in file manager"
+              onClick={() => mutateRevealFileInFileManager(props.file.id)}
+            >
+              <Icon icon={faFolderOpen} />
+            </Button>
+          </span>
+        </TextField>
         <TextField id="filesize">
           <span className="text-truncate">
             <FileSize size={props.file.size} />

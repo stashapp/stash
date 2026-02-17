@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -324,5 +325,55 @@ func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSe
 		return false, err
 	}
 
+	return true, nil
+}
+
+func (r *mutationResolver) RevealFileInFileManager(ctx context.Context, id string) (bool, error) {
+	fileIDInt, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+
+	var filePath string
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		files, err := r.repository.File.Find(ctx, models.FileID(fileIDInt))
+		if err != nil {
+			return fmt.Errorf("finding file: %w", err)
+		}
+		if len(files) == 0 {
+			return fmt.Errorf("file with id %d not found", fileIDInt)
+		}
+		filePath = files[0].Base().Path
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	desktop.RevealInFileManager(filePath)
+	return true, nil
+}
+
+func (r *mutationResolver) RevealFolderInFileManager(ctx context.Context, id string) (bool, error) {
+	folderIDInt, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+
+	var folderPath string
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		folder, err := r.repository.Folder.Find(ctx, models.FolderID(folderIDInt))
+		if err != nil {
+			return fmt.Errorf("finding folder: %w", err)
+		}
+		if folder == nil {
+			return fmt.Errorf("folder with id %d not found", folderIDInt)
+		}
+		folderPath = folder.Path
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	desktop.RevealInFileManager(folderPath)
 	return true, nil
 }

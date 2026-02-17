@@ -33,7 +33,9 @@ func sendNotification(notificationTitle string, notificationText string) {
 }
 
 func revealInFileManager(path string) {
-	exec.Command(`open`, `-R`, path)
+	if err := exec.Command(`open`, `-R`, path).Run(); err != nil {
+		logger.Errorf("Error revealing path in Finder: %s", err.Error())
+	}
 }
 
 func isDoubleClickLaunched() bool {

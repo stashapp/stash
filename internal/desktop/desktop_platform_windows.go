@@ -84,5 +84,7 @@ func sendNotification(notificationTitle string, notificationText string) {
 }
 
 func revealInFileManager(path string) {
-	exec.Command(`explorer`, `\select`, path)
+	if err := exec.Command(`explorer`, `/select,`+path).Run(); err != nil {
+		logger.Errorf("Error revealing path in Explorer: %s", err.Error())
+	}
 }

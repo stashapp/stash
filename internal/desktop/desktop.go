@@ -156,14 +156,14 @@ func getIconPath() string {
 }
 
 func RevealInFileManager(path string) {
-	exists, err := fsutil.FileExists(path)
-	if err != nil {
-		logger.Errorf("Error checking file: %s", err)
+	if !IsDesktop() {
 		return
 	}
-	if exists && IsDesktop() {
-		revealInFileManager(path)
+	if _, err := os.Stat(path); err != nil {
+		logger.Errorf("Error checking path: %s", err)
+		return
 	}
+	revealInFileManager(path)
 }
 
 func getServerURL(path string) string {
