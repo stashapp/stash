@@ -325,6 +325,8 @@ input ImportObjectsInput {
 
 input BackupDatabaseInput {
   download: Boolean
+  "If true, blob files will be included in the backup. This can significantly increase the size of the backup and the time it takes to create it, but allows for a complete backup of the system that can be restored without needing access to the original media files."
+  includeBlobs: Boolean
 }
 
 input AnonymiseDatabaseInput {
