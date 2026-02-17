@@ -259,10 +259,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("fake_tits", state.fake_tits);
     }
     if (state.career_start) {
-      formik.setFieldValue("career_start", parseInt(state.career_start, 10));
+      formik.setFieldValue("career_start", state.career_start);
     }
     if (state.career_end) {
-      formik.setFieldValue("career_end", parseInt(state.career_end, 10));
+      formik.setFieldValue("career_end", state.career_end);
     }
     if (state.tattoos) {
       formik.setFieldValue("tattoos", state.tattoos);
