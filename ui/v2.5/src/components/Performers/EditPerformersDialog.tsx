@@ -42,7 +42,8 @@ const performerFields = [
   "gender",
   "birthdate",
   "death_date",
-  "career_length",
+  "career_start",
+  "career_end",
   "country",
   "ethnicity",
   "eye_color",
@@ -363,8 +364,15 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("piercings", updateInput.piercings, (v) =>
             setUpdateField({ piercings: v })
           )}
-          {renderTextField("career_length", updateInput.career_length, (v) =>
-            setUpdateField({ career_length: v })
+          {renderTextField(
+            "career_start",
+            updateInput.career_start?.toString(),
+            (v) => setUpdateField({ career_start: v ? parseInt(v) : undefined })
+          )}
+          {renderTextField(
+            "career_end",
+            updateInput.career_end?.toString(),
+            (v) => setUpdateField({ career_end: v ? parseInt(v) : undefined })
           )}
 
           <Form.Group controlId="tags">

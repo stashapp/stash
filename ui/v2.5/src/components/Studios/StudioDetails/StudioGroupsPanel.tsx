@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupList } from "src/components/Groups/GroupList";
+import { FilteredGroupList } from "src/components/Groups/GroupList";
 import { useStudioFilterHook } from "src/core/studios";
 import { View } from "src/components/List/views";
 
@@ -17,7 +17,7 @@ export const StudioGroupsPanel: React.FC<IStudioGroupsPanel> = ({
 }) => {
   const filterHook = useStudioFilterHook(studio, showChildStudioContent);
   return (
-    <GroupList
+    <FilteredGroupList
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioGroups}

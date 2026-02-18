@@ -39,9 +39,9 @@ By default, when a scene has a resume point, the scene player will automatically
 
 ## Custom CSS
 
-The stash UI can be customised using custom CSS. See [here](https://docs.stashapp.cc/themes/custom-css-snippets/) for a community-curated set of CSS snippets to customise your UI. 
+The stash UI can be customised using custom CSS. See [here](https://discourse.stashapp.cc/t/custom-css-snippets/4043) for a community-curated set of CSS snippets to customise your UI. 
 
-There is also a [collection of community-created themes](https://docs.stashapp.cc/themes/list/#browse-themes) available.
+There is also a [collection of community-created themes](https://discourse.stashapp.cc/tags/c/plugins/18/all/theme) available.
 
 ## Custom JavaScript
 

@@ -9,7 +9,6 @@ import {
   faPencil,
   faPencilAlt,
   faPlay,
-  faPlus,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -61,6 +60,7 @@ export interface IListFilterOperation {
   isDisplayed?: () => boolean;
   icon?: IconDefinition;
   buttonVariant?: string;
+  className?: string;
 }
 
 interface IListOperationButtonsProps {
@@ -268,22 +268,13 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   );
 };
 
-export interface IListOperations {
-  text: string;
-  onClick: () => void;
-  isDisplayed?: () => boolean;
-  className?: string;
-}
-
 export const ListOperations: React.FC<{
   items: number;
   hasSelection?: boolean;
-  operations?: IListOperations[];
+  operations?: IListFilterOperation[];
   onEdit?: () => void;
   onDelete?: () => void;
   onPlay?: () => void;
-  onCreateNew?: () => void;
-  entityType?: string;
   operationsClassName?: string;
   operationsMenuClassName?: string;
 }> = ({
@@ -293,79 +284,128 @@ export const ListOperations: React.FC<{
   onEdit,
   onDelete,
   onPlay,
-  onCreateNew,
-  entityType,
   operationsClassName = "list-operations",
   operationsMenuClassName,
 }) => {
   const intl = useIntl();
 
+  const dropdownOperations = useMemo(() => {
+    return operations.filter((o) => {
+      if (o.icon) {
+        return false;
+      }
+
+      if (!o.isDisplayed) {
+        return true;
+      }
+
+      return o.isDisplayed();
+    });
+  }, [operations]);
+
+  const buttons = useMemo(() => {
+    const otherButtons = (operations ?? []).filter((o) => {
+      if (!o.icon) {
+        return false;
+      }
+
+      if (!o.isDisplayed) {
+        return true;
+      }
+
+      return o.isDisplayed();
+    });
+
+    const ret: React.ReactNode[] = [];
+
+    function addButton(b: React.ReactNode | null) {
+      if (b) {
+        ret.push(b);
+      }
+    }
+
+    const playButton =
+      !!items && onPlay ? (
+        <Button
+          className="play-button"
+          variant="secondary"
+          onClick={() => onPlay()}
+          title={intl.formatMessage({ id: "actions.play" })}
+        >
+          <Icon icon={faPlay} />
+        </Button>
+      ) : null;
+
+    const editButton =
+      hasSelection && onEdit ? (
+        <Button
+          className="edit-existing-button"
+          variant="secondary"
+          onClick={() => onEdit()}
+        >
+          <Icon icon={faPencil} />
+        </Button>
+      ) : null;
+
+    const deleteButton =
+      hasSelection && onDelete ? (
+        <Button
+          variant="danger"
+          className="delete-button btn-danger-minimal"
+          onClick={() => onDelete()}
+        >
+          <Icon icon={faTrash} />
+        </Button>
+      ) : null;
+
+    addButton(playButton);
+    addButton(editButton);
+    addButton(deleteButton);
+
+    otherButtons.forEach((button) => {
+      addButton(
+        <Button
+          key={button.text}
+          variant={button.buttonVariant ?? "secondary"}
+          onClick={button.onClick}
+          title={button.text}
+          className={button.className}
+        >
+          <Icon icon={button.icon!} />
+        </Button>
+      );
+    });
+
+    if (ret.length === 0) {
+      return null;
+    }
+
+    return ret;
+  }, [operations, hasSelection, onDelete, onEdit, onPlay, items, intl]);
+
+  if (dropdownOperations.length === 0 && !buttons) {
+    return null;
+  }
+
   return (
     <div className="list-operations">
       <ButtonGroup>
-        {!!items && onPlay && (
-          <Button
-            className="play-button"
-            variant="secondary"
-            onClick={() => onPlay()}
-            title={intl.formatMessage({ id: "actions.play" })}
-          >
-            <Icon icon={faPlay} />
-          </Button>
-        )}
-        {!hasSelection && onCreateNew && (
-          <Button
-            className="create-new-button"
-            variant="secondary"
-            onClick={() => onCreateNew()}
-            title={intl.formatMessage(
-              { id: "actions.create_entity" },
-              { entityType }
-            )}
-          >
-            <Icon icon={faPlus} />
-          </Button>
-        )}
+        {buttons}
 
-        {hasSelection && (onEdit || onDelete) && (
-          <>
-            {onEdit && (
-              <Button variant="secondary" onClick={() => onEdit()}>
-                <Icon icon={faPencil} />
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="danger"
-                className="btn-danger-minimal"
-                onClick={() => onDelete()}
-              >
-                <Icon icon={faTrash} />
-              </Button>
-            )}
-          </>
-        )}
-
-        {operations.length > 0 && (
+        {dropdownOperations.length > 0 && (
           <OperationDropdown
             className={operationsClassName}
             menuClassName={operationsMenuClassName}
             menuPortalTarget={document.body}
           >
-            {operations.map((o) => {
-              if (o.isDisplayed && !o.isDisplayed()) {
-                return null;
-              }
-
-              return (
-                <OperationDropdownItem
-                  key={o.text}
-                  onClick={o.onClick}
-                  text={o.text}
-                  className={o.className}
-                />
-              );
-            })}
+            {dropdownOperations.map((o) => (
+              <OperationDropdownItem
+                key={o.text}
+                onClick={o.onClick}
+                text={o.text}
+                className={o.className}
+              />
+            ))}
           </OperationDropdown>
         )}
       </ButtonGroup>

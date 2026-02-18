@@ -44,7 +44,8 @@ type performerRow struct {
 	FakeTits           zero.String `db:"fake_tits"`
 	PenisLength        null.Float  `db:"penis_length"`
 	Circumcised        zero.String `db:"circumcised"`
-	CareerLength       zero.String `db:"career_length"`
+	CareerStart        null.Int    `db:"career_start"`
+	CareerEnd          null.Int    `db:"career_end"`
 	Tattoos            zero.String `db:"tattoos"`
 	Piercings          zero.String `db:"piercings"`
 	Favorite           bool        `db:"favorite"`
@@ -82,7 +83,8 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	if o.Circumcised != nil && o.Circumcised.IsValid() {
 		r.Circumcised = zero.StringFrom(o.Circumcised.String())
 	}
-	r.CareerLength = zero.StringFrom(o.CareerLength)
+	r.CareerStart = intFromPtr(o.CareerStart)
+	r.CareerEnd = intFromPtr(o.CareerEnd)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
 	r.Favorite = o.Favorite
@@ -110,7 +112,8 @@ func (r *performerRow) resolve() *models.Performer {
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
 		PenisLength:    nullFloatPtr(r.PenisLength),
-		CareerLength:   r.CareerLength.String,
+		CareerStart:    nullIntPtr(r.CareerStart),
+		CareerEnd:      nullIntPtr(r.CareerEnd),
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
 		Favorite:       r.Favorite,
@@ -155,7 +158,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("circumcised", o.Circumcised)
-	r.setNullString("career_length", o.CareerLength)
+	r.setNullInt("career_start", o.CareerStart)
+	r.setNullInt("career_end", o.CareerEnd)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
 	r.setBool("favorite", o.Favorite)
@@ -776,7 +780,8 @@ func (qb *PerformerStore) sortByScenesDuration(direction string) string {
 
 var performerSortOptions = sortOptions{
 	"birthdate",
-	"career_length",
+	"career_start",
+	"career_end",
 	"created_at",
 	"galleries_count",
 	"height",
