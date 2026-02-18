@@ -32,8 +32,8 @@ func IsFsPathCaseSensitive(path string) (bool, error) {
 		return false, fmt.Errorf("could not case flip path %s", path)
 	}
 
-	flipped := []byte(path)
-	for _, c := range []byte(fBase) { // replace base of path with the flipped one ( we need to flip the base or last dir part )
+	flipped := []rune(path)
+	for _, c := range fBase { // replace base of path with the flipped one ( we need to flip the base or last dir part )
 		flipped[i] = c
 		i++
 	}
@@ -43,7 +43,7 @@ func IsFsPathCaseSensitive(path string) (bool, error) {
 		return true, nil // fs of path should be case sensitive
 	}
 
-	if fiCase.ModTime() == fi.ModTime() { // file path exists and is the same
+	if fiCase.ModTime().Equal(fi.ModTime()) { // file path exists and is the same
 		return false, nil // fs of path is not case sensitive
 	}
 	return false, fmt.Errorf("can not determine case sensitivity of path %s", path)
