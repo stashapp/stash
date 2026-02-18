@@ -1624,5 +1624,7 @@
     "stash_id_count": "Nombre d'identifiants Stash",
     "duplicated": "Dupliqué",
     "duplicated_stash_id": "Dupliqué (identifiant Stash)",
-    "duplicated_title": "Dupliqué (Titre)"
+    "duplicated_title": "Dupliqué (Titre)",
+    "career_end": "Fin de carrière",
+    "career_start": "Début de carrière"
 }
