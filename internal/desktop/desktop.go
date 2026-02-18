@@ -156,14 +156,17 @@ func getIconPath() string {
 }
 
 func RevealInFileManager(path string) {
-	if !IsDesktop() {
-		return
-	}
 	if _, err := os.Stat(path); err != nil {
 		logger.Errorf("Error checking path: %s", err)
 		return
 	}
-	revealInFileManager(path)
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		logger.Errorf("Error getting absolute path: %s", err)
+		return
+	}
+	revealInFileManager(absPath)
 }
 
 func getServerURL(path string) string {
