@@ -66,17 +66,13 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	// Combine all of the thumbnails into a sprite image
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
-	gridSize := getGridSizeFromImageCount(len(images))
+	gridSize := GetSpriteGridSize(len(images))
 	canvasWidth := width * gridSize
 	canvasHeight := height * gridSize
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
-	row := 0
 	for index := 0; index < len(images); index++ {
-		if (index > 0) && (index%gridSize == 0) {
-			row++
-		}
 		x := width * (index % gridSize)
-		y := height * row
+		y := height * int(math.Floor(float64(index)/float64(gridSize)))
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -84,9 +80,9 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	return montage
 }
 
-// getGridSizeFromImageCount return the required size of a grid, where the number of images in width
+// GetSpriteGridSize return the required size of a grid, where the number of images in width
 // equals the number of images in height, to hold 'imageCount' images
-func getGridSizeFromImageCount(imageCount int) int {
+func GetSpriteGridSize(imageCount int) int {
 	return int(math.Ceil(math.Sqrt(float64(imageCount))))
 }
 
@@ -109,7 +105,7 @@ func (g Generator) spriteVTT(spritePath string, stepSize float64, spriteChunks i
 			return err
 		}
 
-		gridSize := getGridSizeFromImageCount(spriteChunks)
+		gridSize := GetSpriteGridSize(spriteChunks)
 		width := image.Width / gridSize
 		height := image.Height / gridSize
 

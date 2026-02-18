@@ -89,6 +89,16 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	config.SpriteInterval = calculateSpriteInterval(videoFile, config)
 	chunkCount := int(math.Ceil(videoFile.VideoStreamDuration / config.SpriteInterval))
 
+	// adjust the chunk count to the next highest perfect square, to ensure the sprite image
+	// is completely filled (no empty space in the grid) and the grid is as square as possible (minimizing the number of rows/columns)
+	gridSize := generate.GetSpriteGridSize(chunkCount)
+	newChunkCount := gridSize * gridSize
+
+	if newChunkCount != chunkCount {
+		logger.Debugf("[generator] adjusting chunk count from %d to %d to fit a %dx%d grid", chunkCount, newChunkCount, gridSize, gridSize)
+		chunkCount = newChunkCount
+	}
+
 	if config.SpriteWidth <= 0 {
 		config.SpriteWidth = DefaultSpriteWidth
 	}
@@ -151,6 +161,7 @@ func calculateSpriteInterval(videoFile ffmpeg.VideoFile, config SpriteGeneratorC
 			panic("invalid configuration: MinimumSprites must be greater than 0 if SpriteInterval is not set")
 		}
 
+		logger.Debugf("[generator] calculating sprite interval for video duration %.3fs with minimum sprites %d", videoFile.VideoStreamDuration, minSprites)
 		return videoFile.VideoStreamDuration / float64(minSprites)
 	}
 
@@ -160,11 +171,13 @@ func calculateSpriteInterval(videoFile ffmpeg.VideoFile, config SpriteGeneratorC
 	// If the calculated sprite count is greater than the maximum, adjust the interval to meet the maximum
 	if config.MaximumSprites > 0 && spriteCount > int(config.MaximumSprites) {
 		spriteInterval = videoFile.VideoStreamDuration / float64(config.MaximumSprites)
+		logger.Debugf("[generator] provided sprite interval %.1fs results in %d sprites, which exceeds the maximum of %d, adjusting interval to %.1fs", config.SpriteInterval, spriteCount, config.MaximumSprites, spriteInterval)
 	}
 
 	// If the calculated sprite count is less than the minimum, adjust the interval to meet the minimum
 	if config.MinimumSprites > 0 && spriteCount < int(config.MinimumSprites) {
 		spriteInterval = videoFile.VideoStreamDuration / float64(config.MinimumSprites)
+		logger.Debugf("[generator] provided sprite interval %.1fs results in %d sprites, which is less than the minimum of %d, adjusting interval to %.1fs", config.SpriteInterval, spriteCount, config.MinimumSprites, spriteInterval)
 	}
 
 	return spriteInterval
