@@ -50,9 +50,9 @@ type SpriteGeneratorConfig struct {
 	// the provided MinimumSprites and MaximumSprites
 	SpriteInterval float64
 
-	// SpriteWidth is the width in pixels of each sprite image.
-	// The height will be automatically calculated to maintain the aspect ratio of the video
-	SpriteWidth int
+	// SpriteSize is the size in pixels of the longest dimension of each sprite image.
+	// The other dimension will be automatically calculated to maintain the aspect ratio of the video
+	SpriteSize int
 }
 
 const (
@@ -61,16 +61,16 @@ const (
 	// intervals across the video duration
 	DefaultSpriteAmount = 81
 
-	// DefaultSpriteWidth is the default width in pixels of each sprite image if no configuration
-	// is provided. This corresponds to the legacy behavior of the generator.
-	DefaultSpriteWidth = 160
+	// DefaultSpriteSize is the default size in pixels of the longest dimension of each sprite image
+	// if no configuration is provided. This corresponds to the legacy behavior of the generator.
+	DefaultSpriteSize = 160
 )
 
 var DefaultSpriteGeneratorConfig = SpriteGeneratorConfig{
 	MinimumSprites: DefaultSpriteAmount,
 	MaximumSprites: DefaultSpriteAmount,
 	SpriteInterval: 0,
-	SpriteWidth:    DefaultSpriteWidth,
+	SpriteSize:     DefaultSpriteSize,
 }
 
 // NewSpriteGenerator creates a new SpriteGenerator for the given video file and configuration
@@ -99,8 +99,8 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		chunkCount = newChunkCount
 	}
 
-	if config.SpriteWidth <= 0 {
-		config.SpriteWidth = DefaultSpriteWidth
+	if config.SpriteSize <= 0 {
+		config.SpriteSize = DefaultSpriteSize
 	}
 
 	slowSeek := false
@@ -200,6 +200,8 @@ func (g *SpriteGenerator) generateSpriteImage() error {
 
 	var images []image.Image
 
+	isPortrait := g.Info.VideoFile.Height > g.Info.VideoFile.Width
+
 	if !g.SlowSeek {
 		logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
 		// generate `ChunkCount` thumbnails
@@ -207,7 +209,7 @@ func (g *SpriteGenerator) generateSpriteImage() error {
 
 		for i := 0; i < g.Info.ChunkCount; i++ {
 			time := float64(i) * stepSize
-			img, err := g.g.SpriteScreenshot(context.TODO(), g.Info.VideoFile.Path, time, g.Config.SpriteWidth)
+			img, err := g.g.SpriteScreenshot(context.TODO(), g.Info.VideoFile.Path, time, g.Config.SpriteSize, isPortrait)
 			if err != nil {
 				return err
 			}
@@ -225,7 +227,7 @@ func (g *SpriteGenerator) generateSpriteImage() error {
 				return errors.New("invalid frame number conversion")
 			}
 
-			img, err := g.g.SpriteScreenshotSlow(context.TODO(), g.Info.VideoFile.Path, int(frame), g.Config.SpriteWidth)
+			img, err := g.g.SpriteScreenshotSlow(context.TODO(), g.Info.VideoFile.Path, int(frame), g.Config.SpriteSize)
 			if err != nil {
 				return err
 			}

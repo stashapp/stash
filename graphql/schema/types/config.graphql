@@ -185,8 +185,8 @@ input ConfigGeneralInput {
   "Source of plugin packages"
   pluginPackageSources: [PackageSourceInput!]
 
-  "Width of each sprite in pixels"
-  spriteScreenshotWidth: Int
+  "Size of the longest dimension for each sprite in pixels"
+  spriteScreenshotSize: Int
 
   "True if sprite generation should use the sprite interval and min/max sprites settings instead of the default"
   useCustomSpriteInterval: Boolean
@@ -307,8 +307,8 @@ type ConfigGeneralResult {
   minimumSprites: Int!
   "Maximum number of sprites to be generated - only used if useCustomSpriteInterval is true"
   maximumSprites: Int!
-  "Width of the each sprite in pixels"
-  spriteScreenshotWidth: Int!
+  "Size of the longest dimension for each sprite in pixels"
+  spriteScreenshotSize: Int!
   "Array of video file extensions"
   videoExtensions: [String!]!
   "Array of image file extensions"

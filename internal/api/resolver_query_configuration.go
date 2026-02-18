@@ -98,7 +98,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		ParallelTasks:                 config.GetParallelTasks(),
 		UseCustomSpriteInterval:       config.GetUseCustomSpriteInterval(),
 		SpriteInterval:                config.GetSpriteInterval(),
-		SpriteScreenshotWidth:         config.GetSpriteScreenshotWidth(),
+		SpriteScreenshotSize:          config.GetSpriteScreenshotSize(),
 		MinimumSprites:                config.GetMinimumSprites(),
 		MaximumSprites:                config.GetMaximumSprites(),
 		PreviewAudio:                  config.GetPreviewAudio(),

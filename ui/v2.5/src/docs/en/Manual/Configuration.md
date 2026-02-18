@@ -91,9 +91,9 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 ## Sprite generation
 
-### Sprite width
+### Sprite size
 
-Fixed width of a generated sprite. A fitting height will be chosen automatically.
+Fixed size of a generated sprite, being the longest dimension in pixels. 
 Setting this to `0` will fallback to the default of `160`.
 Althought it is possible to set this value to anything bigger than `0` it is recommended to set it to `160` at least.
 

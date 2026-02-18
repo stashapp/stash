@@ -95,8 +95,8 @@ const (
 	MaximumSprites        = "maximum_sprites"
 	MaximumSpritesDefault = 500
 
-	SpriteScreenshotWidth        = "sprite_screenshot_width"
-	spriteScreenshotWidthDefault = 160
+	SpriteScreenshotSize        = "sprite_screenshot_width"
+	spriteScreenshotSizeDefault = 160
 
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
@@ -1022,13 +1022,14 @@ func (i *Config) GetMaximumSprites() int {
 	return value
 }
 
-// GetSpriteScreenshotWidth returns the required width of the screenshots to be taken
-// during sprite generation in pixels. A value of 0 will mean that the default
-// width will be used.
-func (i *Config) GetSpriteScreenshotWidth() int {
-	value := i.getInt(SpriteScreenshotWidth)
+// GetSpriteScreenshotSize returns the required size of the screenshots to be taken
+// during sprite generation in pixels. This will be the width for landscape scenes
+// and the height for portrait scenes, with the other dimension being scaled to maintain
+// the aspect ratio. If the value is less than or equal to 0, the default will be used.
+func (i *Config) GetSpriteScreenshotSize() int {
+	value := i.getInt(SpriteScreenshotSize)
 	if value <= 0 {
-		return spriteScreenshotWidthDefault
+		return spriteScreenshotSizeDefault
 	}
 	return value
 }
@@ -1923,7 +1924,7 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(SpriteInterval, SpriteIntervalDefault)
 	i.setDefault(MinimumSprites, MinimumSpritesDefault)
 	i.setDefault(MaximumSprites, MaximumSpritesDefault)
-	i.setDefault(SpriteScreenshotWidth, spriteScreenshotWidthDefault)
+	i.setDefault(SpriteScreenshotSize, spriteScreenshotSizeDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
 

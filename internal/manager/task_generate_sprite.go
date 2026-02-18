@@ -36,7 +36,7 @@ func (t *GenerateSpriteTask) Start(ctx context.Context) {
 	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(sceneHash)
 
 	cfg := DefaultSpriteGeneratorConfig
-	cfg.SpriteWidth = instance.Config.GetSpriteScreenshotWidth()
+	cfg.SpriteSize = instance.Config.GetSpriteScreenshotSize()
 
 	if instance.Config.GetUseCustomSpriteInterval() {
 		cfg.MinimumSprites = instance.Config.GetMinimumSprites()

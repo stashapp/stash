@@ -429,11 +429,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
       <SettingSection headingID="config.general.sprite_generation_head">
         <NumberSetting
-          id="sprite-screenshot-width"
-          headingID="config.general.sprite_screenshot_width_head"
-          subHeadingID="config.general.sprite_screenshot_width_desc"
-          value={general.spriteScreenshotWidth ?? 160}
-          onChange={(v) => saveGeneral({ spriteScreenshotWidth: v })}
+          id="sprite-screenshot-size"
+          headingID="config.general.sprite_screenshot_size_head"
+          subHeadingID="config.general.sprite_screenshot_size_desc"
+          value={general.spriteScreenshotSize ?? 160}
+          onChange={(v) => saveGeneral({ spriteScreenshotSize: v })}
         />
         <BooleanSetting
           id="use-custom-sprite-interval"

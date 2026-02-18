@@ -43,7 +43,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   spriteInterval
   minimumSprites
   maximumSprites
-  spriteScreenshotWidth
+  spriteScreenshotSize
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
