@@ -117,6 +117,8 @@ Setting this to `0` will fallback to the default of `10`
 The maximum number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
 Setting this to `0` indicates there is no maximum.
 
+> **⚠️ Note:** The number of generated sprites is adjusted upwards to the next perfect square to ensure the sprite image is completely filled (no empty space in the grid) and the grid is as square as possible (minimizing the number of rows/columns). This means that if you set a minimum of 10 sprites, 16 will actually be generated, and if you set a maximum of 15 sprites, 16 will actually be generated.
+
 ## Hardware accelerated live transcoding
 
 Hardware accelerated live transcoding can be enabled by setting the `FFmpeg hardware encoding` setting. Stash outputs the supported hardware encoders to the log file on startup at the Info log level. If a given hardware encoder is not supported, it's error message is logged to the Debug log level for debugging purposes.
