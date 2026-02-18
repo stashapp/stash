@@ -79,6 +79,8 @@ type Scene {
   performers: [Performer!]!
   stash_ids: [StashID!]!
 
+  custom_fields: Map!
+
   "Return valid stream paths"
   sceneStreams: [SceneStreamEndpoint!]!
 }
@@ -120,6 +122,8 @@ input SceneCreateInput {
   Files must not already be primary for another scene.
   """
   file_ids: [ID!]
+
+  custom_fields: Map
 }
 
 input SceneUpdateInput {
@@ -158,6 +162,8 @@ input SceneUpdateInput {
     )
 
   primary_file_id: ID
+
+  custom_fields: CustomFieldsInput
 }
 
 enum BulkUpdateIdMode {
@@ -190,6 +196,8 @@ input BulkSceneUpdateInput {
   tag_ids: BulkUpdateIds
   group_ids: BulkUpdateIds
   movie_ids: BulkUpdateIds @deprecated(reason: "Use group_ids")
+
+  custom_fields: CustomFieldsInput
 }
 
 input SceneDestroyInput {

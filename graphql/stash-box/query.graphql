@@ -120,18 +120,6 @@ fragment SceneFragment on Scene {
   }
 }
 
-query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
-  findSceneByFingerprint(fingerprint: $fingerprint) {
-    ...SceneFragment
-  }
-}
-
-query FindScenesByFullFingerprints($fingerprints: [FingerprintQueryInput!]!) {
-  findScenesByFullFingerprints(fingerprints: $fingerprints) {
-    ...SceneFragment
-  }
-}
-
 query FindScenesBySceneFingerprints(
   $fingerprints: [[FingerprintQueryInput!]!]!
 ) {

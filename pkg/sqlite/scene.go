@@ -234,6 +234,7 @@ var (
 
 type SceneStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 
 	tableMgr *table
 	oDateManager
@@ -247,6 +248,10 @@ func NewSceneStore(r *storeRepository, blobStore *BlobStore) *SceneStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: sceneTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: scenesCustomFieldsTable,
+			fk:    scenesCustomFieldsTable.Col(sceneIDColumn),
 		},
 
 		tableMgr:        sceneTableMgr,

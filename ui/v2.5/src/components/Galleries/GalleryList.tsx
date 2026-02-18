@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { useFilteredItemList } from "../List/ItemList";
@@ -40,7 +40,10 @@ import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { Button } from "react-bootstrap";
-import { ListOperations } from "../List/ListOperationButtons";
+import {
+  IListFilterOperation,
+  ListOperations,
+} from "../List/ListOperationButtons";
 import {
   FilteredListToolbar,
   IItemListOperation,
@@ -227,12 +230,10 @@ export const FilteredGalleryList = PatchComponent(
   "FilteredGalleryList",
   (props: IGalleryList) => {
     const intl = useIntl();
-    const history = useHistory();
-    const location = useLocation();
 
     const searchFocus = useFocus();
 
-    const { filterHook, view, alterQuery } = props;
+    const { filterHook, view, alterQuery, extraOperations = [] } = props;
 
     // States
     const {
@@ -312,15 +313,6 @@ export const FilteredGalleryList = PatchComponent(
       result,
     });
 
-    function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
-      let newPath = "/galleries/new";
-      if (queryParam) {
-        newPath += "?q=" + encodeURIComponent(queryParam);
-      }
-      history.push(newPath);
-    }
-
     const viewRandom = useViewRandom(filter, totalCount);
 
     function onExport(all: boolean) {
@@ -365,7 +357,19 @@ export const FilteredGalleryList = PatchComponent(
       );
     }
 
+    const convertedExtraOperations: IListFilterOperation[] =
+      extraOperations.map((o) => ({
+        ...o,
+        isDisplayed: o.isDisplayed
+          ? () => o.isDisplayed!(result, filter, selectedIds)
+          : undefined,
+        onClick: () => {
+          o.onClick(result, filter, selectedIds);
+        },
+      }));
+
     const otherOperations = [
+      ...convertedExtraOperations,
       {
         text: intl.formatMessage({ id: "actions.select_all" }),
         onClick: () => onSelectAll(),
@@ -411,8 +415,6 @@ export const FilteredGalleryList = PatchComponent(
         operations={otherOperations}
         onEdit={onEdit}
         onDelete={onDelete}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "gallery" })}
         operationsMenuClassName="gallery-list-operations-dropdown"
       />
     );

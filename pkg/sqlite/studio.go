@@ -105,6 +105,7 @@ type studioRepositoryType struct {
 	scenes    repository
 	images    repository
 	galleries repository
+	groups    repository
 }
 
 var (
@@ -129,6 +130,10 @@ var (
 		},
 		galleries: repository{
 			tableName: galleryTable,
+			idColumn:  studioIDColumn,
+		},
+		groups: repository{
+			tableName: groupTable,
 			idColumn:  studioIDColumn,
 		},
 		tags: joinRepository{

@@ -1187,6 +1187,18 @@ func makeScene(i int) *models.Scene {
 	}
 }
 
+func getSceneCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getSceneStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 func createScenes(ctx context.Context, n int) error {
 	sqb := db.Scene
 	fqb := db.File
@@ -1202,6 +1214,10 @@ func createScenes(ctx context.Context, n int) error {
 
 		if err := sqb.Create(ctx, scene, []models.FileID{f.ID}); err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
+		}
+
+		if err := sqb.SetCustomFields(ctx, scene.ID, models.CustomFieldsInput{Full: getSceneCustomFields(i)}); err != nil {
+			return fmt.Errorf("Error setting custom fields for scene %d: %s", scene.ID, err.Error())
 		}
 
 		sceneIDs = append(sceneIDs, scene.ID)
@@ -1513,13 +1529,26 @@ func getPerformerDeathDate(index int) *models.Date {
 	return &ret
 }
 
-func getPerformerCareerLength(index int) *string {
+func getPerformerCareerStart(index int) *int {
 	if index%5 == 0 {
 		return nil
 	}
 
-	ret := fmt.Sprintf("20%2d", index)
+	ret := 2000 + index
 	return &ret
+}
+
+func getPerformerCareerEnd(index int) *int {
+	if index%5 == 0 {
+		return nil
+	}
+
+	// only set career_end for even indices
+	if index%2 == 0 {
+		ret := 2010 + index
+		return &ret
+	}
+	return nil
 }
 
 func getPerformerPenisLength(index int) *float64 {
@@ -1615,10 +1644,8 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			TagIDs:        models.NewRelatedIDs(tids),
 		}
 
-		careerLength := getPerformerCareerLength(i)
-		if careerLength != nil {
-			performer.CareerLength = *careerLength
-		}
+		performer.CareerStart = getPerformerCareerStart(i)
+		performer.CareerEnd = getPerformerCareerEnd(i)
 
 		if (index+1)%5 != 0 {
 			performer.StashIDs = models.NewRelatedStashIDs([]models.StashID{

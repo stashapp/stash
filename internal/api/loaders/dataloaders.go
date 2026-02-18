@@ -42,13 +42,14 @@ const (
 )
 
 type Loaders struct {
-	SceneByID        *SceneLoader
-	SceneFiles       *SceneFileIDsLoader
-	ScenePlayCount   *ScenePlayCountLoader
-	SceneOCount      *SceneOCountLoader
-	ScenePlayHistory *ScenePlayHistoryLoader
-	SceneOHistory    *SceneOHistoryLoader
-	SceneLastPlayed  *SceneLastPlayedLoader
+	SceneByID         *SceneLoader
+	SceneFiles        *SceneFileIDsLoader
+	ScenePlayCount    *ScenePlayCountLoader
+	SceneOCount       *SceneOCountLoader
+	ScenePlayHistory  *ScenePlayHistoryLoader
+	SceneOHistory     *SceneOHistoryLoader
+	SceneLastPlayed   *SceneLastPlayedLoader
+	SceneCustomFields *CustomFieldsLoader
 
 	ImageFiles   *ImageFileIDsLoader
 	GalleryFiles *GalleryFileIDsLoader
@@ -106,6 +107,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchStudioCustomFields(ctx),
+			},
+			SceneCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchSceneCustomFields(ctx),
 			},
 			StudioByID: &StudioLoader{
 				wait:     wait,
@@ -203,6 +209,18 @@ func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models
 			ret, err = m.Repository.Scene.FindMany(ctx, keys)
 			return err
 		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchSceneCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
 		return ret, toErrorSlice(err)
 	}
 }

@@ -6,6 +6,7 @@ import { IScraperSource } from "./constants";
 import { FieldOptionsList } from "./FieldOptions";
 import { ThreeStateBoolean } from "./ThreeStateBoolean";
 import { TagSelect } from "src/components/Shared/Select";
+import { genderList } from "src/utils/gender";
 
 interface IOptionsEditor {
   options: GQL.IdentifyMetadataOptionsInput;
@@ -124,24 +125,52 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
         )}
       </Form.Group>
       <Form.Group className="mb-0">
-        <ThreeStateBoolean
-          id="include-male-performers"
-          value={
-            options.includeMalePerformers === null
-              ? undefined
-              : options.includeMalePerformers
-          }
-          setValue={(v) =>
-            setOptions({
-              includeMalePerformers: v,
-            })
-          }
-          label={intl.formatMessage({
-            id: "config.tasks.identify.include_male_performers",
-          })}
-          defaultValue={defaultOptions?.includeMalePerformers ?? undefined}
-          {...checkboxProps}
-        />
+        <Form.Group controlId="performer-genders" className="mb-2">
+          <Form.Label>
+            <FormattedMessage id="config.tasks.identify.performer_genders" />
+          </Form.Label>
+          {source && (
+            <Form.Check
+              id="performer-genders-use-default"
+              label={intl.formatMessage({ id: "actions.use_default" })}
+              checked={options.performerGenders == null}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (e.currentTarget.checked) {
+                  setOptions({ performerGenders: undefined });
+                } else {
+                  setOptions({
+                    performerGenders:
+                      defaultOptions?.performerGenders ?? genderList.slice(),
+                  });
+                }
+              }}
+            />
+          )}
+          {(options.performerGenders != null || !source) &&
+            genderList.map((gender) => {
+              const performerGenders =
+                options.performerGenders ?? genderList.slice();
+              return (
+                <Form.Check
+                  id={`identify-gender-${gender}`}
+                  key={gender}
+                  label={<FormattedMessage id={`gender_types.${gender}`} />}
+                  checked={performerGenders.includes(gender)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const isChecked = e.currentTarget.checked;
+                    setOptions({
+                      performerGenders: isChecked
+                        ? [...performerGenders, gender]
+                        : performerGenders.filter((g) => g !== gender),
+                    });
+                  }}
+                />
+              );
+            })}
+          <Form.Text className="text-muted">
+            <FormattedMessage id="config.tasks.identify.performer_genders_desc" />
+          </Form.Text>
+        </Form.Group>
         <ThreeStateBoolean
           id="set-cover-image"
           value={

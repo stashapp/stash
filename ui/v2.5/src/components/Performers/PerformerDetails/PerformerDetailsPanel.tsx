@@ -12,6 +12,7 @@ import {
   FormatHeight,
   FormatPenisLength,
   FormatWeight,
+  formatYearRange,
 } from "../PerformerList";
 import { PatchComponent } from "src/patch";
 import { CustomFields } from "src/components/Shared/CustomFields";
@@ -174,7 +175,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
         />
         <DetailItem
           id="career_length"
-          value={performer?.career_length}
+          value={formatYearRange(
+            performer?.career_start,
+            performer?.career_end
+          )}
           fullWidth={fullWidth}
         />
         <DetailItem id="details" value={details} fullWidth={fullWidth} />
