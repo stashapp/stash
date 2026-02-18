@@ -9,7 +9,9 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -329,6 +331,12 @@ func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSe
 }
 
 func (r *mutationResolver) RevealFileInFileManager(ctx context.Context, id string) (bool, error) {
+	// disallow if request did not come from localhost
+	if !session.IsLocalRequest(ctx) {
+		logger.Warnf("Attempt to reveal file in file manager from non-local request")
+		return false, fmt.Errorf("access denied")
+	}
+
 	fileIDInt, err := strconv.Atoi(id)
 	if err != nil {
 		return false, fmt.Errorf("converting id: %w", err)
@@ -354,6 +362,12 @@ func (r *mutationResolver) RevealFileInFileManager(ctx context.Context, id strin
 }
 
 func (r *mutationResolver) RevealFolderInFileManager(ctx context.Context, id string) (bool, error) {
+	// disallow if request did not come from localhost
+	if !session.IsLocalRequest(ctx) {
+		logger.Warnf("Attempt to reveal folder in file manager from non-local request")
+		return false, fmt.Errorf("access denied")
+	}
+
 	folderIDInt, err := strconv.Atoi(id)
 	if err != nil {
 		return false, fmt.Errorf("converting id: %w", err)
