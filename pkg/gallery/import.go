@@ -28,8 +28,8 @@ type Importer struct {
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID      int
-	gallery models.Gallery
+	ID           int
+	gallery      models.Gallery
 	customFields map[string]interface{}
 }
 
