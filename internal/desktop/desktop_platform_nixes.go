@@ -34,9 +34,9 @@ func sendNotification(notificationTitle string, notificationText string) {
 	}
 }
 
-func revealInFileManager(path string) {
+func revealInFileManager(path string, info os.FileInfo) {
 	dir := path
-	if info, err := os.Stat(path); err == nil && !info.IsDir() {
+	if !info.IsDir() {
 		dir = filepath.Dir(path)
 	}
 	if err := exec.Command("xdg-open", dir).Run(); err != nil {

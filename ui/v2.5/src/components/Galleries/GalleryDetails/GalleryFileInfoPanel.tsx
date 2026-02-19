@@ -1,16 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedTime } from "react-intl";
-import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { Icon } from "src/components/Shared/Icon";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
+import { RevealInFilesystemButton } from "src/components/Shared/RevealInFilesystemButton";
 import * as GQL from "src/core/generated-graphql";
-import {
-  mutateGallerySetPrimaryFile,
-  mutateRevealFileInFileManager,
-  mutateRevealFolderInFileManager,
-} from "src/core/StashService";
+import { mutateGallerySetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { TextField, URLsField } from "src/utils/field";
@@ -47,19 +42,10 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
         <TextField id={id}>
           <span className="d-flex align-items-center">
             <TruncatedText text={path} />
-            <Button
-              className="minimal ml-1"
-              title="Reveal in file manager"
-              onClick={() => {
-                if (props.folder) {
-                  mutateRevealFolderInFileManager(props.folder.id);
-                } else if (props.file) {
-                  mutateRevealFileInFileManager(props.file.id);
-                }
-              }}
-            >
-              <Icon icon={faFolderOpen} />
-            </Button>
+            <RevealInFilesystemButton
+              folderId={props.folder?.id}
+              fileId={props.file?.id}
+            />
           </span>
         </TextField>
         {props.file && (

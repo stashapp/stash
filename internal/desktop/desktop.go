@@ -156,7 +156,8 @@ func getIconPath() string {
 }
 
 func RevealInFileManager(path string) {
-	if _, err := os.Stat(path); err != nil {
+	info, err := os.Stat(path)
+	if err != nil {
 		logger.Errorf("Error checking path: %s", err)
 		return
 	}
@@ -166,7 +167,7 @@ func RevealInFileManager(path string) {
 		logger.Errorf("Error getting absolute path: %s", err)
 		return
 	}
-	revealInFileManager(absPath)
+	revealInFileManager(absPath, info)
 }
 
 func getServerURL(path string) string {

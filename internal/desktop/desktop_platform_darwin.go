@@ -4,6 +4,7 @@
 package desktop
 
 import (
+	"os"
 	"os/exec"
 
 	"github.com/kermieisinthehouse/gosx-notifier"
@@ -32,7 +33,7 @@ func sendNotification(notificationTitle string, notificationText string) {
 	}
 }
 
-func revealInFileManager(path string) {
+func revealInFileManager(path string, _ os.FileInfo) {
 	if err := exec.Command(`open`, `-R`, path).Run(); err != nil {
 		logger.Errorf("Error revealing path in Finder: %s", err.Error())
 	}
