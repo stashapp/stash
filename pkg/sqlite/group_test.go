@@ -669,6 +669,32 @@ func TestGroupQuery(t *testing.T) {
 			nil,
 			false,
 		},
+		{
+			"scene count equals 1",
+			nil,
+			&models.GroupFilterType{
+				SceneCount: &models.IntCriterionInput{
+					Value:    1,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{groupIdxWithScene},
+			[]int{groupIdxWithParentAndChild},
+			false,
+		},
+		{
+			"scene count less than 1",
+			nil,
+			&models.GroupFilterType{
+				SceneCount: &models.IntCriterionInput{
+					Value:    1,
+					Modifier: models.CriterionModifierLessThan,
+				},
+			},
+			[]int{groupIdxWithParentAndChild},
+			[]int{groupIdxWithScene},
+			false,
+		},
 	}
 
 	for _, tt := range tests {

@@ -75,6 +75,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		qb.tagsCriterionHandler(groupFilter.Tags),
 		qb.tagCountCriterionHandler(groupFilter.TagCount),
 		qb.groupOCounterCriterionHandler(groupFilter.OCounter),
+		qb.sceneCountCriterionHandler(groupFilter.SceneCount),
 		&dateCriterionHandler{groupFilter.Date, "groups.date", nil},
 		groupHierarchyHandler.ParentsCriterionHandler(groupFilter.ContainingGroups),
 		groupHierarchyHandler.ChildrenCriterionHandler(groupFilter.SubGroups),
@@ -198,6 +199,16 @@ func (qb *groupFilterHandler) tagCountCriterionHandler(count *models.IntCriterio
 	h := countCriterionHandlerBuilder{
 		primaryTable: groupTable,
 		joinTable:    groupsTagsTable,
+		primaryFK:    groupIDColumn,
+	}
+
+	return h.handler(count)
+}
+
+func (qb *groupFilterHandler) sceneCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: groupTable,
+		joinTable:    groupsScenesTable,
 		primaryFK:    groupIDColumn,
 	}
 

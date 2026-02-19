@@ -455,6 +455,8 @@ input GroupFilterType {
   containing_group_count: IntCriterionInput
   "Filter by number of sub-groups the group has"
   sub_group_count: IntCriterionInput
+  "Filter by number of scenes the group has"
+  scene_count: IntCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
