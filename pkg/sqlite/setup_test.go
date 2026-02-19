@@ -1389,6 +1389,18 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	return ret
 }
 
+func getGalleryCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getGalleryStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 func createGalleries(ctx context.Context, n int) error {
 	gqb := db.Gallery
 	fqb := db.File
@@ -1410,7 +1422,11 @@ func createGalleries(ctx context.Context, n int) error {
 		const includeScenes = false
 		gallery := makeGallery(i, includeScenes)
 
-		err := gqb.Create(ctx, gallery, fileIDs)
+		err := gqb.Create(ctx, &models.CreateGalleryInput{
+			Gallery:      gallery,
+			FileIDs:      fileIDs,
+			CustomFields: getGalleryCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())

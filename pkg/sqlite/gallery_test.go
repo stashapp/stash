@@ -3006,6 +3006,245 @@ func TestGallerySetAndResetCover(t *testing.T) {
 	})
 }
 
+func TestGalleryQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.GalleryFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.GalleryFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getGalleryStringValue(galleryIdxWithImage, "custom")},
+					},
+				},
+			},
+			[]int{galleryIdxWithImage},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.GalleryFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getGalleryStringValue(galleryIdxWithImage, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getGalleryStringValue(galleryIdxWithImage, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{galleryIdxWithImage},
+			false,
+		},
+		{
+			"includes",
+			&models.GalleryFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getGalleryStringValue(galleryIdxWithImage, "custom")[9:]},
+					},
+				},
+			},
+			[]int{galleryIdxWithImage},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.GalleryFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getGalleryStringValue(galleryIdxWithImage, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getGalleryStringValue(galleryIdxWithImage, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{galleryIdxWithImage},
+			false,
+		},
+		{
+			"regex",
+			&models.GalleryFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			[]int{galleryIdxWithPerformerTag},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.GalleryFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.GalleryFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getGalleryStringValue(galleryIdxWithPerformerTag, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{galleryIdxWithPerformerTag},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.GalleryFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.GalleryFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getGalleryStringValue(galleryIdxWithImage, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{galleryIdxWithImage},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.GalleryFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getGalleryStringValue(galleryIdxWithImage, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{galleryIdxWithImage},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.GalleryFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{galleryIdxWithImage},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.GalleryFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getGalleryStringValue(galleryIdxWithImage, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{galleryIdxWithImage},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			galleries, _, err := db.Gallery.Query(ctx, tt.filter, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GalleryStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil {
+				return
+			}
+
+			ids := galleriesToIDs(galleries)
+			include := indexesToIDs(galleryIDs, tt.includeIdxs)
+			exclude := indexesToIDs(galleryIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 // TODO Count
 // TODO All
 // TODO Query

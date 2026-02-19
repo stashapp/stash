@@ -240,3 +240,9 @@ func TestSceneSetCustomFields(t *testing.T) {
 
 	testSetCustomFields(t, "Scene", db.Scene, sceneIDs[sceneIdx], getSceneCustomFields(sceneIdx))
 }
+
+func TestGallerySetCustomFields(t *testing.T) {
+	galleryIdx := galleryIdxWithScene
+
+	testSetCustomFields(t, "Gallery", db.Gallery, galleryIDs[galleryIdx], getGalleryCustomFields(galleryIdx))
+}
