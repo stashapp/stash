@@ -491,7 +491,6 @@
             "auto_tagging": "Automatisk taggning",
             "backing_up_database": "Säkerhetskopierar databas",
             "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
-            "backup_database": "Säkerhetskopierar databasen i backup-mappen med filnamnsformatet {filename_format}",
             "cleanup_desc": "Kollar efter saknade filer och raderar dem från databasen. Detta är en destruktiv handling.",
             "data_management": "Datahantering",
             "defaults_set": "Standard har valts och kommer användas när {action} trycks på Jobbsidan.",

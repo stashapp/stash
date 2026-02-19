@@ -436,7 +436,6 @@
             "auto_tagging": "Etiquetamento automático",
             "backing_up_database": "Backup do banco de dados",
             "backup_and_download": "Executa um backup do banco de dados e baixa do arquivo resultante.",
-            "backup_database": "Executa um backup do banco de dados para o mesmo diretório que o banco de dados, com o formato do nome do arquivo {filename_format}",
             "cleanup_desc": "Verifique os arquivos ausentes removendo-os do banco de dados. Esta é uma ação destrutiva.",
             "data_management": "Gestão de dados",
             "defaults_set": "Opções padrão foram definidas e serão usadas quando clicar o botão {action} na página de Tarefas.",

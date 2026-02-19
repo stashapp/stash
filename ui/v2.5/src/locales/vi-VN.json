@@ -443,7 +443,6 @@
             },
             "backing_up_database": "Sao lưu dữ liệu",
             "backup_and_download": "Thực hiện sao lưu cơ sở dữ liệu và tải xuống tệp kết quả.",
-            "backup_database": "Thực hiện sao lưu cơ sở dữ liệu vào thư mục sao lưu (backups), với định dạng tên tệp là {filename_format}",
             "cleanup_desc": "Kiểm tra các tệp bị thiếu và xóa chúng khỏi cơ sở dữ liệu. Đây là hành động có tính phá hủy.",
             "clean_generated": {
                 "blob_files": "Tệp nhị phân (blob)",

@@ -466,7 +466,6 @@
             "auto_tagging": "自動套用標籤",
             "backing_up_database": "備份資料庫中",
             "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
-            "backup_database": "將整個資料庫備份至與資料庫相同的目錄下，該匯出的名稱格式為 {filename_format}",
             "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。此動作具無法復原。",
             "data_management": "資料管理",
             "defaults_set": "已設定預設值；以後按下「{action}」按鈕時將會使用這些設定。",

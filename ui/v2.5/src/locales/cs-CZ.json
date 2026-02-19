@@ -476,7 +476,6 @@
             "auto_tagging": "Autotagování",
             "backing_up_database": "Zálohovat databázi",
             "backup_and_download": "Provede zálohu databáze a stáhne výsledný soubor.",
-            "backup_database": "Provede zálohu databáze do stejné složky s formátem názvu souboru {filename_format}",
             "cleanup_desc": "Zkontrolovat chybějící soubory a odstranit je z databáze. Toto je destruktivní akce.",
             "data_management": "Správa dat",
             "defaults_set": "Výchozí hodnoty byly nastaveny a budou použity při kliknutí na tlačítko {action} na stránce Úloh.",

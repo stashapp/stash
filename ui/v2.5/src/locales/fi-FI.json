@@ -478,7 +478,6 @@
             "auto_tagging": "Automaattinen tunnisteiden asetus",
             "backing_up_database": "Varmuuskopioidaan tietokantaa",
             "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
-            "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston varmuuskopiokansioon",
             "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
             "data_management": "Datan hallinta",
             "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",

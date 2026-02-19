@@ -450,7 +450,6 @@
             "auto_tagging": "Otomatik Etiketleme",
             "backing_up_database": "Veritabanı yedekleniyor",
             "backup_and_download": "Veritabanını yedekler ve yedek dosyasını kaydetmenizi sağlar.",
-            "backup_database": "Veritabanı diziniyle aynı yere {filename_format} biçimini kullanarak yedekler",
             "cleanup_desc": "Eksik dosyaları kontrol eder ve veritabanından siler. Bu geri döndürülemez bir işlemdir.",
             "data_management": "Veri yönetimi",
             "defaults_set": "Varsayılanlar ayarlandı. Bundan sonra Görevler sayfasındaki {action} düğmesi bu varsayılanları kullanacak.",

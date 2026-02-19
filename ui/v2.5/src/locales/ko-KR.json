@@ -491,7 +491,6 @@
             "auto_tagging": "자동 태깅",
             "backing_up_database": "데이터베이스 백업 중",
             "backup_and_download": "데이터베이스를 백업하고 결과 파일을 다운로드합니다.",
-            "backup_database": "백업 폴더에 {filename_format}의 파일 이름 형식으로 데이터베이스를 백업합니다.",
             "cleanup_desc": "있어야 할 곳에 없는 파일이 있는지 검사한 후, 데이터베이스에서 삭제합니다. 데이터베이스의 일부 내용이 삭제될 수 있습니다.",
             "data_management": "데이터 관리",
             "defaults_set": "기본값이 설정되었습니다. '작업' 페이지의 {action} 버튼을 클릭할 때 사용됩니다.",

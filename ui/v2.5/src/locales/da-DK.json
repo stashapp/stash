@@ -479,7 +479,6 @@
             "auto_tagging": "Auto tagging",
             "backing_up_database": "Sikkerhedskopiering af database",
             "backup_and_download": "Udfører en sikkerhedskopi af databasen og downloader den resulterende fil.",
-            "backup_database": "Udfører en sikkerhedskopi af databasen til backup-mappen med filnavnsformatet {filename_format}",
             "cleanup_desc": "Tjek for manglende filer og fjern dem fra databasen. Dette er en destruktiv handling.",
             "data_management": "Datastyring",
             "defaults_set": "Standarder er blevet indstillet og vil blive brugt, når du klikker på knappen {action} på siden Opgaver.",

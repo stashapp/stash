@@ -485,7 +485,6 @@
             "auto_tagging": "Automaatne Märkimine",
             "backing_up_database": "Andmebaasi varundamine",
             "backup_and_download": "Teeb andmebaasist varukoopia ja laadib saadud faili alla.",
-            "backup_database": "Varundab andmebaasi varundamise failiteele, failinimega vormingus {filename_format}",
             "cleanup_desc": "Kontrolli puuduvaid faile ja eemalda need andmebaasist. See on hävitav tegevus.",
             "data_management": "Andmehaldus",
             "defaults_set": "Vaikesätted on määratud ja neid kasutatakse, kui klõpsate lehel Ülesanded nupul {action}.",

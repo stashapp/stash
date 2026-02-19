@@ -473,7 +473,6 @@
             "auto_tagging": "自動タグ付け",
             "backing_up_database": "データベースをバックアップ",
             "backup_and_download": "データベースのバックアップを実施し、結果ファイルをダウンロードします。",
-            "backup_database": "{filename_format}形式で、バックアップ先にデータベースをバックアップします",
             "cleanup_desc": "不明なファイルを確認し、データベースから削除します。この操作はもとに戻せません。",
             "data_management": "データ管理",
             "defaults_set": "デフォルトが設定されており、タスクページの{action}ボタンをクリックした際に使用されます。",

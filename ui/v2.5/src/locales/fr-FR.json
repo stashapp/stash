@@ -492,7 +492,6 @@
             "auto_tagging": "Étiquetage automatique",
             "backing_up_database": "Sauvegarde de la base de données",
             "backup_and_download": "Effectue une sauvegarde de la base de données et télécharge le fichier résultant.",
-            "backup_database": "Effectue un enregistrement de la base de données dans le répertoire de sauvegarde, avec le format de nom de fichier {filename_format}.",
             "cleanup_desc": "Vérifier les fichiers manquants et les supprimer de la base de données. Cette action est irréversible.",
             "data_management": "Gestion des données",
             "defaults_set": "Les valeurs par défaut ont été définies et seront utilisées en cliquant sur le bouton {action} de la page Tâches.",

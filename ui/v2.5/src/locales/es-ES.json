@@ -485,7 +485,6 @@
             "auto_tagging": "Auto-Etiquetado",
             "backing_up_database": "Guardando respaldo de la base de datos",
             "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
-            "backup_database": "Realiza una copia de seguridad de la base de datos en el directorio de copias de seguridad. La copia se almacena con el formato {filename_format}",
             "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
             "data_management": "Gestión de datos",
             "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",

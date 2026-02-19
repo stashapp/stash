@@ -491,7 +491,6 @@
             "auto_tagging": "Automatisches Tagging",
             "backing_up_database": "Datenbank sichern",
             "backup_and_download": "Führt eine Sicherung der Datenbank durch und lädt die resultierende Datei herunter.",
-            "backup_database": "Führt eine Sicherung der Datenbank in den Backup-Verzeichnispfad mit dem Dateiformat {filename_format} aus",
             "cleanup_desc": "Suche nach fehlenden Dateien und entfernen Sie diese aus der Datenbank. Dies ist eine destruktive Aktion.",
             "data_management": "Datenmanagement",
             "defaults_set": "Standardeinstellungen wurden eingestellt und werden genutzt, wenn {action} Button auf der Aufgabenseite geklickt wurde.",
