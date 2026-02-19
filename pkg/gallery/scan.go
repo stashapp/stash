@@ -17,7 +17,7 @@ type ScanCreatorUpdater interface {
 	FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Gallery, error)
 	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
 
-	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []models.FileID) error
+	models.GalleryCreator
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
@@ -80,7 +80,10 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 		logger.Infof("%s doesn't exist. Creating new gallery...", f.Base().Path)
 
-		if err := h.CreatorUpdater.Create(ctx, &newGallery, []models.FileID{baseFile.ID}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &models.CreateGalleryInput{
+			Gallery: &newGallery,
+			FileIDs: []models.FileID{baseFile.ID},
+		}); err != nil {
 			return fmt.Errorf("creating new gallery: %w", err)
 		}
 

@@ -20,6 +20,7 @@ var (
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
 	galleriesURLsJoinTable       = goqu.T(galleriesURLsTable)
+	galleriesCustomFieldsTable   = goqu.T("gallery_custom_fields")
 
 	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)

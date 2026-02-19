@@ -105,6 +105,13 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{filter.CreatedAt, "galleries.created_at", nil},
 		&timestampCriterionHandler{filter.UpdatedAt, "galleries.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: galleriesCustomFieldsTable.GetTable(),
+			fkCol: galleryIDColumn,
+			c:     filter.CustomFields,
+			idCol: "galleries.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.scene_id",
 			relatedRepo:    sceneRepository.repository,

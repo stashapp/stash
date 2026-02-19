@@ -114,13 +114,13 @@ func (_m *GalleryReaderWriter) CountByFileID(ctx context.Context, fileID models.
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, newGallery, fileIDs
-func (_m *GalleryReaderWriter) Create(ctx context.Context, newGallery *models.Gallery, fileIDs []models.FileID) error {
-	ret := _m.Called(ctx, newGallery, fileIDs)
+// Create provides a mock function with given fields: ctx, newGallery
+func (_m *GalleryReaderWriter) Create(ctx context.Context, newGallery *models.CreateGalleryInput) error {
+	ret := _m.Called(ctx, newGallery)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Gallery, []models.FileID) error); ok {
-		r0 = rf(ctx, newGallery, fileIDs)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.CreateGalleryInput) error); ok {
+		r0 = rf(ctx, newGallery)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -395,6 +395,52 @@ func (_m *GalleryReaderWriter) FindUserGalleryByTitle(ctx context.Context, title
 	return r0, r1
 }
 
+// GetCustomFields provides a mock function with given fields: ctx, id
+func (_m *GalleryReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, int) map[string]interface{}); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFieldsBulk provides a mock function with given fields: ctx, ids
+func (_m *GalleryReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []models.CustomFieldMap
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []models.CustomFieldMap); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.CustomFieldMap)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetFiles provides a mock function with given fields: ctx, relatedID
 func (_m *GalleryReaderWriter) GetFiles(ctx context.Context, relatedID int) ([]models.File, error) {
 	ret := _m.Called(ctx, relatedID)
@@ -656,12 +702,26 @@ func (_m *GalleryReaderWriter) SetCover(ctx context.Context, galleryID int, cove
 	return r0
 }
 
+// SetCustomFields provides a mock function with given fields: ctx, id, fields
+func (_m *GalleryReaderWriter) SetCustomFields(ctx context.Context, id int, fields models.CustomFieldsInput) error {
+	ret := _m.Called(ctx, id, fields)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.CustomFieldsInput) error); ok {
+		r0 = rf(ctx, id, fields)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: ctx, updatedGallery
-func (_m *GalleryReaderWriter) Update(ctx context.Context, updatedGallery *models.Gallery) error {
+func (_m *GalleryReaderWriter) Update(ctx context.Context, updatedGallery *models.UpdateGalleryInput) error {
 	ret := _m.Called(ctx, updatedGallery)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Gallery) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdateGalleryInput) error); ok {
 		r0 = rf(ctx, updatedGallery)
 	} else {
 		r0 = ret.Error(0)

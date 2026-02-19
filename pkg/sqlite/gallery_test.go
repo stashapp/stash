@@ -160,7 +160,10 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				fileIDs = []models.FileID{s.Files.List()[0].Base().ID}
 			}
 
-			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
+			if err := qb.Create(ctx, &models.CreateGalleryInput{
+				Gallery: &s,
+				FileIDs: fileIDs,
+			}); (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
@@ -360,7 +363,9 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 
 			copy := *tt.updatedObject
 
-			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+			if err := qb.Update(ctx, &models.UpdateGalleryInput{
+				Gallery: tt.updatedObject,
+			}); (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

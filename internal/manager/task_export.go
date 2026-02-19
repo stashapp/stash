@@ -779,6 +779,7 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 	studioReader := r.Studio
 	performerReader := r.Performer
 	tagReader := r.Tag
+	galleryReader := r.Gallery
 	galleryChapterReader := r.GalleryChapter
 
 	for g := range jobChan {
@@ -846,6 +847,12 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 		}
 
 		newGalleryJSON.Tags = tag.GetNames(tags)
+
+		newGalleryJSON.CustomFields, err = galleryReader.GetCustomFields(ctx, g.ID)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery custom fields: %v", g.DisplayName(), err)
+			continue
+		}
 
 		if t.includeDependencies {
 			if g.StudioID != nil {

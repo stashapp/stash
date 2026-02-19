@@ -522,6 +522,10 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 		return err
 	}
 
+	if err := db.anonymiseCustomFields(ctx, goqu.T(galleriesCustomFieldsTable.GetTable()), "gallery_id"); err != nil {
+		return err
+	}
+
 	return nil
 }
 

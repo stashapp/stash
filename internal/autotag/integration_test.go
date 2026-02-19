@@ -468,7 +468,10 @@ func makeGallery(expectedResult bool) *models.Gallery {
 }
 
 func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Gallery, f *models.BaseFile) error {
-	err := w.Create(ctx, o, []models.FileID{f.ID})
+	err := w.Create(ctx, &models.CreateGalleryInput{
+		Gallery: o,
+		FileIDs: []models.FileID{f.ID},
+	})
 	if err != nil {
 		return fmt.Errorf("Failed to create gallery with path '%s': %s", f.Path, err.Error())
 	}

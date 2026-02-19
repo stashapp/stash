@@ -67,6 +67,9 @@ type GalleryFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type GalleryUpdateInput struct {
@@ -85,6 +88,8 @@ type GalleryUpdateInput struct {
 	TagIds           []string `json:"tag_ids"`
 	PerformerIds     []string `json:"performer_ids"`
 	PrimaryFileID    *string  `json:"primary_file_id"`
+
+	CustomFields *CustomFieldsInput `json:"custom_fields"`
 
 	// deprecated
 	URL *string `json:"url"`

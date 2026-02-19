@@ -34,6 +34,7 @@ type Gallery struct {
 	Tags         []string         `json:"tags,omitempty"`
 	CreatedAt    json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt    json.JSONTime    `json:"updated_at,omitempty"`
+	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 
 	// deprecated - for import only
 	URL string `json:"url,omitempty"`

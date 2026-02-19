@@ -35,7 +35,7 @@ type ScanCreatorUpdater interface {
 type GalleryFinderCreator interface {
 	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
 	FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error)
-	Create(ctx context.Context, newObject *models.Gallery, fileIDs []models.FileID) error
+	models.GalleryCreator
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 }
 
@@ -252,9 +252,13 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f model
 	newGallery := models.NewGallery()
 	newGallery.FolderID = &folderID
 
+	input := models.CreateGalleryInput{
+		Gallery: &newGallery,
+	}
+
 	logger.Infof("Creating folder-based gallery for %s", filepath.Dir(f.Base().Path))
 
-	if err := h.GalleryFinder.Create(ctx, &newGallery, nil); err != nil {
+	if err := h.GalleryFinder.Create(ctx, &input); err != nil {
 		return nil, fmt.Errorf("creating folder based gallery: %w", err)
 	}
 
@@ -308,7 +312,12 @@ func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile mo
 
 	logger.Infof("%s doesn't exist. Creating new gallery...", zipFile.Base().Path)
 
-	if err := h.GalleryFinder.Create(ctx, &newGallery, []models.FileID{zipFile.Base().ID}); err != nil {
+	input := models.CreateGalleryInput{
+		Gallery: &newGallery,
+		FileIDs: []models.FileID{zipFile.Base().ID},
+	}
+
+	if err := h.GalleryFinder.Create(ctx, &input); err != nil {
 		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
 	}
 

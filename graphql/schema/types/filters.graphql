@@ -594,6 +594,8 @@ input GalleryFilterType {
   files_filter: FileFilterType
   "Filter by related folders that meet this criteria"
   folders_filter: FolderFilterType
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input TagFilterType {
