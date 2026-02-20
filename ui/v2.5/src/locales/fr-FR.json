@@ -436,7 +436,18 @@
             "delete_trash_path": {
                 "description": "Chemin où les fichiers supprimés seront déplacés au lieu d'être définitivement supprimés. Laissez ce champ vide pour supprimer définitivement les fichiers.",
                 "heading": "Chemin de la corbeille"
-            }
+            },
+            "sprite_generation_head": "Génération de sprites",
+            "sprite_interval_desc": "Temps en secondes entre chaque sprite généré.",
+            "sprite_interval_head": "Intervalle entre sprites",
+            "sprite_maximum_desc": "Nombre maximal de sprites à générer pour une scène. Définir sur 0 pour désactiver la limite.",
+            "sprite_maximum_head": "Sprites maximums",
+            "sprite_minimum_desc": "Nombre minimum de sprites à générer pour une scène",
+            "sprite_minimum_head": "Sprites minimums",
+            "sprite_screenshot_size_desc": "Taille désirée pour chaque sprite en pixels.",
+            "sprite_screenshot_size_head": "Taille des sprites",
+            "use_custom_sprite_interval_head": "Utiliser un intervalle de sprite personnalisé",
+            "use_custom_sprite_interval_desc": "Active l'intervalle de sprite personnalisé selon les paramètres ci-dessous."
         },
         "library": {
             "exclusions": "Exceptions",
@@ -584,7 +595,18 @@
             "rescan": "Réanalyse des fichiers",
             "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip.",
             "generate_image_phashes_during_scan": "Générer les empreintes perceptuelles de l'image",
-            "generate_image_phashes_during_scan_tooltip": "Pour déduplication et identification."
+            "generate_image_phashes_during_scan_tooltip": "Pour déduplication et identification.",
+            "backup_database": {
+                "description": "Effectue une sauvegarde de la base de données et des fichiers blob.",
+                "destination": "Destination",
+                "download": "Télécharger une sauvegarde",
+                "include_blobs": "Inclure les blobs dans la sauvegarde",
+                "include_blobs_desc": "Désactiver pour ne sauvegarder que le fichier de base de données SQLite.",
+                "sqlite": "Le fichier de sauvegarde sera une copie du fichier de base de données SQLite, avec comme nom de fichier {filename_format}",
+                "to_directory": "Vers {directory}",
+                "warning_blobs": "Les fichiers blob ne seront pas inclus dans la sauvegarde. Cela signifie que pour réussir une restauration à partir de sauvegarde, les fichiers blob doivent être présents dans l'emplacement de stockage blob.",
+                "zip": "Les fichiers de base de données SQLite et les fichiers blob seront compressés en un seul fichier, avec comme nom de fichier {filename_format}"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
