@@ -346,6 +346,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
@@ -366,7 +367,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 			galleries = append(galleries, gallery)
 
-			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile)
+			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 			if err != nil {
 				return err
 			}

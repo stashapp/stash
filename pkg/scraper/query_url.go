@@ -110,7 +110,7 @@ func (p queryURLParameters) constructURL(url string) string {
 }
 
 // replaceURL does a partial URL Replace ( only url parameter is used)
-func replaceURL(url string, scraperConfig scraperTypeConfig) string {
+func replaceURL(url string, scraperConfig ByURLDefinition) string {
 	u := url
 	queryURL := queryURLParameterFromURL(u)
 	if scraperConfig.QueryURLReplacements != nil {

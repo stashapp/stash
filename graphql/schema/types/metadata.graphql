@@ -10,8 +10,11 @@ input GenerateMetadataInput {
   transcodes: Boolean
   "Generate transcodes even if not required"
   forceTranscodes: Boolean
+  "Generate video phashes during scan"
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  "Generate image phashes during scan"
+  imagePhashes: Boolean
   imageThumbnails: Boolean
   clipPreviews: Boolean
 
@@ -19,6 +22,10 @@ input GenerateMetadataInput {
   sceneIDs: [ID!]
   "marker ids to generate for"
   markerIDs: [ID!]
+  "image ids to generate for"
+  imageIDs: [ID!]
+  "gallery ids to generate for"
+  galleryIDs: [ID!]
 
   "overwrite existing media"
   overwrite: Boolean
@@ -85,8 +92,10 @@ input ScanMetadataInput {
   scanGenerateImagePreviews: Boolean
   "Generate sprites during scan"
   scanGenerateSprites: Boolean
-  "Generate phashes during scan"
+  "Generate video phashes during scan"
   scanGeneratePhashes: Boolean
+  "Generate image phashes during scan"
+  scanGenerateImagePhashes: Boolean
   "Generate image thumbnails during scan"
   scanGenerateThumbnails: Boolean
   "Generate image clip previews during scan"
@@ -107,8 +116,10 @@ type ScanMetadataOptions {
   scanGenerateImagePreviews: Boolean!
   "Generate sprites during scan"
   scanGenerateSprites: Boolean!
-  "Generate phashes during scan"
+  "Generate video phashes during scan"
   scanGeneratePhashes: Boolean!
+  "Generate image phashes during scan"
+  scanGenerateImagePhashes: Boolean
   "Generate image thumbnails during scan"
   scanGenerateThumbnails: Boolean!
   "Generate image clip previews during scan"
@@ -204,7 +215,9 @@ input IdentifyMetadataOptionsInput {
   setCoverImage: Boolean
   setOrganized: Boolean
   "defaults to true if not provided"
-  includeMalePerformers: Boolean
+  includeMalePerformers: Boolean @deprecated(reason: "Use performerGenders")
+  "Filter to only include performers with these genders. If not provided, all genders are included."
+  performerGenders: [GenderEnum!]
   "defaults to true if not provided"
   skipMultipleMatches: Boolean
   "tag to tag skipped multiple matches with"
@@ -249,7 +262,9 @@ type IdentifyMetadataOptions {
   setCoverImage: Boolean
   setOrganized: Boolean
   "defaults to true if not provided"
-  includeMalePerformers: Boolean
+  includeMalePerformers: Boolean @deprecated(reason: "Use performerGenders")
+  "Filter to only include performers with these genders. If not provided, all genders are included."
+  performerGenders: [GenderEnum!]
   "defaults to true if not provided"
   skipMultipleMatches: Boolean
   "tag to tag skipped multiple matches with"
@@ -310,6 +325,8 @@ input ImportObjectsInput {
 
 input BackupDatabaseInput {
   download: Boolean
+  "If true, blob files will be included in the backup. This can significantly increase the size of the backup and the time it takes to create it, but allows for a complete backup of the system that can be restored without needing access to the original media files."
+  includeBlobs: Boolean
 }
 
 input AnonymiseDatabaseInput {

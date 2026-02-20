@@ -48,7 +48,9 @@ type Performer struct {
 	FakeTits      string             `json:"fake_tits,omitempty"`
 	PenisLength   float64            `json:"penis_length,omitempty"`
 	Circumcised   string             `json:"circumcised,omitempty"`
-	CareerLength  string             `json:"career_length,omitempty"`
+	CareerLength  string             `json:"career_length,omitempty"` // deprecated - for import only
+	CareerStart   *int               `json:"career_start,omitempty"`
+	CareerEnd     *int               `json:"career_end,omitempty"`
 	Tattoos       string             `json:"tattoos,omitempty"`
 	Piercings     string             `json:"piercings,omitempty"`
 	Aliases       StringOrStringList `json:"aliases,omitempty"`

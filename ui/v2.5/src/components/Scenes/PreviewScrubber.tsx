@@ -67,6 +67,8 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
 
     const clientRect = imageParent.getBoundingClientRect();
     const scale = scaleToFit(sprite, clientRect);
+    const spriteSheet = new Image();
+    spriteSheet.src = sprite.url;
 
     setStyle({
       backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,

@@ -25,8 +25,8 @@ import (
 
 const scrapeDefaultSleep = time.Second * 2
 
-func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
-	driverOptions := scraperConfig.DriverOptions
+func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
+	driverOptions := def.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
 		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
@@ -37,7 +37,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperCo
 		return nil, err
 	}
 
-	jar, err := scraperConfig.jar()
+	jar, err := def.jar()
 	if err != nil {
 		return nil, fmt.Errorf("error creating cookie jar: %w", err)
 	}
@@ -83,7 +83,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperCo
 	}
 
 	bodyReader := bytes.NewReader(body)
-	printCookies(jar, scraperConfig, "Jar cookies found for scraper urls")
+	printCookies(jar, def, "Jar cookies found for scraper urls")
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
 

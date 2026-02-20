@@ -36,6 +36,7 @@ import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
+import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -62,6 +63,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   async function onSave(input: GQL.ImageUpdateInput) {
     await updateImage({
@@ -170,6 +172,20 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     }
   }
 
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={[image.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+          type="image"
+        />
+      );
+    }
+  }
+
   function renderOperations() {
     return (
       <Dropdown>
@@ -188,6 +204,13 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             onClick={() => onRescan()}
           >
             <FormattedMessage id="actions.rescan" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            <FormattedMessage id="actions.generate" />…
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-image"
@@ -299,6 +322,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       </Helmet>
 
       {maybeRenderDeleteDialog()}
+      {maybeRenderSceneGenerateDialog()}
       <div className="image-tabs order-xl-first order-last">
         <div>
           <div className="image-header-container">

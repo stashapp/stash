@@ -27,6 +27,7 @@ var (
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesGroupsJoinTable     = goqu.T(groupsScenesTable)
 	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
+	scenesCustomFieldsTable   = goqu.T("scene_custom_fields")
 
 	sceneMarkersTagsJoinTable = goqu.T(sceneMarkersTagsTable)
 
@@ -40,6 +41,7 @@ var (
 	studiosURLsJoinTable     = goqu.T(studioURLsTable)
 	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
+	studiosCustomFieldsTable = goqu.T("studio_custom_fields")
 
 	groupsURLsJoinTable     = goqu.T(groupURLsTable)
 	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
@@ -48,6 +50,7 @@ var (
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
 	tagsStashIDsJoinTable = goqu.T("tag_stash_ids")
+	tagsCustomFieldsTable = goqu.T("tag_custom_fields")
 )
 
 var (

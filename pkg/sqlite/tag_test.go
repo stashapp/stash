@@ -1012,8 +1012,10 @@ func TestTagUpdateTagImage(t *testing.T) {
 
 		// create tag to test against
 		const name = "TestTagUpdateTagImage"
-		tag := models.Tag{
-			Name: name,
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
@@ -1032,15 +1034,17 @@ func TestTagUpdateAlias(t *testing.T) {
 
 		// create tag to test against
 		const name = "TestTagUpdateAlias"
-		tag := models.Tag{
-			Name: name,
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
-		aliases := []string{"alias1", "alias2"}
+		aliases := []string{"updatedAlias1", "updatedAlias2"}
 		err = qb.UpdateAliases(ctx, tag.ID, aliases)
 		if err != nil {
 			return fmt.Errorf("Error updating tag aliases: %s", err.Error())
@@ -1065,8 +1069,10 @@ func TestTagStashIDs(t *testing.T) {
 
 		// create tag to test against
 		const name = "TestTagStashIDs"
-		tag := models.Tag{
-			Name: name,
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
@@ -1089,9 +1095,11 @@ func TestTagFindByStashID(t *testing.T) {
 		const name = "TestTagFindByStashID"
 		const stashID = "stashid"
 		const endpoint = "endpoint"
-		tag := models.Tag{
-			Name:     name,
-			StashIDs: models.NewRelatedStashIDs([]models.StashID{{StashID: stashID, Endpoint: endpoint}}),
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name:     name,
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{{StashID: stashID, Endpoint: endpoint}}),
+			},
 		}
 		err := qb.Create(ctx, &tag)
 		if err != nil {
@@ -1263,8 +1271,626 @@ func TestTagMerge(t *testing.T) {
 	}
 }
 
-// TODO Create
-// TODO Update
+func loadTagRelationships(ctx context.Context, expected models.Tag, actual *models.Tag) error {
+	if expected.Aliases.Loaded() {
+		if err := actual.LoadAliases(ctx, db.Tag); err != nil {
+			return err
+		}
+	}
+	if expected.ParentIDs.Loaded() {
+		if err := actual.LoadParentIDs(ctx, db.Tag); err != nil {
+			return err
+		}
+	}
+	if expected.ChildIDs.Loaded() {
+		if err := actual.LoadChildIDs(ctx, db.Tag); err != nil {
+			return err
+		}
+	}
+	if expected.StashIDs.Loaded() {
+		if err := actual.LoadStashIDs(ctx, db.Tag); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Test_TagStore_Create(t *testing.T) {
+	var (
+		name          = "name"
+		sortName      = "sortName"
+		description   = "description"
+		favorite      = true
+		ignoreAutoTag = true
+		aliases       = []string{"alias1", "alias2"}
+		endpoint1     = "endpoint1"
+		endpoint2     = "endpoint2"
+		stashID1      = "stashid1"
+		stashID2      = "stashid2"
+		createdAt     = epochTime
+		updatedAt     = epochTime
+	)
+
+	tests := []struct {
+		name      string
+		newObject models.CreateTagInput
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.CreateTagInput{
+				Tag: &models.Tag{
+					Name:          name,
+					SortName:      sortName,
+					Description:   description,
+					Favorite:      favorite,
+					IgnoreAutoTag: ignoreAutoTag,
+					Aliases:       models.NewRelatedStrings(aliases),
+					ParentIDs:     models.NewRelatedIDs([]int{tagIDs[tagIdxWithScene]}),
+					ChildIDs:      models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene]}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
+				CustomFields: testCustomFields,
+			},
+			false,
+		},
+		{
+			"invalid parent id",
+			models.CreateTagInput{
+				Tag: &models.Tag{
+					Name:      name,
+					ParentIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
+			},
+			true,
+		},
+		{
+			"invalid child id",
+			models.CreateTagInput{
+				Tag: &models.Tag{
+					Name:     name,
+					ChildIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
+			},
+			true,
+		},
+	}
+
+	qb := db.Tag
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			p := tt.newObject
+			if err := qb.Create(ctx, &p); (err != nil) != tt.wantErr {
+				t.Errorf("TagStore.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				assert.Zero(p.ID)
+				return
+			}
+
+			assert.NotZero(p.ID)
+
+			copy := *tt.newObject.Tag
+			copy.ID = p.ID
+
+			// load relationships
+			if err := loadTagRelationships(ctx, copy, p.Tag); err != nil {
+				t.Errorf("loadTagRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, *p.Tag)
+
+			// ensure can find the tag
+			found, err := qb.Find(ctx, p.ID)
+			if err != nil {
+				t.Errorf("TagStore.Find() error = %v", err)
+			}
+
+			if !assert.NotNil(found) {
+				return
+			}
+
+			// load relationships
+			if err := loadTagRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadTagRelationships() error = %v", err)
+				return
+			}
+			assert.Equal(copy, *found)
+
+			// ensure custom fields are set
+			cf, err := qb.GetCustomFields(ctx, p.ID)
+			if err != nil {
+				t.Errorf("TagStore.GetCustomFields() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.newObject.CustomFields, cf)
+
+			return
+		})
+	}
+}
+
+func Test_TagStore_Update(t *testing.T) {
+	var (
+		name          = "name"
+		sortName      = "sortName"
+		description   = "description"
+		favorite      = true
+		ignoreAutoTag = true
+		aliases       = []string{"alias1", "alias2"}
+		endpoint1     = "endpoint1"
+		endpoint2     = "endpoint2"
+		stashID1      = "stashid1"
+		stashID2      = "stashid2"
+		createdAt     = epochTime
+		updatedAt     = epochTime
+	)
+
+	tests := []struct {
+		name          string
+		updatedObject models.UpdateTagInput
+		wantErr       bool
+	}{
+		{
+			"full",
+			models.UpdateTagInput{
+				Tag: &models.Tag{
+					ID:            tagIDs[tagIdxWithGallery],
+					Name:          name,
+					SortName:      sortName,
+					Description:   description,
+					Favorite:      favorite,
+					IgnoreAutoTag: ignoreAutoTag,
+					Aliases:       models.NewRelatedStrings(aliases),
+					ParentIDs:     models.NewRelatedIDs([]int{tagIDs[tagIdxWithScene]}),
+					ChildIDs:      models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene]}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
+						},
+						{
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{
+						"string": "updated",
+						"int":    int64(999),
+						"real":   9.99,
+					},
+				},
+			},
+			false,
+		},
+		{
+			"set custom fields",
+			models.UpdateTagInput{
+				Tag: &models.Tag{
+					ID:   tagIDs[tagIdxWithGallery],
+					Name: tagNames[tagIdxWithGallery],
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			false,
+		},
+		{
+			"clear custom fields",
+			models.UpdateTagInput{
+				Tag: &models.Tag{
+					ID:   tagIDs[tagIdxWithGallery],
+					Name: tagNames[tagIdxWithGallery],
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			false,
+		},
+		{
+			"invalid parent id",
+			models.UpdateTagInput{
+				Tag: &models.Tag{
+					ID:        tagIDs[tagIdxWithGallery],
+					Name:      tagNames[tagIdxWithGallery],
+					ParentIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
+			},
+			true,
+		},
+		{
+			"invalid child id",
+			models.UpdateTagInput{
+				Tag: &models.Tag{
+					ID:       tagIDs[tagIdxWithGallery],
+					Name:     tagNames[tagIdxWithGallery],
+					ChildIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
+			},
+			true,
+		},
+	}
+
+	qb := db.Tag
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			p := tt.updatedObject
+			if err := qb.Update(ctx, &p); (err != nil) != tt.wantErr {
+				t.Errorf("TagStore.Update() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("TagStore.Find() error = %v", err)
+				return
+			}
+
+			// load relationships
+			if err := loadTagRelationships(ctx, *tt.updatedObject.Tag, s); err != nil {
+				t.Errorf("loadTagRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(*tt.updatedObject.Tag, *s)
+
+			// ensure custom fields are correct
+			if tt.updatedObject.CustomFields.Full != nil {
+				cf, err := qb.GetCustomFields(ctx, tt.updatedObject.ID)
+				if err != nil {
+					t.Errorf("TagStore.GetCustomFields() error = %v", err)
+					return
+				}
+
+				assert.Equal(tt.updatedObject.CustomFields.Full, cf)
+			}
+		})
+	}
+}
+
+func Test_TagStore_UpdatePartialCustomFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       int
+		partial  models.TagPartial
+		expected map[string]interface{} // nil to use the partial
+	}{
+		{
+			"set custom fields",
+			tagIDs[tagIdxWithGallery],
+			models.TagPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			nil,
+		},
+		{
+			"clear custom fields",
+			tagIDs[tagIdxWithGallery],
+			models.TagPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			nil,
+		},
+		{
+			"partial custom fields",
+			tagIDs[tagIdxWithGallery],
+			models.TagPartial{
+				CustomFields: models.CustomFieldsInput{
+					Partial: map[string]interface{}{
+						"string":    "bbb",
+						"new_field": "new",
+					},
+				},
+			},
+			map[string]interface{}{
+				"int":       int64(2),
+				"real":      float64(1.7),
+				"string":    "bbb",
+				"new_field": "new",
+			},
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Tag
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			_, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if err != nil {
+				t.Errorf("TagStore.UpdatePartial() error = %v", err)
+				return
+			}
+
+			// ensure custom fields are correct
+			cf, err := qb.GetCustomFields(ctx, tt.id)
+			if err != nil {
+				t.Errorf("TagStore.GetCustomFields() error = %v", err)
+				return
+			}
+			if tt.expected == nil {
+				assert.Equal(tt.partial.CustomFields.Full, cf)
+			} else {
+				assert.Equal(tt.expected, cf)
+			}
+		})
+	}
+}
+
+func TestTagQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.TagFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")},
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdxWithGallery},
+			false,
+		},
+		{
+			"includes",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdxWithGallery},
+			false,
+		},
+		{
+			"regex",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdxWithGallery},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{tagIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.TagFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{tagIdx2WithScene},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.TagFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdx2WithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{tagIdx2WithScene},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			tags, _, err := db.Tag.Query(ctx, tt.filter, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TagStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := tagsToIDs(tags)
+			include := indexesToIDs(tagIDs, tt.includeIdxs)
+			exclude := indexesToIDs(tagIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 // TODO Destroy
 // TODO Find
 // TODO FindBySceneID

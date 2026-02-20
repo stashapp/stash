@@ -16,7 +16,8 @@ fragment SlimPerformerData on Performer {
   fake_tits
   penis_length
   circumcised
-  career_length
+  career_start
+  career_end
   tattoos
   piercings
   alias_list

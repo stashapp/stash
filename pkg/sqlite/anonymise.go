@@ -332,6 +332,10 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 		return err
 	}
 
+	if err := db.anonymiseCustomFields(ctx, goqu.T(scenesCustomFieldsTable.GetTable()), "scene_id"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -678,6 +682,10 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 		return err
 	}
 
+	if err := db.anonymiseCustomFields(ctx, goqu.T(studiosCustomFieldsTable.GetTable()), "studio_id"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -870,6 +878,10 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 	}
 
 	if err := db.anonymiseAliases(ctx, goqu.T(tagAliasesTable), "tag_id"); err != nil {
+		return err
+	}
+
+	if err := db.anonymiseCustomFields(ctx, goqu.T(tagsCustomFieldsTable.GetTable()), "tag_id"); err != nil {
 		return err
 	}
 

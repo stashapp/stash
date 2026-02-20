@@ -7,7 +7,7 @@ import {
 } from "../GeneratePreviewOptions";
 
 interface IGenerateOptions {
-  type?: "scene" | "image";
+  type?: "scene" | "image" | "gallery";
   selection?: boolean;
   options: GQL.GenerateMetadataInput;
   setOptions: (s: GQL.GenerateMetadataInput) => void;
@@ -27,7 +27,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
   }
 
   const showSceneOptions = !type || type === "scene";
-  const showImageOptions = !type || type === "image";
+  const showImageOptions = !type || type === "image" || type === "gallery";
 
   return (
     <>
@@ -166,6 +166,13 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             checked={options.imageThumbnails ?? false}
             headingID="dialogs.scene_gen.image_thumbnails"
             onChange={(v) => setOptions({ imageThumbnails: v })}
+          />
+          <BooleanSetting
+            id="image-phash-task"
+            checked={options.imagePhashes ?? false}
+            headingID="dialogs.scene_gen.image_phash"
+            tooltipID="dialogs.scene_gen.image_phash_tooltip"
+            onChange={(v) => setOptions({ imagePhashes: v })}
           />
         </>
       )}

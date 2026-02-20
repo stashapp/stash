@@ -1126,3 +1126,40 @@ func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 
 	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.args...)
 }
+
+type phashDistanceCriterionHandler struct {
+	// assumes that applicable fingerprints table is joined as fingerprints_phash
+	joinFn    func(f *filterBuilder)
+	criterion *models.PhashDistanceCriterionInput
+}
+
+func (h *phashDistanceCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	phashDistance := h.criterion
+	if phashDistance == nil {
+		return
+	}
+
+	h.joinFn(f)
+
+	value, _ := utils.StringToPhash(phashDistance.Value)
+	distance := 0
+	if phashDistance.Distance != nil {
+		distance = *phashDistance.Distance
+	}
+
+	switch {
+	case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
+		// needed to avoid a type mismatch
+		f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+		f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
+	case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
+		// needed to avoid a type mismatch
+		f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+		f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
+	default:
+		intCriterionHandler(&models.IntCriterionInput{
+			Value:    int(value),
+			Modifier: phashDistance.Modifier,
+		}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+	}
+}

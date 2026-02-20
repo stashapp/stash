@@ -9,6 +9,7 @@ import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { TextField, URLField, URLsField } from "src/utils/field";
 import { FileSize } from "src/components/Shared/FileSize";
+import NavUtils from "src/utils/navigation";
 
 interface IFileInfoPanelProps {
   file: GQL.ImageFileDataFragment | GQL.VideoFileDataFragment;
@@ -23,6 +24,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
+  const phash = props.file.fingerprints.find((f) => f.type === "phash");
 
   return (
     <div>
@@ -36,6 +38,15 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           </>
         )}
         <TextField id="media_info.checksum" value={checksum?.value} truncate />
+        <URLField
+          id="media_info.phash"
+          abbr="Perceptual hash"
+          value={phash?.value}
+          url={NavUtils.makeImagesPHashMatchUrl(phash?.value)}
+          target="_self"
+          truncate
+          internal
+        />
         <URLField
           id="path"
           url={`file://${props.file.path}`}

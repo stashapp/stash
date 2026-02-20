@@ -11,11 +11,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSetCustomFields(t *testing.T) {
-	performerIdx := performerIdx1WithScene
+type customFieldsReaderWriter interface {
+	models.CustomFieldsReader
+	models.CustomFieldsWriter
+}
+
+func testSetCustomFields(t *testing.T, namePrefix string, store customFieldsReaderWriter, id int, origCustomFields map[string]interface{}) {
+	getCustomFields := func() map[string]interface{} {
+		m := make(map[string]interface{})
+		for k, v := range origCustomFields {
+			m[k] = v
+		}
+		return m
+	}
 
 	mergeCustomFields := func(i map[string]interface{}) map[string]interface{} {
-		m := getPerformerCustomFields(performerIdx)
+		m := getCustomFields()
+
 		for k, v := range i {
 			m[k] = v
 		}
@@ -70,7 +82,7 @@ func TestSetCustomFields(t *testing.T) {
 				Remove: []string{"real"},
 			},
 			func() map[string]interface{} {
-				m := getPerformerCustomFields(performerIdx)
+				m := getCustomFields()
 				delete(m, "real")
 				return m
 			}(),
@@ -180,12 +192,8 @@ func TestSetCustomFields(t *testing.T) {
 		},
 	}
 
-	// use performer custom fields store
-	store := db.Performer
-	id := performerIDs[performerIdx]
-
 	for _, tt := range tests {
-		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+		runWithRollbackTxn(t, namePrefix+" "+tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
 			err := store.SetCustomFields(ctx, id, tt.input)
@@ -207,4 +215,28 @@ func TestSetCustomFields(t *testing.T) {
 			assert.Equal(tt.expected, actual)
 		})
 	}
+}
+
+func TestPerformerSetCustomFields(t *testing.T) {
+	performerIdx := performerIdx1WithScene
+
+	testSetCustomFields(t, "Performer", db.Performer, performerIDs[performerIdx], getPerformerCustomFields(performerIdx))
+}
+
+func TestTagSetCustomFields(t *testing.T) {
+	tagIdx := tagIdx1WithScene
+
+	testSetCustomFields(t, "Tag", db.Tag, tagIDs[tagIdx], getTagCustomFields(tagIdx))
+}
+
+func TestStudioSetCustomFields(t *testing.T) {
+	studioIdx := studioIdxWithScene
+
+	testSetCustomFields(t, "Studio", db.Studio, studioIDs[studioIdx], getStudioCustomFields(studioIdx))
+}
+
+func TestSceneSetCustomFields(t *testing.T) {
+	sceneIdx := sceneIdxWithPerformer
+
+	testSetCustomFields(t, "Scene", db.Scene, sceneIDs[sceneIdx], getSceneCustomFields(sceneIdx))
 }

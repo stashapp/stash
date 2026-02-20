@@ -47,6 +47,29 @@ func (qb *performerFilterHandler) validate() error {
 		}
 	}
 
+	// if legacy career length filter used, ensure only supported modifiers are used and value is valid
+	if filter.CareerLength != nil {
+		careerLength := filter.CareerLength
+		switch careerLength.Modifier {
+		case models.CriterionModifierEquals:
+			start, end, err := utils.ParseYearRangeString(careerLength.Value)
+			if err != nil {
+				return fmt.Errorf("invalid career length value: %s", careerLength.Value)
+			}
+			// ensure career start/end is not set
+			if start != nil && filter.CareerStart != nil {
+				return fmt.Errorf("cannot use legacy CareerLength filter with CareerStart filter")
+			}
+			if end != nil && filter.CareerEnd != nil {
+				return fmt.Errorf("cannot use legacy CareerLength filter with CareerEnd filter")
+			}
+		case models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+			// valid modifiers, no value parsing needed
+		default:
+			return fmt.Errorf("invalid career length modifier: %s", careerLength.Modifier)
+		}
+	}
+
 	return nil
 }
 
@@ -71,9 +94,12 @@ func (qb *performerFilterHandler) handle(ctx context.Context, f *filterBuilder) 
 }
 
 func (qb *performerFilterHandler) criterionHandler() criterionHandler {
-	filter := qb.performerFilter
+	// make a copy of the filter to modify with legacy conversions without affecting original filter used for subfilters
+	filter := *qb.performerFilter
 	const tableName = performerTable
 	heightCmCrit := filter.HeightCm
+
+	convertLegacyCareerLengthFilter(&filter)
 
 	return compoundHandler{
 		stringCriterionHandler(filter.Name, tableName+".name"),
@@ -129,7 +155,9 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			}
 		}),
 
-		stringCriterionHandler(filter.CareerLength, tableName+".career_length"),
+		// CareerLength filter is deprecated and non-functional (column removed in schema 78)
+		intCriterionHandler(filter.CareerStart, tableName+".career_start", nil),
+		intCriterionHandler(filter.CareerEnd, tableName+".career_end", nil),
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
@@ -218,6 +246,43 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			c:     filter.CustomFields,
 			idCol: "performers.id",
 		},
+	}
+}
+
+func convertLegacyCareerLengthFilter(filter *models.PerformerFilterType) {
+	// convert legacy career length filter to career start/end filters
+	if filter.CareerLength != nil {
+		careerLength := filter.CareerLength
+		switch careerLength.Modifier {
+		case models.CriterionModifierEquals:
+			start, end, _ := utils.ParseYearRangeString(careerLength.Value)
+			if start != nil {
+				filter.CareerStart = &models.IntCriterionInput{
+					Value:    (*start) - 1, // minus one to make it exclusive
+					Modifier: models.CriterionModifierGreaterThan,
+				}
+			}
+			if end != nil {
+				filter.CareerEnd = &models.IntCriterionInput{
+					Value:    (*end) + 1, // plus one to make it exclusive
+					Modifier: models.CriterionModifierLessThan,
+				}
+			}
+		case models.CriterionModifierIsNull:
+			filter.CareerStart = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			}
+			filter.CareerEnd = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			}
+		case models.CriterionModifierNotNull:
+			filter.CareerStart = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			}
+			filter.CareerEnd = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			}
+		}
 	}
 }
 

@@ -63,6 +63,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("sub_group_count"),
   TagsCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];

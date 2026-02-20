@@ -313,46 +313,6 @@ func (s *Manager) validateFFmpeg() error {
 	return nil
 }
 
-func (s *Manager) BackupDatabase(download bool) (string, string, error) {
-	var backupPath string
-	var backupName string
-	if download {
-		backupDir := s.Paths.Generated.Downloads
-		if err := fsutil.EnsureDir(backupDir); err != nil {
-			return "", "", fmt.Errorf("could not create backup directory %v: %w", backupDir, err)
-		}
-		f, err := os.CreateTemp(backupDir, "backup*.sqlite")
-		if err != nil {
-			return "", "", err
-		}
-
-		backupPath = f.Name()
-		backupName = s.Database.DatabaseBackupPath("")
-		f.Close()
-
-		// delete the temp file so that the backup operation can create it
-		if err := os.Remove(backupPath); err != nil {
-			return "", "", fmt.Errorf("could not remove temporary backup file %v: %w", backupPath, err)
-		}
-	} else {
-		backupDir := s.Config.GetBackupDirectoryPathOrDefault()
-		if backupDir != "" {
-			if err := fsutil.EnsureDir(backupDir); err != nil {
-				return "", "", fmt.Errorf("could not create backup directory %v: %w", backupDir, err)
-			}
-		}
-		backupPath = s.Database.DatabaseBackupPath(backupDir)
-		backupName = filepath.Base(backupPath)
-	}
-
-	err := s.Database.Backup(backupPath)
-	if err != nil {
-		return "", "", err
-	}
-
-	return backupPath, backupName, nil
-}
-
 func (s *Manager) AnonymiseDatabase(download bool) (string, string, error) {
 	var outPath string
 	var outName string

@@ -38,7 +38,8 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   fake_tits
   penis_length
   circumcised
-  career_length
+  career_start
+  career_end
   tattoos
   piercings
   aliases
@@ -68,7 +69,8 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   fake_tits
   penis_length
   circumcised
-  career_length
+  career_start
+  career_end
   tattoos
   piercings
   aliases

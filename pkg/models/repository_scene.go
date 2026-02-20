@@ -104,6 +104,7 @@ type SceneReader interface {
 	SceneGroupLoader
 	StashIDLoader
 	VideoFileLoader
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Scene, error)
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
@@ -140,6 +141,7 @@ type SceneWriter interface {
 	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
 	ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error)
+	CustomFieldsWriter
 }
 
 // SceneReaderWriter provides all scene methods.

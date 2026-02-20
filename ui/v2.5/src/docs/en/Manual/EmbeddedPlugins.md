@@ -10,7 +10,9 @@ Stash currently supports Javascript embedded plugin tasks using [goja](https://g
 
 ### Plugin input
 
-The input is provided to Javascript plugin tasks using the `input` global variable, and is an object based on the structure provided in the `Plugin input` section of the [Plugins](/help/Plugins.md) page. Note that the `server_connection` field should not be necessary in most embedded plugins.
+The input is provided to Javascript plugin tasks using the `input` global variable, and is an object based on the structure provided in the `Plugin input` section of the [Plugins](/help/Plugins.md) page. 
+
+> **⚠️ Note:** `server_connection` field should not be necessary in most embedded plugins.
 
 ### Plugin output
 

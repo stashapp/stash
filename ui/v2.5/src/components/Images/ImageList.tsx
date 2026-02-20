@@ -27,6 +27,8 @@ import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
 import { FileSize } from "../Shared/FileSize";
 import { PatchComponent } from "src/patch";
+import { GenerateDialog } from "../Dialogs/GenerateDialog";
+import { useModal } from "src/hooks/modal";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -356,11 +358,27 @@ export const ImageList: React.FC<IImageList> = PatchComponent(
 
     const filterMode = GQL.FilterMode.Images;
 
-    const otherOperations = [
+    const { modal, showModal, closeModal } = useModal();
+
+    const otherOperations: IItemListOperation<GQL.FindImagesQueryResult>[] = [
       ...extraOperations,
       {
         text: intl.formatMessage({ id: "actions.view_random" }),
         onClick: viewRandom,
+      },
+      {
+        text: `${intl.formatMessage({ id: "actions.generate" })}…`,
+        onClick: (result, filter, selectedIds) => {
+          showModal(
+            <GenerateDialog
+              type="image"
+              selectedIds={Array.from(selectedIds.values())}
+              onClose={() => closeModal()}
+            />
+          );
+          return Promise.resolve();
+        },
+        isDisplayed: showWhenSelected,
       },
       {
         text: intl.formatMessage({ id: "actions.export" }),
@@ -497,6 +515,7 @@ export const ImageList: React.FC<IImageList> = PatchComponent(
         view={view}
         selectable
       >
+        {modal}
         <ItemList
           view={view}
           otherOperations={otherOperations}

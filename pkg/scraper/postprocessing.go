@@ -125,6 +125,20 @@ func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedP
 		}
 	}
 
+	isEmptyStr := func(s *string) bool { return s == nil || *s == "" }
+	isEmptyInt := func(s *int) bool { return s == nil || *s == 0 }
+
+	// populate career start/end from career length and vice versa
+	if !isEmptyStr(p.CareerLength) && isEmptyInt(p.CareerStart) && isEmptyInt(p.CareerEnd) {
+		p.CareerStart, p.CareerEnd, err = utils.ParseYearRangeString(*p.CareerLength)
+		if err != nil {
+			logger.Warnf("Could not parse career length %s: %v", *p.CareerLength, err)
+		}
+	} else if isEmptyStr(p.CareerLength) && (!isEmptyInt(p.CareerStart) || !isEmptyInt(p.CareerEnd)) {
+		v := utils.FormatYearRange(p.CareerStart, p.CareerEnd)
+		p.CareerLength = &v
+	}
+
 	return p, nil
 }
 

@@ -21,6 +21,7 @@ const sortByOptions = [
   "random",
   "rating",
   "scenes_duration",
+  "latest_scene",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
@@ -52,6 +53,7 @@ const criterionOptions = [
   TagsCriterionOption,
   RatingCriterionOption,
   createBooleanCriterionOption("ignore_auto_tag"),
+  createBooleanCriterionOption("organized"),
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

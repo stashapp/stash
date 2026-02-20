@@ -101,11 +101,11 @@ func (_m *TagReaderWriter) CountByParentTagID(ctx context.Context, parentID int)
 }
 
 // Create provides a mock function with given fields: ctx, newTag
-func (_m *TagReaderWriter) Create(ctx context.Context, newTag *models.Tag) error {
+func (_m *TagReaderWriter) Create(ctx context.Context, newTag *models.CreateTagInput) error {
 	ret := _m.Called(ctx, newTag)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Tag) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.CreateTagInput) error); ok {
 		r0 = rf(ctx, newTag)
 	} else {
 		r0 = ret.Error(0)
@@ -542,6 +542,52 @@ func (_m *TagReaderWriter) GetChildIDs(ctx context.Context, relatedID int) ([]in
 	return r0, r1
 }
 
+// GetCustomFields provides a mock function with given fields: ctx, id
+func (_m *TagReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, int) map[string]interface{}); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFieldsBulk provides a mock function with given fields: ctx, ids
+func (_m *TagReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []models.CustomFieldMap
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []models.CustomFieldMap); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.CustomFieldMap)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetImage provides a mock function with given fields: ctx, tagID
 func (_m *TagReaderWriter) GetImage(ctx context.Context, tagID int) ([]byte, error) {
 	ret := _m.Called(ctx, tagID)
@@ -699,12 +745,26 @@ func (_m *TagReaderWriter) QueryForAutoTag(ctx context.Context, words []string) 
 	return r0, r1
 }
 
+// SetCustomFields provides a mock function with given fields: ctx, id, fields
+func (_m *TagReaderWriter) SetCustomFields(ctx context.Context, id int, fields models.CustomFieldsInput) error {
+	ret := _m.Called(ctx, id, fields)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.CustomFieldsInput) error); ok {
+		r0 = rf(ctx, id, fields)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: ctx, updatedTag
-func (_m *TagReaderWriter) Update(ctx context.Context, updatedTag *models.Tag) error {
+func (_m *TagReaderWriter) Update(ctx context.Context, updatedTag *models.UpdateTagInput) error {
 	ret := _m.Called(ctx, updatedTag)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Tag) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdateTagInput) error); ok {
 		r0 = rf(ctx, updatedTag)
 	} else {
 		r0 = ret.Error(0)

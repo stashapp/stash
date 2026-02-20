@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { PerformerList } from "src/components/Performers/PerformerList";
+import { FilteredPerformerList } from "src/components/Performers/PerformerList";
 import { usePerformerFilterHook } from "src/core/performers";
 import { View } from "src/components/List/views";
 import { PatchComponent } from "src/patch";
@@ -24,7 +24,7 @@ export const PerformerAppearsWithPanel: React.FC<IPerformerDetailsProps> =
     const filterHook = usePerformerFilterHook(performer);
 
     return (
-      <PerformerList
+      <FilteredPerformerList
         filterHook={filterHook}
         extraCriteria={extraCriteria}
         alterQuery={active}
