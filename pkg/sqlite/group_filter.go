@@ -84,6 +84,13 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{groupFilter.CreatedAt, "groups.created_at", nil},
 		&timestampCriterionHandler{groupFilter.UpdatedAt, "groups.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: groupsCustomFieldsTable.GetTable(),
+			fkCol: groupIDColumn,
+			c:     groupFilter.CustomFields,
+			idCol: "groups.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "groups_scenes.scene_id",
 			relatedRepo:    sceneRepository.repository,

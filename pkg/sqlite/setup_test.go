@@ -1457,6 +1457,18 @@ func getGroupEmptyString(index int, field string) string {
 	return v.String
 }
 
+func getGroupCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getGroupStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 // createGroups creates n groups with plain Name and o groups with camel cased NaMe included
 func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1487,6 +1499,13 @@ func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o in
 
 		if err != nil {
 			return fmt.Errorf("Error creating group [%d] %v+: %s", i, group, err.Error())
+		}
+
+		customFields := getGroupCustomFields(i)
+		if customFields != nil {
+			if err := mqb.SetCustomFields(ctx, group.ID, models.CustomFieldsInput{Full: customFields}); err != nil {
+				return fmt.Errorf("Error setting custom fields for group %d: %s", group.ID, err.Error())
+			}
 		}
 
 		groupIDs = append(groupIDs, group.ID)
