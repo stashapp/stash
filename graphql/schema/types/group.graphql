@@ -31,6 +31,7 @@ type Group {
   sub_group_count(depth: Int): Int! # Resolver
   scenes: [Scene!]!
   o_counter: Int # Resolver
+  custom_fields: Map!
 }
 
 input GroupDescriptionInput {
@@ -59,6 +60,8 @@ input GroupCreateInput {
   front_image: String
   "This should be a URL or a base64 encoded data URL"
   back_image: String
+
+  custom_fields: Map
 }
 
 input GroupUpdateInput {
@@ -82,6 +85,8 @@ input GroupUpdateInput {
   front_image: String
   "This should be a URL or a base64 encoded data URL"
   back_image: String
+
+  custom_fields: CustomFieldsInput
 }
 
 input BulkUpdateGroupDescriptionsInput {
@@ -101,6 +106,8 @@ input BulkGroupUpdateInput {
 
   containing_groups: BulkUpdateGroupDescriptionsInput
   sub_groups: BulkUpdateGroupDescriptionsInput
+
+  custom_fields: CustomFieldsInput
 }
 
 input GroupDestroyInput {

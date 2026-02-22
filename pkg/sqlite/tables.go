@@ -47,6 +47,7 @@ var (
 	groupsURLsJoinTable     = goqu.T(groupURLsTable)
 	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
 	groupRelationsJoinTable = goqu.T(groupRelationsTable)
+	groupsCustomFieldsTable = goqu.T("group_custom_fields")
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)

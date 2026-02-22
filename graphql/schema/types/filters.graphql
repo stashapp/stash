@@ -462,6 +462,9 @@ input GroupFilterType {
   scenes_filter: SceneFilterType
   "Filter by related studios that meet this criteria"
   studios_filter: StudioFilterType
+
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input StudioFilterType {

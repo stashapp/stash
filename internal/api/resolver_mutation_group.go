@@ -14,13 +14,17 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.Group, error) {
+func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.CreateGroupInput, error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
 	// Populate a new group from the input
-	newGroup := models.NewGroup()
+	newGroupInput := &models.CreateGroupInput{
+		Group: &models.Group{},
+	}
+	*newGroupInput.Group = models.NewGroup()
+	newGroup := newGroupInput.Group
 
 	newGroup.Name = strings.TrimSpace(input.Name)
 	newGroup.Aliases = translator.string(input.Aliases)
@@ -59,28 +63,19 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 		newGroup.URLs = models.NewRelatedStrings(stringslice.TrimSpace(input.Urls))
 	}
 
-	return &newGroup, nil
-}
-
-func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInput) (*models.Group, error) {
-	newGroup, err := groupFromGroupCreateInput(ctx, input)
-	if err != nil {
-		return nil, err
-	}
+	newGroupInput.CustomFields = convertMapJSONNumbers(input.CustomFields)
 
 	// Process the base 64 encoded image string
-	var frontimageData []byte
 	if input.FrontImage != nil {
-		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
+		newGroupInput.FrontImageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
 		if err != nil {
 			return nil, fmt.Errorf("processing front image: %w", err)
 		}
 	}
 
 	// Process the base 64 encoded image string
-	var backimageData []byte
 	if input.BackImage != nil {
-		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
+		newGroupInput.BackImageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
 		if err != nil {
 			return nil, fmt.Errorf("processing back image: %w", err)
 		}
@@ -88,13 +83,22 @@ func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInp
 
 	// HACK: if back image is being set, set the front image to the default.
 	// This is because we can't have a null front image with a non-null back image.
-	if len(frontimageData) == 0 && len(backimageData) != 0 {
-		frontimageData = static.ReadAll(static.DefaultGroupImage)
+	if len(newGroupInput.FrontImageData) == 0 && len(newGroupInput.BackImageData) != 0 {
+		newGroupInput.FrontImageData = static.ReadAll(static.DefaultGroupImage)
+	}
+
+	return newGroupInput, nil
+}
+
+func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInput) (*models.Group, error) {
+	createGroupInput, err := groupFromGroupCreateInput(ctx, input)
+	if err != nil {
+		return nil, err
 	}
 
 	// Start the transaction and save the group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		if err = r.groupService.Create(ctx, newGroup, frontimageData, backimageData); err != nil {
+		if err = r.groupService.Create(ctx, createGroupInput); err != nil {
 			return err
 		}
 
@@ -104,9 +108,9 @@ func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInp
 	}
 
 	// for backwards compatibility - run both movie and group hooks
-	r.hookExecutor.ExecutePostHooks(ctx, newGroup.ID, hook.GroupCreatePost, input, nil)
-	r.hookExecutor.ExecutePostHooks(ctx, newGroup.ID, hook.MovieCreatePost, input, nil)
-	return r.getGroup(ctx, newGroup.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, createGroupInput.Group.ID, hook.GroupCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, createGroupInput.Group.ID, hook.MovieCreatePost, input, nil)
+	return r.getGroup(ctx, createGroupInput.Group.ID)
 }
 
 func groupPartialFromGroupUpdateInput(translator changesetTranslator, input GroupUpdateInput) (ret models.GroupPartial, err error) {
@@ -150,6 +154,12 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 	}
 
 	updatedGroup.URLs = translator.updateStrings(input.Urls, "urls")
+	if input.CustomFields != nil {
+		updatedGroup.CustomFields = *input.CustomFields
+		// convert json.Numbers to int/float
+		updatedGroup.CustomFields.Full = convertMapJSONNumbers(updatedGroup.CustomFields.Full)
+		updatedGroup.CustomFields.Partial = convertMapJSONNumbers(updatedGroup.CustomFields.Partial)
+	}
 
 	return updatedGroup, nil
 }
@@ -245,6 +255,13 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	}
 
 	updatedGroup.URLs = translator.optionalURLsBulk(input.Urls, nil)
+
+	if input.CustomFields != nil {
+		updatedGroup.CustomFields = *input.CustomFields
+		// convert json.Numbers to int/float
+		updatedGroup.CustomFields.Full = convertMapJSONNumbers(updatedGroup.CustomFields.Full)
+		updatedGroup.CustomFields.Partial = convertMapJSONNumbers(updatedGroup.CustomFields.Partial)
+	}
 
 	return updatedGroup, nil
 }

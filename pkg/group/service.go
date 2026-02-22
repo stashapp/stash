@@ -10,6 +10,7 @@ type CreatorUpdater interface {
 	models.GroupGetter
 	models.GroupCreator
 	models.GroupUpdater
+	models.CustomFieldsWriter
 
 	models.ContainingGroupLoader
 	models.SubGroupLoader

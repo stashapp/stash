@@ -64,11 +64,12 @@ type Loaders struct {
 	StudioByID         *StudioLoader
 	StudioCustomFields *CustomFieldsLoader
 
-	TagByID         *TagLoader
-	TagCustomFields *CustomFieldsLoader
-	GroupByID       *GroupLoader
-	FileByID        *FileLoader
-	FolderByID      *FolderLoader
+	TagByID           *TagLoader
+	TagCustomFields   *CustomFieldsLoader
+	GroupByID         *GroupLoader
+	GroupCustomFields *CustomFieldsLoader
+	FileByID          *FileLoader
+	FolderByID        *FolderLoader
 }
 
 type Middleware struct {
@@ -138,6 +139,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchGroups(ctx),
+			},
+			GroupCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchGroupCustomFields(ctx),
 			},
 			FileByID: &FileLoader{
 				wait:     wait,
@@ -318,6 +324,18 @@ func (m Middleware) fetchTagCustomFields(ctx context.Context) func(keys []int) (
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Tag.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchGroupCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Group.GetCustomFieldsBulk(ctx, keys)
 			return err
 		})
 

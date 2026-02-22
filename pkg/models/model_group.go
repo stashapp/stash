@@ -34,6 +34,14 @@ func NewGroup() Group {
 	}
 }
 
+type CreateGroupInput struct {
+	*Group
+
+	CustomFields   map[string]interface{} `json:"custom_fields"`
+	FrontImageData []byte
+	BackImageData  []byte
+}
+
 func (m *Group) LoadURLs(ctx context.Context, l URLLoader) error {
 	return m.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, m.ID)
@@ -74,6 +82,8 @@ type GroupPartial struct {
 	SubGroups        *UpdateGroupDescriptions
 	CreatedAt        OptionalTime
 	UpdatedAt        OptionalTime
+
+	CustomFields CustomFieldsInput
 }
 
 func NewGroupPartial() GroupPartial {
