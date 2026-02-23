@@ -328,13 +328,11 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
           }
 
           if (
-            stashboxTag.aliases &&
+            stashboxTag.alias_list &&
+            stashboxTag.alias_list.length > 0 &&
             !(config.excludedTagFields ?? []).includes("aliases")
           ) {
-            updateData.aliases = stashboxTag.aliases
-              .split(",")
-              .map((a) => a.trim())
-              .filter((a) => a.length > 0);
+            updateData.aliases = stashboxTag.alias_list;
           }
 
           if (stashboxTag.remote_site_id) {

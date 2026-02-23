@@ -159,7 +159,7 @@ fragment ScrapedSceneTagData on ScrapedTag {
   stored_id
   name
   description
-  aliases
+  alias_list
   remote_site_id
 }
 

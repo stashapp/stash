@@ -2,7 +2,6 @@ package stashbox
 
 import (
 	"context"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/stashapp/stash/pkg/models"
@@ -70,8 +69,7 @@ func tagFragmentToScrapedTag(t graphql.TagFragment) *models.ScrapedTag {
 	}
 
 	if len(t.Aliases) > 0 {
-		aliases := strings.Join(t.Aliases, ", ")
-		ret.Aliases = &aliases
+		ret.AliasList = t.Aliases
 	}
 
 	return ret

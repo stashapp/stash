@@ -399,7 +399,7 @@ export const ScrapedTagsRow: React.FC<
               items.map((p) => ({
                 ...p,
                 stored_id: p.id,
-                aliases: p.aliases.join(", "),
+                alias_list: p.aliases,
               }))
             );
           }

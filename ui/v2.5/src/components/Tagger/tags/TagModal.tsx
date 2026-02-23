@@ -93,10 +93,7 @@ const TagModal: React.FC<ITagModalProps> = ({
     const tagData: GQL.TagCreateInput = {
       name: tag.name,
       description: tag.description ?? undefined,
-      aliases: tag.aliases
-        ?.split(",")
-        .map((a) => a.trim())
-        .filter((a) => a),
+      aliases: tag.alias_list?.filter((a) => a) ?? undefined,
     };
 
     // stashid handling code
@@ -135,7 +132,7 @@ const TagModal: React.FC<ITagModalProps> = ({
           <div className="col-12">
             {maybeRenderField("name", tag.name)}
             {maybeRenderField("description", tag.description)}
-            {maybeRenderField("aliases", tag.aliases)}
+            {maybeRenderField("aliases", tag.alias_list?.join(", "))}
             {maybeRenderStashBoxLink()}
           </div>
         </div>
