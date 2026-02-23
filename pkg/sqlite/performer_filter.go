@@ -313,7 +313,7 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 					"disambiguation", "gender", "birthdate", "death_date",
 					"ethnicity", "country", "eye_color", "height", "weight",
 					"measurements", "fake_tits", "penis_length", "circumcised",
-					"career_start", "career_end", "tattoos", "piercings", "details",
+					"career_start", "career_end", "tattoos", "piercings", "details", "rating",
 				}); err != nil {
 					f.setError(err)
 					return

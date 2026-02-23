@@ -180,7 +180,7 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				f.addWhere("tags_join.image_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "details", "photographer", "date", "code",
+					"title", "details", "photographer", "date", "code", "rating",
 				}); err != nil {
 					f.setError(err)
 					return

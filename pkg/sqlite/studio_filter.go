@@ -158,7 +158,7 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 				f.addWhere("tags_join.studio_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"details",
+					"details", "rating",
 				}); err != nil {
 					f.setError(err)
 					return
