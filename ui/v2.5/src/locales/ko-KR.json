@@ -154,7 +154,8 @@
         "create_new": "신규 생성",
         "save_and_new": "저장 & 신규",
         "invert_selection": "선택 영역 반전",
-        "select_directory": "경로 선택"
+        "select_directory": "경로 선택",
+        "reveal_in_file_manager": "파일 관리자에서 열기"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -435,7 +436,18 @@
             "delete_trash_path": {
                 "description": "삭제된 파일들이 영구 삭제되는 대신에 옮겨지게 될 경로입니다. 파일들을 영구 삭제하려면 빈 칸으로 두십시오.",
                 "heading": "휴지통 경로"
-            }
+            },
+            "sprite_generation_head": "스프라이트 생성",
+            "sprite_interval_desc": "생성된 각각의 스프라이트 사이의 시간 간격(초).",
+            "sprite_interval_head": "스프라이트 시간 간격",
+            "sprite_maximum_desc": "하나의 영상에 대해 생성되는 최대 스프라이트 개수입니다. 0으로 설정하면 제한을 해제합니다.",
+            "sprite_maximum_head": "최대 스프라이트 개수",
+            "sprite_minimum_desc": "하나의 영상에 대해 생성되는 최소 스프라이트 개수",
+            "sprite_minimum_head": "최소 스프라이트 개수",
+            "sprite_screenshot_size_desc": "각각의 스프라이트의 원하는 크기를 지정합니다 (픽셀).",
+            "sprite_screenshot_size_head": "스프라이트 크기",
+            "use_custom_sprite_interval_head": "사용자 지정 스프라이트 시간 간격 사용",
+            "use_custom_sprite_interval_desc": "사용자 지정 스프라이트 시간 간격을, 아래 설정과 같이 활성화합니다."
         },
         "library": {
             "exclusions": "제외",
@@ -539,7 +551,9 @@
                 "skip_multiple_matches": "여러 개의 매칭 결과가 나왔을 때, 처리하지 않고 건너뛰기",
                 "tag_skipped_matches": "처리하지 않고 건너뛴 항목들에 대해 다음과 같이 태그하기",
                 "tag_skipped_matches_tooltip": "다수 식별 결과가 도출된 항목들을 대상으로, 실제로 일치하는 식별 결과를 영상 태거 뷰에서 직접 고를 수 있도록, '식별: 다수 매칭' 등과 같은 태그를 만듭니다",
-                "tag_skipped_performers": "처리하지 않고 건너뛴 배우들에 대해 다음과 같이 태그하기"
+                "tag_skipped_performers": "처리하지 않고 건너뛴 배우들에 대해 다음과 같이 태그하기",
+                "performer_genders": "배우 성별",
+                "performer_genders_desc": "선택된 성별에 해당되는 배우들은, 식별 과정 중 포함됩니다."
             },
             "import_from_exported_json": "메타데이터 폴더에서 내보낸 JSON 파일에서 가져오기 작업을 합니다. 기존 데이터베이스를 지웁니다.",
             "incremental_import": "내보낸 zip 파일에서 증가한 부분만 가져옵니다.",
@@ -581,7 +595,18 @@
             "rescan_tooltip": "경로 내의 모든 파일을 재스캔합니다. 파일 메타데이터를 강제 업데이트하고 zip 파일들을 재스캔하기 위해 사용됩니다.",
             "rescan": "파일 재스캔",
             "generate_image_phashes_during_scan": "이미지 해쉬 값 생성",
-            "generate_image_phashes_during_scan_tooltip": "중복 제거 및 식별 목적."
+            "generate_image_phashes_during_scan_tooltip": "중복 제거 및 식별 목적.",
+            "backup_database": {
+                "description": "데이터베이스와 blob 파일의 백업을 수행합니다.",
+                "destination": "백업 파일의 위치",
+                "download": "백업 파일 다운로드",
+                "include_blobs": "백업 파일에 blob 포함",
+                "include_blobs_desc": "SQLite 데이터베이스 파일만을 백업하려면 비활성화하세요.",
+                "sqlite": "백업 파일은 SQLite 데이터베이스 파일의 복제본이 될 것입니다. (백업 파일 이름: {filename_format})",
+                "to_directory": "{directory} 경로로",
+                "warning_blobs": "blob 파일들은 백업 파일에 포함되지 않을 것입니다. 이는, 백업을 완전히 복원하려면 blob 저장 위치에 blob 파일이 존재해야 함을 의미합니다.",
+                "zip": "SQLite 데이터베이스 파일과 blob 파일은 하나의 파일로 압축될 것입니다. (압축 파일 이름: {filename_format})"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -1618,5 +1643,10 @@
         "select_stashbox": "StashBox 선택..."
     },
     "latest_scene": "최근 영상",
-    "stash_id_count": "Stash ID 카운트"
+    "stash_id_count": "Stash ID 카운트",
+    "career_end": "경력 종료",
+    "career_start": "경력 시작",
+    "duplicated": "중복됨",
+    "duplicated_stash_id": "중복됨 (Stash ID)",
+    "duplicated_title": "중복됨 (제목)"
 }
