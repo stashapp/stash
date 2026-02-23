@@ -28,6 +28,11 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { Group } from "src/components/Groups/GroupSelect";
 import { RelatedGroupTable, IRelatedGroupEntry } from "./RelatedGroupTable";
+import {
+  CustomFieldsInput,
+  formatCustomFieldInput,
+} from "src/components/Shared/CustomFields";
+import { cloneDeep } from "@apollo/client/utilities";
 
 interface IGroupEditPanel {
   group: Partial<GQL.GroupDataFragment>;
@@ -84,6 +89,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     synopsis: yup.string().ensure(),
     front_image: yup.string().nullable().optional(),
     back_image: yup.string().nullable().optional(),
+    custom_fields: yup.object().required().defined(),
   });
 
   const initialValues = {
@@ -99,15 +105,26 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     director: group?.director ?? "",
     urls: group?.urls ?? [],
     synopsis: group?.synopsis ?? "",
+    custom_fields: cloneDeep(group?.custom_fields ?? {}),
   };
 
   type InputValues = yup.InferType<typeof schema>;
+
+  const [customFieldsError, setCustomFieldsError] = useState<string>();
+
+  function submit(values: InputValues) {
+    const input = {
+      ...schema.cast(values),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
+    };
+    onSave(input);
+  }
 
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
     validate: yupFormikValidate(schema),
-    onSubmit: (values) => onSave(schema.cast(values)),
+    onSubmit: submit,
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
@@ -220,7 +237,10 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   }
 
   async function onSaveAndNewClick() {
-    const input = schema.cast(formik.values);
+    const input = {
+      ...schema.cast(formik.values),
+      custom_fields: formatCustomFieldInput(isNew, formik.values.custom_fields),
+    };
     onSave(input, true);
   }
 
@@ -458,6 +478,13 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         {renderURLListField("urls", onScrapeGroupURL, urlScrapable)}
         {renderInputField("synopsis", "textarea")}
         {renderTagsField()}
+
+        <CustomFieldsInput
+          values={formik.values.custom_fields}
+          onChange={(v) => formik.setFieldValue("custom_fields", v)}
+          error={customFieldsError}
+          setError={(e) => setCustomFieldsError(e)}
+        />
       </Form>
 
       <DetailsEditNavbar
@@ -468,7 +495,11 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         onSaveAndNew={isNew ? onSaveAndNewClick : undefined}
-        saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
+        saveDisabled={
+          (!isNew && !formik.dirty) ||
+          !isEqual(formik.errors, {}) ||
+          customFieldsError !== undefined
+        }
         onImageChange={onFrontImageChange}
         onImageChangeURL={onFrontImageLoad}
         onClearImage={() => onFrontImageLoad(null)}
