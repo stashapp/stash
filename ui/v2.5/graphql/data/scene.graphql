@@ -79,6 +79,8 @@ fragment SceneData on Scene {
     mime_type
     label
   }
+
+  custom_fields
 }
 
 fragment SelectSceneData on Scene {

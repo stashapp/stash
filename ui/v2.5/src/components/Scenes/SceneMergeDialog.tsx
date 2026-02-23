@@ -36,6 +36,8 @@ import {
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
+import { ScrapedCustomFieldRows } from "../Shared/ScrapeDialog/ScrapeDialogRow";
+import { CustomFieldScrapeResults } from "../Shared/ScrapeDialog/scrapeResult";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -171,6 +173,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.paths.screenshot)
+  );
+
+  const [customFields, setCustomFields] = useState<CustomFieldScrapeResults>(
+    new Map()
   );
 
   // calculate the values for everything
@@ -309,28 +315,64 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       )
     );
 
+    const customFieldNames = new Set<string>(
+      Object.keys(dest.custom_fields ?? {})
+    );
+
+    for (const s of sources) {
+      for (const n of Object.keys(s.custom_fields ?? {})) {
+        customFieldNames.add(n);
+      }
+    }
+
+    setCustomFields(
+      new Map(
+        Array.from(customFieldNames)
+          .sort()
+          .map((field) => {
+            return [
+              field,
+              new ScrapeResult(
+                dest.custom_fields?.[field],
+                sources.find((s) => s.custom_fields?.[field])?.custom_fields?.[
+                  field
+                ],
+                dest.custom_fields?.[field] === undefined
+              ),
+            ];
+          })
+      )
+    );
+
     loadImages();
   }, [sources, dest]);
 
+  const hasCustomFieldValues = useMemo(() => {
+    return hasScrapedValues(Array.from(customFields.values()));
+  }, [customFields]);
+
   // ensure this is updated if fields are changed
   const hasValues = useMemo(() => {
-    return hasScrapedValues([
-      title,
-      code,
-      url,
-      date,
-      rating,
-      oCounter,
-      galleries,
-      studio,
-      performers,
-      groups,
-      tags,
-      details,
-      organized,
-      stashIDs,
-      image,
-    ]);
+    return (
+      hasCustomFieldValues ||
+      hasScrapedValues([
+        title,
+        code,
+        url,
+        date,
+        rating,
+        oCounter,
+        galleries,
+        studio,
+        performers,
+        groups,
+        tags,
+        details,
+        organized,
+        stashIDs,
+        image,
+      ])
+    );
   }, [
     title,
     code,
@@ -347,6 +389,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     organized,
     stashIDs,
     image,
+    hasCustomFieldValues,
   ]);
 
   function renderScrapeRows() {
@@ -566,6 +609,12 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           result={image}
           onChange={(value) => setImage(value)}
         />
+        {hasCustomFieldValues && (
+          <ScrapedCustomFieldRows
+            results={customFields}
+            onChange={(newCustomFields) => setCustomFields(newCustomFields)}
+          />
+        )}
       </>
     );
   }
@@ -606,6 +655,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         organized: organized.getNewValue(),
         stash_ids: stashIDs.getNewValue(),
         cover_image: coverImage,
+        custom_fields: {
+          partial: Object.fromEntries(
+            Array.from(customFields.entries()).flatMap(([field, v]) =>
+              v.useNewValue ? [[field, v.getNewValue()]] : []
+            )
+          ),
+        },
       },
       includeViewHistory: playCount.getNewValue() !== undefined,
       includeOHistory: oCounter.getNewValue() !== undefined,

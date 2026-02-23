@@ -86,4 +86,6 @@ fragment SlimSceneData on Scene {
     stash_id
     updated_at
   }
+
+  custom_fields
 }
