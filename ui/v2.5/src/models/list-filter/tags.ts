@@ -15,6 +15,7 @@ import {
 } from "./criteria/tags";
 import { FavoriteTagCriterionOption } from "./criteria/favorite";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
 
 const defaultSortBy = "name";
 const sortByOptions = ["name", "random", "scenes_duration"]
@@ -73,6 +74,7 @@ const criterionOptions = [
   new MandatoryNumberCriterionOption("sub_tag_count", "child_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 
 export const TagListFilterOptions = new ListFilterOptions(
