@@ -154,7 +154,8 @@
         "create_new": "新建",
         "save_and_new": "保存并新建",
         "invert_selection": "反向选择",
-        "select_directory": "选择目录"
+        "select_directory": "选择目录",
+        "reveal_in_file_manager": "在文件管理器中显示"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -435,7 +436,18 @@
             "delete_trash_path": {
                 "description": "删除的文件将被移动到的路径，而不是永久删除。留空将永久删除文件。",
                 "heading": "回收站路径"
-            }
+            },
+            "sprite_generation_head": "精灵图生成",
+            "sprite_interval_desc": "每个生成的精灵图之间的时间间隔（秒）。",
+            "sprite_interval_head": "精灵图间隔",
+            "sprite_maximum_desc": "短片中可生成的最大精灵图数量。设置为 0 可禁用此限制。",
+            "sprite_maximum_head": "精灵图最大数量",
+            "sprite_minimum_desc": "一个短片中最少生成的精灵图数量",
+            "sprite_minimum_head": "精灵图最少数量",
+            "sprite_screenshot_size_desc": "每个精灵图所需像素大小。",
+            "sprite_screenshot_size_head": "精灵图尺寸",
+            "use_custom_sprite_interval_head": "使用自定义精灵图间隔",
+            "use_custom_sprite_interval_desc": "根据以下设置启用自定义精灵图间隔。"
         },
         "library": {
             "exclusions": "不包括",
@@ -583,7 +595,18 @@
             "rescan": "重新扫描文件",
             "rescan_tooltip": "重新扫描路径中的每个文件。用于强制更新文件元数据和重新扫描zip文件。",
             "generate_image_phashes_during_scan": "生成图像感知哈希值",
-            "generate_image_phashes_during_scan_tooltip": "用于去重和识别。"
+            "generate_image_phashes_during_scan_tooltip": "用于去重和识别。",
+            "backup_database": {
+                "description": "执行数据库和 blob 文件的备份。",
+                "destination": "目标位置",
+                "download": "下载备份",
+                "include_blobs": "在备份中包含blobs",
+                "include_blobs_desc": "禁用此功能后，仅备份 SQLite 数据库文件。",
+                "sqlite": "备份文件将是 SQLite 数据库文件的副本，文件名格式为 {filename_format}",
+                "to_directory": "到 {directory}",
+                "warning_blobs": "备份中不会包含 Blob 文件。这意味着，要成功从备份中恢复，Blob 文件必须存在于 Blob 存储位置。",
+                "zip": "SQLite 数据库文件和 blob 文件将被压缩到一个文件中，文件名格式为 {filename_format}"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -1623,5 +1646,7 @@
     "stash_id_count": "Stash ID 统计",
     "duplicated": "重复",
     "duplicated_stash_id": "重复（Stash ID）",
-    "duplicated_title": "重复（标题）"
+    "duplicated_title": "重复（标题）",
+    "career_end": "职业生涯结束时间",
+    "career_start": "职业生涯开始时间"
 }
