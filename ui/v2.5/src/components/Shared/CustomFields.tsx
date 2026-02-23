@@ -189,6 +189,16 @@ interface ICustomFieldsInput {
   setError: (error?: string) => void;
 }
 
+export function formatCustomFieldInput(isNew: boolean, input: {}) {
+  if (isNew) {
+    return input;
+  } else {
+    return {
+      full: input,
+    };
+  }
+}
+
 export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
   "CustomFieldsInput",
   ({ values, error, onChange, setError }) => {
