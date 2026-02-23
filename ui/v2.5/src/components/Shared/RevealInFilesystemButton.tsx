@@ -38,7 +38,7 @@ export const RevealInFilesystemButton: React.FC<
 
   return (
     <Button
-      className="minimal ml-1"
+      className="minimal reveal-in-filesystem-button"
       title={intl.formatMessage({ id: "actions.reveal_in_file_manager" })}
       onClick={onClick}
     >
