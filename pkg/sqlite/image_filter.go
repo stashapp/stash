@@ -179,6 +179,12 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				imageRepository.tags.join(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "details", "photographer", "date", "code",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(images." + *isMissing + " IS NULL OR TRIM(images." + *isMissing + ") = '')")
 			}
 		}

@@ -191,6 +191,12 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 				tagRepository.stashIDs.join(f, "tag_stash_ids", "tags.id")
 				f.addWhere("tag_stash_ids.tag_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"description",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
 			}
 		}

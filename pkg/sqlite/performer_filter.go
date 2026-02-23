@@ -309,6 +309,15 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 				f.addLeftJoin(performersTagsTable, "tags_join", "tags_join.performer_id = performers.id")
 				f.addWhere("tags_join.performer_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"disambiguation", "gender", "birthdate", "death_date",
+					"ethnicity", "country", "eye_color", "height", "weight",
+					"measurements", "fake_tits", "penis_length", "circumcised",
+					"career_length", "tattoos", "piercings", "details",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}
 		}

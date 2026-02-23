@@ -312,6 +312,12 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 				f.addLeftJoin("galleries_images", "cover_join", "cover_join.gallery_id = galleries.id AND cover_join.cover = 1")
 				f.addWhere("cover_join.image_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "code", "details", "photographer",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(galleries." + *isMissing + " IS NULL OR TRIM(galleries." + *isMissing + ") = '')")
 			}
 		}

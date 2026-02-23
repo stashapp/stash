@@ -157,6 +157,12 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 				f.addLeftJoin(studiosTagsTable, "tags_join", "tags_join.studio_id = studios.id")
 				f.addWhere("tags_join.studio_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"details",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
 			}
 		}

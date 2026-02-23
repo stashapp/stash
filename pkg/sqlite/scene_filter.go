@@ -426,6 +426,12 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 			case "cover":
 				f.addWhere("scenes.cover_blob IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "code", "details", "director",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
 		}

@@ -132,6 +132,12 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				groupRepository.tags.join(f, "tags_join", "groups.id")
 				f.addWhere("tags_join.group_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"aliases", "description", "director", "date",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(groups." + *isMissing + " IS NULL OR TRIM(groups." + *isMissing + ") = '')")
 			}
 		}
