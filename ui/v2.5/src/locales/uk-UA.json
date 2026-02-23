@@ -154,7 +154,8 @@
         "create_new": "Створити нове",
         "save_and_new": "Зберегти та створити",
         "invert_selection": "Інвертувати виділення",
-        "select_directory": "Вибрати каталог"
+        "select_directory": "Вибрати каталог",
+        "reveal_in_file_manager": "Показати в файловому менеджері"
     },
     "actions_name": "Дії",
     "age": "Вік",
