@@ -39,6 +39,8 @@ fragment GalleryData on Gallery {
   scenes {
     ...SlimSceneData
   }
+
+  custom_fields
 }
 
 fragment SelectGalleryData on Gallery {
