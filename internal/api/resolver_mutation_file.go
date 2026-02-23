@@ -357,7 +357,10 @@ func (r *mutationResolver) RevealFileInFileManager(ctx context.Context, id strin
 		return false, err
 	}
 
-	desktop.RevealInFileManager(filePath)
+	if err := desktop.RevealInFileManager(filePath); err != nil {
+		return false, err
+	}
+
 	return true, nil
 }
 
@@ -388,6 +391,9 @@ func (r *mutationResolver) RevealFolderInFileManager(ctx context.Context, id str
 		return false, err
 	}
 
-	desktop.RevealInFileManager(folderPath)
+	if err := desktop.RevealInFileManager(folderPath); err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

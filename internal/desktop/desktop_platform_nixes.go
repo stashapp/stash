@@ -4,6 +4,7 @@
 package desktop
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -34,14 +35,15 @@ func sendNotification(notificationTitle string, notificationText string) {
 	}
 }
 
-func revealInFileManager(path string, info os.FileInfo) {
+func revealInFileManager(path string, info os.FileInfo) error {
 	dir := path
 	if !info.IsDir() {
 		dir = filepath.Dir(path)
 	}
 	if err := exec.Command("xdg-open", dir).Run(); err != nil {
-		logger.Errorf("Error opening directory in file manager: %s", err.Error())
+		return fmt.Errorf("error opening directory in file manager: %w", err)
 	}
+	return nil
 }
 
 func isDoubleClickLaunched() bool {
