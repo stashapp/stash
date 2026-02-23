@@ -13,6 +13,7 @@ import { HoverScrubber } from "../Shared/HoverScrubber";
 interface IScenePreviewProps {
   vttPath: string | undefined;
   onClick?: (timestamp: number) => void;
+  disabled?: boolean;
 }
 
 function scaleToFit(dimensions: { w: number; h: number }, bounds: DOMRect) {
@@ -32,6 +33,7 @@ const defaultSprites = 81; // 9x9 grid by default
 export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   vttPath,
   onClick,
+  disabled,
 }) => {
   const imageParentRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState({});
@@ -113,6 +115,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
         onClick={onScrubberClick}
+        disabled={disabled}
       />
     </div>
   );
