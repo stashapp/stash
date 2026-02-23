@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { FormattedMessage, FormattedTime } from "react-intl";
+import { FormattedMessage, FormattedTime, useIntl } from "react-intl";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
 import { RevealInFilesystemButton } from "src/components/Shared/RevealInFilesystemButton";
@@ -24,6 +24,7 @@ interface IFileInfoPanelProps {
 const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
+  const intl = useIntl();
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
   const phash = props.file.fingerprints.find((f) => f.type === "phash");
 
@@ -38,10 +39,10 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             </dd>
           </>
         )}
-        <TextField id="media_info.checksum" value={checksum?.value} truncate />
+        <TextField id="media_info.md5" value={checksum?.value} truncate />
         <URLField
           id="media_info.phash"
-          abbr="Perceptual hash"
+          abbr={intl.formatMessage({ id: "media_info.phash_meaning" })}
           value={phash?.value}
           url={NavUtils.makeImagesPHashMatchUrl(phash?.value)}
           target="_self"

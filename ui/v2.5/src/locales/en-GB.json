@@ -1254,16 +1254,18 @@
   "measurements": "Measurements",
   "media_info": {
     "audio_codec": "Audio Codec",
-    "checksum": "Checksum",
     "downloaded_from": "Downloaded From",
-    "hash": "Hash",
     "interactive_speed": "Interactive Speed",
+    "md5": "MD5 Checksum",
     "o_count": "O Count",
+    "oshash": "oshash",
+    "oshash_meaning": "OpenSubtitles Hash",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} at production"
     },
     "phash": "PHash",
+    "phash_meaning": "Perceptual Hash",
     "play_count": "Play Count",
     "play_duration": "Play Duration",
     "stream": "Stream",
