@@ -21,11 +21,13 @@ import { PatchComponent } from "src/patch";
 interface IGalleryPreviewProps {
   gallery: GQL.SlimGalleryDataFragment;
   onScrubberClick?: (index: number) => void;
+  disabled?: boolean;
 }
 
 export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
   gallery,
   onScrubberClick,
+  disabled,
 }) => {
   const [imgSrc, setImgSrc] = useState<string | undefined>(
     gallery.paths.cover ?? undefined
@@ -48,6 +50,7 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
           imageCount={gallery.image_count}
           onClick={onScrubberClick}
           onPathChanged={setImgSrc}
+          disabled={disabled}
         />
       )}
     </div>
@@ -220,6 +223,7 @@ const GalleryCardImage = PatchComponent(
           onScrubberClick={(i) => {
             history.push(`/galleries/${props.gallery.id}/images/${i}`);
           }}
+          disabled={props.selecting}
         />
         <RatingBanner rating={props.gallery.rating100} />
       </>
