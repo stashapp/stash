@@ -336,7 +336,13 @@ const SceneCardDetails = PatchComponent(
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
-    return <StudioOverlay studio={props.scene.studio} />;
+    const ret = useMemo(() => {
+      return (
+        <StudioOverlay studio={props.scene.studio} disabled={props.selecting} />
+      );
+    }, [props.scene.studio, props.selecting]);
+
+    return ret;
   }
 );
 

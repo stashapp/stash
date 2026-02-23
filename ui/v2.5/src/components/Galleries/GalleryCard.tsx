@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -195,7 +195,16 @@ const GalleryCardDetails = PatchComponent(
 const GalleryCardOverlays = PatchComponent(
   "GalleryCard.Overlays",
   (props: IGalleryCardProps) => {
-    return <StudioOverlay studio={props.gallery.studio} />;
+    const ret = useMemo(() => {
+      return (
+        <StudioOverlay
+          studio={props.gallery.studio}
+          disabled={props.selecting}
+        />
+      );
+    }, [props.gallery.studio, props.selecting]);
+
+    return ret;
   }
 );
 
