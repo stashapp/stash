@@ -765,6 +765,8 @@ input ImageFilterType {
   tags_filter: TagFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input FileFilterType {
