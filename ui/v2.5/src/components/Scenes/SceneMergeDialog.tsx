@@ -13,6 +13,7 @@ import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
   ScrapeDialogRow,
+  ScrapedCustomFieldRows,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
@@ -24,6 +25,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
 import {
+  CustomFieldScrapeResults,
   ObjectListScrapeResult,
   ScrapeResult,
   ZeroableScrapeResult,
@@ -36,8 +38,6 @@ import {
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
-import { ScrapedCustomFieldRows } from "../Shared/ScrapeDialog/ScrapeDialogRow";
-import { CustomFieldScrapeResults } from "../Shared/ScrapeDialog/scrapeResult";
 
 interface IStashIDsField {
   values: GQL.StashId[];
