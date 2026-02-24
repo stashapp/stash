@@ -313,9 +313,14 @@ export class ListFilterModel {
     this.criteria = [];
     if (objectFilter) {
       for (const [k, v] of Object.entries(objectFilter)) {
-        const criterion = this.makeCriterion(k as CriterionType);
-        criterion.setFromSavedCriterion(v);
-        this.criteria.push(criterion);
+        try {
+          const criterion = this.makeCriterion(k as CriterionType);
+          criterion.setFromSavedCriterion(v);
+          this.criteria.push(criterion);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load saved filter criterion:", err);
+        }
       }
     }
   }
