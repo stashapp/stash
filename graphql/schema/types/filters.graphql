@@ -177,6 +177,8 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by marker count (via scene)"
+  marker_count: IntCriterionInput
   "Filter by image count"
   image_count: IntCriterionInput
   "Filter by gallery count"
@@ -220,6 +222,8 @@ input PerformerFilterType {
   galleries_filter: GalleryFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related scene markers (via scene) that meet this criteria"
+  markers_filter: SceneMarkerFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"

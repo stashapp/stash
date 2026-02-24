@@ -195,6 +195,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 
 		qb.tagCountCriterionHandler(filter.TagCount),
 		qb.sceneCountCriterionHandler(filter.SceneCount),
+		qb.markerCountCriterionHandler(filter.MarkerCount),
 		qb.imageCountCriterionHandler(filter.ImageCount),
 		qb.galleryCountCriterionHandler(filter.GalleryCount),
 		qb.playCounterCriterionHandler(filter.PlayCount),
@@ -203,6 +204,16 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		&dateCriterionHandler{filter.DeathDate, tableName + ".death_date", nil},
 		&timestampCriterionHandler{filter.CreatedAt, tableName + ".created_at", nil},
 		&timestampCriterionHandler{filter.UpdatedAt, tableName + ".updated_at", nil},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "scene_markers.id",
+			relatedRepo:    sceneMarkerRepository.repository,
+			relatedHandler: &sceneMarkerFilterHandler{filter.MarkersFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.scenes.innerJoin(f, "", "performers.id")
+				f.addInnerJoin(sceneMarkerTable, "", "scene_markers.scene_id = performers_scenes.scene_id")
+			},
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "performers_scenes.scene_id",
@@ -385,6 +396,22 @@ func (qb *performerFilterHandler) sceneCountCriterionHandler(count *models.IntCr
 	}
 
 	return h.handler(count)
+}
+
+func (qb *performerFilterHandler) markerCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count != nil {
+			performerRepository.scenes.innerJoin(f, "", "performers.id")
+
+			const query = `(SELECT COUNT(*) FROM scene_markers 
+  INNER JOIN scenes ON scene_markers.scene_id = scenes.id
+  INNER JOIN performers_scenes ON performers_scenes.scene_id = scenes.id
+  WHERE performers_scenes.performer_id = performers.id)`
+
+			clause, args := getIntCriterionWhereClause(query, *count)
+			f.addWhere(clause, args...)
+		}
+	}
 }
 
 func (qb *performerFilterHandler) imageCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
