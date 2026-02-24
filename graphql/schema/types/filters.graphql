@@ -684,6 +684,8 @@ input TagFilterType {
   performers_filter: PerformerFilterType
   "Filter by related studios that meet this criteria"
   studios_filter: StudioFilterType
+  "Filter by related scene markers that meet this criteria"
+  markers_filter: SceneMarkerFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
