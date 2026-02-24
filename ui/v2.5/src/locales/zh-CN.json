@@ -437,17 +437,17 @@
                 "description": "删除的文件将被移动到的路径，而不是永久删除。留空将永久删除文件。",
                 "heading": "回收站路径"
             },
-            "sprite_generation_head": "精灵图生成",
-            "sprite_interval_desc": "每个生成的精灵图之间的时间间隔（秒）。",
-            "sprite_interval_head": "精灵图间隔",
-            "sprite_maximum_desc": "短片中可生成的最大精灵图数量。设置为 0 可禁用此限制。",
-            "sprite_maximum_head": "精灵图最大数量",
-            "sprite_minimum_desc": "一个短片中最少生成的精灵图数量",
-            "sprite_minimum_head": "精灵图最少数量",
-            "sprite_screenshot_size_desc": "每个精灵图所需像素大小。",
-            "sprite_screenshot_size_head": "精灵图尺寸",
-            "use_custom_sprite_interval_head": "使用自定义精灵图间隔",
-            "use_custom_sprite_interval_desc": "根据以下设置启用自定义精灵图间隔。"
+            "sprite_generation_head": "时间轴缩略图生成",
+            "sprite_interval_desc": "时间轴缩略图之间的时间间隔（秒）。",
+            "sprite_interval_head": "时间轴缩略图间隔",
+            "sprite_maximum_desc": "短片中可生成的最大时间轴缩略图数量。设置为 0 可禁用此限制。",
+            "sprite_maximum_head": "时间轴缩略图最大数量",
+            "sprite_minimum_desc": "一个短片中最少生成的时间轴缩略图数量",
+            "sprite_minimum_head": "时间轴缩略图最少数量",
+            "sprite_screenshot_size_desc": "每个时间轴缩略图所需像素大小。",
+            "sprite_screenshot_size_head": "时间轴缩略图尺寸",
+            "use_custom_sprite_interval_head": "使用自定义时间轴缩略图间隔",
+            "use_custom_sprite_interval_desc": "根据以下设置启用自定义时间轴缩略图间隔。"
         },
         "library": {
             "exclusions": "不包括",
@@ -589,7 +589,7 @@
                 "markers": "标记预览",
                 "previews": "短片预览",
                 "previews_desc": "短片预览和缩略图",
-                "sprites": "短片精灵",
+                "sprites": "短片时间轴缩略图",
                 "transcodes": "短片转码"
             },
             "rescan": "重新扫描文件",
@@ -1647,6 +1647,6 @@
     "duplicated": "重复",
     "duplicated_stash_id": "重复（Stash ID）",
     "duplicated_title": "重复（标题）",
-    "career_end": "职业生涯结束时间",
-    "career_start": "职业生涯开始时间"
+    "career_end": "引退时间",
+    "career_start": "入行时间"
 }
