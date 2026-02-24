@@ -1133,9 +1133,7 @@
     "measurements": "Wymiary",
     "media_info": {
         "audio_codec": "Kodek audio",
-        "checksum": "Suma kontrolna",
         "downloaded_from": "Pobrano z",
-        "hash": "Hash",
         "interactive_speed": "Szybkość interaktywna",
         "performer_card": {
             "age": "{age} {years_old}",

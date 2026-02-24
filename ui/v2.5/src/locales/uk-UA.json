@@ -1026,8 +1026,6 @@
     "media_info": {
         "phash": "Перцептивний хеш",
         "stream": "Потік",
-        "checksum": "Контрольна сума",
-        "hash": "Хеш",
         "performer_card": {
             "age_context": "{age} {years_old} на момент зйомок",
             "age": "{age} {years_old}"

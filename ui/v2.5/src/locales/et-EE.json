@@ -1153,9 +1153,7 @@
     "measurements": "Mõõdud",
     "media_info": {
         "audio_codec": "Heli Koodek",
-        "checksum": "Kontrollsumma",
         "downloaded_from": "Allalaetud Asukohast",
-        "hash": "Hash",
         "interactive_speed": "Interaktiivne kiirus",
         "performer_card": {
             "age": "{age} {years_old}",

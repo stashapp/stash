@@ -1162,9 +1162,7 @@
     "measurements": "Maße",
     "media_info": {
         "audio_codec": "Audio-Codec",
-        "checksum": "Prüfsumme",
         "downloaded_from": "Heruntergeladen von",
-        "hash": "Hash",
         "interactive_speed": "Interaktive Geschwindigkeit",
         "performer_card": {
             "age": "{age} {years_old}",

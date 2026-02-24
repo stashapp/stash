@@ -1076,9 +1076,7 @@
     "measurements": "Målinger",
     "media_info": {
         "audio_codec": "Audio Codec",
-        "checksum": "Kontrolsum",
         "downloaded_from": "Downloadet fra",
-        "hash": "Hash",
         "interactive_speed": "Interaktiv hastighed",
         "performer_card": {
             "age": "{age} {years_old}",

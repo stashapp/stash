@@ -1025,9 +1025,7 @@
     "measurements": "Beden Ölçüleri",
     "media_info": {
         "audio_codec": "Ses Kodlayıcı",
-        "checksum": "Sağlama Toplamı (checksum)",
         "downloaded_from": "İndirildiği Yer",
-        "hash": "Dosya İmzası (Hash)",
         "interactive_speed": "Etkileşimli Hız",
         "performer_card": {
             "age": "{age} {years_old}",

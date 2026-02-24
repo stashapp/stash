@@ -975,9 +975,7 @@
     "measurements": "Misure",
     "media_info": {
         "audio_codec": "Codec Audio",
-        "checksum": "Checksum",
         "downloaded_from": "Scaricato Da",
-        "hash": "Hash",
         "interactive_speed": "Velocità interattiva",
         "performer_card": {
             "age": "{age} {years_old}",

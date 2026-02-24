@@ -1178,9 +1178,7 @@
     "measurements": "Mått",
     "media_info": {
         "audio_codec": "Ljudkodek",
-        "checksum": "Checksumma",
         "downloaded_from": "Nedladdad från",
-        "hash": "Hash",
         "interactive_speed": "Interaktiv Hastighet",
         "performer_card": {
             "age": "{age} {years_old}",

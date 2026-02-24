@@ -1205,9 +1205,7 @@
     "measurements": "치수",
     "media_info": {
         "audio_codec": "오디오 코덱",
-        "checksum": "체크섬",
         "downloaded_from": "다운로드 출처",
-        "hash": "해쉬",
         "interactive_speed": "인터랙티브 속도",
         "performer_card": {
             "age": "{age} {years_old}",

@@ -1090,9 +1090,7 @@
     "measurements": "スリーサイズ",
     "media_info": {
         "audio_codec": "音声コーデック",
-        "checksum": "チェックサム",
         "downloaded_from": "ダウンロード元",
-        "hash": "ハッシュ",
         "interactive_speed": "インタラクティブ速度",
         "performer_card": {
             "age": "{age}{years_old}",

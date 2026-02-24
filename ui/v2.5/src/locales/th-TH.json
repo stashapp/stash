@@ -1155,7 +1155,6 @@
     "markers": "มาร์คเกอร์",
     "marker_count": "จำนวนมาร์คเกอร์",
     "media_info": {
-        "checksum": "Checksum",
         "audio_codec": "โคเด็คเสียง",
         "phash": "PHash",
         "play_count": "จำนวนครั้งที่เล่น",
@@ -1165,7 +1164,6 @@
             "age_context": "อายุ {age} {years_old} ในเรื่องนี้"
         },
         "downloaded_from": "ดาวน์โหลดมาจาก",
-        "hash": "Hash",
         "play_duration": "ระยะเวลาที่เล่น",
         "stream": "สตรีม",
         "video_codec": "โคเด็ควิดีโอ",

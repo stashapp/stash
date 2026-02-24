@@ -1100,9 +1100,7 @@
     "measurements": "三圍",
     "media_info": {
         "audio_codec": "音效編碼",
-        "checksum": "校驗值",
         "downloaded_from": "下載於",
-        "hash": "雜湊值",
         "interactive_speed": "互動速度",
         "performer_card": {
             "age": "{age} {years_old}",

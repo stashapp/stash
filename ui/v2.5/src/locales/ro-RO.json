@@ -375,8 +375,6 @@
     "measurements": "Măsurători",
     "media_info": {
         "audio_codec": "Codec Audio",
-        "checksum": "Sumă de control",
-        "hash": "Hash",
         "interactive_speed": "Viteză Interactivă",
         "performer_card": {
             "age": "{age} {years_old}",

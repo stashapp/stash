@@ -1018,9 +1018,7 @@
     "measurements": "Mitat",
     "media_info": {
         "audio_codec": "Audiokodekki",
-        "checksum": "Tarkistussumma",
         "downloaded_from": "Ladattu kohteesta",
-        "hash": "Tiiviste",
         "interactive_speed": "Interaktiivinen nopeus",
         "performer_card": {
             "age": "{age} {years_old}",

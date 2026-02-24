@@ -1094,9 +1094,7 @@
     "measurements": "Размеры",
     "media_info": {
         "audio_codec": "Аудио кодек",
-        "checksum": "Контрольная сумма",
         "downloaded_from": "Скачан с",
-        "hash": "Хэш",
         "interactive_speed": "Интерактивная скорость",
         "performer_card": {
             "age": "{age} {years_old}",

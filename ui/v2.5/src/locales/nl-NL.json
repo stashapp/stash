@@ -979,9 +979,7 @@
     "measurements": "Afmetingen",
     "media_info": {
         "audio_codec": "Audio Codec",
-        "checksum": "Checksum",
         "downloaded_from": "Gedownload van",
-        "hash": "Hash",
         "interactive_speed": "Interactieve snelheid",
         "performer_card": {
             "age": "{age} {years_old}",

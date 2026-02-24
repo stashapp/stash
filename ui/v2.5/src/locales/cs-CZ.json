@@ -1348,7 +1348,6 @@
     "measurements": "Míry",
     "media_info": {
         "audio_codec": "Audio Kodek",
-        "checksum": "Kontrolní součet",
         "downloaded_from": "Staženo z",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1357,7 +1356,6 @@
         "play_duration": "Délka přehrávání",
         "stream": "Stream",
         "video_codec": "Video Kodek",
-        "hash": "Hash",
         "interactive_speed": "Interaktivní rychlost",
         "phash": "PHash",
         "play_count": "Počet přehrání",
