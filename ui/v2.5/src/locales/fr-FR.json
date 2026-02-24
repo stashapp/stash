@@ -154,7 +154,8 @@
         "create_new": "Créer un nouveau",
         "save_and_new": "Enregistrer et nouveau",
         "invert_selection": "Inverser la sélection",
-        "select_directory": "Sélectionner un répertoire"
+        "select_directory": "Sélectionner un répertoire",
+        "reveal_in_file_manager": "Afficher dans le gestionnaire de fichiers"
     },
     "actions_name": "Actions",
     "age": "Âge",
