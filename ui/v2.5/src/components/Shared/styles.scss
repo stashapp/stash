@@ -816,6 +816,36 @@ button.btn.favorite-button {
   font-weight: 700;
 }
 
+.custom-fields-input {
+  .custom-fields-field {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 16.667%;
+      max-width: 16.667%;
+    }
+  }
+
+  .custom-fields-value {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 75%;
+      max-width: 75%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 58.33%;
+      max-width: 58.33%;
+    }
+  }
+}
+
 .custom-fields-row {
   align-items: center;
   font-family: "Courier New", Courier, monospace;

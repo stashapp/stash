@@ -511,15 +511,15 @@ export const ImageEditPanel: React.FC<IProps> = ({
           </Col>
           <Col lg={5} xl={12}>
             {renderDetailsField()}
+
+            <CustomFieldsInput
+              values={formik.values.custom_fields}
+              onChange={(v) => formik.setFieldValue("custom_fields", v)}
+              error={customFieldsError}
+              setError={(e) => setCustomFieldsError(e)}
+            />
           </Col>
         </Row>
-
-        <CustomFieldsInput
-          values={formik.values.custom_fields}
-          onChange={(v) => formik.setFieldValue("custom_fields", v)}
-          error={customFieldsError}
-          setError={(e) => setCustomFieldsError(e)}
-        />
       </Form>
     </div>
   );
