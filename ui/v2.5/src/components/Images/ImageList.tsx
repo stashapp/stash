@@ -10,7 +10,11 @@ import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindImages, useFindImages } from "src/core/StashService";
+import {
+  queryFindImages,
+  useFindImages,
+  useFindImagesMetadata,
+} from "src/core/StashService";
 import { useFilteredItemList } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -328,8 +332,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
 };
 
 function renderMetadataByline(
-  result: GQL.FindImagesQueryResult,
-  metadataInfo?: GQL.FindImagesMetadataQueryResult
+  metadataInfo: GQL.FindImagesMetadataQueryResult | undefined
 ) {
   const megapixels = metadataInfo?.data?.findImages?.megapixels;
   const size = metadataInfo?.data?.findImages?.filesize;
@@ -526,20 +529,27 @@ export const FilteredImageList = PatchComponent(
       loading: sidebarStateLoading,
     } = useSidebarState(view);
 
-    const { filterState, queryResult, modalState, listSelect, showEditFilter } =
-      useFilteredItemList({
-        filterStateProps: {
-          filterMode: GQL.FilterMode.Images,
-          view,
-          useURL: alterQuery,
-        },
-        queryResultProps: {
-          useResult: useFindImages,
-          getCount: (r) => r.data?.findImages.count ?? 0,
-          getItems: (r) => r.data?.findImages.images ?? [],
-          filterHook,
-        },
-      });
+    const {
+      filterState,
+      queryResult,
+      metadataInfo,
+      modalState,
+      listSelect,
+      showEditFilter,
+    } = useFilteredItemList({
+      filterStateProps: {
+        filterMode: GQL.FilterMode.Images,
+        view,
+        useURL: alterQuery,
+      },
+      queryResultProps: {
+        useResult: useFindImages,
+        useMetadataInfo: useFindImagesMetadata,
+        getCount: (r) => r.data?.findImages.count ?? 0,
+        getItems: (r) => r.data?.findImages.images ?? [],
+        filterHook,
+      },
+    });
 
     const { filter, setFilter } = filterState;
 
@@ -549,8 +559,8 @@ export const FilteredImageList = PatchComponent(
     const metadataByline = useMemo(() => {
       if (cachedResult.loading) return null;
 
-      return renderMetadataByline(cachedResult) ?? null;
-    }, [cachedResult]);
+      return renderMetadataByline(metadataInfo) ?? null;
+    }, [cachedResult.loading, metadataInfo]);
 
     const {
       selectedIds,

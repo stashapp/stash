@@ -509,23 +509,27 @@ export function useCachedQueryResult<T extends QueryResult>(
 
 export interface IQueryResultHook<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 > {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
 }
 
 export function useQueryResult<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 >(
-  props: IQueryResultHook<T, E> & {
+  props: IQueryResultHook<T, E, M> & {
     filter: ListFilterModel;
   }
 ) {
-  const { filter, filterHook, useResult, getItems, getCount } = props;
+  const { filter, filterHook, useResult, useMetadataInfo, getItems, getCount } =
+    props;
 
   const effectiveFilter = useMemo(() => {
     if (filterHook) {
@@ -534,7 +538,14 @@ export function useQueryResult<
     return filter;
   }, [filter, filterHook]);
 
+  // metadata filter is the effective filter with the sort, page size and page number removed
+  const metadataFilter = useMemo(
+    () => effectiveFilter.metadataInfo(),
+    [effectiveFilter]
+  );
+
   const result = useResult(effectiveFilter);
+  const metadataInfo = useMetadataInfo?.(metadataFilter);
 
   // use cached query result for pagination and metadata rendering
   const cachedResult = useCachedQueryResult(effectiveFilter, result);
@@ -549,6 +560,7 @@ export function useQueryResult<
 
   return {
     effectiveFilter,
+    metadataInfo,
     result,
     cachedResult,
     items,

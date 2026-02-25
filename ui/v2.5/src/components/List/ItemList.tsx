@@ -46,16 +46,21 @@ import { useConfigurationContext } from "src/hooks/Config";
 import { useZoomKeybinds } from "./ZoomSlider";
 import { DisplayMode } from "src/models/list-filter/types";
 
-interface IFilteredItemList<T extends QueryResult, E extends IHasID = IHasID> {
+interface IFilteredItemList<
+  T extends QueryResult,
+  E extends IHasID = IHasID,
+  M = unknown
+> {
   filterStateProps: IFilterStateHook;
-  queryResultProps: IQueryResultHook<T, E>;
+  queryResultProps: IQueryResultHook<T, E, M>;
 }
 
 // Provides the common state and behaviour for filtered item list components
 export function useFilteredItemList<
   T extends QueryResult,
-  E extends IHasID = IHasID
->(props: IFilteredItemList<T, E>) {
+  E extends IHasID = IHasID,
+  M = unknown
+>(props: IFilteredItemList<T, E, M>) {
   const { configuration: config } = useConfigurationContext();
 
   // States
@@ -70,7 +75,7 @@ export function useFilteredItemList<
     filter,
     ...props.queryResultProps,
   });
-  const { result, items, totalCount, pages } = queryResult;
+  const { result, items, totalCount, pages, metadataInfo } = queryResult;
 
   const listSelect = useListSelect(items);
   const { onSelectAll, onSelectNone, onInvertSelection } = listSelect;
@@ -107,6 +112,7 @@ export function useFilteredItemList<
   return {
     filterState,
     queryResult,
+    metadataInfo,
     listSelect,
     modalState,
     showEditFilter,
