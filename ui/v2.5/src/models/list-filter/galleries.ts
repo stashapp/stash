@@ -44,6 +44,9 @@ const displayModeOptions = [
   DisplayMode.Wall,
 ];
 
+export const PerformerAgeCriterionOption =
+  createMandatoryNumberCriterionOption("performer_age");
+
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
@@ -61,7 +64,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
-  createMandatoryNumberCriterionOption("performer_age"),
+  PerformerAgeCriterionOption,
   PerformerFavoriteCriterionOption,
   createMandatoryNumberCriterionOption("image_count"),
   // StudioTagsCriterionOption,
