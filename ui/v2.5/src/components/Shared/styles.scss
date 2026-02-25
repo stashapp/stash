@@ -233,6 +233,19 @@ button.collapse-button {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+
+  .popover-card {
+    padding: 0.5rem;
+  }
+}
+
+.warning-hover-popover {
+  display: inline-flex;
+  margin: 0 0.25rem;
+
+  .fa-icon {
+    color: $warning;
+  }
 }
 
 .ErrorMessage-container {

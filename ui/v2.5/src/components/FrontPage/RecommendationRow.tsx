@@ -3,7 +3,7 @@ import { PatchComponent } from "src/patch";
 
 interface IProps {
   className?: string;
-  header: string;
+  header: React.ReactNode;
   link: JSX.Element;
 }
 

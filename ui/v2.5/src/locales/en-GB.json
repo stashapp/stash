@@ -1657,6 +1657,7 @@
   "twitter": "Twitter",
   "type": "Type",
   "unknown_date": "Unknown date",
+  "unsupported_criteria": "Unsupported criteria: {criteria}",
   "updated_at": "Updated At",
   "url": "URL",
   "urls": "URLs",
