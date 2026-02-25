@@ -217,119 +217,122 @@ interface IImageListImages {
   chapters?: GQL.GalleryChapterDataFragment[];
 }
 
-const ImageListImages: React.FC<IImageListImages> = ({
-  images,
-  filter,
-  selectedIds,
-  onChangePage,
-  pageCount,
-  onSelectChange,
-  slideshowRunning,
-  setSlideshowRunning,
-  chapters = [],
-}) => {
-  const handleLightBoxPage = useCallback(
-    (props: { direction?: number; page?: number }) => {
-      const { direction, page: newPage } = props;
-
-      if (direction !== undefined) {
-        if (direction < 0) {
-          if (filter.currentPage === 1) {
-            onChangePage(pageCount);
-          } else {
-            onChangePage(filter.currentPage + direction);
-          }
-        } else if (direction > 0) {
-          if (filter.currentPage === pageCount) {
-            // return to the first page
-            onChangePage(1);
-          } else {
-            onChangePage(filter.currentPage + direction);
-          }
-        }
-      } else if (newPage !== undefined) {
-        onChangePage(newPage);
-      }
-    },
-    [onChangePage, filter.currentPage, pageCount]
-  );
-
-  const handleClose = useCallback(() => {
-    setSlideshowRunning(false);
-  }, [setSlideshowRunning]);
-
-  const lightboxState = useMemo(() => {
-    return {
-      images,
-      showNavigation: false,
-      pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-      page: filter.currentPage,
-      pages: pageCount,
-      pageSize: filter.itemsPerPage,
-      slideshowEnabled: slideshowRunning,
-      onClose: handleClose,
-    };
-  }, [
+const ImageList: React.FC<IImageListImages> = PatchComponent(
+  "ImageList",
+  ({
     images,
+    filter,
+    selectedIds,
+    onChangePage,
     pageCount,
-    filter.currentPage,
-    filter.itemsPerPage,
+    onSelectChange,
     slideshowRunning,
-    handleClose,
-    handleLightBoxPage,
-  ]);
+    setSlideshowRunning,
+    chapters = [],
+  }) => {
+    const handleLightBoxPage = useCallback(
+      (props: { direction?: number; page?: number }) => {
+        const { direction, page: newPage } = props;
 
-  const showLightbox = useLightbox(
-    lightboxState,
-    filter.sortBy === "path" &&
-      filter.sortDirection === GQL.SortDirectionEnum.Asc
-      ? chapters
-      : []
-  );
-
-  const handleImageOpen = useCallback(
-    (index) => {
-      setSlideshowRunning(true);
-      showLightbox({ initialIndex: index, slideshowEnabled: true });
-    },
-    [showLightbox, setSlideshowRunning]
-  );
-
-  function onPreview(index: number, ev: MouseEvent) {
-    handleImageOpen(index);
-    ev.preventDefault();
-  }
-
-  if (filter.displayMode === DisplayMode.Grid) {
-    return (
-      <ImageCardGrid
-        images={images}
-        selectedIds={selectedIds}
-        zoomIndex={filter.zoomIndex}
-        onSelectChange={onSelectChange}
-        onPreview={onPreview}
-      />
+        if (direction !== undefined) {
+          if (direction < 0) {
+            if (filter.currentPage === 1) {
+              onChangePage(pageCount);
+            } else {
+              onChangePage(filter.currentPage + direction);
+            }
+          } else if (direction > 0) {
+            if (filter.currentPage === pageCount) {
+              // return to the first page
+              onChangePage(1);
+            } else {
+              onChangePage(filter.currentPage + direction);
+            }
+          }
+        } else if (newPage !== undefined) {
+          onChangePage(newPage);
+        }
+      },
+      [onChangePage, filter.currentPage, pageCount]
     );
-  }
-  if (filter.displayMode === DisplayMode.Wall) {
-    return (
-      <ImageWall
-        images={images}
-        onChangePage={onChangePage}
-        currentPage={filter.currentPage}
-        pageCount={pageCount}
-        handleImageOpen={handleImageOpen}
-        zoomIndex={filter.zoomIndex}
-        selectedIds={selectedIds}
-        onSelectChange={onSelectChange}
-        selecting={!!selectedIds && selectedIds.size > 0}
-      />
-    );
-  }
 
-  // should not happen
-  return <></>;
-};
+    const handleClose = useCallback(() => {
+      setSlideshowRunning(false);
+    }, [setSlideshowRunning]);
+
+    const lightboxState = useMemo(() => {
+      return {
+        images,
+        showNavigation: false,
+        pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
+        page: filter.currentPage,
+        pages: pageCount,
+        pageSize: filter.itemsPerPage,
+        slideshowEnabled: slideshowRunning,
+        onClose: handleClose,
+      };
+    }, [
+      images,
+      pageCount,
+      filter.currentPage,
+      filter.itemsPerPage,
+      slideshowRunning,
+      handleClose,
+      handleLightBoxPage,
+    ]);
+
+    const showLightbox = useLightbox(
+      lightboxState,
+      filter.sortBy === "path" &&
+        filter.sortDirection === GQL.SortDirectionEnum.Asc
+        ? chapters
+        : []
+    );
+
+    const handleImageOpen = useCallback(
+      (index) => {
+        setSlideshowRunning(true);
+        showLightbox({ initialIndex: index, slideshowEnabled: true });
+      },
+      [showLightbox, setSlideshowRunning]
+    );
+
+    function onPreview(index: number, ev: MouseEvent) {
+      handleImageOpen(index);
+      ev.preventDefault();
+    }
+
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <ImageCardGrid
+          images={images}
+          selectedIds={selectedIds}
+          zoomIndex={filter.zoomIndex}
+          onSelectChange={onSelectChange}
+          onPreview={onPreview}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.Wall) {
+      return (
+        <ImageWall
+          images={images}
+          onChangePage={onChangePage}
+          currentPage={filter.currentPage}
+          pageCount={pageCount}
+          handleImageOpen={handleImageOpen}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+          selecting={!!selectedIds && selectedIds.size > 0}
+        />
+      );
+    }
+
+    // should not happen
+    return <></>;
+  }
+);
 
 function renderMetadataByline(
   metadataInfo: GQL.FindImagesMetadataQueryResult | undefined
@@ -753,7 +756,7 @@ export const FilteredImageList = PatchComponent(
         </div>
 
         <LoadedContent loading={result.loading} error={result.error}>
-          <ImageListImages
+          <ImageList
             filter={filter}
             images={items}
             onChangePage={(page) => setFilter(filter.changePage(page))}
