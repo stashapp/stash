@@ -795,6 +795,11 @@ button.btn.favorite-button {
   .detail-item {
     max-width: 100%;
   }
+
+  .detail-item-title,
+  .detail-item-value {
+    font-family: "Courier New", Courier, monospace;
+  }
 }
 
 .custom-fields .detail-item .detail-item-title {

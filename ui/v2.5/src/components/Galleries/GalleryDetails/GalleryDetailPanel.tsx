@@ -109,7 +109,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           {renderDetails()}
           {renderTags()}
           {renderPerformers()}
-          <CustomFields values={gallery.custom_fields} />
+          <CustomFields values={gallery.custom_fields} fullWidth />
         </div>
       </div>
     </>

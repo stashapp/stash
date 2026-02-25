@@ -18,6 +18,7 @@ export type CustomFieldMap = {
 
 interface ICustomFields {
   values: CustomFieldMap;
+  fullWidth?: boolean;
 }
 
 function convertValue(value: unknown): string {
@@ -57,7 +58,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
 
 export const CustomFields: React.FC<ICustomFields> = PatchComponent(
   "CustomFields",
-  ({ values }) => {
+  ({ values, fullWidth }) => {
     const intl = useIntl();
     if (Object.keys(values).length === 0) {
       return null;
@@ -65,7 +66,7 @@ export const CustomFields: React.FC<ICustomFields> = PatchComponent(
 
     return (
       // according to linter rule CSS classes shouldn't use underscores
-      <div className="custom-fields">
+      <div className={cx("custom-fields", { "full-width": fullWidth })}>
         <CollapseButton
           text={intl.formatMessage({ id: "custom_fields.title" })}
         >

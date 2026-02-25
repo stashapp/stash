@@ -104,7 +104,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           {renderDetails()}
           {renderTags()}
           {renderPerformers()}
-          <CustomFields values={props.scene.custom_fields} />
+          <CustomFields values={props.scene.custom_fields} fullWidth />
         </div>
       </div>
     </>

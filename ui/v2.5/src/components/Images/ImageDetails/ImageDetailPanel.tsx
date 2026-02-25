@@ -133,7 +133,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = PatchComponent(
             {renderDetails()}
             {renderTags()}
             {renderPerformers()}
-            <CustomFields values={props.image.custom_fields} />
+            <CustomFields values={props.image.custom_fields} fullWidth />
           </div>
         </div>
       </>
