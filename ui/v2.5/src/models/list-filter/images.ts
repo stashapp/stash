@@ -16,7 +16,6 @@ import { OrientationCriterionOption } from "./criteria/orientation";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
-  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
@@ -43,6 +42,10 @@ const sortByOptions = [
     },
   ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
+
+export const PerformerAgeCriterionOption =
+  createMandatoryNumberCriterionOption("performer_age");
+
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
@@ -65,7 +68,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
-  createMandatoryNumberCriterionOption("performer_age"),
+  PerformerAgeCriterionOption,
   PerformerFavoriteCriterionOption,
   // StudioTagsCriterionOption,
   StudiosCriterionOption,
