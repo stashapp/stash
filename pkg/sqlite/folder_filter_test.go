@@ -36,7 +36,7 @@ func TestFolderQuery(t *testing.T) {
 		{
 			name: "basename",
 			filter: &models.FolderFilterType{
-				Path: &models.StringCriterionInput{
+				Basename: &models.StringCriterionInput{
 					Value:    getFolderBasename(folderIdxWithParentFolder, nil),
 					Modifier: models.CriterionModifierIncludes,
 				},
