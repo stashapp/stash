@@ -1,14 +1,14 @@
 {
     "actions": {
         "add": "Lisa",
-        "add_directory": "Lisa Kaust",
+        "add_directory": "Lisa kaust",
         "add_entity": "Lisa {entityType}",
         "add_to_entity": "Lisa {entityType}-sse",
         "allow": "Luba",
         "allow_temporarily": "Luba ajutiselt",
         "anonymise": "Anonüümseks Muutmine",
         "apply": "Rakenda",
-        "auto_tag": "Märgi Automaatselt",
+        "auto_tag": "Märgi automaatselt",
         "backup": "Varunda",
         "browse_for_image": "Otsi pilti…",
         "cancel": "Tühista",
@@ -43,8 +43,8 @@
         "finish": "Lõpeta",
         "from_file": "Failist…",
         "from_url": "URL-ilt…",
-        "full_export": "Täielik Eksportimine",
-        "full_import": "Täielik Importimine",
+        "full_export": "Täielik eksportimine",
+        "full_import": "Täielik importimine",
         "generate": "Genereeri",
         "generate_thumb_default": "Genereri vaikepisipilt",
         "generate_thumb_from_current": "Genereeri pisipilt praegusest",
@@ -58,8 +58,8 @@
         "logout": "Logi välja",
         "make_primary": "Määra Peamiseks",
         "merge": "Liida",
-        "migrate_blobs": "Migreeri Blobid",
-        "migrate_scene_screenshots": "Migreeri Stseenide Ekraanipildid",
+        "migrate_blobs": "Migreeri blobid",
+        "migrate_scene_screenshots": "Migreeri stseenide ekraanipildid",
         "next_action": "Järgmine",
         "not_running": "ei jookse",
         "open_in_external_player": "Ava välises mängijas",
@@ -92,9 +92,9 @@
         "select_entity": "Vali {entityType}",
         "select_folders": "Vali kaustad",
         "select_none": "Vali Mitte Midagi",
-        "selective_auto_tag": "Valikuline Automaatne Märkija",
-        "selective_clean": "Valikuline Puhastus",
-        "selective_scan": "Valikuline Skaneerimine",
+        "selective_auto_tag": "Valikuline automaatne märkija",
+        "selective_clean": "Valikuline puhastus",
+        "selective_scan": "Valikuline skaneerimine",
         "set_as_default": "Määra vaikeväärtuseks",
         "set_back_image": "Tagapilt…",
         "set_front_image": "Esipilt…",
@@ -124,7 +124,7 @@
         "assign_stashid_to_parent_studio": "Määra eksisteerivale vanemstuudiole Stash ID ja uuenda metaandmeid",
         "create_parent_studio": "Loo vanemstuudio",
         "encoding_image": "Pildi kodeerimine…",
-        "optimise_database": "Optimiseeri Andmebaasi",
+        "optimise_database": "Optimiseeri andmebaasi",
         "clean_generated": "Puhasta genereeritud faile",
         "choose_date": "Vali kuupäev",
         "copy_to_clipboard": "Kopeeri lõikelauale",
@@ -153,7 +153,9 @@
         "add_stash_id": "Lisa Stash ID",
         "create_new": "Loo uus",
         "save_and_new": "Salvesta & Uus",
-        "invert_selection": "Inverteeri Valik"
+        "invert_selection": "Inverteeri Valik",
+        "reveal_in_file_manager": "Kuva Failihalduris",
+        "select_directory": "Vali kaust"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -266,7 +268,7 @@
             "allow_temp_ip": "Luba {tempIP}",
             "allowed_ip_addresses": "Lubatud IP aadressid",
             "allowed_ip_temporarily": "Lubatud IP ajutiselt",
-            "default_ip_whitelist": "Vaikimisi IP Valge Nimekiri",
+            "default_ip_whitelist": "Vaikimisi IP valge nimekiri",
             "default_ip_whitelist_desc": "Vaikimisi IP aadressid lubavad DLNA ligipääsu. Kasuta {wildcard}, et lubada kõiki IP aadresse.",
             "disabled_dlna_temporarily": "DLNA ajutiselt keelatud",
             "disallowed_ip": "Keelatud IP",
@@ -275,33 +277,33 @@
             "network_interfaces": "Kasutajaliidesed",
             "network_interfaces_desc": "Kasutajaliidesed DLNA serveri paljastamiseks. Tühi nimekiri lubab jooksutamist kõigil kasutajaliidestel. Vajalik DLNA taaskäivitus peale muutmist.",
             "recent_ip_addresses": "Hiljutised IP aadressid",
-            "server_display_name": "Serveri Nimi",
+            "server_display_name": "Serveri kuvanimi",
             "server_display_name_desc": "DLNA server nimi. Vaikimisi {server_name}, kui midagi pole sisestatud.",
             "successfully_cancelled_temporary_behaviour": "Edukalt tühistatud ajutine käitumine",
             "until_restart": "restardini",
-            "video_sort_order": "Videote Sorteerimise Vaikeväärtus",
+            "video_sort_order": "Videote sorteerimise vaikeväärtus",
             "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida.",
             "server_port": "Serveri port",
             "server_port_desc": "Port DLNA serveri jaoks. Vajab peale muutmist DLNA taaskäivitust."
         },
         "general": {
             "auth": {
-                "api_key": "API Võti",
+                "api_key": "API võti",
                 "api_key_desc": "API võti välistele süsteemidele. Nõutud ainult siis, kui kasutajanimi/parool on sätitud. Kasutajanimi peab olema salvestatud enne API võtme genereerimist.",
                 "authentication": "Autentimine",
                 "clear_api_key": "Puhasta API võti",
                 "credentials": {
-                    "description": "Mandaat Stashile ligipääsu piiramiseks.",
+                    "description": "Mandaat stashile ligipääsu piiramiseks.",
                     "heading": "Mandaat"
                 },
                 "generate_api_key": "Genereeri API võti",
                 "log_file": "Logi fail",
                 "log_file_desc": "Failitee failini, kuhu logid sisestada. Jäta tühjaks, kui soovid logide salvestamise välja lülitada. Vajab taaskäivitust.",
-                "log_http": "Logi http ligipääs",
-                "log_http_desc": "Avaldab http ligipääsu logid terminali. Vajab taaskäivitust.",
+                "log_http": "Logi HTTP ligipääs",
+                "log_http_desc": "Avaldab HTTP ligipääsu logid terminali. Vajab taaskäivitust.",
                 "log_to_terminal": "Logi terminali",
                 "log_to_terminal_desc": "Avaldab logid lisaks failile ka terminalis. Alati sisselülitatud, kui logimine faili on keelatud. Vajab taaskäivitust.",
-                "maximum_session_age": "Maksimaalne Sessiooni Vanus",
+                "maximum_session_age": "Maksimaalne sessiooni vanus",
                 "maximum_session_age_desc": "Maksimaalne paigalseisuaeg enne, kui sessioon aegub, sekundites. Vajab taaskäivitust.",
                 "password": "Parool",
                 "password_desc": "Parool Stashi pääsemiseks. Jäta tühjaks, kui soovid sisselogimise keelata",
@@ -312,26 +314,26 @@
                 "log_file_max_size_desc": "Maksimaalne logifaili suurus megabaitides enne tihendamist. 0MB on väljalülitatud. Nõuab taaskäivitust."
             },
             "backup_directory_path": {
-                "description": "Failitee SQLite andmebaasi varundusfailide jaoks",
-                "heading": "Varunduse Failitee"
+                "description": "Failitee SQLite andmebaasi varundusfailide jaoks.",
+                "heading": "Varunduse failitee"
             },
             "blobs_path": {
                 "description": "Kus kohas hoida binaarseid andmeid failisüsteemis. Kehtib ainult kui kasutad Failisüsteem blob salvestustüüpi. HOIATUS: selle muutmine nõuab olemasolevate andmete manuaalset liigutamist.",
                 "heading": "Binaarseete andmete failisüsteemi tee"
             },
             "blobs_storage": {
-                "description": "Kus hoida binaarseid andmeid nagu stseeni kaanepildid, näitlejate, stuudiote ja siltide pilte. Peale selle väärtuse muutmist tuleb olemasolevad andmed migreerida kasutades Migreeri Blobe ülesannet. Vaata Ülesannete lehele migreerimiseks.",
+                "description": "Kus hoida binaarseid andmeid nagu stseeni kaanepildid, näitlejate, stuudiote ja siltide pilte. Peale selle väärtuse muutmist tuleb olemasolevad andmed migreerida kasutades Migreeri blobe ülesannet. Vaata Ülesannete lehele migreerimiseks.",
                 "heading": "Binaarsete andmete hoiustamistüüp"
             },
             "cache_location": "Failitee vahemäluni. Nõutud kui striimimiseks kasutatakse HLSi (näiteks Apple seadetel) või DASHi.",
-            "cache_path_head": "Vahemälu Failitee",
+            "cache_path_head": "Vahemälu failitee",
             "calculate_md5_and_ohash_desc": "Kalkuleeri MD5 checksum lisaks oshashile. Lubamine põhjustab aeglasemat esmast skaneerimist. Faili nimetuse hash peab olema sätitud oshashiks, et keelata MD5 kalkuleerimine.",
             "calculate_md5_and_ohash_label": "Kalkuleeri MD5 videote jaoks",
             "check_for_insecure_certificates": "Otsi ebaturvalisi sertifikaate",
-            "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi ssl sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
+            "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi SSL sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
             "chrome_cdp_path": "Chrome CDP tee",
             "chrome_cdp_path_desc": "Failitee Chrome käivitajani, või kaugaadress (algab http:// või https:// -iga, näiteks http://localhost:9222/json/version) Chrome'i eksemplarini.",
-            "create_galleries_from_folders_desc": "Kui lubatud, loob vaikeväärtusena galeriisid pilte sisaldavatest kaustadest. Loo kasutas fail nimega .forcegallery või .nogallery, et seda sundida või sellest hoiduda.",
+            "create_galleries_from_folders_desc": "Kui lubatud, loob vaikeväärtusena galeriisid pilte sisaldavatest kaustadest. Loo kasutas fail nimega .forcegallery või .nogallery, et seda seadet üle kirjutada.",
             "create_galleries_from_folders_label": "Loo galeriisid kaustadest, mis sisaldavad pilte",
             "database": "Andmebaas",
             "db_path_head": "Andmebaasi Failitee",
@@ -428,7 +430,7 @@
             },
             "delete_trash_path": {
                 "description": "Tee, kuhu liigutatakse kustutatud failide lõpliku kustutamise asemel. Jäta tühjaks, et alati faile lõplikult kustutada.",
-                "heading": "Prügi Tee"
+                "heading": "Prügi failitee"
             }
         },
         "library": {
@@ -837,7 +839,10 @@
                 "heading": "Kohandatud Tiitel"
             }
         },
-        "advanced_mode": "Täpsem Režiim"
+        "advanced_mode": "Täpsem režiim",
+        "changelog": {
+            "header": "Muudatuste logi"
+        }
     },
     "configuration": "Konfiguratsioon",
     "countables": {
@@ -1578,5 +1583,7 @@
         "no_results": "Vasteid ei leitud.",
         "placeholder_name_or_id": "{entityType} nimi või StashID...",
         "select_stashbox": "Vali StashBox..."
-    }
+    },
+    "career_end": "Karjääri Lõpp",
+    "career_start": "Karjääri Algus"
 }
