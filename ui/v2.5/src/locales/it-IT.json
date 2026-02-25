@@ -1017,14 +1017,6 @@
         "any_names_entered_will_be_queried": "Qualsiasi nome inserito sarà richiesto dall'istanza remota Stash-Box e aggiunto se trovato. Solo corrispondenze esatte saranno considerate corrispondenze.",
         "batch_add_performers": "Aggiungi Attori in Blocco",
         "batch_update_performers": "Aggiorna Attori in Blocco",
-        "config": {
-            "active_stash-box_instance": "Istanza stash-box attiva:",
-            "edit_excluded_fields": "Modifica Campi Esclusi",
-            "excluded_fields": "Campi esclusi:",
-            "no_fields_are_excluded": "Nessun campo escluso",
-            "no_instances_found": "Nessuna istanza trovata",
-            "these_fields_will_not_be_changed_when_updating_performers": "Questi campi non saranno modificati quando si aggiorneranno gli attori."
-        },
         "current_page": "Pagina corrente",
         "failed_to_save_performer": "Salvataggio attore/attrice \"{performer}\" fallito",
         "name_already_exists": "Nome già esistente",

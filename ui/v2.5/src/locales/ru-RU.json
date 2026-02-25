@@ -1138,14 +1138,6 @@
         "any_names_entered_will_be_queried": "Любые введенные имена будут проверены при помощи Stash-Box и позже добавлены, если они будут найдены точные совпадения.",
         "batch_add_performers": "Пакетное добавление участников",
         "batch_update_performers": "Пакетное обновление участников",
-        "config": {
-            "active_stash-box_instance": "Активный stash-box экземпляр:",
-            "edit_excluded_fields": "Редактировать исключенные поля",
-            "excluded_fields": "Исключенные поля:",
-            "no_fields_are_excluded": "Нет исключенных полей",
-            "no_instances_found": "Экземпляры не обнаружены",
-            "these_fields_will_not_be_changed_when_updating_performers": "Эти поля не будут изменены при обновлении актеров."
-        },
         "current_page": "Текущая страница",
         "failed_to_save_performer": "Ошибка сохранения актера \"{performer}\"",
         "name_already_exists": "Такое имя уже существует",
@@ -1370,13 +1362,7 @@
         "batch_add_studios": "Пакетное добавление студий",
         "add_new_studios": "Добавить новую студию",
         "config": {
-            "no_fields_are_excluded": "Нет исключенных полей",
             "create_parent_label": "Создать родительские студии",
-            "no_instances_found": "Инсталляции не найдены",
-            "these_fields_will_not_be_changed_when_updating_studios": "Эти поля не изменятся при обновлении студий.",
-            "edit_excluded_fields": "Изменить исключенные поля",
-            "excluded_fields": "Исключенные поля:",
-            "active_stash-box_instance": "Активная инсталляция stash-box:",
             "create_parent_desc": "Создать отсутствующие родительские студии или связать и обновить данные\\логотипы текущих студий с точным совпадением имени"
         },
         "create_or_tag_parent_studios": "Создать отсутствующие или связать существующие родительские студии",

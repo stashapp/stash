@@ -512,9 +512,6 @@
     "performer_favorite": "Szereplő Kedvencek Közt",
     "performer_image": "Szereplő Képe",
     "performer_tagger": {
-        "config": {
-            "excluded_fields": "Kihagyott mezők:"
-        },
         "current_page": "Jelenlegi oldal",
         "network_error": "Hálózati Hiba",
         "tag_status": "Címke Státusza",

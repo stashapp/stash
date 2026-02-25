@@ -1226,14 +1226,6 @@
         "any_names_entered_will_be_queried": "Alla namn kommer skickas till Stash-Box-instansen och läggas till om de hittas. Endast exakta matchningar kommer övervägas.",
         "batch_add_performers": "Lägg till flera stjärnor",
         "batch_update_performers": "Uppdatera flera stjärnor",
-        "config": {
-            "active_stash-box_instance": "Aktiv Stash-Box-instans:",
-            "edit_excluded_fields": "Ändra exkluderade fält",
-            "excluded_fields": "Exkluderade fält:",
-            "no_fields_are_excluded": "Inga fält är exkluderade",
-            "no_instances_found": "Inga instanser hittades",
-            "these_fields_will_not_be_changed_when_updating_performers": "Dessa fält kommer inte ändras när stjärnor uppdateras."
-        },
         "current_page": "Nuvarande sida",
         "failed_to_save_performer": "Misslyckades med att spara \"{performer}\"",
         "name_already_exists": "Namnet finns redan",
@@ -1421,14 +1413,8 @@
         "batch_add_studios": "Lägg Till Flera Studior",
         "batch_update_studios": "Uppdatera Flera Studior",
         "config": {
-            "active_stash-box_instance": "Aktiv Stash-Box instans:",
             "create_parent_desc": "Skapa saknade överordnad studio, eller tagga och uppdatera data/bild för existerande överordnad studio med exakt namnmatchning",
-            "create_parent_label": "Skapa överordnande studior",
-            "edit_excluded_fields": "Ändra Exkluderade Fält",
-            "excluded_fields": "Exkluderade Fält:",
-            "no_fields_are_excluded": "Inga fält är exkluderade",
-            "no_instances_found": "Inga hittade instanser",
-            "these_fields_will_not_be_changed_when_updating_studios": "Dessa fält kommer inte ändras när studior uppdateras."
+            "create_parent_label": "Skapa överordnande studior"
         },
         "create_or_tag_parent_studios": "Skapa saknad eller tagga existerande överordnade studior",
         "current_page": "Nuvarande sida",

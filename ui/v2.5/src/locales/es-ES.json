@@ -1210,14 +1210,6 @@
         "any_names_entered_will_be_queried": "Cualquier nombre introducido será consultado desde una instancia Stash-Box remota y añadido si es encontrado. Solo se aceptan coincidencias exactas.",
         "batch_add_performers": "Adición automatizada de actrices/actores",
         "batch_update_performers": "Actualización automatizada de actrices/actores",
-        "config": {
-            "active_stash-box_instance": "Instancia Stash-Box activa:",
-            "edit_excluded_fields": "Editar campos excluidos",
-            "excluded_fields": "Campos excluidos:",
-            "no_fields_are_excluded": "No hay campos excluidos",
-            "no_instances_found": "No se han encontrado instancias",
-            "these_fields_will_not_be_changed_when_updating_performers": "Estos campos permanecerán inalterados al actualizar actrices/actores."
-        },
         "current_page": "Página actual",
         "failed_to_save_performer": "Error al guardar \"{performer}\"",
         "name_already_exists": "El nombre ya existe",
@@ -1507,14 +1499,8 @@
         "any_names_entered_will_be_queried": "Cualquier nombre ingresado será consultado desde la instancia remota de Stash-Box y se agregará si se encuentra. Solo se considerarán coincidencias exactas como una coincidencia.",
         "batch_add_studios": "Agregar estudios en lote",
         "config": {
-            "active_stash-box_instance": "Activar instancia stash-box:",
             "create_parent_desc": "Crear estudios padres faltantes, o etiquetar y actualizar datos/imagen para estudios padres existentes con coincidencias exactas de nombre",
-            "create_parent_label": "Crear estudios principales",
-            "edit_excluded_fields": "Editar campos excluidos",
-            "no_fields_are_excluded": "Ningún campo ha sido excluido",
-            "no_instances_found": "No se han encontrado instancias",
-            "excluded_fields": "Campos excluidos:",
-            "these_fields_will_not_be_changed_when_updating_studios": "Estos campos no serán cambiados cuando se actualicen estudios."
+            "create_parent_label": "Crear estudios principales"
         },
         "number_of_studios_will_be_processed": "{studio_count} estudios serán procesados",
         "refreshing_will_update_the_data": "Recargar actualizará los datos de cualquier estudio etiquetado desde la instancia de stash-box.",

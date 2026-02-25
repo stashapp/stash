@@ -1119,14 +1119,6 @@
         "any_names_entered_will_be_queried": "Alle indtastede navne vil blive forespurgt fra den eksterne Stash-Box-instans og tilføjet, hvis de findes. Kun eksakte matches vil blive betragtet som et match.",
         "batch_add_performers": "Batch Tilføj Kunstnere",
         "batch_update_performers": "Batch Opdater Kunstnere",
-        "config": {
-            "active_stash-box_instance": "Aktiv stash-box instans:",
-            "edit_excluded_fields": "Rediger ekskluderede felter",
-            "excluded_fields": "Udelukkede felter:",
-            "no_fields_are_excluded": "Ingen felter er udelukket",
-            "no_instances_found": "Ingen forekomster fundet",
-            "these_fields_will_not_be_changed_when_updating_performers": "Disse felter ændres ikke ved opdatering af kunstnere."
-        },
         "current_page": "Nuværende side",
         "failed_to_save_performer": "Kunne ikke gemme kunstneren \"{performer}\"",
         "name_already_exists": "Navnet findes allerede",

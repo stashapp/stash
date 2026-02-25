@@ -1063,13 +1063,7 @@
         "any_names_entered_will_be_queried": "Будь-які введені імена будуть запитані у віддаленому екземплярі Stash-Box і додані, якщо знайдені. Враховуються лише точні збіги.",
         "config": {
             "create_parent_desc": "Створити відсутні батьківські студії або тегувати та оновити дані/зображення для існуючих при повному збігу імен",
-            "these_fields_will_not_be_changed_when_updating_studios": "Ці поля не будуть змінені при оновленні студій.",
-            "no_instances_found": "Екземплярів не знайдено",
-            "no_fields_are_excluded": "Жодних полів не виключено",
-            "excluded_fields": "Виключені поля:",
-            "edit_excluded_fields": "Редагувати виключені поля",
-            "create_parent_label": "Створити батьківські студії",
-            "active_stash-box_instance": "Активний екземпляр Stash-Box:"
+            "create_parent_label": "Створити батьківські студії"
         },
         "updating_untagged_studios_description": "Оновлення спробує знайти відповідність для студій без StashID та оновити їх метадані.",
         "refreshing_will_update_the_data": "Оновлення оновить дані будь-яких тегованих студій з екземпляра Stash-Box.",
@@ -1111,14 +1105,6 @@
         "status_tagging_job_queued": "Статус: Завдання тегування в черзі",
         "number_of_performers_will_be_processed": "Буде оброблено {performer_count} виконавців",
         "any_names_entered_will_be_queried": "Будь-які введені імена будуть запитані у віддаленому екземплярі Stash-Box і додані, якщо знайдені. Враховуються лише точні збіги.",
-        "config": {
-            "these_fields_will_not_be_changed_when_updating_performers": "Ці поля не будуть змінені при оновленні виконавців.",
-            "active_stash-box_instance": "Активний екземпляр Stash-Box:",
-            "edit_excluded_fields": "Редагувати виключені поля",
-            "excluded_fields": "Виключені поля:",
-            "no_instances_found": "Екземплярів не знайдено",
-            "no_fields_are_excluded": "Жодних полів не виключено"
-        },
         "failed_to_save_performer": "Не вдалося зберегти виконавця \"{performer}\"",
         "refreshing_will_update_the_data": "Оновлення оновить дані будь-яких тегованих виконавців з екземпляра Stash-Box.",
         "query_all_performers_in_the_database": "Усі виконавці в базі даних",

@@ -1059,13 +1059,6 @@
         "add_new_performers": "Lisää uusia esiintyjiä",
         "batch_add_performers": "Lisää joukko esiintyjiä",
         "batch_update_performers": "Päivitä joukko esiintyjiä",
-        "config": {
-            "active_stash-box_instance": "Aktiivinen stash-box instanssi:",
-            "edit_excluded_fields": "Muokkaa poisjätettyjä kenttiä",
-            "excluded_fields": "Poisjätetyt kentät:",
-            "no_fields_are_excluded": "Ei poisjätettyjä kenttiä",
-            "these_fields_will_not_be_changed_when_updating_performers": "Näitä kenttiä ei muokata kun päivitetään esiintyjiä."
-        },
         "current_page": "Nykyinen sivu",
         "failed_to_save_performer": "Esiintyjän \"{performer}\" tallentaminen ei onnistunut",
         "name_already_exists": "Nimi on jo olemassa",

@@ -1197,14 +1197,6 @@
         "any_names_entered_will_be_queried": "Kõigi sisestatud nimede kohta päritakse Stash-kastii kaugeksemplari ja lisatakse, kui need leitakse. Vastena loetakse ainult täpseid vasteid.",
         "batch_add_performers": "Lisa Näitlejaid Hunnikus",
         "batch_update_performers": "Uuenda Näitlejaid Hunnikus",
-        "config": {
-            "active_stash-box_instance": "Aktiivne stash-kasti eksemplar:",
-            "edit_excluded_fields": "Muuda Välistatud Välju",
-            "excluded_fields": "Välistatud väljad:",
-            "no_fields_are_excluded": "Ühtegi välja ei ole välistatud",
-            "no_instances_found": "Eksemplare ei leitud",
-            "these_fields_will_not_be_changed_when_updating_performers": "Neid välju näitlejaid uuendades ei muudeta."
-        },
         "current_page": "Käesolev lehekülg",
         "failed_to_save_performer": "Näitleja \"{performer}\" salvestamine ebaõnnestus",
         "name_already_exists": "Nimi juba eksisteerib",
@@ -1488,13 +1480,7 @@
         "batch_add_studios": "Mitmete Stuudiote Lisamine",
         "config": {
             "create_parent_label": "Loo vanemstuudioid",
-            "create_parent_desc": "Looge puuduvad vanemstuudiod või märgistage ja värskendage olemasolevate vanemstuudiote andmeid/pilti täpsete nimede vastetega",
-            "no_fields_are_excluded": "Ühtegi välja pole välistatud",
-            "active_stash-box_instance": "Aktiivne stash-boxi eksemplar:",
-            "edit_excluded_fields": "Välistatud Väljade Muutmine",
-            "excluded_fields": "Välistatud väljad:",
-            "no_instances_found": "Eksemplare ei leitud",
-            "these_fields_will_not_be_changed_when_updating_studios": "Neid välju stuudiote värskendamisel ei muudeta."
+            "create_parent_desc": "Looge puuduvad vanemstuudiod või märgistage ja värskendage olemasolevate vanemstuudiote andmeid/pilti täpsete nimede vastetega"
         },
         "current_page": "Praegune leht",
         "failed_to_save_studio": "Stuudio \"{studio}\" salvestamine ebaõnnestus",

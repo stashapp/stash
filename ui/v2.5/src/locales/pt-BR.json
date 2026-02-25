@@ -921,14 +921,6 @@
         "any_names_entered_will_be_queried": "Quaisquer nomes inseridos serão consultados na instância remota do Stash-Box e adicionados caso encontrados. Apenas correspondências exatas serão consideradas.",
         "batch_add_performers": "Adicionar Artistas em Lote",
         "batch_update_performers": "Atualizar Artistas em Lote",
-        "config": {
-            "active_stash-box_instance": "Instância Stash-Box ativa:",
-            "edit_excluded_fields": "Editar Campos Excluídos",
-            "excluded_fields": "Campos excluídos:",
-            "no_fields_are_excluded": "Nenhum campo é excluído",
-            "no_instances_found": "Nenhuma instância encontrada",
-            "these_fields_will_not_be_changed_when_updating_performers": "Estes campos não serão alterados ao atualizar artistas."
-        },
         "current_page": "Página atual",
         "failed_to_save_performer": "Falha ao salvar artista \"{performer}\"",
         "name_already_exists": "Nome já existe",

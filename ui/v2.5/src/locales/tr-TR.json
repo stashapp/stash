@@ -1237,13 +1237,7 @@
         "add_new_studios": "Yeni Stüdyo Ekle",
         "batch_add_studios": "Toplu Stüdyo Ekle",
         "config": {
-            "excluded_fields": "Hariç tutulan alanlar:",
-            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
-            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
-            "create_parent_label": "Ana stüdyo oluştur",
-            "these_fields_will_not_be_changed_when_updating_studios": "Stüdyolar güncellenirken bu alanlar değişmeyecektir.",
-            "active_stash-box_instance": "Aktif stash-box oturumu:",
-            "no_instances_found": "Oturum bulunamadı"
+            "create_parent_label": "Ana stüdyo oluştur"
         },
         "batch_update_studios": "Stüdyoları Toplu Güncelle",
         "failed_to_save_studio": "Stüdyo kaydedilemedi \"{studio}\"",
@@ -1309,14 +1303,6 @@
     "penis_length_cm": "Penis Uzunluğu (cm)",
     "performer_age": "Oyuncu Yaşı",
     "performer_tagger": {
-        "config": {
-            "excluded_fields": "Hariç tutulan alanlar:",
-            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
-            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
-            "these_fields_will_not_be_changed_when_updating_performers": "Oyuncular güncellenirken bu alanlar değiştirilmeyecektir.",
-            "active_stash-box_instance": "Aktif stash-box oturumu:",
-            "no_instances_found": "Oturum bulunamadı"
-        },
         "current_page": "Geçerli sayfa",
         "network_error": "Ağ Hatası",
         "no_results_found": "Sonuç bulunamadı.",

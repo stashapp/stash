@@ -1144,14 +1144,6 @@
         "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
         "batch_add_performers": "大量新增演員",
         "batch_update_performers": "大量更新演員",
-        "config": {
-            "active_stash-box_instance": "目前使用的 Stash-box：",
-            "edit_excluded_fields": "編輯排除的種類",
-            "excluded_fields": "已排除種類：",
-            "no_fields_are_excluded": "尚無排除任何種類",
-            "no_instances_found": "尚未設定端點",
-            "these_fields_will_not_be_changed_when_updating_performers": "以下種類的資訊將不會於更新演員時更動。"
-        },
         "current_page": "目前頁面",
         "failed_to_save_performer": "無法新增演員「{performer}」",
         "name_already_exists": "名稱已存在",
@@ -1448,14 +1440,8 @@
         "add_new_studios": "新增工作室",
         "batch_update_studios": "批量更新工作室",
         "config": {
-            "active_stash-box_instance": "目前使用的 Stash-box：",
             "create_parent_desc": "建立缺失的母工作室，或使用確切的名稱匹配標記和更新現有母工作室的資料/影象",
-            "create_parent_label": "建立家長工作室",
-            "edit_excluded_fields": "編輯排除的欄位",
-            "excluded_fields": "已排除欄位：",
-            "no_instances_found": "尚未設定端點",
-            "these_fields_will_not_be_changed_when_updating_studios": "更新工作室時不會更改這些欄位。",
-            "no_fields_are_excluded": "尚無排除任何欄位"
+            "create_parent_label": "建立家長工作室"
         },
         "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
         "batch_add_studios": "批量添加工作室",

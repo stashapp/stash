@@ -1133,14 +1133,6 @@
         "any_names_entered_will_be_queried": "入力された全ての名前は外部のStash-Boxインスタンスで検索され、見つかった場合追加されます。完全一致のみ、一致とみなされます。",
         "batch_add_performers": "出演者を一括追加",
         "batch_update_performers": "出演者の一括更新",
-        "config": {
-            "active_stash-box_instance": "アクティブなstash-boxインスタンス:",
-            "edit_excluded_fields": "除外する欄を編集",
-            "excluded_fields": "除外する欄:",
-            "no_fields_are_excluded": "除外する欄なし",
-            "no_instances_found": "インスタンスが見つかりませんでした",
-            "these_fields_will_not_be_changed_when_updating_performers": "これらの欄は、出演者の更新時に変更されません。"
-        },
         "current_page": "現在のページ",
         "failed_to_save_performer": "出演者\"{performer}\"の保存に失敗しました",
         "name_already_exists": "既に使用されている名前です",

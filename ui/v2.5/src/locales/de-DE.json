@@ -1209,14 +1209,6 @@
         "any_names_entered_will_be_queried": "Alle eingetragenen Namen werden bei der stash-box Instanz nachgeschlagen und hinzugefügt, wenn gefunden. Nur exakte Übereinstimmungen werden als Treffer gewertet.",
         "batch_add_performers": "Stapelverarbeitung für Darsteller",
         "batch_update_performers": "Stapelverarbeitungsaktualisierung für Darsteller",
-        "config": {
-            "active_stash-box_instance": "Ausgewählte stash-box Instanz:",
-            "edit_excluded_fields": "Ausgeschlossene Felder bearbeiten",
-            "excluded_fields": "Ausgeschlossene Felder:",
-            "no_fields_are_excluded": "Keine Felder werden ausgeschlossen",
-            "no_instances_found": "Keine Instanzen gefunden",
-            "these_fields_will_not_be_changed_when_updating_performers": "Diese Felder werden durch die Aktualisierung nicht verändert."
-        },
         "current_page": "Aktuelle Seite",
         "failed_to_save_performer": "Fehler beim Speichern der Darsteller \"{performer}\"",
         "name_already_exists": "Name bereits vergeben",
@@ -1457,12 +1449,6 @@
         "update_studio": "Studio Updaten",
         "any_names_entered_will_be_queried": "Alle eingetragenen Namen werden bei der stash-box Instanz nachgeschlagen und hinzugefügt, wenn gefunden. Nur exakte Übereinstimmungen werden als Treffer gewertet.",
         "config": {
-            "these_fields_will_not_be_changed_when_updating_studios": "Diese Felder werden nicht geändert, wenn Studios aktualisiert werden.",
-            "no_instances_found": "Keine Instanz gefunden",
-            "edit_excluded_fields": "Abgewählte Felder bearbeiten",
-            "excluded_fields": "Abgewähltes Feld:",
-            "no_fields_are_excluded": "Keine Felder sind abgewählt",
-            "active_stash-box_instance": "Aktive stash-box Instanz:",
             "create_parent_desc": "Erstelle fehlende übergeordnete Studios oder tagge und aktualisiere Daten/Bilder für bestehende übergeordnete Studios mit genau passenden Namen",
             "create_parent_label": "Übergeordnete Studios erstellen"
         },

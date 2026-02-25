@@ -878,12 +878,6 @@
         "add_new_studios": "Legg til nye studioer",
         "batch_add_studios": "Batch Legg Til Studio",
         "config": {
-            "edit_excluded_fields": "Rediger ekskluderte felt",
-            "excluded_fields": "Ekskluderte felt:",
-            "no_fields_are_excluded": "Ingen felt er ekskludert",
-            "no_instances_found": "Ingen forekomster funnet",
-            "these_fields_will_not_be_changed_when_updating_studios": "Disse feltene vil ikke bli endret når du oppdaterer studioer.",
-            "active_stash-box_instance": "Aktiv stash-box-instans:",
             "create_parent_label": "Lag foreldrestudioer",
             "create_parent_desc": "Opprett manglende foreldrestudioer, eller tagg og oppdater data/bilde for eksisterende foreldrestudioer med nøyaktige navnesamsvar"
         },
@@ -1114,14 +1108,6 @@
     "part_of": "En del av {forelder}",
     "performer_tagger": {
         "batch_update_performers": "Batch Oppdater Skuespillere",
-        "config": {
-            "active_stash-box_instance": "Aktiv stash-box-instans:",
-            "edit_excluded_fields": "Rediger Ekskluderte Felt",
-            "no_fields_are_excluded": "Ingen felt er ekskludert",
-            "no_instances_found": "Ingen forekomster funnet",
-            "excluded_fields": "Ekskluderte felt:",
-            "these_fields_will_not_be_changed_when_updating_performers": "Disse feltene vil ikke bli endret når skuespillerne oppdateres."
-        },
         "network_error": "Nettverksfeil",
         "performer_already_tagged": "Skuespilleren er allerede tagget",
         "number_of_performers_will_be_processed": "{skuespiller_antall} skuespillere vil bli behandlet",

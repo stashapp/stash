@@ -1166,14 +1166,6 @@
         "performer_selection": "Výběr účinkujících",
         "status_tagging_performers": "Stav: Tagování Účinkujících",
         "add_new_performers": "Přidat nové Účinkující",
-        "config": {
-            "active_stash-box_instance": "Aktivní instance stash-box:",
-            "edit_excluded_fields": "Upravit vyloučená pole",
-            "excluded_fields": "Vyloučená pole:",
-            "no_fields_are_excluded": "Nejsou vyloučena žádná pole",
-            "these_fields_will_not_be_changed_when_updating_performers": "Tato pole se při aktualizaci účinkujících nezmění.",
-            "no_instances_found": "Nebyly nalezeny žádné instance"
-        },
         "current_page": "Aktuální stránka",
         "no_results_found": "Nebyly nalezeny žádné výsledky.",
         "number_of_performers_will_be_processed": "{performer_count} účinkujících bude zpracováno",
@@ -1487,13 +1479,7 @@
         "add_new_studios": "Přidat nová studia",
         "config": {
             "create_parent_label": "Vytvořit nadřazená studia",
-            "these_fields_will_not_be_changed_when_updating_studios": "Tato pole se při aktualizaci studií nezmění.",
-            "active_stash-box_instance": "Aktivní stash-box instance:",
-            "create_parent_desc": "Vytvořte chybějící nadřazená studia nebo označte a aktualizujte data/obrázeky pro stávající nadřazená studia s přesnými shodami názvů",
-            "edit_excluded_fields": "Upravit vyloučená pole",
-            "excluded_fields": "Vyloučená pole:",
-            "no_fields_are_excluded": "Nejsou vyloučena žádná pole",
-            "no_instances_found": "Nebyly nalezeny žádné instance"
+            "create_parent_desc": "Vytvořte chybějící nadřazená studia nebo označte a aktualizujte data/obrázeky pro stávající nadřazená studia s přesnými shodami názvů"
         },
         "number_of_studios_will_be_processed": "Bude zpracováno {studio_count} studií",
         "to_use_the_studio_tagger": "Chcete-li použít studio Tagger, je třeba nakonfigurovat instanci stash-boxu.",

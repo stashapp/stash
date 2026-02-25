@@ -403,13 +403,6 @@
     "performer_image": "Imagine Interpret",
     "performer_tagger": {
         "add_new_performers": "Adaugă Interpreți Noi",
-        "config": {
-            "active_stash-box_instance": "Instață stash-box activă:",
-            "edit_excluded_fields": "Editați câmpurile excluse",
-            "no_fields_are_excluded": "Nu se exclude niciun câmp",
-            "no_instances_found": "Nicio instanță găsită",
-            "these_fields_will_not_be_changed_when_updating_performers": "Aceste câmpuri nu vor fi modificate la actualizarea artiștilor interpreți sau executanți."
-        },
         "current_page": "Pagina curentă",
         "failed_to_save_performer": "Nu s-a reușit salvarea interpretului \"{performer}\"",
         "name_already_exists": "Numele există deja",

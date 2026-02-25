@@ -776,13 +776,7 @@
         "updating_untagged_studios_description": "อัพเดตสตูดิโอที่ยังไม่มีข้อมูลโดยการค้นหาสตูดิโอที่ยังไม่มี stashid และทำการอัปเดตข้อมูล metadata",
         "config": {
             "create_parent_label": "สร้างสตูดิโอบริษัทแม่",
-            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว",
-            "active_stash-box_instance": "Stash-box instance ที่ใช้งาน:",
-            "excluded_fields": "ข้อมูลที่ไม่ต้องการใช้งาน:",
-            "edit_excluded_fields": "แก้ไขประเภทข้อมูลที่ไม่ต้องการใช้งาน",
-            "no_fields_are_excluded": "ไม่มีข้อมูลที่ไม่ต้องการใช้งาน",
-            "no_instances_found": "ไม่พบแหล่งข้อมูล",
-            "these_fields_will_not_be_changed_when_updating_studios": "ข้อมูลประเภทที่เลือกไว้จะไม่ถูกเปลี่ยนแปลงหรืออัปเดต"
+            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว"
         },
         "create_or_tag_parent_studios": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกียวข้องหากยังไม่มี",
         "untagged_studios": "สตูดิโอที่ยังไม่มีข้อมูล",
@@ -919,14 +913,6 @@
         "tag_status": "สถานะการเพิ่มข้อมูล",
         "refresh_tagged_performers": "รีเฟรชนักแสดงที่มีข้อมูลแล้ว",
         "batch_add_performers": "เพิ่มนักแสดงพร้อมกันหลายคน",
-        "config": {
-            "active_stash-box_instance": "แหล่งข้อมูล stash-box ที่เลือกใช้:",
-            "excluded_fields": "ข้อมูลที่ไม่ต้องการใช้งาน:",
-            "no_fields_are_excluded": "ไม่มีข้อมูลที่ไม่ต้องการใช้งาน",
-            "these_fields_will_not_be_changed_when_updating_performers": "ข้อมูลประเภทที่เลือกไว้จะไม่ถูกเปลี่ยนแปลงหรืออัปเดต",
-            "no_instances_found": "ไม่พบแหล่งข้อมูล",
-            "edit_excluded_fields": "แก้ไขประเภทข้อมูลที่ไม่ต้องการใช้งาน"
-        },
         "batch_update_performers": "อัปเดตข้อมูลนักแสดงพร้อมกันหลายคน",
         "network_error": "พบปัญหาเน็ตเวิร์ค",
         "any_names_entered_will_be_queried": "รายชื่อนักแสดงจะถูกเรียกหาข้อมูลจาก stash-box ที่เลือกไว้ โดยจะเลือกเฉพาะข้อมูลที่ตรงกันเท่านั้น",

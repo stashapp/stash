@@ -1255,14 +1255,6 @@
         "any_names_entered_will_be_queried": "Tout nom saisi sera demandé à l'instance distante StashBox et ajouté si trouvé. Seules les correspondances exactes seront considérées comme équivalentes.",
         "batch_add_performers": "Ajouter des performeurs par lots",
         "batch_update_performers": "Mises à jour des performeurs par lots",
-        "config": {
-            "active_stash-box_instance": "Instance stash-box active :",
-            "edit_excluded_fields": "Modifier les champs exclus",
-            "excluded_fields": "Champs exclus :",
-            "no_fields_are_excluded": "Aucun champ n'est exclu",
-            "no_instances_found": "Aucune instance trouvée",
-            "these_fields_will_not_be_changed_when_updating_performers": "Ces champs ne seront pas modifiés lors de la mise à jour des performeurs."
-        },
         "current_page": "Page actuelle",
         "failed_to_save_performer": "Échec pour sauvegarder le performeur \"{performer}\"",
         "name_already_exists": "Le nom existe déjà",
@@ -1451,14 +1443,8 @@
         "batch_add_studios": "Ajouter des studios par lots",
         "batch_update_studios": "Mise à jour des studios par lots",
         "config": {
-            "active_stash-box_instance": "Instance active Stash-Box :",
             "create_parent_desc": "Créer les studios parents manquants, ou étiqueter et mettre à jour les données/image pour les studios parents existants avec des correspondances de noms exactes",
-            "create_parent_label": "Créer les studios parents",
-            "edit_excluded_fields": "Éditer les champs exclus",
-            "excluded_fields": "Champs exclus :",
-            "no_fields_are_excluded": "Aucun champ n'est exclu",
-            "no_instances_found": "Aucunes instances trouvées",
-            "these_fields_will_not_be_changed_when_updating_studios": "Ces champs ne seront pas modifiés lors de la mise à jour des studios."
+            "create_parent_label": "Créer les studios parents"
         },
         "create_or_tag_parent_studios": "Créer les studios parents manquants ou étiqueter les existants",
         "current_page": "Page actuelle",

@@ -1180,14 +1180,6 @@
         "any_names_entered_will_be_queried": "Wszystkie wprowadzone nazwy zostaną wyszukane w zdalnej instancji Stash-Box i dodane, jeśli zostaną znalezione. Tylko dokładne dopasowania będą uznawane za dopasowanie.",
         "batch_add_performers": "Grupowe dodawanie aktorów",
         "batch_update_performers": "Grupowe aktualizowanie aktorów",
-        "config": {
-            "active_stash-box_instance": "Aktywna instancja stash-box:",
-            "edit_excluded_fields": "Edytuj wykluczone pola",
-            "excluded_fields": "Wykluczone pola:",
-            "no_fields_are_excluded": "Żadne pola nie są wykluczone",
-            "no_instances_found": "Nie znaleziono instancji",
-            "these_fields_will_not_be_changed_when_updating_performers": "Te pola nie zostaną zmienione podczas aktualizacji aktorów.."
-        },
         "current_page": "Bieżąca strona",
         "failed_to_save_performer": "Nie udało się zapisać aktora \"{performer}\"",
         "name_already_exists": "Nazwa już istnieje",
@@ -1495,14 +1487,8 @@
     "studio_tagger": {
         "add_new_studios": "Dodaj nowe studia",
         "config": {
-            "excluded_fields": "Wykluczone pola:",
-            "no_fields_are_excluded": "Żadne pola nie są wykluczone",
-            "no_instances_found": "Nie znaleziono instancji",
-            "edit_excluded_fields": "Edytuj wykluczone pola",
-            "active_stash-box_instance": "Aktywna instancja stash-box:",
             "create_parent_desc": "Utwórz brakujące studia nadrzędne lub otaguj i zaktualizuj dane/obraz dla istniejących studiów nadrzędnych o dokładnie takich samych nazwach",
-            "create_parent_label": "Utwórz studia nadrzędne",
-            "these_fields_will_not_be_changed_when_updating_studios": "Te pola nie zostaną zmienione podczas aktualizacji studiów."
+            "create_parent_label": "Utwórz studia nadrzędne"
         },
         "any_names_entered_will_be_queried": "Wszystkie wprowadzone nazwy zostaną wyszukane w zdalnej instancji Stash-Box i dodane, jeśli zostaną znalezione. Tylko dokładne dopasowania będą uznawane za dopasowanie.",
         "batch_add_studios": "Dodaj studia zbiorowo",

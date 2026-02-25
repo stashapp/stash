@@ -1249,14 +1249,6 @@
         "any_names_entered_will_be_queried": "任何输入的名字将会从远程的Stash-Box实例查询并且加入（如果找到）。只有完全符合的名字才会视为匹配。",
         "batch_add_performers": "批量添加演员",
         "batch_update_performers": "批量更新演员",
-        "config": {
-            "active_stash-box_instance": "当前使用的stash-box：",
-            "edit_excluded_fields": "编辑不包括的域名",
-            "excluded_fields": "不包括的域名：",
-            "no_fields_are_excluded": "没有不包括的域名",
-            "no_instances_found": "没有找到端点",
-            "these_fields_will_not_be_changed_when_updating_performers": "以下的域名在演员资料更新时不会被改变。"
-        },
         "current_page": "当前页面",
         "failed_to_save_performer": "保存演员 \"{performer}\" 失败",
         "name_already_exists": "演员名字已存在",
@@ -1493,14 +1485,8 @@
         "add_new_studios": "添加工作室",
         "updating_untagged_studios_description": "更新未标记的工作室将尝试匹配缺少Stash ID的工作室，并更新元数据。",
         "config": {
-            "edit_excluded_fields": "编辑排除字段",
             "create_parent_desc": "对于已存在且名称完全匹配的父（母）工作室创建缺失的父（母）工作室，或者标记并更新数据/图片",
-            "excluded_fields": "排除字段：",
-            "no_fields_are_excluded": "无已排除字段",
-            "create_parent_label": "创建上级工作室",
-            "active_stash-box_instance": "目前使用的 Stash-box 实例：",
-            "no_instances_found": "未找到实例",
-            "these_fields_will_not_be_changed_when_updating_studios": "更新工作室时不改变这些字段。"
+            "create_parent_label": "创建上级工作室"
         },
         "batch_add_studios": "批量添加工作室",
         "batch_update_studios": "批量更新工作室",
