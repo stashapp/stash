@@ -54,7 +54,7 @@ const SceneMarkerList: React.FC<{
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }> = PatchComponent(
-  "SceneList",
+  "SceneMarkerList",
   ({ markers, filter, selectedIds, onSelectChange }) => {
     if (markers.length === 0) {
       return null;
