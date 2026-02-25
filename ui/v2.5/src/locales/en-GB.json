@@ -918,6 +918,7 @@
   "criterion": {
     "greater_than": "Greater than",
     "less_than": "Less than",
+    "unsupported": "{type} (unsupported)",
     "value": "Value"
   },
   "criterion_modifier": {

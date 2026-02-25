@@ -470,6 +470,10 @@ input[type="range"].zoom-slider {
     line-height: 16px;
     padding: 0;
   }
+
+  .tag-item.unsupported {
+    background-color: $warning;
+  }
 }
 
 .filter-button {
