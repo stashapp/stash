@@ -282,7 +282,7 @@ export const FilteredGalleryList = PatchComponent(
       setFilter,
     });
 
-    useAddKeybinds(filter, totalCount);
+    useAddKeybinds(effectiveFilter, totalCount);
     useFilteredSidebarKeybinds({
       showSidebar,
       setShowSidebar,
@@ -313,7 +313,7 @@ export const FilteredGalleryList = PatchComponent(
       result,
     });
 
-    const viewRandom = useViewRandom(filter, totalCount);
+    const viewRandom = useViewRandom(effectiveFilter, totalCount);
 
     function onExport(all: boolean) {
       showModal(
