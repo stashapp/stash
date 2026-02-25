@@ -2463,6 +2463,12 @@ export const mutateStashBoxBatchStudioTag = (
     variables: { input },
   });
 
+export const mutateStashBoxBatchTagTag = (input: GQL.StashBoxBatchTagInput) =>
+  client.mutate<GQL.StashBoxBatchTagTagMutation>({
+    mutation: GQL.StashBoxBatchTagTagDocument,
+    variables: { input },
+  });
+
 export const useListGroupScrapers = () => GQL.useListGroupScrapersQuery();
 
 export const queryScrapeGroupURL = (url: string) =>

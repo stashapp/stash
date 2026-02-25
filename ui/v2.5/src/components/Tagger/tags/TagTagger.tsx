@@ -8,26 +8,21 @@ import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ModalComponent } from "src/components/Shared/Modal";
 import {
-  stashBoxStudioQuery,
+  stashBoxTagQuery,
   useJobsSubscribe,
-  mutateStashBoxBatchStudioTag,
+  mutateStashBoxBatchTagTag,
   getClient,
-  studioMutationImpactedQueries,
-  useStudioCreate,
-  evictQueries,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import TaggerConfig from "../TaggerConfig";
-import { ITaggerConfig, STUDIO_FIELDS } from "../constants";
-import StudioModal from "../scenes/StudioModal";
-import { useUpdateStudio } from "../queries";
-import { apolloError } from "src/utils";
+import { ITaggerConfig, TAG_FIELDS } from "../constants";
+import { useUpdateTag } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
-import { mergeStudioStashIDs } from "../utils";
+import { mergeTagStashIDs } from "../utils";
 import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { useTaggerConfig } from "../config";
 
@@ -38,23 +33,19 @@ type JobFragment = Pick<
 
 const CLASSNAME = "StudioTagger";
 
-interface IStudioBatchUpdateModal {
-  studios: GQL.StudioDataFragment[];
+interface ITagBatchUpdateModal {
+  tags: GQL.TagListDataFragment[];
   isIdle: boolean;
   selectedEndpoint: { endpoint: string; index: number };
   onBatchUpdate: (queryAll: boolean, refresh: boolean) => void;
-  batchAddParents: boolean;
-  setBatchAddParents: (addParents: boolean) => void;
   close: () => void;
 }
 
-const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
-  studios,
+const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
+  tags,
   isIdle,
   selectedEndpoint,
   onBatchUpdate,
-  batchAddParents,
-  setBatchAddParents,
   close,
 }) => {
   const intl = useIntl();
@@ -62,9 +53,9 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
   const [queryAll, setQueryAll] = useState(false);
 
   const [refresh, setRefresh] = useState(false);
-  const { data: allStudios } = GQL.useFindStudiosQuery({
+  const { data: allTags } = GQL.useFindTagsQuery({
     variables: {
-      studio_filter: {
+      tag_filter: {
         stash_id_endpoint: {
           endpoint: selectedEndpoint.endpoint,
           modifier: refresh
@@ -78,31 +69,28 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
     },
   });
 
-  const studioCount = useMemo(() => {
-    // get all stash ids for the selected endpoint
-    const filteredStashIDs = studios.map((p) =>
-      p.stash_ids.filter((s) => s.endpoint === selectedEndpoint.endpoint)
+  const tagCount = useMemo(() => {
+    const filteredStashIDs = tags.map((t) =>
+      t.stash_ids.filter((s) => s.endpoint === selectedEndpoint.endpoint)
     );
 
     return queryAll
-      ? allStudios?.findStudios.count
+      ? allTags?.findTags.count
       : filteredStashIDs.filter((s) =>
-          // if refresh, then we filter out the studios without a stash id
-          // otherwise, we want untagged studios, filtering out those with a stash id
           refresh ? s.length > 0 : s.length === 0
         ).length;
-  }, [queryAll, refresh, studios, allStudios, selectedEndpoint.endpoint]);
+  }, [queryAll, refresh, tags, allTags, selectedEndpoint.endpoint]);
 
   return (
     <ModalComponent
       show
       icon={faTags}
       header={intl.formatMessage({
-        id: "studio_tagger.update_studios",
+        id: "tag_tagger.update_tags",
       })}
       accept={{
         text: intl.formatMessage({
-          id: "studio_tagger.update_studios",
+          id: "tag_tagger.update_tags",
         }),
         onClick: () => onBatchUpdate(queryAll, refresh),
       }}
@@ -116,23 +104,23 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
       <Form.Group>
         <Form.Label>
           <h6>
-            <FormattedMessage id="studio_tagger.studio_selection" />
+            <FormattedMessage id="tag_tagger.tag_selection" />
           </h6>
         </Form.Label>
         <Form.Check
           id="query-page"
           type="radio"
-          name="studio-query"
-          label={<FormattedMessage id="studio_tagger.current_page" />}
+          name="tag-query"
+          label={<FormattedMessage id="tag_tagger.current_page" />}
           checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
         <Form.Check
           id="query-all"
           type="radio"
-          name="studio-query"
+          name="tag-query"
           label={intl.formatMessage({
-            id: "studio_tagger.query_all_studios_in_the_database",
+            id: "tag_tagger.query_all_tags_in_the_database",
           })}
           checked={queryAll}
           onChange={() => setQueryAll(true)}
@@ -141,51 +129,41 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
       <Form.Group>
         <Form.Label>
           <h6>
-            <FormattedMessage id="studio_tagger.tag_status" />
+            <FormattedMessage id="tag_tagger.tag_status" />
           </h6>
         </Form.Label>
         <Form.Check
-          id="untagged-studios"
+          id="untagged-tags"
           type="radio"
-          name="studio-refresh"
+          name="tag-refresh"
           label={intl.formatMessage({
-            id: "studio_tagger.untagged_studios",
+            id: "tag_tagger.untagged_tags",
           })}
           checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
-          <FormattedMessage id="studio_tagger.updating_untagged_studios_description" />
+          <FormattedMessage id="tag_tagger.updating_untagged_tags_description" />
         </Form.Text>
         <Form.Check
-          id="tagged-studios"
+          id="tagged-tags"
           type="radio"
-          name="studio-refresh"
+          name="tag-refresh"
           label={intl.formatMessage({
-            id: "studio_tagger.refresh_tagged_studios",
+            id: "tag_tagger.refresh_tagged_tags",
           })}
           checked={refresh}
           onChange={() => setRefresh(true)}
         />
         <Form.Text>
-          <FormattedMessage id="studio_tagger.refreshing_will_update_the_data" />
+          <FormattedMessage id="tag_tagger.refreshing_will_update_the_data" />
         </Form.Text>
-        <div className="mt-4">
-          <Form.Check
-            id="add-parent"
-            checked={batchAddParents}
-            label={intl.formatMessage({
-              id: "studio_tagger.create_or_tag_parent_studios",
-            })}
-            onChange={() => setBatchAddParents(!batchAddParents)}
-          />
-        </div>
       </Form.Group>
       <b>
         <FormattedMessage
-          id="studio_tagger.number_of_studios_will_be_processed"
+          id="tag_tagger.number_of_tags_will_be_processed"
           values={{
-            studio_count: studioCount,
+            tag_count: tagCount,
           }}
         />
       </b>
@@ -193,39 +171,35 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
   );
 };
 
-interface IStudioBatchAddModal {
+interface ITagBatchAddModal {
   isIdle: boolean;
   onBatchAdd: (input: string) => void;
-  batchAddParents: boolean;
-  setBatchAddParents: (addParents: boolean) => void;
   close: () => void;
 }
 
-const StudioBatchAddModal: React.FC<IStudioBatchAddModal> = ({
+const TagBatchAddModal: React.FC<ITagBatchAddModal> = ({
   isIdle,
   onBatchAdd,
-  batchAddParents,
-  setBatchAddParents,
   close,
 }) => {
   const intl = useIntl();
 
-  const studioInput = useRef<HTMLTextAreaElement | null>(null);
+  const tagInput = useRef<HTMLTextAreaElement | null>(null);
 
   return (
     <ModalComponent
       show
       icon={faStar}
       header={intl.formatMessage({
-        id: "studio_tagger.add_new_studios",
+        id: "tag_tagger.add_new_tags",
       })}
       accept={{
         text: intl.formatMessage({
-          id: "studio_tagger.add_new_studios",
+          id: "tag_tagger.add_new_tags",
         }),
         onClick: () => {
-          if (studioInput.current) {
-            onBatchAdd(studioInput.current.value);
+          if (tagInput.current) {
+            onBatchAdd(tagInput.current.value);
           } else {
             close();
           }
@@ -241,44 +215,30 @@ const StudioBatchAddModal: React.FC<IStudioBatchAddModal> = ({
       <Form.Control
         className="text-input"
         as="textarea"
-        ref={studioInput}
+        ref={tagInput}
         placeholder={intl.formatMessage({
-          id: "studio_tagger.studio_names_or_stashids_separated_by_comma",
+          id: "tag_tagger.tag_names_or_stashids_separated_by_comma",
         })}
         rows={6}
       />
       <Form.Text>
-        <FormattedMessage id="studio_tagger.any_names_entered_will_be_queried" />
+        <FormattedMessage id="tag_tagger.any_names_entered_will_be_queried" />
       </Form.Text>
-      <div className="mt-2">
-        <Form.Check
-          id="add-parent"
-          checked={batchAddParents}
-          label={intl.formatMessage({
-            id: "studio_tagger.create_or_tag_parent_studios",
-          })}
-          onChange={() => setBatchAddParents(!batchAddParents)}
-        />
-      </div>
     </ModalComponent>
   );
 };
 
-interface IStudioTaggerListProps {
-  studios: GQL.StudioDataFragment[];
+interface ITagTaggerListProps {
+  tags: GQL.TagListDataFragment[];
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  onBatchAdd: (studioInput: string, createParent: boolean) => void;
-  onBatchUpdate: (
-    ids: string[] | undefined,
-    refresh: boolean,
-    createParent: boolean
-  ) => void;
+  onBatchAdd: (tagInput: string) => void;
+  onBatchUpdate: (ids: string[] | undefined, refresh: boolean) => void;
 }
 
-const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
-  studios,
+const TagTaggerList: React.FC<ITagTaggerListProps> = ({
+  tags,
   selectedEndpoint,
   isIdle,
   config,
@@ -289,53 +249,46 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    Record<string, GQL.ScrapedStudioDataFragment[]>
+    Record<string, GQL.ScrapedSceneTagDataFragment[]>
   >({});
   const [searchErrors, setSearchErrors] = useState<
     Record<string, string | undefined>
   >({});
-  const [taggedStudios, setTaggedStudios] = useState<
-    Record<string, Partial<GQL.SlimStudioDataFragment>>
+  const [taggedTags, setTaggedTags] = useState<
+    Record<string, Partial<GQL.TagListDataFragment>>
   >({});
   const [queries, setQueries] = useState<Record<string, string>>({});
 
   const [showBatchAdd, setShowBatchAdd] = useState(false);
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
-  const [batchAddParents, setBatchAddParents] = useState(
-    config.createParentStudios || false
-  );
 
   const [error, setError] = useState<
     Record<string, { message?: string; details?: string } | undefined>
   >({});
   const [loadingUpdate, setLoadingUpdate] = useState<string | undefined>();
-  const [modalStudio, setModalStudio] = useState<
-    GQL.ScrapedStudioDataFragment | undefined
-  >();
 
-  const doBoxSearch = (studioID: string, searchVal: string) => {
-    stashBoxStudioQuery(searchVal, selectedEndpoint.endpoint)
+  const doBoxSearch = (tagID: string, searchVal: string) => {
+    stashBoxTagQuery(searchVal, selectedEndpoint.endpoint)
       .then((queryData) => {
-        const s = queryData.data?.scrapeSingleStudio ?? [];
+        const s = queryData.data?.scrapeSingleTag ?? [];
         setSearchResults({
           ...searchResults,
-          [studioID]: s,
+          [tagID]: s,
         });
         setSearchErrors({
           ...searchErrors,
-          [studioID]: undefined,
+          [tagID]: undefined,
         });
         setLoading(false);
       })
       .catch(() => {
         setLoading(false);
-        // Destructure to remove existing result
-        const { [studioID]: unassign, ...results } = searchResults;
+        const { [tagID]: unassign, ...results } = searchResults;
         setSearchResults(results);
         setSearchErrors({
           ...searchErrors,
-          [studioID]: intl.formatMessage({
-            id: "studio_tagger.network_error",
+          [tagID]: intl.formatMessage({
+            id: "tag_tagger.network_error",
           }),
         });
       });
@@ -343,125 +296,94 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
     setLoading(true);
   };
 
-  const doBoxUpdate = (studioID: string, stashID: string, endpoint: string) => {
+  const updateTag = useUpdateTag();
+
+  const doBoxUpdate = (tagID: string, stashID: string, endpoint: string) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
-      [studioID]: undefined,
+      [tagID]: undefined,
     });
-    stashBoxStudioQuery(stashID, endpoint)
-      .then((queryData) => {
-        const data = queryData.data?.scrapeSingleStudio ?? [];
+    stashBoxTagQuery(stashID, endpoint)
+      .then(async (queryData) => {
+        const data = queryData.data?.scrapeSingleTag ?? [];
         if (data.length > 0) {
-          setModalStudio({
-            ...data[0],
-            stored_id: studioID,
-          });
+          const stashboxTag = data[0];
+          const updateData: GQL.TagUpdateInput = {
+            id: tagID,
+          };
+
+          if (
+            !(config.excludedTagFields ?? []).includes("name") &&
+            stashboxTag.name
+          ) {
+            updateData.name = stashboxTag.name;
+          }
+
+          if (
+            stashboxTag.description &&
+            !(config.excludedTagFields ?? []).includes("description")
+          ) {
+            updateData.description = stashboxTag.description;
+          }
+
+          if (
+            stashboxTag.alias_list &&
+            stashboxTag.alias_list.length > 0 &&
+            !(config.excludedTagFields ?? []).includes("aliases")
+          ) {
+            updateData.aliases = stashboxTag.alias_list;
+          }
+
+          if (stashboxTag.remote_site_id) {
+            updateData.stash_ids = await mergeTagStashIDs(tagID, [
+              {
+                endpoint,
+                stash_id: stashboxTag.remote_site_id,
+              },
+            ]);
+          }
+
+          const res = await updateTag(updateData);
+          if (!res?.data?.tagUpdate) {
+            setError({
+              ...error,
+              [tagID]: {
+                message: `Failed to update tag`,
+                details: res?.errors?.[0]?.message ?? "",
+              },
+            });
+          }
         }
       })
       .finally(() => setLoadingUpdate(undefined));
   };
 
   async function handleBatchAdd(input: string) {
-    onBatchAdd(input, batchAddParents);
+    onBatchAdd(input);
     setShowBatchAdd(false);
   }
 
   const handleBatchUpdate = (queryAll: boolean, refresh: boolean) => {
-    onBatchUpdate(
-      !queryAll ? studios.map((p) => p.id) : undefined,
-      refresh,
-      batchAddParents
-    );
+    onBatchUpdate(!queryAll ? tags.map((t) => t.id) : undefined, refresh);
     setShowBatchUpdate(false);
   };
 
-  const handleTaggedStudio = (
-    studio: Pick<GQL.SlimStudioDataFragment, "id"> &
-      Partial<Omit<GQL.SlimStudioDataFragment, "id">>
+  const handleTaggedTag = (
+    tag: Pick<GQL.TagListDataFragment, "id"> &
+      Partial<Omit<GQL.TagListDataFragment, "id">>
   ) => {
-    setTaggedStudios({
-      ...taggedStudios,
-      [studio.id]: studio,
+    setTaggedTags({
+      ...taggedTags,
+      [tag.id]: tag,
     });
   };
 
-  const [createStudio] = useStudioCreate();
-  const updateStudio = useUpdateStudio();
+  const renderTags = () =>
+    tags.map((tag) => {
+      const isTagged = taggedTags[tag.id];
 
-  function handleSaveError(studioID: string, name: string, message: string) {
-    setError({
-      ...error,
-      [studioID]: {
-        message: intl.formatMessage(
-          { id: "studio_tagger.failed_to_save_studio" },
-          { studio: modalStudio?.name }
-        ),
-        details:
-          message === "UNIQUE constraint failed: studios.name"
-            ? intl.formatMessage({
-                id: "studio_tagger.name_already_exists",
-              })
-            : message,
-      },
-    });
-  }
-
-  const handleStudioUpdate = async (
-    input: GQL.StudioCreateInput,
-    parentInput?: GQL.StudioCreateInput
-  ) => {
-    setModalStudio(undefined);
-    const studioID = modalStudio?.stored_id;
-    if (studioID) {
-      if (parentInput) {
-        try {
-          // if parent id is set, then update the existing studio
-          if (input.parent_id) {
-            const parentUpdateData: GQL.StudioUpdateInput = {
-              ...parentInput,
-              id: input.parent_id,
-            };
-            parentUpdateData.stash_ids = await mergeStudioStashIDs(
-              input.parent_id,
-              parentInput.stash_ids ?? []
-            );
-            await updateStudio(parentUpdateData);
-          } else {
-            const parentRes = await createStudio({
-              variables: { input: parentInput },
-            });
-            input.parent_id = parentRes.data?.studioCreate?.id;
-          }
-        } catch (e) {
-          handleSaveError(studioID, parentInput.name, apolloError(e));
-        }
-      }
-
-      const updateData: GQL.StudioUpdateInput = {
-        ...input,
-        id: studioID,
-      };
-      updateData.stash_ids = await mergeStudioStashIDs(
-        studioID,
-        input.stash_ids ?? []
-      );
-
-      const res = await updateStudio(updateData);
-      if (!res.data?.studioUpdate)
-        handleSaveError(
-          studioID,
-          modalStudio?.name ?? "",
-          res?.errors?.[0]?.message ?? ""
-        );
-    }
-  };
-
-  const renderStudios = () =>
-    studios.map((studio) => {
-      const isTagged = taggedStudios[studio.id];
-
-      const stashID = studio.stash_ids.find((s) => {
+      const stashID = tag.stash_ids.find((s) => {
         return s.endpoint === selectedEndpoint.endpoint;
       });
 
@@ -470,7 +392,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         mainContent = (
           <div className="text-left">
             <h5 className="text-bold">
-              <FormattedMessage id="studio_tagger.studio_already_tagged" />
+              <FormattedMessage id="tag_tagger.tag_already_tagged" />
             </h5>
           </div>
         );
@@ -479,26 +401,23 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           <InputGroup>
             <Form.Control
               className="text-input"
-              defaultValue={studio.name ?? ""}
+              defaultValue={tag.name ?? ""}
               onChange={(e) =>
                 setQueries({
                   ...queries,
-                  [studio.id]: e.currentTarget.value,
+                  [tag.id]: e.currentTarget.value,
                 })
               }
               onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
                 e.key === "Enter" &&
-                doBoxSearch(studio.id, queries[studio.id] ?? studio.name ?? "")
+                doBoxSearch(tag.id, queries[tag.id] ?? tag.name ?? "")
               }
             />
             <InputGroup.Append>
               <Button
                 disabled={loading}
                 onClick={() =>
-                  doBoxSearch(
-                    studio.id,
-                    queries[studio.id] ?? studio.name ?? ""
-                  )
+                  doBoxSearch(tag.id, queries[tag.id] ?? tag.name ?? "")
                 }
               >
                 <FormattedMessage id="actions.search" />
@@ -510,7 +429,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         mainContent = (
           <div className="d-flex flex-column text-left">
             <h5>
-              <FormattedMessage id="studio_tagger.studio_successfully_tagged" />
+              <FormattedMessage id="tag_tagger.tag_successfully_tagged" />
             </h5>
           </div>
         );
@@ -522,7 +441,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         const link = base ? (
           <ExternalLink
             className="small d-block"
-            href={`${base}studios/${stashID.stash_id}`}
+            href={`${base}tags/${stashID.stash_id}`}
           >
             {stashID.stash_id}
           </ExternalLink>
@@ -531,13 +450,13 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         );
 
         subContent = (
-          <div key={studio.id}>
+          <div key={tag.id}>
             <InputGroup className="StudioTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
                 <Button
                   onClick={() =>
-                    doBoxUpdate(studio.id, stashID.stash_id, stashID.endpoint)
+                    doBoxUpdate(tag.id, stashID.stash_id, stashID.endpoint)
                   }
                   disabled={!!loadingUpdate}
                 >
@@ -549,74 +468,57 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
                 </Button>
               </InputGroup.Append>
             </InputGroup>
-            {error[studio.id] && (
+            {error[tag.id] && (
               <div className="text-danger mt-1">
                 <strong>
                   <span className="mr-2">Error:</span>
-                  {error[studio.id]?.message}
+                  {error[tag.id]?.message}
                 </strong>
-                <div>{error[studio.id]?.details}</div>
+                <div>{error[tag.id]?.details}</div>
               </div>
             )}
           </div>
         );
-      } else if (searchErrors[studio.id]) {
+      } else if (searchErrors[tag.id]) {
         subContent = (
           <div className="text-danger font-weight-bold">
-            {searchErrors[studio.id]}
+            {searchErrors[tag.id]}
           </div>
         );
-      } else if (searchResults[studio.id]?.length === 0) {
+      } else if (searchResults[tag.id]?.length === 0) {
         subContent = (
           <div className="text-danger font-weight-bold">
-            <FormattedMessage id="studio_tagger.no_results_found" />
+            <FormattedMessage id="tag_tagger.no_results_found" />
           </div>
         );
       }
 
       let searchResult;
-      if (searchResults[studio.id]?.length > 0 && !isTagged) {
+      if (searchResults[tag.id]?.length > 0 && !isTagged) {
         searchResult = (
           <StashSearchResult
-            key={studio.id}
-            stashboxStudios={searchResults[studio.id]}
-            studio={studio}
+            key={tag.id}
+            stashboxTags={searchResults[tag.id]}
+            tag={tag}
             endpoint={selectedEndpoint.endpoint}
-            onStudioTagged={handleTaggedStudio}
-            excludedStudioFields={config.excludedStudioFields ?? []}
+            onTagTagged={handleTaggedTag}
+            excludedTagFields={config.excludedTagFields ?? []}
           />
         );
       }
 
       return (
-        <div key={studio.id} className={`${CLASSNAME}-studio`}>
-          {modalStudio && (
-            <StudioModal
-              closeModal={() => setModalStudio(undefined)}
-              modalVisible={modalStudio.stored_id === studio.id}
-              studio={modalStudio}
-              handleStudioCreate={handleStudioUpdate}
-              excludedStudioFields={config.excludedStudioFields}
-              icon={faTags}
-              header={intl.formatMessage({
-                id: "studio_tagger.update_studio",
-              })}
-              endpoint={selectedEndpoint.endpoint}
-            />
-          )}
+        <div key={tag.id} className={`${CLASSNAME}-studio`}>
           <div className={`${CLASSNAME}-details`}>
             <div></div>
             <div>
               <Card className="studio-card">
-                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
+                <img loading="lazy" src={tag.image_path ?? ""} alt="" />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>
-              <Link
-                to={`/studios/${studio.id}`}
-                className={`${CLASSNAME}-header`}
-              >
-                <h2>{studio.name}</h2>
+              <Link to={`/tags/${tag.id}`} className={`${CLASSNAME}-header`}>
+                <h2>{tag.name}</h2>
               </Link>
               {mainContent}
               <div className="sub-content text-left">{subContent}</div>
@@ -630,44 +532,40 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   return (
     <Card>
       {showBatchUpdate && (
-        <StudioBatchUpdateModal
+        <TagBatchUpdateModal
           close={() => setShowBatchUpdate(false)}
           isIdle={isIdle}
           selectedEndpoint={selectedEndpoint}
-          studios={studios}
+          tags={tags}
           onBatchUpdate={handleBatchUpdate}
-          batchAddParents={batchAddParents}
-          setBatchAddParents={setBatchAddParents}
         />
       )}
 
       {showBatchAdd && (
-        <StudioBatchAddModal
+        <TagBatchAddModal
           close={() => setShowBatchAdd(false)}
           isIdle={isIdle}
           onBatchAdd={handleBatchAdd}
-          batchAddParents={batchAddParents}
-          setBatchAddParents={setBatchAddParents}
         />
       )}
       <div className="ml-auto mb-3">
         <Button onClick={() => setShowBatchAdd(true)}>
-          <FormattedMessage id="studio_tagger.batch_add_studios" />
+          <FormattedMessage id="tag_tagger.batch_add_tags" />
         </Button>
         <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
-          <FormattedMessage id="studio_tagger.batch_update_studios" />
+          <FormattedMessage id="tag_tagger.batch_update_tags" />
         </Button>
       </div>
-      <div className={CLASSNAME}>{renderStudios()}</div>
+      <div className={CLASSNAME}>{renderTags()}</div>
     </Card>
   );
 };
 
 interface ITaggerProps {
-  studios: GQL.StudioDataFragment[];
+  tags: GQL.TagListDataFragment[];
 }
 
-export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
+export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
   const { configuration: stashConfig } = useConfigurationContext();
@@ -678,7 +576,6 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
   const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
 
-  // monitor batch operation
   useEffect(() => {
     if (!jobsSubscribe.data) {
       return;
@@ -695,9 +592,9 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
       setBatchJob(undefined);
       setBatchJobID(undefined);
 
-      // Once the studio batch is complete, refresh all local studio data
       const ac = getClient();
-      evictQueries(ac.cache, studioMutationImpactedQueries);
+      ac.cache.evict({ fieldName: "findTags" });
+      ac.cache.gc();
     }
   }, [jobsSubscribe, batchJobID]);
 
@@ -714,9 +611,9 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
-  async function batchAdd(studioInput: string, createParent: boolean) {
-    if (studioInput && selectedEndpoint) {
-      const inputs = studioInput
+  async function batchAdd(tagInput: string) {
+    if (tagInput && selectedEndpoint) {
+      const inputs = tagInput
         .split(",")
         .map((n) => n.trim())
         .filter((n) => n.length > 0);
@@ -724,44 +621,33 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
       const { names, stashIds } = separateNamesAndStashIds(inputs);
 
       if (names.length > 0 || stashIds.length > 0) {
-        const ret = await mutateStashBoxBatchStudioTag({
+        const ret = await mutateStashBoxBatchTagTag({
           names: names.length > 0 ? names : undefined,
           stash_ids: stashIds.length > 0 ? stashIds : undefined,
           endpoint: selectedEndpointIndex,
           refresh: false,
-          exclude_fields: config?.excludedStudioFields ?? [],
-          createParent: createParent,
+          createParent: false,
+          exclude_fields: config?.excludedTagFields ?? [],
         });
 
-        setBatchJobID(ret.data?.stashBoxBatchStudioTag);
+        setBatchJobID(ret.data?.stashBoxBatchTagTag);
       }
     }
   }
 
-  async function batchUpdate(
-    ids: string[] | undefined,
-    refresh: boolean,
-    createParent: boolean
-  ) {
+  async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
     if (selectedEndpoint) {
-      const ret = await mutateStashBoxBatchStudioTag({
+      const ret = await mutateStashBoxBatchTagTag({
         ids: ids,
         endpoint: selectedEndpointIndex,
         refresh,
-        exclude_fields: config?.excludedStudioFields ?? [],
-        createParent: createParent,
+        createParent: false,
+        exclude_fields: config?.excludedTagFields ?? [],
       });
 
-      setBatchJobID(ret.data?.stashBoxBatchStudioTag);
+      setBatchJobID(ret.data?.stashBoxBatchTagTag);
     }
   }
-
-  // const progress =
-  //   jobStatus.data?.metadataUpdate.status ===
-  //     "Stash-Box Studio Batch Operation" &&
-  //   jobStatus.data.metadataUpdate.progress >= 0
-  //     ? jobStatus.data.metadataUpdate.progress * 100
-  //     : null;
 
   function renderStatus() {
     if (batchJob) {
@@ -772,7 +658,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
       return (
         <Form.Group className="px-4">
           <h5>
-            <FormattedMessage id="studio_tagger.status_tagging_studios" />
+            <FormattedMessage id="tag_tagger.status_tagging_tags" />
           </h5>
           {progress !== undefined && (
             <ProgressBar
@@ -789,7 +675,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
       return (
         <Form.Group className="px-4">
           <h5>
-            <FormattedMessage id="studio_tagger.status_tagging_job_queued" />
+            <FormattedMessage id="tag_tagger.status_tagging_job_queued" />
           </h5>
         </Form.Group>
       );
@@ -829,37 +715,15 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
               config={config}
               setConfig={setConfig}
               show={showConfig}
-              excludedFields={config.excludedStudioFields ?? []}
+              excludedFields={config.excludedTagFields ?? []}
               onFieldsChange={(fields) =>
-                setConfig({ ...config, excludedStudioFields: fields })
+                setConfig({ ...config, excludedTagFields: fields })
               }
-              fields={STUDIO_FIELDS}
-              entityName="studios"
-              extraConfig={
-                <Form.Group
-                  controlId="create-parent"
-                  className="align-items-center"
-                >
-                  <Form.Check
-                    label={
-                      <FormattedMessage id="studio_tagger.config.create_parent_label" />
-                    }
-                    checked={config.createParentStudios}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setConfig({
-                        ...config,
-                        createParentStudios: e.currentTarget.checked,
-                      })
-                    }
-                  />
-                  <Form.Text>
-                    <FormattedMessage id="studio_tagger.config.create_parent_desc" />
-                  </Form.Text>
-                </Form.Group>
-              }
+              fields={TAG_FIELDS}
+              entityName="tags"
             />
-            <StudioTaggerList
-              studios={studios}
+            <TagTaggerList
+              tags={tags}
               selectedEndpoint={{
                 endpoint: selectedEndpoint.endpoint,
                 index: selectedEndpointIndex,
@@ -873,7 +737,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
         ) : (
           <div className="my-4">
             <h3 className="text-center mt-4">
-              <FormattedMessage id="studio_tagger.to_use_the_studio_tagger" />
+              <FormattedMessage id="tag_tagger.to_use_the_tag_tagger" />
             </h3>
             <h5 className="text-center">
               Please see{" "}
