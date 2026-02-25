@@ -508,6 +508,8 @@ export const FilteredImageList = PatchComponent(
 
     const searchFocus = useFocus();
 
+    const withSidebar = props.view !== View.GalleryImages;
+
     const {
       filterHook,
       view,
@@ -515,10 +517,6 @@ export const FilteredImageList = PatchComponent(
       extraOperations: providedOperations = [],
       chapters,
     } = props;
-
-    const withSidebar = view !== View.GroupSubGroups;
-    const filterable = view !== View.GroupSubGroups;
-    const sortable = view !== View.GroupSubGroups;
 
     // States
     const {
@@ -729,8 +727,6 @@ export const FilteredImageList = PatchComponent(
           operationComponent={operations}
           view={view}
           zoomable
-          filterable={filterable}
-          sortable={sortable}
         />
 
         <FilterTags
