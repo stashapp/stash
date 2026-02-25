@@ -667,7 +667,12 @@ declare namespace PluginApi {
     ExternalLinkButtons: React.FC<any>;
     ExternalLinksButton: React.FC<any>;
     FilteredGalleryList: React.FC<any>;
+    FilteredGroupList: React.FC<any>;
+    FilteredImageList: React.FC<any>;
+    FilteredPerformerList: React.FC<any>;
     FilteredSceneList: React.FC<any>;
+    FilteredSceneMarkerList: React.FC<any>;
+    FilteredStudioList: React.FC<any>;
     FolderSelect: React.FC<any>;
     FrontPage: React.FC<any>;
     GalleryCard: React.FC<any>;
