@@ -7,7 +7,10 @@ import { StringListSelect, GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
-import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
+import {
+  mutateSceneMerge,
+  queryFindFullScenesByID,
+} from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
@@ -54,8 +57,8 @@ type MergeOptions = {
 };
 
 interface ISceneMergeDetailsProps {
-  sources: GQL.SlimSceneDataFragment[];
-  dest: GQL.SlimSceneDataFragment;
+  sources: GQL.SceneDataFragment[];
+  dest: GQL.SceneDataFragment;
   onClose: (options?: MergeOptions) => void;
 }
 
@@ -711,10 +714,10 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   const [sourceScenes, setSourceScenes] = useState<Scene[]>([]);
   const [destScene, setDestScene] = useState<Scene[]>([]);
 
-  const [loadedSources, setLoadedSources] = useState<
-    GQL.SlimSceneDataFragment[]
-  >([]);
-  const [loadedDest, setLoadedDest] = useState<GQL.SlimSceneDataFragment>();
+  const [loadedSources, setLoadedSources] = useState<GQL.SceneDataFragment[]>(
+    []
+  );
+  const [loadedDest, setLoadedDest] = useState<GQL.SceneDataFragment>();
 
   const [running, setRunning] = useState(false);
   const [secondStep, setSecondStep] = useState(false);
@@ -740,7 +743,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   async function loadScenes() {
     const sceneIDs = sourceScenes.map((s) => parseInt(s.id));
     sceneIDs.push(parseInt(destScene[0].id));
-    const query = await queryFindScenesByID(sceneIDs);
+    const query = await queryFindFullScenesByID(sceneIDs);
     const { scenes: loadedScenes } = query.data.findScenes;
 
     setLoadedDest(loadedScenes.find((s) => s.id === destScene[0].id));
