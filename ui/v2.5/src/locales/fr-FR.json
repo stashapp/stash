@@ -1218,7 +1218,11 @@
         "play_duration": "Temps de lecture",
         "stream": "Flux",
         "video_codec": "Codec vidéo",
-        "o_count": "Nombre d'O"
+        "o_count": "Nombre d'O",
+        "md5": "Somme de contrôle MD5",
+        "oshash": "oshash",
+        "oshash_meaning": "Empreinte OpenSubtitles",
+        "phash_meaning": "Empreinte perceptuelle"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Métadonnées",
@@ -1632,5 +1636,41 @@
     "duplicated_stash_id": "Dupliqué (identifiant Stash)",
     "duplicated_title": "Dupliqué (Titre)",
     "career_end": "Fin de carrière",
-    "career_start": "Début de carrière"
+    "career_start": "Début de carrière",
+    "tag_tagger": {
+        "add_new_tags": "Ajouter de nouvelles étiquettes",
+        "any_names_entered_will_be_queried": "Tous les noms saisis seront recherchés dans l'instance Stash-Box distante et ajoutés si trouvés. Seules les correspondances exactes seront considérées comme valides.",
+        "batch_add_tags": "Ajouter des étiquettes par lot",
+        "batch_update_tags": "Mise à jour groupée d'étiquettes",
+        "current_page": "Page actuelle",
+        "failed_to_save_tag": "Impossible d'enregistrer l'étiquette \"{tag}\"",
+        "name_already_exists": "Nom déjà existant",
+        "network_error": "Erreur réseau",
+        "no_results_found": "Aucun résultat trouvé.",
+        "number_of_tags_will_be_processed": "{tag_count} étiquettes seront traitées",
+        "query_all_tags_in_the_database": "Toutes les étiquettes dans la base de données",
+        "refresh_tagged_tags": "Actualiser les étiquettes marquées",
+        "refreshing_will_update_the_data": "Une actualisation mettra à jour les données de toutes les étiquettes marquées à partir de l'instance Stash-Box.",
+        "status_tagging_job_queued": "Statut : Tâche d'étiquetage en attente",
+        "status_tagging_tags": "Statut : Marquage des étiquettes",
+        "tag_already_tagged": "Étiquette déjà marquée",
+        "tag_names_or_stashids_separated_by_comma": "Noms d'étiquettes ou identifiants Stash séparés par des virgules",
+        "tag_selection": "Sélection d'étiquettes",
+        "tag_successfully_tagged": "Étiquette marquée avec succès",
+        "tag_status": "Statut étiquette",
+        "to_use_the_tag_tagger": "Pour utiliser le marqueur d'étiquettes, une instance Stash-Box doit être configurée.",
+        "untagged_tags": "Étiquettes non marquées",
+        "update_tags": "Mise à jour des étiquettes",
+        "updating_untagged_tags_description": "Une mise à jour des étiquettes non marquées tentera de faire correspondre toutes les étiquettes sans identifiant Stash et d'actualiser les métadonnées."
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "Instance active Stash-Box :",
+            "edit_excluded_fields": "Éditer les champs exclus",
+            "excluded_fields": "Champs exclus :",
+            "fields_will_not_be_changed": "Ces champs ne seront pas modifiés lors de la mise à jour de {entity}.",
+            "no_fields_are_excluded": "Aucun champ n'est exclu",
+            "no_instances_found": "Aucune instance trouvée"
+        }
+    }
 }
