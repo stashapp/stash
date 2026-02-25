@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { ImageList } from "src/components/Images/ImageList";
+import { FilteredImageList } from "src/components/Images/ImageList";
 import {
   mutateRemoveGalleryImages,
   mutateSetGalleryCover,
@@ -142,7 +142,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> =
       ];
 
       return (
-        <ImageList
+        <FilteredImageList
           filterHook={filterHook}
           alterQuery={active}
           extraOperations={otherOperations}

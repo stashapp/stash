@@ -20,6 +20,7 @@ import {
   FilterMode,
   GalleryFilterType,
   GroupFilterType,
+  ImageFilterType,
   InputMaybe,
   IntCriterionInput,
   PerformerFilterType,
@@ -524,6 +525,8 @@ interface IFilterType {
   performer_count?: InputMaybe<IntCriterionInput>;
   galleries_filter?: InputMaybe<GalleryFilterType>;
   gallery_count?: InputMaybe<IntCriterionInput>;
+  images_filter?: InputMaybe<ImageFilterType>;
+  image_count?: InputMaybe<IntCriterionInput>;
   groups_filter?: InputMaybe<GroupFilterType>;
   group_count?: InputMaybe<IntCriterionInput>;
   studios_filter?: InputMaybe<StudioFilterType>;
@@ -577,6 +580,17 @@ export function setObjectFilter(
         break;
       }
       out.galleries_filter = relatedFilterOutput as GalleryFilterType;
+      break;
+    case FilterMode.Images:
+      // if empty, only get objects with galleries
+      if (empty) {
+        out.image_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+        break;
+      }
+      out.images_filter = relatedFilterOutput as ImageFilterType;
       break;
     case FilterMode.Groups:
       // if empty, only get objects with groups
