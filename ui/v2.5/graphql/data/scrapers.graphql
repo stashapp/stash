@@ -160,6 +160,8 @@ fragment ScrapedSceneStudioData on ScrapedStudio {
 fragment ScrapedSceneTagData on ScrapedTag {
   stored_id
   name
+  description
+  alias_list
   remote_site_id
 }
 

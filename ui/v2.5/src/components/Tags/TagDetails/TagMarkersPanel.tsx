@@ -5,7 +5,7 @@ import {
   TagsCriterion,
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
-import { SceneMarkerList } from "src/components/Scenes/SceneMarkerList";
+import { FilteredSceneMarkerList } from "src/components/Scenes/SceneMarkerList";
 import { View } from "src/components/List/views";
 
 function useFilterHook(tag: GQL.TagDataFragment, showSubTagContent?: boolean) {
@@ -60,7 +60,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
   const filterHook = useFilterHook(tag, showSubTagContent);
 
   return (
-    <SceneMarkerList
+    <FilteredSceneMarkerList
       filterHook={filterHook}
       alterQuery={active}
       view={View.TagMarkers}

@@ -48,7 +48,10 @@ import {
   yupUniqueStringList,
 } from "src/utils/yup";
 import { useTagsEdit } from "src/hooks/tagsEdit";
-import { CustomFieldsInput } from "src/components/Shared/CustomFields";
+import {
+  CustomFieldsInput,
+  formatCustomFieldInput,
+} from "src/components/Shared/CustomFields";
 import { cloneDeep } from "@apollo/client/utilities";
 
 const isScraper = (
@@ -65,16 +68,6 @@ interface IPerformerDetails {
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
-}
-
-function customFieldInput(isNew: boolean, input: {}) {
-  if (isNew) {
-    return input;
-  } else {
-    return {
-      full: input,
-    };
-  }
 }
 
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
@@ -173,7 +166,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function submit(values: InputValues) {
     const input = {
       ...schema.cast(values),
-      custom_fields: customFieldInput(isNew, values.custom_fields),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
     onSave(input);
   }
@@ -368,7 +361,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     const { values } = formik;
     const input = {
       ...schema.cast(values),
-      custom_fields: customFieldInput(isNew, values.custom_fields),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
     onSave(input, true);
   }

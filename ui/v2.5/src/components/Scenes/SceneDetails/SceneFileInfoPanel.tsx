@@ -60,11 +60,16 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             </dd>
           </>
         )}
-        <TextField id="media_info.hash" value={oshash?.value} truncate />
-        <TextField id="media_info.checksum" value={checksum?.value} truncate />
+        <TextField
+          id="media_info.oshash"
+          abbr={intl.formatMessage({ id: "media_info.oshash_meaning" })}
+          value={oshash?.value}
+          truncate
+        />
+        <TextField id="media_info.md5" value={checksum?.value} truncate />
         <URLField
           id="media_info.phash"
-          abbr="Perceptual hash"
+          abbr={intl.formatMessage({ id: "media_info.phash_meaning" })}
           value={phash?.value}
           url={NavUtils.makeScenesPHashMatchUrl(phash?.value)}
           target="_self"

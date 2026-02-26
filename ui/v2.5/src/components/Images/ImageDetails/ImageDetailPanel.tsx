@@ -7,6 +7,7 @@ import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
 import { PatchComponent } from "../../../patch";
+import { CustomFields } from "src/components/Shared/CustomFields";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -132,6 +133,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = PatchComponent(
             {renderDetails()}
             {renderTags()}
             {renderPerformers()}
+            <CustomFields values={props.image.custom_fields} fullWidth />
           </div>
         </div>
       </>

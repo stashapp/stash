@@ -158,6 +158,8 @@ type PerformerFilterType struct {
 	TagCount *IntCriterionInput `json:"tag_count"`
 	// Filter by scene count
 	SceneCount *IntCriterionInput `json:"scene_count"`
+	// Filter by scene marker count (via scene)
+	MarkerCount *IntCriterionInput `json:"marker_count"`
 	// Filter by image count
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
@@ -202,6 +204,8 @@ type PerformerFilterType struct {
 	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
 	// Filter by related tags that meet this criteria
 	TagsFilter *TagFilterType `json:"tags_filter"`
+	// Filter by related scene markers (via scene) that meet this criteria
+	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at

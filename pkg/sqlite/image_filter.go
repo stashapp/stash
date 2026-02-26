@@ -100,6 +100,13 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{imageFilter.CreatedAt, "images.created_at", nil},
 		&timestampCriterionHandler{imageFilter.UpdatedAt, "images.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: imagesCustomFieldsTable.GetTable(),
+			fkCol: imageIDColumn,
+			c:     imageFilter.CustomFields,
+			idCol: "images.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "galleries_images.gallery_id",
 			relatedRepo:    galleryRepository.repository,

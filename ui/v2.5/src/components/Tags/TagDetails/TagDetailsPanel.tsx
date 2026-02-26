@@ -3,6 +3,7 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { StashIDPill } from "src/components/Shared/StashID";
 import * as GQL from "src/core/generated-graphql";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
@@ -90,6 +91,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
         value={renderStashIDs()}
         fullWidth={fullWidth}
       />
+      <CustomFields values={tag.custom_fields} />
     </div>
   );
 };

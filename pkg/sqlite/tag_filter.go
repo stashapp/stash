@@ -161,6 +161,20 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 				tagRepository.studios.innerJoin(f, "", "tags.id")
 			},
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "markers_tags.marker_id",
+			relatedRepo:    sceneMarkerRepository.repository,
+			relatedHandler: &sceneMarkerFilterHandler{tagFilter.MarkersFilter},
+			joinFn: func(f *filterBuilder) {
+				f.addWith(`markers_tags AS (
+				SELECT mt.scene_marker_id AS marker_id, mt.tag_id AS tag_id FROM scene_markers_tags mt
+				UNION
+				SELECT m.id, m.primary_tag_id FROM scene_markers m
+				)`)
+				f.addInnerJoin("markers_tags", "", "markers_tags.tag_id = tags.id")
+			},
+		},
 	}
 }
 

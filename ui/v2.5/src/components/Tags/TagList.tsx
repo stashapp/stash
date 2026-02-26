@@ -30,6 +30,7 @@ import { EditTagsDialog } from "./EditTagsDialog";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
 import { PatchComponent } from "src/patch";
+import { TagTagger } from "../Tagger/tags/TagTagger";
 
 function getItems(result: GQL.FindTagsForListQueryResult) {
   return result?.data?.findTags?.tags ?? [];
@@ -354,6 +355,9 @@ export const TagList: React.FC<ITagList> = PatchComponent(
         }
         if (filter.displayMode === DisplayMode.Wall) {
           return <h1>TODO</h1>;
+        }
+        if (filter.displayMode === DisplayMode.Tagger) {
+          return <TagTagger tags={result.data.findTags.tags} />;
         }
       }
       return (

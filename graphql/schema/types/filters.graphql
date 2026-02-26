@@ -177,6 +177,8 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by marker count (via scene)"
+  marker_count: IntCriterionInput
   "Filter by image count"
   image_count: IntCriterionInput
   "Filter by gallery count"
@@ -220,6 +222,8 @@ input PerformerFilterType {
   galleries_filter: GalleryFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related scene markers (via scene) that meet this criteria"
+  markers_filter: SceneMarkerFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -684,6 +688,8 @@ input TagFilterType {
   performers_filter: PerformerFilterType
   "Filter by related studios that meet this criteria"
   studios_filter: StudioFilterType
+  "Filter by related scene markers that meet this criteria"
+  markers_filter: SceneMarkerFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
@@ -765,6 +771,8 @@ input ImageFilterType {
   tags_filter: TagFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input FileFilterType {

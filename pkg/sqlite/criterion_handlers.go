@@ -1089,11 +1089,16 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 }
 
 type relatedFilterHandler struct {
-	relatedIDCol   string
-	relatedRepo    repository
+	// column on the primary table that relates to the related table (eg scene_id)
+	relatedIDCol string
+	// repository for the related table (eg sceneRepository)
+	relatedRepo repository
+	// handler for the filter on the related table
 	relatedHandler criterionHandler
-	joinFn         func(f *filterBuilder)
-	directJoin     bool
+	// optional function to perform the necessary join(s) to the related table
+	joinFn func(f *filterBuilder)
+	// if true, related filter handler will be run using the existing filterBuilder instead of a subquery.
+	directJoin bool
 }
 
 func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {

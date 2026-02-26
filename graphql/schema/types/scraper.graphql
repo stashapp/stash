@@ -71,6 +71,8 @@ type ScrapedTag {
   "Set if tag matched"
   stored_id: ID
   name: String!
+  description: String
+  alias_list: [String!]
   "Remote site ID, if applicable"
   remote_site_id: String
 }

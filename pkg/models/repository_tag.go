@@ -26,6 +26,7 @@ type TagFinder interface {
 	FindByName(ctx context.Context, name string, nocase bool) (*Tag, error)
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Tag, error)
 	FindByStashID(ctx context.Context, stashID StashID) ([]*Tag, error)
+	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Tag, error)
 }
 
 // TagQueryer provides methods to query tags.

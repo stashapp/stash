@@ -471,9 +471,11 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 
 type ScrapedTag struct {
 	// Set if tag matched
-	StoredID     *string `json:"stored_id"`
-	Name         string  `json:"name"`
-	RemoteSiteID *string `json:"remote_site_id"`
+	StoredID     *string  `json:"stored_id"`
+	Name         string   `json:"name"`
+	Description  *string  `json:"description"`
+	AliasList    []string `json:"alias_list"`
+	RemoteSiteID *string  `json:"remote_site_id"`
 }
 
 func (ScrapedTag) IsScrapedContent() {}
@@ -482,6 +484,17 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	currentTime := time.Now()
 	ret := NewTag()
 	ret.Name = t.Name
+	ret.ParentIDs = NewRelatedIDs([]int{})
+	ret.ChildIDs = NewRelatedIDs([]int{})
+	ret.Aliases = NewRelatedStrings([]string{})
+
+	if t.Description != nil && !excluded["description"] {
+		ret.Description = *t.Description
+	}
+
+	if len(t.AliasList) > 0 && !excluded["aliases"] {
+		ret.Aliases = NewRelatedStrings(t.AliasList)
+	}
 
 	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
@@ -494,6 +507,39 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	}
 
 	return &ret
+}
+
+func (t *ScrapedTag) ToPartial(storedID string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) TagPartial {
+	ret := NewTagPartial()
+
+	if t.Name != "" && !excluded["name"] {
+		ret.Name = NewOptionalString(t.Name)
+	}
+
+	if t.Description != nil && !excluded["description"] {
+		ret.Description = NewOptionalString(*t.Description)
+	}
+
+	if len(t.AliasList) > 0 && !excluded["aliases"] {
+		ret.Aliases = &UpdateStrings{
+			Values: t.AliasList,
+			Mode:   RelationshipUpdateModeSet,
+		}
+	}
+
+	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
+		ret.StashIDs = &UpdateStashIDs{
+			StashIDs: existingStashIDs,
+			Mode:     RelationshipUpdateModeSet,
+		}
+		ret.StashIDs.Set(StashID{
+			Endpoint:  endpoint,
+			StashID:   *t.RemoteSiteID,
+			UpdatedAt: time.Now(),
+		})
+	}
+
+	return ret
 }
 
 func ScrapedTagSortFunction(a, b *ScrapedTag) int {

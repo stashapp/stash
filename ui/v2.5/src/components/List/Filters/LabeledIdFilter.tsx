@@ -24,6 +24,7 @@ import {
   IntCriterionInput,
   PerformerFilterType,
   SceneFilterType,
+  SceneMarkerFilterType,
   StudioFilterType,
 } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
@@ -527,6 +528,8 @@ interface IFilterType {
   group_count?: InputMaybe<IntCriterionInput>;
   studios_filter?: InputMaybe<StudioFilterType>;
   studio_count?: InputMaybe<IntCriterionInput>;
+  marker_count?: InputMaybe<IntCriterionInput>;
+  markers_filter?: InputMaybe<SceneMarkerFilterType>;
 }
 
 export function setObjectFilter(
@@ -549,6 +552,7 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.scenes_filter = relatedFilterOutput as SceneFilterType;
       break;
@@ -559,6 +563,7 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.performers_filter = relatedFilterOutput as PerformerFilterType;
       break;
@@ -569,6 +574,7 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.galleries_filter = relatedFilterOutput as GalleryFilterType;
       break;
@@ -579,6 +585,7 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.groups_filter = relatedFilterOutput as GroupFilterType;
       break;
@@ -589,8 +596,20 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.studios_filter = relatedFilterOutput as StudioFilterType;
+      break;
+    case FilterMode.SceneMarkers:
+      // if empty, only get objects with scene markers
+      if (empty) {
+        out.marker_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+        break;
+      }
+      out.markers_filter = relatedFilterOutput as SceneMarkerFilterType;
       break;
     default:
       throw new Error("Invalid filter mode");

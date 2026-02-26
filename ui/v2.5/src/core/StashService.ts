@@ -166,6 +166,14 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
+export const queryFindFullScenesByID = (sceneIDs: number[]) =>
+  client.query<GQL.FindFullScenesQuery>({
+    query: GQL.FindFullScenesDocument,
+    variables: {
+      ids: sceneIDs,
+    },
+  });
+
 export const queryFindScenesForSelect = (filter: ListFilterModel) =>
   client.query<GQL.FindScenesForSelectQuery>({
     query: GQL.FindScenesForSelectDocument,
@@ -2460,6 +2468,12 @@ export const mutateStashBoxBatchStudioTag = (
 ) =>
   client.mutate<GQL.StashBoxBatchStudioTagMutation>({
     mutation: GQL.StashBoxBatchStudioTagDocument,
+    variables: { input },
+  });
+
+export const mutateStashBoxBatchTagTag = (input: GQL.StashBoxBatchTagInput) =>
+  client.mutate<GQL.StashBoxBatchTagTagMutation>({
+    mutation: GQL.StashBoxBatchTagTagDocument,
     variables: { input },
   });
 

@@ -651,6 +651,7 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 	galleryReader := r.Gallery
 	performerReader := r.Performer
 	tagReader := r.Tag
+	imageReader := r.Image
 
 	for s := range jobChan {
 		imageHash := s.Checksum
@@ -665,14 +666,17 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 			continue
 		}
 
-		newImageJSON := image.ToBasicJSON(s)
+		newImageJSON, err := image.ToBasicJSON(ctx, imageReader, s)
+		if err != nil {
+			logger.Errorf("[images] <%s> error converting image to JSON: %v", imageHash, err)
+			continue
+		}
 
 		// export files
 		for _, f := range s.Files.List() {
 			t.exportFile(f)
 		}
 
-		var err error
 		newImageJSON.Studio, err = image.GetStudioName(ctx, studioReader, s)
 		if err != nil {
 			logger.Errorf("[images] <%s> error getting image studio name: %v", imageHash, err)

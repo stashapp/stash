@@ -18,6 +18,7 @@ export type CustomFieldMap = {
 
 interface ICustomFields {
   values: CustomFieldMap;
+  fullWidth?: boolean;
 }
 
 function convertValue(value: unknown): string {
@@ -41,7 +42,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
   const valueStr = convertValue(value);
 
   // replace spaces with hyphen characters for css id
-  const id = field.toLowerCase().replace(/ /g, "-");
+  const id = `custom-field-${field.toLowerCase().replace(/ /g, "-")}`;
 
   return (
     <DetailItem
@@ -57,7 +58,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
 
 export const CustomFields: React.FC<ICustomFields> = PatchComponent(
   "CustomFields",
-  ({ values }) => {
+  ({ values, fullWidth }) => {
     const intl = useIntl();
     if (Object.keys(values).length === 0) {
       return null;
@@ -65,7 +66,7 @@ export const CustomFields: React.FC<ICustomFields> = PatchComponent(
 
     return (
       // according to linter rule CSS classes shouldn't use underscores
-      <div className="custom-fields">
+      <div className={cx("custom-fields", { "full-width": fullWidth })}>
         <CollapseButton
           text={intl.formatMessage({ id: "custom_fields.title" })}
         >
@@ -125,7 +126,7 @@ const CustomFieldInput: React.FC<{
         <Row
           className={cx("custom-fields-row", { "custom-fields-new": isNew })}
         >
-          <Col sm={3} xl={2} className="custom-fields-field">
+          <Col className="custom-fields-field">
             {isNew ? (
               <>
                 <Form.Control
@@ -146,7 +147,7 @@ const CustomFieldInput: React.FC<{
               <Form.Label title={currentField}>{currentField}</Form.Label>
             )}
           </Col>
-          <Col sm={9} xl={7}>
+          <Col className="custom-fields-value">
             <InputGroup>
               <Form.Control
                 ref={valueRef}
@@ -187,6 +188,16 @@ interface ICustomFieldsInput {
   error?: string;
   onChange: (values: CustomFieldMap) => void;
   setError: (error?: string) => void;
+}
+
+export function formatCustomFieldInput(isNew: boolean, input: {}) {
+  if (isNew) {
+    return input;
+  } else {
+    return {
+      full: input,
+    };
+  }
 }
 
 export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
@@ -282,10 +293,10 @@ export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
         <Row>
           <Col xl={12}>
             <Row className="custom-fields-input-header">
-              <Form.Label column sm={3} xl={2}>
+              <Form.Label column className="custom-fields-field">
                 <FormattedMessage id="custom_fields.field" />
               </Form.Label>
-              <Form.Label column sm={9} xl={7}>
+              <Form.Label column className="custom-fields-value">
                 <FormattedMessage id="custom_fields.value" />
               </Form.Label>
             </Row>

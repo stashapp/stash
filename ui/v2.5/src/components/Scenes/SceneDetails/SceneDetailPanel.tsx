@@ -6,6 +6,7 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { DirectorLink } from "src/components/Shared/Link";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -103,6 +104,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           {renderDetails()}
           {renderTags()}
           {renderPerformers()}
+          <CustomFields values={props.scene.custom_fields} fullWidth />
         </div>
       </div>
     </>

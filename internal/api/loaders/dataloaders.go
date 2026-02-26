@@ -57,6 +57,7 @@ type Loaders struct {
 	GalleryByID         *GalleryLoader
 	GalleryCustomFields *CustomFieldsLoader
 	ImageByID           *ImageLoader
+	ImageCustomFields   *CustomFieldsLoader
 
 	PerformerByID         *PerformerLoader
 	PerformerCustomFields *CustomFieldsLoader
@@ -99,6 +100,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchImages(ctx),
+			},
+			ImageCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchImageCustomFields(ctx),
 			},
 			PerformerByID: &PerformerLoader{
 				wait:     wait,
@@ -242,6 +248,18 @@ func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.FindMany(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchImageCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Image.GetCustomFieldsBulk(ctx, keys)
 			return err
 		})
 

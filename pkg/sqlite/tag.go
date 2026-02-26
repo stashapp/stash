@@ -597,6 +597,36 @@ func (qb *TagStore) FindByStashID(ctx context.Context, stashID models.StashID) (
 	return ret, nil
 }
 
+func (qb *TagStore) FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*models.Tag, error) {
+	table := qb.table()
+	sq := dialect.From(table).LeftJoin(
+		tagsStashIDsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(tagsStashIDsJoinTable.Col(tagIDColumn))),
+	).Select(table.Col(idColumn))
+
+	if hasStashID {
+		sq = sq.Where(
+			tagsStashIDsJoinTable.Col("stash_id").IsNotNull(),
+			tagsStashIDsJoinTable.Col("endpoint").Eq(stashboxEndpoint),
+		)
+	} else {
+		sq = sq.Where(
+			tagsStashIDsJoinTable.Col("stash_id").IsNull(),
+		)
+	}
+
+	idsQuery := qb.selectDataset().Where(
+		table.Col(idColumn).In(sq),
+	)
+
+	ret, err := qb.getMany(ctx, idsQuery)
+	if err != nil {
+		return nil, fmt.Errorf("getting tags for stash-box endpoint %s: %w", stashboxEndpoint, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *TagStore) GetParentIDs(ctx context.Context, relatedID int) ([]int, error) {
 	return tagsParentTagsTableMgr.get(ctx, relatedID)
 }

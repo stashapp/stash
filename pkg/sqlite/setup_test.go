@@ -1247,6 +1247,18 @@ func getImageBasename(index int) string {
 	return getImageStringValue(index, pathField)
 }
 
+func getImageCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getImageStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 func makeImageFile(i int) *models.ImageFile {
 	return &models.ImageFile{
 		BaseFile: &models.BaseFile{
@@ -1309,7 +1321,11 @@ func createImages(ctx context.Context, n int) error {
 
 		image := makeImage(i)
 
-		err := qb.Create(ctx, image, []models.FileID{f.ID})
+		err := qb.Create(ctx, &models.CreateImageInput{
+			Image:        image,
+			FileIDs:      []models.FileID{f.ID},
+			CustomFields: getImageCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())

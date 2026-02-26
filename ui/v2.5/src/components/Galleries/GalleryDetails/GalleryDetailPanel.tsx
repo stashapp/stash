@@ -6,6 +6,7 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { PhotographerLink } from "src/components/Shared/Link";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -108,6 +109,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           {renderDetails()}
           {renderTags()}
           {renderPerformers()}
+          <CustomFields values={gallery.custom_fields} fullWidth />
         </div>
       </div>
     </>
