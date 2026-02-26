@@ -1038,7 +1038,9 @@
         "play_duration": "Тривалість відтворення",
         "video_codec": "Відеокодек",
         "md5": "Контрольна сума MD5",
-        "phash_meaning": "Перцептивний хеш"
+        "phash_meaning": "Перцептивний хеш",
+        "oshash_meaning": "Хеш OpenSubtitles",
+        "oshash": "Хеш OSHash"
     },
     "metadata": "Метадані",
     "new": "Новий",
@@ -1461,7 +1463,8 @@
     "criterion": {
         "greater_than": "Більше ніж",
         "less_than": "Менше ніж",
-        "value": "Значення"
+        "value": "Значення",
+        "unsupported": "{type} (непідтримуваний)"
     },
     "containing_group": "Батьківська група",
     "cover_image": "Обкладинка",
@@ -1641,6 +1644,35 @@
         "batch_add_tags": "Додавання тегів пакетом",
         "no_results_found": "Результатів не знайдено.",
         "query_all_tags_in_the_database": "Усі теги в базі даних",
-        "refresh_tagged_tags": "Оновити позначені теги"
-    }
+        "refresh_tagged_tags": "Оновити позначені теги",
+        "current_page": "Поточна сторінка",
+        "failed_to_save_tag": "Не вдалося зберегти тег \"{tag}\"",
+        "name_already_exists": "Ім'я вже існує",
+        "network_error": "Помилка мережі",
+        "number_of_tags_will_be_processed": "{tag_count} теги будуть оброблені",
+        "refreshing_will_update_the_data": "Оновлення оновить дані будь-яких позначених тегами з екземпляра stash-box.",
+        "status_tagging_job_queued": "Статус: Завдання додавання тегів поставлено в чергу",
+        "status_tagging_tags": "Статус: Позначення тегами",
+        "tag_already_tagged": "Тег уже позначено",
+        "tag_names_or_stashids_separated_by_comma": "Назви тегів або StashID, розділені комами",
+        "tag_selection": "Вибір тегу",
+        "tag_successfully_tagged": "Тег успішно позначено тегом",
+        "tag_status": "Стан тегу",
+        "to_use_the_tag_tagger": "Щоб використовувати теґер, потрібно налаштувати екземпляр stash-box.",
+        "untagged_tags": "Нетеговані теги",
+        "update_tags": "Оновити теги",
+        "updating_untagged_tags_description": "Оновлення нетегованих тегів спробує знайти будь-які теги, яким бракує stashid, та оновити метадані.",
+        "batch_update_tags": "Теги пакетного оновлення"
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "Активний екземпляр сховища:",
+            "edit_excluded_fields": "Редагувати виключені поля",
+            "excluded_fields": "Виключені поля:",
+            "fields_will_not_be_changed": "Ці поля не будуть змінені під час оновлення {entity}.",
+            "no_fields_are_excluded": "Жодне поле не виключено",
+            "no_instances_found": "Не знайдено жодних екземплярів"
+        }
+    },
+    "unsupported_criteria": "Непідтримувані критерії: {criteria}"
 }
