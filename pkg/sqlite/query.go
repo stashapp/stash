@@ -164,13 +164,33 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) error {
 		qb.addWith(f.recursiveWith, clause)
 	}
 
+	withArgCount := 0
 	if len(args) > 0 {
-		// WITH clause always comes first and thus precedes alk args
+		// WITH clause always comes first and thus precedes all args
 		qb.args = append(args, qb.args...)
+		withArgCount = len(args)
 	}
 
-	// add joins here to insert args
-	qb.addJoins(f.getAllJoins()...)
+	// Collect join args separately instead of using addJoins directly,
+	// which appends args at the end. This causes ordering issues when
+	// parseQueryString has already added WHERE args to qb.args.
+	allJoins := f.getAllJoins()
+	var joinArgs []interface{}
+	for _, j := range allJoins {
+		if qb.joins.addUnique(j) {
+			joinArgs = append(joinArgs, j.args...)
+		}
+	}
+
+	// Insert join args after WITH args but before any existing WHERE args,
+	// because JOINs precede WHERE in SQL and args are positional.
+	if len(joinArgs) > 0 {
+		newArgs := make([]interface{}, 0, len(qb.args)+len(joinArgs))
+		newArgs = append(newArgs, qb.args[:withArgCount]...)
+		newArgs = append(newArgs, joinArgs...)
+		newArgs = append(newArgs, qb.args[withArgCount:]...)
+		qb.args = newArgs
+	}
 
 	clause, args = f.generateWhereClauses()
 	if len(clause) > 0 {

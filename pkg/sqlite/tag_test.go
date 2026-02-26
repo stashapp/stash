@@ -1889,6 +1889,65 @@ func TestTagQueryCustomFields(t *testing.T) {
 			}
 		})
 	}
+
+	// Test combining text search (findFilter.Q) with custom field filters.
+	// This verifies that positional args are bound in the correct order
+	// when JOINs (from custom fields) and WHERE (from text search) both
+	// have parameterized placeholders.
+	runWithRollbackTxn(t, "equals with text search", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		tagName := getTagStringValue(tagIdxWithGallery, "Name")
+		q := tagName
+		findFilter := &models.FindFilterType{Q: &q}
+
+		tagFilter := &models.TagFilterType{
+			CustomFields: []models.CustomFieldCriterionInput{
+				{
+					Field:    "string",
+					Modifier: models.CriterionModifierEquals,
+					Value:    []any{getTagStringValue(tagIdxWithGallery, "custom")},
+				},
+			},
+		}
+
+		tags, _, err := db.Tag.Query(ctx, tagFilter, findFilter)
+		if err != nil {
+			t.Errorf("TagStore.Query() error = %v", err)
+			return
+		}
+
+		ids := tagsToIDs(tags)
+		assert.Contains(ids, tagIDs[tagIdxWithGallery])
+		assert.Len(tags, 1)
+	})
+
+	runWithRollbackTxn(t, "is_null with text search", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		tagName := getTagStringValue(tagIdxWithGallery, "Name")
+		q := tagName
+		findFilter := &models.FindFilterType{Q: &q}
+
+		tagFilter := &models.TagFilterType{
+			CustomFields: []models.CustomFieldCriterionInput{
+				{
+					Field:    "not existing",
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+		}
+
+		tags, _, err := db.Tag.Query(ctx, tagFilter, findFilter)
+		if err != nil {
+			t.Errorf("TagStore.Query() error = %v", err)
+			return
+		}
+
+		ids := tagsToIDs(tags)
+		assert.Contains(ids, tagIDs[tagIdxWithGallery])
+		assert.Len(tags, 1)
+	})
 }
 
 // TODO Destroy
