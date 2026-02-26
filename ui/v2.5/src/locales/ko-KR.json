@@ -1636,6 +1636,24 @@
     "tag_tagger": {
         "status_tagging_tags": "상태: 태그 작업중",
         "tag_already_tagged": "이미 부여된 태그",
-        "tag_names_or_stashids_separated_by_comma": "콤마로 구분되는 태그 이름 또는 StashID"
-    }
+        "tag_names_or_stashids_separated_by_comma": "콤마로 구분되는 태그 이름 또는 StashID",
+        "tag_selection": "태그 선택",
+        "tag_successfully_tagged": "태그 부여됨",
+        "tag_status": "태그 상태",
+        "to_use_the_tag_tagger": "태그 부여기를 사용하려면 stash-box 인스턴스를 구성해야 합니다.",
+        "untagged_tags": "부여되지 않은 태그",
+        "update_tags": "태그 업데이트",
+        "updating_untagged_tags_description": "부여되지 않은 태그를 업데이트하면 stashid가 없는 태그와 매칭을 시도하고 메타데이터를 업데이트합니다."
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "활성 stash-box 인스턴스:",
+            "edit_excluded_fields": "제외된 필드 편집",
+            "excluded_fields": "제외된 필드:",
+            "fields_will_not_be_changed": "{entity}를 업데이트할 때 이 필드는 변경되지 않습니다.",
+            "no_fields_are_excluded": "제외된 필드 없음",
+            "no_instances_found": "인스턴스 없음"
+        }
+    },
+    "unsupported_criteria": "지원되지 않는 기준: {criteria}"
 }
