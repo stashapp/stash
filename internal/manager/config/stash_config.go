@@ -38,3 +38,11 @@ func (s StashConfigs) GetStashFromDirPath(dirPath string) *StashConfig {
 	}
 	return nil
 }
+
+func (s StashConfigs) Paths() []string {
+	paths := make([]string, len(s))
+	for i, c := range s {
+		paths[i] = c.Path
+	}
+	return paths
+}

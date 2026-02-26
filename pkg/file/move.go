@@ -45,9 +45,12 @@ type Mover struct {
 
 	moved          map[string]string
 	foldersCreated []string
+
+	// needed for creating folder hierarchy when moving zip file entries
+	rootPaths []string
 }
 
-func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReaderWriter) *Mover {
+func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReaderWriter, rootPaths []string) *Mover {
 	return &Mover{
 		Files:   fileStore,
 		Folders: folderStore,
@@ -55,6 +58,7 @@ func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReade
 			renamerRemoverImpl: newRenamerRemoverImpl(),
 			mkDirFn:            os.Mkdir,
 		},
+		rootPaths: rootPaths,
 	}
 }
 
@@ -87,7 +91,13 @@ func (m *Mover) Move(ctx context.Context, f models.File, folder *models.Folder, 
 		return fmt.Errorf("file %s already exists", newPath)
 	}
 
-	if err := transferZipHierarchy(ctx, m.Folders, m.Files, fBase.ID, oldPath, newPath); err != nil {
+	zipMover := zipHierarchyMover{
+		folderStore: m.Folders,
+		files:       m.Files,
+		rootPaths:   m.rootPaths,
+	}
+
+	if err := zipMover.transferZipHierarchy(ctx, fBase.ID, oldPath, newPath); err != nil {
 		return fmt.Errorf("moving folder hierarchy for file %s: %w", fBase.Path, err)
 	}
 

@@ -60,6 +60,10 @@ type Scanner struct {
 	// handlers are called after a file has been scanned.
 	FileHandlers []Handler
 
+	// RootPaths form the top-level paths for the library.
+	// Used to determine the root of the folder hierarchy when creating folders.
+	RootPaths []string
+
 	// Rescan indicates whether files should be rescanned even if they haven't changed.
 	Rescan bool
 
@@ -604,13 +608,19 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 	fBaseCopy.Fingerprints = updatedBase.Fingerprints
 	*updatedBase = fBaseCopy
 
+	zipMover := zipHierarchyMover{
+		folderStore: s.Repository.Folder,
+		files:       s.Repository.File,
+		rootPaths:   s.RootPaths,
+	}
+
 	if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.File.Update(ctx, updated); err != nil {
 			return fmt.Errorf("updating file for rename %q: %w", newPath, err)
 		}
 
 		if s.IsZipFile(updatedBase.Basename) {
-			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, updatedBase.ID, oldPath, newPath); err != nil {
+			if err := zipMover.transferZipHierarchy(ctx, updatedBase.ID, oldPath, newPath); err != nil {
 				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", newPath, err)
 			}
 		}

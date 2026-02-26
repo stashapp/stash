@@ -123,7 +123,8 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		ZipFileExtensions:     cfg.GetGalleryExtensions(),
 		// ScanFilters is set in ScanJob.Execute
 		// HandlerRequiredFilters is set in ScanJob.Execute
-		Rescan: input.Rescan,
+		RootPaths: cfg.GetStashPaths().Paths(),
+		Rescan:    input.Rescan,
 	}
 
 	scanJob := ScanJob{

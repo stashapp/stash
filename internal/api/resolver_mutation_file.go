@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -19,7 +20,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		fileStore := r.repository.File
 		folderStore := r.repository.Folder
-		mover := file.NewMover(fileStore, folderStore)
+		mover := file.NewMover(fileStore, folderStore, manager.GetInstance().Config.GetStashPaths().Paths())
 		mover.RegisterHooks(ctx)
 
 		var (
@@ -57,13 +58,14 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 			folderPath := *input.DestinationFolder
 
 			// ensure folder path is within the library
-			if err := r.validateFolderPath(folderPath); err != nil {
+			stashPaths := manager.GetInstance().Config.GetStashPaths()
+			if err := r.validateFolderPath(stashPaths, folderPath); err != nil {
 				return err
 			}
 
 			// get or create folder hierarchy
 			var err error
-			folder, err = file.GetOrCreateFolderHierarchy(ctx, folderStore, folderPath)
+			folder, err = file.GetOrCreateFolderHierarchy(ctx, folderStore, folderPath, stashPaths.Paths())
 			if err != nil {
 				return fmt.Errorf("getting or creating folder hierarchy: %w", err)
 			}
@@ -112,8 +114,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 	return true, nil
 }
 
-func (r *mutationResolver) validateFolderPath(folderPath string) error {
-	paths := manager.GetInstance().Config.GetStashPaths()
+func (r *mutationResolver) validateFolderPath(paths config.StashConfigs, folderPath string) error {
 	if l := paths.GetStashFromDirPath(folderPath); l == nil {
 		return fmt.Errorf("folder path %s must be within a stash library path", folderPath)
 	}
