@@ -222,7 +222,7 @@ func (s *Scanner) onNewFolder(ctx context.Context, file ScannedFile) (*models.Fo
 	}
 
 	if !s.isRootPath(file.Path) {
-	dir := filepath.Dir(file.Path)
+		dir := filepath.Dir(file.Path)
 
 		// create full folder hierarchy if parent folder doesn't exist, and set parent folder ID
 		parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, dir, s.RootPaths)
@@ -317,6 +317,19 @@ func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing 
 			existing.ZipFileID = fZfID
 			update = true
 		}
+	}
+
+	// handle case where parent folder was not previously set
+	if existing.ParentFolderID == nil && !s.isRootPath(existing.Path) {
+		logger.Infof("Existing folder entry %q has no parent folder. Creating folder hierarchy and setting parent ID...", existing.Path)
+
+		// create full folder hierarchy if parent folder doesn't exist, and set parent folder ID
+		parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, filepath.Dir(f.Path), s.RootPaths)
+		if err != nil {
+			return nil, fmt.Errorf("getting parent folder for %q: %w", f.Path, err)
+		}
+		existing.ParentFolderID = &parentFolder.ID
+		update = true
 	}
 
 	if update {
