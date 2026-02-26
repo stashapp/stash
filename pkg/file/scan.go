@@ -400,13 +400,31 @@ func (s *Scanner) onNewFile(ctx context.Context, f ScannedFile) (*ScanFileResult
 	baseFile.UpdatedAt = now
 
 	// find the parent folder
-	parentFolderID, err := s.getFolderID(ctx, filepath.Dir(path))
+	folderPath := filepath.Dir(path)
+	parentFolderID, err := s.getFolderID(ctx, folderPath)
 	if err != nil {
 		return nil, fmt.Errorf("getting parent folder for %q: %w", path, err)
 	}
 
 	if parentFolderID == nil {
-		return nil, fmt.Errorf("parent folder for %q doesn't exist", path)
+		// parent folders should have been created before scanning this file in a recursive scan
+		// assume that we are scanning specifically and only this file,
+		// so we should create the parent folder hierarchy if it doesn't exist
+		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+			parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, folderPath, s.RootPaths)
+			if err != nil {
+				return fmt.Errorf("getting parent folder for %q: %w", f.Path, err)
+			}
+
+			parentFolderID = &parentFolder.ID
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if parentFolderID == nil {
+		// shouldn't happen
+		return nil, fmt.Errorf("parent folder ID is nil for %q", path)
 	}
 
 	baseFile.ParentFolderID = *parentFolderID
