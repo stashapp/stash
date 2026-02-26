@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -197,6 +198,10 @@ func (s *Scanner) ScanFolder(ctx context.Context, file ScannedFile) (*models.Fol
 	return f, err
 }
 
+func (s *Scanner) isRootPath(path string) bool {
+	return path == "." || slices.Contains(s.RootPaths, path)
+}
+
 func (s *Scanner) onNewFolder(ctx context.Context, file ScannedFile) (*models.Folder, error) {
 	renamed, err := s.handleFolderRename(ctx, file)
 	if err != nil {
@@ -216,18 +221,16 @@ func (s *Scanner) onNewFolder(ctx context.Context, file ScannedFile) (*models.Fo
 		UpdatedAt: now,
 	}
 
+	if !s.isRootPath(file.Path) {
 	dir := filepath.Dir(file.Path)
-	if dir != "." {
-		parentFolderID, err := s.getFolderID(ctx, dir)
+
+		// create full folder hierarchy if parent folder doesn't exist, and set parent folder ID
+		parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, dir, s.RootPaths)
 		if err != nil {
 			return nil, fmt.Errorf("getting parent folder %q: %w", dir, err)
 		}
 
-		// if parent folder doesn't exist, assume it's a top-level folder
-		// this may not be true if we're using multiple goroutines
-		if parentFolderID != nil {
-			toCreate.ParentFolderID = parentFolderID
-		}
+		toCreate.ParentFolderID = &parentFolder.ID
 	}
 
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
