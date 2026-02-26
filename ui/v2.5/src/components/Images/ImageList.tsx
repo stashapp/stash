@@ -618,7 +618,7 @@ export const FilteredImageList = PatchComponent(
       showModal(
         <ExportDialog
           exportInput={{
-            groups: {
+            images: {
               ids: Array.from(selectedIds.values()),
               all: all,
             },
