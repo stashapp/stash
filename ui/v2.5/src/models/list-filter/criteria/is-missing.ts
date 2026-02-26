@@ -31,6 +31,7 @@ export const SceneIsMissingCriterionOption = new IsMissingCriterionOption(
     "director",
     "url",
     "date",
+    "rating",
     "cover",
     "galleries",
     "studio",
@@ -51,6 +52,7 @@ export const ImageIsMissingCriterionOption = new IsMissingCriterionOption(
     "url",
     "date",
     "code",
+    "rating",
     "galleries",
     "studio",
     "performers",
@@ -85,6 +87,7 @@ export const PerformerIsMissingCriterionOption = new IsMissingCriterionOption(
     "tags",
     "image",
     "details",
+    "rating",
     "stash_id",
   ]
 );
@@ -99,6 +102,7 @@ export const GalleryIsMissingCriterionOption = new IsMissingCriterionOption(
     "photographer",
     "url",
     "date",
+    "rating",
     "cover",
     "studio",
     "performers",
@@ -116,19 +120,19 @@ export const TagIsMissingCriterionOption = new IsMissingCriterionOption(
 export const StudioIsMissingCriterionOption = new IsMissingCriterionOption(
   "isMissing",
   "is_missing",
-  ["image", "stash_id", "details", "url", "aliases", "tags"]
+  ["image", "stash_id", "details", "url", "aliases", "tags", "rating"]
 );
 
 export const GroupIsMissingCriterionOption = new IsMissingCriterionOption(
   "isMissing",
   "is_missing",
   [
-    "name",
     "aliases",
     "description",
     "director",
     "date",
     "url",
+    "rating",
     "studio",
     "performers",
     "tags",

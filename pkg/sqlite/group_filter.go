@@ -133,7 +133,7 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				f.addWhere("tags_join.group_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"aliases", "description", "director", "date",
+					"aliases", "description", "director", "date", "rating",
 				}); err != nil {
 					f.setError(err)
 					return

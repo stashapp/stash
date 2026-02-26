@@ -313,7 +313,7 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 				f.addWhere("cover_join.image_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "code", "details", "photographer",
+					"title", "code", "rating", "details", "photographer",
 				}); err != nil {
 					f.setError(err)
 					return
