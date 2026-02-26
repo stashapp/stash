@@ -236,6 +236,7 @@ Returns `void`.
 - `FilteredSceneList`
 - `FilteredSceneMarkerList`
 - `FilteredStudioList`
+- `FilteredTagList`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -353,6 +354,7 @@ Returns `void`.
 - `TagCardGrid`
 - `TagIDSelect`
 - `TagLink`
+- `TagList`
 - `TagRecommendationRow`
 - `TagSelect`
 - `TagSelect.sort`

@@ -673,6 +673,7 @@ declare namespace PluginApi {
     FilteredSceneList: React.FC<any>;
     FilteredSceneMarkerList: React.FC<any>;
     FilteredStudioList: React.FC<any>;
+    FilteredTagList: React.FC<any>;
     FolderSelect: React.FC<any>;
     FrontPage: React.FC<any>;
     GalleryCard: React.FC<any>;
