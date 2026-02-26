@@ -1632,5 +1632,10 @@
     "career_start": "경력 시작",
     "duplicated": "중복됨",
     "duplicated_stash_id": "중복됨 (Stash ID)",
-    "duplicated_title": "중복됨 (제목)"
+    "duplicated_title": "중복됨 (제목)",
+    "tag_tagger": {
+        "status_tagging_tags": "상태: 태그 작업중",
+        "tag_already_tagged": "이미 부여된 태그",
+        "tag_names_or_stashids_separated_by_comma": "콤마로 구분되는 태그 이름 또는 StashID"
+    }
 }
