@@ -908,7 +908,8 @@
     "criterion": {
         "greater_than": "Supérieur à",
         "less_than": "Inférieur à",
-        "value": "Valeur"
+        "value": "Valeur",
+        "unsupported": "{type} (non supporté)"
     },
     "criterion_modifier": {
         "between": "entre",
@@ -1672,5 +1673,6 @@
             "no_fields_are_excluded": "Aucun champ n'est exclu",
             "no_instances_found": "Aucune instance trouvée"
         }
-    }
+    },
+    "unsupported_criteria": "Critère non supporté : {criteria}"
 }
