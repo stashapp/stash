@@ -7,7 +7,7 @@ import {
 const modifierOptions = [CriterionModifier.Includes];
 
 const defaultModifier = CriterionModifier.Includes;
-const inputType = "text"; // FIXME
+const inputType = "folders";
 
 export const FolderCriterionOption = new ModifierCriterionOption({
   messageID: "folder",
