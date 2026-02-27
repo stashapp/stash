@@ -641,7 +641,7 @@
             },
             "custom_locales": {
                 "description": "Sobreescribir traducciones individuales. El listado original se puede encontrar aquí: https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. La página debe ser refrescada para reflejar los cambios realizados.",
-                "heading": "Traducciones personalizadas",
+                "heading": "Localización personalizada",
                 "option_label": "Traducción personalizada activada"
             },
             "delete_options": {
@@ -901,7 +901,8 @@
     "criterion": {
         "greater_than": "Mayor que",
         "less_than": "Menor que",
-        "value": "Valor"
+        "value": "Valor",
+        "unsupported": "{type} (no compatible)"
     },
     "criterion_modifier": {
         "between": "está entre",
@@ -1177,7 +1178,8 @@
         "video_codec": "Códec de vídeo",
         "play_count": "Contador de reproducciones",
         "play_duration": "Tiempo de reproducción",
-        "o_count": "Contador de orgasmos"
+        "o_count": "Contador de orgasmos",
+        "md5": "Suma de comprobación MD5"
     },
     "megabits_per_second": "{value} megabits por segundo (mbps)",
     "metadata": "Metadatos",
