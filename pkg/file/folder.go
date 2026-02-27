@@ -33,7 +33,10 @@ func GetOrCreateFolderHierarchy(ctx context.Context, fc models.FolderFinderCreat
 			// safety check - don't allow parent path to be the same as the current path,
 			// otherwise we could end up in an infinite loop
 			if parentPath == path {
-				panic(fmt.Sprintf("parent path is the same as the current path: %s", path))
+				// #6618 - log a warning and return nil for the parent ID,
+				// which will cause the folder to be created with no parent
+				logger.Warnf("parent path is the same as the current path: %s", path)
+				return nil, nil
 			}
 
 			parent, err := GetOrCreateFolderHierarchy(ctx, fc, parentPath, rootPaths)
