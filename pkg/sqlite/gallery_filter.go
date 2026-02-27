@@ -84,6 +84,7 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		}),
 
 		qb.pathCriterionHandler(filter.Path),
+		qb.parentFolderCriterionHandler(filter.ParentFolder),
 		qb.fileCountCriterionHandler(filter.FileCount),
 		intCriterionHandler(filter.Rating100, "galleries.rating", nil),
 		qb.urlsCriterionHandler(filter.URL),
@@ -274,6 +275,65 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 					panic("unsupported string filter modifier")
 				}
 			}
+		}
+	}
+}
+
+func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if folder == nil {
+			return
+		}
+
+		galleryRepository.addFoldersTable(f)
+		f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
+
+		criterion := *folder
+		switch criterion.Modifier {
+		case models.CriterionModifierEquals:
+			criterion.Modifier = models.CriterionModifierIncludes
+		case models.CriterionModifierNotEquals:
+			criterion.Modifier = models.CriterionModifierExcludes
+		}
+
+		// only allow includes or excludes filters
+		if criterion.Modifier != models.CriterionModifierIncludes && criterion.Modifier != models.CriterionModifierExcludes {
+			f.setError(fmt.Errorf("invalid modifier for parent folder criterion: %s", criterion.Modifier))
+		}
+
+		if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
+			return
+		}
+
+		// combine excludes if excludes modifier is selected
+		if criterion.Modifier == models.CriterionModifierExcludes {
+			criterion.Modifier = models.CriterionModifierIncludes
+			criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+			criterion.Value = nil
+		}
+
+		if len(criterion.Value) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Value, "folders", "", "parent_folder_id", "parent_folder_id", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			// combine clauses with OR to handle zip file or folder
+			c1 := makeClause(fmt.Sprintf("folders.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			c2 := makeClause(fmt.Sprintf("gallery_folder.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			f.whereClauses = append(f.whereClauses, orClauses(c1, c2))
+		}
+
+		if len(criterion.Excludes) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, "folders", "", "parent_folder_id", "parent_folder_id", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			f.addWhere(fmt.Sprintf("folders.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR folders.parent_folder_id IS NULL", valuesClause))
+			f.addWhere(fmt.Sprintf("gallery_folder.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR gallery_folder.parent_folder_id IS NULL", valuesClause))
 		}
 	}
 }
