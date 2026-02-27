@@ -614,6 +614,7 @@ var folderSortOptions = sortOptions{
 	"created_at",
 	"id",
 	"path",
+	"basename",
 	"random",
 	"updated_at",
 }
