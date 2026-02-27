@@ -66,6 +66,7 @@ import { Button } from "react-bootstrap";
 import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { PerformerAgeCriterionOption } from "src/models/list-filter/images";
+import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -430,6 +431,12 @@ const SidebarContent: React.FC<{
           filterHook={filterHook}
         />
         <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarFolderFilter
+          text={<FormattedMessage id="folder" />}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="folder"
+        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}
