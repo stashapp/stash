@@ -522,7 +522,11 @@ export const queryFindSubFolders = (id: string) =>
       folder_filter: {
         parent_folder: { value: id, modifier: GQL.CriterionModifier.Equals },
       },
-      filter: { per_page: -1 },
+      filter: {
+        per_page: -1,
+        sort: "basename",
+        direction: GQL.SortDirectionEnum.Asc,
+      },
     },
   });
 
