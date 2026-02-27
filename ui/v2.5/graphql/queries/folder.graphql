@@ -1,6 +1,6 @@
 query FindRootFoldersForSelect {
   findFolders(
-    filter: { per_page: -1 }
+    filter: { per_page: -1, sort: "path", direction: ASC }
     folder_filter: { parent_folder: { modifier: IS_NULL } }
   ) {
     count
