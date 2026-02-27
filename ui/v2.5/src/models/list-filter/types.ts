@@ -224,4 +224,5 @@ export type CriterionType =
   | "has_chapters"
   | "sort_name"
   | "custom_fields"
-  | "folder";
+  | "folder"
+  | "parent_folder";

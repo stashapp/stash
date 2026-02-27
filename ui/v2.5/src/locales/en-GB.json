@@ -1327,6 +1327,7 @@
     "next": "Next",
     "previous": "Previous"
   },
+  "parent_folder": "Parent Folder",
   "parent_of": "Parent of {children}",
   "parent_studio": "Parent Studio",
   "parent_studios": "Parent Studios",

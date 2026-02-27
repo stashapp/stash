@@ -314,6 +314,7 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
   }
 
   function onDepthChanged(depth: number) {
+    // this could be ParentFolderCriterion, but the types are the same
     const newValue = criterion.clone() as FolderCriterion;
     newValue.value.depth = depth;
     setCriterion(newValue);
