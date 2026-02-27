@@ -17,7 +17,7 @@ import (
 )
 
 func post84(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 76")
+	logger.Info("Running post-migration for schema version 84")
 
 	m := schema84Migrator{
 		migrator: migrator{
@@ -30,6 +30,10 @@ func post84(ctx context.Context, db *sqlx.DB) error {
 
 	if err := m.createMissingFolderHierarchies(ctx, rootPaths); err != nil {
 		return fmt.Errorf("creating missing folder hierarchies: %w", err)
+	}
+
+	if err := m.fixIncorrectParents(ctx, rootPaths); err != nil {
+		return fmt.Errorf("fixing incorrect parent folders: %w", err)
 	}
 
 	if err := m.migrateFolders(ctx); err != nil {
@@ -207,6 +211,102 @@ func (m *schema84Migrator) getOrCreateFolderHierarchy(tx *sqlx.Tx, path string, 
 	}
 
 	return folderID, nil
+}
+
+func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []string) error {
+	const (
+		limit    = 1000
+		logEvery = 10000
+	)
+
+	lastID := 0
+	count := 0
+	fixed := 0
+	logged := false
+
+	for {
+		gotSome := false
+
+		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+			query := "SELECT f.id, f.path, f.parent_folder_id, pf.path AS parent_path " +
+				"FROM folders f " +
+				"JOIN folders pf ON f.parent_folder_id = pf.id "
+
+			if lastID != 0 {
+				query += fmt.Sprintf("WHERE f.id > %d ", lastID)
+			}
+
+			query += fmt.Sprintf("ORDER BY f.id LIMIT %d", limit)
+
+			rows, err := tx.Query(query)
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			for rows.Next() {
+				var id int
+				var p string
+				var parentFolderID int
+				var parentPath string
+
+				err := rows.Scan(&id, &p, &parentFolderID, &parentPath)
+				if err != nil {
+					return err
+				}
+
+				lastID = id
+				gotSome = true
+				count++
+
+				expectedParent := filepath.Dir(p)
+				if expectedParent == parentPath {
+					continue
+				}
+
+				if !logged {
+					logger.Info("Fixing folders with incorrect parent folder assignments...")
+					logged = true
+				}
+
+				correctParentID, err := m.getOrCreateFolderHierarchy(tx, expectedParent, rootPaths)
+				if err != nil {
+					return fmt.Errorf("error getting/creating correct parent for folder %d %q: %w", id, p, err)
+				}
+
+				if correctParentID == nil {
+					continue
+				}
+
+				logger.Debugf("Fixing folder %d %q: changing parent_folder_id from %d to %d", id, p, parentFolderID, *correctParentID)
+
+				_, err = tx.Exec("UPDATE `folders` SET `parent_folder_id` = ? WHERE `id` = ?", *correctParentID, id)
+				if err != nil {
+					return fmt.Errorf("error fixing parent folder for folder %d %q: %w", id, p, err)
+				}
+
+				fixed++
+			}
+
+			return rows.Err()
+		}); err != nil {
+			return err
+		}
+
+		if !gotSome {
+			break
+		}
+
+		if count%logEvery == 0 {
+			logger.Infof("Checked %d folders", count)
+		}
+	}
+
+	if fixed > 0 {
+		logger.Infof("Fixed %d folders with incorrect parent assignments", fixed)
+	}
+
+	return nil
 }
 
 func (m *schema84Migrator) migrateFolders(ctx context.Context) error {
