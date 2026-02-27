@@ -1097,7 +1097,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		Duration null.Float
 		Size     null.Float
 	}{}
-	if err := sceneRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := sceneRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 

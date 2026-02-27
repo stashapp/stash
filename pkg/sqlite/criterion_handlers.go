@@ -1129,7 +1129,7 @@ func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
-	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.args...)
+	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.allArgs()...)
 }
 
 type phashDistanceCriterionHandler struct {

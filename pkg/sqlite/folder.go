@@ -513,7 +513,7 @@ func (qb *FolderStore) queryGroupedFields(ctx context.Context, options models.Fo
 		Megapixels float64
 		Size       int64
 	}{}
-	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 

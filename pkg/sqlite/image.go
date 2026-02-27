@@ -926,7 +926,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		Megapixels null.Float
 		Size       null.Float
 	}{}
-	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 
