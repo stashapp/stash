@@ -907,7 +907,8 @@
     "criterion": {
         "greater_than": "大于",
         "less_than": "小于",
-        "value": "值"
+        "value": "值",
+        "unsupported": "{type} (未受支持)"
     },
     "criterion_modifier": {
         "between": "介于…之间",
@@ -1216,7 +1217,11 @@
         "play_duration": "播放长度",
         "stream": "视频流地址",
         "video_codec": "视频编码",
-        "o_count": "高潮次数"
+        "o_count": "高潮次数",
+        "md5": "MD5 校验值",
+        "oshash": "oshash值",
+        "oshash_meaning": "OpenSubtitles 哈希值",
+        "phash_meaning": "感知哈希值"
     },
     "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
@@ -1632,5 +1637,42 @@
     "duplicated_stash_id": "重复（Stash ID）",
     "duplicated_title": "重复（标题）",
     "career_end": "引退时间",
-    "career_start": "入行时间"
+    "career_start": "入行时间",
+    "tag_tagger": {
+        "add_new_tags": "增加新标签",
+        "any_names_entered_will_be_queried": "输入的任何名字都会从远程 Stash-Box 实例查询，并在找到后添加。只有完全匹配才算匹配。",
+        "batch_add_tags": "批量添加标签",
+        "batch_update_tags": "批量更新标签",
+        "current_page": "当前页面",
+        "failed_to_save_tag": "保存标签 \"{tag}\" 失败",
+        "name_already_exists": "名字已存在",
+        "network_error": "网络错误",
+        "no_results_found": "没有结果被找到。",
+        "number_of_tags_will_be_processed": "{tag_count} 个标签将被处理",
+        "query_all_tags_in_the_database": "数据库中的所有标签",
+        "refresh_tagged_tags": "刷新已标记的标签",
+        "refreshing_will_update_the_data": "刷新操作将会更新来自此 stash-box 实例中任何已被标记的标签。",
+        "status_tagging_job_queued": "状态：标记作业已入队列",
+        "status_tagging_tags": "状态：标记标签中",
+        "tag_already_tagged": "标签已被标记",
+        "tag_names_or_stashids_separated_by_comma": "英文逗号分隔的标签名称或StashID(可以是多个)",
+        "tag_selection": "标签选择",
+        "tag_successfully_tagged": "标签已被成功标记",
+        "tag_status": "标签状态",
+        "to_use_the_tag_tagger": "使用标记标签的功能，需要配置一个stash-box实例。",
+        "untagged_tags": "未标记的标签",
+        "update_tags": "更新标签",
+        "updating_untagged_tags_description": "更新未标记的标签时，会尝试匹配那些没有 stashid 的标签并更新元数据。"
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "使用中的 stash-box 实例：",
+            "edit_excluded_fields": "编辑被排除的字段",
+            "excluded_fields": "被排除的字段：",
+            "fields_will_not_be_changed": "更新 {entity} 时这些字段将不变。",
+            "no_fields_are_excluded": "没有字段被排除",
+            "no_instances_found": "没有找到实例"
+        }
+    },
+    "unsupported_criteria": "未支持标准：{criteria}"
 }
