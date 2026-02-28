@@ -2,71 +2,14 @@ package scene
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-// sentinel error to force rollback, preventing post-commit hooks from
-// trying to execute plugins on the zero-value Cache in tests.
-var errRollback = errors.New("rollback")
-
-type mockSceneScanCU struct {
-	mock.Mock
-}
-
-func (m *mockSceneScanCU) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
-	args := m.Called(ctx, fileID)
-	return args.Get(0).([]*models.Scene), args.Error(1)
-}
-
-func (m *mockSceneScanCU) FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Scene, error) {
-	args := m.Called(ctx, fp)
-	return args.Get(0).([]*models.Scene), args.Error(1)
-}
-
-func (m *mockSceneScanCU) GetFiles(ctx context.Context, relatedID int) ([]*models.VideoFile, error) {
-	args := m.Called(ctx, relatedID)
-	return args.Get(0).([]*models.VideoFile), args.Error(1)
-}
-
-func (m *mockSceneScanCU) Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error {
-	args := m.Called(ctx, newScene, fileIDs)
-	return args.Error(0)
-}
-
-func (m *mockSceneScanCU) UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error) {
-	args := m.Called(ctx, id, updatedScene)
-	return args.Get(0).(*models.Scene), args.Error(1)
-}
-
-func (m *mockSceneScanCU) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
-	args := m.Called(ctx, id, fileID)
-	return args.Error(0)
-}
-
-type noopTxnManager struct{}
-
-func (m *noopTxnManager) Begin(ctx context.Context, writable bool) (context.Context, error) {
-	return ctx, nil
-}
-func (m *noopTxnManager) Commit(ctx context.Context) error   { return nil }
-func (m *noopTxnManager) Rollback(ctx context.Context) error { return nil }
-func (m *noopTxnManager) IsLocked(err error) bool            { return false }
-
-// withTxnCtx runs fn inside a transaction context so that txn.AddPostCommitHook
-// (called by plugin.Cache.RegisterPostHooks) doesn't panic on a nil hookManager.
-func withTxnCtx(fn func(ctx context.Context)) {
-	_ = txn.WithTxn(context.Background(), &noopTxnManager{}, func(ctx context.Context) error {
-		fn(ctx)
-		return errRollback
-	})
-}
 
 func TestAssociateExisting_UpdatePartialOnContentChange(t *testing.T) {
 	const (
@@ -104,28 +47,28 @@ func TestAssociateExisting_UpdatePartialOnContentChange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cu := &mockSceneScanCU{}
-			cu.On("GetFiles", mock.Anything, testSceneID).Return([]*models.VideoFile{existingFile}, nil)
+			db := mocks.NewDatabase()
+			db.Scene.On("GetFiles", mock.Anything, testSceneID).Return([]*models.VideoFile{existingFile}, nil)
 
 			if tt.expectUpdate {
-				cu.On("UpdatePartial", mock.Anything, testSceneID, mock.Anything).
+				db.Scene.On("UpdatePartial", mock.Anything, testSceneID, mock.Anything).
 					Return(&models.Scene{ID: testSceneID}, nil)
 			}
 
 			h := &ScanHandler{
-				CreatorUpdater: cu,
+				CreatorUpdater: db.Scene,
 				PluginCache:    &plugin.Cache{},
 			}
 
-			withTxnCtx(func(ctx context.Context) {
+			db.WithTxnCtx(func(ctx context.Context) {
 				err := h.associateExisting(ctx, []*models.Scene{makeScene()}, existingFile, tt.updateExisting)
 				assert.NoError(t, err)
 			})
 
 			if tt.expectUpdate {
-				cu.AssertCalled(t, "UpdatePartial", mock.Anything, testSceneID, mock.Anything)
+				db.Scene.AssertCalled(t, "UpdatePartial", mock.Anything, testSceneID, mock.Anything)
 			} else {
-				cu.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
+				db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
 			}
 		})
 	}
@@ -150,22 +93,22 @@ func TestAssociateExisting_UpdatePartialOnNewFile(t *testing.T) {
 		Files: models.NewRelatedVideoFiles([]*models.VideoFile{existingFile}),
 	}
 
-	cu := &mockSceneScanCU{}
-	cu.On("GetFiles", mock.Anything, testSceneID).Return([]*models.VideoFile{existingFile}, nil)
-	cu.On("AddFileID", mock.Anything, testSceneID, models.FileID(newFileID)).Return(nil)
-	cu.On("UpdatePartial", mock.Anything, testSceneID, mock.Anything).
+	db := mocks.NewDatabase()
+	db.Scene.On("GetFiles", mock.Anything, testSceneID).Return([]*models.VideoFile{existingFile}, nil)
+	db.Scene.On("AddFileID", mock.Anything, testSceneID, models.FileID(newFileID)).Return(nil)
+	db.Scene.On("UpdatePartial", mock.Anything, testSceneID, mock.Anything).
 		Return(&models.Scene{ID: testSceneID}, nil)
 
 	h := &ScanHandler{
-		CreatorUpdater: cu,
+		CreatorUpdater: db.Scene,
 		PluginCache:    &plugin.Cache{},
 	}
 
-	withTxnCtx(func(ctx context.Context) {
+	db.WithTxnCtx(func(ctx context.Context) {
 		err := h.associateExisting(ctx, []*models.Scene{scene}, newFile, false)
 		assert.NoError(t, err)
 	})
 
-	cu.AssertCalled(t, "AddFileID", mock.Anything, testSceneID, models.FileID(newFileID))
-	cu.AssertCalled(t, "UpdatePartial", mock.Anything, testSceneID, mock.Anything)
+	db.Scene.AssertCalled(t, "AddFileID", mock.Anything, testSceneID, models.FileID(newFileID))
+	db.Scene.AssertCalled(t, "UpdatePartial", mock.Anything, testSceneID, mock.Anything)
 }
