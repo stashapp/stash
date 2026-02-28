@@ -29,7 +29,6 @@ input GenerateMetadataInput {
 
   paths: [String!]
 
-
   "overwrite existing media"
   overwrite: Boolean
 }
