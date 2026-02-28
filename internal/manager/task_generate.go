@@ -43,6 +43,8 @@ type GenerateMetadataInput struct {
 	GalleryIDs []string `json:"galleryIDs"`
 	// overwrite existing media
 	Overwrite bool `json:"overwrite"`
+	// paths
+	Paths []string `json:"paths"`
 }
 
 type GeneratePreviewOptionsInput struct {
@@ -63,6 +65,7 @@ const generateQueueSize = 200000
 type GenerateJob struct {
 	repository models.Repository
 	input      GenerateMetadataInput
+	paths      []string
 
 	overwrite      bool
 	fileNamingAlgo models.HashAlgorithm
@@ -99,6 +102,12 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 	parallelTasks := config.GetParallelTasksWithAutoDetection()
 
 	logger.Infof("Generate started with %d parallel tasks", parallelTasks)
+
+	sp := getScanPaths(j.input.Paths)
+	j.paths = make([]string, len(sp))
+	for i, p := range sp {
+		j.paths[i] = p.Path
+	}
 
 	queue := make(chan Task, generateQueueSize)
 	go func() {
@@ -182,6 +191,10 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 							j.queueImageJob(g, img, queue)
 						}
 					}
+				}
+
+				if len(j.input.Paths) > 0 {
+					j.queueTasks(ctx, g, queue)
 				}
 			}
 
@@ -287,6 +300,7 @@ func (j *GenerateJob) queueScenesTasks(ctx context.Context, g *generate.Generato
 	const batchSize = 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	sceneFilter := scene.FilterFromPaths(j.paths)
 
 	r := j.repository
 
@@ -295,7 +309,7 @@ func (j *GenerateJob) queueScenesTasks(ctx context.Context, g *generate.Generato
 			return
 		}
 
-		scenes, err := scene.Query(ctx, r.Scene, nil, findFilter)
+		scenes, err := scene.Query(ctx, r.Scene, sceneFilter, findFilter)
 		if err != nil {
 			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
 			return
@@ -326,6 +340,7 @@ func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generato
 	const batchSize = 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	imageFilter := image.FilterFromPaths(j.paths)
 
 	r := j.repository
 
@@ -334,7 +349,7 @@ func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generato
 			return
 		}
 
-		images, err := image.Query(ctx, r.Image, nil, findFilter)
+		images, err := image.Query(ctx, r.Image, imageFilter, findFilter)
 		if err != nil {
 			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
 			return

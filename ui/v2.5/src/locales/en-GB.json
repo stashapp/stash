@@ -123,6 +123,7 @@
     "invert_selection": "Invert Selection",
     "selective_auto_tag": "Selective auto tag",
     "selective_clean": "Selective clean",
+    "selective_generate": "Selective generate",
     "selective_scan": "Selective scan",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
