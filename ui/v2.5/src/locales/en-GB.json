@@ -441,7 +441,7 @@
         "heading": "Scrapers path"
       },
       "scraping": "Scraping",
-      "sprite_generation_head": "Sprite generation",
+      "sprite_generation_head": "Sprite Generation",
       "sprite_interval_desc": "Time between each generated sprite in seconds.",
       "sprite_interval_head": "Sprite interval",
       "sprite_maximum_desc": "Maximum number of sprites to be generated for a scene. Set to 0 to disable the limit.",
