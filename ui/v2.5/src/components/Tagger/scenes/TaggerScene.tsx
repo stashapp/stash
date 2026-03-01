@@ -28,8 +28,7 @@ interface ITaggerSceneDetails {
 
 const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
   const [open, setOpen] = useState(false);
-  const sorted = sortPerformers(scene.performers);
-
+  const sorted = useMemo(() => sortPerformers(scene.performers), [scene.performers]);
   return (
     <div className="original-scene-details">
       <Collapse in={open}>
