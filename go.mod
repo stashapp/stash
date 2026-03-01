@@ -30,7 +30,6 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/json-iterator/go v1.1.12
-	github.com/kermieisinthehouse/gosx-notifier v0.1.2
 	github.com/kermieisinthehouse/systray v1.2.4
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/env v1.1.0

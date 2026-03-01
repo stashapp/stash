@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 
-	gosxnotifier "github.com/kermieisinthehouse/gosx-notifier"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -22,14 +21,8 @@ func isServerDockerized() bool {
 }
 
 func sendNotification(notificationTitle string, notificationText string) {
-	notification := gosxnotifier.NewNotification(notificationText)
-	notification.Title = notificationTitle
-	notification.AppIcon = getIconPath()
-	notification.Open = getServerURL("")
-	notification.Sender = "cc.stashapp.stash"
-	err := notification.Push()
-
-	if err != nil {
+	script := fmt.Sprintf(`display notification %q with title %q`, notificationText, notificationTitle)
+	if err := exec.Command("osascript", "-e", script).Run(); err != nil {
 		logger.Errorf("Could not send MacOS notification: %s", err.Error())
 	}
 }
