@@ -446,6 +446,13 @@ button.collapse-button {
   }
 }
 
+.input-group-append {
+  .btn {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+}
+
 .ModalComponent .modal-footer {
   justify-content: space-between;
 }
