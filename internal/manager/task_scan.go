@@ -312,7 +312,7 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	// handle rename should have already handled the contents of the zip file
 	// so shouldn't need to scan it again
 
-	if (r.New || r.Updated) && j.scanner.IsZipFile(f.Info.Name()) {
+	if (r.New || r.FingerprintChanged) && j.scanner.IsZipFile(f.Info.Name()) {
 		ff := r.File
 		f.BaseFile = ff.Base()
 

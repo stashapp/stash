@@ -343,10 +343,11 @@ func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing 
 }
 
 type ScanFileResult struct {
-	File    models.File
-	New     bool
-	Renamed bool
-	Updated bool
+	File               models.File
+	New                bool
+	Renamed            bool
+	Updated            bool
+	FingerprintChanged bool
 }
 
 // ScanFile scans the provided file into the database, returning the scan result.
@@ -787,6 +788,9 @@ func (s *Scanner) onExistingFile(ctx context.Context, f ScannedFile, existing mo
 		return nil, err
 	}
 
+	oldFingerprints := existing.Base().Fingerprints
+	fingerprintChanged := fp.ContentsChanged(oldFingerprints)
+
 	s.removeOutdatedFingerprints(existing, fp)
 	existing.SetFingerprints(fp)
 
@@ -810,8 +814,9 @@ func (s *Scanner) onExistingFile(ctx context.Context, f ScannedFile, existing mo
 		return nil, err
 	}
 	return &ScanFileResult{
-		File:    existing,
-		Updated: true,
+		File:               existing,
+		Updated:            true,
+		FingerprintChanged: fingerprintChanged,
 	}, nil
 }
 
