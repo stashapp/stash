@@ -29,9 +29,10 @@ jobs:
 
     # pnpm version is read from the packageManager field in package.json
     - name: Install pnpm
-      uses: pnpm/action-setup@9b5745cdf0a2e8c2620f0746130f809adb911c19
+      uses: pnpm/action-setup@v4
       with:
         package_json_file: ui/v2.5/package.json
+        # https://github.com/pnpm/action-setup/issues/201
         cache: true
 
     - name: Setup Node.js
