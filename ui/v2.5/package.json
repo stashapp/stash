@@ -3,6 +3,7 @@
   "private": true,
   "homepage": "./",
   "type": "module",
+  "packageManager": "pnpm@10.24.0",
   "scripts": {
     "start": "vite",
     "build": "vite build",
