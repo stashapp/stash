@@ -5,7 +5,6 @@ on:
     branches:
       - develop
       - master
-      - 'releases/**'
   pull_request:
   release:
     types: [ published ]
@@ -22,28 +21,21 @@ jobs:
   # Runs natively (no Docker) — go generate/gqlgen and node don't need cross-compilers.
   # Produces artifacts (generated Go files + UI build) consumed by test and build jobs.
   generate:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-    # v4 handles full clone + tag fetching natively via fetch-depth/fetch-tags,
-    # replacing the old v2 + separate `git fetch --prune --unshallow --tags` step
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        fetch-tags: true
-
+    - uses: actions/checkout@v6
     - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: 'go.mod'
+      uses: actions/setup-go@v6
 
     # pnpm version is read from the packageManager field in package.json
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:
         package_json_file: ui/v2.5/package.json
+        cache: true
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '20'
         cache: 'pnpm'
@@ -56,7 +48,7 @@ jobs:
       run: make generate
 
     - name: Cache UI build
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: cache-ui
       with:
         path: ui/v2.5/build
@@ -74,7 +66,7 @@ jobs:
 
     # Bundle generated Go files + UI build for downstream jobs (test + build)
     - name: Upload generated artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: generated
         retention-days: 1
@@ -89,21 +81,18 @@ jobs:
   # Runs in parallel with the build matrix jobs.
   test:
     needs: generate
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        fetch-tags: true
+    - uses: actions/checkout@v6
 
     - name: Setup Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version-file: 'go.mod'
 
     # Places generated Go files + UI build into the working tree so the build compiles
     - name: Download generated artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: generated
 
@@ -117,7 +106,7 @@ jobs:
   # Runs in parallel with the test job.
   build:
     needs: generate
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -153,18 +142,18 @@ jobs:
             dist/stash-freebsd
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         fetch-tags: true
 
     - name: Download generated artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: generated
 
     - name: Cache Go build
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: .go-cache
         key: ${{ runner.os }}-go-cache-${{ matrix.platform }}-${{ hashFiles('go.mod', '**/go.sum') }}
@@ -174,7 +163,7 @@ jobs:
     # Bump the cache key suffix if stashapp/compiler is updated.
     - name: Cache compiler image
       id: cache-compiler
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/compiler-image.tar
         key: compiler-image-${{ env.COMPILER_IMAGE }}
@@ -202,7 +191,7 @@ jobs:
       run: docker rm -f -v build
 
     - name: Upload build artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: build-${{ matrix.platform }}
         retention-days: 1
@@ -213,16 +202,16 @@ jobs:
   # into dist/ for checksums, GitHub releases, and multi-arch Docker push.
   release:
     needs: [test, build]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
         fetch-tags: true
 
     # Downloads all artifacts (generated + 7 platform builds) into artifacts/ subdirectories
     - name: Download all build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: artifacts
 
@@ -231,18 +220,11 @@ jobs:
     - name: Collect binaries
       run: |
         mkdir -p dist
-        cp artifacts/build-windows/* dist/ || true
-        cp artifacts/build-macos/* dist/ || true
-        cp artifacts/build-linux/* dist/ || true
-        cp artifacts/build-linux-arm64v8/* dist/ || true
-        cp artifacts/build-linux-arm32v7/* dist/ || true
-        cp artifacts/build-linux-arm32v6/* dist/ || true
-        cp artifacts/build-freebsd/* dist/ || true
+        cp artifacts/build-*/* dist/
 
     - name: Zip UI
       run: |
-        rm -f dist/stash-ui.zip
-        cd artifacts/generated/ui/v2.5/build && zip -r ../../../../../dist/stash-ui.zip .
+        zip -r dist/stash-ui.zip -C artifacts/generated/ui/v2.5/build .
 
     - name: Generate checksums
       run: |
@@ -335,7 +317,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+        docker run --rm --privileged tonistiigi/binfmt
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
@@ -351,7 +333,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+        docker run --rm --privileged tonistiigi/binfmt
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
