@@ -27,6 +27,13 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v6
 
+    # pnpm version is read from the packageManager field in package.json
+    - name: Install pnpm
+      uses: pnpm/action-setup@9b5745cdf0a2e8c2620f0746130f809adb911c19
+      with:
+        package_json_file: ui/v2.5/package.json
+        cache: true
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
