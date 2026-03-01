@@ -27,13 +27,6 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v6
 
-    # pnpm version is read from the packageManager field in package.json
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        package_json_file: ui/v2.5/package.json
-        cache: true
-
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
@@ -224,7 +217,7 @@ jobs:
 
     - name: Zip UI
       run: |
-        zip -r dist/stash-ui.zip -C artifacts/generated/ui/v2.5/build .
+        cd artifacts/generated/ui/v2.5/build && zip -r ../../../../../dist/stash-ui.zip .
 
     - name: Generate checksums
       run: |
