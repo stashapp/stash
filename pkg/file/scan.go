@@ -265,6 +265,7 @@ func (s *Scanner) handleFolderRename(ctx context.Context, file ScannedFile) (*mo
 
 	// if the folder was moved, update the existing folder
 	logger.Infof("%s moved to %s. Updating path...", renamedFrom.Path, file.Path)
+	oldPath := renamedFrom.Path
 	renamedFrom.Path = file.Path
 
 	// update the parent folder ID
@@ -281,7 +282,7 @@ func (s *Scanner) handleFolderRename(ctx context.Context, file ScannedFile) (*mo
 	}
 
 	// #4146 - correct sub-folders to have the correct path
-	if err := correctSubFolderHierarchy(ctx, s.Repository.Folder, renamedFrom); err != nil {
+	if err := correctSubFolderHierarchy(ctx, s.Repository.Folder, renamedFrom, oldPath); err != nil {
 		return nil, fmt.Errorf("correcting sub folder hierarchy for %q: %w", renamedFrom.Path, err)
 	}
 

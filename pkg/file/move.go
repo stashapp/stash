@@ -189,29 +189,55 @@ func (m *Mover) rollback() {
 }
 
 // correctSubFolderHierarchy sets the path of all contained folders to be relative to the given folder.
+// oldParentPath is the folder's path before it was renamed. Children whose filepath.Dir
+// does not match oldParentPath are mis-parented and skipped.
 // It does not move the folder hierarchy in the filesystem.
-func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter, folder *models.Folder) error {
+func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter, folder *models.Folder, oldParentPath string) error {
 	folders, err := rw.FindByParentFolderID(ctx, folder.ID)
 	if err != nil {
 		return fmt.Errorf("finding contained folders in folder %s: %w", folder.Path, err)
 	}
 
-	folderPath := folder.Path
-
 	for _, f := range folders {
-		oldPath := f.Path
-		folderBasename := filepath.Base(f.Path)
-		correctPath := filepath.Join(folderPath, folderBasename)
+		oldChildPath := f.Path
 
-		logger.Debugf("updating folder %s to %s", oldPath, correctPath)
+		// validate that this child is actually a direct subdirectory of the old parent path.
+		// if not, the parent_folder_id is incorrect — skip this child.
+		if filepath.Dir(f.Path) != oldParentPath {
+			logger.Warnf("folder %s is not a direct child of %s (parent_folder_id is incorrect), skipping", f.Path, oldParentPath)
+			continue
+		}
+
+		correctPath := filepath.Join(folder.Path, filepath.Base(f.Path))
+
+		// skip if path is already correct
+		if oldChildPath == correctPath {
+			if err := correctSubFolderHierarchy(ctx, rw, f, oldChildPath); err != nil {
+				return err
+			}
+			continue
+		}
+
+		// check if the target path already exists in the database
+		existing, err := rw.FindByPath(ctx, correctPath, true)
+		if err != nil {
+			return fmt.Errorf("checking for existing folder at path %s: %w", correctPath, err)
+		}
+
+		if existing != nil && existing.ID != f.ID {
+			logger.Warnf("cannot update folder path %s -> %s: target path already exists (folder %d), skipping", oldChildPath, correctPath, existing.ID)
+			continue
+		}
+
+		logger.Debugf("updating folder %s to %s", oldChildPath, correctPath)
 
 		f.Path = correctPath
 		if err := rw.Update(ctx, f); err != nil {
-			return fmt.Errorf("updating folder path %s -> %s: %w", oldPath, f.Path, err)
+			return fmt.Errorf("updating folder path %s -> %s: %w", oldChildPath, f.Path, err)
 		}
 
-		// recurse
-		if err := correctSubFolderHierarchy(ctx, rw, f); err != nil {
+		// recurse with the child's old path
+		if err := correctSubFolderHierarchy(ctx, rw, f, oldChildPath); err != nil {
 			return err
 		}
 	}
