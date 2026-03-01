@@ -43,7 +43,7 @@ type GenerateMetadataInput struct {
 	GalleryIDs []string `json:"galleryIDs"`
 	// overwrite existing media
 	Overwrite bool `json:"overwrite"`
-	// paths
+	// paths to run generate on, in addition to the other ID lists
 	Paths []string `json:"paths"`
 }
 
