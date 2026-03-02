@@ -786,46 +786,47 @@ export const FilteredImageList = PatchComponent(
       </>
     );
 
-    if (!withSidebar) {
-      return (
-        <>
-          {modal}
-          {content}
-        </>
-      );
-    }
-
     return (
-      <div
-        className={cx("item-list-container image-list", {
-          "hide-sidebar": !showSidebar,
-        })}
-      >
+      <>
         {modal}
-
-        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
-          <SidebarPane hideSidebar={!showSidebar}>
-            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-              <SidebarContent
-                filter={filter}
-                setFilter={setFilter}
-                filterHook={filterHook}
-                showEditFilter={showEditFilter}
-                view={view}
-                sidebarOpen={showSidebar}
-                onClose={() => setShowSidebar(false)}
-                count={cachedResult.loading ? undefined : totalCount}
-                focus={searchFocus}
-              />
-            </Sidebar>
-            <SidebarPaneContent
-              onSidebarToggle={() => setShowSidebar(!showSidebar)}
+        {!withSidebar ? (
+          content
+        ) : (
+          <div
+            className={cx("item-list-container image-list", {
+              "hide-sidebar": !showSidebar,
+            })}
+          >
+            <SidebarStateContext.Provider
+              value={{ sectionOpen, setSectionOpen }}
             >
-              {content}
-            </SidebarPaneContent>
-          </SidebarPane>
-        </SidebarStateContext.Provider>
-      </div>
+              <SidebarPane hideSidebar={!showSidebar}>
+                <Sidebar
+                  hide={!showSidebar}
+                  onHide={() => setShowSidebar(false)}
+                >
+                  <SidebarContent
+                    filter={filter}
+                    setFilter={setFilter}
+                    filterHook={filterHook}
+                    showEditFilter={showEditFilter}
+                    view={view}
+                    sidebarOpen={showSidebar}
+                    onClose={() => setShowSidebar(false)}
+                    count={cachedResult.loading ? undefined : totalCount}
+                    focus={searchFocus}
+                  />
+                </Sidebar>
+                <SidebarPaneContent
+                  onSidebarToggle={() => setShowSidebar(!showSidebar)}
+                >
+                  {content}
+                </SidebarPaneContent>
+              </SidebarPane>
+            </SidebarStateContext.Provider>
+          </div>
+        )}
+      </>
     );
   }
 );
