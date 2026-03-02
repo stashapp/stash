@@ -103,10 +103,12 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 
 	logger.Infof("Generate started with %d parallel tasks", parallelTasks)
 
-	sp := getScanPaths(j.input.Paths)
-	j.paths = make([]string, len(sp))
-	for i, p := range sp {
-		j.paths[i] = p.Path
+	if len(j.input.Paths) > 0 {
+		sp := getScanPaths(j.input.Paths)
+		j.paths = make([]string, len(sp))
+		for i, p := range sp {
+			j.paths[i] = p.Path
+		}
 	}
 
 	queue := make(chan Task, generateQueueSize)
