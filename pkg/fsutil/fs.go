@@ -29,7 +29,7 @@ func IsFsPathCaseSensitive(path string) (bool, error) {
 
 	flippedPath := filepath.Join(filepath.Dir(path), fBase)
 
-	fiCase, err := os.Stat(string(flippedPath))
+	fiCase, err := os.Stat(flippedPath)
 	if err != nil { // cannot stat the case flipped path
 		return true, nil // fs of path should be case sensitive
 	}
