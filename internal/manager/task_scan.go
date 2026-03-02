@@ -310,7 +310,9 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	}
 
 	// handle rename should have already handled the contents of the zip file
-	// so shouldn't need to scan it again
+	// so shouldn't need to scan it again.
+	// Only scan zip contents if the file is new, the fingerprint changed,
+	// or if a force rescan was requested.
 
 	if (r.New || r.FingerprintChanged || (r.Updated && j.scanner.Rescan)) && j.scanner.IsZipFile(f.Info.Name()) {
 		ff := r.File
