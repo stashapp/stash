@@ -74,6 +74,28 @@ func getScanPaths(inputPaths []string) []*config.StashConfig {
 	return ret
 }
 
+// Filters the input array for paths that are within the paths managed by stash
+func filterStashPaths(inputPaths []string) []string {
+	if len(inputPaths) == 0 {
+		return inputPaths
+	}
+
+	stashPaths := config.GetInstance().GetStashPaths()
+
+	var ret []string
+	for _, p := range inputPaths {
+		s := stashPaths.GetStashFromDirPath(p)
+		if s == nil {
+			logger.Warnf("%s is not in the configured stash paths", p)
+			continue
+		}
+
+		ret = append(ret, p)
+	}
+
+	return ret
+}
+
 // ScanSubscribe subscribes to a notification that is triggered when a
 // scan or clean is complete.
 func (s *Manager) ScanSubscribe(ctx context.Context) <-chan bool {

@@ -65,7 +65,6 @@ const generateQueueSize = 200000
 type GenerateJob struct {
 	repository models.Repository
 	input      GenerateMetadataInput
-	paths      []string
 
 	overwrite      bool
 	fileNamingAlgo models.HashAlgorithm
@@ -103,14 +102,6 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 
 	logger.Infof("Generate started with %d parallel tasks", parallelTasks)
 
-	if len(j.input.Paths) > 0 {
-		sp := getScanPaths(j.input.Paths)
-		j.paths = make([]string, len(sp))
-		for i, p := range sp {
-			j.paths[i] = p.Path
-		}
-	}
-
 	queue := make(chan Task, generateQueueSize)
 	go func() {
 		defer close(queue)
@@ -144,8 +135,13 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 		r := j.repository
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.Scene
-			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 && len(j.input.ImageIDs) == 0 && len(j.input.GalleryIDs) == 0 {
-				j.queueTasks(ctx, g, queue)
+			if len(j.input.SceneIDs) == 0 &&
+				len(j.input.MarkerIDs) == 0 &&
+				len(j.input.ImageIDs) == 0 &&
+				len(j.input.GalleryIDs) == 0 &&
+				len(j.input.Paths) == 0 {
+
+				j.queueTasks(ctx, g, nil, queue)
 			} else {
 				if len(j.input.SceneIDs) > 0 {
 					scenes, err = qb.FindMany(ctx, sceneIDs)
@@ -196,7 +192,8 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 				}
 
 				if len(j.input.Paths) > 0 {
-					j.queueTasks(ctx, g, queue)
+					paths := filterStashPaths(j.input.Paths)
+					j.queueTasks(ctx, g, paths, queue)
 				}
 			}
 
@@ -291,18 +288,18 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 	return nil
 }
 
-func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, queue chan<- Task) {
+func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, paths []string, queue chan<- Task) {
 	j.totals = totalsGenerate{}
 
-	j.queueScenesTasks(ctx, g, queue)
-	j.queueImagesTasks(ctx, g, queue)
+	j.queueScenesTasks(ctx, g, paths, queue)
+	j.queueImagesTasks(ctx, g, paths, queue)
 }
 
-func (j *GenerateJob) queueScenesTasks(ctx context.Context, g *generate.Generator, queue chan<- Task) {
+func (j *GenerateJob) queueScenesTasks(ctx context.Context, g *generate.Generator, paths []string, queue chan<- Task) {
 	const batchSize = 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
-	sceneFilter := scene.FilterFromPaths(j.paths)
+	sceneFilter := scene.FilterFromPaths(paths)
 
 	r := j.repository
 
@@ -338,11 +335,11 @@ func (j *GenerateJob) queueScenesTasks(ctx context.Context, g *generate.Generato
 	}
 }
 
-func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generator, queue chan<- Task) {
+func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generator, paths []string, queue chan<- Task) {
 	const batchSize = 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
-	imageFilter := image.FilterFromPaths(j.paths)
+	imageFilter := image.FilterFromPaths(paths)
 
 	r := j.repository
 
