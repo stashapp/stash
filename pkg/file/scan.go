@@ -349,6 +349,10 @@ type ScanFileResult struct {
 	Updated bool
 }
 
+func (r ScanFileResult) IsUnchanged() bool {
+	return !r.New && !r.Renamed && !r.Updated
+}
+
 // ScanFile scans the provided file into the database, returning the scan result.
 func (s *Scanner) ScanFile(ctx context.Context, f ScannedFile) (*ScanFileResult, error) {
 	var r *ScanFileResult
