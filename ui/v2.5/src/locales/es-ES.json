@@ -1179,7 +1179,10 @@
         "play_count": "Contador de reproducciones",
         "play_duration": "Tiempo de reproducción",
         "o_count": "Contador de orgasmos",
-        "md5": "Suma de comprobación MD5"
+        "md5": "Suma de comprobación MD5",
+        "oshash": "oshash",
+        "oshash_meaning": "Hash de OpenSubtitles",
+        "phash_meaning": "Hash perceptual"
     },
     "megabits_per_second": "{value} megabits por segundo (mbps)",
     "metadata": "Metadatos",
@@ -1634,5 +1637,42 @@
     "duplicated_stash_id": "Duplicado (ID de Stash)",
     "duplicated_title": "Duplicado (Título)",
     "career_end": "Fin de la carrera",
-    "career_start": "Inicio de la carrera"
+    "career_start": "Inicio de la carrera",
+    "tag_tagger": {
+        "add_new_tags": "Añadir nuevas etiquetas",
+        "any_names_entered_will_be_queried": "Cualquier nombre introducido se consultará en la instancia remota de Stash-Box y se añadirá si se encuentra. Solo se considerarán coincidencias las coincidencias exactas.",
+        "batch_add_tags": "Añadir etiquetas por lotes",
+        "batch_update_tags": "Actualización por lotes de etiquetas",
+        "current_page": "Página actual",
+        "failed_to_save_tag": "No se pudo guardar la etiqueta «{tag}»",
+        "name_already_exists": "El nombre ya existe",
+        "network_error": "Error de red",
+        "no_results_found": "No se han encontrado resultados.",
+        "number_of_tags_will_be_processed": "Se procesarán {tag_count} etiquetas",
+        "query_all_tags_in_the_database": "Todas las etiquetas de la base de datos",
+        "refresh_tagged_tags": "Actualizar etiquetas etiquetadas",
+        "refreshing_will_update_the_data": "Al actualizar se actualizarán los datos de cualquier etiqueta etiquetada de la instancia stash-box.",
+        "status_tagging_job_queued": "Estado: Trabajo de etiquetado en cola",
+        "status_tagging_tags": "Estado: Etiquetado de etiquetas",
+        "tag_already_tagged": "Etiqueta ya etiquetada",
+        "tag_names_or_stashids_separated_by_comma": "Nombres de etiquetas o StashID separados por comas",
+        "tag_selection": "Selección de etiquetas",
+        "tag_successfully_tagged": "Etiqueta etiquetada correctamente",
+        "tag_status": "Estado de la etiqueta",
+        "to_use_the_tag_tagger": "Para utilizar el etiquetador, es necesario configurar una instancia de stash-box.",
+        "untagged_tags": "Etiquetas sin etiquetar",
+        "update_tags": "Actualizar etiquetas",
+        "updating_untagged_tags_description": "Al actualizar las etiquetas sin etiquetar, se intentará encontrar cualquier etiqueta que carezca de un stashid y se actualizarán los metadatos."
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "Instancia activa del almacén oculto:",
+            "edit_excluded_fields": "Editar campos excluidos",
+            "excluded_fields": "Campos excluidos:",
+            "fields_will_not_be_changed": "Estos campos no se modificarán al actualizar {entity}.",
+            "no_fields_are_excluded": "No se excluye ningún campo",
+            "no_instances_found": "No se han encontrado instancias"
+        }
+    },
+    "unsupported_criteria": "Criterios no admitidos: {criteria}"
 }
