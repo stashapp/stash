@@ -587,25 +587,6 @@ export const FilteredImageList = PatchComponent(
       setShowSidebar,
     });
 
-    useEffect(() => {
-      Mousetrap.bind("e", () => {
-        if (hasSelection) {
-          onEdit?.();
-        }
-      });
-
-      Mousetrap.bind("d d", () => {
-        if (hasSelection) {
-          onDelete?.();
-        }
-      });
-
-      return () => {
-        Mousetrap.unbind("e");
-        Mousetrap.unbind("d d");
-      };
-    });
-
     const onCloseEditDelete = useCloseEditDelete({
       closeModal,
       onSelectNone,
@@ -628,23 +609,42 @@ export const FilteredImageList = PatchComponent(
       );
     }
 
-    function onEdit() {
+    const onEdit = useCallback(() => {
       showModal(
         <EditImagesDialog
           selected={selectedItems}
           onClose={onCloseEditDelete}
         />
       );
-    }
+    }, [showModal, selectedItems, onCloseEditDelete]);
 
-    function onDelete() {
+    const onDelete = useCallback(() => {
       showModal(
         <DeleteImagesDialog
           selected={selectedItems}
           onClose={onCloseEditDelete}
         />
       );
-    }
+    }, [showModal, selectedItems, onCloseEditDelete]);
+
+    useEffect(() => {
+      Mousetrap.bind("e", () => {
+        if (hasSelection) {
+          onEdit?.();
+        }
+      });
+
+      Mousetrap.bind("d d", () => {
+        if (hasSelection) {
+          onDelete?.();
+        }
+      });
+
+      return () => {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      };
+    }, [hasSelection, onEdit, onDelete]);
 
     const convertedExtraOperations: IListFilterOperation[] =
       providedOperations.map((o) => ({
@@ -786,41 +786,47 @@ export const FilteredImageList = PatchComponent(
       </>
     );
 
-    if (!withSidebar) {
-      return content;
-    }
-
     return (
-      <div
-        className={cx("item-list-container image-list", {
-          "hide-sidebar": !showSidebar,
-        })}
-      >
+      <>
         {modal}
-
-        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
-          <SidebarPane hideSidebar={!showSidebar}>
-            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
-              <SidebarContent
-                filter={filter}
-                setFilter={setFilter}
-                filterHook={filterHook}
-                showEditFilter={showEditFilter}
-                view={view}
-                sidebarOpen={showSidebar}
-                onClose={() => setShowSidebar(false)}
-                count={cachedResult.loading ? undefined : totalCount}
-                focus={searchFocus}
-              />
-            </Sidebar>
-            <SidebarPaneContent
-              onSidebarToggle={() => setShowSidebar(!showSidebar)}
+        {!withSidebar ? (
+          content
+        ) : (
+          <div
+            className={cx("item-list-container image-list", {
+              "hide-sidebar": !showSidebar,
+            })}
+          >
+            <SidebarStateContext.Provider
+              value={{ sectionOpen, setSectionOpen }}
             >
-              {content}
-            </SidebarPaneContent>
-          </SidebarPane>
-        </SidebarStateContext.Provider>
-      </div>
+              <SidebarPane hideSidebar={!showSidebar}>
+                <Sidebar
+                  hide={!showSidebar}
+                  onHide={() => setShowSidebar(false)}
+                >
+                  <SidebarContent
+                    filter={filter}
+                    setFilter={setFilter}
+                    filterHook={filterHook}
+                    showEditFilter={showEditFilter}
+                    view={view}
+                    sidebarOpen={showSidebar}
+                    onClose={() => setShowSidebar(false)}
+                    count={cachedResult.loading ? undefined : totalCount}
+                    focus={searchFocus}
+                  />
+                </Sidebar>
+                <SidebarPaneContent
+                  onSidebarToggle={() => setShowSidebar(!showSidebar)}
+                >
+                  {content}
+                </SidebarPaneContent>
+              </SidebarPane>
+            </SidebarStateContext.Provider>
+          </div>
+        )}
+      </>
     );
   }
 );

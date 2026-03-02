@@ -205,6 +205,25 @@ func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter
 
 		logger.Debugf("updating folder %s to %s", oldPath, correctPath)
 
+		// #6427 - ensure folder entry with new path doesn't already exist
+		const caseSensitive = true
+		existing, err := rw.FindByPath(ctx, correctPath, caseSensitive)
+		if err != nil {
+			return fmt.Errorf("finding folder by path %s: %w", correctPath, err)
+		}
+
+		if existing != nil {
+			// this should no longer be possible, but if it does happen, log a warning
+			// and skip updating this folder and its subfolders
+			logger.Warnf("folder with path %s already exists, setting parent_folder_id of %s to NULL and skipping", correctPath, oldPath)
+			f.ParentFolderID = nil
+			if err := rw.Update(ctx, f); err != nil {
+				return fmt.Errorf("updating folder parent id to NULL for folder %s: %w", oldPath, err)
+			}
+
+			continue
+		}
+
 		f.Path = correctPath
 		if err := rw.Update(ctx, f); err != nil {
 			return fmt.Errorf("updating folder path %s -> %s: %w", oldPath, f.Path, err)
