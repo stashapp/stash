@@ -374,7 +374,7 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	// Only scan zip contents if the file is new, the fingerprint changed,
 	// or if a force rescan was requested.
 
-	if (r.New || r.FingerprintChanged || (r.Updated && j.scanner.Rescan)) && j.scanner.IsZipFile(f.Info.Name()) {
+	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan) {
 		ff := r.File
 		f.BaseFile = ff.Base()
 
