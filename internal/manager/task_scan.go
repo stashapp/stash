@@ -73,6 +73,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	j.scanner.ScanFilters = []file.PathFilter{newScanFilter(c, repo, minModTime)}
 	j.scanner.HandlerRequiredFilters = []file.Filter{newHandlerRequiredFilter(cfg, repo)}
 
+	logger.Infof("Starting scan of %d paths with %d parallel tasks", len(paths), nTasks)
+
 	j.runJob(ctx, paths, nTasks, progress)
 
 	taskQueue.Close()
@@ -83,7 +85,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	}
 
 	elapsed := time.Since(start)
-	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+	logger.Infof("Scan finished (%s)", elapsed)
 
 	j.subscriptions.notify()
 	return nil
