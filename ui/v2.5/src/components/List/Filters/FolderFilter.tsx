@@ -35,6 +35,7 @@ import { Button, Form } from "react-bootstrap";
 import { DepthSelector } from "./SelectableFilter";
 import ClearableInput from "src/components/Shared/ClearableInput";
 import { useDebouncedState } from "src/hooks/debounce";
+import { ModifierCriterionOption } from "src/models/list-filter/criteria/criterion";
 
 interface IFolder extends FolderDataFragment {
   children?: IFolder[];
@@ -413,6 +414,7 @@ export const SidebarFolderFilter: React.FC<
   ISidebarSectionProps & {
     filter: ListFilterModel;
     setFilter: (f: ListFilterModel) => void;
+    criterionOption?: ModifierCriterionOption;
   }
 > = (props) => {
   const intl = useIntl();
@@ -425,7 +427,7 @@ export const SidebarFolderFilter: React.FC<
     props.onOpen?.();
   }
 
-  const option = FolderCriterionOption;
+  const option = props.criterionOption ?? FolderCriterionOption;
   const { filter, setFilter } = props;
 
   const criterion = useMemo(() => {

@@ -22,9 +22,7 @@ import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
 import { PathCriterionOption } from "./criteria/path";
 import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
-import {
-  ParentFolderCriterionOption,
-} from "./criteria/folder";
+import { ParentFolderCriterionOption } from "./criteria/folder";
 
 const defaultSortBy = "path";
 
