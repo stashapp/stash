@@ -181,3 +181,16 @@ func (r *tagResolver) ChildCount(ctx context.Context, obj *models.Tag) (ret int,
 
 	return ret, nil
 }
+
+func (r *tagResolver) CustomFields(ctx context.Context, obj *models.Tag) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).TagCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
+}

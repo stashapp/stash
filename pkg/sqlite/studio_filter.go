@@ -59,6 +59,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil),
 		boolCriterionHandler(studioFilter.Favorite, studioTable+".favorite", nil),
 		boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil),
+		boolCriterionHandler(studioFilter.Organized, studioTable+".organized", nil),
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if studioFilter.StashID != nil {
@@ -72,12 +73,19 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 			stashIDTableAs:    "studio_stash_ids",
 			parentIDCol:       "studios.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 studioFilter.StashIDsEndpoint,
+			stashIDRepository: &studioRepository.stashIDs,
+			stashIDTableAs:    "studio_stash_ids",
+			parentIDCol:       "studios.id",
+		},
 
 		qb.isMissingCriterionHandler(studioFilter.IsMissing),
 		qb.tagCountCriterionHandler(studioFilter.TagCount),
 		qb.sceneCountCriterionHandler(studioFilter.SceneCount),
 		qb.imageCountCriterionHandler(studioFilter.ImageCount),
 		qb.galleryCountCriterionHandler(studioFilter.GalleryCount),
+		qb.groupCountCriterionHandler(studioFilter.GroupCount),
 		qb.parentCriterionHandler(studioFilter.Parents),
 		qb.aliasCriterionHandler(studioFilter.Aliases),
 		qb.tagsCriterionHandler(studioFilter.Tags),
@@ -111,6 +119,22 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 				studioRepository.galleries.innerJoin(f, "", "studios.id")
 			},
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "groups.id",
+			relatedRepo:    groupRepository.repository,
+			relatedHandler: &groupFilterHandler{studioFilter.GroupsFilter},
+			joinFn: func(f *filterBuilder) {
+				studioRepository.groups.innerJoin(f, "", "studios.id")
+			},
+		},
+
+		&customFieldsFilterHandler{
+			table: studiosCustomFieldsTable.GetTable(),
+			fkCol: studioIDColumn,
+			c:     studioFilter.CustomFields,
+			idCol: "studios.id",
+		},
 	}
 }
 
@@ -126,7 +150,19 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 			case "stash_id":
 				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
+			case "aliases":
+				studiosAliasesTableMgr.join(f, "", "studios.id")
+				f.addWhere("studio_aliases.alias IS NULL")
+			case "tags":
+				f.addLeftJoin(studiosTagsTable, "tags_join", "tags_join.studio_id = studios.id")
+				f.addWhere("tags_join.studio_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"details", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
 			}
 		}
@@ -160,6 +196,17 @@ func (qb *studioFilterHandler) galleryCountCriterionHandler(galleryCount *models
 		if galleryCount != nil {
 			f.addLeftJoin("galleries", "", "galleries.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct galleries.id)", *galleryCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func (qb *studioFilterHandler) groupCountCriterionHandler(groupCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if groupCount != nil {
+			f.addLeftJoin("groups", "", "groups.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct groups.id)", *groupCount)
 
 			f.addHaving(clause, args...)
 		}

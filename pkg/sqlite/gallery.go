@@ -183,6 +183,8 @@ var (
 )
 
 type GalleryStore struct {
+	customFieldsStore
+
 	tableMgr *table
 
 	fileStore   *FileStore
@@ -191,6 +193,10 @@ type GalleryStore struct {
 
 func NewGalleryStore(fileStore *FileStore, folderStore *FolderStore) *GalleryStore {
 	return &GalleryStore{
+		customFieldsStore: customFieldsStore{
+			table: galleriesCustomFieldsTable,
+			fk:    galleriesCustomFieldsTable.Col(galleryIDColumn),
+		},
 		tableMgr:    galleryTableMgr,
 		fileStore:   fileStore,
 		folderStore: folderStore,
@@ -231,18 +237,18 @@ func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []models.FileID) error {
+func (qb *GalleryStore) Create(ctx context.Context, newObject *models.CreateGalleryInput) error {
 	var r galleryRow
-	r.fromGallery(*newObject)
+	r.fromGallery(*newObject.Gallery)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(fileIDs) > 0 {
+	if len(newObject.FileIDs) > 0 {
 		const firstPrimary = true
-		if err := galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+		if err := galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
 			return err
 		}
 	}
@@ -269,19 +275,24 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
+	const partial = false
+	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Gallery = *updated
 
 	return nil
 }
 
-func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Gallery) error {
+func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.UpdateGalleryInput) error {
 	var r galleryRow
-	r.fromGallery(*updatedObject)
+	r.fromGallery(*updatedObject.Gallery)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -317,6 +328,10 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		if err := galleriesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, updatedObject.ID, updatedObject.CustomFields); err != nil {
+		return err
 	}
 
 	return nil
@@ -362,6 +377,10 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		if err := galleriesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
 			return nil, err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
 	}
 
 	return qb.find(ctx, id)

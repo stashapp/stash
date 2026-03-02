@@ -96,6 +96,11 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		CalculateMd5:                  config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:      config.GetVideoFileNamingAlgorithm(),
 		ParallelTasks:                 config.GetParallelTasks(),
+		UseCustomSpriteInterval:       config.GetUseCustomSpriteInterval(),
+		SpriteInterval:                config.GetSpriteInterval(),
+		SpriteScreenshotSize:          config.GetSpriteScreenshotSize(),
+		MinimumSprites:                config.GetMinimumSprites(),
+		MaximumSprites:                config.GetMaximumSprites(),
 		PreviewAudio:                  config.GetPreviewAudio(),
 		PreviewSegments:               config.GetPreviewSegments(),
 		PreviewSegmentDuration:        config.GetPreviewSegmentDuration(),
@@ -156,6 +161,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	javascriptEnabled := config.GetJavascriptEnabled()
 	customLocales := config.GetCustomLocales()
 	customLocalesEnabled := config.GetCustomLocalesEnabled()
+	disableCustomizations := config.GetDisableCustomizations()
 	language := config.GetLanguage()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
@@ -183,6 +189,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		JavascriptEnabled:            &javascriptEnabled,
 		CustomLocales:                &customLocales,
 		CustomLocalesEnabled:         &customLocalesEnabled,
+		DisableCustomizations:        &disableCustomizations,
 		Language:                     &language,
 
 		ImageLightbox: &imageLightboxOptions,

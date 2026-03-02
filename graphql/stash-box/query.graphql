@@ -29,6 +29,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
   name
   id
+  description
+  aliases
 }
 
 fragment MeasurementsFragment on Measurements {
@@ -117,18 +119,6 @@ fragment SceneFragment on Scene {
   }
   fingerprints {
     ...FingerprintFragment
-  }
-}
-
-query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
-  findSceneByFingerprint(fingerprint: $fingerprint) {
-    ...SceneFragment
-  }
-}
-
-query FindScenesByFullFingerprints($fingerprints: [FingerprintQueryInput!]!) {
-  findScenesByFullFingerprints(fingerprints: $fingerprints) {
-    ...SceneFragment
   }
 }
 

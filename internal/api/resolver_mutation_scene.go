@@ -103,8 +103,15 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		}
 	}
 
+	customFields := convertMapJSONNumbers(input.CustomFields)
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.Resolver.sceneService.Create(ctx, &newScene, fileIDs, coverImageData)
+		ret, err = r.Resolver.sceneService.Create(ctx, models.CreateSceneInput{
+			Scene:        &newScene,
+			FileIDs:      fileIDs,
+			CoverImage:   coverImageData,
+			CustomFields: customFields,
+		})
 		return err
 	}); err != nil {
 		return nil, err
@@ -297,6 +304,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	var coverImageData []byte
+	coverImageIncluded := translator.hasField("cover_image")
 	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
@@ -305,26 +313,41 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
+	var customFields *models.CustomFieldsInput
+	if input.CustomFields != nil {
+		cfCopy := *input.CustomFields
+		customFields = &cfCopy
+		// convert json.Numbers to int/float
+		customFields.Full = convertMapJSONNumbers(customFields.Full)
+		customFields.Partial = convertMapJSONNumbers(customFields.Partial)
+	}
+
 	scene, err := qb.UpdatePartial(ctx, sceneID, *updatedScene)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
-		return nil, err
+	if coverImageIncluded {
+		if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
+			return nil, err
+		}
+	}
+
+	if customFields != nil {
+		if err := qb.SetCustomFields(ctx, scene.ID, *customFields); err != nil {
+			return nil, err
+		}
 	}
 
 	return scene, nil
 }
 
 func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
-	if len(coverImageData) > 0 {
-		qb := r.repository.Scene
+	qb := r.repository.Scene
 
-		// update cover table
-		if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
-			return err
-		}
+	// update cover table - empty data will clear the cover
+	if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
+		return err
 	}
 
 	return nil
@@ -386,6 +409,12 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		}
 	}
 
+	var customFields *models.CustomFieldsInput
+	if input.CustomFields != nil {
+		cf := handleUpdateCustomFields(*input.CustomFields)
+		customFields = &cf
+	}
+
 	ret := []*models.Scene{}
 
 	// Start the transaction and save the scenes
@@ -396,6 +425,12 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 			if err != nil {
 				return err
+			}
+
+			if customFields != nil {
+				if err := qb.SetCustomFields(ctx, scene.ID, *customFields); err != nil {
+					return err
+				}
 			}
 
 			ret = append(ret, scene)
@@ -440,6 +475,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
@@ -456,7 +492,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		// kill any running encoders
 		manager.KillRunningStreams(s, fileNamingAlgo)
 
-		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile)
+		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -494,6 +530,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
+	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
@@ -512,7 +549,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			// kill any running encoders
 			manager.KillRunningStreams(scene, fileNamingAlgo)
 
-			if err := r.sceneService.Destroy(ctx, scene, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			if err := r.sceneService.Destroy(ctx, scene, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 				return err
 			}
 		}
@@ -572,6 +609,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 
 	var values *models.ScenePartial
 	var coverImageData []byte
+	var customFields *models.CustomFieldsInput
 
 	if input.Values != nil {
 		translator := changesetTranslator{
@@ -589,6 +627,11 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 			if err != nil {
 				return nil, fmt.Errorf("processing cover image: %w", err)
 			}
+		}
+
+		if input.Values.CustomFields != nil {
+			cf := handleUpdateCustomFields(*input.Values.CustomFields)
+			customFields = &cf
 		}
 	} else {
 		v := models.NewScenePartial()
@@ -621,7 +664,20 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 			return fmt.Errorf("scene with id %d not found", destID)
 		}
 
-		return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		// only update cover image if one was provided
+		if len(coverImageData) > 0 {
+			if err := r.sceneUpdateCoverImage(ctx, ret, coverImageData); err != nil {
+				return err
+			}
+		}
+
+		if customFields != nil {
+			if err := r.Resolver.repository.Scene.SetCustomFields(ctx, ret.ID, *customFields); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}

@@ -19,8 +19,8 @@ import { Manual } from "src/components/Help/Manual";
 import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
-import PerformerConfig from "./Config";
-import { ITaggerConfig } from "../constants";
+import TaggerConfig from "../TaggerConfig";
+import { ITaggerConfig, PERFORMER_FIELDS } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
@@ -771,10 +771,16 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
               </Button>
             </div>
 
-            <PerformerConfig
+            <TaggerConfig
               config={config}
               setConfig={setConfig}
               show={showConfig}
+              excludedFields={config.excludedPerformerFields ?? []}
+              onFieldsChange={(fields) =>
+                setConfig({ ...config, excludedPerformerFields: fields })
+              }
+              fields={PERFORMER_FIELDS}
+              entityName="performers"
             />
             <PerformerTaggerList
               performers={performers}

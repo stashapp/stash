@@ -80,6 +80,8 @@ export interface IFilteredListToolbar {
   operations?: IListFilterOperation[];
   operationComponent?: React.ReactNode;
   zoomable?: boolean;
+  filterable?: boolean;
+  sortable?: boolean;
 }
 
 export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
@@ -93,19 +95,23 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   operations,
   operationComponent,
   zoomable = false,
+  filterable = true,
+  sortable = true,
 }) => {
   const filterOptions = filter.options;
   const { setDisplayMode, setZoom } = useFilterOperations({
     filter,
     setFilter,
   });
-  const { selectedIds, onSelectAll, onSelectNone } = listSelect;
+  const { selectedIds, onSelectAll, onSelectNone, onInvertSelection } =
+    listSelect;
   const hasSelection = selectedIds.size > 0;
 
   const renderOperations = operationComponent ?? (
     <ListOperationButtons
       onSelectAll={onSelectAll}
       onSelectNone={onSelectNone}
+      onInvertSelection={onInvertSelection}
       otherOperations={operations}
       itemsSelected={selectedIds.size > 0}
       onEdit={onEdit}
@@ -126,32 +132,40 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
         />
       ) : (
         <>
-          <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
+          {filterable && (
+            <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
+          )}
 
-          <ButtonGroup>
-            <SavedFilterDropdown
-              filter={filter}
-              onSetFilter={setFilter}
-              view={view}
-            />
-            <FilterButton
-              onClick={() => showEditFilter()}
-              count={filter.count()}
-            />
-          </ButtonGroup>
+          {filterable && (
+            <ButtonGroup>
+              <SavedFilterDropdown
+                filter={filter}
+                onSetFilter={setFilter}
+                view={view}
+              />
+              <FilterButton
+                onClick={() => showEditFilter()}
+                count={filter.count()}
+              />
+            </ButtonGroup>
+          )}
 
-          <SortBySelect
-            sortBy={filter.sortBy}
-            sortDirection={filter.sortDirection}
-            options={filterOptions.sortByOptions}
-            onChangeSortBy={(e) => setFilter(filter.setSortBy(e ?? undefined))}
-            onChangeSortDirection={() =>
-              setFilter(filter.toggleSortDirection())
-            }
-            onReshuffleRandomSort={() =>
-              setFilter(filter.reshuffleRandomSort())
-            }
-          />
+          {sortable && (
+            <SortBySelect
+              sortBy={filter.sortBy}
+              sortDirection={filter.sortDirection}
+              options={filterOptions.sortByOptions}
+              onChangeSortBy={(e) =>
+                setFilter(filter.setSortBy(e ?? undefined))
+              }
+              onChangeSortDirection={() =>
+                setFilter(filter.toggleSortDirection())
+              }
+              onReshuffleRandomSort={() =>
+                setFilter(filter.reshuffleRandomSort())
+              }
+            />
+          )}
 
           <PageSizeSelector
             pageSize={filter.itemsPerPage}

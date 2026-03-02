@@ -15,6 +15,11 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
+import { lazyComponent } from "src/utils/lazyComponent";
+
+const GenerateDialog = lazyComponent(
+  () => import("../../Dialogs/GenerateDialog")
+);
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
@@ -165,6 +170,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
@@ -179,6 +185,18 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <DeleteGalleriesDialog
           selected={[{ ...gallery, image_count: NaN }]}
           onClose={onDeleteDialogClosed}
+        />
+      );
+    }
+  }
+
+  function maybeRenderGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={[gallery.id]}
+          onClose={() => setIsGenerateDialogOpen(false)}
+          type="gallery"
         />
       );
     }
@@ -209,6 +227,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             onClick={() => onResetCover()}
           >
             <FormattedMessage id="actions.reset_cover" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            {`${intl.formatMessage({ id: "actions.generate" })}…`}
           </Dropdown.Item>
           <Dropdown.Item
             className="bg-secondary text-white"
@@ -387,6 +411,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderDeleteDialog()}
+      {maybeRenderGenerateDialog()}
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div>
           <div className="gallery-header-container">

@@ -287,6 +287,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if input.PreviewPreset != nil {
 		c.SetString(config.PreviewPreset, input.PreviewPreset.String())
 	}
+	r.setConfigBool(config.UseCustomSpriteInterval, input.UseCustomSpriteInterval)
+	r.setConfigFloat(config.SpriteInterval, input.SpriteInterval)
+	r.setConfigInt(config.MinimumSprites, input.MinimumSprites)
+	r.setConfigInt(config.MaximumSprites, input.MaximumSprites)
+	r.setConfigInt(config.SpriteScreenshotSize, input.SpriteScreenshotSize)
 
 	r.setConfigBool(config.TranscodeHardwareAcceleration, input.TranscodeHardwareAcceleration)
 	if input.MaxTranscodeSize != nil {
@@ -514,6 +519,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	}
 
 	r.setConfigBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
+
+	r.setConfigBool(config.DisableCustomizations, input.DisableCustomizations)
 
 	if input.DisableDropdownCreate != nil {
 		ddc := input.DisableDropdownCreate

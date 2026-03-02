@@ -39,6 +39,11 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logLevel
   logAccess
   logFileMaxSize
+  useCustomSpriteInterval
+  spriteInterval
+  minimumSprites
+  maximumSprites
+  spriteScreenshotSize
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
@@ -92,6 +97,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   javascriptEnabled
   customLocales
   customLocalesEnabled
+  disableCustomizations
   language
   imageLightbox {
     slideshowDelay
@@ -142,7 +148,7 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   }
   setCoverImage
   setOrganized
-  includeMalePerformers
+  performerGenders
   skipMultipleMatches
   skipMultipleMatchTag
   skipSingleNamePerformers

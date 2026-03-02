@@ -18,10 +18,8 @@ type FolderQueryOptions struct {
 type FolderFilterType struct {
 	OperatorFilter[FolderFilterType]
 
-	Path     *StringCriterionInput `json:"path,omitempty"`
-	Basename *StringCriterionInput `json:"basename,omitempty"`
-	// Filter by parent directory path
-	Dir          *StringCriterionInput            `json:"dir,omitempty"`
+	Path         *StringCriterionInput            `json:"path,omitempty"`
+	Basename     *StringCriterionInput            `json:"basename,omitempty"`
 	ParentFolder *HierarchicalMultiCriterionInput `json:"parent_folder,omitempty"`
 	ZipFile      *MultiCriterionInput             `json:"zip_file,omitempty"`
 	// Filter by modification time

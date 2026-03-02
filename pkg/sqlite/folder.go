@@ -20,6 +20,7 @@ const folderIDColumn = "folder_id"
 
 type folderRow struct {
 	ID             models.FolderID `db:"id" goqu:"skipinsert"`
+	Basename       string          `db:"basename"`
 	Path           string          `db:"path"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID null.Int        `db:"parent_folder_id"`
@@ -30,6 +31,8 @@ type folderRow struct {
 
 func (r *folderRow) fromFolder(o models.Folder) {
 	r.ID = o.ID
+	// derive basename from path
+	r.Basename = filepath.Base(o.Path)
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
@@ -322,6 +325,90 @@ func (qb *FolderStore) FindByParentFolderID(ctx context.Context, parentFolderID 
 	return ret, nil
 }
 
+func (qb *FolderStore) GetManyParentFolderIDs(ctx context.Context, folderIDs []models.FolderID) ([][]models.FolderID, error) {
+	table := qb.table()
+
+	// SQL recursive query to get all parent folder IDs for each folder ID
+	/*
+		WITH RECURSIVE parent_folders AS (
+		    SELECT id, parent_folder_id
+		    FROM folders
+		    WHERE id IN (folderIDs)
+
+		    UNION ALL
+
+		    SELECT f.id, f.parent_folder_id
+		    FROM folders f
+		    INNER JOIN parent_folders pf ON f.id = pf.parent_folder_id
+		)
+		SELECT id, parent_folder_id FROM parent_folders;
+	*/
+	const parentFolders = "parent_folders"
+	const parentFolderID = "parent_folder_id"
+	const parentID = "parent_id"
+	const foldersAlias = "f"
+
+	const parentFoldersAlias = "pf"
+	foldersAliasedI := table.As(foldersAlias)
+	parentFoldersI := goqu.T(parentFolders).As(parentFoldersAlias)
+
+	q := dialect.From(parentFolders).Prepared(true).
+		WithRecursive(parentFolders,
+			dialect.From(table).Select(table.Col(idColumn), table.Col(parentFolderID).As(parentID)).
+				Where(table.Col(idColumn).In(folderIDs)).
+				Union(
+					dialect.From(foldersAliasedI).InnerJoin(
+						parentFoldersI,
+						goqu.On(foldersAliasedI.Col(idColumn).Eq(parentFoldersI.Col(parentID))),
+					).Select(foldersAliasedI.Col(idColumn), foldersAliasedI.Col(parentFolderID).As(parentID)),
+				),
+		).Select(idColumn, parentID)
+
+	type resultRow struct {
+		FolderID       models.FolderID `db:"id"`
+		ParentFolderID null.Int        `db:"parent_id"`
+	}
+
+	folderMap := make(map[models.FolderID]models.FolderID)
+
+	if err := queryFunc(ctx, q, false, func(r *sqlx.Rows) error {
+		var row resultRow
+		if err := r.StructScan(&row); err != nil {
+			return err
+		}
+
+		if row.ParentFolderID.Valid {
+			folderMap[row.FolderID] = models.FolderID(row.ParentFolderID.Int64)
+		} else {
+			folderMap[row.FolderID] = 0
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	ret := make([][]models.FolderID, len(folderIDs))
+
+	for i, folderID := range folderIDs {
+		var parents []models.FolderID
+		currentID := folderID
+
+		for {
+			parentID, exists := folderMap[currentID]
+			if !exists || parentID == 0 {
+				break
+			}
+			parents = append(parents, parentID)
+			currentID = parentID
+		}
+
+		ret[i] = parents
+	}
+
+	return ret, nil
+}
+
 func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectDataset {
 	table := qb.table()
 
@@ -513,7 +600,7 @@ func (qb *FolderStore) queryGroupedFields(ctx context.Context, options models.Fo
 		Megapixels float64
 		Size       int64
 	}{}
-	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 

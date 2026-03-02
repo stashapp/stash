@@ -62,9 +62,22 @@
   padding: 0;
   row-gap: 0.5rem;
 
-  .btn {
+  > .btn {
     margin-right: 0.5rem;
     white-space: nowrap;
+  }
+
+  > .btn-group {
+    margin-right: 0.5rem;
+
+    .btn {
+      margin-right: 0;
+    }
+
+    // Show caret on split button dropdown toggle
+    .dropdown-toggle-split::after {
+      content: "";
+    }
   }
 }
 
@@ -220,6 +233,19 @@ button.collapse-button {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+
+  .popover-card {
+    padding: 0.5rem;
+  }
+}
+
+.warning-hover-popover {
+  display: inline-flex;
+  margin: 0 0.25rem;
+
+  .fa-icon {
+    color: $warning;
+  }
 }
 
 .ErrorMessage-container {
@@ -284,6 +310,10 @@ button.collapse-button {
     opacity: 0;
     width: 1.2rem;
 
+    &:checked {
+      opacity: 0.75;
+    }
+
     @media (hover: none), (pointer: coarse) {
       // always show card controls when hovering not supported
       opacity: 0.25;
@@ -297,10 +327,6 @@ button.collapse-button {
   .card-check {
     padding-left: 15px;
 
-    &:checked {
-      opacity: 0.75;
-    }
-
     @media (hover: none), (pointer: coarse) {
       // and make it bigger when hovering not supported
       width: 1.5rem;
@@ -312,6 +338,34 @@ button.collapse-button {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
+}
+
+.search-item-check,
+.wall-item-check {
+  height: 1.2rem;
+  width: 1.2rem;
+}
+
+// Wall item checkbox styles
+.wall-item-check {
+  left: 0.5rem;
+  opacity: 0;
+  position: absolute;
+  top: 0.5rem;
+  z-index: 10;
+
+  &:checked {
+    opacity: 0.75;
+  }
+
+  @media (hover: none) {
+    opacity: 0.25;
+  }
+}
+
+.wall-item:hover .wall-item-check {
+  opacity: 0.75;
+  transition: opacity 0.5s;
 }
 
 .TruncatedText {
@@ -389,6 +443,13 @@ button.collapse-button {
   .btn {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
+  }
+}
+
+.input-group-append {
+  .btn {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
   }
 }
 
@@ -754,6 +815,11 @@ button.btn.favorite-button {
   .detail-item {
     max-width: 100%;
   }
+
+  .detail-item-title,
+  .detail-item-value {
+    font-family: "Courier New", Courier, monospace;
+  }
 }
 
 .custom-fields .detail-item .detail-item-title {
@@ -773,6 +839,36 @@ button.btn.favorite-button {
 
 .custom-fields-input > .collapse-button {
   font-weight: 700;
+}
+
+.custom-fields-input {
+  .custom-fields-field {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 16.667%;
+      max-width: 16.667%;
+    }
+  }
+
+  .custom-fields-value {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 75%;
+      max-width: 75%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 58.33%;
+      max-width: 58.33%;
+    }
+  }
 }
 
 .custom-fields-row {
@@ -1162,4 +1258,9 @@ input[type="range"].double-range-slider-max {
     max-height: 60vh;
     overflow-y: auto;
   }
+}
+
+.reveal-in-filesystem-button {
+  margin-left: 0.25rem;
+  padding: 0 0.25rem;
 }

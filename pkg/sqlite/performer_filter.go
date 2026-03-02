@@ -47,6 +47,29 @@ func (qb *performerFilterHandler) validate() error {
 		}
 	}
 
+	// if legacy career length filter used, ensure only supported modifiers are used and value is valid
+	if filter.CareerLength != nil {
+		careerLength := filter.CareerLength
+		switch careerLength.Modifier {
+		case models.CriterionModifierEquals:
+			start, end, err := utils.ParseYearRangeString(careerLength.Value)
+			if err != nil {
+				return fmt.Errorf("invalid career length value: %s", careerLength.Value)
+			}
+			// ensure career start/end is not set
+			if start != nil && filter.CareerStart != nil {
+				return fmt.Errorf("cannot use legacy CareerLength filter with CareerStart filter")
+			}
+			if end != nil && filter.CareerEnd != nil {
+				return fmt.Errorf("cannot use legacy CareerLength filter with CareerEnd filter")
+			}
+		case models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+			// valid modifiers, no value parsing needed
+		default:
+			return fmt.Errorf("invalid career length modifier: %s", careerLength.Modifier)
+		}
+	}
+
 	return nil
 }
 
@@ -71,9 +94,12 @@ func (qb *performerFilterHandler) handle(ctx context.Context, f *filterBuilder) 
 }
 
 func (qb *performerFilterHandler) criterionHandler() criterionHandler {
-	filter := qb.performerFilter
+	// make a copy of the filter to modify with legacy conversions without affecting original filter used for subfilters
+	filter := *qb.performerFilter
 	const tableName = performerTable
 	heightCmCrit := filter.HeightCm
+
+	convertLegacyCareerLengthFilter(&filter)
 
 	return compoundHandler{
 		stringCriterionHandler(filter.Name, tableName+".name"),
@@ -129,7 +155,9 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			}
 		}),
 
-		stringCriterionHandler(filter.CareerLength, tableName+".career_length"),
+		// CareerLength filter is deprecated and non-functional (column removed in schema 78)
+		intCriterionHandler(filter.CareerStart, tableName+".career_start", nil),
+		intCriterionHandler(filter.CareerEnd, tableName+".career_end", nil),
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
@@ -148,6 +176,12 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			stashIDTableAs:    "performer_stash_ids",
 			parentIDCol:       "performers.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 filter.StashIDsEndpoint,
+			stashIDRepository: &performerRepository.stashIDs,
+			stashIDTableAs:    "performer_stash_ids",
+			parentIDCol:       "performers.id",
+		},
 
 		qb.aliasCriterionHandler(filter.Aliases),
 
@@ -161,6 +195,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 
 		qb.tagCountCriterionHandler(filter.TagCount),
 		qb.sceneCountCriterionHandler(filter.SceneCount),
+		qb.markerCountCriterionHandler(filter.MarkerCount),
 		qb.imageCountCriterionHandler(filter.ImageCount),
 		qb.galleryCountCriterionHandler(filter.GalleryCount),
 		qb.playCounterCriterionHandler(filter.PlayCount),
@@ -169,6 +204,16 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		&dateCriterionHandler{filter.DeathDate, tableName + ".death_date", nil},
 		&timestampCriterionHandler{filter.CreatedAt, tableName + ".created_at", nil},
 		&timestampCriterionHandler{filter.UpdatedAt, tableName + ".updated_at", nil},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "scene_markers.id",
+			relatedRepo:    sceneMarkerRepository.repository,
+			relatedHandler: &sceneMarkerFilterHandler{filter.MarkersFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.scenes.innerJoin(f, "", "performers.id")
+				f.addInnerJoin(sceneMarkerTable, "", "scene_markers.scene_id = performers_scenes.scene_id")
+			},
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "performers_scenes.scene_id",
@@ -215,6 +260,43 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
+func convertLegacyCareerLengthFilter(filter *models.PerformerFilterType) {
+	// convert legacy career length filter to career start/end filters
+	if filter.CareerLength != nil {
+		careerLength := filter.CareerLength
+		switch careerLength.Modifier {
+		case models.CriterionModifierEquals:
+			start, end, _ := utils.ParseYearRangeString(careerLength.Value)
+			if start != nil {
+				filter.CareerStart = &models.IntCriterionInput{
+					Value:    (*start) - 1, // minus one to make it exclusive
+					Modifier: models.CriterionModifierGreaterThan,
+				}
+			}
+			if end != nil {
+				filter.CareerEnd = &models.IntCriterionInput{
+					Value:    (*end) + 1, // plus one to make it exclusive
+					Modifier: models.CriterionModifierLessThan,
+				}
+			}
+		case models.CriterionModifierIsNull:
+			filter.CareerStart = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			}
+			filter.CareerEnd = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			}
+		case models.CriterionModifierNotNull:
+			filter.CareerStart = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			}
+			filter.CareerEnd = &models.IntCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			}
+		}
+	}
+}
+
 // TODO - we need to provide a whitelist of possible values
 func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
@@ -234,7 +316,19 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 			case "aliases":
 				performersAliasesTableMgr.join(f, "", "performers.id")
 				f.addWhere("performer_aliases.alias IS NULL")
+			case "tags":
+				f.addLeftJoin(performersTagsTable, "tags_join", "tags_join.performer_id = performers.id")
+				f.addWhere("tags_join.performer_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"disambiguation", "gender", "birthdate", "death_date",
+					"ethnicity", "country", "hair_color", "eye_color", "height", "weight",
+					"measurements", "fake_tits", "penis_length", "circumcised",
+					"career_start", "career_end", "tattoos", "piercings", "details", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}
 		}
@@ -314,6 +408,22 @@ func (qb *performerFilterHandler) sceneCountCriterionHandler(count *models.IntCr
 	}
 
 	return h.handler(count)
+}
+
+func (qb *performerFilterHandler) markerCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count != nil {
+			performerRepository.scenes.innerJoin(f, "", "performers.id")
+
+			const query = `(SELECT COUNT(*) FROM scene_markers 
+  INNER JOIN scenes ON scene_markers.scene_id = scenes.id
+  INNER JOIN performers_scenes ON performers_scenes.scene_id = scenes.id
+  WHERE performers_scenes.performer_id = performers.id)`
+
+			clause, args := getIntCriterionWhereClause(query, *count)
+			f.addWhere(clause, args...)
+		}
+	}
 }
 
 func (qb *performerFilterHandler) imageCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {

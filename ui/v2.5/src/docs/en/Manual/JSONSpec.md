@@ -24,7 +24,7 @@ When exported, files are named with different formats depending on the object ty
 | Studios | `<name>.json` |
 | Groups | `<name>.json` |
 
-Note that the file naming is not significant when importing. All json files will be read from the subdirectories.
+> **⚠️ Note:** The file naming is not significant when importing. All json files will be read from the subdirectories.
   
 ## Content of the json files
 

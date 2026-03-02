@@ -10,6 +10,7 @@ export const GalleryPreviewScrubber: React.FC<{
   imageCount: number;
   onClick?: (imageIndex: number) => void;
   onPathChanged: React.Dispatch<React.SetStateAction<string | undefined>>;
+  disabled?: boolean;
 }> = ({
   className,
   previewPath,
@@ -17,6 +18,7 @@ export const GalleryPreviewScrubber: React.FC<{
   imageCount,
   onClick,
   onPathChanged,
+  disabled,
 }) => {
   const [activeIndex, setActiveIndex] = useState<number>();
   const debounceSetActiveIndex = useThrottle(setActiveIndex, 50);
@@ -48,6 +50,7 @@ export const GalleryPreviewScrubber: React.FC<{
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
         onClick={onScrubberClick}
+        disabled={disabled}
       />
     </div>
   );

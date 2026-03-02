@@ -15,6 +15,7 @@ type FolderFinder interface {
 	FindByPath(ctx context.Context, path string, caseSensitive bool) (*Folder, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Folder, error)
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
+	GetManyParentFolderIDs(ctx context.Context, folderIDs []FolderID) ([][]FolderID, error)
 }
 
 type FolderQueryer interface {

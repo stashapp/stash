@@ -26,13 +26,15 @@ type Importer struct {
 	Input               jsonschema.Studio
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID        int
-	studio    models.Studio
-	imageData []byte
+	ID           int
+	studio       models.Studio
+	customFields models.CustomFieldMap
+	imageData    []byte
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.studio = studioJSONtoStudio(i.Input)
+	i.customFields = i.Input.CustomFields
 
 	if err := i.populateParentStudio(ctx); err != nil {
 		return err
@@ -110,7 +112,9 @@ func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 		newTag := models.NewTag()
 		newTag.Name = name
 
-		err := tagWriter.Create(ctx, &newTag)
+		err := tagWriter.Create(ctx, &models.CreateTagInput{
+			Tag: &newTag,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -153,7 +157,7 @@ func (i *Importer) populateParentStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createParentStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 	newStudio.Name = name
 
 	err := i.ReaderWriter.Create(ctx, &newStudio)
@@ -194,7 +198,10 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.studio)
+	err := i.ReaderWriter.Create(ctx, &models.CreateStudioInput{
+		Studio:       &i.studio,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %v", err)
 	}
@@ -206,7 +213,12 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 func (i *Importer) Update(ctx context.Context, id int) error {
 	studio := i.studio
 	studio.ID = id
-	err := i.ReaderWriter.Update(ctx, &studio)
+	err := i.ReaderWriter.Update(ctx, &models.UpdateStudioInput{
+		Studio: &studio,
+		CustomFields: models.CustomFieldsInput{
+			Full: i.customFields,
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("error updating existing studio: %v", err)
 	}
@@ -221,6 +233,7 @@ func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 		Details:       studioJSON.Details,
 		Favorite:      studioJSON.Favorite,
 		IgnoreAutoTag: studioJSON.IgnoreAutoTag,
+		Organized:     studioJSON.Organized,
 		CreatedAt:     studioJSON.CreatedAt.GetTime(),
 		UpdatedAt:     studioJSON.UpdatedAt.GetTime(),
 

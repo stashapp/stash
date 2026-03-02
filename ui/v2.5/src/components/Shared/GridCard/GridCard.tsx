@@ -89,14 +89,21 @@ export function useCardWidth(
   zoomWidths: number[]
 ) {
   return useMemo(() => {
+    if (ScreenUtils.isMobile()) {
+      return;
+    }
+
     if (
-      !containerWidth ||
       zoomIndex === undefined ||
       zoomIndex < 0 ||
-      zoomIndex >= zoomWidths.length ||
-      ScreenUtils.isMobile()
+      zoomIndex >= zoomWidths.length
     )
       return;
+
+    // use a default card width if we don't have the container width yet
+    if (!containerWidth) {
+      return zoomWidths[zoomIndex];
+    }
 
     let zoomValue = zoomIndex;
     const preferredCardWidth = zoomWidths[zoomValue];

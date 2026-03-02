@@ -192,6 +192,10 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 
 	const single = false
 	ret := make([]models.CustomFieldMap, len(ids))
+	// initialise ret with empty maps for each id
+	for i := range ret {
+		ret[i] = make(map[string]interface{})
+	}
 
 	idi := make(map[int]int, len(ids))
 	for i, id := range ids {

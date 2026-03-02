@@ -29,6 +29,10 @@ var (
 	dateObj, _ = models.ParseDate(date)
 	organized  = true
 	ocounter   = 2
+
+	customFields = map[string]interface{}{
+		"customField1": "customValue1",
+	}
 )
 
 const (
@@ -60,7 +64,7 @@ func createFullImage(id int) models.Image {
 	}
 }
 
-func createFullJSONImage() *jsonschema.Image {
+func createFullJSONImage(customFields map[string]interface{}) *jsonschema.Image {
 	return &jsonschema.Image{
 		Title:     title,
 		OCounter:  ocounter,
@@ -75,28 +79,40 @@ func createFullJSONImage() *jsonschema.Image {
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
+		CustomFields: customFields,
 	}
 }
 
 type basicTestScenario struct {
-	input    models.Image
-	expected *jsonschema.Image
+	input        models.Image
+	customFields map[string]interface{}
+	expected     *jsonschema.Image
 }
 
 var scenarios = []basicTestScenario{
 	{
 		createFullImage(imageID),
-		createFullJSONImage(),
+		customFields,
+		createFullJSONImage(customFields),
 	},
 }
 
 func TestToJSON(t *testing.T) {
+	db := mocks.NewDatabase()
+	db.Image.On("GetCustomFields", testCtx, imageID).Return(customFields, nil).Once()
+
 	for i, s := range scenarios {
 		image := s.input
-		json := ToBasicJSON(&image)
+		json, err := ToBasicJSON(testCtx, db.Image, &image)
+		if err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+			continue
+		}
 
 		assert.Equal(t, s.expected, json, "[%d]", i)
 	}
+
+	db.AssertExpectations(t)
 }
 
 func createStudioImage(studioID int) models.Image {

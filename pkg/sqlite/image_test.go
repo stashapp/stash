@@ -73,81 +73,94 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		newObject models.Image
+		newObject models.CreateImageInput
 		wantErr   bool
 	}{
 		{
 			"full",
-			models.Image{
-				Title:        title,
-				Code:         code,
-				Rating:       &rating,
-				Date:         &date,
-				Details:      details,
-				Photographer: photographer,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Organized:    true,
-				OCounter:     ocounter,
-				StudioID:     &studioIDs[studioIdxWithImage],
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+			models.CreateImageInput{
+				Image: &models.Image{
+					Title:        title,
+					Code:         code,
+					Rating:       &rating,
+					Date:         &date,
+					Details:      details,
+					Photographer: photographer,
+					URLs:         models.NewRelatedStrings([]string{url}),
+					Organized:    true,
+					OCounter:     ocounter,
+					StudioID:     &studioIDs[studioIdxWithImage],
+					CreatedAt:    createdAt,
+					UpdatedAt:    updatedAt,
+					GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+					TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+					PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+				},
+				CustomFields: testCustomFields,
 			},
 			false,
 		},
 		{
 			"with file",
-			models.Image{
-				Title:        title,
-				Code:         code,
-				Rating:       &rating,
-				Date:         &date,
-				Details:      details,
-				Photographer: photographer,
-				URLs:         models.NewRelatedStrings([]string{url}),
-				Organized:    true,
-				OCounter:     ocounter,
-				StudioID:     &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedFiles([]models.File{
-					imageFile.(*models.ImageFile),
-				}),
-				PrimaryFileID: &imageFile.Base().ID,
-				Path:          imageFile.Base().Path,
-				CreatedAt:     createdAt,
-				UpdatedAt:     updatedAt,
-				GalleryIDs:    models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
-				PerformerIDs:  models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+			models.CreateImageInput{
+				Image: &models.Image{
+					Title:        title,
+					Code:         code,
+					Rating:       &rating,
+					Date:         &date,
+					Details:      details,
+					Photographer: photographer,
+					URLs:         models.NewRelatedStrings([]string{url}),
+					Organized:    true,
+					OCounter:     ocounter,
+					StudioID:     &studioIDs[studioIdxWithImage],
+					Files: models.NewRelatedFiles([]models.File{
+						imageFile.(*models.ImageFile),
+					}),
+					PrimaryFileID: &imageFile.Base().ID,
+					Path:          imageFile.Base().Path,
+					CreatedAt:     createdAt,
+					UpdatedAt:     updatedAt,
+					GalleryIDs:    models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+					PerformerIDs:  models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+				},
 			},
 			false,
 		},
 		{
 			"invalid studio id",
-			models.Image{
-				StudioID: &invalidID,
+			models.CreateImageInput{
+				Image: &models.Image{
+					StudioID: &invalidID,
+				},
 			},
 			true,
 		},
 		{
 			"invalid gallery id",
-			models.Image{
-				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.CreateImageInput{
+				Image: &models.Image{
+					GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
 		{
 			"invalid tag id",
-			models.Image{
-				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.CreateImageInput{
+				Image: &models.Image{
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
 		{
 			"invalid performer id",
-			models.Image{
-				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.CreateImageInput{
+				Image: &models.Image{
+					PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
@@ -165,8 +178,11 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 					fileIDs = append(fileIDs, f.Base().ID)
 				}
 			}
-			s := tt.newObject
-			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
+			s := *tt.newObject.Image
+			if err := qb.Create(ctx, &models.CreateImageInput{
+				Image:   &s,
+				FileIDs: fileIDs,
+			}); (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
@@ -177,7 +193,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 
 			assert.NotZero(s.ID)
 
-			copy := tt.newObject
+			copy := *tt.newObject.Image
 			copy.ID = s.ID
 
 			// load relationships
@@ -201,8 +217,6 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			}
 
 			assert.Equal(copy, *found)
-
-			return
 		})
 	}
 }
@@ -387,8 +401,6 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			}
 
 			assert.Equal(copy, *s)
-
-			return
 		})
 	}
 }
@@ -827,6 +839,79 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			if tt.partial.GalleryIDs != nil {
 				assert.ElementsMatch(tt.want.GalleryIDs.List(), got.GalleryIDs.List())
 				assert.ElementsMatch(tt.want.GalleryIDs.List(), s.GalleryIDs.List())
+			}
+		})
+	}
+}
+
+func Test_ImageStore_UpdatePartialCustomFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       int
+		partial  models.ImagePartial
+		expected map[string]interface{} // nil to use the partial
+	}{
+		{
+			"set custom fields",
+			imageIDs[imageIdx1WithGallery],
+			models.ImagePartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			nil,
+		},
+		{
+			"clear custom fields",
+			imageIDs[imageIdx1WithGallery],
+			models.ImagePartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			nil,
+		},
+		{
+			"partial custom fields",
+			imageIDs[imageIdxWithStudio],
+			models.ImagePartial{
+				CustomFields: models.CustomFieldsInput{
+					Partial: map[string]interface{}{
+						"string":    "bbb",
+						"new_field": "new",
+					},
+				},
+			},
+			map[string]interface{}{
+				"int":       int64(2),
+				"real":      1.2,
+				"string":    "bbb",
+				"new_field": "new",
+			},
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Image
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			_, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if err != nil {
+				t.Errorf("ImageStore.UpdatePartial() error = %v", err)
+				return
+			}
+
+			// ensure custom fields are correct
+			cf, err := qb.GetCustomFields(ctx, tt.id)
+			if err != nil {
+				t.Errorf("ImageStore.GetCustomFields() error = %v", err)
+				return
+			}
+			if tt.expected == nil {
+				assert.Equal(tt.partial.CustomFields.Full, cf)
+			} else {
+				assert.Equal(tt.expected, cf)
 			}
 		})
 	}
@@ -3016,6 +3101,252 @@ func TestImageQueryPagination(t *testing.T) {
 
 		return nil
 	})
+}
+
+func TestImageQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.ImageFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.ImageFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getImageStringValue(imageIdx1WithGallery, "custom")},
+					},
+				},
+			},
+			[]int{imageIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.ImageFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getImageStringValue(imageIdx1WithGallery, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getImageStringValue(imageIdx1WithGallery, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{imageIdx1WithGallery},
+			false,
+		},
+		{
+			"includes",
+			&models.ImageFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getImageStringValue(imageIdx1WithGallery, "custom")[9:]},
+					},
+				},
+			},
+			[]int{imageIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.ImageFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getImageStringValue(imageIdx1WithGallery, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getImageStringValue(imageIdx1WithGallery, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{imageIdx1WithGallery},
+			false,
+		},
+		{
+			"regex",
+			&models.ImageFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			[]int{imageIdxWithPerformerTag},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.ImageFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.ImageFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getImageStringValue(imageIdxWithPerformerTag, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*17_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{imageIdxWithPerformerTag},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.ImageFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.ImageFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getImageStringValue(imageIdx1WithGallery, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{imageIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.ImageFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getImageStringValue(imageIdx1WithGallery, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{imageIdx1WithGallery},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.ImageFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{imageIdx2WithGallery},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.ImageFilterType{
+				Title: &models.StringCriterionInput{
+					Value:    getImageStringValue(imageIdx2WithGallery, titleField),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{imageIdx2WithGallery},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
+				ImageFilter: tt.filter,
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ImageStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil {
+				return
+			}
+
+			images, err := result.Resolve(ctx)
+			if err != nil {
+				t.Errorf("ImageStore.Query().Resolve() error = %v", err)
+			}
+
+			ids := imagesToIDs(images)
+			include := indexesToIDs(imageIDs, tt.includeIdxs)
+			exclude := indexesToIDs(imageIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 // TODO Count

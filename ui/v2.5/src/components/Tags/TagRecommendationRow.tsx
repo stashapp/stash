@@ -1,12 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useFindTags } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { TagCard } from "./TagCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
+import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -14,29 +11,21 @@ interface IProps {
   header: string;
 }
 
-export const TagRecommendationRow: React.FC<IProps> = (props) => {
-  const result = useFindTags(props.filter);
-  const cardCount = result.data?.findTags.count;
+export const TagRecommendationRow: React.FC<IProps> = PatchComponent(
+  "TagRecommendationRow",
+  (props) => {
+    const result = useFindTags(props.filter);
+    const count = result.data?.findTags.count ?? 0;
 
-  if (!result.loading && !cardCount) {
-    return null;
-  }
-
-  return (
-    <RecommendationRow
-      className="tag-recommendations"
-      header={props.header}
-      link={
-        <Link to={`/tags?${props.filter.makeQueryParameters()}`}>
-          <FormattedMessage id="view_all" />
-        </Link>
-      }
-    >
-      <Slider
-        {...getSlickSliderSettings(
-          cardCount ? cardCount : props.filter.itemsPerPage,
-          props.isTouch
-        )}
+    return (
+      <FilteredRecommendationRow
+        className="tag-recommendations"
+        heading={props.header}
+        url={`/tags?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
@@ -45,7 +34,7 @@ export const TagRecommendationRow: React.FC<IProps> = (props) => {
           : result.data?.findTags.tags.map((p) => (
               <TagCard key={p.id} tag={p} zoomIndex={0} />
             ))}
-      </Slider>
-    </RecommendationRow>
-  );
-};
+      </FilteredRecommendationRow>
+    );
+  }
+);

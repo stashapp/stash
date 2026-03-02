@@ -24,6 +24,7 @@ type Tag {
 
   parent_count: Int! # Resolver
   child_count: Int! # Resolver
+  custom_fields: Map!
 }
 
 input TagCreateInput {
@@ -31,6 +32,7 @@ input TagCreateInput {
   "Value that does not appear in the UI but overrides name for sorting"
   sort_name: String
   description: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
@@ -40,6 +42,8 @@ input TagCreateInput {
 
   parent_ids: [ID!]
   child_ids: [ID!]
+
+  custom_fields: Map
 }
 
 input TagUpdateInput {
@@ -48,6 +52,7 @@ input TagUpdateInput {
   "Value that does not appear in the UI but overrides name for sorting"
   sort_name: String
   description: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
@@ -57,6 +62,8 @@ input TagUpdateInput {
 
   parent_ids: [ID!]
   child_ids: [ID!]
+
+  custom_fields: CustomFieldsInput
 }
 
 input TagDestroyInput {
@@ -71,11 +78,14 @@ type FindTagsResultType {
 input TagsMergeInput {
   source: [ID!]!
   destination: ID!
+  # values defined here will override values in the destination
+  values: TagUpdateInput
 }
 
 input BulkTagUpdateInput {
   ids: [ID!]
   description: String
+  "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
   aliases: BulkUpdateStrings
   ignore_auto_tag: Boolean
   favorite: Boolean

@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useStudioFilterHook } from "src/core/studios";
-import { ImageList } from "src/components/Images/ImageList";
+import { FilteredImageList } from "src/components/Images/ImageList";
 import { View } from "src/components/List/views";
 
 interface IStudioImagesPanel {
@@ -17,7 +17,7 @@ export const StudioImagesPanel: React.FC<IStudioImagesPanel> = ({
 }) => {
   const filterHook = useStudioFilterHook(studio, showChildStudioContent);
   return (
-    <ImageList
+    <FilteredImageList
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioImages}

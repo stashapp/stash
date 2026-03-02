@@ -2,10 +2,28 @@ package models
 
 import "context"
 
-type PHashDuplicationCriterionInput struct {
+type DuplicationCriterionInput struct {
+	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
 	Duplicated *bool `json:"duplicated"`
-	// Currently unimplemented
+	// Currently unimplemented. Intended for phash distance matching.
 	Distance *int `json:"distance"`
+	// Filter by phash duplication
+	Phash *bool `json:"phash"`
+	// Filter by URL duplication
+	URL *bool `json:"url"`
+	// Filter by Stash ID duplication
+	StashID *bool `json:"stash_id"`
+	// Filter by title duplication
+	Title *bool `json:"title"`
+}
+
+type FileDuplicationCriterionInput struct {
+	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
+	Duplicated *bool `json:"duplicated"`
+	// Currently unimplemented. Intended for phash distance matching.
+	Distance *int `json:"distance"`
+	// Filter by phash duplication
+	Phash *bool `json:"phash"`
 }
 
 type SceneFilterType struct {
@@ -33,8 +51,8 @@ type SceneFilterType struct {
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
 	OCounter *IntCriterionInput `json:"o_counter"`
-	// Filter Scenes that have an exact phash match available
-	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
+	// Filter Scenes by duplication criteria
+	Duplicated *DuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
 	// Filter by orientation
@@ -79,6 +97,10 @@ type SceneFilterType struct {
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
+	// Filter by StashIDs Endpoint
+	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
+	// Filter by StashID count
+	StashIDCount *IntCriterionInput `json:"stash_id_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by interactive
@@ -117,6 +139,9 @@ type SceneFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type SceneQueryOptions struct {
@@ -170,7 +195,8 @@ type SceneCreateInput struct {
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
-	FileIds []string `json:"file_ids"`
+	FileIds      []string       `json:"file_ids"`
+	CustomFields map[string]any `json:"custom_fields,omitempty"`
 }
 
 type SceneUpdateInput struct {
@@ -199,18 +225,21 @@ type SceneUpdateInput struct {
 	PlayDuration  *float64       `json:"play_duration"`
 	PlayCount     *int           `json:"play_count"`
 	PrimaryFileID *string        `json:"primary_file_id"`
+	CustomFields  *CustomFieldsInput
 }
 
 type SceneDestroyInput struct {
-	ID              string `json:"id"`
-	DeleteFile      *bool  `json:"delete_file"`
-	DeleteGenerated *bool  `json:"delete_generated"`
+	ID               string `json:"id"`
+	DeleteFile       *bool  `json:"delete_file"`
+	DeleteGenerated  *bool  `json:"delete_generated"`
+	DestroyFileEntry *bool  `json:"destroy_file_entry"`
 }
 
 type ScenesDestroyInput struct {
-	Ids             []string `json:"ids"`
-	DeleteFile      *bool    `json:"delete_file"`
-	DeleteGenerated *bool    `json:"delete_generated"`
+	Ids              []string `json:"ids"`
+	DeleteFile       *bool    `json:"delete_file"`
+	DeleteGenerated  *bool    `json:"delete_generated"`
+	DestroyFileEntry *bool    `json:"destroy_file_entry"`
 }
 
 func NewSceneQueryResult(getter SceneGetter) *SceneQueryResult {

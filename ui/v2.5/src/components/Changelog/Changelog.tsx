@@ -256,7 +256,9 @@ const Changelog: React.FC = () => {
 
   return (
     <div className="changelog">
-      <h1 className="mb-4">Changelog:</h1>
+      <h1 className="mb-4">
+        <FormattedMessage id="config.changelog.header" />
+      </h1>
       {releases.map((r) => (
         <Version
           key={r.version}

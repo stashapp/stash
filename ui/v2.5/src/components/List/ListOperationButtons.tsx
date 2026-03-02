@@ -6,7 +6,9 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Icon } from "../Shared/Icon";
 import {
   faEllipsisH,
+  faPencil,
   faPencilAlt,
+  faPlay,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
@@ -58,11 +60,13 @@ export interface IListFilterOperation {
   isDisplayed?: () => boolean;
   icon?: IconDefinition;
   buttonVariant?: string;
+  className?: string;
 }
 
 interface IListOperationButtonsProps {
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  onInvertSelection?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   itemsSelected?: boolean;
@@ -72,6 +76,7 @@ interface IListOperationButtonsProps {
 export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   onSelectAll,
   onSelectNone,
+  onInvertSelection,
   onEdit,
   onDelete,
   itemsSelected,
@@ -82,6 +87,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
+    Mousetrap.bind("s i", () => onInvertSelection?.());
 
     Mousetrap.bind("e", () => {
       if (itemsSelected) {
@@ -98,10 +104,18 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     return () => {
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
+      Mousetrap.unbind("s i");
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
-  });
+  }, [
+    onSelectAll,
+    onSelectNone,
+    onInvertSelection,
+    itemsSelected,
+    onEdit,
+    onDelete,
+  ]);
 
   const buttons = useMemo(() => {
     const ret = (otherOperations ?? []).filter((o) => {
@@ -185,7 +199,25 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
       }
     }
 
-    const options = [renderSelectAll(), renderSelectNone()].filter((o) => o);
+    function renderInvertSelection() {
+      if (onInvertSelection) {
+        return (
+          <Dropdown.Item
+            key="invert-selection"
+            className="bg-secondary text-white"
+            onClick={() => onInvertSelection?.()}
+          >
+            <FormattedMessage id="actions.invert_selection" />
+          </Dropdown.Item>
+        );
+      }
+    }
+
+    const options = [
+      renderSelectAll(),
+      renderSelectNone(),
+      renderInvertSelection(),
+    ].filter((o) => o);
 
     if (otherOperations) {
       otherOperations
@@ -219,7 +251,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
         {options.length > 0 ? options : undefined}
       </OperationDropdown>
     );
-  }, [otherOperations, onSelectAll, onSelectNone]);
+  }, [otherOperations, onSelectAll, onSelectNone, onInvertSelection]);
 
   // don't render anything if there are no buttons or operations
   if (buttons.length === 0 && !moreDropdown) {
@@ -233,5 +265,150 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
         {moreDropdown}
       </ButtonGroup>
     </>
+  );
+};
+
+export const ListOperations: React.FC<{
+  items: number;
+  hasSelection?: boolean;
+  operations?: IListFilterOperation[];
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onPlay?: () => void;
+  operationsClassName?: string;
+  operationsMenuClassName?: string;
+}> = ({
+  items,
+  hasSelection = false,
+  operations = [],
+  onEdit,
+  onDelete,
+  onPlay,
+  operationsClassName = "list-operations",
+  operationsMenuClassName,
+}) => {
+  const intl = useIntl();
+
+  const dropdownOperations = useMemo(() => {
+    return operations.filter((o) => {
+      if (o.icon) {
+        return false;
+      }
+
+      if (!o.isDisplayed) {
+        return true;
+      }
+
+      return o.isDisplayed();
+    });
+  }, [operations]);
+
+  const buttons = useMemo(() => {
+    const otherButtons = (operations ?? []).filter((o) => {
+      if (!o.icon) {
+        return false;
+      }
+
+      if (!o.isDisplayed) {
+        return true;
+      }
+
+      return o.isDisplayed();
+    });
+
+    const ret: React.ReactNode[] = [];
+
+    function addButton(b: React.ReactNode | null) {
+      if (b) {
+        ret.push(b);
+      }
+    }
+
+    const playButton =
+      !!items && onPlay ? (
+        <Button
+          className="play-button"
+          variant="secondary"
+          onClick={() => onPlay()}
+          title={intl.formatMessage({ id: "actions.play" })}
+        >
+          <Icon icon={faPlay} />
+        </Button>
+      ) : null;
+
+    const editButton =
+      hasSelection && onEdit ? (
+        <Button
+          className="edit-existing-button"
+          variant="secondary"
+          onClick={() => onEdit()}
+        >
+          <Icon icon={faPencil} />
+        </Button>
+      ) : null;
+
+    const deleteButton =
+      hasSelection && onDelete ? (
+        <Button
+          variant="danger"
+          className="delete-button btn-danger-minimal"
+          onClick={() => onDelete()}
+        >
+          <Icon icon={faTrash} />
+        </Button>
+      ) : null;
+
+    addButton(playButton);
+    addButton(editButton);
+    addButton(deleteButton);
+
+    otherButtons.forEach((button) => {
+      addButton(
+        <Button
+          key={button.text}
+          variant={button.buttonVariant ?? "secondary"}
+          onClick={button.onClick}
+          title={button.text}
+          className={button.className}
+        >
+          <Icon icon={button.icon!} />
+        </Button>
+      );
+    });
+
+    if (ret.length === 0) {
+      return null;
+    }
+
+    return ret;
+  }, [operations, hasSelection, onDelete, onEdit, onPlay, items, intl]);
+
+  if (dropdownOperations.length === 0 && !buttons) {
+    return null;
+  }
+
+  return (
+    <div className="list-operations">
+      <ButtonGroup>
+        {buttons}
+
+        {dropdownOperations.length > 0 && (
+          <OperationDropdown
+            className={operationsClassName}
+            menuClassName={operationsMenuClassName}
+            menuPortalTarget={document.body}
+          >
+            {dropdownOperations.map((o) => (
+              <OperationDropdownItem
+                key={o.text}
+                onClick={o.onClick}
+                text={o.text}
+                className={o.className}
+              />
+            ))}
+          </OperationDropdown>
+        )}
+      </ButtonGroup>
+    </div>
   );
 };

@@ -12,6 +12,10 @@ mutation StashBoxBatchStudioTag($input: StashBoxBatchTagInput!) {
   stashBoxBatchStudioTag(input: $input)
 }
 
+mutation StashBoxBatchTagTag($input: StashBoxBatchTagInput!) {
+  stashBoxBatchTagTag(input: $input)
+}
+
 mutation SubmitStashBoxSceneDraft($input: StashBoxDraftSubmissionInput!) {
   submitStashBoxSceneDraft(input: $input)
 }

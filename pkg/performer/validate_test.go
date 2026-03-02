@@ -213,12 +213,12 @@ func TestValidateUpdateAliases(t *testing.T) {
 		want    error
 	}{
 		{"both unset", osUnset, nil, nil},
-		{"invalid name set", os2, nil, &DuplicateAliasError{name2}},
+		{"name conflicts with alias", os2, nil, &DuplicateAliasError{name2}},
 		{"valid name set", os3, nil, nil},
 		{"valid aliases empty", os1, []string{}, nil},
-		{"invalid aliases set", osUnset, []string{name1U}, &DuplicateAliasError{name1U}},
+		{"alias matches name", osUnset, []string{name1U}, &DuplicateAliasError{name1U}},
 		{"valid aliases set", osUnset, []string{name3, name2}, nil},
-		{"invalid both set", os4, []string{name4}, &DuplicateAliasError{name4}},
+		{"alias matches new name", os4, []string{name4}, &DuplicateAliasError{name4}},
 		{"valid both set", os2, []string{name1}, nil},
 	}
 

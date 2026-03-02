@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -243,6 +244,12 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
+	// if default flag is set, return the default image
+	if r.URL.Query().Get("default") == "true" {
+		utils.ServeImage(w, r, static.ReadAll(static.DefaultSceneImage))
+		return
+	}
+
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	ss := manager.SceneServer{

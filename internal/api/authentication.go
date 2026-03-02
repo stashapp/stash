@@ -40,6 +40,8 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
+			r = session.SetLocalRequest(r)
+
 			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
 			if err != nil {
 				if !errors.Is(err, session.ErrUnauthorized) {
