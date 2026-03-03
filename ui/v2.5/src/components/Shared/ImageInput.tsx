@@ -152,14 +152,16 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
               </Button>
             </div>
-            <div>
-              <Button className="minimal" onClick={onPasteClipboard}>
-                <Icon icon={faClipboard} className="fa-fw" />
-                <span>
-                  {intl.formatMessage({ id: "actions.from_clipboard" })}
-                </span>
-              </Button>
-            </div>
+            {window.isSecureContext && (
+              <div>
+                <Button className="minimal" onClick={onPasteClipboard}>
+                  <Icon icon={faClipboard} className="fa-fw" />
+                  <span>
+                    {intl.formatMessage({ id: "actions.from_clipboard" })}
+                  </span>
+                </Button>
+              </div>
+            )}
           </>
         </Popover.Content>
       </Popover>

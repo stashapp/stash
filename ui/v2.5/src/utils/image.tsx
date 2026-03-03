@@ -29,7 +29,24 @@ const imageToDataURL = async (url: string) => {
   return blobToDataURL(blob);
 };
 
+// uses event.clipboardData which works in all contexts including insecure HTTP
+const pasteImage = (
+  event: ClipboardEvent,
+  onLoadEnd: (imageData: string) => void
+) => {
+  const files = event?.clipboardData?.files;
+  if (!files?.length) return;
+
+  const file = Array.from(files).find((f) => f.type.startsWith("image/"));
+  if (file) readImage(file, onLoadEnd);
+};
+
+// uses Clipboard API which requires secure context (HTTPS or localhost)
 const readClipboardImage = async (): Promise<string | null> => {
+  if (!window.isSecureContext) {
+    return null;
+  }
+
   const items = await navigator.clipboard.read();
   for (const item of items) {
     const imageType = item.types.find((t) => t.startsWith("image/"));
@@ -53,10 +70,7 @@ const usePasteImage = (
   );
 
   useEffect(() => {
-    const paste = async () => {
-      const data = await readClipboardImage();
-      if (data) encodeImage(data);
-    };
+    const paste = (event: ClipboardEvent) => pasteImage(event, encodeImage);
     if (isActive) {
       document.addEventListener("paste", paste);
     }
