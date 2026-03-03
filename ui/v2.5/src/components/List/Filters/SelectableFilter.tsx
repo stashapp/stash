@@ -450,9 +450,6 @@ export const ObjectsFilter = <
   );
 };
 
-interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
-  extends IObjectsFilter<T> {}
-
 export const DepthSelector: React.FC<{
   depth: number | undefined;
   onDepthChanged: (depth: number) => void;
