@@ -66,10 +66,28 @@ const imageToDataURL = async (url: string) => {
   });
 };
 
+const readClipboardImage = async (): Promise<string | null> => {
+  const items = await navigator.clipboard.read();
+  for (const item of items) {
+    const imageType = item.types.find((t) => t.startsWith("image/"));
+    if (imageType) {
+      const blob = await item.getType(imageType);
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+  }
+  return null;
+};
+
 const ImageUtils = {
   onImageChange,
   usePasteImage,
   imageToDataURL,
+  readClipboardImage,
 };
 
 export default ImageUtils;

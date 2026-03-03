@@ -56,6 +56,7 @@
     "export_all": "Export all…",
     "find": "Find",
     "finish": "Finish",
+    "from_clipboard": "From clipboard",
     "from_file": "From file…",
     "from_url": "From URL…",
     "full_export": "Full export",
@@ -1636,6 +1637,9 @@
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "Added generation job to queue",
+    "clipboard_access_denied": "Clipboard access denied. Check your browser permissions",
+    "clipboard_image_pasted": "Image pasted from clipboard",
+    "clipboard_no_image": "No image found in clipboard",
     "created_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
