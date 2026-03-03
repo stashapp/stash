@@ -13,46 +13,12 @@ const readImage = (file: File, onLoadEnd: (imageData: string) => void) => {
   blobToDataURL(file).then(onLoadEnd).catch(() => {});
 };
 
-const pasteImage = (
-  event: ClipboardEvent,
-  onLoadEnd: (imageData: string) => void
-) => {
-  const files = event?.clipboardData?.files;
-  if (!files?.length) return;
-
-  const file = files[0];
-  readImage(file, onLoadEnd);
-};
-
 const onImageChange = (
   event: React.FormEvent<HTMLInputElement>,
   onLoadEnd: (imageData: string) => void
 ) => {
   const file = event?.currentTarget?.files?.[0];
   if (file) readImage(file, onLoadEnd);
-};
-
-const usePasteImage = (
-  onLoadEnd: (imageData: string) => void,
-  isActive: boolean = true
-) => {
-  const encodeImage = useCallback(
-    (data: string) => {
-      onLoadEnd(data);
-    },
-    [onLoadEnd]
-  );
-
-  useEffect(() => {
-    const paste = (event: ClipboardEvent) => pasteImage(event, encodeImage);
-    if (isActive) {
-      document.addEventListener("paste", paste);
-    }
-
-    return () => document.removeEventListener("paste", paste);
-  }, [isActive, encodeImage]);
-
-  return false;
 };
 
 const imageToDataURL = async (url: string) => {
@@ -71,6 +37,32 @@ const readClipboardImage = async (): Promise<string | null> => {
     }
   }
   return null;
+};
+
+const usePasteImage = (
+  onLoadEnd: (imageData: string) => void,
+  isActive: boolean = true
+) => {
+  const encodeImage = useCallback(
+    (data: string) => {
+      onLoadEnd(data);
+    },
+    [onLoadEnd]
+  );
+
+  useEffect(() => {
+    const paste = async () => {
+      const data = await readClipboardImage();
+      if (data) encodeImage(data);
+    };
+    if (isActive) {
+      document.addEventListener("paste", paste);
+    }
+
+    return () => document.removeEventListener("paste", paste);
+  }, [isActive, encodeImage]);
+
+  return false;
 };
 
 const ImageUtils = {
