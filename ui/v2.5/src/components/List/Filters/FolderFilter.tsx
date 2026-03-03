@@ -84,7 +84,9 @@ const FolderRow: React.FC<{
               onKeyDown={(e) => e.stopPropagation()}
               className="minimal exclude-button"
             >
-              <span className="exclude-button-text">exclude</span>
+              <span className="exclude-button-text">
+                <FormattedMessage id="actions.exclude_lowercase" />
+              </span>
               <Icon className="fa-fw exclude-icon" icon={faMinus} />
             </Button>
           )}

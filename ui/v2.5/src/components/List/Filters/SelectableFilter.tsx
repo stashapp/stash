@@ -19,7 +19,12 @@ import {
   ModifierCriterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
-import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
+import {
+  defineMessages,
+  FormattedMessage,
+  MessageDescriptor,
+  useIntl,
+} from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
 import { useDebounce } from "src/hooks/debounce";
@@ -118,7 +123,9 @@ const UnselectedItem: React.FC<{
               onKeyDown={(e) => e.stopPropagation()}
               className="minimal exclude-button"
             >
-              <span className="exclude-button-text">exclude</span>
+              <span className="exclude-button-text">
+                <FormattedMessage id="actions.exclude_lowercase" />
+              </span>
               {excludeIcon}
             </Button>
           )}
