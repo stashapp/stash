@@ -154,6 +154,7 @@ func newCleanFilter(c *config.Config) *cleanFilter {
 			generatedPath:     c.GetGeneratedPath(),
 			videoExcludeRegex: generateRegexps(c.GetExcludes()),
 			imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
+			stashIgnoreFilter: file.NewStashIgnoreFilter(),
 		},
 	}
 }
@@ -173,12 +174,18 @@ func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo)
 	}
 
 	if stash == nil {
-		logger.Infof("%s not in any stash library directories. Marking to clean: \"%s\"", fileOrFolder, path)
+		logger.Infof("%s not in any stash library directories. Marking to clean: %q", fileOrFolder, path)
 		return false
 	}
 
 	if fsutil.IsPathInDir(generatedPath, path) {
-		logger.Infof("%s is in generated path. Marking to clean: \"%s\"", fileOrFolder, path)
+		logger.Infof("%s is in generated path. Marking to clean: %q", fileOrFolder, path)
+		return false
+	}
+
+	// Check .stashignore files, bounded to the library root.
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, stash.Path) {
+		logger.Infof("%s is excluded due to .stashignore. Marking to clean: %q", fileOrFolder, path)
 		return false
 	}
 
