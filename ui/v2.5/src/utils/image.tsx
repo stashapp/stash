@@ -37,6 +37,11 @@ const pasteImage = (
   const files = event?.clipboardData?.files;
   if (!files?.length) return;
 
+  if (document.activeElement instanceof HTMLInputElement) {
+    // don't interfere with pasting text into inputs
+    return;
+  }
+
   const file = Array.from(files).find((f) => f.type.startsWith("image/"));
   if (file) readImage(file, onLoadEnd);
 };
