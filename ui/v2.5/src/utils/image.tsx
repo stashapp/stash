@@ -10,7 +10,9 @@ const blobToDataURL = (blob: Blob): Promise<string> =>
 
 const readImage = (file: File, onLoadEnd: (imageData: string) => void) => {
   // only proceed if no error encountered
-  blobToDataURL(file).then(onLoadEnd).catch(() => {});
+  blobToDataURL(file)
+    .then(onLoadEnd)
+    .catch(() => {});
 };
 
 const onImageChange = (
