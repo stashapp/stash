@@ -46,6 +46,18 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   const [hasLoaded, setHasLoaded] = useState(false);
   const spriteInfo = useSpriteInfo(hasLoaded ? vttPath : undefined);
 
+  const spriteSheetSize = useMemo(() => {
+    if (!spriteInfo) {
+      return { x: 0, y: 0 };
+    }
+
+    // calculate total width/height of scrubber image so we can scale it
+    const maxX = Math.max(...spriteInfo.map((sprite) => sprite.x + sprite.w));
+    const maxY = Math.max(...spriteInfo.map((sprite) => sprite.y + sprite.h));
+
+    return { x: maxX, y: maxY };
+  }, [spriteInfo]);
+
   const sprite = useMemo(() => {
     if (!spriteInfo || activeIndex === undefined) {
       return undefined;
@@ -69,17 +81,17 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
 
     const clientRect = imageParent.getBoundingClientRect();
     const scale = scaleToFit(sprite, clientRect);
-    const spriteSheet = new Image();
-    spriteSheet.src = sprite.url;
 
     setStyle({
-      backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
+      backgroundPosition: `${-sprite.x * scale}px ${-sprite.y * scale}px`,
       backgroundImage: `url(${sprite.url})`,
-      width: `${sprite.w}px`,
-      height: `${sprite.h}px`,
-      transform: `scale(${scale})`,
+      backgroundSize: `${spriteSheetSize.x * scale}px ${
+        spriteSheetSize.y * scale
+      }px`,
+      width: `${sprite.w * scale}px`,
+      height: `${sprite.h * scale}px`,
     });
-  }, [sprite]);
+  }, [sprite, spriteSheetSize]);
 
   const currentTime = useMemo(() => {
     if (!sprite) return undefined;
