@@ -155,7 +155,8 @@
         "save_and_new": "Зберегти та створити",
         "invert_selection": "Інвертувати виділення",
         "select_directory": "Вибрати каталог",
-        "reveal_in_file_manager": "Показати в файловому менеджері"
+        "reveal_in_file_manager": "Показати в файловому менеджері",
+        "selective_generate": "Вибіркове генерування"
     },
     "actions_name": "Дії",
     "age": "Вік",
