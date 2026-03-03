@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect } from "react";
 
+const blobToDataURL = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
 const readImage = (file: File, onLoadEnd: (imageData: string) => void) => {
-  const reader: FileReader = new FileReader();
-  reader.onloadend = () => {
-    // only proceed if no error encountered
-    if (!reader.error) {
-      onLoadEnd(reader.result as string);
-    }
-  };
-  reader.readAsDataURL(file);
+  // only proceed if no error encountered
+  blobToDataURL(file).then(onLoadEnd).catch(() => {});
 };
 
 const pasteImage = (
@@ -56,14 +58,7 @@ const usePasteImage = (
 const imageToDataURL = async (url: string) => {
   const response = await fetch(url);
   const blob = await response.blob();
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+  return blobToDataURL(blob);
 };
 
 const readClipboardImage = async (): Promise<string | null> => {
@@ -72,12 +67,7 @@ const readClipboardImage = async (): Promise<string | null> => {
     const imageType = item.types.find((t) => t.startsWith("image/"));
     if (imageType) {
       const blob = await item.getType(imageType);
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+      return blobToDataURL(blob);
     }
   }
   return null;
