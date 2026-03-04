@@ -778,11 +778,23 @@ func (qb *PerformerStore) sortByScenesDuration(direction string) string {
 	return " ORDER BY (" + selectPerformerScenesDurationSQL + ") " + direction
 }
 
+func (qb *PerformerStore) sortByCupSize(direction string) string {
+	direction = getSortDirection(direction)
+	return " ORDER BY CASE" +
+		" WHEN performers.measurements IS NULL OR performers.measurements = '' THEN NULL" +
+		" WHEN INSTR(performers.measurements, '-') = 0 THEN NULL" +
+		" ELSE REPLACE(REPLACE(" +
+		"LTRIM(SUBSTR(performers.measurements, 1, INSTR(performers.measurements, '-') - 1), '0123456789')," +
+		" 'DDD', 'F'), 'DD', 'E')" +
+		" END " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
 	"career_start",
 	"career_end",
 	"created_at",
+	"cup_size",
 	"galleries_count",
 	"height",
 	"id",
@@ -828,6 +840,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
 	case "scenes_duration":
 		sortQuery += qb.sortByScenesDuration(direction)
+	case "cup_size":
+		sortQuery += qb.sortByCupSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":

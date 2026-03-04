@@ -25,6 +25,7 @@ const sortByOptions = [
   "name",
   "height",
   "birthdate",
+  "cup_size",
   "tag_count",
   "random",
   "rating",

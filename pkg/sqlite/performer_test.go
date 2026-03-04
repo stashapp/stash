@@ -2532,6 +2532,37 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 	})
 }
 
+func TestPerformerQuerySortCupSize(t *testing.T) {
+	sort := "cup_size"
+	direction := models.SortDirectionEnumDesc
+	findFilter := &models.FindFilterType{
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	withTxn(func(ctx context.Context) error {
+		// just ensure it queries without error
+		performers, _, err := db.Performer.Query(ctx, nil, findFilter)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+
+		// sort in ascending order
+		direction = models.SortDirectionEnumAsc
+
+		performers, _, err = db.Performer.Query(ctx, nil, findFilter)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+
+		return nil
+	})
+}
+
 func TestPerformerCountByTagID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Performer
