@@ -93,7 +93,7 @@
         "select_folders": "Ordner auswählen",
         "select_none": "Nichts auswählen",
         "selective_auto_tag": "Automatisch selektiv taggen",
-        "selective_clean": "Selektive Reinigung",
+        "selective_clean": "Selektives Aufräumen",
         "selective_scan": "Selektiv scannen",
         "set_as_default": "Als Voreinstellung festlegen",
         "set_back_image": "Rückseite…",
@@ -154,7 +154,10 @@
         "add_stash_id": "Stash-ID hinzufügen",
         "save_and_new": "Speichern & Neu",
         "invert_selection": "Invertiere Auswahl",
-        "select_directory": "Ordner Auswählen"
+        "select_directory": "Ordner Auswählen",
+        "from_clipboard": "Aus Zwischenablage",
+        "reveal_in_file_manager": "Im Dateimanager anzeigen",
+        "selective_generate": "Selektives Generieren"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -287,7 +290,7 @@
             "until_restart": "bis Neustart",
             "video_sort_order": "Standard-Videosortierreihenfolge",
             "video_sort_order_desc": "Reihenfolge, in der Videos standardmäßig sortiert werden.",
-            "server_port": "Server Port",
+            "server_port": "Serverport",
             "server_port_desc": "Port, auf dem der DLNA Server laufen soll. Benötigt nach einer Änderung einen DLNA Neustart."
         },
         "general": {
@@ -297,7 +300,7 @@
                 "authentication": "Authentifizierung",
                 "clear_api_key": "API-Schlüssel löschen",
                 "credentials": {
-                    "description": "Anmeldedaten, um den Zugriff auf den Stash einzuschränken.",
+                    "description": "Anmeldedaten, um den Zugriff auf Stash einzuschränken.",
                     "heading": "Anmeldedaten"
                 },
                 "generate_api_key": "API-Schlüssel erzeugen",
@@ -326,11 +329,11 @@
                 "heading": "Binärdaten Dateisystem-Pfad"
             },
             "blobs_storage": {
-                "description": "Der Ort an dem Binärdaten wie Szenencover, Darsteller-, Studio- und Tag-Bilder bespeichert werden. Nach einer Änderung müssen die bereits existierenden Daten mit der Blobs migrieren Aufgabe migriert werden. Siehe Aufgaben-Seite für Migrierungen.",
+                "description": "Der Ort an dem Binärdaten wie Szenencover, Darsteller-, Studio- und Tag-Bilder bespeichert werden. Nach einer Änderung müssen die bereits existierenden Daten mit der \"Blobs migrieren\"-Aufgabe migriert werden. Siehe Aufgaben-Seite für Migrierungen.",
                 "heading": "Binärdaten Speichertyp"
             },
             "cache_location": "Verzeichnis für den Cache. Notwendig falls Streaming mit HLS (wie auf Apple Geräten üblich) oder DASH erfolgt.",
-            "cache_path_head": "Cache Pfad",
+            "cache_path_head": "Cachepfad",
             "calculate_md5_and_ohash_desc": "Berechne MD5 Prüfsumme zusätzlich zu oshash. Aktivierung führt dazu, dass erstmalige Scans mehr Zeit benötigen. Dateibenennungshash muss auf oshash gesetzt sein, um Berechnung des MD5 zu unterbinden.",
             "calculate_md5_and_ohash_label": "Berechne MD5 für Videodateien",
             "check_for_insecure_certificates": "Überprüfe auf unsichere Zertifikate",
@@ -340,11 +343,11 @@
             "create_galleries_from_folders_desc": "Wenn ausgewählt, erzeuge standardmäßig Galerien aus Verzeichnissen, welche Bilder enthalten. Erstellen Sie eine Datei .forcegallery oder .nogallery in dem Ordner, um das Verhalten für diesen zu erzwingen/unterdrücken.",
             "create_galleries_from_folders_label": "Erzeuge Galerien aus Verzeichnissen mit Bilder darin",
             "database": "Datenbank",
-            "db_path_head": "Datenbank Pfad",
+            "db_path_head": "Datenbankpfad",
             "directory_locations_to_your_content": "Verzeichnis zu Ihren Inhalten",
-            "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
+            "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen.",
             "excluded_image_gallery_patterns_head": "Schema für ausgeschlossene Bilder/Galerien",
-            "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
+            "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen.",
             "excluded_video_patterns_head": "Schema für ausgeschlossene Videos",
             "ffmpeg": {
                 "hardware_acceleration": {
@@ -380,16 +383,16 @@
                     "description": "Pfad zu ffmpeg.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffmpeg.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst"
                 },
                 "ffprobe_path": {
-                    "description": "Pfad zu ffprobe.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffprobe.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst",
+                    "description": "Pfad zu ffprobe.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffprobe.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst.",
                     "heading": "FFprobe.exe Pfad"
                 }
             },
             "funscript_heatmap_draw_range": "Reichweite in generierte Heatmaps einbeziehen",
             "funscript_heatmap_draw_range_desc": "Zeichnet den Bewegungsbereich auf der y-Achse der erzeugten Heatmap. Vorhandene Heatmaps müssen nach der Änderung neu generiert werden.",
-            "gallery_cover_regex_desc": "Regulärer Ausdruck, verwendet um ein Bild als Galerietitelbild zu identifiziert",
+            "gallery_cover_regex_desc": "Regulärer Ausdruck, der verwendet wird um ein Bild als Galerietitelbild zu identifizieren.",
             "gallery_cover_regex_label": "Schema für Galerietitelbilder",
             "gallery_ext_desc": "Durch Kommas getrennte Liste von Dateiformaten, welche als Galeriecontainer gelesen werden sollen.",
-            "gallery_ext_head": "Galeriecontainer Dateiformate",
+            "gallery_ext_head": "Galerie-ZIP Dateiendung",
             "generated_file_naming_hash_desc": "Verwende MD5 oder oshash für die Benennung der generierten Dateien. Um dies zu ändern, müssen für alle Szenen der entsprechende MD5/oshash berechnet werden. Nachdem dieser Wert geändert wurde, müssen vorhandene generierte Dateien migriert oder neu generiert werden. Siehe Aufgabenseite für die Migration.",
             "generated_file_naming_hash_head": "Dateinamen-Hash für generierte Dateien",
             "generated_files_location": "Verzeichnisspeicherort für die generierten Dateien (Markierungen, Vorschauen, Sprites usw.)",
@@ -846,7 +849,10 @@
                 "exit": "Abbrechen"
             }
         },
-        "advanced_mode": "Fortgeschrittener Modus"
+        "advanced_mode": "Fortgeschrittener Modus",
+        "changelog": {
+            "header": "Änderungsprotokoll"
+        }
     },
     "configuration": "Konfiguration",
     "countables": {
@@ -1583,5 +1589,8 @@
         "placeholder_name_or_id": "{entityType} Name oder StashID...",
         "select_stashbox": "StashBox auswählen..."
     },
-    "duplicated": "Dupliziert"
+    "duplicated": "Dupliziert",
+    "unsupported_criteria": "ungültige Kriterien",
+    "career_end": "Ende der Karriere",
+    "career_start": "Beginn der Karriere"
 }
