@@ -778,6 +778,28 @@ func (qb *PerformerStore) sortByScenesDuration(direction string) string {
 	return " ORDER BY (" + selectPerformerScenesDurationSQL + ") " + direction
 }
 
+// used for sorting by total scene file size
+var selectPerformerScenesSizeSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM({files}.size), 0) FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_files} ON {scenes_files}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN {files} ON {files}.id = {scenes_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_files":      scenesFilesTable,
+		"files":             fileTable,
+	},
+)
+
+func (qb *PerformerStore) sortByScenesSize(direction string) string {
+	return " ORDER BY (" + selectPerformerScenesSizeSQL + ") " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
 	"career_start",
@@ -799,6 +821,7 @@ var performerSortOptions = sortOptions{
 	"rating",
 	"scenes_count",
 	"scenes_duration",
+	"scenes_size",
 	"tag_count",
 	"updated_at",
 	"weight",
@@ -828,6 +851,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
 	case "scenes_duration":
 		sortQuery += qb.sortByScenesDuration(direction)
+	case "scenes_size":
+		sortQuery += qb.sortByScenesSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
