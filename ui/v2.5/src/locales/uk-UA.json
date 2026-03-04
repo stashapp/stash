@@ -156,7 +156,8 @@
         "invert_selection": "Інвертувати виділення",
         "select_directory": "Вибрати каталог",
         "reveal_in_file_manager": "Показати в файловому менеджері",
-        "selective_generate": "Вибіркове генерування"
+        "selective_generate": "Вибіркове генерування",
+        "from_clipboard": "З буфера обміну"
     },
     "actions_name": "Дії",
     "age": "Вік",
@@ -1435,7 +1436,10 @@
         "merged_scenes": "Сцени об'єднано",
         "generating_screenshot": "Генерація скріншоту…",
         "default_filter_set": "Встановлено типовий фільтр",
-        "merged_performers": "Виконавців об'єднано"
+        "merged_performers": "Виконавців об'єднано",
+        "clipboard_access_denied": "Доступ до буфера обміну заборонено. Перевірте дозволи браузера",
+        "clipboard_image_pasted": "Зображення вставлено з буфера обміну",
+        "clipboard_no_image": "У буфері обміну не знайдено зображення"
     },
     "empty_server": "Додайте кілька сцен на свій сервер, щоб побачити рекомендації на цій сторінці.",
     "appears_with": "З'являється разом із",
