@@ -247,12 +247,19 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     onSetModifier(defaultModifier);
   }
 
+  function onEnter() {
+    if (objects.length === 1) {
+      onSelect(objects[0], false);
+    }
+  }
+
   return (
     <div className="selectable-filter">
       <ClearableInput
         focus={inputFocus}
         value={query}
         setValue={(v) => onQueryChange(v)}
+        onEnter={onEnter}
         placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
       />
       <ul>
@@ -540,7 +547,7 @@ export const HierarchicalObjectsFilter = <
   }
 
   return (
-    <Form>
+    <div>
       <DepthSelector
         depth={criterion.value.depth}
         onDepthChanged={onDepthChanged}
@@ -549,6 +556,6 @@ export const HierarchicalObjectsFilter = <
         placeholder={intl.formatMessage(messages.studio_depth)}
       />
       <ObjectsFilter {...props} />
-    </Form>
+    </div>
   );
 };
