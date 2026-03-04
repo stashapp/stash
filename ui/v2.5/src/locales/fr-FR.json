@@ -155,7 +155,9 @@
         "save_and_new": "Enregistrer et nouveau",
         "invert_selection": "Inverser la sélection",
         "select_directory": "Sélectionner un répertoire",
-        "reveal_in_file_manager": "Afficher dans le gestionnaire de fichiers"
+        "reveal_in_file_manager": "Afficher dans le gestionnaire de fichiers",
+        "from_clipboard": "Depuis le presse-papiers",
+        "selective_generate": "Génération sélective"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -1503,7 +1505,10 @@
         "started_generating": "Début de la génération",
         "started_importing": "Début d'importation",
         "updated_entity": "{entity} mis·e à jour",
-        "merged_performers": "Performeurs fusionnés"
+        "merged_performers": "Performeurs fusionnés",
+        "clipboard_access_denied": "Accès au presse-papiers refusé. Vérifiez les autorisations de votre navigateur.",
+        "clipboard_image_pasted": "Image collée depuis le presse-papiers",
+        "clipboard_no_image": "Aucune image trouvée dans le presse-papiers"
     },
     "total": "Total",
     "true": "Vrai",
