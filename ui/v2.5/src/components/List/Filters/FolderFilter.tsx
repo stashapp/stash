@@ -141,19 +141,7 @@ function replaceFolder(folder: IFolder): (f: IFolder) => IFolder {
   };
 }
 
-export const FolderSelector: React.FC<{
-  query?: string;
-  onSelect: (folder: IFolder, exclude?: boolean) => void;
-  canExclude?: boolean;
-  preListContent?: React.ReactNode;
-  skip?: boolean;
-}> = ({
-  query,
-  onSelect,
-  preListContent,
-  canExclude = false,
-  skip = false,
-}) => {
+function useFolderMap(query: string, skip?: boolean) {
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
     skip,
   });
@@ -268,6 +256,43 @@ export const FolderSelector: React.FC<{
     }
   }
 
+  return { folderMap, onToggleExpanded };
+}
+
+function getMatchingFolders(folders: IFolder[], query: string): IFolder[] {
+  let matches: IFolder[] = [];
+
+  const queryLower = query.toLowerCase();
+
+  folders.forEach((folder) => {
+    if (
+      folder.basename.toLowerCase().includes(queryLower) ||
+      folder.path.toLowerCase() === queryLower
+    ) {
+      matches.push(folder);
+    }
+
+    if (folder.children) {
+      matches = matches.concat(getMatchingFolders(folder.children, query));
+    }
+  });
+
+  return matches;
+}
+
+export const FolderSelector: React.FC<{
+  onSelect: (folder: IFolder, exclude?: boolean) => void;
+  canExclude?: boolean;
+  preListContent?: React.ReactNode;
+  folderMap: IFolder[];
+  onToggleExpanded: (folder: IFolder) => void;
+}> = ({
+  onSelect,
+  preListContent,
+  canExclude = false,
+  folderMap,
+  onToggleExpanded,
+}) => {
   return (
     <ul className="selectable-list">
       {preListContent}
@@ -296,6 +321,8 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
   const intl = useIntl();
   const [query, setQuery] = useState("");
   const [displayQuery, onQueryChange] = useDebouncedState(query, setQuery, 250);
+
+  const { folderMap, onToggleExpanded } = useFolderMap(query);
 
   const messages = defineMessages({
     sub_folder_depth: {
@@ -362,6 +389,16 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
     [criterion, setCriterion]
   );
 
+  function onEnter() {
+    if (!query) return;
+
+    // if there is a single folder that matches the query, select it
+    const matchingFolders = getMatchingFolders(folderMap, query);
+    if (matchingFolders.length === 1) {
+      onSelect(matchingFolders[0]);
+    }
+  }
+
   const selectedList = useMemo(() => {
     const selected: Option[] =
       criterion.value?.items.map((item) => ({
@@ -389,7 +426,7 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
   }, [criterion, onUnselect]);
 
   return (
-    <Form className="folder-filter">
+    <div className="folder-filter">
       <DepthSelector
         depth={criterion.value.depth}
         onDepthChanged={onDepthChanged}
@@ -405,10 +442,16 @@ export const FolderFilter: React.FC<IInputFilterProps> = ({
           value={displayQuery}
           setValue={(v) => onQueryChange(v)}
           placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+          onEnter={onEnter}
         />
-        <FolderSelector query={query} onSelect={onSelect} canExclude />
+        <FolderSelector
+          folderMap={folderMap}
+          onToggleExpanded={onToggleExpanded}
+          onSelect={onSelect}
+          canExclude
+        />
       </Form.Group>
-    </Form>
+    </div>
   );
 };
 
@@ -428,6 +471,8 @@ export const SidebarFolderFilter: React.FC<
     setSkip(false);
     props.onOpen?.();
   }
+
+  const { folderMap, onToggleExpanded } = useFolderMap(query, skip);
 
   const option = props.criterionOption ?? FolderCriterionOption;
   const { filter, setFilter } = props;
@@ -495,6 +540,16 @@ export const SidebarFolderFilter: React.FC<
     [props.filter, setFilter, option.type, criterion]
   );
 
+  function onEnter() {
+    if (!query) return;
+
+    // if there is a single folder that matches the query, select it
+    const matchingFolders = getMatchingFolders(folderMap, query);
+    if (matchingFolders.length === 1) {
+      onSelect(matchingFolders[0]);
+    }
+  }
+
   const subDirsSelected = criterion.value?.depth === -1;
 
   const selectedList = useMemo(() => {
@@ -543,11 +598,12 @@ export const SidebarFolderFilter: React.FC<
         value={displayQuery}
         setValue={(v) => onQueryChange(v)}
         placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+        onEnter={onEnter}
       />
 
       <FolderSelector
-        query={query}
-        skip={skip}
+        folderMap={folderMap}
+        onToggleExpanded={onToggleExpanded}
         preListContent={modifierItem}
         onSelect={(f) => onSelect(f)}
       />
