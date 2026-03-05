@@ -84,7 +84,7 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
 
   return (
     <div>
-      <InputGroup hasValidation>
+      <InputGroup hasValidation className="bulk-update-date-input">
         <Form.Control
           className={`${props.className ?? "date-input text-input"} `}
           disabled={props.disabled}

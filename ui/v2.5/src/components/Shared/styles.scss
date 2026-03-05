@@ -521,6 +521,45 @@ button.collapse-button {
   }
 }
 
+.bulk-update-date-input {
+  .input-group-append {
+    height: 100%;
+    position: absolute;
+    right: 0;
+  }
+
+  .react-datepicker-wrapper {
+    height: 100%;
+
+    > div,
+    button {
+      height: 100%;
+    }
+  }
+
+  button {
+    background-color: transparent;
+    border: none;
+    color: $text-muted;
+    font-size: $btn-font-size-sm;
+    padding: 0 0.5rem;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &:not(:disabled):not(.disabled):active,
+    &:not(:disabled):not(.disabled):active:focus {
+      background-color: transparent;
+      border: none;
+      box-shadow: none;
+    }
+  }
+
+  &.unset button {
+    visibility: hidden;
+  }
+}
+
 .date-input.form-control:focus {
   // z-index gets set to 3 in input groups
   z-index: inherit;
