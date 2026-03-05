@@ -70,6 +70,43 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func stringNoTrimCriterionHandler(c *models.StringCriterionInput, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			if modifier := c.Modifier; c.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierIncludes:
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, false))
+				case models.CriterionModifierExcludes:
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, true))
+				case models.CriterionModifierEquals:
+					f.addWhere(column+" LIKE ?", c.Value)
+				case models.CriterionModifierNotEquals:
+					f.addWhere(column+" NOT LIKE ?", c.Value)
+				case models.CriterionModifierMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", column), c.Value)
+				case models.CriterionModifierNotMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column), c.Value)
+				case models.CriterionModifierIsNull:
+					f.addWhere("(" + column + " IS NULL)")
+				case models.CriterionModifierNotNull:
+					f.addWhere("(" + column + " IS NOT NULL)")
+				default:
+					panic("unsupported string filter modifier")
+				}
+			}
+		}
+	}
+}
+
 func joinedStringCriterionHandler(c *models.StringCriterionInput, column string, addJoinFn func(f *filterBuilder, joinType joinType)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
@@ -1063,7 +1100,7 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		v = *h.c.StashID
 	}
 
-	stringCriterionHandler(&models.StringCriterionInput{
+	stringNoTrimCriterionHandler(&models.StringCriterionInput{
 		Value:    v,
 		Modifier: h.c.Modifier,
 	}, t+".stash_id")(ctx, f)
