@@ -173,8 +173,8 @@ func (qb *sceneMarkerFilterHandler) performersCriterionHandler(performers *model
 		primaryFK:    sceneIDColumn,
 		foreignFK:    performerIDColumn,
 
-		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(performersScenesTable, "performers_join", "performers_join.scene_id = scene_markers.scene_id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			f.addJoin(joinType, performersScenesTable, "performers_join", "performers_join.scene_id = scene_markers.scene_id")
 		},
 	}
 

@@ -166,7 +166,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if filter.StashID != nil {
-				performerRepository.stashIDs.join(f, "performer_stash_ids", "performers.id")
+				performerRepository.stashIDs.leftJoin(f, "performer_stash_ids", "performers.id")
 				stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 			}
 		}),
@@ -303,7 +303,7 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				performersURLsTableMgr.join(f, "", "performers.id")
+				performersURLsTableMgr.leftJoin(f, "", "performers.id")
 				f.addWhere("performer_urls.url IS NULL")
 			case "scenes": // Deprecated: use `scene_count == 0` filter instead
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
@@ -311,10 +311,10 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 			case "image":
 				f.addWhere("performers.image_blob IS NULL")
 			case "stash_id":
-				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
+				performersStashIDsTableMgr.leftJoin(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
 			case "aliases":
-				performersAliasesTableMgr.join(f, "", "performers.id")
+				performersAliasesTableMgr.leftJoin(f, "", "performers.id")
 				f.addWhere("performer_aliases.alias IS NULL")
 			case "tags":
 				f.addLeftJoin(performersTagsTable, "tags_join", "tags_join.performer_id = performers.id")
@@ -354,7 +354,7 @@ func (qb *performerFilterHandler) urlsCriterionHandler(url *models.StringCriteri
 		joinTable:    performerURLsTable,
 		stringColumn: performerURLColumn,
 		addJoinTable: func(f *filterBuilder, joinType joinType) {
-			performersURLsTableMgr.join(f, "", "performers.id")
+			performersURLsTableMgr.join(f, joinType, "", "performers.id")
 		},
 	}
 
@@ -368,7 +368,7 @@ func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCrit
 		joinTable:    performersAliasesTable,
 		stringColumn: performerAliasColumn,
 		addJoinTable: func(f *filterBuilder, joinType joinType) {
-			performersAliasesTableMgr.join(f, "", "performers.id")
+			performersAliasesTableMgr.join(f, joinType, "", "performers.id")
 		},
 	}
 

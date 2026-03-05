@@ -419,7 +419,7 @@ type joinedMultiCriterionHandlerBuilder struct {
 	// foreign key of the foreign object on the join table
 	foreignFK string
 
-	addJoinTable func(f *filterBuilder)
+	addJoinTable func(f *filterBuilder, joinType joinType)
 }
 
 func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInput) criterionHandlerFunc {
@@ -435,11 +435,13 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInp
 
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
+				joinType := joinTypeLeft
 				if criterion.Modifier == models.CriterionModifierNotNull {
 					notClause = "NOT"
+					joinType = joinTypeInner
 				}
 
-				m.addJoinTable(f)
+				m.addJoinTable(f, joinType)
 
 				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
 					"table":  joinAlias,
@@ -472,11 +474,11 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInp
 				switch criterion.Modifier {
 				case models.CriterionModifierIncludes:
 					// includes any of the provided ids
-					m.addJoinTable(f)
+					m.addJoinTable(f, joinTypeInner)
 					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
 				case models.CriterionModifierEquals:
 					// includes only the provided ids
-					m.addJoinTable(f)
+					m.addJoinTable(f, joinTypeInner)
 					whereClause = utils.StrFormat("{joinAlias}.{foreignFK} IN {inBinding} AND (SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.id) = ?", utils.StrFormatMap{
 						"joinAlias":    joinAlias,
 						"foreignFK":    m.foreignFK,
@@ -491,7 +493,7 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInp
 					f.setError(fmt.Errorf("not equals modifier is not supported for multi criterion input"))
 				case models.CriterionModifierIncludesAll:
 					// includes all of the provided ids
-					m.addJoinTable(f)
+					m.addJoinTable(f, joinTypeInner)
 					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
 					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
 				}

@@ -176,18 +176,18 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				imagesURLsTableMgr.join(f, "", "images.id")
+				imagesURLsTableMgr.leftJoin(f, "", "images.id")
 				f.addWhere("image_urls.url IS NULL")
 			case "studio":
 				f.addWhere("images.studio_id IS NULL")
 			case "performers":
-				imageRepository.performers.join(f, "performers_join", "images.id")
+				imageRepository.performers.leftJoin(f, "performers_join", "images.id")
 				f.addWhere("performers_join.image_id IS NULL")
 			case "galleries":
-				imageRepository.galleries.join(f, "galleries_join", "images.id")
+				imageRepository.galleries.leftJoin(f, "galleries_join", "images.id")
 				f.addWhere("galleries_join.image_id IS NULL")
 			case "tags":
-				imageRepository.tags.join(f, "tags_join", "images.id")
+				imageRepository.tags.leftJoin(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
@@ -209,7 +209,7 @@ func (qb *imageFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		joinTable:    imagesURLsTable,
 		stringColumn: imageURLColumn,
 		addJoinTable: func(f *filterBuilder, joinType joinType) {
-			imagesURLsTableMgr.join(f, "", "images.id")
+			imagesURLsTableMgr.join(f, joinType, "", "images.id")
 		},
 	}
 
@@ -272,8 +272,8 @@ func (qb *imageFilterHandler) performersCriterionHandler(performers *models.Mult
 		primaryFK:    imageIDColumn,
 		foreignFK:    performerIDColumn,
 
-		addJoinTable: func(f *filterBuilder) {
-			imageRepository.performers.join(f, "performers_join", "images.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			imageRepository.performers.join(f, joinType, "performers_join", "images.id")
 		},
 	}
 
