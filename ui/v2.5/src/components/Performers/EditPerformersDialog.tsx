@@ -29,6 +29,7 @@ import * as FormUtils from "src/utils/form";
 import { CountrySelect } from "../Shared/CountrySelect";
 import { useConfigurationContext } from "src/hooks/Config";
 import cx from "classnames";
+import { BulkUpdateDateInput } from "../Shared/DateInput";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -211,15 +212,17 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setter: (newValue: string | undefined) => void
   ) {
     return (
-      <Form.Group controlId={name} data-field={name}>
-        <Form.Label>
-          <FormattedMessage id={name} />
-        </Form.Label>
-        <BulkUpdateTextInput
-          value={value === null ? "" : value ?? undefined}
-          valueChanged={(newValue) => setter(newValue)}
-          unsetDisabled={props.selected.length < 2}
-        />
+      <Form.Group controlId={name} data-field={name} as={Row}>
+        {FormUtils.renderLabel({
+          title: intl.formatMessage({ id: name }),
+        })}
+        <Col xs={9}>
+          <BulkUpdateTextInput
+            value={value === null ? "" : value ?? undefined}
+            valueChanged={(newValue) => setter(newValue)}
+            unsetDisabled={props.selected.length < 2}
+          />
+        </Col>
       </Form.Group>
     );
   }
@@ -272,47 +275,72 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group>
-            <Form.Label>
-              <FormattedMessage id="gender" />
-            </Form.Label>
-            <Form.Control
-              as="select"
-              className="input-control"
-              value={genderToString(updateInput.gender)}
-              onChange={(event) =>
-                setUpdateField({
-                  gender: stringToGender(event.currentTarget.value),
-                })
-              }
-            >
-              {genderOptions.map((opt) => (
-                <option value={opt} key={opt}>
-                  {opt}
-                </option>
-              ))}
-            </Form.Control>
+          <Form.Group controlId="gender" data-field="gender" as={Row}>
+            {FormUtils.renderLabel({
+              title: intl.formatMessage({ id: "gender" }),
+            })}
+            <Col xs={9}>
+              <Form.Control
+                as="select"
+                className="input-control"
+                value={genderToString(updateInput.gender)}
+                onChange={(event) =>
+                  setUpdateField({
+                    gender: stringToGender(event.currentTarget.value),
+                  })
+                }
+              >
+                {genderOptions.map((opt) => (
+                  <option value={opt} key={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </Form.Control>
+            </Col>
           </Form.Group>
 
           {renderTextField("disambiguation", updateInput.disambiguation, (v) =>
             setUpdateField({ disambiguation: v })
           )}
-          {renderTextField("birthdate", updateInput.birthdate, (v) =>
-            setUpdateField({ birthdate: v })
-          )}
-          {renderTextField("death_date", updateInput.death_date, (v) =>
-            setUpdateField({ death_date: v })
-          )}
-
-          <Form.Group>
-            <Form.Label>
-              <FormattedMessage id="country" />
-            </Form.Label>
-            <CountrySelect
-              value={updateInput.country ?? ""}
-              onChange={(v) => setUpdateField({ country: v })}
-              showFlag
-            />
+          <Form.Group controlId="birthdate" data-field="birthdate" as={Row}>
+            {FormUtils.renderLabel({
+              title: intl.formatMessage({ id: "birthdate" }),
+            })}
+            <Col xs={9}>
+              <BulkUpdateDateInput
+                value={updateInput.birthdate ?? undefined}
+                valueChanged={(newValue) =>
+                  setUpdateField({ birthdate: newValue })
+                }
+                unsetDisabled={props.selected.length < 2}
+              />
+            </Col>
+          </Form.Group>
+          <Form.Group controlId="death_date" data-field="death_date" as={Row}>
+            {FormUtils.renderLabel({
+              title: intl.formatMessage({ id: "death_date" }),
+            })}
+            <Col xs={9}>
+              <BulkUpdateDateInput
+                value={updateInput.death_date ?? undefined}
+                valueChanged={(newValue) =>
+                  setUpdateField({ death_date: newValue })
+                }
+                unsetDisabled={props.selected.length < 2}
+              />
+            </Col>
+          </Form.Group>
+          <Form.Group controlId="country" data-field="country" as={Row}>
+            {FormUtils.renderLabel({
+              title: intl.formatMessage({ id: "country" }),
+            })}
+            <Col xs={9}>
+              <CountrySelect
+                value={updateInput.country ?? ""}
+                onChange={(v) => setUpdateField({ country: v })}
+                showFlag
+              />
+            </Col>
           </Form.Group>
 
           {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
@@ -333,26 +361,28 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             setPenisLength(v)
           )}
 
-          <Form.Group data-field="circumcised">
-            <Form.Label>
-              <FormattedMessage id="circumcised" />
-            </Form.Label>
-            <Form.Control
-              as="select"
-              className="input-control"
-              value={circumcisedToString(updateInput.circumcised)}
-              onChange={(event) =>
-                setUpdateField({
-                  circumcised: stringToCircumcised(event.currentTarget.value),
-                })
-              }
-            >
-              {circumcisedOptions.map((opt) => (
-                <option value={opt} key={opt}>
-                  {opt}
-                </option>
-              ))}
-            </Form.Control>
+          <Form.Group controlId="circumcised" data-field="circumcised" as={Row}>
+            {FormUtils.renderLabel({
+              title: intl.formatMessage({ id: "circumcised" }),
+            })}
+            <Col xs={9}>
+              <Form.Control
+                as="select"
+                className="input-control"
+                value={circumcisedToString(updateInput.circumcised)}
+                onChange={(event) =>
+                  setUpdateField({
+                    circumcised: stringToCircumcised(event.currentTarget.value),
+                  })
+                }
+              >
+                {circumcisedOptions.map((opt) => (
+                  <option value={opt} key={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </Form.Control>
+            </Col>
           </Form.Group>
 
           {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
