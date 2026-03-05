@@ -81,6 +81,11 @@ export function getAggregateTagIds(state: { tags: IHasID[] }[]) {
   return getAggregateIds(sortedLists);
 }
 
+export function getAggregateSceneIds(state: { scenes: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.scenes.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
+}
+
 interface IGroup {
   group: IHasID;
 }
