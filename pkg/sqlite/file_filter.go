@@ -290,15 +290,19 @@ func (qb *videoFileFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *videoFileFilterHandler) addVideoFilesTable(f *filterBuilder) {
-	f.addLeftJoin(videoFileTable, "", "video_files.file_id = files.id")
+func (qb *videoFileFilterHandler) addVideoFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, videoFileTable, "", "video_files.file_id = files.id")
 }
 
-func (qb *videoFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *videoFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder, joinType joinType)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if codec != nil {
 			if addJoinFn != nil {
-				addJoinFn(f)
+				joinType := joinTypeInner
+				if codec.Modifier == models.CriterionModifierIsNull || codec.Modifier == models.CriterionModifierNotMatchesRegex {
+					joinType = joinTypeLeft
+				}
+				addJoinFn(f, joinType)
 			}
 
 			stringCriterionHandler(codec, codecColumn)(ctx, f)
@@ -351,6 +355,6 @@ func (qb *imageFileFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *imageFileFilterHandler) addImageFilesTable(f *filterBuilder) {
-	f.addLeftJoin(imageFileTable, "", "image_files.file_id = files.id")
+func (qb *imageFileFilterHandler) addImageFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, imageFileTable, "", "image_files.file_id = files.id")
 }

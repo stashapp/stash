@@ -56,8 +56,12 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(imageFilter.ID, "images.id", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if imageFilter.Checksum != nil {
-				imageRepository.addImagesFilesTable(f)
-				f.addInnerJoin(fingerprintTable, "fingerprints_md5", "images_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+				joinType := joinTypeInner
+				if imageFilter.Checksum.Modifier == models.CriterionModifierIsNull || imageFilter.Checksum.Modifier == models.CriterionModifierNotMatchesRegex {
+					joinType = joinTypeLeft
+				}
+				imageRepository.addImagesFilesTable(f, joinType)
+				f.addJoin(joinType, fingerprintTable, "fingerprints_md5", "images_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 			}
 
 			stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
@@ -65,8 +69,8 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 
 		&phashDistanceCriterionHandler{
 			joinFn: func(f *filterBuilder) {
-				imageRepository.addImagesFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "images_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+				imageRepository.addImagesFilesTable(f, joinTypeInner)
+				f.addInnerJoin(fingerprintTable, "fingerprints_phash", "images_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 			},
 			criterion: imageFilter.PhashDistance,
 		},
@@ -148,8 +152,8 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 				isRelated:  true,
 			},
 			joinFn: func(f *filterBuilder) {
-				imageRepository.addFilesTable(f)
-				imageRepository.addFoldersTable(f)
+				imageRepository.addFilesTable(f, joinTypeInner)
+				imageRepository.addFoldersTable(f, joinTypeInner)
 			},
 			// don't use a subquery; join directly
 			directJoin: true,
