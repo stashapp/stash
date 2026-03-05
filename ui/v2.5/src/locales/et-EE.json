@@ -155,7 +155,10 @@
         "save_and_new": "Salvesta & Uus",
         "invert_selection": "Inverteeri Valik",
         "reveal_in_file_manager": "Kuva Failihalduris",
-        "select_directory": "Vali kaust"
+        "select_directory": "Vali kaust",
+        "exclude_lowercase": "välista",
+        "from_clipboard": "Lõikelaualt",
+        "selective_generate": "Valiv genereerimine"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -432,7 +435,7 @@
                 "description": "Tee, kuhu liigutatakse kustutatud failide lõpliku kustutamise asemel. Jäta tühjaks, et alati faile lõplikult kustutada.",
                 "heading": "Prügi failitee"
             },
-            "sprite_generation_head": "Spraitide genereerimine",
+            "sprite_generation_head": "Spraitide Genereerimine",
             "sprite_interval_desc": "Iga genereeritud spraidi vaheline aeg sekundites.",
             "sprite_interval_head": "Spraitide intervall",
             "sprite_maximum_desc": "Stseeni jaoks genereeritavate spraitide maksimaalne arv. Piirangu keelamiseks määrake väärtuseks 0.",
@@ -642,7 +645,7 @@
             },
             "custom_locales": {
                 "description": "Muutke üksikuid keele stringe. Põhiloendi leiate aadressilt https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. Muudatuste jõustumiseks tuleb leht uuesti laadida.",
-                "heading": "Kohandatud Tõlge",
+                "heading": "Kohandatud tõlge",
                 "option_label": "Kohandatud tõlge lubatud"
             },
             "delete_options": {
@@ -902,7 +905,8 @@
     "criterion": {
         "greater_than": "Suurem kui",
         "less_than": "Väiksem kui",
-        "value": "Väärtus"
+        "value": "Väärtus",
+        "unsupported": "{type} (ilma toeta)"
     },
     "criterion_modifier": {
         "between": "vahel",
@@ -1458,7 +1462,10 @@
         "started_generating": "Alustasin genereerimist",
         "started_importing": "Alustasin importimist",
         "updated_entity": "Uuendatud {entity}",
-        "merged_performers": "Näitlejad kokku seotud"
+        "merged_performers": "Näitlejad kokku seotud",
+        "clipboard_access_denied": "Lõikelaua ligipääs on keelatud. Vaata brauseri õigused üle",
+        "clipboard_image_pasted": "Pilt kleebitud lõikelaualt",
+        "clipboard_no_image": "Lõukelaualt ei leitud pilti"
     },
     "total": "Kokku",
     "true": "Tõene",
@@ -1672,5 +1679,10 @@
             "no_fields_are_excluded": "Mitte ühtegi välja pole välistatud",
             "no_instances_found": "Instanse ei leitud"
         }
-    }
+    },
+    "include_sub_folders": "Sisalda alam-kaustu",
+    "parent_folder": "Pea-Kaust",
+    "sub_folder_depth": "Alamkausta sügavus (tühi kõigi jaoks)",
+    "sub_folders": "Alamkaustad",
+    "unsupported_criteria": "Ilma toeata kriteeriumid: {criteria}"
 }
