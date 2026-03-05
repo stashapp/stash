@@ -157,7 +157,8 @@
         "select_directory": "Вибрати каталог",
         "reveal_in_file_manager": "Показати в файловому менеджері",
         "selective_generate": "Вибіркове генерування",
-        "from_clipboard": "З буфера обміну"
+        "from_clipboard": "З буфера обміну",
+        "exclude_lowercase": "виключити"
     },
     "actions_name": "Дії",
     "age": "Вік",
@@ -1679,5 +1680,9 @@
             "no_instances_found": "Не знайдено жодних екземплярів"
         }
     },
-    "unsupported_criteria": "Непідтримувані критерії: {criteria}"
+    "unsupported_criteria": "Непідтримувані критерії: {criteria}",
+    "include_sub_folders": "Включити підпапки",
+    "sub_folder_depth": "Глибина підпапок (порожня для всіх)",
+    "sub_folders": "Підпапки",
+    "parent_folder": "Основна папка"
 }
