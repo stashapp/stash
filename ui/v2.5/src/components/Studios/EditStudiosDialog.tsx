@@ -154,8 +154,12 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
-          { id: "actions.edit_entity" },
-          { entityType: intl.formatMessage({ id: "studios" }) }
+          { id: "dialogs.edit_entity_count_title" },
+          {
+            count: props?.selected?.length ?? 1,
+            singularEntity: intl.formatMessage({ id: "studio" }),
+            pluralEntity: intl.formatMessage({ id: "studios" }),
+          }
         )}
         accept={{
           onClick: onSave,

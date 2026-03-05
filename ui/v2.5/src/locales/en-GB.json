@@ -985,6 +985,7 @@
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "edit_entity_count_title": "Edit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
     "imagewall": {

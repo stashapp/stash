@@ -178,8 +178,12 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
       show
       icon={faPencilAlt}
       header={intl.formatMessage(
-        { id: "actions.edit_entity" },
-        { entityType: intl.formatMessage({ id: "tags" }) }
+        { id: "dialogs.edit_entity_count_title" },
+        {
+          count: props?.selected?.length ?? 1,
+          singularEntity: intl.formatMessage({ id: "tag" }),
+          pluralEntity: intl.formatMessage({ id: "tags" }),
+        }
       )}
       accept={{
         onClick: onSave,
