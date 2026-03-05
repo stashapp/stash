@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -6,7 +6,6 @@ import { HashLink } from "react-router-hash-link";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { ModalComponent } from "src/components/Shared/Modal";
 import {
   stashBoxTagQuery,
   useJobsSubscribe,
@@ -20,221 +19,33 @@ import StashSearchResult from "./StashSearchResult";
 import TaggerConfig from "../TaggerConfig";
 import { ITaggerConfig, TAG_FIELDS } from "../constants";
 import { useUpdateTag } from "../queries";
-import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { mergeTagStashIDs } from "../utils";
 import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { useTaggerConfig } from "../config";
+import {
+  BatchUpdateModal,
+  BatchAddModal,
+} from "src/components/Shared/BatchModals";
 
 type JobFragment = Pick<
   GQL.Job,
   "id" | "status" | "subTasks" | "description" | "progress"
 >;
 
-const CLASSNAME = "StudioTagger";
-
-interface ITagBatchUpdateModal {
-  tags: GQL.TagListDataFragment[];
-  isIdle: boolean;
-  selectedEndpoint: { endpoint: string; index: number };
-  onBatchUpdate: (queryAll: boolean, refresh: boolean) => void;
-  close: () => void;
-}
-
-const TagBatchUpdateModal: React.FC<ITagBatchUpdateModal> = ({
-  tags,
-  isIdle,
-  selectedEndpoint,
-  onBatchUpdate,
-  close,
-}) => {
-  const intl = useIntl();
-
-  const [queryAll, setQueryAll] = useState(false);
-
-  const [refresh, setRefresh] = useState(false);
-  const { data: allTags } = GQL.useFindTagsQuery({
-    variables: {
-      tag_filter: {
-        stash_id_endpoint: {
-          endpoint: selectedEndpoint.endpoint,
-          modifier: refresh
-            ? GQL.CriterionModifier.NotNull
-            : GQL.CriterionModifier.IsNull,
-        },
-      },
-      filter: {
-        per_page: 0,
-      },
-    },
-  });
-
-  const tagCount = useMemo(() => {
-    const filteredStashIDs = tags.map((t) =>
-      t.stash_ids.filter((s) => s.endpoint === selectedEndpoint.endpoint)
-    );
-
-    return queryAll
-      ? allTags?.findTags.count
-      : filteredStashIDs.filter((s) =>
-          refresh ? s.length > 0 : s.length === 0
-        ).length;
-  }, [queryAll, refresh, tags, allTags, selectedEndpoint.endpoint]);
-
-  return (
-    <ModalComponent
-      show
-      icon={faTags}
-      header={intl.formatMessage({
-        id: "tag_tagger.update_tags",
-      })}
-      accept={{
-        text: intl.formatMessage({
-          id: "tag_tagger.update_tags",
-        }),
-        onClick: () => onBatchUpdate(queryAll, refresh),
-      }}
-      cancel={{
-        text: intl.formatMessage({ id: "actions.cancel" }),
-        variant: "danger",
-        onClick: () => close(),
-      }}
-      disabled={!isIdle}
-    >
-      <Form.Group>
-        <Form.Label>
-          <h6>
-            <FormattedMessage id="tag_tagger.tag_selection" />
-          </h6>
-        </Form.Label>
-        <Form.Check
-          id="query-page"
-          type="radio"
-          name="tag-query"
-          label={<FormattedMessage id="tag_tagger.current_page" />}
-          checked={!queryAll}
-          onChange={() => setQueryAll(false)}
-        />
-        <Form.Check
-          id="query-all"
-          type="radio"
-          name="tag-query"
-          label={intl.formatMessage({
-            id: "tag_tagger.query_all_tags_in_the_database",
-          })}
-          checked={queryAll}
-          onChange={() => setQueryAll(true)}
-        />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>
-          <h6>
-            <FormattedMessage id="tag_tagger.tag_status" />
-          </h6>
-        </Form.Label>
-        <Form.Check
-          id="untagged-tags"
-          type="radio"
-          name="tag-refresh"
-          label={intl.formatMessage({
-            id: "tag_tagger.untagged_tags",
-          })}
-          checked={!refresh}
-          onChange={() => setRefresh(false)}
-        />
-        <Form.Text>
-          <FormattedMessage id="tag_tagger.updating_untagged_tags_description" />
-        </Form.Text>
-        <Form.Check
-          id="tagged-tags"
-          type="radio"
-          name="tag-refresh"
-          label={intl.formatMessage({
-            id: "tag_tagger.refresh_tagged_tags",
-          })}
-          checked={refresh}
-          onChange={() => setRefresh(true)}
-        />
-        <Form.Text>
-          <FormattedMessage id="tag_tagger.refreshing_will_update_the_data" />
-        </Form.Text>
-      </Form.Group>
-      <b>
-        <FormattedMessage
-          id="tag_tagger.number_of_tags_will_be_processed"
-          values={{
-            tag_count: tagCount,
-          }}
-        />
-      </b>
-    </ModalComponent>
-  );
-};
-
-interface ITagBatchAddModal {
-  isIdle: boolean;
-  onBatchAdd: (input: string) => void;
-  close: () => void;
-}
-
-const TagBatchAddModal: React.FC<ITagBatchAddModal> = ({
-  isIdle,
-  onBatchAdd,
-  close,
-}) => {
-  const intl = useIntl();
-
-  const tagInput = useRef<HTMLTextAreaElement | null>(null);
-
-  return (
-    <ModalComponent
-      show
-      icon={faStar}
-      header={intl.formatMessage({
-        id: "tag_tagger.add_new_tags",
-      })}
-      accept={{
-        text: intl.formatMessage({
-          id: "tag_tagger.add_new_tags",
-        }),
-        onClick: () => {
-          if (tagInput.current) {
-            onBatchAdd(tagInput.current.value);
-          } else {
-            close();
-          }
-        },
-      }}
-      cancel={{
-        text: intl.formatMessage({ id: "actions.cancel" }),
-        variant: "danger",
-        onClick: () => close(),
-      }}
-      disabled={!isIdle}
-    >
-      <Form.Control
-        className="text-input"
-        as="textarea"
-        ref={tagInput}
-        placeholder={intl.formatMessage({
-          id: "tag_tagger.tag_names_or_stashids_separated_by_comma",
-        })}
-        rows={6}
-      />
-      <Form.Text>
-        <FormattedMessage id="tag_tagger.any_names_entered_will_be_queried" />
-      </Form.Text>
-    </ModalComponent>
-  );
-};
+const CLASSNAME = "TagTagger";
 
 interface ITagTaggerListProps {
   tags: GQL.TagListDataFragment[];
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  onBatchAdd: (tagInput: string) => void;
-  onBatchUpdate: (ids: string[] | undefined, refresh: boolean) => void;
+  onBatchAdd: (tagInput: string, createParent: boolean) => void;
+  onBatchUpdate: (
+    ids: string[] | undefined,
+    refresh: boolean,
+    createParent: boolean
+  ) => void;
 }
 
 const TagTaggerList: React.FC<ITagTaggerListProps> = ({
@@ -261,6 +72,27 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
 
   const [showBatchAdd, setShowBatchAdd] = useState(false);
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
+  const [batchAddParents, setBatchAddParents] = useState(
+    config.createParentTags || false
+  );
+
+  const [batchUpdateRefresh, setBatchUpdateRefresh] = useState(false);
+  const { data: allTags } = GQL.useFindTagsQuery({
+    skip: !showBatchUpdate,
+    variables: {
+      tag_filter: {
+        stash_id_endpoint: {
+          endpoint: selectedEndpoint.endpoint,
+          modifier: batchUpdateRefresh
+            ? GQL.CriterionModifier.NotNull
+            : GQL.CriterionModifier.IsNull,
+        },
+      },
+      filter: {
+        per_page: 0,
+      },
+    },
+  });
 
   const [error, setError] = useState<
     Record<string, { message?: string; details?: string } | undefined>
@@ -360,12 +192,16 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
   };
 
   async function handleBatchAdd(input: string) {
-    onBatchAdd(input);
+    onBatchAdd(input, batchAddParents);
     setShowBatchAdd(false);
   }
 
   const handleBatchUpdate = (queryAll: boolean, refresh: boolean) => {
-    onBatchUpdate(!queryAll ? tags.map((t) => t.id) : undefined, refresh);
+    onBatchUpdate(
+      !queryAll ? tags.map((t) => t.id) : undefined,
+      refresh,
+      batchAddParents
+    );
     setShowBatchUpdate(false);
   };
 
@@ -451,7 +287,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
 
         subContent = (
           <div key={tag.id}>
-            <InputGroup className="StudioTagger-box-link">
+            <InputGroup className="TagTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
                 <Button
@@ -532,20 +368,31 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
   return (
     <Card>
       {showBatchUpdate && (
-        <TagBatchUpdateModal
+        <BatchUpdateModal
           close={() => setShowBatchUpdate(false)}
           isIdle={isIdle}
           selectedEndpoint={selectedEndpoint}
-          tags={tags}
+          entities={tags}
+          allCount={allTags?.findTags.count}
           onBatchUpdate={handleBatchUpdate}
+          onRefreshChange={setBatchUpdateRefresh}
+          batchAddParents={batchAddParents}
+          setBatchAddParents={setBatchAddParents}
+          localePrefix="tag_tagger"
+          entityName="tag"
+          countVariableName="tag_count"
         />
       )}
 
       {showBatchAdd && (
-        <TagBatchAddModal
+        <BatchAddModal
           close={() => setShowBatchAdd(false)}
           isIdle={isIdle}
           onBatchAdd={handleBatchAdd}
+          batchAddParents={batchAddParents}
+          setBatchAddParents={setBatchAddParents}
+          localePrefix="tag_tagger"
+          entityName="tag"
         />
       )}
       <div className="ml-auto mb-3">
@@ -611,7 +458,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
-  async function batchAdd(tagInput: string) {
+  async function batchAdd(tagInput: string, createParent: boolean) {
     if (tagInput && selectedEndpoint) {
       const inputs = tagInput
         .split(",")
@@ -626,7 +473,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
           stash_ids: stashIds.length > 0 ? stashIds : undefined,
           endpoint: selectedEndpointIndex,
           refresh: false,
-          createParent: false,
+          createParent: createParent,
           exclude_fields: config?.excludedTagFields ?? [],
         });
 
@@ -635,13 +482,17 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
     }
   }
 
-  async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
+  async function batchUpdate(
+    ids: string[] | undefined,
+    refresh: boolean,
+    createParent: boolean
+  ) {
     if (selectedEndpoint) {
       const ret = await mutateStashBoxBatchTagTag({
         ids: ids,
         endpoint: selectedEndpointIndex,
         refresh,
-        createParent: false,
+        createParent: createParent,
         exclude_fields: config?.excludedTagFields ?? [],
       });
 
@@ -721,6 +572,28 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
               }
               fields={TAG_FIELDS}
               entityName="tags"
+              extraConfig={
+                <Form.Group
+                  controlId="create-parent"
+                  className="align-items-center"
+                >
+                  <Form.Check
+                    label={
+                      <FormattedMessage id="tag_tagger.config.create_parent_label" />
+                    }
+                    checked={config.createParentTags}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setConfig({
+                        ...config,
+                        createParentTags: e.currentTarget.checked,
+                      })
+                    }
+                  />
+                  <Form.Text>
+                    <FormattedMessage id="tag_tagger.config.create_parent_desc" />
+                  </Form.Text>
+                </Form.Group>
+              }
             />
             <TagTaggerList
               tags={tags}

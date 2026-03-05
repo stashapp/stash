@@ -541,6 +541,7 @@ type stashBoxBatchTagTagTask struct {
 	name           *string
 	stashID        *string
 	tag            *models.Tag
+	createParent   bool
 	excludedFields []string
 }
 
@@ -630,12 +631,45 @@ func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.
 	result := results[0]
 
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		return match.ScrapedTag(ctx, r.Tag, result, t.box.Endpoint)
+		return match.ScrapedTagHierarchy(ctx, r.Tag, result, t.box.Endpoint)
 	}); err != nil {
 		return nil, err
 	}
 
 	return result, nil
+}
+
+func (t *stashBoxBatchTagTagTask) processParentTag(ctx context.Context, parent *models.ScrapedTag, excluded map[string]bool) error {
+	if parent.StoredID == nil {
+		// Create new parent tag
+		newParentTag := parent.ToTag(t.box.Endpoint, excluded)
+
+		r := instance.Repository
+		err := r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Tag
+
+			if err := tag.ValidateCreate(ctx, *newParentTag, qb); err != nil {
+				return err
+			}
+
+			if err := qb.Create(ctx, &models.CreateTagInput{Tag: newParentTag}); err != nil {
+				return err
+			}
+
+			storedID := strconv.Itoa(newParentTag.ID)
+			parent.StoredID = &storedID
+			return nil
+		})
+		if err != nil {
+			logger.Errorf("Failed to create parent tag %s: %v", parent.Name, err)
+		} else {
+			logger.Infof("Created parent tag %s", parent.Name)
+		}
+		return err
+	}
+
+	// Parent already exists — nothing to update for categories
+	return nil
 }
 
 func (t *stashBoxBatchTagTagTask) processMatchedTag(ctx context.Context, s *models.ScrapedTag, excluded map[string]bool) {
@@ -647,6 +681,12 @@ func (t *stashBoxBatchTagTagTask) processMatchedTag(ctx context.Context, s *mode
 		tagID = t.tag.ID
 	} else if s.StoredID != nil {
 		tagID, _ = strconv.Atoi(*s.StoredID)
+	}
+
+	if s.Parent != nil && t.createParent {
+		if err := t.processParentTag(ctx, s.Parent, excluded); err != nil {
+			return
+		}
 	}
 
 	if tagID > 0 {
