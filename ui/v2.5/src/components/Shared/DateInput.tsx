@@ -8,14 +8,18 @@ import { Icon } from "./Icon";
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
 import { PatchComponent } from "src/patch";
+import { faBan } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
+  className?: string;
   disabled?: boolean;
   value: string;
   isTime?: boolean;
   onValueChange(value: string): void;
   placeholder?: string;
+  placeholderOverride?: string;
   error?: string;
+  append?: React.ReactNode;
 }
 
 const ShowPickerButton = forwardRef<
@@ -70,28 +74,33 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  const placeholderText = intl.formatMessage({
+  const formatHint = intl.formatMessage({
     id: props.isTime ? "datetime_format" : "date_format",
   });
+
+  const placeholderText = props.placeholder
+    ? `${props.placeholder} (${formatHint})`
+    : formatHint;
 
   return (
     <div>
       <InputGroup hasValidation>
         <Form.Control
-          className="date-input text-input"
+          className={`${props.className ?? "date-input text-input"} `}
           disabled={props.disabled}
           value={props.value}
           onChange={(e) => props.onValueChange(e.currentTarget.value)}
           placeholder={
             !props.disabled
-              ? props.placeholder
-                ? `${props.placeholder} (${placeholderText})`
-                : placeholderText
+              ? props.placeholderOverride ?? placeholderText
               : undefined
           }
           isInvalid={!!props.error}
         />
-        <InputGroup.Append>{maybeRenderButton()}</InputGroup.Append>
+        <InputGroup.Append>
+          {props.append}
+          {maybeRenderButton()}
+        </InputGroup.Append>
         <Form.Control.Feedback type="invalid">
           {props.error}
         </Form.Control.Feedback>
@@ -101,3 +110,46 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
 };
 
 export const DateInput = PatchComponent("DateInput", _DateInput);
+
+interface IBulkUpdateDateInputProps
+  extends Omit<IProps, "onValueChange" | "value"> {
+  value: string | undefined;
+  valueChanged: (value: string | undefined) => void;
+  unsetDisabled?: boolean;
+  as?: React.ElementType;
+}
+
+export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
+  valueChanged,
+  unsetDisabled,
+  ...props
+}) => {
+  const intl = useIntl();
+
+  const unsetClassName = props.value === undefined ? "unset" : "";
+
+  const unsetButton = !unsetDisabled ? (
+    <Button
+      variant="secondary"
+      onClick={() => valueChanged(undefined)}
+      title={intl.formatMessage({ id: "actions.unset" })}
+    >
+      <Icon icon={faBan} />
+    </Button>
+  ) : undefined;
+
+  return (
+    <DateInput
+      {...props}
+      value={props.value ?? ""}
+      placeholderOverride={
+        props.value === undefined
+          ? `<${intl.formatMessage({ id: "existing_value" })}>`
+          : undefined
+      }
+      onValueChange={(v) => valueChanged(v)}
+      className={`${unsetClassName} input-control date-input`}
+      append={unsetButton}
+    />
+  );
+};
