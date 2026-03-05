@@ -68,7 +68,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 					joinType = joinTypeLeft
 				}
 				qb.addSceneFilesTable(f, joinType)
-				f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
+				f.addJoin(joinType, fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
 			}
 
 			stringCriterionHandler(sceneFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
@@ -461,7 +461,7 @@ func (qb *sceneFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		primaryFK:    sceneIDColumn,
 		joinTable:    scenesURLsTable,
 		stringColumn: sceneURLColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			scenesURLsTableMgr.join(f, "", "scenes.id")
 		},
 	}
@@ -469,7 +469,7 @@ func (qb *sceneFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 	return h.handler(url)
 }
 
-func (qb *sceneFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *sceneFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		foreignTable: foreignTable,
@@ -486,9 +486,9 @@ func (qb *sceneFilterHandler) captionCriterionHandler(captions *models.StringCri
 		primaryFK:    sceneIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			qb.addSceneFilesTable(f, joinTypeLeft)
-			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = scenes_files.file_id")
+			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = scenes_files.file_id")
 		},
 		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
 			excludeClause := `scenes.id NOT IN (
@@ -604,9 +604,9 @@ func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.
 
 // legacy handler
 func (qb *sceneFilterHandler) moviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
 		sceneRepository.groups.join(f, "", "scenes.id")
-		f.addLeftJoin("groups", "", "groups_scenes.group_id = groups.id")
+		f.addJoin(joinType, "groups", "", "groups_scenes.group_id = groups.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(groupTable, groupsScenesTable, "group_id", addJoinsFunc)
 	return h.handler(movies)
@@ -630,9 +630,9 @@ func (qb *sceneFilterHandler) groupsCriterionHandler(groups *models.Hierarchical
 }
 
 func (qb *sceneFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
 		sceneRepository.galleries.join(f, "", "scenes.id")
-		f.addLeftJoin("galleries", "", "scenes_galleries.gallery_id = galleries.id")
+		f.addJoin(joinType, "galleries", "", "scenes_galleries.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, scenesGalleriesTable, "gallery_id", addJoinsFunc)
 	return h.handler(galleries)

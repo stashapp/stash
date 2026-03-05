@@ -208,7 +208,7 @@ func (qb *imageFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		primaryFK:    imageIDColumn,
 		joinTable:    imagesURLsTable,
 		stringColumn: imageURLColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			imagesURLsTableMgr.join(f, "", "images.id")
 		},
 	}
@@ -216,7 +216,7 @@ func (qb *imageFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 	return h.handler(url)
 }
 
-func (qb *imageFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *imageFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		foreignTable: foreignTable,
@@ -253,7 +253,7 @@ func (qb *imageFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrite
 }
 
 func (qb *imageFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
 		if galleries.Modifier == models.CriterionModifierIncludes || galleries.Modifier == models.CriterionModifierIncludesAll {
 			f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
 			f.addInnerJoin(galleryTable, "", "galleries_images.gallery_id = galleries.id")

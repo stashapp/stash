@@ -224,8 +224,8 @@ func (qb *studioFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrit
 }
 
 func (qb *studioFilterHandler) parentCriterionHandler(parents *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		f.addJoin(joinType, "studios", "parent_studio", "parent_studio.id = studios.parent_id")
 	}
 	h := multiCriterionHandlerBuilder{
 		primaryTable: studioTable,
@@ -244,7 +244,7 @@ func (qb *studioFilterHandler) aliasCriterionHandler(alias *models.StringCriteri
 		primaryFK:    studioIDColumn,
 		joinTable:    studioAliasesTable,
 		stringColumn: studioAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			studiosAliasesTableMgr.join(f, "", "studios.id")
 		},
 	}
@@ -258,7 +258,7 @@ func (qb *studioFilterHandler) urlsCriterionHandler(url *models.StringCriterionI
 		primaryFK:    studioIDColumn,
 		joinTable:    studioURLsTable,
 		stringColumn: studioURLColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			studiosURLsTableMgr.join(f, "", "studios.id")
 		},
 	}

@@ -316,8 +316,8 @@ func (qb *videoFileFilterHandler) captionCriterionHandler(captions *models.Strin
 		primaryFK:    sceneIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = files.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = files.id")
 		},
 		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
 			excludeClause := `files.id NOT IN (

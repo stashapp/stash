@@ -193,7 +193,7 @@ func (qb *galleryFilterHandler) urlsCriterionHandler(url *models.StringCriterion
 		primaryFK:    galleryIDColumn,
 		joinTable:    galleriesURLsTable,
 		stringColumn: galleriesURLColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			galleriesURLsTableMgr.join(f, "", "galleries.id")
 		},
 	}
@@ -201,7 +201,7 @@ func (qb *galleryFilterHandler) urlsCriterionHandler(url *models.StringCriterion
 	return h.handler(url)
 }
 
-func (qb *galleryFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *galleryFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: galleryTable,
 		foreignTable: foreignTable,
@@ -410,9 +410,9 @@ func (qb *galleryFilterHandler) tagCountCriterionHandler(tagCount *models.IntCri
 }
 
 func (qb *galleryFilterHandler) scenesCriterionHandler(scenes *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
 		galleryRepository.scenes.join(f, "", "galleries.id")
-		f.addLeftJoin("scenes", "", "scenes_galleries.scene_id = scenes.id")
+		f.addJoin(joinType, "scenes", "", "scenes_galleries.scene_id = scenes.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(sceneTable, galleriesScenesTable, "scene_id", addJoinsFunc)
 	return h.handler(scenes)

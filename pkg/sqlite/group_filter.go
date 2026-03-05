@@ -150,7 +150,7 @@ func (qb *groupFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		primaryFK:    groupIDColumn,
 		joinTable:    groupURLsTable,
 		stringColumn: groupURLColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			groupsURLsTableMgr.join(f, "", "groups.id")
 		},
 	}

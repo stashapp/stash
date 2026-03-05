@@ -191,8 +191,8 @@ func (qb *sceneMarkerFilterHandler) performersCriterionHandler(performers *model
 }
 
 func (qb *sceneMarkerFilterHandler) scenesCriterionHandler(scenes *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addLeftJoin(sceneTable, "markers_scenes", "markers_scenes.id = scene_markers.scene_id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		f.addJoin(joinType, sceneTable, "markers_scenes", "markers_scenes.id = scene_markers.scene_id")
 	}
 	h := multiCriterionHandlerBuilder{
 		primaryTable: sceneMarkerTable,

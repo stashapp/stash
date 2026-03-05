@@ -488,7 +488,7 @@ type multiCriterionHandlerBuilder struct {
 	foreignFK    string
 
 	// function that will be called to perform any necessary joins
-	addJoinsFunc func(f *filterBuilder)
+	addJoinsFunc func(f *filterBuilder, joinType joinType)
 }
 
 func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
@@ -520,7 +520,7 @@ func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionI
 			}
 
 			if m.addJoinsFunc != nil {
-				m.addJoinsFunc(f)
+				m.addJoinsFunc(f, joinTypeInner)
 			}
 
 			whereClause, havingClause := getMultiCriterionClause(m.primaryTable, m.foreignTable, m.joinTable, m.primaryFK, m.foreignFK, criterion)
@@ -556,7 +556,7 @@ type stringListCriterionHandlerBuilder struct {
 	// string field on the join table
 	stringColumn string
 
-	addJoinTable   func(f *filterBuilder)
+	addJoinTable   func(f *filterBuilder, joinType joinType)
 	excludeHandler func(f *filterBuilder, criterion *models.StringCriterionInput)
 }
 
@@ -590,7 +590,11 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 				// 	Modifier: models.CriterionModifierNotNull,
 				// }, m.joinTable+"."+m.stringColumn)(ctx, f)
 			} else {
-				m.addJoinTable(f)
+				joinType := joinTypeInner
+				if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+					joinType = joinTypeLeft
+				}
+				m.addJoinTable(f, joinType)
 				stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
 			}
 		}
@@ -1048,7 +1052,11 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
 	}
 
-	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+	joinType := joinTypeInner
+	if h.c.Modifier == models.CriterionModifierIsNull || h.c.Modifier == models.CriterionModifierNotMatchesRegex {
+		joinType = joinTypeLeft
+	}
+	f.addJoin(joinType, stashIDRepo.tableName, h.stashIDTableAs, joinClause)
 
 	v := ""
 	if h.c.StashID != nil {
@@ -1084,7 +1092,12 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
 	}
 
-	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+	joinType := joinTypeInner
+	if h.c.Modifier == models.CriterionModifierIsNull {
+		joinType = joinTypeLeft
+	}
+
+	f.addJoin(joinType, stashIDRepo.tableName, h.stashIDTableAs, joinClause)
 
 	switch h.c.Modifier {
 	case models.CriterionModifierIsNull:

@@ -353,7 +353,7 @@ func (qb *performerFilterHandler) urlsCriterionHandler(url *models.StringCriteri
 		primaryFK:    performerIDColumn,
 		joinTable:    performerURLsTable,
 		stringColumn: performerURLColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			performersURLsTableMgr.join(f, "", "performers.id")
 		},
 	}
@@ -367,7 +367,7 @@ func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCrit
 		primaryFK:    performerIDColumn,
 		joinTable:    performersAliasesTable,
 		stringColumn: performerAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
 			performersAliasesTableMgr.join(f, "", "performers.id")
 		},
 	}
