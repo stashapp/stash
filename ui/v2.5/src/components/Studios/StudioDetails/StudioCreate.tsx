@@ -26,12 +26,14 @@ const StudioCreate: React.FC = () => {
 
   const [createStudio] = useStudioCreate();
 
-  async function onSave(input: GQL.StudioCreateInput) {
+  async function onSave(input: GQL.StudioCreateInput, andNew?: boolean) {
     const result = await createStudio({
       variables: { input },
     });
     if (result.data?.studioCreate?.id) {
-      history.push(`/studios/${result.data.studioCreate.id}`);
+      if (!andNew) {
+        history.push(`/studios/${result.data.studioCreate.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

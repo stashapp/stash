@@ -23,12 +23,12 @@ import { ContainingGroupsMultiSet } from "./ContainingGroupsMultiSet";
 import { IRelatedGroupEntry } from "./GroupDetails/RelatedGroupTable";
 
 interface IListOperationProps {
-  selected: GQL.GroupDataFragment[];
+  selected: GQL.ListGroupDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
 export function getAggregateContainingGroups(
-  state: Pick<GQL.GroupDataFragment, "containing_groups">[]
+  state: Pick<GQL.ListGroupDataFragment, "containing_groups">[]
 ) {
   const sortedLists: IRelatedGroupEntry[][] = state.map((o) =>
     o.containing_groups
@@ -144,7 +144,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     let updateDirector: string | undefined;
     let first = true;
 
-    state.forEach((group: GQL.GroupDataFragment) => {
+    state.forEach((group: GQL.ListGroupDataFragment) => {
       const groupTagIDs = (group.tags ?? []).map((p) => p.id).sort();
       const groupContainingGroupIDs = (group.containing_groups ?? []).sort(
         (a, b) => a.group.id.localeCompare(b.group.id)

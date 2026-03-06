@@ -1,6 +1,8 @@
 package models
 
-import "context"
+import (
+	"context"
+)
 
 type ImageFilterType struct {
 	OperatorFilter[ImageFilterType]
@@ -11,6 +13,8 @@ type ImageFilterType struct {
 	Photographer *StringCriterionInput `json:"photographer"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`
+	// Filter by phash distance
+	PhashDistance *PhashDistanceCriterionInput `json:"phash_distance"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
@@ -63,40 +67,45 @@ type ImageFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type ImageUpdateInput struct {
-	ClientMutationID *string  `json:"clientMutationId"`
-	ID               string   `json:"id"`
-	Title            *string  `json:"title"`
-	Code             *string  `json:"code"`
-	Urls             []string `json:"urls"`
-	Date             *string  `json:"date"`
-	Details          *string  `json:"details"`
-	Photographer     *string  `json:"photographer"`
-	Rating100        *int     `json:"rating100"`
-	Organized        *bool    `json:"organized"`
-	SceneIds         []string `json:"scene_ids"`
-	StudioID         *string  `json:"studio_id"`
-	TagIds           []string `json:"tag_ids"`
-	PerformerIds     []string `json:"performer_ids"`
-	GalleryIds       []string `json:"gallery_ids"`
-	PrimaryFileID    *string  `json:"primary_file_id"`
+	ClientMutationID *string            `json:"clientMutationId"`
+	ID               string             `json:"id"`
+	Title            *string            `json:"title"`
+	Code             *string            `json:"code"`
+	Urls             []string           `json:"urls"`
+	Date             *string            `json:"date"`
+	Details          *string            `json:"details"`
+	Photographer     *string            `json:"photographer"`
+	Rating100        *int               `json:"rating100"`
+	Organized        *bool              `json:"organized"`
+	SceneIds         []string           `json:"scene_ids"`
+	StudioID         *string            `json:"studio_id"`
+	TagIds           []string           `json:"tag_ids"`
+	PerformerIds     []string           `json:"performer_ids"`
+	GalleryIds       []string           `json:"gallery_ids"`
+	PrimaryFileID    *string            `json:"primary_file_id"`
+	CustomFields     *CustomFieldsInput `json:"custom_fields"`
 
 	// deprecated
 	URL *string `json:"url"`
 }
 
 type ImageDestroyInput struct {
-	ID              string `json:"id"`
-	DeleteFile      *bool  `json:"delete_file"`
-	DeleteGenerated *bool  `json:"delete_generated"`
+	ID               string `json:"id"`
+	DeleteFile       *bool  `json:"delete_file"`
+	DeleteGenerated  *bool  `json:"delete_generated"`
+	DestroyFileEntry *bool  `json:"destroy_file_entry"`
 }
 
 type ImagesDestroyInput struct {
-	Ids             []string `json:"ids"`
-	DeleteFile      *bool    `json:"delete_file"`
-	DeleteGenerated *bool    `json:"delete_generated"`
+	Ids              []string `json:"ids"`
+	DeleteFile       *bool    `json:"delete_file"`
+	DeleteGenerated  *bool    `json:"delete_generated"`
+	DestroyFileEntry *bool    `json:"destroy_file_entry"`
 }
 
 type ImageQueryOptions struct {

@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useGroupFilterHook } from "src/core/groups";
-import { PerformerList } from "src/components/Performers/PerformerList";
+import { FilteredPerformerList } from "src/components/Performers/PerformerList";
 import { View } from "src/components/List/views";
 
 interface IGroupPerformersPanel {
@@ -18,7 +18,7 @@ export const GroupPerformersPanel: React.FC<IGroupPerformersPanel> = ({
   const filterHook = useGroupFilterHook(group, showChildGroupContent);
 
   return (
-    <PerformerList
+    <FilteredPerformerList
       filterHook={filterHook}
       alterQuery={active}
       view={View.GroupPerformers}

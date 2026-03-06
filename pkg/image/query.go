@@ -2,7 +2,9 @@ package image
 
 import (
 	"context"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -44,6 +46,35 @@ func Query(ctx context.Context, qb Queryer, imageFilter *models.ImageFilterType,
 	}
 
 	return images, nil
+}
+
+// FilterFromPaths creates a ImageFilterType that filters using the provided
+// paths.
+func FilterFromPaths(paths []string) *models.ImageFilterType {
+	ret := &models.ImageFilterType{}
+	or := ret
+	sep := string(filepath.Separator)
+
+	for _, p := range paths {
+		if !strings.HasSuffix(p, sep) {
+			p += sep
+		}
+
+		if ret.Path == nil {
+			or = ret
+		} else {
+			newOr := &models.ImageFilterType{}
+			or.Or = newOr
+			or = newOr
+		}
+
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	return ret
 }
 
 func CountByPerformerID(ctx context.Context, r QueryCounter, id int) (int, error) {

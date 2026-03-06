@@ -33,6 +33,7 @@ interface IProps {
   stashBoxes: GQL.StashBox[];
   excludedStashBoxEndpoints?: string[];
   onSelectItem: (item?: GQL.StashIdInput) => void;
+  initialQuery?: string;
 }
 
 const CLASSNAME = "StashBoxIDSearchModal";
@@ -289,6 +290,7 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
   stashBoxes,
   excludedStashBoxEndpoints = [],
   onSelectItem,
+  initialQuery = "",
 }) => {
   const intl = useIntl();
   const Toast = useToast();
@@ -297,7 +299,7 @@ export const StashBoxIDSearchModal: React.FC<IProps> = ({
   const [selectedStashBox, setSelectedStashBox] = useState<GQL.StashBox | null>(
     null
   );
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>(initialQuery);
   const [results, setResults] = useState<SearchResultItem[] | undefined>(
     undefined
   );

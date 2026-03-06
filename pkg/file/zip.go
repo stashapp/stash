@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	errNotReaderAt  = errors.New("not a ReaderAt")
+	ErrNotReaderAt  = errors.New("invalid reader: does not implement io.ReaderAt")
 	errZipFSOpenZip = errors.New("cannot open zip file inside zip file")
 )
 
@@ -38,7 +38,7 @@ func newZipFS(fs models.FS, path string, size int64) (*zipFS, error) {
 	asReaderAt, _ := reader.(io.ReaderAt)
 	if asReaderAt == nil {
 		reader.Close()
-		return nil, errNotReaderAt
+		return nil, ErrNotReaderAt
 	}
 
 	zipReader, err := zip.NewReader(asReaderAt, size)
@@ -99,7 +99,9 @@ func (f *zipFS) rel(name string) (string, error) {
 
 	relName, err := filepath.Rel(f.zipPath, name)
 	if err != nil {
-		return "", fmt.Errorf("internal error getting relative path: %w", err)
+		// if the path is not relative to the zip path, then it's not found in the zip file,
+		// so treat this as a file not found
+		return "", fs.ErrNotExist
 	}
 
 	// convert relName to use slash, since zip files do so regardless

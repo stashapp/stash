@@ -44,7 +44,8 @@ type performerRow struct {
 	FakeTits           zero.String `db:"fake_tits"`
 	PenisLength        null.Float  `db:"penis_length"`
 	Circumcised        zero.String `db:"circumcised"`
-	CareerLength       zero.String `db:"career_length"`
+	CareerStart        null.Int    `db:"career_start"`
+	CareerEnd          null.Int    `db:"career_end"`
 	Tattoos            zero.String `db:"tattoos"`
 	Piercings          zero.String `db:"piercings"`
 	Favorite           bool        `db:"favorite"`
@@ -82,7 +83,8 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	if o.Circumcised != nil && o.Circumcised.IsValid() {
 		r.Circumcised = zero.StringFrom(o.Circumcised.String())
 	}
-	r.CareerLength = zero.StringFrom(o.CareerLength)
+	r.CareerStart = intFromPtr(o.CareerStart)
+	r.CareerEnd = intFromPtr(o.CareerEnd)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
 	r.Favorite = o.Favorite
@@ -110,7 +112,8 @@ func (r *performerRow) resolve() *models.Performer {
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
 		PenisLength:    nullFloatPtr(r.PenisLength),
-		CareerLength:   r.CareerLength.String,
+		CareerStart:    nullIntPtr(r.CareerStart),
+		CareerEnd:      nullIntPtr(r.CareerEnd),
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
 		Favorite:       r.Favorite,
@@ -155,7 +158,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("circumcised", o.Circumcised)
-	r.setNullString("career_length", o.CareerLength)
+	r.setNullInt("career_start", o.CareerStart)
+	r.setNullInt("career_end", o.CareerEnd)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
 	r.setBool("favorite", o.Favorite)
@@ -706,6 +710,28 @@ func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
 }
 
+// used for sorting on performer latest scene
+var selectPerformerLatestSceneSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"date":              sceneDateColumn,
+	},
+)
+
+func (qb *PerformerStore) sortByLatestScene(direction string) string {
+	// need to get the latest date from scenes
+	return " ORDER BY (" + selectPerformerLatestSceneSQL + ") " + direction
+}
+
 // used for sorting on performer last view_date
 var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 	"SELECT MAX(view_date) FROM ("+
@@ -754,7 +780,8 @@ func (qb *PerformerStore) sortByScenesDuration(direction string) string {
 
 var performerSortOptions = sortOptions{
 	"birthdate",
-	"career_length",
+	"career_start",
+	"career_end",
 	"created_at",
 	"galleries_count",
 	"height",
@@ -762,6 +789,7 @@ var performerSortOptions = sortOptions{
 	"images_count",
 	"last_o_at",
 	"last_played_at",
+	"latest_scene",
 	"measurements",
 	"name",
 	"o_counter",
@@ -812,6 +840,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByLastPlayedAt(direction)
 	case "last_o_at":
 		sortQuery += qb.sortByLastOAt(direction)
+	case "latest_scene":
+		sortQuery += qb.sortByLatestScene(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
@@ -892,4 +922,59 @@ func (qb *PerformerStore) FindByStashIDStatus(ctx context.Context, hasStashID bo
 	}
 
 	return ret, nil
+}
+
+func (qb *PerformerStore) Merge(ctx context.Context, source []int, destination int) error {
+	if len(source) == 0 {
+		return nil
+	}
+
+	inBinding := getInBinding(len(source))
+
+	args := []interface{}{destination}
+	srcArgs := make([]interface{}, len(source))
+	for i, id := range source {
+		if id == destination {
+			return errors.New("cannot merge where source == destination")
+		}
+		srcArgs[i] = id
+	}
+
+	args = append(args, srcArgs...)
+
+	performerTables := map[string]string{
+		performersScenesTable:    sceneIDColumn,
+		performersGalleriesTable: galleryIDColumn,
+		performersImagesTable:    imageIDColumn,
+		performersTagsTable:      tagIDColumn,
+	}
+
+	args = append(args, destination)
+
+	// for each table, update source performer ids to destination performer id, ignoring duplicates
+	for table, idColumn := range performerTables {
+		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
+SET performer_id = ?
+WHERE performer_id IN `+inBinding+`
+AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.performer_id = ?)`,
+			args...,
+		)
+		if err != nil {
+			return err
+		}
+
+		// delete source performer ids from the table where they couldn't be set
+		if _, err := dbWrapper.Exec(ctx, `DELETE FROM `+table+` WHERE performer_id IN `+inBinding, srcArgs...); err != nil {
+			return err
+		}
+	}
+
+	for _, id := range source {
+		err := qb.Destroy(ctx, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

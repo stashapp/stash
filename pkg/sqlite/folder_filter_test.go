@@ -34,6 +34,17 @@ func TestFolderQuery(t *testing.T) {
 			excludeIdxs: []int{folderIdxInZip},
 		},
 		{
+			name: "basename",
+			filter: &models.FolderFilterType{
+				Basename: &models.StringCriterionInput{
+					Value:    getFolderBasename(folderIdxWithParentFolder, nil),
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			includeIdxs: []int{folderIdxWithParentFolder},
+			excludeIdxs: []int{folderIdxInZip},
+		},
+		{
 			name: "parent folder",
 			filter: &models.FolderFilterType{
 				ParentFolder: &models.HierarchicalMultiCriterionInput{

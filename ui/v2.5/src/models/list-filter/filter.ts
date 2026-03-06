@@ -5,7 +5,7 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import { Criterion } from "./criteria/criterion";
+import { Criterion, UnsupportedCriterionOption } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode, SavedUIOptions } from "./types";
 import { ListFilterOptions } from "./filter-options";
@@ -437,7 +437,7 @@ export class ListFilterModel {
     const option = criterionOptions.find((o) => o.type === type);
 
     if (!option) {
-      throw new Error(`Unknown criterion parameter name: ${type}`);
+      return new UnsupportedCriterionOption(type).makeCriterion(this.config);
     }
 
     return option.makeCriterion(this.config);

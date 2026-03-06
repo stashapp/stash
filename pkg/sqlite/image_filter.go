@@ -62,6 +62,15 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 
 			stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 		}),
+
+		&phashDistanceCriterionHandler{
+			joinFn: func(f *filterBuilder) {
+				imageRepository.addImagesFilesTable(f)
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "images_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+			},
+			criterion: imageFilter.PhashDistance,
+		},
+
 		stringCriterionHandler(imageFilter.Title, "images.title"),
 		stringCriterionHandler(imageFilter.Code, "images.code"),
 		stringCriterionHandler(imageFilter.Details, "images.details"),
@@ -90,6 +99,13 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		qb.performerAgeCriterionHandler(imageFilter.PerformerAge),
 		&timestampCriterionHandler{imageFilter.CreatedAt, "images.created_at", nil},
 		&timestampCriterionHandler{imageFilter.UpdatedAt, "images.updated_at", nil},
+
+		&customFieldsFilterHandler{
+			table: imagesCustomFieldsTable.GetTable(),
+			fkCol: imageIDColumn,
+			c:     imageFilter.CustomFields,
+			idCol: "images.id",
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "galleries_images.gallery_id",
@@ -155,6 +171,9 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				imagesURLsTableMgr.join(f, "", "images.id")
+				f.addWhere("image_urls.url IS NULL")
 			case "studio":
 				f.addWhere("images.studio_id IS NULL")
 			case "performers":
@@ -167,6 +186,12 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				imageRepository.tags.join(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "details", "photographer", "date", "code", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(images." + *isMissing + " IS NULL OR TRIM(images." + *isMissing + ") = '')")
 			}
 		}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type sceneFilterHandler struct {
@@ -83,14 +82,27 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Phash != nil {
 				// backwards compatibility
-				qb.phashDistanceCriterionHandler(&models.PhashDistanceCriterionInput{
-					Value:    sceneFilter.Phash.Value,
-					Modifier: sceneFilter.Phash.Modifier,
-				})(ctx, f)
+				h := phashDistanceCriterionHandler{
+					joinFn: func(f *filterBuilder) {
+						qb.addSceneFilesTable(f)
+						f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+					},
+					criterion: &models.PhashDistanceCriterionInput{
+						Value:    sceneFilter.Phash.Value,
+						Modifier: sceneFilter.Phash.Modifier,
+					},
+				}
+				h.handle(ctx, f)
 			}
 		}),
 
-		qb.phashDistanceCriterionHandler(sceneFilter.PhashDistance),
+		&phashDistanceCriterionHandler{
+			joinFn: func(f *filterBuilder) {
+				qb.addSceneFilesTable(f)
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+			},
+			criterion: sceneFilter.PhashDistance,
+		},
 
 		intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil),
 		qb.oCountCriterionHandler(sceneFilter.OCounter),
@@ -114,13 +126,20 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 				stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 			}
 		}),
-
 		&stashIDCriterionHandler{
 			c:                 sceneFilter.StashIDEndpoint,
 			stashIDRepository: &sceneRepository.stashIDs,
 			stashIDTableAs:    "scene_stash_ids",
 			parentIDCol:       "scenes.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 sceneFilter.StashIDsEndpoint,
+			stashIDRepository: &sceneRepository.stashIDs,
+			stashIDTableAs:    "scene_stash_ids",
+			parentIDCol:       "scenes.id",
+		},
+
+		qb.stashIDCountCriterionHandler(sceneFilter.StashIDCount),
 
 		boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable),
 		intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable),
@@ -155,10 +174,17 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.performerTagsCriterionHandler(sceneFilter.PerformerTags),
 		qb.performerFavoriteCriterionHandler(sceneFilter.PerformerFavorite),
 		qb.performerAgeCriterionHandler(sceneFilter.PerformerAge),
-		qb.phashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable),
+		qb.duplicatedCriterionHandler(sceneFilter.Duplicated),
 		&dateCriterionHandler{sceneFilter.Date, "scenes.date", nil},
 		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
 		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
+
+		&customFieldsFilterHandler{
+			table: scenesCustomFieldsTable.GetTable(),
+			fkCol: sceneIDColumn,
+			c:     sceneFilter.CustomFields,
+			idCol: "scenes.id",
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.gallery_id",
@@ -277,24 +303,69 @@ func (qb *sceneFilterHandler) fileCountCriterionHandler(fileCount *models.IntCri
 	return h.handler(fileCount)
 }
 
-func (qb *sceneFilterHandler) phashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *sceneFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models.DuplicationCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		// TODO: Wishlist item: Implement Distance matching
-		if duplicatedFilter != nil {
-			if addJoinFn != nil {
-				addJoinFn(f)
-			}
+		if duplicatedFilter == nil {
+			return
+		}
 
-			var v string
-			if *duplicatedFilter.Duplicated {
-				v = ">"
-			} else {
-				v = "="
-			}
+		// Handle legacy 'duplicated' field - treat as phash if phash not explicitly set
+		//nolint:staticcheck
+		if duplicatedFilter.Duplicated != nil && duplicatedFilter.Phash == nil {
+			//nolint:staticcheck
+			duplicatedFilter.Phash = duplicatedFilter.Duplicated
+		}
 
-			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_files.file_id = scph.file_id")
+		// Handle explicit fields
+		if duplicatedFilter.Phash != nil {
+			qb.addSceneFilesTable(f)
+			qb.applyPhashDuplication(f, *duplicatedFilter.Phash)
+		}
+
+		if duplicatedFilter.StashID != nil {
+			qb.applyStashIDDuplication(f, *duplicatedFilter.StashID)
+		}
+
+		if duplicatedFilter.Title != nil {
+			qb.applyTitleDuplication(f, *duplicatedFilter.Title)
+		}
+
+		if duplicatedFilter.URL != nil {
+			qb.applyURLDuplication(f, *duplicatedFilter.URL)
 		}
 	}
+}
+
+// getCountOperator returns ">" for duplicated items (count > 1) or "=" for unique items (count = 1)
+func getCountOperator(duplicated bool) string {
+	if duplicated {
+		return ">"
+	}
+	return "="
+}
+
+func (qb *sceneFilterHandler) applyPhashDuplication(f *filterBuilder, duplicated bool) {
+	// TODO: Wishlist item: Implement Distance matching
+	v := getCountOperator(duplicated)
+	f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_files.file_id = scph.file_id")
+}
+
+func (qb *sceneFilterHandler) applyStashIDDuplication(f *filterBuilder, duplicated bool) {
+	v := getCountOperator(duplicated)
+	// Find stash_ids that appear on more than one scene
+	f.addInnerJoin("(SELECT scene_id FROM scene_stash_ids INNER JOIN (SELECT stash_id FROM scene_stash_ids GROUP BY stash_id HAVING COUNT(DISTINCT scene_id) "+v+" 1) dupes ON scene_stash_ids.stash_id = dupes.stash_id)", "scsi", "scenes.id = scsi.scene_id")
+}
+
+func (qb *sceneFilterHandler) applyTitleDuplication(f *filterBuilder, duplicated bool) {
+	v := getCountOperator(duplicated)
+	// Find titles that appear on more than one scene (excluding empty titles)
+	f.addInnerJoin("(SELECT id FROM scenes WHERE title != '' AND title IS NOT NULL AND title IN (SELECT title FROM scenes WHERE title != '' AND title IS NOT NULL GROUP BY title HAVING COUNT(*) "+v+" 1))", "sctitle", "scenes.id = sctitle.id")
+}
+
+func (qb *sceneFilterHandler) applyURLDuplication(f *filterBuilder, duplicated bool) {
+	v := getCountOperator(duplicated)
+	// Find URLs that appear on more than one scene
+	f.addInnerJoin("(SELECT scene_id FROM scene_urls INNER JOIN (SELECT url FROM scene_urls GROUP BY url HAVING COUNT(DISTINCT scene_id) "+v+" 1) dupes ON scene_urls.url = dupes.url)", "scurl", "scenes.id = scurl.scene_id")
 }
 
 func (qb *sceneFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
@@ -355,6 +426,12 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 			case "cover":
 				f.addWhere("scenes.cover_blob IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "code", "details", "director", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
 		}
@@ -434,6 +511,16 @@ func (qb *sceneFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrite
 	}
 
 	return h.handler(tagCount)
+}
+
+func (qb *sceneFilterHandler) stashIDCountCriterionHandler(stashIDCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    "scene_stash_ids",
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(stashIDCount)
 }
 
 func (qb *sceneFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
@@ -540,44 +627,5 @@ func (qb *sceneFilterHandler) performerTagsCriterionHandler(tags *models.Hierarc
 		primaryTable:   sceneTable,
 		joinTable:      performersScenesTable,
 		joinPrimaryKey: sceneIDColumn,
-	}
-}
-
-func (qb *sceneFilterHandler) phashDistanceCriterionHandler(phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if phashDistance != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(phashDistance.Value)
-			distance := 0
-			if phashDistance.Distance != nil {
-				distance = *phashDistance.Distance
-			}
-
-			if distance == 0 {
-				// use the default handler
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: phashDistance.Modifier,
-				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-			}
-
-			switch {
-			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
-				// needed to avoid a type mismatch
-				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
-				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
-			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
-				// needed to avoid a type mismatch
-				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
-				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
-			default:
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: phashDistance.Modifier,
-				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
-			}
-		}
 	}
 }

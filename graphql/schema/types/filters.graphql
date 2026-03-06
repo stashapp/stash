@@ -75,19 +75,45 @@ input OrientationCriterionInput {
   value: [OrientationEnum!]!
 }
 
-input PHashDuplicationCriterionInput {
-  duplicated: Boolean
-  "Currently unimplemented"
+input DuplicationCriterionInput {
+  duplicated: Boolean @deprecated(reason: "Use phash field instead")
+  "Currently unimplemented. Intended for phash distance matching."
   distance: Int
+  "Filter by phash duplication"
+  phash: Boolean
+  "Filter by URL duplication"
+  url: Boolean
+  "Filter by Stash ID duplication"
+  stash_id: Boolean
+  "Filter by title duplication"
+  title: Boolean
+}
+
+input FileDuplicationCriterionInput {
+  duplicated: Boolean @deprecated(reason: "Use phash field instead")
+  "Currently unimplemented. Intended for phash distance matching."
+  distance: Int
+  "Filter by phash duplication"
+  phash: Boolean
 }
 
 input StashIDCriterionInput {
   """
   If present, this value is treated as a predicate.
-  That is, it will filter based on stash_ids with the matching endpoint
+  That is, it will filter based on stash_id with the matching endpoint
   """
   endpoint: String
   stash_id: String
+  modifier: CriterionModifier!
+}
+
+input StashIDsCriterionInput {
+  """
+  If present, this value is treated as a predicate.
+  That is, it will filter based on stash_ids with the matching endpoint
+  """
+  endpoint: String
+  stash_ids: [String]
   modifier: CriterionModifier!
 }
 
@@ -128,8 +154,13 @@ input PerformerFilterType {
   penis_length: FloatCriterionInput
   "Filter by ciricumcision"
   circumcised: CircumcisionCriterionInput
-  "Filter by career length"
+  "Deprecated: use career_start and career_end. This filter is non-functional."
   career_length: StringCriterionInput
+    @deprecated(reason: "Use career_start and career_end")
+  "Filter by career start year"
+  career_start: IntCriterionInput
+  "Filter by career end year"
+  career_end: IntCriterionInput
   "Filter by tattoos"
   tattoos: StringCriterionInput
   "Filter by piercings"
@@ -146,6 +177,8 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by marker count (via scene)"
+  marker_count: IntCriterionInput
   "Filter by image count"
   image_count: IntCriterionInput
   "Filter by gallery count"
@@ -156,6 +189,9 @@ input PerformerFilterType {
   o_counter: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by url"
@@ -186,6 +222,8 @@ input PerformerFilterType {
   galleries_filter: GalleryFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related scene markers (via scene) that meet this criteria"
+  markers_filter: SceneMarkerFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -248,8 +286,8 @@ input SceneFilterType {
   organized: Boolean
   "Filter by o-counter"
   o_counter: IntCriterionInput
-  "Filter Scenes that have an exact phash match available"
-  duplicated: PHashDuplicationCriterionInput
+  "Filter Scenes by duplication criteria"
+  duplicated: DuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
   "Filter by orientation"
@@ -292,6 +330,11 @@ input SceneFilterType {
   performer_count: IntCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
+  "Filter by StashID count"
+  stash_id_count: IntCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by interactive"
@@ -332,6 +375,8 @@ input SceneFilterType {
   markers_filter: SceneMarkerFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input MovieFilterType {
@@ -414,11 +459,16 @@ input GroupFilterType {
   containing_group_count: IntCriterionInput
   "Filter by number of sub-groups the group has"
   sub_group_count: IntCriterionInput
+  "Filter by number of scenes the group has"
+  scene_count: IntCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
   "Filter by related studios that meet this criteria"
   studios_filter: StudioFilterType
+
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input StudioFilterType {
@@ -432,6 +482,9 @@ input StudioFilterType {
   parents: MultiCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+  "Filter by StashIDs"
+  stash_ids_endpoint: StashIDsCriterionInput
   "Filter to only include studios with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter to only include studios missing this property"
@@ -446,6 +499,8 @@ input StudioFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
+  "Filter by group count"
+  group_count: IntCriterionInput
   "Filter by tag count"
   tag_count: IntCriterionInput
   "Filter by url"
@@ -456,16 +511,22 @@ input StudioFilterType {
   child_count: IntCriterionInput
   "Filter by autotag ignore value"
   ignore_auto_tag: Boolean
+  "Filter by organized"
+  organized: Boolean
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
+  "Filter by related groups that meet this criteria"
+  groups_filter: GroupFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input GalleryFilterType {
@@ -542,6 +603,10 @@ input GalleryFilterType {
   files_filter: FileFilterType
   "Filter by related folders that meet this criteria"
   folders_filter: FolderFilterType
+  "Filter by parent folder of the zip or folder the gallery is in"
+  parent_folder: HierarchicalMultiCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input TagFilterType {
@@ -608,6 +673,10 @@ input TagFilterType {
 
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+    @deprecated(reason: "use stash_ids_endpoint instead")
+
+  "Filter by StashID"
+  stash_ids_endpoint: StashIDsCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
@@ -615,12 +684,22 @@ input TagFilterType {
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
+  "Filter by related groups that meet this criteria"
+  groups_filter: GroupFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related scene markers that meet this criteria"
+  markers_filter: SceneMarkerFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
 
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input ImageFilterType {
@@ -635,6 +714,8 @@ input ImageFilterType {
   id: IntCriterionInput
   "Filter by file checksum"
   checksum: StringCriterionInput
+  "Filter by file phash distance"
+  phash_distance: PhashDistanceCriterionInput
   "Filter by path"
   path: StringCriterionInput
   "Filter by file count"
@@ -692,6 +773,8 @@ input ImageFilterType {
   tags_filter: TagFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input FileFilterType {
@@ -709,8 +792,8 @@ input FileFilterType {
   "Filter by modification time"
   mod_time: TimestampCriterionInput
 
-  "Filter files that have an exact match available"
-  duplicated: PHashDuplicationCriterionInput
+  "Filter files by duplication criteria (only phash applies to files)"
+  duplicated: FileDuplicationCriterionInput
 
   "find files based on hash"
   hashes: [FingerprintFilterInput!]
@@ -741,6 +824,7 @@ input FolderFilterType {
   NOT: FolderFilterType
 
   path: StringCriterionInput
+  basename: StringCriterionInput
 
   parent_folder: HierarchicalMultiCriterionInput
   zip_file: MultiCriterionInput

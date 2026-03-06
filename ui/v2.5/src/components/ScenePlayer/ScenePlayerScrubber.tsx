@@ -28,6 +28,10 @@ interface ISceneSpriteItem {
   time: string;
 }
 
+const scrubberViewportHeight = 120;
+const scrubberTagsHeight = 30;
+const scrubberSpriteHeight = scrubberViewportHeight - scrubberTagsHeight;
+
 export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
   file,
   scene,
@@ -86,16 +90,36 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
   const [spriteItems, setSpriteItems] = useState<ISceneSpriteItem[]>();
 
   useEffect(() => {
-    if (!spriteInfo) return;
+    if (!spriteInfo || spriteInfo.length === 0) return;
     let totalWidth = 0;
+
+    // calculate total width/height of scrubber image so we can scale it
+    const maxX = Math.max(...spriteInfo.map((sprite) => sprite.x + sprite.w));
+    const maxY = Math.max(...spriteInfo.map((sprite) => sprite.y + sprite.h));
+    const spriteWidth = spriteInfo[0].w;
+    const spriteHeight = spriteInfo[0].h;
+    const scale = scrubberSpriteHeight / spriteHeight;
+
+    const w = spriteWidth * scale;
+    const h = scrubberSpriteHeight;
+
+    const sizeX = maxX * scale;
+    const sizeY = maxY * scale;
+
+    // scale sprite dimensions to fit scrubber height, and calculate background position for each sprite
     const newSprites = spriteInfo?.map((sprite, index) => {
-      totalWidth += sprite.w;
-      const left = sprite.w * index;
+      totalWidth += w;
+      const left = w * index;
+
+      const spriteX = sprite.x * scale;
+      const spriteY = sprite.y * scale;
+
       const style = {
-        width: `${sprite.w}px`,
-        height: `${sprite.h}px`,
-        backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
+        width: `${w}px`,
+        height: `${h}px`,
+        backgroundPosition: `${-spriteX}px ${-spriteY}px`,
         backgroundImage: `url(${sprite.url})`,
+        backgroundSize: `${sizeX}px ${sizeY}px`,
         left: `${left}px`,
       };
       const start = TextUtils.secondsToTimestamp(sprite.start);

@@ -33,6 +33,7 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `FontAwesomeBrands`
 - `Mousetrap`
 - `MousetrapPause`
+- `ReactFontAwesome`
 - `ReactSelect`
 
 ### `register`
@@ -223,10 +224,19 @@ Returns `void`.
 - `CountrySelect`
 - `CustomFieldInput`
 - `CustomFields`
+- `CustomFieldsInput`
 - `DateInput`
 - `DetailImage`
 - `ExternalLinkButtons`
 - `ExternalLinksButton`
+- `FilteredGalleryList`
+- `FilteredGroupList`
+- `FilteredImageList`
+- `FilteredPerformerList`
+- `FilteredSceneList`
+- `FilteredSceneMarkerList`
+- `FilteredStudioList`
+- `FilteredTagList`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -234,17 +244,33 @@ Returns `void`.
 - `GalleryCard.Image`
 - `GalleryCard.Overlays`
 - `GalleryCard.Popovers`
+- `GalleryCardGrid`
 - `GalleryIDSelect`
+- `GalleryList`
+- `GalleryRecommendationRow`
 - `GallerySelect`
 - `GallerySelect.sort`
+- `GridCard`
+- `GroupCard`
+- `GroupCardGrid`
 - `GroupIDSelect`
+- `GroupList`
+- `GroupRecommendationRow`
 - `GroupSelect`
 - `GroupSelect.sort`
 - `HeaderImage`
 - `HoverPopover`
 - `Icon`
+- `ImageCard`
+- `ImageCard.Details`
+- `ImageCard.Image`
+- `ImageCard.Overlays`
+- `ImageCard.Popovers`
 - `ImageDetailPanel`
+- `ImageGridCard`
 - `ImageInput`
+- `ImageList`
+- `ImageRecommendationRow`
 - `LightboxLink`
 - `LoadingIndicator`
 - `MainNavBar.MenuItems`
@@ -260,6 +286,7 @@ Returns `void`.
 - `PerformerCard.Overlays`
 - `PerformerCard.Popovers`
 - `PerformerCard.Title`
+- `PerformerCardGrid`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
 - `PerformerGalleriesPanel`
@@ -267,7 +294,9 @@ Returns `void`.
 - `PerformerHeaderImage`
 - `PerformerIDSelect`
 - `PerformerImagesPanel`
+- `PerformerList`
 - `PerformerPage`
+- `PerformerRecommendationRow`
 - `PerformerScenesPanel`
 - `PerformerSelect`
 - `PerformerSelect.sort`
@@ -276,17 +305,28 @@ Returns `void`.
 - `RatingNumber`
 - `RatingStars`
 - `RatingSystem`
+- `RecommendationRow`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
 - `SceneCard.Overlays`
 - `SceneCard.Popovers`
+- `SceneCardsGrid`
 - `SceneFileInfoPanel`
 - `SceneIDSelect`
+- `SceneMarkerCard`
+- `SceneMarkerCard.Details`
+- `SceneMarkerCard.Image`
+- `SceneMarkerCard.Popovers`
+- `SceneMarkerCardsGrid`
+- `SceneMarkerList`
+- `SceneMarkerRecommendationRow`
+- `SceneList`
 - `ScenePage`
 - `ScenePage.TabContent`
 - `ScenePage.Tabs`
 - `ScenePlayer`
+- `SceneRecommendationRow`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
@@ -295,7 +335,12 @@ Returns `void`.
 - `SettingModal`
 - `StringListSetting`
 - `StringSetting`
+- `StudioCard`
+- `StudioCardGrid`
+- `StudioDetailsPanel`
 - `StudioIDSelect`
+- `StudioList`
+- `StudioRecommendationRow`
 - `StudioSelect`
 - `StudioSelect.sort`
 - `SweatDrops`
@@ -306,8 +351,11 @@ Returns `void`.
 - `TagCard.Overlays`
 - `TagCard.Popovers`
 - `TagCard.Title`
+- `TagCardGrid`
 - `TagIDSelect`
 - `TagLink`
+- `TagList`
+- `TagRecommendationRow`
 - `TagSelect`
 - `TagSelect.sort`
 - `TruncatedText`
@@ -319,5 +367,3 @@ Allows plugins to listen for Stash's events.
 ```js
 PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname))
 ```
-
-

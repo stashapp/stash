@@ -50,3 +50,9 @@ Saved filters are sorted alphabetically by title with capitalized titles sorted 
 ### Default filter
 
 The default filter for the top-level pages may be set to the current filter by clicking the `Set as default` button in the saved filter menu.
+
+## Reveal file in file manager
+
+The `Reveal in file manager` action is available for file-based scenes, galleries and images in the `File Info` tab. This action will open the file manager to the location of the file on disk. The file will be selected if supported by the file manager.
+
+This button will only be available when accessing stash from a local loopback address (e.g. `localhost` or `127.0.0.1`), and will not be shown when accessing stash from a remote address.

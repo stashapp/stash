@@ -19,12 +19,14 @@ const GalleryCreate: React.FC = () => {
 
   const [createGallery] = useGalleryCreate();
 
-  async function onSave(input: GQL.GalleryCreateInput) {
+  async function onSave(input: GQL.GalleryCreateInput, andNew?: boolean) {
     const result = await createGallery({
       variables: { input },
     });
     if (result.data?.galleryCreate) {
-      history.push(`/galleries/${result.data.galleryCreate.id}`);
+      if (!andNew) {
+        history.push(`/galleries/${result.data.galleryCreate.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

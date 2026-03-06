@@ -201,6 +201,29 @@ func (_m *FolderReaderWriter) FindMany(ctx context.Context, id []models.FolderID
 	return r0, r1
 }
 
+// GetManyParentFolderIDs provides a mock function with given fields: ctx, folderIDs
+func (_m *FolderReaderWriter) GetManyParentFolderIDs(ctx context.Context, folderIDs []models.FolderID) ([][]models.FolderID, error) {
+	ret := _m.Called(ctx, folderIDs)
+
+	var r0 [][]models.FolderID
+	if rf, ok := ret.Get(0).(func(context.Context, []models.FolderID) [][]models.FolderID); ok {
+		r0 = rf(ctx, folderIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]models.FolderID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.FolderID) error); ok {
+		r1 = rf(ctx, folderIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Query provides a mock function with given fields: ctx, options
 func (_m *FolderReaderWriter) Query(ctx context.Context, options models.FolderQueryOptions) (*models.FolderQueryResult, error) {
 	ret := _m.Called(ctx, options)

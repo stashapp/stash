@@ -57,14 +57,16 @@ const SceneCreate: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  async function onSave(input: GQL.SceneCreateInput) {
+  async function onSave(input: GQL.SceneCreateInput, andNew?: boolean) {
     const fileID = query.get("file_id") ?? undefined;
     const result = await mutateCreateScene({
       ...input,
       file_ids: fileID ? [fileID] : undefined,
     });
     if (result.data?.sceneCreate?.id) {
-      history.push(`/scenes/${result.data.sceneCreate.id}`);
+      if (!andNew) {
+        history.push(`/scenes/${result.data.sceneCreate.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

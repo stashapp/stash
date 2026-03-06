@@ -31,14 +31,15 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	// Populate a new studio from the input
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 
 	newStudio.Name = strings.TrimSpace(input.Name)
 	newStudio.Rating = input.Rating100
 	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
-	newStudio.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.Aliases))
+	newStudio.Organized = translator.bool(input.Organized)
+	newStudio.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.Aliases), newStudio.Name))
 	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
@@ -61,6 +62,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+	newStudio.CustomFields = convertMapJSONNumbers(input.CustomFields)
 
 	// Process the base 64 encoded image string
 	var imageData []byte
@@ -119,6 +121,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedStudio.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	updatedStudio.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedStudio.Aliases = translator.updateStrings(input.Aliases, "aliases")
 	updatedStudio.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
 
@@ -134,7 +137,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	if translator.hasField("urls") {
 		// ensure url not included in the input
-		if err := r.validateNoLegacyURLs(translator); err != nil {
+		if err := validateNoLegacyURLs(translator); err != nil {
 			return nil, err
 		}
 
@@ -152,6 +155,11 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		}
 	}
 
+	updatedStudio.CustomFields = input.CustomFields
+	// convert json.Numbers to int/float
+	updatedStudio.CustomFields.Full = convertMapJSONNumbers(updatedStudio.CustomFields.Full)
+	updatedStudio.CustomFields.Partial = convertMapJSONNumbers(updatedStudio.CustomFields.Partial)
+
 	// Process the base 64 encoded image string
 	var imageData []byte
 	imageIncluded := translator.hasField("image")
@@ -166,6 +174,28 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Start the transaction and update the studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
+
+		if updatedStudio.Aliases != nil {
+			s, err := qb.Find(ctx, studioID)
+			if err != nil {
+				return err
+			}
+			if s != nil {
+				if err := s.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				effectiveAliases := updatedStudio.Aliases.Apply(s.Aliases.List())
+				name := s.Name
+				if updatedStudio.Name.Set {
+					name = updatedStudio.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
+				updatedStudio.Aliases.Values = sanitized
+				updatedStudio.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
 
 		if err := studio.ValidateModify(ctx, updatedStudio, qb); err != nil {
 			return err
@@ -211,7 +241,7 @@ func (r *mutationResolver) BulkStudioUpdate(ctx context.Context, input BulkStudi
 
 	if translator.hasField("urls") {
 		// ensure url/twitter/instagram are not included in the input
-		if err := r.validateNoLegacyURLs(translator); err != nil {
+		if err := validateNoLegacyURLs(translator); err != nil {
 			return nil, err
 		}
 
@@ -233,6 +263,7 @@ func (r *mutationResolver) BulkStudioUpdate(ctx context.Context, input BulkStudi
 	partial.Rating = translator.optionalInt(input.Rating100, "rating100")
 	partial.Details = translator.optionalString(input.Details, "details")
 	partial.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	partial.Organized = translator.optionalBool(input.Organized, "organized")
 
 	partial.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
 	if err != nil {

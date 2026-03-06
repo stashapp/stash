@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown, Form } from "react-bootstrap";
+import { Button, Tabs, Tab, Form } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -17,7 +17,6 @@ import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { Icon } from "src/components/Shared/Icon";
 import { useToast } from "src/hooks/Toast";
 import { useConfigurationContext } from "src/hooks/Config";
 import { tagRelationHook } from "src/core/tags";
@@ -29,12 +28,8 @@ import { TagStudiosPanel } from "./TagStudiosPanel";
 import { TagGalleriesPanel } from "./TagGalleriesPanel";
 import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
-import { TagMergeModal } from "./TagMergeDialog";
-import {
-  faSignInAlt,
-  faSignOutAlt,
-  faTrashAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { TagMergeModal } from "../TagMergeDialog";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
@@ -306,7 +301,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
+  const [isMerging, setIsMerging] = useState<boolean>(false);
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
@@ -461,41 +456,27 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   function renderMergeButton() {
     return (
-      <Dropdown>
-        <Dropdown.Toggle variant="secondary">
-          <FormattedMessage id="actions.merge" />
-          ...
-        </Dropdown.Toggle>
-        <Dropdown.Menu className="bg-secondary text-white" id="tag-merge-menu">
-          <Dropdown.Item
-            className="bg-secondary text-white"
-            onClick={() => setMergeType("from")}
-          >
-            <Icon icon={faSignInAlt} />
-            <FormattedMessage id="actions.merge_from" />
-            ...
-          </Dropdown.Item>
-          <Dropdown.Item
-            className="bg-secondary text-white"
-            onClick={() => setMergeType("into")}
-          >
-            <Icon icon={faSignOutAlt} />
-            <FormattedMessage id="actions.merge_into" />
-            ...
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
+      <Button variant="secondary" onClick={() => setIsMerging(true)}>
+        <FormattedMessage id="actions.merge" />
+        ...
+      </Button>
     );
   }
 
   function renderMergeDialog() {
-    if (!tag || !mergeType) return;
+    if (!tag.id) return;
     return (
       <TagMergeModal
-        tag={tag}
-        onClose={() => setMergeType(undefined)}
-        show={!!mergeType}
-        mergeType={mergeType}
+        show={isMerging}
+        onClose={(mergedId) => {
+          setIsMerging(false);
+          if (mergedId !== undefined && mergedId !== tag.id) {
+            // By default, the merge destination is the current tag, but
+            // the user can change it, in which case we need to redirect.
+            history.replace(`/tags/${mergedId}`);
+          }
+        }}
+        tags={[tag]}
       />
     );
   }

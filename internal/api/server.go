@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -255,6 +256,9 @@ func Initialize() (*Server, error) {
 		staticUI = statigz.FileServer(ui.UIBox.(fs.ReadDirFS))
 	}
 
+	// handle favicon override
+	r.HandleFunc("/favicon.ico", handleFavicon(staticUI))
+
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
@@ -293,6 +297,31 @@ func Initialize() (*Server, error) {
 	go printLatestVersion(context.TODO())
 
 	return server, nil
+}
+
+func handleFavicon(staticUI *statigz.Server) func(w http.ResponseWriter, r *http.Request) {
+	mgr := manager.GetInstance()
+	cfg := mgr.Config
+
+	// check if favicon.ico exists in the config directory
+	// if so, use that
+	// otherwise, use the embedded one
+	iconPath := filepath.Join(cfg.GetConfigPath(), "favicon.ico")
+	exists, _ := fsutil.FileExists(iconPath)
+
+	if exists {
+		logger.Debugf("Using custom favicon at %s", iconPath)
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+
+		if exists {
+			http.ServeFile(w, r, iconPath)
+		} else {
+			staticUI.ServeHTTP(w, r)
+		}
+	}
 }
 
 // Start starts the server. It listens on the configured address and port.
@@ -421,7 +450,7 @@ func cssHandler(c *config.Config) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var paths []string
 
-		if c.GetCSSEnabled() {
+		if c.GetCSSEnabled() && !c.GetDisableCustomizations() {
 			// search for custom.css in current directory, then $HOME/.stash
 			fn := c.GetCSSPath()
 			exists, _ := fsutil.FileExists(fn)
@@ -439,7 +468,7 @@ func javascriptHandler(c *config.Config) func(w http.ResponseWriter, r *http.Req
 	return func(w http.ResponseWriter, r *http.Request) {
 		var paths []string
 
-		if c.GetJavascriptEnabled() {
+		if c.GetJavascriptEnabled() && !c.GetDisableCustomizations() {
 			// search for custom.js in current directory, then $HOME/.stash
 			fn := c.GetJavascriptPath()
 			exists, _ := fsutil.FileExists(fn)
@@ -457,7 +486,7 @@ func customLocalesHandler(c *config.Config) func(w http.ResponseWriter, r *http.
 	return func(w http.ResponseWriter, r *http.Request) {
 		buffer := bytes.Buffer{}
 
-		if c.GetCustomLocalesEnabled() {
+		if c.GetCustomLocalesEnabled() && !c.GetDisableCustomizations() {
 			// search for custom-locales.json in current directory, then $HOME/.stash
 			path := c.GetCustomLocalesPath()
 			exists, _ := fsutil.FileExists(path)

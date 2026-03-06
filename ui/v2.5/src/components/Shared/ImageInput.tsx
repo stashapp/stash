@@ -10,14 +10,17 @@ import {
 import { useIntl } from "react-intl";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
-import { faFile, faLink } from "@fortawesome/free-solid-svg-icons";
+import { faClipboard, faFile, faLink } from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
+import ImageUtils from "src/utils/image";
+import { useToast } from "src/hooks/Toast";
 
 interface IImageInput {
   isEditing: boolean;
   text?: string;
   onImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImageURL?: (url: string) => void;
+  onReset?: () => void;
   acceptSVG?: boolean;
 }
 
@@ -27,10 +30,18 @@ function acceptExtensions(acceptSVG: boolean = false) {
 
 export const ImageInput: React.FC<IImageInput> = PatchComponent(
   "ImageInput",
-  ({ isEditing, text, onImageChange, onImageURL, acceptSVG = false }) => {
+  ({
+    isEditing,
+    text,
+    onImageChange,
+    onImageURL,
+    onReset,
+    acceptSVG = false,
+  }) => {
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [url, setURL] = useState("");
     const intl = useIntl();
+    const Toast = useToast();
 
     if (!isEditing) return <div />;
 
@@ -48,6 +59,28 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           />
         </Form.Label>
       );
+    }
+
+    async function onPasteClipboard() {
+      try {
+        const data = await ImageUtils.readClipboardImage();
+        if (data && onImageURL) {
+          onImageURL(data);
+          Toast.success(
+            intl.formatMessage({ id: "toast.clipboard_image_pasted" })
+          );
+        } else {
+          Toast.error(intl.formatMessage({ id: "toast.clipboard_no_image" }));
+        }
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "NotAllowedError") {
+          Toast.error(
+            intl.formatMessage({ id: "toast.clipboard_access_denied" })
+          );
+        } else {
+          Toast.error(e);
+        }
+      }
     }
 
     function showDialog() {
@@ -119,6 +152,16 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
               </Button>
             </div>
+            {window.isSecureContext && (
+              <div>
+                <Button className="minimal" onClick={onPasteClipboard}>
+                  <Icon icon={faClipboard} className="fa-fw" />
+                  <span>
+                    {intl.formatMessage({ id: "actions.from_clipboard" })}
+                  </span>
+                </Button>
+              </div>
+            )}
           </>
         </Popover.Content>
       </Popover>
@@ -137,6 +180,11 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
             {text ?? intl.formatMessage({ id: "actions.set_image" })}
           </Button>
         </OverlayTrigger>
+        {onReset && (
+          <Button variant="danger" className="mr-2" onClick={onReset}>
+            {intl.formatMessage({ id: "actions.clear_image" })}
+          </Button>
+        )}
       </>
     );
   }

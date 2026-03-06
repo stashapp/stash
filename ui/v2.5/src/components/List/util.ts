@@ -139,6 +139,7 @@ function useEmptyFilter(props: {
 
 export interface IFilterStateHook {
   filterMode: GQL.FilterMode;
+  defaultFilter?: ListFilterModel;
   defaultSort?: string;
   view?: View;
   useURL?: boolean;
@@ -149,7 +150,14 @@ export function useFilterState(
     config?: GQL.ConfigDataFragment;
   }
 ) {
-  const { filterMode, defaultSort, config, view, useURL } = props;
+  const {
+    filterMode,
+    defaultSort,
+    config,
+    view,
+    useURL,
+    defaultFilter: propDefaultFilter,
+  } = props;
 
   const [filter, setFilterState] = useState<ListFilterModel>(
     () =>
@@ -158,10 +166,13 @@ export function useFilterState(
 
   const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
 
-  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
+  const { defaultFilter: defaultFilterFromConfig } = useDefaultFilter(
+    emptyFilter,
+    view
+  );
 
   const { setFilter } = useFilterURL(filter, setFilterState, {
-    defaultFilter,
+    defaultFilter: propDefaultFilter ?? defaultFilterFromConfig,
     active: useURL,
   });
 
@@ -229,6 +240,7 @@ export function useListKeyboardShortcuts(props: {
   pages?: number;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  onInvertSelection?: () => void;
 }) {
   const {
     currentPage,
@@ -237,6 +249,7 @@ export function useListKeyboardShortcuts(props: {
     pages = 0,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
   } = props;
 
   // set up hotkeys
@@ -298,12 +311,14 @@ export function useListKeyboardShortcuts(props: {
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
+    Mousetrap.bind("s i", () => onInvertSelection?.());
 
     return () => {
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
+      Mousetrap.unbind("s i");
     };
-  }, [onSelectAll, onSelectNone]);
+  }, [onSelectAll, onSelectNone, onInvertSelection]);
 }
 
 export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
@@ -420,6 +435,14 @@ export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
     setLastClickedId(undefined);
   }
 
+  function onInvertSelection() {
+    setItemsSelected((prevSelected) => {
+      const selectedSet = new Set(prevSelected.map((item) => item.id));
+      return items.filter((item) => !selectedSet.has(item.id));
+    });
+    setLastClickedId(undefined);
+  }
+
   // TODO - this is for backwards compatibility
   const getSelected = useCallback(() => itemsSelected, [itemsSelected]);
 
@@ -433,6 +456,7 @@ export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
     hasSelection,
   };
 }
@@ -485,23 +509,27 @@ export function useCachedQueryResult<T extends QueryResult>(
 
 export interface IQueryResultHook<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 > {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
 }
 
 export function useQueryResult<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 >(
-  props: IQueryResultHook<T, E> & {
+  props: IQueryResultHook<T, E, M> & {
     filter: ListFilterModel;
   }
 ) {
-  const { filter, filterHook, useResult, getItems, getCount } = props;
+  const { filter, filterHook, useResult, useMetadataInfo, getItems, getCount } =
+    props;
 
   const effectiveFilter = useMemo(() => {
     if (filterHook) {
@@ -510,7 +538,14 @@ export function useQueryResult<
     return filter;
   }, [filter, filterHook]);
 
+  // metadata filter is the effective filter with the sort, page size and page number removed
+  const metadataFilter = useMemo(
+    () => effectiveFilter.metadataInfo(),
+    [effectiveFilter]
+  );
+
   const result = useResult(effectiveFilter);
+  const metadataInfo = useMetadataInfo?.(metadataFilter);
 
   // use cached query result for pagination and metadata rendering
   const cachedResult = useCachedQueryResult(effectiveFilter, result);
@@ -525,6 +560,7 @@ export function useQueryResult<
 
   return {
     effectiveFilter,
+    metadataInfo,
     result,
     cachedResult,
     items,

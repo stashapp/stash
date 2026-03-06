@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { ImageList } from "src/components/Images/ImageList";
+import { FilteredImageList } from "src/components/Images/ImageList";
 import { showWhenSelected } from "src/components/List/ItemList";
 import { mutateAddGalleryImages } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
@@ -100,7 +100,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = PatchComponent(
     ];
 
     return (
-      <ImageList
+      <FilteredImageList
         filterHook={filterHook}
         extraOperations={otherOperations}
         alterQuery={active}

@@ -8,6 +8,7 @@ type Studio {
   aliases: [String!]!
   tags: [Tag!]!
   ignore_auto_tag: Boolean!
+  organized: Boolean!
 
   image_path: String # Resolver
   scene_count(depth: Int): Int! # Resolver
@@ -26,6 +27,8 @@ type Studio {
   groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
   o_counter: Int
+
+  custom_fields: Map!
 }
 
 input StudioCreateInput {
@@ -40,9 +43,13 @@ input StudioCreateInput {
   rating100: Int
   favorite: Boolean
   details: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+  organized: Boolean
+
+  custom_fields: Map
 }
 
 input StudioUpdateInput {
@@ -58,9 +65,13 @@ input StudioUpdateInput {
   rating100: Int
   favorite: Boolean
   details: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
   tag_ids: [ID!]
   ignore_auto_tag: Boolean
+  organized: Boolean
+
+  custom_fields: CustomFieldsInput
 }
 
 input BulkStudioUpdateInput {
@@ -74,6 +85,7 @@ input BulkStudioUpdateInput {
   details: String
   tag_ids: BulkUpdateIds
   ignore_auto_tag: Boolean
+  organized: Boolean
 }
 
 input StudioDestroyInput {

@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -16,7 +20,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		fileStore := r.repository.File
 		folderStore := r.repository.Folder
-		mover := file.NewMover(fileStore, folderStore)
+		mover := file.NewMover(fileStore, folderStore, manager.GetInstance().Config.GetStashPaths().Paths())
 		mover.RegisterHooks(ctx)
 
 		var (
@@ -54,13 +58,14 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 			folderPath := *input.DestinationFolder
 
 			// ensure folder path is within the library
-			if err := r.validateFolderPath(folderPath); err != nil {
+			stashPaths := manager.GetInstance().Config.GetStashPaths()
+			if err := r.validateFolderPath(stashPaths, folderPath); err != nil {
 				return err
 			}
 
 			// get or create folder hierarchy
 			var err error
-			folder, err = file.GetOrCreateFolderHierarchy(ctx, folderStore, folderPath)
+			folder, err = file.GetOrCreateFolderHierarchy(ctx, folderStore, folderPath, stashPaths.Paths())
 			if err != nil {
 				return fmt.Errorf("getting or creating folder hierarchy: %w", err)
 			}
@@ -109,8 +114,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 	return true, nil
 }
 
-func (r *mutationResolver) validateFolderPath(folderPath string) error {
-	paths := manager.GetInstance().Config.GetStashPaths()
+func (r *mutationResolver) validateFolderPath(paths config.StashConfigs, folderPath string) error {
 	if l := paths.GetStashFromDirPath(folderPath); l == nil {
 		return fmt.Errorf("folder path %s must be within a stash library path", folderPath)
 	}
@@ -210,6 +214,58 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 	return true, nil
 }
 
+func (r *mutationResolver) DestroyFiles(ctx context.Context, ids []string) (ret bool, err error) {
+	fileIDs, err := stringslice.StringSliceToIntSlice(ids)
+	if err != nil {
+		return false, fmt.Errorf("converting ids: %w", err)
+	}
+
+	destroyer := &file.ZipDestroyer{
+		FileDestroyer:   r.repository.File,
+		FolderDestroyer: r.repository.Folder,
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.File
+
+		for _, fileIDInt := range fileIDs {
+			fileID := models.FileID(fileIDInt)
+			f, err := qb.Find(ctx, fileID)
+			if err != nil {
+				return err
+			}
+
+			if len(f) == 0 {
+				return fmt.Errorf("file with id %d not found", fileID)
+			}
+
+			path := f[0].Base().Path
+
+			// ensure not a primary file
+			isPrimary, err := qb.IsPrimary(ctx, fileID)
+			if err != nil {
+				return fmt.Errorf("checking if file %s is primary: %w", path, err)
+			}
+
+			if isPrimary {
+				return fmt.Errorf("cannot destroy primary file entry %s", path)
+			}
+
+			// destroy DB entries only (no filesystem deletion)
+			const deleteFile = false
+			if err := destroyer.DestroyZip(ctx, f[0], nil, deleteFile); err != nil {
+				return fmt.Errorf("destroying file entry %s: %w", path, err)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSetFingerprintsInput) (bool, error) {
 	fileIDInt, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -269,6 +325,74 @@ func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSe
 
 		return nil
 	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) RevealFileInFileManager(ctx context.Context, id string) (bool, error) {
+	// disallow if request did not come from localhost
+	if !session.IsLocalRequest(ctx) {
+		logger.Warnf("Attempt to reveal file in file manager from non-local request")
+		return false, fmt.Errorf("access denied")
+	}
+
+	fileIDInt, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+
+	var filePath string
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		files, err := r.repository.File.Find(ctx, models.FileID(fileIDInt))
+		if err != nil {
+			return fmt.Errorf("finding file: %w", err)
+		}
+		if len(files) == 0 {
+			return fmt.Errorf("file with id %d not found", fileIDInt)
+		}
+		filePath = files[0].Base().Path
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	if err := desktop.RevealInFileManager(filePath); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) RevealFolderInFileManager(ctx context.Context, id string) (bool, error) {
+	// disallow if request did not come from localhost
+	if !session.IsLocalRequest(ctx) {
+		logger.Warnf("Attempt to reveal folder in file manager from non-local request")
+		return false, fmt.Errorf("access denied")
+	}
+
+	folderIDInt, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+
+	var folderPath string
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		folder, err := r.repository.Folder.Find(ctx, models.FolderID(folderIDInt))
+		if err != nil {
+			return fmt.Errorf("finding folder: %w", err)
+		}
+		if folder == nil {
+			return fmt.Errorf("folder with id %d not found", folderIDInt)
+		}
+		folderPath = folder.Path
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	if err := desktop.RevealInFileManager(folderPath); err != nil {
 		return false, err
 	}
 

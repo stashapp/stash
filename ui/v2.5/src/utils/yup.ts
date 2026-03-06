@@ -92,45 +92,6 @@ export function yupUniqueStringList(intl: IntlShape) {
     });
 }
 
-export function yupUniqueAliases(intl: IntlShape, nameField: string) {
-  return yupRequiredStringArray(intl)
-    .defined()
-    .test({
-      name: "unique",
-      test(value) {
-        const aliases = [this.parent[nameField].toLowerCase()];
-        const dupes: number[] = [];
-        for (let i = 0; i < value.length; i++) {
-          const s = value[i].toLowerCase();
-          if (aliases.includes(s)) {
-            dupes.push(i);
-          } else {
-            aliases.push(s);
-          }
-        }
-        if (dupes.length === 0) return true;
-
-        const msg = yup.ValidationError.formatError(
-          intl.formatMessage({ id: "validation.unique" }),
-          {
-            label: this.schema.spec.label,
-            path: this.path,
-          }
-        );
-        const errors = dupes.map(
-          (i) =>
-            new yup.ValidationError(
-              msg,
-              value[i],
-              `${this.path}["${i}"]`,
-              "unique"
-            )
-        );
-        return new yup.ValidationError(errors, value, this.path, "unique");
-      },
-    });
-}
-
 export function yupDateString(intl: IntlShape) {
   return yup
     .string()

@@ -35,6 +35,11 @@ import {
 } from "src/components/Galleries/GallerySelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
+import {
+  CustomFieldsInput,
+  formatCustomFieldInput,
+} from "src/components/Shared/CustomFields";
+import { cloneDeep } from "@apollo/client/utilities";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -86,6 +91,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
+    custom_fields: yup.object().required().defined(),
   });
 
   const initialValues = {
@@ -99,15 +105,26 @@ export const ImageEditPanel: React.FC<IProps> = ({
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
+    custom_fields: cloneDeep(image.custom_fields ?? {}),
   };
 
   type InputValues = yup.InferType<typeof schema>;
+
+  const [customFieldsError, setCustomFieldsError] = useState<string>();
+
+  function submit(values: InputValues) {
+    const input = {
+      ...schema.cast(values),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
+    };
+    onSave(input);
+  }
 
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
     validate: yupFormikValidate(schema),
-    onSubmit: (values) => onSave(schema.cast(values)),
+    onSubmit: submit,
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
@@ -444,7 +461,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
               className="edit-button"
               variant="primary"
               disabled={
-                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+                (!isNew && !formik.dirty) ||
+                !isEqual(formik.errors, {}) ||
+                customFieldsError !== undefined
               }
               onClick={() => formik.submitForm()}
             >
@@ -492,6 +511,13 @@ export const ImageEditPanel: React.FC<IProps> = ({
           </Col>
           <Col lg={5} xl={12}>
             {renderDetailsField()}
+
+            <CustomFieldsInput
+              values={formik.values.custom_fields}
+              onChange={(v) => formik.setFieldValue("custom_fields", v)}
+              error={customFieldsError}
+              setError={(e) => setCustomFieldsError(e)}
+            />
           </Col>
         </Row>
       </Form>

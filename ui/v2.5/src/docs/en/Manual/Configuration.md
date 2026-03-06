@@ -31,7 +31,7 @@ Some examples:
 - `"^/stash/videos/exclude/"` will exclude all directories that match `/stash/videos/exclude/` pattern.
 - `"\\\\stash\\network\\share\\excl\\"` will exclude specific Windows network path `\\stash\network\share\excl\`.
 
-> **Note:** If a directory is excluded for images and videos, then the directory will be excluded from scans completely.
+> **⚠️ Note:** If a directory is excluded for images and videos, then the directory will be excluded from scans completely.
 
 _There is a useful [regex101](https://regex101.com/) site that can help test and experiment with regexps._
 
@@ -87,7 +87,37 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 1. High performance 4+ core cpus.
 2. Media files stored on remote/cloud filesystem.
 
-Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
+> **⚠️ Note:** If this is set too high it will decrease overall performance and causes failures (out of memory).
+
+## Sprite generation
+
+### Sprite size
+
+Fixed size of a generated sprite, being the longest dimension in pixels. 
+Setting this to `0` will fallback to the default of `160`.
+Althought it is possible to set this value to anything bigger than `0` it is recommended to set it to `160` at least.
+
+### Use custom sprite generation
+
+If this setting is disabled, the settings below will be ignored and the default sprite generation settings are used.
+
+### Sprite interval
+
+This represents the time in seconds between each sprite to be generated. This value will be adjusted if necessary to fit within the bounds of the `Minimum Sprites` and `Maximum Sprites` settings.
+
+Setting this to `0` means that the sprite interval will be calculated based on the value of the `Minimum Sprites` field.
+
+### Minimum sprites
+
+The minimal number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
+Setting this to `0` will fallback to the default of `10`
+
+### Maximum sprites
+
+The maximum number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
+Setting this to `0` indicates there is no maximum.
+
+> **⚠️ Note:** The number of generated sprites is adjusted upwards to the next perfect square to ensure the sprite image is completely filled (no empty space in the grid) and the grid is as square as possible (minimizing the number of rows/columns). This means that if you set a minimum of 10 sprites, 16 will actually be generated, and if you set a maximum of 15 sprites, 16 will actually be generated.
 
 ## Hardware accelerated live transcoding
 
@@ -117,7 +147,7 @@ Some scrapers require a Chrome instance to function correctly. If left empty, st
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
-> **Important**: As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
+> **⚠️ Important:** As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
 
 ## Authentication
 
@@ -164,6 +194,12 @@ The following environment variables are also supported:
 | Environment variable | Remarks |
 |----------------------|---------|
 | `STASH_SQLITE_CACHE_SIZE` | Sets the SQLite cache size. See https://www.sqlite.org/pragma.html#pragma_cache_size. Default is `-2000` which is 2MB. |
+
+### Custom favicon
+
+You can provide a custom favicon by placing a `favicon.ico` file in the configuration directory. The configuration directory is located alongside the `config.yml` file.
+
+When a custom favicon is provided, it will be served instead of the default embedded favicon.
 
 ### Custom served folders
 

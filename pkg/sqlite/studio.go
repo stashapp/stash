@@ -15,6 +15,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -43,6 +44,7 @@ type studioRow struct {
 	Favorite      bool        `db:"favorite"`
 	Details       zero.String `db:"details"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	Organized     bool        `db:"organized"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -58,6 +60,7 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Favorite = o.Favorite
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
+	r.Organized = o.Organized
 }
 
 func (r *studioRow) resolve() *models.Studio {
@@ -71,6 +74,7 @@ func (r *studioRow) resolve() *models.Studio {
 		Favorite:      r.Favorite,
 		Details:       r.Details.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
+		Organized:     r.Organized,
 	}
 
 	return ret
@@ -89,6 +93,7 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setBool("favorite", o.Favorite)
 	r.setNullString("details", o.Details)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
+	r.setBool("organized", o.Organized)
 }
 
 type studioRepositoryType struct {
@@ -100,6 +105,7 @@ type studioRepositoryType struct {
 	scenes    repository
 	images    repository
 	galleries repository
+	groups    repository
 }
 
 var (
@@ -126,6 +132,10 @@ var (
 			tableName: galleryTable,
 			idColumn:  studioIDColumn,
 		},
+		groups: repository{
+			tableName: groupTable,
+			idColumn:  studioIDColumn,
+		},
 		tags: joinRepository{
 			repository: repository{
 				tableName: studiosTagsTable,
@@ -140,6 +150,7 @@ var (
 
 type StudioStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 	tagRelationshipStore
 
 	tableMgr *table
@@ -150,6 +161,10 @@ func NewStudioStore(blobStore *BlobStore) *StudioStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: studiosCustomFieldsTable,
+			fk:    studiosCustomFieldsTable.Col(studioIDColumn),
 		},
 		tagRelationshipStore: tagRelationshipStore{
 			idRelationshipStore: idRelationshipStore{
@@ -169,11 +184,11 @@ func (qb *StudioStore) selectDataset() *goqu.SelectDataset {
 	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) error {
+func (qb *StudioStore) Create(ctx context.Context, newObject *models.CreateStudioInput) error {
 	var err error
 
 	var r studioRow
-	r.fromStudio(*newObject)
+	r.fromStudio(*newObject.Studio)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
@@ -207,12 +222,17 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
+	const partial = false
+	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Studio = *updated
 	return nil
 }
 
@@ -253,13 +273,17 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		}
 	}
 
-	return qb.Find(ctx, input.ID)
+	if err := qb.SetCustomFields(ctx, input.ID, input.CustomFields); err != nil {
+		return nil, err
+	}
+
+	return qb.find(ctx, input.ID)
 }
 
 // This is only used by the Import/Export functionality
-func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio) error {
+func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.UpdateStudioInput) error {
 	var r studioRow
-	r.fromStudio(*updatedObject)
+	r.fromStudio(*updatedObject.Studio)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -285,6 +309,10 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 		if err := studiosStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, updatedObject.ID, updatedObject.CustomFields); err != nil {
+		return err
 	}
 
 	return nil
@@ -601,12 +629,32 @@ func (qb *StudioStore) sortByScenesDuration(direction string) string {
 	) %s`, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 }
 
+// used for sorting on performer latest scene
+var selectStudioLatestSceneSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {scenes} s "+
+		"WHERE s.{studio_id} = {studios}.id"+
+		")",
+	map[string]interface{}{
+		"scenes":    sceneTable,
+		"studios":   studioTable,
+		"studio_id": studioIDColumn,
+		"date":      sceneDateColumn,
+	},
+)
+
+func (qb *StudioStore) sortByLatestScene(direction string) string {
+	// need to get the latest date from scenes
+	return " ORDER BY (" + selectStudioLatestSceneSQL + ") " + direction
+}
+
 var studioSortOptions = sortOptions{
 	"child_count",
 	"created_at",
 	"galleries_count",
 	"id",
 	"images_count",
+	"latest_scene",
 	"name",
 	"scenes_count",
 	"scenes_duration",
@@ -646,6 +694,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
+	case "latest_scene":
+		sortQuery += qb.sortByLatestScene(direction)
 	default:
 		sortQuery += getSort(sort, direction, "studios")
 	}

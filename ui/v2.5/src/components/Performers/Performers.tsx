@@ -4,11 +4,11 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Performer from "./PerformerDetails/Performer";
 import PerformerCreate from "./PerformerDetails/PerformerCreate";
-import { PerformerList } from "./PerformerList";
+import { FilteredPerformerList } from "./PerformerList";
 import { View } from "../List/views";
 
 const Performers: React.FC = () => {
-  return <PerformerList view={View.Performers} />;
+  return <FilteredPerformerList view={View.Performers} />;
 };
 
 const PerformerRoutes: React.FC = () => {

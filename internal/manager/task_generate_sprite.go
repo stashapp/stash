@@ -34,7 +34,17 @@ func (t *GenerateSpriteTask) Start(ctx context.Context) {
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(sceneHash)
-	generator, err := NewSpriteGenerator(*videoFile, sceneHash, imagePath, vttPath, 9, 9)
+
+	cfg := DefaultSpriteGeneratorConfig
+	cfg.SpriteSize = instance.Config.GetSpriteScreenshotSize()
+
+	if instance.Config.GetUseCustomSpriteInterval() {
+		cfg.MinimumSprites = instance.Config.GetMinimumSprites()
+		cfg.MaximumSprites = instance.Config.GetMaximumSprites()
+		cfg.SpriteInterval = instance.Config.GetSpriteInterval()
+	}
+
+	generator, err := NewSpriteGenerator(*videoFile, sceneHash, imagePath, vttPath, cfg)
 
 	if err != nil {
 		logger.Errorf("error creating sprite generator: %s", err.Error())

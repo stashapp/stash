@@ -79,6 +79,7 @@ export const LibraryTasks: React.FC = () => {
     scan: false,
     autoTag: false,
     identify: false,
+    generate: false,
   });
 
   function getDefaultScanOptions(): GQL.ScanMetadataInput {
@@ -265,6 +266,41 @@ export const LibraryTasks: React.FC = () => {
     );
   }
 
+  function renderGenerateDialog() {
+    if (!dialogOpen.generate) {
+      return;
+    }
+
+    return <DirectorySelectionDialog onClose={onGenerateDialogClosed} />;
+  }
+
+  function onGenerateDialogClosed(paths?: string[]) {
+    if (paths) {
+      runGenerate(paths);
+    }
+
+    setDialogOpen({ generate: false });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function runGenerate(paths?: string[]) {
+    try {
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        paths,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.generate" }) }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   async function onGenerateClicked() {
     try {
       // insert preview options here instead of loading them
@@ -307,6 +343,7 @@ export const LibraryTasks: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
+      {renderGenerateDialog()}
 
       <SettingSection headingID="library">
         <SettingGroup
@@ -425,13 +462,23 @@ export const LibraryTasks: React.FC = () => {
             subHeadingID: "config.tasks.generate_desc",
           }}
           topLevel={
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => onGenerateClicked()}
-            >
-              <FormattedMessage id="actions.generate" />
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onGenerateClicked()}
+              >
+                <FormattedMessage id="actions.generate" />
+              </Button>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => setDialogOpen({ generate: true })}
+              >
+                <FormattedMessage id="actions.selective_generate" />…
+              </Button>
+            </>
           }
           collapsible
         >

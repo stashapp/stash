@@ -185,6 +185,8 @@ var (
 )
 
 type ImageStore struct {
+	customFieldsStore
+
 	tableMgr *table
 	oCounterManager
 
@@ -193,6 +195,10 @@ type ImageStore struct {
 
 func NewImageStore(r *storeRepository) *ImageStore {
 	return &ImageStore{
+		customFieldsStore: customFieldsStore{
+			table: imagesCustomFieldsTable,
+			fk:    imagesCustomFieldsTable.Col(imageIDColumn),
+		},
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
 		repo:            r,
@@ -236,18 +242,18 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileIDs []models.FileID) error {
+func (qb *ImageStore) Create(ctx context.Context, newObject *models.CreateImageInput) error {
 	var r imageRow
-	r.fromImage(*newObject)
+	r.fromImage(*newObject.Image)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(fileIDs) > 0 {
+	if len(newObject.FileIDs) > 0 {
 		const firstPrimary = true
-		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
 			return err
 		}
 	}
@@ -276,12 +282,18 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 		}
 	}
 
+	if err := qb.SetCustomFields(ctx, id, models.CustomFieldsInput{
+		Full: newObject.CustomFields,
+	}); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Image = *updated
 
 	return nil
 }
@@ -327,6 +339,10 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		if err := imagesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
 			return nil, err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
 	}
 
 	return qb.find(ctx, id)
@@ -910,7 +926,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		Megapixels null.Float
 		Size       null.Float
 	}{}
-	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 
@@ -942,6 +958,7 @@ var imageSortOptions = sortOptions{
 	"performer_count",
 	"random",
 	"rating",
+	"resolution",
 	"tag_count",
 	"title",
 	"updated_at",
@@ -1001,6 +1018,14 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "mod_time", "filesize":
 			addFilesJoin()
 			sortClause = getSort(sort, direction, "files")
+		case "resolution":
+			addFilesJoin()
+			q.addJoins(join{
+				sort:     true,
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			})
+			sortClause = " ORDER BY MIN(image_files.width, image_files.height) " + direction
 		case "title":
 			addFilesJoin()
 			addFolderJoin()

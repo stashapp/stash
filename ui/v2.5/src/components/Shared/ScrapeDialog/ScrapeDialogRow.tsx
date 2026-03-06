@@ -14,7 +14,7 @@ import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "../CountrySelect";
 import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
-import { ScrapeResult } from "./scrapeResult";
+import { CustomFieldScrapeResults, ScrapeResult } from "./scrapeResult";
 import { ScrapeDialogContext } from "./ScrapeDialog";
 
 function renderButtonIcon(selected: boolean) {
@@ -157,6 +157,70 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
       }
       newField={
         <ScrapedInputGroup
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+          isNew
+          locked={props.locked}
+          onChange={(value) =>
+            props.onChange(props.result.cloneWithValue(value))
+          }
+        />
+      }
+      onChange={props.onChange}
+    />
+  );
+};
+
+interface IScrapedNumberInputProps {
+  isNew?: boolean;
+  placeholder?: string;
+  locked?: boolean;
+  result: ScrapeResult<number>;
+  onChange?: (value: number) => void;
+}
+
+const ScrapedNumberInput: React.FC<IScrapedNumberInputProps> = (props) => {
+  return (
+    <FormControl
+      placeholder={props.placeholder}
+      value={props.isNew ? props.result.newValue : props.result.originalValue}
+      readOnly={!props.isNew || props.locked}
+      onChange={(e) => {
+        if (props.isNew && props.onChange) {
+          props.onChange(Number(e.target.value));
+        }
+      }}
+      className="bg-secondary text-white border-secondary"
+      type="number"
+    />
+  );
+};
+
+interface IScrapedNumberRowProps {
+  title: string;
+  field: string;
+  className?: string;
+  placeholder?: string;
+  result: ScrapeResult<number>;
+  locked?: boolean;
+  onChange: (value: ScrapeResult<number>) => void;
+}
+
+export const ScrapedNumberRow: React.FC<IScrapedNumberRowProps> = (props) => {
+  return (
+    <ScrapeDialogRow
+      title={props.title}
+      field={props.field}
+      className={props.className}
+      result={props.result}
+      originalField={
+        <ScrapedNumberInput
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+        />
+      }
+      newField={
+        <ScrapedNumberInput
           placeholder={props.placeholder || props.title}
           result={props.result}
           isNew
@@ -431,3 +495,30 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
     onChange={onChange}
   />
 );
+
+export const ScrapedCustomFieldRows: React.FC<{
+  results: CustomFieldScrapeResults;
+  onChange: (newCustomFields: CustomFieldScrapeResults) => void;
+}> = ({ results, onChange }) => {
+  return (
+    <>
+      {Array.from(results.entries()).map(([field, result]) => {
+        const fieldName = `custom_${field}`;
+        return (
+          <ScrapedInputGroupRow
+            className="custom-field"
+            title={field}
+            field={fieldName}
+            key={fieldName}
+            result={result}
+            onChange={(newResult) => {
+              const newResults = new Map(results);
+              newResults.set(field, newResult);
+              onChange(newResults);
+            }}
+          />
+        );
+      })}
+    </>
+  );
+};

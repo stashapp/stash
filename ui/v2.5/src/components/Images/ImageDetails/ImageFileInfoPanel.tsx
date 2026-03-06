@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { FormattedMessage, FormattedTime } from "react-intl";
+import { FormattedMessage, FormattedTime, useIntl } from "react-intl";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
+import { RevealInFilesystemButton } from "src/components/Shared/RevealInFilesystemButton";
 import * as GQL from "src/core/generated-graphql";
 import { mutateImageSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { TextField, URLField, URLsField } from "src/utils/field";
 import { FileSize } from "src/components/Shared/FileSize";
+import NavUtils from "src/utils/navigation";
 
 interface IFileInfoPanelProps {
   file: GQL.ImageFileDataFragment | GQL.VideoFileDataFragment;
@@ -22,7 +24,9 @@ interface IFileInfoPanelProps {
 const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
+  const intl = useIntl();
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
+  const phash = props.file.fingerprints.find((f) => f.type === "phash");
 
   return (
     <div>
@@ -35,13 +39,22 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             </dd>
           </>
         )}
-        <TextField id="media_info.checksum" value={checksum?.value} truncate />
+        <TextField id="media_info.md5" value={checksum?.value} truncate />
         <URLField
-          id="path"
-          url={`file://${props.file.path}`}
-          value={`file://${props.file.path}`}
+          id="media_info.phash"
+          abbr={intl.formatMessage({ id: "media_info.phash_meaning" })}
+          value={phash?.value}
+          url={NavUtils.makeImagesPHashMatchUrl(phash?.value)}
+          target="_self"
           truncate
+          internal
         />
+        <TextField id="path">
+          <span className="d-flex align-items-center">
+            <TruncatedText text={props.file.path} />
+            <RevealInFilesystemButton fileId={props.file.id} />
+          </span>
+        </TextField>
         <TextField id="filesize">
           <span className="text-truncate">
             <FileSize size={props.file.size} />

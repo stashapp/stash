@@ -160,15 +160,15 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			if err := h.CreatorUpdater.AddFileID(ctx, s.ID, f.ID); err != nil {
 				return fmt.Errorf("adding file to scene: %w", err)
 			}
+		}
 
-			// update updated_at time
+		if !found || updateExisting {
+			// update updated_at time when file association or content changes
 			scenePartial := models.NewScenePartial()
 			if _, err := h.CreatorUpdater.UpdatePartial(ctx, s.ID, scenePartial); err != nil {
 				return fmt.Errorf("updating scene: %w", err)
 			}
-		}
 
-		if !found || updateExisting {
 			h.PluginCache.RegisterPostHooks(ctx, s.ID, hook.SceneUpdatePost, nil, nil)
 		}
 	}

@@ -1012,6 +1012,11 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		return
 	}
 
+	// ideally, this handler should just convert to stashIDsCriterionHandler
+	// but there are some differences in how the existing handler works compared
+	// to the new code, specifically because this code uses the stringCriterionHandler.
+	// To minimise potential regressions, we'll keep the existing logic for now.
+
 	stashIDRepo := h.stashIDRepository
 	t := stashIDRepo.tableName
 	if h.stashIDTableAs != "" {
@@ -1036,12 +1041,64 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 	}, t+".stash_id")(ctx, f)
 }
 
+type stashIDsCriterionHandler struct {
+	c                 *models.StashIDsCriterionInput
+	stashIDRepository *stashIDRepository
+	stashIDTableAs    string
+	parentIDCol       string
+}
+
+func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c == nil {
+		return
+	}
+
+	stashIDRepo := h.stashIDRepository
+	t := stashIDRepo.tableName
+	if h.stashIDTableAs != "" {
+		t = h.stashIDTableAs
+	}
+
+	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
+		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+	}
+
+	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+
+	switch h.c.Modifier {
+	case models.CriterionModifierIsNull:
+		f.addWhere(fmt.Sprintf("%s.stash_id IS NULL", t))
+	case models.CriterionModifierNotNull:
+		f.addWhere(fmt.Sprintf("%s.stash_id IS NOT NULL", t))
+	case models.CriterionModifierEquals:
+		var clauses []sqlClause
+		for _, id := range h.c.StashIDs {
+			clauses = append(clauses, makeClause(fmt.Sprintf("%s.stash_id = ?", t), id))
+		}
+		f.whereClauses = append(f.whereClauses, orClauses(clauses...))
+	case models.CriterionModifierNotEquals:
+		var clauses []sqlClause
+		for _, id := range h.c.StashIDs {
+			clauses = append(clauses, makeClause(fmt.Sprintf("%s.stash_id != ?", t), id))
+		}
+		f.whereClauses = append(f.whereClauses, andClauses(clauses...))
+	default:
+		f.setError(fmt.Errorf("invalid modifier %s for stash IDs criterion", h.c.Modifier))
+	}
+}
+
 type relatedFilterHandler struct {
-	relatedIDCol   string
-	relatedRepo    repository
+	// column on the primary table that relates to the related table (eg scene_id)
+	relatedIDCol string
+	// repository for the related table (eg sceneRepository)
+	relatedRepo repository
+	// handler for the filter on the related table
 	relatedHandler criterionHandler
-	joinFn         func(f *filterBuilder)
-	directJoin     bool
+	// optional function to perform the necessary join(s) to the related table
+	joinFn func(f *filterBuilder)
+	// if true, related filter handler will be run using the existing filterBuilder instead of a subquery.
+	directJoin bool
 }
 
 func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
@@ -1072,5 +1129,42 @@ func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
-	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.args...)
+	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.allArgs()...)
+}
+
+type phashDistanceCriterionHandler struct {
+	// assumes that applicable fingerprints table is joined as fingerprints_phash
+	joinFn    func(f *filterBuilder)
+	criterion *models.PhashDistanceCriterionInput
+}
+
+func (h *phashDistanceCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	phashDistance := h.criterion
+	if phashDistance == nil {
+		return
+	}
+
+	h.joinFn(f)
+
+	value, _ := utils.StringToPhash(phashDistance.Value)
+	distance := 0
+	if phashDistance.Distance != nil {
+		distance = *phashDistance.Distance
+	}
+
+	switch {
+	case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
+		// needed to avoid a type mismatch
+		f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+		f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
+	case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
+		// needed to avoid a type mismatch
+		f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+		f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
+	default:
+		intCriterionHandler(&models.IntCriterionInput{
+			Value:    int(value),
+			Modifier: phashDistance.Modifier,
+		}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+	}
 }

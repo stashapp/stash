@@ -68,7 +68,8 @@
   .collapsed {
     .detail-item.tattoos,
     .detail-item.piercings,
-    .detail-item.career_length,
+    .detail-item.career_start,
+    .detail-item.career_end,
     .detail-item.details,
     .detail-item.tags,
     .detail-item.stash_ids {
@@ -80,11 +81,6 @@
     display: table-cell;
     font-weight: 700;
     padding-left: 0;
-  }
-
-  .custom-fields .detail-item-title,
-  .custom-fields .detail-item-value {
-    font-family: "Courier New", Courier, monospace;
   }
   /* stylelint-enable selector-class-pattern */
 }
@@ -193,17 +189,21 @@
   display: flex;
 }
 
-.fa-mars {
-  color: #89cff0;
-}
+.gender-icon {
+  &[data-gender="FEMALE"],
+  &[data-gender="TRANSGENDER_FEMALE"] {
+    color: #f38cac;
+  }
 
-.fa-venus {
-  color: #f38cac;
-}
+  &[data-gender="MALE"],
+  &[data-gender="TRANSGENDER_MALE"] {
+    color: #89cff0;
+  }
 
-.fa-transgender,
-.fa-transgender-alt {
-  color: #c8a2c8;
+  &[data-gender="NON_BINARY"],
+  &[data-gender="INTERSEX"] {
+    color: #c8a2c8;
+  }
 }
 
 .performer-height .height-imperial,
@@ -301,4 +301,12 @@
   max-height: calc(100vh - 12rem);
   overflow-y: auto;
   padding-right: 1.5rem;
+}
+
+.performer-merge-dialog .custom-field {
+  // ensure we don't catch the destination/source labels
+  & > .form-label,
+  .form-control {
+    font-family: "Courier New", Courier, monospace;
+  }
 }

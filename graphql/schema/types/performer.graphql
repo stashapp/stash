@@ -30,7 +30,9 @@ type Performer {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
   alias_list: [String!]!
@@ -77,9 +79,12 @@ input PerformerCreateInput {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   alias_list: [String!]
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
@@ -115,9 +120,12 @@ input PerformerUpdateInput {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
+  "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   alias_list: [String!]
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
@@ -158,9 +166,12 @@ input BulkPerformerUpdateInput {
   fake_tits: String
   penis_length: Float
   circumcised: CircumisedEnum
-  career_length: String
+  career_length: String @deprecated(reason: "Use career_start and career_end")
+  career_start: Int
+  career_end: Int
   tattoos: String
   piercings: String
+  "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
   alias_list: BulkUpdateStrings
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
@@ -184,4 +195,11 @@ input PerformerDestroyInput {
 type FindPerformersResultType {
   count: Int!
   performers: [Performer!]!
+}
+
+input PerformerMergeInput {
+  source: [ID!]!
+  destination: ID!
+  # values defined here will override values in the destination
+  values: PerformerUpdateInput
 }

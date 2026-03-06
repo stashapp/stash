@@ -101,16 +101,15 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 
 func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
-	studio := models.Studio{
-		Name: name,
-	}
+	studio := models.NewCreateStudioInput()
+	studio.Name = name
 
 	err := qb.Create(ctx, &studio)
 	if err != nil {
 		return nil, err
 	}
 
-	return &studio, nil
+	return studio.Studio, nil
 }
 
 func createTag(ctx context.Context, qb models.TagWriter) error {
@@ -119,7 +118,7 @@ func createTag(ctx context.Context, qb models.TagWriter) error {
 		Name: testName,
 	}
 
-	err := qb.Create(ctx, &tag)
+	err := qb.Create(ctx, &models.CreateTagInput{Tag: &tag})
 	if err != nil {
 		return err
 	}
@@ -366,7 +365,10 @@ func makeImage(expectedResult bool) *models.Image {
 }
 
 func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *models.ImageFile) error {
-	err := w.Create(ctx, o, []models.FileID{f.ID})
+	err := w.Create(ctx, &models.CreateImageInput{
+		Image:   o,
+		FileIDs: []models.FileID{f.ID},
+	})
 
 	if err != nil {
 		return fmt.Errorf("Failed to create image with path '%s': %s", f.Path, err.Error())
@@ -469,7 +471,10 @@ func makeGallery(expectedResult bool) *models.Gallery {
 }
 
 func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Gallery, f *models.BaseFile) error {
-	err := w.Create(ctx, o, []models.FileID{f.ID})
+	err := w.Create(ctx, &models.CreateGalleryInput{
+		Gallery: o,
+		FileIDs: []models.FileID{f.ID},
+	})
 	if err != nil {
 		return fmt.Errorf("Failed to create gallery with path '%s': %s", f.Path, err.Error())
 	}

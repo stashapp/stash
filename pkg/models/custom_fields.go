@@ -17,3 +17,7 @@ type CustomFieldsReader interface {
 	GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error)
 	GetCustomFieldsBulk(ctx context.Context, ids []int) ([]CustomFieldMap, error)
 }
+
+type CustomFieldsWriter interface {
+	SetCustomFields(ctx context.Context, id int, fields CustomFieldsInput) error
+}

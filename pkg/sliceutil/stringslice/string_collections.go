@@ -45,6 +45,23 @@ func UniqueFold(s []string) []string {
 	return ret
 }
 
+// UniqueExcludeFold returns a deduplicated slice of strings with the excluded string removed.
+// The comparison is case-insensitive.
+func UniqueExcludeFold(values []string, exclude string) []string {
+	seen := make(map[string]struct{}, len(values))
+	seen[strings.ToLower(exclude)] = struct{}{}
+	ret := make([]string, 0, len(values))
+	for _, v := range values {
+		vLower := strings.ToLower(v)
+		if _, exists := seen[vLower]; exists {
+			continue
+		}
+		seen[vLower] = struct{}{}
+		ret = append(ret, v)
+	}
+	return ret
+}
+
 // TrimSpace trims whitespace from each string in a slice.
 func TrimSpace(s []string) []string {
 	for i, v := range s {

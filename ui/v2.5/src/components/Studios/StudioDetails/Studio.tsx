@@ -49,6 +49,7 @@ import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { goBackOrReplace } from "src/utils/history";
 import { OCounterButton } from "src/components/Shared/CountButton";
+import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -316,6 +317,28 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
+  const [organizedLoading, setOrganizedLoading] = useState(false);
+
+  async function onOrganizedClick() {
+    if (!studio.id) return;
+
+    setOrganizedLoading(true);
+    try {
+      await updateStudio({
+        variables: {
+          input: {
+            id: studio.id,
+            organized: !studio.organized,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
+    }
+  }
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
@@ -466,6 +489,11 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                   <FavoriteIcon
                     favorite={studio.favorite}
                     onToggleFavorite={(v) => setFavorite(v)}
+                  />
+                  <OrganizedButton
+                    loading={organizedLoading}
+                    organized={studio.organized}
+                    onClick={onOrganizedClick}
                   />
                   <ExternalLinkButtons urls={studio.urls} />
                 </span>

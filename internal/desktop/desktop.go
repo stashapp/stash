@@ -2,6 +2,7 @@
 package desktop
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -155,15 +156,17 @@ func getIconPath() string {
 	return path.Join(config.GetInstance().GetConfigPath(), "icon.png")
 }
 
-func RevealInFileManager(path string) {
-	exists, err := fsutil.FileExists(path)
+func RevealInFileManager(path string) error {
+	info, err := os.Stat(path)
 	if err != nil {
-		logger.Errorf("Error checking file: %s", err)
-		return
+		return fmt.Errorf("error checking path: %w", err)
 	}
-	if exists && IsDesktop() {
-		revealInFileManager(path)
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("error getting absolute path: %w", err)
 	}
+	return revealInFileManager(absPath, info)
 }
 
 func getServerURL(path string) string {

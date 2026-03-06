@@ -1,6 +1,6 @@
 import * as GQL from "src/core/generated-graphql";
 import { ParseMode } from "./constants";
-import { queryFindStudio } from "src/core/StashService";
+import { queryFindStudio, queryFindTag } from "src/core/StashService";
 import { mergeStashIDs } from "src/utils/stashbox";
 
 const months = [
@@ -173,14 +173,32 @@ export const parsePath = (filePath: string) => {
   return { paths, file, ext };
 };
 
-export async function mergeStudioStashIDs(
+async function mergeEntityStashIDs(
+  fetchExisting: (id: string) => Promise<GQL.StashIdInput[] | undefined>,
   id: string,
   newStashIDs: GQL.StashIdInput[]
 ) {
-  const existing = await queryFindStudio(id);
-  if (existing?.data?.findStudio?.stash_ids) {
-    return mergeStashIDs(existing.data.findStudio.stash_ids, newStashIDs);
+  const existing = await fetchExisting(id);
+  if (existing) {
+    return mergeStashIDs(existing, newStashIDs);
   }
-
   return newStashIDs;
 }
+
+export const mergeStudioStashIDs = (
+  id: string,
+  newStashIDs: GQL.StashIdInput[]
+) =>
+  mergeEntityStashIDs(
+    async (studioId) =>
+      (await queryFindStudio(studioId))?.data?.findStudio?.stash_ids,
+    id,
+    newStashIDs
+  );
+
+export const mergeTagStashIDs = (id: string, newStashIDs: GQL.StashIdInput[]) =>
+  mergeEntityStashIDs(
+    async (tagId) => (await queryFindTag(tagId))?.data?.findTag?.stash_ids,
+    id,
+    newStashIDs
+  );

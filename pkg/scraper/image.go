@@ -68,6 +68,12 @@ func processImageField(ctx context.Context, imageField *string, client *http.Cli
 		return nil
 	}
 
+	// don't try to get the image if it doesn't appear to be a URL
+	// this allows scrapers to return base64 data URIs directly
+	if !strings.HasPrefix(*imageField, "http") {
+		return nil
+	}
+
 	img, err := getImage(ctx, *imageField, client, globalConfig)
 	if err != nil {
 		return err

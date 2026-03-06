@@ -8,13 +8,13 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
+func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
 	// chapter deletion is done via delete cascade, so we don't need to do anything here
 
 	// if this is a zip-based gallery, delete the images as well first
-	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
+	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func DestroyChapter(ctx context.Context, galleryChapter *models.GalleryChapter, 
 	return qb.Destroy(ctx, galleryChapter.ID)
 }
 
-func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
+func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) ([]*models.Image, error) {
 	if err := i.LoadFiles(ctx, s.Repository); err != nil {
 		return nil, err
 	}
@@ -79,6 +79,12 @@ func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, f
 
 		if deleteFile {
 			if err := destroyer.DestroyZip(ctx, f, fileDeleter.Deleter, deleteFile); err != nil {
+				return nil, err
+			}
+		} else if destroyFileEntry {
+			// destroy file DB entry without deleting filesystem file
+			const deleteFileFromFS = false
+			if err := destroyer.DestroyZip(ctx, f, nil, deleteFileFromFS); err != nil {
 				return nil, err
 			}
 		}

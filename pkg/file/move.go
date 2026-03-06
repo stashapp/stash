@@ -45,9 +45,12 @@ type Mover struct {
 
 	moved          map[string]string
 	foldersCreated []string
+
+	// needed for creating folder hierarchy when moving zip file entries
+	rootPaths []string
 }
 
-func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReaderWriter) *Mover {
+func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReaderWriter, rootPaths []string) *Mover {
 	return &Mover{
 		Files:   fileStore,
 		Folders: folderStore,
@@ -55,6 +58,7 @@ func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReade
 			renamerRemoverImpl: newRenamerRemoverImpl(),
 			mkDirFn:            os.Mkdir,
 		},
+		rootPaths: rootPaths,
 	}
 }
 
@@ -87,7 +91,13 @@ func (m *Mover) Move(ctx context.Context, f models.File, folder *models.Folder, 
 		return fmt.Errorf("file %s already exists", newPath)
 	}
 
-	if err := transferZipHierarchy(ctx, m.Folders, m.Files, fBase.ID, oldPath, newPath); err != nil {
+	zipMover := zipHierarchyMover{
+		folderStore: m.Folders,
+		files:       m.Files,
+		rootPaths:   m.rootPaths,
+	}
+
+	if err := zipMover.transferZipHierarchy(ctx, fBase.ID, oldPath, newPath); err != nil {
 		return fmt.Errorf("moving folder hierarchy for file %s: %w", fBase.Path, err)
 	}
 
@@ -194,6 +204,25 @@ func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter
 		correctPath := filepath.Join(folderPath, folderBasename)
 
 		logger.Debugf("updating folder %s to %s", oldPath, correctPath)
+
+		// #6427 - ensure folder entry with new path doesn't already exist
+		const caseSensitive = true
+		existing, err := rw.FindByPath(ctx, correctPath, caseSensitive)
+		if err != nil {
+			return fmt.Errorf("finding folder by path %s: %w", correctPath, err)
+		}
+
+		if existing != nil {
+			// this should no longer be possible, but if it does happen, log a warning
+			// and skip updating this folder and its subfolders
+			logger.Warnf("folder with path %s already exists, setting parent_folder_id of %s to NULL and skipping", correctPath, oldPath)
+			f.ParentFolderID = nil
+			if err := rw.Update(ctx, f); err != nil {
+				return fmt.Errorf("updating folder parent id to NULL for folder %s: %w", oldPath, err)
+			}
+
+			continue
+		}
 
 		f.Path = correctPath
 		if err := rw.Update(ctx, f); err != nil {
