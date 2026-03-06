@@ -89,6 +89,47 @@ func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAuto
 	return ret, nil
 }
 
+func (s autotagScraper) viaImage(ctx context.Context, client *http.Client, image *models.Image) (*models.ScrapedImage, error) {
+	var ret *models.ScrapedImage
+	const trimExt = false
+
+	// populate performers, studio and tags based on scene path
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
+		path := image.Path
+		if path == "" {
+			return nil
+		}
+
+		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
+		if err != nil {
+			return fmt.Errorf("autotag scraper viaImage: %w", err)
+		}
+		studio, err := autotagMatchStudio(ctx, path, s.studioReader, trimExt)
+		if err != nil {
+			return fmt.Errorf("autotag scraper viaImage: %w", err)
+		}
+
+		tags, err := autotagMatchTags(ctx, path, s.tagReader, trimExt)
+		if err != nil {
+			return fmt.Errorf("autotag scraper viaImage: %w", err)
+		}
+
+		if len(performers) > 0 || studio != nil || len(tags) > 0 {
+			ret = &models.ScrapedImage{
+				Performers: performers,
+				Studio:     studio,
+				Tags:       tags,
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	var ret *models.ScrapedScene
 	const trimExt = false
@@ -181,6 +222,8 @@ func (s autotagScraper) supports(ty ScrapeContentType) bool {
 		return true
 	case ScrapeContentTypeGallery:
 		return true
+	case ScrapeContentTypeImage:
+		return true
 	}
 
 	return false
@@ -202,6 +245,9 @@ func (s autotagScraper) spec() Scraper {
 			SupportedScrapes: supportedScrapes,
 		},
 		Gallery: &ScraperSpec{
+			SupportedScrapes: supportedScrapes,
+		},
+		Image: &ScraperSpec{
 			SupportedScrapes: supportedScrapes,
 		},
 	}
