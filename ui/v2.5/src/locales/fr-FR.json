@@ -157,7 +157,8 @@
         "select_directory": "Sélectionner un répertoire",
         "reveal_in_file_manager": "Afficher dans le gestionnaire de fichiers",
         "from_clipboard": "Depuis le presse-papiers",
-        "selective_generate": "Génération sélective"
+        "selective_generate": "Génération sélective",
+        "exclude_lowercase": "exclure"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -342,7 +343,7 @@
             "chrome_cdp_path": "Chemin Chrome CDP (Chrome Debugging Protocol)",
             "chrome_cdp_path_desc": "Chemin de l'exécutable Chrome, ou adresse distante (commençant par http:// ou https://, par exemple http://localhost:9222/json/version) d'une instance de Chrome.",
             "create_galleries_from_folders_desc": "Si vrai, crée par défaut des galeries à partir des répertoires contenant des images. Créer un fichier appelé .forcegallery ou .nogallery dans un répertoire pour remplacer ce paramètre.",
-            "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
+            "create_galleries_from_folders_label": "Créer des galeries à partir de répertoires contenant des images",
             "database": "Base de données",
             "db_path_head": "Chemin de la base de données",
             "directory_locations_to_your_content": "Emplacements de votre contenu",
@@ -1679,5 +1680,9 @@
             "no_instances_found": "Aucune instance trouvée"
         }
     },
-    "unsupported_criteria": "Critère non supporté : {criteria}"
+    "unsupported_criteria": "Critère non supporté : {criteria}",
+    "include_sub_folders": "Inclure les sous-répertoires",
+    "parent_folder": "Répertoire parent",
+    "sub_folder_depth": "Profondeur des sous-répertoires (vide pour tous)",
+    "sub_folders": "Sous-répertoires"
 }
