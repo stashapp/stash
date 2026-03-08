@@ -1233,6 +1233,7 @@ func (i *Config) GetMaxSessionAge() int {
 }
 
 // GetSignedURLExpiry gets the expiry time for signed URLs, in seconds.
+// Defaults to 24 hours to accommodate long video playback sessions.
 func (i *Config) GetSignedURLExpiry() int {
 	i.RLock()
 	defer i.RUnlock()

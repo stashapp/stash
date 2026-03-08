@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/signedurl"
 )
 
@@ -109,18 +110,27 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
 
-	// Use configurable expiry for signed URLs (only for AirPlay-compatible formats)
-	expires := time.Now().Add(time.Duration(config.GetSignedURLExpiry()) * time.Second)
+	var streamPath string
+	var captionBasePath string
+	if config.HasCredentials() {
+		userID := session.GetCurrentUserID(ctx)
+		if userID == nil {
+			return nil, fmt.Errorf("user ID not found")
+		}
 
-	// AirPlay-compatible formats: use signed URLs (streaming + captions)
-	streamPath, err := builder.GetSignedStreamURL(config.GetJWTSignKey(), expires)
-	if err != nil {
-		return nil, err
-	}
+		// Sign the stream prefix
+		streamURL := builder.GetStreamURL("")
+		streamURL.RawQuery = signedParams(config, *userID, signedurl.DerivePrefix(streamURL.Path)).Encode()
+		streamPath = streamURL.String()
 
-	captionBasePath, err := builder.GetSignedCaptionURL(config.GetJWTSignKey(), expires)
-	if err != nil {
-		return nil, err
+		// Sign the caption prefix
+		captionBase := builder.GetCaptionURL()
+		captionBasePath = captionBase + "?" + signedParams(config, *userID, "/scene/"+builder.SceneID+"/caption").Encode()
+	} else {
+		apiKey := config.GetAPIKey()
+		streamURL := builder.GetStreamURL(apiKey)
+		streamPath = streamURL.String()
+		captionBasePath = builder.GetCaptionURL()
 	}
 
 	// Web-only formats: use unsigned URLs (rely on cookie authentication)
@@ -309,24 +319,25 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
-	apiKey := config.GetAPIKey()
 
-	endpoints, err := manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
-	if err != nil {
-		return nil, err
-	}
-
-	// Sign each endpoint URL
-	expires := time.Now().Add(time.Duration(config.GetSignedURLExpiry()) * time.Second)
-	for _, endpoint := range endpoints {
-		signedURL, err := signedurl.SignURL(endpoint.URL, config.GetJWTSignKey(), expires)
-		if err != nil {
-			return nil, err
+	// Build the base stream URL with signing params or apikey
+	streamURL := builder.GetStreamURL("")
+	if config.HasCredentials() {
+		userID := session.GetCurrentUserID(ctx)
+		if userID == nil {
+			return nil, fmt.Errorf("user ID not found")
 		}
-		endpoint.URL = signedURL
+		streamURL.RawQuery = signedParams(config, *userID, signedurl.DerivePrefix(streamURL.Path)).Encode()
+	} else {
+		apiKey := config.GetAPIKey()
+		if apiKey != "" {
+			v := streamURL.Query()
+			v.Set("apikey", apiKey)
+			streamURL.RawQuery = v.Encode()
+		}
 	}
 
-	return endpoints, nil
+	return manager.GetSceneStreamPaths(obj, streamURL, config.GetMaxStreamingTranscodeSize())
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {

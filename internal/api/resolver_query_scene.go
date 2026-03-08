@@ -3,13 +3,13 @@ package api
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/signedurl"
 )
 
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manager.SceneStreamEndpoint, error) {
@@ -41,22 +41,22 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, scene)
-	expires := time.Now().Add(24 * time.Hour)
-	signedURL, err := builder.GetSignedStreamURL(config.GetJWTSignKey(), expires)
-	if err != nil {
-		// fallback to api key
+
+	streamURL := builder.GetStreamURL("")
+	if config.HasCredentials() {
+		userID := session.GetCurrentUserID(ctx)
+		if userID == nil {
+			return nil, fmt.Errorf("user ID not found")
+		}
+		streamURL.RawQuery = signedParams(config, *userID, signedurl.DerivePrefix(streamURL.Path)).Encode()
+	} else {
 		apiKey := config.GetAPIKey()
-		streamURL := builder.GetStreamURL(apiKey)
-		return manager.GetSceneStreamPaths(scene, streamURL, config.GetMaxStreamingTranscodeSize())
+		if apiKey != "" {
+			v := streamURL.Query()
+			v.Set("apikey", apiKey)
+			streamURL.RawQuery = v.Encode()
+		}
 	}
 
-	u, err := url.Parse(signedURL)
-	if err != nil {
-		// fallback
-		apiKey := config.GetAPIKey()
-		streamURL := builder.GetStreamURL(apiKey)
-		return manager.GetSceneStreamPaths(scene, streamURL, config.GetMaxStreamingTranscodeSize())
-	}
-
-	return manager.GetSceneStreamPaths(scene, u, config.GetMaxStreamingTranscodeSize())
+	return manager.GetSceneStreamPaths(scene, streamURL, config.GetMaxStreamingTranscodeSize())
 }

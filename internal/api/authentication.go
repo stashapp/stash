@@ -30,22 +30,44 @@ func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
-func isSignedMediaRequest(r *http.Request) bool {
-	// Check if path starts with /scene/, /image/, or /gallery/
-	if !strings.HasPrefix(r.URL.Path, "/scene/") && !strings.HasPrefix(r.URL.Path, "/image/") && !strings.HasPrefix(r.URL.Path, "/gallery/") {
-		return false
+// authenticateSignedRequest checks if the request is a valid signed media request.
+// Returns the matched username and true if valid, or empty string and false otherwise.
+func authenticateSignedRequest(r *http.Request) (string, bool) {
+	// Only apply to scene stream paths (used by AirPlay/Chromecast devices that can't pass cookies)
+	if !strings.HasPrefix(r.URL.Path, "/scene/") {
+		return "", false
+	}
+
+	c := config.GetInstance()
+
+	// Signed URLs are only relevant when credentials are configured
+	if !c.HasCredentials() {
+		return "", false
 	}
 
 	// Check for signed URL parameters
 	q := r.URL.Query()
-	if q.Get(signedurl.ExpiresParam) == "" || q.Get(signedurl.SigParam) == "" {
-		return false
+	if q.Get(signedurl.CIDParam) == "" || q.Get(signedurl.ExpiresParam) == "" || q.Get(signedurl.SigParam) == "" {
+		return "", false
 	}
 
-	// Verify signature
-	c := config.GetInstance()
-	valid, err := signedurl.VerifyURL(r.URL.String(), c.GetJWTSignKey())
-	return err == nil && valid
+	// Extract the credential ID and look up the user's signing key.
+	// We need the key before we can verify the signature, since in a
+	// multi-user setup each user could have their own signing key.
+	cid := q.Get(signedurl.CIDParam)
+	username, secret, found := resolveCredentialID(c, cid)
+	if !found {
+		logger.Warnf("signed URL credential ID mismatch")
+		return "", false
+	}
+
+	// Verify the signature using the user's signing key
+	if _, err := signedurl.VerifyURL(r.URL.Path, q, secret); err != nil {
+		logger.Warnf("signed URL verification failed: %v", err)
+		return "", false
+	}
+
+	return username, true
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
@@ -62,10 +84,9 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			r = session.SetLocalRequest(r)
 
 			// Check for signed media requests
-			if isSignedMediaRequest(r) {
-				// Allow signed requests
+			if username, ok := authenticateSignedRequest(r); ok {
 				ctx := r.Context()
-				ctx = session.SetCurrentUserID(ctx, c.GetUsername())
+				ctx = session.SetCurrentUserID(ctx, username)
 				r = r.WithContext(ctx)
 				next.ServeHTTP(w, r)
 				return

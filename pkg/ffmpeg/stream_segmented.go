@@ -434,34 +434,36 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	baseURL := prefix + baseUrl.String()
 
 	urlQuery := url.Values{}
+
+	// Forward auth params to segment URLs. API key takes precedence
+	// over signed params since it is explicitly configured by the user.
+	// TODO - this needs to be handled outside of this package
 	apikey := r.URL.Query().Get(apiKeyParamKey)
-	expires := r.URL.Query().Get(signedurl.ExpiresParam)
-	sig := r.URL.Query().Get(signedurl.SigParam)
+	if apikey != "" {
+		urlQuery.Set(apiKeyParamKey, apikey)
+	} else {
+		cid := r.URL.Query().Get(signedurl.CIDParam)
+		expires := r.URL.Query().Get(signedurl.ExpiresParam)
+		sig := r.URL.Query().Get(signedurl.SigParam)
+		if cid != "" && expires != "" && sig != "" {
+			urlQuery.Set(signedurl.CIDParam, cid)
+			urlQuery.Set(signedurl.ExpiresParam, expires)
+			urlQuery.Set(signedurl.SigParam, sig)
+		}
+	}
 
 	if resolution != "" {
 		urlQuery.Set(resolutionParamKey, resolution)
 	}
 
-	// TODO - this needs to be handled outside of this package
-	if apikey != "" {
-		urlQuery.Set(apiKeyParamKey, apikey)
-	}
-	if expires != "" {
-		urlQuery.Set(signedurl.ExpiresParam, expires)
-	}
-	if sig != "" {
-		urlQuery.Set(signedurl.SigParam, sig)
-	}
-
-	urlQueryString := ""
+	segQuery := ""
 	if len(urlQuery) > 0 {
-		urlQueryString = "?" + urlQuery.Encode()
+		segQuery = "?" + urlQuery.Encode()
 	}
 
 	var buf bytes.Buffer
 
 	fmt.Fprint(&buf, "#EXTM3U\n")
-
 	fmt.Fprint(&buf, "#EXT-X-VERSION:3\n")
 	fmt.Fprint(&buf, "#EXT-X-MEDIA-SEQUENCE:0\n")
 	fmt.Fprintf(&buf, "#EXT-X-TARGETDURATION:%d\n", segmentLength)
@@ -477,7 +479,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 		}
 
 		fmt.Fprintf(&buf, "#EXTINF:%f,\n", thisLength)
-		fmt.Fprintf(&buf, "%s/%d.ts%s\n", baseURL, segment, urlQueryString)
+		fmt.Fprintf(&buf, "%s/%d.ts%s\n", baseURL, segment, segQuery)
 
 		leftover -= thisLength
 		segment++
@@ -538,18 +540,21 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 
 	urlQuery := url.Values{}
 
+	// Forward auth params to segment URLs. API key takes precedence
+	// over signed params since it is explicitly configured by the user.
 	// TODO - this needs to be handled outside of this package
 	apikey := r.URL.Query().Get(apiKeyParamKey)
-	expires := r.URL.Query().Get(signedurl.ExpiresParam)
-	sig := r.URL.Query().Get(signedurl.SigParam)
 	if apikey != "" {
 		urlQuery.Set(apiKeyParamKey, apikey)
-	}
-	if expires != "" {
-		urlQuery.Set(signedurl.ExpiresParam, expires)
-	}
-	if sig != "" {
-		urlQuery.Set(signedurl.SigParam, sig)
+	} else {
+		cid := r.URL.Query().Get(signedurl.CIDParam)
+		expires := r.URL.Query().Get(signedurl.ExpiresParam)
+		sig := r.URL.Query().Get(signedurl.SigParam)
+		if cid != "" && expires != "" && sig != "" {
+			urlQuery.Set(signedurl.CIDParam, cid)
+			urlQuery.Set(signedurl.ExpiresParam, expires)
+			urlQuery.Set(signedurl.SigParam, sig)
+		}
 	}
 
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
