@@ -81,7 +81,32 @@ func TestFileQuery(t *testing.T) {
 			includeIDs:  []models.FileID{fileIDs[fileIdxInZip]},
 			excludeIdxs: []int{fileIdxStartImageFiles},
 		},
-		// TODO - add more tests for other file filters
+		{
+			name: "hashes md5",
+			filter: &models.FileFilterType{
+				Hashes: []*models.FingerprintFilterInput{
+					{
+						Type:  "MD5",
+						Value: getPrefixedStringValue("file", fileIdxStartVideoFiles, "md5"),
+					},
+				},
+			},
+			includeIdxs: []int{fileIdxStartVideoFiles},
+			excludeIdxs: []int{fileIdxStartImageFiles},
+		},
+		{
+			name: "hashes oshash",
+			filter: &models.FileFilterType{
+				Hashes: []*models.FingerprintFilterInput{
+					{
+						Type:  "OSHASH",
+						Value: getPrefixedStringValue("file", fileIdxStartVideoFiles, "oshash"),
+					},
+				},
+			},
+			includeIdxs: []int{fileIdxStartVideoFiles},
+			excludeIdxs: []int{fileIdxStartImageFiles},
+		},
 	}
 
 	for _, tt := range tests {

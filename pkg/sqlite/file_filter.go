@@ -235,7 +235,11 @@ func (qb *fileFilterHandler) hashesCriterionHandler(hashes []*models.Fingerprint
 
 			// Only phash supports distance matching and is stored as integer
 			if hash.Type == models.FingerprintTypePhash {
-				value, _ := utils.StringToPhash(hash.Value)
+				value, err := utils.StringToPhash(hash.Value)
+				if err != nil {
+					f.setError(fmt.Errorf("invalid phash value: %w", err))
+					return
+				}
 				if distance > 0 {
 					// needed to avoid a type mismatch
 					f.addWhere(fmt.Sprintf("typeof(%s.fingerprint) = 'integer'", t))
