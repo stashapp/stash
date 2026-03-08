@@ -11,6 +11,7 @@ import {
   mutateSceneMerge,
   queryFindFullScenesByID,
 } from "src/core/StashService";
+import { useConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
@@ -47,7 +48,23 @@ interface IStashIDsField {
 }
 
 const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  return <StringListSelect value={values.map((v) => v.stash_id)} />;
+  const { configuration } = useConfigurationContext();
+
+  function getEndpointName(stash_id: GQL.StashId) {
+    return (
+      configuration?.general.stashBoxes.find(
+        (sb) => sb.endpoint === stash_id.endpoint
+      )?.name ?? stash_id.endpoint
+    );
+  }
+
+  function getStashIdDisplayName(stash_id: GQL.StashId) {
+    return `${getEndpointName(stash_id)} | ${stash_id.stash_id}`;
+  }
+
+  return (
+    <StringListSelect value={values.map((v) => getStashIdDisplayName(v))} />
+  );
 };
 
 type MergeOptions = {
