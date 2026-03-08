@@ -155,7 +155,10 @@
         "save_and_new": "저장 & 신규",
         "invert_selection": "선택 영역 반전",
         "select_directory": "경로 선택",
-        "reveal_in_file_manager": "파일 관리자에서 열기"
+        "reveal_in_file_manager": "파일 관리자에서 열기",
+        "exclude_lowercase": "제외",
+        "from_clipboard": "클립보드에서 불러오기",
+        "selective_generate": "선택적 생성"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -1467,7 +1470,10 @@
         "started_generating": "컨텐츠 생성을 시작했습니다",
         "started_importing": "불러오기를 시작했습니다",
         "updated_entity": "{entity}를 수정했습니다",
-        "merged_performers": "배우가 병합되었습니다"
+        "merged_performers": "배우가 병합되었습니다",
+        "clipboard_access_denied": "클립보드 접근 거부됨. 브라우저 권한을 확인하십시오",
+        "clipboard_image_pasted": "클립보드에서 이미지 복사됨",
+        "clipboard_no_image": "클립보드에 이미지 없음"
     },
     "total": "전체",
     "true": "참",
@@ -1674,5 +1680,9 @@
             "no_instances_found": "인스턴스 없음"
         }
     },
-    "unsupported_criteria": "지원되지 않는 기준: {criteria}"
+    "unsupported_criteria": "지원되지 않는 기준: {criteria}",
+    "include_sub_folders": "하위 폴더 포함",
+    "parent_folder": "상위 폴더",
+    "sub_folder_depth": "하위 폴더 깊이 (전체일 경우 비워둠)",
+    "sub_folders": "하위 폴더"
 }
