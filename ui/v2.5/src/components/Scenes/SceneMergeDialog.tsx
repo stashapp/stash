@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { StringListSelect, GallerySelect } from "../Shared/Select";
+import { GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
@@ -11,7 +11,6 @@ import {
   mutateSceneMerge,
   queryFindFullScenesByID,
 } from "src/core/StashService";
-import { useConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
@@ -42,28 +41,23 @@ import {
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IStashIDsField {
   values: GQL.StashId[];
 }
 
 const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  const { configuration } = useConfigurationContext();
-
-  function getEndpointName(stash_id: GQL.StashId) {
-    return (
-      configuration?.general.stashBoxes.find(
-        (sb) => sb.endpoint === stash_id.endpoint
-      )?.name ?? stash_id.endpoint
-    );
-  }
-
-  function getStashIdDisplayName(stash_id: GQL.StashId) {
-    return `${getEndpointName(stash_id)} | ${stash_id.stash_id}`;
-  }
+  if (!values.length) return null;
 
   return (
-    <StringListSelect value={values.map((v) => getStashIdDisplayName(v))} />
+    <ul className="pl-0">
+      {values.map((v) => (
+        <li key={v.stash_id} className="row no-gutters">
+          <StashIDPill linkType="scenes" stashID={v} />
+        </li>
+      ))}
+    </ul>
   );
 };
 
