@@ -234,14 +234,14 @@ input[type="range"].zoom-slider {
 
   .saved-filter-item {
     cursor: pointer;
-    height: 2em;
     margin-bottom: 0.25rem;
+    min-height: 2em;
 
     a {
       align-items: center;
       display: flex;
-      height: 2em;
       justify-content: space-between;
+      min-height: 2em;
       outline: none;
 
       &:hover,
@@ -507,7 +507,8 @@ input[type="range"].zoom-slider {
   }
 }
 
-.selectable-filter ul {
+.selectable-filter ul,
+ul.selectable-list {
   list-style-type: none;
   margin-top: 0.5rem;
   max-height: 300px;
@@ -533,14 +534,14 @@ input[type="range"].zoom-slider {
   .excluded-object,
   .unselected-object {
     cursor: pointer;
-    height: 2em;
     margin-bottom: 0.25rem;
+    min-height: 2em;
 
     a {
       align-items: center;
       display: flex;
-      height: 2em;
       justify-content: space-between;
+      min-height: 2em;
       outline: none;
 
       &:hover,
@@ -613,7 +614,8 @@ input[type="range"].zoom-slider {
   margin-bottom: 0.5rem;
 }
 
-.sidebar-list-filter ul {
+.sidebar-list-filter ul,
+.folder-filter ul {
   list-style-type: none;
   margin-bottom: 0.25rem;
   max-height: 300px;
@@ -639,14 +641,14 @@ input[type="range"].zoom-slider {
   .excluded-object,
   .unselected-object {
     cursor: pointer;
-    height: 2em;
     margin-bottom: 0.25rem;
+    min-height: 2em;
 
     a {
       align-items: center;
       display: flex;
-      height: 2em;
       justify-content: space-between;
+      min-height: 2em;
       outline: none;
 
       &:hover,
@@ -687,7 +689,7 @@ input[type="range"].zoom-slider {
       }
 
       &:hover {
-        background-color: inherit;
+        background-color: transparent;
       }
 
       &:hover .exclude-button-text,
@@ -745,6 +747,29 @@ input[type="range"].zoom-slider {
     &:hover {
       background-color: rgba(138, 155, 168, 0.15);
     }
+  }
+}
+
+.sidebar-folder-filter ul,
+.folder-filter ul,
+ul.selectable-list {
+  margin-top: 0.25rem;
+
+  .btn.expand-collapse {
+    font-size: 0.8rem;
+    padding-left: 0;
+    padding-right: 0.25rem;
+    text-align: left;
+  }
+
+  .empty .btn.expand-collapse {
+    visibility: hidden;
+  }
+
+  .selected-object a .selected-object-label {
+    font-size: 0.8em;
+    overflow-wrap: break-word;
+    white-space: normal;
   }
 }
 

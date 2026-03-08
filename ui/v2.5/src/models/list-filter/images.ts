@@ -23,6 +23,7 @@ import { DisplayMode } from "./types";
 import { GalleriesCriterionOption } from "./criteria/galleries";
 import { PhashCriterionOption } from "./criteria/phash";
 import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { FolderCriterionOption } from "./criteria/folder";
 
 const defaultSortBy = "path";
 
@@ -54,6 +55,7 @@ const criterionOptions = [
   createMandatoryStringCriterionOption("checksum", "media_info.md5"),
   PhashCriterionOption,
   PathCriterionOption,
+  FolderCriterionOption,
   GalleriesCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter", "o_count", {

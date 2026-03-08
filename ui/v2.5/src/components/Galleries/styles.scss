@@ -182,6 +182,11 @@ $galleryTabWidth: 450px;
   width: 100%;
 }
 
+@media (min-width: 1200px) {
+  .gallery-container .image-list .filtered-list-toolbar.has-selection {
+    top: 0;
+  }
+}
 @media (min-width: 1200px), (max-width: 575px) {
   .gallery-performers {
     .performer-card {

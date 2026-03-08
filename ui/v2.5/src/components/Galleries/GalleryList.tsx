@@ -51,6 +51,8 @@ import {
 import { FilterTags } from "../List/FilterTags";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { PerformerAgeCriterionOption } from "src/models/list-filter/galleries";
+import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
+import { ParentFolderCriterionOption } from "src/models/list-filter/criteria/folder";
 
 const GalleryList: React.FC<{
   galleries: GQL.SlimGalleryDataFragment[];
@@ -165,6 +167,13 @@ const SidebarContent: React.FC<{
           filterHook={filterHook}
         />
         <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarFolderFilter
+          text={<FormattedMessage id="parent_folder" />}
+          criterionOption={ParentFolderCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="parent_folder"
+        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}

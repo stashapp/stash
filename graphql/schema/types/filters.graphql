@@ -603,6 +603,8 @@ input GalleryFilterType {
   files_filter: FileFilterType
   "Filter by related folders that meet this criteria"
   folders_filter: FolderFilterType
+  "Filter by parent folder of the zip or folder the gallery is in"
+  parent_folder: HierarchicalMultiCriterionInput
 
   custom_fields: [CustomFieldCriterionInput!]
 }

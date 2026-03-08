@@ -22,6 +22,7 @@ import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
 import { PathCriterionOption } from "./criteria/path";
 import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { ParentFolderCriterionOption } from "./criteria/folder";
 
 const defaultSortBy = "path";
 
@@ -53,6 +54,7 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   createStringCriterionOption("photographer"),
   PathCriterionOption,
+  ParentFolderCriterionOption,
   createStringCriterionOption("checksum", "media_info.md5"),
   RatingCriterionOption,
   OrganizedCriterionOption,

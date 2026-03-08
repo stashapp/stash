@@ -210,8 +210,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			changed = true
 		}
 
-		if changed {
-			// always update updated_at time
+		if changed || updateExisting {
+			// update updated_at time when file association or content changes
 			imagePartial := models.NewImagePartial()
 			imagePartial.GalleryIDs = galleryIDs
 
@@ -229,9 +229,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 					return fmt.Errorf("updating gallery updated at timestamp: %w", err)
 				}
 			}
-		}
 
-		if changed || updateExisting {
 			h.PluginCache.RegisterPostHooks(ctx, i.ID, hook.ImageUpdatePost, nil, nil)
 		}
 	}

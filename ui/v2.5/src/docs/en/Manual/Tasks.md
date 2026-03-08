@@ -10,6 +10,39 @@ Stash currently identifies files by performing a quick file hash. This means tha
 
 Stash currently ignores duplicate files. If two files contain identical content, only the first one it comes across is used.
 
+### Ignoring Files with .stashignore
+
+You can create `.stashignore` files to exclude specific files or directories from being scanned. These files use gitignore-style pattern matching syntax.
+
+Place a `.stashignore` file in any directory within your library. The patterns in that file will apply to all files and subdirectories within that directory. You can have multiple `.stashignore` files at different levels of your directory hierarchy - patterns from parent directories cascade down to child directories.
+
+**Supported patterns:**
+
+| Pattern | Description |
+|---------|-------------|
+| `filename.mp4` | Ignore a specific file. |
+| `*.tmp` | Ignore all files with a specific extension. |
+| `temp/` | Ignore a directory and all its contents. |
+| `**/cache/` | Ignore directories named "cache" at any level. |
+| `!important.mp4` | Negation - do not ignore this file even if it matches a previous pattern. |
+| `# comment` | Lines starting with # are comments. |
+| `\#filename` | Use backslash to match a literal # character. |
+
+**Example .stashignore file:**
+
+```
+# Ignore temporary files
+*.tmp
+*.log
+
+# Ignore specific directories
+temp/
+.thumbnails/
+
+# But keep this specific file
+!important.tmp
+```
+
 The scan task accepts the following options:
 
 | Option | Description |

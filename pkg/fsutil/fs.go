@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"unicode"
 )
 
@@ -27,18 +26,10 @@ func IsFsPathCaseSensitive(path string) (bool, error) {
 	if err != nil { // cannot be case flipped
 		return false, err
 	}
-	i := strings.LastIndex(path, base)
-	if i < 0 { // shouldn't happen
-		return false, fmt.Errorf("could not case flip path %s", path)
-	}
 
-	flipped := []rune(path)
-	for _, c := range fBase { // replace base of path with the flipped one ( we need to flip the base or last dir part )
-		flipped[i] = c
-		i++
-	}
+	flippedPath := filepath.Join(filepath.Dir(path), fBase)
 
-	fiCase, err := os.Stat(string(flipped))
+	fiCase, err := os.Stat(flippedPath)
 	if err != nil { // cannot stat the case flipped path
 		return true, nil // fs of path should be case sensitive
 	}

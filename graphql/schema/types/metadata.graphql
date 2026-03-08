@@ -26,6 +26,8 @@ input GenerateMetadataInput {
   imageIDs: [ID!]
   "gallery ids to generate for"
   galleryIDs: [ID!]
+  "paths to run generate on, in addition to the other ID lists"
+  paths: [String!]
 
   "overwrite existing media"
   overwrite: Boolean

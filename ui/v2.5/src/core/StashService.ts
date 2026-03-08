@@ -515,6 +515,21 @@ export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
     variables: { mode },
   });
 
+export const queryFindSubFolders = (id: string) =>
+  client.query<GQL.FindFoldersForQueryQuery>({
+    query: GQL.FindFoldersForQueryDocument,
+    variables: {
+      folder_filter: {
+        parent_folder: { value: id, modifier: GQL.CriterionModifier.Equals },
+      },
+      filter: {
+        per_page: -1,
+        sort: "basename",
+        direction: GQL.SortDirectionEnum.Asc,
+      },
+    },
+  });
+
 /// Object Mutations
 
 // Increases/decreases the given field of the Stats query by diff
