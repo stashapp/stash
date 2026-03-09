@@ -352,6 +352,29 @@ const SceneCardOverlays = PatchComponent(
   }
 );
 
+interface ISceneSpecsOverlay {
+  scene: GQL.SlimSceneDataFragment;
+}
+
+export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = ({ scene }) => {
+  if (!scene.files.length) return null;
+  let file = scene.files[0];
+  return (
+    <div className="scene-specs-overlay">
+      <span className="overlay-filesize extra-scene-info">
+        <FileSize size={file.size} />
+      </span>
+      <span className="overlay-resolution">
+        {" "}
+        {TextUtils.resolution(file.width, file.height)}
+      </span>
+      <span className="overlay-duration">
+        {TextUtils.secondsToTimestamp(file.duration)}
+      </span>
+    </div>
+  );
+};
+
 const SceneCardImage = PatchComponent(
   "SceneCard.Image",
   (props: ISceneCardProps) => {
@@ -363,35 +386,6 @@ const SceneCardImage = PatchComponent(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
       [props.scene]
     );
-
-    function maybeRenderSceneSpecsOverlay() {
-      return (
-        <div className="scene-specs-overlay">
-          {file?.size !== undefined ? (
-            <span className="overlay-filesize extra-scene-info">
-              <FileSize size={file.size} />
-            </span>
-          ) : (
-            ""
-          )}
-          {file?.width && file?.height ? (
-            <span className="overlay-resolution">
-              {" "}
-              {TextUtils.resolution(file?.width, file?.height)}
-            </span>
-          ) : (
-            ""
-          )}
-          {(file?.duration ?? 0) >= 1 ? (
-            <span className="overlay-duration">
-              {TextUtils.secondsToTimestamp(file?.duration ?? 0)}
-            </span>
-          ) : (
-            ""
-          )}
-        </div>
-      );
-    }
 
     function maybeRenderInteractiveSpeedOverlay() {
       return (
@@ -432,7 +426,7 @@ const SceneCardImage = PatchComponent(
           disabled={props.selecting}
         />
         <RatingBanner rating={props.scene.rating100} />
-        {maybeRenderSceneSpecsOverlay()}
+        <SceneSpecsOverlay scene={props.scene} />
         {maybeRenderInteractiveSpeedOverlay()}
       </>
     );
