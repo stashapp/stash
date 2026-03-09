@@ -155,7 +155,10 @@
         "save_and_new": "Guardar y nuevo",
         "invert_selection": "Invertir selección",
         "select_directory": "Seleccionar directorio",
-        "reveal_in_file_manager": "Mostrar en el Administrador de archivos"
+        "reveal_in_file_manager": "Mostrar en el Administrador de archivos",
+        "exclude_lowercase": "excluir",
+        "from_clipboard": "Desde el portapapeles",
+        "selective_generate": "Generación selectiva"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -1411,7 +1414,10 @@
         "removed_entity": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "reassign_past_tense": "Archivo reasignado",
         "merged_scenes": "Escenas fusionadas",
-        "merged_performers": "Actores fusionados"
+        "merged_performers": "Actores fusionados",
+        "clipboard_access_denied": "Acceso al portapapeles denegado. Comprueba los permisos de tu navegador",
+        "clipboard_image_pasted": "Imagen pegada desde el portapapeles",
+        "clipboard_no_image": "No se ha encontrado ninguna imagen en el portapapeles"
     },
     "total": "Total",
     "true": "Sí",
@@ -1674,5 +1680,9 @@
             "no_instances_found": "No se han encontrado instancias"
         }
     },
-    "unsupported_criteria": "Criterios no admitidos: {criteria}"
+    "unsupported_criteria": "Criterios no admitidos: {criteria}",
+    "include_sub_folders": "Incluir subcarpetas",
+    "parent_folder": "Carpeta principal",
+    "sub_folder_depth": "Profundidad de la subcarpeta (vacía para todas)",
+    "sub_folders": "Subcarpetas"
 }
