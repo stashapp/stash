@@ -129,7 +129,7 @@
         "choose_date": "选择一个日期",
         "add_play": "添加播放记录",
         "add_manual_date": "添加手动日期",
-        "copy_to_clipboard": "复制到剪切板",
+        "copy_to_clipboard": "复制到剪贴板",
         "remove_date": "去除日期",
         "add_o": "添加高潮记录",
         "clean_generated": "清除已生成的文件",
@@ -155,7 +155,10 @@
         "save_and_new": "保存并新建",
         "invert_selection": "反向选择",
         "select_directory": "选择目录",
-        "reveal_in_file_manager": "在文件管理器中显示"
+        "reveal_in_file_manager": "在文件管理器中显示",
+        "exclude_lowercase": "排除",
+        "from_clipboard": "来自剪贴板",
+        "selective_generate": "选择性生成"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -1464,7 +1467,10 @@
         "started_generating": "生成资料中",
         "started_importing": "导入中",
         "updated_entity": "已更新{entity}",
-        "merged_performers": "合并的表演者"
+        "merged_performers": "合并的表演者",
+        "clipboard_access_denied": "剪贴板访问受阻。检查你浏览器的权限",
+        "clipboard_image_pasted": "粘贴剪贴板图像",
+        "clipboard_no_image": "没有图像在剪贴板中找到"
     },
     "total": "总计",
     "true": "是",
@@ -1674,5 +1680,9 @@
             "no_instances_found": "没有找到实例"
         }
     },
-    "unsupported_criteria": "未支持标准：{criteria}"
+    "unsupported_criteria": "未支持标准：{criteria}",
+    "include_sub_folders": "包含自文件夹",
+    "parent_folder": "父母文件夹",
+    "sub_folder_depth": "子文件夹深度(留空为全部)",
+    "sub_folders": "子文件夹"
 }
