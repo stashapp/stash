@@ -364,13 +364,21 @@ export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = ({ scene }) => {
       <span className="overlay-filesize extra-scene-info">
         <FileSize size={file.size} />
       </span>
-      <span className="overlay-resolution">
-        {" "}
-        {TextUtils.resolution(file.width, file.height)}
-      </span>
-      <span className="overlay-duration">
-        {TextUtils.secondsToTimestamp(file.duration)}
-      </span>
+      {file.width && file.height ? (
+        <span className="overlay-resolution">
+          {" "}
+          {TextUtils.resolution(file.width, file.height)}
+        </span>
+      ) : (
+        ""
+      )}
+      {(file.duration ?? 0) >= 1 ? (
+        <span className="overlay-duration">
+          {TextUtils.secondsToTimestamp(file.duration)}
+        </span>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
