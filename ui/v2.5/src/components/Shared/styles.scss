@@ -666,10 +666,11 @@ div.react-datepicker {
 }
 
 .stash-id-pill {
-  display: inline-block;
+  display: inline-flex;
   font-size: 90%;
   font-weight: 700;
   line-height: 1;
+  max-width: 100%;
   padding-bottom: 0.25em;
   padding-top: 0.25em;
   text-align: center;
@@ -685,12 +686,15 @@ div.react-datepicker {
   span {
     background-color: $primary;
     border-radius: 0.25rem 0 0 0.25rem;
+    flex-shrink: 0;
     min-width: 5em;
   }
 
   a {
     background-color: $secondary;
     border-radius: 0 0.25rem 0.25rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
