@@ -1,11 +1,20 @@
 import { faBan } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
-import { Button, Form, FormControlProps, InputGroup } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import {
+  Button,
+  Col,
+  Form,
+  FormControlProps,
+  InputGroup,
+  Row,
+} from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "./Icon";
+import * as FormUtils from "src/utils/form";
 
-interface IBulkUpdateTextInputProps extends FormControlProps {
-  valueChanged: (value: string | undefined) => void;
+interface IBulkUpdateTextInputProps extends Omit<FormControlProps, "value"> {
+  valueChanged: (value: string | null | undefined) => void;
+  value: string | null | undefined;
   unsetDisabled?: boolean;
   as?: React.ElementType;
 }
@@ -17,14 +26,14 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
 }) => {
   const intl = useIntl();
 
-  const unset = props.value === undefined;
+  const value = props.value === null ? "" : props.value ?? undefined;
+  const unset = value === undefined;
 
-  const placeholderValue =
-    props.value === undefined
-      ? `<${intl.formatMessage({ id: "existing_value" })}>`
-      : props.value === ""
-      ? `<${intl.formatMessage({ id: "empty_value" })}>`
-      : undefined;
+  const placeholderValue = unset
+    ? `<${intl.formatMessage({ id: "existing_value" })}>`
+    : value === ""
+    ? `<${intl.formatMessage({ id: "empty_value" })}>`
+    : undefined;
 
   return (
     <InputGroup className="bulk-update-text-input">
@@ -33,7 +42,7 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
         className="text-input"
         type="text"
         as={props.as}
-        value={props.value ?? ""}
+        value={value ?? ""}
         placeholder={placeholderValue}
         onChange={(event) => valueChanged(event.currentTarget.value)}
       />
@@ -50,5 +59,31 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
         ) : undefined}
       </InputGroup.Append>
     </InputGroup>
+  );
+};
+
+export const BulkUpdateFormGroup: React.FC<{
+  name: string;
+  messageId?: string;
+  inline?: boolean;
+}> = ({ name, messageId = name, inline = true, children }) => {
+  if (inline) {
+    return (
+      <Form.Group controlId={name} data-field={name} as={Row}>
+        {FormUtils.renderLabel({
+          title: <FormattedMessage id={messageId} />,
+        })}
+        <Col xs={9}>{children}</Col>
+      </Form.Group>
+    );
+  }
+
+  return (
+    <Form.Group controlId={name} data-field={name}>
+      <Form.Label>
+        <FormattedMessage id={messageId} />
+      </Form.Label>
+      {children}
+    </Form.Group>
   );
 };

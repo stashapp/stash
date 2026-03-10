@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Col, Form, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
@@ -23,9 +23,8 @@ import {
   stringToCircumcised,
 } from "src/utils/circumcised";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
+import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import * as FormUtils from "src/utils/form";
 import { CountrySelect } from "../Shared/CountrySelect";
 import { useConfigurationContext } from "src/hooks/Config";
 import cx from "classnames";
@@ -76,14 +75,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [aggregateState, setAggregateState] =
     useState<GQL.BulkPerformerUpdateInput>({});
   // height and weight needs conversion to/from number
-  const [height, setHeight] = useState<string | undefined>();
-  const [weight, setWeight] = useState<string | undefined>();
-  const [penis_length, setPenisLength] = useState<string | undefined>();
+  const [height, setHeight] = useState<string | undefined | null>();
+  const [weight, setWeight] = useState<string | undefined | null>();
+  const [penis_length, setPenisLength] = useState<string | undefined | null>();
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
     {}
   );
   const genderOptions = [""].concat(genderStrings);
   const circumcisedOptions = [""].concat(circumcisedStrings);
+
+  const unsetDisabled = props.selected.length < 2;
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
@@ -122,14 +123,14 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     );
 
     if (height !== undefined) {
-      performerInput.height_cm = parseFloat(height);
+      performerInput.height_cm = height === null ? null : parseFloat(height);
     }
     if (weight !== undefined) {
-      performerInput.weight = parseFloat(weight);
+      performerInput.weight = weight === null ? null : parseFloat(weight);
     }
-
     if (penis_length !== undefined) {
-      performerInput.penis_length = parseFloat(penis_length);
+      performerInput.penis_length =
+        penis_length === null ? null : parseFloat(penis_length);
     }
 
     return performerInput;
@@ -206,27 +207,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setUpdateInput(updateState);
   }, [props.selected]);
 
-  function renderTextField(
-    name: string,
-    value: string | undefined | null,
-    setter: (newValue: string | undefined) => void
-  ) {
-    return (
-      <Form.Group controlId={name} data-field={name} as={Row}>
-        {FormUtils.renderLabel({
-          title: intl.formatMessage({ id: name }),
-        })}
-        <Col xs={9}>
-          <BulkUpdateTextInput
-            value={value === null ? "" : value ?? undefined}
-            valueChanged={(newValue) => setter(newValue)}
-            unsetDisabled={props.selected.length < 2}
-          />
-        </Col>
-      </Form.Group>
-    );
-  }
-
   function render() {
     // sfw class needs to be set because it is outside body
 
@@ -256,11 +236,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
-        <Form.Group controlId="rating" as={Row} data-field={name}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
+        <Form>
+          <BulkUpdateFormGroup name="rating">
             <RatingSystem
               value={updateInput.rating100}
               onSetRating={(value) =>
@@ -268,9 +245,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               }
               disabled={isUpdating}
             />
-          </Col>
-        </Form.Group>
-        <Form>
+          </BulkUpdateFormGroup>
+
           <Form.Group controlId="favorite">
             <IndeterminateCheckbox
               setChecked={(checked) => setUpdateField({ favorite: checked })}
@@ -279,151 +255,198 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group controlId="gender" data-field="gender" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "gender" }),
-            })}
-            <Col xs={9}>
-              <Form.Control
-                as="select"
-                className="input-control"
-                value={genderToString(updateInput.gender)}
-                onChange={(event) =>
-                  setUpdateField({
-                    gender: stringToGender(event.currentTarget.value),
-                  })
-                }
-              >
-                {genderOptions.map((opt) => (
-                  <option value={opt} key={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </Form.Control>
-            </Col>
-          </Form.Group>
+          <BulkUpdateFormGroup name="gender">
+            <Form.Control
+              as="select"
+              className="input-control"
+              value={genderToString(updateInput.gender)}
+              onChange={(event) =>
+                setUpdateField({
+                  gender: stringToGender(event.currentTarget.value),
+                })
+              }
+            >
+              {genderOptions.map((opt) => (
+                <option value={opt} key={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Form.Control>
+          </BulkUpdateFormGroup>
 
-          {renderTextField("disambiguation", updateInput.disambiguation, (v) =>
-            setUpdateField({ disambiguation: v })
-          )}
-          <Form.Group controlId="birthdate" data-field="birthdate" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "birthdate" }),
-            })}
-            <Col xs={9}>
-              <BulkUpdateDateInput
-                value={updateInput.birthdate ?? undefined}
-                valueChanged={(newValue) =>
-                  setUpdateField({ birthdate: newValue })
-                }
-                unsetDisabled={props.selected.length < 2}
-              />
-            </Col>
-          </Form.Group>
-          <Form.Group controlId="death_date" data-field="death_date" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "death_date" }),
-            })}
-            <Col xs={9}>
-              <BulkUpdateDateInput
-                value={updateInput.death_date ?? undefined}
-                valueChanged={(newValue) =>
-                  setUpdateField({ death_date: newValue })
-                }
-                unsetDisabled={props.selected.length < 2}
-              />
-            </Col>
-          </Form.Group>
-          <Form.Group controlId="country" data-field="country" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "country" }),
-            })}
-            <Col xs={9}>
-              <CountrySelect
-                value={updateInput.country ?? ""}
-                onChange={(v) => setUpdateField({ country: v })}
-                showFlag
-              />
-            </Col>
-          </Form.Group>
+          <BulkUpdateFormGroup name="disambiguation">
+            <BulkUpdateTextInput
+              value={updateInput.disambiguation}
+              valueChanged={(newValue) =>
+                setUpdateField({ disambiguation: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
 
-          {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
-            setUpdateField({ ethnicity: v })
-          )}
-          {renderTextField("hair_color", updateInput.hair_color, (v) =>
-            setUpdateField({ hair_color: v })
-          )}
-          {renderTextField("eye_color", updateInput.eye_color, (v) =>
-            setUpdateField({ eye_color: v })
-          )}
-          {renderTextField("height", height, (v) => setHeight(v))}
-          {renderTextField("weight", weight, (v) => setWeight(v))}
-          {renderTextField("measurements", updateInput.measurements, (v) =>
-            setUpdateField({ measurements: v })
-          )}
-          {renderTextField("penis_length", penis_length, (v) =>
-            setPenisLength(v)
-          )}
+          <BulkUpdateFormGroup name="birthdate">
+            <BulkUpdateDateInput
+              value={updateInput.birthdate ?? undefined}
+              valueChanged={(newValue) =>
+                setUpdateField({ birthdate: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="death_date">
+            <BulkUpdateDateInput
+              value={updateInput.death_date ?? undefined}
+              valueChanged={(newValue) =>
+                setUpdateField({ death_date: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="country">
+            <CountrySelect
+              value={updateInput.country ?? ""}
+              onChange={(v) => setUpdateField({ country: v })}
+              showFlag
+            />
+          </BulkUpdateFormGroup>
 
-          <Form.Group controlId="circumcised" data-field="circumcised" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "circumcised" }),
-            })}
-            <Col xs={9}>
-              <Form.Control
-                as="select"
-                className="input-control"
-                value={circumcisedToString(updateInput.circumcised)}
-                onChange={(event) =>
-                  setUpdateField({
-                    circumcised: stringToCircumcised(event.currentTarget.value),
-                  })
-                }
-              >
-                {circumcisedOptions.map((opt) => (
-                  <option value={opt} key={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </Form.Control>
-            </Col>
-          </Form.Group>
+          <BulkUpdateFormGroup name="ethnicity">
+            <BulkUpdateTextInput
+              value={updateInput.ethnicity}
+              valueChanged={(newValue) =>
+                setUpdateField({ ethnicity: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="hair_color">
+            <BulkUpdateTextInput
+              value={updateInput.hair_color}
+              valueChanged={(newValue) =>
+                setUpdateField({ hair_color: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="eye_color">
+            <BulkUpdateTextInput
+              value={updateInput.eye_color}
+              valueChanged={(newValue) =>
+                setUpdateField({ eye_color: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="height">
+            <BulkUpdateTextInput
+              value={height}
+              valueChanged={(newValue) => setHeight(newValue)}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="weight">
+            <BulkUpdateTextInput
+              value={weight}
+              valueChanged={(newValue) => setWeight(newValue)}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="measurements">
+            <BulkUpdateTextInput
+              value={updateInput.measurements}
+              valueChanged={(newValue) =>
+                setUpdateField({ measurements: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="penis_length">
+            <BulkUpdateTextInput
+              value={penis_length}
+              valueChanged={(newValue) => setPenisLength(newValue)}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
 
-          {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
-            setUpdateField({ fake_tits: v })
-          )}
-          {renderTextField("tattoos", updateInput.tattoos, (v) =>
-            setUpdateField({ tattoos: v })
-          )}
-          {renderTextField("piercings", updateInput.piercings, (v) =>
-            setUpdateField({ piercings: v })
-          )}
-          {renderTextField(
-            "career_start",
-            updateInput.career_start?.toString(),
-            (v) => setUpdateField({ career_start: v ? parseInt(v) : undefined })
-          )}
-          {renderTextField(
-            "career_end",
-            updateInput.career_end?.toString(),
-            (v) => setUpdateField({ career_end: v ? parseInt(v) : undefined })
-          )}
+          <BulkUpdateFormGroup name="circumcised">
+            <Form.Control
+              as="select"
+              className="input-control"
+              value={circumcisedToString(updateInput.circumcised)}
+              onChange={(event) =>
+                setUpdateField({
+                  circumcised: stringToCircumcised(event.currentTarget.value),
+                })
+              }
+            >
+              {circumcisedOptions.map((opt) => (
+                <option value={opt} key={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Form.Control>
+          </BulkUpdateFormGroup>
 
-          <Form.Group controlId="tags">
-            <Form.Label>
-              <FormattedMessage id="tags" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="fake_tits">
+            <BulkUpdateTextInput
+              value={updateInput.fake_tits}
+              valueChanged={(newValue) =>
+                setUpdateField({ fake_tits: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="tattoos">
+            <BulkUpdateTextInput
+              value={updateInput.tattoos}
+              valueChanged={(newValue) => setUpdateField({ tattoos: newValue })}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="piercings">
+            <BulkUpdateTextInput
+              value={updateInput.piercings}
+              valueChanged={(newValue) =>
+                setUpdateField({ piercings: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="career_start">
+            <BulkUpdateTextInput
+              value={updateInput.career_start?.toString()}
+              valueChanged={(v) =>
+                setUpdateField({ career_start: v ? parseInt(v) : undefined })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="career_end">
+            <BulkUpdateTextInput
+              value={updateInput.career_end?.toString()}
+              valueChanged={(v) =>
+                setUpdateField({ career_end: v ? parseInt(v) : undefined })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+
+          <BulkUpdateFormGroup name="tags" inline={false}>
             <MultiSet
-              type="tags"
+              type={"tags"}
               disabled={isUpdating}
-              onUpdate={(itemIDs) => setTagIds({ ...tagIds, ids: itemIDs })}
-              onSetMode={(newMode) => setTagIds({ ...tagIds, mode: newMode })}
-              existingIds={existingTagIds ?? []}
+              onUpdate={(itemIDs) => {
+                setTagIds((c) => ({ ...c, ids: itemIDs }));
+              }}
+              onSetMode={(newMode) => {
+                setTagIds((c) => ({ ...c, mode: newMode }));
+              }}
               ids={tagIds.ids ?? []}
+              existingIds={existingTagIds}
               mode={tagIds.mode}
               menuPortalTarget={document.body}
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
           <Form.Group controlId="ignore-auto-tags">
             <IndeterminateCheckbox

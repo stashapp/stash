@@ -11,7 +11,7 @@ import {
   getAggregateStateObject,
 } from "src/utils/bulkUpdate";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
+import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 function Tags(props: {
@@ -85,6 +85,8 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
 
   const [updateInput, setUpdateInput] = useState<GQL.BulkTagUpdateInput>({});
 
+  const unsetDisabled = props.selected.length < 2;
+
   const [updateTags] = useBulkTagUpdate(getTagInput());
 
   // Network state
@@ -153,25 +155,6 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
     setUpdateInput(updateState);
   }, [props.selected]);
 
-  function renderTextField(
-    name: string,
-    value: string | undefined | null,
-    setter: (newValue: string | undefined) => void
-  ) {
-    return (
-      <Form.Group controlId={name}>
-        <Form.Label>
-          <FormattedMessage id={name} />
-        </Form.Label>
-        <BulkUpdateTextInput
-          value={value === null ? "" : value ?? undefined}
-          valueChanged={(newValue) => setter(newValue)}
-          unsetDisabled={props.selected.length < 2}
-        />
-      </Form.Group>
-    );
-  }
-
   return (
     <ModalComponent
       dialogClassName="edit-tags-dialog"
@@ -205,9 +188,16 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
           />
         </Form.Group>
 
-        {renderTextField("description", updateInput.description, (v) =>
-          setUpdateField({ description: v })
-        )}
+        <BulkUpdateFormGroup name="description" inline={false}>
+          <BulkUpdateTextInput
+            value={updateInput.description}
+            valueChanged={(newValue) =>
+              setUpdateField({ description: newValue })
+            }
+            unsetDisabled={unsetDisabled}
+            as="textarea"
+          />
+        </BulkUpdateFormGroup>
 
         <Tags
           isUpdating={isUpdating}

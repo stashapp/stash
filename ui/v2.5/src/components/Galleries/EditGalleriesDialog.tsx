@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Form, Col, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { useBulkGalleryUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { MultiSet } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
-import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
@@ -19,7 +18,7 @@ import {
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
+import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
 
 interface IListOperationProps {
@@ -57,6 +56,8 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   const [sceneIds, setSceneIds] = useState<GQL.BulkUpdateIds>({
     mode: GQL.BulkUpdateIdMode.Add,
   });
+
+  const unsetDisabled = props.selected.length < 2;
 
   const [updateGalleries] = useBulkGalleryUpdate();
 
@@ -131,46 +132,6 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(false);
   }
 
-  function renderTextField(
-    name: string,
-    value: string | undefined | null,
-    setter: (newValue: string | undefined) => void,
-    area: boolean = false
-  ) {
-    const control = (
-      <BulkUpdateTextInput
-        value={value === null ? "" : value ?? undefined}
-        valueChanged={(newValue) => setter(newValue)}
-        unsetDisabled={props.selected.length < 2}
-        as={area ? "textarea" : undefined}
-      />
-    );
-
-    if (area) {
-      return (
-        <Form.Group
-          controlId={name}
-          data-field={name}
-          as={area ? undefined : Row}
-        >
-          <Form.Label>
-            <FormattedMessage id={name} />
-          </Form.Label>
-          {control}
-        </Form.Group>
-      );
-    }
-
-    return (
-      <Form.Group controlId={name} data-field={name} as={Row}>
-        {FormUtils.renderLabel({
-          title: intl.formatMessage({ id: name }),
-        })}
-        <Col xs={9}>{control}</Col>
-      </Form.Group>
-    );
-  }
-
   function render() {
     return (
       <ModalComponent
@@ -196,62 +157,54 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         isRunning={isUpdating}
       >
         <Form>
-          <Form.Group controlId="rating" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "rating" }),
-            })}
-            <Col xs={9}>
-              <RatingSystem
-                value={updateInput.rating100}
-                onSetRating={(value) =>
-                  setUpdateField({ rating100: value ?? undefined })
-                }
-                disabled={isUpdating}
-              />
-            </Col>
-          </Form.Group>
+          <BulkUpdateFormGroup name="rating">
+            <RatingSystem
+              value={updateInput.rating100}
+              onSetRating={(value) =>
+                setUpdateField({ rating100: value ?? undefined })
+              }
+              disabled={isUpdating}
+            />
+          </BulkUpdateFormGroup>
 
-          {renderTextField("scene_code", updateInput.code, (newValue) =>
-            setUpdateField({ code: newValue })
-          )}
-          <Form.Group controlId="date" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "date" }),
-            })}
-            <Col xs={9}>
-              <BulkUpdateDateInput
-                value={updateInput.date ?? undefined}
-                valueChanged={(newValue) => setUpdateField({ date: newValue })}
-                unsetDisabled={props.selected.length < 2}
-              />
-            </Col>
-          </Form.Group>
+          <BulkUpdateFormGroup name="scene_code">
+            <BulkUpdateTextInput
+              value={updateInput.code}
+              valueChanged={(newValue) => setUpdateField({ code: newValue })}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="date">
+            <BulkUpdateDateInput
+              value={updateInput.date ?? undefined}
+              valueChanged={(newValue) => setUpdateField({ date: newValue })}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
 
-          {renderTextField("photographer", updateInput.photographer, (v) =>
-            setUpdateField({ photographer: v })
-          )}
-          <Form.Group controlId="studio" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "studio" }),
-            })}
-            <Col xs={9}>
-              <StudioSelect
-                onSelect={(items) =>
-                  setUpdateField({
-                    studio_id: items.length > 0 ? items[0]?.id : undefined,
-                  })
-                }
-                ids={updateInput.studio_id ? [updateInput.studio_id] : []}
-                isDisabled={isUpdating}
-                menuPortalTarget={document.body}
-              />
-            </Col>
-          </Form.Group>
+          <BulkUpdateFormGroup name="photographer">
+            <BulkUpdateTextInput
+              value={updateInput.photographer}
+              valueChanged={(newValue) =>
+                setUpdateField({ photographer: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="studio">
+            <StudioSelect
+              onSelect={(items) =>
+                setUpdateField({
+                  studio_id: items.length > 0 ? items[0]?.id : undefined,
+                })
+              }
+              ids={updateInput.studio_id ? [updateInput.studio_id] : []}
+              isDisabled={isUpdating}
+              menuPortalTarget={document.body}
+            />
+          </BulkUpdateFormGroup>
 
-          <Form.Group controlId="performers">
-            <Form.Label>
-              <FormattedMessage id="performers" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="performers" inline={false}>
             <MultiSet
               type={"performers"}
               disabled={isUpdating}
@@ -266,12 +219,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               mode={performerIds.mode}
               menuPortalTarget={document.body}
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          <Form.Group controlId="scenes">
-            <Form.Label>
-              <FormattedMessage id="scenes" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="scenes" inline={false}>
             <MultiSet
               type={"scenes"}
               disabled={isUpdating}
@@ -286,12 +236,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               mode={sceneIds.mode}
               menuPortalTarget={document.body}
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          <Form.Group controlId="tags">
-            <Form.Label>
-              <FormattedMessage id="tags" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="tags" inline={false}>
             <MultiSet
               type={"tags"}
               disabled={isUpdating}
@@ -306,14 +253,16 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               mode={tagIds.mode}
               menuPortalTarget={document.body}
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          {renderTextField(
-            "details",
-            updateInput.details,
-            (v) => setUpdateField({ details: v }),
-            true
-          )}
+          <BulkUpdateFormGroup name="details" inline={false}>
+            <BulkUpdateTextInput
+              value={updateInput.details}
+              valueChanged={(newValue) => setUpdateField({ details: newValue })}
+              unsetDisabled={unsetDisabled}
+              as="textarea"
+            />
+          </BulkUpdateFormGroup>
 
           <Form.Group controlId="organized">
             <IndeterminateCheckbox
