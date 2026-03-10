@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { useBulkGroupUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "../Shared/Select";
@@ -227,7 +227,11 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
             />
           </BulkUpdateFormGroup>
 
-          <BulkUpdateFormGroup name="containing-groups" messageId="containing_groups" inline={false}>
+          <BulkUpdateFormGroup
+            name="containing-groups"
+            messageId="containing_groups"
+            inline={false}
+          >
             <ContainingGroupsMultiSet
               disabled={isUpdating}
               onUpdate={(v) => setGroups(v)}
