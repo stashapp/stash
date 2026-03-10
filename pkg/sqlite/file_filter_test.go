@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -86,7 +87,7 @@ func TestFileQuery(t *testing.T) {
 			filter: &models.FileFilterType{
 				Hashes: []*models.FingerprintFilterInput{
 					{
-						Type:  "MD5",
+						Type:  models.FingerprintTypeMD5,
 						Value: getPrefixedStringValue("file", fileIdxStartVideoFiles, "md5"),
 					},
 				},
@@ -99,13 +100,26 @@ func TestFileQuery(t *testing.T) {
 			filter: &models.FileFilterType{
 				Hashes: []*models.FingerprintFilterInput{
 					{
-						Type:  "OSHASH",
+						Type:  models.FingerprintTypeOshash,
 						Value: getPrefixedStringValue("file", fileIdxStartVideoFiles, "oshash"),
 					},
 				},
 			},
 			includeIdxs: []int{fileIdxStartVideoFiles},
 			excludeIdxs: []int{fileIdxStartImageFiles},
+		},
+		{
+			name: "hashes phash",
+			filter: &models.FileFilterType{
+				Hashes: []*models.FingerprintFilterInput{
+					{
+						Type:  models.FingerprintTypePhash,
+						Value: utils.PhashToString(getFilePhash(fileIdxStartImageFiles)),
+					},
+				},
+			},
+			includeIdxs: []int{fileIdxStartImageFiles},
+			excludeIdxs: []int{fileIdxStartVideoFiles},
 		},
 	}
 

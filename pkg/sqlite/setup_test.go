@@ -865,15 +865,23 @@ func getFileModTime(index int) time.Time {
 	return getFolderModTime(index)
 }
 
+func getFilePhash(index int) int64 {
+	return int64(index * 567)
+}
+
 func getFileFingerprints(index int) []models.Fingerprint {
 	return []models.Fingerprint{
 		{
-			Type:        "MD5",
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: getPrefixedStringValue("file", index, "md5"),
 		},
 		{
-			Type:        "OSHASH",
+			Type:        models.FingerprintTypeOshash,
 			Fingerprint: getPrefixedStringValue("file", index, "oshash"),
+		},
+		{
+			Type:        models.FingerprintTypePhash,
+			Fingerprint: getFilePhash(index),
 		},
 	}
 }

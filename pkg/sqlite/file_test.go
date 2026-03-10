@@ -572,7 +572,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		{
 			"by MD5",
 			models.Fingerprint{
-				Type:        "MD5",
+				Type:        models.FingerprintTypeMD5,
 				Fingerprint: getPrefixedStringValue("file", fileIdxZip, "md5"),
 			},
 			[]models.File{makeFileWithID(fileIdxZip)},
@@ -581,7 +581,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		{
 			"by OSHASH",
 			models.Fingerprint{
-				Type:        "OSHASH",
+				Type:        models.FingerprintTypeOshash,
 				Fingerprint: getPrefixedStringValue("file", fileIdxZip, "oshash"),
 			},
 			[]models.File{makeFileWithID(fileIdxZip)},
@@ -590,7 +590,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		{
 			"non-existing",
 			models.Fingerprint{
-				Type:        "OSHASH",
+				Type:        models.FingerprintTypeOshash,
 				Fingerprint: "foo",
 			},
 			nil,
