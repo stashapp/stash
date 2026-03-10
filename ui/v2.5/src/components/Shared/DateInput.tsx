@@ -11,6 +11,7 @@ import { PatchComponent } from "src/patch";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
+  groupClassName?: string;
   className?: string;
   disabled?: boolean;
   value: string;
@@ -35,6 +36,11 @@ const ShowPickerButton = forwardRef<
 
 const _DateInput: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
+
+  const {
+    groupClassName = "date-input-group",
+    className = "date-input text-input",
+  } = props;
 
   const date = useMemo(() => {
     const toDate = props.isTime
@@ -83,29 +89,27 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
     : formatHint;
 
   return (
-    <div>
-      <InputGroup hasValidation className="bulk-update-date-input">
-        <Form.Control
-          className={`${props.className ?? "date-input text-input"} `}
-          disabled={props.disabled}
-          value={props.value}
-          onChange={(e) => props.onValueChange(e.currentTarget.value)}
-          placeholder={
-            !props.disabled
-              ? props.placeholderOverride ?? placeholderText
-              : undefined
-          }
-          isInvalid={!!props.error}
-        />
-        <InputGroup.Append>
-          {props.append}
-          {maybeRenderButton()}
-        </InputGroup.Append>
-        <Form.Control.Feedback type="invalid">
-          {props.error}
-        </Form.Control.Feedback>
-      </InputGroup>
-    </div>
+    <InputGroup hasValidation className={groupClassName}>
+      <Form.Control
+        className={className}
+        disabled={props.disabled}
+        value={props.value}
+        onChange={(e) => props.onValueChange(e.currentTarget.value)}
+        placeholder={
+          !props.disabled
+            ? props.placeholderOverride ?? placeholderText
+            : undefined
+        }
+        isInvalid={!!props.error}
+      />
+      <InputGroup.Append>
+        {props.append}
+        {maybeRenderButton()}
+      </InputGroup.Append>
+      <Form.Control.Feedback type="invalid">
+        {props.error}
+      </Form.Control.Feedback>
+    </InputGroup>
   );
 };
 
@@ -148,6 +152,7 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
           : undefined
       }
       onValueChange={(v) => valueChanged(v)}
+      groupClassName="bulk-update-date-input"
       className={`${unsetClassName} input-control date-input`}
       append={unsetButton}
     />
