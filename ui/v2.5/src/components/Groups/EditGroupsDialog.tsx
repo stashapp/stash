@@ -17,7 +17,7 @@ import {
   getAggregateIds,
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
 import { IRelatedGroupEntry } from "./GroupDetails/RelatedGroupTable";
 import { ContainingGroupsMultiSet } from "./ContainingGroupsMultiSet";

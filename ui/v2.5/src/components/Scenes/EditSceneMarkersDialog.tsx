@@ -10,7 +10,7 @@ import {
   getAggregateState,
   getAggregateStateObject,
 } from "src/utils/bulkUpdate";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { TagSelect } from "../Shared/Select";
 

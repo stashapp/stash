@@ -11,7 +11,7 @@ import {
   getAggregateStateObject,
 } from "src/utils/bulkUpdate";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 function Tags(props: {

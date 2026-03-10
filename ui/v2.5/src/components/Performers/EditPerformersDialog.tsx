@@ -23,7 +23,7 @@ import {
   stringToCircumcised,
 } from "src/utils/circumcised";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import * as FormUtils from "src/utils/form";
 import { CountrySelect } from "../Shared/CountrySelect";
