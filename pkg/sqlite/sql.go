@@ -71,6 +71,16 @@ func (o sortOptions) validateSort(sort string) error {
 	return fmt.Errorf("invalid sort: %s", sort)
 }
 
+func validateIsMissing(isMissing string, allowed []string) error {
+	for _, v := range allowed {
+		if v == isMissing {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid is_missing field: %s", isMissing)
+}
+
 func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
 		return "ASC"

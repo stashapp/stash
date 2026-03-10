@@ -1,3 +1,11 @@
 mutation DeleteFiles($ids: [ID!]!) {
   deleteFiles(ids: $ids)
 }
+
+mutation RevealFileInFileManager($id: ID!) {
+  revealFileInFileManager(id: $id)
+}
+
+mutation RevealFolderInFileManager($id: ID!) {
+  revealFolderInFileManager(id: $id)
+}

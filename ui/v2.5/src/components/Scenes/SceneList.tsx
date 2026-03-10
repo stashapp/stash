@@ -44,6 +44,7 @@ import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organi
 import { HasMarkersCriterionOption } from "src/models/list-filter/criteria/has-markers";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { PerformerAgeCriterionOption } from "src/models/list-filter/scenes";
+import { SidebarDuplicateFilter } from "../List/Filters/DuplicateFilter";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { SidebarDurationFilter } from "../List/Filters/SidebarDurationFilter";
 import {
@@ -57,6 +58,7 @@ import useFocus from "src/utils/focus";
 import { useZoomKeybinds } from "../List/ZoomSlider";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { FilterTags } from "../List/FilterTags";
+import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -304,6 +306,12 @@ const SidebarContent: React.FC<{
         />
         <SidebarRatingFilter filter={filter} setFilter={setFilter} />
         <SidebarDurationFilter filter={filter} setFilter={setFilter} />
+        <SidebarFolderFilter
+          text={<FormattedMessage id="folder" />}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="folder"
+        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="hasMarkers" />}
           data-type={HasMarkersCriterionOption.type}
@@ -319,6 +327,12 @@ const SidebarContent: React.FC<{
           filter={filter}
           setFilter={setFilter}
           sectionID="organized"
+        />
+        <SidebarDuplicateFilter
+          title={<FormattedMessage id="duplicated" />}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="duplicated"
         />
         <SidebarAgeFilter
           title={<FormattedMessage id="performer_age" />}
@@ -405,7 +419,7 @@ export const FilteredSceneList = PatchComponent(
       setFilter,
     });
 
-    useAddKeybinds(filter, totalCount);
+    useAddKeybinds(effectiveFilter, totalCount);
     useFilteredSidebarKeybinds({
       showSidebar,
       setShowSidebar,
@@ -620,8 +634,6 @@ export const FilteredSceneList = PatchComponent(
         onEdit={onEdit}
         onDelete={onDelete}
         onPlay={onPlay}
-        onCreateNew={onCreateNew}
-        entityType={intl.formatMessage({ id: "scene" })}
         operationsMenuClassName="scene-list-operations-dropdown"
       />
     );

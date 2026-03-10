@@ -97,3 +97,44 @@ export const useUpdateStudio = () => {
 
   return updateStudioHandler;
 };
+
+export const useUpdateTag = () => {
+  const [updateTag] = GQL.useTagUpdateMutation({
+    onError: (errors) => errors,
+    errorPolicy: "all",
+  });
+
+  const updateTagHandler = (input: GQL.TagUpdateInput) =>
+    updateTag({
+      variables: {
+        input,
+      },
+      update: (store, updatedTag) => {
+        if (!updatedTag.data?.tagUpdate) return;
+
+        updatedTag.data.tagUpdate.stash_ids.forEach((id) => {
+          store.writeQuery<GQL.FindTagsQuery, GQL.FindTagsQueryVariables>({
+            query: GQL.FindTagsDocument,
+            variables: {
+              tag_filter: {
+                stash_id_endpoint: {
+                  stash_id: id.stash_id,
+                  endpoint: id.endpoint,
+                  modifier: GQL.CriterionModifier.Equals,
+                },
+              },
+            },
+            data: {
+              findTags: {
+                count: 1,
+                tags: [updatedTag.data!.tagUpdate!],
+                __typename: "FindTagsResultType",
+              },
+            },
+          });
+        });
+      },
+    });
+
+  return updateTagHandler;
+};

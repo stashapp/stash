@@ -32,14 +32,17 @@ type Importer struct {
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
-	i.performer = performerJSONToPerformer(i.Input)
+	var err error
+	i.performer, err = performerJSONToPerformer(i.Input)
+	if err != nil {
+		return err
+	}
 	i.customFields = i.Input.CustomFields
 
 	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
 
-	var err error
 	if len(i.Input.Image) > 0 {
 		i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
@@ -196,7 +199,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Performer {
+func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Performer, error) {
 	newPerformer := models.Performer{
 		Name:           performerJSON.Name,
 		Disambiguation: performerJSON.Disambiguation,
@@ -205,7 +208,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		EyeColor:       performerJSON.EyeColor,
 		Measurements:   performerJSON.Measurements,
 		FakeTits:       performerJSON.FakeTits,
-		CareerLength:   performerJSON.CareerLength,
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
 		Aliases:        models.NewRelatedStrings(performerJSON.Aliases),
@@ -282,5 +284,18 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		}
 	}
 
-	return newPerformer
+	// prefer explicit career_start/career_end, fall back to parsing legacy career_length
+	if performerJSON.CareerStart != nil || performerJSON.CareerEnd != nil {
+		newPerformer.CareerStart = performerJSON.CareerStart
+		newPerformer.CareerEnd = performerJSON.CareerEnd
+	} else if performerJSON.CareerLength != "" {
+		start, end, err := utils.ParseYearRangeString(performerJSON.CareerLength)
+		if err != nil {
+			return models.Performer{}, fmt.Errorf("invalid career_length %q: %w", performerJSON.CareerLength, err)
+		}
+		newPerformer.CareerStart = start
+		newPerformer.CareerEnd = end
+	}
+
+	return newPerformer, nil
 }

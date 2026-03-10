@@ -131,7 +131,16 @@ export const SceneWallItem: React.FC<
       />
       <div className="lineargradient">
         <footer className="wall-item-footer">
-          <Link to={props.photo.link} onClick={(e) => e.stopPropagation()}>
+          <Link
+            to={props.photo.link}
+            onClick={(e) => {
+              if (props.selecting) {
+                e.preventDefault();
+                handleClick(e);
+              }
+              e.stopPropagation();
+            }}
+          >
             {title && (
               <TruncatedText
                 text={title}

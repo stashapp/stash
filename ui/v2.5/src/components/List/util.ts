@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
@@ -139,6 +139,7 @@ function useEmptyFilter(props: {
 
 export interface IFilterStateHook {
   filterMode: GQL.FilterMode;
+  defaultFilter?: ListFilterModel;
   defaultSort?: string;
   view?: View;
   useURL?: boolean;
@@ -149,7 +150,14 @@ export function useFilterState(
     config?: GQL.ConfigDataFragment;
   }
 ) {
-  const { filterMode, defaultSort, config, view, useURL } = props;
+  const {
+    filterMode,
+    defaultSort,
+    config,
+    view,
+    useURL,
+    defaultFilter: propDefaultFilter,
+  } = props;
 
   const [filter, setFilterState] = useState<ListFilterModel>(
     () =>
@@ -158,10 +166,13 @@ export function useFilterState(
 
   const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
 
-  const { defaultFilter } = useDefaultFilter(emptyFilter, view);
+  const { defaultFilter: defaultFilterFromConfig } = useDefaultFilter(
+    emptyFilter,
+    view
+  );
 
   const { setFilter } = useFilterURL(filter, setFilterState, {
-    defaultFilter,
+    defaultFilter: propDefaultFilter ?? defaultFilterFromConfig,
     active: useURL,
   });
 
@@ -478,43 +489,47 @@ export function useCachedQueryResult<T extends QueryResult>(
   result: T
 ) {
   const [cachedResult, setCachedResult] = useState(result);
-  const [lastFilter, setLastFilter] = useState(filter);
+  const lastFilterRef = useRef(filter);
 
   // if we are only changing the page or sort, don't update the result count
   useEffect(() => {
     if (!result.loading) {
       setCachedResult(result);
     } else {
-      if (totalCountImpacted(lastFilter, filter)) {
+      if (totalCountImpacted(lastFilterRef.current, filter)) {
         setCachedResult(result);
       }
     }
 
-    setLastFilter(filter);
-  }, [filter, result, lastFilter]);
+    lastFilterRef.current = filter;
+  }, [filter, result]);
 
   return cachedResult;
 }
 
 export interface IQueryResultHook<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 > {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
 }
 
 export function useQueryResult<
   T extends QueryResult,
-  E extends IHasID = IHasID
+  E extends IHasID = IHasID,
+  M = unknown
 >(
-  props: IQueryResultHook<T, E> & {
+  props: IQueryResultHook<T, E, M> & {
     filter: ListFilterModel;
   }
 ) {
-  const { filter, filterHook, useResult, getItems, getCount } = props;
+  const { filter, filterHook, useResult, useMetadataInfo, getItems, getCount } =
+    props;
 
   const effectiveFilter = useMemo(() => {
     if (filterHook) {
@@ -523,7 +538,14 @@ export function useQueryResult<
     return filter;
   }, [filter, filterHook]);
 
+  // metadata filter is the effective filter with the sort, page size and page number removed
+  const metadataFilter = useMemo(
+    () => effectiveFilter.metadataInfo(),
+    [effectiveFilter]
+  );
+
   const result = useResult(effectiveFilter);
+  const metadataInfo = useMetadataInfo?.(metadataFilter);
 
   // use cached query result for pagination and metadata rendering
   const cachedResult = useCachedQueryResult(effectiveFilter, result);
@@ -538,6 +560,7 @@ export function useQueryResult<
 
   return {
     effectiveFilter,
+    metadataInfo,
     result,
     cachedResult,
     items,

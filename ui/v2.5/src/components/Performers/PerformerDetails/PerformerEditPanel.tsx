@@ -48,7 +48,10 @@ import {
   yupUniqueStringList,
 } from "src/utils/yup";
 import { useTagsEdit } from "src/hooks/tagsEdit";
-import { CustomFieldsInput } from "src/components/Shared/CustomFields";
+import {
+  CustomFieldsInput,
+  formatCustomFieldInput,
+} from "src/components/Shared/CustomFields";
 import { cloneDeep } from "@apollo/client/utilities";
 
 const isScraper = (
@@ -65,16 +68,6 @@ interface IPerformerDetails {
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
-}
-
-function customFieldInput(isNew: boolean, input: {}) {
-  if (isNew) {
-    return input;
-  } else {
-    return {
-      full: input,
-    };
-  }
 }
 
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
@@ -126,7 +119,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
-    career_length: yup.string().ensure(),
+    career_start: yupInputNumber().positive().nullable().defined(),
+    career_end: yupInputNumber().positive().nullable().defined(),
     urls: yupUniqueStringList(intl),
     details: yup.string().ensure(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -155,7 +149,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     circumcised: performer.circumcised ?? null,
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
-    career_length: performer.career_length ?? "",
+    career_start: performer.career_start ?? null,
+    career_end: performer.career_end ?? null,
     urls: performer.urls ?? [],
     details: performer.details ?? "",
     tag_ids: (performer.tags ?? []).map((t) => t.id),
@@ -171,7 +166,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function submit(values: InputValues) {
     const input = {
       ...schema.cast(values),
-      custom_fields: customFieldInput(isNew, values.custom_fields),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
     onSave(input);
   }
@@ -256,8 +251,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.fake_tits) {
       formik.setFieldValue("fake_tits", state.fake_tits);
     }
-    if (state.career_length) {
-      formik.setFieldValue("career_length", state.career_length);
+    if (state.career_start) {
+      formik.setFieldValue("career_start", state.career_start);
+    }
+    if (state.career_end) {
+      formik.setFieldValue("career_end", state.career_end);
     }
     if (state.tattoos) {
       formik.setFieldValue("tattoos", state.tattoos);
@@ -363,7 +361,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     const { values } = formik;
     const input = {
       ...schema.cast(values),
-      custom_fields: customFieldInput(isNew, values.custom_fields),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
     onSave(input, true);
   }
@@ -747,7 +745,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("tattoos", "textarea")}
         {renderInputField("piercings", "textarea")}
 
-        {renderInputField("career_length")}
+        {renderInputField("career_start", "number")}
+        {renderInputField("career_end", "number")}
 
         {renderURLListField("urls", onScrapePerformerURL, urlScrapable)}
 

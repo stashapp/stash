@@ -4,9 +4,11 @@
 package desktop
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 
-	"github.com/kermieisinthehouse/gosx-notifier"
+	gosxnotifier "github.com/kermieisinthehouse/gosx-notifier"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -32,8 +34,11 @@ func sendNotification(notificationTitle string, notificationText string) {
 	}
 }
 
-func revealInFileManager(path string) {
-	exec.Command(`open`, `-R`, path)
+func revealInFileManager(path string, _ os.FileInfo) error {
+	if err := exec.Command(`open`, `-R`, path).Run(); err != nil {
+		return fmt.Errorf("error revealing path in Finder: %w", err)
+	}
+	return nil
 }
 
 func isDoubleClickLaunched() bool {

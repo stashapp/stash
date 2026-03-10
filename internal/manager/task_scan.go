@@ -26,6 +26,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ScanJob struct {
@@ -35,6 +36,8 @@ type ScanJob struct {
 
 	fileQueue chan file.ScannedFile
 	count     int
+
+	unmatchedCaptionFiles utils.MutexField[[]string]
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
@@ -73,6 +76,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	j.scanner.ScanFilters = []file.PathFilter{newScanFilter(c, repo, minModTime)}
 	j.scanner.HandlerRequiredFilters = []file.Filter{newHandlerRequiredFilter(cfg, repo)}
 
+	logger.Infof("Starting scan of %d paths with %d parallel tasks", len(paths), nTasks)
+
 	j.runJob(ctx, paths, nTasks, progress)
 
 	taskQueue.Close()
@@ -83,7 +88,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	}
 
 	elapsed := time.Since(start)
-	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+	logger.Infof("Scan finished (%s)", elapsed)
 
 	j.subscriptions.notify()
 	return nil
@@ -170,6 +175,22 @@ func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.
 			if info.IsDir() {
 				logger.Debugf("Skipping directory %s", path)
 				return fs.SkipDir
+			}
+
+			// we don't include caption files in the file scan, but we do need
+			// to handle them
+			if fsutil.MatchExtension(path, video.CaptionExts) {
+				fileRepo := j.scanner.Repository.File
+				matched := video.AssociateCaptions(ctx, path, j.scanner.Repository.TxnManager, fileRepo, fileRepo)
+
+				if !matched {
+					logger.Debugf("No matching video file found for caption file %s", path)
+					j.unmatchedCaptionFiles.SetFunc(func(files []string) []string {
+						return append(files, path)
+					})
+				}
+
+				return nil
 			}
 
 			logger.Debugf("Skipping file %s", path)
@@ -309,10 +330,53 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 		return err
 	}
 
-	// handle rename should have already handled the contents of the zip file
-	// so shouldn't need to scan it again
+	// if this is a new video file, match it with any unmatched caption files
+	if r.New && len(j.unmatchedCaptionFiles.Get()) > 0 {
+		videoFile, _ := r.File.(*models.VideoFile)
 
-	if (r.New || r.Updated) && j.scanner.IsZipFile(f.Info.Name()) {
+		if videoFile != nil {
+			// try to match any unmatched caption files to this video file
+			for _, captionPath := range j.unmatchedCaptionFiles.Get() {
+				if video.MatchesCaption(videoFile.Path, captionPath) {
+					video.AssociateCaptions(ctx, captionPath, j.scanner.Repository.TxnManager, j.scanner.Repository.File, j.scanner.Repository.File)
+
+					// remove from the unmatched list
+					j.unmatchedCaptionFiles.SetFunc(func(files []string) []string {
+						newFiles := make([]string, 0, len(files)-1)
+						for _, f := range files {
+							if f != captionPath {
+								newFiles = append(newFiles, f)
+							}
+						}
+						return newFiles
+					})
+				}
+			}
+		}
+	}
+
+	// clean captions - scene handler handles this as well, but
+	// unchanged files aren't processed by the scene handler
+	if r.IsUnchanged() {
+		videoFile, _ := r.File.(*models.VideoFile)
+
+		if videoFile != nil {
+			txnMgr := j.scanner.Repository.TxnManager
+			fileRepo := j.scanner.Repository.File
+			if err := txn.WithDatabase(ctx, txnMgr, func(ctx context.Context) error {
+				return video.CleanCaptions(ctx, videoFile, txnMgr, fileRepo)
+			}); err != nil {
+				logger.Errorf("Error cleaning captions: %v", err)
+			}
+		}
+	}
+
+	// handle rename should have already handled the contents of the zip file
+	// so shouldn't need to scan it again.
+	// Only scan zip contents if the file is new, the fingerprint changed,
+	// or if a force rescan was requested.
+
+	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan) {
 		ff := r.File
 		f.BaseFile = ff.Base()
 
@@ -324,6 +388,8 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 		if err := j.scanZipFile(zipCtx, f, progress); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
 		}
+	} else if r.Updated && j.scanner.IsZipFile(f.Info.Name()) {
+		logger.Debugf("Skipping zip file scan for %q: fingerprint unchanged", f.Path)
 	}
 
 	return nil
@@ -378,11 +444,10 @@ type sceneFinder interface {
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
 type handlerRequiredFilter struct {
 	extensionConfig
-	txnManager     txn.Manager
-	SceneFinder    sceneFinder
-	ImageFinder    fileCounter
-	GalleryFinder  galleryFinder
-	CaptionUpdater video.CaptionUpdater
+	txnManager    txn.Manager
+	SceneFinder   sceneFinder
+	ImageFinder   fileCounter
+	GalleryFinder galleryFinder
 
 	FolderCache *lru.LRU[bool]
 
@@ -398,7 +463,6 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 		SceneFinder:              repo.Scene,
 		ImageFinder:              repo.Image,
 		GalleryFinder:            repo.Gallery,
-		CaptionUpdater:           repo.File,
 		FolderCache:              lru.New[bool](processes * 2),
 		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
@@ -473,61 +537,31 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 		}
 	}
 
-	if isVideoFile {
-		// TODO - check if the cover exists
-		// hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
-		// ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
-		// if exists, _ := fsutil.FileExists(ssPath); !exists {
-		// 	// if not, check if the file is a primary file for a scene
-		// 	scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
-		// 	if err != nil {
-		// 		// just ignore
-		// 		return false
-		// 	}
-
-		// 	if len(scenes) > 0 {
-		// 		// if it is, then it needs to be re-generated
-		// 		return true
-		// 	}
-		// }
-
-		// clean captions - scene handler handles this as well, but
-		// unchanged files aren't processed by the scene handler
-		videoFile, _ := ff.(*models.VideoFile)
-		if videoFile != nil {
-			if err := video.CleanCaptions(ctx, videoFile, f.txnManager, f.CaptionUpdater); err != nil {
-				logger.Errorf("Error cleaning captions: %v", err)
-			}
-		}
-	}
-
 	return false
 }
 
 type scanFilter struct {
 	extensionConfig
-	txnManager     txn.Manager
-	FileFinder     models.FileFinder
-	CaptionUpdater video.CaptionUpdater
+	txnManager txn.Manager
 
 	stashPaths        config.StashConfigs
 	generatedPath     string
 	videoExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
 	minModTime        time.Time
+	stashIgnoreFilter *file.StashIgnoreFilter
 }
 
 func newScanFilter(c *config.Config, repo models.Repository, minModTime time.Time) *scanFilter {
 	return &scanFilter{
 		extensionConfig:   newExtensionConfig(c),
 		txnManager:        repo.TxnManager,
-		FileFinder:        repo.File,
-		CaptionUpdater:    repo.File,
 		stashPaths:        c.GetStashPaths(),
 		generatedPath:     c.GetGeneratedPath(),
 		videoExcludeRegex: generateRegexps(c.GetExcludes()),
 		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
 		minModTime:        minModTime,
+		stashIgnoreFilter: file.NewStashIgnoreFilter(),
 	}
 }
 
@@ -548,18 +582,15 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
+	// Check .stashignore files, bounded to the library root.
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, s.Path) {
+		logger.Debugf("Skipping %s due to .stashignore", path)
+		return false
+	}
+
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
-
-	// handle caption files
-	if fsutil.MatchExtension(path, video.CaptionExts) {
-		// we don't include caption files in the file scan, but we do need
-		// to handle them
-		video.AssociateCaptions(ctx, path, f.txnManager, f.FileFinder, f.CaptionUpdater)
-
-		return false
-	}
 
 	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
 		logger.Debugf("Skipping %s as it does not match any known file extensions", path)

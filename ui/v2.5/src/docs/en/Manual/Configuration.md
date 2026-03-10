@@ -89,6 +89,36 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 > **⚠️ Note:** If this is set too high it will decrease overall performance and causes failures (out of memory).
 
+## Sprite generation
+
+### Sprite size
+
+Fixed size of a generated sprite, being the longest dimension in pixels. 
+Setting this to `0` will fallback to the default of `160`.
+Althought it is possible to set this value to anything bigger than `0` it is recommended to set it to `160` at least.
+
+### Use custom sprite generation
+
+If this setting is disabled, the settings below will be ignored and the default sprite generation settings are used.
+
+### Sprite interval
+
+This represents the time in seconds between each sprite to be generated. This value will be adjusted if necessary to fit within the bounds of the `Minimum Sprites` and `Maximum Sprites` settings.
+
+Setting this to `0` means that the sprite interval will be calculated based on the value of the `Minimum Sprites` field.
+
+### Minimum sprites
+
+The minimal number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
+Setting this to `0` will fallback to the default of `10`
+
+### Maximum sprites
+
+The maximum number of distinct sprites that will be generated for a scene. `Sprite interval` will be adjusted if necessary.
+Setting this to `0` indicates there is no maximum.
+
+> **⚠️ Note:** The number of generated sprites is adjusted upwards to the next perfect square to ensure the sprite image is completely filled (no empty space in the grid) and the grid is as square as possible (minimizing the number of rows/columns). This means that if you set a minimum of 10 sprites, 16 will actually be generated, and if you set a maximum of 15 sprites, 16 will actually be generated.
+
 ## Hardware accelerated live transcoding
 
 Hardware accelerated live transcoding can be enabled by setting the `FFmpeg hardware encoding` setting. Stash outputs the supported hardware encoders to the log file on startup at the Info log level. If a given hardware encoder is not supported, it's error message is logged to the Debug log level for debugging purposes.

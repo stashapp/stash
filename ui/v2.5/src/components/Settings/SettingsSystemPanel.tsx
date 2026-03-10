@@ -427,6 +427,44 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID="config.general.sprite_generation_head">
+        <NumberSetting
+          id="sprite-screenshot-size"
+          headingID="config.general.sprite_screenshot_size_head"
+          subHeadingID="config.general.sprite_screenshot_size_desc"
+          value={general.spriteScreenshotSize ?? 160}
+          onChange={(v) => saveGeneral({ spriteScreenshotSize: v })}
+        />
+        <BooleanSetting
+          id="use-custom-sprite-interval"
+          headingID="config.general.use_custom_sprite_interval_head"
+          subHeadingID="config.general.use_custom_sprite_interval_desc"
+          checked={general.useCustomSpriteInterval ?? false}
+          onChange={(v) => saveGeneral({ useCustomSpriteInterval: v })}
+        />
+        <NumberSetting
+          id="sprite-interval"
+          headingID="config.general.sprite_interval_head"
+          subHeadingID="config.general.sprite_interval_desc"
+          value={general.spriteInterval ?? 0}
+          onChange={(v) => saveGeneral({ spriteInterval: v })}
+        />
+        <NumberSetting
+          id="minimum-sprites"
+          headingID="config.general.sprite_minimum_head"
+          subHeadingID="config.general.sprite_minimum_desc"
+          value={general.minimumSprites ?? 10}
+          onChange={(v) => saveGeneral({ minimumSprites: v })}
+        />
+        <NumberSetting
+          id="maximum-sprites"
+          headingID="config.general.sprite_maximum_head"
+          subHeadingID="config.general.sprite_maximum_desc"
+          value={general.maximumSprites ?? 10}
+          onChange={(v) => saveGeneral({ maximumSprites: v })}
+        />
+      </SettingSection>
+
       <SettingSection headingID="config.general.heatmap_generation">
         <BooleanSetting
           id="heatmap-draw-range"

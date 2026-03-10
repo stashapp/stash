@@ -19,10 +19,13 @@ import {
   CriterionModifier,
   FilterMode,
   GalleryFilterType,
+  GroupFilterType,
+  ImageFilterType,
   InputMaybe,
   IntCriterionInput,
   PerformerFilterType,
   SceneFilterType,
+  SceneMarkerFilterType,
   StudioFilterType,
 } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
@@ -388,10 +391,17 @@ export function useCandidates(props: {
   const defaultModifier = getDefaultModifier(singleValue);
 
   const candidates = useMemo(() => {
+    return (results ?? []).map((r) => ({
+      id: r.id,
+      label: r.label,
+    }));
+  }, [results]);
+
+  const modifierCandidates = useMemo(() => {
     const hierarchicalCandidate =
       hierarchical && (criterion.value as IHierarchicalLabelValue).depth !== -1;
 
-    const modifierCandidates: Option[] = getModifierCandidates({
+    return getModifierCandidates({
       modifier,
       defaultModifier,
       hasSelected: selected.length > 0,
@@ -413,19 +423,11 @@ export function useCandidates(props: {
         canExclude: false,
       };
     });
-
-    return modifierCandidates.concat(
-      (results ?? []).map((r) => ({
-        id: r.id,
-        label: r.label,
-      }))
-    );
   }, [
     defaultModifier,
     intl,
     modifier,
     singleValue,
-    results,
     selected,
     excluded,
     criterion.value,
@@ -433,7 +435,7 @@ export function useCandidates(props: {
     includeSubMessageID,
   ]);
 
-  return candidates;
+  return { candidates, modifierCandidates };
 }
 
 export function useLabeledIdFilterState(props: {
@@ -478,7 +480,7 @@ export function useLabeledIdFilterState(props: {
       includeSubMessageID,
     });
 
-  const candidates = useCandidates({
+  const { candidates, modifierCandidates } = useCandidates({
     criterion,
     queryResults,
     selected,
@@ -494,6 +496,7 @@ export function useLabeledIdFilterState(props: {
 
   return {
     candidates,
+    modifierCandidates,
     onSelect,
     onUnselect,
     selected,
@@ -522,8 +525,14 @@ interface IFilterType {
   performer_count?: InputMaybe<IntCriterionInput>;
   galleries_filter?: InputMaybe<GalleryFilterType>;
   gallery_count?: InputMaybe<IntCriterionInput>;
+  images_filter?: InputMaybe<ImageFilterType>;
+  image_count?: InputMaybe<IntCriterionInput>;
+  groups_filter?: InputMaybe<GroupFilterType>;
+  group_count?: InputMaybe<IntCriterionInput>;
   studios_filter?: InputMaybe<StudioFilterType>;
   studio_count?: InputMaybe<IntCriterionInput>;
+  marker_count?: InputMaybe<IntCriterionInput>;
+  markers_filter?: InputMaybe<SceneMarkerFilterType>;
 }
 
 export function setObjectFilter(
@@ -533,6 +542,7 @@ export function setObjectFilter(
     | SceneFilterType
     | PerformerFilterType
     | GalleryFilterType
+    | GroupFilterType
     | StudioFilterType
 ) {
   const empty = Object.keys(relatedFilterOutput).length === 0;
@@ -545,6 +555,7 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.scenes_filter = relatedFilterOutput as SceneFilterType;
       break;
@@ -555,6 +566,7 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.performers_filter = relatedFilterOutput as PerformerFilterType;
       break;
@@ -565,8 +577,31 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.galleries_filter = relatedFilterOutput as GalleryFilterType;
+      break;
+    case FilterMode.Images:
+      // if empty, only get objects with galleries
+      if (empty) {
+        out.image_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+        break;
+      }
+      out.images_filter = relatedFilterOutput as ImageFilterType;
+      break;
+    case FilterMode.Groups:
+      // if empty, only get objects with groups
+      if (empty) {
+        out.group_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+        break;
+      }
+      out.groups_filter = relatedFilterOutput as GroupFilterType;
       break;
     case FilterMode.Studios:
       // if empty, only get objects with studios
@@ -575,8 +610,20 @@ export function setObjectFilter(
           modifier: CriterionModifier.GreaterThan,
           value: 0,
         };
+        break;
       }
       out.studios_filter = relatedFilterOutput as StudioFilterType;
+      break;
+    case FilterMode.SceneMarkers:
+      // if empty, only get objects with scene markers
+      if (empty) {
+        out.marker_count = {
+          modifier: CriterionModifier.GreaterThan,
+          value: 0,
+        };
+        break;
+      }
+      out.markers_filter = relatedFilterOutput as SceneMarkerFilterType;
       break;
     default:
       throw new Error("Invalid filter mode");

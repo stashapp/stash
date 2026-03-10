@@ -35,6 +35,8 @@ import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { RatingCriterionOption } from "./criteria/rating";
 import { PathCriterionOption } from "./criteria/path";
 import { OrientationCriterionOption } from "./criteria/orientation";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { FolderCriterionOption } from "./criteria/folder";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -95,10 +97,11 @@ const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   PathCriterionOption,
+  FolderCriterionOption,
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
-  createMandatoryStringCriterionOption("oshash", "media_info.hash"),
-  createStringCriterionOption("checksum", "media_info.checksum"),
+  createMandatoryStringCriterionOption("oshash", "media_info.oshash"),
+  createStringCriterionOption("checksum", "media_info.md5"),
   PhashCriterionOption,
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
@@ -141,6 +144,7 @@ const criterionOptions = [
   createDateCriterionOption("date"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(

@@ -1,13 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useFindPerformers } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { PerformerCard } from "./PerformerCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
 import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -19,40 +15,29 @@ export const PerformerRecommendationRow: React.FC<IProps> = PatchComponent(
   "PerformerRecommendationRow",
   (props) => {
     const result = useFindPerformers(props.filter);
-    const cardCount = result.data?.findPerformers.count;
-
-    if (!result.loading && !cardCount) {
-      return null;
-    }
+    const count = result.data?.findPerformers.count ?? 0;
 
     return (
-      <RecommendationRow
+      <FilteredRecommendationRow
         className="performer-recommendations"
-        header={props.header}
-        link={
-          <Link to={`/performers?${props.filter.makeQueryParameters()}`}>
-            <FormattedMessage id="view_all" />
-          </Link>
-        }
+        heading={props.header}
+        url={`/performers?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
-        <Slider
-          {...getSlickSliderSettings(
-            cardCount ? cardCount : props.filter.itemsPerPage,
-            props.isTouch
-          )}
-        >
-          {result.loading
-            ? [...Array(props.filter.itemsPerPage)].map((i) => (
-                <div
-                  key={`_${i}`}
-                  className="performer-skeleton skeleton-card"
-                ></div>
-              ))
-            : result.data?.findPerformers.performers.map((p) => (
-                <PerformerCard key={p.id} performer={p} />
-              ))}
-        </Slider>
-      </RecommendationRow>
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div
+                key={`_${i}`}
+                className="performer-skeleton skeleton-card"
+              ></div>
+            ))
+          : result.data?.findPerformers.performers.map((p) => (
+              <PerformerCard key={p.id} performer={p} />
+            ))}
+      </FilteredRecommendationRow>
     );
   }
 );

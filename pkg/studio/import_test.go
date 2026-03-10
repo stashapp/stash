@@ -49,6 +49,7 @@ func TestImporterPreImport(t *testing.T) {
 			Name:          studioName,
 			Image:         invalidImage,
 			IgnoreAutoTag: autoTagIgnored,
+			Organized:     studioOrganized,
 		},
 	}
 

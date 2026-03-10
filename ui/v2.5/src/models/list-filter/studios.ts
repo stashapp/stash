@@ -13,6 +13,7 @@ import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
 
 const defaultSortBy = "name";
 const sortByOptions = [
@@ -53,6 +54,7 @@ const criterionOptions = [
   TagsCriterionOption,
   RatingCriterionOption,
   createBooleanCriterionOption("ignore_auto_tag"),
+  createBooleanCriterionOption("organized"),
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
@@ -66,6 +68,7 @@ const criterionOptions = [
   ),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 
 export const StudioListFilterOptions = new ListFilterOptions(

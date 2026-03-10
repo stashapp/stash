@@ -38,6 +38,7 @@ interface IScenePreviewProps {
   soundActive: boolean;
   vttPath?: string;
   onScrubberClick?: (timestamp: number) => void;
+  disabled?: boolean;
 }
 
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
@@ -47,6 +48,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   soundActive,
   vttPath,
   onScrubberClick,
+  disabled,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -86,7 +88,11 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         ref={videoEl}
         src={video}
       />
-      <PreviewScrubber vttPath={vttPath} onClick={onScrubberClick} />
+      <PreviewScrubber
+        vttPath={vttPath}
+        onClick={onScrubberClick}
+        disabled={disabled}
+      />
     </div>
   );
 };
@@ -336,7 +342,13 @@ const SceneCardDetails = PatchComponent(
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
-    return <StudioOverlay studio={props.scene.studio} />;
+    const ret = useMemo(() => {
+      return (
+        <StudioOverlay studio={props.scene.studio} disabled={props.selecting} />
+      );
+    }, [props.scene.studio, props.selecting]);
+
+    return ret;
   }
 );
 
@@ -390,6 +402,7 @@ const SceneCardImage = PatchComponent(
     }
 
     function onScrubberClick(timestamp: number) {
+      if (props.selecting) return;
       const link = props.queue
         ? props.queue.makeLink(props.scene.id, {
             sceneIndex: props.index,
@@ -416,6 +429,7 @@ const SceneCardImage = PatchComponent(
           soundActive={configuration?.interface?.soundOnPreview ?? false}
           vttPath={props.scene.paths.vtt ?? undefined}
           onScrubberClick={onScrubberClick}
+          disabled={props.selecting}
         />
         <RatingBanner rating={props.scene.rating100} />
         {maybeRenderSceneSpecsOverlay()}

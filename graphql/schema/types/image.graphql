@@ -21,6 +21,7 @@ type Image {
   studio: Studio
   tags: [Tag!]!
   performers: [Performer!]!
+  custom_fields: Map!
 }
 
 type ImageFileType {
@@ -56,6 +57,7 @@ input ImageUpdateInput {
   gallery_ids: [ID!]
 
   primary_file_id: ID
+  custom_fields: CustomFieldsInput
 }
 
 input BulkImageUpdateInput {
@@ -76,6 +78,7 @@ input BulkImageUpdateInput {
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
   gallery_ids: BulkUpdateIds
+  custom_fields: CustomFieldsInput
 }
 
 input ImageDestroyInput {

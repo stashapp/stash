@@ -9,8 +9,6 @@ import (
 )
 
 type StashBoxGraphQLClient interface {
-	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindSceneByFingerprint, error)
-	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesByFullFingerprints, error)
 	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesBySceneFingerprints, error)
 	SearchScene(ctx context.Context, term string, interceptors ...clientv2.RequestInterceptor) (*SearchScene, error)
 	SearchPerformer(ctx context.Context, term string, interceptors ...clientv2.RequestInterceptor) (*SearchPerformer, error)
@@ -130,8 +128,10 @@ func (t *StudioFragment) GetImages() []*ImageFragment {
 }
 
 type TagFragment struct {
-	Name string "json:\"name\" graphql:\"name\""
-	ID   string "json:\"id\" graphql:\"id\""
+	Name        string   "json:\"name\" graphql:\"name\""
+	ID          string   "json:\"id\" graphql:\"id\""
+	Description *string  "json:\"description,omitempty\" graphql:\"description\""
+	Aliases     []string "json:\"aliases\" graphql:\"aliases\""
 }
 
 func (t *TagFragment) GetName() string {
@@ -145,6 +145,18 @@ func (t *TagFragment) GetID() string {
 		t = &TagFragment{}
 	}
 	return t.ID
+}
+func (t *TagFragment) GetDescription() *string {
+	if t == nil {
+		t = &TagFragment{}
+	}
+	return t.Description
+}
+func (t *TagFragment) GetAliases() []string {
+	if t == nil {
+		t = &TagFragment{}
+	}
+	return t.Aliases
 }
 
 type MeasurementsFragment struct {
@@ -536,42 +548,6 @@ func (t *SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	return t.Name
 }
 
-type FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
-}
-
-func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
-	if t == nil {
-		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
-	}
-	return t.ID
-}
-func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
-	if t == nil {
-		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
-	}
-	return t.Name
-}
-
-type FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
-}
-
-func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
-	if t == nil {
-		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
-	}
-	return t.ID
-}
-func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
-	if t == nil {
-		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
-	}
-	return t.Name
-}
-
 type FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
 	ID   string "json:\"id\" graphql:\"id\""
 	Name string "json:\"name\" graphql:\"name\""
@@ -693,28 +669,6 @@ func (t *SubmitPerformerDraft_SubmitPerformerDraft) GetID() *string {
 		t = &SubmitPerformerDraft_SubmitPerformerDraft{}
 	}
 	return t.ID
-}
-
-type FindSceneByFingerprint struct {
-	FindSceneByFingerprint []*SceneFragment "json:\"findSceneByFingerprint\" graphql:\"findSceneByFingerprint\""
-}
-
-func (t *FindSceneByFingerprint) GetFindSceneByFingerprint() []*SceneFragment {
-	if t == nil {
-		t = &FindSceneByFingerprint{}
-	}
-	return t.FindSceneByFingerprint
-}
-
-type FindScenesByFullFingerprints struct {
-	FindScenesByFullFingerprints []*SceneFragment "json:\"findScenesByFullFingerprints\" graphql:\"findScenesByFullFingerprints\""
-}
-
-func (t *FindScenesByFullFingerprints) GetFindScenesByFullFingerprints() []*SceneFragment {
-	if t == nil {
-		t = &FindScenesByFullFingerprints{}
-	}
-	return t.FindScenesByFullFingerprints
 }
 
 type FindScenesBySceneFingerprints struct {
@@ -849,278 +803,6 @@ func (t *SubmitPerformerDraft) GetSubmitPerformerDraft() *SubmitPerformerDraft_S
 	return &t.SubmitPerformerDraft
 }
 
-const FindSceneByFingerprintDocument = `query FindSceneByFingerprint ($fingerprint: FingerprintQueryInput!) {
-	findSceneByFingerprint(fingerprint: $fingerprint) {
-		... SceneFragment
-	}
-}
-fragment SceneFragment on Scene {
-	id
-	title
-	code
-	details
-	director
-	duration
-	date
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	aliases
-	urls {
-		... URLFragment
-	}
-	parent {
-		name
-		id
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	deleted
-	merged_into_id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birth_date
-	death_date
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-`
-
-func (c *Client) FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindSceneByFingerprint, error) {
-	vars := map[string]any{
-		"fingerprint": fingerprint,
-	}
-
-	var res FindSceneByFingerprint
-	if err := c.Client.Post(ctx, "FindSceneByFingerprint", FindSceneByFingerprintDocument, &res, vars, interceptors...); err != nil {
-		if c.Client.ParseDataWhenErrors {
-			return &res, err
-		}
-
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const FindScenesByFullFingerprintsDocument = `query FindScenesByFullFingerprints ($fingerprints: [FingerprintQueryInput!]!) {
-	findScenesByFullFingerprints(fingerprints: $fingerprints) {
-		... SceneFragment
-	}
-}
-fragment SceneFragment on Scene {
-	id
-	title
-	code
-	details
-	director
-	duration
-	date
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	aliases
-	urls {
-		... URLFragment
-	}
-	parent {
-		name
-		id
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	deleted
-	merged_into_id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birth_date
-	death_date
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-`
-
-func (c *Client) FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesByFullFingerprints, error) {
-	vars := map[string]any{
-		"fingerprints": fingerprints,
-	}
-
-	var res FindScenesByFullFingerprints
-	if err := c.Client.Post(ctx, "FindScenesByFullFingerprints", FindScenesByFullFingerprintsDocument, &res, vars, interceptors...); err != nil {
-		if c.Client.ParseDataWhenErrors {
-			return &res, err
-		}
-
-		return nil, err
-	}
-
-	return &res, nil
-}
-
 const FindScenesBySceneFingerprintsDocument = `query FindScenesBySceneFingerprints ($fingerprints: [[FingerprintQueryInput!]!]!) {
 	findScenesBySceneFingerprints(fingerprints: $fingerprints) {
 		... SceneFragment
@@ -1181,6 +863,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -1317,6 +1001,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -1611,6 +1297,8 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -1745,6 +1433,8 @@ const FindTagDocument = `query FindTag ($id: ID, $name: String) {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 `
 
@@ -1777,6 +1467,8 @@ const QueryTagsDocument = `query QueryTags ($input: TagQueryInput!) {
 fragment TagFragment on Tag {
 	name
 	id
+	description
+	aliases
 }
 `
 
@@ -1890,8 +1582,6 @@ func (c *Client) SubmitPerformerDraft(ctx context.Context, input PerformerDraftI
 }
 
 var DocumentOperationNames = map[string]string{
-	FindSceneByFingerprintDocument:        "FindSceneByFingerprint",
-	FindScenesByFullFingerprintsDocument:  "FindScenesByFullFingerprints",
 	FindScenesBySceneFingerprintsDocument: "FindScenesBySceneFingerprints",
 	SearchSceneDocument:                   "SearchScene",
 	SearchPerformerDocument:               "SearchPerformer",

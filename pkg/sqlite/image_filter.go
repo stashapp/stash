@@ -100,6 +100,13 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{imageFilter.CreatedAt, "images.created_at", nil},
 		&timestampCriterionHandler{imageFilter.UpdatedAt, "images.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: imagesCustomFieldsTable.GetTable(),
+			fkCol: imageIDColumn,
+			c:     imageFilter.CustomFields,
+			idCol: "images.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "galleries_images.gallery_id",
 			relatedRepo:    galleryRepository.repository,
@@ -164,6 +171,9 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				imagesURLsTableMgr.join(f, "", "images.id")
+				f.addWhere("image_urls.url IS NULL")
 			case "studio":
 				f.addWhere("images.studio_id IS NULL")
 			case "performers":
@@ -176,6 +186,12 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				imageRepository.tags.join(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "details", "photographer", "date", "code", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(images." + *isMissing + " IS NULL OR TRIM(images." + *isMissing + ") = '')")
 			}
 		}

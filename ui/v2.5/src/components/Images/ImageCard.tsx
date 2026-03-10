@@ -148,7 +148,13 @@ const ImageCardDetails = PatchComponent(
 const ImageCardOverlays = PatchComponent(
   "ImageCard.Overlays",
   (props: IImageCardProps) => {
-    return <StudioOverlay studio={props.image.studio} />;
+    const ret = useMemo(() => {
+      return (
+        <StudioOverlay studio={props.image.studio} disabled={props.selecting} />
+      );
+    }, [props.image.studio, props.selecting]);
+
+    return ret;
   }
 );
 

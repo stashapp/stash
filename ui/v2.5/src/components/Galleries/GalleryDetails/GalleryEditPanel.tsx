@@ -31,6 +31,11 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
+import {
+  CustomFieldsInput,
+  formatCustomFieldInput,
+} from "src/components/Shared/CustomFields";
+import { cloneDeep } from "@apollo/client/utilities";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -76,6 +81,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     tag_ids: yup.array(yup.string().required()).defined(),
     scene_ids: yup.array(yup.string().required()).defined(),
     details: yup.string().ensure(),
+    custom_fields: yup.object().required().defined(),
   });
 
   const initialValues = {
@@ -89,15 +95,26 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     tag_ids: (gallery?.tags ?? []).map((t) => t.id),
     scene_ids: (gallery?.scenes ?? []).map((s) => s.id),
     details: gallery?.details ?? "",
+    custom_fields: cloneDeep(gallery?.custom_fields ?? {}),
   };
 
   type InputValues = yup.InferType<typeof schema>;
+
+  const [customFieldsError, setCustomFieldsError] = useState<string>();
+
+  function submit(values: InputValues) {
+    const input = {
+      ...schema.cast(values),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
+    };
+    onSave(input);
+  }
 
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
     validate: yupFormikValidate(schema),
-    onSubmit: (values) => onSave(schema.cast(values)),
+    onSubmit: submit,
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
@@ -189,7 +206,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   }
 
   async function onSaveAndNewClick() {
-    const input = schema.cast(formik.values);
+    const input = {
+      ...schema.cast(formik.values),
+      custom_fields: formatCustomFieldInput(isNew, formik.values.custom_fields),
+    };
     onSave(input, true);
   }
 
@@ -455,7 +475,9 @@ export const GalleryEditPanel: React.FC<IProps> = ({
                 id="gallery-save-split-button"
                 className="edit-button"
                 variant="primary"
-                disabled={!isEqual(formik.errors, {})}
+                disabled={
+                  !isEqual(formik.errors, {}) || customFieldsError !== undefined
+                }
                 title={intl.formatMessage({ id: "actions.save" })}
                 onClick={() => formik.submitForm()}
               >
@@ -468,7 +490,9 @@ export const GalleryEditPanel: React.FC<IProps> = ({
                 className="edit-button"
                 variant="primary"
                 disabled={
-                  (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+                  (!isNew && !formik.dirty) ||
+                  !isEqual(formik.errors, {}) ||
+                  customFieldsError !== undefined
                 }
                 onClick={() => formik.submitForm()}
               >
@@ -523,6 +547,13 @@ export const GalleryEditPanel: React.FC<IProps> = ({
               </Form.Label>
               {cover}
             </Form.Group>
+
+            <CustomFieldsInput
+              values={formik.values.custom_fields}
+              onChange={(v) => formik.setFieldValue("custom_fields", v)}
+              error={customFieldsError}
+              setError={(e) => setCustomFieldsError(e)}
+            />
           </Col>
         </Row>
       </Form>

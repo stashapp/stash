@@ -186,8 +186,6 @@ func Test_FolderStore_Update(t *testing.T) {
 			}
 
 			assert.Equal(copy, *s)
-
-			return
 		})
 	}
 }
@@ -236,6 +234,78 @@ func Test_FolderStore_FindByPath(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FolderStore.FindByPath() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_FolderStore_GetManyParentFolderIDs(t *testing.T) {
+	var empty []models.FolderID
+	emptyResult := [][]models.FolderID{empty}
+	tests := []struct {
+		name            string
+		parentFolderIDs []models.FolderID
+		want            [][]models.FolderID
+		wantErr         bool
+	}{
+		{
+			"valid with parent folders",
+			[]models.FolderID{folderIDs[folderIdxWithParentFolder]},
+			[][]models.FolderID{
+				{
+					folderIDs[folderIdxWithSubFolder],
+					folderIDs[folderIdxRoot],
+				},
+			},
+			false,
+		},
+		{
+			"valid multiple folders",
+			[]models.FolderID{
+				folderIDs[folderIdxWithParentFolder],
+				folderIDs[folderIdxWithSceneFiles],
+			},
+			[][]models.FolderID{
+				{
+					folderIDs[folderIdxWithSubFolder],
+					folderIDs[folderIdxRoot],
+				},
+				{
+					folderIDs[folderIdxForObjectFiles],
+					folderIDs[folderIdxRoot],
+				},
+			},
+			false,
+		},
+		{
+			"valid without parent folders",
+			[]models.FolderID{folderIDs[folderIdxRoot]},
+			emptyResult,
+			false,
+		},
+		{
+			"invalid folder id",
+			[]models.FolderID{invalidFolderID},
+			emptyResult,
+			// does not error, just returns empty result
+			false,
+		},
+	}
+
+	qb := db.Folder
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.GetManyParentFolderIDs(ctx, tt.parentFolderIDs)
+			if (err != nil) != tt.wantErr {
+				assert.Errorf(err, "FolderStore.GetManyParentFolderIDs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(got, tt.want)
 		})
 	}
 }

@@ -6,11 +6,14 @@ type Fingerprint {
 type Folder {
   id: ID!
   path: String!
+  basename: String!
 
   parent_folder_id: ID @deprecated(reason: "Use parent_folder instead")
   zip_file_id: ID @deprecated(reason: "Use zip_file instead")
 
   parent_folder: Folder
+  "Returns all parent folders in order from immediate parent to top-level"
+  parent_folders: [Folder!]!
   zip_file: BasicFile
 
   mod_time: Time!

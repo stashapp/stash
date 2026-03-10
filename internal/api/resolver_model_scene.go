@@ -410,3 +410,16 @@ func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*tim
 
 	return ptrRet, nil
 }
+
+func (r *sceneResolver) CustomFields(ctx context.Context, obj *models.Scene) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).SceneCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
+}

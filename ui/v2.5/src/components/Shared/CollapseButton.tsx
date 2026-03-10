@@ -2,6 +2,7 @@ import {
   faChevronDown,
   faChevronRight,
   faChevronUp,
+  IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { Button, Collapse, CollapseProps } from "react-bootstrap";
@@ -55,14 +56,21 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
 export const ExpandCollapseButton: React.FC<{
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
-}> = ({ collapsed, setCollapsed }) => {
-  const buttonIcon = collapsed ? faChevronDown : faChevronUp;
+  collapsedIcon?: IconDefinition;
+  notCollapsedIcon?: IconDefinition;
+}> = ({ collapsedIcon, notCollapsedIcon, collapsed, setCollapsed }) => {
+  const buttonIcon = collapsed
+    ? collapsedIcon ?? faChevronDown
+    : notCollapsedIcon ?? faChevronUp;
 
   return (
     <span className="detail-expand-collapse">
       <Button
         className="minimal expand-collapse"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={(e) => {
+          setCollapsed(!collapsed);
+          e.stopPropagation();
+        }}
       >
         <Icon icon={buttonIcon} fixedWidth />
       </Button>

@@ -1,0 +1,24 @@
+query FindRootFoldersForSelect {
+  findFolders(
+    filter: { per_page: -1, sort: "path", direction: ASC }
+    folder_filter: { parent_folder: { modifier: IS_NULL } }
+  ) {
+    count
+    folders {
+      ...SelectFolderData
+    }
+  }
+}
+
+query FindFoldersForQuery(
+  $filter: FindFilterType
+  $folder_filter: FolderFilterType
+  $ids: [ID!]
+) {
+  findFolders(filter: $filter, folder_filter: $folder_filter, ids: $ids) {
+    count
+    folders {
+      ...RecursiveFolderData
+    }
+  }
+}

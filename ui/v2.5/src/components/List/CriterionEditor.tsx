@@ -42,12 +42,21 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import StudiosFilter from "./Filters/StudiosFilter";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import TagsFilter from "./Filters/TagsFilter";
-import { PhashCriterion } from "src/models/list-filter/criteria/phash";
+import {
+  PhashCriterion,
+  DuplicatedCriterion,
+} from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
+import { DuplicatedFilter } from "./Filters/DuplicateFilter";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { ModifierSelectorButtons } from "./ModifierSelect";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
 import { CustomFieldsFilter } from "./Filters/CustomFieldsFilter";
+import { FolderFilter } from "./Filters/FolderFilter";
+import {
+  FolderCriterion,
+  ParentFolderCriterion,
+} from "src/models/list-filter/criteria/folder";
 
 interface IGenericCriterionEditor {
   criterion: ModifierCriterion<CriterionValue>;
@@ -64,7 +73,9 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (
       criterion instanceof PerformersCriterion ||
       criterion instanceof StudiosCriterion ||
-      criterion instanceof TagsCriterion
+      criterion instanceof TagsCriterion ||
+      criterion instanceof FolderCriterion ||
+      criterion instanceof ParentFolderCriterion
     ) {
       return false;
     }
@@ -153,6 +164,18 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (criterion instanceof TagsCriterion) {
       return (
         <TagsFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (
+      criterion instanceof FolderCriterion ||
+      criterion instanceof ParentFolderCriterion
+    ) {
+      return (
+        <FolderFilter
           criterion={criterion}
           setCriterion={(c) => setCriterion(c)}
         />
@@ -270,6 +293,12 @@ export const CriterionEditor: React.FC<ICriterionEditor> = ({
     if (criterion instanceof BooleanCriterion) {
       return (
         <BooleanFilter criterion={criterion} setCriterion={setCriterion} />
+      );
+    }
+
+    if (criterion instanceof DuplicatedCriterion) {
+      return (
+        <DuplicatedFilter criterion={criterion} setCriterion={setCriterion} />
       );
     }
 

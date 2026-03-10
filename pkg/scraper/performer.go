@@ -20,6 +20,8 @@ type ScrapedPerformerInput struct {
 	PenisLength    *string  `json:"penis_length"`
 	Circumcised    *string  `json:"circumcised"`
 	CareerLength   *string  `json:"career_length"`
+	CareerStart    *int     `json:"career_start"`
+	CareerEnd      *int     `json:"career_end"`
 	Tattoos        *string  `json:"tattoos"`
 	Piercings      *string  `json:"piercings"`
 	Aliases        *string  `json:"aliases"`

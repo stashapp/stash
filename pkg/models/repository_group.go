@@ -68,6 +68,7 @@ type GroupReader interface {
 	TagIDLoader
 	ContainingGroupLoader
 	SubGroupLoader
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Group, error)
 	GetFrontImage(ctx context.Context, groupID int) ([]byte, error)
@@ -81,6 +82,7 @@ type GroupWriter interface {
 	GroupCreator
 	GroupUpdater
 	GroupDestroyer
+	CustomFieldsWriter
 }
 
 // GroupReaderWriter provides all group methods.

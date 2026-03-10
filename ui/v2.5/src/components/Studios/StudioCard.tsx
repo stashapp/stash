@@ -7,13 +7,13 @@ import { PatchComponent } from "src/patch";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
-import { faTag } from "@fortawesome/free-solid-svg-icons";
+import { faTag, faBox } from "@fortawesome/free-solid-svg-icons";
 import { OCounterButton } from "../Shared/CountButton";
 
 interface IProps {
@@ -185,6 +185,27 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
       return <OCounterButton value={studio.o_counter} />;
     }
 
+    function maybeRenderOrganized() {
+      if (studio.organized) {
+        return (
+          <OverlayTrigger
+            overlay={
+              <Tooltip id="organized-tooltip">
+                <FormattedMessage id="organized" />
+              </Tooltip>
+            }
+            placement="bottom"
+          >
+            <div className="organized">
+              <Button className="minimal">
+                <Icon icon={faBox} />
+              </Button>
+            </div>
+          </OverlayTrigger>
+        );
+      }
+    }
+
     function maybeRenderPopoverButtonGroup() {
       if (
         studio.scene_count ||
@@ -193,7 +214,8 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
         studio.group_count ||
         studio.performer_count ||
         studio.o_counter ||
-        studio.tags.length > 0
+        studio.tags.length > 0 ||
+        studio.organized
       ) {
         return (
           <>
@@ -206,6 +228,7 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
               {maybeRenderPerformersPopoverButton()}
               {maybeRenderTagPopoverButton()}
               {maybeRenderOCounter()}
+              {maybeRenderOrganized()}
             </ButtonGroup>
           </>
         );

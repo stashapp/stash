@@ -22,6 +22,7 @@ const (
 	studioID        = 4
 	missingStudioID = 5
 	errStudioID     = 6
+	customFieldsID  = 7
 
 	noTagsID  = 11
 	errTagsID = 12
@@ -33,6 +34,7 @@ const (
 	errMarkersID        = 17
 	errFindPrimaryTagID = 18
 	errFindByMarkerID   = 19
+	errCustomFieldsID   = 20
 )
 
 var (
@@ -82,6 +84,13 @@ var (
 	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
+var (
+	emptyCustomFields = make(map[string]interface{})
+	customFields      = map[string]interface{}{
+		"customField1": "customValue1",
+	}
+)
+
 func createFullScene(id int) models.Scene {
 	return models.Scene{
 		ID:        id,
@@ -123,7 +132,7 @@ func createEmptyScene(id int) models.Scene {
 	}
 }
 
-func createFullJSONScene(image string) *jsonschema.Scene {
+func createFullJSONScene(image string, customFields map[string]interface{}) *jsonschema.Scene {
 	return &jsonschema.Scene{
 		Title:     title,
 		Files:     []string{path},
@@ -142,6 +151,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		StashIDs: []models.StashID{
 			stashID,
 		},
+		CustomFields: customFields,
 	}
 }
 
@@ -155,31 +165,48 @@ func createEmptyJSONScene() *jsonschema.Scene {
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
+		CustomFields: emptyCustomFields,
 	}
 }
 
 type basicTestScenario struct {
-	input    models.Scene
-	expected *jsonschema.Scene
-	err      bool
+	input        models.Scene
+	customFields map[string]interface{}
+	expected     *jsonschema.Scene
+	err          bool
 }
 
 var scenarios = []basicTestScenario{
 	{
 		createFullScene(sceneID),
-		createFullJSONScene(imageBase64),
+		emptyCustomFields,
+		createFullJSONScene(imageBase64, emptyCustomFields),
+		false,
+	},
+	{
+		createFullScene(customFieldsID),
+		customFields,
+		createFullJSONScene("", customFields),
 		false,
 	},
 	{
 		createEmptyScene(noImageID),
+		emptyCustomFields,
 		createEmptyJSONScene(),
 		false,
 	},
 	{
 		createFullScene(errImageID),
-		createFullJSONScene(""),
+		emptyCustomFields,
+		createFullJSONScene("", emptyCustomFields),
 		// failure to get image should not cause an error
 		false,
+	},
+	{
+		createFullScene(errCustomFieldsID),
+		customFields,
+		createFullJSONScene("", customFields),
+		true,
 	},
 }
 
@@ -191,8 +218,12 @@ func TestToJSON(t *testing.T) {
 	db.Scene.On("GetCover", testCtx, sceneID).Return(imageBytes, nil).Once()
 	db.Scene.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
 	db.Scene.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Scene.On("GetCover", testCtx, mock.Anything).Return(nil, nil)
 	db.Scene.On("GetViewDates", testCtx, mock.Anything).Return(nil, nil)
 	db.Scene.On("GetODates", testCtx, mock.Anything).Return(nil, nil)
+	db.Scene.On("GetCustomFields", testCtx, customFieldsID).Return(customFields, nil).Once()
+	db.Scene.On("GetCustomFields", testCtx, errCustomFieldsID).Return(nil, errors.New("error getting custom fields")).Once()
+	db.Scene.On("GetCustomFields", testCtx, mock.Anything).Return(emptyCustomFields, nil)
 
 	for i, s := range scenarios {
 		scene := s.input
@@ -203,6 +234,8 @@ func TestToJSON(t *testing.T) {
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
 		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
+		case err != nil:
+			// error case already handled, no need for assertion
 		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}

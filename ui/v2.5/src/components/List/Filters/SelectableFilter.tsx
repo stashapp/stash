@@ -19,7 +19,12 @@ import {
   ModifierCriterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
-import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
+import {
+  defineMessages,
+  FormattedMessage,
+  MessageDescriptor,
+  useIntl,
+} from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
 import { useDebounce } from "src/hooks/debounce";
@@ -118,7 +123,9 @@ const UnselectedItem: React.FC<{
               onKeyDown={(e) => e.stopPropagation()}
               className="minimal exclude-button"
             >
-              <span className="exclude-button-text">exclude</span>
+              <span className="exclude-button-text">
+                <FormattedMessage id="actions.exclude_lowercase" />
+              </span>
               {excludeIcon}
             </Button>
           )}
@@ -240,12 +247,19 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     onSetModifier(defaultModifier);
   }
 
+  function onEnter() {
+    if (objects.length === 1) {
+      onSelect(objects[0], false);
+    }
+  }
+
   return (
     <div className="selectable-filter">
       <ClearableInput
         focus={inputFocus}
         value={query}
         setValue={(v) => onQueryChange(v)}
+        onEnter={onEnter}
         placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
       />
       <ul>
@@ -450,6 +464,42 @@ export const ObjectsFilter = <
   );
 };
 
+export const DepthSelector: React.FC<{
+  depth: number | undefined;
+  onDepthChanged: (depth: number) => void;
+  id: string;
+  label?: React.ReactNode;
+  placeholder?: string;
+  disabled?: boolean;
+}> = ({ depth, onDepthChanged, id, label, disabled, placeholder }) => {
+  return (
+    <Form.Group>
+      <Form.Group>
+        <Form.Check
+          id={id}
+          checked={depth !== 0}
+          label={label}
+          onChange={() => onDepthChanged(depth !== 0 ? 0 : -1)}
+          disabled={disabled}
+        />
+      </Form.Group>
+      {depth !== 0 && (
+        <Form.Group>
+          <NumberField
+            className="btn-secondary"
+            placeholder={placeholder}
+            onChange={(e) =>
+              onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
+            }
+            defaultValue={depth !== -1 ? depth : ""}
+            min="1"
+          />
+        </Form.Group>
+      )}
+    </Form.Group>
+  );
+};
+
 interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
   extends IObjectsFilter<T> {}
 
@@ -497,38 +547,15 @@ export const HierarchicalObjectsFilter = <
   }
 
   return (
-    <Form>
-      <Form.Group>
-        <Form.Check
-          id={criterionOptionTypeToIncludeID()}
-          checked={
-            criterion.modifier !== CriterionModifier.Equals &&
-            criterion.value.depth !== 0
-          }
-          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
-          onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
-          disabled={criterion.modifier === CriterionModifier.Equals}
-        />
-      </Form.Group>
-
-      {criterion.value.depth !== 0 && (
-        <Form.Group>
-          <NumberField
-            className="btn-secondary"
-            placeholder={intl.formatMessage(messages.studio_depth)}
-            onChange={(e) =>
-              onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
-            }
-            defaultValue={
-              criterion.value && criterion.value.depth !== -1
-                ? criterion.value.depth
-                : ""
-            }
-            min="1"
-          />
-        </Form.Group>
-      )}
+    <div>
+      <DepthSelector
+        depth={criterion.value.depth}
+        onDepthChanged={onDepthChanged}
+        id={criterionOptionTypeToIncludeID()}
+        label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+        placeholder={intl.formatMessage(messages.studio_depth)}
+      />
       <ObjectsFilter {...props} />
-    </Form>
+    </div>
   );
 };

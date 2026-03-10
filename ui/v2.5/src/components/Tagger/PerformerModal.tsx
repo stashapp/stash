@@ -15,10 +15,10 @@ import {
   faArrowLeft,
   faArrowRight,
   faCheck,
-  faExternalLinkAlt,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { StashIDPill } from "../Shared/StashID";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -208,15 +208,13 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
   function maybeRenderStashBoxLink() {
     const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
-    if (!base) return;
+    if (!base || !performer.remote_site_id) return;
 
     return (
-      <h6 className="mt-2">
-        <ExternalLink href={`${base}performers/${performer.remote_site_id}`}>
-          <FormattedMessage id="stashbox.source" />
-          <Icon icon={faExternalLinkAlt} className="ml-2" />
-        </ExternalLink>
-      </h6>
+      <StashIDPill
+        linkType="performers"
+        stashID={{ endpoint: endpoint, stash_id: performer.remote_site_id }}
+      />
     );
   }
 
@@ -240,7 +238,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       height_cm: Number.parseFloat(performer.height ?? "") ?? undefined,
       measurements: performer.measurements,
       fake_tits: performer.fake_tits,
-      career_length: performer.career_length,
+      career_start: performer.career_start,
+      career_end: performer.career_end,
       tattoos: performer.tattoos,
       piercings: performer.piercings,
       urls: performer.urls,
@@ -326,7 +325,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {maybeRenderField("measurements", performer.measurements)}
           {performer?.gender !== GQL.GenderEnum.Male &&
             maybeRenderField("fake_tits", performer.fake_tits)}
-          {maybeRenderField("career_length", performer.career_length)}
+          {maybeRenderField("career_start", performer.career_start?.toString())}
+          {maybeRenderField("career_end", performer.career_end?.toString())}
           {maybeRenderField("tattoos", performer.tattoos, false)}
           {maybeRenderField("piercings", performer.piercings, false)}
           {maybeRenderField("weight", performer.weight, false)}

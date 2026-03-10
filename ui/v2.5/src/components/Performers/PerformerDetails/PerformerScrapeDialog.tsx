@@ -8,6 +8,7 @@ import {
   ScrapedTextAreaRow,
   ScrapedCountryRow,
   ScrapedStringListRow,
+  ScrapedNumberRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { Form } from "react-bootstrap";
@@ -272,10 +273,16 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [fakeTits, setFakeTits] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.fake_tits, props.scraped.fake_tits)
   );
-  const [careerLength, setCareerLength] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      props.performer.career_length,
-      props.scraped.career_length
+  const [careerStart, setCareerStart] = useState<ScrapeResult<number>>(
+    new ScrapeResult<number>(
+      props.performer.career_start,
+      props.scraped.career_start
+    )
+  );
+  const [careerEnd, setCareerEnd] = useState<ScrapeResult<number>>(
+    new ScrapeResult<number>(
+      props.performer.career_end,
+      props.scraped.career_end
     )
   );
   const [tattoos, setTattoos] = useState<ScrapeResult<string>>(
@@ -347,7 +354,8 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     fakeTits,
     penisLength,
     circumcised,
-    careerLength,
+    careerStart,
+    careerEnd,
     tattoos,
     piercings,
     urls,
@@ -379,7 +387,8 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       height: height.getNewValue(),
       measurements: measurements.getNewValue(),
       fake_tits: fakeTits.getNewValue(),
-      career_length: careerLength.getNewValue(),
+      career_start: careerStart.getNewValue(),
+      career_end: careerEnd.getNewValue(),
       tattoos: tattoos.getNewValue(),
       piercings: piercings.getNewValue(),
       urls: urls.getNewValue(),
@@ -493,11 +502,17 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
         />
-        <ScrapedInputGroupRow
-          field="career_length"
-          title={intl.formatMessage({ id: "career_length" })}
-          result={careerLength}
-          onChange={(value) => setCareerLength(value)}
+        <ScrapedNumberRow
+          field="career_start"
+          title={intl.formatMessage({ id: "career_start" })}
+          result={careerStart}
+          onChange={(value) => setCareerStart(value)}
+        />
+        <ScrapedNumberRow
+          field="career_end"
+          title={intl.formatMessage({ id: "career_end" })}
+          result={careerEnd}
+          onChange={(value) => setCareerEnd(value)}
         />
         <ScrapedTextAreaRow
           field="tattoos"

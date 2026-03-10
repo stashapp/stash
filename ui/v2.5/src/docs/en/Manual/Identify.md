@@ -20,7 +20,7 @@ The following options can be configured:
 
 | Option | Description |
 |--------|-------------|
-| Include male performers | If false, male performers will not be created or set on scenes. |
+| Performer genders | Filter which performer genders are included during identification. If no genders are selected, all performers are included regardless of gender. |
 | Set cover images | If false, scene cover images will not be modified. |
 | Set organized flag | If true, the organized flag is set to true when a scene is organized. |
 | Skip matches that have more than one result | If this is not enabled and more than one result is returned, one will be randomly chosen to match |

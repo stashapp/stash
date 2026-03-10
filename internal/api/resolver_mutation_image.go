@@ -177,6 +177,13 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input models.ImageUp
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
+	if input.CustomFields != nil {
+		updatedImage.CustomFields = *input.CustomFields
+		// convert json.Numbers to int/float
+		updatedImage.CustomFields.Full = convertMapJSONNumbers(updatedImage.CustomFields.Full)
+		updatedImage.CustomFields.Partial = convertMapJSONNumbers(updatedImage.CustomFields.Partial)
+	}
+
 	qb := r.repository.Image
 	image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 	if err != nil {
@@ -235,6 +242,13 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	if input.CustomFields != nil {
+		updatedImage.CustomFields = *input.CustomFields
+		// convert json.Numbers to int/float
+		updatedImage.CustomFields.Full = convertMapJSONNumbers(updatedImage.CustomFields.Full)
+		updatedImage.CustomFields.Partial = convertMapJSONNumbers(updatedImage.CustomFields.Partial)
 	}
 
 	// Start the transaction and save the images

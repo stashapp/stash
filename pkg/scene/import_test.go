@@ -549,3 +549,103 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 
 	db.AssertExpectations(t)
 }
+
+func TestImporterPostImport(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	vt := time.Now()
+	ot := vt.Add(time.Minute)
+
+	var (
+		okID              = 1
+		errViewHistoryID  = 2
+		errOHistoryID     = 3
+		errImageID        = 4
+		errCustomFieldsID = 5
+	)
+
+	var (
+		errImage        = errors.New("error updating cover image")
+		errViewHistory  = errors.New("error updating view history")
+		errOHistory     = errors.New("error updating o history")
+		errCustomFields = errors.New("error updating custom fields")
+	)
+
+	table := []struct {
+		name     string
+		importer Importer
+		err      bool
+	}{
+		{
+			name: "all set successfully",
+			importer: Importer{
+				ID:             okID,
+				coverImageData: []byte(imageBase64),
+				viewHistory:    []time.Time{vt},
+				oHistory:       []time.Time{ot},
+				customFields:   customFields,
+			},
+			err: false,
+		},
+		{
+			name: "cover image set with error",
+			importer: Importer{
+				ID:             errImageID,
+				coverImageData: []byte(invalidImage),
+			},
+			err: true,
+		},
+		{
+			name: "view history set with error",
+			importer: Importer{
+				ID:          errViewHistoryID,
+				viewHistory: []time.Time{vt},
+			},
+			err: true,
+		},
+		{
+			name: "o history set with error",
+			importer: Importer{
+				ID:       errOHistoryID,
+				oHistory: []time.Time{ot},
+			},
+			err: true,
+		},
+		{
+			name: "custom fields set with error",
+			importer: Importer{
+				ID:           errCustomFieldsID,
+				customFields: customFields,
+			},
+			err: true,
+		},
+	}
+
+	db.Scene.On("UpdateCover", testCtx, okID, []byte(imageBase64)).Return(nil).Once()
+	db.Scene.On("UpdateCover", testCtx, errImageID, []byte(invalidImage)).Return(errImage).Once()
+	db.Scene.On("AddViews", testCtx, okID, []time.Time{vt}).Return([]time.Time{vt}, nil).Once()
+	db.Scene.On("AddViews", testCtx, errViewHistoryID, []time.Time{vt}).Return(nil, errViewHistory).Once()
+	db.Scene.On("AddO", testCtx, okID, []time.Time{ot}).Return([]time.Time{ot}, nil).Once()
+	db.Scene.On("AddO", testCtx, errOHistoryID, []time.Time{ot}).Return(nil, errOHistory).Once()
+	db.Scene.On("SetCustomFields", testCtx, okID, models.CustomFieldsInput{
+		Full: customFields,
+	}).Return(nil).Once()
+	db.Scene.On("SetCustomFields", testCtx, errCustomFieldsID, models.CustomFieldsInput{
+		Full: customFields,
+	}).Return(errCustomFields).Once()
+
+	for _, tt := range table {
+		t.Run(tt.name, func(t *testing.T) {
+			i := tt.importer
+			i.ReaderWriter = db.Scene
+
+			err := i.PostImport(testCtx, i.ID)
+
+			if tt.err {
+				assert.NotNil(t, err, "expected error but got nil")
+			} else {
+				assert.Nil(t, err, "unexpected error: %v", err)
+			}
+		})
+	}
+}

@@ -31,8 +31,9 @@ type Importer struct {
 	Input               jsonschema.Image
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID    int
-	image models.Image
+	ID           int
+	image        models.Image
+	customFields map[string]interface{}
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -57,6 +58,8 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
+
+	i.customFields = i.Input.CustomFields
 
 	return nil
 }
@@ -344,7 +347,11 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 
-	err := i.ReaderWriter.Create(ctx, &i.image, fileIDs)
+	err := i.ReaderWriter.Create(ctx, &models.CreateImageInput{
+		Image:        &i.image,
+		FileIDs:      fileIDs,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}

@@ -10,6 +10,39 @@ Stash currently identifies files by performing a quick file hash. This means tha
 
 Stash currently ignores duplicate files. If two files contain identical content, only the first one it comes across is used.
 
+### Ignoring Files with .stashignore
+
+You can create `.stashignore` files to exclude specific files or directories from being scanned. These files use gitignore-style pattern matching syntax.
+
+Place a `.stashignore` file in any directory within your library. The patterns in that file will apply to all files and subdirectories within that directory. You can have multiple `.stashignore` files at different levels of your directory hierarchy - patterns from parent directories cascade down to child directories.
+
+**Supported patterns:**
+
+| Pattern | Description |
+|---------|-------------|
+| `filename.mp4` | Ignore a specific file. |
+| `*.tmp` | Ignore all files with a specific extension. |
+| `temp/` | Ignore a directory and all its contents. |
+| `**/cache/` | Ignore directories named "cache" at any level. |
+| `!important.mp4` | Negation - do not ignore this file even if it matches a previous pattern. |
+| `# comment` | Lines starting with # are comments. |
+| `\#filename` | Use backslash to match a literal # character. |
+
+**Example .stashignore file:**
+
+```
+# Ignore temporary files
+*.tmp
+*.log
+
+# Ignore specific directories
+temp/
+.thumbnails/
+
+# But keep this specific file
+!important.tmp
+```
+
 The scan task accepts the following options:
 
 | Option | Description |
@@ -85,3 +118,19 @@ The import and export tasks read and write JSON files to the configured metadata
 > **⚠️ Note:** The full import task wipes the current database completely before importing.
 
 See the [JSON Specification](/help/JSONSpec.md) page for details on the exported JSON format.
+
+## Backing up
+
+The backup task creates a backup of the stash database and (optionally) blob files. The backup can either be downloaded or output into the backup directory (under `Settings > Paths`) or the database directory if the backup directory is not configured.
+
+For a full backup, the database file and all blob files must be copied. The backup is stored as a zip file, with the database file at the root of the zip and the blob files in a `blobs` directory.
+
+> **⚠️ Note:** generated files are not included in the backup, so these will need to be regenerated when restoring with an empty system from backup.
+
+For database-only backups, only the database file is copied into the destination. This is useful for quick backups before performing risky operations, or for users who do not use filesystem blob storage.
+
+## Restoring from backup
+
+Restoring from backup is currently a manual process. The database backup zip file must be unzipped, and the database file and blob files (if applicable) copied into the database and blob directories respectively. Stash should then be restarted to load the restored database.
+
+> **⚠️ Note:** the filename for a database-only backup is not the same as the original database file, so the database file from the backup must be renamed to match the original database filename before copying it into the database directory. The original database filename can be found in `Settings > Paths > Database path`.

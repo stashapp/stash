@@ -201,7 +201,7 @@ const getFingerprintStatus = (
             <FormattedMessage
               id="component_tagger.results.hash_matches"
               values={{
-                hash_type: <FormattedMessage id="media_info.checksum" />,
+                hash_type: <FormattedMessage id="media_info.md5" />,
               }}
             />
           </div>
