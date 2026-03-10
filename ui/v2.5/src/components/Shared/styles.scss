@@ -494,69 +494,10 @@ button.collapse-button {
   }
 }
 
-.bulk-update-text-input {
-  button {
-    background-color: $secondary;
-    color: $text-muted;
-    font-size: $btn-font-size-sm;
-    margin: $btn-padding-y $btn-padding-x;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    z-index: 4;
-
-    &:hover,
-    &:focus,
-    &:active,
-    &:not(:disabled):not(.disabled):active,
-    &:not(:disabled):not(.disabled):active:focus {
-      background-color: $secondary;
-      border-color: transparent;
-      box-shadow: none;
-    }
-  }
-
-  &.unset button {
-    visibility: hidden;
-  }
-}
-
 .bulk-update-date-input {
-  .input-group-append {
-    height: 100%;
-    position: absolute;
-    right: 0;
-  }
-
-  .react-datepicker-wrapper {
-    height: 100%;
-
-    > div,
-    button {
-      height: 100%;
-    }
-  }
-
-  button {
-    background-color: transparent;
-    border: none;
-    color: $text-muted;
-    font-size: $btn-font-size-sm;
-    padding: 0 0.5rem;
-
-    &:hover,
-    &:focus,
-    &:active,
-    &:not(:disabled):not(.disabled):active,
-    &:not(:disabled):not(.disabled):active:focus {
-      background-color: transparent;
-      border: none;
-      box-shadow: none;
-    }
-  }
-
-  &.unset button {
-    visibility: hidden;
+  .react-datepicker-wrapper .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
   }
 }
 

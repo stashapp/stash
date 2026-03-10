@@ -17,32 +17,38 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
 }) => {
   const intl = useIntl();
 
-  const unsetClassName = props.value === undefined ? "unset" : "";
+  const unset = props.value === undefined;
+
+  const placeholderValue =
+    props.value === undefined
+      ? `<${intl.formatMessage({ id: "existing_value" })}>`
+      : props.value === ""
+      ? `<${intl.formatMessage({ id: "empty_value" })}>`
+      : undefined;
 
   return (
-    <InputGroup className={`bulk-update-text-input ${unsetClassName}`}>
+    <InputGroup className="bulk-update-text-input">
       <Form.Control
         {...props}
-        className="input-control"
+        className="text-input"
         type="text"
         as={props.as}
         value={props.value ?? ""}
-        placeholder={
-          props.value === undefined
-            ? `<${intl.formatMessage({ id: "existing_value" })}>`
-            : undefined
-        }
+        placeholder={placeholderValue}
         onChange={(event) => valueChanged(event.currentTarget.value)}
       />
-      {!unsetDisabled ? (
-        <Button
-          variant="secondary"
-          onClick={() => valueChanged(undefined)}
-          title={intl.formatMessage({ id: "actions.unset" })}
-        >
-          <Icon icon={faBan} />
-        </Button>
-      ) : undefined}
+      <InputGroup.Append>
+        {!unsetDisabled ? (
+          <Button
+            variant="secondary"
+            onClick={() => valueChanged(undefined)}
+            title={intl.formatMessage({ id: "actions.unset" })}
+            disabled={unset}
+          >
+            <Icon icon={faBan} />
+          </Button>
+        ) : undefined}
+      </InputGroup.Append>
     </InputGroup>
   );
 };

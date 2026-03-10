@@ -1148,6 +1148,7 @@
     "warmth": "Warmth"
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
+  "empty_value": "empty",
   "errors": {
     "custom_fields": {
       "duplicate_field": "Field name must be unique",

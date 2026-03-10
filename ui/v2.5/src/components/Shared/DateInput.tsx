@@ -103,8 +103,8 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
         isInvalid={!!props.error}
       />
       <InputGroup.Append>
-        {props.append}
         {maybeRenderButton()}
+        {props.append}
       </InputGroup.Append>
       <Form.Control.Feedback type="invalid">
         {props.error}
@@ -130,13 +130,14 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
 }) => {
   const intl = useIntl();
 
-  const unsetClassName = props.value === undefined ? "unset" : "";
+  const unset = props.value === undefined;
 
   const unsetButton = !unsetDisabled ? (
     <Button
       variant="secondary"
       onClick={() => valueChanged(undefined)}
       title={intl.formatMessage({ id: "actions.unset" })}
+      disabled={unset}
     >
       <Icon icon={faBan} />
     </Button>
@@ -153,7 +154,7 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
       }
       onValueChange={(v) => valueChanged(v)}
       groupClassName="bulk-update-date-input"
-      className={`${unsetClassName} input-control date-input`}
+      className="date-input text-input"
       append={unsetButton}
     />
   );
