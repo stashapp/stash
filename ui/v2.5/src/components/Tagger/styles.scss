@@ -8,6 +8,11 @@
 
   .scene-card {
     position: relative;
+
+    .scene-specs-overlay {
+      bottom: 5px;
+      right: 5px;
+    }
   }
 
   .scene-card-preview {
