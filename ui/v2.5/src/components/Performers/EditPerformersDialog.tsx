@@ -286,7 +286,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
           <BulkUpdateFormGroup name="birthdate">
             <BulkUpdateDateInput
-              value={updateInput.birthdate ?? undefined}
+              value={updateInput.birthdate}
               valueChanged={(newValue) =>
                 setUpdateField({ birthdate: newValue })
               }
@@ -295,7 +295,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           </BulkUpdateFormGroup>
           <BulkUpdateFormGroup name="death_date">
             <BulkUpdateDateInput
-              value={updateInput.death_date ?? undefined}
+              value={updateInput.death_date}
               valueChanged={(newValue) =>
                 setUpdateField({ death_date: newValue })
               }

@@ -117,8 +117,8 @@ export const DateInput = PatchComponent("DateInput", _DateInput);
 
 interface IBulkUpdateDateInputProps
   extends Omit<IProps, "onValueChange" | "value"> {
-  value: string | undefined;
-  valueChanged: (value: string | undefined) => void;
+  value: string | null | undefined;
+  valueChanged: (value: string | null | undefined) => void;
   unsetDisabled?: boolean;
   as?: React.ElementType;
 }
@@ -143,16 +143,27 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
     </Button>
   ) : undefined;
 
+  const placeholderValue =
+    props.value === null
+      ? `<${intl.formatMessage({ id: "empty_value" })}>`
+      : props.value === undefined
+      ? `<${intl.formatMessage({ id: "existing_value" })}>`
+      : undefined;
+
+  function outValue(v: string | undefined) {
+    if (v === "") {
+      return null;
+    }
+
+    return v;
+  }
+
   return (
     <DateInput
       {...props}
       value={props.value ?? ""}
-      placeholderOverride={
-        props.value === undefined
-          ? `<${intl.formatMessage({ id: "existing_value" })}>`
-          : undefined
-      }
-      onValueChange={(v) => valueChanged(v)}
+      placeholderOverride={placeholderValue}
+      onValueChange={(v) => valueChanged(outValue(v))}
       groupClassName="bulk-update-date-input"
       className="date-input text-input"
       append={unsetButton}

@@ -175,7 +175,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
           <BulkUpdateFormGroup name="date">
             <BulkUpdateDateInput
-              value={updateInput.date ?? undefined}
+              value={updateInput.date}
               valueChanged={(newValue) => setUpdateField({ date: newValue })}
               unsetDisabled={unsetDisabled}
             />
