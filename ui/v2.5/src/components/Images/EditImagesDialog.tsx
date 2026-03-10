@@ -20,6 +20,7 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
+import { getDateError } from "src/utils/yup";
 
 interface IListOperationProps {
   selected: GQL.SlimImageDataFragment[];
@@ -59,6 +60,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 
   const unsetDisabled = props.selected.length < 2;
 
+  const [dateError, setDateError] = useState<string | undefined>();
+
   const [updateImages] = useBulkImageUpdate();
 
   // Network state
@@ -90,6 +93,10 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     setUpdateInput((current) => ({ ...current, ...aggregateState.state }));
   }, [aggregateState]);
+
+  useEffect(() => {
+    setDateError(getDateError(updateInput.date ?? "", intl));
+  }, [updateInput.date, intl]);
 
   function setUpdateField(input: Partial<GQL.BulkImageUpdateInput>) {
     setUpdateInput((current) => ({ ...current, ...input }));
@@ -147,6 +154,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
         }}
+        disabled={isUpdating || !!dateError}
         cancel={{
           onClick: () => props.onClose(false),
           text: intl.formatMessage({ id: "actions.cancel" }),
@@ -178,6 +186,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               value={updateInput.date}
               valueChanged={(newValue) => setUpdateField({ date: newValue })}
               unsetDisabled={unsetDisabled}
+              error={dateError}
             />
           </BulkUpdateFormGroup>
 

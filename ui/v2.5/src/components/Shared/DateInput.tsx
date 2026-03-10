@@ -8,7 +8,7 @@ import { Icon } from "./Icon";
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
 import { PatchComponent } from "src/patch";
-import { faBan } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   groupClassName?: string;
@@ -20,7 +20,8 @@ interface IProps {
   placeholder?: string;
   placeholderOverride?: string;
   error?: string;
-  append?: React.ReactNode;
+  appendBefore?: React.ReactNode;
+  appendAfter?: React.ReactNode;
 }
 
 const ShowPickerButton = forwardRef<
@@ -103,8 +104,9 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
         isInvalid={!!props.error}
       />
       <InputGroup.Append>
+        {props.appendBefore}
         {maybeRenderButton()}
-        {props.append}
+        {props.appendAfter}
       </InputGroup.Append>
       <Form.Control.Feedback type="invalid">
         {props.error}
@@ -121,6 +123,7 @@ interface IBulkUpdateDateInputProps
   valueChanged: (value: string | null | undefined) => void;
   unsetDisabled?: boolean;
   as?: React.ElementType;
+  error?: string;
 }
 
 export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
@@ -142,6 +145,18 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
       <Icon icon={faBan} />
     </Button>
   ) : undefined;
+
+  const clearButton =
+    props.value !== null ? (
+      <Button
+        className="minimal"
+        variant="secondary"
+        onClick={() => valueChanged(null)}
+        title={intl.formatMessage({ id: "actions.clear" })}
+      >
+        <Icon icon={faTimes} />
+      </Button>
+    ) : undefined;
 
   const placeholderValue =
     props.value === null
@@ -166,7 +181,8 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
       onValueChange={(v) => valueChanged(outValue(v))}
       groupClassName="bulk-update-date-input"
       className="date-input text-input"
-      append={unsetButton}
+      appendBefore={clearButton}
+      appendAfter={unsetButton}
     />
   );
 };

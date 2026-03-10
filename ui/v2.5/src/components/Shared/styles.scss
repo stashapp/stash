@@ -1244,3 +1244,8 @@ input[type="range"].double-range-slider-max {
   margin-left: 0.25rem;
   padding: 0 0.25rem;
 }
+
+// general styling for appended minimal button to input group
+.text-input + .input-group-append .btn.minimal {
+  background-color: $textfield-bg;
+}

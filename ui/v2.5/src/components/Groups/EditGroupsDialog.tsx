@@ -20,6 +20,7 @@ import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
 import { IRelatedGroupEntry } from "./GroupDetails/RelatedGroupTable";
 import { ContainingGroupsMultiSet } from "./ContainingGroupsMultiSet";
+import { getDateError } from "src/utils/yup";
 
 interface IListOperationProps {
   selected: GQL.ListGroupDataFragment[];
@@ -91,6 +92,8 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
 
   const [updateGroups] = useBulkGroupUpdate();
 
+  const [dateError, setDateError] = useState<string | undefined>();
+
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -118,6 +121,10 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     setUpdateInput((current) => ({ ...current, ...aggregateState.state }));
   }, [aggregateState]);
+
+  useEffect(() => {
+    setDateError(getDateError(updateInput.date ?? "", intl));
+  }, [updateInput.date, intl]);
 
   function setUpdateField(input: Partial<GQL.BulkGroupUpdateInput>) {
     setUpdateInput((current) => ({ ...current, ...input }));
@@ -179,6 +186,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
         }}
+        disabled={isUpdating || !!dateError}
         cancel={{
           onClick: () => props.onClose(false),
           text: intl.formatMessage({ id: "actions.cancel" }),
@@ -202,6 +210,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
               value={updateInput.date}
               valueChanged={(newValue) => setUpdateField({ date: newValue })}
               unsetDisabled={unsetDisabled}
+              error={dateError}
             />
           </BulkUpdateFormGroup>
 

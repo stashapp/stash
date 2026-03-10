@@ -29,6 +29,7 @@ import { CountrySelect } from "../Shared/CountrySelect";
 import { useConfigurationContext } from "src/hooks/Config";
 import cx from "classnames";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
+import { getDateError } from "src/utils/yup";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -87,6 +88,17 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const unsetDisabled = props.selected.length < 2;
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
+
+  const [birthdateError, setBirthdateError] = useState<string | undefined>();
+  const [deathDateError, setDeathDateError] = useState<string | undefined>();
+
+  useEffect(() => {
+    setBirthdateError(getDateError(updateInput.birthdate ?? "", intl));
+  }, [updateInput.birthdate, intl]);
+
+  useEffect(() => {
+    setDeathDateError(getDateError(updateInput.death_date ?? "", intl));
+  }, [updateInput.death_date, intl]);
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
@@ -229,6 +241,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
         }}
+        disabled={isUpdating || !!birthdateError || !!deathDateError}
         cancel={{
           onClick: () => props.onClose(false),
           text: intl.formatMessage({ id: "actions.cancel" }),
@@ -291,6 +304,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
                 setUpdateField({ birthdate: newValue })
               }
               unsetDisabled={unsetDisabled}
+              error={birthdateError}
             />
           </BulkUpdateFormGroup>
           <BulkUpdateFormGroup name="death_date">
@@ -300,6 +314,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
                 setUpdateField({ death_date: newValue })
               }
               unsetDisabled={unsetDisabled}
+              error={deathDateError}
             />
           </BulkUpdateFormGroup>
           <BulkUpdateFormGroup name="country">
