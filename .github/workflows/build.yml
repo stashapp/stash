@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - 'releases/**'
   pull_request:
   release:
     types: [ published ]
@@ -227,7 +228,7 @@ jobs:
         echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
 
     - name: Upload Windows binary
-      # only upload binaries for pull requests not targeting develop or master
+      # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v4
       with:
@@ -235,7 +236,7 @@ jobs:
         path: dist/stash-win.exe
 
     - name: Upload macOS binary
-      # only upload binaries for pull requests not targeting develop or master
+      # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v4
       with:
@@ -243,7 +244,7 @@ jobs:
         path: dist/stash-macos
 
     - name: Upload Linux binary
-      # only upload binaries for pull requests not targeting develop or master
+      # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v4
       with:
@@ -251,7 +252,7 @@ jobs:
         path: dist/stash-linux
 
     - name: Upload UI
-      # only upload for pull requests not targeting develop or master
+      # only upload for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v4
       with:
