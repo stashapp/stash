@@ -110,11 +110,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             values={{ value: intl.formatNumber(props.file.frame_rate ?? 0) }}
           />
         </TextField>
-        <TextField
-          id="frames"
-          value={`${props.file.frames ?? 0}`}
-          truncate
-        />
+        <TextField id="frames" value={`${props.file.frames ?? 0}`} truncate />
         <TextField id="bitrate">
           <FormattedMessage
             id="megabits_per_second"
