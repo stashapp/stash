@@ -60,6 +60,7 @@ type videoFileRow struct {
 	VideoCodec       string        `db:"video_codec"`
 	AudioCodec       string        `db:"audio_codec"`
 	FrameRate        float64       `db:"frame_rate"`
+	Frames           int64         `db:"frames"`
 	BitRate          int64         `db:"bit_rate"`
 	Interactive      bool          `db:"interactive"`
 	InteractiveSpeed null.Int      `db:"interactive_speed"`
@@ -74,6 +75,7 @@ func (f *videoFileRow) fromVideoFile(ff models.VideoFile) {
 	f.VideoCodec = ff.VideoCodec
 	f.AudioCodec = ff.AudioCodec
 	f.FrameRate = ff.FrameRate
+	f.Frames = ff.Frames
 	f.BitRate = ff.BitRate
 	f.Interactive = ff.Interactive
 	f.InteractiveSpeed = intFromPtr(ff.InteractiveSpeed)
@@ -104,6 +106,7 @@ type videoFileQueryRow struct {
 	VideoCodec       null.String `db:"video_codec"`
 	AudioCodec       null.String `db:"audio_codec"`
 	FrameRate        null.Float  `db:"frame_rate"`
+	Frames           null.Int    `db:"frames"`
 	BitRate          null.Int    `db:"bit_rate"`
 	Interactive      null.Bool   `db:"interactive"`
 	InteractiveSpeed null.Int    `db:"interactive_speed"`
@@ -118,6 +121,7 @@ func (f *videoFileQueryRow) resolve() *models.VideoFile {
 		VideoCodec:       f.VideoCodec.String,
 		AudioCodec:       f.AudioCodec.String,
 		FrameRate:        f.FrameRate.Float64,
+		Frames:           f.Frames.Int64,
 		BitRate:          f.BitRate.Int64,
 		Interactive:      f.Interactive.Bool,
 		InteractiveSpeed: nullIntPtr(f.InteractiveSpeed),
@@ -135,6 +139,7 @@ func videoFileQueryColumns() []interface{} {
 		table.Col("video_codec"),
 		table.Col("audio_codec"),
 		table.Col("frame_rate"),
+		table.Col("frames"),
 		table.Col("bit_rate"),
 		table.Col("interactive"),
 		table.Col("interactive_speed"),

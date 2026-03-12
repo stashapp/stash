@@ -15,6 +15,7 @@ fragment VideoFileData on VideoFile {
   width
   height
   frame_rate
+  frames
   bit_rate
   fingerprints {
     type
@@ -80,6 +81,7 @@ fragment VisualFileData on VisualFile {
     width
     height
     frame_rate
+    frames
     bit_rate
     fingerprints {
       type

@@ -274,6 +274,7 @@ type SceneFileType struct {
 	Width      *int     `graphql:"width" json:"width"`
 	Height     *int     `graphql:"height" json:"height"`
 	Framerate  *float64 `graphql:"framerate" json:"framerate"`
+	Frames     *int     `graphql:"frames" json:"frames"`
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
 }
 

@@ -285,6 +285,7 @@ type VideoFile struct {
 	VideoCodec string  `json:"video_codec"`
 	AudioCodec string  `json:"audio_codec"`
 	FrameRate  float64 `json:"frame_rate"`
+	Frames     int64   `json:"frames"`
 	BitRate    int64   `json:"bitrate"`
 
 	Interactive      bool `json:"interactive"`

@@ -45,6 +45,7 @@ type videoFileInput struct {
 	VideoCodec string  `json:"video_codec,omitempty"`
 	AudioCodec string  `json:"audio_codec,omitempty"`
 	FrameRate  float64 `json:"frame_rate,omitempty"`
+	Frames     int64   `json:"frames,omitempty"`
 	BitRate    int64   `json:"bitrate,omitempty"`
 
 	Interactive      bool `json:"interactive,omitempty"`
@@ -106,6 +107,7 @@ func videoFileInputFromVideoFile(vf *models.VideoFile) videoFileInput {
 		VideoCodec:       vf.VideoCodec,
 		AudioCodec:       vf.AudioCodec,
 		FrameRate:        vf.FrameRate,
+		Frames:           vf.Frames,
 		BitRate:          vf.BitRate,
 		Interactive:      vf.Interactive,
 		InteractiveSpeed: vf.InteractiveSpeed,

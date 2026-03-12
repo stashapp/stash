@@ -441,6 +441,7 @@ func fileToJSON(f models.File) jsonschema.DirEntry {
 			VideoCodec:       ff.VideoCodec,
 			AudioCodec:       ff.AudioCodec,
 			FrameRate:        ff.FrameRate,
+			Frames:           ff.Frames,
 			BitRate:          ff.BitRate,
 			Interactive:      ff.Interactive,
 			InteractiveSpeed: ff.InteractiveSpeed,

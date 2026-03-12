@@ -1181,6 +1181,7 @@
   "filters": "Filters",
   "folder": "Folder",
   "framerate": "Frame Rate",
+  "frames": "Frame Count",
   "frames_per_second": "{value} fps",
   "front_page": {
     "types": {

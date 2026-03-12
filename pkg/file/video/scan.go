@@ -52,6 +52,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 		Height:      videoFile.Height,
 		Duration:    videoFile.FileDuration,
 		FrameRate:   videoFile.FrameRate,
+		Frames:      videoFile.FrameCount,
 		BitRate:     videoFile.Bitrate,
 		Interactive: interactive,
 	}, nil
@@ -76,6 +77,6 @@ func (d *Decorator) IsMissingMetadata(ctx context.Context, fs models.FS, f model
 	return vf.VideoCodec == unsetString || vf.AudioCodec == unsetString ||
 		vf.Format == unsetString || vf.Width == unsetNumber ||
 		vf.Height == unsetNumber || vf.FrameRate == unsetNumber ||
-		vf.Duration == unsetNumber ||
+		vf.Frames == unsetNumber || vf.Duration == unsetNumber ||
 		vf.BitRate == unsetNumber || interactive != vf.Interactive
 }

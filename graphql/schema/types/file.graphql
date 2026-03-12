@@ -88,6 +88,7 @@ type VideoFile implements BaseFile {
   video_codec: String!
   audio_codec: String!
   frame_rate: Float!
+  frames: Int!
   bit_rate: Int!
 
   created_at: Time!

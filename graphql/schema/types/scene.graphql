@@ -6,6 +6,7 @@ type SceneFileType {
   width: Int
   height: Int
   framerate: Float
+  frames: Int
   bitrate: Int
 }
 

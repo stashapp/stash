@@ -195,6 +195,16 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     </ul>
   );
 
+  const FramesCell = (scene: GQL.SlimSceneDataFragment) => (
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>{file?.frames ?? 0}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
   const BitRateCell = (scene: GQL.SlimSceneDataFragment) => (
     <ul className="comma-list">
       {scene.files.map((file) => (
@@ -356,6 +366,11 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       value: "framerate",
       label: intl.formatMessage({ id: "framerate" }),
       render: FrameRateCell,
+    },
+    {
+      value: "frames",
+      label: intl.formatMessage({ id: "frames" }),
+      render: FramesCell,
     },
     {
       value: "bitrate",

@@ -307,6 +307,7 @@ type stashVideoFile struct {
 	Width      int     `graphql:"width" json:"width"`
 	Height     int     `graphql:"height" json:"height"`
 	Framerate  float64 `graphql:"frame_rate" json:"frame_rate"`
+	Frames     int     `graphql:"frames" json:"frames"`
 	Bitrate    int     `graphql:"bit_rate" json:"bit_rate"`
 }
 
@@ -318,6 +319,7 @@ func (f stashVideoFile) SceneFileType() models.SceneFileType {
 		Width:      &f.Width,
 		Height:     &f.Height,
 		Framerate:  &f.Framerate,
+		Frames:     &f.Frames,
 		Bitrate:    &f.Bitrate,
 	}
 

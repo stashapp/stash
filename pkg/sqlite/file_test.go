@@ -41,6 +41,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 		width            = 640
 		height           = 480
 		framerate        = 2.345
+		frames           = 3
 		bitrate    int64 = 234
 		videoCodec       = "videoCodec"
 		audioCodec       = "audioCodec"
@@ -104,6 +105,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 				Width:      width,
 				Height:     height,
 				FrameRate:  framerate,
+				Frames:     frames,
 				BitRate:    bitrate,
 			},
 			false,
@@ -258,6 +260,7 @@ func Test_fileStore_Update(t *testing.T) {
 		width            = 640
 		height           = 480
 		framerate        = 2.345
+		frames           = 3
 		bitrate    int64 = 234
 		videoCodec       = "videoCodec"
 		audioCodec       = "audioCodec"
@@ -323,6 +326,7 @@ func Test_fileStore_Update(t *testing.T) {
 				Width:      width,
 				Height:     height,
 				FrameRate:  framerate,
+				Frames:     frames,
 				BitRate:    bitrate,
 			},
 			false,

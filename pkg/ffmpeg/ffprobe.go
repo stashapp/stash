@@ -221,6 +221,7 @@ func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 		"-show_format",
 		"-show_streams",
 		"-show_error",
+		"-count_frames",
 	}
 
 	// show_entries stream_side_data=rotation requires 5.x or later ffprobe

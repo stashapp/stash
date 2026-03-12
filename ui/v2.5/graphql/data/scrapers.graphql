@@ -183,6 +183,7 @@ fragment ScrapedSceneData on ScrapedScene {
     width
     height
     framerate
+    frames
     bitrate
   }
 
@@ -270,6 +271,7 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
     width
     height
     framerate
+    frames
     bitrate
   }
 

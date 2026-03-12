@@ -34,6 +34,8 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 #### Ubuntu
 
 1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
+    * To install `pnpm`: `npm install -g pnpm`
+    * Check Go Version, if old (`make generate` fails) use `sudo snap install go  --classic` or install from tarball
 
 ### OpenBSD
 

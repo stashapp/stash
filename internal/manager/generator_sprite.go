@@ -105,7 +105,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 
 	slowSeek := false
 
-	// For files with small duration / low frame count  try to seek using frame number intead of seconds
+	// For files with small duration / low frame count  try to seek using frame number instead of seconds
 	if videoFile.VideoStreamDuration < 5 || (0 < videoFile.FrameCount && videoFile.FrameCount <= int64(chunkCount)) { // some files can have FrameCount == 0, only use SlowSeek  if duration < 5
 		if videoFile.VideoStreamDuration <= 0 {
 			s := fmt.Sprintf("video %s: duration(%.3f)/frame count(%d) invalid, skipping sprite creation", videoFile.Path, videoFile.VideoStreamDuration, videoFile.FrameCount)

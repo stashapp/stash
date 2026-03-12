@@ -696,7 +696,7 @@ func (s *Scanner) isHandlerRequired(ctx context.Context, f models.File) bool {
 // Missing metadata includes the following:
 // - file size
 // - image format, width or height
-// - video codec, audio codec, format, width, height, framerate or bitrate
+// - video codec, audio codec, format, width, height, framerate, frames or bitrate
 func (s *Scanner) isMissingMetadata(ctx context.Context, f ScannedFile, existing models.File) bool {
 	for _, h := range s.FileDecorators {
 		if h.IsMissingMetadata(ctx, f.FS, existing) {
