@@ -7,6 +7,9 @@ import {
   Row,
   Col,
   Card,
+  ButtonGroup,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFindDuplicateImagesQuery } from "src/core/generated-graphql";
@@ -17,6 +20,10 @@ import { ErrorMessage } from "../Shared/ErrorMessage";
 import { FileSize } from "../Shared/FileSize";
 import { Pagination } from "src/components/List/Pagination";
 import { useHistory } from "react-router-dom";
+import { DeleteImagesDialog } from "../Images/DeleteImagesDialog";
+import { EditImagesDialog } from "../Images/EditImagesDialog";
+import { Icon } from "../Shared/Icon";
+import { faPencilAlt, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const ImageDuplicateCheckerSection = PatchContainerComponent(
   "ImageDuplicateCheckerSection"
@@ -32,6 +39,10 @@ const ImageDuplicateChecker: React.FC = () => {
 
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [checkedImages, setCheckedImages] = useState<Record<string, boolean>>({});
+  const [selectedImages, setSelectedImages] = useState<GQL.ImageDataFragment[]>();
+  const [deletingImages, setDeletingImages] = useState(false);
+  const [editingImages, setEditingImages] = useState(false);
 
   const { data, loading, error, refetch } = useFindDuplicateImagesQuery({
     variables: { distance: hashDistance },
@@ -42,6 +53,7 @@ const ImageDuplicateChecker: React.FC = () => {
   const handleSearch = () => {
     setIsSearching(true);
     setHasSearched(true);
+    setCheckedImages({});
     refetch({ distance: hashDistance }).finally(() => setIsSearching(false));
   };
 
@@ -67,6 +79,40 @@ const ImageDuplicateChecker: React.FC = () => {
     return allGroups.slice(start, start + pageSize);
   }, [allGroups, currentPage, pageSize]);
 
+  const checkCount = Object.keys(checkedImages).filter((id) => checkedImages[id]).length;
+
+  const handleCheck = (checked: boolean, imageID: string) => {
+    setCheckedImages({ ...checkedImages, [imageID]: checked });
+  };
+
+  const handleDeleteChecked = () => {
+    setSelectedImages(allGroups.flat().filter((i) => checkedImages[i.id]));
+    setDeletingImages(true);
+  };
+
+  const onEdit = () => {
+    setSelectedImages(allGroups.flat().filter((i) => checkedImages[i.id]));
+    setEditingImages(true);
+    setCheckedImages({});
+  };
+
+  const onDeleteDialogClosed = (confirmed: boolean) => {
+    setDeletingImages(false);
+    setSelectedImages(undefined);
+    if (confirmed) {
+      setCheckedImages({});
+      refetch();
+    }
+  };
+
+  const onEditDialogClosed = (applied: boolean) => {
+    setEditingImages(false);
+    setSelectedImages(undefined);
+    if (applied) {
+      refetch();
+    }
+  };
+
   if (error) return <ErrorMessage error={error.message} />;
 
   const renderGroup = (group: GQL.ImageDataFragment[], index: number) => {
@@ -83,6 +129,7 @@ const ImageDuplicateChecker: React.FC = () => {
           <Table striped bordered hover responsive size="sm">
             <thead>
               <tr>
+                <th style={{ width: "40px" }}></th>
                 <th style={{ width: "150px" }}>Image</th>
                 <th>Details</th>
                 <th style={{ width: "120px" }}>Size</th>
@@ -94,6 +141,12 @@ const ImageDuplicateChecker: React.FC = () => {
                 const file = img.visual_files[0];
                 return (
                   <tr key={img.id}>
+                    <td className="text-center align-middle">
+                      <Form.Check
+                        checked={checkedImages[img.id] || false}
+                        onChange={(e) => handleCheck(e.currentTarget.checked, img.id)}
+                      />
+                    </td>
                     <td>
                       <img
                         src={img.paths.thumbnail || ""}
@@ -137,6 +190,18 @@ const ImageDuplicateChecker: React.FC = () => {
   return (
     <div className="container-fluid py-4">
       <ImageDuplicateCheckerSection>
+        {deletingImages && selectedImages && (
+          <DeleteImagesDialog
+            selected={selectedImages}
+            onClose={onDeleteDialogClosed}
+          />
+        )}
+        {editingImages && selectedImages && (
+          <EditImagesDialog
+            selected={selectedImages}
+            onClose={onEditDialogClosed}
+          />
+        )}
         <Row className="mb-4">
           <Col>
             <h3>
@@ -188,6 +253,40 @@ const ImageDuplicateChecker: React.FC = () => {
         {hasSearched && !loading && !error && allGroups.length === 0 && (
           <div className="text-center py-5 border rounded bg-light">
             <p className="mb-0">No duplicates found with the current distance.</p>
+          </div>
+        )}
+
+        {hasSearched && !loading && !error && allGroups.length > 0 && (
+          <div className="d-flex mb-3 align-items-center">
+            <h6 className="me-auto mb-0">
+              Found {allGroups.length} duplicate groups
+            </h6>
+            {checkCount > 0 && (
+              <ButtonGroup>
+                <OverlayTrigger
+                  overlay={
+                    <Tooltip id="edit">
+                      {intl.formatMessage({ id: "actions.edit" })}
+                    </Tooltip>
+                  }
+                >
+                  <Button variant="secondary" onClick={onEdit}>
+                    <Icon icon={faPencilAlt} />
+                  </Button>
+                </OverlayTrigger>
+                <OverlayTrigger
+                  overlay={
+                    <Tooltip id="delete">
+                      {intl.formatMessage({ id: "actions.delete" })}
+                    </Tooltip>
+                  }
+                >
+                  <Button variant="danger" onClick={handleDeleteChecked}>
+                    <Icon icon={faTrash} />
+                  </Button>
+                </OverlayTrigger>
+              </ButtonGroup>
+            )}
           </div>
         )}
 
