@@ -170,6 +170,12 @@ input AutoTagMetadataInput {
   IDs of tags to tag files with, or "*" for all
   """
   tags: [String!]
+  "If true, will also match performer aliases"
+  performerAliases: Boolean
+  "If true, will also match studio aliases"
+  studioAliases: Boolean
+  "If true, will also match tag aliases"
+  tagAliases: Boolean
 }
 
 type AutoTagMetadataOptions {
@@ -185,6 +191,12 @@ type AutoTagMetadataOptions {
   IDs of tags to tag files with, or "*" for all
   """
   tags: [String!]
+  "If true, will also match performer aliases"
+  performerAliases: Boolean
+  "If true, will also match studio aliases"
+  studioAliases: Boolean
+  "If true, will also match tag aliases"
+  tagAliases: Boolean
 }
 
 enum IdentifyFieldStrategy {

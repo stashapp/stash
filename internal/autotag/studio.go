@@ -59,7 +59,7 @@ func addGalleryStudio(ctx context.Context, galleryWriter GalleryFinderUpdater, o
 	return true, nil
 }
 
-func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []tagger {
+func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache, matchAliases bool) []tagger {
 	ret := []tagger{{
 		ID:    p.ID,
 		Type:  "studio",
@@ -67,20 +67,22 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 		cache: cache,
 	}}
 
-	for _, a := range aliases {
-		ret = append(ret, tagger{
-			ID:   p.ID,
-			Type: "studio",
-			Name: a,
-		})
+	if matchAliases {
+		for _, a := range aliases {
+			ret = append(ret, tagger{
+				ID:   p.ID,
+				Type: "studio",
+				Name: a,
+			})
+		}
 	}
 
 	return ret
 }
 
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
-func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater) error {
-	t := getStudioTagger(p, aliases, tagger.Cache)
+func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater, matchAliases bool) error {
+	t := getStudioTagger(p, aliases, tagger.Cache, matchAliases)
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
@@ -109,8 +111,8 @@ func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths 
 }
 
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.
-func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater) error {
-	t := getStudioTagger(p, aliases, tagger.Cache)
+func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater, matchAliases bool) error {
+	t := getStudioTagger(p, aliases, tagger.Cache, matchAliases)
 
 	for _, tt := range t {
 		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
@@ -139,8 +141,8 @@ func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths 
 }
 
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.
-func (tagger *Tagger) StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw GalleryFinderUpdater) error {
-	t := getStudioTagger(p, aliases, tagger.Cache)
+func (tagger *Tagger) StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw GalleryFinderUpdater, matchAliases bool) error {
+	t := getStudioTagger(p, aliases, tagger.Cache, matchAliases)
 
 	for _, tt := range t {
 		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {

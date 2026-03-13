@@ -526,20 +526,26 @@ func (qb *StudioStore) All(ctx context.Context) ([]*models.Studio, error) {
 	return qb.getMany(ctx, qb.selectDataset().Order(table.Col(studioNameColumn).Asc()))
 }
 
-func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error) {
+func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*models.Studio, error) {
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
-	sq := dialect.From(table).Select(table.Col(idColumn)).LeftJoin(
-		studiosAliasesJoinTable,
-		goqu.On(studiosAliasesJoinTable.Col(studioIDColumn).Eq(table.Col(idColumn))),
-	)
+	sq := dialect.From(table).Select(table.Col(idColumn))
+
+	if matchAliases {
+		sq = sq.LeftJoin(
+			studiosAliasesJoinTable,
+			goqu.On(studiosAliasesJoinTable.Col(studioIDColumn).Eq(table.Col(idColumn))),
+		)
+	}
 
 	var whereClauses []exp.Expression
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, table.Col(studioNameColumn).Like(w+"%"))
-		whereClauses = append(whereClauses, studiosAliasesJoinTable.Col("alias").Like(w+"%"))
+		if matchAliases {
+			whereClauses = append(whereClauses, studiosAliasesJoinTable.Col("alias").Like(w+"%"))
+		}
 	}
 
 	sq = sq.Where(

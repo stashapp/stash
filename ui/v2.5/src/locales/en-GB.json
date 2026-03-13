@@ -511,6 +511,9 @@
         "auto_tagging_paths": "Auto tagging the following paths"
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
+      "autotag_performer_aliases": "Include performer aliases",
+      "autotag_studio_aliases": "Include studio aliases",
+      "autotag_tag_aliases": "Include tag aliases",
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",

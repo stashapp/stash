@@ -1294,6 +1294,7 @@ func makeImageFile(i int) *models.ImageFile {
 
 func makeImage(i int) *models.Image {
 	title := getImageStringValue(i, titleField)
+	details := getImageStringValue(i, "Details")
 	var studioID *int
 	if _, ok := imageStudios[i]; ok {
 		v := studioIDs[imageStudios[i]]
@@ -1306,6 +1307,7 @@ func makeImage(i int) *models.Image {
 
 	return &models.Image{
 		Title:  title,
+		Details: details,
 		Rating: getIntPtr(getRating(i)),
 		Date:   getObjectDate(i),
 		URLs: models.NewRelatedStrings([]string{

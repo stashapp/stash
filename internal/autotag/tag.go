@@ -30,7 +30,7 @@ type GalleryQueryTagUpdater interface {
 	models.GalleryUpdater
 }
 
-func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache) []tagger {
+func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache, matchAliases bool) []tagger {
 	ret := []tagger{{
 		ID:    p.ID,
 		Type:  "tag",
@@ -38,21 +38,23 @@ func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache) []tagger
 		cache: cache,
 	}}
 
-	for _, a := range aliases {
-		ret = append(ret, tagger{
-			ID:    p.ID,
-			Type:  "tag",
-			Name:  a,
-			cache: cache,
-		})
+	if matchAliases {
+		for _, a := range aliases {
+			ret = append(ret, tagger{
+				ID:    p.ID,
+				Type:  "tag",
+				Name:  a,
+				cache: cache,
+			})
+		}
 	}
 
 	return ret
 }
 
 // TagScenes searches for scenes whose path matches the provided tag name and tags the scene with the tag.
-func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw SceneQueryTagUpdater) error {
-	t := getTagTaggers(p, aliases, tagger.Cache)
+func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw SceneQueryTagUpdater, matchAliases bool) error {
+	t := getTagTaggers(p, aliases, tagger.Cache, matchAliases)
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
@@ -80,8 +82,8 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 }
 
 // TagImages searches for images whose path matches the provided tag name and tags the image with the tag.
-func (tagger *Tagger) TagImages(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw ImageQueryTagUpdater) error {
-	t := getTagTaggers(p, aliases, tagger.Cache)
+func (tagger *Tagger) TagImages(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw ImageQueryTagUpdater, matchAliases bool) error {
+	t := getTagTaggers(p, aliases, tagger.Cache, matchAliases)
 
 	for _, tt := range t {
 		if err := tt.tagImages(ctx, paths, rw, func(o *models.Image) (bool, error) {
@@ -109,8 +111,8 @@ func (tagger *Tagger) TagImages(ctx context.Context, p *models.Tag, paths []stri
 }
 
 // TagGalleries searches for galleries whose path matches the provided tag name and tags the gallery with the tag.
-func (tagger *Tagger) TagGalleries(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw GalleryQueryTagUpdater) error {
-	t := getTagTaggers(p, aliases, tagger.Cache)
+func (tagger *Tagger) TagGalleries(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw GalleryQueryTagUpdater, matchAliases bool) error {
+	t := getTagTaggers(p, aliases, tagger.Cache, matchAliases)
 
 	for _, tt := range t {
 		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {

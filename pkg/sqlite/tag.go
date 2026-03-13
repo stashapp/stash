@@ -685,7 +685,7 @@ func (qb *TagStore) All(ctx context.Context) ([]*models.Tag, error) {
 	))
 }
 
-func (qb *TagStore) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Tag, error) {
+func (qb *TagStore) QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*models.Tag, error) {
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	query := selectAll(tagTable)

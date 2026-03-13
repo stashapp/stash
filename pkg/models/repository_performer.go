@@ -32,7 +32,7 @@ type PerformerAutoTagQueryer interface {
 
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
+	QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*Performer, error)
 }
 
 // PerformerCounter provides methods to count performers.

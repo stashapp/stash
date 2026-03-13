@@ -180,13 +180,13 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 				}
 
 				err := func() error {
-					if err := tagger.PerformerScenes(ctx, performer, paths, r.Scene); err != nil {
+					if err := tagger.PerformerScenes(ctx, performer, paths, r.Scene, j.input.PerformerAliases != nil && *j.input.PerformerAliases); err != nil {
 						return fmt.Errorf("processing scenes: %w", err)
 					}
-					if err := tagger.PerformerImages(ctx, performer, paths, r.Image); err != nil {
+					if err := tagger.PerformerImages(ctx, performer, paths, r.Image, j.input.PerformerAliases != nil && *j.input.PerformerAliases); err != nil {
 						return fmt.Errorf("processing images: %w", err)
 					}
-					if err := tagger.PerformerGalleries(ctx, performer, paths, r.Gallery); err != nil {
+					if err := tagger.PerformerGalleries(ctx, performer, paths, r.Gallery, j.input.PerformerAliases != nil && *j.input.PerformerAliases); err != nil {
 						return fmt.Errorf("processing galleries: %w", err)
 					}
 
@@ -278,13 +278,13 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 						return fmt.Errorf("getting studio aliases: %w", err)
 					}
 
-					if err := tagger.StudioScenes(ctx, studio, paths, aliases, r.Scene); err != nil {
+					if err := tagger.StudioScenes(ctx, studio, paths, aliases, r.Scene, j.input.StudioAliases != nil && *j.input.StudioAliases); err != nil {
 						return fmt.Errorf("processing scenes: %w", err)
 					}
-					if err := tagger.StudioImages(ctx, studio, paths, aliases, r.Image); err != nil {
+					if err := tagger.StudioImages(ctx, studio, paths, aliases, r.Image, j.input.StudioAliases != nil && *j.input.StudioAliases); err != nil {
 						return fmt.Errorf("processing images: %w", err)
 					}
-					if err := tagger.StudioGalleries(ctx, studio, paths, aliases, r.Gallery); err != nil {
+					if err := tagger.StudioGalleries(ctx, studio, paths, aliases, r.Gallery, j.input.StudioAliases != nil && *j.input.StudioAliases); err != nil {
 						return fmt.Errorf("processing galleries: %w", err)
 					}
 
@@ -375,13 +375,13 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 						return fmt.Errorf("getting tag aliases: %w", err)
 					}
 
-					if err := tagger.TagScenes(ctx, tag, paths, aliases, r.Scene); err != nil {
+					if err := tagger.TagScenes(ctx, tag, paths, aliases, r.Scene, j.input.TagAliases != nil && *j.input.TagAliases); err != nil {
 						return fmt.Errorf("processing scenes: %w", err)
 					}
-					if err := tagger.TagImages(ctx, tag, paths, aliases, r.Image); err != nil {
+					if err := tagger.TagImages(ctx, tag, paths, aliases, r.Image, j.input.TagAliases != nil && *j.input.TagAliases); err != nil {
 						return fmt.Errorf("processing images: %w", err)
 					}
-					if err := tagger.TagGalleries(ctx, tag, paths, aliases, r.Gallery); err != nil {
+					if err := tagger.TagGalleries(ctx, tag, paths, aliases, r.Gallery, j.input.TagAliases != nil && *j.input.TagAliases); err != nil {
 						return fmt.Errorf("processing galleries: %w", err)
 					}
 
@@ -412,10 +412,13 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 }
 
 type autoTagFilesTask struct {
-	paths      []string
-	performers bool
-	studios    bool
-	tags       bool
+	paths            []string
+	performers       bool
+	studios          bool
+	tags             bool
+	performerAliases bool
+	studioAliases    bool
+	tagAliases       bool
 
 	progress   *job.Progress
 	repository models.Repository
@@ -575,12 +578,15 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context) {
 			}
 
 			tt := autoTagSceneTask{
-				repository: r,
-				scene:      ss,
-				performers: t.performers,
-				studios:    t.studios,
-				tags:       t.tags,
-				cache:      t.cache,
+				repository:       r,
+				scene:            ss,
+				performers:       t.performers,
+				studios:          t.studios,
+				tags:             t.tags,
+				performerAliases: t.performerAliases,
+				studioAliases:    t.studioAliases,
+				tagAliases:       t.tagAliases,
+				cache:            t.cache,
 			}
 
 			var wg sync.WaitGroup
@@ -638,12 +644,15 @@ func (t *autoTagFilesTask) processImages(ctx context.Context) {
 			}
 
 			tt := autoTagImageTask{
-				repository: t.repository,
-				image:      ss,
-				performers: t.performers,
-				studios:    t.studios,
-				tags:       t.tags,
-				cache:      t.cache,
+				repository:       t.repository,
+				image:            ss,
+				performers:       t.performers,
+				studios:          t.studios,
+				tags:             t.tags,
+				performerAliases: t.performerAliases,
+				studioAliases:    t.studioAliases,
+				tagAliases:       t.tagAliases,
+				cache:            t.cache,
 			}
 
 			var wg sync.WaitGroup
@@ -701,12 +710,15 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context) {
 			}
 
 			tt := autoTagGalleryTask{
-				repository: t.repository,
-				gallery:    ss,
-				performers: t.performers,
-				studios:    t.studios,
-				tags:       t.tags,
-				cache:      t.cache,
+				repository:       t.repository,
+				gallery:          ss,
+				performers:       t.performers,
+				studios:          t.studios,
+				tags:             t.tags,
+				performerAliases: t.performerAliases,
+				studioAliases:    t.studioAliases,
+				tagAliases:       t.tagAliases,
+				cache:            t.cache,
 			}
 
 			var wg sync.WaitGroup
@@ -756,9 +768,12 @@ type autoTagSceneTask struct {
 	repository models.Repository
 	scene      *models.Scene
 
-	performers bool
-	studios    bool
-	tags       bool
+	performers       bool
+	studios          bool
+	tags             bool
+	performerAliases bool
+	studioAliases    bool
+	tagAliases       bool
 
 	cache *match.Cache
 }
@@ -773,17 +788,17 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		}
 
 		if t.performers {
-			if err := autotag.ScenePerformers(ctx, t.scene, r.Scene, r.Performer, t.cache); err != nil {
+			if err := autotag.ScenePerformers(ctx, t.scene, r.Scene, r.Performer, t.cache, t.performers); err != nil {
 				return fmt.Errorf("tagging scene performers for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 		if t.studios {
-			if err := autotag.SceneStudios(ctx, t.scene, r.Scene, r.Studio, t.cache); err != nil {
+			if err := autotag.SceneStudios(ctx, t.scene, r.Scene, r.Studio, t.cache, t.studios); err != nil {
 				return fmt.Errorf("tagging scene studio for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 		if t.tags {
-			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache); err != nil {
+			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache, t.tags); err != nil {
 				return fmt.Errorf("tagging scene tags for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
@@ -800,9 +815,12 @@ type autoTagImageTask struct {
 	repository models.Repository
 	image      *models.Image
 
-	performers bool
-	studios    bool
-	tags       bool
+	performers       bool
+	studios          bool
+	tags             bool
+	performerAliases bool
+	studioAliases    bool
+	tagAliases       bool
 
 	cache *match.Cache
 }
@@ -812,17 +830,17 @@ func (t *autoTagImageTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	r := t.repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
-			if err := autotag.ImagePerformers(ctx, t.image, r.Image, r.Performer, t.cache); err != nil {
+			if err := autotag.ImagePerformers(ctx, t.image, r.Image, r.Performer, t.cache, t.performers); err != nil {
 				return fmt.Errorf("tagging image performers for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 		if t.studios {
-			if err := autotag.ImageStudios(ctx, t.image, r.Image, r.Studio, t.cache); err != nil {
+			if err := autotag.ImageStudios(ctx, t.image, r.Image, r.Studio, t.cache, t.studios); err != nil {
 				return fmt.Errorf("tagging image studio for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 		if t.tags {
-			if err := autotag.ImageTags(ctx, t.image, r.Image, r.Tag, t.cache); err != nil {
+			if err := autotag.ImageTags(ctx, t.image, r.Image, r.Tag, t.cache, t.tags); err != nil {
 				return fmt.Errorf("tagging image tags for %s: %v", t.image.DisplayName(), err)
 			}
 		}
@@ -839,9 +857,12 @@ type autoTagGalleryTask struct {
 	repository models.Repository
 	gallery    *models.Gallery
 
-	performers bool
-	studios    bool
-	tags       bool
+	performers       bool
+	studios          bool
+	tags             bool
+	performerAliases bool
+	studioAliases    bool
+	tagAliases       bool
 
 	cache *match.Cache
 }
@@ -851,17 +872,17 @@ func (t *autoTagGalleryTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	r := t.repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
-			if err := autotag.GalleryPerformers(ctx, t.gallery, r.Gallery, r.Performer, t.cache); err != nil {
+			if err := autotag.GalleryPerformers(ctx, t.gallery, r.Gallery, r.Performer, t.cache, t.performers); err != nil {
 				return fmt.Errorf("tagging gallery performers for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 		if t.studios {
-			if err := autotag.GalleryStudios(ctx, t.gallery, r.Gallery, r.Studio, t.cache); err != nil {
+			if err := autotag.GalleryStudios(ctx, t.gallery, r.Gallery, r.Studio, t.cache, t.studios); err != nil {
 				return fmt.Errorf("tagging gallery studio for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 		if t.tags {
-			if err := autotag.GalleryTags(ctx, t.gallery, r.Gallery, r.Tag, t.cache); err != nil {
+			if err := autotag.GalleryTags(ctx, t.gallery, r.Gallery, r.Tag, t.cache, t.tags); err != nil {
 				return fmt.Errorf("tagging gallery tags for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}

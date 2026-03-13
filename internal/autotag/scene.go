@@ -35,7 +35,7 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 }
 
 // ScenePerformers tags the provided scene with performers whose name matches the scene's path.
-func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
+func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache, matchAliases bool) error {
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
@@ -53,13 +53,13 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 		}
 
 		return true, nil
-	})
+	}, matchAliases)
 }
 
 // SceneStudios tags the provided scene with the first studio whose name matches the scene's path.
 //
 // Scenes will not be tagged if studio is already set.
-func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
+func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache, matchAliases bool) error {
 	if s.StudioID != nil {
 		// don't modify
 		return nil
@@ -69,11 +69,11 @@ func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, s
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
 		return addSceneStudio(ctx, rw, s, otherID)
-	})
+	}, matchAliases)
 }
 
 // SceneTags tags the provided scene with tags whose name matches the scene's path.
-func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
+func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache, matchAliases bool) error {
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
@@ -91,5 +91,5 @@ func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagRead
 		}
 
 		return true, nil
-	})
+	}, matchAliases)
 }

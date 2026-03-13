@@ -790,7 +790,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 
 		name := studioNames[studioIdxWithGroup] // find a studio by name
 
-		studios, err := tqb.QueryForAutoTag(ctx, []string{name})
+		studios, err := tqb.QueryForAutoTag(ctx, []string{name}, true)
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())
@@ -800,7 +800,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithGroup]), strings.ToLower(studios[0].Name))
 
 		name = getStudioStringValue(studioIdxWithGroup, "Alias")
-		studios, err = tqb.QueryForAutoTag(ctx, []string{name})
+		studios, err = tqb.QueryForAutoTag(ctx, []string{name}, true)
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())

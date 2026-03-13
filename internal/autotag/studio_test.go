@@ -166,7 +166,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 		TxnManager: db,
 	}
 
-	err := tagger.StudioScenes(testCtx, &studio, nil, aliases, db.Scene)
+	err := tagger.StudioScenes(testCtx, &studio, nil, aliases, db.Scene, true)
 
 	assert := assert.New(t)
 
@@ -269,7 +269,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 		TxnManager: db,
 	}
 
-	err := tagger.StudioImages(testCtx, &studio, nil, aliases, db.Image)
+	err := tagger.StudioImages(testCtx, &studio, nil, aliases, db.Image, true)
 
 	assert := assert.New(t)
 
@@ -372,7 +372,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 		TxnManager: db,
 	}
 
-	err := tagger.StudioGalleries(testCtx, &studio, nil, aliases, db.Gallery)
+	err := tagger.StudioGalleries(testCtx, &studio, nil, aliases, db.Gallery, true)
 
 	assert := assert.New(t)
 
