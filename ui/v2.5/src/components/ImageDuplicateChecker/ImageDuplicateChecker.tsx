@@ -1,21 +1,40 @@
-import React, { useState } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
+import React, { useMemo, useState } from "react";
+import {
+  Button,
+  Form,
+  Spinner,
+  Table,
+  Row,
+  Col,
+  Card,
+} from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useFindDuplicateImagesQuery } from "src/core/generated-graphql";
+import * as GQL from "src/core/generated-graphql";
 import { PatchContainerComponent } from "src/patch";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ErrorMessage } from "../Shared/ErrorMessage";
+import { FileSize } from "../Shared/FileSize";
+import { Pagination } from "src/components/List/Pagination";
+import { useHistory } from "react-router-dom";
 
 const ImageDuplicateCheckerSection = PatchContainerComponent(
   "ImageDuplicateCheckerSection"
 );
 
 const ImageDuplicateChecker: React.FC = () => {
-  const [distance, setDistance] = useState(0);
+  const intl = useIntl();
+  const history = useHistory();
+  const query = new URLSearchParams(history.location.search);
+  const currentPage = Number.parseInt(query.get("page") ?? "1", 10);
+  const pageSize = Number.parseInt(query.get("size") ?? "20", 10);
+  const hashDistance = Number.parseInt(query.get("distance") ?? "0", 10);
+
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // We lazily fetch the query only when "Search" is clicked
   const { data, loading, error, refetch } = useFindDuplicateImagesQuery({
-    variables: { distance },
+    variables: { distance: hashDistance },
     skip: !hasSearched,
     fetchPolicy: "network-only",
   });
@@ -23,90 +42,171 @@ const ImageDuplicateChecker: React.FC = () => {
   const handleSearch = () => {
     setIsSearching(true);
     setHasSearched(true);
-    refetch({ distance }).finally(() => setIsSearching(false));
+    refetch({ distance: hashDistance }).finally(() => setIsSearching(false));
   };
 
-  const results = data?.findDuplicateImages ?? [];
+  const getGroupTotalSize = (group: GQL.ImageDataFragment[]) => {
+    return group.reduce((groupTotal, img) => {
+      const imgTotal = img.visual_files.reduce(
+        (fileTotal, file) => fileTotal + (file.size ?? 0),
+        0
+      );
+      return groupTotal + imgTotal;
+    }, 0);
+  };
 
-  return (
-    <div className="row image-duplicate-checker">
-      <div className="col-md-12">
-        <ImageDuplicateCheckerSection>
-          <h3>
-            <FormattedMessage id="config.tools.image_duplicate_checker" />
-          </h3>
-          <Form className="d-flex align-items-end mb-4">
-            <Form.Group controlId="distanceInput" className="mb-0 me-3">
-              <Form.Label>PHash Distance</Form.Label>
-              <Form.Control
-                type="number"
-                value={distance}
-                min={0}
-                max={10}
-                onChange={(e) => setDistance(parseInt(e.target.value) || 0)}
-              />
-              <Form.Text className="text-muted">
-                Distance 0 means exact matches.
-              </Form.Text>
-            </Form.Group>
+  const allGroups = useMemo(() => {
+    const groups = data?.findDuplicateImages ?? [];
+    return [...groups].sort((a, b) => {
+      return getGroupTotalSize(b) - getGroupTotalSize(a);
+    });
+  }, [data?.findDuplicateImages]);
 
-            <Button
-              variant="primary"
-              onClick={handleSearch}
-              disabled={isSearching || loading}
-            >
-              {isSearching || loading ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                "Search"
-              )}
-            </Button>
-          </Form>
+  const pagedGroups = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return allGroups.slice(start, start + pageSize);
+  }, [allGroups, currentPage, pageSize]);
 
-          {error && (
-            <div className="text-danger mb-4">Error: {error.message}</div>
-          )}
+  if (error) return <ErrorMessage error={error.message} />;
 
-          {hasSearched && !loading && !error && results.length === 0 && (
-            <p>No duplicates found.</p>
-          )}
-
-          {results.map((group, index) => {
-            if (!group || group.length < 2) return null;
-            return (
-              <div
-                key={index}
-                className="duplicate-group mb-4 pb-4 border-bottom"
-              >
-                <h5>Group {index + 1}</h5>
-                {/* ImageList requires an array of items with proper types. We map it nicely. */}
-                <div className="d-flex flex-wrap gap-3">
-                  {group.map((img) => (
-                    <div key={img.id} className="border p-2 rounded">
+  const renderGroup = (group: GQL.ImageDataFragment[], index: number) => {
+    const groupIndex = (currentPage - 1) * pageSize + index + 1;
+    return (
+      <Card key={groupIndex} className="mb-4">
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <h5>Group {groupIndex}</h5>
+          <span className="text-muted">
+            Total Size: <FileSize size={getGroupTotalSize(group)} />
+          </span>
+        </Card.Header>
+        <Card.Body>
+          <Table striped bordered hover responsive size="sm">
+            <thead>
+              <tr>
+                <th style={{ width: "150px" }}>Image</th>
+                <th>Details</th>
+                <th style={{ width: "120px" }}>Size</th>
+                <th style={{ width: "150px" }}>Dimensions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {group.map((img) => {
+                const file = img.visual_files[0];
+                return (
+                  <tr key={img.id}>
+                    <td>
                       <img
                         src={img.paths.thumbnail || ""}
                         alt={img.title || img.id}
                         style={{
-                          maxWidth: "200px",
-                          maxHeight: "200px",
+                          maxWidth: "120px",
+                          maxHeight: "120px",
                           objectFit: "contain",
                         }}
                       />
-                      <div
-                        className="mt-2 text-center text-truncate"
-                        style={{ maxWidth: "200px" }}
-                        title={img.title || img.id}
-                      >
-                        {img.title || img.id}
+                    </td>
+                    <td>
+                      <div className="fw-bold">{img.title || "(No Title)"}</div>
+                      <div className="text-muted small text-truncate" style={{ maxWidth: "400px" }}>
+                        {img.visual_files[0]?.path}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </ImageDuplicateCheckerSection>
-      </div>
+                      <div className="mt-1 small">ID: {img.id}</div>
+                    </td>
+                    <td>
+                      <FileSize size={file?.size ?? 0} />
+                    </td>
+                    <td>
+                      {file?.__typename === "ImageFile" || file?.__typename === "VideoFile" ? (
+                        <>
+                          {file.width} x {file.height}
+                        </>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="container-fluid py-4">
+      <ImageDuplicateCheckerSection>
+        <Row className="mb-4">
+          <Col>
+            <h3>
+              <FormattedMessage id="config.tools.image_duplicate_checker" />
+            </h3>
+          </Col>
+        </Row>
+
+        <Form className="bg-light p-3 rounded mb-4 shadow-sm">
+          <Row className="align-items-end">
+            <Col md={3}>
+              <Form.Group controlId="distanceInput">
+                <Form.Label>PHash Distance</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={hashDistance}
+                  min={0}
+                  max={10}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 0;
+                    query.set("distance", val.toString());
+                    history.push({ search: query.toString() });
+                  }}
+                />
+                <Form.Text className="text-muted small">
+                  0 = exact matches.
+                </Form.Text>
+              </Form.Group>
+            </Col>
+            <Col md={2}>
+              <Button
+                variant="primary"
+                className="w-100"
+                onClick={handleSearch}
+                disabled={isSearching || loading}
+              >
+                {isSearching || loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  "Search"
+                )}
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+
+        {loading && <LoadingIndicator />}
+
+        {hasSearched && !loading && !error && allGroups.length === 0 && (
+          <div className="text-center py-5 border rounded bg-light">
+            <p className="mb-0">No duplicates found with the current distance.</p>
+          </div>
+        )}
+
+        {pagedGroups.map((group, index) => renderGroup(group, index))}
+
+        {allGroups.length > pageSize && (
+          <div className="d-flex justify-content-center mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={allGroups.length}
+              pageSize={pageSize}
+              onChangePage={(page) => {
+                query.set("page", page.toString());
+                history.push({ search: query.toString() });
+              }}
+            />
+          </div>
+        )}
+      </ImageDuplicateCheckerSection>
     </div>
   );
 };
