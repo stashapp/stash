@@ -82,6 +82,9 @@ const SceneFilenameParser = lazyComponent(
 const SceneDuplicateChecker = lazyComponent(
   () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
 );
+const ImageDuplicateChecker = lazyComponent(
+  () => import("./components/ImageDuplicateChecker/ImageDuplicateChecker")
+);
 
 const appleRendering = isPlatformUniquelyRenderedByApple();
 
@@ -268,6 +271,10 @@ export const App: React.FC = () => {
             <Route
               path="/sceneDuplicateChecker"
               component={SceneDuplicateChecker}
+            />
+            <Route
+              path="/imageDuplicateChecker"
+              component={ImageDuplicateChecker}
             />
             <Route path="/setup" component={Setup} />
             <Route path="/migrate" component={Migrate} />

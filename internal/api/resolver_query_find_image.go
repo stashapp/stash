@@ -134,3 +134,7 @@ func (r *queryResolver) AllImages(ctx context.Context) (ret []*models.Image, err
 
 	return ret, nil
 }
+
+func (r *queryResolver) FindDuplicateImages(ctx context.Context, distance int) ([][]*models.Image, error) {
+	return r.repository.Image.FindDuplicates(ctx, distance)
+}

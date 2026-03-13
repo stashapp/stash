@@ -53,6 +53,9 @@ type Query {
     duration_diff: Float
   ): [[Scene!]!]!
 
+  "Find duplicate images"
+  findDuplicateImages(distance: Int! = 0): [[Image!]!]!
+
   "Return valid stream paths"
   sceneStreams(id: ID): [SceneStreamEndpoint!]!
 

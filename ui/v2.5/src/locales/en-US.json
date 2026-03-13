@@ -9,7 +9,9 @@
         "tools": {
             "scene_filename_parser": {
                 "ignore_organized": "Ignore organized scenes"
-            }
+            },
+            "image_tools": "Image Tools",
+            "image_duplicate_checker": "Image Duplicate Checker"
         },
         "ui": {
             "custom_locales": {

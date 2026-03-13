@@ -643,7 +643,9 @@
         "whitespace_chars": "Whitespace characters",
         "whitespace_chars_desc": "These characters will be replaced with whitespace in the title"
       },
-      "scene_tools": "Scene Tools"
+      "scene_tools": "Scene Tools",
+      "image_tools": "Image Tools",
+      "image_duplicate_checker": "Image Duplicate Checker"
     },
     "ui": {
       "abbreviate_counters": {

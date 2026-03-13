@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -1092,4 +1093,113 @@ func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int)
 
 func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {
 	return imagesURLsTableMgr.get(ctx, imageID)
+}
+
+func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Image, error) {
+	return qb.findPhashMatches(ctx, distance)
+}
+
+func (qb *ImageStore) findPhashMatches(ctx context.Context, distance int) ([][]*models.Image, error) {
+	query := `
+        SELECT images.id, files_fingerprints.fingerprint as phash
+        FROM images
+        JOIN images_files ON images.id = images_files.image_id
+        JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
+        WHERE files_fingerprints.type = 'phash'`
+
+	type ImagePhash struct {
+		ID    int    `db:"id"`
+		PHash string `db:"phash"`
+	}
+
+	var hashes []ImagePhash
+	err := imageRepository.queryStruct(ctx, query, nil, &hashes)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse hashes
+	type ParsedPhash struct {
+		ID    int
+		PHash uint64
+	}
+	var parsedHashes []ParsedPhash
+	for _, h := range hashes {
+		val, parseErr := strconv.ParseUint(h.PHash, 16, 64)
+		if parseErr == nil {
+			parsedHashes = append(parsedHashes, ParsedPhash{ID: h.ID, PHash: val})
+		}
+	}
+
+	// Helper for Popcount
+	popcount := func(x uint64) int {
+		x -= (x >> 1) & 0x5555555555555555
+		x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333)
+		x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f
+		return int((x * 0x0101010101010101) >> 56)
+	}
+
+	// Adjacency list for connected components
+	adj := make(map[int][]int)
+	nodes := make(map[int]bool)
+
+	// O(N^2) comparison in memory
+	for i := 0; i < len(parsedHashes); i++ {
+		for j := i + 1; j < len(parsedHashes); j++ {
+			diff := popcount(parsedHashes[i].PHash ^ parsedHashes[j].PHash)
+			if diff <= distance {
+				id1 := parsedHashes[i].ID
+				id2 := parsedHashes[j].ID
+				adj[id1] = append(adj[id1], id2)
+				adj[id2] = append(adj[id2], id1)
+				nodes[id1] = true
+				nodes[id2] = true
+			}
+		}
+	}
+
+	// Find connected components
+	visited := make(map[int]bool)
+	var components [][]int
+
+	for node := range nodes {
+		if !visited[node] {
+			var component []int
+			queue := []int{node}
+			visited[node] = true
+
+			for len(queue) > 0 {
+				curr := queue[0]
+				queue = queue[1:]
+				component = append(component, curr)
+
+				for _, neighbor := range adj[curr] {
+					if !visited[neighbor] {
+						visited[neighbor] = true
+						queue = append(queue, neighbor)
+					}
+				}
+			}
+			if len(component) > 1 {
+				components = append(components, component)
+			}
+		}
+	}
+
+	// Fetch actual image objects
+	var result [][]*models.Image
+	for _, comp := range components {
+		var group []*models.Image
+		for _, id := range comp {
+			img, err := qb.Find(ctx, id)
+			if err == nil && img != nil {
+				group = append(group, img)
+			}
+		}
+		if len(group) > 1 {
+			result = append(result, group)
+		}
+	}
+
+	return result, nil
 }

@@ -48,6 +48,20 @@ export const SettingsToolsPanel: React.FC = () => {
           />
         </SettingsToolsSection>
       </SettingSection>
+
+      <SettingSection headingID="config.tools.image_tools">
+        <SettingsToolsSection>
+          <Setting
+            heading={
+              <Link to="/imageDuplicateChecker">
+                <Button>
+                  <FormattedMessage id="config.tools.image_duplicate_checker" />
+                </Button>
+              </Link>
+            }
+          />
+        </SettingsToolsSection>
+      </SettingSection>
     </>
   );
 };
