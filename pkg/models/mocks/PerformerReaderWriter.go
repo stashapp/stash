@@ -539,8 +539,8 @@ func (_m *PerformerReaderWriter) QueryCount(ctx context.Context, performerFilter
 }
 
 // QueryForAutoTag provides a mock function with given fields: ctx, words
-func (_m *PerformerReaderWriter) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error) {
-	ret := _m.Called(ctx, words)
+func (_m *PerformerReaderWriter) QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*models.Performer, error) {
+	ret := _m.Called(ctx, words, matchAliases)
 
 	var r0 []*models.Performer
 	if rf, ok := ret.Get(0).(func(context.Context, []string) []*models.Performer); ok {

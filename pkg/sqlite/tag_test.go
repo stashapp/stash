@@ -126,7 +126,7 @@ func TestTagQueryForAutoTag(t *testing.T) {
 
 		name := tagNames[tagIdx1WithScene] // find a tag by name
 
-		tags, err := tqb.QueryForAutoTag(ctx, []string{name})
+		tags, err := tqb.QueryForAutoTag(ctx, []string{name}, true)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -139,7 +139,7 @@ func TestTagQueryForAutoTag(t *testing.T) {
 
 		// find by alias
 		name = getTagStringValue(tagIdx1WithScene, "Alias")
-		tags, err = tqb.QueryForAutoTag(ctx, []string{name})
+		tags, err = tqb.QueryForAutoTag(ctx, []string{name}, true)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())

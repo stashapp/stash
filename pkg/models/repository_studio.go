@@ -31,7 +31,7 @@ type StudioAutoTagQueryer interface {
 
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Studio, error)
+	QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*Studio, error)
 }
 
 // StudioCounter provides methods to count studios.

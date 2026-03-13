@@ -55,7 +55,7 @@ func TestGalleryPerformers(t *testing.T) {
 		db := mocks.NewDatabase()
 
 		db.Performer.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
-		db.Performer.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
+		db.Performer.On("QueryForAutoTag", testCtx, mock.Anything, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
 			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
@@ -76,7 +76,42 @@ func TestGalleryPerformers(t *testing.T) {
 			Path:         test.Path,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := GalleryPerformers(testCtx, &gallery, db.Gallery, db.Performer, nil)
+		err := GalleryPerformers(testCtx, &gallery, db.Gallery, db.Performer, nil, true)
+
+		assert.Nil(err)
+		db.AssertExpectations(t)
+	}
+
+	// test against aliases
+	performer.Name = "unmatched"
+	performer.Aliases = models.NewRelatedStrings([]string{performerName})
+
+	for _, test := range testTables {
+		db := mocks.NewDatabase()
+
+		db.Performer.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		db.Performer.On("QueryForAutoTag", testCtx, mock.Anything, mock.Anything, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
+
+		if test.Matches {
+			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+				expected := models.GalleryPartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  []int{performerID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				return galleryPartialsEqual(got, expected)
+			})
+			db.Gallery.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
+		}
+
+		gallery := models.Gallery{
+			ID:           galleryID,
+			Path:         test.Path,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
+		}
+		err := GalleryPerformers(testCtx, &gallery, db.Gallery, db.Performer, nil, true)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -121,7 +156,7 @@ func TestGalleryStudios(t *testing.T) {
 			ID:   galleryID,
 			Path: test.Path,
 		}
-		err := GalleryStudios(testCtx, &gallery, db.Gallery, db.Studio, nil)
+		err := GalleryStudios(testCtx, &gallery, db.Gallery, db.Studio, nil, true)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -131,7 +166,7 @@ func TestGalleryStudios(t *testing.T) {
 		db := mocks.NewDatabase()
 
 		db.Studio.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
-		db.Studio.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		db.Studio.On("QueryForAutoTag", testCtx, mock.Anything, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 		db.Studio.On("GetAliases", testCtx, mock.Anything).Return([]string{}, nil).Maybe()
 
 		doTest(db, test)
@@ -145,7 +180,7 @@ func TestGalleryStudios(t *testing.T) {
 		db := mocks.NewDatabase()
 
 		db.Studio.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
-		db.Studio.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		db.Studio.On("QueryForAutoTag", testCtx, mock.Anything, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 		db.Studio.On("GetAliases", testCtx, studioID).Return([]string{
 			studioName,
 		}, nil).Once()
@@ -197,7 +232,7 @@ func TestGalleryTags(t *testing.T) {
 			Path:   test.Path,
 			TagIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := GalleryTags(testCtx, &gallery, db.Gallery, db.Tag, nil)
+		err := GalleryTags(testCtx, &gallery, db.Gallery, db.Tag, nil, true)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -207,7 +242,7 @@ func TestGalleryTags(t *testing.T) {
 		db := mocks.NewDatabase()
 
 		db.Tag.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
-		db.Tag.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		db.Tag.On("QueryForAutoTag", testCtx, mock.Anything, mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
 		db.Tag.On("GetAliases", testCtx, mock.Anything).Return([]string{}, nil).Maybe()
 
 		doTest(db, test)
@@ -220,7 +255,7 @@ func TestGalleryTags(t *testing.T) {
 		db := mocks.NewDatabase()
 
 		db.Tag.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
-		db.Tag.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		db.Tag.On("QueryForAutoTag", testCtx, mock.Anything, mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
 		db.Tag.On("GetAliases", testCtx, tagID).Return([]string{
 			tagName,
 		}, nil).Once()

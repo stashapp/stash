@@ -53,16 +53,34 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
         onChange={(v) => setOptions({ performers: set(v) })}
       />
       <BooleanSetting
+        id="autotag-performer-aliases"
+        checked={options.performerAliases ?? false}
+        headingID="config.tasks.autotag_performer_aliases"
+        onChange={(v) => setOptions({ performerAliases: v })}
+      />
+      <BooleanSetting
         id="autotag-studios"
         checked={!!studios?.length}
         headingID="studios"
         onChange={(v) => setOptions({ studios: set(v) })}
       />
       <BooleanSetting
+        id="autotag-studio-aliases"
+        checked={options.studioAliases ?? false}
+        headingID="config.tasks.autotag_studio_aliases"
+        onChange={(v) => setOptions({ studioAliases: v })}
+      />
+      <BooleanSetting
         id="autotag-tags"
         checked={!!tags?.length}
         headingID="tags"
         onChange={(v) => setOptions({ tags: set(v) })}
+      />
+      <BooleanSetting
+        id="autotag-tag-aliases"
+        checked={options.tagAliases ?? false}
+        headingID="config.tasks.autotag_tag_aliases"
+        onChange={(v) => setOptions({ tagAliases: v })}
       />
     </>
   );

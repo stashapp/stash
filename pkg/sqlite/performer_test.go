@@ -1683,7 +1683,7 @@ func TestPerformerQueryForAutoTag(t *testing.T) {
 
 		name := performerNames[performerIdx1WithScene] // find a performer by name
 
-		performers, err := tqb.QueryForAutoTag(ctx, []string{name})
+		performers, err := tqb.QueryForAutoTag(ctx, []string{name}, true)
 
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())

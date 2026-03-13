@@ -746,8 +746,8 @@ func (_m *TagReaderWriter) Query(ctx context.Context, tagFilter *models.TagFilte
 }
 
 // QueryForAutoTag provides a mock function with given fields: ctx, words
-func (_m *TagReaderWriter) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Tag, error) {
-	ret := _m.Called(ctx, words)
+func (_m *TagReaderWriter) QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, words, matchAliases)
 
 	var r0 []*models.Tag
 	if rf, ok := ret.Get(0).(func(context.Context, []string) []*models.Tag); ok {

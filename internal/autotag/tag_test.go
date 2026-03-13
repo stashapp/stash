@@ -169,7 +169,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 		TxnManager: db,
 	}
 
-	err := tagger.TagScenes(testCtx, &tag, nil, aliases, db.Scene)
+	err := tagger.TagScenes(testCtx, &tag, nil, aliases, db.Scene, true)
 
 	assert := assert.New(t)
 
@@ -276,7 +276,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 		TxnManager: db,
 	}
 
-	err := tagger.TagImages(testCtx, &tag, nil, aliases, db.Image)
+	err := tagger.TagImages(testCtx, &tag, nil, aliases, db.Image, true)
 
 	assert := assert.New(t)
 
@@ -384,7 +384,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 		TxnManager: db,
 	}
 
-	err := tagger.TagGalleries(testCtx, &tag, nil, aliases, db.Gallery)
+	err := tagger.TagGalleries(testCtx, &tag, nil, aliases, db.Gallery, true)
 
 	assert := assert.New(t)
 

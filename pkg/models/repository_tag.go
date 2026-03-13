@@ -40,7 +40,7 @@ type TagAutoTagQueryer interface {
 
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Tag, error)
+	QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*Tag, error)
 }
 
 // TagCounter provides methods to count tags.

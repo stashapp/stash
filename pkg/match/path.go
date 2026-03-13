@@ -127,8 +127,8 @@ func regexpMatchesPath(r *regexp.Regexp, path string) int {
 	return found[len(found)-1][0]
 }
 
-func getPerformers(ctx context.Context, words []string, performerReader models.PerformerAutoTagQueryer, cache *Cache) ([]*models.Performer, error) {
-	performers, err := performerReader.QueryForAutoTag(ctx, words)
+func getPerformers(ctx context.Context, words []string, performerReader models.PerformerAutoTagQueryer, cache *Cache, matchAliases bool) ([]*models.Performer, error) {
+	performers, err := performerReader.QueryForAutoTag(ctx, words, matchAliases)
 	if err != nil {
 		return nil, err
 	}
@@ -141,10 +141,10 @@ func getPerformers(ctx context.Context, words []string, performerReader models.P
 	return append(performers, swPerformers...), nil
 }
 
-func PathToPerformers(ctx context.Context, path string, reader models.PerformerAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Performer, error) {
+func PathToPerformers(ctx context.Context, path string, reader models.PerformerAutoTagQueryer, cache *Cache, trimExt bool, matchAliases bool) ([]*models.Performer, error) {
 	words := getPathWords(path, trimExt)
 
-	performers, err := getPerformers(ctx, words, reader, cache)
+	performers, err := getPerformers(ctx, words, reader, cache, matchAliases)
 	if err != nil {
 		return nil, err
 	}
@@ -156,20 +156,18 @@ func PathToPerformers(ctx context.Context, path string, reader models.PerformerA
 			matches = true
 		}
 
-		// TODO - disabled alias matching until we can get finer
-		// control over the matching
-		// if !matches {
-		// 	if err := p.LoadAliases(ctx, reader); err != nil {
-		// 		return nil, err
-		// 	}
+		if !matches && matchAliases {
+			if err := p.LoadAliases(ctx, reader); err != nil {
+				return nil, err
+			}
 
-		// 	for _, alias := range p.Aliases.List() {
-		// 		if nameMatchesPath(alias, path) != -1 {
-		// 			matches = true
-		// 			break
-		// 		}
-		// 	}
-		// }
+			for _, alias := range p.Aliases.List() {
+				if nameMatchesPath(alias, path) != -1 {
+					matches = true
+					break
+				}
+			}
+		}
 
 		if matches {
 			ret = append(ret, p)
@@ -179,8 +177,8 @@ func PathToPerformers(ctx context.Context, path string, reader models.PerformerA
 	return ret, nil
 }
 
-func getStudios(ctx context.Context, words []string, reader models.StudioAutoTagQueryer, cache *Cache) ([]*models.Studio, error) {
-	studios, err := reader.QueryForAutoTag(ctx, words)
+func getStudios(ctx context.Context, words []string, reader models.StudioAutoTagQueryer, cache *Cache, matchAliases bool) ([]*models.Studio, error) {
+	studios, err := reader.QueryForAutoTag(ctx, words, matchAliases)
 	if err != nil {
 		return nil, err
 	}
@@ -196,9 +194,9 @@ func getStudios(ctx context.Context, words []string, reader models.StudioAutoTag
 // PathToStudio returns the Studio that matches the given path.
 // Where multiple matching studios are found, the one that matches the latest
 // position in the path is returned.
-func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQueryer, cache *Cache, trimExt bool) (*models.Studio, error) {
+func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQueryer, cache *Cache, trimExt bool, matchAliases bool) (*models.Studio, error) {
 	words := getPathWords(path, trimExt)
-	candidates, err := getStudios(ctx, words, reader, cache)
+	candidates, err := getStudios(ctx, words, reader, cache, matchAliases)
 
 	if err != nil {
 		return nil, err
@@ -213,16 +211,18 @@ func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQ
 			index = matchIndex
 		}
 
-		aliases, err := reader.GetAliases(ctx, c.ID)
-		if err != nil {
-			return nil, err
-		}
+		if matchAliases {
+			aliases, err := reader.GetAliases(ctx, c.ID)
+			if err != nil {
+				return nil, err
+			}
 
-		for _, alias := range aliases {
-			matchIndex = nameMatchesPath(alias, path)
-			if matchIndex != -1 && matchIndex > index {
-				ret = c
-				index = matchIndex
+			for _, alias := range aliases {
+				matchIndex = nameMatchesPath(alias, path)
+				if matchIndex != -1 && matchIndex > index {
+					ret = c
+					index = matchIndex
+				}
 			}
 		}
 	}
@@ -230,8 +230,8 @@ func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQ
 	return ret, nil
 }
 
-func getTags(ctx context.Context, words []string, reader models.TagAutoTagQueryer, cache *Cache) ([]*models.Tag, error) {
-	tags, err := reader.QueryForAutoTag(ctx, words)
+func getTags(ctx context.Context, words []string, reader models.TagAutoTagQueryer, cache *Cache, matchAliases bool) ([]*models.Tag, error) {
+	tags, err := reader.QueryForAutoTag(ctx, words, matchAliases)
 	if err != nil {
 		return nil, err
 	}
@@ -244,9 +244,9 @@ func getTags(ctx context.Context, words []string, reader models.TagAutoTagQuerye
 	return append(tags, swTags...), nil
 }
 
-func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Tag, error) {
+func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQueryer, cache *Cache, trimExt bool, matchAliases bool) ([]*models.Tag, error) {
 	words := getPathWords(path, trimExt)
-	tags, err := getTags(ctx, words, reader, cache)
+	tags, err := getTags(ctx, words, reader, cache, matchAliases)
 
 	if err != nil {
 		return nil, err
@@ -259,7 +259,7 @@ func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQuerye
 			matches = true
 		}
 
-		if !matches {
+		if !matches && matchAliases {
 			aliases, err := reader.GetAliases(ctx, t.ID)
 			if err != nil {
 				return nil, err

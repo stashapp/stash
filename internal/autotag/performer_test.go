@@ -107,7 +107,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 		TxnManager: db,
 	}
 
-	err := tagger.PerformerScenes(testCtx, &performer, nil, db.Scene)
+	err := tagger.PerformerScenes(testCtx, &performer, nil, db.Scene, true)
 
 	assert := assert.New(t)
 
@@ -202,7 +202,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 		TxnManager: db,
 	}
 
-	err := tagger.PerformerImages(testCtx, &performer, nil, db.Image)
+	err := tagger.PerformerImages(testCtx, &performer, nil, db.Image, true)
 
 	assert := assert.New(t)
 
@@ -297,7 +297,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 		TxnManager: db,
 	}
 
-	err := tagger.PerformerGalleries(testCtx, &performer, nil, db.Gallery)
+	err := tagger.PerformerGalleries(testCtx, &performer, nil, db.Gallery, true)
 
 	assert := assert.New(t)
 

@@ -28,4 +28,10 @@ type AutoTagMetadataOptions struct {
 	Studios []string `json:"studios"`
 	// IDs of tags to tag files with, or "*" for all
 	Tags []string `json:"tags"`
+	// If true, will also match performer aliases
+	PerformerAliases bool `json:"performerAliases"`
+	// If true, will also match studio aliases
+	StudioAliases bool `json:"studioAliases"`
+	// If true, will also match tag aliases
+	TagAliases bool `json:"tagAliases"`
 }

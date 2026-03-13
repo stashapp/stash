@@ -502,8 +502,8 @@ func (_m *StudioReaderWriter) QueryCount(ctx context.Context, studioFilter *mode
 }
 
 // QueryForAutoTag provides a mock function with given fields: ctx, words
-func (_m *StudioReaderWriter) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error) {
-	ret := _m.Called(ctx, words)
+func (_m *StudioReaderWriter) QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*models.Studio, error) {
+	ret := _m.Called(ctx, words, matchAliases)
 
 	var r0 []*models.Studio
 	if rf, ok := ret.Get(0).(func(context.Context, []string) []*models.Studio); ok {

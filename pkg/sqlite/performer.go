@@ -580,23 +580,26 @@ func (qb *PerformerStore) All(ctx context.Context) ([]*models.Performer, error) 
 	return qb.getMany(ctx, qb.selectDataset().Order(table.Col("name").Asc()))
 }
 
-func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error) {
+func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string, matchAliases bool) ([]*models.Performer, error) {
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
 	sq := dialect.From(table).Select(table.Col(idColumn))
-	// TODO - disabled alias matching until we get finer control over it
-	// .LeftJoin(
-	// 	performersAliasesJoinTable,
-	// 	goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
-	// )
+
+	if matchAliases {
+		sq = sq.LeftJoin(
+			performersAliasesJoinTable,
+			goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
+		)
+	}
 
 	var whereClauses []exp.Expression
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, table.Col("name").Like(w+"%"))
-		// TODO - see above
-		// whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
+		if matchAliases {
+			whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
+		}
 	}
 
 	sq = sq.Where(
