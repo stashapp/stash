@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
-	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
@@ -1131,4 +1131,3 @@ func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 
 	return result, nil
 }
-

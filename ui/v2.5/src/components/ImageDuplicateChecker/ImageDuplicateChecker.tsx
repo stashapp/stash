@@ -39,8 +39,11 @@ const ImageDuplicateChecker: React.FC = () => {
 
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [checkedImages, setCheckedImages] = useState<Record<string, boolean>>({});
-  const [selectedImages, setSelectedImages] = useState<GQL.ImageDataFragment[]>();
+  const [checkedImages, setCheckedImages] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [selectedImages, setSelectedImages] =
+    useState<GQL.ImageDataFragment[]>();
   const [deletingImages, setDeletingImages] = useState(false);
   const [editingImages, setEditingImages] = useState(false);
 
@@ -79,7 +82,9 @@ const ImageDuplicateChecker: React.FC = () => {
     return allGroups.slice(start, start + pageSize);
   }, [allGroups, currentPage, pageSize]);
 
-  const checkCount = Object.keys(checkedImages).filter((id) => checkedImages[id]).length;
+  const checkCount = Object.keys(checkedImages).filter(
+    (id) => checkedImages[id]
+  ).length;
 
   const handleCheck = (checked: boolean, imageID: string) => {
     setCheckedImages({ ...checkedImages, [imageID]: checked });
@@ -144,7 +149,9 @@ const ImageDuplicateChecker: React.FC = () => {
                     <td className="text-center align-middle">
                       <Form.Check
                         checked={checkedImages[img.id] || false}
-                        onChange={(e) => handleCheck(e.currentTarget.checked, img.id)}
+                        onChange={(e) =>
+                          handleCheck(e.currentTarget.checked, img.id)
+                        }
                       />
                     </td>
                     <td>
@@ -160,7 +167,10 @@ const ImageDuplicateChecker: React.FC = () => {
                     </td>
                     <td>
                       <div className="fw-bold">{img.title || "(No Title)"}</div>
-                      <div className="text-muted small text-truncate" style={{ maxWidth: "400px" }}>
+                      <div
+                        className="text-muted small text-truncate"
+                        style={{ maxWidth: "400px" }}
+                      >
                         {img.visual_files[0]?.path}
                       </div>
                       <div className="mt-1 small">ID: {img.id}</div>
@@ -169,7 +179,8 @@ const ImageDuplicateChecker: React.FC = () => {
                       <FileSize size={file?.size ?? 0} />
                     </td>
                     <td>
-                      {file?.__typename === "ImageFile" || file?.__typename === "VideoFile" ? (
+                      {file?.__typename === "ImageFile" ||
+                      file?.__typename === "VideoFile" ? (
                         <>
                           {file.width} x {file.height}
                         </>
@@ -252,7 +263,9 @@ const ImageDuplicateChecker: React.FC = () => {
 
         {hasSearched && !loading && !error && allGroups.length === 0 && (
           <div className="text-center py-5 border rounded bg-light">
-            <p className="mb-0">No duplicates found with the current distance.</p>
+            <p className="mb-0">
+              No duplicates found with the current distance.
+            </p>
           </div>
         )}
 
@@ -297,7 +310,7 @@ const ImageDuplicateChecker: React.FC = () => {
             <Pagination
               currentPage={currentPage}
               totalItems={allGroups.length}
-              pageSize={pageSize}
+              itemsPerPage={pageSize}
               onChangePage={(page) => {
                 query.set("page", page.toString());
                 history.push({ search: query.toString() });

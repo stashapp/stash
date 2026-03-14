@@ -9,8 +9,8 @@ import (
 )
 
 type Phash struct {
-	ID        int    `db:"id"`
-	Hash      int64  `db:"phash"`
+	ID        int     `db:"id"`
+	Hash      int64   `db:"phash"`
 	Duration  float64 `db:"duration"`
 	Neighbors []int
 	Bucket    int
