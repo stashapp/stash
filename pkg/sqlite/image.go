@@ -838,7 +838,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		)
 
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
-		searchColumns := []string{"images.title", "images.details", filepathColumn, "files_fingerprints.fingerprint"}
+		searchColumns := []string{"images.title", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -1104,28 +1104,29 @@ func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
         WHERE files_fingerprints.type = 'phash'`
 
 	var hashes []*utils.Phash
-	err := imageRepository.queryStruct(ctx, query, nil, &hashes)
-	if err != nil {
-		return nil, err
-	}
+	if err := imageRepository.queryFunc(ctx, query, nil, false, func(rows *sqlx.Rows) error {
+		phash := utils.Phash{
+			Bucket:   -1,
+			Duration: -1,
+		}
+		if err := rows.StructScan(&phash); err != nil {
+			return err
+		}
 
-	for _, h := range hashes {
-		h.Bucket = -1
+		hashes = append(hashes, &phash)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	dupeIds := utils.FindDuplicates(hashes, distance, -1)
 
 	var result [][]*models.Image
 	for _, comp := range dupeIds {
-		var group []*models.Image
-		for _, id := range comp {
-			img, err := qb.Find(ctx, id)
-			if err == nil && img != nil {
-				group = append(group, img)
+		if images, err := qb.FindMany(ctx, comp); err == nil {
+			if len(images) > 1 {
+				result = append(result, images)
 			}
-		}
-		if len(group) > 1 {
-			result = append(result, group)
 		}
 	}
 
