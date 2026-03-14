@@ -1282,7 +1282,8 @@
         "scrape_results_existing": "Наявні",
         "scrape_results_missing": "Відсутні",
         "scrape_results_scraped": "Отримані",
-        "set_default_filter_confirm": "Ви впевнені, що хочете встановити цей фільтр як типовий?"
+        "set_default_filter_confirm": "Ви впевнені, що хочете встановити цей фільтр як типовий?",
+        "edit_entity_count_title": "Редагувати {count} {count, plural, one {{singularEntity}} інший {{pluralEntity}}}"
     },
     "setup": {
         "errors": {
@@ -1684,5 +1685,6 @@
     "include_sub_folders": "Включити підпапки",
     "sub_folder_depth": "Глибина підпапок (порожня для всіх)",
     "sub_folders": "Підпапки",
-    "parent_folder": "Основна папка"
+    "parent_folder": "Основна папка",
+    "empty_value": "порожній"
 }
