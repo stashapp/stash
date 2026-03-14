@@ -89,11 +89,13 @@ func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAuto
 	return ret, nil
 }
 
-func (s autotagScraper) viaImage(ctx context.Context, client *http.Client, image *models.Image) (*models.ScrapedImage, error) {
+func (s autotagScraper) viaImage(ctx context.Context, _client *http.Client, image *models.Image) (*models.ScrapedImage, error) {
 	var ret *models.ScrapedImage
-	const trimExt = false
 
-	// populate performers, studio and tags based on scene path
+	// only trim extension if image is file-based
+	trimExt := image.PrimaryFileID != nil
+
+	// populate performers, studio and tags based on image path
 	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		path := image.Path
 		if path == "" {
