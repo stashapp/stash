@@ -103,7 +103,7 @@ func (e CircumcisedEnum) MarshalGQL(w io.Writer) {
 }
 
 type CircumcisionCriterionInput struct {
-	Value    []CircumcisedEnum  `json:"value"`
+	Value    []CircumcisedEnum `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 
@@ -216,32 +216,32 @@ type PerformerFilterType struct {
 }
 
 type PerformerCreateInput struct {
-	Name           string          `json:"name"`
-	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"` // deprecated
-	Urls           []string        `json:"urls"`
-	Gender         *GenderEnum     `json:"gender"`
-	Birthdate      *string         `json:"birthdate"`
-	Ethnicity      *string         `json:"ethnicity"`
-	Country        *string         `json:"country"`
-	EyeColor       *string         `json:"eye_color"`
-	Height         *string         `json:"height"`
-	HeightCm       *int            `json:"height_cm"`
-	Measurements   *string         `json:"measurements"`
-	FakeTits       *string         `json:"fake_tits"`
-	PenisLength    *float64        `json:"penis_length"`
+	Name           string           `json:"name"`
+	Disambiguation *string          `json:"disambiguation"`
+	URL            *string          `json:"url"` // deprecated
+	Urls           []string         `json:"urls"`
+	Gender         *GenderEnum      `json:"gender"`
+	Birthdate      *string          `json:"birthdate"`
+	Ethnicity      *string          `json:"ethnicity"`
+	Country        *string          `json:"country"`
+	EyeColor       *string          `json:"eye_color"`
+	Height         *string          `json:"height"`
+	HeightCm       *int             `json:"height_cm"`
+	Measurements   *string          `json:"measurements"`
+	FakeTits       *string          `json:"fake_tits"`
+	PenisLength    *float64         `json:"penis_length"`
 	Circumcised    *CircumcisedEnum `json:"circumcised"`
-	CareerLength   *string         `json:"career_length"`
-	CareerStart    *int            `json:"career_start"`
-	CareerEnd      *int            `json:"career_end"`
-	Tattoos        *string         `json:"tattoos"`
-	Piercings      *string         `json:"piercings"`
-	Aliases        *string         `json:"aliases"`
-	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`   // deprecated
-	Instagram      *string         `json:"instagram"` // deprecated
-	Favorite       *bool           `json:"favorite"`
-	TagIds         []string        `json:"tag_ids"`
+	CareerLength   *string          `json:"career_length"`
+	CareerStart    *int             `json:"career_start"`
+	CareerEnd      *int             `json:"career_end"`
+	Tattoos        *string          `json:"tattoos"`
+	Piercings      *string          `json:"piercings"`
+	Aliases        *string          `json:"aliases"`
+	AliasList      []string         `json:"alias_list"`
+	Twitter        *string          `json:"twitter"`   // deprecated
+	Instagram      *string          `json:"instagram"` // deprecated
+	Favorite       *bool            `json:"favorite"`
+	TagIds         []string         `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
 	Image         *string        `json:"image"`
 	StashIds      []StashIDInput `json:"stash_ids"`
@@ -256,33 +256,33 @@ type PerformerCreateInput struct {
 }
 
 type PerformerUpdateInput struct {
-	ID             string          `json:"id"`
-	Name           *string         `json:"name"`
-	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"` // deprecated
-	Urls           []string        `json:"urls"`
-	Gender         *GenderEnum     `json:"gender"`
-	Birthdate      *string         `json:"birthdate"`
-	Ethnicity      *string         `json:"ethnicity"`
-	Country        *string         `json:"country"`
-	EyeColor       *string         `json:"eye_color"`
-	Height         *string         `json:"height"`
-	HeightCm       *int            `json:"height_cm"`
-	Measurements   *string         `json:"measurements"`
-	FakeTits       *string         `json:"fake_tits"`
-	PenisLength    *float64        `json:"penis_length"`
+	ID             string           `json:"id"`
+	Name           *string          `json:"name"`
+	Disambiguation *string          `json:"disambiguation"`
+	URL            *string          `json:"url"` // deprecated
+	Urls           []string         `json:"urls"`
+	Gender         *GenderEnum      `json:"gender"`
+	Birthdate      *string          `json:"birthdate"`
+	Ethnicity      *string          `json:"ethnicity"`
+	Country        *string          `json:"country"`
+	EyeColor       *string          `json:"eye_color"`
+	Height         *string          `json:"height"`
+	HeightCm       *int             `json:"height_cm"`
+	Measurements   *string          `json:"measurements"`
+	FakeTits       *string          `json:"fake_tits"`
+	PenisLength    *float64         `json:"penis_length"`
 	Circumcised    *CircumcisedEnum `json:"circumcised"`
-	CareerLength   *string         `json:"career_length"`
-	CareerStart    *int            `json:"career_start"`
-	CareerEnd      *int            `json:"career_end"`
-	Tattoos        *string         `json:"tattoos"`
-	Piercings      *string         `json:"piercings"`
-	Aliases        *string         `json:"aliases"`
-	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`   // deprecated
-	Instagram      *string         `json:"instagram"` // deprecated
-	Favorite       *bool           `json:"favorite"`
-	TagIds         []string        `json:"tag_ids"`
+	CareerLength   *string          `json:"career_length"`
+	CareerStart    *int             `json:"career_start"`
+	CareerEnd      *int             `json:"career_end"`
+	Tattoos        *string          `json:"tattoos"`
+	Piercings      *string          `json:"piercings"`
+	Aliases        *string          `json:"aliases"`
+	AliasList      []string         `json:"alias_list"`
+	Twitter        *string          `json:"twitter"`   // deprecated
+	Instagram      *string          `json:"instagram"` // deprecated
+	Favorite       *bool            `json:"favorite"`
+	TagIds         []string         `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
 	Image         *string        `json:"image"`
 	StashIds      []StashIDInput `json:"stash_ids"`
