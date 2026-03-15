@@ -76,8 +76,6 @@ const numberCriteria: CriterionType[] = [
   "age",
   "weight",
   "penis_length",
-  "career_start",
-  "career_end",
 ];
 
 const stringCriteria: CriterionType[] = [
@@ -120,6 +118,8 @@ const criterionOptions = [
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
   createDateCriterionOption("birthdate"),
   createDateCriterionOption("death_date"),
+  createDateCriterionOption("career_start"),
+  createDateCriterionOption("career_end"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
   CustomFieldsCriterionOption,

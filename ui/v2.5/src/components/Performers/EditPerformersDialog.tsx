@@ -428,21 +428,23 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </BulkUpdateFormGroup>
           <BulkUpdateFormGroup name="career_start">
-            <BulkUpdateTextInput
-              value={updateInput.career_start?.toString()}
-              valueChanged={(v) =>
-                setUpdateField({ career_start: v ? parseInt(v) : undefined })
+            <BulkUpdateDateInput
+              value={updateInput.career_start}
+              valueChanged={(newValue) =>
+                setUpdateField({ career_start: newValue })
               }
               unsetDisabled={unsetDisabled}
+              error={birthdateError}
             />
           </BulkUpdateFormGroup>
           <BulkUpdateFormGroup name="career_end">
-            <BulkUpdateTextInput
-              value={updateInput.career_end?.toString()}
-              valueChanged={(v) =>
-                setUpdateField({ career_end: v ? parseInt(v) : undefined })
+            <BulkUpdateDateInput
+              value={updateInput.career_end}
+              valueChanged={(newValue) =>
+                setUpdateField({ career_end: newValue })
               }
               unsetDisabled={unsetDisabled}
+              error={birthdateError}
             />
           </BulkUpdateFormGroup>
 

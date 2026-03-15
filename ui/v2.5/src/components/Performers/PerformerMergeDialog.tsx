@@ -630,12 +630,8 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           : undefined,
         measurements: measurements.getNewValue(),
         fake_tits: fakeTits.getNewValue(),
-        career_start: careerStart.getNewValue()
-          ? parseInt(careerStart.getNewValue()!)
-          : undefined,
-        career_end: careerEnd.getNewValue()
-          ? parseInt(careerEnd.getNewValue()!)
-          : undefined,
+        career_start: careerStart.getNewValue(),
+        career_end: careerEnd.getNewValue(),
         tattoos: tattoos.getNewValue(),
         piercings: piercings.getNewValue(),
         urls: urls.getNewValue(),
