@@ -1,6 +1,6 @@
 import {
   CircumcisionCriterionInput,
-  CircumisedEnum,
+  CircumcisedEnum,
   CriterionModifier,
 } from "src/core/generated-graphql";
 import { circumcisedStrings, stringToCircumcised } from "src/utils/circumcised";
@@ -28,7 +28,7 @@ export class CircumcisedCriterion extends MultiStringCriterion {
   public toCriterionInput(): CircumcisionCriterionInput {
     const value = this.value.map((v) =>
       stringToCircumcised(v)
-    ) as CircumisedEnum[];
+    ) as CircumcisedEnum[];
 
     return {
       value,

@@ -18,7 +18,7 @@ type Performer struct {
 	Measurements   string          `json:"measurements"`
 	FakeTits       string          `json:"fake_tits"`
 	PenisLength    *float64        `json:"penis_length"`
-	Circumcised    *CircumisedEnum `json:"circumcised"`
+	Circumcised    *CircumcisedEnum `json:"circumcised"`
 	CareerStart    *int            `json:"career_start"`
 	CareerEnd      *int            `json:"career_end"`
 	Tattoos        string          `json:"tattoos"`

@@ -191,7 +191,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       return;
     }
 
-    let retEnum: GQL.CircumisedEnum | undefined;
+    let retEnum: GQL.CircumcisedEnum | undefined;
 
     // try to translate from enum values first
     const upperCircumcised = scrapedCircumcised.toUpperCase();

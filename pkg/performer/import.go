@@ -247,7 +247,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 	}
 
 	if performerJSON.Circumcised != "" {
-		v := models.CircumisedEnum(performerJSON.Circumcised)
+		v := models.CircumcisedEnum(performerJSON.Circumcised)
 		newPerformer.Circumcised = &v
 	}
 

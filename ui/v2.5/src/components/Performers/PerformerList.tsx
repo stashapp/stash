@@ -145,7 +145,7 @@ export function formatYearRange(
   return `${start ?? ""} - ${end ?? ""}`;
 }
 
-export const FormatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
+export const FormatCircumcised = (circumcised?: GQL.CircumcisedEnum | null) => {
   const intl = useIntl();
   if (!circumcised) {
     return "";

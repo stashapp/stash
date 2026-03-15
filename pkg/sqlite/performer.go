@@ -134,7 +134,7 @@ func (r *performerRow) resolve() *models.Performer {
 	}
 
 	if r.Circumcised.ValueOrZero() != "" {
-		v := models.CircumisedEnum(r.Circumcised.String)
+		v := models.CircumcisedEnum(r.Circumcised.String)
 		ret.Circumcised = &v
 	}
 

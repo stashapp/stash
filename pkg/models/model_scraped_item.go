@@ -288,7 +288,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		}
 	}
 	if p.Circumcised != nil && !excluded["circumcised"] {
-		v := CircumisedEnum(*p.Circumcised)
+		v := CircumcisedEnum(*p.Circumcised)
 		if v.IsValid() {
 			ret.Circumcised = &v
 		}

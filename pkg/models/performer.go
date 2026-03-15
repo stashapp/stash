@@ -61,49 +61,49 @@ type GenderCriterionInput struct {
 	Modifier  CriterionModifier `json:"modifier"`
 }
 
-type CircumisedEnum string
+type CircumcisedEnum string
 
 const (
-	CircumisedEnumCut   CircumisedEnum = "CUT"
-	CircumisedEnumUncut CircumisedEnum = "UNCUT"
+	CircumcisedEnumCut   CircumcisedEnum = "CUT"
+	CircumcisedEnumUncut CircumcisedEnum = "UNCUT"
 )
 
-var AllCircumcisionEnum = []CircumisedEnum{
-	CircumisedEnumCut,
-	CircumisedEnumUncut,
+var AllCircumcisionEnum = []CircumcisedEnum{
+	CircumcisedEnumCut,
+	CircumcisedEnumUncut,
 }
 
-func (e CircumisedEnum) IsValid() bool {
+func (e CircumcisedEnum) IsValid() bool {
 	switch e {
-	case CircumisedEnumCut, CircumisedEnumUncut:
+	case CircumcisedEnumCut, CircumcisedEnumUncut:
 		return true
 	}
 	return false
 }
 
-func (e CircumisedEnum) String() string {
+func (e CircumcisedEnum) String() string {
 	return string(e)
 }
 
-func (e *CircumisedEnum) UnmarshalGQL(v interface{}) error {
+func (e *CircumcisedEnum) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = CircumisedEnum(str)
+	*e = CircumcisedEnum(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CircumisedEnum", str)
+		return fmt.Errorf("%s is not a valid CircumcisedEnum", str)
 	}
 	return nil
 }
 
-func (e CircumisedEnum) MarshalGQL(w io.Writer) {
+func (e CircumcisedEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type CircumcisionCriterionInput struct {
-	Value    []CircumisedEnum  `json:"value"`
+	Value    []CircumcisedEnum  `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 
@@ -230,7 +230,7 @@ type PerformerCreateInput struct {
 	Measurements   *string         `json:"measurements"`
 	FakeTits       *string         `json:"fake_tits"`
 	PenisLength    *float64        `json:"penis_length"`
-	Circumcised    *CircumisedEnum `json:"circumcised"`
+	Circumcised    *CircumcisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
 	CareerStart    *int            `json:"career_start"`
 	CareerEnd      *int            `json:"career_end"`
@@ -271,7 +271,7 @@ type PerformerUpdateInput struct {
 	Measurements   *string         `json:"measurements"`
 	FakeTits       *string         `json:"fake_tits"`
 	PenisLength    *float64        `json:"penis_length"`
-	Circumcised    *CircumisedEnum `json:"circumcised"`
+	Circumcised    *CircumcisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
 	CareerStart    *int            `json:"career_start"`
 	CareerEnd      *int            `json:"career_end"`

@@ -1626,15 +1626,15 @@ func getPerformerPenisLength(index int) *float64 {
 	return &ret
 }
 
-func getPerformerCircumcised(index int) *models.CircumisedEnum {
-	var ret models.CircumisedEnum
+func getPerformerCircumcised(index int) *models.CircumcisedEnum {
+	var ret models.CircumcisedEnum
 	switch {
 	case index%3 == 0:
 		return nil
 	case index%3 == 1:
-		ret = models.CircumisedEnumCut
+		ret = models.CircumcisedEnumCut
 	default:
-		ret = models.CircumisedEnumUncut
+		ret = models.CircumcisedEnumUncut
 	}
 
 	return &ret

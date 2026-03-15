@@ -15,7 +15,7 @@ declare namespace PluginApi {
     const BulkPerformerUpdateDocument: { [key: string]: any };
     const BulkSceneUpdateDocument: { [key: string]: any };
     const BulkUpdateIdMode: { [key: string]: any };
-    const CircumisedEnum: { [key: string]: any };
+    const CircumcisedEnum: { [key: string]: any };
     const ConfigDataFragmentDoc: { [key: string]: any };
     const ConfigDefaultSettingsDataFragmentDoc: { [key: string]: any };
     const ConfigDlnaDataFragmentDoc: { [key: string]: any };
