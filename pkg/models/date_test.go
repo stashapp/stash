@@ -53,7 +53,8 @@ func TestParseDateStringAsTime(t *testing.T) {
 
 func TestFormatYearRange(t *testing.T) {
 	datePtr := func(v int) *Date {
-		return &Date{Time: time.Date(v, 1, 1, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionYear}
+		date := DateFromYear(v)
+		return &date
 	}
 
 	tests := []struct {
