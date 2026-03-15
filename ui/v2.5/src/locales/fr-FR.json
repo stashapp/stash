@@ -1058,7 +1058,8 @@
         "stashid_exists_warning": "L'identifiant Stash existant pour cette Stash-Box sera remplacé.",
         "studios_found": "{count} studios trouvés",
         "tags_found": "{count} étiquettes trouvées",
-        "scrape_results_missing": "Manquant"
+        "scrape_results_missing": "Manquant",
+        "edit_entity_count_title": "Éditer {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
@@ -1684,5 +1685,6 @@
     "include_sub_folders": "Inclure les sous-répertoires",
     "parent_folder": "Répertoire parent",
     "sub_folder_depth": "Profondeur des sous-répertoires (vide pour tous)",
-    "sub_folders": "Sous-répertoires"
+    "sub_folders": "Sous-répertoires",
+    "empty_value": "vide"
 }
