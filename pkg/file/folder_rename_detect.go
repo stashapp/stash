@@ -161,7 +161,8 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 					continue
 				}
 
-				if !errors.Is(err, fs.ErrNotExist) {
+				// treat bad network path error as missing folder
+				if !errors.Is(err, fs.ErrNotExist) && !IsBadNetworkError(err) {
 					return fmt.Errorf("checking for parent folder %q: %w", pf.Path, err)
 				}
 
