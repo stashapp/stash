@@ -139,9 +139,9 @@ type PerformerFilterType struct {
 	// Filter by career length
 	CareerLength *StringCriterionInput `json:"career_length"` // deprecated
 	// Filter by career start year
-	CareerStart *IntCriterionInput `json:"career_start"`
+	CareerStart *DateCriterionInput `json:"career_start"`
 	// Filter by career end year
-	CareerEnd *IntCriterionInput `json:"career_end"`
+	CareerEnd *DateCriterionInput `json:"career_end"`
 	// Filter by tattoos
 	Tattoos *StringCriterionInput `json:"tattoos"`
 	// Filter by piercings
@@ -232,8 +232,8 @@ type PerformerCreateInput struct {
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
-	CareerStart    *int            `json:"career_start"`
-	CareerEnd      *int            `json:"career_end"`
+	CareerStart    *string         `json:"career_start"`
+	CareerEnd      *string         `json:"career_end"`
 	Tattoos        *string         `json:"tattoos"`
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
@@ -273,8 +273,8 @@ type PerformerUpdateInput struct {
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
-	CareerStart    *int            `json:"career_start"`
-	CareerEnd      *int            `json:"career_end"`
+	CareerStart    *string         `json:"career_start"`
+	CareerEnd      *string         `json:"career_end"`
 	Tattoos        *string         `json:"tattoos"`
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`

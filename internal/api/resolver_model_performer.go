@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer) ([]string, error) {
@@ -110,12 +109,28 @@ func (r *performerResolver) HeightCm(ctx context.Context, obj *models.Performer)
 	return obj.Height, nil
 }
 
+func (r *performerResolver) CareerStart(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.CareerStart != nil {
+		ret := obj.CareerStart.String()
+		return &ret, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) CareerEnd(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.CareerEnd != nil {
+		ret := obj.CareerEnd.String()
+		return &ret, nil
+	}
+	return nil, nil
+}
+
 func (r *performerResolver) CareerLength(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.CareerStart == nil && obj.CareerEnd == nil {
 		return nil, nil
 	}
 
-	ret := utils.FormatYearRange(obj.CareerStart, obj.CareerEnd)
+	ret := models.FormatYearRange(obj.CareerStart, obj.CareerEnd)
 	return &ret, nil
 }
 

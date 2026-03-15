@@ -19,8 +19,8 @@ type ScrapedPerformer {
   penis_length: String
   circumcised: String
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   # aliases must be comma-delimited to be parsed correctly
@@ -57,8 +57,8 @@ input ScrapedPerformerInput {
   penis_length: String
   circumcised: String
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   aliases: String

@@ -1595,24 +1595,24 @@ func getPerformerDeathDate(index int) *models.Date {
 	return &ret
 }
 
-func getPerformerCareerStart(index int) *int {
+func getPerformerCareerStart(index int) *models.Date {
 	if index%5 == 0 {
 		return nil
 	}
 
-	ret := 2000 + index
-	return &ret
+	date := models.DateFromYear(2000 + index)
+	return &date
 }
 
-func getPerformerCareerEnd(index int) *int {
+func getPerformerCareerEnd(index int) *models.Date {
 	if index%5 == 0 {
 		return nil
 	}
 
 	// only set career_end for even indices
 	if index%2 == 0 {
-		ret := 2010 + index
-		return &ret
+		date := models.DateFromYear(2010 + index)
+		return &date
 	}
 	return nil
 }

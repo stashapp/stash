@@ -2821,6 +2821,31 @@ func verifyIntPtr(t *testing.T, value *int, criterion models.IntCriterionInput) 
 	}
 }
 
+func verifyDatePtr(t *testing.T, value *models.Date, criterion models.DateCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	if criterion.Modifier == models.CriterionModifierIsNull {
+		assert.Nil(value, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierNotNull {
+		assert.NotNil(value, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierEquals {
+		assert.Equal(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotEquals {
+		assert.NotEqual(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierGreaterThan {
+		date, _ := models.ParseDate(criterion.Value)
+		assert.True(value.After(date))
+	}
+	if criterion.Modifier == models.CriterionModifierLessThan {
+		date, _ := models.ParseDate(criterion.Value)
+		assert.True(date.After(*value))
+	}
+}
+
 func TestSceneQueryOCounter(t *testing.T) {
 	const oCounter = 1
 	oCounterCriterion := models.IntCriterionInput{

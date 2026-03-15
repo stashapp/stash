@@ -317,15 +317,15 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestImportCareerFields(t *testing.T) {
-	startYear := 2005
-	endYear := 2015
+	startYear, _ := models.ParseDate("2005")
+	endYear, _ := models.ParseDate("2015")
 
 	// explicit career_start/career_end should be used directly
 	t.Run("explicit fields", func(t *testing.T) {
 		input := jsonschema.Performer{
 			Name:        "test",
-			CareerStart: &startYear,
-			CareerEnd:   &endYear,
+			CareerStart: startYear.String(),
+			CareerEnd:   endYear.String(),
 		}
 
 		p, err := performerJSONToPerformer(input)
@@ -338,8 +338,8 @@ func TestImportCareerFields(t *testing.T) {
 	t.Run("explicit fields override legacy", func(t *testing.T) {
 		input := jsonschema.Performer{
 			Name:         "test",
-			CareerStart:  &startYear,
-			CareerEnd:    &endYear,
+			CareerStart:  startYear.String(),
+			CareerEnd:    endYear.String(),
 			CareerLength: "1990 - 1995",
 		}
 

@@ -31,8 +31,8 @@ type Performer {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   alias_list: [String!]!
@@ -80,8 +80,8 @@ input PerformerCreateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
@@ -121,8 +121,8 @@ input PerformerUpdateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
@@ -167,8 +167,8 @@ input BulkPerformerUpdateInput {
   penis_length: Float
   circumcised: CircumisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will result in an error (case-insensitive)"

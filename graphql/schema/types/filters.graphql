@@ -157,10 +157,10 @@ input PerformerFilterType {
   "Deprecated: use career_start and career_end. This filter is non-functional."
   career_length: StringCriterionInput
     @deprecated(reason: "Use career_start and career_end")
-  "Filter by career start year"
-  career_start: IntCriterionInput
-  "Filter by career end year"
-  career_end: IntCriterionInput
+  "Filter by career start"
+  career_start: DateCriterionInput
+  "Filter by career end"
+  career_end: DateCriterionInput
   "Filter by tattoos"
   tattoos: StringCriterionInput
   "Filter by piercings"
