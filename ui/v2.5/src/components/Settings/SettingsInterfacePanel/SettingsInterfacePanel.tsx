@@ -42,7 +42,7 @@ import {
   defaultImageWallDirection,
   defaultImageWallMargin,
 } from "src/utils/imageWall";
-import { defaultMaxOptionsShown } from "src/core/config";
+import { defaultMaxOptionsShown, defaultSceneCardOptions } from "src/core/config";
 import { PatchComponent } from "src/patch";
 
 const allMenuItems = [
@@ -355,6 +355,343 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             checked={iface.showStudioAsText ?? undefined}
             onChange={(v) => saveInterface({ showStudioAsText: v })}
           />
+        </SettingSection>
+
+        {/* ═══════════════════════════════════════════════════════════
+            SCENE CARD DISPLAY — customise what shows on each card
+            ═══════════════════════════════════════════════════════════ */}
+        <SettingSection headingID="config.ui.scene_card.heading">
+
+          {/* ── Reset to Defaults button ── */}
+          <div className="setting">
+            <div>
+              <h3>
+                {intl.formatMessage({
+                  id: "config.ui.scene_card.reset.heading",
+                })}
+              </h3>
+              <div className="sub-heading">
+                {intl.formatMessage({
+                  id: "config.ui.scene_card.reset.description",
+                })}
+              </div>
+            </div>
+            <div>
+              <Button
+                id="scene-card-reset-defaults"
+                variant="secondary"
+                onClick={() => saveUI({ sceneCard: defaultSceneCardOptions })}
+              >
+                {intl.formatMessage({
+                  id: "config.ui.scene_card.reset.button",
+                })}
+              </Button>
+            </div>
+          </div>
+
+          {/* ── GROUP 1: Thumbnail Overlay ── */}
+          <div className="setting-group">
+            <div className="setting">
+              <div>
+                <h3>
+                  {intl.formatMessage({
+                    id: "config.ui.scene_card.overlay.heading",
+                  })}
+                </h3>
+                <div className="sub-heading">
+                  {intl.formatMessage({
+                    id: "config.ui.scene_card.overlay.description",
+                  })}
+                </div>
+              </div>
+              <div />
+            </div>
+
+            <BooleanSetting
+              id="scene-card-show-rating"
+              headingID="config.ui.scene_card.overlay.show_rating.heading"
+              subHeadingID="config.ui.scene_card.overlay.show_rating.description"
+              checked={ui.sceneCard?.overlay?.showRatingBanner ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    overlay: { ...ui.sceneCard?.overlay, showRatingBanner: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-resolution"
+              headingID="config.ui.scene_card.overlay.show_resolution.heading"
+              subHeadingID="config.ui.scene_card.overlay.show_resolution.description"
+              checked={ui.sceneCard?.overlay?.showResolution ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    overlay: { ...ui.sceneCard?.overlay, showResolution: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-duration"
+              headingID="config.ui.scene_card.overlay.show_duration.heading"
+              subHeadingID="config.ui.scene_card.overlay.show_duration.description"
+              checked={ui.sceneCard?.overlay?.showDuration ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    overlay: { ...ui.sceneCard?.overlay, showDuration: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-filesize"
+              headingID="config.ui.scene_card.overlay.show_filesize.heading"
+              subHeadingID="config.ui.scene_card.overlay.show_filesize.description"
+              checked={ui.sceneCard?.overlay?.showFileSize ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    overlay: { ...ui.sceneCard?.overlay, showFileSize: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-studio"
+              headingID="config.ui.scene_card.overlay.show_studio.heading"
+              subHeadingID="config.ui.scene_card.overlay.show_studio.description"
+              checked={ui.sceneCard?.overlay?.showStudio ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    overlay: { ...ui.sceneCard?.overlay, showStudio: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-interactive-speed"
+              headingID="config.ui.scene_card.overlay.show_interactive_speed.heading"
+              subHeadingID="config.ui.scene_card.overlay.show_interactive_speed.description"
+              checked={ui.sceneCard?.overlay?.showInteractiveSpeed ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    overlay: {
+                      ...ui.sceneCard?.overlay,
+                      showInteractiveSpeed: v,
+                    },
+                  },
+                })
+              }
+            />
+          </div>
+
+          {/* ── GROUP 2: Card Details ── */}
+          <div className="setting-group">
+            <div className="setting">
+              <div>
+                <h3>
+                  {intl.formatMessage({
+                    id: "config.ui.scene_card.details.heading",
+                  })}
+                </h3>
+                <div className="sub-heading">
+                  {intl.formatMessage({
+                    id: "config.ui.scene_card.details.description",
+                  })}
+                </div>
+              </div>
+              <div />
+            </div>
+
+            <BooleanSetting
+              id="scene-card-show-date"
+              headingID="config.ui.scene_card.details.show_date.heading"
+              subHeadingID="config.ui.scene_card.details.show_date.description"
+              checked={ui.sceneCard?.details?.showDate ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    details: { ...ui.sceneCard?.details, showDate: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-description"
+              headingID="config.ui.scene_card.details.show_description.heading"
+              subHeadingID="config.ui.scene_card.details.show_description.description"
+              checked={ui.sceneCard?.details?.showDescription ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    details: { ...ui.sceneCard?.details, showDescription: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-filepath"
+              headingID="config.ui.scene_card.details.show_file_path.heading"
+              subHeadingID="config.ui.scene_card.details.show_file_path.description"
+              checked={ui.sceneCard?.details?.showFilePath ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    details: { ...ui.sceneCard?.details, showFilePath: v },
+                  },
+                })
+              }
+            />
+          </div>
+
+          {/* ── GROUP 3: Card Icon Buttons (Popovers) ── */}
+          <div className="setting-group">
+            <div className="setting">
+              <div>
+                <h3>
+                  {intl.formatMessage({
+                    id: "config.ui.scene_card.popovers.heading",
+                  })}
+                </h3>
+                <div className="sub-heading">
+                  {intl.formatMessage({
+                    id: "config.ui.scene_card.popovers.description",
+                  })}
+                </div>
+              </div>
+              <div />
+            </div>
+
+            <BooleanSetting
+              id="scene-card-show-tags"
+              headingID="config.ui.scene_card.popovers.show_tags.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_tags.description"
+              checked={ui.sceneCard?.popovers?.showTags ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showTags: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-performers"
+              headingID="config.ui.scene_card.popovers.show_performers.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_performers.description"
+              checked={ui.sceneCard?.popovers?.showPerformers ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showPerformers: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-groups"
+              headingID="config.ui.scene_card.popovers.show_groups.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_groups.description"
+              checked={ui.sceneCard?.popovers?.showGroups ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showGroups: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-markers"
+              headingID="config.ui.scene_card.popovers.show_markers.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_markers.description"
+              checked={ui.sceneCard?.popovers?.showMarkers ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showMarkers: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-o-counter"
+              headingID="config.ui.scene_card.popovers.show_o_counter.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_o_counter.description"
+              checked={ui.sceneCard?.popovers?.showOCounter ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showOCounter: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-galleries"
+              headingID="config.ui.scene_card.popovers.show_galleries.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_galleries.description"
+              checked={ui.sceneCard?.popovers?.showGalleries ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showGalleries: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-organized"
+              headingID="config.ui.scene_card.popovers.show_organized.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_organized.description"
+              checked={ui.sceneCard?.popovers?.showOrganized ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: { ...ui.sceneCard?.popovers, showOrganized: v },
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="scene-card-show-duplicate-copies"
+              headingID="config.ui.scene_card.popovers.show_duplicate_copies.heading"
+              subHeadingID="config.ui.scene_card.popovers.show_duplicate_copies.description"
+              checked={ui.sceneCard?.popovers?.showDuplicateCopies ?? true}
+              onChange={(v) =>
+                saveUI({
+                  sceneCard: {
+                    ...ui.sceneCard,
+                    popovers: {
+                      ...ui.sceneCard?.popovers,
+                      showDuplicateCopies: v,
+                    },
+                  },
+                })
+              }
+            />
+          </div>
         </SettingSection>
 
         <SettingSection headingID="config.ui.scene_player.heading">

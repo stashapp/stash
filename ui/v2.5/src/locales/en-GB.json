@@ -815,6 +815,94 @@
           "show_studio_as_text": "Display studio overlay as text"
         }
       },
+      "scene_card": {
+        "heading": "Scene Card Display",
+        "reset": {
+          "heading": "Reset to Defaults",
+          "description": "Restore all scene card settings back to their original values. Everything will be visible again.",
+          "button": "Reset to Defaults"
+        },
+        "overlay": {
+          "heading": "Thumbnail Overlay",
+          "description": "These are the items shown on top of the video preview thumbnail.",
+          "show_rating": {
+            "heading": "Show Star Rating",
+            "description": "Shows a coloured bar at the bottom of the thumbnail with the scene's star rating. Example: ★★★★☆"
+          },
+          "show_resolution": {
+            "heading": "Show Video Quality",
+            "description": "Shows the video resolution on the thumbnail — like '4K', '1080p', or '720p'."
+          },
+          "show_duration": {
+            "heading": "Show Video Length",
+            "description": "Shows how long the video is, for example '1:23:45', on the thumbnail."
+          },
+          "show_filesize": {
+            "heading": "Show File Size",
+            "description": "Shows how much storage space the video file uses, for example '4.2 GB', on the thumbnail."
+          },
+          "show_studio": {
+            "heading": "Show Studio Logo",
+            "description": "Shows the studio logo or name on the thumbnail so you know which studio made it."
+          },
+          "show_interactive_speed": {
+            "heading": "Show Interactive Speed",
+            "description": "For interactive (haptic) scenes, shows the speed rating on the thumbnail."
+          }
+        },
+        "details": {
+          "heading": "Card Text Details",
+          "description": "These are the pieces of information shown in the text area below the thumbnail.",
+          "show_date": {
+            "heading": "Show Scene Date",
+            "description": "Shows the date the scene was released, for example '2024-01-15', below the thumbnail."
+          },
+          "show_description": {
+            "heading": "Show Description",
+            "description": "Shows a short preview of the scene's description text below the thumbnail."
+          },
+          "show_file_path": {
+            "heading": "Show File Location",
+            "description": "Shows the folder path of the video file on your computer. Useful for quickly finding it on disk."
+          }
+        },
+        "popovers": {
+          "heading": "Card Icon Buttons",
+          "description": "These are the small icon buttons at the bottom of each card. Hover over them to see more details.",
+          "show_tags": {
+            "heading": "Show Tags Button",
+            "description": "Shows a tag icon with the number of tags on the scene. Hover over it to see all tag names."
+          },
+          "show_performers": {
+            "heading": "Show Performers Button",
+            "description": "Shows a people icon. Hover over it to see the list of performers in the scene."
+          },
+          "show_groups": {
+            "heading": "Show Groups Button",
+            "description": "Shows a film reel icon. Hover over it to see which groups or movie collections this scene belongs to."
+          },
+          "show_markers": {
+            "heading": "Show Scene Markers Button",
+            "description": "Shows a pin icon with the number of bookmarked moments in the scene. Click to jump to them."
+          },
+          "show_o_counter": {
+            "heading": "Show O-Counter Button",
+            "description": "Shows your personal play counter for this scene."
+          },
+          "show_galleries": {
+            "heading": "Show Galleries Button",
+            "description": "Shows an images icon. Hover over it to see linked photo galleries for this scene."
+          },
+          "show_organized": {
+            "heading": "Show Organised Badge",
+            "description": "Shows a box icon when you have marked a scene as 'Organised' — meaning you have reviewed and sorted it."
+          },
+          "show_duplicate_copies": {
+            "heading": "Show Duplicate Copies Button",
+            "description": "Shows an icon if Stash has found a possible duplicate of this video file on your system."
+          }
+        }
+      },
       "scene_player": {
         "heading": "Scene Player",
         "options": {

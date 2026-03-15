@@ -39,6 +39,67 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
 
+// ── Scene Card Display Options ──────────────────────────────────────────────
+
+export interface ISceneCardOverlayOptions {
+  showRatingBanner?: boolean;     // default: true
+  showResolution?: boolean;       // default: true
+  showDuration?: boolean;         // default: true
+  showFileSize?: boolean;         // default: true
+  showStudio?: boolean;           // default: true
+  showInteractiveSpeed?: boolean; // default: true
+}
+
+export interface ISceneCardDetailsOptions {
+  showDate?: boolean;             // default: true
+  showDescription?: boolean;      // default: true
+  showFilePath?: boolean;         // default: true
+}
+
+export interface ISceneCardPopoverOptions {
+  showTags?: boolean;             // default: true
+  showPerformers?: boolean;       // default: true
+  showGroups?: boolean;           // default: true
+  showMarkers?: boolean;          // default: true
+  showOCounter?: boolean;         // default: true
+  showGalleries?: boolean;        // default: true
+  showOrganized?: boolean;        // default: true
+  showDuplicateCopies?: boolean;  // default: true
+}
+
+export interface ISceneCardOptions {
+  overlay?: ISceneCardOverlayOptions;
+  details?: ISceneCardDetailsOptions;
+  popovers?: ISceneCardPopoverOptions;
+}
+
+/** All fields default to `true`, so existing users see no visual change. */
+export const defaultSceneCardOptions: Required<ISceneCardOptions> = {
+  overlay: {
+    showRatingBanner: true,
+    showResolution: true,
+    showDuration: true,
+    showFileSize: true,
+    showStudio: true,
+    showInteractiveSpeed: true,
+  },
+  details: {
+    showDate: true,
+    showDescription: true,
+    showFilePath: true,
+  },
+  popovers: {
+    showTags: true,
+    showPerformers: true,
+    showGroups: true,
+    showMarkers: true,
+    showOCounter: true,
+    showGalleries: true,
+    showOrganized: true,
+    showDuplicateCopies: true,
+  },
+};
+
 export interface IUIConfig {
   // unknown to prevent direct access - use getFrontPageContent
   frontPageContent?: unknown;
@@ -105,6 +166,9 @@ export interface IUIConfig {
   taggerConfig?: ITaggerConfig;
 
   title?: string;
+
+  // Scene card display customization (see ISceneCardOptions)
+  sceneCard?: ISceneCardOptions;
 }
 
 export function getFrontPageContent(
