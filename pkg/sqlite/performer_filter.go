@@ -70,6 +70,28 @@ func (qb *performerFilterHandler) validate() error {
 		}
 	}
 
+	// validate date formats
+	if filter.Birthdate != nil && filter.Birthdate.Value != "" {
+		if _, err := models.ParseDate(filter.Birthdate.Value); err != nil {
+			return fmt.Errorf("invalid birthdate value: %s", filter.Birthdate.Value)
+		}
+	}
+	if filter.DeathDate != nil && filter.DeathDate.Value != "" {
+		if _, err := models.ParseDate(filter.DeathDate.Value); err != nil {
+			return fmt.Errorf("invalid death date value: %s", filter.DeathDate.Value)
+		}
+	}
+	if filter.CareerStart != nil && filter.CareerStart.Value != "" {
+		if _, err := models.ParseDate(filter.CareerStart.Value); err != nil {
+			return fmt.Errorf("invalid career start value: %s", filter.CareerStart.Value)
+		}
+	}
+	if filter.CareerEnd != nil && filter.CareerEnd.Value != "" {
+		if _, err := models.ParseDate(filter.CareerEnd.Value); err != nil {
+			return fmt.Errorf("invalid career end value: %s", filter.CareerEnd.Value)
+		}
+	}
+
 	return nil
 }
 
