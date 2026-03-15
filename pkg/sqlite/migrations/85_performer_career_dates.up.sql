@@ -108,3 +108,5 @@ UPDATE "performers" SET `career_end` = CONCAT(`career_end`, '-01-01'), "career_e
 
 CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL;
 CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL;
+
+PRAGMA foreign_keys=ON;
