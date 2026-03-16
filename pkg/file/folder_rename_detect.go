@@ -2,7 +2,6 @@ package file
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 
@@ -161,10 +160,7 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 					continue
 				}
 
-				// treat bad network path error as missing folder
-				if !errors.Is(err, fs.ErrNotExist) && !IsBadNetworkError(err) {
-					return fmt.Errorf("checking for parent folder %q: %w", pf.Path, err)
-				}
+				// treat any error as missing folder
 
 				// parent folder is missing, possible candidate
 				// count the total number of files in the existing folder
