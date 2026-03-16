@@ -158,7 +158,8 @@
         "reveal_in_file_manager": "Mostrar en el Administrador de archivos",
         "exclude_lowercase": "excluir",
         "from_clipboard": "Desde el portapapeles",
-        "selective_generate": "Generación selectiva"
+        "selective_generate": "Generación selectiva",
+        "create_parent_tag": "Crear etiqueta principal"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -1048,7 +1049,8 @@
         "stashid_exists_warning": "Se sustituirá el identificador de stash existente para este stash-box.",
         "studios_found": "{count} estudios encontrados",
         "tags_found": "{count} etiquetas encontradas",
-        "scrape_results_missing": "Faltante"
+        "scrape_results_missing": "Faltante",
+        "edit_entity_count_title": "Editar {count} {count, plural, una {{singularEntity}} otra {{pluralEntity}}}"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
@@ -1668,7 +1670,12 @@
         "to_use_the_tag_tagger": "Para utilizar el etiquetador, es necesario configurar una instancia de stash-box.",
         "untagged_tags": "Etiquetas sin etiquetar",
         "update_tags": "Actualizar etiquetas",
-        "updating_untagged_tags_description": "Al actualizar las etiquetas sin etiquetar, se intentará encontrar cualquier etiqueta que carezca de un stashid y se actualizarán los metadatos."
+        "updating_untagged_tags_description": "Al actualizar las etiquetas sin etiquetar, se intentará encontrar cualquier etiqueta que carezca de un stashid y se actualizarán los metadatos.",
+        "config": {
+            "create_parent_desc": "Crear etiquetas principales que falten a partir de las categorías de stash-box, o etiquetar las etiquetas principales existentes con nombres que coincidan exactamente",
+            "create_parent_label": "Crear etiquetas principales"
+        },
+        "create_or_tag_parent_tags": "Crear las etiquetas principales que falten o etiquetar las ya existentes"
     },
     "tagger": {
         "config": {
@@ -1684,5 +1691,6 @@
     "include_sub_folders": "Incluir subcarpetas",
     "parent_folder": "Carpeta principal",
     "sub_folder_depth": "Profundidad de la subcarpeta (vacía para todas)",
-    "sub_folders": "Subcarpetas"
+    "sub_folders": "Subcarpetas",
+    "empty_value": "vacío"
 }
