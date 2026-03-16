@@ -359,7 +359,6 @@ interface ISceneSpecsOverlay {
 export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
   "SceneCard.SceneSpecs",
   ({ scene }) => {
-    // try with more effort
     const file = scene.files?.[0];
     if (!file) return null;
     return (
