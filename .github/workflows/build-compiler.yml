@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  COMPILER_IMAGE: ghcr.io/feederbox826/stash-compiler
+  COMPILER_IMAGE: ghcr.io/stashapp/compiler:13
 
 jobs:
   build-compiler:
@@ -21,6 +21,8 @@ jobs:
       with:
         push: true
         context: "{{defaultContext}}:docker/compiler"
-        tags: ${{ env.COMPILER_IMAGE }}
+        tags: |
+          ${{ env.COMPILER_IMAGE }}
+          ghcr.io/stashapp/compiler:latest
         cache-from: type=gha,scope=all,mode=max
         cache-to: type=gha,scope=all,mode=max

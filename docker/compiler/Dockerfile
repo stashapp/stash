@@ -81,6 +81,6 @@ RUN git config --global safe.directory '*'
 # make generate
 # make ui
 # cd docker/compiler
-# make build
-# docker run --rm -v /PATH_TO_STASH:/stash -w /stash -i -t stashapp/compiler:latest make build-cc-all
+# docker build . -t ghcr.io/stashapp/compiler:latest
+# docker run --rm -v /PATH_TO_STASH:/stash -w /stash -i -t ghcr.io/stashapp/compiler:latest make build-cc-all
 # # binaries will show up in /dist

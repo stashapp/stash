@@ -50,7 +50,7 @@ export CGO_ENABLED := 1
 
 # define COMPILER_IMAGE for cross-compilation docker container
 ifndef COMPILER_IMAGE
-  COMPILER_IMAGE := stashapp/compiler:latest
+  COMPILER_IMAGE := ghcr.io/stashapp/compiler:latest
 endif
 
 .PHONY: release

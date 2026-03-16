@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: ghcr.io/feederbox826/stash-compiler
+  COMPILER_IMAGE: ghcr.io/stashapp/compiler:13
 
 jobs:
   # Job 1: Generate code and build UI
@@ -102,7 +102,7 @@ jobs:
       run: make it
 
   # Job 3: Cross-compile for all platforms
-  # Each platform gets its own runner and Docker container (stashapp/compiler:12).
+  # Each platform gets its own runner and Docker container (ghcr.io/stashapp/compiler:13).
   # Each build-cc-* make target is self-contained (sets its own GOOS/GOARCH/CC),
   # so running them in separate containers is functionally identical to one container.
   # Runs in parallel with the test job.
