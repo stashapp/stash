@@ -158,7 +158,8 @@
         "reveal_in_file_manager": "Показати в файловому менеджері",
         "selective_generate": "Вибіркове генерування",
         "from_clipboard": "З буфера обміну",
-        "exclude_lowercase": "виключити"
+        "exclude_lowercase": "виключити",
+        "create_parent_tag": "Створити головний тег"
     },
     "actions_name": "Дії",
     "age": "Вік",
@@ -1669,7 +1670,12 @@
         "untagged_tags": "Нетеговані теги",
         "update_tags": "Оновити теги",
         "updating_untagged_tags_description": "Оновлення нетегованих тегів спробує знайти будь-які теги, яким бракує stashid, та оновити метадані.",
-        "batch_update_tags": "Теги пакетного оновлення"
+        "batch_update_tags": "Теги пакетного оновлення",
+        "config": {
+            "create_parent_desc": "Створити відсутні головні теги з категорій stash-box або прив'язати наявні головні теги за точним збігом назви",
+            "create_parent_label": "Створити головні теги"
+        },
+        "create_or_tag_parent_tags": "Створити відсутні або прив'язати наявні головні теги"
     },
     "tagger": {
         "config": {
