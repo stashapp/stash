@@ -110,7 +110,7 @@ input ScanMetadataInput {
 # specifies when to generate metadata during a scan
 enum GenerateTiming {
   """
-  Generate artifacts before returning from the scan API call. 
+  Generate artifacts before returning from the scan API call.
   This will block the API call until generation is complete, and is not recommended for large artifacts.
   Recommended when you want the metadata/artifact to be available immediately after the scan completes (ie covers and phashes).
   """
