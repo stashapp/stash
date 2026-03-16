@@ -32,6 +32,7 @@ func NewTaskQueue(ctx context.Context, p *Progress, queueSize int, processes int
 }
 
 func (tq *TaskQueue) Add(description string, fn func(ctx context.Context)) {
+	tq.p.AddTotal(1)
 	tq.tasks <- taskExec{
 		task: task{
 			description: description,
@@ -42,6 +43,10 @@ func (tq *TaskQueue) Add(description string, fn func(ctx context.Context)) {
 
 func (tq *TaskQueue) Close() {
 	close(tq.tasks)
+	tq.p.Definite()
+}
+
+func (tq *TaskQueue) Wait() {
 	// wait for all tasks to finish
 	<-tq.done
 }
@@ -59,6 +64,7 @@ func (tq *TaskQueue) executer(ctx context.Context) {
 		tq.wg.Add()
 		go func() {
 			defer tq.wg.Done()
+			defer tq.p.Increment()
 			tq.p.ExecuteTask(tt.description, func() {
 				tt.fn(ctx)
 			})
