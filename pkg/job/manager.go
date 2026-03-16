@@ -95,7 +95,18 @@ func (m *Manager) Start(ctx context.Context, description string, e JobExec) int 
 
 	m.queue = append(m.queue, &j)
 
-	m.dispatch(ctx, &j)
+	m.notifyNewJob(&j)
+	done := m.dispatch(ctx, &j)
+
+	// handle removing the job from the queue when it is done
+	go func() {
+		<-done
+		m.mutex.Lock()
+		defer m.mutex.Unlock()
+
+		// remove the job from the queue
+		m.removeJob(&j)
+	}()
 
 	return j.ID
 }
