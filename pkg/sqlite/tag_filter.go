@@ -185,7 +185,7 @@ func (qb *tagFilterHandler) aliasCriterionHandler(alias *models.StringCriterionI
 		joinTable:    tagAliasesTable,
 		stringColumn: tagAliasColumn,
 		addJoinTable: func(f *filterBuilder, joinType joinType) {
-			tagRepository.aliases.leftJoin(f, "", "tags.id")
+			tagRepository.aliases.join(f, joinType, "", "tags.id")
 		},
 	}
 
