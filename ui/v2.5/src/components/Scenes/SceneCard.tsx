@@ -30,6 +30,11 @@ import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
 import { FileSize } from "../Shared/FileSize";
 import { OCounterButton } from "../Shared/CountButton";
+import {
+  IUIConfig,
+  ISceneCardOverlayOptions,
+  defaultSceneCardOptions,
+} from "src/core/config";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -131,6 +136,13 @@ const Description: React.FC<{
 const SceneCardPopovers = PatchComponent(
   "SceneCard.Popovers",
   (props: ISceneCardProps) => {
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui as IUIConfig | undefined;
+    const popoverOpts = {
+      ...defaultSceneCardOptions.popovers,
+      ...(uiConfig?.sceneCard?.popovers ?? {}),
+    };
+
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
       [props.scene]
@@ -148,6 +160,7 @@ const SceneCardPopovers = PatchComponent(
     }, [props.fromGroupId, props.scene.groups]);
 
     function maybeRenderTagPopoverButton() {
+      if (!popoverOpts.showTags) return;
       if (props.scene.tags.length <= 0) return;
 
       const popoverContent = props.scene.tags.map((tag) => (
@@ -169,6 +182,7 @@ const SceneCardPopovers = PatchComponent(
     }
 
     function maybeRenderPerformerPopoverButton() {
+      if (!popoverOpts.showPerformers) return;
       if (props.scene.performers.length <= 0) return;
 
       return (
@@ -180,6 +194,7 @@ const SceneCardPopovers = PatchComponent(
     }
 
     function maybeRenderGroupPopoverButton() {
+      if (!popoverOpts.showGroups) return;
       if (props.scene.groups.length <= 0) return;
 
       const popoverContent = props.scene.groups.map((sceneGroup) => (
@@ -201,6 +216,7 @@ const SceneCardPopovers = PatchComponent(
     }
 
     function maybeRenderSceneMarkerPopoverButton() {
+      if (!popoverOpts.showMarkers) return;
       if (props.scene.scene_markers.length <= 0) return;
 
       const popoverContent = props.scene.scene_markers.map((marker) => {
@@ -223,12 +239,14 @@ const SceneCardPopovers = PatchComponent(
     }
 
     function maybeRenderOCounter() {
+      if (!popoverOpts.showOCounter) return;
       if (props.scene.o_counter) {
         return <OCounterButton value={props.scene.o_counter} />;
       }
     }
 
     function maybeRenderGallery() {
+      if (!popoverOpts.showGalleries) return;
       if (props.scene.galleries.length <= 0) return;
 
       const popoverContent = props.scene.galleries.map((gallery) => (
@@ -250,6 +268,7 @@ const SceneCardPopovers = PatchComponent(
     }
 
     function maybeRenderOrganized() {
+      if (!popoverOpts.showOrganized) return;
       if (props.scene.organized) {
         return (
           <OverlayTrigger
@@ -267,6 +286,7 @@ const SceneCardPopovers = PatchComponent(
     }
 
     function maybeRenderDupeCopies() {
+      if (!popoverOpts.showDuplicateCopies) return;
       const phash = file
         ? file.fingerprints.find((fp) => fp.type === "phash")
         : undefined;
@@ -320,51 +340,94 @@ const SceneCardPopovers = PatchComponent(
   }
 );
 
+
 const SceneCardDetails = PatchComponent(
   "SceneCard.Details",
   (props: ISceneCardProps) => {
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui as IUIConfig | undefined;
+    const detailOpts = {
+      ...defaultSceneCardOptions.details,
+      ...(uiConfig?.sceneCard?.details ?? {}),
+    };
+
     return (
       <div className="scene-card__details">
-        <span className="scene-card__date">{props.scene.date}</span>
-        <span className="file-path extra-scene-info">
-          {objectPath(props.scene)}
-        </span>
-        <TruncatedText
-          className="scene-card__description"
-          text={props.scene.details}
-          lineCount={3}
-        />
+        {detailOpts.showDate && (
+          <span className="scene-card__date">{props.scene.date}</span>
+        )}
+        {detailOpts.showFilePath && (
+          <span className="file-path extra-scene-info">
+            {objectPath(props.scene)}
+          </span>
+        )}
+        {detailOpts.showDescription && (
+          <TruncatedText
+            className="scene-card__description"
+            text={props.scene.details}
+            lineCount={3}
+          />
+        )}
       </div>
     );
   }
 );
 
+
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui as IUIConfig | undefined;
+    const overlayOpts = resolveOverlayOpts(uiConfig);
+
     const ret = useMemo(() => {
+      if (!overlayOpts.showStudio) return null;
       return (
         <StudioOverlay studio={props.scene.studio} disabled={props.selecting} />
       );
-    }, [props.scene.studio, props.selecting]);
+    }, [props.scene.studio, props.selecting, overlayOpts.showStudio]);
 
     return ret;
   }
 );
 
-interface ISceneSpecsOverlay {
-  scene: GQL.SlimSceneDataFragment;
+/** Helper: merge user settings over the all-true defaults for the overlay section. */
+function resolveOverlayOpts(
+  uiConfig: IUIConfig | undefined
+): Required<ISceneCardOverlayOptions> {
+  return {
+    ...defaultSceneCardOptions.overlay,
+    ...(uiConfig?.sceneCard?.overlay ?? {}),
+  } as Required<ISceneCardOverlayOptions>;
 }
 
-export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = ({ scene }) => {
+interface ISceneSpecsOverlayProps {
+  scene: GQL.SlimSceneDataFragment;
+  showResolution?: boolean;
+  showDuration?: boolean;
+  showFileSize?: boolean;
+}
+
+export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlayProps> = ({
+  scene,
+  showResolution = true,
+  showDuration = true,
+  showFileSize = true,
+}) => {
   if (!scene.files.length) return null;
-  let file = scene.files[0];
+  const file = scene.files[0];
+
+  if (!showResolution && !showDuration && !showFileSize) return null;
+
   return (
     <div className="scene-specs-overlay">
-      <span className="overlay-filesize extra-scene-info">
-        <FileSize size={file.size} />
-      </span>
-      {file.width && file.height ? (
+      {showFileSize && (
+        <span className="overlay-filesize extra-scene-info">
+          <FileSize size={file.size} />
+        </span>
+      )}
+      {showResolution && file.width && file.height ? (
         <span className="overlay-resolution">
           {" "}
           {TextUtils.resolution(file.width, file.height)}
@@ -372,7 +435,7 @@ export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = ({ scene }) => {
       ) : (
         ""
       )}
-      {(file.duration ?? 0) >= 1 ? (
+      {showDuration && (file.duration ?? 0) >= 1 ? (
         <span className="overlay-duration">
           {TextUtils.secondsToTimestamp(file.duration)}
         </span>
@@ -389,6 +452,8 @@ const SceneCardImage = PatchComponent(
     const history = useHistory();
     const { configuration } = useConfigurationContext();
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
+    const uiConfig = configuration?.ui as IUIConfig | undefined;
+    const overlayOpts = resolveOverlayOpts(uiConfig);
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
@@ -396,6 +461,7 @@ const SceneCardImage = PatchComponent(
     );
 
     function maybeRenderInteractiveSpeedOverlay() {
+      if (!overlayOpts.showInteractiveSpeed) return null;
       return (
         <div className="scene-interactive-speed-overlay">
           {props.scene.interactive_speed ?? ""}
@@ -433,8 +499,15 @@ const SceneCardImage = PatchComponent(
           onScrubberClick={onScrubberClick}
           disabled={props.selecting}
         />
-        <RatingBanner rating={props.scene.rating100} />
-        <SceneSpecsOverlay scene={props.scene} />
+        {overlayOpts.showRatingBanner && (
+          <RatingBanner rating={props.scene.rating100} />
+        )}
+        <SceneSpecsOverlay
+          scene={props.scene}
+          showResolution={overlayOpts.showResolution}
+          showDuration={overlayOpts.showDuration}
+          showFileSize={overlayOpts.showFileSize}
+        />
         {maybeRenderInteractiveSpeedOverlay()}
       </>
     );
