@@ -158,7 +158,8 @@
         "reveal_in_file_manager": "파일 관리자에서 열기",
         "exclude_lowercase": "제외",
         "from_clipboard": "클립보드에서 불러오기",
-        "selective_generate": "선택적 생성"
+        "selective_generate": "선택적 생성",
+        "create_parent_tag": "부모 태그 만들기"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -1057,7 +1058,8 @@
         "stashid_exists_warning": "이 Stash-Box의 기존 Stash ID가 교체될 것입니다.",
         "studios_found": "{count}개 스튜디오 발견됨",
         "tags_found": "{count}개 태그 발견됨",
-        "scrape_results_missing": "없음"
+        "scrape_results_missing": "없음",
+        "edit_entity_count_title": "{count}개의 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정"
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -1668,7 +1670,12 @@
         "query_all_tags_in_the_database": "데이터베이스 내 모든 태그",
         "refresh_tagged_tags": "표준 태그 새로고침",
         "refreshing_will_update_the_data": "새로고침하면, Stash-Box 인스턴스로부터 표준 태그의 데이터를 업데이트할 것입니다.",
-        "status_tagging_job_queued": "상태: 표준화 작업 대기열 추가됨"
+        "status_tagging_job_queued": "상태: 표준화 작업 대기열 추가됨",
+        "config": {
+            "create_parent_desc": "stash-box 카테고리에서 누락된 부모 태그를 만들거나, 기존 부모 태그를 정확한 이름과 연결하는 태그를 지정합니다",
+            "create_parent_label": "부모 태그 만들기"
+        },
+        "create_or_tag_parent_tags": "누락된 부모 태그 생성 또는 기존 태그 지정"
     },
     "tagger": {
         "config": {
@@ -1684,5 +1691,6 @@
     "include_sub_folders": "하위 폴더 포함",
     "parent_folder": "상위 폴더",
     "sub_folder_depth": "하위 폴더 깊이 (전체일 경우 비워둠)",
-    "sub_folders": "하위 폴더"
+    "sub_folders": "하위 폴더",
+    "empty_value": "공백"
 }
