@@ -89,6 +89,15 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, fmt.Errorf("converting death date: %w", err)
 	}
 
+	newPerformer.CareerStart, err = translator.datePtr(input.CareerStart)
+	if err != nil {
+		return nil, fmt.Errorf("converting career start: %w", err)
+	}
+	newPerformer.CareerEnd, err = translator.datePtr(input.CareerEnd)
+	if err != nil {
+		return nil, fmt.Errorf("converting career end: %w", err)
+	}
+
 	// if career_start/career_end not provided, parse deprecated career_length
 	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
 		start, end, err := models.ParseYearRangeString(*input.CareerLength)
@@ -97,15 +106,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		}
 		newPerformer.CareerStart = start
 		newPerformer.CareerEnd = end
-	}
-
-	newPerformer.CareerStart, err = translator.datePtr(input.CareerStart)
-	if err != nil {
-		return nil, fmt.Errorf("converting career start: %w", err)
-	}
-	newPerformer.CareerEnd, err = translator.datePtr(input.CareerEnd)
-	if err != nil {
-		return nil, fmt.Errorf("converting career end: %w", err)
 	}
 
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
