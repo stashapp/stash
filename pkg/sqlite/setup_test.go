@@ -306,6 +306,7 @@ const (
 	pathField            = "Path"
 	checksumField        = "Checksum"
 	titleField           = "Title"
+	detailsField         = "Details"
 	urlField             = "URL"
 	zipPath              = "zipPath.zip"
 	firstSavedFilterName = "firstSavedFilterName"
@@ -1305,9 +1306,10 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Title:  title,
-		Rating: getIntPtr(getRating(i)),
-		Date:   getObjectDate(i),
+		Title:   title,
+		Details: getImageStringValue(i, detailsField),
+		Rating:  getIntPtr(getRating(i)),
+		Date:    getObjectDate(i),
 		URLs: models.NewRelatedStrings([]string{
 			getImageEmptyString(i, urlField),
 		}),
