@@ -18,6 +18,7 @@ type SceneGetter interface {
 // SceneFinder provides methods to find scenes.
 type SceneFinder interface {
 	SceneGetter
+	IDsFromFileIDsLoader
 	FindByFingerprints(ctx context.Context, fp []Fingerprint) ([]*Scene, error)
 	FindByChecksum(ctx context.Context, checksum string) ([]*Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*Scene, error)

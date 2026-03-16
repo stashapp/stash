@@ -14,6 +14,7 @@
 //go:generate go run github.com/vektah/dataloaden FolderRelatedFolderIDsLoader github.com/stashapp/stash/pkg/models.FolderID []github.com/stashapp/stash/pkg/models.FolderID
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
+//go:generate go run github.com/vektah/dataloaden FileIDsRelatedIDsLoader github.com/stashapp/stash/pkg/models.FileID []int
 //go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden CustomFieldsLoader int github.com/stashapp/stash/pkg/models.CustomFieldMap
 //go:generate go run github.com/vektah/dataloaden SceneOCountLoader int int
@@ -44,6 +45,7 @@ const (
 
 type Loaders struct {
 	SceneByID         *SceneLoader
+	SceneIDsByFileID  *FileIDsRelatedIDsLoader
 	SceneFiles        *SceneFileIDsLoader
 	ScenePlayCount    *ScenePlayCountLoader
 	SceneOCount       *SceneOCountLoader
@@ -56,8 +58,10 @@ type Loaders struct {
 	GalleryFiles *GalleryFileIDsLoader
 
 	GalleryByID         *GalleryLoader
+	GalleryIDsByFileID  *FileIDsRelatedIDsLoader
 	GalleryCustomFields *CustomFieldsLoader
 	ImageByID           *ImageLoader
+	ImageIDsByFileID    *FileIDsRelatedIDsLoader
 	ImageCustomFields   *CustomFieldsLoader
 
 	PerformerByID         *PerformerLoader
@@ -92,10 +96,20 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenes(ctx),
 			},
+			SceneIDsByFileID: &FileIDsRelatedIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchSceneIDsByFileID(ctx),
+			},
 			GalleryByID: &GalleryLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchGalleries(ctx),
+			},
+			GalleryIDsByFileID: &FileIDsRelatedIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchGalleryIDsByFileID(ctx),
 			},
 			GalleryCustomFields: &CustomFieldsLoader{
 				wait:     wait,
@@ -106,6 +120,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchImages(ctx),
+			},
+			ImageIDsByFileID: &FileIDsRelatedIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchImageIDsByFileID(ctx),
 			},
 			ImageCustomFields: &CustomFieldsLoader{
 				wait:     wait,
@@ -247,6 +266,17 @@ func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models
 	}
 }
 
+func (m Middleware) fetchSceneIDsByFileID(ctx context.Context) func(keys []models.FileID) ([][]int, []error) {
+	return func(keys []models.FileID) (ret [][]int, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyIDsByFileIDs(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
 func (m Middleware) fetchSceneCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
 	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
@@ -271,6 +301,17 @@ func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models
 	}
 }
 
+func (m Middleware) fetchImageIDsByFileID(ctx context.Context) func(keys []models.FileID) ([][]int, []error) {
+	return func(keys []models.FileID) (ret [][]int, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Image.GetManyIDsByFileIDs(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
 func (m Middleware) fetchImageCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
 	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
@@ -291,6 +332,17 @@ func (m Middleware) fetchGalleries(ctx context.Context) func(keys []int) ([]*mod
 			return err
 		})
 
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchGalleryIDsByFileID(ctx context.Context) func(keys []models.FileID) ([][]int, []error) {
+	return func(keys []models.FileID) (ret [][]int, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Gallery.GetManyIDsByFileIDs(ctx, keys)
+			return err
+		})
 		return ret, toErrorSlice(err)
 	}
 }

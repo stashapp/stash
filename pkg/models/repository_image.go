@@ -12,6 +12,7 @@ type ImageGetter interface {
 // ImageFinder provides methods to find images.
 type ImageFinder interface {
 	ImageGetter
+	IDsFromFileIDsLoader
 	FindByFingerprints(ctx context.Context, fp []Fingerprint) ([]*Image, error)
 	FindByChecksum(ctx context.Context, checksum string) ([]*Image, error)
 	FindByFileID(ctx context.Context, fileID FileID) ([]*Image, error)
