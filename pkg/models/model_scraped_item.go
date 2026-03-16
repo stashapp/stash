@@ -292,7 +292,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		}
 	}
 	if p.Circumcised != nil && !excluded["circumcised"] {
-		v := CircumisedEnum(*p.Circumcised)
+		v := CircumcisedEnum(*p.Circumcised)
 		if v.IsValid() {
 			ret.Circumcised = &v
 		}
@@ -475,11 +475,12 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 
 type ScrapedTag struct {
 	// Set if tag matched
-	StoredID     *string  `json:"stored_id"`
-	Name         string   `json:"name"`
-	Description  *string  `json:"description"`
-	AliasList    []string `json:"alias_list"`
-	RemoteSiteID *string  `json:"remote_site_id"`
+	StoredID     *string     `json:"stored_id"`
+	Name         string      `json:"name"`
+	Description  *string     `json:"description"`
+	AliasList    []string    `json:"alias_list"`
+	RemoteSiteID *string     `json:"remote_site_id"`
+	Parent       *ScrapedTag `json:"parent"`
 }
 
 func (ScrapedTag) IsScrapedContent() {}
@@ -498,6 +499,13 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 
 	if len(t.AliasList) > 0 && !excluded["aliases"] {
 		ret.Aliases = NewRelatedStrings(t.AliasList)
+	}
+
+	if t.Parent != nil && t.Parent.StoredID != nil {
+		parentID, err := strconv.Atoi(*t.Parent.StoredID)
+		if err == nil && parentID > 0 {
+			ret.ParentIDs = NewRelatedIDs([]int{parentID})
+		}
 	}
 
 	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
@@ -528,6 +536,16 @@ func (t *ScrapedTag) ToPartial(storedID string, endpoint string, excluded map[st
 		ret.Aliases = &UpdateStrings{
 			Values: t.AliasList,
 			Mode:   RelationshipUpdateModeSet,
+		}
+	}
+
+	if t.Parent != nil && t.Parent.StoredID != nil {
+		parentID, err := strconv.Atoi(*t.Parent.StoredID)
+		if err == nil && parentID > 0 {
+			ret.ParentIDs = &UpdateIDs{
+				IDs:  []int{parentID},
+				Mode: RelationshipUpdateModeAdd,
+			}
 		}
 	}
 

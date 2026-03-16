@@ -287,7 +287,8 @@
   }
 }
 
-.StudioTagger {
+.StudioTagger,
+.TagTagger {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -342,7 +343,8 @@
     vertical-align: bottom;
   }
 
-  &-studio-search {
+  &-studio-search,
+  &-tag-search {
     display: flex;
     flex-wrap: wrap;
 

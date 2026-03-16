@@ -65,9 +65,9 @@ func Test_PerformerStore_Create(t *testing.T) {
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
-		circumcised    = models.CircumisedEnumCut
-		careerStart    = models.Date{Time: time.Date(2005, 1, 1, 0, 0, 0, 0, time.UTC), Precision: models.DatePrecisionYear}
-		careerEnd      = models.Date{Time: time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC), Precision: models.DatePrecisionYear}
+		circumcised    = models.CircumcisedEnumCut
+		careerStart    = models.DateFromYear(2005)
+		careerEnd      = models.DateFromYear(2015)
 		tattoos        = "tattoos"
 		piercings      = "piercings"
 		aliases        = []string{"alias1", "alias2"}
@@ -228,7 +228,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
-		circumcised    = models.CircumisedEnumCut
+		circumcised    = models.CircumcisedEnumCut
 		careerStart    = models.DateFromYear(2005)
 		careerEnd      = models.DateFromYear(2015)
 		tattoos        = "tattoos"
@@ -457,7 +457,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
-		circumcised    = models.CircumisedEnumCut
+		circumcised    = models.CircumcisedEnumCut
 		careerStart    = models.DateFromYear(2005)
 		careerEnd      = models.DateFromYear(2015)
 		tattoos        = "tattoos"
@@ -1200,7 +1200,7 @@ func TestPerformerQuery(t *testing.T) {
 			nil,
 			&models.PerformerFilterType{
 				Circumcised: &models.CircumcisionCriterionInput{
-					Value:    []models.CircumisedEnum{models.CircumisedEnumCut},
+					Value:    []models.CircumcisedEnum{models.CircumcisedEnumCut},
 					Modifier: models.CriterionModifierIncludes,
 				},
 			},
@@ -1213,7 +1213,7 @@ func TestPerformerQuery(t *testing.T) {
 			nil,
 			&models.PerformerFilterType{
 				Circumcised: &models.CircumcisionCriterionInput{
-					Value:    []models.CircumisedEnum{models.CircumisedEnumCut},
+					Value:    []models.CircumcisedEnum{models.CircumcisedEnumCut},
 					Modifier: models.CriterionModifierExcludes,
 				},
 			},

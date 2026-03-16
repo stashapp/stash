@@ -356,32 +356,34 @@ interface ISceneSpecsOverlay {
   scene: GQL.SlimSceneDataFragment;
 }
 
-export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = ({ scene }) => {
-  if (!scene.files.length) return null;
-  let file = scene.files[0];
-  return (
-    <div className="scene-specs-overlay">
-      <span className="overlay-filesize extra-scene-info">
-        <FileSize size={file.size} />
-      </span>
-      {file.width && file.height ? (
-        <span className="overlay-resolution">
-          {" "}
-          {TextUtils.resolution(file.width, file.height)}
+export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
+  "SceneCard.SceneSpecs",
+  ({ scene }) => {
+    const file = scene.files?.[0];
+    if (!file) return null;
+    return (
+      <div className="scene-specs-overlay">
+        <span className="overlay-filesize extra-scene-info">
+          <FileSize size={file.size} />
         </span>
-      ) : (
-        ""
-      )}
-      {(file.duration ?? 0) >= 1 ? (
-        <span className="overlay-duration">
-          {TextUtils.secondsToTimestamp(file.duration)}
-        </span>
-      ) : (
-        ""
-      )}
-    </div>
-  );
-};
+        {file.width && file.height ? (
+          <span className="overlay-resolution">
+            {TextUtils.resolution(file.width, file.height)}
+          </span>
+        ) : (
+          ""
+        )}
+        {file.duration > 0 ? (
+          <span className="overlay-duration">
+            {TextUtils.secondsToTimestamp(file.duration)}
+          </span>
+        ) : (
+          ""
+        )}
+      </div>
+    );
+  }
+);
 
 const SceneCardImage = PatchComponent(
   "SceneCard.Image",

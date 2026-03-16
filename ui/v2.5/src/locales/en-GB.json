@@ -36,6 +36,7 @@
     "create_marker": "Create Marker",
     "create_new": "Create new",
     "create_parent_studio": "Create parent studio",
+    "create_parent_tag": "Create parent tag",
     "created_entity": "Created {entity_type}: {entity_name}",
     "customise": "Customise",
     "delete": "Delete",
@@ -1605,6 +1606,11 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_tags": "Batch Add Tags",
     "batch_update_tags": "Batch Update Tags",
+    "config": {
+      "create_parent_desc": "Create missing parent tags from stash-box categories, or tag existing parent tags with exact name matches",
+      "create_parent_label": "Create parent tags"
+    },
+    "create_or_tag_parent_tags": "Create missing or tag existing parent tags",
     "current_page": "Current page",
     "failed_to_save_tag": "Failed to save tag \"{tag}\"",
     "name_already_exists": "Name already exists",

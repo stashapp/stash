@@ -7,6 +7,8 @@ import TagModal from "./TagModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { mergeTagStashIDs } from "../utils";
+import { useTagCreate } from "src/core/StashService";
+import { apolloError } from "src/utils";
 
 interface IStashSearchResultProps {
   tag: GQL.TagListDataFragment;
@@ -34,13 +36,49 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     {}
   );
 
+  const [createTag] = useTagCreate();
   const updateTag = useUpdateTag();
 
-  const handleSave = async (input: GQL.TagCreateInput) => {
+  function handleSaveError(name: string, message: string) {
+    setError({
+      message: intl.formatMessage(
+        { id: "tag_tagger.failed_to_save_tag" },
+        { tag: name }
+      ),
+      details:
+        message === "UNIQUE constraint failed: tags.name"
+          ? intl.formatMessage({
+              id: "tag_tagger.name_already_exists",
+            })
+          : message,
+    });
+  }
+
+  const handleSave = async (
+    input: GQL.TagCreateInput,
+    parentInput?: GQL.TagCreateInput
+  ) => {
     setError({});
     setModalTag(undefined);
-    setSaveState("Saving tag");
 
+    if (parentInput) {
+      setSaveState("Saving parent tag");
+
+      try {
+        const parentRes = await createTag({
+          variables: { input: parentInput },
+        });
+        input.parent_ids = [parentRes.data?.tagCreate?.id].filter(
+          Boolean
+        ) as string[];
+      } catch (e) {
+        handleSaveError(parentInput.name, apolloError(e));
+        setSaveState("");
+        return;
+      }
+    }
+
+    setSaveState("Saving tag");
     const updateData: GQL.TagUpdateInput = {
       ...input,
       id: tag.id,
@@ -54,18 +92,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const res = await updateTag(updateData);
 
     if (!res?.data?.tagUpdate) {
-      setError({
-        message: intl.formatMessage(
-          { id: "tag_tagger.failed_to_save_tag" },
-          { tag: input.name ?? tag.name }
-        ),
-        details:
-          res?.errors?.[0]?.message === "UNIQUE constraint failed: tags.name"
-            ? intl.formatMessage({
-                id: "tag_tagger.name_already_exists",
-              })
-            : res?.errors?.[0]?.message ?? "",
-      });
+      handleSaveError(input.name ?? tag.name, res?.errors?.[0]?.message ?? "");
     } else {
       onTagTagged(tag);
     }
@@ -74,7 +101,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const tags = stashboxTags.map((p) => (
     <Button
-      className="StudioTagger-studio-search-item minimal col-6"
+      className="TagTagger-tag-search-item minimal col-6"
       variant="link"
       key={p.remote_site_id}
       onClick={() => setModalTag(p)}
@@ -97,7 +124,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           endpoint={endpoint}
         />
       )}
-      <div className="StudioTagger-studio-search">{tags}</div>
+      <div className="TagTagger-tag-search">{tags}</div>
       <div className="row no-gutters mt-2 align-items-center justify-content-end">
         {error.message && (
           <div className="text-right text-danger mt-1">

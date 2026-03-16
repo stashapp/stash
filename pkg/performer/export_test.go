@@ -51,7 +51,7 @@ var (
 	careerStart, _  = models.ParseDate("2005")
 	careerEnd, _    = models.ParseDate("2015")
 	penisLength     = 1.23
-	circumcisedEnum = models.CircumisedEnumCut
+	circumcisedEnum = models.CircumcisedEnumCut
 	circumcised     = circumcisedEnum.String()
 
 	emptyCustomFields = make(map[string]interface{})

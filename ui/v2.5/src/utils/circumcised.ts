@@ -1,12 +1,12 @@
 import * as GQL from "../core/generated-graphql";
 
-export const stringCircumMap = new Map<string, GQL.CircumisedEnum>([
-  ["Uncut", GQL.CircumisedEnum.Uncut],
-  ["Cut", GQL.CircumisedEnum.Cut],
+export const stringCircumMap = new Map<string, GQL.CircumcisedEnum>([
+  ["Uncut", GQL.CircumcisedEnum.Uncut],
+  ["Cut", GQL.CircumcisedEnum.Cut],
 ]);
 
 export const circumcisedToString = (
-  value?: GQL.CircumisedEnum | String | null
+  value?: GQL.CircumcisedEnum | String | null
 ) => {
   if (!value) {
     return undefined;
@@ -24,12 +24,12 @@ export const circumcisedToString = (
 export const stringToCircumcised = (
   value?: string | null,
   caseInsensitive?: boolean
-): GQL.CircumisedEnum | undefined => {
+): GQL.CircumcisedEnum | undefined => {
   if (!value) {
     return undefined;
   }
 
-  const existing = Object.entries(GQL.CircumisedEnum).find(
+  const existing = Object.entries(GQL.CircumcisedEnum).find(
     (e) => e[1] === value
   );
   if (existing) return existing[1];
