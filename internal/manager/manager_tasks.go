@@ -236,13 +236,13 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 
 		taskQueue := <-taskQueueChan
 
-	scanJob := ScanJob{
+		scanJob := ScanJob{
 			scanner:         scanner,
 			generateOptions: makeGenerateOptions(input),
 			paths:           input.Paths,
 			taskQueue:       taskQueue,
 			subscriptions:   s.scanSubs,
-	}
+		}
 
 		scanJob.Execute(ctx, progress)
 
@@ -254,6 +254,49 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 
 	return jobID, nil
 }
+
+type ScanFileInput struct {
+	Path string `json:"path"`
+	// Forces a rescan on files even if modification time is unchanged
+	Rescan *bool `json:"rescan,omitempty"`
+
+	ScanGenerateOptions
+}
+
+func (s *Manager) ScanFile(ctx context.Context, input ScanFileInput) (models.File, error) {
+	if err := s.validateFFmpeg(); err != nil {
+		return nil, err
+	}
+
+	taskQueueChan := make(chan *job.TaskQueue)
+
+	s.JobManager.Add(ctx, "Generating for scanned file...", job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
+		nTasks := s.Config.GetParallelTasksWithAutoDetection()
+
+		const taskQueueSize = 200000
+		taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
+		taskQueueChan <- taskQueue
+		close(taskQueueChan)
+		taskQueue.Wait()
+		return nil
+	}))
+
+	taskQueue := <-taskQueueChan
+
+	scanner := s.makeScanner(utils.IsTrue(input.Rescan), time.Time{})
+	scanner.FileHandlers = getScanHandlers(input.ScanGenerateOptions, taskQueue, nil)
+
+	scanJob := ScanJob{
+		scanner:         scanner,
+		generateOptions: input.ScanGenerateOptions,
+	}
+
+	f, err := scanJob.scanFile(ctx, input.Path)
+	taskQueue.Close()
+
+	s.scanSubs.notify()
+
+	return f, err
 }
 
 func (s *Manager) Import(ctx context.Context) (int, error) {

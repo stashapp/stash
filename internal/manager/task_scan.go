@@ -166,6 +166,39 @@ func makeScannedFile(f models.FS, path string, info fs.FileInfo, zipFile *file.S
 	return &ff, nil
 }
 
+// used for individual scanning only
+func (j *ScanJob) scanFile(ctx context.Context, path string) (models.File, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf("error reading file info for %q: %w", path, err)
+	}
+
+	if info.IsDir() {
+		return nil, fmt.Errorf("expected file but found directory: %s", path)
+	}
+
+	if !j.scanner.AcceptEntry(ctx, path, info) {
+		return nil, fmt.Errorf("file excluded from library")
+	}
+
+	if j.scanner.IsZipFile(info.Name()) {
+		return nil, fmt.Errorf("cannot scan zip file directly")
+	}
+
+	fs := &file.OsFS{}
+	ff, err := makeScannedFile(fs, path, info, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := j.scanner.ScanFile(ctx, *ff)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.File, nil
+}
+
 func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.ScannedFile, progress *job.Progress) fs.WalkDirFunc {
 	return func(path string, d fs.DirEntry, err error) error {
 		if err != nil {

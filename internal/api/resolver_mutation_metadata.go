@@ -24,6 +24,15 @@ func (r *mutationResolver) MetadataScan(ctx context.Context, input manager.ScanM
 	return strconv.Itoa(jobID), nil
 }
 
+func (r *mutationResolver) ScanFile(ctx context.Context, input manager.ScanFileInput) (BaseFile, error) {
+	f, err := manager.GetInstance().ScanFile(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return convertBaseFile(f), nil
+}
+
 func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
 	jobID, err := manager.GetInstance().Import(ctx)
 	if err != nil {
