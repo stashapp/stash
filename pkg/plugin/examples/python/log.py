@@ -12,33 +12,38 @@ import sys
 #
 
 def __prefix(levelChar):
-    startLevelChar = b'\x01'
-    endLevelChar = b'\x02'
+    if isinstance(levelChar, bytes):
+        try:
+            levelChar = levelChar.decode('ascii', errors='ignore')
+        except Exception:
+            levelChar = ''
+    startLevelChar = '\x01'
+    endLevelChar = '\x02'
 
     ret = startLevelChar + levelChar + endLevelChar
-    return ret.decode()
+    return ret
 
 def __log(levelChar, s):
-    if levelChar == "":
+    if not levelChar:
         return
 
-    print(__prefix(levelChar) + s + "\n", file=sys.stderr, flush=True)
+    print(__prefix(levelChar) + str(s), file=sys.stderr, flush=True)
 
 def LogTrace(s):
-    __log(b't', s)
+    __log('t', s)
 
 def LogDebug(s):
-    __log(b'd', s)
+    __log('d', s)
 
 def LogInfo(s):
-    __log(b'i', s)
+    __log('i', s)
 
 def LogWarning(s):
-    __log(b'w', s)
+    __log('w', s)
 
 def LogError(s):
-    __log(b'e', s)
+    __log('e', s)
 
 def LogProgress(p):
     progress = min(max(0, p), 1)
-    __log(b'p', str(progress))
+    __log('p', str(progress))
