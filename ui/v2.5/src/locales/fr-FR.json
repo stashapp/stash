@@ -158,7 +158,8 @@
         "reveal_in_file_manager": "Afficher dans le gestionnaire de fichiers",
         "from_clipboard": "Depuis le presse-papiers",
         "selective_generate": "Génération sélective",
-        "exclude_lowercase": "exclure"
+        "exclude_lowercase": "exclure",
+        "create_parent_tag": "Créer une étiquette parente"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -1669,7 +1670,12 @@
         "to_use_the_tag_tagger": "Pour utiliser le marqueur d'étiquettes, une instance Stash-Box doit être configurée.",
         "untagged_tags": "Étiquettes non marquées",
         "update_tags": "Mise à jour des étiquettes",
-        "updating_untagged_tags_description": "Une mise à jour des étiquettes non marquées tentera de faire correspondre toutes les étiquettes sans identifiant Stash et d'actualiser les métadonnées."
+        "updating_untagged_tags_description": "Une mise à jour des étiquettes non marquées tentera de faire correspondre toutes les étiquettes sans identifiant Stash et d'actualiser les métadonnées.",
+        "config": {
+            "create_parent_desc": "Créer les étiquettes parentes manquantes à partir des catégories de Stash-Box, ou attribuer des étiquettes parentes existantes dont le nom correspond exactement",
+            "create_parent_label": "Créer des étiquettes parentes"
+        },
+        "create_or_tag_parent_tags": "Créer les étiquettes parentes manquantes ou les associer aux étiquettes existantes"
     },
     "tagger": {
         "config": {
