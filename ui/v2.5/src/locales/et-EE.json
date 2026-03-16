@@ -158,7 +158,8 @@
         "select_directory": "Vali kaust",
         "exclude_lowercase": "välista",
         "from_clipboard": "Lõikelaualt",
-        "selective_generate": "Valiv genereerimine"
+        "selective_generate": "Valiv genereerimine",
+        "create_parent_tag": "Loo vanemsilt"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -1668,7 +1669,10 @@
         "to_use_the_tag_tagger": "Sildistaja kasutamiseks tuleb seadistada stash-boxi eksemplar.",
         "untagged_tags": "Märgistamata sildid",
         "update_tags": "Uuenda Silte",
-        "updating_untagged_tags_description": "Märgendamata siltide uuendamine püüab leida vasteid siltidele, millel puudub stashid, ja uuendab metaandmeid."
+        "updating_untagged_tags_description": "Märgendamata siltide uuendamine püüab leida vasteid siltidele, millel puudub stashid, ja uuendab metaandmeid.",
+        "config": {
+            "create_parent_label": "Loo vanemsildid"
+        }
     },
     "tagger": {
         "config": {
@@ -1684,5 +1688,6 @@
     "parent_folder": "Pea-Kaust",
     "sub_folder_depth": "Alamkausta sügavus (tühi kõigi jaoks)",
     "sub_folders": "Alamkaustad",
-    "unsupported_criteria": "Ilma toeata kriteeriumid: {criteria}"
+    "unsupported_criteria": "Ilma toeata kriteeriumid: {criteria}",
+    "empty_value": "tühi"
 }
