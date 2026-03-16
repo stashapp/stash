@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func useAsVideo(pathname string) bool {
@@ -117,14 +118,11 @@ type ScanMetaDataFilterInput struct {
 	MinModTime *time.Time `json:"minModTime"`
 }
 
-func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {
-	if err := s.validateFFmpeg(); err != nil {
-		return 0, err
-	}
-
+func (s *Manager) makeScanner(rescan bool, minModTime time.Time) *file.Scanner {
 	cfg := config.GetInstance()
+	repo := s.Repository
 
-	scanner := &file.Scanner{
+	return &file.Scanner{
 		Repository: file.NewRepository(s.Repository),
 		FileDecorators: []file.Decorator{
 			&file.FilteredDecorator{
@@ -143,19 +141,119 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		FingerprintCalculator: &fingerprintCalculator{s.Config},
 		FS:                    &file.OsFS{},
 		ZipFileExtensions:     cfg.GetGalleryExtensions(),
-		// ScanFilters is set in ScanJob.Execute
-		// HandlerRequiredFilters is set in ScanJob.Execute
-		RootPaths: cfg.GetStashPaths().Paths(),
-		Rescan:    input.Rescan,
+		// FileHandlers must be set during execute as it needs progress reference
+		ScanFilters:            []file.PathFilter{newScanFilter(cfg, repo, minModTime)},
+		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
+		RootPaths:              cfg.GetStashPaths().Paths(),
+		Rescan:                 rescan,
 	}
+}
+
+type ScanGenerateOptions struct {
+	// Generate covers during scan
+	GenerateCovers *models.GenerateTiming `json:"generateCovers,omitempty"`
+	// Generate video previews during scan
+	GeneratePreviews *models.GenerateTiming `json:"generatePreviews,omitempty"`
+	// Generate image previews during scan
+	GenerateImagePreviews *models.GenerateTiming `json:"generateImagePreviews,omitempty"`
+	// Generate video sprites during scan
+	GenerateSprites *models.GenerateTiming `json:"generateSprites,omitempty"`
+	// Generate video phashes during scan
+	GenerateVideoPhashes *models.GenerateTiming `json:"generateVideoPhashes,omitempty"`
+	// Generate image phashes during scan
+	GenerateImagePhashes *models.GenerateTiming `json:"generateImagePhashes,omitempty"`
+	// Generate image thumbnails during scan
+	GenerateThumbnails *models.GenerateTiming `json:"generateThumbnails,omitempty"`
+	// Generate image clip previews during scan
+	GenerateClipPreviews *models.GenerateTiming `json:"generateClipPreviews,omitempty"`
+}
+
+func makeGenerateOptions(input ScanMetadataInput) ScanGenerateOptions {
+	cfg := config.GetInstance()
+	timing := models.GenerateTimingAsync
+	if cfg.GetSequentialScanning() {
+		timing = models.GenerateTimingSync
+	}
+
+	setTiming := func(include bool) *models.GenerateTiming {
+		if include {
+			return &timing
+		}
+		return nil
+	}
+
+	setTimingSync := func(include bool) *models.GenerateTiming {
+		if include {
+			v := models.GenerateTimingSync
+			return &v
+		}
+		return nil
+	}
+
+	return ScanGenerateOptions{
+		// covers should be generated synchronously to ensure they are available
+		// when the scene is created, as they are used as the default cover
+		GenerateCovers:        setTimingSync(input.ScanGenerateCovers),
+		GeneratePreviews:      setTiming(input.ScanGeneratePreviews),
+		GenerateImagePreviews: setTiming(input.ScanGenerateImagePreviews),
+		GenerateSprites:       setTiming(input.ScanGenerateSprites),
+		GenerateVideoPhashes:  setTiming(input.ScanGeneratePhashes),
+		GenerateThumbnails:    setTiming(input.ScanGenerateThumbnails),
+		GenerateClipPreviews:  setTiming(input.ScanGenerateClipPreviews),
+		GenerateImagePhashes:  setTiming(input.ScanGenerateImagePhashes),
+	}
+}
+
+func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {
+	if err := s.validateFFmpeg(); err != nil {
+		return 0, err
+	}
+
+	var minModTime time.Time
+	if input.Filter != nil && input.Filter.MinModTime != nil {
+		minModTime = *input.Filter.MinModTime
+	}
+
+	scanner := s.makeScanner(input.Rescan, minModTime)
+
+	// we want the generate task to run concurrently, but it shouldn't be created first
+	jobID := s.JobManager.Add(ctx, "Scanning...", job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
+		taskQueueChan := make(chan *job.TaskQueue)
+
+		// add the generate task in here
+		s.JobManager.Start(ctx, "Generating for scanned files...", job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
+			const taskQueueSize = 200000
+			nTasks := s.Config.GetParallelTasksWithAutoDetection()
+			taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
+
+			taskQueueChan <- taskQueue
+			close(taskQueueChan)
+
+			taskQueue.Wait()
+			logger.Debug("Finished generating from scanned files")
+			return nil
+		}))
+
+		taskQueue := <-taskQueueChan
 
 	scanJob := ScanJob{
-		scanner:       scanner,
-		input:         input,
-		subscriptions: s.scanSubs,
+			scanner:         scanner,
+			generateOptions: makeGenerateOptions(input),
+			paths:           input.Paths,
+			taskQueue:       taskQueue,
+			subscriptions:   s.scanSubs,
 	}
 
-	return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil
+		scanJob.Execute(ctx, progress)
+
+		// close task queue
+		taskQueue.Close()
+
+		return nil
+	}))
+
+	return jobID, nil
+}
 }
 
 func (s *Manager) Import(ctx context.Context) (int, error) {
