@@ -91,6 +91,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
   const [birthdateError, setBirthdateError] = useState<string | undefined>();
   const [deathDateError, setDeathDateError] = useState<string | undefined>();
+  const [careerStartError, setCareerStartError] = useState<
+    string | undefined
+  >();
+  const [careerEndError, setCareerEndError] = useState<string | undefined>();
 
   useEffect(() => {
     setBirthdateError(getDateError(updateInput.birthdate ?? "", intl));
@@ -99,6 +103,14 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     setDeathDateError(getDateError(updateInput.death_date ?? "", intl));
   }, [updateInput.death_date, intl]);
+
+  useEffect(() => {
+    setCareerStartError(getDateError(updateInput.career_start ?? "", intl));
+  }, [updateInput.career_start, intl]);
+
+  useEffect(() => {
+    setCareerEndError(getDateError(updateInput.career_end ?? "", intl));
+  }, [updateInput.career_end, intl]);
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
@@ -434,7 +446,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
                 setUpdateField({ career_start: newValue })
               }
               unsetDisabled={unsetDisabled}
-              error={birthdateError}
+              error={careerStartError}
             />
           </BulkUpdateFormGroup>
           <BulkUpdateFormGroup name="career_end">
@@ -444,7 +456,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
                 setUpdateField({ career_end: newValue })
               }
               unsetDisabled={unsetDisabled}
-              error={birthdateError}
+              error={careerEndError}
             />
           </BulkUpdateFormGroup>
 
