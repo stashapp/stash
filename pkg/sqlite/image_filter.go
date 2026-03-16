@@ -185,6 +185,10 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "tags":
 				imageRepository.tags.join(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
+			case "phash":
+				f.addInnerJoin("images_files", "", "images_files.image_id = images.id")
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "images_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
 					"title", "details", "photographer", "date", "code", "rating",
