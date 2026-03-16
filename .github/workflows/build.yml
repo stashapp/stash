@@ -29,12 +29,11 @@ jobs:
       uses: actions/setup-go@v6
 
     # pnpm version is read from the packageManager field in package.json
+    # very broken (4.3, 4.4)
     - name: Install pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
       with:
         package_json_file: ui/v2.5/package.json
-        # https://github.com/pnpm/action-setup/issues/201
-        cache: true
 
     - name: Setup Node.js
       uses: actions/setup-node@v6
