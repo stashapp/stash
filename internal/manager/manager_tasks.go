@@ -244,7 +244,8 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 			subscriptions:   s.scanSubs,
 		}
 
-		scanJob.Execute(ctx, progress)
+		// scan job does not return error
+		_ = scanJob.Execute(ctx, progress)
 
 		// close task queue
 		taskQueue.Close()
