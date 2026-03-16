@@ -12,10 +12,8 @@
 //go:generate go run github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/models.FileID github.com/stashapp/stash/pkg/models.File
 //go:generate go run github.com/vektah/dataloaden FolderLoader github.com/stashapp/stash/pkg/models.FolderID *github.com/stashapp/stash/pkg/models.Folder
 //go:generate go run github.com/vektah/dataloaden FolderRelatedFolderIDsLoader github.com/stashapp/stash/pkg/models.FolderID []github.com/stashapp/stash/pkg/models.FolderID
-//go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
-//go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
+//go:generate go run github.com/vektah/dataloaden RelatedFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden FileIDsRelatedIDsLoader github.com/stashapp/stash/pkg/models.FileID []int
-//go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden CustomFieldsLoader int github.com/stashapp/stash/pkg/models.CustomFieldMap
 //go:generate go run github.com/vektah/dataloaden SceneOCountLoader int int
 //go:generate go run github.com/vektah/dataloaden ScenePlayCountLoader int int
@@ -46,7 +44,7 @@ const (
 type Loaders struct {
 	SceneByID         *SceneLoader
 	SceneIDsByFileID  *FileIDsRelatedIDsLoader
-	SceneFiles        *SceneFileIDsLoader
+	SceneFiles        *RelatedFileIDsLoader
 	ScenePlayCount    *ScenePlayCountLoader
 	SceneOCount       *SceneOCountLoader
 	ScenePlayHistory  *ScenePlayHistoryLoader
@@ -54,8 +52,8 @@ type Loaders struct {
 	SceneLastPlayed   *SceneLastPlayedLoader
 	SceneCustomFields *CustomFieldsLoader
 
-	ImageFiles   *ImageFileIDsLoader
-	GalleryFiles *GalleryFileIDsLoader
+	ImageFiles   *RelatedFileIDsLoader
+	GalleryFiles *RelatedFileIDsLoader
 
 	GalleryByID         *GalleryLoader
 	GalleryIDsByFileID  *FileIDsRelatedIDsLoader
@@ -196,17 +194,17 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchFoldersSubFolderIDs(ctx),
 			},
-			SceneFiles: &SceneFileIDsLoader{
+			SceneFiles: &RelatedFileIDsLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesFileIDs(ctx),
 			},
-			ImageFiles: &ImageFileIDsLoader{
+			ImageFiles: &RelatedFileIDsLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchImagesFileIDs(ctx),
 			},
-			GalleryFiles: &GalleryFileIDsLoader{
+			GalleryFiles: &RelatedFileIDsLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchGalleriesFileIDs(ctx),
