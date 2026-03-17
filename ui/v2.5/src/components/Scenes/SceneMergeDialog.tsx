@@ -591,6 +591,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           }
           newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
         />
         <ScrapedImageRow
           field="cover_image"

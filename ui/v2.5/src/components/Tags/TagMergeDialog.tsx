@@ -325,6 +325,9 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
           }
           newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
         />
         <ScrapedImageRow
           field="image"
