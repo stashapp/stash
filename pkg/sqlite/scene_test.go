@@ -2828,7 +2828,7 @@ func verifyDatePtr(t *testing.T, value *models.Date, criterion models.DateCriter
 		assert.Nil(value, "expect is null values to be null")
 	}
 	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.NotNil(value, "expect is null values to be null")
+		assert.NotNil(value, "expect not null values to be not null")
 	}
 	if criterion.Modifier == models.CriterionModifierEquals {
 		date, _ := models.ParseDate(criterion.Value)
