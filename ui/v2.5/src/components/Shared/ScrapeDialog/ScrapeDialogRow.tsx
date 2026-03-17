@@ -40,6 +40,7 @@ interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
   newField: React.ReactNode;
   onChange: (value: ScrapeResult<T>) => void;
   newValues?: React.ReactNode;
+  alwaysShow?: boolean;
 }
 
 export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
@@ -51,7 +52,7 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
     props.onChange(ret);
   }
 
-  if (!props.result.scraped && !props.newValues) {
+  if (!props.result.scraped && !props.newValues && !props.alwaysShow) {
     return <></>;
   }
 
