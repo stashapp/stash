@@ -257,6 +257,7 @@ export const ScrapedPerformersRow: React.FC<
         id: p.stored_id ?? "",
         name: p.name ?? "",
         alias_list,
+        aliases: [],
       };
     });
 
@@ -268,7 +269,12 @@ export const ScrapedPerformersRow: React.FC<
         onSelect={(items) => {
           if (onChangeFn) {
             // map the id back to stored_id
-            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
+            onChangeFn(
+              items.map((p) => {
+                const { aliases, ...rest } = p;
+                return { ...rest, stored_id: p.id };
+              })
+            );
           }
         }}
         values={selectValue}
@@ -339,7 +345,12 @@ export const ScrapedGroupsRow: React.FC<
         onSelect={(items) => {
           if (onChangeFn) {
             // map the id back to stored_id
-            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
+            onChangeFn(
+              items.map((p) => {
+                const { aliases, ...rest } = p;
+                return { ...rest, stored_id: p.id };
+              })
+            );
           }
         }}
         values={selectValue}

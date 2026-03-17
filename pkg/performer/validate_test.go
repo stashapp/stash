@@ -180,7 +180,7 @@ func TestValidateAliases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.tName, func(t *testing.T) {
-			got := ValidateAliases(tt.name, models.NewRelatedStrings(tt.aliases))
+			got := ValidateAliases(tt.name, tt.aliases)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -197,7 +197,7 @@ func TestValidateUpdateAliases(t *testing.T) {
 
 	existing := models.Performer{
 		Name:    name1,
-		Aliases: models.NewRelatedStrings([]string{name2}),
+		Aliases: models.NewRelatedPerformerAliases([]models.PerformerAlias{{Alias: name2}}),
 	}
 
 	osUnset := models.OptionalString{}

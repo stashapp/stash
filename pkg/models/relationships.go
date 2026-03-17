@@ -570,3 +570,85 @@ func (r *RelatedStrings) load(fn func() ([]string, error)) error {
 
 	return nil
 }
+
+type PerformerAlias struct {
+	Alias         string `json:"alias"`
+	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
+}
+
+type PerformerAliasLoader interface {
+	GetPerformerAliases(ctx context.Context, relatedID int) ([]PerformerAlias, error)
+}
+
+// RelatedPerformerAliases represents a list of related PerformerAlias objects.
+type RelatedPerformerAliases struct {
+	list []PerformerAlias
+}
+
+// NewRelatedPerformerAliases returns a loaded RelatedPerformerAliases object with the provided values.
+func NewRelatedPerformerAliases(values []PerformerAlias) RelatedPerformerAliases {
+	return RelatedPerformerAliases{
+		list: values,
+	}
+}
+
+// Loaded returns true if the related aliases have been loaded.
+func (r RelatedPerformerAliases) Loaded() bool {
+	return r.list != nil
+}
+
+func (r RelatedPerformerAliases) mustLoaded() {
+	if !r.Loaded() {
+		panic("list has not been loaded")
+	}
+}
+
+// List returns the related values. Panics if the relationship has not been loaded.
+func (r RelatedPerformerAliases) List() []PerformerAlias {
+	r.mustLoaded()
+
+	return r.list
+}
+
+func (r RelatedPerformerAliases) ToAliases() []string {
+	aliases := []string{}
+	if !r.Loaded() {
+		return aliases
+	}
+	for _, a := range r.list {
+		aliases = append(aliases, a.Alias)
+	}
+	return aliases
+}
+
+// Add adds the provided values to the list. Panics if the relationship has not been loaded.
+func (r *RelatedPerformerAliases) Add(values ...PerformerAlias) {
+	r.mustLoaded()
+
+	r.list = append(r.list, values...)
+}
+
+func (r *RelatedPerformerAliases) load(fn func() ([]PerformerAlias, error)) error {
+	if r.Loaded() {
+		return nil
+	}
+
+	values, err := fn()
+	if err != nil {
+		return err
+	}
+
+	if values == nil {
+		values = []PerformerAlias{}
+	}
+
+	r.list = values
+
+	return nil
+}
+
+// UpdatePerformerAliases contains the required information to perform a bulk update on performer aliases.
+type UpdatePerformerAliases struct {
+	Values []PerformerAlias
+	Mode   RelationshipUpdateMode
+}

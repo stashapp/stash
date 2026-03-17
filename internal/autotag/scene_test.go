@@ -166,7 +166,7 @@ func TestScenePerformers(t *testing.T) {
 	performer := models.Performer{
 		ID:      performerID,
 		Name:    performerName,
-		Aliases: models.NewRelatedStrings([]string{}),
+		Aliases: models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 	}
 
 	const reversedPerformerName = "name performer"
@@ -174,7 +174,7 @@ func TestScenePerformers(t *testing.T) {
 	reversedPerformer := models.Performer{
 		ID:      reversedPerformerID,
 		Name:    reversedPerformerName,
-		Aliases: models.NewRelatedStrings([]string{}),
+		Aliases: models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 	}
 
 	testTables := generateTestTable(performerName, sceneExt)
@@ -207,6 +207,41 @@ func TestScenePerformers(t *testing.T) {
 			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
+		err := ScenePerformers(testCtx, &scene, db.Scene, db.Performer, nil)
+
+		assert.Nil(err)
+		db.AssertExpectations(t)
+	}
+
+	// test against aliases
+	performer.Name = "unmatched"
+	performer.Aliases = models.NewRelatedPerformerAliases([]models.PerformerAlias{{Alias: performerName, IgnoreAutoTag: false}})
+
+	for _, test := range testTables {
+		db := mocks.NewDatabase()
+
+		db.Performer.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		db.Performer.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
+
+		if test.Matches {
+			matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+				expected := models.ScenePartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  []int{performerID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				return scenePartialsEqual(got, expected)
+			})
+			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
+		}
+
+		scene := models.Scene{
+			ID:           sceneID,
+			Path:         test.Path,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
+		}
 		err := ScenePerformers(testCtx, &scene, db.Scene, db.Performer, nil)
 
 		assert.Nil(err)

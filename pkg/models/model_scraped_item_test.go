@@ -214,7 +214,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				CareerEnd:      dateFromInt(2015),
 				Tattoos:        *nextVal(), // skip CareerLength counter slot
 				Piercings:      *nextVal(),
-				Aliases:        NewRelatedStrings([]string{*nextVal()}),
+				Aliases:        NewRelatedPerformerAliases([]PerformerAlias{{Alias: *nextVal(), IgnoreAutoTag: true}}),
 				URLs:           NewRelatedStrings([]string{*nextVal(), *nextVal(), *nextVal()}),
 				Details:        *nextVal(),
 				StashIDs: NewRelatedStashIDs([]StashID{

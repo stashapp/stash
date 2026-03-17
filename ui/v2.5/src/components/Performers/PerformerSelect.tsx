@@ -47,6 +47,7 @@ export type Performer = Pick<
   | "id"
   | "name"
   | "alias_list"
+  | "aliases"
   | "disambiguation"
   | "image_path"
   | "birthdate"
@@ -66,7 +67,7 @@ function sortPerformersByRelevance(
     input,
     performers,
     (p) => p.name,
-    (p) => p.alias_list
+    (p) => p.alias_list ?? undefined
   );
 }
 
@@ -289,6 +290,7 @@ const _PerformerSelect: React.FC<
       id,
       name,
       alias_list: [],
+      aliases: [],
     };
   };
 

@@ -16,6 +16,7 @@ import { DurationInput } from "src/components/Shared/DurationInput";
 import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { LinkType, StashIDPill } from "src/components/Shared/StashID";
+import { PerformerAliasListInput } from "src/components/Shared/PerformerAliasListInput";
 import { StringListInput } from "src/components/Shared/StringListInput";
 import { URLListInput } from "src/components/Shared/URLField";
 import * as GQL from "src/core/generated-graphql";
@@ -364,6 +365,29 @@ export function formikUtils<V extends FormikValues>(
     return renderField(field, title, control, props);
   }
 
+  function renderPerformerAliasListField(
+    field: Field,
+    messageID: string = field,
+    props?: IProps
+  ) {
+    const value = formik.values[field] as GQL.PerformerAliasInput[];
+    const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
+
+    const [errorMsg, errorIdx] = flattenError(error);
+
+    const title = intl.formatMessage({ id: messageID });
+    const control = (
+      <PerformerAliasListInput
+        value={value}
+        setValue={(v) => formik.setFieldValue(field, v)}
+        errors={errorMsg}
+        errorIdx={errorIdx}
+      />
+    );
+
+    return renderField(field, title, control, props);
+  }
+
   function renderStashIDsField(
     field: Field,
     linkType: LinkType,
@@ -421,6 +445,7 @@ export function formikUtils<V extends FormikValues>(
     renderRatingField,
     renderStringListField,
     renderURLListField,
+    renderPerformerAliasListField,
     renderStashIDsField,
   };
 }

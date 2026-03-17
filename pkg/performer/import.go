@@ -210,7 +210,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 		FakeTits:       performerJSON.FakeTits,
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
-		Aliases:        models.NewRelatedStrings(performerJSON.Aliases),
+		Aliases:        models.NewRelatedPerformerAliases(toPerformerAliases(performerJSON.Aliases)),
 		Details:        performerJSON.Details,
 		HairColor:      performerJSON.HairColor,
 		Favorite:       performerJSON.Favorite,
@@ -304,4 +304,12 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 	}
 
 	return newPerformer, nil
+}
+
+func toPerformerAliases(aliases []string) []models.PerformerAlias {
+	var res []models.PerformerAlias
+	for _, a := range aliases {
+		res = append(res, models.PerformerAlias{Alias: a, IgnoreAutoTag: false})
+	}
+	return res
 }

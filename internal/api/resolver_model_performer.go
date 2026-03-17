@@ -21,7 +21,7 @@ func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer
 		}
 	}
 
-	return obj.Aliases.List(), nil
+	return obj.Aliases.ToAliases(), nil
 }
 
 func (r *performerResolver) URL(ctx context.Context, obj *models.Performer) (*string, error) {
@@ -309,4 +309,22 @@ func (r *performerResolver) CustomFields(ctx context.Context, obj *models.Perfor
 // deprecated
 func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Group, err error) {
 	return r.Groups(ctx, obj)
+}
+
+func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]*models.PerformerAlias, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			qb := r.repository.Performer
+			return obj.LoadAliases(ctx, qb)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	ret := make([]*models.PerformerAlias, len(obj.Aliases.List()))
+	for i, v := range obj.Aliases.List() {
+		vCopy := v
+		ret[i] = &vCopy
+	}
+	return ret, nil
 }

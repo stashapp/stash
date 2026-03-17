@@ -530,7 +530,9 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
-	sq := dialect.From(table).Select(table.Col(idColumn)).LeftJoin(
+	sq := dialect.From(table).Select(table.Col(idColumn))
+
+	sq = sq.LeftJoin(
 		studiosAliasesJoinTable,
 		goqu.On(studiosAliasesJoinTable.Col(studioIDColumn).Eq(table.Col(idColumn))),
 	)

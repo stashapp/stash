@@ -55,7 +55,7 @@ func ValidateCreate(ctx context.Context, performer models.Performer, qb models.P
 		return err
 	}
 
-	if err := ValidateAliases(performer.Name, performer.Aliases); err != nil {
+	if err := ValidateAliases(performer.Name, performer.Aliases.ToAliases()); err != nil {
 		return err
 	}
 
@@ -83,7 +83,18 @@ func ValidateUpdate(ctx context.Context, id int, partial models.PerformerPartial
 	if err := existing.LoadAliases(ctx, qb); err != nil {
 		return err
 	}
-	if err := ValidateUpdateAliases(*existing, partial.Name, partial.Aliases); err != nil {
+	var partialAliases *models.UpdateStrings
+	if partial.Aliases != nil {
+		var stringValues []string
+		for _, v := range partial.Aliases.Values {
+			stringValues = append(stringValues, v.Alias)
+		}
+		partialAliases = &models.UpdateStrings{
+			Values: stringValues,
+			Mode:   partial.Aliases.Mode,
+		}
+	}
+	if err := ValidateUpdateAliases(*existing, partial.Name, partialAliases); err != nil {
 		return err
 	}
 
@@ -194,16 +205,12 @@ func ValidateUpdateName(ctx context.Context, existing models.Performer, name mod
 	return validateName(ctx, newName, newDisambig, &existing.ID, qb)
 }
 
-func ValidateAliases(name string, aliases models.RelatedStrings) error {
-	if !aliases.Loaded() {
-		return nil
-	}
-
+func ValidateAliases(name string, aliases []string) error {
 	m := make(map[string]bool)
 	nameL := strings.ToLower(name)
 	m[nameL] = true
 
-	for _, alias := range aliases.List() {
+	for _, alias := range aliases {
 		aliasL := strings.ToLower(alias)
 		if m[aliasL] {
 			return &DuplicateAliasError{alias}
@@ -227,12 +234,12 @@ func ValidateUpdateAliases(existing models.Performer, name models.OptionalString
 
 	// If aliases is nil, we're only changing the name - check existing aliases against new name
 	if aliases == nil {
-		return ValidateAliases(newName, existing.Aliases)
+		return ValidateAliases(newName, existing.Aliases.ToAliases())
 	}
 
-	newAliases := aliases.Apply(existing.Aliases.List())
+	newAliases := aliases.Apply(existing.Aliases.ToAliases())
 
-	return ValidateAliases(newName, models.NewRelatedStrings(newAliases))
+	return ValidateAliases(newName, newAliases)
 }
 
 // ValidateDeathDate returns an error if the birthdate is after the death date.

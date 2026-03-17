@@ -377,8 +377,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Tattoos != "" {
 		draft.Tattoos = &performer.Tattoos
 	}
-	if len(performer.Aliases.List()) > 0 {
-		aliases := strings.Join(performer.Aliases.List(), ",")
+	if len(performer.Aliases.ToAliases()) > 0 {
+		aliases := strings.Join(performer.Aliases.ToAliases(), ",")
 		draft.Aliases = &aliases
 	}
 	if performer.CareerStart != nil {

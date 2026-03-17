@@ -38,15 +38,16 @@ func getPerformerTaggers(p *models.Performer, cache *match.Cache) []tagger {
 		cache: cache,
 	}}
 
-	// TODO - disabled until we can have finer control over alias matching
-	// for _, a := range p.Aliases.List() {
-	// 	ret = append(ret, tagger{
-	// 		ID:    p.ID,
-	// 		Type:  "performer",
-	// 		Name:  a,
-	// 		cache: cache,
-	// 	})
-	// }
+	for _, a := range p.Aliases.List() {
+		if !a.IgnoreAutoTag {
+			ret = append(ret, tagger{
+				ID:    p.ID,
+				Type:  "performer",
+				Name:  a.Alias,
+				cache: cache,
+			})
+		}
+	}
 
 	return ret
 }

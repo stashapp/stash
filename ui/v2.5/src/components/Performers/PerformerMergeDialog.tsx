@@ -188,14 +188,14 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     // default alias list should be the existing aliases, plus the names of all sources,
     // plus all source aliases, deduplicated
     const allAliases = uniq(
-      dest.alias_list.concat(
+      (dest.alias_list ?? []).concat(
         sources.map((s) => s.name),
-        sources.flatMap((s) => s.alias_list)
+        sources.flatMap((s) => s.alias_list ?? [])
       )
     );
 
     setAliases(
-      new ScrapeResult(dest.alias_list, allAliases, !!allAliases.length)
+      new ScrapeResult(dest.alias_list ?? [], allAliases, !!allAliases.length)
     );
     setBirthdate(
       new ScrapeResult(

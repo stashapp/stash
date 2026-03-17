@@ -28,7 +28,7 @@ type PerformerQueryer interface {
 
 type PerformerAutoTagQueryer interface {
 	PerformerQueryer
-	AliasLoader
+	PerformerAliasLoader
 
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
@@ -75,7 +75,7 @@ type PerformerReader interface {
 	PerformerAutoTagQueryer
 	PerformerCounter
 
-	AliasLoader
+	PerformerAliasLoader
 	StashIDLoader
 	TagIDLoader
 	URLLoader

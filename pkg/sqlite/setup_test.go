@@ -1696,7 +1696,7 @@ func createPerformers(ctx context.Context, n int, o int) error {
 		performer := models.Performer{
 			Name:           getPerformerStringValue(index, name),
 			Disambiguation: getPerformerStringValue(index, "disambiguation"),
-			Aliases:        models.NewRelatedStrings(performerAliases(index)),
+			Aliases:        models.NewRelatedPerformerAliases(toTestPerformerAliases(performerAliases(index))),
 			URLs: models.NewRelatedStrings([]string{
 				getPerformerEmptyString(i, urlField),
 			}),
@@ -2172,4 +2172,12 @@ func linkGroupsParent(ctx context.Context, qb models.GroupReaderWriter) error {
 
 func addTagImage(ctx context.Context, qb models.TagWriter, tagIndex int) error {
 	return qb.UpdateImage(ctx, tagIDs[tagIndex], []byte("image"))
+}
+
+func toTestPerformerAliases(aliases []string) []models.PerformerAlias {
+	var ret []models.PerformerAlias
+	for _, a := range aliases {
+		ret = append(ret, models.PerformerAlias{Alias: a})
+	}
+	return ret
 }

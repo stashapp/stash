@@ -1,7 +1,13 @@
 package sqlite
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+
 	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/models"
 
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 )
@@ -279,12 +285,11 @@ var (
 		idColumn: goqu.T(performerTable).Col(idColumn),
 	}
 
-	performersAliasesTableMgr = &stringTable{
+	performersAliasesTableMgr = &performerAliasTable{
 		table: table{
 			table:    performersAliasesJoinTable,
 			idColumn: performersAliasesJoinTable.Col(performerIDColumn),
 		},
-		stringColumn: performersAliasesJoinTable.Col(performerAliasColumn),
 	}
 
 	performersURLsTableMgr = &orderedValueTable[string]{
@@ -433,3 +438,118 @@ var (
 		idColumn: goqu.T(savedFilterTable).Col(idColumn),
 	}
 )
+
+type performerAliasTable struct {
+	table
+}
+
+type performerAliasRow struct {
+	Alias         string `db:"alias"`
+	IgnoreAutoTag bool   `db:"ignore_auto_tag"`
+}
+
+func (t *performerAliasTable) get(ctx context.Context, id int) ([]models.PerformerAlias, error) {
+	q := dialect.Select("alias", "ignore_auto_tag").From(t.table.table).Where(t.idColumn.Eq(id))
+
+	const single = false
+	var ret []models.PerformerAlias
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v performerAliasRow
+		if err := rows.StructScan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, models.PerformerAlias{
+			Alias:         v.Alias,
+			IgnoreAutoTag: v.IgnoreAutoTag,
+		})
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting performer aliases from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *performerAliasTable) insertJoin(ctx context.Context, id int, v models.PerformerAlias) (sql.Result, error) {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "alias", "ignore_auto_tag").Vals(
+		goqu.Vals{id, v.Alias, v.IgnoreAutoTag},
+	)
+	ret, err := exec(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *performerAliasTable) insertJoins(ctx context.Context, id int, v []models.PerformerAlias) error {
+	for _, fk := range v {
+		if _, err := t.insertJoin(ctx, id, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *performerAliasTable) replaceJoins(ctx context.Context, id int, v []models.PerformerAlias) error {
+	if err := t.destroy(ctx, []int{id}); err != nil {
+		return err
+	}
+
+	return t.insertJoins(ctx, id, v)
+}
+
+func (t *performerAliasTable) addJoins(ctx context.Context, id int, v []models.PerformerAlias) error {
+	// get existing foreign keys
+	existing, err := t.get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// only add values that are not already present
+	var filtered []models.PerformerAlias
+	for _, vv := range v {
+		found := false
+		for _, e := range existing {
+			if e.Alias == vv.Alias {
+				found = true
+				break
+			}
+		}
+		if !found {
+			filtered = append(filtered, vv)
+		}
+	}
+	return t.insertJoins(ctx, id, filtered)
+}
+
+func (t *performerAliasTable) destroyJoins(ctx context.Context, id int, v []models.PerformerAlias) error {
+	for _, vv := range v {
+		q := dialect.Delete(t.table.table).Where(
+			t.idColumn.Eq(id),
+			t.table.table.Col("alias").Eq(vv.Alias),
+		)
+
+		if _, err := exec(ctx, q); err != nil {
+			return fmt.Errorf("destroying %s: %w", t.table.table.GetTable(), err)
+		}
+	}
+
+	return nil
+}
+
+func (t *performerAliasTable) modifyJoins(ctx context.Context, id int, v []models.PerformerAlias, mode models.RelationshipUpdateMode) error {
+	switch mode {
+	case models.RelationshipUpdateModeSet:
+		return t.replaceJoins(ctx, id, v)
+	case models.RelationshipUpdateModeAdd:
+		return t.addJoins(ctx, id, v)
+	case models.RelationshipUpdateModeRemove:
+		return t.destroyJoins(ctx, id, v)
+	}
+
+	return nil
+}

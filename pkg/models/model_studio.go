@@ -104,7 +104,7 @@ func (s *Studio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
 	})
 }
 
-func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error {
+func (s *Studio) LoadRelationships(ctx context.Context, l StudioReader) error {
 	if err := s.LoadAliases(ctx, l); err != nil {
 		return err
 	}

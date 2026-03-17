@@ -65,7 +65,7 @@ function sortResults(
     query,
     performers ?? [],
     (p) => p.name,
-    (p) => p.alias_list
+    (p) => p.alias_list ?? undefined
   ).map((p) => {
     return {
       id: p.id,

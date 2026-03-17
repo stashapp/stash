@@ -291,29 +291,6 @@ func (_m *PerformerReaderWriter) FindMany(ctx context.Context, ids []int) ([]*mo
 	return r0, r1
 }
 
-// GetAliases provides a mock function with given fields: ctx, relatedID
-func (_m *PerformerReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]string, error) {
-	ret := _m.Called(ctx, relatedID)
-
-	var r0 []string
-	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
-		r0 = rf(ctx, relatedID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, relatedID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetCustomFields provides a mock function with given fields: ctx, id
 func (_m *PerformerReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
 	ret := _m.Called(ctx, id)
@@ -376,6 +353,29 @@ func (_m *PerformerReaderWriter) GetImage(ctx context.Context, performerID int) 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetPerformerAliases provides a mock function with given fields: ctx, relatedID
+func (_m *PerformerReaderWriter) GetPerformerAliases(ctx context.Context, relatedID int) ([]models.PerformerAlias, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []models.PerformerAlias
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.PerformerAlias); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.PerformerAlias)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}

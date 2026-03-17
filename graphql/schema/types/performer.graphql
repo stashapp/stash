@@ -35,7 +35,9 @@ type Performer {
   career_end: String
   tattoos: String
   piercings: String
-  alias_list: [String!]!
+  alias_list: [String!] @deprecated(reason: "Use aliases")
+
+  aliases: [PerformerAlias!]!
   favorite: Boolean!
   tags: [Tag!]!
   ignore_auto_tag: Boolean!
@@ -85,7 +87,8 @@ input PerformerCreateInput {
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
-  alias_list: [String!]
+  alias_list: [String!] @deprecated(reason: "Use aliases")
+  aliases: [PerformerAliasInput!]
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
   favorite: Boolean
@@ -126,7 +129,8 @@ input PerformerUpdateInput {
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
-  alias_list: [String!]
+  alias_list: [String!] @deprecated(reason: "Use aliases")
+  aliases: [PerformerAliasInput!]
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
   favorite: Boolean
@@ -172,7 +176,8 @@ input BulkPerformerUpdateInput {
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
-  alias_list: BulkUpdateStrings
+  alias_list: BulkUpdateStrings @deprecated(reason: "Use aliases")
+  aliases: BulkUpdatePerformerAliases
   twitter: String @deprecated(reason: "Use urls")
   instagram: String @deprecated(reason: "Use urls")
   favorite: Boolean
@@ -202,4 +207,19 @@ input PerformerMergeInput {
   destination: ID!
   # values defined here will override values in the destination
   values: PerformerUpdateInput
+}
+
+type PerformerAlias {
+  alias: String!
+  ignore_auto_tag: Boolean!
+}
+
+input PerformerAliasInput {
+  alias: String!
+  ignore_auto_tag: Boolean!
+}
+
+input BulkUpdatePerformerAliases {
+  values: [PerformerAliasInput!]
+  mode: BulkUpdateIdMode!
 }

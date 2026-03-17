@@ -36,7 +36,7 @@ func TestGalleryPerformers(t *testing.T) {
 	performer := models.Performer{
 		ID:      performerID,
 		Name:    performerName,
-		Aliases: models.NewRelatedStrings([]string{}),
+		Aliases: models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 	}
 
 	const reversedPerformerName = "name performer"
@@ -44,12 +44,47 @@ func TestGalleryPerformers(t *testing.T) {
 	reversedPerformer := models.Performer{
 		ID:      reversedPerformerID,
 		Name:    reversedPerformerName,
-		Aliases: models.NewRelatedStrings([]string{}),
+		Aliases: models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 	}
 
 	testTables := generateTestTable(performerName, galleryExt)
 
 	assert := assert.New(t)
+
+	for _, test := range testTables {
+		db := mocks.NewDatabase()
+
+		db.Performer.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		db.Performer.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
+
+		if test.Matches {
+			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+				expected := models.GalleryPartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  []int{performerID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				return galleryPartialsEqual(got, expected)
+			})
+			db.Gallery.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
+		}
+
+		gallery := models.Gallery{
+			ID:           galleryID,
+			Path:         test.Path,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
+		}
+		err := GalleryPerformers(testCtx, &gallery, db.Gallery, db.Performer, nil)
+
+		assert.Nil(err)
+		db.AssertExpectations(t)
+	}
+
+	// test against aliases
+	performer.Name = "unmatched"
+	performer.Aliases = models.NewRelatedPerformerAliases([]models.PerformerAlias{{Alias: performerName, IgnoreAutoTag: false}})
 
 	for _, test := range testTables {
 		db := mocks.NewDatabase()

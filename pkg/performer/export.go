@@ -14,7 +14,7 @@ import (
 
 type ImageAliasStashIDGetter interface {
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
-	models.AliasLoader
+	models.PerformerAliasLoader
 	models.StashIDLoader
 	models.URLLoader
 	models.CustomFieldsReader
@@ -81,7 +81,7 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		return nil, fmt.Errorf("loading performer aliases: %w", err)
 	}
 
-	newPerformerJSON.Aliases = performer.Aliases.List()
+	newPerformerJSON.Aliases = performer.Aliases.ToAliases()
 
 	if err := performer.LoadURLs(ctx, reader); err != nil {
 		return nil, fmt.Errorf("loading performer urls: %w", err)

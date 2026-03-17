@@ -156,20 +156,18 @@ func PathToPerformers(ctx context.Context, path string, reader models.PerformerA
 			matches = true
 		}
 
-		// TODO - disabled alias matching until we can get finer
-		// control over the matching
-		// if !matches {
-		// 	if err := p.LoadAliases(ctx, reader); err != nil {
-		// 		return nil, err
-		// 	}
+		if !matches {
+			if err := p.LoadAliases(ctx, reader); err != nil {
+				return nil, err
+			}
 
-		// 	for _, alias := range p.Aliases.List() {
-		// 		if nameMatchesPath(alias, path) != -1 {
-		// 			matches = true
-		// 			break
-		// 		}
-		// 	}
-		// }
+			for _, alias := range p.Aliases.List() {
+				if !alias.IgnoreAutoTag && nameMatchesPath(alias.Alias, path) != -1 {
+					matches = true
+					break
+				}
+			}
+		}
 
 		if matches {
 			ret = append(ret, p)
@@ -213,16 +211,18 @@ func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQ
 			index = matchIndex
 		}
 
-		aliases, err := reader.GetAliases(ctx, c.ID)
-		if err != nil {
-			return nil, err
-		}
+		{
+			aliases, err := reader.GetAliases(ctx, c.ID)
+			if err != nil {
+				return nil, err
+			}
 
-		for _, alias := range aliases {
-			matchIndex = nameMatchesPath(alias, path)
-			if matchIndex != -1 && matchIndex > index {
-				ret = c
-				index = matchIndex
+			for _, alias := range aliases {
+				matchIndex = nameMatchesPath(alias, path)
+				if matchIndex != -1 && matchIndex > index {
+					ret = c
+					index = matchIndex
+				}
 			}
 		}
 	}

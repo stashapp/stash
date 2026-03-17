@@ -204,10 +204,14 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 
 	if p.Aliases != nil && !excluded["aliases"] {
 		aliases := stringslice.FromString(*p.Aliases, ",")
-		for i, alias := range aliases {
-			aliases[i] = strings.TrimSpace(alias)
+		var parsedAliases []PerformerAlias
+		for _, alias := range aliases {
+			parsedAliases = append(parsedAliases, PerformerAlias{
+				Alias:         strings.TrimSpace(alias),
+				IgnoreAutoTag: true,
+			})
 		}
-		ret.Aliases = NewRelatedStrings(aliases)
+		ret.Aliases = NewRelatedPerformerAliases(parsedAliases)
 	}
 	if p.Birthdate != nil && !excluded["birthdate"] {
 		date, err := ParseDate(*p.Birthdate)
@@ -352,8 +356,15 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 	ret := NewPerformerPartial()
 
 	if p.Aliases != nil && !excluded["aliases"] {
-		ret.Aliases = &UpdateStrings{
-			Values: stringslice.FromString(*p.Aliases, ","),
+		var aliases []PerformerAlias
+		for _, a := range stringslice.FromString(*p.Aliases, ",") {
+			aliases = append(aliases, PerformerAlias{
+				Alias:         strings.TrimSpace(a),
+				IgnoreAutoTag: true,
+			})
+		}
+		ret.Aliases = &UpdatePerformerAliases{
+			Values: aliases,
 			Mode:   RelationshipUpdateModeSet,
 		}
 	}

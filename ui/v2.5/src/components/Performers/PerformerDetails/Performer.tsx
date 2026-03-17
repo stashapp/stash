@@ -452,7 +452,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
                     <ExternalLinkButtons urls={performer.urls ?? undefined} />
                   </span>
                 </DetailTitle>
-                <AliasList aliases={performer.alias_list} />
+                <AliasList aliases={performer.alias_list ?? undefined} />
                 <div className="quality-group">
                   <RatingSystem
                     value={performer.rating100}

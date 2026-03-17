@@ -120,7 +120,7 @@ func Test_PerformerStore_Create(t *testing.T) {
 					Weight:         &weight,
 					IgnoreAutoTag:  ignoreAutoTag,
 					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
-					Aliases:        models.NewRelatedStrings(aliases),
+					Aliases:        models.NewRelatedPerformerAliases(toTestPerformerAliases(aliases)),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
 							StashID:   stashID1,
@@ -283,7 +283,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 					HairColor:      hairColor,
 					Weight:         &weight,
 					IgnoreAutoTag:  ignoreAutoTag,
-					Aliases:        models.NewRelatedStrings(aliases),
+					Aliases:        models.NewRelatedPerformerAliases(toTestPerformerAliases(aliases)),
 					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
@@ -308,7 +308,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 			models.UpdatePerformerInput{
 				Performer: &models.Performer{
 					ID:       performerIDs[performerIdxWithGallery],
-					Aliases:  models.NewRelatedStrings([]string{}),
+					Aliases:  models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 					URLs:     models.NewRelatedStrings([]string{}),
 					TagIDs:   models.NewRelatedIDs([]int{}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
@@ -428,7 +428,7 @@ func clearPerformerPartial() models.PerformerPartial {
 		CareerEnd:      nullDate,
 		Tattoos:        nullString,
 		Piercings:      nullString,
-		Aliases:        &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
+		Aliases:        &models.UpdatePerformerAliases{Mode: models.RelationshipUpdateModeSet},
 		Rating:         nullInt,
 		Details:        nullString,
 		DeathDate:      nullDate,
@@ -509,8 +509,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				CareerEnd:    models.NewOptionalDate(careerEnd),
 				Tattoos:      models.NewOptionalString(tattoos),
 				Piercings:    models.NewOptionalString(piercings),
-				Aliases: &models.UpdateStrings{
-					Values: aliases,
+				Aliases: &models.UpdatePerformerAliases{
+					Values: toTestPerformerAliases(aliases),
 					Mode:   models.RelationshipUpdateModeSet,
 				},
 				Favorite:      models.NewOptionalBool(favorite),
@@ -561,7 +561,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				CareerEnd:      &careerEnd,
 				Tattoos:        tattoos,
 				Piercings:      piercings,
-				Aliases:        models.NewRelatedStrings(aliases),
+				Aliases:        models.NewRelatedPerformerAliases(toTestPerformerAliases(aliases)),
 				Favorite:       favorite,
 				Rating:         &rating,
 				Details:        details,
@@ -596,7 +596,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
 				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
 				URLs:          models.NewRelatedStrings([]string{}),
-				Aliases:       models.NewRelatedStrings([]string{}),
+				Aliases:       models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 				TagIDs:        models.NewRelatedIDs([]int{}),
 				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
 				IgnoreAutoTag: getIgnoreAutoTag(performerIdxWithTwoTags),
@@ -2482,7 +2482,7 @@ func TestPerformerQueryIsMissingAlias(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 
 		for _, performer := range performers {
-			a, err := db.Performer.GetAliases(ctx, performer.ID)
+			a, err := db.Performer.GetPerformerAliases(ctx, performer.ID)
 			if err != nil {
 				t.Errorf("error getting performer aliases: %s", err.Error())
 			}

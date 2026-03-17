@@ -270,6 +270,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
               id: p.stored_id!,
               name: p.name ?? "",
               alias_list: [],
+              aliases: [],
             };
           })
         );

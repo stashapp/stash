@@ -44,7 +44,6 @@ import {
   yupInputNumber,
   yupInputEnum,
   yupDateString,
-  yupRequiredStringArray,
   yupUniqueStringList,
 } from "src/utils/yup";
 import { useTagsEdit } from "src/hooks/tagsEdit";
@@ -103,7 +102,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const schema = yup.object({
     name: yup.string().required(),
     disambiguation: yup.string().ensure(),
-    alias_list: yupRequiredStringArray(intl).defined(),
+    aliases: yup
+      .array(
+        yup
+          .object({
+            alias: yup.string().required(),
+            ignore_auto_tag: yup.boolean().required(),
+          })
+          .required()
+      )
+      .defined(),
     gender: yupInputEnum(GQL.GenderEnum).nullable().defined(),
     birthdate: yupDateString(intl),
     death_date: yupDateString(intl),
@@ -133,7 +141,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const initialValues = {
     name: performer.name ?? "",
     disambiguation: performer.disambiguation ?? "",
-    alias_list: performer.alias_list ?? [],
+    aliases: performer.aliases ?? [],
     gender: performer.gender ?? null,
     birthdate: performer.birthdate ?? "",
     death_date: performer.death_date ?? "",
@@ -164,10 +172,35 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [customFieldsError, setCustomFieldsError] = useState<string>();
 
   function submit(values: InputValues) {
+    const { aliases, ...rest } = values;
+
+    // deduplicate aliases
+    const aliasesMap = new Map<string, boolean>();
+    (aliases || []).forEach((a) => {
+      const existing = aliasesMap.get(a.alias);
+      if (existing !== undefined) {
+        // If duplicates exist, and their ignore_auto_tag differs, we default to true (ignore auto tag)
+        if (existing !== a.ignore_auto_tag) {
+          aliasesMap.set(a.alias, true);
+        }
+      } else {
+        aliasesMap.set(a.alias, a.ignore_auto_tag);
+      }
+    });
+
+    const finalAliases = Array.from(aliasesMap.entries()).map(
+      ([alias, ignore_auto_tag]) => ({
+        alias,
+        ignore_auto_tag,
+      })
+    );
+
     const input = {
-      ...schema.cast(values),
+      ...schema.cast(rest),
+      aliases: finalAliases,
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
-    };
+    } as GQL.PerformerCreateInput;
+
     onSave(input);
   }
 
@@ -225,10 +258,20 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("disambiguation", state.disambiguation);
     }
     if (state.aliases) {
-      formik.setFieldValue(
-        "alias_list",
-        state.aliases.split(",").map((a) => a.trim())
-      );
+      const existingMap = new Map<string, boolean>();
+      formik.values.aliases?.forEach((a) => {
+        existingMap.set(a.alias, a.ignore_auto_tag);
+      });
+
+      const aliasModels = state.aliases.split(",").map((a) => {
+        const trimmed = a.trim();
+        const existing = existingMap.get(trimmed);
+        return {
+          alias: trimmed,
+          ignore_auto_tag: existing !== undefined ? existing : true,
+        };
+      });
+      formik.setFieldValue("aliases", aliasModels);
     }
     if (state.birthdate) {
       formik.setFieldValue("birthdate", state.birthdate);
@@ -346,7 +389,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onSave(input: InputValues, andNew?: boolean) {
+  async function onSave(input: GQL.PerformerCreateInput, andNew?: boolean) {
     setIsLoading(true);
     try {
       await onSubmit(input, andNew);
@@ -359,10 +402,36 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   async function onSaveAndNewClick() {
     const { values } = formik;
+
+    const { aliases, ...rest } = values;
+
+    // deduplicate aliases
+    const aliasesMap = new Map<string, boolean>();
+    (aliases || []).forEach((a) => {
+      const existing = aliasesMap.get(a.alias);
+      if (existing !== undefined) {
+        // If duplicates exist, and their ignore_auto_tag differs, we default to true (ignore auto tag)
+        if (existing !== a.ignore_auto_tag) {
+          aliasesMap.set(a.alias, true);
+        }
+      } else {
+        aliasesMap.set(a.alias, a.ignore_auto_tag);
+      }
+    });
+
+    const finalAliases = Array.from(aliasesMap.entries()).map(
+      ([alias, ignore_auto_tag]) => ({
+        alias,
+        ignore_auto_tag,
+      })
+    );
+
     const input = {
-      ...schema.cast(values),
+      ...schema.cast(rest),
+      aliases: finalAliases,
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
-    };
+    } as GQL.PerformerCreateInput;
+
     onSave(input, true);
   }
 
@@ -669,9 +738,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     renderInputField,
     renderSelectField,
     renderDateField,
-    renderStringListField,
     renderStashIDsField,
     renderURLListField,
+    renderPerformerAliasListField,
   } = formikUtils(intl, formik);
 
   function renderCountryField() {
@@ -721,7 +790,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("name")}
         {renderInputField("disambiguation")}
 
-        {renderStringListField("alias_list", "aliases", { orderable: false })}
+        {renderPerformerAliasListField("aliases", "aliases")}
 
         {renderSelectField("gender", stringGenderMap)}
 

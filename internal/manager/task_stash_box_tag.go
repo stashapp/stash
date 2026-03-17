@@ -178,16 +178,43 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
 
+			// Preserving existing aliases' IgnoreAutoTag state
+			if partial.Aliases != nil {
+				if err := t.performer.LoadAliases(ctx, qb); err == nil {
+					existingAliases := t.performer.Aliases.List()
+					existingAliasMap := make(map[string]bool)
+					for _, existing := range existingAliases {
+						existingAliasMap[existing.Alias] = existing.IgnoreAutoTag
+					}
+
+					for i, a := range partial.Aliases.Values {
+						if ignore, ok := existingAliasMap[a.Alias]; ok {
+							partial.Aliases.Values[i].IgnoreAutoTag = ignore
+						}
+					}
+				}
+			}
+
 			// if we're setting the performer's aliases, and not the name, then filter out the name
 			// from the aliases to avoid duplicates
 			// add the name to the aliases if it's not already there
 			if partial.Aliases != nil && !partial.Name.Set {
-				partial.Aliases.Values = sliceutil.Filter(partial.Aliases.Values, func(s string) bool {
-					return s != t.performer.Name
+				partial.Aliases.Values = sliceutil.Filter(partial.Aliases.Values, func(a models.PerformerAlias) bool {
+					return a.Alias != t.performer.Name
 				})
 
 				if p.Name != nil && t.performer.Name != *p.Name {
-					partial.Aliases.Values = sliceutil.AppendUnique(partial.Aliases.Values, *p.Name)
+					// Check if already exists before appending
+					exists := false
+					for _, existing := range partial.Aliases.Values {
+						if existing.Alias == *p.Name {
+							exists = true
+							break
+						}
+					}
+					if !exists {
+						partial.Aliases.Values = append(partial.Aliases.Values, models.PerformerAlias{Alias: *p.Name, IgnoreAutoTag: true})
+					}
 				}
 			}
 

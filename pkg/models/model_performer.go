@@ -34,10 +34,10 @@ type Performer struct {
 	Weight        *int   `json:"weight"`
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
-	Aliases  RelatedStrings  `json:"aliases"`
-	URLs     RelatedStrings  `json:"urls"`
-	TagIDs   RelatedIDs      `json:"tag_ids"`
-	StashIDs RelatedStashIDs `json:"stash_ids"`
+	Aliases  RelatedPerformerAliases `json:"aliases"`
+	URLs     RelatedStrings          `json:"urls"`
+	TagIDs   RelatedIDs              `json:"tag_ids"`
+	StashIDs RelatedStashIDs         `json:"stash_ids"`
 }
 
 type CreatePerformerInput struct {
@@ -91,7 +91,7 @@ type PerformerPartial struct {
 	Weight        OptionalInt
 	IgnoreAutoTag OptionalBool
 
-	Aliases  *UpdateStrings
+	Aliases  *UpdatePerformerAliases
 	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
 
@@ -105,9 +105,9 @@ func NewPerformerPartial() PerformerPartial {
 	}
 }
 
-func (s *Performer) LoadAliases(ctx context.Context, l AliasLoader) error {
-	return s.Aliases.load(func() ([]string, error) {
-		return l.GetAliases(ctx, s.ID)
+func (s *Performer) LoadAliases(ctx context.Context, l PerformerAliasLoader) error {
+	return s.Aliases.load(func() ([]PerformerAlias, error) {
+		return l.GetPerformerAliases(ctx, s.ID)
 	})
 }
 

@@ -589,18 +589,17 @@ func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) (
 	// this method should be removed
 	table := qb.table()
 	sq := dialect.From(table).Select(table.Col(idColumn))
-	// TODO - disabled alias matching until we get finer control over it
-	// .LeftJoin(
-	// 	performersAliasesJoinTable,
-	// 	goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
-	// )
+
+	sq = sq.LeftJoin(
+		performersAliasesJoinTable,
+		goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
+	)
 
 	var whereClauses []exp.Expression
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, table.Col("name").Like(w+"%"))
-		// TODO - see above
-		// whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
+		whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
 	}
 
 	sq = sq.Where(
@@ -900,7 +899,7 @@ func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) err
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
 }
 
-func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {
+func (qb *PerformerStore) GetPerformerAliases(ctx context.Context, performerID int) ([]models.PerformerAlias, error) {
 	return performersAliasesTableMgr.get(ctx, performerID)
 }
 

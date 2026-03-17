@@ -86,7 +86,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		Name:           name,
 		Disambiguation: disambiguation,
 		URLs:           models.NewRelatedStrings([]string{url, twitter, instagram}),
-		Aliases:        models.NewRelatedStrings(aliases),
+		Aliases:        models.NewRelatedPerformerAliases([]models.PerformerAlias{{Alias: aliases[0], IgnoreAutoTag: false}, {Alias: aliases[1], IgnoreAutoTag: false}}),
 		Birthdate:      &birthDate,
 		CareerStart:    &careerStart,
 		CareerEnd:      &careerEnd,
@@ -120,7 +120,7 @@ func createEmptyPerformer(id int) models.Performer {
 		ID:        id,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
-		Aliases:   models.NewRelatedStrings([]string{}),
+		Aliases:   models.NewRelatedPerformerAliases([]models.PerformerAlias{}),
 		URLs:      models.NewRelatedStrings([]string{}),
 		TagIDs:    models.NewRelatedIDs([]int{}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
@@ -253,7 +253,8 @@ func TestToJSON(t *testing.T) {
 
 	for i, s := range scenarios {
 		tag := s.input
-		json, err := ToJSON(testCtx, db.Performer, &tag)
+		var testDb ImageAliasStashIDGetter = db.Performer
+		json, err := ToJSON(testCtx, testDb, &tag)
 
 		switch {
 		case !s.err && err != nil:
