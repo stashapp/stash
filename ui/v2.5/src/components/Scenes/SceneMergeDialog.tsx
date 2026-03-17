@@ -26,7 +26,7 @@ import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
-import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -41,25 +41,7 @@ import {
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
-import { StashIDPill } from "src/components/Shared/StashID";
-
-interface IStashIDsField {
-  values: GQL.StashId[];
-}
-
-const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  if (!values.length) return null;
-
-  return (
-    <ul className="pl-0 mw-100">
-      {values.map((v) => (
-        <li key={v.stash_id} className="row no-gutters">
-          <StashIDPill linkType="scenes" stashID={v} />
-        </li>
-      ))}
-    </ul>
-  );
-};
+import { StashIDsField } from "../Shared/StashID";
 
 type MergeOptions = {
   values: GQL.SceneUpdateInput;
@@ -141,12 +123,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     });
 
     return ret;
-  }
-
-  function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
-    return objs.filter((o, i) => {
-      return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
-    });
   }
 
   const [performers, setPerformers] = useState<
