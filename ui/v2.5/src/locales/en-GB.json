@@ -625,9 +625,9 @@
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
-      "graphql_playground": "GraphQL Playground",
+      "graphql_playground": "GraphQL playground",
       "heading": "Tools",
-      "scene_duplicate_checker": "Scene Duplicate Checker",
+      "scene_duplicate_checker": "Scene duplicate checker",
       "scene_filename_parser": {
         "add_field": "Add Field",
         "capitalize_title": "Capitalize title",
@@ -639,13 +639,13 @@
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
-        "title": "Scene Filename Parser",
+        "title": "Scene filename parser",
         "whitespace_chars": "Whitespace characters",
         "whitespace_chars_desc": "These characters will be replaced with whitespace in the title"
       },
       "scene_tools": "Scene Tools",
       "image_tools": "Image Tools",
-      "image_duplicate_checker": "Image Duplicate Checker"
+      "image_duplicate_checker": "Image duplicate checker"
     },
     "ui": {
       "abbreviate_counters": {
