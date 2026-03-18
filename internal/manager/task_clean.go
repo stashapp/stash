@@ -40,9 +40,10 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	}
 
 	j.cleaner.Clean(ctx, file.CleanOptions{
-		Paths:      j.input.Paths,
-		DryRun:     j.input.DryRun,
-		PathFilter: newCleanFilter(instance.Config),
+		Paths:                 j.input.Paths,
+		DryRun:                j.input.DryRun,
+		IgnoreZipFileContents: j.input.IgnoreZipFileContents,
+		PathFilter:            newCleanFilter(instance.Config),
 	}, progress)
 
 	if job.IsCancelled(ctx) {

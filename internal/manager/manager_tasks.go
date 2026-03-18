@@ -314,6 +314,8 @@ type CleanMetadataInput struct {
 	Paths []string `json:"paths"`
 	// Do a dry run. Don't delete any files
 	DryRun bool `json:"dryRun"`
+
+	IgnoreZipFileContents bool `json:"ignoreZipFileContents"`
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {

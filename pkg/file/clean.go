@@ -33,6 +33,11 @@ type cleanJob struct {
 type CleanOptions struct {
 	Paths []string
 
+	// IgnoreZipFileContents will skip checking the contents of zip files when determining whether to clean a file.
+	// This can significantly speed up the clean process, but will potentially miss removed files within zip files.
+	// Where users do not modify zip files contents directly, this should be safe to use.
+	IgnoreZipFileContents bool
+
 	// Do a dry run. Don't delete any files
 	DryRun bool
 
@@ -174,13 +179,16 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 
 	more := true
 	r := j.Repository
+
+	includeZipContents := !j.options.IgnoreZipFileContents
+
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
 
-			files, err := r.File.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			files, err := r.File.FindAllInPaths(ctx, j.options.Paths, includeZipContents, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for files: %w", err)
 			}
@@ -258,6 +266,8 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 	offset := 0
 	progress := j.progress
 
+	includeZipContents := !j.options.IgnoreZipFileContents
+
 	more := true
 	r := j.Repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
@@ -266,7 +276,7 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 				return nil
 			}
 
-			folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, includeZipContents, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for folders: %w", err)
 			}
