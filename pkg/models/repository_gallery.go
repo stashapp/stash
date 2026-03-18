@@ -83,6 +83,7 @@ type GalleryWriter interface {
 
 	CustomFieldsWriter
 
+	AddSceneIDs(ctx context.Context, galleryID int, sceneIDs []int) error
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AddImages(ctx context.Context, galleryID int, imageIDs ...int) error
 	RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error

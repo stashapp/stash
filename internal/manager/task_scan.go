@@ -660,8 +660,9 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(imageFileFilter),
 			Handler: &image.ScanHandler{
-				CreatorUpdater: r.Image,
-				GalleryFinder:  r.Gallery,
+				CreatorUpdater:     r.Image,
+				GalleryFinder:      r.Gallery,
+				SceneFinderUpdater: r.Scene,
 				ScanGenerator: &imageGenerators{
 					input:              options,
 					taskQueue:          taskQueue,
@@ -690,9 +691,10 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(videoFileFilter),
 			Handler: &scene.ScanHandler{
-				CreatorUpdater: r.Scene,
-				CaptionUpdater: r.File,
-				PluginCache:    pluginCache,
+				CreatorUpdater:       r.Scene,
+				GalleryFinderUpdater: r.Gallery,
+				CaptionUpdater:       r.File,
+				PluginCache:          pluginCache,
 				ScanGenerator: &sceneGenerators{
 					input:               options,
 					taskQueue:           taskQueue,

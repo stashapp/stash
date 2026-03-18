@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -39,6 +40,11 @@ type GalleryFinderCreator interface {
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 }
 
+type ScanSceneFinderUpdater interface {
+	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
+	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
+}
+
 type ScanConfig interface {
 	GetCreateGalleriesFromFolders() bool
 }
@@ -48,8 +54,9 @@ type ScanGenerator interface {
 }
 
 type ScanHandler struct {
-	CreatorUpdater ScanCreatorUpdater
-	GalleryFinder  GalleryFinderCreator
+	CreatorUpdater     ScanCreatorUpdater
+	GalleryFinder      GalleryFinderCreator
+	SceneFinderUpdater ScanSceneFinderUpdater
 
 	ScanGenerator ScanGenerator
 
@@ -322,9 +329,37 @@ func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile mo
 		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
 	}
 
+	// try to associate with scene
+	if err := h.associateScene(ctx, &newGallery, zipFile); err != nil {
+		return nil, fmt.Errorf("associating scene: %w", err)
+	}
+
 	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, hook.GalleryCreatePost, nil, nil)
 
 	return &newGallery, nil
+}
+
+func (h *ScanHandler) associateScene(ctx context.Context, existing *models.Gallery, zipFile models.File) error {
+	galleryIDs := []int{existing.ID}
+
+	path := zipFile.Base().Path
+	withoutExt := strings.TrimSuffix(path, filepath.Ext(path)) + ".*"
+
+	// find scenes with a file that matches
+	scenes, err := h.SceneFinderUpdater.FindByPath(ctx, withoutExt)
+	if err != nil {
+		return err
+	}
+
+	for _, scene := range scenes {
+		// found related Scene
+		logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
+		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, scene.ID, galleryIDs); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f models.File) (*models.Gallery, error) {
