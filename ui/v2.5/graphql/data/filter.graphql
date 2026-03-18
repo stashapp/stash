@@ -11,4 +11,38 @@ fragment SavedFilterData on SavedFilter {
   }
   object_filter
   ui_options
+  label_mapping {
+    tags {
+      id
+      label
+    }
+    studios {
+      id
+      label
+    }
+    performers {
+      id
+      label
+    }
+    groups {
+      id
+      label
+    }
+    galleries {
+      id
+      label
+    }
+    folders {
+      id
+      label
+    }
+    scenes {
+      id
+      label
+    }
+    movies {
+      id
+      label
+    }
+  }
 }

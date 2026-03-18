@@ -292,6 +292,7 @@ export class ListFilterModel {
       find_filter: findFilter,
       object_filter: objectFilter,
       ui_options: uiOptions,
+      label_mapping: labelMapping,
     } = savedFilter;
 
     this.itemsPerPage = findFilter?.per_page ?? this.itemsPerPage;
@@ -311,9 +312,53 @@ export class ListFilterModel {
     this.currentPage = 1;
 
     this.criteria = [];
+
+    // Convert array mapping to map for O(1) lookup
+    const resolvedMapping: Record<string, Record<string, string>> = {};
+    if (labelMapping) {
+      for (const [groupKey, entries] of Object.entries(
+        labelMapping as unknown as Record<
+          string,
+          { id: string; label: string }[]
+        >
+      )) {
+        if (Array.isArray(entries)) {
+          resolvedMapping[groupKey] = entries.reduce(
+            (
+              acc: Record<string, string>,
+              item: { id: string; label: string }
+            ) => {
+              if (item && item.id && item.label) {
+                acc[item.id] = item.label;
+              }
+              return acc;
+            },
+            {}
+          );
+        }
+      }
+    }
+
     if (objectFilter) {
       for (const [k, v] of Object.entries(objectFilter)) {
         const criterion = this.makeCriterion(k as CriterionType);
+
+        // Map criteria back to their respective groups
+        let groupName = k;
+        if (k.endsWith("_tags") || k === "parents" || k === "children") {
+          groupName = "tags";
+        } else if (k === "containing_groups" || k === "sub_groups") {
+          groupName = "groups";
+        } else if (k === "parent_folder") {
+          groupName = "folders";
+        }
+
+        if (labelMapping && resolvedMapping[groupName]) {
+          if (typeof v === "object" && v !== null) {
+            (v as unknown as Record<string, unknown>)._labelMapping =
+              resolvedMapping[groupName];
+          }
+        }
         criterion.setFromSavedCriterion(v);
         this.criteria.push(criterion);
       }

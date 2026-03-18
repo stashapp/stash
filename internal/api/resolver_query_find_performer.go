@@ -1,6 +1,10 @@
 package api
 
 import (
+	"fmt"
+
+	"errors"
+
 	"context"
 	"strconv"
 
@@ -23,7 +27,52 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 	return ret, nil
 }
 
-func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType, performerIDs []int, ids []string) (ret *FindPerformersResultType, err error) {
+func (r *queryResolver) FindPerformers(
+	ctx context.Context,
+	performerFilter *models.PerformerFilterType,
+	savedFilterID *string,
+	filter *models.FindFilterType, performerIDs []int,
+	ids []string,
+) (ret *FindPerformersResultType, err error) {
+	if performerFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both performerFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.PerformerFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.PerformerFilterType{}
+		var mode models.FilterMode
+		switch "performerFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "performerFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = performerFilter
+	}
 	if len(ids) > 0 {
 		performerIDs, err = handleIDList(ids, "ids")
 		if err != nil {
@@ -32,8 +81,8 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 	}
 
 	// #5682 - convert JSON numbers to float64 or int64
-	if performerFilter != nil {
-		performerFilter.CustomFields = convertCustomFieldCriterionInputJSONNumbers(performerFilter.CustomFields)
+	if finalFilter != nil {
+		finalFilter.CustomFields = convertCustomFieldCriterionInputJSONNumbers(finalFilter.CustomFields)
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
@@ -45,7 +94,7 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 			performers, err = r.repository.Performer.FindMany(ctx, performerIDs)
 			total = len(performers)
 		} else {
-			performers, total, err = r.repository.Performer.Query(ctx, performerFilter, filter)
+			performers, total, err = r.repository.Performer.Query(ctx, finalFilter, filter)
 		}
 
 		if err != nil {

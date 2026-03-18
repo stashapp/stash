@@ -213,8 +213,23 @@ export abstract class ModifierCriterion<
 
   public setFromSavedCriterion(criterion: unknown) {
     const c = criterion as ISavedCriterion<V>;
+    const labelMapping =
+      ((criterion as Record<string, unknown>)._labelMapping as
+        | Record<string, string>
+        | undefined) || {};
     if (c.value !== undefined && c.value !== null) {
-      this.value = c.value;
+      if (
+        Array.isArray(c.value) &&
+        c.value.length > 0 &&
+        typeof c.value[0] === "string"
+      ) {
+        this.value = (c.value as unknown as string[]).map((id: string) => ({
+          id,
+          label: labelMapping[id] || id,
+        })) as unknown as V;
+      } else {
+        this.value = c.value;
+      }
     }
     this.modifier = c.modifier;
   }
@@ -417,14 +432,34 @@ export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarch
   public setFromSavedCriterion(
     criterion: ISavedCriterion<IHierarchicalLabelValue>
   ) {
-    const { modifier, value } = criterion;
+    const c = criterion as unknown as Record<string, unknown>;
+    const modifier = c.modifier as CriterionModifier;
+    const value = c.value as IHierarchicalLabelValue | string[] | undefined;
+    const excludes = c.excludes as string[] | undefined;
+    const depth = c.depth as number | undefined;
+    const _labelMapping =
+      (c._labelMapping as Record<string, string> | undefined) || {};
 
     if (value !== undefined) {
-      this.value = {
-        items: value.items || [],
-        excluded: value.excluded || [],
-        depth: value.depth || 0,
-      };
+      if (Array.isArray(value)) {
+        this.value = {
+          items: value.map((id: string) => ({
+            id,
+            label: _labelMapping[id] || id,
+          })),
+          excluded: (excludes || []).map((id: string) => ({
+            id,
+            label: _labelMapping[id] || id,
+          })),
+          depth: depth || 0,
+        };
+      } else {
+        this.value = {
+          items: value.items || [],
+          excluded: value.excluded || [],
+          depth: value.depth || 0,
+        };
+      }
     }
 
     const modifierOptions =

@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"context"
 	"errors"
 	"strconv"
@@ -43,9 +45,49 @@ func (r *queryResolver) FindFolder(ctx context.Context, id *string, path *string
 func (r *queryResolver) FindFolders(
 	ctx context.Context,
 	folderFilter *models.FolderFilterType,
+	savedFilterID *string,
 	filter *models.FindFilterType,
 	ids []string,
 ) (ret *FindFoldersResultType, err error) {
+	if folderFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both folderFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.FolderFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.FolderFilterType{}
+		var mode models.FilterMode
+		switch "folderFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "folderFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = folderFilter
+	}
 	var folderIDs []models.FolderID
 	if len(ids) > 0 {
 		folderIDsInt, err := handleIDList(ids, "ids")
@@ -74,7 +116,7 @@ func (r *queryResolver) FindFolders(
 					FindFilter: filter,
 					Count:      fields.Has("count"),
 				},
-				FolderFilter: folderFilter,
+				FolderFilter: finalFilter,
 			})
 			if err == nil {
 				folders, err = result.Resolve(ctx)

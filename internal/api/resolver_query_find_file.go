@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"context"
 	"errors"
 	"strconv"
@@ -48,9 +50,49 @@ func (r *queryResolver) FindFile(ctx context.Context, id *string, path *string) 
 func (r *queryResolver) FindFiles(
 	ctx context.Context,
 	fileFilter *models.FileFilterType,
+	savedFilterID *string,
 	filter *models.FindFilterType,
 	ids []string,
 ) (ret *FindFilesResultType, err error) {
+	if fileFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both fileFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.FileFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.FileFilterType{}
+		var mode models.FilterMode
+		switch "fileFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "fileFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = fileFilter
+	}
 	var fileIDs []models.FileID
 	if len(ids) > 0 {
 		fileIDsInt, err := stringslice.StringSliceToIntSlice(ids)
@@ -89,7 +131,7 @@ func (r *queryResolver) FindFiles(
 					FindFilter: filter,
 					Count:      fields.Has("count"),
 				},
-				FileFilter:    fileFilter,
+				FileFilter:    finalFilter,
 				TotalDuration: fields.Has("duration"),
 				Megapixels:    fields.Has("megapixels"),
 				TotalSize:     fields.Has("size"),

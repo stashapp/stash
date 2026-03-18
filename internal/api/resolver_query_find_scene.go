@@ -1,6 +1,10 @@
 package api
 
 import (
+	"fmt"
+
+	"errors"
+
 	"context"
 	"slices"
 	"strconv"
@@ -77,10 +81,50 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 func (r *queryResolver) FindScenes(
 	ctx context.Context,
 	sceneFilter *models.SceneFilterType,
+	savedFilterID *string,
 	sceneIDs []int,
 	ids []string,
 	filter *models.FindFilterType,
 ) (ret *FindScenesResultType, err error) {
+	if sceneFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both sceneFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.SceneFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.SceneFilterType{}
+		var mode models.FilterMode
+		switch "sceneFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "sceneFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = sceneFilter
+	}
 	if len(ids) > 0 {
 		sceneIDs, err = handleIDList(ids, "ids")
 		if err != nil {
@@ -120,7 +164,7 @@ func (r *queryResolver) FindScenes(
 					FindFilter: filter,
 					Count:      slices.Contains(fields, "count"),
 				},
-				SceneFilter:   sceneFilter,
+				SceneFilter:   finalFilter,
 				TotalDuration: slices.Contains(fields, "duration"),
 				TotalSize:     slices.Contains(fields, "filesize"),
 			})
@@ -151,10 +195,10 @@ func (r *queryResolver) FindScenes(
 func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 
-		sceneFilter := &models.SceneFilterType{}
+		finalFilter := &models.SceneFilterType{}
 
 		if filter != nil && filter.Q != nil {
-			sceneFilter.Path = &models.StringCriterionInput{
+			finalFilter.Path = &models.StringCriterionInput{
 				Modifier: models.CriterionModifierMatchesRegex,
 				Value:    "(?i)" + *filter.Q,
 			}
@@ -175,7 +219,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 				FindFilter: queryFilter,
 				Count:      slices.Contains(fields, "count"),
 			},
-			SceneFilter:   sceneFilter,
+			SceneFilter:   finalFilter,
 			TotalDuration: slices.Contains(fields, "duration"),
 			TotalSize:     slices.Contains(fields, "filesize"),
 		})

@@ -1,6 +1,10 @@
 package api
 
 import (
+	"fmt"
+
+	"errors"
+
 	"context"
 	"slices"
 	"strconv"
@@ -49,10 +53,50 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindImages(
 	ctx context.Context,
 	imageFilter *models.ImageFilterType,
+	savedFilterID *string,
 	imageIds []int,
 	ids []string,
 	filter *models.FindFilterType,
 ) (ret *FindImagesResultType, err error) {
+	if imageFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both imageFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.ImageFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.ImageFilterType{}
+		var mode models.FilterMode
+		switch "imageFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "imageFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = imageFilter
+	}
 	if len(ids) > 0 {
 		imageIds, err = handleIDList(ids, "ids")
 		if err != nil {
@@ -96,7 +140,7 @@ func (r *queryResolver) FindImages(
 					FindFilter: filter,
 					Count:      slices.Contains(fields, "count"),
 				},
-				ImageFilter: imageFilter,
+				ImageFilter: finalFilter,
 				Megapixels:  slices.Contains(fields, "megapixels"),
 				TotalSize:   slices.Contains(fields, "filesize"),
 			})

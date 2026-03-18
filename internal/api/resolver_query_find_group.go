@@ -1,6 +1,10 @@
 package api
 
 import (
+	"fmt"
+
+	"errors"
+
 	"context"
 	"strconv"
 
@@ -23,7 +27,52 @@ func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.G
 	return ret, nil
 }
 
-func (r *queryResolver) FindGroups(ctx context.Context, groupFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindGroupsResultType, err error) {
+func (r *queryResolver) FindGroups(
+	ctx context.Context,
+	groupFilter *models.GroupFilterType,
+	savedFilterID *string,
+	filter *models.FindFilterType,
+	ids []string,
+) (ret *FindGroupsResultType, err error) {
+	if groupFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both groupFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.GroupFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.GroupFilterType{}
+		var mode models.FilterMode
+		switch "groupFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "groupFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = groupFilter
+	}
 	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
@@ -38,7 +87,7 @@ func (r *queryResolver) FindGroups(ctx context.Context, groupFilter *models.Grou
 			groups, err = r.repository.Group.FindMany(ctx, idInts)
 			total = len(groups)
 		} else {
-			groups, total, err = r.repository.Group.Query(ctx, groupFilter, filter)
+			groups, total, err = r.repository.Group.Query(ctx, finalFilter, filter)
 		}
 
 		if err != nil {

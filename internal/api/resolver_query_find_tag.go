@@ -1,6 +1,10 @@
 package api
 
 import (
+	"fmt"
+
+	"errors"
+
 	"context"
 	"strconv"
 
@@ -23,7 +27,52 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 	return ret, nil
 }
 
-func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType, ids []string) (ret *FindTagsResultType, err error) {
+func (r *queryResolver) FindTags(
+	ctx context.Context,
+	tagFilter *models.TagFilterType,
+	savedFilterID *string,
+	filter *models.FindFilterType,
+	ids []string,
+) (ret *FindTagsResultType, err error) {
+	if tagFilter != nil && savedFilterID != nil {
+		return nil, errors.New("cannot provide both tagFilter and saved_filter_id")
+	}
+
+	var finalFilter *models.TagFilterType
+	if savedFilterID != nil {
+		finalFilter = &models.TagFilterType{}
+		var mode models.FilterMode
+		switch "tagFilter" {
+		case "sceneFilter":
+			mode = models.FilterModeScenes
+		case "performerFilter":
+			mode = models.FilterModePerformers
+		case "studioFilter":
+			mode = models.FilterModeStudios
+		case "galleryFilter":
+			mode = models.FilterModeGalleries
+		case "sceneMarkerFilter":
+			mode = models.FilterModeSceneMarkers
+		case "movieFilter":
+			mode = models.FilterModeMovies
+		case "groupFilter":
+			mode = models.FilterModeGroups
+		case "tagFilter":
+			mode = models.FilterModeTags
+		case "imageFilter":
+			mode = models.FilterModeImages
+		default:
+			return nil, fmt.Errorf("saved filters are not supported for %s", "tagFilter")
+		}
+
+		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
+		if err != nil {
+			return nil, err
+		}
+		filter = mergedFindFilter
+	} else {
+		finalFilter = tagFilter
+	}
 	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
@@ -38,7 +87,7 @@ func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilte
 			tags, err = r.repository.Tag.FindMany(ctx, idInts)
 			total = len(tags)
 		} else {
-			tags, total, err = r.repository.Tag.Query(ctx, tagFilter, filter)
+			tags, total, err = r.repository.Tag.Query(ctx, finalFilter, filter)
 		}
 
 		if err != nil {

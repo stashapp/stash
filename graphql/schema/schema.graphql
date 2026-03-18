@@ -12,6 +12,8 @@ type Query {
   "Queries for Files"
   findFiles(
     file_filter: FileFilterType
+    "Provide the ID of a saved filter instead of providing a file_filter. Cannot be used with file_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindFilesResultType!
@@ -22,6 +24,8 @@ type Query {
   "Queries for Files"
   findFolders(
     folder_filter: FolderFilterType
+    "Provide the ID of a saved filter instead of providing a folder_filter. Cannot be used with folder_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindFoldersResultType!
@@ -33,6 +37,8 @@ type Query {
   "A function which queries Scene objects"
   findScenes(
     scene_filter: SceneFilterType
+    "Provide the ID of a saved filter instead of providing a scene_filter. Cannot be used with scene_filter "
+    saved_filter_id: ID
     scene_ids: [Int!] @deprecated(reason: "use ids")
     ids: [ID!]
     filter: FindFilterType
@@ -64,6 +70,8 @@ type Query {
   "A function which queries SceneMarker objects"
   findSceneMarkers(
     scene_marker_filter: SceneMarkerFilterType
+    "Provide the ID of a saved filter instead of providing a scene_marker_filter. Cannot be used with scene_marker_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindSceneMarkersResultType!
@@ -73,6 +81,8 @@ type Query {
   "A function which queries Scene objects"
   findImages(
     image_filter: ImageFilterType
+    "Provide the ID of a saved filter instead of providing a image_filter. Cannot be used with image_filter "
+    saved_filter_id: ID
     image_ids: [Int!] @deprecated(reason: "use ids")
     ids: [ID!]
     filter: FindFilterType
@@ -83,6 +93,8 @@ type Query {
   "A function which queries Performer objects"
   findPerformers(
     performer_filter: PerformerFilterType
+    "Provide the ID of a saved filter instead of providing a performer_filter. Cannot be used with performer_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     performer_ids: [Int!] @deprecated(reason: "use ids")
     ids: [ID!]
@@ -93,6 +105,8 @@ type Query {
   "A function which queries Studio objects"
   findStudios(
     studio_filter: StudioFilterType
+    "Provide the ID of a saved filter instead of providing a studio_filter. Cannot be used with studio_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindStudiosResultType!
@@ -102,6 +116,8 @@ type Query {
   "A function which queries Movie objects"
   findMovies(
     movie_filter: MovieFilterType
+    "Provide the ID of a saved filter instead of providing a movie_filter. Cannot be used with movie_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindMoviesResultType! @deprecated(reason: "Use findGroups instead")
@@ -111,6 +127,8 @@ type Query {
   "A function which queries Group objects"
   findGroups(
     group_filter: GroupFilterType
+    "Provide the ID of a saved filter instead of providing a group_filter. Cannot be used with group_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindGroupsResultType!
@@ -118,6 +136,8 @@ type Query {
   findGallery(id: ID!): Gallery
   findGalleries(
     gallery_filter: GalleryFilterType
+    "Provide the ID of a saved filter instead of providing a gallery_filter. Cannot be used with gallery_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindGalleriesResultType!
@@ -125,6 +145,8 @@ type Query {
   findTag(id: ID!): Tag
   findTags(
     tag_filter: TagFilterType
+    "Provide the ID of a saved filter instead of providing a tag_filter. Cannot be used with tag_filter "
+    saved_filter_id: ID
     filter: FindFilterType
     ids: [ID!]
   ): FindTagsResultType!
