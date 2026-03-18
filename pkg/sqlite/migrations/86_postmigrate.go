@@ -12,8 +12,8 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-func post85(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 85")
+func post86(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running post-migration for schema version 86")
 
 	ffprobePath, _ := exec.LookPath("ffprobe")
 
@@ -120,5 +120,5 @@ func (m *schema85PostMigrator) migrate(ctx context.Context) error {
 }
 
 func init() {
-	sqlite.RegisterPostMigration(85, post85)
+	sqlite.RegisterPostMigration(86, post86)
 }
