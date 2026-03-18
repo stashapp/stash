@@ -47,16 +47,16 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if input.Aliases != nil {
 		for _, a := range input.Aliases {
 			aliases = append(aliases, models.PerformerAlias{
-				Alias:         strings.TrimSpace(a.Alias),
+				Alias:         a.Alias,
 				IgnoreAutoTag: a.IgnoreAutoTag,
 			})
 		}
 	} else if input.AliasList != nil {
-		for _, a := range stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.AliasList), newPerformer.Name) {
+		for _, a := range input.AliasList {
 			aliases = append(aliases, models.PerformerAlias{Alias: a, IgnoreAutoTag: true})
 		}
 	}
-	newPerformer.Aliases = models.NewRelatedPerformerAliases(aliases)
+	newPerformer.Aliases = models.NewRelatedPerformerAliases(performer.NormalizeAliases(newPerformer.Name, aliases))
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
@@ -444,62 +444,17 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 					return err
 				}
 
-				var effectiveAliases []models.PerformerAlias
-				switch updatedPerformer.Aliases.Mode {
-				case models.RelationshipUpdateModeSet:
-					// We need to preserve the IgnoreAutoTag state when updating aliases via AliasList (which sets them to true by default)
-					// if they already existed.
-					if translator.hasField("alias_list") && !translator.hasField("aliases") {
-						existingAliases := p.Aliases.List()
-						existingAliasMap := make(map[string]bool)
-						for _, existing := range existingAliases {
-							existingAliasMap[existing.Alias] = existing.IgnoreAutoTag
-						}
-
-						for _, a := range updatedPerformer.Aliases.Values {
-							if ignore, ok := existingAliasMap[a.Alias]; ok {
-								a.IgnoreAutoTag = ignore
-							}
-							effectiveAliases = append(effectiveAliases, a)
-						}
-					} else {
-						effectiveAliases = updatedPerformer.Aliases.Values
-					}
-				case models.RelationshipUpdateModeAdd:
-					effectiveAliases = append(p.Aliases.List(), updatedPerformer.Aliases.Values...)
-				case models.RelationshipUpdateModeRemove:
-					for _, existing := range p.Aliases.List() {
-						found := false
-						for _, toRemove := range updatedPerformer.Aliases.Values {
-							if existing.Alias == toRemove.Alias {
-								found = true
-								break
-							}
-						}
-						if !found {
-							effectiveAliases = append(effectiveAliases, existing)
-						}
-					}
-				}
+				// Preserve IgnoreAutoTag state when updating aliases via AliasList (which sets them to true by default)
+				// if they already existed.
+				preserveIgnore := translator.hasField("alias_list") && !translator.hasField("aliases")
+				effectiveAliases := performer.GetEffectiveAliases(p.Aliases.List(), updatedPerformer.Aliases.Values, updatedPerformer.Aliases.Mode, preserveIgnore)
 
 				name := p.Name
 				if updatedPerformer.Name.Set {
 					name = updatedPerformer.Name.Value
 				}
 
-				var sanitized []models.PerformerAlias
-				seen := make(map[string]bool)
-				for _, a := range effectiveAliases {
-					trimmed := strings.TrimSpace(a.Alias)
-					lower := strings.ToLower(trimmed)
-					if trimmed != "" && lower != strings.ToLower(name) && !seen[lower] {
-						seen[lower] = true
-						a.Alias = trimmed
-						sanitized = append(sanitized, a)
-					}
-				}
-
-				updatedPerformer.Aliases.Values = sanitized
+				updatedPerformer.Aliases.Values = performer.NormalizeAliases(name, effectiveAliases)
 				updatedPerformer.Aliases.Mode = models.RelationshipUpdateModeSet
 			}
 		}

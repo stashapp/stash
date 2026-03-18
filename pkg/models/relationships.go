@@ -611,10 +611,8 @@ func (r RelatedPerformerAliases) List() []PerformerAlias {
 }
 
 func (r RelatedPerformerAliases) ToAliases() []string {
+	r.mustLoaded()
 	aliases := []string{}
-	if !r.Loaded() {
-		return aliases
-	}
 	for _, a := range r.list {
 		aliases = append(aliases, a.Alias)
 	}

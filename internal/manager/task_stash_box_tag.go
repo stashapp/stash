@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/stashbox"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
@@ -181,17 +180,7 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 			// Preserving existing aliases' IgnoreAutoTag state
 			if partial.Aliases != nil {
 				if err := t.performer.LoadAliases(ctx, qb); err == nil {
-					existingAliases := t.performer.Aliases.List()
-					existingAliasMap := make(map[string]bool)
-					for _, existing := range existingAliases {
-						existingAliasMap[existing.Alias] = existing.IgnoreAutoTag
-					}
-
-					for i, a := range partial.Aliases.Values {
-						if ignore, ok := existingAliasMap[a.Alias]; ok {
-							partial.Aliases.Values[i].IgnoreAutoTag = ignore
-						}
-					}
+					partial.Aliases.Values = performer.GetEffectiveAliases(t.performer.Aliases.List(), partial.Aliases.Values, partial.Aliases.Mode, true)
 				}
 			}
 
@@ -199,23 +188,11 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 			// from the aliases to avoid duplicates
 			// add the name to the aliases if it's not already there
 			if partial.Aliases != nil && !partial.Name.Set {
-				partial.Aliases.Values = sliceutil.Filter(partial.Aliases.Values, func(a models.PerformerAlias) bool {
-					return a.Alias != t.performer.Name
-				})
-
 				if p.Name != nil && t.performer.Name != *p.Name {
-					// Check if already exists before appending
-					exists := false
-					for _, existing := range partial.Aliases.Values {
-						if existing.Alias == *p.Name {
-							exists = true
-							break
-						}
-					}
-					if !exists {
-						partial.Aliases.Values = append(partial.Aliases.Values, models.PerformerAlias{Alias: *p.Name, IgnoreAutoTag: true})
-					}
+					partial.Aliases.Values = append(partial.Aliases.Values, models.PerformerAlias{Alias: *p.Name, IgnoreAutoTag: true})
 				}
+
+				partial.Aliases.Values = performer.NormalizeAliases(t.performer.Name, partial.Aliases.Values)
 			}
 
 			if err := performer.ValidateUpdate(ctx, t.performer.ID, partial, qb); err != nil {
