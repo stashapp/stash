@@ -146,6 +146,13 @@ const CleanOptions: React.FC<ICleanOptions> = ({
   return (
     <>
       <BooleanSetting
+        id="clean-ignore-zip-contents"
+        checked={options.ignoreZipFileContents ?? false}
+        headingID="config.tasks.clean_ignore_zip_contents"
+        subHeadingID="config.tasks.clean_ignore_zip_contents_desc"
+        onChange={(v) => setOptions({ ignoreZipFileContents: v })}
+      />
+      <BooleanSetting
         id="clean-dryrun"
         checked={options.dryRun}
         headingID="config.tasks.only_dry_run"
