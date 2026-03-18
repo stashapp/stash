@@ -334,19 +334,19 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     },
     {
       value: "scene_count",
-      label: intl.formatMessage({ id: "scene_count" }),
+      label: intl.formatMessage({ id: "scenes" }),
       defaultShow: true,
       render: SceneCountCell,
     },
     {
       value: "gallery_count",
-      label: intl.formatMessage({ id: "gallery_count" }),
+      label: intl.formatMessage({ id: "galleries" }),
       defaultShow: true,
       render: GalleryCountCell,
     },
     {
       value: "image_count",
-      label: intl.formatMessage({ id: "image_count" }),
+      label: intl.formatMessage({ id: "images" }),
       defaultShow: true,
       render: ImageCountCell,
     },
