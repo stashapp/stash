@@ -1023,6 +1023,7 @@
       }
     },
     "merge": {
+      "combined": "Combined",
       "destination": "Destination",
       "empty_results": "Destination field values will be unchanged.",
       "source": "Source"
