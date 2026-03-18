@@ -348,8 +348,14 @@ func (j *cleanJob) shouldClean(ctx context.Context, f models.File) bool {
 	// run through path filter, if returns false then the file should be cleaned
 	filter := j.options.PathFilter
 
+	// need to get the zip file path if present
+	zipFilePath := ""
+	if f.Base().ZipFile != nil {
+		zipFilePath = f.Base().ZipFile.Base().Path
+	}
+
 	// don't log anything - assume filter will have logged the reason
-	return !filter.Accept(ctx, path, info)
+	return !filter.Accept(ctx, path, info, zipFilePath)
 }
 
 func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool {
@@ -387,8 +393,14 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool
 	// run through path filter, if returns false then the file should be cleaned
 	filter := j.options.PathFilter
 
+	// need to get the zip file path if present
+	zipFilePath := ""
+	if f.ZipFile != nil {
+		zipFilePath = f.ZipFile.Base().Path
+	}
+
 	// don't log anything - assume filter will have logged the reason
-	return !filter.Accept(ctx, path, info)
+	return !filter.Accept(ctx, path, info, zipFilePath)
 }
 
 func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {

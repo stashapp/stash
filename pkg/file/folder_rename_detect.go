@@ -87,6 +87,11 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 
 	r := s.Repository
 
+	zipFilePath := ""
+	if file.ZipFile != nil {
+		zipFilePath = file.ZipFile.Base().Path
+	}
+
 	if err := SymWalk(file.FS, file.Path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// don't let errors prevent scanning
@@ -110,7 +115,7 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 			return nil
 		}
 
-		if !s.AcceptEntry(ctx, path, info) {
+		if !s.AcceptEntry(ctx, path, info, zipFilePath) {
 			return nil
 		}
 

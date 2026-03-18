@@ -64,7 +64,7 @@ func walkAndFilter(t *testing.T, root string, filter *StashIgnoreFilter) []strin
 			return err
 		}
 
-		if filter.Accept(ctx, path, info, root) {
+		if filter.Accept(ctx, path, info, root, "") {
 			relPath, _ := filepath.Rel(root, path)
 			accepted = append(accepted, relPath)
 		} else if info.IsDir() {

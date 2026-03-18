@@ -23,8 +23,8 @@ type stashIgnorePathFilter struct {
 	libraryRoot string
 }
 
-func (f *stashIgnorePathFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
-	return f.filter.Accept(ctx, path, info, f.libraryRoot)
+func (f *stashIgnorePathFilter) Accept(ctx context.Context, path string, info fs.FileInfo, zipFilePath string) bool {
+	return f.filter.Accept(ctx, path, info, f.libraryRoot, zipFilePath)
 }
 
 // createTestFileOnDisk creates a file with some content.
@@ -105,7 +105,7 @@ temp/
 		if err != nil {
 			t.Fatalf("failed to stat file %s: %v", scenario.path, err)
 		}
-		accepted := scanner.AcceptEntry(ctx, scenario.path, info)
+		accepted := scanner.AcceptEntry(ctx, scenario.path, info, "")
 
 		if accepted != scenario.accepted {
 			t.Errorf("unexpected accept result for %s: expected %v, got %v",
@@ -160,7 +160,7 @@ func TestScannerWithNestedStashIgnore(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to stat file %s: %v", scenario.path, err)
 		}
-		accepted := scanner.AcceptEntry(ctx, scenario.path, info)
+		accepted := scanner.AcceptEntry(ctx, scenario.path, info, "")
 
 		if accepted != scenario.accepted {
 			t.Errorf("unexpected accept result for %s: expected %v, got %v",
@@ -205,7 +205,7 @@ func TestScannerWithoutStashIgnore(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to stat file %s: %v", scenario.path, err)
 		}
-		accepted := scanner.AcceptEntry(ctx, scenario.path, info)
+		accepted := scanner.AcceptEntry(ctx, scenario.path, info, "")
 
 		if accepted != scenario.accepted {
 			t.Errorf("unexpected accept result for %s: expected %v, got %v",
@@ -258,7 +258,7 @@ func TestScannerWithNegationPattern(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to stat file %s: %v", scenario.path, err)
 		}
-		accepted := scanner.AcceptEntry(ctx, scenario.path, info)
+		accepted := scanner.AcceptEntry(ctx, scenario.path, info, "")
 
 		if accepted != scenario.accepted {
 			t.Errorf("unexpected accept result for %s: expected %v, got %v",
