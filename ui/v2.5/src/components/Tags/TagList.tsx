@@ -5,22 +5,17 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFilteredItemList } from "../List/ItemList";
 import { Button } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindTagsForList,
-  mutateMetadataAutoTag,
   useFindTagsForList,
   useTagsDestroy,
 } from "src/core/StashService";
-import { useToast } from "src/hooks/Toast";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
-import NavUtils from "src/utils/navigation";
-import { Icon } from "../Shared/Icon";
+import { FormattedMessage, useIntl } from "react-intl";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { TagMergeModal } from "./TagMergeDialog";
 import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
@@ -51,17 +46,16 @@ import { Pagination, PaginationIndex } from "../List/Pagination";
 import { LoadedContent } from "../List/PagedList";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { FavoriteTagCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { TagListTable } from "./TagListTable";
 
 const TagList: React.FC<{
   tags: GQL.TagListDataFragment[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
-  onDelete: (tag: GQL.TagListDataFragment) => void;
-  onAutoTag: (tag: GQL.TagListDataFragment) => void;
 }> = PatchComponent(
   "TagList",
-  ({ tags, filter, selectedIds, onSelectChange, onDelete, onAutoTag }) => {
+  ({ tags, filter, selectedIds, onSelectChange }) => {
     if (tags.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
@@ -77,95 +71,13 @@ const TagList: React.FC<{
       );
     }
     if (filter.displayMode === DisplayMode.List) {
-      const tagElements = tags.map((tag) => {
-        return (
-          <div key={tag.id} className="tag-list-row row">
-            <Link to={`/tags/${tag.id}`}>{tag.name}</Link>
-
-            <div className="ml-auto">
-              <Button
-                variant="secondary"
-                className="tag-list-button"
-                onClick={() => onAutoTag(tag)}
-              >
-                <FormattedMessage id="actions.auto_tag" />
-              </Button>
-              <Button variant="secondary" className="tag-list-button">
-                <Link
-                  to={NavUtils.makeTagScenesUrl(tag)}
-                  className="tag-list-anchor"
-                >
-                  <FormattedMessage
-                    id="countables.scenes"
-                    values={{
-                      count: tag.scene_count ?? 0,
-                    }}
-                  />
-                  : <FormattedNumber value={tag.scene_count ?? 0} />
-                </Link>
-              </Button>
-              <Button variant="secondary" className="tag-list-button">
-                <Link
-                  to={NavUtils.makeTagImagesUrl(tag)}
-                  className="tag-list-anchor"
-                >
-                  <FormattedMessage
-                    id="countables.images"
-                    values={{
-                      count: tag.image_count ?? 0,
-                    }}
-                  />
-                  : <FormattedNumber value={tag.image_count ?? 0} />
-                </Link>
-              </Button>
-              <Button variant="secondary" className="tag-list-button">
-                <Link
-                  to={NavUtils.makeTagGalleriesUrl(tag)}
-                  className="tag-list-anchor"
-                >
-                  <FormattedMessage
-                    id="countables.galleries"
-                    values={{
-                      count: tag.gallery_count ?? 0,
-                    }}
-                  />
-                  : <FormattedNumber value={tag.gallery_count ?? 0} />
-                </Link>
-              </Button>
-              <Button variant="secondary" className="tag-list-button">
-                <Link
-                  to={NavUtils.makeTagSceneMarkersUrl(tag)}
-                  className="tag-list-anchor"
-                >
-                  <FormattedMessage
-                    id="countables.markers"
-                    values={{
-                      count: tag.scene_marker_count ?? 0,
-                    }}
-                  />
-                  : <FormattedNumber value={tag.scene_marker_count ?? 0} />
-                </Link>
-              </Button>
-              <span className="tag-list-count">
-                <FormattedMessage id="total" />:{" "}
-                <FormattedNumber
-                  value={
-                    (tag.scene_count || 0) +
-                    (tag.scene_marker_count || 0) +
-                    (tag.image_count || 0) +
-                    (tag.gallery_count || 0)
-                  }
-                />
-              </span>
-              <Button variant="danger" onClick={() => onDelete(tag)}>
-                <Icon icon={faTrashAlt} color="danger" />
-              </Button>
-            </div>
-          </div>
-        );
-      });
-
-      return <div className="col col-sm-8 m-auto">{tagElements}</div>;
+      return (
+        <TagListTable
+          tags={tags}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
     }
     if (filter.displayMode === DisplayMode.Tagger) {
       return <TagTagger tags={tags} />;
@@ -287,7 +199,6 @@ export const FilteredTagList = PatchComponent(
   (props: ITagList) => {
     const intl = useIntl();
     const history = useHistory();
-    const Toast = useToast();
 
     const searchFocus = useFocus();
 
@@ -433,16 +344,6 @@ export const FilteredTagList = PatchComponent(
       );
     }
 
-    async function onAutoTag(tag: GQL.TagListDataFragment) {
-      if (!tag) return;
-      try {
-        await mutateMetadataAutoTag({ tags: [tag.id] });
-        Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
-      } catch (e) {
-        Toast.error(e);
-      }
-    }
-
     const convertedExtraOperations = extraOperations.map((op) => ({
       text: op.text,
       onClick: () => op.onClick(result, filter, selectedIds),
@@ -566,8 +467,6 @@ export const FilteredTagList = PatchComponent(
                   tags={items}
                   selectedIds={selectedIds}
                   onSelectChange={onSelectChange}
-                  onDelete={(tag) => onDelete(tag)}
-                  onAutoTag={(tag) => onAutoTag(tag)}
                 />
               </LoadedContent>
 
