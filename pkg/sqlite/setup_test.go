@@ -925,7 +925,7 @@ func makeFile(i int) models.File {
 			VideoCodec: getFileStringValue(i, "videoCodec"),
 			AudioCodec: getFileStringValue(i, "audioCodec"),
 			FrameRate:  getFileDuration(i) * 2,
-			Frames:     int64(getFileDuration(i)) * 3,
+			Frames:     int64(getFileDuration(i) * getFileDuration(i) * 2),
 			BitRate:    int64(getFileDuration(i)) * 3,
 		}
 	} else if i >= fileIdxStartImageFiles && i < fileIdxStartGalleryFiles {

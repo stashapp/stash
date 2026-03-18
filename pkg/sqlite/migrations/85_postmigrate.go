@@ -42,7 +42,7 @@ func (m *schema85PostMigrator) migrate(ctx context.Context) error {
 		Count int `db:"count"`
 	}{0}
 
-	if err := m.db.Get(&result, "SELECT COUNT(*) AS count FROM `video_files` WHERE `frames` = 0"); err != nil {
+	if err := m.db.Get(&result, "SELECT COUNT(*) AS count FROM `video_files` WHERE `frames` IS NULL"); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (m *schema85PostMigrator) migrate(ctx context.Context) error {
 				FROM video_files vf
 				JOIN files f ON f.id = vf.file_id
 				JOIN folders ON folders.id = f.parent_folder_id
-				WHERE vf.frames = 0
+				WHERE vf.frames IS NULL
 			`
 			if lastID != 0 {
 				query += fmt.Sprintf(" AND f.id > %d", lastID)

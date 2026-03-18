@@ -31,7 +31,7 @@ type SceneFile struct {
 	Width      int           `json:"width"`
 	Height     int           `json:"height"`
 	Framerate  string        `json:"framerate"`
-	Frames     int           `json:"frame"`
+	Frames     int           `json:"frames"`
 	Bitrate    int           `json:"bitrate"`
 }
 
