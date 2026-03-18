@@ -62,7 +62,10 @@ func Test_PerformerStore_Create(t *testing.T) {
 		country        = "country"
 		eyeColor       = "eyeColor"
 		height         = 134
-		measurements   = "measurements"
+		bandSize    = 34
+		cupSize     = "DD"
+		waistSize   = 24
+		hipSize     = 36
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
 		circumcised    = models.CircumcisedEnumCut
@@ -104,7 +107,10 @@ func Test_PerformerStore_Create(t *testing.T) {
 					Country:        country,
 					EyeColor:       eyeColor,
 					Height:         &height,
-					Measurements:   measurements,
+					BandSize:       &bandSize,
+					CupSize:        cupSize,
+					WaistSize:      &waistSize,
+					HipSize:        &hipSize,
 					FakeTits:       fakeTits,
 					PenisLength:    &penisLength,
 					Circumcised:    &circumcised,
@@ -225,7 +231,10 @@ func Test_PerformerStore_Update(t *testing.T) {
 		country        = "country"
 		eyeColor       = "eyeColor"
 		height         = 134
-		measurements   = "measurements"
+		bandSize    = 34
+		cupSize     = "DD"
+		waistSize   = 24
+		hipSize     = 36
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
 		circumcised    = models.CircumcisedEnumCut
@@ -268,7 +277,10 @@ func Test_PerformerStore_Update(t *testing.T) {
 					Country:        country,
 					EyeColor:       eyeColor,
 					Height:         &height,
-					Measurements:   measurements,
+					BandSize:       &bandSize,
+					CupSize:        cupSize,
+					WaistSize:      &waistSize,
+					HipSize:        &hipSize,
 					FakeTits:       fakeTits,
 					PenisLength:    &penisLength,
 					Circumcised:    &circumcised,
@@ -420,7 +432,10 @@ func clearPerformerPartial() models.PerformerPartial {
 		Country:        nullString,
 		EyeColor:       nullString,
 		Height:         nullInt,
-		Measurements:   nullString,
+		BandSize:       nullInt,
+		CupSize:        nullString,
+		WaistSize:      nullInt,
+		HipSize:        nullInt,
 		FakeTits:       nullString,
 		PenisLength:    nullFloat,
 		Circumcised:    nullString,
@@ -454,7 +469,10 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		country        = "country"
 		eyeColor       = "eyeColor"
 		height         = 143
-		measurements   = "measurements"
+		bandSize    = 34
+		cupSize     = "DD"
+		waistSize   = 24
+		hipSize     = 36
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
 		circumcised    = models.CircumcisedEnumCut
@@ -501,7 +519,10 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Country:      models.NewOptionalString(country),
 				EyeColor:     models.NewOptionalString(eyeColor),
 				Height:       models.NewOptionalInt(height),
-				Measurements: models.NewOptionalString(measurements),
+				BandSize:  models.NewOptionalInt(bandSize),
+				CupSize:   models.NewOptionalString(cupSize),
+				WaistSize: models.NewOptionalInt(waistSize),
+				HipSize:   models.NewOptionalInt(hipSize),
 				FakeTits:     models.NewOptionalString(fakeTits),
 				PenisLength:  models.NewOptionalFloat64(penisLength),
 				Circumcised:  models.NewOptionalString(circumcised.String()),
@@ -553,7 +574,10 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Country:        country,
 				EyeColor:       eyeColor,
 				Height:         &height,
-				Measurements:   measurements,
+				BandSize:       &bandSize,
+				CupSize:        cupSize,
+				WaistSize:      &waistSize,
+				HipSize:        &hipSize,
 				FakeTits:       fakeTits,
 				PenisLength:    &penisLength,
 				Circumcised:    &circumcised,
