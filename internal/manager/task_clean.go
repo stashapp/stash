@@ -40,9 +40,10 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	}
 
 	j.cleaner.Clean(ctx, file.CleanOptions{
-		Paths:      j.input.Paths,
-		DryRun:     j.input.DryRun,
-		PathFilter: newCleanFilter(instance.Config),
+		Paths:                 j.input.Paths,
+		DryRun:                j.input.DryRun,
+		IgnoreZipFileContents: j.input.IgnoreZipFileContents,
+		PathFilter:            newCleanFilter(instance.Config),
 	}, progress)
 
 	if job.IsCancelled(ctx) {
@@ -159,7 +160,7 @@ func newCleanFilter(c *config.Config) *cleanFilter {
 	}
 }
 
-func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
+func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, zipFilePath string) bool {
 	//  #1102 - clean anything in generated path
 	generatedPath := f.generatedPath
 
@@ -184,7 +185,7 @@ func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo)
 	}
 
 	// Check .stashignore files, bounded to the library root.
-	if !f.stashIgnoreFilter.Accept(ctx, path, info, stash.Path) {
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, stash.Path, zipFilePath) {
 		logger.Infof("%s is excluded due to .stashignore. Marking to clean: %q", fileOrFolder, path)
 		return false
 	}

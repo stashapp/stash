@@ -58,8 +58,6 @@
         "logout": "Wyloguj",
         "make_primary": "Ustaw jako główny",
         "merge": "Scal",
-        "merge_from": "Scal z",
-        "merge_into": "Scal do",
         "migrate_blobs": "Migruj bloby",
         "migrate_scene_screenshots": "Migruj zrzuty ekranu ze scen",
         "next_action": "Dalej",
@@ -143,7 +141,16 @@
         "add_sub_groups": "Dodaj podgrupy",
         "view_history": "Zobacz historię",
         "play": "Odtwarzaj",
-        "show_results": "Pokaż wyniki"
+        "show_results": "Pokaż wyniki",
+        "add_stash_id": "Dodaj Stash ID",
+        "create_new": "Utwórz nowy",
+        "load": "Wczytaj",
+        "load_filter": "Wczytaj filtr",
+        "sidebar": {
+            "close": "Zamknij pasek boczny",
+            "open": "Otwórz pasek boczny",
+            "toggle": "Przełącz pasek boczny"
+        }
     },
     "actions_name": "Działania",
     "age": "Wiek",
@@ -191,7 +198,14 @@
             "set_tag_label": "Ustaw tagi",
             "source": "Źródło",
             "mark_organized_desc": "Po kliknięciu przycisku Zapisz scena zostaje natychmiast oznaczona jako zorganizowana.",
-            "mark_organized_label": "Oznacz jako zorganizowane przy zapisywaniu"
+            "mark_organized_label": "Oznacz jako zorganizowane przy zapisywaniu",
+            "errors": {
+                "blacklist_duplicate": "Duplikuj element czarnej listy"
+            },
+            "performer_genders": {
+                "heading": "Płeć wykonawcy",
+                "description": "Wykonawcy o tych płciach będą wyświetlani podczas tagowania scen."
+            }
         },
         "noun_query": "Zapytanie",
         "results": {
@@ -212,7 +226,9 @@
         "verb_scrape_all": "Zbierz wszystko",
         "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} few{# odciski palców} other{# odcisków palców}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} niedopasowane sceny"
+        "verb_toggle_unmatched": "{toggle} niedopasowane sceny",
+        "verb_add_as_alias": "Dodaj zebraną nazwę jako alias",
+        "verb_link_existing": "Połącz z istniejącym"
     },
     "config": {
         "about": {
@@ -291,7 +307,9 @@
                 "password_desc": "Hasło dostępu do aplikacji Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika",
                 "stash-box_integration": "Integracja ze Stash-box",
                 "username": "Nazwa użytkownika",
-                "username_desc": "Nazwa użytkownika umożliwiająca dostęp do Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika"
+                "username_desc": "Nazwa użytkownika umożliwiająca dostęp do Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika",
+                "log_file_max_size": "Maksymalny rozmiar pliku loga",
+                "log_file_max_size_desc": "Maksymalny rozmiar pliku loga w megabajtach przed jego skompresowaniem. 0MB wyłącza tę funkcję. Wymaga ponownego uruchomienia."
             },
             "backup_directory_path": {
                 "description": "Lokalizacja katalogu kopii zapasowych plików bazy danych SQLite",
@@ -348,7 +366,16 @@
                     }
                 },
                 "download_ffmpeg": {
-                    "heading": "Pobierz FFmpeg"
+                    "heading": "Pobierz FFmpeg",
+                    "description": "Pobiera FFmpeg do katalogu konfiguracji i czyści ścieżki do ffmpeg oraz ffprobe, aby były powiązane z katalogiem konfiguracji."
+                },
+                "ffmpeg_path": {
+                    "heading": "Ścieżka pliku wykonywalnego FFmpeg",
+                    "description": "Ścieżka do pliku wykonywalnego ffmpeg (nie do folderu). Jeśli pole jest puste, ffmpeg zostanie odnaleziony na podstawie zmiennej środowiskowej $PATH, katalogu konfiguracji lub katalogu $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Ścieżka do pliku wykonywalnego ffprobe (nie do folderu). Jeśli pole jest puste, ffprobe zostanie odnalezione na podstawie zmiennej środowiskowej $PATH, katalogu konfiguracji lub katalogu $HOME/.stash",
+                    "heading": "Ścieżka pliku wykonywalnego FFprobe"
                 }
             },
             "funscript_heatmap_draw_range": "Bierz pod uwagę zakres dla wygenerowanych heatmap",
@@ -394,7 +421,15 @@
             "sqlite_location": "Lokalizacja pliku dla bazy danych SQLite (wymaga ponownego uruchomienia). UWAGA: przechowywanie bazy danych w systemie innym niż ten na którym uruchomiony jest serwer Stash (np. w lokalizacji sieciowej) nie jest wspierane!",
             "video_ext_desc": "Rozdzielona przecinkami lista rozszerzeń plików, które będą identyfikowane jako pliki wideo.",
             "video_ext_head": "Rozszerzenia wideo",
-            "video_head": "Wideo"
+            "video_head": "Wideo",
+            "delete_trash_path": {
+                "description": "Ścieżka, do której będą przenoszone usuwane pliki zamiast ich trwałego usunięcia. Pozostaw puste, aby usuwać pliki na stałe.",
+                "heading": "Ścieżka kosza"
+            },
+            "plugins_path": {
+                "description": "Lokalizacja katalogu plików konfiguracyjnych wtyczek",
+                "heading": "Ścieżka wtyczek"
+            }
         },
         "library": {
             "exclusions": "Wykluczenia",
@@ -406,7 +441,9 @@
         },
         "plugins": {
             "hooks": "Punkty zaczepienia",
-            "triggers_on": "Wyzwalacze \"w przypadku\""
+            "triggers_on": "Wyzwalacze \"w przypadku\"",
+            "available_plugins": "Dostępne wtyczki",
+            "installed_plugins": "Zainstalowane wtyczki"
         },
         "scraping": {
             "entity_metadata": "Metadane - {entityType}",
@@ -417,7 +454,9 @@
             "scrapers": "Zbieracze",
             "search_by_name": "Wyszukiwanie według nazwy",
             "supported_types": "Obsługiwane typy",
-            "supported_urls": "Adresy URL"
+            "supported_urls": "Adresy URL",
+            "available_scrapers": "Dostępne zbieracze",
+            "installed_scrapers": "Zainstalowane zbieracze"
         },
         "stashbox": {
             "add_instance": "Dodaj instancję stash-box",
@@ -426,7 +465,9 @@
             "endpoint": "Punkt końcowy",
             "graphql_endpoint": "Punkt końcowy GraphQL",
             "name": "Nazwa",
-            "title": "Punkty końcowe stash-box"
+            "title": "Punkty końcowe stash-box",
+            "max_requests_per_minute": "Maksymalna liczba żądań na minutę",
+            "max_requests_per_minute_description": "Używa wartości domyślnej {defaultValue}, jeśli ustawiono 0"
         },
         "system": {
             "transcoding": "Transkodowanie"
@@ -444,7 +485,6 @@
             "auto_tagging": "Automatyczne tagowanie",
             "backing_up_database": "Tworzenie kopii zapasowej bazy danych",
             "backup_and_download": "Wykonuje kopię zapasową bazy danych i pobiera plik wynikowy.",
-            "backup_database": "Wykonuje kopię zapasową bazy danych do katalogu kopii zapasowych, z nazwą pliku w formacie {filename_format}",
             "cleanup_desc": "Sprawdza, czy nie ma brakujących plików i usuwa je z bazy danych. Jest to działanie destrukcyjne.",
             "data_management": "Zarządzanie danymi",
             "defaults_set": "Zostały ustawione wartości domyślne, które będą używane po kliknięciu przycisku {action} na stronie Zadania.",
@@ -485,7 +525,13 @@
                 "source": "Źródło",
                 "source_options": "Opcje {source}",
                 "sources": "Źródła",
-                "strategy": "Strategia"
+                "strategy": "Strategia",
+                "skip_multiple_matches": "Pomiń dopasowania, które mają więcej niż jeden wynik",
+                "skip_multiple_matches_tooltip": "Jeśli ta opcja nie jest włączona i zwrócono więcej niż jeden wynik, jeden z nich zostanie losowo wybrany do dopasowania",
+                "skip_single_name_performers": "Pomiń wykonawców z jedną nazwą bez dodatkowego rozróżnienia",
+                "tag_skipped_matches": "Otaguj pominięte dopasowania",
+                "tag_skipped_performers": "Otaguj pominiętych wykonawców",
+                "skip_single_name_performers_tooltip": "Bez włączenia tej opcji wykonawcy o popularnych imionach (np. Samantha, Olga) będą dopasowywani"
             },
             "import_from_exported_json": "Import z wyeksportowanego pliku JSON w katalogu metadanych. Wymazuje istniejącą bazę danych.",
             "incremental_import": "Import przyrostowy z dostarczonego wyeksportowanego pliku zip.",
@@ -509,7 +555,22 @@
                 "scanning_paths": "Skanowanie następujących ścieżek"
             },
             "scan_for_content_desc": "Skanowanie w poszukiwaniu nowych treści i dodawanie ich do bazy danych.",
-            "set_name_date_details_from_metadata_if_present": "Ustawianie nazwy, daty i szczegółów z metadanych osadzonego pliku"
+            "set_name_date_details_from_metadata_if_present": "Ustawianie nazwy, daty i szczegółów z metadanych osadzonego pliku",
+            "clean_generated": {
+                "blob_files": "Pliki blob",
+                "description": "Usuwa wygenerowane pliki, które nie mają odpowiadającego wpisu w bazie danych.",
+                "image_thumbnails": "Miniatury obrazów",
+                "image_thumbnails_desc": "Miniatury obrazów i klipy",
+                "markers": "Podglądy znaczników",
+                "previews": "Podglądy scen",
+                "previews_desc": "Podglądy scen i miniatury",
+                "sprites": "Klipy scen",
+                "transcodes": "Transkodowania scen"
+            },
+            "generate_sprites_during_scan_tooltip": "Obrazy wyświetlane pod odtwarzaczem wideo ułatwiające nawigację.",
+            "optimise_database": "Popraw wydajność, analizując i przebudowując całą bazę danych.",
+            "rescan": "Przeskanuj pliki ponownie",
+            "rescan_tooltip": "Przeskanuj ponownie każdy plik w ścieżce. Używane do wymuszenia aktualizacji metadanych plików i ponownego skanowania plików ZIP."
         },
         "tools": {
             "scene_duplicate_checker": "Sprawdzacz duplikatów scen",
@@ -528,7 +589,9 @@
                 "whitespace_chars": "Białe znaki",
                 "whitespace_chars_desc": "Te znaki zostaną zastąpione spacją w tytule"
             },
-            "scene_tools": "Narzędzia scen"
+            "scene_tools": "Narzędzia scen",
+            "graphql_playground": "Środowisko testowe GraphQL",
+            "heading": "Narzędzia"
         },
         "ui": {
             "abbreviate_counters": {
@@ -658,7 +721,7 @@
                 }
             },
             "preview_type": {
-                "description": "Konfiguracja dla elementów ściany",
+                "description": "Domyślną opcją są podglądy wideo (MP4). Aby zmniejszyć obciążenie CPU podczas przeglądania, możesz używać podglądów w formacie animowanego obrazu (WebP). Jednakże muszą one zostać dodatkowo wygenerowane i zajmują więcej miejsca.",
                 "heading": "Typ podglądu",
                 "options": {
                     "animated": "Animowany obraz",
@@ -690,7 +753,8 @@
                     "vr_tag": {
                         "description": "Przycisk VR będzie wyświetlany tylko dla scen z tym znacznikiem.",
                         "heading": "Tag VR"
-                    }
+                    },
+                    "enable_chromecast": "Włącz Chromecast"
                 }
             },
             "scene_wall": {
@@ -730,7 +794,33 @@
                     }
                 }
             },
-            "title": "Interfejs użytkownika"
+            "title": "Interfejs użytkownika",
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "Po włączeniu ta opcja wyświetli rozszerzone szczegóły przy zachowaniu kompaktowego układu",
+                    "heading": "Kompaktowy widok szczegółów"
+                },
+                "enable_background_image": {
+                    "description": "Pokaż tło na stronie szczegółów.",
+                    "heading": "Włącz obraz tła"
+                },
+                "heading": "Strona szczegółów",
+                "show_all_details": {
+                    "description": "Po włączeniu wszystkie szczegóły zawartości będą domyślnie wyświetlane, każdy element szczegółów w jednej kolumnie",
+                    "heading": "Pokaż wszystkie szczegóły"
+                }
+            },
+            "performer_list": {
+                "heading": "Lista wykonawców",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Wyświetl linki na kartach siatki wykonawców"
+                    }
+                }
+            },
+            "sfw_mode": {
+                "heading": "Tryb treści SFW"
+            }
         },
         "advanced_mode": "Tryb zaawansowany"
     },
@@ -824,15 +914,12 @@
                 "label": "Tryb przewijania",
                 "pan_y": "Przesunięcie Y",
                 "zoom": "Powiększenie"
-            }
+            },
+            "disable_animation": "Wyłącz animację przejścia między obrazami"
         },
         "merge": {
             "destination": "Cel",
             "empty_results": "Wartości pola \"cel\" nie zostaną zmienione.",
-            "source": "Źródło"
-        },
-        "merge_tags": {
-            "destination": "Cel",
             "source": "Źródło"
         },
         "reassign_entity_title": "Przypisz {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -870,11 +957,13 @@
             "preview_seg_duration_desc": "Czas trwania każdego segmentu podglądu, w sekundach.",
             "preview_seg_duration_head": "Czas trwania segmentu podglądu",
             "sprites": "Sprite'y sceny",
-            "sprites_tooltip": "Sprite'y (dla scrubbera)",
+            "sprites_tooltip": "Obrazy wyświetlane pod odtwarzaczem wideo ułatwiające nawigację.",
             "transcodes": "Transkodowanie",
             "transcodes_tooltip": "Konwersja do MP4 z nieobsługiwanych formatów wideo",
             "video_previews": "Podglądy",
-            "video_previews_tooltip": "Podgląd wideo odtwarzany po najechaniu kursorem myszy na scenę"
+            "video_previews_tooltip": "Podgląd wideo odtwarzany po najechaniu kursorem myszy na scenę",
+            "image_thumbnails": "Miniatury obrazów",
+            "phash_tooltip": "Do deduplikacji i identyfikacji scen"
         },
         "scenes_found": "Znaleziono {count} scen",
         "scrape_entity_query": "Zapytanie zbieracza – {entity_type}",
@@ -882,7 +971,17 @@
         "scrape_results_existing": "Istniejący",
         "scrape_results_scraped": "Zebrany",
         "set_image_url_title": "Adres URL obrazu",
-        "unsaved_changes": "Niezapisane zmiany. Czy na pewno chcesz wyjść?"
+        "unsaved_changes": "Niezapisane zmiany. Czy na pewno chcesz wyjść?",
+        "clear_o_history_confirm": "Czy na pewno chcesz wyczyścić historię O?",
+        "clear_play_history_confirm": "Czy na pewno chcesz wyczyścić historię odtwarzania?",
+        "overwrite_filter_warning": "Zapisany filtr \"{entityName}\" zostanie zastąpiony.",
+        "studios_found": "Znalezione studia: {count}",
+        "tags_found": "Znalezione tagi: {count}",
+        "set_default_filter_confirm": "Czy na pewno chcesz ustawić ten filtr jako domyślny?",
+        "clear_o_history_confirm_sfw": "Czy na pewno chcesz wyczyścić historię polubień?",
+        "performers_found": "Znalezieni wykonawcy: {count}",
+        "stashid_exists_warning": "Istniejący stash id dla tego stash-box zostanie zastąpiony.",
+        "scrape_results_missing": "Brakuje"
     },
     "dimensions": "Wymiary",
     "director": "Reżyser",
@@ -892,7 +991,8 @@
         "list": "Lista",
         "tagger": "Otagowywacz",
         "unknown": "Nieznany",
-        "wall": "Ściana"
+        "wall": "Ściana",
+        "label_current": "Tryb wyświetlania: {current}"
     },
     "donate": "Przekaż darowiznę",
     "dupe_check": {
@@ -910,7 +1010,14 @@
             "medium": "Średnia"
         },
         "search_accuracy_label": "Dokładność wyszukiwania",
-        "title": "Duplikaty scen"
+        "title": "Duplikaty scen",
+        "select_all_but_largest_file": "Zaznacz wszystkie pliki w każdej grupie duplikatów, z wyjątkiem największego pliku",
+        "select_all_but_largest_resolution": "Zaznacz wszystkie pliki w każdej grupie duplikatów, z wyjątkiem pliku o najwyższej rozdzielczości",
+        "only_select_matching_codecs": "Zaznacz tylko wtedy, gdy wszystkie kodeki w grupie duplikatów się zgadzają",
+        "select_oldest": "Zaznacz najstarszy plik w grupie duplikatów",
+        "select_none": "Odznacz wszystko",
+        "select_options": "Ustawienia zaznaczania…",
+        "select_youngest": "Zaznacz najmłodszy plik w grupie duplikatów"
     },
     "duplicated_phash": "Duplikaty (phash)",
     "duration": "Czas trwania",
@@ -939,7 +1046,17 @@
     "errors": {
         "image_index_greater_than_zero": "Indeks obrazu musi być większy niż 0",
         "lazy_component_error_help": "Jeśli Stash został niedawno zaktualizowany, proszę przeładować stronę lub wyczyścić pamięć podręczną przeglądarki.",
-        "something_went_wrong": "Coś się zepsuło."
+        "something_went_wrong": "Coś się zepsuło.",
+        "custom_fields": {
+            "duplicate_field": "Nazwa pola musi być unikalna",
+            "field_name_length": "Nazwa pola musi mieć mniej niż 65 znaków",
+            "field_name_required": "Nazwa pola jest wymagana",
+            "field_name_whitespace": "Nazwa pola nie może zawierać spacji na początku ani na końcu"
+        },
+        "header": "Błąd",
+        "invalid_javascript_string": "Nieprawidłowy kod JavaScript: {error}",
+        "invalid_json_string": "Nieprawidłowy ciąg JSON: {error}",
+        "loading_type": "Błąd podczas ładowania {type}"
     },
     "ethnicity": "Pochodzenie etniczne",
     "existing_value": "istniejąca wartość",
@@ -988,8 +1105,8 @@
         "syncing": "Synchronizacja z serwerem",
         "uploading": "Wgrywanie skryptu"
     },
-    "hasChapters": "Posiada Rozdziały",
-    "hasMarkers": "Ma znaczniki",
+    "hasChapters": "Rozdziały",
+    "hasMarkers": "Znaczniki",
     "height": "Wzrost",
     "height_cm": "Wzrost (cm)",
     "help": "Help",
@@ -1008,26 +1125,26 @@
     "last_played_at": "Ostatnio odtwarzano",
     "library": "Biblioteka",
     "loading": {
-        "generic": "Ładowanie…"
+        "generic": "Ładowanie…",
+        "plugins": "Ładowanie wtyczek…"
     },
     "marker_count": "Liczba Znaczników",
     "markers": "Znaczniki",
     "measurements": "Wymiary",
     "media_info": {
         "audio_codec": "Kodek audio",
-        "checksum": "Suma kontrolna",
         "downloaded_from": "Pobrano z",
-        "hash": "Hash",
         "interactive_speed": "Szybkość interaktywna",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} w tej scenie"
+            "age_context": "{age} {years_old} w momencie produkcji"
         },
         "phash": "PHash",
         "play_count": "Liczba odtworzeń",
         "play_duration": "Czas odtwarzania",
         "stream": "Stream",
-        "video_codec": "Kodek wideo"
+        "video_codec": "Kodek wideo",
+        "o_count": "Licznik O"
     },
     "megabits_per_second": "{value} megabitów na sekundę",
     "metadata": "Metadane",
@@ -1040,7 +1157,8 @@
         "first": "Pierwsza",
         "last": "Ostatnia",
         "next": "Następna",
-        "previous": "Poprzednia"
+        "previous": "Poprzednia",
+        "current_total": "{current} z {total}"
     },
     "parent_of": "Rodzic {children}",
     "parent_studios": "Studia nadrzędne",
@@ -1062,14 +1180,6 @@
         "any_names_entered_will_be_queried": "Wszystkie wprowadzone nazwy zostaną wyszukane w zdalnej instancji Stash-Box i dodane, jeśli zostaną znalezione. Tylko dokładne dopasowania będą uznawane za dopasowanie.",
         "batch_add_performers": "Grupowe dodawanie aktorów",
         "batch_update_performers": "Grupowe aktualizowanie aktorów",
-        "config": {
-            "active_stash-box_instance": "Aktywna instancja stash-box:",
-            "edit_excluded_fields": "Edytuj wykluczone pola",
-            "excluded_fields": "Wykluczone pola:",
-            "no_fields_are_excluded": "Żadne pola nie są wykluczone",
-            "no_instances_found": "Nie znaleziono instancji",
-            "these_fields_will_not_be_changed_when_updating_performers": "Te pola nie zostaną zmienione podczas aktualizacji aktorów.."
-        },
         "current_page": "Bieżąca strona",
         "failed_to_save_performer": "Nie udało się zapisać aktora \"{performer}\"",
         "name_already_exists": "Nazwa już istnieje",
@@ -1087,9 +1197,10 @@
         "tag_status": "Status tagu",
         "to_use_the_performer_tagger": "Aby korzystać z otagowywacza aktorów, należy skonfigurować instancję stash-box.",
         "untagged_performers": "Nieotagowany aktor",
-        "update_performer": "Zaktualizowano aktora",
+        "update_performer": "Aktualizacja aktora",
         "update_performers": "Zaktualizowano aktorów",
-        "updating_untagged_performers_description": "Aktualizowanie nieotagowanych aktorów spróbuje dopasować aktorów, którym brakuje stashid i zaktualizować metadane."
+        "updating_untagged_performers_description": "Aktualizowanie nieotagowanych aktorów spróbuje dopasować aktorów, którym brakuje stashid i zaktualizować metadane.",
+        "performer_names_or_stashids_separated_by_comma": "Nazwiska wykonawców lub StashID oddzielone przecinkiem"
     },
     "performer_tags": "Tagi aktorów",
     "performers": "Aktorzy",
@@ -1120,7 +1231,9 @@
         "edit_filter": "Filtr Edycji",
         "name": "Filtr",
         "saved_filters": "Zapisane filtry",
-        "update_filter": "Aktualizuj filtr"
+        "update_filter": "Aktualizuj filtr",
+        "search_term": "Szukana fraza",
+        "more_filter_criteria": "+{count} więcej"
     },
     "second": "Drugi",
     "seconds": "Sekund",
@@ -1134,7 +1247,8 @@
             "database_file_path": "Ścieżka do pliku bazy danych",
             "generated_directory": "Folder z wygenerowaną zawartością",
             "nearly_there": "Już prawie gotowe!",
-            "stash_library_directories": "Katalogi biblioteki Stash"
+            "stash_library_directories": "Katalogi biblioteki Stash",
+            "blobs_use_database": "<używa bazy danych>"
         },
         "creating": {
             "creating_your_system": "Tworzenie systemu"
@@ -1142,11 +1256,13 @@
         "errors": {
             "something_went_wrong": "O nie! Coś poszło nie tak!",
             "something_went_wrong_description": "Wygląda to na problem z twoimi danymi wejściowymi, kliknij Wstecz, aby je poprawić. W przeciwnym razie zgłoś błąd na stronie {githubLink} lub poszukaj pomocy na {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Coś poszło nie tak podczas konfigurowania systemu. Oto błąd, który otrzymaliśmy: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Coś poszło nie tak podczas konfigurowania systemu. Oto błąd, który otrzymaliśmy: {error}",
+            "unable_to_retrieve_system_status": "Nie można uzyskać statusu systemu: {error}",
+            "unexpected_error": "Wystąpił nieoczekiwany błąd: {error}"
         },
         "folder": {
             "file_path": "Ścieżka do pliku",
-            "up_dir": "W górę katalogu"
+            "up_dir": "Katalog wyżej"
         },
         "github_repository": "Repozytorium na Githubie",
         "migrate": {
@@ -1164,7 +1280,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "nazwa pliku bazy danych (domyślnie puste)",
-            "description": "Następnie należy określić, gdzie ma się znajdować kolekcja porno oraz gdzie ma być przechowywana baza danych Stash, wygenerowane pliki i pliki pamięci podręcznej. Ustawienia te można zmienić później, jeśli zajdzie taka potrzeba.",
+            "description": "Następnie należy określić, gdzie ma się znajdować Twoja zawartość oraz gdzie ma być przechowywana baza danych Stash, wygenerowane pliki i pliki pamięci podręcznej. Ustawienia te można zmienić później, jeśli zajdzie taka potrzeba.",
             "path_to_cache_directory_empty_for_default": "ścieżka do katalogu cache (domyślnie pusta)",
             "path_to_generated_directory_empty_for_default": "ścieżka do katalogu z wygenerowanymi plikami (domyślnie pusta)",
             "set_up_your_paths": "Ustaw ścieżki",
@@ -1175,12 +1291,17 @@
             "where_can_stash_store_cache_files": "Gdzie Stash może przechowywać pliki pamięci podręcznej?",
             "where_can_stash_store_cache_files_description": "Aby niektóre funkcjonalności takie jak transkodowanie na żywo HLS/DASH mogły działać, Stash wymaga katalogu cache dla plików tymczasowych. Domyślnie, Stash utworzy katalog <code>cache</code> w katalogu zawierającym twój plik konfiguracyjny. Jeśli chcesz to zmienić, podaj ścieżkę bezwzględną lub względną (do bieżącego katalogu roboczego). Stash utworzy ten katalog, jeśli jeszcze nie istnieje.",
             "where_can_stash_store_its_database": "Gdzie Stash może przechowywać swoją bazę danych?",
-            "where_can_stash_store_its_database_description": "Stash używa bazy danych SQLite do przechowywania metadanych porno. Domyślnie zostanie ona utworzona jako <code>stash-go.sqlite</code> w katalogu zawierającym twój plik konfiguracyjny. Jeśli chcesz to zmienić, podaj bezwzględną lub względną (względem bieżącego katalogu roboczego) nazwę pliku.",
+            "where_can_stash_store_its_database_description": "Stash używa bazy danych SQLite do przechowywania metadanych zawartości. Domyślnie zostanie ona utworzona jako <code>stash-go.sqlite</code> w katalogu zawierającym Twój plik konfiguracyjny. Jeśli chcesz to zmienić, podaj bezwzględną lub względną (względem bieżącego katalogu roboczego) nazwę pliku.",
             "where_can_stash_store_its_database_warning": "UWAGA: przechowywanie bazy danych w innym systemie niż ten, z którego uruchamiany jest Stash (np. przechowywanie bazy danych na dysku NAS przy jednoczesnym uruchomieniu serwera Stash na innym komputerze) jest <strong>nieobsługiwane</strong>! SQLite nie jest przeznaczony do pracy w sieci, a próba takiego działania może bardzo łatwo spowodować uszkodzenie całej bazy danych.",
             "where_can_stash_store_its_generated_content": "Gdzie Stash może przechowywać wygenerowaną zawartość?",
             "where_can_stash_store_its_generated_content_description": "Aby zapewnić miniatury, podglądy i sprite'y, Stash generuje obrazy i wideo. Obejmuje to również transkodowanie dla nieobsługiwanych formatów plików. Domyślnie Stash tworzy katalog <code>generated</code> w katalogu zawierającym plik konfiguracyjny. Jeśli chcesz zmienić miejsce przechowywania wygenerowanych multimediów, podaj ścieżkę bezwzględną lub względną (do bieżącego katalogu roboczego). Stash utworzy ten katalog, jeśli jeszcze nie istnieje.",
-            "where_is_your_porn_located": "Gdzie znajduje się Twoje porno?",
-            "where_is_your_porn_located_description": "Dodaj katalogi zawierające filmy porno i obrazy. Stash będzie używał tych katalogów do wyszukiwania filmów i obrazów podczas skanowania.."
+            "where_is_your_porn_located": "Gdzie znajduje się Twoja zawartość?",
+            "where_is_your_porn_located_description": "Dodaj katalogi zawierające filmy i obrazy. Stash będzie używał tych katalogów do wyszukiwania filmów i obrazów podczas skanowania..",
+            "path_to_blobs_directory_empty_for_default": "ścieżka do katalogu blobs (domyślnie pusta)",
+            "sfw_content_settings": "Korzystasz ze stash do treści SFW?",
+            "sfw_content_settings_description": "Stash może być używany do zarządzania treściami SFW, takimi jak fotografia, sztuka, komiksy i inne. Włączenie tej opcji dostosuje niektóre elementy interfejsu, aby były bardziej odpowiednie dla treści SFW.",
+            "store_blobs_in_database": "Przechowuj bloby w bazie danych",
+            "use_sfw_content_mode": "Użyj trybu treści SFW"
         },
         "stash_setup_wizard": "Kreator konfiguracji Stash",
         "success": {
@@ -1193,16 +1314,20 @@
             "support_us": "Wesprzyj nas",
             "thanks_for_trying_stash": "Dzięki za wypróbowanie Stasha!",
             "welcome_contrib": "Mile widziany jest również wkład w postaci kodu (poprawki błędów, ulepszenia i nowe funkcje), testowania, raportów o błędach, próśb o ulepszenia i funkcje oraz wsparcia użytkowników. Szczegóły można znaleźć w sekcji Wkład w instrukcję obsługi aplikacji.",
-            "your_system_has_been_created": "Sukces! Twój system został utworzony!"
+            "your_system_has_been_created": "Sukces! Twój system został utworzony!",
+            "download_ffmpeg": "Pobierz ffmpeg",
+            "missing_ffmpeg": "Brakuje wymaganego pliku wykonywalnego<code>ffmpeg</code>. Możesz go automatycznie pobrać do katalogu konfiguracji, zaznaczając poniższe pole. Alternatywnie, możesz podać ścieżki do plików binarnych <code>ffmpeg</code> i <code>ffprobe</code> w Ustawieniach Systemu. Te pliki binarne muszą być obecne, aby Stash działał prawidłowo."
         },
         "welcome": {
             "config_path_logic_explained": "Stash próbuje najpierw znaleźć swój plik konfiguracyjny (<code>config.yml</code>) w bieżącym katalogu roboczym, a jeśli go tam nie znajdzie, wraca do <code>$HOME/.stash/config.yml</code> (w systemie Windows będzie to <code>%USERPROFILE%\\.stash\\config.yml</code>). Można również sprawić, że Stash będzie odczytywał dane z określonego pliku konfiguracyjnego, uruchamiając go z opcją opcji <code>-c '<ścieżka do pliku konfiguracyjnego>'</code> lub <code>--config '<ścieżka do pliku konfiguracyjnego>'</code>.",
-            "in_current_stash_directory": "W katalogu <code>$HOME/.stash</code>",
-            "in_the_current_working_directory": "W bieżącym katalogu roboczym",
-            "next_step": "Jeśli jesteś gotowy do skonfigurowania nowego systemu, wybierz miejsce, w którym chcesz przechowywać plik konfiguracyjny, i kliknij przycisk Dalej.",
+            "in_current_stash_directory": "W katalogu <code>$HOME/.stash</code>:",
+            "in_the_current_working_directory": "W katalogu roboczym <code>{path}</code>, obecnie:",
+            "next_step": "Jeśli jesteś gotowy do skonfigurowania nowego systemu, wybierz miejsce, w którym chcesz przechowywać plik konfiguracyjny i kliknij przycisk Dalej.",
             "store_stash_config": "Gdzie ma być przechowywana konfiguracja Stasha?",
             "unable_to_locate_config": "Jeśli to czytasz, to znaczy, że Stash nie mógł znaleźć istniejącej konfiguracji. Kreator poprowadzi Cię przez proces tworzenia nowej konfiguracji.",
-            "unexpected_explained": "Jeśli ten ekran pojawia się niespodziewanie, spróbuj ponownie uruchomić Stash we właściwym katalogu roboczym lub z flagą <code>-c</code>."
+            "unexpected_explained": "Jeśli ten ekran pojawia się niespodziewanie, spróbuj ponownie uruchomić Stash we właściwym katalogu roboczym lub z flagą <code>-c</code>.",
+            "in_the_current_working_directory_disabled": "W katalogu roboczym <code>{path}</code>:",
+            "in_the_current_working_directory_disabled_macos": "Nieobsługiwane podczas uruchamiania <code>Stash.app</code>.<br></br>Uruchom <code>stash-macos</code>, aby skonfigurować katalog roboczy"
         },
         "welcome_specific_config": {
             "config_path": "Stash będzie używał następującej ścieżki do pliku konfiguracyjnego: <code>{path}</code>",
@@ -1215,17 +1340,23 @@
     "stash_id_endpoint": "Punkt końcowy Stash ID",
     "stash_ids": "ID Stasha",
     "stashbox": {
-        "go_review_draft": "Przejdź do {endpoint_name}, aby zapoznać się z projektem.",
+        "go_review_draft": "Przejdź do {endpoint_name}, aby zapoznać się z wersją roboczą.",
         "selected_stash_box": "Wybrany punkt końcowy Stash-Box",
         "submission_failed": "Zgłoszenie nie powiodło się",
         "submission_successful": "Zgłoszenie przesłano sukcesem",
-        "submit_update": "Już istnieje w {endpoint_name}"
+        "submit_update": "Już istnieje w {endpoint_name}",
+        "source": "Źródło Stash-Box"
     },
     "statistics": "Statystyki",
     "stats": {
         "image_size": "Rozmiar obrazów",
         "scenes_duration": "Czas trwania scen",
-        "scenes_size": "Rozmiar scen"
+        "scenes_size": "Rozmiar scen",
+        "scenes_played": "Odtworzone sceny",
+        "total_o_count": "Łączna ilość O",
+        "total_o_count_sfw": "Łączna ilość polubień",
+        "total_play_count": "Łączna liczba odtworzeń",
+        "total_play_duration": "Łączny czas odtwarzania"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
@@ -1267,10 +1398,11 @@
     "updated_at": "Zaktualizowano",
     "url": "URL",
     "validation": {
-        "date_invalid_form": "${path} musi być w formacie RRRR-MM-DD",
+        "date_invalid_form": "${path} musi być w formacie RRRR, RRRR-MM lub RRRR-MM-DD",
         "required": "${path} jest wymagana",
         "unique": "${path} musi być unikalny",
-        "blank": "${path} nie może być puste"
+        "blank": "${path} nie może być puste",
+        "end_time_before_start_time": "Czas zakończenia musi być większy lub równy czasowi rozpoczęcia"
     },
     "videos": "Filmy wideo",
     "view_all": "Pokaż wszystko",
@@ -1285,5 +1417,111 @@
     "sub_group_order": "Kolejność podgrup",
     "sub_groups": "Podgrupy",
     "unknown_date": "Nieznana data",
-    "video_codec": "Kodek Wideo"
+    "video_codec": "Kodek Wideo",
+    "distance": "Dystans",
+    "eta": "ETA",
+    "group_count": "Ilość grup",
+    "group_scene_number": "Numer sceny",
+    "groups": "Grupy",
+    "group": "Grupa",
+    "history": "Historia",
+    "include_sub_group_content": "Uwzględnij zawartość podgrupy",
+    "include_sub_groups": "Uwzględnij podgrupy",
+    "index_of_total": "{index} z {total}",
+    "last_o_at": "Ostatnie O",
+    "login": {
+        "login": "Logowanie",
+        "username": "Użytkownik",
+        "password": "Hasło",
+        "invalid_credentials": "Nieprawidłowa nazwa użytkownika lub hasło",
+        "internal_error": "Nieoczekiwany błąd wewnętrzny. Szczegóły znajdziesz w logach"
+    },
+    "o_count": "Licznik O",
+    "o_count_sfw": "Polubienia",
+    "o_history": "Historia O",
+    "o_history_sfw": "Historia polubień",
+    "odate_recorded_no": "Nie zarejestrowano O",
+    "orientation": "Orientacja",
+    "package_manager": {
+        "add_source": "Dodaj źródło",
+        "check_for_updates": "Sprawdź dostępność aktualizacji",
+        "confirm_delete_source": "Czy na pewno chcesz usunąć źródło {name} ({url})?",
+        "confirm_uninstall": "Czy na pewno chcesz odinstalować {number} pakietów?",
+        "description": "Opis",
+        "edit_source": "Edytuj źródło",
+        "hide_unselected": "Ukryj niezaznaczone",
+        "install": "Instaluj",
+        "installed_version": "Zainstalowana wersja",
+        "latest_version": "Najnowsza wersja",
+        "no_packages": "Nie znaleziono pakietów",
+        "no_sources": "Nie skonfigurowano żadnych źródeł",
+        "no_upgradable": "Brak pakietów do aktualizacji",
+        "package": "Pakiet",
+        "required_by": "Wymagane przez {packages}",
+        "selected_only": "Tylko zaznaczone",
+        "show_all": "Pokaż wszystko",
+        "source": {
+            "local_path": {
+                "description": "Ścieżka względna do przechowywania pakietów dla tego źródła. Uwaga: zmiana tej ścieżki wymaga ręcznego przeniesienia pakietów.",
+                "heading": "Ścieżka lokalna"
+            },
+            "name": "Nazwa",
+            "url": "URL źródła"
+        },
+        "uninstall": "Odinstaluj",
+        "unknown": "<nieznany>",
+        "update": "Aktualizuj",
+        "version": "Wersja"
+    },
+    "parent_studio": "Studio nadrzędne",
+    "photographer": "Fotograf",
+    "play_history": "Historia odtwarzania",
+    "playdate_recorded_no": "Nie zarejestrowano odtworzeń",
+    "plays": "Odtworzenia: {value}",
+    "primary_tag": "Tag nadrzędny",
+    "scenes_duration": "Czas trwania sceny",
+    "stashbox_search": {
+        "no_results": "Nie znaleziono wyników.",
+        "select_stashbox": "Wybierz StashBox..."
+    },
+    "studio_tagger": {
+        "add_new_studios": "Dodaj nowe studia",
+        "config": {
+            "create_parent_desc": "Utwórz brakujące studia nadrzędne lub otaguj i zaktualizuj dane/obraz dla istniejących studiów nadrzędnych o dokładnie takich samych nazwach",
+            "create_parent_label": "Utwórz studia nadrzędne"
+        },
+        "any_names_entered_will_be_queried": "Wszystkie wprowadzone nazwy zostaną wyszukane w zdalnej instancji Stash-Box i dodane, jeśli zostaną znalezione. Tylko dokładne dopasowania będą uznawane za dopasowanie.",
+        "batch_add_studios": "Dodaj studia zbiorowo",
+        "batch_update_studios": "Aktualizuj studia zbiorowo",
+        "create_or_tag_parent_studios": "Utwórz brakujące studia nadrzędne lub otaguj istniejące",
+        "current_page": "Aktualna strona",
+        "failed_to_save_studio": "Nie udało się zapisać studia \"{studio}\"",
+        "name_already_exists": "Nazwa już istnieje",
+        "network_error": "Błąd sieci",
+        "no_results_found": "Nie znaleziono wyników.",
+        "query_all_studios_in_the_database": "Wszystkie studia w bazie danych",
+        "number_of_studios_will_be_processed": "{studio_count} studiów zostanie przetworzonych"
+    },
+    "studio_and_parent": "Studio i Studio nadrzędne",
+    "studio_count": "Liczba studiów",
+    "studio_tags": "Tagi studia",
+    "tag_parent_tooltip": "Ma tagi nadrzędne",
+    "tag_sub_tag_tooltip": "Ma podtagi",
+    "time": "Czas",
+    "time_end": "Czas zakończenia",
+    "urls": "Adresy URL",
+    "age_on_date": "{age} w momencie produkcji",
+    "criterion_modifier_values": {
+        "any": "Którykolwiek",
+        "any_of": "Którykolwiek z",
+        "only": "Wyłącznie"
+    },
+    "custom_fields": {
+        "field": "Pole",
+        "title": "Pola niestandardowe",
+        "value": "Wartość"
+    },
+    "include_sub_studio_content": "Uwzględnij zawartość podstudia",
+    "include_sub_tag_content": "Uwzględnij zawartość podtaga",
+    "odate_recorded_no_sfw": "Nie zarejestrowano polubień"
 }

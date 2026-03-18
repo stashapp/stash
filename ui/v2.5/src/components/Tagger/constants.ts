@@ -38,6 +38,7 @@ export const initialConfig: ITaggerConfig = {
   excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
   excludedTagFields: DEFAULT_EXCLUDED_TAG_FIELDS,
   createParentStudios: true,
+  createParentTags: true,
 };
 
 export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
@@ -56,6 +57,7 @@ export interface ITaggerConfig {
   excludedStudioFields?: string[];
   excludedTagFields?: string[];
   createParentStudios: boolean;
+  createParentTags: boolean;
 }
 
 export const PERFORMER_FIELDS = [
@@ -85,4 +87,4 @@ export const PERFORMER_FIELDS = [
 ];
 
 export const STUDIO_FIELDS = ["name", "image", "url", "parent_studio"];
-export const TAG_FIELDS = ["name", "description", "aliases"];
+export const TAG_FIELDS = ["name", "description", "aliases", "parent_tags"];

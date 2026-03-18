@@ -99,6 +99,8 @@ input BulkGroupUpdateInput {
   ids: [ID!]
   # rating expressed as 1-100
   rating100: Int
+  date: String
+  synopsis: String
   studio_id: ID
   director: String
   urls: BulkUpdateStrings

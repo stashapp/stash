@@ -54,8 +54,6 @@
         "import_from_file": "นำเข้าด้วยไฟล์",
         "logout": "ล็อกเอาท์",
         "merge": "รวม",
-        "merge_from": "รวมจาก",
-        "merge_into": "รวมไปยัง",
         "next_action": "ต่อไป",
         "not_running": "ไม่สามารถรันได้",
         "open_in_external_player": "เปิดด้วย Player อื่น",
@@ -438,7 +436,6 @@
             "auto_tagging": "การแท็กอัตโนมัติ",
             "backing_up_database": "กำลังสำรองฐานข้อมูล",
             "backup_and_download": "ทำการสำรองฐานข้อมูลและดาวน์โหลดไฟล์",
-            "backup_database": "ทำการสำรองฐานข้อมูลไปยังไดเร็กทอรีสำรองข้อมูล โดยมีรูปแบบชื่อไฟล์ {filename_format}",
             "cleanup_desc": "ตรวจสอบไฟล์ที่หายไปและลบออกจากฐานข้อมูล นี่คือการกระทำที่ทำลายล้าง",
             "data_management": "การจัดการเดต้า",
             "defaults_set": "มีการตั้งค่าเริ่มต้นและจะใช้เมื่อคลิกปุ่ม {action} บนหน้างาน",
@@ -779,13 +776,7 @@
         "updating_untagged_studios_description": "อัพเดตสตูดิโอที่ยังไม่มีข้อมูลโดยการค้นหาสตูดิโอที่ยังไม่มี stashid และทำการอัปเดตข้อมูล metadata",
         "config": {
             "create_parent_label": "สร้างสตูดิโอบริษัทแม่",
-            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว",
-            "active_stash-box_instance": "Stash-box instance ที่ใช้งาน:",
-            "excluded_fields": "ข้อมูลที่ไม่ต้องการใช้งาน:",
-            "edit_excluded_fields": "แก้ไขประเภทข้อมูลที่ไม่ต้องการใช้งาน",
-            "no_fields_are_excluded": "ไม่มีข้อมูลที่ไม่ต้องการใช้งาน",
-            "no_instances_found": "ไม่พบแหล่งข้อมูล",
-            "these_fields_will_not_be_changed_when_updating_studios": "ข้อมูลประเภทที่เลือกไว้จะไม่ถูกเปลี่ยนแปลงหรืออัปเดต"
+            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว"
         },
         "create_or_tag_parent_studios": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกียวข้องหากยังไม่มี",
         "untagged_studios": "สตูดิโอที่ยังไม่มีข้อมูล",
@@ -922,14 +913,6 @@
         "tag_status": "สถานะการเพิ่มข้อมูล",
         "refresh_tagged_performers": "รีเฟรชนักแสดงที่มีข้อมูลแล้ว",
         "batch_add_performers": "เพิ่มนักแสดงพร้อมกันหลายคน",
-        "config": {
-            "active_stash-box_instance": "แหล่งข้อมูล stash-box ที่เลือกใช้:",
-            "excluded_fields": "ข้อมูลที่ไม่ต้องการใช้งาน:",
-            "no_fields_are_excluded": "ไม่มีข้อมูลที่ไม่ต้องการใช้งาน",
-            "these_fields_will_not_be_changed_when_updating_performers": "ข้อมูลประเภทที่เลือกไว้จะไม่ถูกเปลี่ยนแปลงหรืออัปเดต",
-            "no_instances_found": "ไม่พบแหล่งข้อมูล",
-            "edit_excluded_fields": "แก้ไขประเภทข้อมูลที่ไม่ต้องการใช้งาน"
-        },
         "batch_update_performers": "อัปเดตข้อมูลนักแสดงพร้อมกันหลายคน",
         "network_error": "พบปัญหาเน็ตเวิร์ค",
         "any_names_entered_will_be_queried": "รายชื่อนักแสดงจะถูกเรียกหาข้อมูลจาก stash-box ที่เลือกไว้ โดยจะเลือกเฉพาะข้อมูลที่ตรงกันเท่านั้น",
@@ -1070,10 +1053,6 @@
         "delete_galleries_extra": "…รวมถึงไฟล์ภาพต่างๆ ที่ไม่เกี่ยวข้องกับแกลเลอรีอื่นๆ ด้วย",
         "delete_gallery_files": "ลบโฟลเดอร์แกลเลอรี/ไฟล์ซิปและรูปภาพอื่นๆ ที่ไม่เกี่ยวข้องกับแกลเลอรีอื่นๆ",
         "delete_object_overflow": "…และอีก {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-        "merge_tags": {
-            "destination": "ปลายทาง",
-            "source": "ต้นทาง"
-        },
         "reassign_files": {
             "destination": "ย้ายไปที่"
         },
@@ -1162,7 +1141,6 @@
     "markers": "มาร์คเกอร์",
     "marker_count": "จำนวนมาร์คเกอร์",
     "media_info": {
-        "checksum": "Checksum",
         "audio_codec": "โคเด็คเสียง",
         "phash": "PHash",
         "play_count": "จำนวนครั้งที่เล่น",
@@ -1172,7 +1150,6 @@
             "age_context": "อายุ {age} {years_old} ในเรื่องนี้"
         },
         "downloaded_from": "ดาวน์โหลดมาจาก",
-        "hash": "Hash",
         "play_duration": "ระยะเวลาที่เล่น",
         "stream": "สตรีม",
         "video_codec": "โคเด็ควิดีโอ",

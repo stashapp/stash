@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { StringListSelect, GallerySelect } from "../Shared/Select";
+import { GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
@@ -26,7 +26,7 @@ import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
-import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -41,14 +41,7 @@ import {
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
-
-interface IStashIDsField {
-  values: GQL.StashId[];
-}
-
-const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  return <StringListSelect value={values.map((v) => v.stash_id)} />;
-};
+import { StashIDsField } from "../Shared/StashID";
 
 type MergeOptions = {
   values: GQL.SceneUpdateInput;
@@ -130,12 +123,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     });
 
     return ret;
-  }
-
-  function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
-    return objs.filter((o, i) => {
-      return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
-    });
   }
 
   const [performers, setPerformers] = useState<
@@ -604,6 +591,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           }
           newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
         />
         <ScrapedImageRow
           field="cover_image"

@@ -6,26 +6,26 @@ import (
 )
 
 type Performer struct {
-	ID             int             `json:"id"`
-	Name           string          `json:"name"`
-	Disambiguation string          `json:"disambiguation"`
-	Gender         *GenderEnum     `json:"gender"`
-	Birthdate      *Date           `json:"birthdate"`
-	Ethnicity      string          `json:"ethnicity"`
-	Country        string          `json:"country"`
-	EyeColor       string          `json:"eye_color"`
-	Height         *int            `json:"height"`
-	Measurements   string          `json:"measurements"`
-	FakeTits       string          `json:"fake_tits"`
-	PenisLength    *float64        `json:"penis_length"`
-	Circumcised    *CircumisedEnum `json:"circumcised"`
-	CareerStart    *int            `json:"career_start"`
-	CareerEnd      *int            `json:"career_end"`
-	Tattoos        string          `json:"tattoos"`
-	Piercings      string          `json:"piercings"`
-	Favorite       bool            `json:"favorite"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	ID             int              `json:"id"`
+	Name           string           `json:"name"`
+	Disambiguation string           `json:"disambiguation"`
+	Gender         *GenderEnum      `json:"gender"`
+	Birthdate      *Date            `json:"birthdate"`
+	Ethnicity      string           `json:"ethnicity"`
+	Country        string           `json:"country"`
+	EyeColor       string           `json:"eye_color"`
+	Height         *int             `json:"height"`
+	Measurements   string           `json:"measurements"`
+	FakeTits       string           `json:"fake_tits"`
+	PenisLength    *float64         `json:"penis_length"`
+	Circumcised    *CircumcisedEnum `json:"circumcised"`
+	CareerStart    *Date            `json:"career_start"`
+	CareerEnd      *Date            `json:"career_end"`
+	Tattoos        string           `json:"tattoos"`
+	Piercings      string           `json:"piercings"`
+	Favorite       bool             `json:"favorite"`
+	CreatedAt      time.Time        `json:"created_at"`
+	UpdatedAt      time.Time        `json:"updated_at"`
 	// Rating expressed in 1-100 scale
 	Rating        *int   `json:"rating"`
 	Details       string `json:"details"`
@@ -76,8 +76,8 @@ type PerformerPartial struct {
 	FakeTits       OptionalString
 	PenisLength    OptionalFloat64
 	Circumcised    OptionalString
-	CareerStart    OptionalInt
-	CareerEnd      OptionalInt
+	CareerStart    OptionalDate
+	CareerEnd      OptionalDate
 	Tattoos        OptionalString
 	Piercings      OptionalString
 	Favorite       OptionalBool

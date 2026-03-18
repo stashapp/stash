@@ -28,16 +28,8 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ScrapedTagsRow } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
-import { StringListSelect } from "../Shared/Select";
 import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
-
-interface IStashIDsField {
-  values: GQL.StashId[];
-}
-
-const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  return <StringListSelect value={values.map((v) => v.stash_id)} />;
-};
+import { StashIDsField } from "../Shared/StashID";
 
 interface ITagMergeDetailsProps {
   sources: GQL.TagDataFragment[];
@@ -333,6 +325,9 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
           }
           newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
         />
         <ScrapedImageRow
           field="image"

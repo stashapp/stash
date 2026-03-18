@@ -58,8 +58,6 @@
         "logout": "Log ud",
         "make_primary": "Gør til primær",
         "merge": "Fusioner",
-        "merge_from": "Fusioner fra",
-        "merge_into": "Fusioner til",
         "migrate_blobs": "Migrér Blobs",
         "migrate_scene_screenshots": "Migrér Scene-skærmbilleder",
         "next_action": "Næste",
@@ -133,7 +131,27 @@
         "remove_date": "Fjern dato",
         "assign_stashid_to_parent_studio": "Tildel Stash ID til eksisterende forældre studie og updater metadata",
         "clean_generated": "Rens generede filer",
-        "clear_date_data": "Rens dato data"
+        "clear_date_data": "Rens dato data",
+        "add_sub_groups": "Tilføj undergrupper",
+        "add_stash_id": "Tilføj Stash ID",
+        "create_new": "Skab ny",
+        "encoding_image": "Enkoder billede…",
+        "load": "Hent",
+        "load_filter": "Hent filter",
+        "play": "Afspil",
+        "remove_from_containing_group": "Fjern fra Gruppe",
+        "reset_play_duration": "Nulstil afspilningslængde",
+        "reset_resume_time": "Nulstil genoptag tidspunkt",
+        "reset_cover": "Genskab Standard Cover",
+        "set_cover": "Sæt som Cover",
+        "show_results": "Vis resultater",
+        "show_count_results": "Vis {count} resultater",
+        "sidebar": {
+            "close": "Luk sidepanel",
+            "open": "Åbn sidepanel",
+            "toggle": "Skift sidepanel"
+        },
+        "view_history": "Se historik"
     },
     "actions_name": "Handlinger",
     "age": "Alder",
@@ -176,7 +194,14 @@
             "set_tag_label": "Sæt tags",
             "source": "Kilde",
             "mark_organized_desc": "Sæt scene som Organiseret efter klik på Save knappen.",
-            "mark_organized_label": "Marker som Organiseret ved gem"
+            "mark_organized_label": "Marker som Organiseret ved gem",
+            "errors": {
+                "blacklist_duplicate": "Duplikér blacklist element"
+            },
+            "performer_genders": {
+                "heading": "Skuespilleres køn",
+                "description": "Skuespillere med disse køn vil blive vist når scener tagges."
+            }
         },
         "noun_query": "Query",
         "results": {
@@ -197,7 +222,10 @@
         "verb_scrape_all": "Scrape Alle",
         "verb_submit_fp": "Indsend {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} ikke matchede scener"
+        "verb_toggle_unmatched": "{toggle} ikke matchede scener",
+        "verb_add_as_alias": "Tilføj scrapede navne som alias",
+        "verb_link_existing": "Link til eksisterende",
+        "verb_match_tag": "Match Tag"
     },
     "config": {
         "about": {
@@ -249,7 +277,9 @@
             "successfully_cancelled_temporary_behaviour": "Midlertidig adfærd blev annulleret",
             "until_restart": "indtil genstart",
             "video_sort_order": "Standard Video Sorteringsrækkefølge",
-            "video_sort_order_desc": "Standard rækkefølge til sortering af videoer."
+            "video_sort_order_desc": "Standard rækkefølge til sortering af videoer.",
+            "server_port": "Server Port",
+            "server_port_desc": "Porten som DLNA serveren skal køre på. Kræver DLNA genstart efter ændring."
         },
         "general": {
             "auth": {
@@ -274,7 +304,9 @@
                 "password_desc": "Adgangskode for at få adgang til Stash. Lad tom for at deaktivere brugergodkendelse",
                 "stash-box_integration": "Stash-box integration",
                 "username": "Brugernavn",
-                "username_desc": "Brugernavn for at få adgang til Stash. Lad tom for at deaktivere brugergodkendelse"
+                "username_desc": "Brugernavn for at få adgang til Stash. Lad tom for at deaktivere brugergodkendelse",
+                "log_file_max_size": "Maksimal log størrelse",
+                "log_file_max_size_desc": "Den maksimale størrelse i megabytes for logfilen, før den bliver komprimeret. 0MB betyder slået fra. Kræver genstart."
             },
             "backup_directory_path": {
                 "description": "Mappelokation for SQLite database backup filer",
@@ -314,6 +346,32 @@
                     "input_args": {
                         "desc": "Avanceret: Yderligere argumenter for videreførsel til ffmpeg forinden inputsfeltet, når live video omkodes.",
                         "heading": "FFmpeg Live Omkodning Input Argumenter"
+                    },
+                    "output_args": {
+                        "desc": "Avanceret: Øvrige argumenter som overføres til ffmpeg før output feltet når videoer transkodes live.",
+                        "heading": "FFmpeg Live Trankodning Output Args"
+                    }
+                },
+                "download_ffmpeg": {
+                    "description": "Downloader FFmpeg til konfigurationsmappen og nulstiller ffmpeg and ffprobe mappestier så de hentes fra konfigurationsmappen.",
+                    "heading": "Download FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "Stien til det eksekverbare ffmpeg program (ikke bare mappen). Hvis tom, bliver ffmpeg hentet fra enten miljøet via $PATH, konfigurationsmappen, eller fra $HOME/.stash",
+                    "heading": "FFmpeg Eksekvérbare Sti"
+                },
+                "ffprobe_path": {
+                    "description": "Stien til ffprobes eksekvérbare fil (ikke bare mappen). Hvis tom, bliver ffprobe hentet fra enten miljøet via $PATH, konfigurationsmappen, eller fra $HOME/.stash",
+                    "heading": "FFProbes Eksekvérbare Sti"
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Avanceret: Øvrige argumenter som overføres til ffmpeg før input feltet når video skabes.",
+                        "heading": "FFmpeg Transkodning Input Args"
+                    },
+                    "output_args": {
+                        "desc": "Avanceret: Øvrige argumenter som overføres til ffmpeg før output feltet når videoer skabes.",
+                        "heading": "FFMpeg Transkodning Output Args"
                     }
                 }
             },
@@ -359,7 +417,16 @@
                 "heading": "Sti til Plugins",
                 "description": "Placeringen af plugin konfigurations filer"
             },
-            "gallery_cover_regex_desc": "Regexp bruges til at identificere et billede som galleri cover"
+            "gallery_cover_regex_desc": "Regexp bruges til at identificere et billede som galleri cover",
+            "delete_trash_path": {
+                "description": "Stien slettede filer flyttes til, i stedet for at blive slettet permanent. Efterlad tom hvis filer skal slettes permanent.",
+                "heading": "Sti til Papirkurv"
+            },
+            "funscript_heatmap_draw_range": "Inkludér interval i genererede heatmaps",
+            "funscript_heatmap_draw_range_desc": "Tegn bevægelsesomfang på y-aksen af det genererede heatmap. Eksisterende heatmaps vil blive regenereret efter ændringen.",
+            "gallery_cover_regex_label": "Galleri cover mønster",
+            "hashing": "Hashing",
+            "heatmap_generation": "Funscript Heatmap Generering"
         },
         "library": {
             "exclusions": "Udelukkelser",
@@ -395,7 +462,9 @@
             "endpoint": "Slutpunkt",
             "graphql_endpoint": "GraphQL slutpunkt",
             "name": "Navn",
-            "title": "Stash-box-endepunkter"
+            "title": "Stash-box-endepunkter",
+            "max_requests_per_minute": "Max forespørgsler per minut",
+            "max_requests_per_minute_description": "Bruger standardværdien {defaultValue} hvis sat til 0"
         },
         "system": {
             "transcoding": "Omkodning"
@@ -410,7 +479,6 @@
             "auto_tagging": "Auto tagging",
             "backing_up_database": "Sikkerhedskopiering af database",
             "backup_and_download": "Udfører en sikkerhedskopi af databasen og downloader den resulterende fil.",
-            "backup_database": "Udfører en sikkerhedskopi af databasen til backup-mappen med filnavnsformatet {filename_format}",
             "cleanup_desc": "Tjek for manglende filer og fjern dem fra databasen. Dette er en destruktiv handling.",
             "data_management": "Datastyring",
             "defaults_set": "Standarder er blevet indstillet og vil blive brugt, når du klikker på knappen {action} på siden Opgaver.",
@@ -492,7 +560,8 @@
             "optimise_database": "Forsøg forøgelse af ydelsen ved at analysere og derefter genopbygge hele database filen.",
             "optimise_database_warning": "Advarsel: mens denne opgave kører, hvilken som helst opgave der ændrer databasen vil fejle, og afhængigt af din databasestørrelse, kan det tage flere minutter at gennemføre. Det kræver også som minimum lige så meget ledig diskplads som din database er stor, men 1.5X mere anbefales.",
             "anonymise_and_download": "Laver en anonymiseret kopi af databasen og downloader den endelige fil.",
-            "generate_sprites_during_scan_tooltip": "Sættet af billeder bliver vist under afspilleren for nem navigation."
+            "generate_sprites_during_scan_tooltip": "Sættet af billeder bliver vist under afspilleren for nem navigation.",
+            "anonymise_database": "Laver en kopi af databasen til backupmappen, alle følsomme data anonymiseres. Dette kan herefter gives til andre til fejlsøgnings og debugging formål. Den originale database forbliver uændret. Den anonymiserede database bruger filnavnformatet {filename_format}."
         },
         "tools": {
             "scene_duplicate_checker": "Scene duplikatkontrol",
@@ -815,10 +884,6 @@
             },
             "page_header": "Side {page} / {total}"
         },
-        "merge_tags": {
-            "destination": "Destination",
-            "source": "Kilde"
-        },
         "scene_gen": {
             "force_transcodes": "Tving omkodningsgenerering",
             "force_transcodes_tooltip": "Som standard genereres omkoder kun, når videofilen ikke understøttes i browseren. Når det er aktiveret, genereres omkoder, selv når videofilen ser ud til at være understøttet i browseren.",
@@ -883,7 +948,8 @@
         },
         "reassign_files": {
             "destination": "Gentildel til"
-        }
+        },
+        "delete_alert_to_trash": "Følgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} vil blive flyttet til papirkurv:"
     },
     "dimensions": "Dimensioner",
     "director": "Direktør",
@@ -1010,9 +1076,7 @@
     "measurements": "Målinger",
     "media_info": {
         "audio_codec": "Audio Codec",
-        "checksum": "Kontrolsum",
         "downloaded_from": "Downloadet fra",
-        "hash": "Hash",
         "interactive_speed": "Interaktiv hastighed",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1055,14 +1119,6 @@
         "any_names_entered_will_be_queried": "Alle indtastede navne vil blive forespurgt fra den eksterne Stash-Box-instans og tilføjet, hvis de findes. Kun eksakte matches vil blive betragtet som et match.",
         "batch_add_performers": "Batch Tilføj Kunstnere",
         "batch_update_performers": "Batch Opdater Kunstnere",
-        "config": {
-            "active_stash-box_instance": "Aktiv stash-box instans:",
-            "edit_excluded_fields": "Rediger ekskluderede felter",
-            "excluded_fields": "Udelukkede felter:",
-            "no_fields_are_excluded": "Ingen felter er udelukket",
-            "no_instances_found": "Ingen forekomster fundet",
-            "these_fields_will_not_be_changed_when_updating_performers": "Disse felter ændres ikke ved opdatering af kunstnere."
-        },
         "current_page": "Nuværende side",
         "failed_to_save_performer": "Kunne ikke gemme kunstneren \"{performer}\"",
         "name_already_exists": "Navnet findes allerede",
@@ -1254,7 +1310,8 @@
     "years_old": "år gammel",
     "circumcised": "Omskåret",
     "circumcised_types": {
-        "CUT": ""
+        "CUT": "Omskåret",
+        "UNCUT": "Ej Omskåret"
     },
     "disambiguation": "Fjernelse af flertydighed",
     "distance": "Afstand",
@@ -1329,5 +1386,6 @@
     "history": "Historie",
     "index_of_total": "{index} af {total}",
     "primary_file": "Primær fil",
-    "primary_tag": "Primær Mærke"
+    "primary_tag": "Primær Mærke",
+    "age_on_date": "{age} på produktionstidpunktet"
 }

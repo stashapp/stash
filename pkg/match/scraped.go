@@ -188,6 +188,20 @@ func ScrapedGroup(ctx context.Context, qb GroupNamesFinder, storedID *string, na
 	return
 }
 
+// ScrapedTagHierarchy executes ScrapedTag for the provided tag and its parent.
+func ScrapedTagHierarchy(ctx context.Context, qb models.TagQueryer, s *models.ScrapedTag, stashBoxEndpoint string) error {
+	if err := ScrapedTag(ctx, qb, s, stashBoxEndpoint); err != nil {
+		return err
+	}
+
+	if s.Parent == nil {
+		return nil
+	}
+
+	// Match parent by name only (categories don't have StashDB tag IDs)
+	return ScrapedTag(ctx, qb, s.Parent, "")
+}
+
 // ScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
 func ScrapedTag(ctx context.Context, qb models.TagQueryer, s *models.ScrapedTag, stashBoxEndpoint string) error {

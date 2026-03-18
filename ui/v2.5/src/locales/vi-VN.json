@@ -70,8 +70,6 @@
         "logout": "Đăng xuất",
         "make_primary": "Chính",
         "merge": "Nối",
-        "merge_from": "Nối từ",
-        "merge_into": "Nối vào",
         "migrate_blobs": "Nối Blobs",
         "next_action": "Kế tiếp",
         "not_running": "không khởi chạy",
@@ -445,7 +443,6 @@
             },
             "backing_up_database": "Sao lưu dữ liệu",
             "backup_and_download": "Thực hiện sao lưu cơ sở dữ liệu và tải xuống tệp kết quả.",
-            "backup_database": "Thực hiện sao lưu cơ sở dữ liệu vào thư mục sao lưu (backups), với định dạng tên tệp là {filename_format}",
             "cleanup_desc": "Kiểm tra các tệp bị thiếu và xóa chúng khỏi cơ sở dữ liệu. Đây là hành động có tính phá hủy.",
             "clean_generated": {
                 "blob_files": "Tệp nhị phân (blob)",
@@ -915,10 +912,6 @@
             "destination": "Đích đến",
             "source": "Nguồn",
             "empty_results": "Giá trị điền vào mục Đích đến sẽ không bị thay đổi."
-        },
-        "merge_tags": {
-            "destination": "Đích đến",
-            "source": "Nguồn"
         },
         "performers_found": "Đã tìm thấy {count} diễn viên",
         "reassign_entity_title": "{count, plural, one {Chỉnh lại {singularEntity}} other {Chỉnh lại {pluralEntity}}}",

@@ -60,8 +60,6 @@
         "logout": "Sair",
         "make_primary": "Tornar Primário",
         "merge": "Unir",
-        "merge_from": "Unir do",
-        "merge_into": "Unir em",
         "migrate_blobs": "Migrar Blobs",
         "migrate_scene_screenshots": "Migrar Print da Cena",
         "next_action": "Próximo",
@@ -145,7 +143,16 @@
         "reset_cover": "Restaurar a capa padrão",
         "copy_to_clipboard": "Copiar para a área de transferência",
         "encoding_image": "Codificando imagem…",
-        "reload": "Recarregar"
+        "reload": "Recarregar",
+        "set_cover": "Definir como Capa",
+        "show_results": "Mostrar resultados",
+        "show_count_results": "Mostrar {count} resultados",
+        "sidebar": {
+            "close": "Fechar barra lateral",
+            "open": "Abrir barra lateral",
+            "toggle": "Alternar barra lateral"
+        },
+        "invert_selection": "Inverter Seleção"
     },
     "actions_name": "Ações",
     "age": "Idade",
@@ -194,7 +201,13 @@
             "set_cover_label": "Definir imagem da capa da cena",
             "set_tag_desc": "Anexar etiquetas à cena, sobrescrevendo ou mesclando com as etiquetas existentes na cena.",
             "set_tag_label": "Definir etiquetas",
-            "source": "Fonte"
+            "source": "Fonte",
+            "errors": {
+                "blacklist_duplicate": "Lista negra duplicada"
+            },
+            "performer_genders": {
+                "heading": "Gêneros de artistas"
+            }
         },
         "noun_query": "Query",
         "results": {
@@ -423,7 +436,6 @@
             "auto_tagging": "Etiquetamento automático",
             "backing_up_database": "Backup do banco de dados",
             "backup_and_download": "Executa um backup do banco de dados e baixa do arquivo resultante.",
-            "backup_database": "Executa um backup do banco de dados para o mesmo diretório que o banco de dados, com o formato do nome do arquivo {filename_format}",
             "cleanup_desc": "Verifique os arquivos ausentes removendo-os do banco de dados. Esta é uma ação destrutiva.",
             "data_management": "Gestão de dados",
             "defaults_set": "Opções padrão foram definidas e serão usadas quando clicar o botão {action} na página de Tarefas.",
@@ -462,7 +474,10 @@
                 "source": "Fonte",
                 "source_options": "Opções de {source}",
                 "sources": "Fontes",
-                "strategy": "Estratégia"
+                "strategy": "Estratégia",
+                "skip_single_name_performers": "Pular artistas com nome único que não possuem desambiguação",
+                "skip_single_name_performers_tooltip": "Se isso não estiver ativado, artistas que costumam ser genéricos, como Samantha ou Olga, vão ser combinados",
+                "tag_skipped_performers": "Marcar artistas ignorados com"
             },
             "import_from_exported_json": "Importação de JSON exportado no diretório de metadados. Limpa o banco de dados existente.",
             "incremental_import": "Importação incremental de um arquivo zip de exportação fornecido.",
@@ -622,7 +637,10 @@
                 "description": "Slideshow está disponível em galerias quando no modo de exibição de paredão",
                 "heading": "Atraso do slideshow (segundos)"
             },
-            "title": "Interface de usuário"
+            "title": "Interface de usuário",
+            "performer_list": {
+                "heading": "Lista de artistas"
+            }
         },
         "advanced_mode": "Modo Avançado"
     },
@@ -704,10 +722,6 @@
                 "zoom": "Zoom"
             }
         },
-        "merge_tags": {
-            "destination": "Destino",
-            "source": "Fonte"
-        },
         "scene_gen": {
             "force_transcodes": "Forçar geração de transcodificação",
             "force_transcodes_tooltip": "Por padrão, transcodificações são geradas apenas quando o arquivo de vídeo não é suportado pelo navegador. Quando ativado, transcodificações serão geradas mesmo quando o vídeo parecer ser suportado no navegador.",
@@ -749,7 +763,8 @@
         "scrape_results_existing": "Existem",
         "scrape_results_scraped": "Scrape finalizado",
         "set_image_url_title": "URL da imagem",
-        "unsaved_changes": "Mudanças não salvas. Você tem certeza de que quer sair?"
+        "unsaved_changes": "Mudanças não salvas. Você tem certeza de que quer sair?",
+        "performers_found": "{count} artistas encontrados"
     },
     "dimensions": "Dimensões",
     "director": "Diretor(a)",
@@ -866,9 +881,7 @@
     "measurements": "Medidas",
     "media_info": {
         "audio_codec": "Codec de áudio",
-        "checksum": "Checksum",
         "downloaded_from": "Baixado de",
-        "hash": "Hash",
         "interactive_speed": "Velocidade interativa",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -908,14 +921,6 @@
         "any_names_entered_will_be_queried": "Quaisquer nomes inseridos serão consultados na instância remota do Stash-Box e adicionados caso encontrados. Apenas correspondências exatas serão consideradas.",
         "batch_add_performers": "Adicionar Artistas em Lote",
         "batch_update_performers": "Atualizar Artistas em Lote",
-        "config": {
-            "active_stash-box_instance": "Instância Stash-Box ativa:",
-            "edit_excluded_fields": "Editar Campos Excluídos",
-            "excluded_fields": "Campos excluídos:",
-            "no_fields_are_excluded": "Nenhum campo é excluído",
-            "no_instances_found": "Nenhuma instância encontrada",
-            "these_fields_will_not_be_changed_when_updating_performers": "Estes campos não serão alterados ao atualizar artistas."
-        },
         "current_page": "Página atual",
         "failed_to_save_performer": "Falha ao salvar artista \"{performer}\"",
         "name_already_exists": "Nome já existe",
@@ -1080,7 +1085,8 @@
         "started_auto_tagging": "Etiquetamento automático iniciado",
         "started_generating": "Geração de arquivos multimídia iniciada",
         "started_importing": "Importação iniciada",
-        "updated_entity": "{entity} atualizado(a)"
+        "updated_entity": "{entity} atualizado(a)",
+        "merged_scenes": "Cenas mescladas"
     },
     "total": "Total",
     "true": "Verdadeiro",
@@ -1091,5 +1097,9 @@
     "videos": "Vídeos",
     "view_all": "Ver todos",
     "weight": "Peso",
-    "years_old": "anos"
+    "years_old": "anos",
+    "age_on_date": "{age} na produção",
+    "weight_kg": "Peso (kg)",
+    "unknown_date": "Data desconhecida",
+    "urls": "URLs"
 }

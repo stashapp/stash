@@ -70,3 +70,9 @@ export function sortStoredIdObjects<T extends IHasStoredID>(
 
   return ret;
 }
+
+export function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
+  return objs.filter((o, i) => {
+    return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
+  });
+}

@@ -21,7 +21,6 @@
             "import_warning": "Er du sikker på at du vil importere? Dette vil slette databasen og re-importere fra dine eksporterte metadata."
         },
         "generate_thumb_default": "Generer standard miniatyrbilde",
-        "merge_into": "Slå sammen til",
         "scrape_query": "Skrape forespørsel",
         "reset_play_duration": "Tilbakestill avspillingsvarigheten",
         "reset_resume_time": "Tilbakestill gjenoppta tid",
@@ -59,7 +58,6 @@
         "encoding_image": "Omsetter bilde til kode…",
         "merge": "Slå sammen",
         "created_entity": "Opprettet {entity_type}: {entity_name}",
-        "merge_from": "Slå sammen fra",
         "clean_generated": "Rydd opp i genererte filer",
         "clear": "Fjern",
         "clear_back_image": "Fjern bakbilde",
@@ -456,7 +454,6 @@
             "added_job_to_queue": "La til {operation_name} i jobbkøen",
             "anonymise_and_download": "Lager en anonymisert kopi av databasen og laster ned den resulterende filen.",
             "anonymise_database": "Lager en kopi av databasen i backup-mappen, og anonymiserer all sensitiv informasjon. Denne kan deretter deles med andre for feilsøking og debugging. Den opprinnelige databasen blir ikke endret. Den anonymiserte databasen bruker filnavnformatet {filename_format}.",
-            "backup_database": "Utfører en sikkerhetskopi av databasen til backup-mappen, med filnavnformatet {filename_format}",
             "cleanup_desc": "Sjekk etter manglende filer og fjern dem fra databasen. Dette er en destruktiv handling.",
             "defaults_set": "Standardinnstillinger er satt og vil bli brukt når du klikker på {action}-knappen på Oppgaver-siden.",
             "migrate_scene_screenshots": {
@@ -819,9 +816,7 @@
         },
         "video_codec": "Video Kodek",
         "audio_codec": "Lydkodek",
-        "checksum": "Sjekksum",
         "downloaded_from": "Lastet ned fra",
-        "hash": "Hash",
         "interactive_speed": "Interaktiv hastighet",
         "o_count": "0 Antall",
         "phash": "PHash",
@@ -883,12 +878,6 @@
         "add_new_studios": "Legg til nye studioer",
         "batch_add_studios": "Batch Legg Til Studio",
         "config": {
-            "edit_excluded_fields": "Rediger ekskluderte felt",
-            "excluded_fields": "Ekskluderte felt:",
-            "no_fields_are_excluded": "Ingen felt er ekskludert",
-            "no_instances_found": "Ingen forekomster funnet",
-            "these_fields_will_not_be_changed_when_updating_studios": "Disse feltene vil ikke bli endret når du oppdaterer studioer.",
-            "active_stash-box_instance": "Aktiv stash-box-instans:",
             "create_parent_label": "Lag foreldrestudioer",
             "create_parent_desc": "Opprett manglende foreldrestudioer, eller tagg og oppdater data/bilde for eksisterende foreldrestudioer med nøyaktige navnesamsvar"
         },
@@ -1043,10 +1032,6 @@
         "dont_show_until_updated": "Ikke vis før neste oppdatering",
         "export_include_related_objects": "Inkluder relaterte objekter i eksporten",
         "export_title": "Eksport",
-        "merge_tags": {
-            "destination": "Destinasjon",
-            "source": "Kilde"
-        },
         "performers_found": "{count} utøvere funnet",
         "reassign_entity_title": "{antall, flertall, én {Reassign {singularEntity}} annen {Reassign {pluralEntity}}}",
         "reassign_files": {
@@ -1123,14 +1108,6 @@
     "part_of": "En del av {forelder}",
     "performer_tagger": {
         "batch_update_performers": "Batch Oppdater Skuespillere",
-        "config": {
-            "active_stash-box_instance": "Aktiv stash-box-instans:",
-            "edit_excluded_fields": "Rediger Ekskluderte Felt",
-            "no_fields_are_excluded": "Ingen felt er ekskludert",
-            "no_instances_found": "Ingen forekomster funnet",
-            "excluded_fields": "Ekskluderte felt:",
-            "these_fields_will_not_be_changed_when_updating_performers": "Disse feltene vil ikke bli endret når skuespillerne oppdateres."
-        },
         "network_error": "Nettverksfeil",
         "performer_already_tagged": "Skuespilleren er allerede tagget",
         "number_of_performers_will_be_processed": "{skuespiller_antall} skuespillere vil bli behandlet",

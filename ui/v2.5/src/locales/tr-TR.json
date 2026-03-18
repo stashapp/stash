@@ -49,8 +49,6 @@
         "import": "İçe Aktar…",
         "import_from_file": "Dosyadan içe aktar",
         "merge": "Birleştir",
-        "merge_from": "Buradan birleştir",
-        "merge_into": "Bununla birleştir",
         "next_action": "Sonraki",
         "not_running": "çalışmıyor",
         "open_random": "Rastgele Aç",
@@ -452,7 +450,6 @@
             "auto_tagging": "Otomatik Etiketleme",
             "backing_up_database": "Veritabanı yedekleniyor",
             "backup_and_download": "Veritabanını yedekler ve yedek dosyasını kaydetmenizi sağlar.",
-            "backup_database": "Veritabanı diziniyle aynı yere {filename_format} biçimini kullanarak yedekler",
             "cleanup_desc": "Eksik dosyaları kontrol eder ve veritabanından siler. Bu geri döndürülemez bir işlemdir.",
             "data_management": "Veri yönetimi",
             "defaults_set": "Varsayılanlar ayarlandı. Bundan sonra Görevler sayfasındaki {action} düğmesi bu varsayılanları kullanacak.",
@@ -860,10 +857,6 @@
             },
             "page_header": "Sayfa {page} / {total}"
         },
-        "merge_tags": {
-            "destination": "Hedef Noktası",
-            "source": "Kaynak"
-        },
         "scene_gen": {
             "force_transcodes": "Dönüştürülmüş video oluşturmayı zorla",
             "force_transcodes_tooltip": "Varsayılan olarak, video yalnızca video dosyası tarayıcı tarafından desteklenmediğinde dönüştürülür. Etkinleştirildiğinde, video dosyası tarayıcı tarafından destekleniyorsa bile video dönüştürülür.",
@@ -1032,9 +1025,7 @@
     "measurements": "Beden Ölçüleri",
     "media_info": {
         "audio_codec": "Ses Kodlayıcı",
-        "checksum": "Sağlama Toplamı (checksum)",
         "downloaded_from": "İndirildiği Yer",
-        "hash": "Dosya İmzası (Hash)",
         "interactive_speed": "Etkileşimli Hız",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1246,13 +1237,7 @@
         "add_new_studios": "Yeni Stüdyo Ekle",
         "batch_add_studios": "Toplu Stüdyo Ekle",
         "config": {
-            "excluded_fields": "Hariç tutulan alanlar:",
-            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
-            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
-            "create_parent_label": "Ana stüdyo oluştur",
-            "these_fields_will_not_be_changed_when_updating_studios": "Stüdyolar güncellenirken bu alanlar değişmeyecektir.",
-            "active_stash-box_instance": "Aktif stash-box oturumu:",
-            "no_instances_found": "Oturum bulunamadı"
+            "create_parent_label": "Ana stüdyo oluştur"
         },
         "batch_update_studios": "Stüdyoları Toplu Güncelle",
         "failed_to_save_studio": "Stüdyo kaydedilemedi \"{studio}\"",
@@ -1318,14 +1303,6 @@
     "penis_length_cm": "Penis Uzunluğu (cm)",
     "performer_age": "Oyuncu Yaşı",
     "performer_tagger": {
-        "config": {
-            "excluded_fields": "Hariç tutulan alanlar:",
-            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
-            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
-            "these_fields_will_not_be_changed_when_updating_performers": "Oyuncular güncellenirken bu alanlar değiştirilmeyecektir.",
-            "active_stash-box_instance": "Aktif stash-box oturumu:",
-            "no_instances_found": "Oturum bulunamadı"
-        },
         "current_page": "Geçerli sayfa",
         "network_error": "Ağ Hatası",
         "no_results_found": "Sonuç bulunamadı.",

@@ -111,12 +111,12 @@ type ScannedFile struct {
 }
 
 // AcceptEntry determines if the file entry should be accepted for scanning
-func (s *Scanner) AcceptEntry(ctx context.Context, path string, info fs.FileInfo) bool {
+func (s *Scanner) AcceptEntry(ctx context.Context, path string, info fs.FileInfo, zipFilePath string) bool {
 	// always accept if there's no filters
 	accept := len(s.ScanFilters) == 0
 	for _, filter := range s.ScanFilters {
 		// accept if any filter accepts the file
-		if filter.Accept(ctx, path, info) {
+		if filter.Accept(ctx, path, info, zipFilePath) {
 			accept = true
 			break
 		}
@@ -462,7 +462,11 @@ func (s *Scanner) onNewFile(ctx context.Context, f ScannedFile) (*ScanFileResult
 
 	// determine if the file is renamed from an existing file in the store
 	// do this after decoration so that missing fields can be populated
-	renamed, err := s.handleRename(ctx, file, fp)
+	zipFilePath := ""
+	if f.ZipFile != nil {
+		zipFilePath = f.ZipFile.Base().Path
+	}
+	renamed, err := s.handleRename(ctx, file, fp, zipFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -572,7 +576,7 @@ func (s *Scanner) getFileFS(f *models.BaseFile) (models.FS, error) {
 	return fs.OpenZip(zipPath, zipSize)
 }
 
-func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {
+func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint, zipFilePath string) (models.File, error) {
 	var others []models.File
 
 	for _, tfp := range fp {
@@ -614,7 +618,7 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 				// treat as a move
 				missing = append(missing, other)
 			}
-		case !s.AcceptEntry(ctx, other.Base().Path, info):
+		case !s.AcceptEntry(ctx, other.Base().Path, info, zipFilePath):
 			// #4393 - if the file is no longer in the configured library paths, treat it as a move
 			logger.Debugf("File %q no longer in library paths. Treating as a move.", other.Base().Path)
 			missing = append(missing, other)

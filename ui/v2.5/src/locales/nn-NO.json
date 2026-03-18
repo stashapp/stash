@@ -81,11 +81,9 @@
         "logout": "Logg ut",
         "make_primary": "Set som føretrekt",
         "merge": "Flett",
-        "merge_into": "Flett inn i",
         "migrate_scene_screenshots": "Migrer skjermbilete av scener",
         "download_anonymised": "Last ned anonymisert",
-        "disallow": "Ikkje tillat",
-        "merge_from": "Flett frå"
+        "disallow": "Ikkje tillat"
     },
     "countables": {
         "groups": "{count, plural, one {Gruppe} other {Grupper}}",

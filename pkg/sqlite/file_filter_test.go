@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -81,7 +82,45 @@ func TestFileQuery(t *testing.T) {
 			includeIDs:  []models.FileID{fileIDs[fileIdxInZip]},
 			excludeIdxs: []int{fileIdxStartImageFiles},
 		},
-		// TODO - add more tests for other file filters
+		{
+			name: "hashes md5",
+			filter: &models.FileFilterType{
+				Hashes: []*models.FingerprintFilterInput{
+					{
+						Type:  models.FingerprintTypeMD5,
+						Value: getPrefixedStringValue("file", fileIdxStartVideoFiles, "md5"),
+					},
+				},
+			},
+			includeIdxs: []int{fileIdxStartVideoFiles},
+			excludeIdxs: []int{fileIdxStartImageFiles},
+		},
+		{
+			name: "hashes oshash",
+			filter: &models.FileFilterType{
+				Hashes: []*models.FingerprintFilterInput{
+					{
+						Type:  models.FingerprintTypeOshash,
+						Value: getPrefixedStringValue("file", fileIdxStartVideoFiles, "oshash"),
+					},
+				},
+			},
+			includeIdxs: []int{fileIdxStartVideoFiles},
+			excludeIdxs: []int{fileIdxStartImageFiles},
+		},
+		{
+			name: "hashes phash",
+			filter: &models.FileFilterType{
+				Hashes: []*models.FingerprintFilterInput{
+					{
+						Type:  models.FingerprintTypePhash,
+						Value: utils.PhashToString(getFilePhash(fileIdxStartImageFiles)),
+					},
+				},
+			},
+			includeIdxs: []int{fileIdxStartImageFiles},
+			excludeIdxs: []int{fileIdxStartVideoFiles},
+		},
 	}
 
 	for _, tt := range tests {

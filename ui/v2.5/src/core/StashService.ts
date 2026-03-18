@@ -625,9 +625,8 @@ export const useSceneUpdate = () =>
     },
   });
 
-export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
+export const useBulkSceneUpdate = () =>
   GQL.useBulkSceneUpdateMutation({
-    variables: { input },
     update(cache, result) {
       if (!result.data?.bulkSceneUpdate) return;
 
@@ -1403,9 +1402,8 @@ export const useGroupUpdate = () =>
     },
   });
 
-export const useBulkGroupUpdate = (input: GQL.BulkGroupUpdateInput) =>
+export const useBulkGroupUpdate = () =>
   GQL.useBulkGroupUpdateMutation({
-    variables: { input },
     update(cache, result) {
       if (!result.data?.bulkGroupUpdate) return;
 

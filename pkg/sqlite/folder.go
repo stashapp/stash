@@ -427,9 +427,13 @@ func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.Selec
 // FindAllInPaths returns the all folders that are or are within any of the given paths.
 // Returns all if limit is < 0.
 // Returns all folders if p is empty.
-func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*models.Folder, error) {
+func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit, offset int) ([]*models.Folder, error) {
 	q := qb.selectDataset().Prepared(true)
 	q = qb.allInPaths(q, p)
+
+	if !includeZipContents {
+		q = q.Where(qb.table().Col("zip_file_id").IsNull())
+	}
 
 	if limit > -1 {
 		q = q.Limit(uint(limit))

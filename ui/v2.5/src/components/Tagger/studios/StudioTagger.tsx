@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -6,7 +6,6 @@ import { HashLink } from "react-router-hash-link";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { ModalComponent } from "src/components/Shared/Modal";
 import {
   stashBoxStudioQuery,
   useJobsSubscribe,
@@ -25,11 +24,15 @@ import { ITaggerConfig, STUDIO_FIELDS } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
 import { apolloError } from "src/utils";
-import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { mergeStudioStashIDs } from "../utils";
 import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { useTaggerConfig } from "../config";
+import {
+  BatchUpdateModal,
+  BatchAddModal,
+} from "src/components/Shared/BatchModals";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -37,232 +40,6 @@ type JobFragment = Pick<
 >;
 
 const CLASSNAME = "StudioTagger";
-
-interface IStudioBatchUpdateModal {
-  studios: GQL.StudioDataFragment[];
-  isIdle: boolean;
-  selectedEndpoint: { endpoint: string; index: number };
-  onBatchUpdate: (queryAll: boolean, refresh: boolean) => void;
-  batchAddParents: boolean;
-  setBatchAddParents: (addParents: boolean) => void;
-  close: () => void;
-}
-
-const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
-  studios,
-  isIdle,
-  selectedEndpoint,
-  onBatchUpdate,
-  batchAddParents,
-  setBatchAddParents,
-  close,
-}) => {
-  const intl = useIntl();
-
-  const [queryAll, setQueryAll] = useState(false);
-
-  const [refresh, setRefresh] = useState(false);
-  const { data: allStudios } = GQL.useFindStudiosQuery({
-    variables: {
-      studio_filter: {
-        stash_id_endpoint: {
-          endpoint: selectedEndpoint.endpoint,
-          modifier: refresh
-            ? GQL.CriterionModifier.NotNull
-            : GQL.CriterionModifier.IsNull,
-        },
-      },
-      filter: {
-        per_page: 0,
-      },
-    },
-  });
-
-  const studioCount = useMemo(() => {
-    // get all stash ids for the selected endpoint
-    const filteredStashIDs = studios.map((p) =>
-      p.stash_ids.filter((s) => s.endpoint === selectedEndpoint.endpoint)
-    );
-
-    return queryAll
-      ? allStudios?.findStudios.count
-      : filteredStashIDs.filter((s) =>
-          // if refresh, then we filter out the studios without a stash id
-          // otherwise, we want untagged studios, filtering out those with a stash id
-          refresh ? s.length > 0 : s.length === 0
-        ).length;
-  }, [queryAll, refresh, studios, allStudios, selectedEndpoint.endpoint]);
-
-  return (
-    <ModalComponent
-      show
-      icon={faTags}
-      header={intl.formatMessage({
-        id: "studio_tagger.update_studios",
-      })}
-      accept={{
-        text: intl.formatMessage({
-          id: "studio_tagger.update_studios",
-        }),
-        onClick: () => onBatchUpdate(queryAll, refresh),
-      }}
-      cancel={{
-        text: intl.formatMessage({ id: "actions.cancel" }),
-        variant: "danger",
-        onClick: () => close(),
-      }}
-      disabled={!isIdle}
-    >
-      <Form.Group>
-        <Form.Label>
-          <h6>
-            <FormattedMessage id="studio_tagger.studio_selection" />
-          </h6>
-        </Form.Label>
-        <Form.Check
-          id="query-page"
-          type="radio"
-          name="studio-query"
-          label={<FormattedMessage id="studio_tagger.current_page" />}
-          checked={!queryAll}
-          onChange={() => setQueryAll(false)}
-        />
-        <Form.Check
-          id="query-all"
-          type="radio"
-          name="studio-query"
-          label={intl.formatMessage({
-            id: "studio_tagger.query_all_studios_in_the_database",
-          })}
-          checked={queryAll}
-          onChange={() => setQueryAll(true)}
-        />
-      </Form.Group>
-      <Form.Group>
-        <Form.Label>
-          <h6>
-            <FormattedMessage id="studio_tagger.tag_status" />
-          </h6>
-        </Form.Label>
-        <Form.Check
-          id="untagged-studios"
-          type="radio"
-          name="studio-refresh"
-          label={intl.formatMessage({
-            id: "studio_tagger.untagged_studios",
-          })}
-          checked={!refresh}
-          onChange={() => setRefresh(false)}
-        />
-        <Form.Text>
-          <FormattedMessage id="studio_tagger.updating_untagged_studios_description" />
-        </Form.Text>
-        <Form.Check
-          id="tagged-studios"
-          type="radio"
-          name="studio-refresh"
-          label={intl.formatMessage({
-            id: "studio_tagger.refresh_tagged_studios",
-          })}
-          checked={refresh}
-          onChange={() => setRefresh(true)}
-        />
-        <Form.Text>
-          <FormattedMessage id="studio_tagger.refreshing_will_update_the_data" />
-        </Form.Text>
-        <div className="mt-4">
-          <Form.Check
-            id="add-parent"
-            checked={batchAddParents}
-            label={intl.formatMessage({
-              id: "studio_tagger.create_or_tag_parent_studios",
-            })}
-            onChange={() => setBatchAddParents(!batchAddParents)}
-          />
-        </div>
-      </Form.Group>
-      <b>
-        <FormattedMessage
-          id="studio_tagger.number_of_studios_will_be_processed"
-          values={{
-            studio_count: studioCount,
-          }}
-        />
-      </b>
-    </ModalComponent>
-  );
-};
-
-interface IStudioBatchAddModal {
-  isIdle: boolean;
-  onBatchAdd: (input: string) => void;
-  batchAddParents: boolean;
-  setBatchAddParents: (addParents: boolean) => void;
-  close: () => void;
-}
-
-const StudioBatchAddModal: React.FC<IStudioBatchAddModal> = ({
-  isIdle,
-  onBatchAdd,
-  batchAddParents,
-  setBatchAddParents,
-  close,
-}) => {
-  const intl = useIntl();
-
-  const studioInput = useRef<HTMLTextAreaElement | null>(null);
-
-  return (
-    <ModalComponent
-      show
-      icon={faStar}
-      header={intl.formatMessage({
-        id: "studio_tagger.add_new_studios",
-      })}
-      accept={{
-        text: intl.formatMessage({
-          id: "studio_tagger.add_new_studios",
-        }),
-        onClick: () => {
-          if (studioInput.current) {
-            onBatchAdd(studioInput.current.value);
-          } else {
-            close();
-          }
-        },
-      }}
-      cancel={{
-        text: intl.formatMessage({ id: "actions.cancel" }),
-        variant: "danger",
-        onClick: () => close(),
-      }}
-      disabled={!isIdle}
-    >
-      <Form.Control
-        className="text-input"
-        as="textarea"
-        ref={studioInput}
-        placeholder={intl.formatMessage({
-          id: "studio_tagger.studio_names_or_stashids_separated_by_comma",
-        })}
-        rows={6}
-      />
-      <Form.Text>
-        <FormattedMessage id="studio_tagger.any_names_entered_will_be_queried" />
-      </Form.Text>
-      <div className="mt-2">
-        <Form.Check
-          id="add-parent"
-          checked={batchAddParents}
-          label={intl.formatMessage({
-            id: "studio_tagger.create_or_tag_parent_studios",
-          })}
-          onChange={() => setBatchAddParents(!batchAddParents)}
-        />
-      </div>
-    </ModalComponent>
-  );
-};
 
 interface IStudioTaggerListProps {
   studios: GQL.StudioDataFragment[];
@@ -304,6 +81,24 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   const [batchAddParents, setBatchAddParents] = useState(
     config.createParentStudios || false
   );
+
+  const [batchUpdateRefresh, setBatchUpdateRefresh] = useState(false);
+  const { data: allStudios } = GQL.useFindStudiosQuery({
+    skip: !showBatchUpdate,
+    variables: {
+      studio_filter: {
+        stash_id_endpoint: {
+          endpoint: selectedEndpoint.endpoint,
+          modifier: batchUpdateRefresh
+            ? GQL.CriterionModifier.NotNull
+            : GQL.CriterionModifier.IsNull,
+        },
+      },
+      filter: {
+        per_page: 0,
+      },
+    },
+  });
 
   const [error, setError] = useState<
     Record<string, { message?: string; details?: string } | undefined>
@@ -630,24 +425,31 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   return (
     <Card>
       {showBatchUpdate && (
-        <StudioBatchUpdateModal
+        <BatchUpdateModal
           close={() => setShowBatchUpdate(false)}
           isIdle={isIdle}
           selectedEndpoint={selectedEndpoint}
-          studios={studios}
+          entities={studios}
+          allCount={allStudios?.findStudios.count}
           onBatchUpdate={handleBatchUpdate}
+          onRefreshChange={setBatchUpdateRefresh}
           batchAddParents={batchAddParents}
           setBatchAddParents={setBatchAddParents}
+          localePrefix="studio_tagger"
+          entityName="studio"
+          countVariableName="studio_count"
         />
       )}
 
       {showBatchAdd && (
-        <StudioBatchAddModal
+        <BatchAddModal
           close={() => setShowBatchAdd(false)}
           isIdle={isIdle}
           onBatchAdd={handleBatchAdd}
           batchAddParents={batchAddParents}
           setBatchAddParents={setBatchAddParents}
+          localePrefix="studio_tagger"
+          entityName="studio"
         />
       )}
       <div className="ml-auto mb-3">

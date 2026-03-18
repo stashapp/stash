@@ -157,7 +157,7 @@ input MoveFilesInput {
 
 input SetFingerprintsInput {
   type: String!
-  "an null value will remove the fingerprint"
+  "a null value will remove the fingerprint"
   value: String
 }
 

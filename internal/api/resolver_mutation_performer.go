@@ -52,17 +52,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.FakeTits = translator.string(input.FakeTits)
 	newPerformer.PenisLength = input.PenisLength
 	newPerformer.Circumcised = input.Circumcised
-	newPerformer.CareerStart = input.CareerStart
-	newPerformer.CareerEnd = input.CareerEnd
-	// if career_start/career_end not provided, parse deprecated career_length
-	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
-		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
-		}
-		newPerformer.CareerStart = start
-		newPerformer.CareerEnd = end
-	}
 	newPerformer.Tattoos = translator.string(input.Tattoos)
 	newPerformer.Piercings = translator.string(input.Piercings)
 	newPerformer.Favorite = translator.bool(input.Favorite)
@@ -98,6 +87,25 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate)
 	if err != nil {
 		return nil, fmt.Errorf("converting death date: %w", err)
+	}
+
+	newPerformer.CareerStart, err = translator.datePtr(input.CareerStart)
+	if err != nil {
+		return nil, fmt.Errorf("converting career start: %w", err)
+	}
+	newPerformer.CareerEnd, err = translator.datePtr(input.CareerEnd)
+	if err != nil {
+		return nil, fmt.Errorf("converting career end: %w", err)
+	}
+
+	// if career_start/career_end not provided, parse deprecated career_length
+	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
+		start, end, err := models.ParseYearRangeString(*input.CareerLength)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
+		}
+		newPerformer.CareerStart = start
+		newPerformer.CareerEnd = end
 	}
 
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
@@ -273,18 +281,25 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	// prefer career_start/career_end over deprecated career_length
 	if translator.hasField("career_start") || translator.hasField("career_end") {
-		updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
-		updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
+		var err error
+		updatedPerformer.CareerStart, err = translator.optionalDate(input.CareerStart, "career_start")
+		if err != nil {
+			return nil, fmt.Errorf("converting career start: %w", err)
+		}
+		updatedPerformer.CareerEnd, err = translator.optionalDate(input.CareerEnd, "career_end")
+		if err != nil {
+			return nil, fmt.Errorf("converting career end: %w", err)
+		}
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
-		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
+		start, end, err := models.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
 		}
 		if start != nil {
-			updatedPerformer.CareerStart = models.NewOptionalInt(*start)
+			updatedPerformer.CareerStart = models.NewOptionalDate(*start)
 		}
 		if end != nil {
-			updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
+			updatedPerformer.CareerEnd = models.NewOptionalDate(*end)
 		}
 	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
@@ -444,18 +459,24 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	// prefer career_start/career_end over deprecated career_length
 	if translator.hasField("career_start") || translator.hasField("career_end") {
-		updatedPerformer.CareerStart = translator.optionalInt(input.CareerStart, "career_start")
-		updatedPerformer.CareerEnd = translator.optionalInt(input.CareerEnd, "career_end")
+		updatedPerformer.CareerStart, err = translator.optionalDate(input.CareerStart, "career_start")
+		if err != nil {
+			return nil, fmt.Errorf("converting career start: %w", err)
+		}
+		updatedPerformer.CareerEnd, err = translator.optionalDate(input.CareerEnd, "career_end")
+		if err != nil {
+			return nil, fmt.Errorf("converting career end: %w", err)
+		}
 	} else if translator.hasField("career_length") && input.CareerLength != nil {
-		start, end, err := utils.ParseYearRangeString(*input.CareerLength)
+		start, end, err := models.ParseYearRangeString(*input.CareerLength)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
 		}
 		if start != nil {
-			updatedPerformer.CareerStart = models.NewOptionalInt(*start)
+			updatedPerformer.CareerStart = models.NewOptionalDate(*start)
 		}
 		if end != nil {
-			updatedPerformer.CareerEnd = models.NewOptionalInt(*end)
+			updatedPerformer.CareerEnd = models.NewOptionalDate(*end)
 		}
 	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")

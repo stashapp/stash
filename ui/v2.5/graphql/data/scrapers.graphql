@@ -162,6 +162,11 @@ fragment ScrapedSceneTagData on ScrapedTag {
   name
   description
   alias_list
+  parent {
+    stored_id
+    name
+    description
+  }
   remote_site_id
 }
 

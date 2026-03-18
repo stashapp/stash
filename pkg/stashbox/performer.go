@@ -232,12 +232,12 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	if p.CareerStartYear != nil {
-		cs := *p.CareerStartYear
+		cs := strconv.Itoa(*p.CareerStartYear)
 		sp.CareerStart = &cs
 	}
 
 	if p.CareerEndYear != nil {
-		ce := *p.CareerEndYear
+		ce := strconv.Itoa(*p.CareerEndYear)
 		sp.CareerEnd = &ce
 	}
 
@@ -399,10 +399,12 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		draft.Aliases = &aliases
 	}
 	if performer.CareerStart != nil {
-		draft.CareerStartYear = performer.CareerStart
+		year := performer.CareerStart.Year()
+		draft.CareerStartYear = &year
 	}
 	if performer.CareerEnd != nil {
-		draft.CareerEndYear = performer.CareerEnd
+		year := performer.CareerEnd.Year()
+		draft.CareerEndYear = &year
 	}
 
 	if len(performer.URLs.List()) > 0 {

@@ -227,6 +227,12 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.GroupPartial, err error) {
 	updatedGroup := models.NewGroupPartial()
 
+	updatedGroup.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		err = fmt.Errorf("converting date: %w", err)
+		return
+	}
+	updatedGroup.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
 

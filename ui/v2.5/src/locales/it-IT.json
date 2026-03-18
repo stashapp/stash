@@ -58,8 +58,6 @@
         "logout": "Esci",
         "make_primary": "Rendi Primario",
         "merge": "Unisci",
-        "merge_from": "Unisci da",
-        "merge_into": "Unisci in",
         "next_action": "Prossima",
         "not_running": "non in funzione",
         "open_in_external_player": "Aprire nel lettore esterno",
@@ -136,7 +134,25 @@
         "reload": "Ricarica",
         "remove_date": "Rimuovi la data",
         "view_history": "Visualizza cronologia",
-        "add_sub_groups": "Aggiungi Sottogruppi"
+        "add_sub_groups": "Aggiungi Sottogruppi",
+        "add_stash_id": "Aggiungi ID Stash",
+        "create_new": "Crea nuovo",
+        "load": "Carica",
+        "load_filter": "Carica filtro",
+        "play": "Riproduci",
+        "remove_from_containing_group": "Rimuovi dal Gruppo",
+        "reset_play_duration": "Reimposta la durata di riproduzione",
+        "reset_cover": "Ripristina Copertina Predefinita",
+        "select_directory": "Seleziona cartella",
+        "invert_selection": "Inverti Selezione",
+        "set_cover": "Imposta come Copertina",
+        "show_results": "Mostra risultati",
+        "show_count_results": "Mostra risultati {count}",
+        "sidebar": {
+            "close": "Chiudi barra laterale",
+            "open": "Apri barra laterale",
+            "toggle": "Attiva/disattiva barra laterale"
+        }
     },
     "actions_name": "Azioni",
     "age": "Età",
@@ -179,7 +195,14 @@
             "set_tag_label": "Imposta i tags",
             "source": "Sorgente",
             "mark_organized_desc": "Contrassegna immediatamente la scena come \"ordinata\" quando si clicca sul pulsante Save.",
-            "mark_organized_label": "Contrassegna come \"ordinato\" al salvataggio"
+            "mark_organized_label": "Contrassegna come \"ordinato\" al salvataggio",
+            "errors": {
+                "blacklist_duplicate": "Duplica oggetto blacklistato"
+            },
+            "performer_genders": {
+                "heading": "Genere dell'attore/attrice",
+                "description": "Attori con questi generi saranno mostrati durante il tag delle scene."
+            }
         },
         "noun_query": "Query",
         "results": {
@@ -200,7 +223,10 @@
         "verb_scrape_all": "Scrape Tutto",
         "verb_submit_fp": "Invia {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} scene non uguali"
+        "verb_toggle_unmatched": "{toggle} scene non uguali",
+        "verb_add_as_alias": "aggiungi nomi ottenuti con scrape come alias",
+        "verb_match_tag": "Compara Tag",
+        "verb_scrape_selected": "Scrape Selezionato"
     },
     "config": {
         "about": {
@@ -251,7 +277,8 @@
             "server_display_name_desc": "Nome visualizzato per il server DLNA. Predefinito come {server_name} se lasciato vuoto.",
             "successfully_cancelled_temporary_behaviour": "Funzionamento temporaneo cancellato con successo",
             "until_restart": "fino al riavvio",
-            "video_sort_order": "Ordinamento dei video di default"
+            "video_sort_order": "Ordinamento dei video di default",
+            "server_port": "Porta del server"
         },
         "general": {
             "auth": {
@@ -276,14 +303,17 @@
                 "password_desc": "Password per accedere a Stash. Lasciare vuota per disabilitare l'autenticazione utente",
                 "stash-box_integration": "Integrazione Stash-box",
                 "username": "Nome Utente",
-                "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione"
+                "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione",
+                "log_file_max_size": "Massima grandezza log",
+                "log_file_max_size_desc": "Massima grandezza in megabytes del file di log prima che sia compresso. 0MB è disabilitato. Richiede riavvio."
             },
             "backup_directory_path": {
                 "description": "Percorso della directory per i file di backup del database SQLite",
                 "heading": "Percorso Directory di Backup"
             },
             "blobs_path": {
-                "heading": "Percorso dei dati binari"
+                "heading": "Percorso dei dati binari",
+                "description": "Dove salvare dati binari nel filesystem. Applicabile solo quando si utilizza Filesystem con archiviazione Blob. ATTENZIONE: cambiare questo richiede spostare manualmente i dati esistenti."
             },
             "cache_location": "Percorso della Cartella cache",
             "cache_path_head": "Percorso Cache",
@@ -338,10 +368,41 @@
                 "heading": "Percorso Scraper"
             },
             "scraping": "Scraping",
-            "sqlite_location": "Locazione del file per il database SQLite (richiede riavvio)",
+            "sqlite_location": "Locazione del file per il database SQLite (richiede riavvio) ATTENZIONE: salvare il database su un sistema differente rispetto a dove il server di stash è in funzione (p.es. sulla rete) non è supportato!",
             "video_ext_desc": "Lista di estensioni delimitate da Virgola che saranno identificate come video.",
             "video_ext_head": "Estensioni Video",
-            "video_head": "Video"
+            "video_head": "Video",
+            "delete_trash_path": {
+                "description": "Percorso dove i file cancellati saranno spostati invece di essere cancellati permanentemente. Lasciare vuoto per cancellare permanentemente i file.",
+                "heading": "Percorso cestino"
+            },
+            "blobs_storage": {
+                "description": "Dove salvare dati binari come copertine di scene, attori, studio e tag di immagini. Dopo aver cambiato questo valore, i dati esistenti devono essere migrati usando l'attività \"Migrare Blobs\". Guarda la pagina Attività per la migrazione.",
+                "heading": "Tipo storage per dati binari"
+            },
+            "database": "Database",
+            "ffmpeg": {
+                "download_ffmpeg": {
+                    "heading": "Scarica FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "Percorso per l'eseguibile di FFmpeg (non solo la cartella). Se vuoto, ffmpeg verrà determinato dall'ambiente tramite $PATH, dalla cartella di configurazione, o da $HOME/.stash.",
+                    "heading": "Percorso eseguibile FFmpeg"
+                },
+                "ffprobe_path": {
+                    "description": "Percorso per l'eseguibile di FFprobe (non solo la cartella). Se vuoto, ffprobe verrà determinato dall'ambiente tramite $PATH, dalla cartella di configurazione, o da $HOME/.stash.",
+                    "heading": "Percorso eseguibile FFprobe"
+                },
+                "hardware_acceleration": {
+                    "desc": "Usa l'Hardware disponibile per codificare video per la transcodifica in tempo reale.",
+                    "heading": "Codifica hardware FFmpeg"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Avanzato: Arguments aggiuntivi da passare a FFmpeg nel campo di input prima della transcodifica video in tempo reale"
+                    }
+                }
+            }
         },
         "library": {
             "exclusions": "Esclusioni",
@@ -391,7 +452,6 @@
             "auto_tagging": "Tag Automatico",
             "backing_up_database": "Backup del database",
             "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
-            "backup_database": "Esegue il backup del database nella cartella dei backup, nel formato {filename_format}",
             "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
             "data_management": "Gestione dati",
             "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
@@ -651,7 +711,10 @@
             },
             "title": "Interfaccia Utente"
         },
-        "advanced_mode": "Modalità Avanzata"
+        "advanced_mode": "Modalità Avanzata",
+        "changelog": {
+            "header": "Registro delle modifiche"
+        }
     },
     "configuration": "Configurazione",
     "countables": {
@@ -738,10 +801,6 @@
             "destination": "Destinazione",
             "empty_results": "Il valore del campo destinazione rimarranno inalterati.",
             "source": "Sorgente"
-        },
-        "merge_tags": {
-            "destination": "Destinazione",
-            "source": "Origine"
         },
         "reassign_entity_title": "{count, plural, one {Riassegna {singularEntity}} other {Riassegna {pluralEntity}}}",
         "reassign_files": {
@@ -900,7 +959,7 @@
     "image_count": "Numero Immagini",
     "images": "Immagini",
     "include_parent_tags": "Include tag principali",
-    "include_sub_studios": "Include tag sussidiarie",
+    "include_sub_studios": "Includi Studi sussidiari",
     "include_sub_tags": "Include sotto-tags",
     "instagram": "Instagram",
     "interactive": "Interattivo",
@@ -916,9 +975,7 @@
     "measurements": "Misure",
     "media_info": {
         "audio_codec": "Codec Audio",
-        "checksum": "Checksum",
         "downloaded_from": "Scaricato Da",
-        "hash": "Hash",
         "interactive_speed": "Velocità interattiva",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -960,14 +1017,6 @@
         "any_names_entered_will_be_queried": "Qualsiasi nome inserito sarà richiesto dall'istanza remota Stash-Box e aggiunto se trovato. Solo corrispondenze esatte saranno considerate corrispondenze.",
         "batch_add_performers": "Aggiungi Attori in Blocco",
         "batch_update_performers": "Aggiorna Attori in Blocco",
-        "config": {
-            "active_stash-box_instance": "Istanza stash-box attiva:",
-            "edit_excluded_fields": "Modifica Campi Esclusi",
-            "excluded_fields": "Campi esclusi:",
-            "no_fields_are_excluded": "Nessun campo escluso",
-            "no_instances_found": "Nessuna istanza trovata",
-            "these_fields_will_not_be_changed_when_updating_performers": "Questi campi non saranno modificati quando si aggiorneranno gli attori."
-        },
         "current_page": "Pagina corrente",
         "failed_to_save_performer": "Salvataggio attore/attrice \"{performer}\" fallito",
         "name_already_exists": "Nome già esistente",
@@ -1084,8 +1133,8 @@
         },
         "welcome": {
             "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c '<percorso al file>'</code> o <code>--config '<percorso al file>'</code>.",
-            "in_current_stash_directory": "Nella cartella <code>$HOME/.stash</code>",
-            "in_the_current_working_directory": "Nell'attuale cartella di lavoro",
+            "in_current_stash_directory": "Nella cartella <code>{path}</code>:",
+            "in_the_current_working_directory": "In <code>{path}</code> , attuale cartella di lavoro:",
             "next_step": "Dopo tutto questo, se siete pronti a procedere con la configurazione di un nuovo sistema, scegliete dove vorreste salvare il file di configurazione e premete Prossimo.",
             "store_stash_config": "Dove volete salvare la vostra configurazione di Stash?",
             "unable_to_locate_config": "Se potete leggere questo, allora Stash non ha potuto trovare una configurazione esistente. Questa procedura guidata vi guiderà attraverso il processo per impostare una nuova configurazione.",
@@ -1141,7 +1190,7 @@
         "removed_entity": "Rimosso {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
         "saved_entity": "Salvato/a {entity}",
-        "started_auto_tagging": "Inizato il tag automatico",
+        "started_auto_tagging": "Iniziato il tag automatico",
         "started_generating": "Creazione iniziata",
         "started_importing": "Importazione iniziata",
         "updated_entity": "Aggiornato/a {entity}"
@@ -1172,5 +1221,12 @@
     "circumcised_types": {
         "CUT": "Taglia",
         "UNCUT": "Annulla taglio"
-    }
+    },
+    "studio_tags": "Tag dello Studio",
+    "sub_group": "Sottogruppo",
+    "sub_group_count": "Numero di Sottogruppi",
+    "sub_group_of": "Sottogruppo di {parent}",
+    "sub_group_order": "Ordine Sottogruppi",
+    "sub_groups": "Sottogruppi",
+    "subsidiary_studio_count": "Numero di Studi sussidiari"
 }

@@ -11,7 +11,10 @@ import { StashIDPill } from "src/components/Shared/StashID";
 import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
-import { ScenePreview } from "src/components/Scenes/SceneCard";
+import {
+  ScenePreview,
+  SceneSpecsOverlay,
+} from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";
 import {
   faChevronDown,
@@ -271,6 +274,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
                 vttPath={scene.paths.vtt ?? undefined}
                 onScrubberClick={onScrubberClick}
               />
+              <SceneSpecsOverlay scene={scene} />
               {maybeRenderSpriteIcon()}
             </Link>
           </div>

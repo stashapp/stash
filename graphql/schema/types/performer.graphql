@@ -7,7 +7,7 @@ enum GenderEnum {
   NON_BINARY
 }
 
-enum CircumisedEnum {
+enum CircumcisedEnum {
   CUT
   UNCUT
 }
@@ -29,10 +29,10 @@ type Performer {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumisedEnum
+  circumcised: CircumcisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   alias_list: [String!]!
@@ -78,10 +78,10 @@ input PerformerCreateInput {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumisedEnum
+  circumcised: CircumcisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
@@ -119,10 +119,10 @@ input PerformerUpdateInput {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumisedEnum
+  circumcised: CircumcisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
@@ -165,10 +165,10 @@ input BulkPerformerUpdateInput {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumisedEnum
+  circumcised: CircumcisedEnum
   career_length: String @deprecated(reason: "Use career_start and career_end")
-  career_start: Int
-  career_end: Int
+  career_start: String
+  career_end: String
   tattoos: String
   piercings: String
   "Duplicate aliases and those equal to name will result in an error (case-insensitive)"

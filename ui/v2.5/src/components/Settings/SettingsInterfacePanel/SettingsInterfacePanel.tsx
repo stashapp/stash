@@ -200,6 +200,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ language: v })}
           >
             <option value="af-ZA">Afrikaans (Preview)</option>
+            <option value="ar">Arabic (Preview)</option>
             <option value="bg-BG">Bulgarian (Preview)</option>
             <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
             <option value="ca-ES">Catalan (Preview)</option>

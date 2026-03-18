@@ -247,7 +247,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 	}
 
 	if performerJSON.Circumcised != "" {
-		v := models.CircumisedEnum(performerJSON.Circumcised)
+		v := models.CircumcisedEnum(performerJSON.Circumcised)
 		newPerformer.Circumcised = &v
 	}
 
@@ -285,11 +285,17 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 	}
 
 	// prefer explicit career_start/career_end, fall back to parsing legacy career_length
-	if performerJSON.CareerStart != nil || performerJSON.CareerEnd != nil {
-		newPerformer.CareerStart = performerJSON.CareerStart
-		newPerformer.CareerEnd = performerJSON.CareerEnd
+	if performerJSON.CareerStart != "" || performerJSON.CareerEnd != "" {
+		careerStart, err := models.ParseDate(performerJSON.CareerStart)
+		if err == nil {
+			newPerformer.CareerStart = &careerStart
+		}
+		careerEnd, err := models.ParseDate(performerJSON.CareerEnd)
+		if err == nil {
+			newPerformer.CareerEnd = &careerEnd
+		}
 	} else if performerJSON.CareerLength != "" {
-		start, end, err := utils.ParseYearRangeString(performerJSON.CareerLength)
+		start, end, err := models.ParseYearRangeString(performerJSON.CareerLength)
 		if err != nil {
 			return models.Performer{}, fmt.Errorf("invalid career_length %q: %w", performerJSON.CareerLength, err)
 		}

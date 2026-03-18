@@ -1596,6 +1596,20 @@ func TestImageQueryQ(t *testing.T) {
 	})
 }
 
+func TestImageQueryQ_Details(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		const imageIdx = 3
+
+		q := getImageStringValue(imageIdx, detailsField)
+
+		sqb := db.Image
+
+		imageQueryQ(ctx, t, sqb, q, imageIdx)
+
+		return nil
+	})
+}
+
 func queryImagesWithCount(ctx context.Context, sqb models.ImageReader, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
 	result, err := sqb.Query(ctx, models.ImageQueryOptions{
 		QueryOptions: models.QueryOptions{

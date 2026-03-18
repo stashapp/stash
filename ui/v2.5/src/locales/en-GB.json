@@ -36,6 +36,7 @@
     "create_marker": "Create Marker",
     "create_new": "Create new",
     "create_parent_studio": "Create parent studio",
+    "create_parent_tag": "Create parent tag",
     "created_entity": "Created {entity_type}: {entity_name}",
     "customise": "Customise",
     "delete": "Delete",
@@ -526,6 +527,8 @@
         "zip": "SQLite database file and blob files will be zipped into a single file, with the filename {filename_format}"
       },
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
+      "clean_ignore_zip_contents": "Ignore zip file contents",
+      "clean_ignore_zip_contents_desc": "Faster but will miss files removed inside zip files. Safe to enable if you don't delete files within zips.",
       "clean_generated": {
         "blob_files": "Blob files",
         "description": "Removes generated files without a corresponding database entry.",
@@ -985,6 +988,7 @@
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "edit_entity_count_title": "Edit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
     "imagewall": {
@@ -1147,6 +1151,7 @@
     "warmth": "Warmth"
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
+  "empty_value": "empty",
   "errors": {
     "custom_fields": {
       "duplicate_field": "Field name must be unique",
@@ -1398,6 +1403,7 @@
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
   "scenes_duration": "Scene Duration",
+  "scenes_size": "Scene Size",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",
@@ -1604,6 +1610,11 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_tags": "Batch Add Tags",
     "batch_update_tags": "Batch Update Tags",
+    "config": {
+      "create_parent_desc": "Create missing parent tags from stash-box categories, or tag existing parent tags with exact name matches",
+      "create_parent_label": "Create parent tags"
+    },
+    "create_or_tag_parent_tags": "Create missing or tag existing parent tags",
     "current_page": "Current page",
     "failed_to_save_tag": "Failed to save tag \"{tag}\"",
     "name_already_exists": "Name already exists",

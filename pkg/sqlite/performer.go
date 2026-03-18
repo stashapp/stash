@@ -30,27 +30,29 @@ const (
 )
 
 type performerRow struct {
-	ID                 int         `db:"id" goqu:"skipinsert"`
-	Name               null.String `db:"name"` // TODO: make schema non-nullable
-	Disambigation      zero.String `db:"disambiguation"`
-	Gender             zero.String `db:"gender"`
-	Birthdate          NullDate    `db:"birthdate"`
-	BirthdatePrecision null.Int    `db:"birthdate_precision"`
-	Ethnicity          zero.String `db:"ethnicity"`
-	Country            zero.String `db:"country"`
-	EyeColor           zero.String `db:"eye_color"`
-	Height             null.Int    `db:"height"`
-	Measurements       zero.String `db:"measurements"`
-	FakeTits           zero.String `db:"fake_tits"`
-	PenisLength        null.Float  `db:"penis_length"`
-	Circumcised        zero.String `db:"circumcised"`
-	CareerStart        null.Int    `db:"career_start"`
-	CareerEnd          null.Int    `db:"career_end"`
-	Tattoos            zero.String `db:"tattoos"`
-	Piercings          zero.String `db:"piercings"`
-	Favorite           bool        `db:"favorite"`
-	CreatedAt          Timestamp   `db:"created_at"`
-	UpdatedAt          Timestamp   `db:"updated_at"`
+	ID                   int         `db:"id" goqu:"skipinsert"`
+	Name                 null.String `db:"name"` // TODO: make schema non-nullable
+	Disambigation        zero.String `db:"disambiguation"`
+	Gender               zero.String `db:"gender"`
+	Birthdate            NullDate    `db:"birthdate"`
+	BirthdatePrecision   null.Int    `db:"birthdate_precision"`
+	Ethnicity            zero.String `db:"ethnicity"`
+	Country              zero.String `db:"country"`
+	EyeColor             zero.String `db:"eye_color"`
+	Height               null.Int    `db:"height"`
+	Measurements         zero.String `db:"measurements"`
+	FakeTits             zero.String `db:"fake_tits"`
+	PenisLength          null.Float  `db:"penis_length"`
+	Circumcised          zero.String `db:"circumcised"`
+	CareerStart          NullDate    `db:"career_start"`
+	CareerStartPrecision null.Int    `db:"career_start_precision"`
+	CareerEnd            NullDate    `db:"career_end"`
+	CareerEndPrecision   null.Int    `db:"career_end_precision"`
+	Tattoos              zero.String `db:"tattoos"`
+	Piercings            zero.String `db:"piercings"`
+	Favorite             bool        `db:"favorite"`
+	CreatedAt            Timestamp   `db:"created_at"`
+	UpdatedAt            Timestamp   `db:"updated_at"`
 	// expressed as 1-100
 	Rating             null.Int    `db:"rating"`
 	Details            zero.String `db:"details"`
@@ -83,8 +85,10 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	if o.Circumcised != nil && o.Circumcised.IsValid() {
 		r.Circumcised = zero.StringFrom(o.Circumcised.String())
 	}
-	r.CareerStart = intFromPtr(o.CareerStart)
-	r.CareerEnd = intFromPtr(o.CareerEnd)
+	r.CareerStart = NullDateFromDatePtr(o.CareerStart)
+	r.CareerStartPrecision = datePrecisionFromDatePtr(o.CareerStart)
+	r.CareerEnd = NullDateFromDatePtr(o.CareerEnd)
+	r.CareerEndPrecision = datePrecisionFromDatePtr(o.CareerEnd)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
 	r.Favorite = o.Favorite
@@ -112,8 +116,8 @@ func (r *performerRow) resolve() *models.Performer {
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
 		PenisLength:    nullFloatPtr(r.PenisLength),
-		CareerStart:    nullIntPtr(r.CareerStart),
-		CareerEnd:      nullIntPtr(r.CareerEnd),
+		CareerStart:    r.CareerStart.DatePtr(r.CareerStartPrecision),
+		CareerEnd:      r.CareerEnd.DatePtr(r.CareerEndPrecision),
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
 		Favorite:       r.Favorite,
@@ -134,7 +138,7 @@ func (r *performerRow) resolve() *models.Performer {
 	}
 
 	if r.Circumcised.ValueOrZero() != "" {
-		v := models.CircumisedEnum(r.Circumcised.String)
+		v := models.CircumcisedEnum(r.Circumcised.String)
 		ret.Circumcised = &v
 	}
 
@@ -158,8 +162,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("circumcised", o.Circumcised)
-	r.setNullInt("career_start", o.CareerStart)
-	r.setNullInt("career_end", o.CareerEnd)
+	r.setNullDate("career_start", "career_start_precision", o.CareerStart)
+	r.setNullDate("career_end", "career_end_precision", o.CareerEnd)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
 	r.setBool("favorite", o.Favorite)
@@ -778,6 +782,28 @@ func (qb *PerformerStore) sortByScenesDuration(direction string) string {
 	return " ORDER BY (" + selectPerformerScenesDurationSQL + ") " + direction
 }
 
+// used for sorting by total scene file size
+var selectPerformerScenesSizeSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM({files}.size), 0) FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_files} ON {scenes_files}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN {files} ON {files}.id = {scenes_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_files":      scenesFilesTable,
+		"files":             fileTable,
+	},
+)
+
+func (qb *PerformerStore) sortByScenesSize(direction string) string {
+	return " ORDER BY (" + selectPerformerScenesSizeSQL + ") " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
 	"career_start",
@@ -799,6 +825,7 @@ var performerSortOptions = sortOptions{
 	"rating",
 	"scenes_count",
 	"scenes_duration",
+	"scenes_size",
 	"tag_count",
 	"updated_at",
 	"weight",
@@ -828,6 +855,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
 	case "scenes_duration":
 		sortQuery += qb.sortByScenesDuration(direction)
+	case "scenes_size":
+		sortQuery += qb.sortByScenesSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":

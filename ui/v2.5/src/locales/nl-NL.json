@@ -54,8 +54,6 @@
         "import_from_file": "Importeren uit bestand",
         "logout": "Uitloggen",
         "merge": "Samenvoegen",
-        "merge_from": "Samenvoegen uit",
-        "merge_into": "Samenvoegen naar",
         "next_action": "Volgende",
         "not_running": "niet actief",
         "open_in_external_player": "Openen in externe speler",
@@ -462,7 +460,6 @@
             "auto_tagging": "Automatisch taggen",
             "backing_up_database": "Database back-uppen",
             "backup_and_download": "Voert een backup uit van de database en download het backup bestand.",
-            "backup_database": "Voert een backup van de database uit naar de backup map, met het bestandsformaat {filename_format}",
             "cleanup_desc": "Controleer op missende bestanden en verwijder deze uit de database. Dit is een destructieve handeling.",
             "data_management": "Opslagbeheer",
             "defaults_set": "Standaarden zijn ingesteld en zullen gebruikt worden wanneer de {action} knop op de Taken pagina ingedrukt wordt.",
@@ -807,10 +804,6 @@
                 "zoom": "Zoom"
             }
         },
-        "merge_tags": {
-            "destination": "Bestemming",
-            "source": "Afkomst"
-        },
         "scene_gen": {
             "force_transcodes": "Genereren van transcode forceren",
             "force_transcodes_tooltip": "Standaard worden transcodes alleen gegenereerd als het videobestand niet wordt ondersteund in de browser. Indien ingeschakeld, worden transcodes gegenereerd, zelfs als het videobestand in de browser lijkt te worden ondersteund.",
@@ -986,9 +979,7 @@
     "measurements": "Afmetingen",
     "media_info": {
         "audio_codec": "Audio Codec",
-        "checksum": "Checksum",
         "downloaded_from": "Gedownload van",
-        "hash": "Hash",
         "interactive_speed": "Interactieve snelheid",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1028,14 +1019,6 @@
         "any_names_entered_will_be_queried": "Alle ingevoerde namen worden opgevraagd vanuit de externe Stash-Box-instantie en toegevoegd als ze worden gevonden. Alleen exacte overeenkomsten worden als een overeenkomst beschouwd.",
         "batch_add_performers": "Batch Artiesten toevoegen",
         "batch_update_performers": "Artiesten in batch bewerken",
-        "config": {
-            "active_stash-box_instance": "Actieve stashbox-instantie:",
-            "edit_excluded_fields": "Uitgesloten velden bewerken",
-            "excluded_fields": "Uitgesloten velden:",
-            "no_fields_are_excluded": "Er zijn geen velden uitgesloten",
-            "no_instances_found": "Geen instanties gevonden",
-            "these_fields_will_not_be_changed_when_updating_performers": "Deze velden worden niet gewijzigd bij het updaten van artiesten."
-        },
         "current_page": "Huidige pagina",
         "failed_to_save_performer": "Kan artiest \"{performer}\" niet opslaan",
         "name_already_exists": "Naam bestaat al",
@@ -1229,10 +1212,6 @@
         "query_all_studios_in_the_database": "Alle studio's in de database",
         "current_page": "Huidige pagina",
         "status_tagging_job_queued": "Status: Tagging-taak in de wachtrij",
-        "config": {
-            "no_instances_found": "Geen gevallen gevonden",
-            "these_fields_will_not_be_changed_when_updating_studios": "Deze velden worden niet gewijzigd bij het updaten van studio's."
-        },
         "failed_to_save_studio": "Opslaan van studio “{studio}” mislukt",
         "name_already_exists": "Naam bestaat reeds",
         "network_error": "Netwerkfout",
@@ -1274,5 +1253,8 @@
     },
     "datetime_format": "YYYY-MM-DD HH:MM",
     "sub_group": "Subgroep",
-    "sub_groups": "Subgroepen"
+    "sub_groups": "Subgroepen",
+    "weight_kg": "Gewicht (kg)",
+    "type": "Type",
+    "time_end": "Eindtijd"
 }
