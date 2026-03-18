@@ -90,6 +90,39 @@ const _PerformerSelect: React.FC<
     !configuration?.interface.disableDropdownCreate.performer;
 
   async function loadPerformers(input: string): Promise<Option[]> {
+    const trimmed = input.trim();
+
+    // If the input looks like a GUID, search for stash_id first and return match immediately
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) {
+      const stashFilter = new ListFilterModel(GQL.FilterMode.Performers);
+      stashFilter.searchTerm = "";
+      stashFilter.currentPage = 1;
+      stashFilter.itemsPerPage = maxOptionsShown;
+      stashFilter.sortBy = "name";
+      stashFilter.sortDirection = GQL.SortDirectionEnum.Asc;
+
+      const stashCriterion = stashFilter.makeCriterion(
+        "stash_id_endpoint"
+      ) as unknown as {
+        modifier: GQL.CriterionModifier;
+        value: { endpoint: string; stashID: string };
+      };
+      stashCriterion.modifier = GQL.CriterionModifier.Equals;
+      stashCriterion.value = { endpoint: "", stashID: trimmed };
+      stashFilter.criteria = [stashCriterion as unknown as any];
+
+      const stashQuery = await queryFindPerformersForSelect(stashFilter);
+      const stashMatches = stashQuery.data.findPerformers.performers.slice();
+      if (stashMatches.length > 0) {
+        // Matches found, return them immediately.
+        return stashMatches.map((performer) => ({
+          value: performer.id,
+          object: performer,
+        }));
+      }
+      // If no stash_id matches found, continue with standard name/alias search.
+    }
+    
     const filter = new ListFilterModel(GQL.FilterMode.Performers);
     filter.searchTerm = input;
     filter.currentPage = 1;
