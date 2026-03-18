@@ -1,13 +1,10 @@
 host=ghcr.io
 user=stashapp
 repo=compiler
-version=12
+version=13
 
 VERSION_IMAGE = ${host}/${user}/${repo}:${version}
 LATEST_IMAGE = ${host}/${user}/${repo}:latest
-
-latest:
-	docker build -t ${LATEST_IMAGE} .
 
 latest:
 	docker build -t ${LATEST_IMAGE} .
