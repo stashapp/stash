@@ -32,6 +32,7 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
 import { PerformerPopover } from "./PerformerPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 
 export type SelectObject = {
   id: string;
@@ -103,13 +104,10 @@ const _PerformerSelect: React.FC<
 
       const stashCriterion = stashFilter.makeCriterion(
         "stash_id_endpoint"
-      ) as unknown as {
-        modifier: GQL.CriterionModifier;
-        value: { endpoint: string; stashID: string };
-      };
+      ) as ModifierCriterion<{ endpoint: string; stashID: string }>;
       stashCriterion.modifier = GQL.CriterionModifier.Equals;
       stashCriterion.value = { endpoint: "", stashID: input.trim() };
-      stashFilter.criteria = [stashCriterion as unknown as any];
+      stashFilter.criteria = [stashCriterion];
 
       const stashQuery = await queryFindPerformersForSelect(stashFilter);
       const stashMatches = stashQuery.data.findPerformers.performers.slice();
