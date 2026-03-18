@@ -18,7 +18,8 @@ type ScrapedPerformer {
   cup_size: String
   waist_size: Int
   hip_size: Int
-  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
+  measurements: String
+    @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: String
   circumcised: String
@@ -60,7 +61,8 @@ input ScrapedPerformerInput {
   cup_size: String
   waist_size: Int
   hip_size: Int
-  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
+  measurements: String
+    @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: String
   circumcised: String
