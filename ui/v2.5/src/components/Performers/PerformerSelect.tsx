@@ -91,10 +91,12 @@ const _PerformerSelect: React.FC<
     !configuration?.interface.disableDropdownCreate.performer;
 
   async function loadPerformers(input: string): Promise<Option[]> {
-    
-
     // If the input looks like a GUID, search for stash_id first and return match immediately
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.trim())) {
+    if (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        input.trim()
+      )
+    ) {
       const stashFilter = new ListFilterModel(GQL.FilterMode.Performers);
       stashFilter.searchTerm = "";
       stashFilter.currentPage = 1;
@@ -120,7 +122,7 @@ const _PerformerSelect: React.FC<
       }
       // If no stash_id matches found, continue with standard name/alias search.
     }
-    
+
     const filter = new ListFilterModel(GQL.FilterMode.Performers);
     filter.searchTerm = input;
     filter.currentPage = 1;
