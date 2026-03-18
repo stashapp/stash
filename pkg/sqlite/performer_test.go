@@ -62,10 +62,10 @@ func Test_PerformerStore_Create(t *testing.T) {
 		country        = "country"
 		eyeColor       = "eyeColor"
 		height         = 134
-		bandSize    = 34
-		cupSize     = "DD"
-		waistSize   = 24
-		hipSize     = 36
+		bandSize       = 34
+		cupSize        = "DD"
+		waistSize      = 24
+		hipSize        = 36
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
 		circumcised    = models.CircumcisedEnumCut
@@ -231,10 +231,10 @@ func Test_PerformerStore_Update(t *testing.T) {
 		country        = "country"
 		eyeColor       = "eyeColor"
 		height         = 134
-		bandSize    = 34
-		cupSize     = "DD"
-		waistSize   = 24
-		hipSize     = 36
+		bandSize       = 34
+		cupSize        = "DD"
+		waistSize      = 24
+		hipSize        = 36
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
 		circumcised    = models.CircumcisedEnumCut
@@ -469,10 +469,10 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		country        = "country"
 		eyeColor       = "eyeColor"
 		height         = 143
-		bandSize    = 34
-		cupSize     = "DD"
-		waistSize   = 24
-		hipSize     = 36
+		bandSize       = 34
+		cupSize        = "DD"
+		waistSize      = 24
+		hipSize        = 36
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
 		circumcised    = models.CircumcisedEnumCut
@@ -514,22 +514,22 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 					Values: urls,
 					Mode:   models.RelationshipUpdateModeSet,
 				},
-				Birthdate:    models.NewOptionalDate(birthdate),
-				Ethnicity:    models.NewOptionalString(ethnicity),
-				Country:      models.NewOptionalString(country),
-				EyeColor:     models.NewOptionalString(eyeColor),
-				Height:       models.NewOptionalInt(height),
-				BandSize:  models.NewOptionalInt(bandSize),
-				CupSize:   models.NewOptionalString(cupSize),
-				WaistSize: models.NewOptionalInt(waistSize),
-				HipSize:   models.NewOptionalInt(hipSize),
-				FakeTits:     models.NewOptionalString(fakeTits),
-				PenisLength:  models.NewOptionalFloat64(penisLength),
-				Circumcised:  models.NewOptionalString(circumcised.String()),
-				CareerStart:  models.NewOptionalDate(careerStart),
-				CareerEnd:    models.NewOptionalDate(careerEnd),
-				Tattoos:      models.NewOptionalString(tattoos),
-				Piercings:    models.NewOptionalString(piercings),
+				Birthdate:   models.NewOptionalDate(birthdate),
+				Ethnicity:   models.NewOptionalString(ethnicity),
+				Country:     models.NewOptionalString(country),
+				EyeColor:    models.NewOptionalString(eyeColor),
+				Height:      models.NewOptionalInt(height),
+				BandSize:    models.NewOptionalInt(bandSize),
+				CupSize:     models.NewOptionalString(cupSize),
+				WaistSize:   models.NewOptionalInt(waistSize),
+				HipSize:     models.NewOptionalInt(hipSize),
+				FakeTits:    models.NewOptionalString(fakeTits),
+				PenisLength: models.NewOptionalFloat64(penisLength),
+				Circumcised: models.NewOptionalString(circumcised.String()),
+				CareerStart: models.NewOptionalDate(careerStart),
+				CareerEnd:   models.NewOptionalDate(careerEnd),
+				Tattoos:     models.NewOptionalString(tattoos),
+				Piercings:   models.NewOptionalString(piercings),
 				Aliases: &models.UpdateStrings{
 					Values: aliases,
 					Mode:   models.RelationshipUpdateModeSet,
