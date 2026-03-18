@@ -80,6 +80,16 @@ func (a Args) VideoFilter(vf VideoFilter) Args {
 	return append(a, vf.Args()...)
 }
 
+// FilterComplex adds a -filter_complex argument and returns the result.
+func (a Args) FilterComplex(fc string) Args {
+	return append(a, "-filter_complex", fc)
+}
+
+// Map adds a -map argument and returns the result.
+func (a Args) Map(m string) Args {
+	return append(a, "-map", m)
+}
+
 // VSync adds the VsyncMethod and returns the result.
 func (a Args) VSync(m VSyncMethod) Args {
 	return append(a, m.Args()...)
