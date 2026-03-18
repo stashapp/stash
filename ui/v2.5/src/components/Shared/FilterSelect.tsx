@@ -256,3 +256,10 @@ export interface IFilterIDProps<T> {
   ids?: string[];
   onSelect?: (item: T[]) => void;
 }
+
+export function toOption<T extends IHasID>(item: T): Option<T> {
+  return {
+    value: item.id,
+    object: item,
+  };
+}

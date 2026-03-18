@@ -23,6 +23,7 @@ import {
   IFilterProps,
   IFilterValueProps,
   Option as SelectOption,
+  toOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
@@ -32,7 +33,8 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
 import { PerformerPopover } from "./PerformerPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
-import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
+import { isUUID } from "src/utils/stashIds";
+import { filterByStashID } from "src/models/list-filter/utils";
 
 export type SelectObject = {
   id: string;
@@ -91,52 +93,33 @@ const _PerformerSelect: React.FC<
     !configuration?.interface.disableDropdownCreate.performer;
 
   async function loadPerformers(input: string): Promise<Option[]> {
-    // If the input looks like a GUID, search for stash_id first and return match immediately
-    if (
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        input.trim()
-      )
-    ) {
-      const stashFilter = new ListFilterModel(GQL.FilterMode.Performers);
-      stashFilter.searchTerm = "";
-      stashFilter.currentPage = 1;
-      stashFilter.itemsPerPage = maxOptionsShown;
-      stashFilter.sortBy = "name";
-      stashFilter.sortDirection = GQL.SortDirectionEnum.Asc;
-
-      const stashCriterion = stashFilter.makeCriterion(
-        "stash_id_endpoint"
-      ) as ModifierCriterion<{ endpoint: string; stashID: string }>;
-      stashCriterion.modifier = GQL.CriterionModifier.Equals;
-      stashCriterion.value = { endpoint: "", stashID: input.trim() };
-      stashFilter.criteria = [stashCriterion];
-
-      const stashQuery = await queryFindPerformersForSelect(stashFilter);
-      const stashMatches = stashQuery.data.findPerformers.performers.slice();
-      if (stashMatches.length > 0) {
-        // Matches found, return them immediately.
-        return stashMatches.map((performer) => ({
-          value: performer.id,
-          object: performer,
-        }));
-      }
-      // If no stash_id matches found, continue with standard name/alias search.
-    }
-
     const filter = new ListFilterModel(GQL.FilterMode.Performers);
-    filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
+
+    // If the input looks like a GUID, search for stash_id first and return match immediately
+    if (isUUID(input)) {
+      filterByStashID(filter, input);
+
+      const query = await queryFindPerformersForSelect(filter);
+      const matches = query.data.findPerformers.performers.slice();
+      if (matches.length > 0) {
+        // Matches found, return them immediately.
+        return matches.map(toOption);
+      }
+      // If no stash_id matches found, continue with standard name/alias search.
+      filter.criteria = []; // Clear stash_id criterion to search by name/alias below.
+    }
+
+    filter.searchTerm = input;
+
     const query = await queryFindPerformersForSelect(filter);
     return performerSelectSort(
       input,
       query.data.findPerformers.performers.slice()
-    ).map((performer) => ({
-      value: performer.id,
-      object: performer,
-    }));
+    ).map(toOption);
   }
 
   const PerformerOption: React.FC<OptionProps<Option, boolean>> = (
