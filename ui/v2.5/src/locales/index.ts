@@ -2,6 +2,7 @@ import Countries from "i18n-iso-countries";
 
 export const localeCountries = {
   af: () => import("i18n-iso-countries/langs/af.json"),
+  ar: () => import("i18n-iso-countries/langs/ar.json"),
   bg: () => import("i18n-iso-countries/langs/bg.json"),
   bn: () => import("i18n-iso-countries/langs/bn.json"),
   ca: () => import("i18n-iso-countries/langs/ca.json"),
@@ -56,6 +57,7 @@ export async function registerCountry(locale: string) {
 
 export const localeLoader = {
   afZA: () => import("./af-ZA.json"),
+  ar: () => import("./ar.json"),
   bgBG: () => import("./bg-BG.json"),
   bnBD: () => import("./bn-BD.json"),
   caES: () => import("./ca-ES.json"),
