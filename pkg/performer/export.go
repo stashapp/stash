@@ -28,7 +28,6 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		Ethnicity:      performer.Ethnicity,
 		Country:        performer.Country,
 		EyeColor:       performer.EyeColor,
-		Measurements:   performer.Measurements,
 		FakeTits:       performer.FakeTits,
 		Tattoos:        performer.Tattoos,
 		Piercings:      performer.Piercings,
@@ -38,6 +37,19 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		IgnoreAutoTag:  performer.IgnoreAutoTag,
 		CreatedAt:      json.JSONTime{Time: performer.CreatedAt},
 		UpdatedAt:      json.JSONTime{Time: performer.UpdatedAt},
+	}
+
+	if performer.BandSize != nil {
+		newPerformerJSON.BandSize = *performer.BandSize
+	}
+	if performer.CupSize != "" {
+		newPerformerJSON.CupSize = performer.CupSize
+	}
+	if performer.WaistSize != nil {
+		newPerformerJSON.WaistSize = *performer.WaistSize
+	}
+	if performer.HipSize != nil {
+		newPerformerJSON.HipSize = *performer.HipSize
 	}
 
 	if performer.Gender != nil {

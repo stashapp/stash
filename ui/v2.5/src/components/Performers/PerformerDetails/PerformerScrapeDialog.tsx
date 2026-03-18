@@ -263,11 +263,20 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       props.scraped.penis_length
     )
   );
+  const currentMeasurements = (() => {
+    const { band_size, cup_size, waist_size, hip_size } = props.performer;
+    if (band_size == null && !cup_size && waist_size == null && hip_size == null)
+      return undefined;
+    return [
+      band_size != null ? `${band_size}${cup_size ?? ""}` : undefined,
+      waist_size?.toString(),
+      hip_size?.toString(),
+    ]
+      .filter(Boolean)
+      .join("-");
+  })();
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      props.performer.measurements,
-      props.scraped.measurements
-    )
+    new ScrapeResult<string>(currentMeasurements, props.scraped.measurements)
   );
   const [fakeTits, setFakeTits] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.fake_tits, props.scraped.fake_tits)

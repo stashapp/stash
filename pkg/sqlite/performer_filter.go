@@ -166,7 +166,10 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 
 		intCriterionHandler(heightCmCrit, tableName+".height", nil),
 
-		stringCriterionHandler(filter.Measurements, tableName+".measurements"),
+		intCriterionHandler(filter.BandSize, tableName+".band_size", nil),
+		stringCriterionHandler(filter.CupSize, tableName+".cup_size"),
+		intCriterionHandler(filter.WaistSize, tableName+".waist_size", nil),
+		intCriterionHandler(filter.HipSize, tableName+".hip_size", nil),
 		stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"),
 		floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil),
 
@@ -353,7 +356,7 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 				if err := validateIsMissing(*isMissing, []string{
 					"disambiguation", "gender", "birthdate", "death_date",
 					"ethnicity", "country", "hair_color", "eye_color", "height", "weight",
-					"measurements", "fake_tits", "penis_length", "circumcised",
+					"band_size", "cup_size", "waist_size", "hip_size", "fake_tits", "penis_length", "circumcised",
 					"career_start", "career_end", "tattoos", "piercings", "details", "rating",
 				}); err != nil {
 					f.setError(err)

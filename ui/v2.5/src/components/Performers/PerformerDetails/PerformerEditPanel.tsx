@@ -113,7 +113,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     eye_color: yup.string().ensure(),
     height_cm: yupInputNumber().positive().truncate().nullable().defined(),
     weight: yupInputNumber().positive().truncate().nullable().defined(),
-    measurements: yup.string().ensure(),
+    band_size: yupInputNumber().positive().truncate().nullable().defined(),
+    cup_size: yup.string().ensure(),
+    waist_size: yupInputNumber().positive().truncate().nullable().defined(),
+    hip_size: yupInputNumber().positive().truncate().nullable().defined(),
     fake_tits: yup.string().ensure(),
     penis_length: yupInputNumber().positive().nullable().defined(),
     circumcised: yupInputEnum(GQL.CircumcisedEnum).nullable().defined(),
@@ -143,7 +146,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     eye_color: performer.eye_color ?? "",
     height_cm: performer.height_cm ?? null,
     weight: performer.weight ?? null,
-    measurements: performer.measurements ?? "",
+    band_size: performer.band_size ?? null,
+    cup_size: performer.cup_size ?? "",
+    waist_size: performer.waist_size ?? null,
+    hip_size: performer.hip_size ?? null,
     fake_tits: performer.fake_tits ?? "",
     penis_length: performer.penis_length ?? null,
     circumcised: performer.circumcised ?? null,
@@ -245,8 +251,33 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.height) {
       formik.setFieldValue("height_cm", parseInt(state.height, 10));
     }
-    if (state.measurements) {
-      formik.setFieldValue("measurements", state.measurements);
+    if (state.band_size != null) {
+      formik.setFieldValue("band_size", state.band_size);
+    }
+    if (state.cup_size) {
+      formik.setFieldValue("cup_size", state.cup_size);
+    }
+    if (state.waist_size != null) {
+      formik.setFieldValue("waist_size", state.waist_size);
+    }
+    if (state.hip_size != null) {
+      formik.setFieldValue("hip_size", state.hip_size);
+    }
+    // fallback: parse deprecated measurements string if individual fields not present
+    if (
+      state.band_size == null &&
+      !state.cup_size &&
+      state.waist_size == null &&
+      state.hip_size == null &&
+      state.measurements
+    ) {
+      const m = state.measurements.match(/^(\d+)([A-Za-z]+)-(\d+)-(\d+)$/);
+      if (m) {
+        formik.setFieldValue("band_size", parseInt(m[1], 10));
+        formik.setFieldValue("cup_size", m[2].toUpperCase());
+        formik.setFieldValue("waist_size", parseInt(m[3], 10));
+        formik.setFieldValue("hip_size", parseInt(m[4], 10));
+      }
     }
     if (state.fake_tits) {
       formik.setFieldValue("fake_tits", state.fake_tits);
@@ -739,7 +770,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderSelectField("circumcised", stringCircumMap)}
 
-        {renderInputField("measurements")}
+        {renderInputField("band_size", "number")}
+        {renderInputField("cup_size")}
+        {renderInputField("waist_size", "number")}
+        {renderInputField("hip_size", "number")}
         {renderInputField("fake_tits")}
 
         {renderInputField("tattoos", "textarea")}

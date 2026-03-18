@@ -35,7 +35,10 @@ const sortByOptions = [
   "career_start",
   "career_end",
   "weight",
-  "measurements",
+  "band_size",
+  "cup_size",
+  "waist_size",
+  "hip_size",
   "scenes_duration",
   "scenes_size",
 ]
@@ -76,6 +79,9 @@ const numberCriteria: CriterionType[] = [
   "death_year",
   "age",
   "weight",
+  "band_size",
+  "waist_size",
+  "hip_size",
   "penis_length",
 ];
 
@@ -86,7 +92,7 @@ const stringCriteria: CriterionType[] = [
   "ethnicity",
   "hair_color",
   "eye_color",
-  "measurements",
+  "cup_size",
   "fake_tits",
   "tattoos",
   "piercings",

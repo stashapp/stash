@@ -9,7 +9,10 @@ fragment PerformerData on Performer {
   country
   eye_color
   height_cm
-  measurements
+  band_size
+  cup_size
+  waist_size
+  hip_size
   fake_tits
   penis_length
   circumcised

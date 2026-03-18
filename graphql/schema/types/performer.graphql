@@ -26,7 +26,11 @@ type Performer {
   country: String
   eye_color: String
   height_cm: Int
-  measurements: String
+  band_size: Int
+  cup_size: String
+  waist_size: Int
+  hip_size: Int
+  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: Float
   circumcised: CircumcisedEnum
@@ -75,7 +79,11 @@ input PerformerCreateInput {
   country: String
   eye_color: String
   height_cm: Int
-  measurements: String
+  band_size: Int
+  cup_size: String
+  waist_size: Int
+  hip_size: Int
+  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: Float
   circumcised: CircumcisedEnum
@@ -116,7 +124,11 @@ input PerformerUpdateInput {
   country: String
   eye_color: String
   height_cm: Int
-  measurements: String
+  band_size: Int
+  cup_size: String
+  waist_size: Int
+  hip_size: Int
+  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: Float
   circumcised: CircumcisedEnum
@@ -162,7 +174,11 @@ input BulkPerformerUpdateInput {
   country: String
   eye_color: String
   height_cm: Int
-  measurements: String
+  band_size: Int
+  cup_size: String
+  waist_size: Int
+  hip_size: Int
+  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: Float
   circumcised: CircumcisedEnum

@@ -146,8 +146,17 @@ input PerformerFilterType {
   eye_color: StringCriterionInput
   "Filter by height in cm"
   height_cm: IntCriterionInput
-  "Filter by measurements"
+  "Filter by band size"
+  band_size: IntCriterionInput
+  "Filter by cup size"
+  cup_size: StringCriterionInput
+  "Filter by waist size"
+  waist_size: IntCriterionInput
+  "Filter by hip size"
+  hip_size: IntCriterionInput
+  "Deprecated: use band_size, cup_size, waist_size, hip_size. This filter is non-functional."
   measurements: StringCriterionInput
+    @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   "Filter by fake tits value"
   fake_tits: StringCriterionInput
   "Filter by penis length value"

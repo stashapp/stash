@@ -14,7 +14,11 @@ type ScrapedPerformer {
   country: String
   eye_color: String
   height: String
-  measurements: String
+  band_size: Int
+  cup_size: String
+  waist_size: Int
+  hip_size: Int
+  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: String
   circumcised: String
@@ -52,7 +56,11 @@ input ScrapedPerformerInput {
   country: String
   eye_color: String
   height: String
-  measurements: String
+  band_size: Int
+  cup_size: String
+  waist_size: Int
+  hip_size: Int
+  measurements: String @deprecated(reason: "Use band_size, cup_size, waist_size, hip_size")
   fake_tits: String
   penis_length: String
   circumcised: String

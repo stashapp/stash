@@ -125,6 +125,14 @@ func (r *performerResolver) CareerEnd(ctx context.Context, obj *models.Performer
 	return nil, nil
 }
 
+func (r *performerResolver) Measurements(ctx context.Context, obj *models.Performer) (*string, error) {
+	ret := models.FormatMeasurements(obj.BandSize, obj.CupSize, obj.WaistSize, obj.HipSize)
+	if ret == "" {
+		return nil, nil
+	}
+	return &ret, nil
+}
+
 func (r *performerResolver) CareerLength(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.CareerStart == nil && obj.CareerEnd == nil {
 		return nil, nil

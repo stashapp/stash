@@ -48,7 +48,20 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
 	newPerformer.EyeColor = translator.string(input.EyeColor)
-	newPerformer.Measurements = translator.string(input.Measurements)
+	newPerformer.BandSize = input.BandSize
+	newPerformer.CupSize = translator.string(input.CupSize)
+	newPerformer.WaistSize = input.WaistSize
+	newPerformer.HipSize = input.HipSize
+	// if band_size/cup_size/waist_size/hip_size not provided, parse deprecated measurements
+	if newPerformer.BandSize == nil && newPerformer.CupSize == "" && newPerformer.WaistSize == nil && newPerformer.HipSize == nil && input.Measurements != nil {
+		band, cup, waist, hip, err := models.ParseMeasurementsString(*input.Measurements)
+		if err == nil {
+			newPerformer.BandSize = band
+			newPerformer.CupSize = translator.string(cup)
+			newPerformer.WaistSize = waist
+			newPerformer.HipSize = hip
+		}
+	}
 	newPerformer.FakeTits = translator.string(input.FakeTits)
 	newPerformer.PenisLength = input.PenisLength
 	newPerformer.Circumcised = input.Circumcised
@@ -275,7 +288,20 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
-	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
+	updatedPerformer.BandSize = translator.optionalInt(input.BandSize, "band_size")
+	updatedPerformer.CupSize = translator.optionalString(input.CupSize, "cup_size")
+	updatedPerformer.WaistSize = translator.optionalInt(input.WaistSize, "waist_size")
+	updatedPerformer.HipSize = translator.optionalInt(input.HipSize, "hip_size")
+	// if band_size/cup_size/waist_size/hip_size not provided, parse deprecated measurements
+	if !translator.hasField("band_size") && !translator.hasField("cup_size") && !translator.hasField("waist_size") && !translator.hasField("hip_size") && translator.hasField("measurements") && input.Measurements != nil {
+		band, cup, waist, hip, err := models.ParseMeasurementsString(*input.Measurements)
+		if err == nil {
+			updatedPerformer.BandSize = models.NewOptionalInt(*band)
+			updatedPerformer.CupSize = models.NewOptionalString(*cup)
+			updatedPerformer.WaistSize = models.NewOptionalInt(*waist)
+			updatedPerformer.HipSize = models.NewOptionalInt(*hip)
+		}
+	}
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
@@ -453,7 +479,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
-	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
+	updatedPerformer.BandSize = translator.optionalInt(input.BandSize, "band_size")
+	updatedPerformer.CupSize = translator.optionalString(input.CupSize, "cup_size")
+	updatedPerformer.WaistSize = translator.optionalInt(input.WaistSize, "waist_size")
+	updatedPerformer.HipSize = translator.optionalInt(input.HipSize, "hip_size")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")

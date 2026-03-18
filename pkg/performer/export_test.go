@@ -31,7 +31,7 @@ const (
 	eyeColor       = "eyeColor"
 	fakeTits       = "fakeTits"
 	instagram      = "instagram"
-	measurements   = "measurements"
+	cupSize        = "DD"
 	piercings      = "piercings"
 	tattoos        = "tattoos"
 	twitter        = "twitter"
@@ -50,6 +50,9 @@ var (
 	weight          = 60
 	careerStart, _  = models.ParseDate("2005")
 	careerEnd, _    = models.ParseDate("2015")
+	bandSize        = 34
+	waistSize       = 24
+	hipSize         = 36
 	penisLength     = 1.23
 	circumcisedEnum = models.CircumcisedEnumCut
 	circumcised     = circumcisedEnum.String()
@@ -99,7 +102,10 @@ func createFullPerformer(id int, name string) *models.Performer {
 		Favorite:       true,
 		Gender:         &genderEnum,
 		Height:         &height,
-		Measurements:   measurements,
+		BandSize:       &bandSize,
+		CupSize:        cupSize,
+		WaistSize:      &waistSize,
+		HipSize:        &hipSize,
 		Piercings:      piercings,
 		Tattoos:        tattoos,
 		CreatedAt:      createTime,
@@ -145,7 +151,10 @@ func createFullJSONPerformer(name string, image string, withCustomFields bool) *
 		Favorite:       true,
 		Gender:         gender,
 		Height:         strconv.Itoa(height),
-		Measurements:   measurements,
+		BandSize:       bandSize,
+		CupSize:        cupSize,
+		WaistSize:      waistSize,
+		HipSize:        hipSize,
 		Piercings:      piercings,
 		Tattoos:        tattoos,
 		CreatedAt: json.JSONTime{

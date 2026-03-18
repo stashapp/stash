@@ -385,8 +385,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		v := strconv.Itoa(*performer.Height)
 		draft.Height = &v
 	}
-	if performer.Measurements != "" {
-		draft.Measurements = &performer.Measurements
+	if measurements := models.FormatMeasurements(performer.BandSize, performer.CupSize, performer.WaistSize, performer.HipSize); measurements != "" {
+		draft.Measurements = &measurements
 	}
 	if performer.Piercings != "" {
 		draft.Piercings = &performer.Piercings

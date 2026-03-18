@@ -172,7 +172,11 @@ type ScrapedPerformer struct {
 	Country        *string       `json:"country"`
 	EyeColor       *string       `json:"eye_color"`
 	Height         *string       `json:"height"`
-	Measurements   *string       `json:"measurements"`
+	BandSize       *int          `json:"band_size"`
+	CupSize        *string       `json:"cup_size"`
+	WaistSize      *int          `json:"waist_size"`
+	HipSize        *int          `json:"hip_size"`
+	Measurements   *string       `json:"measurements"` // deprecated: use BandSize/CupSize/WaistSize/HipSize
 	FakeTits       *string       `json:"fake_tits"`
 	PenisLength    *string       `json:"penis_length"`
 	Circumcised    *string       `json:"circumcised"`
@@ -270,8 +274,35 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		}
 	}
 
-	if p.Measurements != nil && !excluded["measurements"] {
-		ret.Measurements = *p.Measurements
+	if p.BandSize != nil && !excluded["band_size"] {
+		ret.BandSize = p.BandSize
+	}
+	if p.CupSize != nil && !excluded["cup_size"] {
+		ret.CupSize = *p.CupSize
+	}
+	if p.WaistSize != nil && !excluded["waist_size"] {
+		ret.WaistSize = p.WaistSize
+	}
+	if p.HipSize != nil && !excluded["hip_size"] {
+		ret.HipSize = p.HipSize
+	}
+	// fallback: parse deprecated measurements string
+	if p.BandSize == nil && p.WaistSize == nil && p.HipSize == nil && p.Measurements != nil && !excluded["measurements"] {
+		band, cup, waist, hip, err := ParseMeasurementsString(*p.Measurements)
+		if err == nil {
+			if !excluded["band_size"] {
+				ret.BandSize = band
+			}
+			if !excluded["cup_size"] {
+				ret.CupSize = *cup
+			}
+			if !excluded["waist_size"] {
+				ret.WaistSize = waist
+			}
+			if !excluded["hip_size"] {
+				ret.HipSize = hip
+			}
+		}
 	}
 	if p.Disambiguation != nil && !excluded["disambiguation"] {
 		ret.Disambiguation = *p.Disambiguation
@@ -411,8 +442,35 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			ret.Weight = NewOptionalInt(w)
 		}
 	}
-	if p.Measurements != nil && !excluded["measurements"] {
-		ret.Measurements = NewOptionalString(*p.Measurements)
+	if p.BandSize != nil && !excluded["band_size"] {
+		ret.BandSize = NewOptionalInt(*p.BandSize)
+	}
+	if p.CupSize != nil && !excluded["cup_size"] {
+		ret.CupSize = NewOptionalString(*p.CupSize)
+	}
+	if p.WaistSize != nil && !excluded["waist_size"] {
+		ret.WaistSize = NewOptionalInt(*p.WaistSize)
+	}
+	if p.HipSize != nil && !excluded["hip_size"] {
+		ret.HipSize = NewOptionalInt(*p.HipSize)
+	}
+	// fallback: parse deprecated measurements string
+	if p.BandSize == nil && p.WaistSize == nil && p.HipSize == nil && p.Measurements != nil && !excluded["measurements"] {
+		band, cup, waist, hip, err := ParseMeasurementsString(*p.Measurements)
+		if err == nil {
+			if !excluded["band_size"] {
+				ret.BandSize = NewOptionalInt(*band)
+			}
+			if !excluded["cup_size"] {
+				ret.CupSize = NewOptionalString(*cup)
+			}
+			if !excluded["waist_size"] {
+				ret.WaistSize = NewOptionalInt(*waist)
+			}
+			if !excluded["hip_size"] {
+				ret.HipSize = NewOptionalInt(*hip)
+			}
+		}
 	}
 	if p.Name != nil && !excluded["name"] {
 		ret.Name = NewOptionalString(*p.Name)

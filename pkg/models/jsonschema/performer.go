@@ -43,9 +43,14 @@ type Performer struct {
 	Country        string   `json:"country,omitempty"`
 	EyeColor       string   `json:"eye_color,omitempty"`
 	// this should be int, but keeping string for backwards compatibility
-	Height        string             `json:"height,omitempty"`
-	Measurements  string             `json:"measurements,omitempty"`
-	FakeTits      string             `json:"fake_tits,omitempty"`
+	Height    string `json:"height,omitempty"`
+	BandSize  int    `json:"band_size,omitempty"`
+	CupSize   string `json:"cup_size,omitempty"`
+	WaistSize int    `json:"waist_size,omitempty"`
+	HipSize   int    `json:"hip_size,omitempty"`
+	// deprecated - for import only
+	Measurements string `json:"measurements,omitempty"`
+	FakeTits     string `json:"fake_tits,omitempty"`
 	PenisLength   float64            `json:"penis_length,omitempty"`
 	Circumcised   string             `json:"circumcised,omitempty"`
 	CareerLength  string             `json:"career_length,omitempty"` // deprecated - for import only

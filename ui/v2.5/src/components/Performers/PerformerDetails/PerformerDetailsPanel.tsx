@@ -154,8 +154,23 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           fullWidth={fullWidth}
         />
         <DetailItem
-          id="measurements"
-          value={performer?.measurements}
+          id="band_size"
+          value={performer?.band_size?.toString()}
+          fullWidth={fullWidth}
+        />
+        <DetailItem
+          id="cup_size"
+          value={performer?.cup_size}
+          fullWidth={fullWidth}
+        />
+        <DetailItem
+          id="waist_size"
+          value={performer?.waist_size?.toString()}
+          fullWidth={fullWidth}
+        />
+        <DetailItem
+          id="hip_size"
+          value={performer?.hip_size?.toString()}
           fullWidth={fullWidth}
         />
         <DetailItem

@@ -15,7 +15,10 @@ type Performer struct {
 	Country        string           `json:"country"`
 	EyeColor       string           `json:"eye_color"`
 	Height         *int             `json:"height"`
-	Measurements   string           `json:"measurements"`
+	BandSize       *int             `json:"band_size"`
+	CupSize        string           `json:"cup_size"`
+	WaistSize      *int             `json:"waist_size"`
+	HipSize        *int             `json:"hip_size"`
 	FakeTits       string           `json:"fake_tits"`
 	PenisLength    *float64         `json:"penis_length"`
 	Circumcised    *CircumcisedEnum `json:"circumcised"`
@@ -72,7 +75,10 @@ type PerformerPartial struct {
 	Country        OptionalString
 	EyeColor       OptionalString
 	Height         OptionalInt
-	Measurements   OptionalString
+	BandSize       OptionalInt
+	CupSize        OptionalString
+	WaistSize      OptionalInt
+	HipSize        OptionalInt
 	FakeTits       OptionalString
 	PenisLength    OptionalFloat64
 	Circumcised    OptionalString

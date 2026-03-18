@@ -40,7 +40,10 @@ type performerRow struct {
 	Country              zero.String `db:"country"`
 	EyeColor             zero.String `db:"eye_color"`
 	Height               null.Int    `db:"height"`
-	Measurements         zero.String `db:"measurements"`
+	BandSize             null.Int    `db:"band_size"`
+	CupSize              zero.String `db:"cup_size"`
+	WaistSize            null.Int    `db:"waist_size"`
+	HipSize              null.Int    `db:"hip_size"`
 	FakeTits             zero.String `db:"fake_tits"`
 	PenisLength          null.Float  `db:"penis_length"`
 	Circumcised          zero.String `db:"circumcised"`
@@ -79,7 +82,10 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Country = zero.StringFrom(o.Country)
 	r.EyeColor = zero.StringFrom(o.EyeColor)
 	r.Height = intFromPtr(o.Height)
-	r.Measurements = zero.StringFrom(o.Measurements)
+	r.BandSize = intFromPtr(o.BandSize)
+	r.CupSize = zero.StringFrom(o.CupSize)
+	r.WaistSize = intFromPtr(o.WaistSize)
+	r.HipSize = intFromPtr(o.HipSize)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
 	r.PenisLength = null.FloatFromPtr(o.PenisLength)
 	if o.Circumcised != nil && o.Circumcised.IsValid() {
@@ -112,9 +118,12 @@ func (r *performerRow) resolve() *models.Performer {
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
 		EyeColor:       r.EyeColor.String,
-		Height:         nullIntPtr(r.Height),
-		Measurements:   r.Measurements.String,
-		FakeTits:       r.FakeTits.String,
+		Height:    nullIntPtr(r.Height),
+		BandSize:  nullIntPtr(r.BandSize),
+		CupSize:   r.CupSize.String,
+		WaistSize: nullIntPtr(r.WaistSize),
+		HipSize:   nullIntPtr(r.HipSize),
+		FakeTits:  r.FakeTits.String,
 		PenisLength:    nullFloatPtr(r.PenisLength),
 		CareerStart:    r.CareerStart.DatePtr(r.CareerStartPrecision),
 		CareerEnd:      r.CareerEnd.DatePtr(r.CareerEndPrecision),
@@ -158,7 +167,10 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("country", o.Country)
 	r.setNullString("eye_color", o.EyeColor)
 	r.setNullInt("height", o.Height)
-	r.setNullString("measurements", o.Measurements)
+	r.setNullInt("band_size", o.BandSize)
+	r.setNullString("cup_size", o.CupSize)
+	r.setNullInt("waist_size", o.WaistSize)
+	r.setNullInt("hip_size", o.HipSize)
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("circumcised", o.Circumcised)
@@ -816,8 +828,11 @@ var performerSortOptions = sortOptions{
 	"last_o_at",
 	"last_played_at",
 	"latest_scene",
-	"measurements",
+	"band_size",
+	"cup_size",
+	"hip_size",
 	"name",
+	"waist_size",
 	"o_counter",
 	"penis_length",
 	"play_count",

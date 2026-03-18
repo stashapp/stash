@@ -1259,7 +1259,11 @@
   },
   "marker_count": "Marker Count",
   "markers": "Markers",
+  "band_size": "Band Size",
+  "cup_size": "Cup Size",
+  "hip_size": "Hip Size",
   "measurements": "Measurements",
+  "waist_size": "Waist Size",
   "media_info": {
     "audio_codec": "Audio Codec",
     "downloaded_from": "Downloaded From",

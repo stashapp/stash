@@ -62,6 +62,23 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
 
   const [loading, setLoading] = useState(true);
 
+  const formatMeasurements = (p: GQL.PerformerDataFragment): string | undefined => {
+    if (
+      p.band_size == null &&
+      !p.cup_size &&
+      p.waist_size == null &&
+      p.hip_size == null
+    )
+      return undefined;
+    return [
+      p.band_size != null ? `${p.band_size}${p.cup_size ?? ""}` : undefined,
+      p.waist_size?.toString(),
+      p.hip_size?.toString(),
+    ]
+      .filter(Boolean)
+      .join("-");
+  };
+
   const [name, setName] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.name)
   );
@@ -99,7 +116,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     new ScrapeResult<string>(dest.penis_length?.toString())
   );
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(dest.measurements)
+    new ScrapeResult<string>(formatMeasurements(dest))
   );
   const [fakeTits, setFakeTits] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.fake_tits)
@@ -261,12 +278,14 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
         !dest.penis_length
       )
     );
+    const destMeasurements = formatMeasurements(dest);
+    const srcMeasurements = formatMeasurements(
+      sources.find(
+        (s) => s.band_size != null || s.cup_size || s.waist_size != null || s.hip_size != null
+      ) ?? ({} as GQL.PerformerDataFragment)
+    );
     setMeasurements(
-      new ScrapeResult(
-        dest.measurements,
-        sources.find((s) => s.measurements)?.measurements,
-        !dest.measurements
-      )
+      new ScrapeResult(destMeasurements, srcMeasurements, !destMeasurements)
     );
     setFakeTits(
       new ScrapeResult(

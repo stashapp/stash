@@ -3,7 +3,9 @@ package models
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 type GenderEnum string
@@ -128,7 +130,15 @@ type PerformerFilterType struct {
 	Height *StringCriterionInput `json:"height"`
 	// Filter by height in centimeters
 	HeightCm *IntCriterionInput `json:"height_cm"`
-	// Filter by measurements
+	// Filter by band size
+	BandSize *IntCriterionInput `json:"band_size"`
+	// Filter by cup size
+	CupSize *StringCriterionInput `json:"cup_size"`
+	// Filter by waist size
+	WaistSize *IntCriterionInput `json:"waist_size"`
+	// Filter by hip size
+	HipSize *IntCriterionInput `json:"hip_size"`
+	// Filter by measurements - deprecated: use band_size/cup_size/waist_size/hip_size
 	Measurements *StringCriterionInput `json:"measurements"`
 	// Filter by fake tits value
 	FakeTits *StringCriterionInput `json:"fake_tits"`
@@ -227,7 +237,11 @@ type PerformerCreateInput struct {
 	EyeColor       *string          `json:"eye_color"`
 	Height         *string          `json:"height"`
 	HeightCm       *int             `json:"height_cm"`
-	Measurements   *string          `json:"measurements"`
+	BandSize       *int             `json:"band_size"`
+	CupSize        *string          `json:"cup_size"`
+	WaistSize      *int             `json:"waist_size"`
+	HipSize        *int             `json:"hip_size"`
+	Measurements   *string          `json:"measurements"` // deprecated: use band_size/cup_size/waist_size/hip_size
 	FakeTits       *string          `json:"fake_tits"`
 	PenisLength    *float64         `json:"penis_length"`
 	Circumcised    *CircumcisedEnum `json:"circumcised"`
@@ -268,7 +282,11 @@ type PerformerUpdateInput struct {
 	EyeColor       *string          `json:"eye_color"`
 	Height         *string          `json:"height"`
 	HeightCm       *int             `json:"height_cm"`
-	Measurements   *string          `json:"measurements"`
+	BandSize       *int             `json:"band_size"`
+	CupSize        *string          `json:"cup_size"`
+	WaistSize      *int             `json:"waist_size"`
+	HipSize        *int             `json:"hip_size"`
+	Measurements   *string          `json:"measurements"` // deprecated: use band_size/cup_size/waist_size/hip_size
 	FakeTits       *string          `json:"fake_tits"`
 	PenisLength    *float64         `json:"penis_length"`
 	Circumcised    *CircumcisedEnum `json:"circumcised"`
@@ -294,4 +312,49 @@ type PerformerUpdateInput struct {
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
 
 	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
+// measurementsRe matches strings like "34DD-24-34" or "34B-24-34"
+// Group 1: band (digits), Group 2: cup (letters), Group 3: waist (digits), Group 4: hip (digits)
+var measurementsRe = regexp.MustCompile(`^(\d+)([A-Za-z]+)-(\d+)-(\d+)$`)
+
+// ParseMeasurementsString parses a measurements string of the form "34DD-24-34"
+// into its constituent parts. Returns an error if the string doesn't match the
+// expected format.
+func ParseMeasurementsString(s string) (bandSize *int, cupSize *string, waistSize *int, hipSize *int, err error) {
+	s = strings.TrimSpace(s)
+	m := measurementsRe.FindStringSubmatch(s)
+	if m == nil {
+		return nil, nil, nil, nil, fmt.Errorf("measurements %q does not match expected format (e.g. 34DD-24-34)", s)
+	}
+
+	band, _ := strconv.Atoi(m[1])
+	cup := strings.ToUpper(m[2])
+	waist, _ := strconv.Atoi(m[3])
+	hip, _ := strconv.Atoi(m[4])
+
+	return &band, &cup, &waist, &hip, nil
+}
+
+// FormatMeasurements formats the individual measurement fields back into the
+// legacy "34DD-24-34" string format. Returns an empty string if all fields are nil/empty.
+func FormatMeasurements(bandSize *int, cupSize string, waistSize *int, hipSize *int) string {
+	if bandSize == nil && cupSize == "" && waistSize == nil && hipSize == nil {
+		return ""
+	}
+
+	band := ""
+	if bandSize != nil {
+		band = strconv.Itoa(*bandSize)
+	}
+	waist := ""
+	if waistSize != nil {
+		waist = strconv.Itoa(*waistSize)
+	}
+	hip := ""
+	if hipSize != nil {
+		hip = strconv.Itoa(*hipSize)
+	}
+
+	return fmt.Sprintf("%s%s-%s-%s", band, cupSize, waist, hip)
 }

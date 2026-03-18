@@ -124,7 +124,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 	endpoint := "endpoint"
 	remoteSiteID := "remoteSiteID"
 
-	const nValues = 19
+	const nValues = 22
 	stringValues := make([]string, nValues)
 	for i := 0; i < nValues; i++ {
 		stringValues[i] = strconv.Itoa(i)
@@ -182,7 +182,10 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				HairColor:      nextVal(),
 				Height:         nextVal(),
 				Weight:         nextVal(),
-				Measurements:   nextVal(),
+				BandSize:       nextIntVal(),
+				CupSize:        nextVal(),
+				WaistSize:      nextIntVal(),
+				HipSize:        nextIntVal(),
 				FakeTits:       nextVal(),
 				CareerStart:    dateStrFromInt(2005),
 				CareerEnd:      dateStrFromInt(2015),
@@ -208,7 +211,10 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				HairColor:      *nextVal(),
 				Height:         nextIntVal(),
 				Weight:         nextIntVal(),
-				Measurements:   *nextVal(),
+				BandSize:       nextIntVal(),
+				CupSize:        *nextVal(),
+				WaistSize:      nextIntVal(),
+				HipSize:        nextIntVal(),
 				FakeTits:       *nextVal(),
 				CareerStart:    dateFromInt(2005),
 				CareerEnd:      dateFromInt(2015),

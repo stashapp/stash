@@ -144,4 +144,6 @@ models:
     fields:
       career_length:
         resolver: true
+      measurements:
+        resolver: true
   

@@ -34,6 +34,10 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   country
   eye_color
   height
+  band_size
+  cup_size
+  waist_size
+  hip_size
   measurements
   fake_tits
   penis_length
@@ -65,6 +69,10 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   country
   eye_color
   height
+  band_size
+  cup_size
+  waist_size
+  hip_size
   measurements
   fake_tits
   penis_length

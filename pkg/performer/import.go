@@ -206,7 +206,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 		Ethnicity:      performerJSON.Ethnicity,
 		Country:        performerJSON.Country,
 		EyeColor:       performerJSON.EyeColor,
-		Measurements:   performerJSON.Measurements,
 		FakeTits:       performerJSON.FakeTits,
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
@@ -281,6 +280,30 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 			newPerformer.Height = &h
 		} else {
 			logger.Warnf("error parsing height %q: %v", performerJSON.Height, err)
+		}
+	}
+
+	// prefer explicit band_size/cup_size/waist_size/hip_size, fall back to parsing legacy measurements
+	if performerJSON.BandSize != 0 || performerJSON.CupSize != "" || performerJSON.WaistSize != 0 || performerJSON.HipSize != 0 {
+		if performerJSON.BandSize != 0 {
+			newPerformer.BandSize = &performerJSON.BandSize
+		}
+		if performerJSON.CupSize != "" {
+			newPerformer.CupSize = performerJSON.CupSize
+		}
+		if performerJSON.WaistSize != 0 {
+			newPerformer.WaistSize = &performerJSON.WaistSize
+		}
+		if performerJSON.HipSize != 0 {
+			newPerformer.HipSize = &performerJSON.HipSize
+		}
+	} else if performerJSON.Measurements != "" {
+		band, cup, waist, hip, err := models.ParseMeasurementsString(performerJSON.Measurements)
+		if err == nil {
+			newPerformer.BandSize = band
+			newPerformer.CupSize = *cup
+			newPerformer.WaistSize = waist
+			newPerformer.HipSize = hip
 		}
 	}
 

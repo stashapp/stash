@@ -102,7 +102,11 @@ export const scrapedPerformerToCreateInput = (
     country: toCreate.country,
     eye_color: toCreate.eye_color,
     height_cm: toCreate.height ? Number(toCreate.height) : undefined,
-    measurements: toCreate.measurements,
+    band_size: toCreate.band_size ?? undefined,
+    cup_size: toCreate.cup_size ?? undefined,
+    waist_size: toCreate.waist_size ?? undefined,
+    hip_size: toCreate.hip_size ?? undefined,
+    measurements: toCreate.measurements ?? undefined, // deprecated fallback
     fake_tits: toCreate.fake_tits,
     career_start: toCreate.career_start,
     career_end: toCreate.career_end,

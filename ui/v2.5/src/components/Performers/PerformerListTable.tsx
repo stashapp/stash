@@ -156,9 +156,18 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <>{performer.ethnicity}</>
   );
 
-  const MeasurementsCell = (performer: GQL.PerformerDataFragment) => (
-    <span className="ellips-data">{performer.measurements}</span>
-  );
+  const MeasurementsCell = (performer: GQL.PerformerDataFragment) => {
+    const parts = [
+      performer.band_size != null
+        ? `${performer.band_size}${performer.cup_size ?? ""}`
+        : undefined,
+      performer.waist_size?.toString(),
+      performer.hip_size?.toString(),
+    ].filter(Boolean);
+    return (
+      <span className="ellips-data">{parts.length ? parts.join("-") : ""}</span>
+    );
+  };
 
   const FakeTitsCell = (performer: GQL.PerformerDataFragment) => (
     <>{performer.fake_tits}</>
