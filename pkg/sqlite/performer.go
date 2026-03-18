@@ -886,6 +886,11 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByLastOAt(direction)
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
+	case "cup_size":
+		// Sort by length first so single-letter cups (A–G) precede double-letter
+		// ones (AA, BB, DD) which precede triple-letter ones (DDD), then
+		// alphabetically within each length group.
+		sortQuery += fmt.Sprintf("LENGTH(performers.cup_size) %s, performers.cup_size %s", direction, direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
