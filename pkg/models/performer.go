@@ -247,9 +247,9 @@ type PerformerCreateInput struct {
 	Tattoos        *string                `json:"tattoos"`
 	Piercings      *string                `json:"piercings"`
 	Aliases        []*PerformerAliasInput `json:"aliases"`
-	AliasList      []string               `json:"alias_list"`
-	Twitter        *string                `json:"twitter"`   // deprecated
-	Instagram      *string                `json:"instagram"` // deprecated
+	AliasList      []string               `json:"alias_list"` // deprecated
+	Twitter        *string                `json:"twitter"`    // deprecated
+	Instagram      *string                `json:"instagram"`  // deprecated
 	Favorite       *bool                  `json:"favorite"`
 	TagIds         []string               `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
@@ -288,9 +288,9 @@ type PerformerUpdateInput struct {
 	Tattoos        *string                      `json:"tattoos"`
 	Piercings      *string                      `json:"piercings"`
 	Aliases        *UpdatePerformerAliasesInput `json:"aliases"`
-	AliasList      []string                     `json:"alias_list"`
-	Twitter        *string                      `json:"twitter"`   // deprecated
-	Instagram      *string                      `json:"instagram"` // deprecated
+	AliasList      []string                     `json:"alias_list"` // deprecated
+	Twitter        *string                      `json:"twitter"`    // deprecated
+	Instagram      *string                      `json:"instagram"`  // deprecated
 	Favorite       *bool                        `json:"favorite"`
 	TagIds         []string                     `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL

@@ -59,13 +59,13 @@ function queryVariables(
 
 function sortResults(
   query: string,
-  performers?: Pick<PerformerDataFragment, "name" | "alias_list" | "id">[]
+  performers?: Pick<PerformerDataFragment, "name" | "aliases" | "id">[]
 ) {
   return sortByRelevance(
     query,
     performers ?? [],
     (p) => p.name,
-    (p) => p.alias_list ?? undefined
+    (p) => p.aliases.map((a) => a.alias)
   ).map((p) => {
     return {
       id: p.id,

@@ -20,7 +20,6 @@ fragment SlimPerformerData on Performer {
   career_end
   tattoos
   piercings
-  alias_list
   aliases {
     ...PerformerAliasData
   }
@@ -42,7 +41,6 @@ fragment SelectPerformerData on Performer {
   id
   name
   disambiguation
-  alias_list
   aliases {
     ...PerformerAliasData
   }

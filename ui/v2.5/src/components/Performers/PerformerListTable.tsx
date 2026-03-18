@@ -89,7 +89,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   const AliasesCell = (performer: GQL.PerformerDataFragment) => {
-    let aliases = performer.alias_list ? performer.alias_list.join(", ") : "";
+    let aliases = performer.aliases
+      ? performer.aliases.map((a) => a.alias).join(", ")
+      : "";
     return (
       <span className="ellips-data" title={aliases}>
         {aliases}

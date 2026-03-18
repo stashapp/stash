@@ -69,7 +69,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     new ScrapeResult<string>(dest.disambiguation)
   );
   const [aliases, setAliases] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(dest.alias_list)
+    new ScrapeResult<string[]>(dest.aliases.map((a) => a.alias))
   );
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.birthdate)
@@ -188,14 +188,18 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     // default alias list should be the existing aliases, plus the names of all sources,
     // plus all source aliases, deduplicated
     const allAliases = uniq(
-      (dest.alias_list ?? []).concat(
+      (dest.aliases.map((a) => a.alias) ?? []).concat(
         sources.map((s) => s.name),
-        sources.flatMap((s) => s.alias_list ?? [])
+        sources.flatMap((s) => s.aliases.map((a) => a.alias) ?? [])
       )
     );
 
     setAliases(
-      new ScrapeResult(dest.alias_list ?? [], allAliases, !!allAliases.length)
+      new ScrapeResult(
+        dest.aliases.map((a) => a.alias) ?? [],
+        allAliases,
+        !!allAliases.length
+      )
     );
     setBirthdate(
       new ScrapeResult(
@@ -648,10 +652,10 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
         id: dest.id,
         name: name.getNewValue(),
         disambiguation: disambiguation.getNewValue(),
-        alias_list: aliases
+        aliases: aliases
           .getNewValue()
-          ?.map((s) => s.trim())
-          .filter((s) => s.length > 0),
+          ?.map((s) => ({ alias: s.trim(), ignore_auto_tag: true }))
+          .filter((a) => a.alias.length > 0),
         birthdate: birthdate.getNewValue(),
         death_date: deathDate.getNewValue(),
         ethnicity: ethnicity.getNewValue(),

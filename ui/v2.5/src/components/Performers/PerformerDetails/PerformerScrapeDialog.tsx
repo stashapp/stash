@@ -217,7 +217,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   );
   const [aliases, setAliases] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      props.performer.alias_list?.join(", "),
+      props.performer.aliases?.map((a) => a.alias).join(", "),
       props.scraped.aliases
     )
   );

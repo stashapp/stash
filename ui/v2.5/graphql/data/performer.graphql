@@ -22,7 +22,6 @@ fragment PerformerData on Performer {
   career_end
   tattoos
   piercings
-  alias_list
   aliases {
     ...PerformerAliasData
   }

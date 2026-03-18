@@ -309,7 +309,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) (models.Perfor
 func toPerformerAliases(aliases []string) []models.PerformerAlias {
 	var res []models.PerformerAlias
 	for _, a := range aliases {
-		res = append(res, models.PerformerAlias{Alias: a, IgnoreAutoTag: false})
+		res = append(res, models.PerformerAlias{Alias: a, IgnoreAutoTag: true})
 	}
 	return res
 }

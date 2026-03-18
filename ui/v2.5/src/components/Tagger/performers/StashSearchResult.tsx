@@ -18,21 +18,6 @@ interface IStashSearchResultProps {
   excludedPerformerFields: string[];
 }
 
-// #4596 - remove any duplicate aliases or aliases that are the same as the performer's name
-function cleanAliases(currentName: string, aliases: string[]) {
-  const ret: string[] = [];
-  aliases.forEach((alias) => {
-    if (
-      alias.toLowerCase() !== currentName.toLowerCase() &&
-      !ret.find((r) => r.toLowerCase() === alias.toLowerCase())
-    ) {
-      ret.push(alias);
-    }
-  });
-
-  return ret;
-}
-
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   performer,
   stashboxPerformers,
@@ -56,10 +41,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
     if (input.stash_ids?.length) {
       input.stash_ids = mergeStashIDs(performer.stash_ids, input.stash_ids);
-    }
-
-    if (input.alias_list) {
-      input.alias_list = cleanAliases(performer.name, input.alias_list);
     }
 
     const updateData: GQL.PerformerUpdateInput = {

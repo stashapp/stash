@@ -252,12 +252,14 @@ export const ScrapedPerformersRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const alias_list: string[] = [];
+      const aliases =
+        p.aliases
+          ?.split(",")
+          .map((a) => ({ alias: a.trim(), ignore_auto_tag: true })) ?? [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
-        alias_list,
-        aliases: [],
+        aliases,
       };
     });
 
@@ -271,8 +273,8 @@ export const ScrapedPerformersRow: React.FC<
             // map the id back to stored_id
             onChangeFn(
               items.map((p) => {
-                const { aliases, ...rest } = p;
-                return { ...rest, stored_id: p.id };
+                const aliases = p.aliases.map((a) => a.alias).join(", ");
+                return { ...p, aliases, stored_id: p.id };
               })
             );
           }
@@ -329,11 +331,10 @@ export const ScrapedGroupsRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const aliases: string = "";
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
-        aliases,
+        aliases: p.aliases ?? "",
       };
     });
 
@@ -347,8 +348,7 @@ export const ScrapedGroupsRow: React.FC<
             // map the id back to stored_id
             onChangeFn(
               items.map((p) => {
-                const { aliases, ...rest } = p;
-                return { ...rest, stored_id: p.id };
+                return { ...p, stored_id: p.id };
               })
             );
           }

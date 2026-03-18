@@ -108,7 +108,7 @@ export const scrapedPerformerToCreateInput = (
     career_end: toCreate.career_end,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
-    alias_list: aliases,
+    aliases: aliases.map((a) => ({ alias: a, ignore_auto_tag: true })),
     urls: toCreate.urls,
     tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
     image:

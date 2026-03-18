@@ -228,8 +228,11 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     } = {
       name: performer.name ?? "",
       disambiguation: performer.disambiguation ?? "",
-      alias_list:
-        performer.aliases?.split(",").map((a) => a.trim()) ?? undefined,
+      aliases:
+        performer.aliases
+          ?.split(",")
+          .map((a) => ({ alias: a.trim(), ignore_auto_tag: true })) ??
+        undefined,
       gender: stringToGender(performer.gender ?? undefined, true),
       birthdate: performer.birthdate,
       ethnicity: performer.ethnicity,
@@ -282,8 +285,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         performerData[k] = undefined;
       }
       // #5565 - special case aliases as the names differ
-      if (k == "alias_list" && excluded.aliases) {
-        performerData.alias_list = undefined;
+      if (k == "aliases" && excluded.aliases) {
+        performerData.aliases = undefined;
       }
     });
 
