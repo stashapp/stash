@@ -227,7 +227,7 @@ func (g *SpriteGenerator) generateSpriteImage() error {
 				return errors.New("invalid frame number conversion")
 			}
 
-			img, err := g.g.SpriteScreenshotSlow(context.TODO(), g.Info.VideoFile.Path, int(frame), g.Config.SpriteSize)
+			img, err := g.g.SpriteScreenshotSlow(context.TODO(), g.Info.VideoFile.Path, int(frame), g.Config.SpriteSize, isPortrait)
 			if err != nil {
 				return err
 			}

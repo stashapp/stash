@@ -38,14 +38,19 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 	return g.generateImage(lockCtx, args)
 }
 
-func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int, width int) (image.Image, error) {
+func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int, size int, isPortrait bool) (image.Image, error) {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
-		Width:      width,
+	}
+
+	if isPortrait {
+		ssOptions.Height = size
+	} else {
+		ssOptions.Width = size
 	}
 
 	args := transcoder.ScreenshotFrame(input, frame, ssOptions)
