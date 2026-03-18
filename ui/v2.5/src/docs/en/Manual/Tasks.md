@@ -16,6 +16,8 @@ You can create `.stashignore` files to exclude specific files or directories fro
 
 Place a `.stashignore` file in any directory within your library. The patterns in that file will apply to all files and subdirectories within that directory. You can have multiple `.stashignore` files at different levels of your directory hierarchy - patterns from parent directories cascade down to child directories.
 
+`.stashignore` files are not read inside zip files.
+
 **Supported patterns:**
 
 | Pattern | Description |
