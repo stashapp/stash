@@ -611,7 +611,9 @@
                 "to_directory": "Vers {directory}",
                 "warning_blobs": "Les fichiers blob ne seront pas inclus dans la sauvegarde. Cela signifie que pour réussir une restauration à partir de sauvegarde, les fichiers blob doivent être présents dans l'emplacement de stockage blob.",
                 "zip": "Les fichiers de base de données SQLite et les fichiers blob seront compressés en un seul fichier, avec comme nom de fichier {filename_format}"
-            }
+            },
+            "clean_ignore_zip_contents": "Ignorer le contenu du fichier zip",
+            "clean_ignore_zip_contents_desc": "Plus rapide, mais les fichiers supprimés à l'intérieur des archives zip seront ignorés. Vous pouvez l'activer sans risque si vous ne supprimez pas de fichiers dans les archives zip."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -1692,5 +1694,6 @@
     "parent_folder": "Répertoire parent",
     "sub_folder_depth": "Profondeur des sous-répertoires (vide pour tous)",
     "sub_folders": "Sous-répertoires",
-    "empty_value": "vide"
+    "empty_value": "vide",
+    "scenes_size": "Taille de la scène"
 }
