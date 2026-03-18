@@ -16,6 +16,8 @@ import { Icon } from "../Icon";
 import { faLink, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 
+import { mergeScrapedAliases } from "src/core/performers";
+
 interface INewScrapedObjects<T> {
   newValues: T[];
   onCreateNew: (value: T) => void;
@@ -252,14 +254,10 @@ export const ScrapedPerformersRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const aliases =
-        p.aliases
-          ?.split(",")
-          .map((a) => ({ alias: a.trim(), ignore_auto_tag: true })) ?? [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
-        aliases,
+        aliases: mergeScrapedAliases(p.aliases),
       };
     });
 

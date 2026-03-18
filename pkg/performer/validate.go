@@ -55,7 +55,7 @@ func ValidateCreate(ctx context.Context, performer models.Performer, qb models.P
 		return err
 	}
 
-	if err := ValidateAliases(performer.Name, performer.Aliases.ToAliases()); err != nil {
+	if err := ValidateAliases(performer.Name, performer.Aliases.List()); err != nil {
 		return err
 	}
 
@@ -83,18 +83,8 @@ func ValidateUpdate(ctx context.Context, id int, partial models.PerformerPartial
 	if err := existing.LoadAliases(ctx, qb); err != nil {
 		return err
 	}
-	var partialAliases *models.UpdateStrings
-	if partial.Aliases != nil {
-		var stringValues []string
-		for _, v := range partial.Aliases.Values {
-			stringValues = append(stringValues, v.Alias)
-		}
-		partialAliases = &models.UpdateStrings{
-			Values: stringValues,
-			Mode:   partial.Aliases.Mode,
-		}
-	}
-	if err := ValidateUpdateAliases(*existing, partial.Name, partialAliases); err != nil {
+
+	if err := ValidateUpdateAliases(*existing, partial.Name, partial.Aliases); err != nil {
 		return err
 	}
 
@@ -205,15 +195,15 @@ func ValidateUpdateName(ctx context.Context, existing models.Performer, name mod
 	return validateName(ctx, newName, newDisambig, &existing.ID, qb)
 }
 
-func ValidateAliases(name string, aliases []string) error {
+func ValidateAliases(name string, aliases []models.PerformerAlias) error {
 	m := make(map[string]bool)
 	nameL := strings.ToLower(name)
 	m[nameL] = true
 
-	for _, alias := range aliases {
-		aliasL := strings.ToLower(alias)
+	for _, a := range aliases {
+		aliasL := strings.ToLower(a.Alias)
 		if m[aliasL] {
-			return &DuplicateAliasError{alias}
+			return &DuplicateAliasError{a.Alias}
 		}
 		m[aliasL] = true
 	}
@@ -221,7 +211,7 @@ func ValidateAliases(name string, aliases []string) error {
 	return nil
 }
 
-func ValidateUpdateAliases(existing models.Performer, name models.OptionalString, aliases *models.UpdateStrings) error {
+func ValidateUpdateAliases(existing models.Performer, name models.OptionalString, aliases *models.UpdatePerformerAliases) error {
 	// if neither name nor aliases is set, don't check anything
 	if !name.Set && aliases == nil {
 		return nil
@@ -234,10 +224,10 @@ func ValidateUpdateAliases(existing models.Performer, name models.OptionalString
 
 	// If aliases is nil, we're only changing the name - check existing aliases against new name
 	if aliases == nil {
-		return ValidateAliases(newName, existing.Aliases.ToAliases())
+		return ValidateAliases(newName, existing.Aliases.List())
 	}
 
-	newAliases := aliases.Apply(existing.Aliases.ToAliases())
+	newAliases := GetEffectiveAliases(existing.Aliases.List(), aliases.Values, aliases.Mode, false)
 
 	return ValidateAliases(newName, newAliases)
 }

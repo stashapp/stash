@@ -19,6 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
 import { StashIDPill } from "../Shared/StashID";
+import { mergeScrapedAliases } from "src/core/performers";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -228,11 +229,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     } = {
       name: performer.name ?? "",
       disambiguation: performer.disambiguation ?? "",
-      aliases:
-        performer.aliases
-          ?.split(",")
-          .map((a) => ({ alias: a.trim(), ignore_auto_tag: true })) ??
-        undefined,
+      aliases: mergeScrapedAliases(performer.aliases) ?? undefined,
       gender: stringToGender(performer.gender ?? undefined, true),
       birthdate: performer.birthdate,
       ethnicity: performer.ethnicity,

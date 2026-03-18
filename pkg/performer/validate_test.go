@@ -167,15 +167,15 @@ func TestValidateAliases(t *testing.T) {
 	tests := []struct {
 		tName   string
 		name    string
-		aliases []string
+		aliases []models.PerformerAlias
 		want    error
 	}{
 		{"no aliases", name1, nil, nil},
-		{"valid aliases", name2, []string{name3, name4}, nil},
-		{"duplicate alias", name1, []string{name2, name3, name2}, &DuplicateAliasError{name2}},
-		{"duplicate name", name4, []string{name4, name3}, &DuplicateAliasError{name4}},
-		{"duplicate alias caps", name2, []string{name1, name1U}, &DuplicateAliasError{name1U}},
-		{"duplicate name caps", name1U, []string{name1}, &DuplicateAliasError{name1}},
+		{"valid aliases", name2, []models.PerformerAlias{{Alias: name3}, {Alias: name4}}, nil},
+		{"duplicate alias", name1, []models.PerformerAlias{{Alias: name2}, {Alias: name3}, {Alias: name2}}, &DuplicateAliasError{name2}},
+		{"duplicate name", name4, []models.PerformerAlias{{Alias: name4}, {Alias: name3}}, &DuplicateAliasError{name4}},
+		{"duplicate alias caps", name2, []models.PerformerAlias{{Alias: name1}, {Alias: name1U}}, &DuplicateAliasError{name1U}},
+		{"duplicate name caps", name1U, []models.PerformerAlias{{Alias: name1}}, &DuplicateAliasError{name1}},
 	}
 
 	for _, tt := range tests {
@@ -209,24 +209,24 @@ func TestValidateUpdateAliases(t *testing.T) {
 	tests := []struct {
 		tName   string
 		name    models.OptionalString
-		aliases []string
+		aliases []models.PerformerAlias
 		want    error
 	}{
 		{"both unset", osUnset, nil, nil},
 		{"name conflicts with alias", os2, nil, &DuplicateAliasError{name2}},
 		{"valid name set", os3, nil, nil},
-		{"valid aliases empty", os1, []string{}, nil},
-		{"alias matches name", osUnset, []string{name1U}, &DuplicateAliasError{name1U}},
-		{"valid aliases set", osUnset, []string{name3, name2}, nil},
-		{"alias matches new name", os4, []string{name4}, &DuplicateAliasError{name4}},
-		{"valid both set", os2, []string{name1}, nil},
+		{"valid aliases empty", os1, []models.PerformerAlias{}, nil},
+		{"alias matches name", osUnset, []models.PerformerAlias{{Alias: name1U}}, &DuplicateAliasError{name1U}},
+		{"valid aliases set", osUnset, []models.PerformerAlias{{Alias: name3}, {Alias: name2}}, nil},
+		{"alias matches new name", os4, []models.PerformerAlias{{Alias: name4}}, &DuplicateAliasError{name4}},
+		{"valid both set", os2, []models.PerformerAlias{{Alias: name1}}, nil},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.tName, func(t *testing.T) {
-			var aliases *models.UpdateStrings
+			var aliases *models.UpdatePerformerAliases
 			if tt.aliases != nil {
-				aliases = &models.UpdateStrings{
+				aliases = &models.UpdatePerformerAliases{
 					Values: tt.aliases,
 					Mode:   models.RelationshipUpdateModeSet,
 				}

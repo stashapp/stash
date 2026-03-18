@@ -86,7 +86,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		Name:           name,
 		Disambiguation: disambiguation,
 		URLs:           models.NewRelatedStrings([]string{url, twitter, instagram}),
-		Aliases:        models.NewRelatedPerformerAliases([]models.PerformerAlias{{Alias: aliases[0], IgnoreAutoTag: false}, {Alias: aliases[1], IgnoreAutoTag: false}}),
+		Aliases:        models.NewRelatedPerformerAliases([]models.PerformerAlias{{Alias: aliases[0], IgnoreAutoTag: true}, {Alias: aliases[1], IgnoreAutoTag: true}}),
 		Birthdate:      &birthDate,
 		CareerStart:    &careerStart,
 		CareerEnd:      &careerEnd,

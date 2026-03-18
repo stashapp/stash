@@ -83,16 +83,56 @@ export function sortPerformers<T extends IPerformerFragment>(performers: T[]) {
   return ret;
 }
 
+export function normalizeAliases(
+  aliases: GQL.PerformerAliasInput[]
+): GQL.PerformerAliasInput[] {
+  const aliasesMap = new Map<string, boolean>();
+  aliases.forEach((a) => {
+    const existing = aliasesMap.get(a.alias);
+    // If duplicates exist, and their ignore_auto_tag differs, we default to true (ignore auto tag)
+    const safeIgnore =
+      existing === undefined
+        ? a.ignore_auto_tag
+        : existing || a.ignore_auto_tag;
+    aliasesMap.set(a.alias, safeIgnore);
+  });
+
+  return [...aliasesMap].map(([alias, ignore_auto_tag]) => ({
+    alias,
+    ignore_auto_tag,
+  }));
+}
+
+export function mergeScrapedAliases(
+  scrapedAliases: string | null | undefined,
+  existingAliases: GQL.PerformerAliasInput[] = []
+): GQL.PerformerAliasInput[] {
+  if (!scrapedAliases) {
+    return existingAliases;
+  }
+
+  const existingMap = new Map<string, boolean>();
+  existingAliases.forEach((a) => {
+    existingMap.set(a.alias, a.ignore_auto_tag);
+  });
+
+  return scrapedAliases
+    .split(",")
+    .map((a) => {
+      const trimmed = a.trim();
+      const existing = existingMap.get(trimmed);
+      return {
+        alias: trimmed,
+        ignore_auto_tag: existing !== undefined ? existing : true,
+      };
+    })
+    .filter((a) => a.alias.length > 0);
+}
+
 export const scrapedPerformerToCreateInput = (
   toCreate: GQL.ScrapedPerformer,
   endpoint?: string
 ) => {
-  const aliases =
-    toCreate.aliases
-      ?.split(",")
-      .map((a) => a.trim())
-      .filter((a) => a) || [];
-
   const input: GQL.PerformerCreateInput = {
     name: toCreate.name ?? "",
     gender: stringToGender(toCreate.gender),
@@ -108,7 +148,7 @@ export const scrapedPerformerToCreateInput = (
     career_end: toCreate.career_end,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
-    aliases: aliases.map((a) => ({ alias: a, ignore_auto_tag: true })),
+    aliases: mergeScrapedAliases(toCreate.aliases),
     urls: toCreate.urls,
     tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
     image:

@@ -188,15 +188,17 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     // default alias list should be the existing aliases, plus the names of all sources,
     // plus all source aliases, deduplicated
     const allAliases = uniq(
-      (dest.aliases.map((a) => a.alias) ?? []).concat(
-        sources.map((s) => s.name),
-        sources.flatMap((s) => s.aliases.map((a) => a.alias) ?? [])
-      )
+      dest.aliases
+        .map((a) => a.alias)
+        .concat(
+          sources.map((s) => s.name),
+          sources.flatMap((s) => s.aliases.map((a) => a.alias))
+        )
     );
 
     setAliases(
       new ScrapeResult(
-        dest.aliases.map((a) => a.alias) ?? [],
+        dest.aliases.map((a) => a.alias),
         allAliases,
         !!allAliases.length
       )
@@ -647,15 +649,17 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     // only set the cover image if it's different from the existing cover image
     const coverImage = image.useNewValue ? image.getNewValue() : undefined;
 
+    const updatedAliases = aliases.getNewValue();
+    const finalAliases = updatedAliases
+      ?.map((s) => ({ alias: s.trim(), ignore_auto_tag: true }))
+      .filter((a) => a.alias.length > 0);
+
     return {
       values: {
         id: dest.id,
         name: name.getNewValue(),
         disambiguation: disambiguation.getNewValue(),
-        aliases: aliases
-          .getNewValue()
-          ?.map((s) => ({ alias: s.trim(), ignore_auto_tag: true }))
-          .filter((a) => a.alias.length > 0),
+        aliases: finalAliases,
         birthdate: birthdate.getNewValue(),
         death_date: deathDate.getNewValue(),
         ethnicity: ethnicity.getNewValue(),

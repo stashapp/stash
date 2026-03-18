@@ -52,6 +52,7 @@ import {
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
 import { cloneDeep } from "@apollo/client/utilities";
+import { normalizeAliases, mergeScrapedAliases } from "src/core/performers";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -171,44 +172,23 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const [customFieldsError, setCustomFieldsError] = useState<string>();
 
-  function submit(values: InputValues) {
+  function submit(values: InputValues, andNew?: boolean) {
     const { aliases, ...rest } = values;
-
-    // deduplicate aliases
-    const aliasesMap = new Map<string, boolean>();
-    (aliases || []).forEach((a) => {
-      const existing = aliasesMap.get(a.alias);
-      if (existing !== undefined) {
-        // If duplicates exist, and their ignore_auto_tag differs, we default to true (ignore auto tag)
-        if (existing !== a.ignore_auto_tag) {
-          aliasesMap.set(a.alias, true);
-        }
-      } else {
-        aliasesMap.set(a.alias, a.ignore_auto_tag);
-      }
-    });
-
-    const finalAliases = Array.from(aliasesMap.entries()).map(
-      ([alias, ignore_auto_tag]) => ({
-        alias,
-        ignore_auto_tag,
-      })
-    );
 
     const input = {
       ...schema.cast(rest),
-      aliases: finalAliases,
+      aliases: normalizeAliases(aliases),
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
 
-    onSave(input);
+    onSave(input, andNew);
   }
 
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
     validate: yupFormikValidate(schema),
-    onSubmit: submit,
+    onSubmit: (values) => submit(values),
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
@@ -258,20 +238,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("disambiguation", state.disambiguation);
     }
     if (state.aliases) {
-      const existingMap = new Map<string, boolean>();
-      formik.values.aliases?.forEach((a) => {
-        existingMap.set(a.alias, a.ignore_auto_tag);
-      });
-
-      const aliasModels = state.aliases.split(",").map((a) => {
-        const trimmed = a.trim();
-        const existing = existingMap.get(trimmed);
-        return {
-          alias: trimmed,
-          ignore_auto_tag: existing !== undefined ? existing : true,
-        };
-      });
-      formik.setFieldValue("aliases", aliasModels);
+      formik.setFieldValue(
+        "aliases",
+        mergeScrapedAliases(state.aliases, formik.values.aliases)
+      );
     }
     if (state.birthdate) {
       formik.setFieldValue("birthdate", state.birthdate);
@@ -400,39 +370,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(false);
   }
 
-  async function onSaveAndNewClick() {
-    const { values } = formik;
-
-    const { aliases, ...rest } = values;
-
-    // deduplicate aliases
-    const aliasesMap = new Map<string, boolean>();
-    (aliases || []).forEach((a) => {
-      const existing = aliasesMap.get(a.alias);
-      if (existing !== undefined) {
-        // If duplicates exist, and their ignore_auto_tag differs, we default to true (ignore auto tag)
-        if (existing !== a.ignore_auto_tag) {
-          aliasesMap.set(a.alias, true);
-        }
-      } else {
-        aliasesMap.set(a.alias, a.ignore_auto_tag);
-      }
-    });
-
-    const finalAliases = Array.from(aliasesMap.entries()).map(
-      ([alias, ignore_auto_tag]) => ({
-        alias,
-        ignore_auto_tag,
-      })
-    );
-
-    const input = {
-      ...schema.cast(rest),
-      aliases: finalAliases,
-      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
-    };
-
-    onSave(input, true);
+  function onSaveAndNewClick() {
+    submit(formik.values, true);
   }
 
   // set up hotkeys

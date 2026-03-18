@@ -301,7 +301,7 @@ const _PerformerSelect: React.FC<
       options.some((o) => {
         return (
           o.name.toLowerCase() === inputValue.toLowerCase() ||
-          o.aliases?.some(
+          o.aliases.some(
             (a) => a.alias.toLowerCase() === inputValue.toLowerCase()
           )
         );
