@@ -58,7 +58,6 @@ const SelectComponent = <T, IsMulti extends boolean>(
 ) => {
   const {
     selectedOptions,
-    isLoading,
     isDisabled = false,
     creatable = false,
     components,
