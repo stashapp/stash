@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-
 	"errors"
 
 	"context"
@@ -41,29 +39,7 @@ func (r *queryResolver) FindTags(
 	var finalFilter *models.TagFilterType
 	if savedFilterID != nil {
 		finalFilter = &models.TagFilterType{}
-		var mode models.FilterMode
-		switch "tagFilter" {
-		case "sceneFilter":
-			mode = models.FilterModeScenes
-		case "performerFilter":
-			mode = models.FilterModePerformers
-		case "studioFilter":
-			mode = models.FilterModeStudios
-		case "galleryFilter":
-			mode = models.FilterModeGalleries
-		case "sceneMarkerFilter":
-			mode = models.FilterModeSceneMarkers
-		case "movieFilter":
-			mode = models.FilterModeMovies
-		case "groupFilter":
-			mode = models.FilterModeGroups
-		case "tagFilter":
-			mode = models.FilterModeTags
-		case "imageFilter":
-			mode = models.FilterModeImages
-		default:
-			return nil, fmt.Errorf("saved filters are not supported for %s", "tagFilter")
-		}
+		mode := models.FilterModeTags
 
 		mergedFindFilter, err := r.resolveSavedFilter(ctx, *savedFilterID, mode, finalFilter, filter)
 		if err != nil {
