@@ -62,21 +62,19 @@ export const ScraperMenu: React.FC<{
 
       <Dropdown.Menu>
         <div className="scraper-filter-container">
-          <div className="btn-group">
-            <ClearableInput
-              placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-              value={filter}
-              setValue={setFilter}
+          <ClearableInput
+            placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+            value={filter}
+            setValue={setFilter}
             focus={focusRef}
-            />
-            <Button
-              onClick={onReloadScrapers}
-              className="reload-button"
-              title={intl.formatMessage({ id: "actions.reload_scrapers" })}
-            >
-              <Icon icon={faSyncAlt} />
-            </Button>
-          </div>
+          />
+          <Button
+            onClick={onReloadScrapers}
+            className="reload-button"
+            title={intl.formatMessage({ id: "actions.reload_scrapers" })}
+          >
+            <Icon icon={faSyncAlt} />
+          </Button>
         </div>
 
         {filteredStashboxes.map((s, index) => (

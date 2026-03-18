@@ -766,15 +766,14 @@ button.btn.favorite-button {
   .scraper-filter-container {
     background-color: $secondary;
     border-bottom: solid 1px $textfield-bg;
+    display: flex;
     padding: 5px;
     position: sticky;
     top: 0;
     z-index: 1;
 
-    .btn-group {
-      border: solid 1px $textfield-bg;
-      border-radius: 5px;
-      width: 100%;
+    .clearable-input-group {
+      flex-grow: 1;
     }
 
     .clearable-text-field {
