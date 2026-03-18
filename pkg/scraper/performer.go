@@ -14,13 +14,13 @@ type ScrapedPerformerInput struct {
 	Ethnicity      *string  `json:"ethnicity"`
 	Country        *string  `json:"country"`
 	EyeColor       *string  `json:"eye_color"`
-	Height       *string  `json:"height"`
-	BandSize     *int     `json:"band_size"`
-	CupSize      *string  `json:"cup_size"`
-	WaistSize    *int     `json:"waist_size"`
-	HipSize      *int     `json:"hip_size"`
-	Measurements *string  `json:"measurements"` // deprecated: use BandSize/CupSize/WaistSize/HipSize
-	FakeTits     *string  `json:"fake_tits"`
+	Height         *string  `json:"height"`
+	BandSize       *int     `json:"band_size"`
+	CupSize        *string  `json:"cup_size"`
+	WaistSize      *int     `json:"waist_size"`
+	HipSize        *int     `json:"hip_size"`
+	Measurements   *string  `json:"measurements"` // deprecated: use BandSize/CupSize/WaistSize/HipSize
+	FakeTits       *string  `json:"fake_tits"`
 	PenisLength    *string  `json:"penis_length"`
 	Circumcised    *string  `json:"circumcised"`
 	CareerLength   *string  `json:"career_length"`

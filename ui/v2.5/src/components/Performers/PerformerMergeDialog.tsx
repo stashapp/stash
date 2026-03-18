@@ -62,7 +62,9 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
 
   const [loading, setLoading] = useState(true);
 
-  const formatMeasurements = (p: GQL.PerformerDataFragment): string | undefined => {
+  const formatMeasurements = (
+    p: GQL.PerformerDataFragment
+  ): string | undefined => {
     if (
       p.band_size == null &&
       !p.cup_size &&
@@ -281,7 +283,11 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     const destMeasurements = formatMeasurements(dest);
     const srcMeasurements = formatMeasurements(
       sources.find(
-        (s) => s.band_size != null || s.cup_size || s.waist_size != null || s.hip_size != null
+        (s) =>
+          s.band_size != null ||
+          s.cup_size ||
+          s.waist_size != null ||
+          s.hip_size != null
       ) ?? ({} as GQL.PerformerDataFragment)
     );
     setMeasurements(

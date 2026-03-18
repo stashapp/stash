@@ -265,7 +265,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   );
   const currentMeasurements = (() => {
     const { band_size, cup_size, waist_size, hip_size } = props.performer;
-    if (band_size == null && !cup_size && waist_size == null && hip_size == null)
+    if (
+      band_size == null &&
+      !cup_size &&
+      waist_size == null &&
+      hip_size == null
+    )
       return undefined;
     return [
       band_size != null ? `${band_size}${cup_size ?? ""}` : undefined,

@@ -49,8 +49,8 @@ type Performer struct {
 	WaistSize int    `json:"waist_size,omitempty"`
 	HipSize   int    `json:"hip_size,omitempty"`
 	// deprecated - for import only
-	Measurements string `json:"measurements,omitempty"`
-	FakeTits     string `json:"fake_tits,omitempty"`
+	Measurements  string             `json:"measurements,omitempty"`
+	FakeTits      string             `json:"fake_tits,omitempty"`
 	PenisLength   float64            `json:"penis_length,omitempty"`
 	Circumcised   string             `json:"circumcised,omitempty"`
 	CareerLength  string             `json:"career_length,omitempty"` // deprecated - for import only
