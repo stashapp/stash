@@ -5,6 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	stdimage "image"
+	"image/color"
+	"image/draw"
+	_ "image/gif"
+	_ "image/jpeg"
+	"image/png"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -143,7 +149,38 @@ func (e *ThumbnailEncoder) GetPreview(inPath string, outPath string, maxSize int
 	return e.getClipPreview(inPath, outPath, maxSize, clipDuration, fileData.FrameRate)
 }
 
+// flattenAlphaToWhite composites an image with an alpha channel against a white
+// background and returns a PNG-encoded buffer. Returns the original buffer
+// unchanged if the image has no alpha channel or cannot be decoded.
+func flattenAlphaToWhite(buf *bytes.Buffer) *bytes.Buffer {
+	img, _, err := stdimage.Decode(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		return buf
+	}
+
+	switch img.ColorModel() {
+	case color.RGBAModel, color.NRGBAModel, color.RGBA64Model, color.NRGBA64Model:
+		// image has alpha - flatten against white
+	default:
+		return buf
+	}
+
+	bounds := img.Bounds()
+	dst := stdimage.NewNRGBA(bounds)
+	draw.Draw(dst, bounds, &stdimage.Uniform{C: color.White}, bounds.Min, draw.Src)
+	draw.Draw(dst, bounds, img, bounds.Min, draw.Over)
+
+	var out bytes.Buffer
+	if err := png.Encode(&out, dst); err != nil {
+		return buf
+	}
+	return &out
+}
+
 func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
+	// Flatten alpha channel against white background; JPEG does not support transparency
+	input := flattenAlphaToWhite(image)
+
 	options := transcoder.ImageThumbnailOptions{
 		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
@@ -153,7 +190,7 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int
 
 	args := transcoder.ImageThumbnail("-", options)
 
-	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
+	return e.FFMpeg.GenerateOutput(context.TODO(), args, input)
 }
 
 // ffmpegImageThumbnailPath generates a thumbnail from a file path (used for AVIF which can't be piped)
