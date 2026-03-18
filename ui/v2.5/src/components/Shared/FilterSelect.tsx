@@ -103,7 +103,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
   return creatable ? (
     <AsyncCreatableSelect
       {...componentProps}
-      isDisabled={isLoading || isDisabled}
+      isDisabled={isDisabled}
     />
   ) : (
     <AsyncSelect {...componentProps} />
