@@ -199,7 +199,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...schema.cast(rest),
       aliases: finalAliases,
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
-    } as GQL.PerformerCreateInput;
+    };
 
     onSave(input);
   }
@@ -430,7 +430,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...schema.cast(rest),
       aliases: finalAliases,
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
-    } as GQL.PerformerCreateInput;
+    };
 
     onSave(input, true);
   }

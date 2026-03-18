@@ -1,5 +1,5 @@
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { FormikValues, useFormik } from "formik";
+import { FormikProps, FormikValues } from "formik";
 import React, { InputHTMLAttributes, useEffect, useRef } from "react";
 import {
   Button,
@@ -82,7 +82,7 @@ export const NumberField: React.FC<
   return <Form.Control {...props} type="number" ref={inputRef} />;
 };
 
-type Formik<V extends FormikValues> = ReturnType<typeof useFormik<V>>;
+type Formik<V extends FormikValues> = FormikProps<V>;
 
 interface IProps {
   labelProps?: FormLabelProps;
@@ -107,14 +107,34 @@ export function formikUtils<V extends FormikValues>(
   type Field = keyof V & string;
   type ErrorMessage = string | undefined;
 
-  function renderFormControl(field: Field, type: string, placeholder: string) {
-    const formikProps = formik.getFieldProps({ name: field, type: type });
-    const error = formik.errors[field] as ErrorMessage;
-
-    let { value } = formikProps;
-    if (value === null) {
-      value = "";
+  const getFlattenedError = (
+    field: Field
+  ): [string | undefined, number[] | undefined] => {
+    const error = formik.errors[field] as ErrorMessage | ErrorMessage[];
+    if (Array.isArray(error)) {
+      const errors: string[] = [];
+      const errorIdx: number[] = [];
+      for (let i = 0; i < error.length; i++) {
+        const err = error[i];
+        if (err) {
+          if (!errors.includes(err)) {
+            errors.push(err);
+          }
+          errorIdx.push(i);
+        }
+      }
+      return [errors.join("\n"), errorIdx];
+    } else {
+      return [error, undefined];
     }
+  };
+
+  function renderFormControl(field: Field, type: string, placeholder: string) {
+    const { value: rawValue, ...formikProps } = formik.getFieldProps<
+      string | null
+    >(field);
+    const { error } = formik.getFieldMeta(field);
+    const value = rawValue ?? "";
 
     let control: React.ReactNode;
     if (type === "checkbox") {
@@ -201,12 +221,10 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IProps
   ) {
-    const formikProps = formik.getFieldProps(field);
-
-    let { value } = formikProps;
-    if (value === null) {
-      value = "";
-    }
+    const { value: rawValue, ...formikProps } = formik.getFieldProps<
+      string | null
+    >(field);
+    const value = rawValue ?? "";
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -233,8 +251,8 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IProps
   ) {
-    const value = formik.values[field] as string;
-    const error = formik.errors[field] as ErrorMessage;
+    const { value } = formik.getFieldProps<string>(field);
+    const { error } = formik.getFieldMeta(field);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -253,8 +271,8 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IProps
   ) {
-    const value = formik.values[field] as number | null;
-    const error = formik.errors[field] as ErrorMessage;
+    const { value } = formik.getFieldProps<number | null>(field);
+    const { error } = formik.getFieldMeta(field);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -273,7 +291,7 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IProps
   ) {
-    const value = formik.values[field] as number | null;
+    const { value } = formik.getFieldProps<number | null>(field);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -286,29 +304,6 @@ export function formikUtils<V extends FormikValues>(
     return renderField(field, title, control, props);
   }
 
-  // flattens a potential list of errors into a [errorMsg, errorIdx] tuple
-  // error messages are joined with newlines, and duplicate messages are skipped
-  function flattenError(
-    error: ErrorMessage[] | ErrorMessage
-  ): [string | undefined, number[] | undefined] {
-    if (Array.isArray(error)) {
-      let errors: string[] = [];
-      const errorIdx = [];
-      for (let i = 0; i < error.length; i++) {
-        const err = error[i];
-        if (err) {
-          if (!errors.includes(err)) {
-            errors.push(err);
-          }
-          errorIdx.push(i);
-        }
-      }
-      return [errors.join("\n"), errorIdx];
-    } else {
-      return [error, undefined];
-    }
-  }
-
   interface IStringListProps extends IProps {
     // defaults to true if not provided
     orderable?: boolean;
@@ -319,10 +314,8 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IStringListProps
   ) {
-    const value = formik.values[field] as string[];
-    const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
-
-    const [errorMsg, errorIdx] = flattenError(error);
+    const { value } = formik.getFieldProps<string[]>(field);
+    const [errorMsg, errorIdx] = getFlattenedError(field);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -345,10 +338,8 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IProps
   ) {
-    const value = formik.values[field] as string[];
-    const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
-
-    const [errorMsg, errorIdx] = flattenError(error);
+    const { value } = formik.getFieldProps<string[]>(field);
+    const [errorMsg, errorIdx] = getFlattenedError(field);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -370,10 +361,8 @@ export function formikUtils<V extends FormikValues>(
     messageID: string = field,
     props?: IProps
   ) {
-    const value = formik.values[field] as GQL.PerformerAliasInput[];
-    const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
-
-    const [errorMsg, errorIdx] = flattenError(error);
+    const { value } = formik.getFieldProps<GQL.PerformerAliasInput[]>(field);
+    const [errorMsg, errorIdx] = getFlattenedError(field);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -395,7 +384,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps,
     addButton?: React.ReactNode
   ) {
-    const values = formik.values[field] as GQL.StashIdInput[];
+    const { value: values } = formik.getFieldProps<GQL.StashIdInput[]>(field);
 
     const title = intl.formatMessage({ id: messageID });
 
