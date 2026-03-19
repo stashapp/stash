@@ -1252,3 +1252,15 @@ input[type="range"].double-range-slider-max {
 .text-input + .input-group-append .btn.minimal {
   background-color: $textfield-bg;
 }
+
+.studio-logo a:hover {
+  color: inherit;
+}
+
+.studio-logo .studio-name {
+  color: $text-color;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
+}
