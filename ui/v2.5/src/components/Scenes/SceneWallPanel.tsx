@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
@@ -15,6 +21,7 @@ import TextUtils from "src/utils/text";
 import { useIntl } from "react-intl";
 import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
+import { defaultPreviewVolume } from "src/core/config";
 
 interface IScenePhoto {
   scene: GQL.SlimSceneDataFragment;
@@ -42,6 +49,7 @@ export const SceneWallItem: React.FC<
 
   const { configuration } = useConfigurationContext();
   const playSound = configuration?.interface.soundOnPreview ?? false;
+  const volume = configuration?.ui.previewVolume ?? defaultPreviewVolume;
   const showTitle = configuration?.interface.wallShowTitle ?? false;
 
   const height = Math.min(props.maxHeight, props.photo.height);
@@ -75,7 +83,31 @@ export const SceneWallItem: React.FC<
   };
 
   const video = props.photo.src.includes("preview");
-  const ImagePreview = video ? "video" : "img";
+  const previewProps = {
+    loading: "lazy",
+    loop: video,
+    muted: !video || !playSound || !active,
+    autoPlay: video,
+    playsInline: video,
+    key: props.photo.key,
+    src: props.photo.src,
+    width,
+    height,
+    alt: props.photo.alt,
+    onMouseEnter: () => setActive(true),
+    onMouseLeave: () => setActive(false),
+    onClick: handleClick,
+    onError: () => {
+      props.photo.onError?.(props.photo);
+    },
+  };
+
+  const videoEl = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (video && videoEl?.current?.volume)
+      videoEl.current.volume = playSound ? volume / 100 : 0;
+  }, [video, playSound, volume]);
 
   const { scene } = props.photo;
   const title = objectTitle(scene);
@@ -111,24 +143,11 @@ export const SceneWallItem: React.FC<
           }}
         />
       )}
-      <ImagePreview
-        loading="lazy"
-        loop={video}
-        muted={!video || !playSound || !active}
-        autoPlay={video}
-        playsInline={video}
-        key={props.photo.key}
-        src={props.photo.src}
-        width={width}
-        height={height}
-        alt={props.photo.alt}
-        onMouseEnter={() => setActive(true)}
-        onMouseLeave={() => setActive(false)}
-        onClick={handleClick}
-        onError={() => {
-          props.photo.onError?.(props.photo);
-        }}
-      />
+      {video ? (
+        <video {...previewProps} ref={videoEl} />
+      ) : (
+        <img {...previewProps} loading="lazy" />
+      )}
       <div className="lineargradient">
         <footer className="wall-item-footer">
           <Link

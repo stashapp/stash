@@ -38,6 +38,7 @@ export type DefaultFilters = {
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
+export const defaultPreviewVolume = 25;
 
 export interface IUIConfig {
   // unknown to prevent direct access - use getFrontPageContent
@@ -47,6 +48,8 @@ export interface IUIConfig {
   showChildStudioContent?: boolean;
   showLinksOnPerformerCard?: boolean;
   showTagCardOnHover?: boolean;
+
+  previewVolume?: number;
 
   abbreviateCounters?: boolean;
 

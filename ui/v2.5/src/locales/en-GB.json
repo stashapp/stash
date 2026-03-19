@@ -843,11 +843,20 @@
           }
         }
       },
+      "scene_view": {
+        "heading": "Scene View",
+        "options": {
+          "preview_volume": {
+            "description": "Volume of the preview when hovering over a scene. Set to 0 to mute.",
+            "heading": "Preview volume"
+          }
+        }
+      },
       "scene_wall": {
         "heading": "Scene / Marker Wall",
         "options": {
           "display_title": "Display title and tags",
-          "toggle_sound": "Enable sound"
+          "toggle_sound": "Enable sound on preview hover"
         }
       },
       "scroll_attempts_before_change": {

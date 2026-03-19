@@ -30,12 +30,14 @@ import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
 import { FileSize } from "../Shared/FileSize";
 import { OCounterButton } from "../Shared/CountButton";
+import { defaultPreviewVolume } from "src/core/config";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
   soundActive: boolean;
+  volume?: number;
   vttPath?: string;
   onScrubberClick?: (timestamp: number) => void;
   disabled?: boolean;
@@ -49,6 +51,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   vttPath,
   onScrubberClick,
   disabled,
+  volume,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -67,8 +70,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
   useEffect(() => {
     if (videoEl?.current?.volume)
-      videoEl.current.volume = soundActive ? 0.05 : 0;
-  }, [soundActive]);
+      videoEl.current.volume = soundActive ? (volume ?? 0) / 100 : 0;
+  }, [volume, soundActive]);
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
@@ -431,6 +434,7 @@ const SceneCardImage = PatchComponent(
           video={props.scene.paths.preview ?? undefined}
           isPortrait={isPortrait()}
           soundActive={configuration?.interface?.soundOnPreview ?? false}
+          volume={configuration?.ui.previewVolume ?? defaultPreviewVolume}
           vttPath={props.scene.paths.vtt ?? undefined}
           onScrubberClick={onScrubberClick}
           disabled={props.selecting}
