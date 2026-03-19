@@ -244,7 +244,7 @@
       "build_time": "Build time:",
       "check_for_new_version": "Check for new version",
       "latest_version": "Latest Version",
-      "latest_version_build_hash": "Latest Version Build Hash:",
+      "latest_version_build_hash": "Latest version build hash:",
       "new_version_notice": "[NEW]",
       "release_date": "Release date:",
       "stash_home": "Visit Stash on {url}.",
