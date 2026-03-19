@@ -610,7 +610,9 @@
                 "to_directory": "{directory} 경로로",
                 "warning_blobs": "blob 파일들은 백업 파일에 포함되지 않을 것입니다. 이는, 백업을 완전히 복원하려면 blob 저장 위치에 blob 파일이 존재해야 함을 의미합니다.",
                 "zip": "SQLite 데이터베이스 파일과 blob 파일은 하나의 파일로 압축될 것입니다. (압축 파일 이름: {filename_format})"
-            }
+            },
+            "clean_ignore_zip_contents": "zip 파일 컨텐츠 무시",
+            "clean_ignore_zip_contents_desc": "더 빠르지만 zip 파일 내부에서 제거된 파일이 누락될 수 있습니다. zip 파일 내에서 파일을 삭제하지 않으면 안전하게 활성화할 수 있습니다."
         },
         "tools": {
             "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -804,7 +806,7 @@
                 "heading": "영상 / 마커 미리보기",
                 "options": {
                     "display_title": "제목과 태그 표시",
-                    "toggle_sound": "소리 켜기"
+                    "toggle_sound": "미리보기 호버에서 소리 재생"
                 }
             },
             "scroll_attempts_before_change": {
@@ -886,6 +888,15 @@
                 "enable": "활성화 & 다시 불러오기",
                 "overlay_message": "트러블슈팅 모드 활성화 - 모든 사용자 지정 설정이 비활성화됨",
                 "exit": "나가기"
+            },
+            "scene_view": {
+                "heading": "영상 표시",
+                "options": {
+                    "preview_volume": {
+                        "description": "영상을 호버링할 때 표시되는 미리보기의 음량. 0으로 설정하면 음소거.",
+                        "heading": "미리보기 음량"
+                    }
+                }
             }
         },
         "advanced_mode": "고급 설정 모드",
@@ -1046,7 +1057,8 @@
         "merge": {
             "destination": "~으로 병합 (병합 결과)",
             "source": "~을 (병합 대상)",
-            "empty_results": "병합 결과 값이 바뀌지 않을 것입니다."
+            "empty_results": "병합 결과 값이 바뀌지 않을 것입니다.",
+            "combined": "병합됨"
         },
         "reassign_files": {
             "destination": "~으로 재지정"
@@ -1692,5 +1704,7 @@
     "parent_folder": "상위 폴더",
     "sub_folder_depth": "하위 폴더 깊이 (전체일 경우 비워둠)",
     "sub_folders": "하위 폴더",
-    "empty_value": "공백"
+    "empty_value": "공백",
+    "refer_to": "{link}를 참조해 주십시오.",
+    "scenes_size": "영상 크기"
 }
