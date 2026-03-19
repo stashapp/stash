@@ -209,11 +209,13 @@ jobs:
         path: artifacts
 
     # Reassemble platform binaries from matrix job artifacts into a single dist/ directory
+    # make sure that artifacts have executable bit set
     # upload-artifact@v4 strips the common path prefix (dist/), so files are at the artifact root
     - name: Collect binaries
       run: |
         mkdir -p dist
         cp artifacts/build-*/* dist/
+        chmod +x dist/*
 
     - name: Zip UI
       run: |
