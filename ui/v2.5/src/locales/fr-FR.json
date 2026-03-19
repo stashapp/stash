@@ -822,7 +822,7 @@
                 "heading": "Mur de scènes et marqueurs",
                 "options": {
                     "display_title": "Afficher le titre et étiquettes",
-                    "toggle_sound": "Activer le son"
+                    "toggle_sound": "Activer le son lors du survol de l'aperçu"
                 }
             },
             "scroll_attempts_before_change": {
