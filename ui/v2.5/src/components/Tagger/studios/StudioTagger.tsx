@@ -15,11 +15,10 @@ import {
   useStudioCreate,
   evictQueries,
 } from "src/core/StashService";
-import { Manual } from "src/components/Help/Manual";
 import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
-import TaggerConfig from "../TaggerConfig";
+import TaggerConfig, { ConfigButton } from "../TaggerConfig";
 import { ITaggerConfig, STUDIO_FIELDS } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
@@ -33,6 +32,7 @@ import {
   BatchUpdateModal,
   BatchAddModal,
 } from "src/components/Shared/BatchModals";
+import { StashBoxSelectorField } from "../StashBoxSelector";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -471,11 +471,9 @@ interface ITaggerProps {
 
 export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const jobsSubscribe = useJobsSubscribe();
-  const intl = useIntl();
   const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
-  const [showManual, setShowManual] = useState(false);
 
   const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
   const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
@@ -598,98 +596,102 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
     }
   }
 
-  const showHideConfigId = showConfig
-    ? "actions.hide_configuration"
-    : "actions.show_configuration";
+  if (selectedEndpointIndex === -1 || !selectedEndpoint) {
+    return (
+      <div className="my-4">
+        <h3 className="text-center mt-4">
+          <FormattedMessage id="studio_tagger.to_use_the_studio_tagger" />
+        </h3>
+        <h5 className="text-center">
+          <FormattedMessage
+            id="refer_to"
+            values={{
+              link: (
+                <HashLink
+                  to="/settings?tab=metadata-providers#stash-boxes"
+                  scroll={(el) =>
+                    el.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                >
+                  <FormattedMessage id="config.stashbox.title" />
+                </HashLink>
+              ),
+            }}
+          />
+        </h5>
+      </div>
+    );
+  }
 
   return (
     <>
-      <Manual
-        show={showManual}
-        onClose={() => setShowManual(false)}
-        defaultActiveTab="Tagger.md"
-      />
       {renderStatus()}
       <div className="tagger-container mx-md-auto">
-        {selectedEndpointIndex !== -1 && selectedEndpoint ? (
-          <>
-            <div className="row mb-2 no-gutters">
-              <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-                {intl.formatMessage({ id: showHideConfigId })}
-              </Button>
-              <Button
-                className="ml-auto"
-                onClick={() => setShowManual(true)}
-                title={intl.formatMessage({ id: "help" })}
-                variant="link"
-              >
-                <FormattedMessage id="help" />
-              </Button>
-            </div>
-
-            <TaggerConfig
-              config={config}
-              setConfig={setConfig}
-              show={showConfig}
-              excludedFields={config.excludedStudioFields ?? []}
-              onFieldsChange={(fields) =>
-                setConfig({ ...config, excludedStudioFields: fields })
-              }
-              fields={STUDIO_FIELDS}
-              entityName="studios"
-              extraConfig={
-                <Form.Group
-                  controlId="create-parent"
-                  className="align-items-center"
-                >
-                  <Form.Check
-                    label={
-                      <FormattedMessage id="studio_tagger.config.create_parent_label" />
-                    }
-                    checked={config.createParentStudios}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setConfig({
-                        ...config,
-                        createParentStudios: e.currentTarget.checked,
-                      })
-                    }
-                  />
-                  <Form.Text>
-                    <FormattedMessage id="studio_tagger.config.create_parent_desc" />
-                  </Form.Text>
-                </Form.Group>
-              }
-            />
-            <StudioTaggerList
-              studios={studios}
-              selectedEndpoint={{
-                endpoint: selectedEndpoint.endpoint,
-                index: selectedEndpointIndex,
-              }}
-              isIdle={batchJobID === undefined}
-              config={config}
-              onBatchAdd={batchAdd}
-              onBatchUpdate={batchUpdate}
-            />
-          </>
-        ) : (
-          <div className="my-4">
-            <h3 className="text-center mt-4">
-              <FormattedMessage id="studio_tagger.to_use_the_studio_tagger" />
-            </h3>
-            <h5 className="text-center">
-              Please see{" "}
-              <HashLink
-                to="/settings?tab=metadata-providers#stash-boxes"
-                scroll={(el) =>
-                  el.scrollIntoView({ behavior: "smooth", block: "center" })
+        <div className="tagger-container-header">
+          <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <div className="w-auto">
+              <StashBoxSelectorField
+                stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                selectedEndpoint={selectedEndpoint.endpoint}
+                onEndpointChange={(endpoint) =>
+                  setConfig({ ...config, selectedEndpoint: endpoint })
                 }
-              >
-                Settings.
-              </HashLink>
-            </h5>
+              />
+            </div>
+            <div className="d-flex">
+              <div className="ml-2">
+                <ConfigButton
+                  showConfig={showConfig}
+                  onClick={() => setShowConfig(!showConfig)}
+                />
+              </div>
+            </div>
           </div>
-        )}
+
+          <TaggerConfig
+            show={showConfig}
+            excludedFields={config.excludedStudioFields ?? []}
+            onFieldsChange={(fields) =>
+              setConfig({ ...config, excludedStudioFields: fields })
+            }
+            fields={STUDIO_FIELDS}
+            entityName="studios"
+            extraConfig={
+              <Form.Group
+                controlId="create-parent"
+                className="align-items-center"
+              >
+                <Form.Check
+                  label={
+                    <FormattedMessage id="studio_tagger.config.create_parent_label" />
+                  }
+                  checked={config.createParentStudios}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setConfig({
+                      ...config,
+                      createParentStudios: e.currentTarget.checked,
+                    })
+                  }
+                />
+                <Form.Text>
+                  <FormattedMessage id="studio_tagger.config.create_parent_desc" />
+                </Form.Text>
+              </Form.Group>
+            }
+          />
+        </div>
+
+        <StudioTaggerList
+          studios={studios}
+          selectedEndpoint={{
+            endpoint: selectedEndpoint.endpoint,
+            index: selectedEndpointIndex,
+          }}
+          isIdle={batchJobID === undefined}
+          config={config}
+          onBatchAdd={batchAdd}
+          onBatchUpdate={batchUpdate}
+        />
       </div>
     </>
   );
