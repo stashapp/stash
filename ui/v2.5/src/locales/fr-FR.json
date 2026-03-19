@@ -889,6 +889,15 @@
                 "enable": "Activer et actualiser",
                 "overlay_message": "Le mode dépannage est actif. Toutes les personnalisations sont désactivées.",
                 "exit": "Sortir"
+            },
+            "scene_view": {
+                "heading": "Vu de la scène",
+                "options": {
+                    "preview_volume": {
+                        "description": "Volume de l'aperçu lorsque vous passez la souris sur une scène. Définir sur 0 pour couper le son.",
+                        "heading": "Volume des aperçus"
+                    }
+                }
             }
         },
         "advanced_mode": "Mode avancé",
@@ -997,7 +1006,8 @@
         "merge": {
             "destination": "Destination",
             "empty_results": "Les valeurs des champs de destination seront inchangées.",
-            "source": "Source"
+            "source": "Source",
+            "combined": "Combiné"
         },
         "performers_found": "{count} performeurs trouvés",
         "reassign_entity_title": "{count, plural, one {Réaffecté {singularEntity}} other {Réaffectés {pluralEntity}}}",
@@ -1695,5 +1705,6 @@
     "sub_folder_depth": "Profondeur des sous-répertoires (vide pour tous)",
     "sub_folders": "Sous-répertoires",
     "empty_value": "vide",
-    "scenes_size": "Taille de la scène"
+    "scenes_size": "Taille de la scène",
+    "refer_to": "Merci de consulter {link}."
 }
