@@ -208,7 +208,7 @@ const PerformerList: React.FC<{
 }> = PatchComponent(
   "PerformerList",
   ({ performers, filter, selectedIds, onSelectChange, extraCriteria }) => {
-    if (performers.length === 0) {
+    if (performers.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
 
