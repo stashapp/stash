@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,16 +26,22 @@ import (
 
 const scrapeDefaultSleep = time.Second * 2
 
+const (
+	// maxRateLimitRetries is the maximum number of retries when receiving HTTP 429 responses.
+	maxRateLimitRetries = 5
+
+	// rateLimitBaseDelay is the initial backoff delay for 429 retries.
+	rateLimitBaseDelay = time.Second * 2
+
+	// rateLimitMaxDelay caps the exponential backoff to prevent excessively long waits.
+	rateLimitMaxDelay = time.Minute
+)
+
 func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := def.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
 		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
-	if err != nil {
-		return nil, err
 	}
 
 	jar, err := def.jar()
@@ -47,44 +54,101 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 		return nil, fmt.Errorf("error parsing url %s: %w", loadURL, err)
 	}
 
-	// Fetch relevant cookies from the jar for url u and add them to the request
-	cookies := jar.Cookies(u)
-	for _, cookie := range cookies {
-		req.AddCookie(cookie)
-	}
-
 	userAgent := globalConfig.GetScraperUserAgent()
-	if userAgent != "" {
-		req.Header.Set("User-Agent", userAgent)
-	}
 
-	if driverOptions != nil { // setting the Headers after the UA allows us to override it from inside the scraper
-		for _, h := range driverOptions.Headers {
-			if h.Key != "" {
-				req.Header.Set(h.Key, h.Value)
-				logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+	for attempt := 0; ; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		// Fetch relevant cookies from the jar for url u and add them to the request
+		cookies := jar.Cookies(u)
+		for _, cookie := range cookies {
+			req.AddCookie(cookie)
+		}
+
+		if userAgent != "" {
+			req.Header.Set("User-Agent", userAgent)
+		}
+
+		if driverOptions != nil { // setting the Headers after the UA allows us to override it from inside the scraper
+			for _, h := range driverOptions.Headers {
+				if h.Key != "" {
+					req.Header.Set(h.Key, h.Value)
+					logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+				}
 			}
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			resp.Body.Close()
+
+			if attempt >= maxRateLimitRetries {
+				logger.Warnf("[scraper] rate limited on %s after %d retries, giving up", loadURL, maxRateLimitRetries)
+				return nil, &HTTPError{StatusCode: resp.StatusCode}
+			}
+
+			delay := rateLimitBackoff(resp, attempt)
+			logger.Infof("[scraper] rate limited on %s (attempt %d/%d), retrying in %v", loadURL, attempt+1, maxRateLimitRetries, delay)
+
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(delay):
+				continue
+			}
+		}
+
+		if resp.StatusCode >= 400 {
+			resp.Body.Close()
+			return nil, &HTTPError{StatusCode: resp.StatusCode}
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		bodyReader := bytes.NewReader(body)
+		printCookies(jar, def, "Jar cookies found for scraper urls")
+		return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
+	}
+}
+
+// rateLimitBackoff calculates the delay before retrying a rate-limited request.
+// It respects the Retry-After header if present, otherwise uses exponential backoff.
+func rateLimitBackoff(resp *http.Response, attempt int) time.Duration {
+	if retryAfter := resp.Header.Get("Retry-After"); retryAfter != "" {
+		// Try parsing as seconds first
+		if seconds, err := strconv.Atoi(retryAfter); err == nil && seconds > 0 {
+			return clampDelay(time.Duration(seconds) * time.Second)
+		}
+		// Try parsing as HTTP-date
+		if t, err := http.ParseTime(retryAfter); err == nil {
+			if d := time.Until(t); d > 0 {
+				return clampDelay(d)
+			}
+			return rateLimitBaseDelay
 		}
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
-	}
+	// Exponential backoff: 2s, 4s, 8s, 16s, 32s (capped at rateLimitMaxDelay)
+	return clampDelay(rateLimitBaseDelay * (1 << attempt))
+}
 
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+// clampDelay caps a duration to rateLimitMaxDelay.
+func clampDelay(d time.Duration) time.Duration {
+	if d > rateLimitMaxDelay {
+		return rateLimitMaxDelay
 	}
-
-	bodyReader := bytes.NewReader(body)
-	printCookies(jar, def, "Jar cookies found for scraper urls")
-	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
+	return d
 }
 
 // func urlFromCDP uses chrome cdp and DOM to load and process the url

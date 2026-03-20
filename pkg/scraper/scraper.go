@@ -146,6 +146,18 @@ func (e ScrapeType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// HTTPError represents an HTTP response error with its status code.
+// Callers can inspect the StatusCode to decide whether to skip an item
+// and continue with the rest of a batch (e.g. 404, 500) or whether the
+// error was a rate-limit that exhausted all retries (429).
+type HTTPError struct {
+	StatusCode int
+}
+
+func (e *HTTPError) Error() string {
+	return fmt.Sprintf("http error %d: %s", e.StatusCode, http.StatusText(e.StatusCode))
+}
+
 var (
 	// ErrMaxRedirects is returned if the max number of HTTP redirects are reached.
 	ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
