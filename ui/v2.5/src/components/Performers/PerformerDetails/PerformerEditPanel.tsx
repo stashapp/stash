@@ -173,11 +173,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [customFieldsError, setCustomFieldsError] = useState<string>();
 
   function submit(values: InputValues, andNew?: boolean) {
-    const { aliases, ...rest } = values;
-
     const input = {
-      ...schema.cast(rest),
-      aliases: normalizeAliases(aliases),
+      ...schema.cast(values),
+      aliases: normalizeAliases(values.aliases),
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
 
