@@ -504,7 +504,10 @@ type Mutation {
   configureUISetting(key: String!, value: Any): Map! @hasRole(role: ADMIN)
 
   "Generate and set (or clear) API key for the current user"
-  generateAPIKey(input: GenerateAPIKeyInput!): String!
+  generateAPIKey(input: GenerateAPIKeyInput!): String! @hasRole(role: GENERATE_API_KEY)
+
+  generateUserAPIKey(username: String!, input: GenerateAPIKeyInput!): String!
+    @hasRole(role: ADMIN)
 
   "Returns a link to download the result"
   exportObjects(input: ExportObjectsInput!): String @hasRole(role: ADMIN)

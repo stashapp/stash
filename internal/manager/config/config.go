@@ -1127,10 +1127,6 @@ func (i *Config) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
 }
 
-func (i *Config) GetAPIKey() string {
-	return i.getString(ApiKey)
-}
-
 func stashBoxValidate(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != "" && strings.HasSuffix(u.Path, "/graphql")

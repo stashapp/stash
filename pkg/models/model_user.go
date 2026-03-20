@@ -3,12 +3,12 @@ package models
 import "time"
 
 type User struct {
-	ID        int
-	Username  string
-	Roles     Roles
-	ApiKey    string
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID         int
+	Username   string
+	Roles      Roles
+	ApiKeyHash string
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
 }
 
 type UserInput struct {

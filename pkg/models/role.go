@@ -9,9 +9,10 @@ import (
 type RoleEnum string
 
 const (
-	RoleEnumAdmin  RoleEnum = "ADMIN"
-	RoleEnumRead   RoleEnum = "READ"
-	RoleEnumModify RoleEnum = "MODIFY"
+	RoleEnumAdmin          RoleEnum = "ADMIN"
+	RoleEnumRead           RoleEnum = "READ"
+	RoleEnumModify         RoleEnum = "MODIFY"
+	RoleEnumGenerateAPIKey RoleEnum = "GENERATE_API_KEY"
 )
 
 func (e RoleEnum) Implies(other RoleEnum) bool {
@@ -31,7 +32,7 @@ func (e RoleEnum) Implies(other RoleEnum) bool {
 
 func (e RoleEnum) IsValid() bool {
 	switch e {
-	case RoleEnumRead, RoleEnumModify, RoleEnumAdmin:
+	case RoleEnumRead, RoleEnumModify, RoleEnumAdmin, RoleEnumGenerateAPIKey:
 		return true
 	}
 	return false

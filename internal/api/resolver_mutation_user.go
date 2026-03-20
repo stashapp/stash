@@ -91,21 +91,35 @@ func (r *mutationResolver) ChangeUserPassword(ctx context.Context, input ChangeU
 
 func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPIKeyInput) (string, error) {
 	u := session.GetCurrentUser(ctx)
-
 	if u == nil {
 		return "", fmt.Errorf("no current user in context")
 	}
 
-	if input.Clear != nil && *input.Clear {
-		err := r.withTxn(ctx, func(ctx context.Context) error {
-			return r.userService.ClearAPIKey(ctx, u.Username)
-		})
-		return "", err
+	return r.generateUserAPIKey(ctx, u, input)
+}
+
+func (r *mutationResolver) GenerateUserAPIKey(ctx context.Context, username string, input GenerateAPIKeyInput) (string, error) {
+	var user *models.User
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		user, err = r.userService.GetUser(ctx, username)
+		return err
+	}); err != nil {
+		return "", fmt.Errorf("error retrieving user: %w", err)
 	}
 
+	return r.generateUserAPIKey(ctx, user, input)
+}
+
+func (r *mutationResolver) generateUserAPIKey(ctx context.Context, u *models.User, input GenerateAPIKeyInput) (string, error) {
 	var newAPIKey string
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
+
+		if input.Clear != nil && *input.Clear {
+			return r.userService.ClearAPIKey(ctx, u.Username)
+		}
+
 		newAPIKey, err = r.userService.GenerateAPIKey(ctx, u.Username)
 		return err
 	}); err != nil {

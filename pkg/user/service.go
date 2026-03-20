@@ -80,6 +80,11 @@ func userIsLocked(u *models.User) bool {
 	return len(u.Roles) == 0
 }
 
+func checkHash(password, hash string) (bool, error) {
+	ret, _, err := argon2id.CheckHash(password, hash)
+	return ret, err
+}
+
 func (s *Service) ValidateCredentials(ctx context.Context, username string, password string) error {
 	// ensure user is not locked
 	u, err := s.GetUser(ctx, username)
@@ -104,7 +109,7 @@ func (s *Service) ValidateCredentials(ctx context.Context, username string, pass
 		return ErrInternalError
 	}
 
-	match, _, err := argon2id.CheckHash(password, passwordHash)
+	match, err := checkHash(password, passwordHash)
 	if err != nil {
 		logger.Errorf("error checking password hash for user %s: %v", username, err)
 		return ErrInternalError
@@ -146,6 +151,11 @@ func (s *Service) AuthenticateSession(ctx context.Context, username string, logi
 	return u, nil
 }
 
+func checkApiKey(apiKey, hash string) (bool, error) {
+	hasher := sha256Hasher{}
+	return hasher.CompareHash(apiKey, hash)
+}
+
 func (s *Service) AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error) {
 	username, err := GetUserIDFromAPIKey(apiKey)
 	if err != nil {
@@ -169,8 +179,14 @@ func (s *Service) AuthenticateByAPIKey(ctx context.Context, apiKey string) (*mod
 		return nil, ErrAccessDenied
 	}
 
+	match, err := checkApiKey(apiKey, user.ApiKeyHash)
+	if err != nil {
+		logger.Errorf("error checking api key hash for user %s: %v", username, err)
+		return nil, ErrInternalError
+	}
+
 	// ensure apikey matches
-	if user.ApiKey != apiKey {
+	if !match {
 		logger.Infof("[apikey authentication] invalid api key for user %s", username)
 		return nil, ErrAccessDenied
 	}
@@ -201,6 +217,14 @@ func (s *Service) validatePassword(password string) error {
 	// add more password validation as needed
 
 	return nil
+}
+
+func hashPassword(password string) (string, error) {
+	hash, err := argon2id.CreateHash(password, Argon2Params)
+	if err != nil {
+		return "", err
+	}
+	return hash, nil
 }
 
 func (s *Service) CreateUser(ctx context.Context, u models.User, password string) error {
@@ -366,12 +390,12 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	return nil
 }
 
-func hashPassword(password string) (string, error) {
-	hash, err := argon2id.CreateHash(password, Argon2Params)
-	if err != nil {
-		return "", err
-	}
-	return hash, nil
+func hashAPIKey(apiKey string) (string, error) {
+	// use faster SHA-256 hashing for API keys
+	// https://cybersierra.co/blog/bcrypt-performance-issues-api/
+
+	hasher := sha256Hasher{}
+	return hasher.GenerateHash(apiKey)
 }
 
 func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, error) {
@@ -391,7 +415,13 @@ func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, 
 		return "", fmt.Errorf("error generating api key: %w", err)
 	}
 
-	if err := s.Store.SetUserAPIKey(ctx, existingUser.ID, newAPIKey); err != nil {
+	// hash the api key and store it
+	hashedAPIKey, err := hashAPIKey(newAPIKey)
+	if err != nil {
+		return "", fmt.Errorf("error hashing api key: %w", err)
+	}
+
+	if err := s.Store.SetUserAPIKey(ctx, existingUser.ID, hashedAPIKey); err != nil {
 		return "", fmt.Errorf("error updating user with new api key: %w", err)
 	}
 

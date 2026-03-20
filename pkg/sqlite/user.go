@@ -41,11 +41,11 @@ func (r *userRow) fromUser(o models.User) {
 
 func (r *userRow) resolve() *models.User {
 	ret := &models.User{
-		ID:        r.ID,
-		Username:  r.Username,
-		ApiKey:    r.ApiKey.String,
-		CreatedAt: r.CreatedAt.Timestamp,
-		UpdatedAt: r.UpdatedAt.Timestamp,
+		ID:         r.ID,
+		Username:   r.Username,
+		ApiKeyHash: r.ApiKey.String,
+		CreatedAt:  r.CreatedAt.Timestamp,
+		UpdatedAt:  r.UpdatedAt.Timestamp,
 	}
 
 	return ret
