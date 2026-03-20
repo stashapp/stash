@@ -9,7 +9,7 @@ import (
 // NormalizeAliases trims whitespace, deduplicates aliases (case-insensitively),
 // and ensures aliases are not empty and do not match the performer's name.
 func NormalizeAliases(performerName string, aliases []models.PerformerAlias) []models.PerformerAlias {
-	var sanitized []models.PerformerAlias
+	sanitized := []models.PerformerAlias{}
 	seen := make(map[string]bool)
 	nameLower := strings.ToLower(strings.TrimSpace(performerName))
 

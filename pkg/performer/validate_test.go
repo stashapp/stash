@@ -307,3 +307,32 @@ func TestValidateUpdateDeathDate(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateCreate(t *testing.T) {
+	db := mocks.NewDatabase()
+	db.Performer.On("QueryCount", mock.Anything, mock.Anything, mock.Anything).Return(0, nil)
+
+	tests := []struct {
+		name    string
+		pName   string
+		aliases []models.PerformerAlias
+	}{
+		{"no aliases", "Performer 1", nil},
+		{"empty aliases", "Performer 2", []models.PerformerAlias{}},
+		{"alias matches name", "Performer 3", []models.PerformerAlias{{Alias: "Performer 3", IgnoreAutoTag: true}}},
+		{"duplicate aliases", "Performer 4", []models.PerformerAlias{{Alias: "Alias 1", IgnoreAutoTag: true}, {Alias: "Alias 1", IgnoreAutoTag: false}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := models.Performer{
+				Name: tt.pName,
+			}
+			p.Aliases = models.NewRelatedPerformerAliases(NormalizeAliases(p.Name, tt.aliases))
+
+			// This should NOT panic
+			err := ValidateCreate(testCtx, p, db.Performer)
+			assert.Nil(t, err)
+		})
+	}
+}
