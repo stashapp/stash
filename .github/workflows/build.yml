@@ -242,6 +242,14 @@ jobs:
         name: stash-macos
         path: dist/stash-macos
 
+    - name: Upload macOS bundle
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v7
+      with:
+        name: Stash.app.zip
+        path: dist/Stash.app.zip
+
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
