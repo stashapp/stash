@@ -1101,9 +1101,12 @@ var findExactImageDuplicateQuery = `
 SELECT GROUP_CONCAT(DISTINCT image_id) as ids
 FROM images_files
 JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
-WHERE files_fingerprints.type = 'phash'
+WHERE files_fingerprints.type = 'phash' 
+  AND files_fingerprints.fingerprint != zeroblob(8)
+  AND files_fingerprints.fingerprint != ''
 GROUP BY fingerprint
-HAVING COUNT(DISTINCT image_id) > 1;
+HAVING COUNT(DISTINCT image_id) > 1
+LIMIT 1000;
 `
 
 func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Image, error) {

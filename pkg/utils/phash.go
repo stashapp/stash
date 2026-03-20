@@ -3,7 +3,9 @@ package utils
 import (
 	"math"
 	"math/bits"
+	"runtime"
 	"strconv"
+	"sync"
 
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
@@ -23,31 +25,48 @@ func FindDuplicates(hashes []*Phash, distance int, durationDiff float64) [][]int
 		uintHashes[i] = uint64(h.Hash)
 	}
 
-	for i, subject := range hashes {
-		subjectHash := uintHashes[i]
-		for j := i + 1; j < len(hashes); j++ {
-			neighbor := hashes[j]
-			if subject.ID == neighbor.ID {
-				continue
-			}
+	numHashes := len(hashes)
+	numWorkers := runtime.GOMAXPROCS(0)
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
 
-			// Check duration if applicable (for scenes)
-			if durationDiff >= 0 {
-				if subject.Duration > 0 && neighbor.Duration > 0 {
-					if math.Abs(subject.Duration-neighbor.Duration) > durationDiff {
+	// Distribute work among workers
+	for w := 0; w < numWorkers; w++ {
+		go func(workerID int) {
+			defer wg.Done()
+			for i := workerID; i < numHashes; i += numWorkers {
+				subject := hashes[i]
+				subjectHash := uintHashes[i]
+
+				for j := 0; j < numHashes; j++ {
+					if i == j {
 						continue
+					}
+					neighbor := hashes[j]
+					if subject.ID == neighbor.ID {
+						continue
+					}
+
+					// Check duration if applicable (for scenes)
+					if durationDiff >= 0 {
+						if subject.Duration > 0 && neighbor.Duration > 0 {
+							if math.Abs(subject.Duration-neighbor.Duration) > durationDiff {
+								continue
+							}
+						}
+					}
+
+					neighborHash := uintHashes[j]
+					// Hamming distance using native bit counting
+					if bits.OnesCount64(subjectHash^neighborHash) <= distance {
+						subject.Neighbors = append(subject.Neighbors, j)
 					}
 				}
 			}
-
-			neighborHash := uintHashes[j]
-			// Hamming distance using native bit counting
-			if bits.OnesCount64(subjectHash^neighborHash) <= distance {
-				subject.Neighbors = append(subject.Neighbors, j)
-				neighbor.Neighbors = append(neighbor.Neighbors, i)
-			}
-		}
+		}(w)
 	}
+
+	wg.Wait()
 
 	var buckets [][]int
 	for _, subject := range hashes {
