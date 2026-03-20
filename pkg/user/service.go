@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexedwards/argon2id"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -24,6 +24,23 @@ var (
 	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
 	ErrUserAlreadyExists        = errors.New("user with that username already exists")
 )
+
+const (
+	Argon2Time    = 5
+	Argon2Memory  = 7 * 1024
+	Argon2Threads = 5
+	Argon2KeyLen  = 32
+
+	SaltLength = 16
+)
+
+var Argon2Params = &argon2id.Params{
+	Memory:      Argon2Memory,
+	Iterations:  Argon2Time,
+	Parallelism: Argon2Threads,
+	SaltLength:  SaltLength,
+	KeyLength:   Argon2KeyLen,
+}
 
 type UserSource interface {
 	All(ctx context.Context) ([]*models.User, error)
@@ -87,7 +104,13 @@ func (s *Service) ValidateCredentials(ctx context.Context, username string, pass
 		return ErrInternalError
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
+	match, _, err := argon2id.CheckHash(password, passwordHash)
+	if err != nil {
+		logger.Errorf("error checking password hash for user %s: %v", username, err)
+		return ErrInternalError
+	}
+
+	if !match {
 		logger.Infof("[login attempt] invalid credentials for user %s", username)
 		return ErrAccessDenied
 	}
@@ -216,7 +239,10 @@ func (s *Service) CreateUser(ctx context.Context, u models.User, password string
 	u.UpdatedAt = u.CreatedAt
 
 	// hash the password and store it
-	hashedPassword := hashPassword(password)
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		return fmt.Errorf("error hashing password: %w", err)
+	}
 
 	// create user in store
 	if err := s.Store.Create(ctx, &u, hashedPassword); err != nil {
@@ -325,7 +351,10 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	}
 
 	// hash the password and store it
-	hashedPassword := hashPassword(newPassword)
+	hashedPassword, err := hashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("error hashing password: %w", err)
+	}
 
 	// change password in store
 	if err := s.Store.SetUserPassword(ctx, existingUser.ID, hashedPassword); err != nil {
@@ -337,10 +366,12 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	return nil
 }
 
-func hashPassword(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
-	return string(hash)
+func hashPassword(password string) (string, error) {
+	hash, err := argon2id.CreateHash(password, Argon2Params)
+	if err != nil {
+		return "", err
+	}
+	return hash, nil
 }
 
 func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, error) {
