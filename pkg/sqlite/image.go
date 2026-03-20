@@ -1099,17 +1099,11 @@ func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error
 
 var findExactImageDuplicateQuery = `
 SELECT GROUP_CONCAT(DISTINCT image_id) as ids
-FROM (
-	SELECT images.id as image_id
-		 , files_fingerprints.fingerprint as phash
-	FROM images
-	JOIN images_files ON images.id = images_files.image_id
-	JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
-	WHERE files_fingerprints.type = 'phash'
-)
-GROUP BY phash
-HAVING COUNT(phash) > 1
-   AND COUNT(DISTINCT image_id) > 1;
+FROM images_files
+JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
+WHERE files_fingerprints.type = 'phash'
+GROUP BY fingerprint
+HAVING COUNT(DISTINCT image_id) > 1;
 `
 
 func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Image, error) {
@@ -1160,13 +1154,26 @@ func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 		dupeIds = utils.FindDuplicates(hashes, distance, -1)
 	}
 
-	var result [][]*models.Image
+	var allIds []int
 	for _, comp := range dupeIds {
-		if images, err := qb.FindMany(ctx, comp); err == nil {
-			if len(images) > 1 {
-				result = append(result, images)
-			}
-		}
+		allIds = append(allIds, comp...)
+	}
+
+	if len(allIds) == 0 {
+		return nil, nil
+	}
+
+	allImages, err := qb.FindMany(ctx, allIds)
+	if err != nil {
+		return nil, err
+	}
+
+	var result [][]*models.Image
+	offset := 0
+	for _, comp := range dupeIds {
+		group := allImages[offset : offset+len(comp)]
+		result = append(result, group)
+		offset += len(comp)
 	}
 
 	return result, nil

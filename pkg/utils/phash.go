@@ -2,6 +2,7 @@ package utils
 
 import (
 	"math"
+	"math/bits"
 	"strconv"
 
 	"github.com/corona10/goimagehash"
@@ -17,21 +18,34 @@ type Phash struct {
 }
 
 func FindDuplicates(hashes []*Phash, distance int, durationDiff float64) [][]int {
+	// Pre-calculate hash values to avoid allocations and method calls in the inner loop
+	uintHashes := make([]uint64, len(hashes))
+	for i, h := range hashes {
+		uintHashes[i] = uint64(h.Hash)
+	}
+
 	for i, subject := range hashes {
-		subjectHash := goimagehash.NewImageHash(uint64(subject.Hash), goimagehash.PHash)
-		for j, neighbor := range hashes {
-			if i != j && subject.ID != neighbor.ID {
-				neighbourDurationDistance := 0.
+		subjectHash := uintHashes[i]
+		for j := i + 1; j < len(hashes); j++ {
+			neighbor := hashes[j]
+			if subject.ID == neighbor.ID {
+				continue
+			}
+
+			// Check duration if applicable (for scenes)
+			if durationDiff >= 0 {
 				if subject.Duration > 0 && neighbor.Duration > 0 {
-					neighbourDurationDistance = math.Abs(subject.Duration - neighbor.Duration)
-				}
-				if (neighbourDurationDistance <= durationDiff) || (durationDiff < 0) {
-					neighborHash := goimagehash.NewImageHash(uint64(neighbor.Hash), goimagehash.PHash)
-					neighborDistance, _ := subjectHash.Distance(neighborHash)
-					if neighborDistance <= distance {
-						subject.Neighbors = append(subject.Neighbors, j)
+					if math.Abs(subject.Duration-neighbor.Duration) > durationDiff {
+						continue
 					}
 				}
+			}
+
+			neighborHash := uintHashes[j]
+			// Hamming distance using native bit counting
+			if bits.OnesCount64(subjectHash^neighborHash) <= distance {
+				subject.Neighbors = append(subject.Neighbors, j)
+				neighbor.Neighbors = append(neighbor.Neighbors, i)
 			}
 		}
 	}

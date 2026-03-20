@@ -1472,11 +1472,26 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 		dupeIds = utils.FindDuplicates(hashes, distance, durationDiff)
 	}
 
+	var allIds []int
+	for _, comp := range dupeIds {
+		allIds = append(allIds, comp...)
+	}
+
+	if len(allIds) == 0 {
+		return nil, nil
+	}
+
+	allScenes, err := qb.FindMany(ctx, allIds)
+	if err != nil {
+		return nil, err
+	}
+
 	var duplicates [][]*models.Scene
-	for _, sceneIds := range dupeIds {
-		if scenes, err := qb.FindMany(ctx, sceneIds); err == nil {
-			duplicates = append(duplicates, scenes)
-		}
+	offset := 0
+	for _, comp := range dupeIds {
+		group := allScenes[offset : offset+len(comp)]
+		duplicates = append(duplicates, group)
+		offset += len(comp)
 	}
 
 	sortByPath(duplicates)
