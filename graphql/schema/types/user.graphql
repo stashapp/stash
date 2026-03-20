@@ -2,6 +2,7 @@ enum RoleEnum {
   ADMIN
   READ
   MODIFY
+  GENERATE_API_KEY
 }
 
 directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
@@ -14,10 +15,6 @@ type User {
   Should not be visible to other users
   """
   roles: [RoleEnum!] @isUserOwner
-  """
-  Should not be visible to other users
-  """
-  api_key: String @isUserOwner
 }
 
 input UserCreateInput {
