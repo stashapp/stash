@@ -8,12 +8,14 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/user"
 )
 
@@ -33,18 +35,56 @@ func allowUnauthenticated(r *http.Request) bool {
 }
 
 type UserAuthenticator interface {
+	LoginRequired(ctx context.Context) (bool, error)
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
-	AuthenticateUserByID(ctx context.Context, username string) (*models.User, error)
+	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 }
 
-func authenticateHandler(g UserAuthenticator) func(http.Handler) http.Handler {
+func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
+	// if graphql or a non-webpage was requested, we just return a forbidden error
+	ext := path.Ext(r.URL.Path)
+	if r.URL.Path == gqlEndpoint || (ext != "" && ext != ".html") {
+		w.Header().Add("WWW-Authenticate", "FormBased")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	prefix := getProxyPrefix(r)
+
+	returnURL := url.URL{
+		Path:     prefix + r.URL.Path,
+		RawQuery: r.URL.RawQuery,
+	}
+	q := make(url.Values)
+	q.Set(returnURLParam, returnURL.String())
+	u := url.URL{
+		Path:     prefix + loginEndpoint,
+		RawQuery: q.Encode(),
+	}
+	http.Redirect(w, r, u.String(), http.StatusFound)
+}
+
+func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := config.GetInstance()
-			s := c.UserStore
+			ctx := r.Context()
+
+			// TODO - check ip whitelist here
+
+			var loginRequired bool
+			if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
+				var err error
+				loginRequired, err = g.LoginRequired(ctx)
+				return err
+			}); err != nil {
+				logger.Errorf("Error checking if login is required: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 
 			// error if external access tripwire activated
-			if accessErr := session.CheckExternalAccessTripwire(s, c); accessErr != nil {
+			if accessErr := session.CheckExternalAccessTripwire(loginRequired, c); accessErr != nil {
 				http.Error(w, tripwireActivatedErrMsg, http.StatusForbidden)
 				return
 			}
@@ -54,21 +94,38 @@ func authenticateHandler(g UserAuthenticator) func(http.Handler) http.Handler {
 			// try to authenticate using api key first
 			var u *models.User
 			var err error
-			ctx := r.Context()
 
 			apiKey := session.GetRequestApiKey(r)
 			if apiKey != "" {
-				u, err = g.AuthenticateByAPIKey(ctx, apiKey)
+				if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
+					u, err = g.AuthenticateByAPIKey(ctx, apiKey)
+					return err
+				}); err != nil {
+					if errors.Is(err, user.ErrInternalError) {
+						logger.Errorf("error authenticating by API key: %v", err)
+						http.Error(w, "internal server error", http.StatusInternalServerError)
+						return
+					}
+				}
 			} else {
-				userID, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
+				session, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
 				if getErr != nil {
 					logger.Errorf("error getting session user ID: %v", getErr)
 					http.Error(w, "internal server error", http.StatusInternalServerError)
 					return
 				}
 
-				if userID != "" {
-					u, err = g.AuthenticateUserByID(ctx, userID)
+				if session != nil {
+					if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
+						u, err = g.AuthenticateSession(ctx, session.UserID, session.LoginTime)
+						return err
+					}); err != nil {
+						if errors.Is(err, user.ErrInternalError) {
+							logger.Errorf("error authenticating user by ID: %v", err)
+							http.Error(w, "internal server error", http.StatusInternalServerError)
+							return
+						}
+					}
 				}
 			}
 
@@ -78,13 +135,11 @@ func authenticateHandler(g UserAuthenticator) func(http.Handler) http.Handler {
 					return
 				}
 
-				// unauthorized error
-				w.Header().Add("WWW-Authenticate", "FormBased")
-				w.WriteHeader(http.StatusUnauthorized)
-				return
+				// fall through and treat as unauthenticated
 			}
 
-			if err := session.CheckAllowPublicWithoutAuth(s, c, r); err != nil {
+			// TODO remove this in favour of ip whitelist
+			if err := session.CheckAllowPublicWithoutAuth(loginRequired, c, r); err != nil {
 				var accessErr session.ExternalAccessError
 				if errors.As(err, &accessErr) {
 					session.LogExternalAccessError(accessErr)
@@ -102,31 +157,10 @@ func authenticateHandler(g UserAuthenticator) func(http.Handler) http.Handler {
 				return
 			}
 
-			if hc := s.LoginRequired(ctx); hc {
+			if loginRequired {
 				// authentication is required
 				if u == nil && !allowUnauthenticated(r) {
-					// if graphql or a non-webpage was requested, we just return a forbidden error
-					ext := path.Ext(r.URL.Path)
-					if r.URL.Path == gqlEndpoint || (ext != "" && ext != ".html") {
-						w.Header().Add("WWW-Authenticate", "FormBased")
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					prefix := getProxyPrefix(r)
-
-					// otherwise redirect to the login page
-					returnURL := url.URL{
-						Path:     prefix + r.URL.Path,
-						RawQuery: r.URL.RawQuery,
-					}
-					q := make(url.Values)
-					q.Set(returnURLParam, returnURL.String())
-					u := url.URL{
-						Path:     prefix + loginEndpoint,
-						RawQuery: q.Encode(),
-					}
-					http.Redirect(w, r, u.String(), http.StatusFound)
+					handleUnauthorized(w, r)
 					return
 				}
 			}

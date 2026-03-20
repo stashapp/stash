@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
@@ -52,9 +53,9 @@ type UserService interface {
 	session.Authenticator
 	AllUsers(ctx context.Context) ([]*models.User, error)
 	GetUser(ctx context.Context, username string) (*models.User, error)
-	LoginRequired(ctx context.Context) bool
+	LoginRequired(ctx context.Context) (bool, error)
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
-	AuthenticateUserByID(ctx context.Context, username string) (*models.User, error)
+	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 
 	CreateUser(ctx context.Context, u models.User, password string) error
 	UpdateUser(ctx context.Context, username string, updated models.User) error

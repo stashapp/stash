@@ -68,3 +68,11 @@ func (r Roles) HasRole(role RoleEnum) bool {
 	}
 	return false
 }
+
+func (r Roles) Strings() []string {
+	strs := make([]string, len(r))
+	for i, role := range r {
+		strs[i] = role.String()
+	}
+	return strs
+}

@@ -103,11 +103,17 @@ func getLoginLocale(lang string) ([]byte, error) {
 	return data, nil
 }
 
-func handleLogin(s manager.UserService) http.HandlerFunc {
+func handleLogin(s *session.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
-		if hc := s.LoginRequired(r.Context()); !hc {
+		loginRequired, err := s.LoginRequired(r.Context())
+		if err != nil {
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+			return
+		}
+
+		if !loginRequired {
 			if returnURL != "" {
 				http.Redirect(w, r, returnURL, http.StatusFound)
 			} else {
@@ -153,9 +159,15 @@ func handleLogout(s *session.Store) http.HandlerFunc {
 			return
 		}
 
+		loginRequired, err := s.LoginRequired(r.Context())
+		if err != nil {
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+			return
+		}
+
 		// redirect to the login page if credentials are required
 		prefix := getProxyPrefix(r)
-		if hc := s.LoginRequired(r.Context()); hc {
+		if loginRequired {
 			http.Redirect(w, r, prefix+loginEndpoint, http.StatusFound)
 		} else {
 			http.Redirect(w, r, prefix+"/", http.StatusFound)

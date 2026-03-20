@@ -35,7 +35,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 
 	doTest := func(caseIndex int, r *http.Request, expectedErr interface{}) {
 		t.Helper()
-		err := CheckAllowPublicWithoutAuth(c, c, r)
+		err := CheckAllowPublicWithoutAuth(c.LoginRequired(context.Background()), c, r)
 
 		if expectedErr == nil && err == nil {
 			return
@@ -121,7 +121,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 				RemoteAddr: remoteAddr,
 			}
 
-			err := CheckAllowPublicWithoutAuth(c, c, r)
+			err := CheckAllowPublicWithoutAuth(c.LoginRequired(context.Background()), c, r)
 			if err == nil {
 				t.Errorf("[%s]: expected error", remoteAddr)
 				continue
@@ -138,7 +138,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 		c.username = "admin"
 		c.password = "admin"
 
-		if err := CheckAllowPublicWithoutAuth(c, c, r); err != nil {
+		if err := CheckAllowPublicWithoutAuth(c.LoginRequired(context.Background()), c, r); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 
@@ -147,7 +147,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 
 		c.dangerousAllowPublicWithoutAuth = true
 
-		if err := CheckAllowPublicWithoutAuth(c, c, r); err != nil {
+		if err := CheckAllowPublicWithoutAuth(c.LoginRequired(context.Background()), c, r); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 	}
@@ -161,7 +161,7 @@ func TestCheckExternalAccessTripwire(t *testing.T) {
 	c.username = "admin"
 	c.password = "admin"
 
-	if err := CheckExternalAccessTripwire(c, c); err != nil {
+	if err := CheckExternalAccessTripwire(c.LoginRequired(context.Background()), c); err != nil {
 		t.Errorf("unexpected error %v", err)
 	}
 
@@ -171,19 +171,19 @@ func TestCheckExternalAccessTripwire(t *testing.T) {
 	// HACK - this key isn't publically exposed
 	c.dangerousAllowPublicWithoutAuth = true
 
-	if err := CheckExternalAccessTripwire(c, c); err != nil {
+	if err := CheckExternalAccessTripwire(c.LoginRequired(context.Background()), c); err != nil {
 		t.Errorf("unexpected error %v", err)
 	}
 
 	c.dangerousAllowPublicWithoutAuth = false
 
-	if err := CheckExternalAccessTripwire(c, c); err == nil {
+	if err := CheckExternalAccessTripwire(c.LoginRequired(context.Background()), c); err == nil {
 		t.Errorf("expected error %v", ExternalAccessError("4.4.4.4"))
 	}
 
 	c.securityTripwireAccessedFromPublicInternet = ""
 
-	if err := CheckExternalAccessTripwire(c, c); err != nil {
+	if err := CheckExternalAccessTripwire(c.LoginRequired(context.Background()), c); err != nil {
 		t.Errorf("unexpected error %v", err)
 	}
 }

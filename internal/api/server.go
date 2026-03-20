@@ -122,11 +122,11 @@ func Initialize() (*Server, error) {
 		manager:        mgr,
 	}
 
-	userStore := manager.GetInstance().UserService
+	userService := mgr.UserService
 
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
-	r.Use(authenticateHandler(userStore))
+	r.Use(authenticateHandler(mgr.Repository.TxnManager, userService))
 	visitedPluginHandler := mgr.SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
 
@@ -164,7 +164,6 @@ func Initialize() (*Server, error) {
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
 	groupService := mgr.GroupService
-	userService := mgr.UserService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
@@ -241,7 +240,7 @@ func Initialize() (*Server, error) {
 
 	sessionStore := mgr.SessionStore
 
-	r.Get(loginEndpoint, handleLogin(userService))
+	r.Get(loginEndpoint, handleLogin(sessionStore))
 	r.Post(loginEndpoint, handleLoginPost(sessionStore))
 	r.Get(logoutEndpoint, handleLogout(sessionStore))
 	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))

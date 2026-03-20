@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
@@ -21,6 +22,7 @@ const (
 
 const (
 	userIDKey             = "userID"
+	loginTimeKey          = "loginTime"
 	visitedPluginHooksKey = "visitedPluginsHooks"
 )
 
@@ -47,19 +49,21 @@ func (e InvalidCredentialsError) Error() string {
 var ErrUnauthorized = errors.New("unauthorized")
 
 type Authenticator interface {
-	LoginRequired(ctx context.Context) bool
+	LoginRequired(ctx context.Context) (bool, error)
 	ValidateCredentials(ctx context.Context, username string, password string) error
 }
 
 type Store struct {
 	sessionStore  *sessions.CookieStore
 	authenticator Authenticator
+	txnManager    models.TxnManager
 	config        SessionConfig
 }
 
-func NewStore(c SessionConfig, a Authenticator) *Store {
+func NewStore(c SessionConfig, a Authenticator, txnMgr models.TxnManager) *Store {
 	ret := &Store{
 		sessionStore:  sessions.NewCookieStore(c.GetSessionStoreKey()),
+		txnManager:    txnMgr,
 		config:        c,
 		authenticator: a,
 	}
@@ -70,8 +74,16 @@ func NewStore(c SessionConfig, a Authenticator) *Store {
 	return ret
 }
 
-func (s *Store) LoginRequired(ctx context.Context) bool {
-	return s.authenticator.LoginRequired(ctx)
+func (s *Store) LoginRequired(ctx context.Context) (bool, error) {
+	var loginRequired bool
+	if err := s.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		loginRequired, err = s.authenticator.LoginRequired(ctx)
+		return err
+	}); err != nil {
+		return false, err
+	}
+	return loginRequired, nil
 }
 
 func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
@@ -82,16 +94,18 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
-	err := s.authenticator.ValidateCredentials(r.Context(), username, password)
-	if err != nil {
+	if err := s.txnManager.WithReadTxn(r.Context(), func(ctx context.Context) error {
+		return s.authenticator.ValidateCredentials(ctx, username, password)
+	}); err != nil {
 		return &InvalidCredentialsError{Username: username}
 	}
 
 	logger.Infof("User %s logged in", username)
 
 	newSession.Values[userIDKey] = username
+	newSession.Values[loginTimeKey] = time.Now().Unix()
 
-	err = newSession.Save(r, w)
+	err := newSession.Save(r, w)
 	if err != nil {
 		return err
 	}
@@ -120,29 +134,35 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
+type Session struct {
+	UserID    string
+	LoginTime time.Time
+}
+
+func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (*Session, error) {
 	session, err := s.sessionStore.Get(r, cookieName)
 	// ignore errors and treat as an empty user id, so that we handle expired
 	// cookie
 	if err != nil {
-		return "", nil
+		return nil, nil
 	}
 
 	if !session.IsNew {
-		val := session.Values[userIDKey]
-
 		// refresh the cookie
 		err = session.Save(r, w)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		ret, _ := val.(string)
+		ret := &Session{}
+		ret.UserID, _ = session.Values[userIDKey].(string)
+		loginTimeUnix, _ := session.Values[loginTimeKey].(int64)
+		ret.LoginTime = time.Unix(loginTimeUnix, 0)
 
 		return ret, nil
 	}
 
-	return "", nil
+	return nil, nil
 }
 
 func SetCurrentUser(ctx context.Context, u models.User) context.Context {

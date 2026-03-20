@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -24,32 +26,37 @@ var (
 )
 
 type UserSource interface {
-	AllUsers(ctx context.Context) ([]*models.User, error)
-	GetUser(ctx context.Context, username string) (*models.User, error)
-	ValidateCredentials(ctx context.Context, username string, password string) bool
+	All(ctx context.Context) ([]*models.User, error)
+	Count(ctx context.Context) (int, error)
+	FindByUsername(ctx context.Context, username string) (*models.User, error)
+	GetPasswordHash(ctx context.Context, id int) (string, error)
 
-	CreateUser(ctx context.Context, u models.User, password string) error
-	ReplaceUser(ctx context.Context, username string, updated models.User) error
-	ChangeUserPassword(ctx context.Context, username string, newPassword string) error
-	ChangeUserAPIKey(ctx context.Context, username string, newAPIKey string) error
-	DeleteUser(ctx context.Context, username string) error
+	Create(ctx context.Context, u *models.User, password string) error
+	Update(ctx context.Context, updated *models.User) error
+	SetUserPassword(ctx context.Context, id int, newPassword string) error
+	SetUserAPIKey(ctx context.Context, id int, newAPIKey string) error
+	Destroy(ctx context.Context, id int) error
 }
 
 type Service struct {
 	Store UserSource
 }
 
-func (s *Service) LoginRequired(ctx context.Context) bool {
-	u, _ := s.Store.AllUsers(ctx)
-	return len(u) > 0
+func (s *Service) LoginRequired(ctx context.Context) (bool, error) {
+	count, err := s.Store.Count(ctx)
+	if err != nil {
+		logger.Errorf("error checking if login is required: %v", err)
+		return false, ErrInternalError
+	}
+	return count > 0, nil
 }
 
 func (s *Service) GetUser(ctx context.Context, username string) (*models.User, error) {
-	return s.Store.GetUser(ctx, username)
+	return s.Store.FindByUsername(ctx, username)
 }
 
 func (s *Service) AllUsers(ctx context.Context) ([]*models.User, error) {
-	return s.Store.AllUsers(ctx)
+	return s.Store.All(ctx)
 }
 
 func userIsLocked(u *models.User) bool {
@@ -74,17 +81,23 @@ func (s *Service) ValidateCredentials(ctx context.Context, username string, pass
 		return ErrAccessDenied
 	}
 
-	if !s.Store.ValidateCredentials(ctx, username, password) {
+	passwordHash, err := s.Store.GetPasswordHash(ctx, u.ID)
+	if err != nil {
+		logger.Errorf("error getting password hash for user %s: %v", username, err)
+		return ErrInternalError
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
 		logger.Infof("[login attempt] invalid credentials for user %s", username)
 		return ErrAccessDenied
 	}
 	return nil
 }
 
-// AuthenticateUserByID authenticates a user by their username and returns the user object if successful.
+// AuthenticateSession authenticates a user by their username and login time and returns the user object if successful.
 // This is used for session-based authentication.
-// It will return an error if the user does not exist or if the user is locked.
-func (s *Service) AuthenticateUserByID(ctx context.Context, username string) (*models.User, error) {
+// It will return an error if the user does not exist, if the user is locked or if the user has been updated since the login time.
+func (s *Service) AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error) {
 	u, err := s.GetUser(ctx, username)
 	if err != nil {
 		logger.Errorf("error getting user for authentication: %v", err)
@@ -98,6 +111,12 @@ func (s *Service) AuthenticateUserByID(ctx context.Context, username string) (*m
 
 	if userIsLocked(u) {
 		logger.Infof("[authentication] user %s is locked", username)
+		return nil, ErrAccessDenied
+	}
+
+	// check if the user has been updated since the login time
+	if u.UpdatedAt.After(loginTime) {
+		logger.Infof("[authentication] user %s has been updated since login", username)
 		return nil, ErrAccessDenied
 	}
 
@@ -184,17 +203,23 @@ func (s *Service) CreateUser(ctx context.Context, u models.User, password string
 	}
 
 	// if this is the first user, make them an admin
-	users, err := s.AllUsers(ctx)
+	count, err := s.Store.Count(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting existing users: %w", err)
 	}
 
-	if len(users) == 0 && !u.Roles.HasRole(models.RoleEnumAdmin) {
+	if count == 0 && !u.Roles.HasRole(models.RoleEnumAdmin) {
 		return errors.New("the first user must be an admin")
 	}
 
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = u.CreatedAt
+
+	// hash the password and store it
+	hashedPassword := hashPassword(password)
+
 	// create user in store
-	if err := s.Store.CreateUser(ctx, u, password); err != nil {
+	if err := s.Store.Create(ctx, &u, hashedPassword); err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
 
@@ -255,8 +280,10 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 		}
 	}
 
+	updated.ID = existingUser.ID
+
 	// update user in store
-	if err := s.Store.ReplaceUser(ctx, username, updated); err != nil {
+	if err := s.Store.Update(ctx, &updated); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
 
@@ -297,14 +324,23 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 		return err
 	}
 
+	// hash the password and store it
+	hashedPassword := hashPassword(newPassword)
+
 	// change password in store
-	if err := s.Store.ChangeUserPassword(ctx, username, newPassword); err != nil {
+	if err := s.Store.SetUserPassword(ctx, existingUser.ID, hashedPassword); err != nil {
 		return fmt.Errorf("error changing user password: %w", err)
 	}
 
 	logger.Infof("[user] changed password for %q", username)
 
 	return nil
+}
+
+func hashPassword(password string) string {
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	return string(hash)
 }
 
 func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, error) {
@@ -324,7 +360,7 @@ func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, 
 		return "", fmt.Errorf("error generating api key: %w", err)
 	}
 
-	if err := s.Store.ChangeUserAPIKey(ctx, username, newAPIKey); err != nil {
+	if err := s.Store.SetUserAPIKey(ctx, existingUser.ID, newAPIKey); err != nil {
 		return "", fmt.Errorf("error updating user with new api key: %w", err)
 	}
 
@@ -345,7 +381,7 @@ func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
 	}
 
 	// clear api key
-	if err := s.Store.ChangeUserAPIKey(ctx, username, ""); err != nil {
+	if err := s.Store.SetUserAPIKey(ctx, existingUser.ID, ""); err != nil {
 		return fmt.Errorf("error clearing user api key: %w", err)
 	}
 
@@ -387,7 +423,7 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 	}
 
 	// delete user from store
-	if err := s.Store.DeleteUser(ctx, username); err != nil {
+	if err := s.Store.Destroy(ctx, existingUser.ID); err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 

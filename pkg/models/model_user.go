@@ -1,9 +1,14 @@
 package models
 
+import "time"
+
 type User struct {
-	Username string
-	Roles    Roles
-	ApiKey   string
+	ID        int
+	Username  string
+	Roles     Roles
+	ApiKey    string
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type UserInput struct {

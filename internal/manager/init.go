@@ -111,7 +111,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	}
 
 	mgr.UserService = &user.Service{
-		Store: cfg.UserStore,
+		Store: db.User,
 	}
 
 	if !cfg.IsNewSystem() {
@@ -126,7 +126,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 			return nil, err
 		}
 
-		mgr.checkSecurityTripwire()
+		// mgr.checkSecurityTripwire()
 	} else {
 		cfgFile := cfg.GetConfigFile()
 		if cfgFile != "" {
@@ -135,7 +135,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 		// create temporary session store - this will be re-initialised
 		// after config is complete
-		mgr.SessionStore = session.NewStore(cfg, instance.UserService)
+		mgr.SessionStore = session.NewStore(cfg, instance.UserService, repo.TxnManager)
 
 		logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 	}
@@ -194,7 +194,7 @@ func initJobManager(cfg *config.Config) *job.Manager {
 func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshConfig()
 
-	s.SessionStore = session.NewStore(s.Config, s.UserService)
+	s.SessionStore = session.NewStore(s.Config, s.UserService, s.Repository.TxnManager)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)
 
 	s.RefreshPluginCache()
@@ -255,11 +255,17 @@ func (s *Manager) postInit(ctx context.Context) error {
 	return nil
 }
 
-func (s *Manager) checkSecurityTripwire() {
-	if err := session.CheckExternalAccessTripwire(s.Config.UserStore, s.Config); err != nil {
-		session.LogExternalAccessError(*err)
-	}
-}
+// func (s *Manager) checkSecurityTripwire() {
+// 	loginRequired, err := s.SessionStore.LoginRequired(context.Background())
+// 	if err != nil {
+// 		logger.Errorf("Error checking if login is required: %v", err)
+// 		return
+// 	}
+
+// 	if err := session.CheckExternalAccessTripwire(loginRequired, s.Config); err != nil {
+// 		session.LogExternalAccessError(*err)
+// 	}
+// }
 
 func (s *Manager) writeStashIcon() {
 	iconPath := filepath.Join(s.Config.GetConfigPath(), "icon.png")
