@@ -1105,28 +1105,12 @@ func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 
 	var hashes []*utils.Phash
 	if err := imageRepository.queryFunc(ctx, query, nil, false, func(rows *sqlx.Rows) error {
-		var sq struct {
-			ID    int     `db:"id"`
-			Phash *string `db:"phash"`
-		}
-		if err := rows.StructScan(&sq); err != nil {
-			return err
-		}
-
-		if sq.Phash == nil {
-			return nil
-		}
-
-		hashInt, err := utils.StringToPhash(*sq.Phash)
-		if err != nil {
-			return nil
-		}
-
 		phash := utils.Phash{
-			ID:       sq.ID,
-			Hash:     hashInt,
 			Bucket:   -1,
 			Duration: -1,
+		}
+		if err := rows.StructScan(&phash); err != nil {
+			return err
 		}
 
 		hashes = append(hashes, &phash)
