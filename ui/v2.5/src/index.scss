@@ -1474,3 +1474,10 @@ h3 .TruncatedText {
     pointer-events: auto;
   }
 }
+
+// hack for #6724 since we can't align in TruncatedText
+li {
+  a {
+    display: block;
+  }
+}
