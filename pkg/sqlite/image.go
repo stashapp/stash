@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -412,6 +411,11 @@ func (qb *ImageStore) Find(ctx context.Context, id int) (*models.Image, error) {
 func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
 	images := make([]*models.Image, len(ids))
 
+	idToIndex := make(map[int]int, len(ids))
+	for i, id := range ids {
+		idToIndex[id] = i
+	}
+
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
 		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
@@ -420,8 +424,9 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 		}
 
 		for _, s := range unsorted {
-			i := slices.Index(ids, s.ID)
-			images[i] = s
+			if i, ok := idToIndex[s.ID]; ok {
+				images[i] = s
+			}
 		}
 
 		return nil
@@ -1099,14 +1104,20 @@ func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error
 
 var findExactImageDuplicateQuery = `
 SELECT GROUP_CONCAT(DISTINCT image_id) as ids
-FROM images_files
-JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
-WHERE files_fingerprints.type = 'phash' 
-  AND files_fingerprints.fingerprint != zeroblob(8)
-  AND files_fingerprints.fingerprint != ''
-GROUP BY fingerprint
+FROM (
+	SELECT images_files.image_id
+		 , files.size as file_size
+		 , files_fingerprints.fingerprint as phash
+	FROM images_files
+	JOIN files ON images_files.file_id = files.id
+	JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
+	WHERE files_fingerprints.type = 'phash' 
+	  AND files_fingerprints.fingerprint != zeroblob(8)
+	  AND files_fingerprints.fingerprint != ''
+)
+GROUP BY phash
 HAVING COUNT(DISTINCT image_id) > 1
-LIMIT 1000;
+ORDER BY SUM(file_size) DESC;
 `
 
 func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Image, error) {

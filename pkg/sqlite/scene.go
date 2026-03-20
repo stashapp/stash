@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -533,9 +532,15 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 		return nil, err
 	}
 
+	idToIndex := make(map[int]int, len(ids))
+	for i, id := range ids {
+		idToIndex[id] = i
+	}
+
 	for _, s := range unsorted {
-		i := slices.Index(ids, s.ID)
-		scenes[i] = s
+		if i, ok := idToIndex[s.ID]; ok {
+			scenes[i] = s
+		}
 	}
 
 	for i := range scenes {
