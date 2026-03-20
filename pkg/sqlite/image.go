@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -1095,31 +1097,68 @@ func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error
 	return imagesURLsTableMgr.get(ctx, imageID)
 }
 
+var findExactImageDuplicateQuery = `
+SELECT GROUP_CONCAT(DISTINCT image_id) as ids
+FROM (
+	SELECT images.id as image_id
+		 , files_fingerprints.fingerprint as phash
+	FROM images
+	JOIN images_files ON images.id = images_files.image_id
+	JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
+	WHERE files_fingerprints.type = 'phash'
+)
+GROUP BY phash
+HAVING COUNT(phash) > 1
+   AND COUNT(DISTINCT image_id) > 1;
+`
+
 func (qb *ImageStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Image, error) {
-	query := `
+	var dupeIds [][]int
+	if distance == 0 {
+		var ids []string
+		if err := dbWrapper.Select(ctx, &ids, findExactImageDuplicateQuery); err != nil {
+			return nil, err
+		}
+
+		for _, id := range ids {
+			strIds := strings.Split(id, ",")
+			var imageIds []int
+			for _, strId := range strIds {
+				if intId, err := strconv.Atoi(strId); err == nil {
+					imageIds = sliceutil.AppendUnique(imageIds, intId)
+				}
+			}
+			// filter out
+			if len(imageIds) > 1 {
+				dupeIds = append(dupeIds, imageIds)
+			}
+		}
+	} else {
+		query := `
         SELECT images.id, files_fingerprints.fingerprint as phash
         FROM images
         JOIN images_files ON images.id = images_files.image_id
         JOIN files_fingerprints ON images_files.file_id = files_fingerprints.file_id
         WHERE files_fingerprints.type = 'phash'`
 
-	var hashes []*utils.Phash
-	if err := imageRepository.queryFunc(ctx, query, nil, false, func(rows *sqlx.Rows) error {
-		phash := utils.Phash{
-			Bucket:   -1,
-			Duration: -1,
-		}
-		if err := rows.StructScan(&phash); err != nil {
-			return err
+		var hashes []*utils.Phash
+		if err := imageRepository.queryFunc(ctx, query, nil, false, func(rows *sqlx.Rows) error {
+			phash := utils.Phash{
+				Bucket:   -1,
+				Duration: -1,
+			}
+			if err := rows.StructScan(&phash); err != nil {
+				return err
+			}
+
+			hashes = append(hashes, &phash)
+			return nil
+		}); err != nil {
+			return nil, err
 		}
 
-		hashes = append(hashes, &phash)
-		return nil
-	}); err != nil {
-		return nil, err
+		dupeIds = utils.FindDuplicates(hashes, distance, -1)
 	}
-
-	dupeIds := utils.FindDuplicates(hashes, distance, -1)
 
 	var result [][]*models.Image
 	for _, comp := range dupeIds {
