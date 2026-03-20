@@ -71,8 +71,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(MaxTranscodeSize, i.GetMaxTranscodeSize())
 				i.SetInterface(MaxStreamingTranscodeSize, i.GetMaxStreamingTranscodeSize())
 				i.SetInterface(ApiKey, i.GetAPIKey())
-				i.SetInterface(Username, i.GetUsername())
-				i.SetInterface(Password, i.GetPasswordHash())
 				i.SetInterface(MaxSessionAge, i.GetMaxSessionAge())
 				i.SetInterface(CustomServedFolders, i.GetCustomServedFolders())
 				i.SetInterface(LegacyCustomUILocation, i.GetUILocation())

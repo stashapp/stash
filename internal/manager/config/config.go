@@ -345,8 +345,6 @@ type Config struct {
 	certFile string
 	keyFile  string
 
-	UserStore *UserStore
-
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
 }
@@ -360,102 +358,102 @@ func GetInstance() *Config {
 	return instance
 }
 
-func (s *Config) load(f string) error {
-	if err := s.main.Load(file.Provider(f), yaml.Parser()); err != nil {
+func (i *Config) load(f string) error {
+	if err := i.main.Load(file.Provider(f), yaml.Parser()); err != nil {
 		return err
 	}
 
-	s.filePath = f
+	i.filePath = f
 	return nil
 }
 
-func (s *Config) IsNewSystem() bool {
-	return s.isNewSystem
+func (i *Config) IsNewSystem() bool {
+	return i.isNewSystem
 }
 
-func (s *Config) SetConfigFile(fn string) {
-	s.Lock()
-	defer s.Unlock()
-	s.filePath = fn
+func (i *Config) SetConfigFile(fn string) {
+	i.Lock()
+	defer i.Unlock()
+	i.filePath = fn
 }
 
-func (s *Config) InitTLS() {
-	configDirectory := s.GetConfigPath()
+func (i *Config) InitTLS() {
+	configDirectory := i.GetConfigPath()
 	tlsPaths := []string{
 		configDirectory,
 		paths.GetStashHomeDirectory(),
 	}
 
-	s.certFile = s.getString(sslCertPath)
-	if s.certFile == "" {
+	i.certFile = i.getString(sslCertPath)
+	if i.certFile == "" {
 		// Look for default file
-		s.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
+		i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
 	}
 
-	s.keyFile = s.getString(sslKeyPath)
-	if s.keyFile == "" {
+	i.keyFile = i.getString(sslKeyPath)
+	if i.keyFile == "" {
 		// Look for default file
-		s.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+		i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
 	}
 }
 
-func (s *Config) GetTLSFiles() (certFile, keyFile string) {
-	return s.certFile, s.keyFile
+func (i *Config) GetTLSFiles() (certFile, keyFile string) {
+	return i.certFile, i.keyFile
 }
 
-func (s *Config) HasTLSConfig() bool {
-	certFile, keyFile := s.GetTLSFiles()
+func (i *Config) HasTLSConfig() bool {
+	certFile, keyFile := i.GetTLSFiles()
 	return certFile != "" && keyFile != ""
 }
 
-func (s *Config) GetNoBrowser() bool {
-	return s.getBool(NoBrowser)
+func (i *Config) GetNoBrowser() bool {
+	return i.getBool(NoBrowser)
 }
 
-func (s *Config) GetNotificationsEnabled() bool {
-	return s.getBool(NotificationsEnabled)
+func (i *Config) GetNotificationsEnabled() bool {
+	return i.getBool(NotificationsEnabled)
 }
 
 // GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
 // will no longer show a terminal window, and instead will be available in the tray, should be shown.
 // It is true when an existing system is started after upgrading, and set to false forever after it is shown.
-func (s *Config) GetShowOneTimeMovedNotification() bool {
-	return s.getBool(ShowOneTimeMovedNotification)
+func (i *Config) GetShowOneTimeMovedNotification() bool {
+	return i.getBool(ShowOneTimeMovedNotification)
 }
 
 // these methods are intended to ensure type safety (ie no primitive pointers)
-func (s *Config) SetBool(key string, value bool) {
-	s.SetInterface(key, value)
+func (i *Config) SetBool(key string, value bool) {
+	i.SetInterface(key, value)
 }
 
-func (s *Config) SetString(key string, value string) {
-	s.SetInterface(key, value)
+func (i *Config) SetString(key string, value string) {
+	i.SetInterface(key, value)
 }
 
-func (s *Config) SetInt(key string, value int) {
-	s.SetInterface(key, value)
+func (i *Config) SetInt(key string, value int) {
+	i.SetInterface(key, value)
 }
 
-func (s *Config) SetFloat(key string, value float64) {
-	s.SetInterface(key, value)
+func (i *Config) SetFloat(key string, value float64) {
+	i.SetInterface(key, value)
 }
 
-func (s *Config) SetInterface(key string, value interface{}) {
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetInterface(key string, value interface{}) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.setInterfaceNoLock(key, value)
+	i.setInterfaceNoLock(key, value)
 }
-func (s *Config) setInterfaceNoLock(key string, value interface{}) {
-	s.set(key, value)
+func (i *Config) setInterfaceNoLock(key string, value interface{}) {
+	i.set(key, value)
 }
 
-func (s *Config) set(key string, value interface{}) {
+func (i *Config) set(key string, value interface{}) {
 	// assumes lock held
 
 	// default behaviour for Set is to merge the value
 	// we want to replace it
-	s.main.Delete(key)
+	i.main.Delete(key)
 
 	if value == nil {
 		return
@@ -467,56 +465,47 @@ func (s *Config) set(key string, value interface{}) {
 		return
 	}
 
-	_ = s.main.Set(key, value)
+	_ = i.main.Set(key, value)
 }
 
-func (s *Config) SetDefault(key string, value interface{}) {
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetDefault(key string, value interface{}) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.setDefault(key, value)
+	i.setDefault(key, value)
 }
 
-func (s *Config) setDefault(key string, value interface{}) {
-	if !s.main.Exists(key) {
-		s.set(key, value)
+func (i *Config) setDefault(key string, value interface{}) {
+	if !i.main.Exists(key) {
+		i.set(key, value)
 	}
 }
 
-func (s *Config) SetPassword(value string) {
-	// if blank, don't bother hashing; we want it to be blank
-	if value == "" {
-		s.SetString(Password, "")
-	} else {
-		s.SetString(Password, hashPassword(value))
-	}
+func (i *Config) Write() error {
+	i.Lock()
+	defer i.Unlock()
+
+	return i.writeNoLock()
 }
 
-func (s *Config) Write() error {
-	s.Lock()
-	defer s.Unlock()
-
-	return s.writeNoLock()
-}
-
-func (s *Config) writeNoLock() error {
-	data, err := s.marshal()
+func (i *Config) writeNoLock() error {
+	data, err := i.marshal()
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(s.filePath, data, 0640)
+	return os.WriteFile(i.filePath, data, 0640)
 }
 
-func (s *Config) Marshal() ([]byte, error) {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) Marshal() ([]byte, error) {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.marshal()
+	return i.marshal()
 }
 
-func (s *Config) marshal() ([]byte, error) {
-	return s.main.Marshal(yaml.Parser())
+func (i *Config) marshal() ([]byte, error) {
+	return i.main.Marshal(yaml.Parser())
 }
 
 // FileEnvSet returns true if the configuration file environment parameter
@@ -526,23 +515,23 @@ func FileEnvSet() bool {
 }
 
 // GetConfigFile returns the full path to the used configuration file.
-func (s *Config) GetConfigFile() string {
-	s.RLock()
-	defer s.RUnlock()
-	return s.filePath
+func (i *Config) GetConfigFile() string {
+	i.RLock()
+	defer i.RUnlock()
+	return i.filePath
 }
 
 // GetConfigPath returns the path of the directory containing the used
 // configuration file.
-func (s *Config) GetConfigPath() string {
-	return filepath.Dir(s.GetConfigFile())
+func (i *Config) GetConfigPath() string {
+	return filepath.Dir(i.GetConfigFile())
 }
 
 // GetConfigPathAbs returns the path of the directory containing the used
 // configuration file, resolved to an absolute path. Returns the return value
 // of GetConfigPath if the path cannot be made into an absolute path.
-func (s *Config) GetConfigPathAbs() string {
-	p := filepath.Dir(s.GetConfigFile())
+func (i *Config) GetConfigPathAbs() string {
+	p := filepath.Dir(i.GetConfigFile())
 
 	ret, _ := filepath.Abs(p)
 	if ret == "" {
@@ -554,17 +543,17 @@ func (s *Config) GetConfigPathAbs() string {
 
 // GetDefaultDatabaseFilePath returns the default database filename,
 // which is located in the same directory as the config file.
-func (s *Config) GetDefaultDatabaseFilePath() string {
-	return filepath.Join(s.GetConfigPath(), "stash-go.sqlite")
+func (i *Config) GetDefaultDatabaseFilePath() string {
+	return filepath.Join(i.GetConfigPath(), "stash-go.sqlite")
 }
 
 // forKey returns the Koanf instance that should be used to get the provided
 // key. Returns the overrides instance if the key exists there, otherwise it
 // returns the main instance. Assumes read lock held.
-func (s *Config) forKey(key string) *koanf.Koanf {
-	v := s.main
-	if s.overrides.Exists(key) {
-		v = s.overrides
+func (i *Config) forKey(key string) *koanf.Koanf {
+	v := i.main
+	if i.overrides.Exists(key) {
+		v = i.overrides
 	}
 
 	return v
@@ -572,8 +561,8 @@ func (s *Config) forKey(key string) *koanf.Koanf {
 
 // viper returns the viper instance that has the key set. Returns nil
 // if no instance has the key. Assumes read lock held.
-func (s *Config) with(key string) *koanf.Koanf {
-	v := s.forKey(key)
+func (i *Config) with(key string) *koanf.Koanf {
+	v := i.forKey(key)
 
 	if v.Exists(key) {
 		return v
@@ -582,75 +571,75 @@ func (s *Config) with(key string) *koanf.Koanf {
 	return nil
 }
 
-func (s *Config) HasOverride(key string) bool {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) HasOverride(key string) bool {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.overrides.Exists(key)
+	return i.overrides.Exists(key)
 }
 
 // These functions wrap the equivalent viper functions, checking the override
 // instance first, then the main instance.
 
-func (s *Config) unmarshalKey(key string, rawVal interface{}) error {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) unmarshalKey(key string, rawVal interface{}) error {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(key).Unmarshal(key, rawVal)
+	return i.forKey(key).Unmarshal(key, rawVal)
 }
 
-func (s *Config) getStringSlice(key string) []string {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getStringSlice(key string) []string {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(key).Strings(key)
+	return i.forKey(key).Strings(key)
 }
 
-func (s *Config) getString(key string) string {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getString(key string) string {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(key).String(key)
+	return i.forKey(key).String(key)
 }
 
-func (s *Config) getBool(key string) bool {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getBool(key string) bool {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(key).Bool(key)
+	return i.forKey(key).Bool(key)
 }
 
-func (s *Config) getBoolDefault(key string, def bool) bool {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getBoolDefault(key string, def bool) bool {
+	i.RLock()
+	defer i.RUnlock()
 
 	ret := def
-	v := s.forKey(key)
+	v := i.forKey(key)
 	if v.Exists(key) {
 		ret = v.Bool(key)
 	}
 	return ret
 }
 
-func (s *Config) getInt(key string) int {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getInt(key string) int {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(key).Int(key)
+	return i.forKey(key).Int(key)
 }
 
-func (s *Config) getFloat64(key string) float64 {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getFloat64(key string) float64 {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(key).Float64(key)
+	return i.forKey(key).Float64(key)
 }
 
-func (s *Config) getStringMapString(key string) map[string]string {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) getStringMapString(key string) map[string]string {
+	i.RLock()
+	defer i.RUnlock()
 
-	ret := s.forKey(key).StringMap(key)
+	ret := i.forKey(key).StringMap(key)
 
 	// GetStringMapString returns an empty map regardless of whether the
 	// key exists or not.
@@ -663,24 +652,24 @@ func (s *Config) getStringMapString(key string) map[string]string {
 
 // GetSFW returns true if SFW mode is enabled.
 // Default performer images are changed to more agnostic images when enabled.
-func (s *Config) GetSFWContentMode() bool {
-	s.RLock()
-	defer s.RUnlock()
-	return s.getBool(SFWContentMode)
+func (i *Config) GetSFWContentMode() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return i.getBool(SFWContentMode)
 }
 
 // GetStashPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
-func (s *Config) GetStashPaths() StashConfigs {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetStashPaths() StashConfigs {
+	i.RLock()
+	defer i.RUnlock()
 
 	var ret StashConfigs
 
-	v := s.main
+	v := i.main
 	if !v.Exists(Stash) {
-		v = s.overrides
+		v = i.overrides
 	}
 
 	if err := v.Unmarshal(Stash, &ret); err != nil || len(ret) == 0 {
@@ -698,26 +687,26 @@ func (s *Config) GetStashPaths() StashConfigs {
 	return ret
 }
 
-func (s *Config) GetCachePath() string {
-	return s.getString(Cache)
+func (i *Config) GetCachePath() string {
+	return i.getString(Cache)
 }
 
-func (s *Config) GetGeneratedPath() string {
-	return s.getString(Generated)
+func (i *Config) GetGeneratedPath() string {
+	return i.getString(Generated)
 }
 
-func (s *Config) GetBlobsPath() string {
-	return s.getString(BlobsPath)
+func (i *Config) GetBlobsPath() string {
+	return i.getString(BlobsPath)
 }
 
 // GetExtraBlobsPaths returns extra blobs paths.
 // For developer/advanced use only.
-func (s *Config) GetExtraBlobsPaths() []string {
-	return s.getStringSlice(ExtraBlobsPaths)
+func (i *Config) GetExtraBlobsPaths() []string {
+	return i.getStringSlice(ExtraBlobsPaths)
 }
 
-func (s *Config) GetBlobsStorage() BlobsStorageType {
-	ret := BlobsStorageType(s.getString(BlobsStorage))
+func (i *Config) GetBlobsStorage() BlobsStorageType {
+	ret := BlobsStorageType(i.getString(BlobsStorage))
 
 	if !ret.IsValid() {
 		// default to database storage
@@ -728,23 +717,23 @@ func (s *Config) GetBlobsStorage() BlobsStorageType {
 	return ret
 }
 
-func (s *Config) GetMetadataPath() string {
-	return s.getString(Metadata)
+func (i *Config) GetMetadataPath() string {
+	return i.getString(Metadata)
 }
 
-func (s *Config) GetDatabasePath() string {
-	return s.getString(Database)
+func (i *Config) GetDatabasePath() string {
+	return i.getString(Database)
 }
 
-func (s *Config) GetBackupDirectoryPath() string {
-	return s.getString(BackupDirectoryPath)
+func (i *Config) GetBackupDirectoryPath() string {
+	return i.getString(BackupDirectoryPath)
 }
 
-func (s *Config) GetBackupDirectoryPathOrDefault() string {
-	ret := s.GetBackupDirectoryPath()
+func (i *Config) GetBackupDirectoryPathOrDefault() string {
+	ret := i.GetBackupDirectoryPath()
 	if ret == "" {
 		// #4915 - default to the same directory as the database
-		return filepath.Dir(s.GetDatabasePath())
+		return filepath.Dir(i.GetDatabasePath())
 	}
 
 	return ret
@@ -752,69 +741,69 @@ func (s *Config) GetBackupDirectoryPathOrDefault() string {
 
 // GetFFMpegPath returns the path to the FFMpeg executable.
 // If empty, stash will attempt to resolve it from the path.
-func (s *Config) GetFFMpegPath() string {
-	return s.getString(FFMpegPath)
+func (i *Config) GetFFMpegPath() string {
+	return i.getString(FFMpegPath)
 }
 
 // GetFFProbePath returns the path to the FFProbe executable.
 // If empty, stash will attempt to resolve it from the path.
-func (s *Config) GetFFProbePath() string {
-	return s.getString(FFProbePath)
+func (i *Config) GetFFProbePath() string {
+	return i.getString(FFProbePath)
 }
 
-func (s *Config) GetJWTSignKey() []byte {
-	return []byte(s.getString(JWTSignKey))
+func (i *Config) GetJWTSignKey() []byte {
+	return []byte(i.getString(JWTSignKey))
 }
 
-func (s *Config) GetSessionStoreKey() []byte {
-	return []byte(s.getString(SessionStoreKey))
+func (i *Config) GetSessionStoreKey() []byte {
+	return []byte(i.getString(SessionStoreKey))
 }
 
-func (s *Config) GetDefaultScrapersPath() string {
+func (i *Config) GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
-	fn := filepath.Join(s.GetConfigPath(), "scrapers")
+	fn := filepath.Join(i.GetConfigPath(), "scrapers")
 
 	return fn
 }
 
-func (s *Config) GetExcludes() []string {
-	return s.getStringSlice(Exclude)
+func (i *Config) GetExcludes() []string {
+	return i.getStringSlice(Exclude)
 }
 
-func (s *Config) GetImageExcludes() []string {
-	return s.getStringSlice(ImageExclude)
+func (i *Config) GetImageExcludes() []string {
+	return i.getStringSlice(ImageExclude)
 }
 
-func (s *Config) GetVideoExtensions() []string {
-	ret := s.getStringSlice(VideoExtensions)
+func (i *Config) GetVideoExtensions() []string {
+	ret := i.getStringSlice(VideoExtensions)
 	if len(ret) == 0 {
 		ret = defaultVideoExtensions
 	}
 	return ret
 }
 
-func (s *Config) GetImageExtensions() []string {
-	ret := s.getStringSlice(ImageExtensions)
+func (i *Config) GetImageExtensions() []string {
+	ret := i.getStringSlice(ImageExtensions)
 	if len(ret) == 0 {
 		ret = defaultImageExtensions
 	}
 	return ret
 }
 
-func (s *Config) GetGalleryExtensions() []string {
-	ret := s.getStringSlice(GalleryExtensions)
+func (i *Config) GetGalleryExtensions() []string {
+	ret := i.getStringSlice(GalleryExtensions)
 	if len(ret) == 0 {
 		ret = defaultGalleryExtensions
 	}
 	return ret
 }
 
-func (s *Config) GetCreateGalleriesFromFolders() bool {
-	return s.getBool(CreateGalleriesFromFolders)
+func (i *Config) GetCreateGalleriesFromFolders() bool {
+	return i.getBool(CreateGalleriesFromFolders)
 }
 
-func (s *Config) GetLanguage() string {
-	ret := s.getString(Language)
+func (i *Config) GetLanguage() string {
+	ret := i.getString(Language)
 
 	// default to English
 	if ret == "" {
@@ -826,14 +815,14 @@ func (s *Config) GetLanguage() string {
 
 // IsCalculateMD5 returns true if MD5 checksums should be generated for
 // scene video files.
-func (s *Config) IsCalculateMD5() bool {
-	return s.getBool(CalculateMD5)
+func (i *Config) IsCalculateMD5() bool {
+	return i.getBool(CalculateMD5)
 }
 
 // GetVideoFileNamingAlgorithm returns what hash algorithm should be used for
 // naming generated scene video files.
-func (s *Config) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
-	ret := s.getString(VideoFileNamingAlgorithm)
+func (i *Config) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
+	ret := i.getString(VideoFileNamingAlgorithm)
 
 	// default to oshash
 	if ret == "" {
@@ -843,12 +832,12 @@ func (s *Config) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	return models.HashAlgorithm(ret)
 }
 
-func (s *Config) GetSequentialScanning() bool {
-	return s.getBool(SequentialScanning)
+func (i *Config) GetSequentialScanning() bool {
+	return i.getBool(SequentialScanning)
 }
 
-func (s *Config) GetGalleryCoverRegex() string {
-	var regexString = s.getString(GalleryCoverRegex)
+func (i *Config) GetGalleryCoverRegex() string {
+	var regexString = i.getString(GalleryCoverRegex)
 
 	_, err := regexp.Compile(regexString)
 	if err != nil {
@@ -859,57 +848,57 @@ func (s *Config) GetGalleryCoverRegex() string {
 	return regexString
 }
 
-func (s *Config) GetScrapersPath() string {
-	return s.getString(ScrapersPath)
+func (i *Config) GetScrapersPath() string {
+	return i.getString(ScrapersPath)
 }
 
-func (s *Config) GetScraperUserAgent() string {
-	return s.getString(ScraperUserAgent)
+func (i *Config) GetScraperUserAgent() string {
+	return i.getString(ScraperUserAgent)
 }
 
 // GetScraperCDPPath gets the path to the Chrome executable or remote address
 // to an instance of Chrome.
-func (s *Config) GetScraperCDPPath() string {
-	return s.getString(ScraperCDPPath)
+func (i *Config) GetScraperCDPPath() string {
+	return i.getString(ScraperCDPPath)
 }
 
 // GetScraperCertCheck returns true if the scraper should check for insecure
 // certificates when fetching an image or a page.
-func (s *Config) GetScraperCertCheck() bool {
-	return s.getBoolDefault(ScraperCertCheck, true)
+func (i *Config) GetScraperCertCheck() bool {
+	return i.getBoolDefault(ScraperCertCheck, true)
 }
 
-func (s *Config) GetScraperExcludeTagPatterns() []string {
-	return s.getStringSlice(ScraperExcludeTagPatterns)
+func (i *Config) GetScraperExcludeTagPatterns() []string {
+	return i.getStringSlice(ScraperExcludeTagPatterns)
 }
 
-func (s *Config) GetStashBoxes() []*models.StashBox {
+func (i *Config) GetStashBoxes() []*models.StashBox {
 	var boxes []*models.StashBox
-	if err := s.unmarshalKey(StashBoxes, &boxes); err != nil {
+	if err := i.unmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
 
 	return boxes
 }
 
-func (s *Config) GetDefaultPluginsPath() string {
+func (i *Config) GetDefaultPluginsPath() string {
 	// default to the same directory as the config file
-	fn := filepath.Join(s.GetConfigPath(), "plugins")
+	fn := filepath.Join(i.GetConfigPath(), "plugins")
 
 	return fn
 }
 
-func (s *Config) GetPluginsPath() string {
-	return s.getString(PluginsPath)
+func (i *Config) GetPluginsPath() string {
+	return i.getString(PluginsPath)
 }
 
-func (s *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
 
 	ret := make(map[string]map[string]interface{})
 
-	v := s.forKey(PluginsSetting)
+	v := i.forKey(PluginsSetting)
 
 	sub := v.Cut(PluginsSetting)
 	if sub == nil {
@@ -923,36 +912,36 @@ func (s *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
 	return ret
 }
 
-func (s *Config) GetPluginConfiguration(pluginID string) map[string]interface{} {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetPluginConfiguration(pluginID string) map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
 
 	key := PluginsSettingPrefix + pluginID
 
-	return s.forKey(key).Cut(key).Raw()
+	return i.forKey(key).Cut(key).Raw()
 }
 
 // SetPluginConfiguration sets the configuration for a plugin.
 // It will overwrite any existing configuration.
-func (s *Config) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
+	i.Lock()
+	defer i.Unlock()
 
 	key := PluginsSettingPrefix + pluginID
 
-	s.set(key, v)
+	i.set(key, v)
 }
 
-func (s *Config) GetDisabledPlugins() []string {
-	return s.getStringSlice(DisabledPlugins)
+func (i *Config) GetDisabledPlugins() []string {
+	return i.getStringSlice(DisabledPlugins)
 }
 
-func (s *Config) GetPythonPath() string {
-	return s.getString(PythonPath)
+func (i *Config) GetPythonPath() string {
+	return i.getString(PythonPath)
 }
 
-func (s *Config) GetHost() string {
-	ret := s.getString(Host)
+func (i *Config) GetHost() string {
+	ret := i.getString(Host)
 	if ret == "" {
 		ret = hostDefault
 	}
@@ -960,8 +949,8 @@ func (s *Config) GetHost() string {
 	return ret
 }
 
-func (s *Config) GetPort() int {
-	ret := s.getInt(Port)
+func (i *Config) GetPort() int {
+	ret := i.getInt(Port)
 	if ret == 0 {
 		ret = portDefault
 	}
@@ -969,28 +958,28 @@ func (s *Config) GetPort() int {
 	return ret
 }
 
-func (s *Config) GetThemeColor() string {
-	return s.getString(ThemeColor)
+func (i *Config) GetThemeColor() string {
+	return i.getString(ThemeColor)
 }
 
-func (s *Config) GetExternalHost() string {
-	return s.getString(ExternalHost)
+func (i *Config) GetExternalHost() string {
+	return i.getString(ExternalHost)
 }
 
 // GetPreviewSegmentDuration returns the duration of a single segment in a
 // scene preview file, in seconds.
-func (s *Config) GetPreviewSegmentDuration() float64 {
-	return s.getFloat64(PreviewSegmentDuration)
+func (i *Config) GetPreviewSegmentDuration() float64 {
+	return i.getFloat64(PreviewSegmentDuration)
 }
 
 // GetParallelTasks returns the number of parallel tasks that should be started
 // by scan or generate task.
-func (s *Config) GetParallelTasks() int {
-	return s.getInt(ParallelTasks)
+func (i *Config) GetParallelTasks() int {
+	return i.getInt(ParallelTasks)
 }
 
-func (s *Config) GetParallelTasksWithAutoDetection() int {
-	parallelTasks := s.getInt(ParallelTasks)
+func (i *Config) GetParallelTasksWithAutoDetection() int {
+	parallelTasks := i.getInt(ParallelTasks)
 	if parallelTasks <= 0 {
 		parallelTasks = (runtime.NumCPU() / 4) + 1
 	}
@@ -999,23 +988,23 @@ func (s *Config) GetParallelTasksWithAutoDetection() int {
 
 // GetUseCustomSpriteInterval returns true if the sprite minimum, maximum, and interval settings
 // should be used instead of the default
-func (s *Config) GetUseCustomSpriteInterval() bool {
-	value := s.getBool(UseCustomSpriteInterval)
+func (i *Config) GetUseCustomSpriteInterval() bool {
+	value := i.getBool(UseCustomSpriteInterval)
 	return value
 }
 
 // GetSpriteInterval returns the time (in seconds) to be between each scrubber sprite
 // A value of 0 indicates that the sprite interval should be automatically determined
 // based on the minimum sprite setting.
-func (s *Config) GetSpriteInterval() float64 {
-	value := s.getFloat64(SpriteInterval)
+func (i *Config) GetSpriteInterval() float64 {
+	value := i.getFloat64(SpriteInterval)
 	return value
 }
 
 // GetMinimumSprites returns the minimum number of sprites that have to be generated
 // A value of 0 will be overridden with the default of 10.
-func (s *Config) GetMinimumSprites() int {
-	value := s.getInt(MinimumSprites)
+func (i *Config) GetMinimumSprites() int {
+	value := i.getInt(MinimumSprites)
 	if value <= 0 {
 		return MinimumSpritesDefault
 	}
@@ -1024,8 +1013,8 @@ func (s *Config) GetMinimumSprites() int {
 
 // GetMaximumSprites returns the maximum number of sprites that can be generated
 // A value of 0 indicates no maximum.
-func (s *Config) GetMaximumSprites() int {
-	value := s.getInt(MaximumSprites)
+func (i *Config) GetMaximumSprites() int {
+	value := i.getInt(MaximumSprites)
 	return value
 }
 
@@ -1033,21 +1022,21 @@ func (s *Config) GetMaximumSprites() int {
 // during sprite generation in pixels. This will be the width for landscape scenes
 // and the height for portrait scenes, with the other dimension being scaled to maintain
 // the aspect ratio. If the value is less than or equal to 0, the default will be used.
-func (s *Config) GetSpriteScreenshotSize() int {
-	value := s.getInt(SpriteScreenshotSize)
+func (i *Config) GetSpriteScreenshotSize() int {
+	value := i.getInt(SpriteScreenshotSize)
 	if value <= 0 {
 		return spriteScreenshotSizeDefault
 	}
 	return value
 }
 
-func (s *Config) GetPreviewAudio() bool {
-	return s.getBool(PreviewAudio)
+func (i *Config) GetPreviewAudio() bool {
+	return i.getBool(PreviewAudio)
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.
-func (s *Config) GetPreviewSegments() int {
-	return s.getInt(PreviewSegments)
+func (i *Config) GetPreviewSegments() int {
+	return i.getInt(PreviewSegments)
 }
 
 // GetPreviewExcludeStart returns the configuration setting string for
@@ -1056,8 +1045,8 @@ func (s *Config) GetPreviewSegments() int {
 // of seconds to exclude from the start of the video before it is included
 // in the preview. If the value is suffixed with a '%' character (for example
 // '2%'), then it is interpreted as a proportion of the total video duration.
-func (s *Config) GetPreviewExcludeStart() string {
-	return s.getString(PreviewExcludeStart)
+func (i *Config) GetPreviewExcludeStart() string {
+	return i.getString(PreviewExcludeStart)
 }
 
 // GetPreviewExcludeEnd returns the configuration setting string for
@@ -1065,14 +1054,14 @@ func (s *Config) GetPreviewExcludeStart() string {
 // is interpreted as the amount of seconds to exclude from the end of the video
 // when generating previews. If the value is suffixed with a '%' character,
 // then it is interpreted as a proportion of the total video duration.
-func (s *Config) GetPreviewExcludeEnd() string {
-	return s.getString(PreviewExcludeEnd)
+func (i *Config) GetPreviewExcludeEnd() string {
+	return i.getString(PreviewExcludeEnd)
 }
 
 // GetPreviewPreset returns the preset when generating previews. Defaults to
 // Slow.
-func (s *Config) GetPreviewPreset() models.PreviewPreset {
-	ret := s.getString(PreviewPreset)
+func (i *Config) GetPreviewPreset() models.PreviewPreset {
+	ret := i.getString(PreviewPreset)
 
 	// default to slow
 	if ret == "" {
@@ -1082,12 +1071,12 @@ func (s *Config) GetPreviewPreset() models.PreviewPreset {
 	return models.PreviewPreset(ret)
 }
 
-func (s *Config) GetTranscodeHardwareAcceleration() bool {
-	return s.getBool(TranscodeHardwareAcceleration)
+func (i *Config) GetTranscodeHardwareAcceleration() bool {
+	return i.getBool(TranscodeHardwareAcceleration)
 }
 
-func (s *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
-	ret := s.getString(MaxTranscodeSize)
+func (i *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
+	ret := i.getString(MaxTranscodeSize)
 
 	// default to original
 	if ret == "" {
@@ -1097,8 +1086,8 @@ func (s *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	return models.StreamingResolutionEnum(ret)
 }
 
-func (s *Config) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
-	ret := s.getString(MaxStreamingTranscodeSize)
+func (i *Config) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
+	ret := i.getString(MaxStreamingTranscodeSize)
 
 	// default to original
 	if ret == "" {
@@ -1108,38 +1097,38 @@ func (s *Config) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	return models.StreamingResolutionEnum(ret)
 }
 
-func (s *Config) GetTranscodeInputArgs() []string {
-	return s.getStringSlice(TranscodeInputArgs)
+func (i *Config) GetTranscodeInputArgs() []string {
+	return i.getStringSlice(TranscodeInputArgs)
 }
 
-func (s *Config) GetTranscodeOutputArgs() []string {
-	return s.getStringSlice(TranscodeOutputArgs)
+func (i *Config) GetTranscodeOutputArgs() []string {
+	return i.getStringSlice(TranscodeOutputArgs)
 }
 
-func (s *Config) GetLiveTranscodeInputArgs() []string {
-	return s.getStringSlice(LiveTranscodeInputArgs)
+func (i *Config) GetLiveTranscodeInputArgs() []string {
+	return i.getStringSlice(LiveTranscodeInputArgs)
 }
 
-func (s *Config) GetLiveTranscodeOutputArgs() []string {
-	return s.getStringSlice(LiveTranscodeOutputArgs)
+func (i *Config) GetLiveTranscodeOutputArgs() []string {
+	return i.getStringSlice(LiveTranscodeOutputArgs)
 }
 
-func (s *Config) GetDrawFunscriptHeatmapRange() bool {
-	return s.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
+func (i *Config) GetDrawFunscriptHeatmapRange() bool {
+	return i.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written
 // to disk after generating on the fly.
-func (s *Config) IsWriteImageThumbnails() bool {
-	return s.getBool(WriteImageThumbnails)
+func (i *Config) IsWriteImageThumbnails() bool {
+	return i.getBool(WriteImageThumbnails)
 }
 
-func (s *Config) IsCreateImageClipsFromVideos() bool {
-	return s.getBool(CreateImageClipsFromVideos)
+func (i *Config) IsCreateImageClipsFromVideos() bool {
+	return i.getBool(CreateImageClipsFromVideos)
 }
 
-func (s *Config) GetAPIKey() string {
-	return s.getString(ApiKey)
+func (i *Config) GetAPIKey() string {
+	return i.getString(ApiKey)
 }
 
 func stashBoxValidate(str string) bool {
@@ -1154,7 +1143,7 @@ type StashBoxInput struct {
 	MaxRequestsPerMinute int    `json:"max_requests_per_minute"`
 }
 
-func (s *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
+func (i *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
 	for _, box := range boxes {
@@ -1181,12 +1170,12 @@ func (s *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
 
 // GetMaxSessionAge gets the maximum age for session cookies, in seconds.
 // Session cookie expiry times are refreshed every request.
-func (s *Config) GetMaxSessionAge() int {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetMaxSessionAge() int {
+	i.RLock()
+	defer i.RUnlock()
 
 	ret := DefaultMaxSessionAge
-	v := s.forKey(MaxSessionAge)
+	v := i.forKey(MaxSessionAge)
 	if v.Exists(MaxSessionAge) {
 		ret = v.Int(MaxSessionAge)
 	}
@@ -1196,55 +1185,55 @@ func (s *Config) GetMaxSessionAge() int {
 
 // GetCustomServedFolders gets the map of custom paths to their applicable
 // filesystem locations
-func (s *Config) GetCustomServedFolders() utils.URLMap {
-	return s.getStringMapString(CustomServedFolders)
+func (i *Config) GetCustomServedFolders() utils.URLMap {
+	return i.getStringMapString(CustomServedFolders)
 }
 
-func (s *Config) GetUILocation() string {
-	if ret := s.getString(UILocation); ret != "" {
+func (i *Config) GetUILocation() string {
+	if ret := i.getString(UILocation); ret != "" {
 		return ret
 	}
 
-	return s.getString(LegacyCustomUILocation)
+	return i.getString(LegacyCustomUILocation)
 }
 
 // Interface options
-func (s *Config) GetMenuItems() []string {
-	s.RLock()
-	defer s.RUnlock()
-	v := s.forKey(MenuItems)
+func (i *Config) GetMenuItems() []string {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.forKey(MenuItems)
 	if v.Exists(MenuItems) {
 		return v.Strings(MenuItems)
 	}
 	return defaultMenuItems
 }
 
-func (s *Config) GetSoundOnPreview() bool {
-	return s.getBool(SoundOnPreview)
+func (i *Config) GetSoundOnPreview() bool {
+	return i.getBool(SoundOnPreview)
 }
 
-func (s *Config) GetWallShowTitle() bool {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetWallShowTitle() bool {
+	i.RLock()
+	defer i.RUnlock()
 
 	ret := defaultWallShowTitle
-	v := s.forKey(WallShowTitle)
+	v := i.forKey(WallShowTitle)
 	if v.Exists(WallShowTitle) {
 		ret = v.Bool(WallShowTitle)
 	}
 	return ret
 }
 
-func (s *Config) GetCustomPerformerImageLocation() string {
-	return s.getString(CustomPerformerImageLocation)
+func (i *Config) GetCustomPerformerImageLocation() string {
+	return i.getString(CustomPerformerImageLocation)
 }
 
-func (s *Config) GetWallPlayback() string {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetWallPlayback() string {
+	i.RLock()
+	defer i.RUnlock()
 
 	ret := defaultWallPlayback
-	v := s.forKey(WallPlayback)
+	v := i.forKey(WallPlayback)
 	if v.Exists(WallPlayback) {
 		ret = v.String(WallPlayback)
 	}
@@ -1252,40 +1241,40 @@ func (s *Config) GetWallPlayback() string {
 	return ret
 }
 
-func (s *Config) GetShowScrubber() bool {
-	return s.getBoolDefault(ShowScrubber, showScrubberDefault)
+func (i *Config) GetShowScrubber() bool {
+	return i.getBoolDefault(ShowScrubber, showScrubberDefault)
 }
 
-func (s *Config) GetMaximumLoopDuration() int {
-	return s.getInt(MaximumLoopDuration)
+func (i *Config) GetMaximumLoopDuration() int {
+	return i.getInt(MaximumLoopDuration)
 }
 
-func (s *Config) GetAutostartVideo() bool {
-	return s.getBool(AutostartVideo)
+func (i *Config) GetAutostartVideo() bool {
+	return i.getBool(AutostartVideo)
 }
 
-func (s *Config) GetAutostartVideoOnPlaySelected() bool {
-	return s.getBoolDefault(AutostartVideoOnPlaySelected, autostartVideoOnPlaySelectedDefault)
+func (i *Config) GetAutostartVideoOnPlaySelected() bool {
+	return i.getBoolDefault(AutostartVideoOnPlaySelected, autostartVideoOnPlaySelectedDefault)
 }
 
-func (s *Config) GetContinuePlaylistDefault() bool {
-	return s.getBool(ContinuePlaylistDefault)
+func (i *Config) GetContinuePlaylistDefault() bool {
+	return i.getBool(ContinuePlaylistDefault)
 }
 
-func (s *Config) GetShowStudioAsText() bool {
-	return s.getBool(ShowStudioAsText)
+func (i *Config) GetShowStudioAsText() bool {
+	return i.getBool(ShowStudioAsText)
 }
 
-func (s *Config) getSlideshowDelay() int {
+func (i *Config) getSlideshowDelay() int {
 	// assume have lock
 
 	ret := defaultImageLightboxSlideshowDelay
-	v := s.forKey(ImageLightboxSlideshowDelay)
+	v := i.forKey(ImageLightboxSlideshowDelay)
 	if v.Exists(ImageLightboxSlideshowDelay) {
 		ret = v.Int(ImageLightboxSlideshowDelay)
 	} else {
 		// fallback to old location
-		v := s.forKey(legacyImageLightboxSlideshowDelay)
+		v := i.forKey(legacyImageLightboxSlideshowDelay)
 		if v.Exists(legacyImageLightboxSlideshowDelay) {
 			ret = v.Int(legacyImageLightboxSlideshowDelay)
 		}
@@ -1294,36 +1283,36 @@ func (s *Config) getSlideshowDelay() int {
 	return ret
 }
 
-func (s *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
+	i.RLock()
+	defer i.RUnlock()
 
-	delay := s.getSlideshowDelay()
+	delay := i.getSlideshowDelay()
 
 	ret := ConfigImageLightboxResult{
 		SlideshowDelay: &delay,
 	}
 
-	if v := s.with(ImageLightboxDisplayModeKey); v != nil {
+	if v := i.with(ImageLightboxDisplayModeKey); v != nil {
 		mode := ImageLightboxDisplayMode(v.String(ImageLightboxDisplayModeKey))
 		ret.DisplayMode = &mode
 	}
-	if v := s.with(ImageLightboxScaleUp); v != nil {
+	if v := i.with(ImageLightboxScaleUp); v != nil {
 		value := v.Bool(ImageLightboxScaleUp)
 		ret.ScaleUp = &value
 	}
-	if v := s.with(ImageLightboxResetZoomOnNav); v != nil {
+	if v := i.with(ImageLightboxResetZoomOnNav); v != nil {
 		value := v.Bool(ImageLightboxResetZoomOnNav)
 		ret.ResetZoomOnNav = &value
 	}
-	if v := s.with(ImageLightboxScrollModeKey); v != nil {
+	if v := i.with(ImageLightboxScrollModeKey); v != nil {
 		mode := ImageLightboxScrollMode(v.String(ImageLightboxScrollModeKey))
 		ret.ScrollMode = &mode
 	}
-	if v := s.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
+	if v := i.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
 	}
-	if v := s.with(ImageLightboxDisableAnimation); v != nil {
+	if v := i.with(ImageLightboxDisableAnimation); v != nil {
 		value := v.Bool(ImageLightboxDisableAnimation)
 		ret.DisableAnimation = &value
 	}
@@ -1331,27 +1320,27 @@ func (s *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	return ret
 }
 
-func (s *Config) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
+func (i *Config) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 	return &ConfigDisableDropdownCreate{
-		Performer: s.getBool(DisableDropdownCreatePerformer),
-		Studio:    s.getBool(DisableDropdownCreateStudio),
-		Tag:       s.getBool(DisableDropdownCreateTag),
-		Movie:     s.getBool(DisableDropdownCreateMovie),
-		Gallery:   s.getBool(DisableDropdownCreateGallery),
+		Performer: i.getBool(DisableDropdownCreatePerformer),
+		Studio:    i.getBool(DisableDropdownCreateStudio),
+		Tag:       i.getBool(DisableDropdownCreateTag),
+		Movie:     i.getBool(DisableDropdownCreateMovie),
+		Gallery:   i.getBool(DisableDropdownCreateGallery),
 	}
 }
 
-func (s *Config) GetUIConfiguration() map[string]interface{} {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetUIConfiguration() map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
 
-	return s.forKey(UI).Cut(UI).Raw()
+	return i.forKey(UI).Cut(UI).Raw()
 }
 
 // GetMinimumPlayPercent returns the minimum percentage of a video that must be
 // watched before incrementing the play count. Returns 0 if not configured.
-func (s *Config) GetMinimumPlayPercent() int {
-	uiConfig := s.GetUIConfiguration()
+func (i *Config) GetMinimumPlayPercent() int {
+	uiConfig := i.GetUIConfiguration()
 	if uiConfig == nil {
 		return 0
 	}
@@ -1368,16 +1357,16 @@ func (s *Config) GetMinimumPlayPercent() int {
 	return 0
 }
 
-func (s *Config) SetUIConfiguration(v map[string]interface{}) {
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetUIConfiguration(v map[string]interface{}) {
+	i.Lock()
+	defer i.Unlock()
 
-	s.set(UI, v)
+	i.set(UI, v)
 }
 
-func (s *Config) GetCSSPath() string {
+func (i *Config) GetCSSPath() string {
 	// use custom.css in the same directory as the config file
-	configFileUsed := s.GetConfigFile()
+	configFileUsed := i.GetConfigFile()
 	configDir := filepath.Dir(configFileUsed)
 
 	fn := filepath.Join(configDir, "custom.css")
@@ -1385,8 +1374,8 @@ func (s *Config) GetCSSPath() string {
 	return fn
 }
 
-func (s *Config) GetCSS() string {
-	fn := s.GetCSSPath()
+func (i *Config) GetCSS() string {
+	fn := i.GetCSSPath()
 
 	exists, _ := fsutil.FileExists(fn)
 	if !exists {
@@ -1402,10 +1391,10 @@ func (s *Config) GetCSS() string {
 	return string(buf)
 }
 
-func (s *Config) SetCSS(css string) {
-	fn := s.GetCSSPath()
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetCSS(css string) {
+	fn := i.GetCSSPath()
+	i.Lock()
+	defer i.Unlock()
 
 	buf := []byte(css)
 
@@ -1414,13 +1403,13 @@ func (s *Config) SetCSS(css string) {
 	}
 }
 
-func (s *Config) GetCSSEnabled() bool {
-	return s.getBool(CSSEnabled)
+func (i *Config) GetCSSEnabled() bool {
+	return i.getBool(CSSEnabled)
 }
 
-func (s *Config) GetJavascriptPath() string {
+func (i *Config) GetJavascriptPath() string {
 	// use custom.js in the same directory as the config file
-	configFileUsed := s.GetConfigFile()
+	configFileUsed := i.GetConfigFile()
 	configDir := filepath.Dir(configFileUsed)
 
 	fn := filepath.Join(configDir, "custom.js")
@@ -1428,8 +1417,8 @@ func (s *Config) GetJavascriptPath() string {
 	return fn
 }
 
-func (s *Config) GetJavascript() string {
-	fn := s.GetJavascriptPath()
+func (i *Config) GetJavascript() string {
+	fn := i.GetJavascriptPath()
 
 	exists, _ := fsutil.FileExists(fn)
 	if !exists {
@@ -1445,10 +1434,10 @@ func (s *Config) GetJavascript() string {
 	return string(buf)
 }
 
-func (s *Config) SetJavascript(javascript string) {
-	fn := s.GetJavascriptPath()
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetJavascript(javascript string) {
+	fn := i.GetJavascriptPath()
+	i.Lock()
+	defer i.Unlock()
 
 	buf := []byte(javascript)
 
@@ -1457,13 +1446,13 @@ func (s *Config) SetJavascript(javascript string) {
 	}
 }
 
-func (s *Config) GetJavascriptEnabled() bool {
-	return s.getBool(JavascriptEnabled)
+func (i *Config) GetJavascriptEnabled() bool {
+	return i.getBool(JavascriptEnabled)
 }
 
-func (s *Config) GetCustomLocalesPath() string {
+func (i *Config) GetCustomLocalesPath() string {
 	// use custom-locales.json in the same directory as the config file
-	configFileUsed := s.GetConfigFile()
+	configFileUsed := i.GetConfigFile()
 	configDir := filepath.Dir(configFileUsed)
 
 	fn := filepath.Join(configDir, "custom-locales.json")
@@ -1471,8 +1460,8 @@ func (s *Config) GetCustomLocalesPath() string {
 	return fn
 }
 
-func (s *Config) GetCustomLocales() string {
-	fn := s.GetCustomLocalesPath()
+func (i *Config) GetCustomLocales() string {
+	fn := i.GetCustomLocalesPath()
 
 	exists, _ := fsutil.FileExists(fn)
 	if !exists {
@@ -1488,10 +1477,10 @@ func (s *Config) GetCustomLocales() string {
 	return string(buf)
 }
 
-func (s *Config) SetCustomLocales(customLocales string) {
-	fn := s.GetCustomLocalesPath()
-	s.Lock()
-	defer s.Unlock()
+func (i *Config) SetCustomLocales(customLocales string) {
+	fn := i.GetCustomLocalesPath()
+	i.Lock()
+	defer i.Unlock()
 
 	buf := []byte(customLocales)
 
@@ -1500,52 +1489,52 @@ func (s *Config) SetCustomLocales(customLocales string) {
 	}
 }
 
-func (s *Config) GetCustomLocalesEnabled() bool {
-	return s.getBool(CustomLocalesEnabled)
+func (i *Config) GetCustomLocalesEnabled() bool {
+	return i.getBool(CustomLocalesEnabled)
 }
 
 // GetDisableCustomizations returns true if all customizations (plugins, custom CSS,
 // custom JavaScript, and custom locales) should be disabled. This is useful for
 // troubleshooting issues without permanently disabling individual customizations.
-func (s *Config) GetDisableCustomizations() bool {
-	return s.getBool(DisableCustomizations)
+func (i *Config) GetDisableCustomizations() bool {
+	return i.getBool(DisableCustomizations)
 }
 
-func (s *Config) GetHandyKey() string {
-	return s.getString(HandyKey)
+func (i *Config) GetHandyKey() string {
+	return i.getString(HandyKey)
 }
 
-func (s *Config) GetFunscriptOffset() int {
-	return s.getInt(FunscriptOffset)
+func (i *Config) GetFunscriptOffset() int {
+	return i.getInt(FunscriptOffset)
 }
 
-func (s *Config) GetUseStashHostedFunscript() bool {
-	return s.getBoolDefault(UseStashHostedFunscript, useStashHostedFunscriptDefault)
+func (i *Config) GetUseStashHostedFunscript() bool {
+	return i.getBoolDefault(UseStashHostedFunscript, useStashHostedFunscriptDefault)
 }
 
-func (s *Config) GetDeleteFileDefault() bool {
-	return s.getBool(DeleteFileDefault)
+func (i *Config) GetDeleteFileDefault() bool {
+	return i.getBool(DeleteFileDefault)
 }
 
-func (s *Config) GetDeleteGeneratedDefault() bool {
-	return s.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
+func (i *Config) GetDeleteGeneratedDefault() bool {
+	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
 }
 
-func (s *Config) GetDeleteTrashPath() string {
-	return s.getString(DeleteTrashPath)
+func (i *Config) GetDeleteTrashPath() string {
+	return i.getString(DeleteTrashPath)
 }
 
-func (s *Config) SetDeleteTrashPath(value string) {
-	s.SetString(DeleteTrashPath, value)
+func (i *Config) SetDeleteTrashPath(value string) {
+	i.SetString(DeleteTrashPath, value)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (s *Config) GetDefaultIdentifySettings() *identify.Options {
-	s.RLock()
-	defer s.RUnlock()
-	v := s.forKey(DefaultIdentifySettings)
+func (i *Config) GetDefaultIdentifySettings() *identify.Options {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.forKey(DefaultIdentifySettings)
 
 	if v.Exists(DefaultIdentifySettings) && v.Get(DefaultIdentifySettings) != nil {
 		var ret identify.Options
@@ -1562,10 +1551,10 @@ func (s *Config) GetDefaultIdentifySettings() *identify.Options {
 // GetDefaultScanSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (s *Config) GetDefaultScanSettings() *ScanMetadataOptions {
-	s.RLock()
-	defer s.RUnlock()
-	v := s.forKey(DefaultScanSettings)
+func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.forKey(DefaultScanSettings)
 
 	if v.Exists(DefaultScanSettings) && v.Get(DefaultScanSettings) != nil {
 		var ret ScanMetadataOptions
@@ -1581,10 +1570,10 @@ func (s *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 // GetDefaultAutoTagSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (s *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
-	s.RLock()
-	defer s.RUnlock()
-	v := s.forKey(DefaultAutoTagSettings)
+func (i *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.forKey(DefaultAutoTagSettings)
 
 	if v.Exists(DefaultAutoTagSettings) {
 		var ret AutoTagMetadataOptions
@@ -1600,10 +1589,10 @@ func (s *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 // GetDefaultGenerateSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (s *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
-	s.RLock()
-	defer s.RUnlock()
-	v := s.forKey(DefaultGenerateSettings)
+func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.forKey(DefaultGenerateSettings)
 
 	if v.Exists(DefaultGenerateSettings) {
 		var ret models.GenerateMetadataOptions
@@ -1618,44 +1607,44 @@ func (s *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
 // See https://discourse.stashapp.cc/t/-/1658
-func (s *Config) GetDangerousAllowPublicWithoutAuth() bool {
-	return s.getBool(dangerousAllowPublicWithoutAuth)
+func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
+	return i.getBool(dangerousAllowPublicWithoutAuth)
 }
 
 // GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
 // has been accessed from the public internet, with no auth enabled, and
 // DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
-func (s *Config) GetSecurityTripwireAccessedFromPublicInternet() string {
-	return s.getString(SecurityTripwireAccessedFromPublicInternet)
+func (i *Config) GetSecurityTripwireAccessedFromPublicInternet() string {
+	return i.getString(SecurityTripwireAccessedFromPublicInternet)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
 // "stash" will be used.
-func (s *Config) GetDLNAServerName() string {
-	return s.getString(DLNAServerName)
+func (i *Config) GetDLNAServerName() string {
+	return i.getString(DLNAServerName)
 }
 
 // GetDLNADefaultEnabled returns true if the DLNA is enabled by default.
-func (s *Config) GetDLNADefaultEnabled() bool {
-	return s.getBool(DLNADefaultEnabled)
+func (i *Config) GetDLNADefaultEnabled() bool {
+	return i.getBool(DLNADefaultEnabled)
 }
 
 // GetDLNADefaultIPWhitelist returns a list of IP addresses/wildcards that
 // are allowed to use the DLNA service.
-func (s *Config) GetDLNADefaultIPWhitelist() []string {
-	return s.getStringSlice(DLNADefaultIPWhitelist)
+func (i *Config) GetDLNADefaultIPWhitelist() []string {
+	return i.getStringSlice(DLNADefaultIPWhitelist)
 }
 
 // GetDLNAInterfaces returns a list of interface names to expose DLNA on. If
 // empty, runs on all interfaces.
-func (s *Config) GetDLNAInterfaces() []string {
-	return s.getStringSlice(DLNAInterfaces)
+func (i *Config) GetDLNAInterfaces() []string {
+	return i.getStringSlice(DLNAInterfaces)
 }
 
 // GetDLNAPort returns the port to run the DLNA server on. If empty, 1338
 // will be used.
-func (s *Config) GetDLNAPort() int {
-	ret := s.getInt(DLNAPort)
+func (i *Config) GetDLNAPort() int {
+	ret := i.getInt(DLNAPort)
 	if ret == 0 {
 		ret = DLNAPortDefault
 	}
@@ -1663,15 +1652,15 @@ func (s *Config) GetDLNAPort() int {
 }
 
 // GetDLNAPortAsString returns the port to run the DLNA server on as a string.
-func (s *Config) GetDLNAPortAsString() string {
-	return ":" + strconv.Itoa(s.GetDLNAPort())
+func (i *Config) GetDLNAPortAsString() string {
+	return ":" + strconv.Itoa(i.GetDLNAPort())
 }
 
 // GetDLNAActivityTrackingEnabled returns true if DLNA activity tracking is enabled.
 // This uses the same "trackActivity" UI setting that controls frontend play history tracking.
 // When enabled, scenes played via DLNA will have their play count and duration tracked.
-func (s *Config) GetDLNAActivityTrackingEnabled() bool {
-	uiConfig := s.GetUIConfiguration()
+func (i *Config) GetDLNAActivityTrackingEnabled() bool {
+	uiConfig := i.GetUIConfiguration()
 	if uiConfig == nil {
 		return true // Default to enabled
 	}
@@ -1685,8 +1674,8 @@ func (s *Config) GetDLNAActivityTrackingEnabled() bool {
 
 // GetVideoSortOrder returns the sort order to display videos. If
 // empty, videos will be sorted by titles.
-func (s *Config) GetVideoSortOrder() string {
-	ret := s.getString(DLNAVideoSortOrder)
+func (i *Config) GetVideoSortOrder() string {
+	ret := i.getString(DLNAVideoSortOrder)
 	if ret == "" {
 		ret = dlnaVideoSortOrderDefault
 	}
@@ -1696,21 +1685,21 @@ func (s *Config) GetVideoSortOrder() string {
 
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
-func (s *Config) GetLogFile() string {
-	return s.getString(LogFile)
+func (i *Config) GetLogFile() string {
+	return i.getString(LogFile)
 }
 
 // GetLogOut returns true if logging should be output to the terminal
 // in addition to writing to a log file. Logging will be output to the
 // terminal if file logging is disabled. Defaults to true.
-func (s *Config) GetLogOut() bool {
-	return s.getBoolDefault(LogOut, defaultLogOut)
+func (i *Config) GetLogOut() bool {
+	return i.getBoolDefault(LogOut, defaultLogOut)
 }
 
 // GetLogLevel returns the lowest log level to write to the log.
 // Should be one of "Debug", "Info", "Warning", "Error"
-func (s *Config) GetLogLevel() string {
-	value := s.getString(LogLevel)
+func (i *Config) GetLogLevel() string {
+	value := i.getString(LogLevel)
 	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" && value != "Trace" {
 		value = defaultLogLevel
 	}
@@ -1720,13 +1709,13 @@ func (s *Config) GetLogLevel() string {
 
 // GetLogAccess returns true if http requests should be logged to the terminal.
 // HTTP requests are not logged to the log file. Defaults to true.
-func (s *Config) GetLogAccess() bool {
-	return s.getBoolDefault(LogAccess, defaultLogAccess)
+func (i *Config) GetLogAccess() bool {
+	return i.getBoolDefault(LogAccess, defaultLogAccess)
 }
 
 // GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
-func (s *Config) GetLogFileMaxSize() int {
-	value := s.getInt(LogFileMaxSize)
+func (i *Config) GetLogFileMaxSize() int {
+	value := i.getInt(LogFileMaxSize)
 	if value < 0 {
 		value = defaultLogFileMaxSize
 	}
@@ -1735,12 +1724,12 @@ func (s *Config) GetLogFileMaxSize() int {
 }
 
 // Max allowed graphql upload size in megabytes
-func (s *Config) GetMaxUploadSize() int64 {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) GetMaxUploadSize() int64 {
+	i.RLock()
+	defer i.RUnlock()
 	ret := int64(1024)
 
-	v := s.forKey(MaxUploadSize)
+	v := i.forKey(MaxUploadSize)
 	if v.Exists(MaxUploadSize) {
 		ret = v.Int64(MaxUploadSize)
 	}
@@ -1748,10 +1737,10 @@ func (s *Config) GetMaxUploadSize() int64 {
 }
 
 // GetProxy returns the url of a http proxy to be used for all outgoing http calls.
-func (s *Config) GetProxy() string {
+func (i *Config) GetProxy() string {
 	// Validate format
 	reg := regexp.MustCompile(`^((?:socks5h?|https?):\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	proxy := s.getString(Proxy)
+	proxy := i.getString(Proxy)
 	if proxy != "" && reg.MatchString(proxy) {
 		logger.Debug("Proxy is valid, using it")
 		return proxy
@@ -1763,34 +1752,34 @@ func (s *Config) GetProxy() string {
 }
 
 // GetProxy returns the url of a http proxy to be used for all outgoing http calls.
-func (s *Config) GetNoProxy() string {
+func (i *Config) GetNoProxy() string {
 	// NoProxy does not require validation, it is validated by the native Go library sufficiently
-	return s.getString(NoProxy)
+	return i.getString(NoProxy)
 }
 
 // ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
 // config field to the provided IP address to indicate that stash has been accessed
 // from this public IP without authentication.
-func (s *Config) ActivatePublicAccessTripwire(requestIP string) error {
-	s.SetString(SecurityTripwireAccessedFromPublicInternet, requestIP)
-	return s.Write()
+func (i *Config) ActivatePublicAccessTripwire(requestIP string) error {
+	i.SetString(SecurityTripwireAccessedFromPublicInternet, requestIP)
+	return i.Write()
 }
 
-func (s *Config) getPackageSources(key string) []*models.PackageSource {
+func (i *Config) getPackageSources(key string) []*models.PackageSource {
 	var sources []*models.PackageSource
-	if err := s.unmarshalKey(key, &sources); err != nil {
+	if err := i.unmarshalKey(key, &sources); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
 
 	return sources
 }
 
-func (s *Config) GetPluginPackageSources() []*models.PackageSource {
-	return s.getPackageSources(PluginPackageSources)
+func (i *Config) GetPluginPackageSources() []*models.PackageSource {
+	return i.getPackageSources(PluginPackageSources)
 }
 
-func (s *Config) GetScraperPackageSources() []*models.PackageSource {
-	return s.getPackageSources(ScraperPackageSources)
+func (i *Config) GetScraperPackageSources() []*models.PackageSource {
+	return i.getPackageSources(ScraperPackageSources)
 }
 
 type packagePathGetter struct {
@@ -1819,21 +1808,21 @@ func (g packagePathGetter) GetSourcePath(srcURL string) string {
 	return ""
 }
 
-func (s *Config) GetPluginPackagePathGetter() packagePathGetter {
+func (i *Config) GetPluginPackagePathGetter() packagePathGetter {
 	return packagePathGetter{
-		getterFn: s.GetPluginPackageSources,
+		getterFn: i.GetPluginPackageSources,
 	}
 }
 
-func (s *Config) GetScraperPackagePathGetter() packagePathGetter {
+func (i *Config) GetScraperPackagePathGetter() packagePathGetter {
 	return packagePathGetter{
-		getterFn: s.GetScraperPackageSources,
+		getterFn: i.GetScraperPackageSources,
 	}
 }
 
-func (s *Config) Validate() error {
-	s.RLock()
-	defer s.RUnlock()
+func (i *Config) Validate() error {
+	i.RLock()
+	defer i.RUnlock()
 	mandatoryPaths := []string{
 		Database,
 		Generated,
@@ -1842,7 +1831,7 @@ func (s *Config) Validate() error {
 	var missingFields []string
 
 	for _, p := range mandatoryPaths {
-		if !s.forKey(p).Exists(p) || s.forKey(p).String(p) == "" {
+		if !i.forKey(p).Exists(p) || i.forKey(p).String(p) == "" {
 			missingFields = append(missingFields, p)
 		}
 	}
@@ -1853,7 +1842,7 @@ func (s *Config) Validate() error {
 		}
 	}
 
-	if s.GetBlobsStorage() == BlobStorageTypeFilesystem && s.forKey(BlobsPath).String(BlobsPath) == "" {
+	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
 		}
@@ -1862,69 +1851,69 @@ func (s *Config) Validate() error {
 	return nil
 }
 
-func (s *Config) setDefaultValues() {
+func (i *Config) setDefaultValues() {
 	// read data before write lock scope
-	defaultDatabaseFilePath := s.GetDefaultDatabaseFilePath()
-	defaultScrapersPath := s.GetDefaultScrapersPath()
-	defaultPluginsPath := s.GetDefaultPluginsPath()
+	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
+	defaultScrapersPath := i.GetDefaultScrapersPath()
+	defaultPluginsPath := i.GetDefaultPluginsPath()
 
-	s.Lock()
-	defer s.Unlock()
+	i.Lock()
+	defer i.Unlock()
 
 	// set the default host and port so that these are written to the config
 	// file
-	s.setDefault(Host, hostDefault)
-	s.setDefault(Port, portDefault)
+	i.setDefault(Host, hostDefault)
+	i.setDefault(Port, portDefault)
 
-	s.setDefault(ParallelTasks, parallelTasksDefault)
-	s.setDefault(SequentialScanning, SequentialScanningDefault)
-	s.setDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
-	s.setDefault(PreviewSegments, previewSegmentsDefault)
-	s.setDefault(PreviewExcludeStart, previewExcludeStartDefault)
-	s.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
-	s.setDefault(PreviewAudio, previewAudioDefault)
-	s.setDefault(SoundOnPreview, false)
+	i.setDefault(ParallelTasks, parallelTasksDefault)
+	i.setDefault(SequentialScanning, SequentialScanningDefault)
+	i.setDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
+	i.setDefault(PreviewSegments, previewSegmentsDefault)
+	i.setDefault(PreviewExcludeStart, previewExcludeStartDefault)
+	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+	i.setDefault(PreviewAudio, previewAudioDefault)
+	i.setDefault(SoundOnPreview, false)
 
-	s.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
-	s.setDefault(SpriteInterval, SpriteIntervalDefault)
-	s.setDefault(MinimumSprites, MinimumSpritesDefault)
-	s.setDefault(MaximumSprites, MaximumSpritesDefault)
-	s.setDefault(SpriteScreenshotSize, spriteScreenshotSizeDefault)
+	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
+	i.setDefault(SpriteInterval, SpriteIntervalDefault)
+	i.setDefault(MinimumSprites, MinimumSpritesDefault)
+	i.setDefault(MaximumSprites, MaximumSpritesDefault)
+	i.setDefault(SpriteScreenshotSize, spriteScreenshotSizeDefault)
 
-	s.setDefault(ThemeColor, DefaultThemeColor)
+	i.setDefault(ThemeColor, DefaultThemeColor)
 
-	s.setDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
-	s.setDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
+	i.setDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
+	i.setDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
 
-	s.setDefault(Database, defaultDatabaseFilePath)
+	i.setDefault(Database, defaultDatabaseFilePath)
 
-	s.setDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
-	s.setDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
+	i.setDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
+	i.setDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
-	s.setDefault(Generated, s.main.String(Metadata))
+	i.setDefault(Generated, i.main.String(Metadata))
 
-	s.setDefault(NoBrowser, NoBrowserDefault)
-	s.setDefault(NotificationsEnabled, NotificationsEnabledDefault)
-	s.setDefault(ShowOneTimeMovedNotification, ShowOneTimeMovedNotificationDefault)
+	i.setDefault(NoBrowser, NoBrowserDefault)
+	i.setDefault(NotificationsEnabled, NotificationsEnabledDefault)
+	i.setDefault(ShowOneTimeMovedNotification, ShowOneTimeMovedNotificationDefault)
 
 	// Set default scrapers and plugins paths
-	s.setDefault(ScrapersPath, defaultScrapersPath)
-	s.setDefault(PluginsPath, defaultPluginsPath)
+	i.setDefault(ScrapersPath, defaultScrapersPath)
+	i.setDefault(PluginsPath, defaultPluginsPath)
 
 	// Set default gallery cover regex
-	s.setDefault(GalleryCoverRegex, galleryCoverRegexDefault)
+	i.setDefault(GalleryCoverRegex, galleryCoverRegexDefault)
 
 	// Set NoProxy default
-	s.setDefault(NoProxy, noProxyDefault)
+	i.setDefault(NoProxy, noProxyDefault)
 
 	// set default package sources
-	s.setDefault(PluginPackageSources, []map[string]string{{
+	i.setDefault(PluginPackageSources, []map[string]string{{
 		"name":      sourceDefaultName,
 		"url":       pluginPackageSourcesDefault,
 		"localpath": sourceDefaultPath,
 	}})
-	s.setDefault(ScraperPackageSources, []map[string]string{{
+	i.setDefault(ScraperPackageSources, []map[string]string{{
 		"name":      sourceDefaultName,
 		"url":       scraperPackageSourcesDefault,
 		"localpath": sourceDefaultPath,
@@ -1934,50 +1923,50 @@ func (s *Config) setDefaultValues() {
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,
 // but should have a separate default than for brand-new systems, to maintain behavior.
 // The config file will not be written.
-func (s *Config) setExistingSystemDefaults() {
-	s.Lock()
-	defer s.Unlock()
-	if !s.isNewSystem {
+func (i *Config) setExistingSystemDefaults() {
+	i.Lock()
+	defer i.Unlock()
+	if !i.isNewSystem {
 		// Existing systems as of the introduction of auto-browser open should retain existing
 		// behavior and not start the browser automatically.
-		if !s.main.Exists(NoBrowser) {
-			s.set(NoBrowser, true)
+		if !i.main.Exists(NoBrowser) {
+			i.set(NoBrowser, true)
 		}
 
 		// Existing systems as of the introduction of the taskbar should inform users.
-		if !s.main.Exists(ShowOneTimeMovedNotification) {
-			s.set(ShowOneTimeMovedNotification, true)
+		if !i.main.Exists(ShowOneTimeMovedNotification) {
+			i.set(ShowOneTimeMovedNotification, true)
 		}
 	}
 }
 
 // SetInitialConfig fills in missing required config fields. The config file will not be written.
-func (s *Config) SetInitialConfig() error {
+func (i *Config) SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
-	if string(s.GetJWTSignKey()) == "" {
+	if string(i.GetJWTSignKey()) == "" {
 		signKey, err := hash.GenerateRandomKey(apiKeyLength)
 		if err != nil {
 			return fmt.Errorf("error generating JWTSignKey: %w", err)
 		}
-		s.SetString(JWTSignKey, signKey)
+		i.SetString(JWTSignKey, signKey)
 	}
 
-	if string(s.GetSessionStoreKey()) == "" {
+	if string(i.GetSessionStoreKey()) == "" {
 		sessionStoreKey, err := hash.GenerateRandomKey(apiKeyLength)
 		if err != nil {
 			return fmt.Errorf("error generating session store key: %w", err)
 		}
-		s.SetString(SessionStoreKey, sessionStoreKey)
+		i.SetString(SessionStoreKey, sessionStoreKey)
 	}
 
-	s.setDefaultValues()
+	i.setDefaultValues()
 
 	return nil
 }
 
-func (s *Config) FinalizeSetup() {
-	s.isNewSystem = false
+func (i *Config) FinalizeSetup() {
+	i.isNewSystem = false
 	// i.configUpdates <- 0
 }

@@ -13,9 +13,6 @@ type CredentialStore interface {
 }
 
 type SessionConfig interface {
-	GetUsername() string
-	GetAPIKey() string
-
 	GetSessionStoreKey() []byte
 	GetMaxSessionAge() int
 }

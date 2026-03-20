@@ -62,9 +62,6 @@ func Initialize() (*Config, error) {
 		main:      koanf.New("."),
 		overrides: koanf.New("."),
 	}
-	cfg.UserStore = &UserStore{
-		Config: cfg,
-	}
 
 	cfg.initOverrides()
 
@@ -99,10 +96,6 @@ func Initialize() (*Config, error) {
 		}
 	}
 
-	if err := cfg.UserStore.loadUsers(); err != nil {
-		return nil, fmt.Errorf("failed to load users: %v", err)
-	}
-
 	instance = cfg
 	return instance, nil
 }
@@ -117,8 +110,8 @@ func InitializeEmpty() *Config {
 	return instance
 }
 
-func (s *Config) loadFromCommandLine() {
-	v := s.overrides
+func (i *Config) loadFromCommandLine() {
+	v := i.overrides
 
 	if err := v.Load(posflag.ProviderWithFlag(pflag.CommandLine, ".", v, func(f *pflag.Flag) (string, interface{}) {
 		// ignore flags that have not been changed
@@ -132,8 +125,8 @@ func (s *Config) loadFromCommandLine() {
 	}
 }
 
-func (s *Config) loadFromEnv() {
-	v := s.overrides
+func (i *Config) loadFromEnv() {
+	v := i.overrides
 
 	if err := v.Load(env.ProviderWithValue("STASH_", ".", func(key, value string) (string, interface{}) {
 		key = strings.ToLower(strings.TrimPrefix(key, "STASH_"))
@@ -147,12 +140,12 @@ func (s *Config) loadFromEnv() {
 	}
 }
 
-func (s *Config) initOverrides() {
-	s.loadFromCommandLine()
-	s.loadFromEnv()
+func (i *Config) initOverrides() {
+	i.loadFromCommandLine()
+	i.loadFromEnv()
 }
 
-func (s *Config) initConfig() error {
+func (i *Config) initConfig() error {
 	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
 
@@ -165,8 +158,8 @@ func (s *Config) initConfig() error {
 	if configFile != "" {
 		// if file does not exist, assume it is a new system
 		if exists, _ := fsutil.FileExists(configFile); !exists {
-			s.isNewSystem = true
-			s.SetConfigFile(configFile)
+			i.isNewSystem = true
+			i.SetConfigFile(configFile)
 
 			// ensure we can write to the file
 			if err := fsutil.Touch(configFile); err != nil {
@@ -179,15 +172,15 @@ func (s *Config) initConfig() error {
 			return nil
 		} else {
 			// load from provided config file
-			if err := s.loadFirstFromFiles([]string{configFile}); err != nil {
+			if err := i.loadFirstFromFiles([]string{configFile}); err != nil {
 				return err
 			}
 		}
 	} else {
 		// load from default locations
-		if err := s.loadFirstFromFiles(defaultConfigLocations); err != nil {
+		if err := i.loadFirstFromFiles(defaultConfigLocations); err != nil {
 			if errors.Is(err, errConfigNotFound) {
-				s.isNewSystem = true
+				i.isNewSystem = true
 				return nil
 			}
 
@@ -198,10 +191,10 @@ func (s *Config) initConfig() error {
 	return nil
 }
 
-func (s *Config) loadFirstFromFiles(f []string) error {
+func (i *Config) loadFirstFromFiles(f []string) error {
 	for _, ff := range f {
 		if exists, _ := fsutil.FileExists(ff); exists {
-			return s.load(ff)
+			return i.load(ff)
 		}
 	}
 

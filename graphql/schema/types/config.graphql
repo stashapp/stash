@@ -144,9 +144,9 @@ input ConfigGeneralInput {
   "Create Image Clips from Video extensions when Videos are disabled in Library"
   createImageClipsFromVideos: Boolean
   "Username"
-  username: String
+  username: String @deprecated(reason: "not supported - use user API instead")
   "Password"
-  password: String
+  password: String @deprecated(reason: "not supported - use user API instead")
   "Maximum session cookie age"
   maxSessionAge: Int
   "Name of the log file"
@@ -282,11 +282,11 @@ type ConfigGeneralResult {
   "Create Image Clips from Video extensions when Videos are disabled in Library"
   createImageClipsFromVideos: Boolean!
   "API Key"
-  apiKey: String!
+  apiKey: String! @deprecated(reason: "use user API instead")
   "Username"
-  username: String!
+  username: String @deprecated(reason: "use user API instead")
   "Password"
-  password: String!
+  password: String @deprecated(reason: "use user API instead")
   "Maximum session cookie age"
   maxSessionAge: Int!
   "Name of the log file"

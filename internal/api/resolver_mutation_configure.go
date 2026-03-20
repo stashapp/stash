@@ -320,28 +320,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	if input.Username != nil && *input.Username != c.GetUsername() {
-		c.SetString(config.Username, *input.Username)
-		if *input.Password == "" {
-			logger.Info("Username cleared")
-		} else {
-			logger.Info("Username changed")
-		}
+	if input.Username != nil {
+		return makeConfigGeneralResult(), fmt.Errorf("username not supported")
 	}
 
 	if input.Password != nil {
-		// bit of a hack - check if the passed in password is the same as the stored hash
-		// and only set if they are different
-		currentPWHash := c.GetPasswordHash()
-
-		if *input.Password != currentPWHash {
-			if *input.Password == "" {
-				logger.Info("Password cleared")
-			} else {
-				logger.Info("Password changed")
-			}
-			c.SetPassword(*input.Password)
-		}
+		return makeConfigGeneralResult(), fmt.Errorf("password not supported")
 	}
 
 	r.setConfigInt(config.MaxSessionAge, input.MaxSessionAge)
