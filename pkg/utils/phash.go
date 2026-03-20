@@ -5,7 +5,6 @@ import (
 	"math/bits"
 	"strconv"
 
-	"github.com/corona10/goimagehash"
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
