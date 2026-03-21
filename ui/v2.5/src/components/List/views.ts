@@ -13,6 +13,7 @@ export enum View {
   TagScenes = "tag_scenes",
   TagImages = "tag_images",
   TagPerformers = "tag_performers",
+  TagStudios = "tag_studios",
   TagGroups = "tag_groups",
 
   PerformerScenes = "performer_scenes",

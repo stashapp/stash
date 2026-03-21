@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -686,6 +687,12 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		direction = findFilter.GetDirection()
 	}
 
+	// check for favorites-first prefix and strip it before further processing
+	favoritesFirst := strings.HasPrefix(sort, FavoritesFirstPrefix)
+	if favoritesFirst {
+		sort = sort[len(FavoritesFirstPrefix):]
+	}
+
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := studioSortOptions.validateSort(sort); err != nil {
 		return "", err
@@ -715,6 +722,11 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
+
+	if favoritesFirst {
+		sortQuery = strings.Replace(sortQuery, " ORDER BY ", " ORDER BY studios.favorite DESC, ", 1)
+	}
+
 	return sortQuery, nil
 }
 

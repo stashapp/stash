@@ -47,6 +47,9 @@ import { LoadedContent } from "../List/PagedList";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { FavoriteTagCriterionOption } from "src/models/list-filter/criteria/favorite";
 import { TagListTable } from "./TagListTable";
+import { useConfigurationContext } from "src/hooks/Config";
+import { useFavoritesFirstFilterHook } from "src/hooks/useFavoritesFirstFilterHook";
+import { IUIConfig } from "src/core/config";
 
 const TagList: React.FC<{
   tags: GQL.TagListDataFragment[];
@@ -206,6 +209,16 @@ export const FilteredTagList = PatchComponent(
 
     const view = View.Tags;
 
+    // favorites-first: applies on the main Tags page
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui as IUIConfig;
+    const showFavoritesFirst = uiConfig?.showFavoritesFirstTags ?? false;
+
+    const combinedFilterHook = useFavoritesFirstFilterHook(
+      showFavoritesFirst,
+      filterHook
+    );
+
     // States
     const {
       showSidebar,
@@ -226,7 +239,7 @@ export const FilteredTagList = PatchComponent(
           useResult: useFindTagsForList,
           getCount: (r) => r.data?.findTags.count ?? 0,
           getItems: (r) => r.data?.findTags.tags ?? [],
-          filterHook,
+          filterHook: combinedFilterHook,
         },
       });
 

@@ -712,6 +712,10 @@
           "heading": "Show all details"
         }
       },
+      "favorites_first": {
+        "description": "When enabled, favourites will appear at the top of the list while respecting the current sort order within each group.",
+        "heading": "Show Favourites First"
+      },
       "editing": {
         "disable_dropdown_create": {
           "description": "Remove the ability to create new objects from the dropdown selectors.",

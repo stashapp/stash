@@ -58,6 +58,9 @@ import { FavoritePerformerCriterionOption } from "src/models/list-filter/criteri
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { SidebarOptionFilter } from "../List/Filters/OptionFilter";
 import { GenderCriterionOption } from "src/models/list-filter/criteria/gender";
+import { useConfigurationContext } from "src/hooks/Config";
+import { useFavoritesFirstFilterHook } from "src/hooks/useFavoritesFirstFilterHook";
+import { IUIConfig } from "src/core/config";
 
 export const FormatHeight = (height?: number | null) => {
   const intl = useIntl();
@@ -377,6 +380,22 @@ export const FilteredPerformerList = PatchComponent(
       extraOperations = [],
     } = props;
 
+    // favorites-first: applies on the main Performers page and related performer tabs
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui as IUIConfig;
+    const favoritesFirstApplicable =
+      view === View.Performers ||
+      view === View.TagPerformers ||
+      view === View.StudioPerformers;
+    const showFavoritesFirst =
+      favoritesFirstApplicable &&
+      (uiConfig?.showFavoritesFirstPerformers ?? false);
+
+    const combinedFilterHook = useFavoritesFirstFilterHook(
+      showFavoritesFirst,
+      filterHook
+    );
+
     // States
     const {
       showSidebar,
@@ -397,7 +416,7 @@ export const FilteredPerformerList = PatchComponent(
           useResult: useFindPerformers,
           getCount: (r) => r.data?.findPerformers.count ?? 0,
           getItems: (r) => r.data?.findPerformers.performers ?? [],
-          filterHook,
+          filterHook: combinedFilterHook,
         },
       });
 

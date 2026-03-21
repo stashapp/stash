@@ -46,6 +46,9 @@ import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { FavoriteStudioCriterionOption } from "src/models/list-filter/criteria/favorite";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
+import { useConfigurationContext } from "src/hooks/Config";
+import { useFavoritesFirstFilterHook } from "src/hooks/useFavoritesFirstFilterHook";
+import { IUIConfig } from "src/core/config";
 
 const StudioList: React.FC<{
   studios: GQL.StudioDataFragment[];
@@ -204,6 +207,20 @@ export const FilteredStudioList = PatchComponent(
 
     const { filterHook, view, alterQuery, extraOperations = [] } = props;
 
+    // favorites-first: applies on the main Studios page and the Tag → Studios tab
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui as IUIConfig;
+    const favoritesFirstApplicable =
+      view === View.Studios || view === View.TagStudios;
+    const showFavoritesFirst =
+      favoritesFirstApplicable &&
+      (uiConfig?.showFavoritesFirstStudios ?? false);
+
+    const combinedFilterHook = useFavoritesFirstFilterHook(
+      showFavoritesFirst,
+      filterHook
+    );
+
     // States
     const {
       showSidebar,
@@ -224,7 +241,7 @@ export const FilteredStudioList = PatchComponent(
           useResult: useFindStudios,
           getCount: (r) => r.data?.findStudios.count ?? 0,
           getItems: (r) => r.data?.findStudios.studios ?? [],
-          filterHook,
+          filterHook: combinedFilterHook,
         },
       });
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -842,6 +843,12 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		direction = findFilter.GetDirection()
 	}
 
+	// check for favorites-first prefix and strip it before further processing
+	favoritesFirst := strings.HasPrefix(sort, FavoritesFirstPrefix)
+	if favoritesFirst {
+		sort = sort[len(FavoritesFirstPrefix):]
+	}
+
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := performerSortOptions.validateSort(sort); err != nil {
 		return "", err
@@ -877,6 +884,11 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
+
+	if favoritesFirst {
+		sortQuery = strings.Replace(sortQuery, " ORDER BY ", " ORDER BY performers.favorite DESC, ", 1)
+	}
+
 	return sortQuery, nil
 }
 

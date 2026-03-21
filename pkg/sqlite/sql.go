@@ -47,11 +47,17 @@ func getPaginationSQL(page int, perPage int) string {
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 
-const randomSeedPrefix = "random_" // prefix for random sort
+const randomSeedPrefix = "random_"       // prefix for random sort
+const FavoritesFirstPrefix = "favorites_first_" // prefix for favorites-first sort
 
 type sortOptions []string
 
 func (o sortOptions) validateSort(sort string) error {
+	// strip favorites-first prefix before validating the underlying sort
+	if strings.HasPrefix(sort, FavoritesFirstPrefix) {
+		sort = sort[len(FavoritesFirstPrefix):]
+	}
+
 	if strings.HasPrefix(sort, randomSeedPrefix) {
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -61,6 +67,7 @@ func (o sortOptions) validateSort(sort string) error {
 		}
 		return nil
 	}
+
 
 	for _, v := range o {
 		if v == sort {

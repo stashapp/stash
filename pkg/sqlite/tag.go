@@ -811,6 +811,12 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		direction = findFilter.GetDirection()
 	}
 
+	// check for favorites-first prefix and strip it before further processing
+	favoritesFirst := strings.HasPrefix(sort, FavoritesFirstPrefix)
+	if favoritesFirst {
+		sort = sort[len(FavoritesFirstPrefix):]
+	}
+
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := tagSortOptions.validateSort(sort); err != nil {
 		return "", err
@@ -844,6 +850,11 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 
 	// Whatever the sorting, always use sort_name/name/id as a final sort
 	sortQuery += ", COALESCE(tags.sort_name, tags.name, tags.id) COLLATE NATURAL_CI ASC"
+
+	if favoritesFirst {
+		sortQuery = strings.Replace(sortQuery, " ORDER BY ", " ORDER BY tags.favorite DESC, ", 1)
+	}
+
 	return sortQuery, nil
 }
 

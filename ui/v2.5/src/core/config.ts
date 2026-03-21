@@ -68,6 +68,13 @@ export interface IUIConfig {
   // if true show all content details by default
   showAllDetails?: boolean;
 
+  // if true show favorites first on the performers list page and tag performers tab
+  showFavoritesFirstPerformers?: boolean;
+  // if true show favorites first on the studios list page and tag studios tab
+  showFavoritesFirstStudios?: boolean;
+  // if true show favorites first on the tags list page
+  showFavoritesFirstTags?: boolean;
+
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
 

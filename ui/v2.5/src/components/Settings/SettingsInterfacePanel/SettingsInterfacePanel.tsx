@@ -694,6 +694,39 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           />
         </SettingSection>
 
+        <SettingSection headingID="config.ui.favorites_first.heading">
+          <div className="setting-group">
+            <div className="setting">
+              <div>
+                <div className="sub-heading">
+                  {intl.formatMessage({
+                    id: "config.ui.favorites_first.description",
+                  })}
+                </div>
+              </div>
+              <div />
+            </div>
+            <BooleanSetting
+              id="showFavoritesFirstPerformers"
+              headingID="performer"
+              checked={ui.showFavoritesFirstPerformers ?? undefined}
+              onChange={(v) => saveUI({ showFavoritesFirstPerformers: v })}
+            />
+            <BooleanSetting
+              id="showFavoritesFirstStudios"
+              headingID="studio"
+              checked={ui.showFavoritesFirstStudios ?? undefined}
+              onChange={(v) => saveUI({ showFavoritesFirstStudios: v })}
+            />
+            <BooleanSetting
+              id="showFavoritesFirstTags"
+              headingID="tag"
+              checked={ui.showFavoritesFirstTags ?? undefined}
+              onChange={(v) => saveUI({ showFavoritesFirstTags: v })}
+            />
+          </div>
+        </SettingSection>
+
         <SettingSection headingID="config.ui.editing.heading">
           <div className="setting-group">
             <div className="setting">

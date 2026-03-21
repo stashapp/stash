@@ -640,3 +640,134 @@ func TestStringCriterionHandlerNotNull(t *testing.T) {
 	assert.Equal(fmt.Sprintf("(%[1]s IS NOT NULL AND TRIM(%[1]s) != '')", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 0)
 }
+
+func TestValidateSortFavoritesFirstPrefix(t *testing.T) {
+	opts := sortOptions{"name", "rating", "random", "scenes_count"}
+	assert := assert.New(t)
+
+	// valid: known sorts with the favorites_first_ prefix pass
+	assert.NoError(opts.validateSort("favorites_first_name"))
+	assert.NoError(opts.validateSort("favorites_first_rating"))
+	assert.NoError(opts.validateSort("favorites_first_scenes_count"))
+
+	// valid: random with prefix passes (random itself is valid)
+	assert.NoError(opts.validateSort("favorites_first_random"))
+	assert.NoError(opts.validateSort("favorites_first_random_42"))
+
+	// invalid: prefixed random with invalid seed
+	assert.Error(opts.validateSort("favorites_first_random_not-a-number"))
+
+	// invalid: unknown sort after prefix
+	assert.Error(opts.validateSort("favorites_first_unknown_sort"))
+
+	// invalid: nothing after prefix
+	assert.Error(opts.validateSort("favorites_first_"))
+
+	// plain sorts still work unchanged
+	assert.NoError(opts.validateSort("name"))
+	assert.NoError(opts.validateSort("random_42"))
+	assert.Error(opts.validateSort("unknown"))
+}
+
+func TestGetPerformerSortFavoritesFirstPrefix(t *testing.T) {
+	qb := &PerformerStore{}
+	assert := assert.New(t)
+
+	favNameSort := "favorites_first_name"
+	favRatingSort := "favorites_first_rating"
+	favRandomSort := "favorites_first_random_42"
+	plainSort := "name"
+	invalidSort := "favorites_first_not_a_real_sort"
+
+	// favorites_first_name → ORDER BY performers.favorite DESC, performers.name …
+	sort, err := qb.getPerformerSort(&models.FindFilterType{Sort: &favNameSort})
+	assert.NoError(err)
+	assert.Contains(sort, "performers.favorite DESC")
+	assert.Contains(sort, "performers.name")
+
+	// favorites_first_rating → ORDER BY performers.favorite DESC, performers.rating …
+	sort, err = qb.getPerformerSort(&models.FindFilterType{Sort: &favRatingSort})
+	assert.NoError(err)
+	assert.Contains(sort, "performers.favorite DESC")
+	assert.Contains(sort, "performers.rating")
+
+	// favorites_first_random_<seed> keeps favorites first and randomizes within groups
+	sort, err = qb.getPerformerSort(&models.FindFilterType{Sort: &favRandomSort})
+	assert.NoError(err)
+	assert.Contains(sort, "performers.favorite DESC")
+	assert.Contains(sort, "mod((performers.id + 42)")
+
+	// plain name sort must NOT inject favorite
+	sort, err = qb.getPerformerSort(&models.FindFilterType{Sort: &plainSort})
+	assert.NoError(err)
+	assert.NotContains(sort, "favorite")
+
+	// unknown sort after prefix must error
+	_, err = qb.getPerformerSort(&models.FindFilterType{Sort: &invalidSort})
+	assert.Error(err)
+}
+
+func TestGetStudioSortFavoritesFirstPrefix(t *testing.T) {
+	qb := &StudioStore{}
+	assert := assert.New(t)
+
+	favNameSort := "favorites_first_name"
+	favRandomSort := "favorites_first_random_42"
+	plainSort := "name"
+	invalidSort := "favorites_first_not_a_real_sort"
+
+	// favorites_first_name → ORDER BY studios.favorite DESC, studios.name …
+	sort, err := qb.getStudioSort(&models.FindFilterType{Sort: &favNameSort})
+	assert.NoError(err)
+	assert.Contains(sort, "studios.favorite DESC")
+	assert.Contains(sort, "studios.name")
+
+	// favorites_first_random_<seed> keeps favorites first and randomizes within groups
+	sort, err = qb.getStudioSort(&models.FindFilterType{Sort: &favRandomSort})
+	assert.NoError(err)
+	assert.Contains(sort, "studios.favorite DESC")
+	assert.Contains(sort, "mod((studios.id + 42)")
+
+	// plain name sort must NOT inject favorite
+	sort, err = qb.getStudioSort(&models.FindFilterType{Sort: &plainSort})
+	assert.NoError(err)
+	assert.NotContains(sort, "favorite")
+
+	// unknown sort after prefix must error
+	_, err = qb.getStudioSort(&models.FindFilterType{Sort: &invalidSort})
+	assert.Error(err)
+}
+
+func TestGetTagSortFavoritesFirstPrefix(t *testing.T) {
+	qb := &TagStore{}
+	assert := assert.New(t)
+
+	favNameSort := "favorites_first_name"
+	favRandomSort := "favorites_first_random_42"
+	plainSort := "name"
+	invalidSort := "favorites_first_not_a_real_sort"
+
+	query := &queryBuilder{}
+
+	// favorites_first_name → ORDER BY tags.favorite DESC, COALESCE(tags.sort_name, tags.name) …
+	sort, err := qb.getTagSort(query, &models.FindFilterType{Sort: &favNameSort})
+	assert.NoError(err)
+	assert.Contains(sort, "tags.favorite DESC")
+	assert.Contains(sort, "tags.sort_name") // tag name uses COALESCE(sort_name, name)
+
+	// favorites_first_random_<seed> keeps favorites first and randomizes within groups
+	sort, err = qb.getTagSort(query, &models.FindFilterType{Sort: &favRandomSort})
+	assert.NoError(err)
+	assert.Contains(sort, "tags.favorite DESC")
+	assert.Contains(sort, "mod((tags.id + 42)")
+
+	// plain name sort must NOT inject favorite
+	sort, err = qb.getTagSort(query, &models.FindFilterType{Sort: &plainSort})
+	assert.NoError(err)
+	assert.NotContains(sort, "favorite")
+
+	// unknown sort after prefix must error
+	_, err = qb.getTagSort(query, &models.FindFilterType{Sort: &invalidSort})
+	assert.Error(err)
+}
+
