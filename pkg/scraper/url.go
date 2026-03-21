@@ -103,8 +103,8 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 				return nil, &HTTPError{StatusCode: resp.StatusCode}
 			}
 
-			delay := rateLimitBackoff(resp, attempt)
-			if delay < 0 {
+			delay, ok := rateLimitBackoff(resp, attempt)
+			if !ok {
 				logger.Warnf("[scraper] rate limited on %s, server requested wait exceeds maximum", loadURL)
 				return nil, &HTTPError{StatusCode: resp.StatusCode}
 			}
@@ -138,24 +138,24 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 // rateLimitBackoff calculates the delay before retrying a rate-limited request.
 // The delay is the sum of the parsed Retry-After value (defaulting to
 // rateLimitBaseDelay when absent) and an exponential backoff (2s, 4s, 8s, ...,
-// capped at rateLimitMaxDelay). Returns -1 if the server's Retry-After exceeds
-// rateLimitMaxDelay, signalling that the caller should stop retrying.
-func rateLimitBackoff(resp *http.Response, attempt int) time.Duration {
+// capped at rateLimitMaxDelay). Returns ok=false if the server's Retry-After
+// exceeds rateLimitMaxDelay, signalling that the caller should stop retrying.
+func rateLimitBackoff(resp *http.Response, attempt int) (time.Duration, bool) {
 	retryAfter := parseRetryAfter(resp)
 
 	// If the server asks us to wait longer than our max, give up immediately.
 	if retryAfter > rateLimitMaxDelay {
-		return -1
+		return 0, false
 	}
 
 	// Exponential backoff: 2s, 4s, 8s, 16s, 32s, ...
 	// Guard against int64 overflow for large attempt values.
 	if attempt >= 30 {
-		return rateLimitMaxDelay
+		return rateLimitMaxDelay, true
 	}
 	backoff := rateLimitBaseDelay << uint(attempt)
 
-	return clampDelay(retryAfter + backoff)
+	return clampDelay(retryAfter + backoff), true
 }
 
 // parseRetryAfter extracts a duration from the Retry-After header.

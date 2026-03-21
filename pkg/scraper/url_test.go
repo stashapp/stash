@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +30,10 @@ func TestRateLimitBackoff_ExponentialWithoutHeader(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("attempt_%d", tc.attempt), func(t *testing.T) {
 			resp := &http.Response{Header: http.Header{}}
-			got := rateLimitBackoff(resp, tc.attempt)
+			got, ok := rateLimitBackoff(resp, tc.attempt)
+			if !ok {
+				t.Fatal("expected ok=true")
+			}
 			if got != tc.expected {
 				t.Errorf("attempt %d: got %v, want %v", tc.attempt, got, tc.expected)
 			}
@@ -55,7 +59,10 @@ func TestRateLimitBackoff_RetryAfterPlusBackoff(t *testing.T) {
 		t.Run(fmt.Sprintf("attempt_%d", tc.attempt), func(t *testing.T) {
 			resp := &http.Response{Header: http.Header{}}
 			resp.Header.Set("Retry-After", "10")
-			got := rateLimitBackoff(resp, tc.attempt)
+			got, ok := rateLimitBackoff(resp, tc.attempt)
+			if !ok {
+				t.Fatal("expected ok=true")
+			}
 			if got != tc.expected {
 				t.Errorf("attempt %d: got %v, want %v", tc.attempt, got, tc.expected)
 			}
@@ -68,7 +75,10 @@ func TestRateLimitBackoff_RetryAfterDate(t *testing.T) {
 	resp := &http.Response{Header: http.Header{}}
 	resp.Header.Set("Retry-After", future.UTC().Format(http.TimeFormat))
 
-	got := rateLimitBackoff(resp, 0)
+	got, ok := rateLimitBackoff(resp, 0)
+	if !ok {
+		t.Fatal("expected ok=true")
+	}
 	// ~5s (Retry-After) + 2s (backoff attempt 0) = ~7s
 	if got < 6*time.Second || got > 8*time.Second {
 		t.Errorf("got %v, want ~7s", got)
@@ -79,9 +89,9 @@ func TestRateLimitBackoff_RetryAfterTooLong(t *testing.T) {
 	resp := &http.Response{Header: http.Header{}}
 	resp.Header.Set("Retry-After", "300") // 5 minutes, exceeds rateLimitMaxDelay
 
-	got := rateLimitBackoff(resp, 0)
-	if got != -1 {
-		t.Errorf("got %v, want -1 (give up)", got)
+	_, ok := rateLimitBackoff(resp, 0)
+	if ok {
+		t.Error("expected ok=false for Retry-After exceeding max")
 	}
 }
 
@@ -125,6 +135,10 @@ func TestLoadURL_429RetriesAndSucceeds(t *testing.T) {
 }
 
 func TestLoadURL_429ExhaustsRetries(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow retry exhaustion test")
+	}
+
 	var attempts atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		attempts.Add(1)
@@ -133,18 +147,24 @@ func TestLoadURL_429ExhaustsRetries(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	// Use a tight context so exponential backoff doesn't make the test slow.
-	// With Retry-After: 0, delays are 2s, 4s, 8s, 16s (cumulative 30s),
-	// so 15s allows about 3 retries before the context deadline fires.
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
+	ctx := context.Background()
 	def := Definition{}
 	gc := &testGlobalConfig{}
 
 	_, err := loadURL(ctx, srv.URL, srv.Client(), def, gc)
 	if err == nil {
 		t.Fatal("expected error after exhausting retries")
+	}
+	var httpErr *HTTPError
+	if !errors.As(err, &httpErr) {
+		t.Fatalf("expected *HTTPError, got %T: %v", err, err)
+	}
+	if httpErr.StatusCode != 429 {
+		t.Errorf("expected status 429, got %d", httpErr.StatusCode)
+	}
+	// 1 initial request + maxRateLimitRetries retries
+	if got := attempts.Load(); got != int32(maxRateLimitRetries+1) {
+		t.Errorf("expected %d attempts, got %d", maxRateLimitRetries+1, got)
 	}
 }
 
@@ -165,8 +185,8 @@ func TestLoadURL_429RetryAfterTooLong(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when Retry-After exceeds max")
 	}
-	httpErr, ok := err.(*HTTPError)
-	if !ok {
+	var httpErr *HTTPError
+	if !errors.As(err, &httpErr) {
 		t.Fatalf("expected *HTTPError, got %T: %v", err, err)
 	}
 	if httpErr.StatusCode != 429 {
