@@ -111,6 +111,25 @@ func (r *mutationResolver) GenerateUserAPIKey(ctx context.Context, username stri
 	return r.generateUserAPIKey(ctx, user, input)
 }
 
+func (r *mutationResolver) LockUser(ctx context.Context, name string) (bool, error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.userService.LockUser(ctx, name)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) UnlockUser(ctx context.Context, name string) (bool, error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.userService.UnlockUser(ctx, name)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
 func (r *mutationResolver) generateUserAPIKey(ctx context.Context, u *models.User, input GenerateAPIKeyInput) (string, error) {
 	var newAPIKey string
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

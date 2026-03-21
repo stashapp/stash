@@ -64,4 +64,6 @@ type UserService interface {
 	GenerateAPIKey(ctx context.Context, username string) (string, error)
 	ClearAPIKey(ctx context.Context, username string) error
 	DeleteUser(ctx context.Context, username string) error
+	LockUser(ctx context.Context, username string) error
+	UnlockUser(ctx context.Context, username string) error
 }

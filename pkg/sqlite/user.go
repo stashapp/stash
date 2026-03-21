@@ -26,6 +26,7 @@ const (
 type userRow struct {
 	ID           int         `db:"id" goqu:"skipinsert"`
 	Username     string      `db:"username"`
+	Locked       bool        `db:"locked"`
 	ApiKey       null.String `db:"api_key"`
 	PasswordHash []byte      `db:"password_hash"`
 	CreatedAt    Timestamp   `db:"created_at"`
@@ -35,6 +36,7 @@ type userRow struct {
 func (r *userRow) fromUser(o models.User) {
 	r.ID = o.ID
 	r.Username = o.Username
+	r.Locked = o.Locked
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
@@ -43,6 +45,7 @@ func (r *userRow) resolve() *models.User {
 	ret := &models.User{
 		ID:         r.ID,
 		Username:   r.Username,
+		Locked:     r.Locked,
 		ApiKeyHash: r.ApiKey.String,
 		CreatedAt:  r.CreatedAt.Timestamp,
 		UpdatedAt:  r.UpdatedAt.Timestamp,
@@ -231,6 +234,19 @@ func (qb *UserStore) SetUserAPIKey(ctx context.Context, id int, newAPIKey string
 func (qb *UserStore) SetRoles(ctx context.Context, id int, roles models.Roles) error {
 	// No need to update the user record itself, just ensure the roles are updated in the roles table
 	return userRolesTableMgr.replaceJoins(ctx, id, roles.Strings())
+}
+
+func (qb *UserStore) SetLock(ctx context.Context, id int, locked bool) error {
+	t := qb.table()
+	q := dialect.Update(t).Prepared(true).Set(
+		goqu.Record{"locked": locked},
+	).Where(t.Col("id").Eq(id))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("updating %s: %w", t.GetTable(), err)
+	}
+
+	return nil
 }
 
 func (qb *UserStore) Destroy(ctx context.Context, id int) error {

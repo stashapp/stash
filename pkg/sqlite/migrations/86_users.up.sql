@@ -2,6 +2,7 @@ CREATE TABLE `users` (
     `id` INTEGER PRIMARY KEY,
     `username` TEXT NOT NULL,
     `api_key` TEXT,
+    `locked` BOOLEAN NOT NULL DEFAULT '0',
     `password_hash` TEXT,
     `created_at` datetime NOT NULL,
     `updated_at` datetime NOT NULL

@@ -11,6 +11,7 @@ import (
 	"github.com/alexedwards/argon2id"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 )
 
 var (
@@ -23,6 +24,7 @@ var (
 	ErrAccessDenied             = errors.New("access denied")
 	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
 	ErrUserAlreadyExists        = errors.New("user with that username already exists")
+	ErrLockSelf                 = errors.New("cannot lock/unlock yourself")
 )
 
 const (
@@ -53,6 +55,7 @@ type UserSource interface {
 	SetUserPassword(ctx context.Context, id int, newPassword string) error
 	SetUserAPIKey(ctx context.Context, id int, newAPIKey string) error
 	Destroy(ctx context.Context, id int) error
+	SetLock(ctx context.Context, id int, locked bool) error
 }
 
 type Service struct {
@@ -77,7 +80,57 @@ func (s *Service) AllUsers(ctx context.Context) ([]*models.User, error) {
 }
 
 func userIsLocked(u *models.User) bool {
-	return len(u.Roles) == 0
+	return u.Locked || len(u.Roles) == 0
+}
+
+func (s *Service) LockUser(ctx context.Context, username string) error {
+	// ensure caller not locking themselves
+	cur := session.GetCurrentUser(ctx)
+	if cur != nil && cur.Username == username {
+		return ErrLockSelf
+	}
+
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return ErrUserNotExist
+	}
+
+	if err := s.Store.SetLock(ctx, existingUser.ID, true); err != nil {
+		return fmt.Errorf("error locking user: %w", err)
+	}
+
+	logger.Infof("[user] locked %q by %q", username, cur.Username)
+
+	return nil
+}
+
+func (s *Service) UnlockUser(ctx context.Context, username string) error {
+	// ensure caller not unlocking themselves (same rule)
+	cur := session.GetCurrentUser(ctx)
+	if cur != nil && cur.Username == username {
+		return ErrLockSelf
+	}
+
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return ErrUserNotExist
+	}
+
+	if err := s.Store.SetLock(ctx, existingUser.ID, false); err != nil {
+		return fmt.Errorf("error unlocking user: %w", err)
+	}
+
+	logger.Infof("[user] unlocked %q by %q", username, cur.Username)
+
+	return nil
 }
 
 func checkHash(password, hash string) (bool, error) {
@@ -273,7 +326,8 @@ func (s *Service) CreateUser(ctx context.Context, u models.User, password string
 		return fmt.Errorf("error creating user: %w", err)
 	}
 
-	logger.Infof("[user] created %q", u.Username)
+	cur := session.GetCurrentUser(ctx)
+	logger.Infof("[user] created %q by %q", u.Username, cur.Username)
 
 	return nil
 }
@@ -345,6 +399,9 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 		logger.Infof("[user] updated roles for user %q", updated.Username)
 	}
 
+	cur := session.GetCurrentUser(ctx)
+	logger.Infof("[user] updated %q by %q", updated.Username, cur.Username)
+
 	return nil
 }
 
@@ -385,7 +442,8 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 		return fmt.Errorf("error changing user password: %w", err)
 	}
 
-	logger.Infof("[user] changed password for %q", username)
+	cur := session.GetCurrentUser(ctx)
+	logger.Infof("[user] changed password for %q by %q", username, cur.Username)
 
 	return nil
 }
@@ -425,7 +483,8 @@ func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, 
 		return "", fmt.Errorf("error updating user with new api key: %w", err)
 	}
 
-	logger.Infof("[user] generated new API key for %q", username)
+	cur := session.GetCurrentUser(ctx)
+	logger.Infof("[user] generated new API key for %q by %q", username, cur.Username)
 
 	return newAPIKey, nil
 }
@@ -446,7 +505,8 @@ func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
 		return fmt.Errorf("error clearing user api key: %w", err)
 	}
 
-	logger.Infof("[user] cleared API key for %q", username)
+	cur := session.GetCurrentUser(ctx)
+	logger.Infof("[user] cleared API key for %q by %q", username, cur.Username)
 
 	return nil
 }
@@ -488,7 +548,8 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 
-	logger.Infof("[user] deleted %q", username)
+	cur := session.GetCurrentUser(ctx)
+	logger.Infof("[user] deleted %q by %q", username, cur.Username)
 
 	return nil
 }

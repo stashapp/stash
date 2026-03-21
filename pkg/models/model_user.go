@@ -7,6 +7,7 @@ type User struct {
 	Username   string
 	Roles      Roles
 	ApiKeyHash string
+	Locked     bool
 	CreatedAt  time.Time `db:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at"`
 }

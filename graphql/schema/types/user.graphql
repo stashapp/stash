@@ -15,6 +15,10 @@ type User {
   Should not be visible to other users
   """
   roles: [RoleEnum!] @isUserOwner
+  """
+  Whether the user is locked (cannot log in). Not visible to other users.
+  """
+  locked: Boolean! @isUserOwner
 }
 
 input UserCreateInput {
