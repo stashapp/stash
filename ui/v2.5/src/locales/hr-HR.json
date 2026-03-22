@@ -222,9 +222,7 @@
             "latest_version_build_hash": "Izrađen Hash Zadnje Verzije:",
             "new_version_notice": "[NOVO]",
             "release_date": "Datum izdanja:",
-            "stash_discord": "Pridruži se našem {url} kanalu",
             "stash_home": "Stash početna stranica na {url}",
-            "stash_open_collective": "Podrži nas kroz {url}",
             "stash_wiki": "Stash {url} stranica",
             "version": "Verzija"
         },

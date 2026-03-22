@@ -216,9 +216,7 @@
             "latest_version": "Son Sürüm",
             "latest_version_build_hash": "Son Sürüm İmzası:",
             "new_version_notice": "[YENİ]",
-            "stash_discord": "{url} kanalımıza katılın",
             "stash_home": "{url} üzerinde Stash sayfası",
-            "stash_open_collective": "Bizi {url} aracılığıyla destekleyin",
             "stash_wiki": "Stash {url} sayfası",
             "version": "Sürüm",
             "release_date": "Yayın tarihi:"

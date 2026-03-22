@@ -232,9 +232,7 @@
             "latest_version": "Nejnovější verze",
             "latest_version_build_hash": "Hash sestavení poslední verze:",
             "new_version_notice": "[NOVÝ]",
-            "stash_discord": "Připojte se na náš {url} kanál",
             "stash_home": "Stash domovská stránka na {url}",
-            "stash_open_collective": "Podpořte nás skrze {url}",
             "stash_wiki": "Stash {url} stránka",
             "version": "Verze",
             "release_date": "Datum vydání:"

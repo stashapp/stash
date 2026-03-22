@@ -229,9 +229,7 @@
             "latest_version_build_hash": "最新バージョンのビルドハッシュ:",
             "new_version_notice": "[NEW]",
             "release_date": "リリース日:",
-            "stash_discord": "私たちの{url}チャンネルへ参加しませんか",
             "stash_home": "Stashのすべては{url}にあります",
-            "stash_open_collective": "{url}からStashの開発を支援",
             "stash_wiki": "Stashの{url}で疑問を解決",
             "version": "バージョン"
         },

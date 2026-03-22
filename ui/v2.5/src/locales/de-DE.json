@@ -248,9 +248,7 @@
             "latest_version_build_hash": "Neuester Build Hash:",
             "new_version_notice": "[NEU]",
             "release_date": "Veröffentlichungsdatum:",
-            "stash_discord": "Komm in unseren {url} Kanal",
             "stash_home": "Stash ist beheimatet auf {url}",
-            "stash_open_collective": "Unterstütze uns über {url}",
             "stash_wiki": "Stash {url} Seite",
             "version": "Version"
         },

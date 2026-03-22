@@ -220,9 +220,7 @@
             "latest_version": "Nieuwste versie",
             "latest_version_build_hash": "Controlesome van nieuwste versie:",
             "new_version_notice": "[NIEUW]",
-            "stash_discord": "Neem deel aan ons {url}-kanaal",
             "stash_home": "Stash thuis bij {url}",
-            "stash_open_collective": "Steun ons via {url}",
             "stash_wiki": "Stash {url}-pagina",
             "version": "Versie",
             "release_date": "Uitgebracht op:"

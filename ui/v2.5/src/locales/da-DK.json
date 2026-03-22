@@ -236,9 +236,7 @@
             "latest_version_build_hash": "Seneste version Byg Hash:",
             "new_version_notice": "[NY]",
             "release_date": "Udgivelsesdato:",
-            "stash_discord": "Tilmeld dig vores {url} kanal",
             "stash_home": "Stash hjem på {url}",
-            "stash_open_collective": "Støt os gennem {url}",
             "stash_wiki": "Stash {url} side",
             "version": "Version"
         },

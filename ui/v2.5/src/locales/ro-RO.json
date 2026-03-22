@@ -197,8 +197,6 @@
             "check_for_new_version": "Verifică pentru o versiune nouă",
             "latest_version": "Ultima Versiune",
             "new_version_notice": "[NOU]",
-            "stash_discord": "Alăturați-vă {url} canalului nostru",
-            "stash_open_collective": "Susține-ne prin {url}",
             "version": "Versiune"
         },
         "application_paths": {

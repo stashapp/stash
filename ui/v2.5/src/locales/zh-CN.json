@@ -250,9 +250,7 @@
             "latest_version_build_hash": "最新版本识别码:",
             "new_version_notice": "[新版本]",
             "release_date": "发布日期：",
-            "stash_discord": "加入我们的 {url} 频道",
             "stash_home": "Stash 主页在 {url}",
-            "stash_open_collective": "通过 {url} 支持我们",
             "stash_wiki": "Stash {url} 页面",
             "version": "版本"
         },

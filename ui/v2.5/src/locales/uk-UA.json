@@ -229,8 +229,6 @@
         "about": {
             "check_for_new_version": "Перевірити наявність нової версії",
             "latest_version": "Остання Версія",
-            "stash_discord": "Приєднуйтесь до нашого каналу в {url}",
-            "stash_open_collective": "Підтримайте нас через {url}",
             "version": "Версія",
             "release_date": "Дата випуску:",
             "stash_home": "Домашня сторінка Stash: {url}",

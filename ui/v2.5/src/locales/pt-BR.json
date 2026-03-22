@@ -251,9 +251,7 @@
             "latest_version_build_hash": "Hash do executável da última versão:",
             "new_version_notice": "[NOVA]",
             "release_date": "Data de Lançamento:",
-            "stash_discord": "Junte-se ao nosso servidor no {url}",
             "stash_home": "Stash home no {url}",
-            "stash_open_collective": "Apoie-nos através de {url}",
             "stash_wiki": "Página da Stash {url}",
             "version": "Versão"
         },

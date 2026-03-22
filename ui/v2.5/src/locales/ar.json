@@ -253,9 +253,7 @@
             "latest_version": "أحدث إصدار",
             "latest_version_build_hash": "أحدث إصدار من رقم البناء:",
             "release_date": "تاريخ الاصدار:",
-            "stash_discord": "انضم إلى {url} قناتنا",
             "stash_home": "صفحة ستاش {url}",
-            "stash_open_collective": "ادعمونا من خلال {url}",
             "stash_wiki": "موقع ستاش {url}",
             "version": "إصدار",
             "new_version_notice": "[NEW]"

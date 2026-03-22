@@ -221,11 +221,9 @@
             "video_sort_order": "Standard videosortering"
         },
         "about": {
-            "stash_open_collective": "Støtt oss gjennom {url}",
             "version": "Versjon",
             "new_version_notice": "[NY]",
             "release_date": "Utgivelsesdato:",
-            "stash_discord": "Bli med på vår {url} kanal",
             "check_for_new_version": "Sjekk for ny versjon",
             "latest_version": "Siste versjon",
             "latest_version_build_hash": "Siste Versjon Build Hash:",

@@ -200,9 +200,7 @@
             "latest_version": "เวอร์ชันล่าสุด",
             "latest_version_build_hash": "เวอร์ชันล่าสุด Hash:",
             "new_version_notice": "[ใหม่]",
-            "stash_discord": "เข้าร่วมดิสคอร์ดของเรา {url}",
             "stash_home": "หน้าเว็บหลักของ Stash {url}",
-            "stash_open_collective": "สนับสนุนเราได้ที่ {url}",
             "stash_wiki": "หน้าเว็บ {url}",
             "version": "เวอร์ชัน",
             "release_date": "วันที่วางขาย:"

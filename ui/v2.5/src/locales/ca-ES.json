@@ -370,9 +370,7 @@
             "latest_version_build_hash": "Hash de l'última versió:",
             "new_version_notice": "[NOVA]",
             "release_date": "Data de llançament:",
-            "stash_discord": "Uneix-te al nostre canal {url}",
             "stash_home": "Pàgina principal del projecte en {url}",
-            "stash_open_collective": "Donacions al projecte a través de {url}",
             "stash_wiki": "Pàgina web {url}",
             "version": "Versió"
         },

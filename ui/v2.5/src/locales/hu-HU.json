@@ -187,8 +187,7 @@
             "latest_version_build_hash": "Legújabb verzió build hash-e:",
             "check_for_new_version": "Új verzió keresése",
             "new_version_notice": "[ÚJ]",
-            "release_date": "Megjelenés dátuma:",
-            "stash_discord": "Csatlakozz a csatornához {url}"
+            "release_date": "Megjelenés dátuma:"
         },
         "categories": {
             "logs": "Logok",

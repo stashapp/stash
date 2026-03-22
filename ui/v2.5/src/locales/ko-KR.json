@@ -250,9 +250,7 @@
             "latest_version_build_hash": "최신 버전 빌드 해쉬:",
             "new_version_notice": "[새 버전]",
             "release_date": "출시일:",
-            "stash_discord": "디스코드: {url}",
             "stash_home": "깃허브: {url}",
-            "stash_open_collective": "후원: {url}",
             "stash_wiki": "Stash 위키: {url}",
             "version": "버전"
         },
