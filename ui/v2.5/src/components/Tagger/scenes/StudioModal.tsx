@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -56,9 +56,11 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
   function maybeRenderField(
     id: string,
     text: string | null | undefined,
-    isSelectable: boolean = true
+    isSelectable: boolean = true,
+    messageId?: string
   ) {
     if (!text) return;
+    if (!messageId) messageId = id;
 
     return (
       <div className="row no-gutters">
@@ -73,7 +75,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
             </Button>
           )}
           <strong>
-            <FormattedMessage id={id} />:
+            <FormattedMessage id={messageId} />:
           </strong>
         </div>
         <TruncatedText className="col-7" text={text} />
@@ -141,7 +143,12 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
           {maybeRenderField("details", studio.details)}
           {maybeRenderField("aliases", studio.aliases)}
           {maybeRenderField("tags", studio.tags?.map((t) => t.name).join(", "))}
-          {maybeRenderField("parent_studio", studio.parent?.name, false)}
+          {maybeRenderField(
+            "parent_id",
+            studio.parent?.name,
+            true,
+            "parent_studio"
+          )}
           {maybeRenderStashBoxLink()}
         </div>
       </div>
@@ -202,6 +209,10 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   const [createParentStudio, setCreateParentStudio] = useState<boolean>(
     !!studio.parent
   );
+
+  useEffect(() => {
+    setCreateParentStudio(!excluded.parent_id && !!studio.parent);
+  }, [excluded.parent_id, studio.parent]);
 
   let sendParentStudio = true;
   // The parent studio exists, need to check if it has a Stash ID.
@@ -301,22 +312,26 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
   function maybeRenderParentStudio() {
     // There is no parent studio or it already has a Stash ID
-    if (!studio.parent || !sendParentStudio) {
+    if (!studio.parent || !sendParentStudio || excluded.parent_id) {
       return;
     }
 
+    // force create if there is no current parent studio and parent studio is not excluded
+    const mustCreateParent = !studio.parent.stored_id;
+
     return (
       <div>
-        <div className="mb-4 mt-4">
+        <Form.Group className="mb-4 mt-4">
           <Form.Check
             id="create-parent"
             checked={createParentStudio}
             label={intl.formatMessage({
               id: parentStudioCreateText(),
             })}
+            disabled={mustCreateParent}
             onChange={() => setCreateParentStudio(!createParentStudio)}
           />
-        </div>
+        </Form.Group>
         {maybeRenderParentStudioDetails()}
       </div>
     );
