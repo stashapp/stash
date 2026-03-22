@@ -39,7 +39,13 @@ const (
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
 
-	MaxSessionAge              = "max_session_age"
+	SingleUserMode        = "single_user_mode"
+	singleUserModeDefault = true
+
+	MaxSessionAge = "max_session_age"
+
+	GuestAccountEnabled = "guest_account_enabled"
+
 	UserGraphqlRateLimit       = "user_graphql_rate_limit"
 	UserGraphqlRateLimitWindow = "user_graphql_rate_limit_window_seconds"
 
@@ -139,9 +145,6 @@ const (
 	// urls or IPs that should not use the proxy
 	NoProxy        = "no_proxy"
 	noProxyDefault = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12"
-
-	SingleUserMode        = "single_user_mode"
-	singleUserModeDefault = true
 
 	// key used to sign JWT tokens
 	JWTSignKey = "jwt_secret_key"
@@ -1192,6 +1195,17 @@ func (i *Config) GetMaxSessionAge() int {
 	}
 
 	return ret
+}
+
+func (i *Config) GetGuestUserEnabled() bool {
+	return i.getBool(GuestAccountEnabled)
+}
+
+func (i *Config) SetGuestUserEnabled(enabled bool) {
+	i.RLock()
+	defer i.RUnlock()
+	i.set(GuestAccountEnabled, enabled)
+	_ = i.Write()
 }
 
 func (i *Config) GetUserGraphqlRateLimit() int {

@@ -10,10 +10,15 @@ import (
 
 type mockConfig struct {
 	single bool
+	guest  bool
 }
 
-func (m *mockConfig) GetSingleUserMode() bool  { return m.single }
-func (m *mockConfig) SetSingleUserMode(b bool) { m.single = b }
+func (m *mockConfig) GetSingleUserMode() bool   { return m.single }
+func (m *mockConfig) SetSingleUserMode(b bool)  { m.single = b }
+func (m *mockConfig) GetGuestUserEnabled() bool { return m.guest }
+func (m *mockConfig) SetGuestUserEnabled(enabled bool) {
+	m.guest = enabled
+}
 
 type mockStore struct {
 	users     map[string]*models.User

@@ -68,14 +68,19 @@ type UserSource interface {
 type UserServiceConfig interface {
 	GetSingleUserMode() bool
 	SetSingleUserMode(bool)
+
+	GetGuestUserEnabled() bool
+	SetGuestUserEnabled(bool)
 }
 
 type Service struct {
 	Store  UserSource
 	Config UserServiceConfig
 
-	startedAt      time.Time
-	singleUserMode bool
+	startedAt time.Time
+
+	singleUserMode   bool
+	guestUserEnabled bool
 }
 
 func (s *Service) setSingleUserMode(enabled bool) {
@@ -111,6 +116,26 @@ func (s *Service) Init(ctx context.Context) error {
 		return err
 	}
 
+	s.guestUserEnabled = s.Config.GetGuestUserEnabled()
+	if s.guestUserEnabled {
+		if s.singleUserMode {
+			logger.Warnf("Guest user cannot be enabled in single user mode, ignoring guest user enabled setting")
+			s.guestUserEnabled = false
+		} else {
+			logger.Info("Guest user enabled")
+		}
+
+	}
+
+	return nil
+}
+
+func (s *Service) SetGuestUserEnabled(enabled bool) error {
+	if enabled && s.singleUserMode {
+		return fmt.Errorf("cannot enable guest user in single user mode")
+	}
+	s.guestUserEnabled = enabled
+	s.Config.SetGuestUserEnabled(enabled)
 	return nil
 }
 
@@ -146,8 +171,17 @@ func (s *Service) ActivateSingleUserMode(ctx context.Context, currentPassword st
 
 // GetGuestUser returns the guest user if it exists, or nil if it does not exist.
 // The guest user is a special user that is used for unauthenticated access.
-func (s *Service) GetGuestUser(ctx context.Context) (*models.User, error) {
-	return s.GetUser(ctx, GuestUsername)
+func (s *Service) GetGuestUser(ctx context.Context) *models.User {
+	if !s.guestUserEnabled {
+		return nil
+	}
+
+	return &models.User{
+		Username: GuestUsername,
+		Roles:    []models.RoleEnum{models.RoleEnumRead},
+	}
+
+	//return s.GetUser(ctx, GuestUsername)
 }
 
 // GetSingleUser returns the single user if it exists.
@@ -665,27 +699,27 @@ func (s *Service) ResetUserPassword(ctx context.Context, username string) (strin
 	return newPassword, nil
 }
 
-func (s *Service) CreateGuestUser(ctx context.Context) error {
-	if s.singleUserMode {
-		return errors.New("cannot create guest user in single user mode")
-	}
+// func (s *Service) CreateGuestUser(ctx context.Context) error {
+// 	if s.singleUserMode {
+// 		return errors.New("cannot create guest user in single user mode")
+// 	}
 
-	u := models.User{
-		Username:  "guest",
-		Roles:     []models.RoleEnum{models.RoleEnumRead},
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+// 	u := models.User{
+// 		Username:  "guest",
+// 		Roles:     []models.RoleEnum{models.RoleEnumRead},
+// 		CreatedAt: time.Now(),
+// 		UpdatedAt: time.Now(),
+// 	}
 
-	// create user in store with empty password
-	if err := s.Store.Create(ctx, &u, ""); err != nil {
-		return fmt.Errorf("error creating guest user: %w", err)
-	}
+// 	// create user in store with empty password
+// 	if err := s.Store.Create(ctx, &u, ""); err != nil {
+// 		return fmt.Errorf("error creating guest user: %w", err)
+// 	}
 
-	logger.Infof("[user] created guest user")
+// 	logger.Infof("[user] created guest user")
 
-	return nil
-}
+// 	return nil
+// }
 
 func hashAPIKey(apiKey string) (string, error) {
 	// use faster SHA-256 hashing for API keys

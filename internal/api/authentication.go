@@ -58,7 +58,7 @@ func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
 }
 
 type UserAuthenticator interface {
-	GetGuestUser(ctx context.Context) (*models.User, error)
+	GetGuestUser(ctx context.Context) *models.User
 	GetSingleUser(ctx context.Context) (*models.User, error)
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
@@ -88,30 +88,21 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 
 			singleUserMode := cfg.GetSingleUserMode()
 
-			var guestUser *models.User
 			var defaultUser *models.User
-			if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
-				var err error
-				if singleUserMode {
+			if singleUserMode {
+				if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
+					var err error
 					defaultUser, err = g.GetSingleUser(ctx)
 					if err != nil {
 						return fmt.Errorf("error retrieving default user: %w", err)
 					}
 
-					// if we're in single user mode, we can skip trying to authenticate the guest user since it won't be used, but we'll still try to retrieve it so that it gets created if it doesn't exist
 					return nil
+				}); err != nil {
+					logger.Error(err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
 				}
-
-				guestUser, err = g.GetGuestUser(ctx)
-				if err != nil {
-					return fmt.Errorf("error retrieving guest user: %w", err)
-				}
-
-				return nil
-			}); err != nil {
-				logger.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
 			}
 
 			// // error if external access tripwire activated
@@ -217,10 +208,8 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 			// 	return
 			// }
 
-			if u == nil && guestUser != nil {
-				// if no user authenticated but default user exists, use default user
-				u = guestUser
-				u.Roles = models.Roles{models.RoleEnumRead}
+			if u == nil && !singleUserMode {
+				u = g.GetGuestUser(ctx)
 			}
 
 			// authentication is required

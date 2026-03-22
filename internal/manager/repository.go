@@ -61,7 +61,9 @@ type UserService interface {
 	GetUser(ctx context.Context, username string) (*models.User, error)
 
 	GetSingleUser(ctx context.Context) (*models.User, error)
-	GetGuestUser(ctx context.Context) (*models.User, error)
+
+	GetGuestUser(ctx context.Context) *models.User
+	SetGuestUserEnabled(enabled bool) error
 
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)

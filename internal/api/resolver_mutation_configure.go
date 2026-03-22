@@ -328,6 +328,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		return makeConfigGeneralResult(), fmt.Errorf("password not supported")
 	}
 
+	if input.GuestAccountEnabled != nil {
+		if err := manager.GetInstance().UserService.SetGuestUserEnabled(*input.GuestAccountEnabled); err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("error setting guest account enabled: %w", err)
+		}
+	}
+
 	r.setConfigInt(config.MaxSessionAge, input.MaxSessionAge)
 	r.setConfigString(config.LogFile, input.LogFile)
 	r.setConfigBool(config.LogOut, input.LogOut)

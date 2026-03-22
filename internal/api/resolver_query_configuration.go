@@ -116,6 +116,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		APIKey:                        "",
 		Username:                      nil,
 		Password:                      nil,
+		GuestAccountEnabled:           config.GetGuestUserEnabled(),
 		MaxSessionAge:                 config.GetMaxSessionAge(),
 		LogFile:                       &logFile,
 		LogOut:                        config.GetLogOut(),

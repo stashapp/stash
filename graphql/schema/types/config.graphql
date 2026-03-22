@@ -149,6 +149,8 @@ input ConfigGeneralInput {
   password: String @deprecated(reason: "not supported - use user API instead")
   "Maximum session cookie age"
   maxSessionAge: Int
+  "Whether guest user account is enabled"
+  guestAccountEnabled: Boolean
   "Name of the log file"
   logFile: String
   "Whether to also output to stderr"
@@ -289,6 +291,8 @@ type ConfigGeneralResult {
   password: String @deprecated(reason: "use user API instead")
   "Maximum session cookie age"
   maxSessionAge: Int!
+  "Whether guest user account is enabled"
+  guestAccountEnabled: Boolean!
   "Name of the log file"
   logFile: String
   "Whether to also output to stderr"
