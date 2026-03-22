@@ -655,6 +655,14 @@ type Mutation {
   userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
   lockUser(name: String!): Boolean! @hasRole(role: ADMIN)
   unlockUser(name: String!): Boolean! @hasRole(role: ADMIN)
+
+  """
+  Activates single user mode. Single user mode disabled authentication and allows anyone with access to the instance to have admin privileges. 
+  Requires a single user to present in the database, and this mutation will unset its password.
+  Requires the current password to prevent unauthorized activation of single user mode.
+  Returns true if successful.
+  """
+  activateSingleUserMode(currentPassword: String!): Boolean! @hasRole(role: ADMIN)
   
   changeUserPassword(input: ChangeUserPasswordInput!): Boolean!
     @hasRole(role: ADMIN)
