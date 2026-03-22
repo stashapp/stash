@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -126,6 +127,7 @@ func Initialize() (*Server, error) {
 
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
+	r.Use(RequestIPMiddleware)
 	r.Use(authenticateHandler(mgr.Repository.TxnManager, userService, cfg))
 	visitedPluginHandler := mgr.SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
@@ -651,6 +653,7 @@ type contextKey struct {
 
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
+	IPCtxKey      = &contextKey{"requestIP"}
 )
 
 func BaseURLMiddleware(next http.Handler) http.Handler {
@@ -679,4 +682,83 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 
 func getProxyPrefix(r *http.Request) string {
 	return strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
+}
+
+// RequestIPMiddleware is a middleware that adds the client's IP address to the request context.
+// This can be used by handlers to perform IP-based rate limiting or other IP-based logic.
+func RequestIPMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		requestIP, err := getRequestIP(r)
+		if err != nil {
+			// reject requests with invalid IPs
+			logger.Warnf("Rejecting request with invalid IP: %v", err)
+			http.Error(w, "Invalid IP address", http.StatusBadRequest)
+			return
+		}
+
+		r = r.WithContext(context.WithValue(r.Context(), IPCtxKey, requestIP))
+
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
+}
+
+func getRequestIPFromCtx(ctx context.Context) (net.IP, error) {
+	ctxVal := ctx.Value(IPCtxKey)
+	if ctxVal == nil {
+		return nil, errors.New("IP address not found in context")
+	}
+
+	requestIP, ok := ctxVal.(net.IP)
+	if !ok {
+		return nil, errors.New("IP address in context has invalid type")
+	}
+
+	return requestIP, nil
+}
+
+func isLocalIP(requestIP net.IP) bool {
+	_, cgNatAddrSpace, _ := net.ParseCIDR("100.64.0.0/10")
+	return requestIP.IsPrivate() || requestIP.IsLoopback() || requestIP.IsLinkLocalUnicast() || cgNatAddrSpace.Contains(requestIP)
+}
+
+func getRequestIP(r *http.Request) (net.IP, error) {
+	requestIPString, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing remote host (%s): %v", r.RemoteAddr, err)
+	}
+
+	// presence of scope ID in IPv6 addresses prevents parsing. Remove if present
+	scopeIDIndex := strings.Index(requestIPString, "%")
+	if scopeIDIndex != -1 {
+		requestIPString = requestIPString[0:scopeIDIndex]
+	}
+
+	requestIP := net.ParseIP(requestIPString)
+	if requestIP == nil {
+		return nil, fmt.Errorf("unable to parse remote host (%s)", requestIPString)
+	}
+
+	// TODO - only handle X-FORWARDED-FOR if the request is coming from a trusted proxy
+	// at the moment, we just check that the immediate client is a local IP before trusting the header, but this is not ideal
+	if r.Header.Get("X-FORWARDED-FOR") != "" {
+		// Request was proxied
+		proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
+
+		// validate proxies against local network only
+		if !isLocalIP(requestIP) {
+			logger.Warnf("Request from non-local IP %s with X-FORWARDED-FOR header. Rejecting to prevent IP spoofing.", requestIP)
+			return nil, fmt.Errorf("non-local IP %s with X-FORWARDED-FOR header", requestIP)
+		}
+
+		// Safe to validate X-Forwarded-For
+		// Client should be the first entry
+		requestIP = net.ParseIP(proxyChain[0])
+		if requestIP == nil {
+			return nil, fmt.Errorf("unable to parse client IP from X-FORWARDED-FOR header: %s", proxyChain[0])
+		}
+	}
+
+	return requestIP, nil
 }

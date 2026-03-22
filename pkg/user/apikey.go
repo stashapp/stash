@@ -44,7 +44,7 @@ func GetUserIDFromAPIKey(apiKey string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return "", ErrInvalidToken
 	}
 
 	if !token.Valid {

@@ -18,15 +18,15 @@ import (
 	"github.com/stashapp/stash/pkg/user"
 )
 
-const (
-	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
-		"More information and fixes are available at https://discourse.stashapp.cc/t/-/1658"
+// const (
+// 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
+// 		"More information and fixes are available at https://discourse.stashapp.cc/t/-/1658"
 
-	externalAccessErrMsg = "You have attempted to access Stash over the internet, and authentication is not enabled. " +
-		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
-		"Stash is not answering any other requests to protect your privacy. " +
-		"Please read the log entry or visit https://discourse.stashapp.cc/t/-/1658"
-)
+// 	externalAccessErrMsg = "You have attempted to access Stash over the internet, and authentication is not enabled. " +
+// 		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
+// 		"Stash is not answering any other requests to protect your privacy. " +
+// 		"Please read the log entry or visit https://discourse.stashapp.cc/t/-/1658"
+// )
 
 func allowUnauthenticated(r *http.Request) bool {
 	// #2715 - allow access to UI files
@@ -68,6 +68,17 @@ type AuthenticationConfig interface {
 	GetSingleUserMode() bool
 }
 
+func httpError(w http.ResponseWriter, r *http.Request, text string, status int) {
+	// if request accepts json, return json error response
+	if strings.Contains(r.Header.Get("Accept"), "application/json") {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		fmt.Fprintf(w, `{"error": "%s"}`, text)
+	} else {
+		http.Error(w, text, status)
+	}
+}
+
 func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg AuthenticationConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +116,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 
 			// // error if external access tripwire activated
 			// if accessErr := session.CheckExternalAccessTripwire(loginRequired, c); accessErr != nil {
-			// 	http.Error(w, tripwireActivatedErrMsg, http.StatusForbidden)
+			// 	httpError(w, r, tripwireActivatedErrMsg, http.StatusForbidden)
 			// 	return
 			// }
 
@@ -123,21 +134,43 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 				// try to authenticate using api key first
 				apiKey := session.GetRequestApiKey(r)
 				if apiKey != "" {
+					requestIP, err := keyByIP(r)
+					if err != nil {
+						logger.Errorf("Error getting IP for API key rate limiting: %v", err)
+						httpError(w, r, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+						return
+					}
+
+					canIncr, err := loginRateLimiter.canIncrement(requestIP)
+					if !canIncr {
+						loginRateLimiter.OnLimit(w, r, requestIP)
+						httpError(w, r, "Too many attempts using bad API key. Please try again later.", http.StatusTooManyRequests)
+						return
+					}
+
 					if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
 						u, err = g.AuthenticateByAPIKey(ctx, apiKey)
 						return err
 					}); err != nil {
 						if errors.Is(err, user.ErrInternalError) {
 							logger.Errorf("error authenticating by API key: %v", err)
-							http.Error(w, "internal server error", http.StatusInternalServerError)
+							httpError(w, r, "internal server error", http.StatusInternalServerError)
 							return
 						}
+
+						// must be authentication failure
+						// rate limit failed API key attempts to prevent brute forcing
+						_ = loginRateLimiter.Increment(requestIP)
+
+						// don't forward to login page if api key auth fails
+						httpError(w, r, "Invalid API key", http.StatusUnauthorized)
+						return
 					}
 				} else {
 					session, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
 					if getErr != nil {
 						logger.Errorf("error getting session user ID: %v", getErr)
-						http.Error(w, "internal server error", http.StatusInternalServerError)
+						httpError(w, r, "internal server error", http.StatusInternalServerError)
 						return
 					}
 
@@ -148,7 +181,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 						}); err != nil {
 							if errors.Is(err, user.ErrInternalError) {
 								logger.Errorf("error authenticating user by ID: %v", err)
-								http.Error(w, "internal server error", http.StatusInternalServerError)
+								httpError(w, r, "internal server error", http.StatusInternalServerError)
 								return
 							}
 						}
@@ -157,7 +190,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 
 				if err != nil {
 					if errors.Is(err, user.ErrInternalError) {
-						http.Error(w, "internal server error", http.StatusInternalServerError)
+						httpError(w, r, "internal server error", http.StatusInternalServerError)
 						return
 					}
 
@@ -176,7 +209,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 			// 			logger.Errorf("Error activating public access tripwire: %v", err)
 			// 		}
 
-			// 		http.Error(w, externalAccessErrMsg, http.StatusForbidden)
+			// 		httpError(w, r, externalAccessErrMsg, http.StatusForbidden)
 			// 	} else {
 			// 		logger.Errorf("Error checking external access security: %v", err)
 			// 		w.WriteHeader(http.StatusInternalServerError)

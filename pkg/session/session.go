@@ -73,6 +73,10 @@ func NewStore(c SessionConfig, a Authenticator, txnMgr models.TxnManager) *Store
 	return ret
 }
 
+func GetUsernameFromForm(r *http.Request) string {
+	return r.FormValue(usernameFormKey)
+}
+
 func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	// ignore error - we want a new session regardless
 	newSession, _ := s.sessionStore.Get(r, cookieName)

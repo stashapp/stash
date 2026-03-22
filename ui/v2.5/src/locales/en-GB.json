@@ -1274,7 +1274,8 @@
     "username": "Username",
     "password": "Password",
     "invalid_credentials": "Invalid username or password",
-    "internal_error": "Unexpected internal error. See logs for more details"
+    "internal_error": "Unexpected internal error. See logs for more details",
+    "too_many_attempts": "Too many failed login attempts. Please try again later."
   },
   "marker_count": "Marker Count",
   "markers": "Markers",

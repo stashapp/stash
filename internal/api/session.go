@@ -129,7 +129,28 @@ func handleLogin(s manager.UserService) http.HandlerFunc {
 
 func handleLoginPost(s *session.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := s.Login(w, r)
+		// perform IP rate limiting before attempting to log in to prevent brute force attacks
+
+		limitKey, err := keyByIP(r)
+		if err != nil {
+			logger.Errorf("Error getting IP for login rate limiting: %v", err)
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+			return
+		}
+
+		if loginRateLimiter.OnLimit(w, r, limitKey) {
+			http.Error(w, "Too many login attempts. Please try again later.", http.StatusTooManyRequests)
+			return
+		}
+
+		username := session.GetUsernameFromForm(r)
+
+		if userLoginRateLimiter.OnLimit(w, r, username) {
+			http.Error(w, "Too many login attempts. Please try again later.", http.StatusTooManyRequests)
+			return
+		}
+
+		err = s.Login(w, r)
 		if err != nil {
 			// always log the error
 			logger.Errorf("Error logging in: %v from IP: %s", err, r.RemoteAddr)
