@@ -610,6 +610,47 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	return nil
 }
 
+// ResetUserPassword resets the password for the specified user and returns the new password.
+// Used for emergency password resets from the command line when the user has been locked out.
+func (s *Service) ResetUserPassword(ctx context.Context, username string) (string, error) {
+	if s.singleUserMode {
+		return "", errors.New("cannot reset user password in single user mode")
+	}
+
+	if username == GuestUsername {
+		return "", ErrCannotModifyGuestUser
+	}
+
+	// check if user exists
+	existingUser, err := s.GetUser(ctx, username)
+	if err != nil {
+		return "", fmt.Errorf("error getting existing user: %w", err)
+	}
+
+	if existingUser == nil {
+		return "", ErrUserNotExist
+	}
+
+	const passwordLen = 16
+	newPassword, err := generateRandomString(passwordLen)
+	if err != nil {
+		return "", fmt.Errorf("error generating new password: %w", err)
+	}
+
+	// hash the password and store it
+	hashedPassword, err := hashPassword(newPassword)
+	if err != nil {
+		return "", fmt.Errorf("error hashing password: %w", err)
+	}
+
+	if err := s.Store.SetUserPassword(ctx, existingUser.ID, hashedPassword); err != nil {
+		return "", fmt.Errorf("error changing user password: %w", err)
+	}
+
+	logger.Warnf("Password for user %q has been reset", username)
+	return newPassword, nil
+}
+
 func (s *Service) CreateGuestUser(ctx context.Context) error {
 	if s.singleUserMode {
 		return errors.New("cannot create guest user in single user mode")

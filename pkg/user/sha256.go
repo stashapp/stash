@@ -1,7 +1,6 @@
 package user
 
 import (
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -13,7 +12,7 @@ type sha256Hasher struct{}
 const sha256SaltLength = 16
 
 func (h *sha256Hasher) GenerateHash(password string) (string, error) {
-	salt, err := h.generateSalt(sha256SaltLength)
+	salt, err := generateRandomBytes(sha256SaltLength)
 	if err != nil {
 		return "", err
 	}
@@ -33,16 +32,6 @@ func (h *sha256Hasher) CompareHash(password, hash string) (bool, error) {
 
 	computedHash := h.hashPasswordWithSalt(password, salt)
 	return computedHash == hash, nil
-}
-
-func (h *sha256Hasher) generateSalt(n uint32) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
 }
 
 func (h *sha256Hasher) hashPasswordWithSalt(password string, salt []byte) string {

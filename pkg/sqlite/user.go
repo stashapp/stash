@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -208,8 +209,14 @@ func (qb *UserStore) GetPasswordHash(ctx context.Context, id int) (string, error
 
 func (qb *UserStore) SetUserPassword(ctx context.Context, id int, newPassword string) error {
 	t := qb.table()
+	// also update the updated_at timestamp when changing password
+	// so that sessions are expired
+	updatedAt := time.Now()
 	q := dialect.Update(t).Prepared(true).Set(
-		goqu.Record{"password_hash": null.StringFrom(newPassword)},
+		goqu.Record{
+			"password_hash": null.StringFrom(newPassword),
+			"updated_at":    Timestamp{Timestamp: updatedAt},
+		},
 	).Where(t.Col("id").Eq(id))
 
 	if _, err := exec(ctx, q); err != nil {

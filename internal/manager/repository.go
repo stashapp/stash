@@ -72,6 +72,7 @@ type UserService interface {
 
 	ChangePassword(ctx context.Context, username, existingPassword, newPassword string) error
 	ChangeUserPassword(ctx context.Context, username string, newPassword string) error
+	ResetUserPassword(ctx context.Context, username string) (string, error)
 
 	GenerateAPIKey(ctx context.Context, username string) (string, error)
 	ClearAPIKey(ctx context.Context, username string) error
