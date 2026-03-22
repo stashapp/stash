@@ -103,7 +103,7 @@ func getLoginLocale(lang string) ([]byte, error) {
 	return data, nil
 }
 
-func handleLogin(s *session.Store) http.HandlerFunc {
+func handleLogin(s manager.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
@@ -152,7 +152,7 @@ func handleLoginPost(s *session.Store) http.HandlerFunc {
 	}
 }
 
-func handleLogout(s *session.Store) http.HandlerFunc {
+func handleLogout(s manager.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := manager.GetInstance().SessionStore.Logout(w, r); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

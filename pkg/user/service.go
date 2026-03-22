@@ -53,6 +53,8 @@ type UserSource interface {
 	All(ctx context.Context) ([]*models.User, error)
 	Count(ctx context.Context) (int, error)
 	FindByUsername(ctx context.Context, username string) (*models.User, error)
+	FindAdminUsers(ctx context.Context) ([]*models.User, error)
+
 	GetPasswordHash(ctx context.Context, id int) (string, error)
 
 	Create(ctx context.Context, u *models.User, password string) error
@@ -63,17 +65,80 @@ type UserSource interface {
 	SetLock(ctx context.Context, id int, locked bool) error
 }
 
+type UserServiceConfig interface {
+	GetSingleUserMode() bool
+	SetSingleUserMode(bool)
+}
+
 type Service struct {
-	Store UserSource
+	Store  UserSource
+	Config UserServiceConfig
+
+	singleUserMode bool
+}
+
+func (s *Service) setSingleUserMode(enabled bool) {
+	s.singleUserMode = enabled
+	s.Config.SetSingleUserMode(enabled)
 }
 
 func (s *Service) LoginRequired(ctx context.Context) (bool, error) {
+	return !s.singleUserMode, nil
+}
+
+func (s *Service) Init(ctx context.Context) error {
+	s.singleUserMode = s.Config.GetSingleUserMode()
+	if !s.singleUserMode {
+		// ensure there is at least one user. If there are no users, enable single user mode
+		// and create the default user
+		count, err := s.Store.Count(ctx)
+		if err != nil {
+			return fmt.Errorf("error counting users during initialization: %w", err)
+		}
+
+		if count == 0 {
+			logger.Infof("No users found, enabling single user mode and creating default user")
+			s.setSingleUserMode(true)
+		}
+	}
+
+	if s.singleUserMode {
+		logger.Info("Single user mode enabled")
+		_, err := s.createSingleUserIfNeeded(ctx)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) ActivateSingleUserMode(ctx context.Context, currentPassword string) error {
+	cur := session.GetCurrentUser(ctx)
+
+	// ensure there is a single user
 	count, err := s.Store.Count(ctx)
 	if err != nil {
-		logger.Errorf("error checking if login is required: %v", err)
-		return false, ErrInternalError
+		return fmt.Errorf("error counting users: %w", err)
 	}
-	return count > 0, nil
+
+	if count != 1 {
+		return fmt.Errorf("cannot activate single user mode when multiple users exist")
+	}
+
+	// validate current credentials
+	if err := s.ValidateCredentials(ctx, cur.Username, currentPassword); err != nil {
+		logger.Infof("[single user mode activation] failed attempt by %q: incorrect password", cur.Username)
+		return ErrCurrentPasswordIncorrect
+	}
+
+	logger.Warnf("Activating single user mode. Unsetting password for single user %q", cur.Username)
+
+	// unset user password
+	if err := s.Store.SetUserPassword(ctx, cur.ID, ""); err != nil {
+		return fmt.Errorf("error unsetting user password: %w", err)
+	}
+
+	s.setSingleUserMode(true)
+	return nil
 }
 
 // GetGuestUser returns the guest user if it exists, or nil if it does not exist.
@@ -82,10 +147,14 @@ func (s *Service) GetGuestUser(ctx context.Context) (*models.User, error) {
 	return s.GetUser(ctx, GuestUsername)
 }
 
-// GetDefaultUser returns the default password-less user if it exists.
-// It will return nil if there is no default user or if there are multiple users
-// (since default user can only be used if it is the only user).
-func (s *Service) GetDefaultUser(ctx context.Context) (*models.User, error) {
+// GetSingleUser returns the single user if it exists.
+// It will return nil if there is no single user or if there are multiple users
+// (since single user can only be used if it is the only user).
+func (s *Service) GetSingleUser(ctx context.Context) (*models.User, error) {
+	if !s.singleUserMode {
+		return nil, nil
+	}
+
 	count, err := s.Store.Count(ctx)
 	if err != nil {
 		logger.Errorf("error counting users: %v", err)
@@ -108,9 +177,12 @@ func (s *Service) GetDefaultUser(ctx context.Context) (*models.User, error) {
 	return all[0], nil
 }
 
-// CreateAdminUser creates the inital admin user.
-// It will return an error if there are already users in the system.
-func (s *Service) CreateAdminUserIfNeeded(ctx context.Context) (*models.User, error) {
+// createSingleUserIfNeeded creates the initial single user.
+func (s *Service) createSingleUserIfNeeded(ctx context.Context) (*models.User, error) {
+	if !s.singleUserMode {
+		return nil, fmt.Errorf("single user mode is not enabled")
+	}
+
 	// only create default user if there are no users
 	count, err := s.Store.Count(ctx)
 	if err != nil {
@@ -347,6 +419,10 @@ func hashPassword(password string) (string, error) {
 }
 
 func (s *Service) CreateUser(ctx context.Context, u models.User, password string) error {
+	if s.singleUserMode {
+		return errors.New("cannot create user in single user mode")
+	}
+
 	// validate input
 	// ensure username is valid
 	if err := s.validateUsername(u.Username); err != nil {
@@ -432,7 +508,7 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 	// validate roles
 	// don't allow removing admin from last admin user
 	if existingRoles.HasRole(models.RoleEnumAdmin) && !updated.Roles.HasRole(models.RoleEnumAdmin) {
-		users, err := s.AllUsers(ctx)
+		users, err := s.Store.FindAdminUsers(ctx)
 		if err != nil {
 			return fmt.Errorf("error getting all users: %w", err)
 		}
@@ -474,6 +550,11 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 func (s *Service) ChangePassword(ctx context.Context, username, currentPassword, newPassword string) error {
 	if username == GuestUsername {
 		return ErrCannotModifyGuestUser
+	}
+
+	// if we're in single user mode, allow changing password without validating current password since there is no other user
+	if s.singleUserMode {
+		return s.ChangeUserPassword(ctx, username, newPassword)
 	}
 
 	// validate current credentials
@@ -519,10 +600,21 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	cur := session.GetCurrentUser(ctx)
 	logger.Infof("[user] changed password for %q by %q", username, cur.Username)
 
+	if s.singleUserMode {
+		// turn off single user mode since password is now set and default user can no longer be used
+		s.setSingleUserMode(false)
+
+		logger.Infof("Single user mode disabled since password has been set for user %q", username)
+	}
+
 	return nil
 }
 
 func (s *Service) CreateGuestUser(ctx context.Context) error {
+	if s.singleUserMode {
+		return errors.New("cannot create guest user in single user mode")
+	}
+
 	u := models.User{
 		Username:  "guest",
 		Roles:     []models.RoleEnum{models.RoleEnumRead},
@@ -551,6 +643,11 @@ func hashAPIKey(apiKey string) (string, error) {
 func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, error) {
 	if username == GuestUsername {
 		return "", ErrCannotModifyGuestUser
+	}
+
+	if s.singleUserMode {
+		// don't allow generating API key in single user mode since default user is meant to be used without password or API key
+		return "", errors.New("cannot generate API key in single user mode")
 	}
 
 	// check if user exists
@@ -590,6 +687,11 @@ func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
 		return ErrCannotModifyGuestUser
 	}
 
+	if s.singleUserMode {
+		// don't allow clearing API key in single user mode since default user is meant to be used without password or API key
+		return errors.New("cannot clear API key in single user mode")
+	}
+
 	// check if user exists
 	existingUser, err := s.GetUser(ctx, username)
 	if err != nil {
@@ -612,6 +714,10 @@ func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
 }
 
 func (s *Service) DeleteUser(ctx context.Context, username string) error {
+	if s.singleUserMode {
+		return errors.New("cannot delete user in single user mode")
+	}
+
 	// check if user exists
 	existingUser, err := s.GetUser(ctx, username)
 	if err != nil {
@@ -624,9 +730,9 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 
 	// don't allow deleting last admin user unless it is the last user
 	if existingUser.Roles.HasRole(models.RoleEnumAdmin) {
-		users, err := s.AllUsers(ctx)
+		users, err := s.Store.FindAdminUsers(ctx)
 		if err != nil {
-			return fmt.Errorf("error getting all users: %w", err)
+			return fmt.Errorf("error getting admin users: %w", err)
 		}
 
 		hasAdmin := false
@@ -637,8 +743,7 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 			}
 		}
 
-		// allow deleting last admin if it is the only user
-		if !hasAdmin && len(users) > 1 {
+		if !hasAdmin {
 			return ErrDeleteLastAdminUser
 		}
 	}

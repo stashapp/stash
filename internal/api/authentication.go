@@ -59,7 +59,7 @@ func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
 
 type UserAuthenticator interface {
 	GetGuestUser(ctx context.Context) (*models.User, error)
-	GetDefaultUser(ctx context.Context) (*models.User, error)
+	GetSingleUser(ctx context.Context) (*models.User, error)
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 }
@@ -82,7 +82,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 			if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
 				var err error
 				if singleUserMode {
-					defaultUser, err = g.GetDefaultUser(ctx)
+					defaultUser, err = g.GetSingleUser(ctx)
 					if err != nil {
 						return fmt.Errorf("error retrieving default user: %w", err)
 					}
@@ -119,48 +119,50 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 				u.Roles = models.Roles{models.RoleEnumAdmin}
 			}
 
-			// try to authenticate using api key first
-			apiKey := session.GetRequestApiKey(r)
-			if apiKey != "" {
-				if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
-					u, err = g.AuthenticateByAPIKey(ctx, apiKey)
-					return err
-				}); err != nil {
-					if errors.Is(err, user.ErrInternalError) {
-						logger.Errorf("error authenticating by API key: %v", err)
-						http.Error(w, "internal server error", http.StatusInternalServerError)
-						return
-					}
-				}
-			} else {
-				session, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
-				if getErr != nil {
-					logger.Errorf("error getting session user ID: %v", getErr)
-					http.Error(w, "internal server error", http.StatusInternalServerError)
-					return
-				}
-
-				if session != nil {
+			if !singleUserMode {
+				// try to authenticate using api key first
+				apiKey := session.GetRequestApiKey(r)
+				if apiKey != "" {
 					if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
-						u, err = g.AuthenticateSession(ctx, session.UserID, session.LoginTime)
+						u, err = g.AuthenticateByAPIKey(ctx, apiKey)
 						return err
 					}); err != nil {
 						if errors.Is(err, user.ErrInternalError) {
-							logger.Errorf("error authenticating user by ID: %v", err)
+							logger.Errorf("error authenticating by API key: %v", err)
 							http.Error(w, "internal server error", http.StatusInternalServerError)
 							return
 						}
 					}
-				}
-			}
+				} else {
+					session, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
+					if getErr != nil {
+						logger.Errorf("error getting session user ID: %v", getErr)
+						http.Error(w, "internal server error", http.StatusInternalServerError)
+						return
+					}
 
-			if err != nil {
-				if errors.Is(err, user.ErrInternalError) {
-					http.Error(w, "internal server error", http.StatusInternalServerError)
-					return
+					if session != nil {
+						if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
+							u, err = g.AuthenticateSession(ctx, session.UserID, session.LoginTime)
+							return err
+						}); err != nil {
+							if errors.Is(err, user.ErrInternalError) {
+								logger.Errorf("error authenticating user by ID: %v", err)
+								http.Error(w, "internal server error", http.StatusInternalServerError)
+								return
+							}
+						}
+					}
 				}
 
-				// fall through and treat as unauthenticated
+				if err != nil {
+					if errors.Is(err, user.ErrInternalError) {
+						http.Error(w, "internal server error", http.StatusInternalServerError)
+						return
+					}
+
+					// fall through and treat as unauthenticated
+				}
 			}
 
 			// TODO remove this in favour of ip whitelist

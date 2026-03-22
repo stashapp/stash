@@ -272,6 +272,14 @@ func (qb *UserStore) FindByUsername(ctx context.Context, username string) (*mode
 	return ret, err
 }
 
+func (qb *UserStore) FindAdminUsers(ctx context.Context) ([]*models.User, error) {
+	q := qb.selectDataset().Where(qb.table().Col("id").In(
+		dialect.Select(userIDColumn).From(userRolesJoinTable).Where(userRolesJoinTable.Col(userRoleColumn).Eq(models.RoleEnumAdmin.String())),
+	))
+
+	return qb.getMany(ctx, q)
+}
+
 func (qb *UserStore) FindMany(ctx context.Context, ids []int) ([]*models.User, error) {
 	ret := make([]*models.User, len(ids))
 

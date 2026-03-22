@@ -240,9 +240,9 @@ func Initialize() (*Server, error) {
 
 	sessionStore := mgr.SessionStore
 
-	r.Get(loginEndpoint, handleLogin(sessionStore))
+	r.Get(loginEndpoint, handleLogin(userService))
 	r.Post(loginEndpoint, handleLoginPost(sessionStore))
-	r.Get(logoutEndpoint, handleLogout(sessionStore))
+	r.Get(logoutEndpoint, handleLogout(userService))
 	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndpoint)

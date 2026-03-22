@@ -50,13 +50,16 @@ type GroupService interface {
 }
 
 type UserService interface {
+	Init(ctx context.Context) error
+
+	LoginRequired(ctx context.Context) (bool, error)
 	session.Authenticator
+
 	AllUsers(ctx context.Context) ([]*models.User, error)
 	GetUser(ctx context.Context, username string) (*models.User, error)
 
-	GetDefaultUser(ctx context.Context) (*models.User, error)
+	GetSingleUser(ctx context.Context) (*models.User, error)
 	GetGuestUser(ctx context.Context) (*models.User, error)
-	CreateAdminUserIfNeeded(ctx context.Context) (*models.User, error)
 
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)

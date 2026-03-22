@@ -49,7 +49,6 @@ func (e InvalidCredentialsError) Error() string {
 var ErrUnauthorized = errors.New("unauthorized")
 
 type Authenticator interface {
-	LoginRequired(ctx context.Context) (bool, error)
 	ValidateCredentials(ctx context.Context, username string, password string) error
 }
 
@@ -72,18 +71,6 @@ func NewStore(c SessionConfig, a Authenticator, txnMgr models.TxnManager) *Store
 	ret.sessionStore.Options.SameSite = http.SameSiteLaxMode
 
 	return ret
-}
-
-func (s *Store) LoginRequired(ctx context.Context) (bool, error) {
-	var loginRequired bool
-	if err := s.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
-		var err error
-		loginRequired, err = s.authenticator.LoginRequired(ctx)
-		return err
-	}); err != nil {
-		return false, err
-	}
-	return loginRequired, nil
 }
 
 func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {

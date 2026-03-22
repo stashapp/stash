@@ -111,7 +111,8 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	}
 
 	mgr.UserService = &user.Service{
-		Store: db.User,
+		Store:  db.User,
+		Config: cfg,
 	}
 
 	if !cfg.IsNewSystem() {
@@ -252,16 +253,14 @@ func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshFFMpeg(ctx)
 	s.RefreshStreamManager()
 
-	// create admin account here if single user mode is enabled, since this is required for authentication and session management to work properly
-	if s.Config.GetSingleUserMode() {
-		if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-			if _, err := s.UserService.CreateAdminUserIfNeeded(ctx); err != nil {
-				return fmt.Errorf("error creating admin user: %w", err)
-			}
-			return nil
-		}); err != nil {
-			return err
+	// initialise the user service - this will create the default user if in single user mode
+	if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := s.UserService.Init(ctx); err != nil {
+			return fmt.Errorf("error initialising user service: %w", err)
 		}
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return nil
