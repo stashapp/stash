@@ -103,7 +103,7 @@ const TagModal: React.FC<ITagModalProps> = ({
             <FormattedMessage id={id} />:
           </strong>
         </div>
-        <TruncatedText className="col-7" text={text} />
+        <TruncatedText className="col-7" text={text} lineCount={3} />
       </div>
     );
   }
@@ -147,7 +147,7 @@ const TagModal: React.FC<ITagModalProps> = ({
             <FormattedMessage id={id} />:
           </strong>
         </div>
-        <TruncatedText className="col-7" text={text} />
+        <TruncatedText className="col-7" text={text} lineCount={3} />
       </div>
     );
   }
