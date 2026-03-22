@@ -89,7 +89,7 @@ const TagModal: React.FC<ITagModalProps> = ({
 
     return (
       <div className="row no-gutters">
-        <div className="col-5 studio-create-modal-field" key={id}>
+        <div className="col-5 create-modal-field" key={id}>
           {isSelectable && (
             <Button
               onClick={() => toggleField(id)}
@@ -133,7 +133,7 @@ const TagModal: React.FC<ITagModalProps> = ({
 
     return (
       <div className="row no-gutters">
-        <div className="col-5 studio-create-modal-field" key={id}>
+        <div className="col-5 create-modal-field" key={id}>
           {isSelectable && (
             <Button
               onClick={() => toggleParentField(id)}
@@ -249,7 +249,7 @@ const TagModal: React.FC<ITagModalProps> = ({
       }}
       cancel={{ onClick: () => closeModal(), variant: "secondary" }}
       onHide={() => closeModal()}
-      dialogClassName="studio-create-modal"
+      dialogClassName="tag-create-modal"
       icon={icon}
       header={header}
     >

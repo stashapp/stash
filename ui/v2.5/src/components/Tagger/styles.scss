@@ -131,6 +131,24 @@
   font-weight: 500;
 }
 
+.create-modal-field {
+  margin-bottom: 5px;
+
+  .btn {
+    margin-right: 5px;
+  }
+
+  .fa-icon {
+    width: 12px;
+  }
+}
+
+.create-modal-value ul {
+  font-size: 0.8em;
+  list-style-type: none;
+  padding-inline-start: 0;
+}
+
 .performer-create-modal {
   font-size: 1.2rem;
   max-width: 800px;
@@ -158,24 +176,6 @@
 
   .LoadingIndicator {
     height: 100%;
-  }
-
-  &-field {
-    margin-bottom: 5px;
-
-    .btn {
-      margin-right: 5px;
-    }
-
-    .fa-icon {
-      width: 12px;
-    }
-  }
-
-  &-value ul {
-    font-size: 0.8em;
-    list-style-type: none;
-    padding-inline-start: 0;
   }
 }
 
@@ -246,7 +246,8 @@
   }
 }
 
-.studio-create-modal {
+.studio-create-modal,
+.tag-create-modal {
   font-size: 1.2rem;
   max-width: 800px;
 
@@ -272,18 +273,6 @@
 
   .LoadingIndicator {
     height: 100%;
-  }
-
-  &-field {
-    margin-bottom: 5px;
-
-    .btn {
-      margin-right: 5px;
-    }
-
-    .fa-icon {
-      width: 12px;
-    }
   }
 }
 

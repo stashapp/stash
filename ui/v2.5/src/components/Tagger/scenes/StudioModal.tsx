@@ -65,7 +65,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
 
     return (
       <div className="row no-gutters">
-        <div className="col-5 studio-create-modal-field" key={id}>
+        <div className="col-5 create-modal-field" key={id}>
           {isSelectable && (
             <Button
               onClick={() => toggleField(id)}
@@ -93,7 +93,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
 
     return (
       <div className="row no-gutters">
-        <div className="col-5 studio-create-modal-field" key={name}>
+        <div className="col-5 create-modal-field" key={name}>
           {!isNew && (
             <Button
               onClick={() => toggleField(name)}
@@ -107,7 +107,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
             <FormattedMessage id={name} />:
           </strong>
         </div>
-        <div className="col-7 studio-create-modal-value">
+        <div className="col-7 create-modal-value">
           <ul>
             {text.map((t, i) => (
               <li key={i}>
