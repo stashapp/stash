@@ -220,6 +220,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 			if u == nil && guestUser != nil {
 				// if no user authenticated but default user exists, use default user
 				u = guestUser
+				u.Roles = models.Roles{models.RoleEnumRead}
 			}
 
 			// authentication is required

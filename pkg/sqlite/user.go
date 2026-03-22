@@ -28,6 +28,7 @@ const (
 type userRow struct {
 	ID           int         `db:"id" goqu:"skipinsert"`
 	Username     string      `db:"username"`
+	Notes        zero.String `db:"notes"`
 	Locked       bool        `db:"locked"`
 	ApiKey       zero.String `db:"api_key"`
 	PasswordHash zero.String `db:"password_hash"`
@@ -38,6 +39,7 @@ type userRow struct {
 func (r *userRow) fromUser(o models.User) {
 	r.ID = o.ID
 	r.Username = o.Username
+	r.Notes = zero.StringFrom(o.Notes)
 	r.Locked = o.Locked
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -47,6 +49,7 @@ func (r *userRow) resolve() *models.User {
 	ret := &models.User{
 		ID:         r.ID,
 		Username:   r.Username,
+		Notes:      r.Notes.String,
 		Locked:     r.Locked,
 		ApiKeyHash: r.ApiKey.String,
 		CreatedAt:  r.CreatedAt.Timestamp,
@@ -62,11 +65,13 @@ type userUpdateRow struct {
 	ApiKey    null.String `db:"api_key"`
 	CreatedAt Timestamp   `db:"created_at"`
 	UpdatedAt Timestamp   `db:"updated_at"`
+	Notes     string      `db:"notes"`
 }
 
 func (r *userUpdateRow) fromUser(o models.User) {
 	r.ID = o.ID
 	r.Username = o.Username
+	r.Notes = o.Notes
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }

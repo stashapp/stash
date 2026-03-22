@@ -20,9 +20,15 @@ func (r *mutationResolver) ActivateSingleUserMode(ctx context.Context, currentPa
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input UserCreateInput) (user *models.User, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		notes := ""
+		if input.Notes != nil {
+			notes = *input.Notes
+		}
+
 		err := r.userService.CreateUser(ctx, models.User{
 			Username: input.Name,
 			Roles:    models.Roles(input.Roles),
+			Notes:    notes,
 		}, input.Password)
 		if err != nil {
 			return fmt.Errorf("error creating user: %w", err)
@@ -42,9 +48,15 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input UserCreateInput
 
 func (r *mutationResolver) UserUpdate(ctx context.Context, input UserUpdateInput) (user *models.User, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		notes := ""
+		if input.Notes != nil {
+			notes = *input.Notes
+		}
+
 		err := r.userService.UpdateUser(ctx, input.ExistingName, models.User{
 			Username: input.Name,
 			Roles:    models.Roles(input.Roles),
+			Notes:    notes,
 		})
 		if err != nil {
 			return fmt.Errorf("error updating user: %w", err)

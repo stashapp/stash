@@ -10,6 +10,7 @@ directive @isUserOwner on FIELD_DEFINITION
 
 type User {
   name: String!
+  notes: String!
   """
   If the user has no roles, they are considered locked and cannot log in.
   Should not be visible to other users
@@ -23,6 +24,7 @@ type User {
 
 input UserCreateInput {
   name: String!
+  notes: String
   """
   Password in plain text
   """
@@ -33,6 +35,7 @@ input UserCreateInput {
 input UserUpdateInput {
   existingName: String!
   name: String!
+  notes: String
   roles: [RoleEnum!]!
 }
 

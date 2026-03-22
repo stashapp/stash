@@ -1,6 +1,7 @@
 CREATE TABLE `users` (
     `id` INTEGER PRIMARY KEY,
     `username` TEXT NOT NULL,
+    `notes` TEXT,
     `api_key` TEXT,
     `locked` BOOLEAN NOT NULL DEFAULT '0',
     `password_hash` TEXT,

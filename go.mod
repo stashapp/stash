@@ -20,6 +20,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.3.1
+	github.com/go-chi/httprate v0.15.0
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/golang-migrate/migrate/v4 v4.16.2
@@ -79,7 +80,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/go-chi/httprate v0.15.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250725192818-e39067aee2d2 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
