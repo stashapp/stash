@@ -74,6 +74,7 @@ type Service struct {
 	Store  UserSource
 	Config UserServiceConfig
 
+	startedAt      time.Time
 	singleUserMode bool
 }
 
@@ -87,6 +88,8 @@ func (s *Service) LoginRequired(ctx context.Context) (bool, error) {
 }
 
 func (s *Service) Init(ctx context.Context) error {
+	s.startedAt = time.Now()
+
 	s.singleUserMode = s.Config.GetSingleUserMode()
 	if !s.singleUserMode {
 		// ensure there is at least one user. If there are no users, enable single user mode
@@ -330,6 +333,12 @@ func (s *Service) AuthenticateSession(ctx context.Context, username string, logi
 
 	if userIsLocked(u) {
 		logger.Infof("[authentication] user %s is locked", username)
+		return nil, ErrAccessDenied
+	}
+
+	// check if the user is logging in after a restart
+	if s.startedAt.After(loginTime) {
+		logger.Infof("[authentication] user %s logged in before service start time", username)
 		return nil, ErrAccessDenied
 	}
 
