@@ -658,7 +658,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
             entityName="studios"
             extraConfig={
               <Form.Group
-                controlId="create-parent"
+                controlId="config-create-parent"
                 className="align-items-center"
               >
                 <Form.Check

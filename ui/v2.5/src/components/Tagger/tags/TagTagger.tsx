@@ -593,7 +593,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
             entityName="tags"
             extraConfig={
               <Form.Group
-                controlId="create-parent"
+                controlId="config-create-parent"
                 className="align-items-center"
               >
                 <Form.Check
