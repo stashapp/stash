@@ -252,6 +252,18 @@ func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshFFMpeg(ctx)
 	s.RefreshStreamManager()
 
+	// create admin account here if single user mode is enabled, since this is required for authentication and session management to work properly
+	if s.Config.GetSingleUserMode() {
+		if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+			if _, err := s.UserService.CreateAdminUserIfNeeded(ctx); err != nil {
+				return fmt.Errorf("error creating admin user: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

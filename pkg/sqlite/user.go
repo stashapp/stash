@@ -11,6 +11,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -27,8 +28,8 @@ type userRow struct {
 	ID           int         `db:"id" goqu:"skipinsert"`
 	Username     string      `db:"username"`
 	Locked       bool        `db:"locked"`
-	ApiKey       null.String `db:"api_key"`
-	PasswordHash []byte      `db:"password_hash"`
+	ApiKey       zero.String `db:"api_key"`
+	PasswordHash zero.String `db:"password_hash"`
 	CreatedAt    Timestamp   `db:"created_at"`
 	UpdatedAt    Timestamp   `db:"updated_at"`
 }
@@ -152,7 +153,7 @@ func (qb *UserStore) selectDataset() *goqu.SelectDataset {
 func (qb *UserStore) Create(ctx context.Context, newObject *models.User, passwordHash string) error {
 	var r userRow
 	r.fromUser(*newObject)
-	r.PasswordHash = []byte(passwordHash)
+	r.PasswordHash = zero.StringFrom(passwordHash)
 
 	id, err := userTableMgr.insertID(ctx, r)
 	if err != nil {
@@ -208,7 +209,7 @@ func (qb *UserStore) GetPasswordHash(ctx context.Context, id int) (string, error
 func (qb *UserStore) SetUserPassword(ctx context.Context, id int, newPassword string) error {
 	t := qb.table()
 	q := dialect.Update(t).Prepared(true).Set(
-		goqu.Record{"password_hash": []byte(newPassword)},
+		goqu.Record{"password_hash": null.StringFrom(newPassword)},
 	).Where(t.Col("id").Eq(id))
 
 	if _, err := exec(ctx, q); err != nil {

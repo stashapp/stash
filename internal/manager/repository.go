@@ -53,17 +53,26 @@ type UserService interface {
 	session.Authenticator
 	AllUsers(ctx context.Context) ([]*models.User, error)
 	GetUser(ctx context.Context, username string) (*models.User, error)
-	LoginRequired(ctx context.Context) (bool, error)
+
+	GetDefaultUser(ctx context.Context) (*models.User, error)
+	GetGuestUser(ctx context.Context) (*models.User, error)
+	CreateAdminUserIfNeeded(ctx context.Context) (*models.User, error)
+
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 
 	CreateUser(ctx context.Context, u models.User, password string) error
+
 	UpdateUser(ctx context.Context, username string, updated models.User) error
+
 	ChangePassword(ctx context.Context, username, existingPassword, newPassword string) error
 	ChangeUserPassword(ctx context.Context, username string, newPassword string) error
+
 	GenerateAPIKey(ctx context.Context, username string) (string, error)
 	ClearAPIKey(ctx context.Context, username string) error
-	DeleteUser(ctx context.Context, username string) error
+
 	LockUser(ctx context.Context, username string) error
 	UnlockUser(ctx context.Context, username string) error
+
+	DeleteUser(ctx context.Context, username string) error
 }

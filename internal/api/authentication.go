@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"errors"
-	"net"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
@@ -32,12 +31,6 @@ const (
 func allowUnauthenticated(r *http.Request) bool {
 	// #2715 - allow access to UI files
 	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
-}
-
-type UserAuthenticator interface {
-	LoginRequired(ctx context.Context) (bool, error)
-	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
-	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 }
 
 func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
@@ -64,37 +57,69 @@ func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, u.String(), http.StatusFound)
 }
 
-func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator) func(http.Handler) http.Handler {
+type UserAuthenticator interface {
+	GetGuestUser(ctx context.Context) (*models.User, error)
+	GetDefaultUser(ctx context.Context) (*models.User, error)
+	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
+	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
+}
+
+type AuthenticationConfig interface {
+	GetSingleUserMode() bool
+}
+
+func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg AuthenticationConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
 			ctx := r.Context()
 
 			// TODO - check ip whitelist here
 
-			var loginRequired bool
+			singleUserMode := cfg.GetSingleUserMode()
+
+			var guestUser *models.User
+			var defaultUser *models.User
 			if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
 				var err error
-				loginRequired, err = g.LoginRequired(ctx)
-				return err
+				if singleUserMode {
+					defaultUser, err = g.GetDefaultUser(ctx)
+					if err != nil {
+						return fmt.Errorf("error retrieving default user: %w", err)
+					}
+
+					// if we're in single user mode, we can skip trying to authenticate the guest user since it won't be used, but we'll still try to retrieve it so that it gets created if it doesn't exist
+					return nil
+				}
+
+				guestUser, err = g.GetGuestUser(ctx)
+				if err != nil {
+					return fmt.Errorf("error retrieving guest user: %w", err)
+				}
+
+				return nil
 			}); err != nil {
-				logger.Errorf("Error checking if login is required: %v", err)
+				logger.Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
-			// error if external access tripwire activated
-			if accessErr := session.CheckExternalAccessTripwire(loginRequired, c); accessErr != nil {
-				http.Error(w, tripwireActivatedErrMsg, http.StatusForbidden)
-				return
-			}
+			// // error if external access tripwire activated
+			// if accessErr := session.CheckExternalAccessTripwire(loginRequired, c); accessErr != nil {
+			// 	http.Error(w, tripwireActivatedErrMsg, http.StatusForbidden)
+			// 	return
+			// }
 
 			r = session.SetLocalRequest(r)
 
-			// try to authenticate using api key first
 			var u *models.User
 			var err error
 
+			if defaultUser != nil {
+				u = defaultUser
+				u.Roles = models.Roles{models.RoleEnumAdmin}
+			}
+
+			// try to authenticate using api key first
 			apiKey := session.GetRequestApiKey(r)
 			if apiKey != "" {
 				if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
@@ -139,30 +164,33 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator) func(htt
 			}
 
 			// TODO remove this in favour of ip whitelist
-			if err := session.CheckAllowPublicWithoutAuth(loginRequired, c, r); err != nil {
-				var accessErr session.ExternalAccessError
-				if errors.As(err, &accessErr) {
-					session.LogExternalAccessError(accessErr)
+			// if err := session.CheckAllowPublicWithoutAuth(loginRequired, c, r); err != nil {
+			// 	var accessErr session.ExternalAccessError
+			// 	if errors.As(err, &accessErr) {
+			// 		session.LogExternalAccessError(accessErr)
 
-					err := c.ActivatePublicAccessTripwire(net.IP(accessErr).String())
-					if err != nil {
-						logger.Errorf("Error activating public access tripwire: %v", err)
-					}
+			// 		err := c.ActivatePublicAccessTripwire(net.IP(accessErr).String())
+			// 		if err != nil {
+			// 			logger.Errorf("Error activating public access tripwire: %v", err)
+			// 		}
 
-					http.Error(w, externalAccessErrMsg, http.StatusForbidden)
-				} else {
-					logger.Errorf("Error checking external access security: %v", err)
-					w.WriteHeader(http.StatusInternalServerError)
-				}
-				return
+			// 		http.Error(w, externalAccessErrMsg, http.StatusForbidden)
+			// 	} else {
+			// 		logger.Errorf("Error checking external access security: %v", err)
+			// 		w.WriteHeader(http.StatusInternalServerError)
+			// 	}
+			// 	return
+			// }
+
+			if u == nil && guestUser != nil {
+				// if no user authenticated but default user exists, use default user
+				u = guestUser
 			}
 
-			if loginRequired {
-				// authentication is required
-				if u == nil && !allowUnauthenticated(r) {
-					handleUnauthorized(w, r)
-					return
-				}
+			// authentication is required
+			if u == nil && !allowUnauthenticated(r) {
+				handleUnauthorized(w, r)
+				return
 			}
 
 			if u != nil {

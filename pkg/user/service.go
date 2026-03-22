@@ -25,6 +25,8 @@ var (
 	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
 	ErrUserAlreadyExists        = errors.New("user with that username already exists")
 	ErrLockSelf                 = errors.New("cannot lock/unlock yourself")
+	ErrCannotModifyGuestUser    = errors.New("guest user cannot be modified")
+	ErrUsersExist               = errors.New("users already exist in the system")
 )
 
 const (
@@ -43,6 +45,9 @@ var Argon2Params = &argon2id.Params{
 	SaltLength:  SaltLength,
 	KeyLength:   Argon2KeyLen,
 }
+
+const AdminUsername = "admin"
+const GuestUsername = "guest"
 
 type UserSource interface {
 	All(ctx context.Context) ([]*models.User, error)
@@ -69,6 +74,67 @@ func (s *Service) LoginRequired(ctx context.Context) (bool, error) {
 		return false, ErrInternalError
 	}
 	return count > 0, nil
+}
+
+// GetGuestUser returns the guest user if it exists, or nil if it does not exist.
+// The guest user is a special user that is used for unauthenticated access.
+func (s *Service) GetGuestUser(ctx context.Context) (*models.User, error) {
+	return s.GetUser(ctx, GuestUsername)
+}
+
+// GetDefaultUser returns the default password-less user if it exists.
+// It will return nil if there is no default user or if there are multiple users
+// (since default user can only be used if it is the only user).
+func (s *Service) GetDefaultUser(ctx context.Context) (*models.User, error) {
+	count, err := s.Store.Count(ctx)
+	if err != nil {
+		logger.Errorf("error counting users: %v", err)
+		return nil, ErrInternalError
+	}
+
+	if count != 1 {
+		return nil, ErrUsersExist
+	}
+
+	all, err := s.AllUsers(ctx)
+	if err != nil {
+		logger.Errorf("error getting all users: %v", err)
+		return nil, ErrInternalError
+	}
+	// sanity check
+	if len(all) != 1 {
+		panic(fmt.Sprintf("expected exactly one user, got %d", len(all)))
+	}
+	return all[0], nil
+}
+
+// CreateAdminUser creates the inital admin user.
+// It will return an error if there are already users in the system.
+func (s *Service) CreateAdminUserIfNeeded(ctx context.Context) (*models.User, error) {
+	// only create default user if there are no users
+	count, err := s.Store.Count(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error counting users: %w", err)
+	}
+
+	if count > 0 {
+		logger.Debugf("Not creating default admin user since %d users already exist", count)
+		return nil, nil
+	}
+
+	u := models.User{
+		Username:  AdminUsername,
+		Roles:     []models.RoleEnum{models.RoleEnumAdmin},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	if err := s.Store.Create(ctx, &u, ""); err != nil {
+		return nil, fmt.Errorf("error creating admin user: %w", err)
+	}
+
+	logger.Infof("Created default admin user with username %q", AdminUsername)
+	return &u, nil
 }
 
 func (s *Service) GetUser(ctx context.Context, username string) (*models.User, error) {
@@ -406,6 +472,10 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 }
 
 func (s *Service) ChangePassword(ctx context.Context, username, currentPassword, newPassword string) error {
+	if username == GuestUsername {
+		return ErrCannotModifyGuestUser
+	}
+
 	// validate current credentials
 	if err := s.ValidateCredentials(ctx, username, currentPassword); err != nil {
 		logger.Infof("[user] failed password change attempt for %q: incorrect current password", username)
@@ -416,6 +486,10 @@ func (s *Service) ChangePassword(ctx context.Context, username, currentPassword,
 }
 
 func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword string) error {
+	if username == GuestUsername {
+		return ErrCannotModifyGuestUser
+	}
+
 	// check if user exists
 	existingUser, err := s.GetUser(ctx, username)
 	if err != nil {
@@ -448,6 +522,24 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	return nil
 }
 
+func (s *Service) CreateGuestUser(ctx context.Context) error {
+	u := models.User{
+		Username:  "guest",
+		Roles:     []models.RoleEnum{models.RoleEnumRead},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	// create user in store with empty password
+	if err := s.Store.Create(ctx, &u, ""); err != nil {
+		return fmt.Errorf("error creating guest user: %w", err)
+	}
+
+	logger.Infof("[user] created guest user")
+
+	return nil
+}
+
 func hashAPIKey(apiKey string) (string, error) {
 	// use faster SHA-256 hashing for API keys
 	// https://cybersierra.co/blog/bcrypt-performance-issues-api/
@@ -457,6 +549,10 @@ func hashAPIKey(apiKey string) (string, error) {
 }
 
 func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, error) {
+	if username == GuestUsername {
+		return "", ErrCannotModifyGuestUser
+	}
+
 	// check if user exists
 	existingUser, err := s.GetUser(ctx, username)
 	if err != nil {
@@ -490,6 +586,10 @@ func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, 
 }
 
 func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
+	if username == GuestUsername {
+		return ErrCannotModifyGuestUser
+	}
+
 	// check if user exists
 	existingUser, err := s.GetUser(ctx, username)
 	if err != nil {

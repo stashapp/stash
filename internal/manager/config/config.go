@@ -137,6 +137,9 @@ const (
 	NoProxy        = "no_proxy"
 	noProxyDefault = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12"
 
+	SingleUserMode        = "single_user_mode"
+	singleUserModeDefault = true
+
 	// key used to sign JWT tokens
 	JWTSignKey = "jwt_secret_key"
 
@@ -375,6 +378,15 @@ func (i *Config) SetConfigFile(fn string) {
 	i.Lock()
 	defer i.Unlock()
 	i.filePath = fn
+}
+
+func (i *Config) GetSingleUserMode() bool {
+	return i.getBool(SingleUserMode)
+}
+
+func (i *Config) SetSingleUserMode(enabled bool) {
+	i.SetBool(SingleUserMode, enabled)
+	_ = i.Write()
 }
 
 func (i *Config) InitTLS() {
@@ -1914,6 +1926,16 @@ func (i *Config) setDefaultValues() {
 		"url":       scraperPackageSourcesDefault,
 		"localpath": sourceDefaultPath,
 	}})
+}
+
+// setNewSystemDefaults sets config options that are new and unset in a fresh install.
+func (i *Config) setNewSystemDefaults() {
+	i.Lock()
+	defer i.Unlock()
+	if i.isNewSystem {
+		// Only set single user mode on new systems
+		i.setDefault(SingleUserMode, singleUserModeDefault)
+	}
 }
 
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,
