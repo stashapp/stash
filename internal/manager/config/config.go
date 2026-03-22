@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"sync"
 	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
@@ -38,7 +39,9 @@ const (
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
 
-	MaxSessionAge = "max_session_age"
+	MaxSessionAge              = "max_session_age"
+	UserGraphqlRateLimit       = "user_graphql_rate_limit"
+	UserGraphqlRateLimitWindow = "user_graphql_rate_limit_window_seconds"
 
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
@@ -1186,6 +1189,32 @@ func (i *Config) GetMaxSessionAge() int {
 	v := i.forKey(MaxSessionAge)
 	if v.Exists(MaxSessionAge) {
 		ret = v.Int(MaxSessionAge)
+	}
+
+	return ret
+}
+
+func (i *Config) GetUserGraphqlRateLimit() int {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := 0
+	v := i.forKey(UserGraphqlRateLimit)
+	if v.Exists(UserGraphqlRateLimit) {
+		ret = v.Int(UserGraphqlRateLimit)
+	}
+
+	return ret
+}
+
+func (i *Config) GetUserGraphqlRateLimitWindow() time.Duration {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := time.Minute
+	v := i.forKey(UserGraphqlRateLimitWindow)
+	if v.Exists(UserGraphqlRateLimitWindow) {
+		ret = time.Duration(v.Int(UserGraphqlRateLimitWindow)) * time.Second
 	}
 
 	return ret

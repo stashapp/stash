@@ -144,6 +144,7 @@ func Initialize() (*Server, error) {
 	r.Use(middleware.Compress(4))
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
+	r.Use(rateLimitGraphql(cfg.GetUserGraphqlRateLimit(), cfg.GetUserGraphqlRateLimitWindow()))
 
 	recoverFunc := func(ctx context.Context, err interface{}) error {
 		logger.Error(err)

@@ -3,10 +3,14 @@ package api
 import (
 	"math"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-chi/httprate"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 )
 
 type rateLimiter struct {
@@ -64,6 +68,7 @@ const (
 var (
 	loginRateLimiter     = newRateLimiter(loginRequestLimit, loginRequestWindow)
 	userLoginRateLimiter = newRateLimiter(userLoginRequestLimit, userLoginRequestWindow)
+	userRateLimiter      *rateLimiter
 )
 
 // https://github.com/go-chi/httprate/issues/53
@@ -75,4 +80,38 @@ func keyByIP(r *http.Request) (string, error) {
 		return "", err
 	}
 	return ip.String(), nil
+}
+
+func rateLimitGraphql(rateLimit int, window time.Duration) func(http.Handler) http.Handler {
+	if rateLimit <= 0 || window <= 0 {
+		return func(next http.Handler) http.Handler {
+			return next
+		}
+	}
+
+	userRateLimiter = newRateLimiter(rateLimit, window)
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !strings.HasPrefix(r.URL.Path, gqlEndpoint) {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			user := session.GetCurrentUser(r.Context())
+
+			if user != nil && !user.Roles.HasRole(models.RoleEnumAdmin) {
+				id := strconv.Itoa(user.ID)
+
+				if userRateLimiter.OnLimit(w, r, id) {
+					// don't log this as an error to prevent log spam, but do return a 429 to the user
+					// TODO - really want to login this once per window
+					httpError(w, r, "You have made too many requests. Please try again later.", http.StatusTooManyRequests)
+					return
+				}
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
