@@ -5,15 +5,11 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
-import {
-  faCheck,
-  faExternalLinkAlt,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { excludeFields } from "src/utils/data";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface ITagModalProps {
   tag: GQL.ScrapedSceneTagDataFragment;
@@ -110,17 +106,13 @@ const TagModal: React.FC<ITagModalProps> = ({
 
   function maybeRenderStashBoxLink() {
     const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
-    const link = base ? `${base}tags/${tag.remote_site_id}` : undefined;
-
-    if (!link) return;
+    if (!base || !tag.remote_site_id) return;
 
     return (
-      <h6 className="mt-2">
-        <ExternalLink href={link}>
-          <FormattedMessage id="stashbox.source" />
-          <Icon icon={faExternalLinkAlt} className="ml-2" />
-        </ExternalLink>
-      </h6>
+      <StashIDPill
+        linkType="tags"
+        stashID={{ endpoint: endpoint, stash_id: tag.remote_site_id }}
+      />
     );
   }
 

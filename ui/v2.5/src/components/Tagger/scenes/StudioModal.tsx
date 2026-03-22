@@ -7,19 +7,16 @@ import * as GQL from "src/core/generated-graphql";
 import { useFindStudio } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
-import {
-  faCheck,
-  faExternalLinkAlt,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { excludeFields } from "src/utils/data";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IStudioDetailsProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
-  link?: string;
+  endpoint?: string;
   excluded: Record<string, boolean>;
   toggleField: (field: string) => void;
   isNew?: boolean;
@@ -27,7 +24,7 @@ interface IStudioDetailsProps {
 
 const StudioDetails: React.FC<IStudioDetailsProps> = ({
   studio,
-  link,
+  endpoint,
   excluded,
   toggleField,
   isNew = false,
@@ -123,15 +120,14 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
   }
 
   function maybeRenderStashBoxLink() {
-    if (!link) return;
+    const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
+    if (!base || !studio.remote_site_id) return;
 
     return (
-      <h6 className="mt-2">
-        <ExternalLink href={link}>
-          <FormattedMessage id="stashbox.source" />
-          <Icon icon={faExternalLinkAlt} className="ml-2" />
-        </ExternalLink>
-      </h6>
+      <StashIDPill
+        linkType="studios"
+        stashID={{ endpoint: endpoint, stash_id: studio.remote_site_id }}
+      />
     );
   }
 
@@ -303,12 +299,6 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     handleStudioCreate(studioData, parentData);
   }
 
-  const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
-  const link = base ? `${base}studios/${studio.remote_site_id}` : undefined;
-  const parentLink = base
-    ? `${base}studios/${studio.parent?.remote_site_id}`
-    : undefined;
-
   function maybeRenderParentStudio() {
     // There is no parent studio or it already has a Stash ID
     if (!studio.parent || !sendParentStudio) {
@@ -342,7 +332,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         studio={studio.parent}
         excluded={parentExcluded}
         toggleField={(field) => toggleParentField(field)}
-        link={parentLink}
+        endpoint={endpoint}
         isNew
       />
     );
@@ -365,7 +355,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         studio={studio}
         excluded={excluded}
         toggleField={(field) => toggleField(field)}
-        link={link}
+        endpoint={endpoint}
       />
 
       {maybeRenderParentStudio()}
