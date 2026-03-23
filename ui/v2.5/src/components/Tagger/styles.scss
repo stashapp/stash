@@ -295,7 +295,8 @@
     }
   }
 
-  &-studio {
+  &-studio,
+  &-tag {
     background-color: #495b68;
     border-radius: 3px;
     display: flex;
@@ -303,7 +304,8 @@
     max-width: 100%;
     padding: 1rem;
 
-    .studio-card {
+    .studio-card,
+    .tag-card {
       box-shadow: none;
       flex-shrink: 0;
       margin: 0;

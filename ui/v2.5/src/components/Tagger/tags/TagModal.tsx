@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
@@ -47,6 +47,10 @@ const TagModal: React.FC<ITagModalProps> = ({
     !!tag.parent && !tag.parent.stored_id
   );
 
+  useEffect(() => {
+    setCreateParentTag(!excluded.parent_ids && !!tag.parent);
+  }, [excluded.parent_ids, tag.parent]);
+
   // Check if a tag with the parent name already exists locally.
   // Categories don't have stash IDs, so stored_id may be null even when the
   // parent tag has already been created (e.g. by tagging a sibling tag first).
@@ -70,6 +74,7 @@ const TagModal: React.FC<ITagModalProps> = ({
   const [parentExcluded, setParentExcluded] = useState<Record<string, boolean>>(
     excludedTagFields.reduce((dict, field) => ({ ...dict, [field]: true }), {})
   );
+
   const toggleParentField = (name: string) =>
     setParentExcluded({
       ...parentExcluded,
@@ -79,9 +84,11 @@ const TagModal: React.FC<ITagModalProps> = ({
   function maybeRenderField(
     id: string,
     text: string | null | undefined,
-    isSelectable: boolean = true
+    isSelectable: boolean = true,
+    messageId?: string
   ) {
     if (!text) return;
+    if (!messageId) messageId = id;
 
     return (
       <div className="row no-gutters">
@@ -96,7 +103,7 @@ const TagModal: React.FC<ITagModalProps> = ({
             </Button>
           )}
           <strong>
-            <FormattedMessage id={id} />:
+            <FormattedMessage id={messageId} />:
           </strong>
         </div>
         <TruncatedText className="col-7" text={text} lineCount={3} />
@@ -159,9 +166,17 @@ const TagModal: React.FC<ITagModalProps> = ({
 
   function maybeRenderParentTag() {
     // No parent tag, or parent already exists locally
-    if (!tag.parent || tag.parent.stored_id || !sendParentTag) {
+    if (
+      !tag.parent ||
+      tag.parent.stored_id ||
+      !sendParentTag ||
+      excluded.parent_ids
+    ) {
       return;
     }
+
+    // force create if there is no current parent tag and parent tag is not excluded
+    const mustCreateParent = true;
 
     return (
       <div>
@@ -172,6 +187,7 @@ const TagModal: React.FC<ITagModalProps> = ({
             label={intl.formatMessage({
               id: "actions.create_parent_tag",
             })}
+            disabled={mustCreateParent}
             onChange={() => setCreateParentTag(!createParentTag)}
           />
         </div>
@@ -251,7 +267,12 @@ const TagModal: React.FC<ITagModalProps> = ({
             {maybeRenderField("name", tag.name)}
             {maybeRenderField("description", tag.description)}
             {maybeRenderField("aliases", tag.alias_list?.join(", "))}
-            {maybeRenderField("parent_tags", tag.parent?.name, false)}
+            {maybeRenderField(
+              "parent_ids",
+              tag.parent?.name,
+              true,
+              "parent_tags"
+            )}
             {maybeRenderStashBoxLink()}
           </div>
         </div>

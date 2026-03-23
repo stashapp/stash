@@ -11,6 +11,7 @@ import {
   useJobsSubscribe,
   mutateStashBoxBatchTagTag,
   getClient,
+  useTagCreate,
 } from "src/core/StashService";
 import { useConfigurationContext } from "src/hooks/Config";
 
@@ -27,6 +28,10 @@ import {
   BatchAddModal,
 } from "src/components/Shared/BatchModals";
 import { StashBoxSelectorField } from "../StashBoxSelector";
+import { apolloError } from "src/utils";
+import TagModal from "./TagModal";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { uniq } from "lodash-es";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -59,6 +64,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
   const intl = useIntl();
 
   const [loading, setLoading] = useState(false);
+
   const [searchResults, setSearchResults] = useState<
     Record<string, GQL.ScrapedSceneTagDataFragment[]>
   >({});
@@ -94,6 +100,13 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
     },
   });
 
+  const [modalTag, setModalTag] = useState<
+    | {
+        existingTag: GQL.TagListDataFragment;
+        scrapedTag: GQL.ScrapedSceneTagDataFragment;
+      }
+    | undefined
+  >();
   const [error, setError] = useState<
     Record<string, { message?: string; details?: string } | undefined>
   >({});
@@ -128,64 +141,30 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
     setLoading(true);
   };
 
+  const [createTag] = useTagCreate();
   const updateTag = useUpdateTag();
 
-  const doBoxUpdate = (tagID: string, stashID: string, endpoint: string) => {
+  const doBoxUpdate = (
+    tag: GQL.TagListDataFragment,
+    stashID: string,
+    endpoint: string
+  ) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
-      [tagID]: undefined,
+      [tag.id]: undefined,
     });
     stashBoxTagQuery(stashID, endpoint)
       .then(async (queryData) => {
         const data = queryData.data?.scrapeSingleTag ?? [];
         if (data.length > 0) {
-          const stashboxTag = data[0];
-          const updateData: GQL.TagUpdateInput = {
-            id: tagID,
-          };
-
-          if (
-            !(config.excludedTagFields ?? []).includes("name") &&
-            stashboxTag.name
-          ) {
-            updateData.name = stashboxTag.name;
-          }
-
-          if (
-            stashboxTag.description &&
-            !(config.excludedTagFields ?? []).includes("description")
-          ) {
-            updateData.description = stashboxTag.description;
-          }
-
-          if (
-            stashboxTag.alias_list &&
-            stashboxTag.alias_list.length > 0 &&
-            !(config.excludedTagFields ?? []).includes("aliases")
-          ) {
-            updateData.aliases = stashboxTag.alias_list;
-          }
-
-          if (stashboxTag.remote_site_id) {
-            updateData.stash_ids = await mergeTagStashIDs(tagID, [
-              {
-                endpoint,
-                stash_id: stashboxTag.remote_site_id,
-              },
-            ]);
-          }
-
-          const res = await updateTag(updateData);
-          if (!res?.data?.tagUpdate) {
-            setError({
-              ...error,
-              [tagID]: {
-                message: `Failed to update tag`,
-                details: res?.errors?.[0]?.message ?? "",
-              },
-            });
-          }
+          setModalTag({
+            scrapedTag: {
+              ...data[0],
+              stored_id: tag.id,
+            },
+            existingTag: tag,
+          });
         }
       })
       .finally(() => setLoadingUpdate(undefined));
@@ -203,6 +182,75 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
       batchAddParents
     );
     setShowBatchUpdate(false);
+  };
+
+  function handleSaveError(tagID: string, name: string, message: string) {
+    setError({
+      ...error,
+      [tagID]: {
+        message: intl.formatMessage(
+          { id: "tag_tagger.failed_to_save_tag" },
+          { tag: name }
+        ),
+        details:
+          message === "UNIQUE constraint failed: tags.name"
+            ? intl.formatMessage({
+                id: "tag_tagger.name_already_exists",
+              })
+            : message,
+      },
+    });
+  }
+
+  const handleTagUpdate = async (
+    input: GQL.TagCreateInput,
+    parentInput?: GQL.TagCreateInput
+  ) => {
+    const { existingTag, scrapedTag: tag } = modalTag!;
+    const tagID = existingTag.id;
+    setModalTag(undefined);
+
+    if (tagID) {
+      if (parentInput) {
+        try {
+          // cannot update parent tags, since there may be many
+          if (!!input.parent_ids?.length) {
+            // ignore
+          } else {
+            const parentRes = await createTag({
+              variables: { input: parentInput },
+            });
+            const parentID = parentRes.data?.tagCreate?.id;
+            if (parentID) {
+              // merge parent ids below
+              input.parent_ids = [parentID];
+            }
+          }
+        } catch (e) {
+          handleSaveError(tagID, parentInput.name, apolloError(e));
+        }
+      }
+
+      // always merge parent ids if included
+      if (input.parent_ids) {
+        input.parent_ids = uniq(
+          existingTag.parents.map((p) => p.id).concat(input.parent_ids)
+        );
+      }
+
+      const updateData: GQL.TagUpdateInput = {
+        ...input,
+        id: tagID,
+      };
+      updateData.stash_ids = await mergeTagStashIDs(
+        tagID,
+        input.stash_ids ?? []
+      );
+
+      const res = await updateTag(updateData);
+      if (!res?.data?.tagUpdate)
+        handleSaveError(tagID, tag.name ?? "", res?.errors?.[0]?.message ?? "");
+    }
   };
 
   const handleTaggedTag = (
@@ -292,7 +340,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
               <InputGroup.Append>
                 <Button
                   onClick={() =>
-                    doBoxUpdate(tag.id, stashID.stash_id, stashID.endpoint)
+                    doBoxUpdate(tag, stashID.stash_id, stashID.endpoint)
                   }
                   disabled={!!loadingUpdate}
                 >
@@ -344,11 +392,11 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
       }
 
       return (
-        <div key={tag.id} className={`${CLASSNAME}-studio`}>
+        <div key={tag.id} className={`${CLASSNAME}-tag`}>
           <div className={`${CLASSNAME}-details`}>
             <div></div>
             <div>
-              <Card className="studio-card">
+              <Card className="tag-card">
                 <img loading="lazy" src={tag.image_path ?? ""} alt="" />
               </Card>
             </div>
@@ -393,6 +441,19 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
           setBatchAddParents={setBatchAddParents}
           localePrefix="tag_tagger"
           entityName="tag"
+        />
+      )}
+
+      {modalTag && (
+        <TagModal
+          closeModal={() => setModalTag(undefined)}
+          modalVisible={modalTag !== undefined}
+          tag={modalTag.scrapedTag}
+          onSave={handleTagUpdate}
+          icon={faTags}
+          header="Update Tag"
+          excludedTagFields={config.excludedTagFields}
+          endpoint={selectedEndpoint.endpoint}
         />
       )}
       <div className="ml-auto mb-3">
