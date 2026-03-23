@@ -244,9 +244,11 @@
             "latest_version_build_hash": "Hash de la última versión:",
             "new_version_notice": "[NUEVA]",
             "release_date": "Fecha de publicación:",
-            "stash_home": "Página principal del proyecto en {url}",
-            "stash_wiki": "Documentación del proyecto en nuestro {url}",
-            "version": "Versión"
+            "stash_home": "Visita Stash en {url}.",
+            "stash_wiki": "Echa un vistazo a la página web de Stash {url}.",
+            "version": "Versión",
+            "stash_community": "Únete a nuestro foro {forumUrl} o a nuestro servidor de Discord {discordUrl}.",
+            "support_us": "Apóyanos a través de {openCollectiveUrl} o {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Rutas de la Aplicación"
@@ -602,7 +604,11 @@
                 "to_directory": "A {directory}",
                 "warning_blobs": "Los archivos blob no se incluirán en la copia de seguridad. Esto significa que, para restaurar correctamente desde la copia de seguridad, los archivos blob deben estar presentes en la ubicación de almacenamiento de blobs.",
                 "zip": "El archivo de base de datos SQLite y los archivos blob se comprimirán en un único archivo, con el nombre de archivo {filename_format}"
-            }
+            },
+            "auto_tag_confirm": "Esto intentará comparar tu contenido con los metadatos existentes.",
+            "auto_tag_warning": "Este proceso es irreversible y puede dar lugar a coincidencias erróneas.",
+            "clean_ignore_zip_contents": "Ignorar el contenido del archivo zip",
+            "clean_ignore_zip_contents_desc": "Es más rápido, pero no detectará los archivos eliminados dentro de los archivos zip. Se puede activar sin problema si no se borran archivos dentro de los archivos zip."
         },
         "tools": {
             "scene_duplicate_checker": "Comprobación de escenas duplicadas",
@@ -764,7 +770,8 @@
             "scene_list": {
                 "heading": "Vista de cuadrícula",
                 "options": {
-                    "show_studio_as_text": "Mostrar superposición de estudio como texto"
+                    "show_studio_as_text": "Mostrar superposición de estudio como texto",
+                    "show_studio_as_text_desc": "De forma predeterminada, el logotipo del estudio aparece en las fichas de la cuadrícula. Activa esta opción para que, en su lugar, siempre se muestre el nombre del estudio en forma de texto."
                 }
             },
             "scene_player": {
@@ -796,7 +803,7 @@
                 "heading": "Muro de escenas/Marcadores",
                 "options": {
                     "display_title": "Mostrar título y etiquetas",
-                    "toggle_sound": "Habilitar sonido"
+                    "toggle_sound": "Activar el sonido al pasar el cursor por la vista previa"
                 }
             },
             "slideshow_delay": {
@@ -830,7 +837,11 @@
                     "heading": "Habilitar imagen de fondo",
                     "description": "Mostrar la imagen de fondo en la página de detalles."
                 },
-                "heading": "Página de detalle"
+                "heading": "Página de detalle",
+                "show_studio_text": {
+                    "description": "Mostrar siempre el nombre del estudio como texto en las vistas detalladas, en lugar de como icono.",
+                    "heading": "Mostrar «estudio» como texto"
+                }
             },
             "use_stash_hosted_funscript": {
                 "description": "Cuando se activa, los funscripts se servirán directamente desde Stash a tu dispositivo Handy sin utilizar el servidor Handy de terceros. Requiere que Stash sea accesible desde tu dispositivo Handy, y que se genere una clave API si Stash tiene las credenciales configuradas.",
@@ -878,6 +889,15 @@
                 "enable": "Habilitar y recargar",
                 "overlay_message": "El modo de resolución de problemas está activo: todas las personalizaciones están desactivadas",
                 "exit": "Salir"
+            },
+            "scene_view": {
+                "heading": "Vista de escena",
+                "options": {
+                    "preview_volume": {
+                        "description": "Volumen de la vista previa al pasar el cursor por encima de una escena. Establece el valor en 0 para silenciarlo.",
+                        "heading": "Volumen de vista previa"
+                    }
+                }
             }
         },
         "advanced_mode": "Modo avanzado",
@@ -1021,7 +1041,8 @@
         "merge": {
             "destination": "Destino",
             "empty_results": "Los valores del campo de destino permanecerán sin cambios.",
-            "source": "Fuente"
+            "source": "Fuente",
+            "combined": "Combinado"
         },
         "create_new_entity": "Crear nuevo {entity}",
         "imagewall": {
@@ -1690,5 +1711,7 @@
     "parent_folder": "Carpeta principal",
     "sub_folder_depth": "Profundidad de la subcarpeta (vacía para todas)",
     "sub_folders": "Subcarpetas",
-    "empty_value": "vacío"
+    "empty_value": "vacío",
+    "refer_to": "Consulte {enlace}.",
+    "scenes_size": "Tamaño de la escena"
 }
