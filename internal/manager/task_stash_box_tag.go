@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -589,8 +590,11 @@ func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.
 
 	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
 
+	nameQuery := ""
+
 	switch {
 	case t.name != nil:
+		nameQuery = *t.name
 		results, err = client.QueryTag(ctx, *t.name)
 	case t.stashID != nil:
 		results, err = client.QueryTag(ctx, *t.stashID)
@@ -616,6 +620,7 @@ func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.
 		if remoteID != "" {
 			results, err = client.QueryTag(ctx, remoteID)
 		} else {
+			nameQuery = t.tag.Name
 			results, err = client.QueryTag(ctx, t.tag.Name)
 		}
 	}
@@ -628,7 +633,27 @@ func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.
 		return nil, nil
 	}
 
-	result := results[0]
+	var result *models.ScrapedTag
+
+	// QueryTag returns tags that partially match the name, so find the exact match if searching by name
+	if nameQuery != "" {
+		var exactMatch *models.ScrapedTag
+		for _, result := range results {
+			if strings.EqualFold(result.Name, nameQuery) {
+				exactMatch = result
+				break
+			}
+		}
+		if exactMatch != nil {
+			result = exactMatch
+		}
+	} else {
+		result = results[0]
+	}
+
+	if result == nil {
+		return nil, nil
+	}
 
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		return match.ScrapedTagHierarchy(ctx, r.Tag, result, t.box.Endpoint)
