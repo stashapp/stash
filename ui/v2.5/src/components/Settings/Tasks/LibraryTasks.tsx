@@ -19,7 +19,10 @@ import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
-import { AutoTagConfirmDialog } from "src/components/Shared/AutoTagConfirmDialog";
+import {
+  AutoTagConfirmDialog,
+  AutoTagWarning,
+} from "src/components/Shared/AutoTagConfirmDialog";
 import { useSettings } from "../context";
 
 interface IAutoTagOptions {
@@ -244,7 +247,11 @@ export const LibraryTasks: React.FC = () => {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+    return (
+      <DirectorySelectionDialog onClose={onAutoTagDialogClosed}>
+        <AutoTagWarning />
+      </DirectorySelectionDialog>
+    );
   }
 
   function onAutoTagDialogClosed(paths?: string[]) {
