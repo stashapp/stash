@@ -637,15 +637,11 @@ func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.
 
 	// QueryTag returns tags that partially match the name, so find the exact match if searching by name
 	if nameQuery != "" {
-		var exactMatch *models.ScrapedTag
-		for _, result := range results {
-			if strings.EqualFold(result.Name, nameQuery) {
-				exactMatch = result
+		for _, r := range results {
+			if strings.EqualFold(r.Name, nameQuery) {
+				result = r
 				break
 			}
-		}
-		if exactMatch != nil {
-			result = exactMatch
 		}
 	} else {
 		result = results[0]
