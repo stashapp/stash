@@ -692,6 +692,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             checked={ui.compactExpandedDetails ?? undefined}
             onChange={(v) => saveUI({ compactExpandedDetails: v })}
           />
+          <BooleanSetting
+            id="show_studio_text"
+            headingID="config.ui.detail.show_studio_text.heading"
+            subHeadingID="config.ui.detail.show_studio_text.description"
+            checked={ui.showStudioText ?? false}
+            onChange={(v) => saveUI({ showStudioText: v })}
+          />
         </SettingSection>
 
         <SettingSection headingID="config.ui.editing.heading">

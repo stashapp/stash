@@ -710,6 +710,10 @@
         "show_all_details": {
           "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column.",
           "heading": "Show all details"
+        },
+        "show_studio_text": {
+          "description": "Always display studio name as text on details views instead of an icon.",
+          "heading": "Show studio as text"
         }
       },
       "editing": {
