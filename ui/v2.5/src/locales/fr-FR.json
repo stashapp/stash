@@ -251,9 +251,11 @@
             "latest_version_build_hash": "Empreinte de construction de la dernière version :",
             "new_version_notice": "[Nouveautés]",
             "release_date": "Date de sortie :",
-            "stash_home": "Accueil de Stash sur {url}",
-            "stash_wiki": "{url} de Stash",
-            "version": "Version actuelle"
+            "stash_home": "Découvrez Stash sur {url}.",
+            "stash_wiki": "Consultez le site web de Stash {url}.",
+            "version": "Version actuelle",
+            "stash_community": "Rejoignez notre forum {forumUrl} ou notre serveur communautaire {discordUrl}.",
+            "support_us": "Soutenez-nous via {openCollectiveUrl} ou {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Chemins de l'application"
@@ -611,7 +613,9 @@
                 "zip": "Les fichiers de base de données SQLite et les fichiers blob seront compressés en un seul fichier, avec comme nom de fichier {filename_format}"
             },
             "clean_ignore_zip_contents": "Ignorer le contenu du fichier zip",
-            "clean_ignore_zip_contents_desc": "Plus rapide, mais les fichiers supprimés à l'intérieur des archives zip seront ignorés. Vous pouvez l'activer sans risque si vous ne supprimez pas de fichiers dans les archives zip."
+            "clean_ignore_zip_contents_desc": "Plus rapide, mais les fichiers supprimés à l'intérieur des archives zip seront ignorés. Vous pouvez l'activer sans risque si vous ne supprimez pas de fichiers dans les archives zip.",
+            "auto_tag_confirm": "Cela permettra de faire correspondre votre contenu aux métadonnées existantes.",
+            "auto_tag_warning": "Cette opération est irréversible et peut produire des correspondances erronées."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
