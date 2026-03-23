@@ -22,3 +22,20 @@ query FindFoldersForQuery(
     }
   }
 }
+
+query FindFolderHierarchyForIDs($ids: [ID!]!) {
+  findFolders(ids: $ids) {
+    count
+    folders {
+      ...SelectFolderData
+
+      parent_folders {
+        ...SelectFolderData
+        # the parent folders will be expanded, so we need the child folders
+        sub_folders {
+          ...SelectFolderData
+        }
+      }
+    }
+  }
+}
