@@ -127,10 +127,14 @@
 .folder-list {
   list-style-type: none;
   margin: 0;
-  max-height: 30vw;
+  max-height: 300px;
   overflow-x: auto;
   padding-bottom: 0.5rem;
   padding-top: 1rem;
+
+  &:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 
   &-item {
     white-space: nowrap;
