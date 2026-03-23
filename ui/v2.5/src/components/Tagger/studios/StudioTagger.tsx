@@ -385,20 +385,6 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
 
       return (
         <div key={studio.id} className={`${CLASSNAME}-studio`}>
-          {modalStudio && (
-            <StudioModal
-              closeModal={() => setModalStudio(undefined)}
-              modalVisible={modalStudio.stored_id === studio.id}
-              studio={modalStudio}
-              handleStudioCreate={handleStudioUpdate}
-              excludedStudioFields={config.excludedStudioFields}
-              icon={faTags}
-              header={intl.formatMessage({
-                id: "studio_tagger.update_studio",
-              })}
-              endpoint={selectedEndpoint.endpoint}
-            />
-          )}
           <div className={`${CLASSNAME}-details`}>
             <div></div>
             <div>
@@ -450,6 +436,20 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           setBatchAddParents={setBatchAddParents}
           localePrefix="studio_tagger"
           entityName="studio"
+        />
+      )}
+      {modalStudio && (
+        <StudioModal
+          closeModal={() => setModalStudio(undefined)}
+          modalVisible={!!modalStudio.stored_id}
+          studio={modalStudio}
+          handleStudioCreate={handleStudioUpdate}
+          excludedStudioFields={config.excludedStudioFields}
+          icon={faTags}
+          header={intl.formatMessage({
+            id: "studio_tagger.update_studio",
+          })}
+          endpoint={selectedEndpoint.endpoint}
         />
       )}
       <div className="ml-auto mb-3">
