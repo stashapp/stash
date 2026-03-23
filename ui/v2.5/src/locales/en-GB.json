@@ -1136,12 +1136,12 @@
       "medium": "Medium"
     },
     "search_accuracy_label": "Search Accuracy",
-    "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
-    "select_all_but_largest_resolution": "Select every file in each duplicated group, except the file with highest resolution",
+    "select_all_but_largest_file": "Keep the largest file (select all but the largest)",
+    "select_all_but_largest_resolution": "Keep the highest resolution file (select all but the highest resolution)",
     "select_none": "Select None",
-    "select_oldest": "Select the oldest file in the duplicate group",
+    "select_oldest": "Keep the oldest file (select all but the oldest)",
     "select_options": "Select Options…",
-    "select_youngest": "Select the youngest file in the duplicate group",
+    "select_youngest": "Keep the youngest file (select all but the youngest)",
     "title": "Duplicate Scenes"
   },
   "duplicated": "Duplicated",

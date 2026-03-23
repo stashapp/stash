@@ -250,9 +250,12 @@ const ImageDuplicateChecker: React.FC = () => {
   };
 
   function checkSameResolution(dataGroup: GQL.SlimImageDataFragment[]) {
-    const resolutions = dataGroup.map(
-      (s) => (s.visual_files[0]?.width ?? 0) * (s.visual_files[0]?.height ?? 0)
-    );
+    const resolutions = dataGroup.map((s) => {
+      return s.visual_files.reduce(
+        (prev, f) => Math.max(prev, (f.height ?? 0) * (f.width ?? 0)),
+        0
+      );
+    });
     return new Set(resolutions).size === 1;
   }
 
