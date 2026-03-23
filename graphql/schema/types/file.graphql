@@ -16,6 +16,9 @@ type Folder {
   parent_folders: [Folder!]!
   zip_file: BasicFile
 
+  "Returns direct sub-folders"
+  sub_folders: [Folder!]!
+
   mod_time: Time!
 
   created_at: Time!
