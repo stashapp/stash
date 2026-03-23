@@ -62,6 +62,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const Toast = useToast();
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -411,7 +412,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div>
           <div className="gallery-header-container">
-            <StudioLogo studio={gallery.studio} />
+            <StudioLogo studio={gallery.studio} showText={showStudioText} />
             <h3
               className={cx("gallery-header", { "no-studio": !gallery.studio })}
             >

@@ -5,11 +5,14 @@ import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
 export const StudioLogo: React.FC<{
   studio: Pick<Studio, "id" | "image_path" | "name"> | undefined | null;
-}> = ({ studio }) => {
+  showText?: boolean;
+}> = ({ studio, showText = false }) => {
   if (!studio) return null;
 
   const hasLogo =
-    studio.image_path && !studio.image_path.endsWith("default=true");
+    !showText &&
+    studio.image_path &&
+    !studio.image_path.endsWith("default=true");
 
   return (
     <h1 className="text-center studio-logo">

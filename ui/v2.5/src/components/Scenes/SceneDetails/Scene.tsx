@@ -191,6 +191,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
 
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
@@ -675,7 +676,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       >
         <div>
           <div className="scene-header-container">
-            <StudioLogo studio={scene.studio} />
+            <StudioLogo studio={scene.studio} showText={showStudioText} />
             <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
               <TruncatedText lineCount={2} text={title} />
             </h3>
