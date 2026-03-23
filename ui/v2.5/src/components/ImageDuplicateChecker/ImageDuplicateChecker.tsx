@@ -101,7 +101,7 @@ const ImageDuplicateChecker: React.FC = () => {
 
   const allGroups = useMemo(() => {
     const groups = data?.findDuplicateImages ?? [];
-    
+
     const groupSizes = new Map<GQL.SlimImageDataFragment[], number>();
     groups.forEach((group) => {
       groupSizes.set(group, getGroupTotalSize(group));

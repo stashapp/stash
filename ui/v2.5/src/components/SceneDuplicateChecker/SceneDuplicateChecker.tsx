@@ -92,7 +92,7 @@ export const SceneDuplicateChecker: React.FC = () => {
 
   const scenes = useMemo(() => {
     const groups = data?.findDuplicateScenes ?? [];
-    
+
     const groupSizes = new Map<GQL.SlimSceneDataFragment[], number>();
     groups.forEach((group) => {
       groupSizes.set(group, getGroupTotalSize(group));
