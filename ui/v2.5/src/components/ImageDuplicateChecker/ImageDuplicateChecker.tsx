@@ -86,7 +86,7 @@ const ImageDuplicateChecker: React.FC = () => {
 
   const { data, loading, refetch } = useFindDuplicateImagesQuery({
     variables: { distance: hashDistance },
-    fetchPolicy: "network-only",
+    fetchPolicy: "no-cache",
   });
 
   const getGroupTotalSize = (group: GQL.SlimImageDataFragment[]) => {
@@ -101,8 +101,14 @@ const ImageDuplicateChecker: React.FC = () => {
 
   const allGroups = useMemo(() => {
     const groups = data?.findDuplicateImages ?? [];
+    
+    const groupSizes = new Map<GQL.SlimImageDataFragment[], number>();
+    groups.forEach((group) => {
+      groupSizes.set(group, getGroupTotalSize(group));
+    });
+
     return [...groups].sort((a, b) => {
-      return getGroupTotalSize(b) - getGroupTotalSize(a);
+      return (groupSizes.get(b) ?? 0) - (groupSizes.get(a) ?? 0);
     });
   }, [data?.findDuplicateImages]);
 
