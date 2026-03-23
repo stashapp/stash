@@ -19,9 +19,9 @@ The Scene Wall and Marker pages display scene preview videos (mp4) by default. T
 
 > **⚠️ Note:** scene/marker preview videos must be generated to see them in the applicable wall page if Video preview type is selected. Likewise, if Animated image is selected, then Image Previews must be generated.
 
-## Show Studios as text
+## Show studio overlay as text
 
-By default, a scene's studio will be shown as an image overlay. Checking this option changes this to display studios as a text name instead.
+By default, in the grid card view the studio will be shown as an image overlay of the studio logo. Checking this option changes this to display studios as a text name instead.
 
 ## Scene Player options
 

@@ -819,7 +819,8 @@
       "scene_list": {
         "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Display studio overlay as text"
+          "show_studio_as_text": "Display studio overlay as text",
+          "show_studio_as_text_desc": "By default, the studio logo is shown on cards in the grid. Enable this option to always show the studio name as text instead."
         }
       },
       "scene_player": {

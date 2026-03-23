@@ -372,6 +372,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           <BooleanSetting
             id="show-text-studios"
             headingID="config.ui.scene_list.options.show_studio_as_text"
+            subHeadingID="config.ui.scene_list.options.show_studio_as_text_desc"
             checked={iface.showStudioAsText ?? undefined}
             onChange={(v) => saveInterface({ showStudioAsText: v })}
           />
