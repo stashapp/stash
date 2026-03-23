@@ -1,13 +1,29 @@
 import React from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { ModalComponent } from "./Modal";
+import { Icon } from "./Icon";
 
 interface IAutoTagConfirmDialog {
   show: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+export const AutoTagWarning = () => (
+  <>
+    <p>
+      <FormattedMessage id="config.tasks.auto_tag_based_on_filenames" />
+    </p>
+    <p>
+      <FormattedMessage id="config.tasks.auto_tag_confirm" />
+    </p>
+    <p className="lead">
+      <Icon icon={faExclamationTriangle} className="text-warning" />
+      <FormattedMessage id="config.tasks.auto_tag_warning" />
+    </p>
+  </>
+);
 
 export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   show,
@@ -30,12 +46,7 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
         onClick: onCancel,
       }}
     >
-      <p>
-        {intl.formatMessage({
-          id: "config.tasks.auto_tag_based_on_filenames",
-        })}
-      </p>
-      <p>{intl.formatMessage({ id: "config.tasks.auto_tag_confirm" })}</p>
+      <AutoTagWarning />
     </ModalComponent>
   );
 };

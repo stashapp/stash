@@ -512,7 +512,8 @@
         "auto_tagging_paths": "Auto tagging the following paths"
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
-      "auto_tag_confirm": "This will attempt to match your content against existing metadata. This process cannot be undone and may produce incorrect matches. Are you sure you want to continue?",
+      "auto_tag_confirm": "This will attempt to match your content against existing metadata.",
+      "auto_tag_warning": "This process cannot be undone and may produce incorrect matches.",
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
