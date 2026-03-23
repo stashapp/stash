@@ -54,7 +54,7 @@ const ImageDuplicateChecker: React.FC = () => {
     {}
   );
   const [selectedImages, setSelectedImages] =
-    useState<GQL.ImageDataFragment[]>();
+    useState<GQL.SlimImageDataFragment[]>();
   const [deletingImages, setDeletingImages] = useState(false);
   const [editingImages, setEditingImages] = useState(false);
 
@@ -89,7 +89,7 @@ const ImageDuplicateChecker: React.FC = () => {
     fetchPolicy: "network-only",
   });
 
-  const getGroupTotalSize = (group: GQL.ImageDataFragment[]) => {
+  const getGroupTotalSize = (group: GQL.SlimImageDataFragment[]) => {
     return group.reduce((groupTotal, img) => {
       const imgTotal = img.visual_files.reduce(
         (fileTotal, file) => fileTotal + (file.size ?? 0),
@@ -188,8 +188,8 @@ const ImageDuplicateChecker: React.FC = () => {
     setCheckedImages(updatedImages);
   };
 
-  const findLargestImage = (group: GQL.ImageDataFragment[]) => {
-    const totalSize = (image: GQL.ImageDataFragment) => {
+  const findLargestImage = (group: GQL.SlimImageDataFragment[]) => {
+    const totalSize = (image: GQL.SlimImageDataFragment) => {
       return image.visual_files.reduce(
         (prev: number, f) => Math.max(prev, f.size ?? 0),
         0
@@ -202,8 +202,8 @@ const ImageDuplicateChecker: React.FC = () => {
     });
   };
 
-  const findLargestResolutionImage = (group: GQL.ImageDataFragment[]) => {
-    const imgResolution = (image: GQL.ImageDataFragment) => {
+  const findLargestResolutionImage = (group: GQL.SlimImageDataFragment[]) => {
+    const imgResolution = (image: GQL.SlimImageDataFragment) => {
       return image.visual_files.reduce(
         (prev: number, f) => Math.max(prev, (f.height ?? 0) * (f.width ?? 0)),
         0
@@ -218,7 +218,7 @@ const ImageDuplicateChecker: React.FC = () => {
 
   const findFirstFileByAge = (
     oldest: boolean,
-    compareImages: GQL.ImageDataFragment[]
+    compareImages: GQL.SlimImageDataFragment[]
   ) => {
     let selectedFile: GQL.ImageFileDataFragment | GQL.VideoFileDataFragment;
     let oldestTimestamp: Date | undefined = undefined;
@@ -243,7 +243,7 @@ const ImageDuplicateChecker: React.FC = () => {
     );
   };
 
-  function checkSameResolution(dataGroup: GQL.ImageDataFragment[]) {
+  function checkSameResolution(dataGroup: GQL.SlimImageDataFragment[]) {
     const resolutions = dataGroup.map(
       (s) => (s.visual_files[0]?.width ?? 0) * (s.visual_files[0]?.height ?? 0)
     );
@@ -300,7 +300,7 @@ const ImageDuplicateChecker: React.FC = () => {
     setCheckedImages(checkedArray);
   };
 
-  const handleDeleteImage = (image: GQL.ImageDataFragment) => {
+  const handleDeleteImage = (image: GQL.SlimImageDataFragment) => {
     setSelectedImages([image]);
     setDeletingImages(true);
   };
@@ -372,7 +372,7 @@ const ImageDuplicateChecker: React.FC = () => {
     );
   }
 
-  function maybeRenderPopoverButtonGroup(image: GQL.ImageDataFragment) {
+  function maybeRenderPopoverButtonGroup(image: GQL.SlimImageDataFragment) {
     if (
       image.tags.length > 0 ||
       image.performers.length > 0 ||

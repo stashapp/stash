@@ -38,6 +38,6 @@ query FindImage($id: ID!, $checksum: String) {
 
 query FindDuplicateImages($distance: Int!) {
   findDuplicateImages(distance: $distance) {
-    ...ImageData
+    ...SlimImageData
   }
 }
