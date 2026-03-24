@@ -687,6 +687,10 @@
                 "show_all_details": {
                     "description": "Activée, tous les détails du contenu seront affichés par défaut et chaque élément détaillé tiendra dans une seule colonne.",
                     "heading": "Montrer tous les détails"
+                },
+                "show_studio_text": {
+                    "description": "Toujours afficher le nom du studio au format texte dans les vues détaillées, plutôt qu'une icône.",
+                    "heading": "Afficher le studio au format texte"
                 }
             },
             "editing": {
@@ -792,7 +796,8 @@
             "scene_list": {
                 "heading": "Vue en grille",
                 "options": {
-                    "show_studio_as_text": "Afficher en texte la superposition du studio"
+                    "show_studio_as_text": "Afficher en texte la superposition du studio",
+                    "show_studio_as_text_desc": "Par défaut, le logo du studio apparaît sur les fiches de la grille. Activez cette option pour toujours afficher le nom du studio au format texte à la place."
                 }
             },
             "scene_player": {
