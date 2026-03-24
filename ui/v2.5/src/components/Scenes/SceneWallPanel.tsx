@@ -240,7 +240,9 @@ const SceneWall: React.FC<ISceneWallProps> = ({
       return {
         scene: s,
         src:
-          s.paths.preview && !erroredImgs.includes(s.paths.preview)
+          s.paths.webp && !erroredImgs.includes(s.paths.webp)
+            ? s.paths.webp
+            : s.paths.preview && !erroredImgs.includes(s.paths.preview)
             ? s.paths.preview!
             : s.paths.screenshot!,
         link: sceneQueue
