@@ -515,12 +515,15 @@ export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
     variables: { mode },
   });
 
-export const queryFindSubFolders = (id: string) =>
+export const queryFindSubFolders = (id: string, excludeZipFolders?: boolean) =>
   client.query<GQL.FindFoldersForQueryQuery>({
     query: GQL.FindFoldersForQueryDocument,
     variables: {
       folder_filter: {
         parent_folder: { value: id, modifier: GQL.CriterionModifier.Equals },
+        zip_file: excludeZipFolders
+          ? { modifier: GQL.CriterionModifier.IsNull }
+          : undefined,
       },
       filter: {
         per_page: -1,

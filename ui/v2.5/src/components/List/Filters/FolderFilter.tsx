@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  CriterionModifier,
+  FilterMode,
   FolderDataFragment,
+  MultiCriterionInput,
   useFindFolderHierarchyForIDsQuery,
   useFindFoldersForQueryQuery,
   useFindRootFoldersForSelectQuery,
@@ -159,21 +162,47 @@ function mergeFolderMaps(base: IFolder[], update: IFolder[]): IFolder[] {
   return ret;
 }
 
-function useFolderMap(
-  query: string,
-  skip?: boolean,
-  initialSelected?: string[]
-) {
+function useFolderMap(props: {
+  query: string;
+  skip?: boolean;
+  initialSelected?: string[];
+  mode?: FilterMode;
+}) {
+  const { query, skip = false, initialSelected, mode } = props;
+
   const [cachedInitialSelected] = useState<string[]>(initialSelected ?? []);
+
+  // exclude zip folders for scenes and galleries
+  const excludeZipFolders =
+    mode === FilterMode.Scenes || mode === FilterMode.Galleries;
+
+  const zipFileFilter: MultiCriterionInput | undefined = useMemo(
+    () =>
+      excludeZipFolders
+        ? {
+            modifier: CriterionModifier.IsNull,
+          }
+        : undefined,
+    [excludeZipFolders]
+  );
+
+  const folderFilterForQuery = useMemo(
+    () => (zipFileFilter ? { zip_file: zipFileFilter } : undefined),
+    [zipFileFilter]
+  );
 
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
     skip,
+    variables: {
+      zip_file_filter: zipFileFilter,
+    },
   });
 
   const { data: queryFoldersResult } = useFindFoldersForQueryQuery({
     skip: !query,
     variables: {
       filter: { q: query, per_page: 200 },
+      folder_filter: folderFilterForQuery,
     },
   });
 
@@ -213,11 +242,14 @@ function useFolderMap(
             existing = {
               ...folder.parent_folders[i],
               expanded: true,
-              children: folder.parent_folders[i].sub_folders.map((f) => ({
-                ...f,
-                expanded: false,
-                children: undefined,
-              })),
+              children: folder.parent_folders[i].sub_folders
+                // filter out zip folders if needed
+                .filter((f) => f.zip_file === null || !excludeZipFolders)
+                .map((f) => ({
+                  ...f,
+                  expanded: false,
+                  children: undefined,
+                })),
             };
             ret.push(existing);
           }
@@ -243,11 +275,14 @@ function useFolderMap(
         existing = {
           ...existing,
           expanded: true,
-          children: thisFolder.sub_folders.map((f) => ({
-            ...f,
-            expanded: false,
-            children: undefined,
-          })),
+          // filter out zip folders if needed
+          children: thisFolder.sub_folders
+            .filter((f) => f.zip_file === null || !excludeZipFolders)
+            .map((f) => ({
+              ...f,
+              expanded: false,
+              children: undefined,
+            })),
         };
 
         currentParent!.children![existingIndex] = existing;
@@ -255,7 +290,7 @@ function useFolderMap(
       }
     });
     return ret;
-  }, [initialSelectedResult]);
+  }, [initialSelectedResult, excludeZipFolders]);
 
   const mergedRootFolders = useMemo(() => {
     if (query) {
@@ -347,7 +382,10 @@ function useFolderMap(
 
     // query children folders if not already loaded
     if (folder.children === undefined) {
-      const subFolderResult = await queryFindSubFolders(folder.id);
+      const subFolderResult = await queryFindSubFolders(
+        folder.id,
+        excludeZipFolders
+      );
       setFolderMap((current) =>
         current.map(
           replaceFolder({
@@ -419,17 +457,19 @@ export const FolderSelector: React.FC<{
 interface IInputFilterProps {
   criterion: FolderCriterion;
   setCriterion: (c: FolderCriterion) => void;
+  mode?: FilterMode;
 }
 
 export const FolderFilter: React.FC<IInputFilterProps> = ({
   criterion,
   setCriterion,
+  mode,
 }) => {
   const intl = useIntl();
   const [query, setQuery] = useState("");
   const [displayQuery, onQueryChange] = useDebouncedState(query, setQuery, 250);
 
-  const { folderMap, onToggleExpanded } = useFolderMap(query);
+  const { folderMap, onToggleExpanded } = useFolderMap({ query, mode });
 
   const messages = defineMessages({
     sub_folder_depth: {
@@ -599,11 +639,12 @@ export const SidebarFolderFilter: React.FC<
   const multipleSelected =
     criterion.value.items.length > 1 || criterion.value.excluded.length > 0;
 
-  const { folderMap, onToggleExpanded } = useFolderMap(
+  const { folderMap, onToggleExpanded } = useFolderMap({
     query,
     skip,
-    criterion.value.items.map((i) => i.id)
-  );
+    initialSelected: criterion.value.items.map((i) => i.id),
+    mode: filter.mode,
+  });
 
   function onSelect(folder: IFolder) {
     // maintain sub-folder select if present

@@ -1,7 +1,10 @@
-query FindRootFoldersForSelect {
+query FindRootFoldersForSelect($zip_file_filter: MultiCriterionInput) {
   findFolders(
     filter: { per_page: -1, sort: "path", direction: ASC }
-    folder_filter: { parent_folder: { modifier: IS_NULL } }
+    folder_filter: {
+      parent_folder: { modifier: IS_NULL }
+      zip_file: $zip_file_filter
+    }
   ) {
     count
     folders {
@@ -34,6 +37,10 @@ query FindFolderHierarchyForIDs($ids: [ID!]!) {
         # the parent folders will be expanded, so we need the child folders
         sub_folders {
           ...SelectFolderData
+          # get zip file so we can filter out zip folders if needed
+          zip_file {
+            id
+          }
         }
       }
     }
