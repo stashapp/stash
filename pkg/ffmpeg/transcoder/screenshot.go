@@ -60,9 +60,9 @@ func ScreenshotTime(input string, t float64, options ScreenshotOptions) ffmpeg.A
 	var args ffmpeg.Args
 	args = args.LogLevel(options.Verbosity)
 	args = args.Overwrite()
-	args = args.Seek(t)
 
 	args = args.Input(input)
+	args = args.Seek(t)
 	args = args.VideoFrames(1)
 
 	if options.Quality > 0 {
