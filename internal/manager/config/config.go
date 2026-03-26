@@ -146,6 +146,12 @@ const (
 	NoProxy        = "no_proxy"
 	noProxyDefault = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12"
 
+	// proxy patterns for which X-Forwarded-For will be trusted
+	// may be IP addresses or CIDR notation for subnets
+	// eg: 192.168.1.0/24 will match any IP address within 192.168.1.0 subnet.
+	// Loaded at startup - requires restart to update
+	TrustedProxies = "trusted_proxies"
+
 	// key used to sign JWT tokens
 	JWTSignKey = "jwt_secret_key"
 
@@ -1806,6 +1812,10 @@ func (i *Config) GetProxy() string {
 func (i *Config) GetNoProxy() string {
 	// NoProxy does not require validation, it is validated by the native Go library sufficiently
 	return i.getString(NoProxy)
+}
+
+func (i *Config) GetTrustedProxies() []string {
+	return i.getStringSlice(TrustedProxies)
 }
 
 // ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet

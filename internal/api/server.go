@@ -688,8 +688,30 @@ func getProxyPrefix(r *http.Request) string {
 // RequestIPMiddleware is a middleware that adds the client's IP address to the request context.
 // This can be used by handlers to perform IP-based rate limiting or other IP-based logic.
 func RequestIPMiddleware(next http.Handler) http.Handler {
+	trustedProxies := config.GetInstance().GetTrustedProxies()
+	var trustedNets []net.IPNet
+	var trustedAddrs []net.IP
+
+	for _, proxy := range trustedProxies {
+		if strings.Contains(proxy, "/") {
+			_, net, err := net.ParseCIDR(proxy)
+			if err != nil {
+				logger.Warnf("Invalid trusted proxy CIDR: %s", proxy)
+				continue
+			}
+			trustedNets = append(trustedNets, *net)
+		} else {
+			ip := net.ParseIP(proxy)
+			if ip == nil {
+				logger.Warnf("Invalid trusted proxy IP: %s", proxy)
+				continue
+			}
+			trustedAddrs = append(trustedAddrs, ip)
+		}
+	}
+
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		requestIP, err := getRequestIP(r)
+		requestIP, err := getRequestIP(r, trustedNets, trustedAddrs)
 		if err != nil {
 			// reject requests with invalid IPs
 			logger.Warnf("Rejecting request with invalid IP: %v", err)
@@ -724,7 +746,23 @@ func isLocalIP(requestIP net.IP) bool {
 	return requestIP.IsPrivate() || requestIP.IsLoopback() || requestIP.IsLinkLocalUnicast() || cgNatAddrSpace.Contains(requestIP)
 }
 
-func getRequestIP(r *http.Request) (net.IP, error) {
+func isTrustedProxy(requestIP net.IP, trustedNets []net.IPNet, trustedAddrs []net.IP) bool {
+	for _, net := range trustedNets {
+		if net.Contains(requestIP) {
+			return true
+		}
+	}
+
+	for _, addr := range trustedAddrs {
+		if addr.Equal(requestIP) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func getRequestIP(r *http.Request, trustedNets []net.IPNet, trustedAddrs []net.IP) (net.IP, error) {
 	requestIPString, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing remote host (%s): %v", r.RemoteAddr, err)
@@ -748,7 +786,7 @@ func getRequestIP(r *http.Request) (net.IP, error) {
 		proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
 
 		// validate proxies against local network only
-		if !isLocalIP(requestIP) {
+		if !isLocalIP(requestIP) && !isTrustedProxy(requestIP, trustedNets, trustedAddrs) {
 			logger.Warnf("Request from non-local IP %s with X-FORWARDED-FOR header. Rejecting to prevent IP spoofing.", requestIP)
 			return nil, fmt.Errorf("non-local IP %s with X-FORWARDED-FOR header", requestIP)
 		}
