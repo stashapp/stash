@@ -290,7 +290,6 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	return sp
 }
 
-
 // FindPerformerByID queries stash-box for a performer by ID.
 func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.ScrapedPerformer, error) {
 	performer, err := c.client.FindPerformerByID(ctx, id)
