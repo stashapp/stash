@@ -110,7 +110,7 @@ models:
   DLNAStatus:
     model: github.com/stashapp/stash/internal/dlna.Status
   DLNAIP:
-    model: github.com/stashapp/stash/internal/dlna.Dlnaip
+    model: github.com/stashapp/stash/internal/ip.IPTime
   IdentifySource:
     model: github.com/stashapp/stash/internal/identify.Source
   IdentifyMetadataTaskOptions:

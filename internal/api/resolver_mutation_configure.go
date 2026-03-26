@@ -544,8 +544,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	r.setConfigString(config.DLNAServerName, input.ServerName)
 
+	updateDLNAWhitelist := false
 	if input.WhitelistedIPs != nil {
 		c.SetInterface(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+		updateDLNAWhitelist = true
 	}
 
 	r.setConfigString(config.DLNAVideoSortOrder, input.VideoSortOrder)
@@ -563,6 +565,11 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
+	}
+
+	// need to update the whitelist manager with the new default whitelist
+	if updateDLNAWhitelist {
+		manager.GetInstance().DLNAService.IPWhitelistMgr.SetDefaultWhitelist(input.WhitelistedIPs)
 	}
 
 	if refresh {
