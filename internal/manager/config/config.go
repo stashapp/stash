@@ -371,6 +371,11 @@ type Config struct {
 	// cached values for high-frequency calls
 	cachedValues      sync.Map
 	publicIPWhitelist ipWhitelist
+
+	// temporary username/password for setup purposes
+	setupUsername    string
+	setupPassword    string
+	setupStartupTime time.Time
 }
 
 var instance *Config
@@ -395,6 +400,25 @@ func (i *Config) IsNewSystem() bool {
 	// not protected as we shouldn't be changing it in multi-threaded environments
 	// and its not worth the overhead
 	return i.isNewSystem
+}
+
+func (i *Config) SetNewSystemCredentials(username, password string) {
+	i.Lock()
+	defer i.Unlock()
+	i.setupUsername = username
+	i.setupPassword = password
+	i.setupStartupTime = time.Now()
+}
+
+// GetNewSystemCredentials returns the temporary username and password used for authentication in a new system before the initial user is created.
+// Returns empty strings if not in a new system.
+func (i *Config) GetNewSystemCredentials() (username, password string, startupTime time.Time) {
+	i.RLock()
+	defer i.RUnlock()
+	if !i.isNewSystem {
+		return "", "", time.Time{}
+	}
+	return i.setupUsername, i.setupPassword, i.setupStartupTime
 }
 
 func (i *Config) SetConfigFile(fn string) {
@@ -441,6 +465,8 @@ func (i *Config) SetSingleUserMode(enabled bool) {
 	_ = i.Write()
 }
 
+// GetPublicAccess returns true if public access is enabled.
+// In public access mode, Stash will allow access from external IPs.
 func (i *Config) GetPublicAccess() bool {
 	// cache the value as it is used frequently in authentication
 	return getCachedValue(i, PublicAccess, func() bool {
@@ -478,6 +504,7 @@ func (i *Config) initialisePublicWhitelist() error {
 	return nil
 }
 
+// GetPublicWhitelist returns the list of IPs and subnets that are allowed external access to Stash when public access is disabled.
 func (i *Config) GetPublicWhitelist() (nets []net.IPNet, addrs []net.IP) {
 	// don't bother protecting this as it's not writable at runtime
 	return i.publicIPWhitelist.nets, i.publicIPWhitelist.addrs

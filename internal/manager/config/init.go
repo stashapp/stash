@@ -43,6 +43,7 @@ var (
 		"cache":         Cache,
 		"stash":         Stash,
 		"ui":            UILocation,
+		"public_access": PublicAccess,
 	}
 )
 

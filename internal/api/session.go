@@ -127,7 +127,7 @@ func handleLogin(s manager.UserService) http.HandlerFunc {
 	}
 }
 
-func handleLoginPost(s *session.Store) http.HandlerFunc {
+func handleLoginPost(s *session.Store, cfg authenticationConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// perform IP rate limiting before attempting to log in to prevent brute force attacks
 
@@ -150,7 +150,14 @@ func handleLoginPost(s *session.Store) http.HandlerFunc {
 			return
 		}
 
-		err = s.Login(w, r)
+		// handle new system setup
+		if cfg.IsNewSystem() {
+			expectedUsername, expectedPassword, _ := cfg.GetNewSystemCredentials()
+			err = s.LoginForSetup(w, r, expectedUsername, expectedPassword)
+		} else {
+			err = s.Login(w, r)
+		}
+
 		if err != nil {
 			// always log the error
 			logger.Errorf("Error logging in: %v from IP: %s", err, r.RemoteAddr)

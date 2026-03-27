@@ -658,6 +658,11 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	return nil
 }
 
+// GenerateRandomPassword generates a random password of a specified length.
+func GenerateRandomPassword(length uint32) (string, error) {
+	return generateRandomString(length)
+}
+
 // ResetUserPassword resets the password for the specified user and returns the new password.
 // Used for emergency password resets from the command line when the user has been locked out.
 func (s *Service) ResetUserPassword(ctx context.Context, username string) (string, error) {

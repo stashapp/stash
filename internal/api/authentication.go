@@ -96,13 +96,16 @@ func matchIPWhitelist(g PublicIPWhitelistGetter, requestIP net.IP) bool {
 	return false
 }
 
-type AuthenticationConfig interface {
+type authenticationConfig interface {
+	IsNewSystem() bool
+	GetNewSystemCredentials() (string, string, time.Time)
+
 	GetSingleUserMode() bool
 	GetPublicAccess() bool
 	PublicIPWhitelistGetter
 }
 
-func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg AuthenticationConfig) func(http.Handler) http.Handler {
+func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg authenticationConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -126,10 +129,23 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 					return
 				}
 
-				if !isLocalIP(requestIP) && !matchIPWhitelist(cfg, requestIP) {
+				if /*!isLocalIP(requestIP) && */ !matchIPWhitelist(cfg, requestIP) {
 					httpError(w, r, "Access denied: Stash is not configured to allow access from external IPs", http.StatusForbidden)
 					return
 				}
+			}
+
+			if cfg.IsNewSystem() {
+				expectedUsername, _, startupTime := cfg.GetNewSystemCredentials()
+
+				session, _ := manager.GetInstance().SessionStore.GetSession(w, r)
+				if !allowUnauthenticated(r) && expectedUsername != "" && (session == nil || session.UserID != expectedUsername || session.LoginTime.Before(startupTime)) {
+					handleUnauthorized(w, r)
+					return
+				}
+
+				next.ServeHTTP(w, r)
+				return
 			}
 
 			var defaultUser *models.User
@@ -202,7 +218,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 						return
 					}
 				} else {
-					session, getErr := manager.GetInstance().SessionStore.GetSessionUserID(w, r)
+					session, getErr := manager.GetInstance().SessionStore.GetSession(w, r)
 					if getErr != nil {
 						logger.Errorf("error getting session user ID: %v", getErr)
 						httpError(w, r, "internal server error", http.StatusInternalServerError)

@@ -34,7 +34,7 @@ import (
 
 // Called at startup
 func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	db := sqlite.NewDatabase()
 	repo := db.Repository()
@@ -134,9 +134,30 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 			cfgFile += " "
 		}
 
+		// if public mode is enabled, generate credentials used for initial setup
+		if cfg.GetPublicAccess() {
+			username := "admin"
+			const defaultPasswordLength = 16
+			password, err := user.GenerateRandomPassword(defaultPasswordLength)
+			if err != nil {
+				return nil, fmt.Errorf("error generating random password: %w", err)
+			}
+
+			cfg.SetNewSystemCredentials(username, password)
+
+			// turn off single user mode
+			cfg.SetSingleUserMode(false)
+
+			logger.Warnf("-----------------------------------------------------------")
+			logger.Warnf("Public access is enabled but no config file was found. Generated credentials for initial setup:")
+			logger.Warnf("Username: %s", username)
+			logger.Warnf("Password: %s", password)
+			logger.Warnf("-----------------------------------------------------------")
+		}
+
 		// create temporary session store - this will be re-initialised
 		// after config is complete
-		mgr.SessionStore = session.NewStore(cfg, mgr.UserService, repo.TxnManager)
+		mgr.SessionStore = session.NewStore(cfg, mgr.UserService, &repo.TxnManager)
 
 		logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 	}
@@ -195,7 +216,7 @@ func initJobManager(cfg *config.Config) *job.Manager {
 func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshConfig()
 
-	s.SessionStore = session.NewStore(s.Config, s.UserService, s.Repository.TxnManager)
+	s.SessionStore = session.NewStore(s.Config, s.UserService, &s.Repository.TxnManager)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)
 
 	s.RefreshPluginCache()

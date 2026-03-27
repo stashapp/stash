@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type key int
@@ -52,17 +53,21 @@ type Authenticator interface {
 	ValidateCredentials(ctx context.Context, username string, password string) error
 }
 
+type TxnReader interface {
+	WithReadTxn(ctx context.Context, fn txn.TxnFunc) error
+}
+
 type Store struct {
 	sessionStore  *sessions.CookieStore
 	authenticator Authenticator
-	txnManager    models.TxnManager
+	txnReader     TxnReader
 	config        SessionConfig
 }
 
-func NewStore(c SessionConfig, a Authenticator, txnMgr models.TxnManager) *Store {
+func NewStore(c SessionConfig, a Authenticator, txnReader TxnReader) *Store {
 	ret := &Store{
 		sessionStore:  sessions.NewCookieStore(c.GetSessionStoreKey()),
-		txnManager:    txnMgr,
+		txnReader:     txnReader,
 		config:        c,
 		authenticator: a,
 	}
@@ -85,13 +90,39 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
-	if err := s.txnManager.WithReadTxn(r.Context(), func(ctx context.Context) error {
+	if err := s.txnReader.WithReadTxn(r.Context(), func(ctx context.Context) error {
 		return s.authenticator.ValidateCredentials(ctx, username, password)
 	}); err != nil {
 		return &InvalidCredentialsError{Username: username}
 	}
 
 	logger.Infof("User %s logged in", username)
+
+	newSession.Values[userIDKey] = username
+	newSession.Values[loginTimeKey] = time.Now().Unix()
+
+	err := newSession.Save(r, w)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// LoginForSetup handles login for the initial setup of a new system. It checks the provided credentials against the expected credentials for a new system setup, which are stored in the config. This is separate from the regular Login function to handle the case where there is no session store or user service available yet.
+func (s *Store) LoginForSetup(w http.ResponseWriter, r *http.Request, expectedUser, expectedPassword string) error {
+	// ignore error - we want a new session regardless
+	newSession, _ := s.sessionStore.Get(r, cookieName)
+
+	username := r.FormValue(usernameFormKey)
+	password := r.FormValue(passwordFormKey)
+
+	// authenticate the user
+	if username != expectedUser || password != expectedPassword {
+		return &InvalidCredentialsError{Username: username}
+	}
+
+	logger.Info("Setup user logged in")
 
 	newSession.Values[userIDKey] = username
 	newSession.Values[loginTimeKey] = time.Now().Unix()
@@ -130,7 +161,7 @@ type Session struct {
 	LoginTime time.Time
 }
 
-func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (*Session, error) {
+func (s *Store) GetSession(w http.ResponseWriter, r *http.Request) (*Session, error) {
 	session, err := s.sessionStore.Get(r, cookieName)
 	// ignore errors and treat as an empty user id, so that we handle expired
 	// cookie

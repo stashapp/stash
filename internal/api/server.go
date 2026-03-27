@@ -244,7 +244,7 @@ func Initialize() (*Server, error) {
 	sessionStore := mgr.SessionStore
 
 	r.Get(loginEndpoint, handleLogin(userService))
-	r.Post(loginEndpoint, handleLoginPost(sessionStore))
+	r.Post(loginEndpoint, handleLoginPost(sessionStore, cfg))
 	r.Get(logoutEndpoint, handleLogout(userService))
 	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
