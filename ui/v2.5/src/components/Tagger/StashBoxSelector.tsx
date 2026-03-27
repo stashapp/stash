@@ -20,10 +20,7 @@ export const StashBoxSelector: React.FC<IStashBoxSelectorProps> = ({
     let box = configuration?.general.stashBoxes.find(
       (sb) => sb.endpoint === endpoint
     );
-    if (!box) {
-      return endpoint;
-    }
-    return `${box.name}: ${endpoint}`;
+    return `stash-box: ${box?.name ?? endpoint}`;
   }
 
   return (
