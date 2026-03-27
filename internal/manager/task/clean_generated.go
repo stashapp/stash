@@ -664,6 +664,8 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 		return err
 	}
 
+	j.removeEmptyDirs(j.Paths.Generated.Markers)
+
 	return nil
 }
 
@@ -756,6 +758,8 @@ func (j *CleanGeneratedJob) cleanThumbnailFiles(ctx context.Context, progress *j
 	}); err != nil {
 		return err
 	}
+
+	j.removeEmptyDirs(j.Paths.Generated.Thumbnails)
 
 	return nil
 }
