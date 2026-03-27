@@ -138,11 +138,13 @@ export function formikUtils<V extends FormikValues>(
 
     let control: React.ReactNode;
     if (type === "checkbox") {
+      const checked = !!rawValue;
       control = (
         <Form.Check
           placeholder={placeholder}
           {...formikProps}
           value={value}
+          checked={checked}
           isInvalid={!!error}
         />
       );
