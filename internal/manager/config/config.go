@@ -1,7 +1,9 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -41,6 +43,9 @@ const (
 
 	SingleUserMode        = "single_user_mode"
 	singleUserModeDefault = true
+	PublicAccess          = "public_access"
+	publicAccessDefault   = false
+	PublicWhitelist       = "public_whitelist"
 
 	MaxSessionAge = "max_session_age"
 
@@ -362,6 +367,10 @@ type Config struct {
 
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
+
+	// cached values for high-frequency calls
+	cachedValues      sync.Map
+	publicIPWhitelist ipWhitelist
 }
 
 var instance *Config
@@ -383,6 +392,8 @@ func (i *Config) load(f string) error {
 }
 
 func (i *Config) IsNewSystem() bool {
+	// not protected as we shouldn't be changing it in multi-threaded environments
+	// and its not worth the overhead
 	return i.isNewSystem
 }
 
@@ -392,13 +403,84 @@ func (i *Config) SetConfigFile(fn string) {
 	i.filePath = fn
 }
 
+// getCachedValue returns
+func getCachedValue[T any](i *Config, key string, getter func() T) T {
+	var ret T
+	cached, ok := i.cachedValues.Load(key)
+	if ok {
+		ret, ok = cached.(T)
+		if ok {
+			return ret
+		}
+	}
+
+	ret = getter()
+	i.cachedValues.Store(key, ret)
+	return ret
+}
+
+func setCachedValue[T any](i *Config, key string, value T) {
+	i.cachedValues.Store(key, value)
+}
+
+// GetSingleUserMode returns true if single user mode is activated.
+// In single user mode, authentication is effectively disabled and Stash will operate as if a
+// single default user is always authenticated.
+// This is intended for use in environments where external access is not possible, such as when
+// running Stash locally on a user's machine.
 func (i *Config) GetSingleUserMode() bool {
-	return i.getBool(SingleUserMode)
+	// cache the value as it is used frequently in authentication
+	return getCachedValue(i, SingleUserMode, func() bool {
+		return i.getBool(SingleUserMode)
+	})
 }
 
 func (i *Config) SetSingleUserMode(enabled bool) {
 	i.SetBool(SingleUserMode, enabled)
+	setCachedValue(i, SingleUserMode, enabled)
 	_ = i.Write()
+}
+
+func (i *Config) GetPublicAccess() bool {
+	// cache the value as it is used frequently in authentication
+	return getCachedValue(i, PublicAccess, func() bool {
+		return i.getBool(PublicAccess)
+	})
+}
+
+func (i *Config) SetPublicAccess(enabled bool) {
+	i.SetBool(PublicAccess, enabled)
+	setCachedValue(i, PublicAccess, enabled)
+	_ = i.Write()
+}
+
+type ipWhitelist struct {
+	nets  []net.IPNet
+	addrs []net.IP
+}
+
+func (i *Config) initialisePublicWhitelist() error {
+	// ensure ip whitelist entries are valid
+	for _, ip := range i.getStringSlice(PublicWhitelist) {
+		if ip == "*" {
+			return errors.New("cannot use wildcard '*' in public whitelist for security reasons")
+		}
+		_, ipNet, err := net.ParseCIDR(ip)
+		if err == nil {
+			i.publicIPWhitelist.nets = append(i.publicIPWhitelist.nets, *ipNet)
+		} else if ip := net.ParseIP(ip); ip == nil {
+			i.publicIPWhitelist.addrs = append(i.publicIPWhitelist.addrs, ip)
+		} else {
+			return fmt.Errorf("invalid entry in public whitelist: %s", ip)
+		}
+	}
+
+	return nil
+}
+
+func (i *Config) GetPublicWhitelist() (nets []net.IPNet, addrs []net.IP) {
+	// don't bother protecting this as it's not writable at runtime
+	return i.publicIPWhitelist.nets, i.publicIPWhitelist.addrs
 }
 
 func (i *Config) InitTLS() {

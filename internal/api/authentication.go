@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -64,10 +65,6 @@ type UserAuthenticator interface {
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 }
 
-type AuthenticationConfig interface {
-	GetSingleUserMode() bool
-}
-
 func httpError(w http.ResponseWriter, r *http.Request, text string, status int) {
 	// if request accepts json, return json error response
 	if strings.Contains(r.Header.Get("Accept"), "application/json") {
@@ -79,6 +76,32 @@ func httpError(w http.ResponseWriter, r *http.Request, text string, status int) 
 	}
 }
 
+type PublicIPWhitelistGetter interface {
+	GetPublicWhitelist() ([]net.IPNet, []net.IP)
+}
+
+func matchIPWhitelist(g PublicIPWhitelistGetter, requestIP net.IP) bool {
+	nets, addrs := g.GetPublicWhitelist()
+
+	for _, addr := range addrs {
+		if addr.Equal(requestIP) {
+			return true
+		}
+	}
+	for _, net := range nets {
+		if net.Contains(requestIP) {
+			return true
+		}
+	}
+	return false
+}
+
+type AuthenticationConfig interface {
+	GetSingleUserMode() bool
+	GetPublicAccess() bool
+	PublicIPWhitelistGetter
+}
+
 func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg AuthenticationConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +110,27 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg Auth
 			// TODO - check ip whitelist here
 
 			singleUserMode := cfg.GetSingleUserMode()
+			publicAccess := cfg.GetPublicAccess()
+
+			if singleUserMode && publicAccess {
+				// mis-configuration - cannot enable single user mode and public access at the same time
+				httpError(w, r, "Server misconfiguration: single user mode and public access cannot both be enabled", http.StatusServiceUnavailable)
+				return
+			}
+
+			if !publicAccess {
+				requestIP, err := getRequestIPFromCtx(ctx)
+				if err != nil {
+					logger.Errorf("error getting request IP: %v", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+
+				if !isLocalIP(requestIP) && !matchIPWhitelist(cfg, requestIP) {
+					httpError(w, r, "Access denied: Stash is not configured to allow access from external IPs", http.StatusForbidden)
+					return
+				}
+			}
 
 			var defaultUser *models.User
 			if singleUserMode {

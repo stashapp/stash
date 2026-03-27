@@ -189,6 +189,8 @@ These options are typically not exposed in the UI and must be changed manually i
 | `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 | `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
 | `trusted_proxies` | A list of trusted proxy IPs or CIDR ranges. If a request comes from a trusted proxy or if the request IP address is a local address, the `X-FORWARDED-FOR` header will be used to determine the client's real IP address. Default is empty (no trusted proxies). |
+| `public_access` | By default, stash rejects any request from a public IP address. Setting this to true will allow requests from public IP addresses. Cannot be enabled when running in single-user mode. |
+| `public_whitelist` | A list of public IP addresses or subnets (in CIDR range format eg: `192.168.1.0/24`) that are allowed to access the system when `public_access` is disabled. |
 | `user_graphql_rate_limit_window` | The maximum number of API requests per user allowed within the `user_api_key_rate_limit_window_seconds` time window. |
 | `user_graphql_rate_limit_window_seconds` | The time window in seconds for GraphQL API user-based rate limiting. Only applies if `user_graphql_rate_limit` is set. Default is 60 (1 minute). |
 

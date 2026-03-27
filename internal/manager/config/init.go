@@ -98,6 +98,8 @@ func Initialize() (*Config, error) {
 		}
 	}
 
+	cfg.initialisePublicWhitelist()
+
 	instance = cfg
 	return instance, nil
 }
