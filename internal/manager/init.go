@@ -136,7 +136,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 		// create temporary session store - this will be re-initialised
 		// after config is complete
-		mgr.SessionStore = session.NewStore(cfg, instance.UserService, repo.TxnManager)
+		mgr.SessionStore = session.NewStore(cfg, mgr.UserService, repo.TxnManager)
 
 		logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 	}
