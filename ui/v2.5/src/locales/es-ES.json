@@ -501,7 +501,7 @@
             "auto_tagging": "Etiquetado automático",
             "backing_up_database": "Guardando respaldo de la base de datos",
             "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
-            "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
+            "cleanup_desc": "Verifique si hay archivos faltantes y elimínelos de la base de datos. Esta es una acción destructiva.",
             "data_management": "Gestión de datos",
             "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",
             "dont_include_file_extension_as_part_of_the_title": "No incluir la extensión del archivo como parte del título",
@@ -567,7 +567,7 @@
                 "overwrite_existing": "Sobreescribir blobs existentes con datos de capturas de pantalla"
             },
             "migrations": "Migraciones",
-            "only_dry_run": "Marca esta casilla para ejecutar en MODO DE SIMULACIÓN. No se eliminará información alguna, solo se mostrarán en el registro las acciones a realizar",
+            "only_dry_run": "Realiza únicamente una prueba. No se eliminará nada",
             "plugin_tasks": "Tareas de complementos",
             "scan": {
                 "scanning_all_paths": "Escaneando todas las rutas",
@@ -590,7 +590,7 @@
             "generate_sprites_during_scan_tooltip": "El conjunto de imágenes que se muestra bajo el reproductor de vídeo para facilitar la navegación.",
             "optimise_database_warning": "Advertencia: mientras se esté ejecutando esta tarea, cualquier operación que modifique la base de datos fallará, y dependiendo del tamaño de su base de datos, podría tardar varios minutos en completarse. También requiere como mínimo tanto espacio libre en disco como grande sea su base de datos, pero se recomienda 1.5 veces más.",
             "optimise_database": "Intentar mejorar el rendimiento mediante el análisis y posterior reconstrucción del archivo de base de datos completo.",
-            "rescan_tooltip": "Volver a analizar todos los archivos en la ruta. Se usa para forzar la actualización de metadatos y contenidos de archivos ZIP.",
+            "rescan_tooltip": "Volver a escanear cada archivo en la ruta.  Se utiliza para forzar la actualización de los metadatos de los archivos y volver a escanear los archivos zip.",
             "rescan": "Reanalizar archivos",
             "generate_image_phashes_during_scan": "Generar hash perceptuales de imágenes",
             "generate_image_phashes_during_scan_tooltip": "Para la deduplicación y la identificación.",
@@ -1258,7 +1258,7 @@
         "untagged_performers": "Actrices/actores no etiquetadas/os",
         "update_performer": "Actualizar actriz/actor",
         "update_performers": "Actualizar actrices/actores",
-        "updating_untagged_performers_description": "Actualizar las actrices/actores no etiquetados intentará seleccionar cualquier actriz/actor que carecen de un StashID y actualizará los metadatos.",
+        "updating_untagged_performers_description": "Actualizar a los artistas sin etiqueta intentará emparejar a cualquier artista que carezca de un stashid y actualizar los metadatos.",
         "performer_names_or_stashids_separated_by_comma": "Nombres de actores o StashIDs separados por comas"
     },
     "performer_tags": "Etiquetas de actriz/actor",
@@ -1301,7 +1301,7 @@
             "creating_your_system": "Creando tu nuevo entorno"
         },
         "errors": {
-            "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",
+            "something_went_wrong": "¡Oh no!. ¡Algo salió mal!",
             "something_went_wrong_description": "Si sospechas que puede haber un error con los datos aportados, por favor, haz clic en volver para arreglarlos. De lo contrario, abre una incidencia en {githubLink} o busca ayuda en {discordLink}.",
             "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}",
             "unable_to_retrieve_system_status": "No se puede recuperar el estado del sistema: {error}",
@@ -1387,7 +1387,7 @@
     "stash_ids": "Stash IDs",
     "stashbox": {
         "go_review_draft": "Ir a {endpoint_name} para revisar el borrador.",
-        "selected_stash_box": "URL de la entidad Stash-Box seleccionada",
+        "selected_stash_box": "Punto final de Stash-Box seleccionado",
         "submission_failed": "Envío fallido",
         "submission_successful": "Enviado correctamente",
         "source": "Fuente para el Stash-Box",
