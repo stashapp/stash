@@ -61,11 +61,12 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     try {
       await deleteImage();
       Toast.success(toastMessage);
+      props.onClose(true);
     } catch (e) {
       Toast.error(e);
+      props.onClose(false);
     }
     setIsDeleting(false);
-    props.onClose(true);
   }
 
   function maybeRenderDeleteFileAlert() {

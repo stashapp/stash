@@ -34,6 +34,8 @@ import { Pagination } from "src/components/List/Pagination";
 import { DeleteImagesDialog } from "../Images/DeleteImagesDialog";
 import { EditImagesDialog } from "../Images/EditImagesDialog";
 import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ErrorMessage } from "../Shared/ErrorMessage";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -136,20 +138,20 @@ const ImageDuplicateChecker: React.FC = () => {
     setCheckedImages({});
   };
 
-  const onDeleteDialogClosed = (confirmed: boolean) => {
+  const onDeleteDialogClosed = async (confirmed: boolean) => {
     setDeletingImages(false);
     setSelectedImages(undefined);
     if (confirmed) {
       setCheckedImages({});
-      refetch();
+      await refetch();
     }
   };
 
-  const onEditDialogClosed = (applied: boolean) => {
+  const onEditDialogClosed = async (applied: boolean) => {
     setEditingImages(false);
     setSelectedImages(undefined);
     if (applied) {
-      refetch();
+      await refetch();
     }
   };
 
@@ -172,6 +174,9 @@ const ImageDuplicateChecker: React.FC = () => {
       );
     });
   }, [allGroups.length]);
+
+  if (loading) return <LoadingIndicator />;
+  if (!data) return <ErrorMessage error="Error searching for duplicates." />;
 
   const setQuery = (q: Record<string, string | number | undefined>) => {
     const newQuery = new URLSearchParams(query);
