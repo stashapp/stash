@@ -754,6 +754,15 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
     id: "actions.merge",
   });
 
+  const srcIDs = useMemo(
+    () => sourcePerformers.map((s) => s.id),
+    [sourcePerformers]
+  );
+  const destID = useMemo(
+    () => (destPerformer[0] ? [destPerformer[0].id] : []),
+    [destPerformer]
+  );
+
   useEffect(() => {
     if (performers.length > 0) {
       // set the first performer as the destination, others as source
@@ -862,6 +871,7 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
                 onSelect={(items) => setSourcePerformers(items)}
                 values={sourcePerformers}
                 menuPortalTarget={document.body}
+                excludeIds={destID}
               />
             </Col>
           </Form.Group>
@@ -895,6 +905,7 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
                 onSelect={(items) => setDestPerformer(items)}
                 values={destPerformer}
                 menuPortalTarget={document.body}
+                excludeIds={srcIDs}
               />
             </Col>
           </Form.Group>

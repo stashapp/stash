@@ -719,6 +719,12 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
     id: "actions.merge",
   });
 
+  const srcIDs = useMemo(() => sourceScenes.map((s) => s.id), [sourceScenes]);
+  const destID = useMemo(
+    () => (destScene[0] ? [destScene[0].id] : []),
+    [destScene]
+  );
+
   useEffect(() => {
     if (scenes.length > 0) {
       // set the first scene as the destination, others as source
@@ -826,6 +832,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
                 onSelect={(items) => setSourceScenes(items)}
                 values={sourceScenes}
                 menuPortalTarget={document.body}
+                excludeIds={destID}
               />
             </Col>
           </Form.Group>
@@ -859,6 +866,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
                 onSelect={(items) => setDestScene(items)}
                 values={destScene}
                 menuPortalTarget={document.body}
+                excludeIds={srcIDs}
               />
             </Col>
           </Form.Group>
