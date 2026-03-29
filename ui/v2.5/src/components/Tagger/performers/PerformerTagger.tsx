@@ -348,6 +348,13 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     });
   };
 
+  // clear tagged performers when source is changed
+  useEffect(() => {
+    setTaggedPerformers({});
+    setSearchResults({});
+    setSearchErrors({});
+  }, [selectedEndpoint]);
+
   const updatePerformer = useUpdatePerformer();
 
   function handleSaveError(performerID: string, name: string, message: string) {
@@ -650,8 +657,6 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     }
   }, [jobsSubscribe, batchJobID]);
 
-  if (!config) return <LoadingIndicator />;
-
   const savedEndpointIndex =
     stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
@@ -662,6 +667,16 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
       : savedEndpointIndex;
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
+
+  const selectedEndpointInput = useMemo(
+    () => ({
+      endpoint: selectedEndpoint.endpoint,
+      index: selectedEndpointIndex,
+    }),
+    [selectedEndpoint, selectedEndpointIndex]
+  );
+
+  if (!config) return <LoadingIndicator />;
 
   async function batchAdd(performerInput: string) {
     if (performerInput && selectedEndpoint) {
@@ -805,10 +820,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
 
         <PerformerTaggerList
           performers={performers}
-          selectedEndpoint={{
-            endpoint: selectedEndpoint.endpoint,
-            index: selectedEndpointIndex,
-          }}
+          selectedEndpoint={selectedEndpointInput}
           isIdle={batchJobID === undefined}
           config={config}
           onBatchAdd={batchAdd}

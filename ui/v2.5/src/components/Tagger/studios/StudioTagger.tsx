@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -180,6 +180,13 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
       [studio.id]: studio,
     });
   };
+
+  // clear tagged studios when source is changed
+  useEffect(() => {
+    setTaggedStudios({});
+    setSearchResults({});
+    setSearchErrors({});
+  }, [selectedEndpoint]);
 
   const [createStudio] = useStudioCreate();
   const updateStudio = useUpdateStudio();
@@ -501,8 +508,6 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
     }
   }, [jobsSubscribe, batchJobID]);
 
-  if (!config) return <LoadingIndicator />;
-
   const savedEndpointIndex =
     stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
@@ -513,6 +518,16 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
       : savedEndpointIndex;
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
+
+  const selectedEndpointInput = useMemo(
+    () => ({
+      endpoint: selectedEndpoint.endpoint,
+      index: selectedEndpointIndex,
+    }),
+    [selectedEndpoint, selectedEndpointIndex]
+  );
+
+  if (!config) return <LoadingIndicator />;
 
   async function batchAdd(studioInput: string, createParent: boolean) {
     if (studioInput && selectedEndpoint) {
@@ -683,10 +698,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
 
         <StudioTaggerList
           studios={studios}
-          selectedEndpoint={{
-            endpoint: selectedEndpoint.endpoint,
-            index: selectedEndpointIndex,
-          }}
+          selectedEndpoint={selectedEndpointInput}
           isIdle={batchJobID === undefined}
           config={config}
           onBatchAdd={batchAdd}

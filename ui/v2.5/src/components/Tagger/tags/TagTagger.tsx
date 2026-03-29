@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -263,6 +263,13 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
     });
   };
 
+  // clear tagged tags when source is changed
+  useEffect(() => {
+    setTaggedTags({});
+    setSearchResults({});
+    setSearchErrors({});
+  }, [selectedEndpoint]);
+
   const renderTags = () =>
     tags.map((tag) => {
       const isTagged = taggedTags[tag.id];
@@ -504,8 +511,6 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
     }
   }, [jobsSubscribe, batchJobID]);
 
-  if (!config) return <LoadingIndicator />;
-
   const savedEndpointIndex =
     stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
@@ -516,6 +521,16 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
       : savedEndpointIndex;
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
+
+  const selectedEndpointInput = useMemo(
+    () => ({
+      endpoint: selectedEndpoint.endpoint,
+      index: selectedEndpointIndex,
+    }),
+    [selectedEndpoint, selectedEndpointIndex]
+  );
+
+  if (!config) return <LoadingIndicator />;
 
   async function batchAdd(tagInput: string, createParent: boolean) {
     if (tagInput && selectedEndpoint) {
@@ -679,10 +694,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
 
         <TagTaggerList
           tags={tags}
-          selectedEndpoint={{
-            endpoint: selectedEndpoint.endpoint,
-            index: selectedEndpointIndex,
-          }}
+          selectedEndpoint={selectedEndpointInput}
           isIdle={batchJobID === undefined}
           config={config}
           onBatchAdd={batchAdd}
