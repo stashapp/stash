@@ -289,6 +289,9 @@ type StashBoxFingerprint {
   algorithm: String!
   hash: String!
   duration: Int!
+  reports: Int!
+  user_submitted: Boolean!
+  user_reported: Boolean!
 }
 
 """

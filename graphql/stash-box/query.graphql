@@ -97,6 +97,9 @@ fragment FingerprintFragment on Fingerprint {
   algorithm
   hash
   duration
+  reports
+  user_submitted
+  user_reported
 }
 
 fragment SceneFragment on Scene {

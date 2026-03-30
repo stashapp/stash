@@ -232,8 +232,12 @@
       "match_failed_no_result": "No results found",
       "match_success": "Scene successfully tagged",
       "phash_matches": "{count} PHashes match",
+      "fp_reported": "{count, plural, one {# fingerprint report} other {# fingerprint reports}}",
+      "fp_submitted": "You submitted fingerprints",
       "unnamed": "Unnamed"
     },
+    "marked_wrong": "Wrong Match",
+    "wrong_match": "Wrong Match",
     "verb_add_as_alias": "Add scraped name as alias",
     "verb_link_existing": "Link to existing",
     "verb_match_fp": "Match Fingerprints",

@@ -98,13 +98,21 @@ const getDurationStatus = (
   );
 };
 
+interface PhashMatch {
+  hash: string;
+  distance: number;
+  reports: number;
+  userSubmitted: boolean;
+  userReported: boolean;
+}
+
 function matchPhashes(
   scenePhashes: Pick<GQL.Fingerprint, "type" | "value">[],
   fingerprints: GQL.StashBoxFingerprint[]
-) {
+): PhashMatch[] {
   const phashes = fingerprints.filter((f) => f.algorithm === "PHASH");
 
-  const matches: { [key: string]: number } = {};
+  const matches: PhashMatch[] = [];
   phashes.forEach((p) => {
     let bestMatch = -1;
     scenePhashes.forEach((fp) => {
@@ -116,31 +124,64 @@ function matchPhashes(
     });
 
     if (bestMatch !== -1) {
-      matches[p.hash] = bestMatch;
+      matches.push({
+        hash: p.hash,
+        distance: bestMatch,
+        reports: p.reports,
+        userSubmitted: p.user_submitted,
+        userReported: p.user_reported,
+      });
     }
   });
 
-  // convert to tuple and sort by distance descending
-  const entries = Object.entries(matches);
-  entries.sort((a, b) => {
-    return a[1] - b[1];
+  // sort by distance ascending
+  matches.sort((a, b) => a.distance - b.distance);
+
+  return matches;
+}
+
+interface ChecksumMatch {
+  hash: string;
+  reports: number;
+  userSubmitted: boolean;
+  userReported: boolean;
+}
+
+function matchChecksums(
+  stashScene: GQL.SlimSceneDataFragment,
+  fingerprints: GQL.StashBoxFingerprint[]
+): ChecksumMatch[] {
+  const matches: ChecksumMatch[] = [];
+
+  fingerprints.forEach((f) => {
+    if (f.algorithm !== "OSHASH" && f.algorithm !== "MD5") return;
+
+    const isMatch = stashScene.files.some((ff) =>
+      ff.fingerprints.some(
+        (fp) =>
+          fp.value === f.hash &&
+          (fp.type === "oshash" || fp.type === "md5")
+      )
+    );
+
+    if (isMatch) {
+      matches.push({
+        hash: f.hash,
+        reports: f.reports,
+        userSubmitted: f.user_submitted,
+        userReported: f.user_reported,
+      });
+    }
   });
 
-  return entries;
+  return matches;
 }
 
 const getFingerprintStatus = (
   scene: IScrapedScene,
   stashScene: GQL.SlimSceneDataFragment
 ) => {
-  const checksumMatch = scene.fingerprints?.some((f) =>
-    stashScene.files.some((ff) =>
-      ff.fingerprints.some(
-        (fp) =>
-          fp.value === f.hash && (fp.type === "oshash" || fp.type === "md5")
-      )
-    )
-  );
+  const checksumMatches = matchChecksums(stashScene, scene.fingerprints ?? []);
 
   const allPhashes = stashScene.files.reduce(
     (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
@@ -151,63 +192,102 @@ const getFingerprintStatus = (
 
   const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
 
+  // Combine all matches to check for reports and user submissions
+  const allMatches = [
+    ...phashMatches.map((m) => ({
+      reports: m.reports,
+      userSubmitted: m.userSubmitted,
+      userReported: m.userReported,
+    })),
+    ...checksumMatches.map((m) => ({
+      reports: m.reports,
+      userSubmitted: m.userSubmitted,
+      userReported: m.userReported,
+    })),
+  ];
+
+  const hasReports = allMatches.some((m) => m.reports > 0);
+  const hasUserSubmitted = allMatches.some((m) => m.userSubmitted);
+  const totalReports = allMatches.reduce((sum, m) => sum + m.reports, 0);
+
   const phashList = (
     <div className="m-2">
-      {phashMatches.map((fp: [string, number]) => {
-        const hash = fp[0];
-        const d = fp[1];
+      {phashMatches.map((fp) => {
         return (
-          <div key={hash}>
-            <b>{hash}</b>
-            {d === 0 ? ", Exact match" : `, distance ${d}`}
+          <div key={fp.hash}>
+            <b>{fp.hash}</b>
+            {fp.distance === 0 ? ", Exact match" : `, distance ${fp.distance}`}
+            {fp.reports > 0 && (
+              <span className="text-warning ml-2">
+                ({fp.reports} {fp.reports === 1 ? "report" : "reports"})
+              </span>
+            )}
           </div>
         );
       })}
     </div>
   );
 
-  if (checksumMatch || phashMatches.length > 0)
-    return (
-      <div>
-        {phashMatches.length > 0 && (
-          <div className="font-weight-bold">
-            <SuccessIcon className="SceneTaggerIcon" />
-            <HoverPopover
-              placement="bottom"
-              content={phashList}
-              className="PHashPopover"
-            >
-              {phashMatches.length > 1 ? (
-                <FormattedMessage
-                  id="component_tagger.results.phash_matches"
-                  values={{
-                    count: phashMatches.length,
-                  }}
-                />
-              ) : (
-                <FormattedMessage
-                  id="component_tagger.results.hash_matches"
-                  values={{
-                    hash_type: <FormattedMessage id="media_info.phash" />,
-                  }}
-                />
-              )}
-            </HoverPopover>
-          </div>
-        )}
-        {checksumMatch && (
-          <div className="font-weight-bold">
-            <SuccessIcon className="mr-2" />
-            <FormattedMessage
-              id="component_tagger.results.hash_matches"
-              values={{
-                hash_type: <FormattedMessage id="media_info.md5" />,
-              }}
-            />
-          </div>
-        )}
-      </div>
-    );
+  if (checksumMatches.length === 0 && phashMatches.length === 0) {
+    return null;
+  }
+
+  return (
+    <div>
+      {phashMatches.length > 0 && (
+        <div className="font-weight-bold">
+          <SuccessIcon className="SceneTaggerIcon" />
+          <HoverPopover
+            placement="bottom"
+            content={phashList}
+            className="PHashPopover"
+          >
+            {phashMatches.length > 1 ? (
+              <FormattedMessage
+                id="component_tagger.results.phash_matches"
+                values={{
+                  count: phashMatches.length,
+                }}
+              />
+            ) : (
+              <FormattedMessage
+                id="component_tagger.results.hash_matches"
+                values={{
+                  hash_type: <FormattedMessage id="media_info.phash" />,
+                }}
+              />
+            )}
+          </HoverPopover>
+        </div>
+      )}
+      {checksumMatches.length > 0 && (
+        <div className="font-weight-bold">
+          <SuccessIcon className="mr-2" />
+          <FormattedMessage
+            id="component_tagger.results.hash_matches"
+            values={{
+              hash_type: <FormattedMessage id="media_info.md5" />,
+            }}
+          />
+        </div>
+      )}
+      {hasReports && (
+        <div className="text-warning font-weight-bold">
+          <Icon className="SceneTaggerIcon" icon={faTriangleExclamation} />
+          <FormattedMessage
+            id="component_tagger.results.fp_reported"
+            values={{ count: totalReports }}
+          />
+        </div>
+      )}
+      {hasUserSubmitted && (
+        <div className="text-success">
+          <SuccessIcon className="SceneTaggerIcon" />
+          <FormattedMessage id="component_tagger.results.fp_submitted" />
+        </div>
+      )}
+    </div>
+  );
 };
 
 interface IStashSearchResultProps {
@@ -237,6 +317,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     resolveScene,
     currentSource,
     saveScene,
+    queueFingerprintSubmission,
+    isMarkedWrong,
   } = React.useContext(TaggerStateContext);
 
   const performerGenders = config.performerGenders || genderList;
@@ -428,8 +510,17 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       delete sceneCreateInput.stash_ids;
     }
 
-    await saveScene(sceneCreateInput, includeStashID);
+    await saveScene(sceneCreateInput, includeStashID, scene.remote_site_id ?? undefined);
   }
+
+  async function handleMarkWrong() {
+    if (!scene.remote_site_id) return;
+    await queueFingerprintSubmission(stashScene.id, scene.remote_site_id, GQL.FingerprintVote.Invalid);
+  }
+
+  const markedWrong = scene.remote_site_id
+    ? isMarkedWrong(stashScene.id, scene.remote_site_id)
+    : false;
 
   function showPerformerModal(t: GQL.ScrapedPerformer) {
     createPerformerModal(t, (toCreate) => {
@@ -818,7 +909,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   return (
     <>
-      <div className={isActive ? "col-lg-6" : ""}>
+      <div className={cx(isActive ? "col-lg-6" : "", { "marked-wrong": markedWrong })}>
         <div className="row mx-0">
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
@@ -828,6 +919,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               <>
                 {renderStudioDate()}
                 {renderPerformerList()}
+                {markedWrong && (
+                  <Badge variant="danger" className="mt-1">
+                    <FormattedMessage id="component_tagger.marked_wrong" />
+                  </Badge>
+                )}
               </>
             )}
 
@@ -853,10 +949,37 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">
+            {scene.remote_site_id && (
+              <OperationButton
+                className="mr-2"
+                operation={handleMarkWrong}
+                variant="outline-danger"
+                disabled={markedWrong}
+              >
+                <Icon icon={faXmark} />
+                <span className="ml-1">
+                  <FormattedMessage id="component_tagger.wrong_match" />
+                </span>
+              </OperationButton>
+            )}
             <OperationButton operation={handleSave}>
               <FormattedMessage id="actions.save" />
             </OperationButton>
           </div>
+        </div>
+      )}
+      {!isActive && scene.remote_site_id && !markedWrong && (
+        <div className="col-lg-6">
+            <div className="ml-auto d-flex align-items-center">
+              <OperationButton
+                operation={handleMarkWrong}
+                variant="outline-danger"
+                size="sm"
+                title={intl.formatMessage({ id: "component_tagger.wrong_match" })}
+              >
+                <Icon icon={faXmark} />
+              </OperationButton>
+            </div>
         </div>
       )}
     </>

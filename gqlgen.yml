@@ -144,4 +144,8 @@ models:
     fields:
       career_length:
         resolver: true
+  FingerprintSubmission:
+    fields:
+      scene:
+        resolver: true
   

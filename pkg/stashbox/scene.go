@@ -227,9 +227,12 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	fingerprints := []*models.StashBoxFingerprint{}
 	for _, fp := range scene.Fingerprints {
 		fingerprint := models.StashBoxFingerprint{
-			Algorithm: fp.Algorithm.String(),
-			Hash:      fp.Hash,
-			Duration:  fp.Duration,
+			Algorithm:     fp.Algorithm.String(),
+			Hash:          fp.Hash,
+			Duration:      fp.Duration,
+			Reports:       fp.Reports,
+			UserSubmitted: fp.UserSubmitted,
+			UserReported:  fp.UserReported,
 		}
 		fingerprints = append(fingerprints, &fingerprint)
 	}
@@ -455,6 +458,46 @@ func (c Client) submitFingerprints(ctx context.Context, fingerprints []graphql.F
 	}
 
 	return true, nil
+}
+
+// FingerprintVote represents the vote type for a fingerprint submission
+type FingerprintVote string
+
+const (
+	FingerprintVoteValid   FingerprintVote = "VALID"
+	FingerprintVoteInvalid FingerprintVote = "INVALID"
+)
+
+// SubmitFingerprintsWithVote submits fingerprints for a scene with an explicit stash-box scene ID and vote
+func (c Client) SubmitFingerprintsWithVote(ctx context.Context, scene *models.Scene, stashBoxSceneID string, vote FingerprintVote) error {
+	var fingerprints []graphql.FingerprintSubmission
+
+	for _, f := range scene.Files.List() {
+		duration := f.Duration
+
+		if duration == 0 {
+			continue
+		}
+
+		fps := fileFingerprintsToInputGraphQL(f.Fingerprints, int(duration))
+		voteType := graphql.FingerprintSubmissionType(vote)
+		for _, fp := range fps {
+			fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+				SceneID:     stashBoxSceneID,
+				Fingerprint: fp,
+				Vote:        &voteType,
+			})
+		}
+	}
+
+	for _, fingerprint := range fingerprints {
+		_, err := c.client.SubmitFingerprint(ctx, fingerprint)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.FingerprintInput) []*graphql.FingerprintInput {

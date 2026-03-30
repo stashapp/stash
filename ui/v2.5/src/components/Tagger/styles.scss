@@ -427,3 +427,13 @@ li.active .optional-field.excluded .scene-link {
   display: inline-block;
   text-decoration: underline dotted;
 }
+
+.marked-wrong {
+  opacity: 0.6;
+
+  .scene-link,
+  h4,
+  h5 {
+    text-decoration: line-through;
+  }
+}

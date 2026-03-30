@@ -1,9 +1,12 @@
 package models
 
 type StashBoxFingerprint struct {
-	Algorithm string `json:"algorithm"`
-	Hash      string `json:"hash"`
-	Duration  int    `json:"duration"`
+	Algorithm     string `json:"algorithm"`
+	Hash          string `json:"hash"`
+	Duration      int    `json:"duration"`
+	Reports       int    `json:"reports"`
+	UserSubmitted bool   `json:"user_submitted"`
+	UserReported  bool   `json:"user_reported"`
 }
 
 type StashBox struct {
