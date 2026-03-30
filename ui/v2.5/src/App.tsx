@@ -74,6 +74,7 @@ const Groups = lazyComponent(() => import("./components/Groups/Groups"));
 const Tags = lazyComponent(() => import("./components/Tags/Tags"));
 const Images = lazyComponent(() => import("./components/Images/Images"));
 const Setup = lazyComponent(() => import("./components/Setup/Setup"));
+const Welcome = lazyComponent(() => import("./components/Setup/Welcome"));
 const Migrate = lazyComponent(() => import("./components/Setup/Migrate"));
 
 const SceneFilenameParser = lazyComponent(
@@ -203,7 +204,7 @@ export const App: React.FC = () => {
 
   const location = useLocation();
   const history = useHistory();
-  const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+  const setupMatch = useRouteMatch(["/setup", "/migrate", "/welcome"]);
 
   // dispatch event when location changes
   useEffect(() => {
@@ -270,6 +271,7 @@ export const App: React.FC = () => {
               component={SceneDuplicateChecker}
             />
             <Route path="/setup" component={Setup} />
+            <Route path="/welcome" component={Welcome} />
             <Route path="/migrate" component={Migrate} />
             <PluginRoutes />
             <Route component={PageNotFound} />
