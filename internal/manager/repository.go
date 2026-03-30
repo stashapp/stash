@@ -55,11 +55,10 @@ type UserService interface {
 	LoginRequired(ctx context.Context) (bool, error)
 	session.Authenticator
 
-	ActivateSingleUserMode(ctx context.Context, currentPassword string) error
-
 	AllUsers(ctx context.Context) ([]*models.User, error)
 	GetUser(ctx context.Context, username string) (*models.User, error)
 
+	IsSingleUserMode() bool
 	GetSingleUser(ctx context.Context) (*models.User, error)
 
 	GetGuestUser(ctx context.Context) *models.User

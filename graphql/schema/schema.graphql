@@ -504,7 +504,8 @@ type Mutation {
   configureUISetting(key: String!, value: Any): Map! @hasRole(role: ADMIN)
 
   "Generate and set (or clear) API key for the current user"
-  generateAPIKey(input: GenerateAPIKeyInput!): String! @hasRole(role: GENERATE_API_KEY)
+  generateAPIKey(input: GenerateAPIKeyInput!): String!
+    @hasRole(role: GENERATE_API_KEY)
 
   generateUserAPIKey(username: String!, input: GenerateAPIKeyInput!): String!
     @hasRole(role: ADMIN)
@@ -638,7 +639,8 @@ type Mutation {
   stashBoxBatchStudioTag(input: StashBoxBatchTagInput!): String!
     @hasRole(role: ADMIN)
   "Run batch tag tag task. Returns the job ID."
-  stashBoxBatchTagTag(input: StashBoxBatchTagInput!): String! @hasRole(role: ADMIN)
+  stashBoxBatchTagTag(input: StashBoxBatchTagInput!): String!
+    @hasRole(role: ADMIN)
 
   "Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"
   enableDLNA(input: EnableDLNAInput!): Boolean! @hasRole(role: ADMIN)
@@ -656,14 +658,6 @@ type Mutation {
   lockUser(name: String!): Boolean! @hasRole(role: ADMIN)
   unlockUser(name: String!): Boolean! @hasRole(role: ADMIN)
 
-  """
-  Activates single user mode. Single user mode disabled authentication and allows anyone with access to the instance to have admin privileges. 
-  Requires a single user to present in the database, and this mutation will unset its password.
-  Requires the current password to prevent unauthorized activation of single user mode.
-  Returns true if successful.
-  """
-  activateSingleUserMode(currentPassword: String!): Boolean! @hasRole(role: ADMIN)
-  
   changeUserPassword(input: ChangeUserPasswordInput!): Boolean!
     @hasRole(role: ADMIN)
   changePassword(input: UserChangePasswordInput!): Boolean!

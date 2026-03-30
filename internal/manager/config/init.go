@@ -99,7 +99,9 @@ func Initialize() (*Config, error) {
 		}
 	}
 
-	cfg.initialisePublicWhitelist()
+	if err := cfg.initialisePublicWhitelist(); err != nil {
+		return nil, fmt.Errorf("error initializing public access whitelist: %w", err)
+	}
 
 	instance = cfg
 	return instance, nil

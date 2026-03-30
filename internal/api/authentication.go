@@ -60,7 +60,10 @@ func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
 
 type UserAuthenticator interface {
 	GetGuestUser(ctx context.Context) *models.User
+
+	IsSingleUserMode() bool
 	GetSingleUser(ctx context.Context) (*models.User, error)
+
 	AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error)
 	AuthenticateSession(ctx context.Context, username string, loginTime time.Time) (*models.User, error)
 }
@@ -100,7 +103,6 @@ type authenticationConfig interface {
 	IsNewSystem() bool
 	GetNewSystemCredentials() (string, string, time.Time)
 
-	GetSingleUserMode() bool
 	GetPublicAccess() bool
 	PublicIPWhitelistGetter
 }
@@ -110,9 +112,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg auth
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
-			// TODO - check ip whitelist here
-
-			singleUserMode := cfg.GetSingleUserMode()
+			singleUserMode := g.IsSingleUserMode()
 			publicAccess := cfg.GetPublicAccess()
 
 			if singleUserMode && publicAccess {

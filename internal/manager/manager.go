@@ -309,7 +309,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 
 	cfg.FinalizeSetup()
 
-	if input.InitialUsername != "" && input.InitialPassword != "" {
+	if input.InitialUsername != "" {
 		if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			u := models.User{
 				Username:  input.InitialUsername,

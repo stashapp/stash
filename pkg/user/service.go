@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/alexedwards/argon2id"
@@ -67,8 +68,6 @@ type UserSource interface {
 
 type UserServiceConfig interface {
 	IsNewSystem() bool
-	GetSingleUserMode() bool
-	SetSingleUserMode(bool)
 	GetPublicAccess() bool
 
 	GetGuestUserEnabled() bool
@@ -81,60 +80,61 @@ type Service struct {
 
 	startedAt time.Time
 
-	singleUserMode   bool
+	singleUserModeMutex sync.RWMutex
+	singleUserMode      bool
+
 	guestUserEnabled bool
 }
 
-func (s *Service) setSingleUserMode(enabled bool) {
-	s.singleUserMode = enabled
-	s.Config.SetSingleUserMode(enabled)
+func (s *Service) IsSingleUserMode() bool {
+	s.singleUserModeMutex.RLock()
+	defer s.singleUserModeMutex.RUnlock()
+
+	return s.singleUserMode
 }
 
 func (s *Service) LoginRequired(ctx context.Context) (bool, error) {
+	s.singleUserModeMutex.RLock()
+	defer s.singleUserModeMutex.RUnlock()
+
 	return !s.singleUserMode, nil
 }
 
 func (s *Service) Init(ctx context.Context) error {
 	s.startedAt = time.Now()
 
-	s.singleUserMode = s.Config.GetSingleUserMode()
+	// determine if we are in single user mode
+	// don't do this for publically accessible instances
+	if !s.Config.GetPublicAccess() {
+		s.singleUserModeMutex.Lock()
+		defer s.singleUserModeMutex.Unlock()
 
-	// if we're in public access mode, don't switch to single user mode
-	if !s.singleUserMode {
-		// ensure there is at least one user. If there are no users, enable single user mode
-		// and create the default user
 		count, err := s.Store.Count(ctx)
 		if err != nil {
 			return fmt.Errorf("error counting users during initialization: %w", err)
 		}
 
-		if count == 0 {
-			if !s.Config.GetPublicAccess() {
-				logger.Infof("No users found, enabling single user mode and creating default user")
-				s.setSingleUserMode(true)
-			} else if !s.Config.IsNewSystem() { // if in new system we should be generating credentials and creating user
-				// generate a new admin user with a random password and print the credentials to the console for initial setup
-				const defaultRandomPasswordLength = 16
-				pw, err := GenerateRandomPassword(defaultRandomPasswordLength)
-				if err != nil {
-					return fmt.Errorf("error generating random password for initial user: %w", err)
-				}
+		if count == 1 {
+			// determine if we are in single user mode based on whether there is exactly one user and that user has no password set
+			u, err := s.Store.All(ctx)
+			if err != nil {
+				return fmt.Errorf("error getting users during initialization: %w", err)
+			}
 
-				if _, err := s.createSingleUserIfNeeded(ctx, pw); err != nil {
-					return fmt.Errorf("error creating initial admin user: %w", err)
-				}
+			if len(u) != 1 {
+				return fmt.Errorf("expected exactly one user, got %d", len(u))
+			}
 
-				fmt.Printf("-----------------------------------------------------------\n")
-				fmt.Printf("Initial admin user created with username: %s and password: %s\n", AdminUsername, pw)
-				fmt.Printf("-----------------------------------------------------------\n")
+			pwHash, err := s.Store.GetPasswordHash(ctx, u[0].ID)
+			if err != nil {
+				return fmt.Errorf("error getting password hash during initialization: %w", err)
+			}
+
+			s.singleUserMode = pwHash == ""
+			if s.singleUserMode {
+				logger.Infof("Single user mode enabled since there is exactly one user with no password set")
 			}
 		}
-	}
-
-	if s.singleUserMode {
-		logger.Info("Single user mode enabled")
-		_, err := s.createSingleUserIfNeeded(ctx, "")
-		return err
 	}
 
 	s.guestUserEnabled = s.Config.GetGuestUserEnabled()
@@ -160,36 +160,6 @@ func (s *Service) SetGuestUserEnabled(enabled bool) error {
 	return nil
 }
 
-func (s *Service) ActivateSingleUserMode(ctx context.Context, currentPassword string) error {
-	cur := session.GetCurrentUser(ctx)
-
-	// ensure there is a single user
-	count, err := s.Store.Count(ctx)
-	if err != nil {
-		return fmt.Errorf("error counting users: %w", err)
-	}
-
-	if count != 1 {
-		return fmt.Errorf("cannot activate single user mode when multiple users exist")
-	}
-
-	// validate current credentials
-	if err := s.ValidateCredentials(ctx, cur.Username, currentPassword); err != nil {
-		logger.Infof("[single user mode activation] failed attempt by %q: incorrect password", cur.Username)
-		return ErrCurrentPasswordIncorrect
-	}
-
-	logger.Warnf("Activating single user mode. Unsetting password for single user %q", cur.Username)
-
-	// unset user password
-	if err := s.Store.SetUserPassword(ctx, cur.ID, ""); err != nil {
-		return fmt.Errorf("error unsetting user password: %w", err)
-	}
-
-	s.setSingleUserMode(true)
-	return nil
-}
-
 // GetGuestUser returns the guest user if it exists, or nil if it does not exist.
 // The guest user is a special user that is used for unauthenticated access.
 func (s *Service) GetGuestUser(ctx context.Context) *models.User {
@@ -201,14 +171,15 @@ func (s *Service) GetGuestUser(ctx context.Context) *models.User {
 		Username: GuestUsername,
 		Roles:    []models.RoleEnum{models.RoleEnumRead},
 	}
-
-	//return s.GetUser(ctx, GuestUsername)
 }
 
 // GetSingleUser returns the single user if it exists.
 // It will return nil if there is no single user or if there are multiple users
 // (since single user can only be used if it is the only user).
 func (s *Service) GetSingleUser(ctx context.Context) (*models.User, error) {
+	s.singleUserModeMutex.RLock()
+	defer s.singleUserModeMutex.RUnlock()
+
 	if !s.singleUserMode {
 		return nil, nil
 	}
@@ -233,46 +204,6 @@ func (s *Service) GetSingleUser(ctx context.Context) (*models.User, error) {
 		panic(fmt.Sprintf("expected exactly one user, got %d", len(all)))
 	}
 	return all[0], nil
-}
-
-// createSingleUserIfNeeded creates the initial single user.
-func (s *Service) createSingleUserIfNeeded(ctx context.Context, pw string) (*models.User, error) {
-	if !s.singleUserMode {
-		return nil, fmt.Errorf("single user mode is not enabled")
-	}
-
-	// only create default user if there are no users
-	count, err := s.Store.Count(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error counting users: %w", err)
-	}
-
-	if count > 0 {
-		logger.Debugf("Not creating default admin user since %d users already exist", count)
-		return nil, nil
-	}
-
-	u := models.User{
-		Username:  AdminUsername,
-		Roles:     []models.RoleEnum{models.RoleEnumAdmin},
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	var hashedPassword string
-	if pw != "" {
-		hashedPassword, err = hashPassword(pw)
-		if err != nil {
-			return nil, fmt.Errorf("error hashing password: %w", err)
-		}
-	}
-
-	if err := s.Store.Create(ctx, &u, hashedPassword); err != nil {
-		return nil, fmt.Errorf("error creating admin user: %w", err)
-	}
-
-	logger.Infof("Created default admin user with username %q", AdminUsername)
-	return &u, nil
 }
 
 func (s *Service) GetUser(ctx context.Context, username string) (*models.User, error) {
@@ -496,8 +427,11 @@ func hashPassword(password string) (string, error) {
 }
 
 func (s *Service) CreateUser(ctx context.Context, u models.User, password string) error {
+	s.singleUserModeMutex.Lock()
+	defer s.singleUserModeMutex.Unlock()
+
 	if s.singleUserMode {
-		return errors.New("cannot create user in single user mode")
+		return errors.New("password must be set on initial user before other users can be created")
 	}
 
 	// validate input
@@ -516,29 +450,43 @@ func (s *Service) CreateUser(ctx context.Context, u models.User, password string
 		return ErrUserAlreadyExists
 	}
 
-	// validate password
-	if err := s.validatePassword(password); err != nil {
-		return err
-	}
-
-	// if this is the first user, make them an admin
 	count, err := s.Store.Count(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting existing users: %w", err)
 	}
 
+	hashedPassword := ""
+	setSingleUserMode := false
+
+	// special case for no password set
+	if password == "" {
+		// must be the first user created
+		if count != 0 {
+			return errors.New("password cannot be empty for non-initial users")
+		}
+
+		logger.Warnf("Creating initial user %q with no password set", u.Username)
+		setSingleUserMode = true
+	} else {
+		// validate password
+		if err := s.validatePassword(password); err != nil {
+			return err
+		}
+
+		// hash the password and store it
+		hashedPassword, err = hashPassword(password)
+		if err != nil {
+			return fmt.Errorf("error hashing password: %w", err)
+		}
+	}
+
+	// if this is the first user, make them an admin
 	if count == 0 && !u.Roles.HasRole(models.RoleEnumAdmin) {
 		return errors.New("the first user must be an admin")
 	}
 
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = u.CreatedAt
-
-	// hash the password and store it
-	hashedPassword, err := hashPassword(password)
-	if err != nil {
-		return fmt.Errorf("error hashing password: %w", err)
-	}
 
 	// create user in store
 	if err := s.Store.Create(ctx, &u, hashedPassword); err != nil {
@@ -547,6 +495,9 @@ func (s *Service) CreateUser(ctx context.Context, u models.User, password string
 
 	cur := session.GetCurrentUser(ctx)
 	logger.Infof("[user] created %q by %q", u.Username, cur.Username)
+	if setSingleUserMode {
+		s.singleUserMode = true
+	}
 
 	return nil
 }
@@ -658,6 +609,33 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 		return ErrUserNotExist
 	}
 
+	// if new password is empty, we are unsetting the password and enabling single user mode
+	if newPassword == "" {
+		s.singleUserModeMutex.Lock()
+		defer s.singleUserModeMutex.Unlock()
+
+		if s.Config.GetPublicAccess() {
+			return errors.New("cannot unset password in public access mode")
+		}
+
+		count, err := s.Store.Count(ctx)
+		if err != nil {
+			return fmt.Errorf("error counting users: %w", err)
+		}
+
+		if count != 1 {
+			return errors.New("can only unset password if there is exactly one user")
+		}
+
+		if err := s.Store.SetUserPassword(ctx, existingUser.ID, ""); err != nil {
+			return fmt.Errorf("error unsetting user password: %w", err)
+		}
+
+		logger.Warnf("Unsetting password for user %q, enabling single user mode", username)
+		s.singleUserMode = true
+		return nil
+	}
+
 	// validate new password
 	if err := s.validatePassword(newPassword); err != nil {
 		return err
@@ -677,9 +655,12 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 	cur := session.GetCurrentUser(ctx)
 	logger.Infof("[user] changed password for %q by %q", username, cur.Username)
 
+	s.singleUserModeMutex.Lock()
+	defer s.singleUserModeMutex.Unlock()
+
 	if s.singleUserMode {
 		// turn off single user mode since password is now set and default user can no longer be used
-		s.setSingleUserMode(false)
+		s.singleUserMode = false
 
 		logger.Infof("Single user mode disabled since password has been set for user %q", username)
 	}

@@ -14,8 +14,8 @@ input SetupInput {
   "Empty to indicate default - only applicable if storeBlobsInDatabase is false"
   blobsLocation: String!
 
-  "Initial credentials"
-  initialUsername: String
+  "Initial username - must not be empty or have leading or trailing whitespace"
+  initialUsername: String!
   initialPassword: String
 }
 

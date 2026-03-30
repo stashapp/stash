@@ -8,16 +8,6 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 )
 
-func (r *mutationResolver) ActivateSingleUserMode(ctx context.Context, currentPassword string) (bool, error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.userService.ActivateSingleUserMode(ctx, currentPassword)
-	}); err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
 func (r *mutationResolver) UserCreate(ctx context.Context, input UserCreateInput) (user *models.User, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		notes := ""

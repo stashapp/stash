@@ -9,13 +9,13 @@ import (
 )
 
 type mockConfig struct {
-	single bool
+	public bool
 	guest  bool
 }
 
-func (m *mockConfig) GetSingleUserMode() bool   { return m.single }
-func (m *mockConfig) SetSingleUserMode(b bool)  { m.single = b }
+func (m *mockConfig) GetPublicAccess() bool     { return m.public }
 func (m *mockConfig) GetGuestUserEnabled() bool { return m.guest }
+func (m *mockConfig) IsNewSystem() bool         { return false }
 func (m *mockConfig) SetGuestUserEnabled(enabled bool) {
 	m.guest = enabled
 }
@@ -116,7 +116,7 @@ func (m *mockStore) SetLock(ctx context.Context, id int, locked bool) error {
 
 func TestDeleteUser(t *testing.T) {
 	store := newMockStore()
-	cfg := &mockConfig{single: false}
+	cfg := &mockConfig{public: false}
 	svc := &Service{Store: store, Config: cfg}
 
 	ctx := session.SetCurrentUser(context.Background(), models.User{Username: "admin"})

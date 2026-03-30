@@ -41,11 +41,9 @@ const (
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
 
-	SingleUserMode        = "single_user_mode"
-	singleUserModeDefault = true
-	PublicAccess          = "public_access"
-	publicAccessDefault   = false
-	PublicWhitelist       = "public_whitelist"
+	PublicAccess        = "public_access"
+	publicAccessDefault = false
+	PublicWhitelist     = "public_whitelist"
 
 	MaxSessionAge = "max_session_age"
 
@@ -445,24 +443,6 @@ func getCachedValue[T any](i *Config, key string, getter func() T) T {
 
 func setCachedValue[T any](i *Config, key string, value T) {
 	i.cachedValues.Store(key, value)
-}
-
-// GetSingleUserMode returns true if single user mode is activated.
-// In single user mode, authentication is effectively disabled and Stash will operate as if a
-// single default user is always authenticated.
-// This is intended for use in environments where external access is not possible, such as when
-// running Stash locally on a user's machine.
-func (i *Config) GetSingleUserMode() bool {
-	// cache the value as it is used frequently in authentication
-	return getCachedValue(i, SingleUserMode, func() bool {
-		return i.getBool(SingleUserMode)
-	})
-}
-
-func (i *Config) SetSingleUserMode(enabled bool) {
-	i.SetBool(SingleUserMode, enabled)
-	setCachedValue(i, SingleUserMode, enabled)
-	_ = i.Write()
 }
 
 // GetPublicAccess returns true if public access is enabled.
@@ -2098,10 +2078,8 @@ func (i *Config) setDefaultValues() {
 func (i *Config) setNewSystemDefaults() {
 	i.Lock()
 	defer i.Unlock()
-	if i.isNewSystem {
-		// Only set single user mode on new systems
-		i.setDefault(SingleUserMode, singleUserModeDefault)
-	}
+
+	// add new system defaults here
 }
 
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,

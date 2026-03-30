@@ -145,9 +145,6 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 			cfg.SetNewSystemCredentials(username, password)
 
-			// turn off single user mode
-			cfg.SetSingleUserMode(false)
-
 			fmt.Printf("-----------------------------------------------------------\n")
 			fmt.Printf("Public access is enabled but no config file was found. Generated credentials for initial setup:\n")
 			fmt.Printf("Username: %s\n", username)
