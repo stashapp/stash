@@ -32,6 +32,10 @@ type SetupInput struct {
 	StoreBlobsInDatabase bool `json:"storeBlobsInDatabase"`
 	// Empty to indicate default
 	BlobsLocation string `json:"blobsLocation"`
+
+	// Initial credentials
+	InitialUsername string `json:"initialUsername"`
+	InitialPassword string `json:"initialPassword"`
 }
 
 type MigrateInput struct {

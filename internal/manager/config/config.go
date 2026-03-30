@@ -892,6 +892,10 @@ func (i *Config) GetSessionStoreKey() []byte {
 	return []byte(i.getString(SessionStoreKey))
 }
 
+func (i *Config) SetSessionStoreKey(key string) {
+	i.SetString(SessionStoreKey, key)
+}
+
 func (i *Config) GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
 	fn := filepath.Join(i.GetConfigPath(), "scrapers")
@@ -2120,6 +2124,15 @@ func (i *Config) setExistingSystemDefaults() {
 	}
 }
 
+func GenerateSessionStoreKey() (string, error) {
+	const sessionKeyLength = 32
+	sessionStoreKey, err := hash.GenerateRandomKey(sessionKeyLength)
+	if err != nil {
+		return "", err
+	}
+	return sessionStoreKey, nil
+}
+
 // SetInitialConfig fills in missing required config fields. The config file will not be written.
 func (i *Config) SetInitialConfig() error {
 	// generate some api keys
@@ -2134,11 +2147,11 @@ func (i *Config) SetInitialConfig() error {
 	}
 
 	if string(i.GetSessionStoreKey()) == "" {
-		sessionStoreKey, err := hash.GenerateRandomKey(apiKeyLength)
+		sessionStoreKey, err := GenerateSessionStoreKey()
 		if err != nil {
 			return fmt.Errorf("error generating session store key: %w", err)
 		}
-		i.SetString(SessionStoreKey, sessionStoreKey)
+		i.SetSessionStoreKey(sessionStoreKey)
 	}
 
 	i.setDefaultValues()

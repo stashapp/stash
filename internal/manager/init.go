@@ -136,7 +136,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 		// if public mode is enabled, generate credentials used for initial setup
 		if cfg.GetPublicAccess() {
-			username := "admin"
+			username := "setup"
 			const defaultPasswordLength = 16
 			password, err := user.GenerateRandomPassword(defaultPasswordLength)
 			if err != nil {
@@ -148,12 +148,20 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 			// turn off single user mode
 			cfg.SetSingleUserMode(false)
 
-			logger.Warnf("-----------------------------------------------------------")
-			logger.Warnf("Public access is enabled but no config file was found. Generated credentials for initial setup:")
-			logger.Warnf("Username: %s", username)
-			logger.Warnf("Password: %s", password)
-			logger.Warnf("-----------------------------------------------------------")
+			fmt.Printf("-----------------------------------------------------------\n")
+			fmt.Printf("Public access is enabled but no config file was found. Generated credentials for initial setup:\n")
+			fmt.Printf("Username: %s\n", username)
+			fmt.Printf("Password: %s\n", password)
+			fmt.Printf("-----------------------------------------------------------\n")
 		}
+
+		// need to generate a session key that we will later use in the setup
+		// if we don't, we end up with bad cookie errors if a login was required
+		sessionKey, err := config.GenerateSessionStoreKey()
+		if err != nil {
+			return nil, fmt.Errorf("error generating session store key: %w", err)
+		}
+		cfg.SetSessionStoreKey(sessionKey)
 
 		// create temporary session store - this will be re-initialised
 		// after config is complete

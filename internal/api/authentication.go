@@ -129,7 +129,7 @@ func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg auth
 					return
 				}
 
-				if /*!isLocalIP(requestIP) && */ !matchIPWhitelist(cfg, requestIP) {
+				if !isLocalIP(requestIP) && !matchIPWhitelist(cfg, requestIP) {
 					httpError(w, r, "Access denied: Stash is not configured to allow access from external IPs", http.StatusForbidden)
 					return
 				}

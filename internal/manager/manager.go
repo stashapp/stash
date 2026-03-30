@@ -213,6 +213,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	cfg := s.Config
 
+	// validate user credentials if we are in public mode
+	if cfg.GetPublicAccess() && (input.InitialUsername == "" || input.InitialPassword == "") {
+		return errors.New("initial username and password must be set when public access is enabled")
+	}
+
 	// create the config directory if it does not exist
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
@@ -303,6 +308,28 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	}
 
 	cfg.FinalizeSetup()
+
+	if input.InitialUsername != "" && input.InitialPassword != "" {
+		if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+			u := models.User{
+				Username:  input.InitialUsername,
+				Roles:     []models.RoleEnum{models.RoleEnumAdmin},
+				UpdatedAt: time.Now(),
+			}
+
+			// create a temporary user to set the password, since CreateUser requires a user to be passed in
+			newCtx := session.SetCurrentUser(ctx, models.User{
+				Username: "setup",
+			})
+
+			if err := s.UserService.CreateUser(newCtx, u, input.InitialPassword); err != nil {
+				return fmt.Errorf("error initialising user service: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

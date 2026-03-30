@@ -66,8 +66,10 @@ type UserSource interface {
 }
 
 type UserServiceConfig interface {
+	IsNewSystem() bool
 	GetSingleUserMode() bool
 	SetSingleUserMode(bool)
+	GetPublicAccess() bool
 
 	GetGuestUserEnabled() bool
 	SetGuestUserEnabled(bool)
@@ -96,6 +98,8 @@ func (s *Service) Init(ctx context.Context) error {
 	s.startedAt = time.Now()
 
 	s.singleUserMode = s.Config.GetSingleUserMode()
+
+	// if we're in public access mode, don't switch to single user mode
 	if !s.singleUserMode {
 		// ensure there is at least one user. If there are no users, enable single user mode
 		// and create the default user
@@ -105,14 +109,31 @@ func (s *Service) Init(ctx context.Context) error {
 		}
 
 		if count == 0 {
-			logger.Infof("No users found, enabling single user mode and creating default user")
-			s.setSingleUserMode(true)
+			if !s.Config.GetPublicAccess() {
+				logger.Infof("No users found, enabling single user mode and creating default user")
+				s.setSingleUserMode(true)
+			} else if !s.Config.IsNewSystem() { // if in new system we should be generating credentials and creating user
+				// generate a new admin user with a random password and print the credentials to the console for initial setup
+				const defaultRandomPasswordLength = 16
+				pw, err := GenerateRandomPassword(defaultRandomPasswordLength)
+				if err != nil {
+					return fmt.Errorf("error generating random password for initial user: %w", err)
+				}
+
+				if _, err := s.createSingleUserIfNeeded(ctx, pw); err != nil {
+					return fmt.Errorf("error creating initial admin user: %w", err)
+				}
+
+				fmt.Printf("-----------------------------------------------------------\n")
+				fmt.Printf("Initial admin user created with username: %s and password: %s\n", AdminUsername, pw)
+				fmt.Printf("-----------------------------------------------------------\n")
+			}
 		}
 	}
 
 	if s.singleUserMode {
 		logger.Info("Single user mode enabled")
-		_, err := s.createSingleUserIfNeeded(ctx)
+		_, err := s.createSingleUserIfNeeded(ctx, "")
 		return err
 	}
 
@@ -215,7 +236,7 @@ func (s *Service) GetSingleUser(ctx context.Context) (*models.User, error) {
 }
 
 // createSingleUserIfNeeded creates the initial single user.
-func (s *Service) createSingleUserIfNeeded(ctx context.Context) (*models.User, error) {
+func (s *Service) createSingleUserIfNeeded(ctx context.Context, pw string) (*models.User, error) {
 	if !s.singleUserMode {
 		return nil, fmt.Errorf("single user mode is not enabled")
 	}
@@ -238,7 +259,15 @@ func (s *Service) createSingleUserIfNeeded(ctx context.Context) (*models.User, e
 		UpdatedAt: time.Now(),
 	}
 
-	if err := s.Store.Create(ctx, &u, ""); err != nil {
+	var hashedPassword string
+	if pw != "" {
+		hashedPassword, err = hashPassword(pw)
+		if err != nil {
+			return nil, fmt.Errorf("error hashing password: %w", err)
+		}
+	}
+
+	if err := s.Store.Create(ctx, &u, hashedPassword); err != nil {
 		return nil, fmt.Errorf("error creating admin user: %w", err)
 	}
 
