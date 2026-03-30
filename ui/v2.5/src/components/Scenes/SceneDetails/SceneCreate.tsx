@@ -91,6 +91,8 @@ const SceneCreate: React.FC = () => {
           isVisible
           isNew
           onSubmit={onSave}
+          savedFileGains={{}}
+          onSaveFileGains={async () => undefined}
         />
       </div>
     </div>

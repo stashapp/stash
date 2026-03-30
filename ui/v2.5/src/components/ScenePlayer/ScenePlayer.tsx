@@ -224,6 +224,7 @@ interface IScenePlayerProps {
   autoplay?: boolean;
   permitLoop?: boolean;
   initialTimestamp: number;
+  primaryFileGain: number;
   sendSetTimestamp: (setTimestamp: (value: number) => void) => void;
   onComplete: () => void;
   onNext: () => void;
@@ -238,6 +239,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     autoplay,
     permitLoop = true,
     initialTimestamp: _initialTimestamp,
+    primaryFileGain,
     sendSetTimestamp,
     onComplete,
     onNext,
@@ -249,6 +251,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
     const sceneId = useRef<string>();
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const audioSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+    const gainNodeRef = useRef<GainNode | null>(null);
+    const audioSetupFailedRef = useRef(false);
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
     const [updateInterfaceConfig] = useConfigureInterface();
@@ -299,6 +305,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (_player.isDisposed()) return null;
       return _player;
     }, [_player]);
+
+    const applyPrimaryFileGain = useCallback(() => {
+      const gainNode = gainNodeRef.current;
+      if (!gainNode) {
+        return;
+      }
+
+      gainNode.gain.value = Math.min(6, Math.max(0, primaryFileGain / 100));
+    }, [primaryFileGain]);
 
     useEffect(() => {
       if (hideScrubberOverride || fullscreen) {
@@ -435,6 +450,25 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         videoEl.remove();
         setPlayer(undefined);
 
+        try {
+          gainNodeRef.current?.disconnect();
+          audioSourceRef.current?.disconnect();
+        } catch {
+          // Ignore audio graph cleanup errors during player teardown.
+        }
+
+        if (
+          audioContextRef.current &&
+          audioContextRef.current.state !== "closed"
+        ) {
+          audioContextRef.current.close().catch(() => undefined);
+        }
+
+        gainNodeRef.current = null;
+        audioSourceRef.current = null;
+        audioContextRef.current = null;
+        audioSetupFailedRef.current = false;
+
         // reset sceneId to force reload sources
         sceneId.current = undefined;
       };
@@ -444,6 +478,82 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // player re-initialization when toggling autostart (which would interrupt playback)
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player || audioSetupFailedRef.current || gainNodeRef.current) {
+        return;
+      }
+
+      function initializeAudioGraph() {
+        if (audioSetupFailedRef.current || gainNodeRef.current) {
+          return;
+        }
+
+        const playerElement = player?.el();
+        const mediaElement = playerElement?.querySelector("video, audio");
+        const AudioContextConstructor = window.AudioContext;
+
+        if (
+          !(mediaElement instanceof HTMLMediaElement) ||
+          !AudioContextConstructor
+        ) {
+          return;
+        }
+
+        try {
+          const audioContext = new AudioContextConstructor();
+          const audioSource =
+            audioContext.createMediaElementSource(mediaElement);
+          const gainNode = audioContext.createGain();
+
+          audioSource.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          audioContextRef.current = audioContext;
+          audioSourceRef.current = audioSource;
+          gainNodeRef.current = gainNode;
+
+          applyPrimaryFileGain();
+          audioContext.resume().catch(() => undefined);
+        } catch {
+          audioSetupFailedRef.current = true;
+        }
+      }
+
+      initializeAudioGraph();
+      player.on("loadstart", initializeAudioGraph);
+
+      return () => {
+        player.off("loadstart", initializeAudioGraph);
+      };
+    }, [applyPrimaryFileGain, getPlayer, scene.id]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) {
+        return;
+      }
+
+      function resumeAudioContext() {
+        const audioContext = audioContextRef.current;
+        if (audioContext && audioContext.state === "suspended") {
+          audioContext.resume().catch(() => undefined);
+        }
+      }
+
+      player.on("play", resumeAudioContext);
+      player.on("playing", resumeAudioContext);
+
+      return () => {
+        player.off("play", resumeAudioContext);
+        player.off("playing", resumeAudioContext);
+      };
+    }, [getPlayer]);
+
+    useEffect(() => {
+      applyPrimaryFileGain();
+    }, [applyPrimaryFileGain, scene.id]);
 
     useEffect(() => {
       const player = getPlayer();

@@ -8,6 +8,8 @@ import {
   Row,
   ButtonGroup,
   SplitButton,
+  Accordion,
+  Card,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -55,6 +57,16 @@ import {
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
 import { cloneDeep } from "@apollo/client/utilities";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import TextUtils from "src/utils/text";
+import {
+  DEFAULT_SCENE_FILE_GAIN,
+  MAX_SCENE_FILE_GAIN,
+  MIN_SCENE_FILE_GAIN,
+  SceneFileGainMap,
+  clampSceneFileGain,
+  normalizeSceneFileGains,
+} from "./sceneFileGains";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -65,6 +77,8 @@ interface IProps {
   isNew?: boolean;
   isVisible: boolean;
   onSubmit: (input: GQL.SceneCreateInput, andNew?: boolean) => Promise<void>;
+  savedFileGains: SceneFileGainMap;
+  onSaveFileGains: (fileGains: SceneFileGainMap) => Promise<void>;
   onDelete?: () => void;
 }
 
@@ -74,6 +88,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   isNew = false,
   isVisible,
   onSubmit,
+  savedFileGains,
+  onSaveFileGains,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -95,6 +111,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
   const [endpoint, setEndpoint] = useState<string>();
+  const sceneFiles = useMemo(() => scene.files ?? [], [scene.files]);
+  const [draftFileGains, setDraftFileGains] = useState<SceneFileGainMap>(
+    normalizeSceneFileGains(sceneFiles, savedFileGains)
+  );
 
   useEffect(() => {
     setGalleries(
@@ -118,6 +138,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setStudio(scene.studio ?? null);
   }, [scene.studio]);
+
+  useEffect(() => {
+    setDraftFileGains(normalizeSceneFileGains(sceneFiles, savedFileGains));
+  }, [savedFileGains, scene.id, sceneFiles]);
 
   const { configuration: stashConfig } = useConfigurationContext();
 
@@ -218,6 +242,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       .filter((m) => m.group !== undefined) as IGroupEntry[];
   }, [formik.values.groups, groups]);
 
+  const hasDirtyFileGains = !isEqual(
+    draftFileGains,
+    normalizeSceneFileGains(sceneFiles, savedFileGains)
+  );
+  const hasDirtyChanges = formik.dirty || hasDirtyFileGains;
+
   function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
     formik.setFieldValue(
@@ -242,7 +272,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        if (formik.dirty) {
+        if (hasDirtyChanges) {
           formik.submitForm();
         }
       });
@@ -293,11 +323,33 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("groups", newGroups);
   }
 
+  function showSceneUpdatedToast() {
+    Toast.success(
+      intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+      )
+    );
+  }
+
   async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input, andNew);
-      formik.resetForm();
+      const nextFileGains = normalizeSceneFileGains(sceneFiles, draftFileGains);
+
+      if (formik.dirty) {
+        await onSubmit(input, andNew);
+        formik.resetForm();
+      }
+
+      if (hasDirtyFileGains) {
+        await onSaveFileGains(nextFileGains);
+        setDraftFileGains(nextFileGains);
+
+        if (!formik.dirty) {
+          showSceneUpdatedToast();
+        }
+      }
     } catch (e) {
       Toast.error(e);
     }
@@ -748,10 +800,86 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderInputField("details", "textarea", "details", props);
   }
 
+  function onSetFileGain(fileID: string, value: number) {
+    setDraftFileGains((previousFileGains) => ({
+      ...previousFileGains,
+      [fileID]: clampSceneFileGain(value),
+    }));
+  }
+
+  function renderFileGainControl(file: GQL.VideoFileDataFragment) {
+    const gain = draftFileGains[file.id] ?? DEFAULT_SCENE_FILE_GAIN;
+
+    return (
+      <Form.Group className="mb-0">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <Form.Label className="mb-0">
+              <FormattedMessage id="scene_file_volume_gain" />
+            </Form.Label>
+            <Form.Text className="text-muted mt-1">
+              <FormattedMessage id="scene_file_gain_browser_note" />
+            </Form.Text>
+          </div>
+          <div className="d-flex align-items-center">
+            <span>{`${gain}%`}</span>
+            <Button
+              variant="link"
+              className="p-0 ml-3"
+              onClick={() => onSetFileGain(file.id, DEFAULT_SCENE_FILE_GAIN)}
+              disabled={gain === DEFAULT_SCENE_FILE_GAIN}
+            >
+              <FormattedMessage id="scene_file_gain_reset" />
+            </Button>
+          </div>
+        </div>
+        <Form.Control
+          type="range"
+          min={MIN_SCENE_FILE_GAIN}
+          max={MAX_SCENE_FILE_GAIN}
+          step={1}
+          value={gain}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            onSetFileGain(
+              file.id,
+              Number.parseInt(event.currentTarget.value, 10)
+            )
+          }
+        />
+      </Form.Group>
+    );
+  }
+
+  function renderFilesSection() {
+    if (isNew || sceneFiles.length === 0) {
+      return;
+    }
+
+    const filesPanel =
+      sceneFiles.length === 1 ? (
+        renderFileGainControl(sceneFiles[0])
+      ) : (
+        <Accordion defaultActiveKey={sceneFiles[0].id}>
+          {sceneFiles.map((file) => (
+            <Card key={file.id} className="scene-file-card">
+              <Accordion.Toggle as={Card.Header} eventKey={file.id}>
+                <TruncatedText text={TextUtils.fileNameFromPath(file.path)} />
+              </Accordion.Toggle>
+              <Accordion.Collapse eventKey={file.id}>
+                <Card.Body>{renderFileGainControl(file)}</Card.Body>
+              </Accordion.Collapse>
+            </Card>
+          ))}
+        </Accordion>
+      );
+
+    return <Form.Group className="mb-3">{filesPanel}</Form.Group>;
+  }
+
   return (
     <div id="scene-edit-details">
       <Prompt
-        when={formik.dirty}
+        when={hasDirtyChanges}
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
@@ -794,7 +922,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 className="edit-button"
                 variant="primary"
                 disabled={
-                  (!isNew && !formik.dirty) ||
+                  (!isNew && !hasDirtyChanges) ||
                   !isEqual(formik.errors, {}) ||
                   customFieldsError !== undefined
                 }
@@ -834,6 +962,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
               </ButtonGroup>
             </div>
           )}
+        </Row>
+        <Row className="form-container px-3">
+          <Col xl={12}>{renderFilesSection()}</Col>
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>

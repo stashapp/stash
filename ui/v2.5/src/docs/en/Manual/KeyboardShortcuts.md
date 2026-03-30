@@ -104,7 +104,7 @@
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `s s` | Save Scene |
+| `s s` | Save scene changes, including local file volume gain overrides |
 | `d d` | Delete Scene |
 | `Ctrl + v` | Paste Scene cover |
 

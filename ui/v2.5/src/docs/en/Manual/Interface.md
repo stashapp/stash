@@ -29,6 +29,14 @@ By default, scene videos do not automatically start when navigating to the scene
 
 The maximum loop duration option allows looping of shorter videos. Set this value to the maximum scene duration that scene videos should loop. Setting this to 0 disables this functionality.
 
+### Per-file volume gain
+
+On the Scene Edit tab, each attached scene file can have its own `Volume gain` slider.
+
+These gain overrides are saved in the current browser's local storage only. They are not stored in the database and are not shared across browsers or browser profiles.
+
+During playback, the saved gain is applied only to the scene's current primary file. This gain is multiplied on top of the normal player volume and mute controls.
+
 ### Activity tracking
 
 The "Track Activity" option allows tracking of scene play count and duration, and sets the resume point when a scene video is not finished.

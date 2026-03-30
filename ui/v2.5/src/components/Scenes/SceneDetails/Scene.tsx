@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
   useLayoutEffect,
+  useCallback,
 } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, RouteComponentProps } from "react-router-dom";
@@ -57,6 +58,14 @@ import { SceneMergeModal } from "../SceneMergeDialog";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
 import { StudioLogo } from "src/components/Shared/StudioLogo";
+import {
+  DEFAULT_SCENE_FILE_GAIN,
+  SceneFileGainMap,
+  getSceneFileGainStorageId,
+  loadSceneFileGains,
+  normalizeSceneFileGains,
+  saveSceneFileGains,
+} from "./sceneFileGains";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -154,6 +163,8 @@ interface IProps {
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
   setContinuePlaylist: (value: boolean) => void;
+  savedFileGains: SceneFileGainMap;
+  saveFileGains: (fileGains: SceneFileGainMap) => Promise<void>;
 }
 
 interface ISceneParams {
@@ -183,6 +194,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     collapsed,
     setCollapsed,
     setContinuePlaylist,
+    savedFileGains,
+    saveFileGains,
   } = props;
 
   const Toast = useToast();
@@ -641,6 +654,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onSubmit={onSave}
+              savedFileGains={savedFileGains}
+              onSaveFileGains={saveFileGains}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -759,6 +774,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
+  const [savedFileGains, setSavedFileGains] = useState<SceneFileGainMap>({});
 
   // useLayoutEffect to update before paint
   useLayoutEffect(() => {
@@ -767,6 +783,66 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       setScene(data?.findScene ?? undefined);
     }
   }, [data, loading]);
+
+  const sceneFileGainKey = useMemo(
+    () =>
+      scene?.files.map((file) => getSceneFileGainStorageId(file)).join("|") ??
+      "",
+    [scene]
+  );
+
+  useEffect(() => {
+    if (!scene) {
+      setSavedFileGains({});
+      return;
+    }
+
+    const defaultFileGains = normalizeSceneFileGains(scene.files);
+    setSavedFileGains(defaultFileGains);
+
+    let ignore = false;
+
+    loadSceneFileGains(scene.files)
+      .then((loadedFileGains) => {
+        if (!ignore) {
+          setSavedFileGains(loadedFileGains);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setSavedFileGains(defaultFileGains);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [scene, sceneFileGainKey]);
+
+  const saveFileGains = useCallback(
+    async (nextFileGains: SceneFileGainMap) => {
+      if (!scene) {
+        return;
+      }
+
+      const persistedFileGains = await saveSceneFileGains(
+        scene.files,
+        nextFileGains
+      );
+
+      setSavedFileGains(persistedFileGains);
+    },
+    [scene]
+  );
+
+  const primaryFileGain = useMemo(() => {
+    const primaryFileId = scene?.files[0]?.id;
+    if (!primaryFileId) {
+      return DEFAULT_SCENE_FILE_GAIN;
+    }
+
+    return savedFileGains[primaryFileId] ?? DEFAULT_SCENE_FILE_GAIN;
+  }, [savedFileGains, scene]);
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -1029,6 +1105,8 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         setContinuePlaylist={setContinuePlaylist}
+        savedFileGains={savedFileGains}
+        saveFileGains={saveFileGains}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
@@ -1042,6 +1120,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
           onComplete={onComplete}
           onNext={() => queueNext(true)}
           onPrevious={() => queuePrevious(true)}
+          primaryFileGain={primaryFileGain}
         />
       </div>
     </div>
