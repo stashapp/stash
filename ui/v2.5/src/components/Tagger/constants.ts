@@ -1,13 +1,7 @@
-import {
-  FingerprintVote,
-  GenderEnum,
-  ScraperSourceInput,
-} from "src/core/generated-graphql";
+import { GenderEnum, ScraperSourceInput } from "src/core/generated-graphql";
 
 export const STASH_BOX_PREFIX = "stashbox:";
 export const SCRAPER_PREFIX = "scraper:";
-
-export { FingerprintVote };
 
 export interface ITaggerSource {
   id: string;

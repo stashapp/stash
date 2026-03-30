@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
-  FingerprintVote,
   initialConfig,
   ITaggerConfig,
 } from "src/components/Tagger/constants";
@@ -296,6 +295,23 @@ export const TaggerContext: React.FC = ({ children }) => {
     if (!endpoint) return;
 
     try {
+      // If queueing an INVALID vote, first remove any existing submission for this stash ID
+      if (vote === GQL.FingerprintVote.Invalid) {
+        const existingSubmission = pendingFingerprints.find(
+          (fp) => fp.stashId === stashBoxSceneId
+        );
+        if (existingSubmission) {
+          await removeFingerprintMutation({
+            variables: {
+              input: {
+                endpoint,
+                stash_id: stashBoxSceneId,
+              },
+            },
+          });
+        }
+      }
+
       await queueFingerprintMutation({
         variables: {
           input: {
@@ -307,7 +323,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         },
       });
 
-      refetchPending();
+      await refetchPending();
     } catch (err) {
       Toast.error(err);
     }
@@ -326,7 +342,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         },
       });
 
-      refetchPending();
+      await refetchPending();
     } catch (err) {
       Toast.error(err);
     }

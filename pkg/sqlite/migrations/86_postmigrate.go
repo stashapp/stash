@@ -71,6 +71,8 @@ func (m *schema86Migrator) migrateFingerprintQueue(ctx context.Context) error {
 	}
 
 	// Migrate each endpoint's queue to the database
+	// Legacy format: fingerprintQueue[endpoint] = ["sceneId1", "sceneId2", ...]
+	// We need to look up the stash-box scene ID from scene_stash_ids table
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 		for endpoint, queueData := range fingerprintQueue {
 			queue, ok := queueData.([]any)
@@ -80,30 +82,39 @@ func (m *schema86Migrator) migrateFingerprintQueue(ctx context.Context) error {
 			}
 
 			for _, entryData := range queue {
-				entry, ok := entryData.(map[string]any)
+				// Legacy format: entries are just scene ID strings
+				sceneID, ok := entryData.(string)
 				if !ok {
-					logger.Warnf("fingerprintQueue entry is not an object, skipping")
+					// Try parsing as float64 (JSON numbers)
+					if f, ok := entryData.(float64); ok {
+						sceneID = fmt.Sprintf("%d", int(f))
+					} else {
+						logger.Warnf("fingerprintQueue entry is not a string or number, skipping: %T", entryData)
+						continue
+					}
+				}
+
+				if sceneID == "" {
+					logger.Warnf("fingerprintQueue entry is empty, skipping")
 					continue
 				}
 
-				sceneID, _ := entry["sceneId"].(string)
-				stashBoxSceneID, _ := entry["stashBoxSceneId"].(string)
-				vote, _ := entry["vote"].(string)
-
-				if sceneID == "" || stashBoxSceneID == "" {
-					logger.Warnf("fingerprintQueue entry missing sceneId or stashBoxSceneId, skipping")
+				// Look up the stash-box scene ID from scene_stash_ids
+				var stashBoxSceneID string
+				err := tx.QueryRow(`
+					SELECT stash_id FROM scene_stash_ids
+					WHERE scene_id = ? AND endpoint = ?
+				`, sceneID, endpoint).Scan(&stashBoxSceneID)
+				if err != nil {
+					logger.Warnf("Could not find stash_id for scene %s endpoint %s, skipping: %v", sceneID, endpoint, err)
 					continue
-				}
-
-				if vote == "" {
-					vote = "VALID"
 				}
 
 				// Insert into the new table, ignore conflicts (entry already exists)
-				_, err := tx.Exec(`
+				_, err = tx.Exec(`
 					INSERT OR IGNORE INTO fingerprint_submissions (endpoint, stash_id, scene_id, vote)
 					VALUES (?, ?, ?, ?)
-				`, endpoint, stashBoxSceneID, sceneID, vote)
+				`, endpoint, stashBoxSceneID, sceneID, "VALID")
 				if err != nil {
 					return fmt.Errorf("inserting fingerprint submission: %w", err)
 				}
