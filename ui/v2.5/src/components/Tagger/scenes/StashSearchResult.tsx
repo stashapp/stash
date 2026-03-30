@@ -10,6 +10,7 @@ import {
   faLink,
   faPlus,
   faTriangleExclamation,
+  faUndo,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -177,6 +178,27 @@ function matchChecksums(
   return matches;
 }
 
+const hasUserReportedFingerprint = (
+  scene: IScrapedScene,
+  stashScene: GQL.SlimSceneDataFragment
+): boolean => {
+  const checksumMatches = matchChecksums(stashScene, scene.fingerprints ?? []);
+
+  const allPhashes = stashScene.files.reduce(
+    (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
+      return [...pv, ...cv.fingerprints.filter((f) => f.type === "phash")];
+    },
+    []
+  );
+
+  const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
+
+  return (
+    checksumMatches.some((m) => m.userReported) ||
+    phashMatches.some((m) => m.userReported)
+  );
+};
+
 const getFingerprintStatus = (
   scene: IScrapedScene,
   stashScene: GQL.SlimSceneDataFragment
@@ -262,7 +284,7 @@ const getFingerprintStatus = (
       )}
       {checksumMatches.length > 0 && (
         <div className="font-weight-bold">
-          <SuccessIcon className="mr-2" />
+          <SuccessIcon className="SceneTaggerIcon" />
           <FormattedMessage
             id="component_tagger.results.hash_matches"
             values={{
@@ -272,7 +294,7 @@ const getFingerprintStatus = (
         </div>
       )}
       {hasReports && (
-        <div className="text-warning font-weight-bold">
+        <div className="text-danger font-weight-bold">
           <Icon className="SceneTaggerIcon" icon={faTriangleExclamation} />
           <FormattedMessage
             id="component_tagger.results.fp_reported"
@@ -281,7 +303,7 @@ const getFingerprintStatus = (
         </div>
       )}
       {hasUserSubmitted && (
-        <div className="text-success">
+        <div className="font-weight-bold">
           <SuccessIcon className="SceneTaggerIcon" />
           <FormattedMessage id="component_tagger.results.fp_submitted" />
         </div>
@@ -295,6 +317,7 @@ interface IStashSearchResultProps {
   stashScene: GQL.SlimSceneDataFragment;
   index: number;
   isActive: boolean;
+  onMarkWrong?: () => void;
 }
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
@@ -302,6 +325,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   stashScene,
   index,
   isActive,
+  onMarkWrong,
 }) => {
   const intl = useIntl();
 
@@ -318,7 +342,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     currentSource,
     saveScene,
     queueFingerprintSubmission,
-    isMarkedWrong,
+    removeFingerprintSubmission,
+    isReported,
   } = React.useContext(TaggerStateContext);
 
   const performerGenders = config.performerGenders || genderList;
@@ -516,11 +541,19 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   async function handleMarkWrong() {
     if (!scene.remote_site_id) return;
     await queueFingerprintSubmission(stashScene.id, scene.remote_site_id, GQL.FingerprintVote.Invalid);
+    onMarkWrong?.();
   }
 
-  const markedWrong = scene.remote_site_id
-    ? isMarkedWrong(stashScene.id, scene.remote_site_id)
+  async function handleRemoveReport() {
+    if (!scene.remote_site_id) return;
+    await removeFingerprintSubmission(scene.remote_site_id);
+  }
+
+  const isReportedWrong = scene.remote_site_id
+    ? isReported(stashScene.id, scene.remote_site_id)
     : false;
+
+  const alreadyReported = hasUserReportedFingerprint(scene, stashScene);
 
   function showPerformerModal(t: GQL.ScrapedPerformer) {
     createPerformerModal(t, (toCreate) => {
@@ -909,7 +942,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   return (
     <>
-      <div className={cx(isActive ? "col-lg-6" : "", { "marked-wrong": markedWrong })}>
+      <div className={cx(isActive ? "col-lg-6" : "", { "marked-wrong": isReportedWrong })}>
         <div className="row mx-0">
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
@@ -919,7 +952,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               <>
                 {renderStudioDate()}
                 {renderPerformerList()}
-                {markedWrong && (
+                {isReportedWrong && (
                   <Badge variant="danger" className="mt-1">
                     <FormattedMessage id="component_tagger.marked_wrong" />
                   </Badge>
@@ -949,16 +982,32 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">
-            {scene.remote_site_id && (
+            {scene.remote_site_id && !isReportedWrong && (
               <OperationButton
                 className="mr-2"
                 operation={handleMarkWrong}
                 variant="outline-danger"
-                disabled={markedWrong}
+                disabled={alreadyReported}
               >
                 <Icon icon={faXmark} />
                 <span className="ml-1">
-                  <FormattedMessage id="component_tagger.wrong_match" />
+                  {alreadyReported ? (
+                    <FormattedMessage id="component_tagger.marked_wrong" />
+                  ) : (
+                    <FormattedMessage id="component_tagger.report_match" />
+                  )}
+                </span>
+              </OperationButton>
+            )}
+            {scene.remote_site_id && isReportedWrong && (
+              <OperationButton
+                className="mr-2"
+                operation={handleRemoveReport}
+                variant="danger"
+              >
+                <Icon icon={faUndo} />
+                <span className="ml-1">
+                  <FormattedMessage id="component_tagger.undo_report" />
                 </span>
               </OperationButton>
             )}
@@ -968,16 +1017,16 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           </div>
         </div>
       )}
-      {!isActive && scene.remote_site_id && !markedWrong && (
+      {!isActive && scene.remote_site_id && isReportedWrong && (
         <div className="col-lg-6">
             <div className="ml-auto d-flex align-items-center">
               <OperationButton
-                operation={handleMarkWrong}
-                variant="outline-danger"
+                operation={handleRemoveReport}
+                variant="danger"
                 size="sm"
-                title={intl.formatMessage({ id: "component_tagger.wrong_match" })}
+                title={intl.formatMessage({ id: "component_tagger.undo_report" })}
               >
-                <Icon icon={faXmark} />
+                <Icon icon={faUndo} />
               </OperationButton>
             </div>
         </div>
@@ -1039,6 +1088,9 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
             isActive={i === selectedResult}
             scene={s}
             stashScene={target}
+            onMarkWrong={
+              i === selectedResult ? () => setSelectedResult(undefined) : undefined
+            }
           />
         </li>
       ))}
