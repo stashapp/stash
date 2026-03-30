@@ -390,7 +390,9 @@ export const MainNavbar: React.FC = () => {
 
         <Navbar.Brand as="div" onClick={handleDismiss}>
           <Link to="/">
-            <Button className="minimal brand-link d-inline-block">{title}</Button>
+            <Button className="minimal brand-link d-inline-block">
+              {title}
+            </Button>
           </Link>
         </Navbar.Brand>
 
