@@ -184,6 +184,7 @@ export const MainNavbar: React.FC = () => {
   const location = useLocation();
   const { configuration } = useConfigurationContext();
   const { openManual } = React.useContext(ManualStateContext);
+  const title = configuration?.ui?.title ?? "Stash";
 
   const [expanded, setExpanded] = useState(false);
 
@@ -389,7 +390,7 @@ export const MainNavbar: React.FC = () => {
 
         <Navbar.Brand as="div" onClick={handleDismiss}>
           <Link to="/">
-            <Button className="minimal brand-link d-inline-block">Stash</Button>
+            <Button className="minimal brand-link d-inline-block">{title}</Button>
           </Link>
         </Navbar.Brand>
 
