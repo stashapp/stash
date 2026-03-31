@@ -160,8 +160,7 @@ function matchChecksums(
     const isMatch = stashScene.files.some((ff) =>
       ff.fingerprints.some(
         (fp) =>
-          fp.value === f.hash &&
-          (fp.type === "oshash" || fp.type === "md5")
+          fp.value === f.hash && (fp.type === "oshash" || fp.type === "md5")
       )
     );
 
@@ -535,12 +534,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       delete sceneCreateInput.stash_ids;
     }
 
-    await saveScene(sceneCreateInput, includeStashID, scene.remote_site_id ?? undefined);
+    await saveScene(
+      sceneCreateInput,
+      includeStashID,
+      scene.remote_site_id ?? undefined
+    );
   }
 
   async function handleReportWrong() {
     if (!scene.remote_site_id) return;
-    await queueFingerprintSubmission(stashScene.id, scene.remote_site_id, GQL.FingerprintVote.Invalid);
+    await queueFingerprintSubmission(
+      stashScene.id,
+      scene.remote_site_id,
+      GQL.FingerprintVote.Invalid
+    );
     onReportWrong?.();
   }
 
@@ -942,7 +949,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   return (
     <>
-      <div className={cx(isActive ? "col-lg-6" : "", { "marked-wrong": isReportedWrong })}>
+      <div
+        className={cx(isActive ? "col-lg-6" : "", {
+          "marked-wrong": isReportedWrong,
+        })}
+      >
         <div className="row mx-0">
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
@@ -1075,7 +1086,9 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
             scene={s}
             stashScene={target}
             onReportWrong={
-              i === selectedResult ? () => setSelectedResult(undefined) : undefined
+              i === selectedResult
+                ? () => setSelectedResult(undefined)
+                : undefined
             }
           />
         </li>

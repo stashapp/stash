@@ -248,7 +248,9 @@ type Query {
   validateStashBoxCredentials(input: StashBoxInput!): StashBoxValidationResult!
 
   "List pending fingerprint submissions for a stash-box endpoint"
-  pendingFingerprintSubmissions(stash_box_endpoint: String!): [FingerprintSubmission!]!
+  pendingFingerprintSubmissions(
+    stash_box_endpoint: String!
+  ): [FingerprintSubmission!]!
 
   # System status
   systemStatus: SystemStatus!

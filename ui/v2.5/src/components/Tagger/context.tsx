@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import {
-  initialConfig,
-  ITaggerConfig,
-} from "src/components/Tagger/constants";
+import { initialConfig, ITaggerConfig } from "src/components/Tagger/constants";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindPerformer,
@@ -86,9 +83,7 @@ export interface ITaggerContextState {
     stashBoxSceneId: string,
     vote: GQL.FingerprintVote
   ) => Promise<void>;
-  removeFingerprintSubmission: (
-    stashBoxSceneId: string
-  ) => Promise<void>;
+  removeFingerprintSubmission: (stashBoxSceneId: string) => Promise<void>;
   isReported: (sceneId: string, remoteSceneId: string) => boolean;
 }
 
@@ -160,9 +155,12 @@ export const TaggerContext: React.FC = ({ children }) => {
   const [updateTag] = useTagUpdate();
 
   // Fingerprint submission mutations and query
-  const [queueFingerprintMutation] = GQL.useQueueFingerprintSubmissionMutation();
-  const [removeFingerprintMutation] = GQL.useRemoveFingerprintSubmissionMutation();
-  const [submitFingerprintsMutation] = GQL.useSubmitFingerprintSubmissionsMutation();
+  const [queueFingerprintMutation] =
+    GQL.useQueueFingerprintSubmissionMutation();
+  const [removeFingerprintMutation] =
+    GQL.useRemoveFingerprintSubmissionMutation();
+  const [submitFingerprintsMutation] =
+    GQL.useSubmitFingerprintSubmissionsMutation();
 
   useEffect(() => {
     if (!stashConfig || !Scrapers.data) {
@@ -244,10 +242,11 @@ export const TaggerContext: React.FC = ({ children }) => {
 
   // Query pending fingerprint submissions from the backend
   const endpoint = currentSource?.sourceInput.stash_box_endpoint;
-  const { data: pendingData, refetch: refetchPending } = GQL.usePendingFingerprintSubmissionsQuery({
-    variables: { stash_box_endpoint: endpoint ?? "" },
-    skip: !endpoint,
-  });
+  const { data: pendingData, refetch: refetchPending } =
+    GQL.usePendingFingerprintSubmissionsQuery({
+      variables: { stash_box_endpoint: endpoint ?? "" },
+      skip: !endpoint,
+    });
 
   const pendingFingerprints = useMemo((): IPendingSubmission[] => {
     if (!pendingData?.pendingFingerprintSubmissions) return [];
@@ -562,7 +561,11 @@ export const TaggerContext: React.FC = ({ children }) => {
       });
 
       if (queueFingerprint && stashBoxSceneId) {
-        await queueFingerprintSubmission(sceneCreateInput.id, stashBoxSceneId, GQL.FingerprintVote.Valid);
+        await queueFingerprintSubmission(
+          sceneCreateInput.id,
+          stashBoxSceneId,
+          GQL.FingerprintVote.Valid
+        );
       }
       clearSearchResults(sceneCreateInput.id);
     } catch (err) {
