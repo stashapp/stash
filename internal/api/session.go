@@ -103,10 +103,11 @@ func getLoginLocale(lang string) ([]byte, error) {
 	return data, nil
 }
 
-func handleLogin(s manager.UserService) http.HandlerFunc {
+func handleLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
+		s := manager.GetInstance().UserService
 		loginRequired, err := s.LoginRequired(r.Context())
 		if err != nil {
 			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
@@ -180,13 +181,14 @@ func handleLoginPost(s *session.Store, cfg authenticationConfig) http.HandlerFun
 	}
 }
 
-func handleLogout(s manager.UserService) http.HandlerFunc {
+func handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := manager.GetInstance().SessionStore.Logout(w, r); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		s := manager.GetInstance().UserService
 		loginRequired, err := s.LoginRequired(r.Context())
 		if err != nil {
 			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)

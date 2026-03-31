@@ -107,11 +107,12 @@ type authenticationConfig interface {
 	PublicIPWhitelistGetter
 }
 
-func authenticateHandler(txnMgr models.TxnManager, g UserAuthenticator, cfg authenticationConfig) func(http.Handler) http.Handler {
+func authenticateHandler(txnMgr models.TxnManager, cfg authenticationConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
+			g := manager.GetInstance().UserService
 			singleUserMode := g.IsSingleUserMode()
 			publicAccess := cfg.GetPublicAccess()
 

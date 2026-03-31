@@ -28,6 +28,7 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/user"
+	"github.com/stashapp/stash/pkg/utils"
 
 	// register custom migrations
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
@@ -69,6 +70,8 @@ type Manager struct {
 	GalleryService GalleryService
 	GroupService   GroupService
 	UserService    UserService
+
+	UserServiceObservers utils.Observer[UserService]
 
 	scanSubs *subscriptionManager
 }
@@ -352,6 +355,10 @@ func (s *Manager) PostMigrate(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
+
+	s.UserServiceObservers.Notify(s.UserService)
+	s.SessionStore.RegisterAuthenticator(s.UserService)
+
 	return nil
 }
 

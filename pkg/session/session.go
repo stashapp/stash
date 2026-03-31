@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/sessions"
@@ -58,10 +59,13 @@ type TxnReader interface {
 }
 
 type Store struct {
-	sessionStore  *sessions.CookieStore
+	sessionStore *sessions.CookieStore
+
+	authMutex     sync.RWMutex
 	authenticator Authenticator
-	txnReader     TxnReader
-	config        SessionConfig
+
+	txnReader TxnReader
+	config    SessionConfig
 }
 
 func NewStore(c SessionConfig, a Authenticator, txnReader TxnReader) *Store {
@@ -82,6 +86,18 @@ func GetUsernameFromForm(r *http.Request) string {
 	return r.FormValue(usernameFormKey)
 }
 
+func (s *Store) RegisterAuthenticator(a Authenticator) {
+	s.authMutex.Lock()
+	defer s.authMutex.Unlock()
+	s.authenticator = a
+}
+
+func (s *Store) getAuthenticator() Authenticator {
+	s.authMutex.RLock()
+	defer s.authMutex.RUnlock()
+	return s.authenticator
+}
+
 func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	// ignore error - we want a new session regardless
 	newSession, _ := s.sessionStore.Get(r, cookieName)
@@ -91,7 +107,7 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 
 	// authenticate the user
 	if err := s.txnReader.WithReadTxn(r.Context(), func(ctx context.Context) error {
-		return s.authenticator.ValidateCredentials(ctx, username, password)
+		return s.getAuthenticator().ValidateCredentials(ctx, username, password)
 	}); err != nil {
 		return &InvalidCredentialsError{Username: username}
 	}

@@ -123,12 +123,10 @@ func Initialize() (*Server, error) {
 		manager:        mgr,
 	}
 
-	userService := mgr.UserService
-
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
 	r.Use(RequestIPMiddleware)
-	r.Use(authenticateHandler(mgr.Repository.TxnManager, userService, cfg))
+	r.Use(authenticateHandler(mgr.Repository.TxnManager, cfg))
 	visitedPluginHandler := mgr.SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
 
@@ -167,6 +165,8 @@ func Initialize() (*Server, error) {
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
 	groupService := mgr.GroupService
+	userService := mgr.UserService
+
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
@@ -176,6 +176,11 @@ func Initialize() (*Server, error) {
 		userService:    userService,
 		hookExecutor:   pluginCache,
 	}
+
+	// observe user service changes as we need to update resolvers
+	mgr.UserServiceObservers.Subscribe(func(userService manager.UserService) {
+		resolver.userService = userService
+	})
 
 	gqlCfg := Config{
 		Resolvers: resolver,
@@ -243,9 +248,9 @@ func Initialize() (*Server, error) {
 
 	sessionStore := mgr.SessionStore
 
-	r.Get(loginEndpoint, handleLogin(userService))
+	r.Get(loginEndpoint, handleLogin())
 	r.Post(loginEndpoint, handleLoginPost(sessionStore, cfg))
-	r.Get(logoutEndpoint, handleLogout(userService))
+	r.Get(logoutEndpoint, handleLogout())
 	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndpoint)

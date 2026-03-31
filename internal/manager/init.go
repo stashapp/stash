@@ -300,6 +300,10 @@ func (s *Manager) postInit(ctx context.Context) error {
 			Username:     s.Config.GetLegacyUsername(),
 			PasswordHash: s.Config.GetLegacyPasswordHash(),
 		}
+
+		// need to also set the session store to use the legacy user service
+		s.SessionStore.RegisterAuthenticator(s.UserService)
+
 		logger.Warn("User table not yet in database, using legacy user service loading user credentials from config file.")
 	}
 

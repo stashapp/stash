@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
@@ -115,6 +116,10 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 	// reinitialise the database
 	if err := database.ReInitialise(); err != nil {
 		return fmt.Errorf("error reinitialising database: %s", err)
+	}
+
+	if err := manager.GetInstance().PostMigrate(ctx); err != nil {
+		return fmt.Errorf("error performing post-migrate tasks: %s", err)
 	}
 
 	logger.Infof("Database migration complete")

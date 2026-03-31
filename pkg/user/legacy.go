@@ -58,7 +58,7 @@ func (s *LegacyService) Init(ctx context.Context) error {
 }
 
 func (s *LegacyService) IsSingleUserMode() bool {
-	return s.Username != "" && s.PasswordHash != ""
+	return s.Username == "" || s.PasswordHash == ""
 }
 
 func (s *LegacyService) LoginRequired(ctx context.Context) (bool, error) {
