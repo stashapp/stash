@@ -57,29 +57,29 @@ declare module "@blaineam/videojs-vr" {
     // options are taken verbaitum from the README
     interface Options {
       // Projection mode
-      projection?: ProjectionType = "AUTO"; // see ProjectionType
-      sphereDetails?: number = 32; // Sphere mesh detail (higher = smoother)
+      projection?: ProjectionType; // see ProjectionType
+      sphereDetails?: number; // Sphere mesh detail (higher = smoother)
 
       // VR HUD options
-      enableVRHud?: boolean = true; // Enable in-VR controls
-      enableVRGallery?: boolean = true; // Enable in-VR video gallery
-      showHUDOnStart?: boolean = true; // Show HUD when entering VR
-      hudAutoHideDelay?: number = 5000; // Auto-hide HUD after ms (0 to disable)
-      hudDistance?: number = 1.5; // Distance of HUD from viewer
-      hudHeight?: number = 1.5; // Height of HUD
-      hudScale?: number = 0.015; // Scale of HUD elements
+      enableVRHud?: boolean; // Enable in-VR controls
+      enableVRGallery?: boolean; // Enable in-VR video gallery
+      showHUDOnStart?: boolean; // Show HUD when entering VR
+      hudAutoHideDelay?: number; // Auto-hide HUD after ms (0 to disable)
+      hudDistance?: number; // Distance of HUD from viewer
+      hudHeight?: number; // Height of HUD
+      hudScale?: number; // Scale of HUD elements
 
       // Behavior options
-      forceCardboard?: boolean = false; // Force cardboard button on all devices
-      motionControls?: boolean = true; // Enable gyroscope/device orientation
-      disableTogglePlay?: boolean = false; // Disable click-to-play
+      forceCardboard?: boolean; // Force cardboard button on all devices
+      motionControls?: boolean; // Enable gyroscope/device orientation
+      disableTogglePlay?: boolean; // Disable click-to-play
 
       // Spatial audio (requires Omnitone library)
-      omnitone?: Object = null; // Pass Omnitone library object
-      omnitoneOptions?: Record<string, unknown> = {}; // Omnitone configuration
+      omnitone?: Object; // Pass Omnitone library object
+      omnitoneOptions?: Record<string, unknown>; // Omnitone configuration
 
       // Media gallery items
-      mediaItems?: mediaItems = []; // Array of media items for gallery
+      mediaItems?: mediaItems; // Array of media items for gallery
     }
 
     interface PlayerMediaInfo {
