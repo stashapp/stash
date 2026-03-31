@@ -26,13 +26,12 @@ func TestFingerprintSubmissionCreate(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Verify it was created
-		found, err := db.FingerprintSubmission.Find(ctx, submission.Endpoint, submission.StashID)
+		found, err := db.FingerprintSubmission.FindByEndpoint(ctx, submission.Endpoint)
 		assert.NoError(t, err)
-		assert.NotNil(t, found)
-		assert.Equal(t, submission.Endpoint, found.Endpoint)
-		assert.Equal(t, submission.StashID, found.StashID)
-		assert.Equal(t, submission.SceneID, found.SceneID)
-		assert.Equal(t, submission.Vote, found.Vote)
+		assert.Len(t, found, 1)
+		assert.Equal(t, submission.StashID, found[0].StashID)
+		assert.Equal(t, submission.SceneID, found[0].SceneID)
+		assert.Equal(t, submission.Vote, found[0].Vote)
 
 		return nil
 	})
@@ -64,20 +63,10 @@ func TestFingerprintSubmissionCreateDuplicate(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Original should still exist unchanged
-		found, err := db.FingerprintSubmission.Find(ctx, submission.Endpoint, submission.StashID)
+		found, err := db.FingerprintSubmission.FindByEndpoint(ctx, submission.Endpoint)
 		assert.NoError(t, err)
-		assert.Equal(t, models.FingerprintVoteValid, found.Vote)
-
-		return nil
-	})
-}
-
-func TestFingerprintSubmissionFind(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		// Find non-existent
-		found, err := db.FingerprintSubmission.Find(ctx, "non-existent", "non-existent")
-		assert.NoError(t, err)
-		assert.Nil(t, found)
+		assert.Len(t, found, 1)
+		assert.Equal(t, models.FingerprintVoteValid, found[0].Vote)
 
 		return nil
 	})
@@ -138,9 +127,9 @@ func TestFingerprintSubmissionDelete(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Verify it's gone
-		found, err := db.FingerprintSubmission.Find(ctx, submission.Endpoint, submission.StashID)
+		found, err := db.FingerprintSubmission.FindByEndpoint(ctx, submission.Endpoint)
 		assert.NoError(t, err)
-		assert.Nil(t, found)
+		assert.Len(t, found, 0)
 
 		return nil
 	})

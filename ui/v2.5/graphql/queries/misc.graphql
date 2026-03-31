@@ -47,8 +47,8 @@ query LatestVersion {
   }
 }
 
-query PendingFingerprintSubmissions($endpoint: String!) {
-  pendingFingerprintSubmissions(endpoint: $endpoint) {
+query PendingFingerprintSubmissions($stash_box_endpoint: String!) {
+  pendingFingerprintSubmissions(stash_box_endpoint: $stash_box_endpoint) {
     endpoint
     stash_id
     scene {

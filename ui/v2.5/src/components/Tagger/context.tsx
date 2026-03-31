@@ -245,7 +245,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   // Query pending fingerprint submissions from the backend
   const endpoint = currentSource?.sourceInput.stash_box_endpoint;
   const { data: pendingData, refetch: refetchPending } = GQL.usePendingFingerprintSubmissionsQuery({
-    variables: { endpoint: endpoint ?? "" },
+    variables: { stash_box_endpoint: endpoint ?? "" },
     skip: !endpoint,
   });
 
@@ -275,7 +275,7 @@ export const TaggerContext: React.FC = ({ children }) => {
       setLoading(true);
       await submitFingerprintsMutation({
         variables: {
-          endpoint,
+          stash_box_endpoint: endpoint,
         },
       });
 

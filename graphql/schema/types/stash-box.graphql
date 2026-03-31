@@ -31,7 +31,7 @@ enum FingerprintVote {
 }
 
 input FingerprintSubmissionInput {
-  scene_id: String!
+  scene_id: ID!
   stash_box_scene_id: String!
   stash_box_endpoint: String!
   vote: FingerprintVote!

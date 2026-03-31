@@ -34,7 +34,6 @@ type FingerprintSubmission struct {
 
 type FingerprintSubmissionReader interface {
 	FindByEndpoint(ctx context.Context, endpoint string) ([]*FingerprintSubmission, error)
-	Find(ctx context.Context, endpoint string, stashID string) (*FingerprintSubmission, error)
 }
 
 type FingerprintSubmissionWriter interface {

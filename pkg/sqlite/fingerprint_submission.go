@@ -2,8 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -18,8 +16,7 @@ const (
 
 var (
 	fingerprintSubmissionsTableMgr = &table{
-		table:    goqu.T(fingerprintSubmissionsTable),
-		idColumn: goqu.T(fingerprintSubmissionsTable).Col("endpoint"), // not a real ID column, but needed for table struct
+		table: goqu.T(fingerprintSubmissionsTable),
 	}
 )
 
@@ -100,38 +97,12 @@ func (qb *FingerprintSubmissionStore) DeleteByEndpoint(ctx context.Context, endp
 	return nil
 }
 
-func (qb *FingerprintSubmissionStore) Find(ctx context.Context, endpoint string, stashID string) (*models.FingerprintSubmission, error) {
-	q := qb.selectDataset().Where(
-		qb.table().Col("endpoint").Eq(endpoint),
-		qb.table().Col("stash_id").Eq(stashID),
-	)
-
-	ret, err := qb.get(ctx, q)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	return ret, err
-}
-
 func (qb *FingerprintSubmissionStore) FindByEndpoint(ctx context.Context, endpoint string) ([]*models.FingerprintSubmission, error) {
 	q := qb.selectDataset().Where(
 		qb.table().Col("endpoint").Eq(endpoint),
 	).Order(qb.table().Col("created_at").Asc())
 
 	return qb.getMany(ctx, q)
-}
-
-func (qb *FingerprintSubmissionStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.FingerprintSubmission, error) {
-	ret, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ret) == 0 {
-		return nil, sql.ErrNoRows
-	}
-
-	return ret[0], nil
 }
 
 func (qb *FingerprintSubmissionStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.FingerprintSubmission, error) {

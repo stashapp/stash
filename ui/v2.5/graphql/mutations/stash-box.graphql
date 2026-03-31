@@ -32,6 +32,6 @@ mutation RemoveFingerprintSubmission($input: RemoveFingerprintInput!) {
   removeFingerprintSubmission(input: $input)
 }
 
-mutation SubmitFingerprintSubmissions($endpoint: String!) {
-  submitFingerprintSubmissions(endpoint: $endpoint)
+mutation SubmitFingerprintSubmissions($stash_box_endpoint: String!) {
+  submitFingerprintSubmissions(stash_box_endpoint: $stash_box_endpoint)
 }

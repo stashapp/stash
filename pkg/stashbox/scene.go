@@ -460,16 +460,8 @@ func (c Client) submitFingerprints(ctx context.Context, fingerprints []graphql.F
 	return true, nil
 }
 
-// FingerprintVote represents the vote type for a fingerprint submission
-type FingerprintVote string
-
-const (
-	FingerprintVoteValid   FingerprintVote = "VALID"
-	FingerprintVoteInvalid FingerprintVote = "INVALID"
-)
-
 // SubmitFingerprintsWithVote submits fingerprints for a scene with an explicit stash-box scene ID and vote
-func (c Client) SubmitFingerprintsWithVote(ctx context.Context, scene *models.Scene, stashBoxSceneID string, vote FingerprintVote) error {
+func (c Client) SubmitFingerprintsWithVote(ctx context.Context, scene *models.Scene, stashBoxSceneID string, vote models.FingerprintVote) error {
 	var fingerprints []graphql.FingerprintSubmission
 
 	for _, f := range scene.Files.List() {

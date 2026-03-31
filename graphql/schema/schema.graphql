@@ -248,7 +248,7 @@ type Query {
   validateStashBoxCredentials(input: StashBoxInput!): StashBoxValidationResult!
 
   "List pending fingerprint submissions for a stash-box endpoint"
-  pendingFingerprintSubmissions(endpoint: String!): [FingerprintSubmission!]!
+  pendingFingerprintSubmissions(stash_box_endpoint: String!): [FingerprintSubmission!]!
 
   # System status
   systemStatus: SystemStatus!
@@ -578,7 +578,7 @@ type Mutation {
   "Remove a fingerprint submission from the queue"
   removeFingerprintSubmission(input: RemoveFingerprintInput!): Boolean!
   "Submit all pending fingerprint submissions for a stash-box endpoint"
-  submitFingerprintSubmissions(endpoint: String!): Boolean!
+  submitFingerprintSubmissions(stash_box_endpoint: String!): Boolean!
 
   "Backup the database. Optionally returns a link to download the database file"
   backupDatabase(input: BackupDatabaseInput!): String
