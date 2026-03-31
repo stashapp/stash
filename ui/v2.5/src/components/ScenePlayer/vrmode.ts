@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
-import "videojs-vr";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import "@blaineam/videojs-vr";
 // separate type import, otherwise typescript elides the above import
 // and the plugin does not get initialized
-import type { ProjectionType, Plugin as VideoJsVRPlugin } from "videojs-vr";
+import type { ProjectionType, Plugin as VideoJsVRPlugin } from "@blaineam/videojs-vr";
 
 export interface VRMenuOptions {
   /**
