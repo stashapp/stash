@@ -259,7 +259,11 @@ func (s *Manager) postInit(ctx context.Context) error {
 		})
 	}
 
-	if err := s.Database.Open(s.Config.GetDatabasePath()); err != nil {
+	if err := s.Database.Open(ctx, s.Config.GetDatabasePath()); err != nil {
+		return err
+	}
+
+	if err := s.Database.Ready(); err != nil {
 		var migrationNeededErr *sqlite.MigrationNeededError
 		if errors.As(err, &migrationNeededErr) {
 			logger.Warn(err)
@@ -279,14 +283,24 @@ func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshFFMpeg(ctx)
 	s.RefreshStreamManager()
 
-	// initialise the user service - this will create the default user if in single user mode
-	if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		if err := s.UserService.Init(ctx); err != nil {
-			return fmt.Errorf("error initialising user service: %w", err)
+	// initialise the user service - only do this is the database schema is >= 86, which is when the user table was added
+	const minimumUserSchemaVersion = 86
+	if s.Database.Version() >= minimumUserSchemaVersion {
+		if err := s.Repository.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+			if err := s.UserService.Init(ctx); err != nil {
+				return fmt.Errorf("error initialising user service: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return err
 		}
-		return nil
-	}); err != nil {
-		return err
+	} else {
+		// user table does not exist, use the legacy config based service
+		s.UserService = &user.LegacyService{
+			Username:     s.Config.GetLegacyUsername(),
+			PasswordHash: s.Config.GetLegacyPasswordHash(),
+		}
+		logger.Warn("User table not yet in database, using legacy user service loading user credentials from config file.")
 	}
 
 	return nil

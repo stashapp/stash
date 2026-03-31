@@ -62,7 +62,7 @@ func (r *userRow) resolve() *models.User {
 type userUpdateRow struct {
 	ID        int         `db:"id" goqu:"skipinsert"`
 	Username  string      `db:"username"`
-	ApiKey    null.String `db:"api_key"`
+	APIKey    zero.String `db:"api_key"`
 	CreatedAt Timestamp   `db:"created_at"`
 	UpdatedAt Timestamp   `db:"updated_at"`
 	Notes     string      `db:"notes"`
@@ -199,7 +199,7 @@ func (qb *UserStore) GetPasswordHash(ctx context.Context, id int) (string, error
 	t := qb.table()
 	q := dialect.Select(t.Col("password_hash")).From(t).Where(t.Col("id").Eq(id))
 
-	var passwordHash string
+	var passwordHash zero.String
 	if err := queryFunc(ctx, q, true, func(r *sqlx.Rows) error {
 		if err := r.Scan(&passwordHash); err != nil {
 			return err
@@ -209,7 +209,7 @@ func (qb *UserStore) GetPasswordHash(ctx context.Context, id int) (string, error
 		return "", fmt.Errorf("getting password hash: %w", err)
 	}
 
-	return passwordHash, nil
+	return passwordHash.String, nil
 }
 
 func (qb *UserStore) SetUserPassword(ctx context.Context, id int, newPassword string) error {
@@ -219,7 +219,7 @@ func (qb *UserStore) SetUserPassword(ctx context.Context, id int, newPassword st
 	updatedAt := time.Now()
 	q := dialect.Update(t).Prepared(true).Set(
 		goqu.Record{
-			"password_hash": null.StringFrom(newPassword),
+			"password_hash": zero.StringFrom(newPassword),
 			"updated_at":    Timestamp{Timestamp: updatedAt},
 		},
 	).Where(t.Col("id").Eq(id))
@@ -234,7 +234,7 @@ func (qb *UserStore) SetUserPassword(ctx context.Context, id int, newPassword st
 func (qb *UserStore) SetUserAPIKey(ctx context.Context, id int, newAPIKey string) error {
 	t := qb.table()
 	q := dialect.Update(t).Prepared(true).Set(
-		goqu.Record{"api_key": null.StringFrom(newAPIKey)},
+		goqu.Record{"api_key": zero.StringFrom(newAPIKey)},
 	).Where(t.Col("id").Eq(id))
 
 	if _, err := exec(ctx, q); err != nil {

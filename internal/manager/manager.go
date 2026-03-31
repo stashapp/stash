@@ -27,6 +27,7 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/user"
 
 	// register custom migrations
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
@@ -302,15 +303,17 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		return fmt.Errorf("error writing configuration file: %v", err)
 	}
 
+	newCtx := models.WithSetupContext(ctx)
+
 	// finish initialization
-	if err := s.postInit(ctx); err != nil {
+	if err := s.postInit(newCtx); err != nil {
 		return fmt.Errorf("error completing initialization: %v", err)
 	}
 
 	cfg.FinalizeSetup()
 
 	if input.InitialUsername != "" {
-		if err := s.Repository.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := s.Repository.TxnManager.WithTxn(newCtx, func(ctx context.Context) error {
 			u := models.User{
 				Username:  input.InitialUsername,
 				Roles:     []models.RoleEnum{models.RoleEnumAdmin},
@@ -331,6 +334,24 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 	}
 
+	return nil
+}
+
+func (s *Manager) PostMigrate(ctx context.Context) error {
+	// reinitialise the user service as it may be using the legacy service
+	s.UserService = &user.Service{
+		Store:  s.Database.User,
+		Config: s.Config,
+	}
+
+	if err := s.Repository.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		if err := s.UserService.Init(ctx); err != nil {
+			return fmt.Errorf("error initialising user service: %w", err)
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 

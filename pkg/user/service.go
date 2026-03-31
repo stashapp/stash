@@ -270,6 +270,23 @@ func (s *Service) UnlockUser(ctx context.Context, username string) error {
 
 func checkHash(password, hash string) (bool, error) {
 	ret, _, err := argon2id.CheckHash(password, hash)
+
+	// handle legacy bcrypt hashes
+	if errors.Is(err, argon2id.ErrInvalidHash) {
+		lhash, err2 := decodeLegacyHash(hash)
+		if err2 != nil {
+			// return the original error if we fail to decode the legacy hash since it means the hash is invalid
+			return false, err
+		}
+
+		ret, err = checkLegacyHash(password, lhash)
+
+		if ret {
+			// successfully validated legacy hash, log a warning that the password should be updated to use the new hashing algorithm
+			logger.Warnf("User with legacy bcrypt password hash successfully authenticated. Please update password to use new hashing algorithm")
+		}
+	}
+
 	return ret, err
 }
 
@@ -424,6 +441,60 @@ func hashPassword(password string) (string, error) {
 		return "", err
 	}
 	return hash, nil
+}
+
+// CreateUserFromConfig creates the initial user from the configuration if it does not already exist.
+// There must not be any existing users in the system since this is meant to be used for initial user
+// creation on first startup migrating from the old config-based user system.
+func (s *Service) CreateUserFromConfig(ctx context.Context, username, password, apiKey string) error {
+	count, err := s.Store.Count(ctx)
+	if err != nil {
+		return fmt.Errorf("error counting users: %w", err)
+	}
+
+	if count != 0 {
+		return ErrUsersExist
+	}
+
+	// validate input
+	// ensure username is valid
+	if err := s.validateUsername(username); err != nil {
+		return err
+	}
+
+	// validate password
+	if err := s.validatePassword(password); err != nil {
+		return err
+	}
+
+	encodedPW, err := EncodeLegacyHash(password)
+	if err != nil {
+		return fmt.Errorf("error encoding legacy password hash: %w", err)
+	}
+
+	now := time.Now()
+
+	u := models.User{
+		Username:  username,
+		Roles:     []models.RoleEnum{models.RoleEnumAdmin},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if err := s.Store.Create(ctx, &u, encodedPW); err != nil {
+		return fmt.Errorf("error creating user from config: %w", err)
+	}
+
+	hashedAPIKey, err := HashAPIKey(apiKey)
+	if err != nil {
+		return fmt.Errorf("error hashing api key: %w", err)
+	}
+
+	if err := s.Store.SetUserAPIKey(ctx, u.ID, hashedAPIKey); err != nil {
+		return fmt.Errorf("error updating user with new api key: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Service) CreateUser(ctx context.Context, u models.User, password string) error {
@@ -736,7 +807,8 @@ func (s *Service) ResetUserPassword(ctx context.Context, username string) (strin
 // 	return nil
 // }
 
-func hashAPIKey(apiKey string) (string, error) {
+// HashAPIKey hashes the API key using a fast hashing algorithm (SHA-256).
+func HashAPIKey(apiKey string) (string, error) {
 	// use faster SHA-256 hashing for API keys
 	// https://cybersierra.co/blog/bcrypt-performance-issues-api/
 
@@ -771,7 +843,7 @@ func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, 
 	}
 
 	// hash the api key and store it
-	hashedAPIKey, err := hashAPIKey(newAPIKey)
+	hashedAPIKey, err := HashAPIKey(newAPIKey)
 	if err != nil {
 		return "", fmt.Errorf("error hashing api key: %w", err)
 	}

@@ -39,6 +39,9 @@ func (db *Database) Begin(ctx context.Context, writable bool) (context.Context, 
 
 	dbtx := db.readDB
 	if writable {
+		if err := db.Ready(); err != nil {
+			return nil, fmt.Errorf("database not ready: %w", err)
+		}
 		dbtx = db.writeDB
 	}
 

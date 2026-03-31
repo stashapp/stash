@@ -39,7 +39,10 @@ const (
 	Metadata            = "metadata"
 	BlobsPath           = "blobs_path"
 	Downloads           = "downloads"
-	ApiKey              = "api_key"
+
+	LegacyAPIKey   = "api_key"
+	LegacyUsername = "username"
+	LegacyPassword = "password"
 
 	PublicAccess        = "public_access"
 	publicAccessDefault = false
@@ -1242,6 +1245,18 @@ func (i *Config) IsWriteImageThumbnails() bool {
 
 func (i *Config) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
+}
+
+func (i *Config) GetLegacyAPIKey() string {
+	return i.getString(LegacyAPIKey)
+}
+
+func (i *Config) GetLegacyUsername() string {
+	return i.getString(LegacyUsername)
+}
+
+func (i *Config) GetLegacyPasswordHash() string {
+	return i.getString(LegacyPassword)
 }
 
 func stashBoxValidate(str string) bool {
