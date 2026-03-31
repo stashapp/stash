@@ -18,17 +18,17 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       '@formatjs/intl-getcanonicallocales':
-        specifier: ^2.0.5
-        version: 2.5.6
+        specifier: ^3.2.2
+        version: 3.2.2
       '@formatjs/intl-locale':
-        specifier: ^3.0.11
-        version: 3.4.6
+        specifier: ^5.3.1
+        version: 5.3.1
       '@formatjs/intl-numberformat':
-        specifier: ^8.3.3
+        specifier: ^8.15.6
         version: 8.15.6
       '@formatjs/intl-pluralrules':
-        specifier: ^5.1.8
-        version: 5.4.6
+        specifier: ^6.3.1
+        version: 6.3.1
       '@fortawesome/fontawesome-svg-core':
         specifier: ^7.2.0
         version: 7.2.0
@@ -214,7 +214,7 @@ importers:
         specifier: ^4.17.12
         version: 4.17.12
       '@types/mousetrap':
-        specifier: ^1.6.11
+        specifier: ^1.6.15
         version: 1.6.15
       '@types/node':
         specifier: ^20.19.37
@@ -241,7 +241,7 @@ importers:
         specifier: ^0.183.1
         version: 0.183.1
       '@types/ua-parser-js':
-        specifier: ^0.7.36
+        specifier: ^0.7.39
         version: 0.7.39
       '@types/video.js':
         specifier: ^7.3.58
@@ -986,8 +986,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@formatjs/ecma402-abstract@1.18.3':
-    resolution: {integrity: sha512-J961RbhyjHWeCIv+iOceNxpoZ/qomJOs5lH+rUJCeKNa59gME4KC0LJVMeWODjHsnv/hTH8Hvd6sevzcAzjuaQ==}
+  '@formatjs/bigdecimal@0.2.0':
+    resolution: {integrity: sha512-GeaxHZbUoYvHL9tC5eltHLs+1zU70aPw0s7LwqgktIzF5oMhNY4o4deEtusJMsq7WFJF3Ye2zQEzdG8beVk73w==}
 
   '@formatjs/ecma402-abstract@1.4.0':
     resolution: {integrity: sha512-Mv027hcLFjE45K8UJ8PjRpdDGfR0aManEFj1KzoN8zXNveHGEygpZGfFf/FTTMl+QEVSrPAUlyxaCApvmv47AQ==}
@@ -1001,11 +1001,17 @@ packages:
   '@formatjs/ecma402-abstract@2.3.6':
     resolution: {integrity: sha512-HJnTFeRM2kVFVr5gr5kH1XP6K0JcJtE7Lzvtr3FS/so5f1kpsqqqxy5JF+FRaO6H2qmcMfAUIox7AJteieRtVw==}
 
+  '@formatjs/ecma402-abstract@3.2.0':
+    resolution: {integrity: sha512-dHnqHgBo6GXYGRsepaE1wmsC2etaivOWd5VaJstZd+HI2zR3DCUjbDVZRtoPGkkXZmyHvBwrdEUuqfvzhF/DtQ==}
+
   '@formatjs/fast-memoize@2.2.3':
     resolution: {integrity: sha512-3jeJ+HyOfu8osl3GNSL4vVHUuWFXR03Iz9jjgI7RwjG6ysu/Ymdr0JRCPHfF5yGbTE6JCrd63EpvX1/WybYRbA==}
 
   '@formatjs/fast-memoize@2.2.7':
     resolution: {integrity: sha512-Yabmi9nSvyOMrlSeGGWDiH7rf3a7sIwplbvo/dlz9WCIjzIQAfy1RMf4S0X3yG724n5Ghu2GmEl5NJIV6O9sZQ==}
+
+  '@formatjs/fast-memoize@3.1.1':
+    resolution: {integrity: sha512-CbNbf+tlJn1baRnPkNePnBqTLxGliG6DDgNa/UtV66abwIjwsliPMOt0172tzxABYzSuxZBZfcp//qI8AvBWPg==}
 
   '@formatjs/icu-messageformat-parser@2.9.4':
     resolution: {integrity: sha512-Tbvp5a9IWuxUcpWNIW6GlMQYEc4rwNHR259uUFoKWNN1jM9obf9Ul0e+7r7MvFOBNcN+13K7NuKCKqQiAn1QEg==}
@@ -1016,24 +1022,14 @@ packages:
   '@formatjs/intl-displaynames@6.8.5':
     resolution: {integrity: sha512-85b+GdAKCsleS6cqVxf/Aw/uBd+20EM0wDpgaxzHo3RIR3bxF4xCJqH/Grbzx8CXurTgDDZHPdPdwJC+May41w==}
 
-  '@formatjs/intl-enumerator@1.4.6':
-    resolution: {integrity: sha512-O2YMcE3SuBy4jL8r6YNq/8hvFrQ92QGLawdmzFbOi8D1r3VOfEMr8ifnOMp3zt8XemfTLrma+aF6yRCVeEbVLw==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-
-  '@formatjs/intl-getcanonicallocales@2.3.0':
-    resolution: {integrity: sha512-BOXbLwqQ7nKua/l7tKqDLRN84WupDXFDhGJQMFvsMVA2dKuOdRaWTxWpL3cJ7qPkoNw11Jf+Xpj4OSPBBvW0eQ==}
-
-  '@formatjs/intl-getcanonicallocales@2.5.6':
-    resolution: {integrity: sha512-CnBbc4St61RL06gDXlCZG08Gt41uiySgsdZNBExh8/c0FBONJCrAlQ9FsyalUdq9ze0nCeknJtMmO8JnB9xHgQ==}
+  '@formatjs/intl-getcanonicallocales@3.2.2':
+    resolution: {integrity: sha512-pjF2zC26yXXLv9FlPes6zzOme9MwgqyeWYu8r5bP7qEdoDcaGsuQO3mk6pQb57t9bxdbIwrAhZFy0hH760SeWw==}
 
   '@formatjs/intl-listformat@7.7.5':
     resolution: {integrity: sha512-Wzes10SMNeYgnxYiKsda4rnHP3Q3II4XT2tZyOgnH5fWuHDtIkceuWlRQNsvrI3uiwP4hLqp2XdQTCsfkhXulg==}
 
-  '@formatjs/intl-locale@3.4.6':
-    resolution: {integrity: sha512-2TI0sBmIBhtM/BI/ePWuQhoqmMWveeKF4bUphs9YLHmFf4XmmlpWKzbPV8jR/fTK/KFidEuZsF+IgbOAL/OVGQ==}
-
-  '@formatjs/intl-localematcher@0.5.4':
-    resolution: {integrity: sha512-zTwEpWOzZ2CiKcB93BLngUX59hQkuZjT2+SAQEscSm52peDW/getsawMcWF1rGRpMCX6D7nSJA3CzJ8gn13N/g==}
+  '@formatjs/intl-locale@5.3.1':
+    resolution: {integrity: sha512-txs0HyscmgtmSzrQFzsrM6iYajsAuonoRtuackvAlmW9VX6H4FTL4TzEJoL/Qn6FFAXaQ+wxB5YqlNFR1PtlbQ==}
 
   '@formatjs/intl-localematcher@0.5.8':
     resolution: {integrity: sha512-I+WDNWWJFZie+jkfkiK5Mp4hEDyRSEvmyfYadflOno/mmKJKcB17fEpEH0oJu/OWhhCJ8kJBDz2YMd/6cDl7Mg==}
@@ -1041,14 +1037,20 @@ packages:
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
 
+  '@formatjs/intl-localematcher@0.8.2':
+    resolution: {integrity: sha512-q05KMYGJLyqFNFtIb8NhWLF5X3aK/k0wYt7dnRFuy6aLQL+vUwQ1cg5cO4qawEiINybeCPXAWlprY2mSBjSXAQ==}
+
   '@formatjs/intl-numberformat@5.7.6':
     resolution: {integrity: sha512-ZlZfYtvbVHYZY5OG3RXizoCwxKxEKOrzEe2YOw9wbzoxF3PmFn0SAgojCFGLyNXkkR6xVxlylhbuOPf1dkIVNg==}
 
   '@formatjs/intl-numberformat@8.15.6':
     resolution: {integrity: sha512-htynTNKm5WOnbR521tNSMkWzX3yO6Z77qjOxvRujh5/A/UBKeoNElyuKCJltizdx3X33QNWQZC4aWjLKcccyeQ==}
 
-  '@formatjs/intl-pluralrules@5.4.6':
-    resolution: {integrity: sha512-2HlOq+c7KsSps829SJ3B5987coX5mzKx9NbPcNwQ07eq8FBHgB3HfMoxt5HvLsdk4oQwCjAEnocbtd+wVwZ2Kg==}
+  '@formatjs/intl-pluralrules@6.3.1':
+    resolution: {integrity: sha512-2sn5PxsN1X0NfHlXSPfVZ5Kh5K0sMgdlgij9B5R2BZqSNbwW5eLtQ9V4xHSjwkiBauMFM75xyqt+MsVtptjwtA==}
+
+  '@formatjs/intl-supportedvaluesof@2.3.0':
+    resolution: {integrity: sha512-Fjw2ur3N+GrMLxjT6jLPCuAKFRNcWB1GDHB77pN8Lktx2z7MHJnlCA8q4NEZbJsDdVDsCeaesudHBe6el3khkg==}
 
   '@formatjs/intl@2.10.15':
     resolution: {integrity: sha512-i6+xVqT+6KCz7nBfk4ybMXmbKO36tKvbMKtgFz9KV+8idYFyFbfwKooYk8kGjyA5+T5f1kEPQM5IDLXucTAQ9g==}
@@ -5998,10 +6000,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@formatjs/ecma402-abstract@1.18.3':
-    dependencies:
-      '@formatjs/intl-localematcher': 0.5.4
-      tslib: 2.8.1
+  '@formatjs/bigdecimal@0.2.0': {}
 
   '@formatjs/ecma402-abstract@1.4.0':
     dependencies:
@@ -6024,6 +6023,12 @@ snapshots:
       decimal.js: 10.6.0
       tslib: 2.8.1
 
+  '@formatjs/ecma402-abstract@3.2.0':
+    dependencies:
+      '@formatjs/bigdecimal': 0.2.0
+      '@formatjs/fast-memoize': 3.1.1
+      '@formatjs/intl-localematcher': 0.8.2
+
   '@formatjs/fast-memoize@2.2.3':
     dependencies:
       tslib: 2.8.1
@@ -6031,6 +6036,8 @@ snapshots:
   '@formatjs/fast-memoize@2.2.7':
     dependencies:
       tslib: 2.8.1
+
+  '@formatjs/fast-memoize@3.1.1': {}
 
   '@formatjs/icu-messageformat-parser@2.9.4':
     dependencies:
@@ -6049,17 +6056,7 @@ snapshots:
       '@formatjs/intl-localematcher': 0.5.8
       tslib: 2.8.1
 
-  '@formatjs/intl-enumerator@1.4.6':
-    dependencies:
-      tslib: 2.8.1
-
-  '@formatjs/intl-getcanonicallocales@2.3.0':
-    dependencies:
-      tslib: 2.8.1
-
-  '@formatjs/intl-getcanonicallocales@2.5.6':
-    dependencies:
-      tslib: 2.8.1
+  '@formatjs/intl-getcanonicallocales@3.2.2': {}
 
   '@formatjs/intl-listformat@7.7.5':
     dependencies:
@@ -6067,16 +6064,11 @@ snapshots:
       '@formatjs/intl-localematcher': 0.5.8
       tslib: 2.8.1
 
-  '@formatjs/intl-locale@3.4.6':
+  '@formatjs/intl-locale@5.3.1':
     dependencies:
-      '@formatjs/ecma402-abstract': 1.18.3
-      '@formatjs/intl-enumerator': 1.4.6
-      '@formatjs/intl-getcanonicallocales': 2.3.0
-      tslib: 2.8.1
-
-  '@formatjs/intl-localematcher@0.5.4':
-    dependencies:
-      tslib: 2.8.1
+      '@formatjs/ecma402-abstract': 3.2.0
+      '@formatjs/intl-getcanonicallocales': 3.2.2
+      '@formatjs/intl-supportedvaluesof': 2.3.0
 
   '@formatjs/intl-localematcher@0.5.8':
     dependencies:
@@ -6085,6 +6077,10 @@ snapshots:
   '@formatjs/intl-localematcher@0.6.2':
     dependencies:
       tslib: 2.8.1
+
+  '@formatjs/intl-localematcher@0.8.2':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.1
 
   '@formatjs/intl-numberformat@5.7.6':
     dependencies:
@@ -6098,12 +6094,16 @@ snapshots:
       decimal.js: 10.6.0
       tslib: 2.8.1
 
-  '@formatjs/intl-pluralrules@5.4.6':
+  '@formatjs/intl-pluralrules@6.3.1':
     dependencies:
-      '@formatjs/ecma402-abstract': 2.3.6
-      '@formatjs/intl-localematcher': 0.6.2
-      decimal.js: 10.6.0
-      tslib: 2.8.1
+      '@formatjs/bigdecimal': 0.2.0
+      '@formatjs/ecma402-abstract': 3.2.0
+      '@formatjs/intl-localematcher': 0.8.2
+
+  '@formatjs/intl-supportedvaluesof@2.3.0':
+    dependencies:
+      '@formatjs/ecma402-abstract': 3.2.0
+      '@formatjs/fast-memoize': 3.1.1
 
   '@formatjs/intl@2.10.15(typescript@4.8.4)':
     dependencies:
@@ -6560,7 +6560,7 @@ snapshots:
   '@graphql-tools/optimize@2.0.0(graphql@16.11.0)':
     dependencies:
       graphql: 16.11.0
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   '@graphql-tools/prisma-loader@8.0.17(@types/node@20.19.37)(graphql@16.11.0)':
     dependencies:
@@ -6606,7 +6606,7 @@ snapshots:
       '@ardatan/relay-compiler': 12.0.3(graphql@16.11.0)
       '@graphql-tools/utils': 10.9.1(graphql@16.11.0)
       graphql: 16.11.0
-      tslib: 2.6.3
+      tslib: 2.8.1
     transitivePeerDependencies:
       - encoding
 
