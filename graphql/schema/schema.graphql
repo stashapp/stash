@@ -566,7 +566,7 @@ type Mutation {
   "Submit fingerprints to stash-box instance"
   submitStashBoxFingerprints(
     input: StashBoxFingerprintSubmissionInput!
-  ): Boolean!
+  ): Boolean! @deprecated(reason: "Use submitFingerprintSubmissions")
 
   "Submit scene as draft to stash-box instance"
   submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID

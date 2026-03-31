@@ -15,7 +15,7 @@ import (
 )
 
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
-	b, err := resolveStashBox(nil, input.StashBoxEndpoint)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint) //nolint:staticcheck
 	if err != nil {
 		return false, err
 	}

@@ -538,7 +538,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     await saveScene(sceneCreateInput, includeStashID, scene.remote_site_id ?? undefined);
   }
 
-  async function handleMarkWrong() {
+  async function handleReportWrong() {
     if (!scene.remote_site_id) return;
     await queueFingerprintSubmission(stashScene.id, scene.remote_site_id, GQL.FingerprintVote.Invalid);
     onReportWrong?.();
@@ -549,11 +549,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     await removeFingerprintSubmission(scene.remote_site_id);
   }
 
-  const isReportedWrong = scene.remote_site_id
+  const alreadyReported = hasUserReportedFingerprint(scene, stashScene);
+  const pendingReport = scene.remote_site_id
     ? isReported(stashScene.id, scene.remote_site_id)
     : false;
-
-  const alreadyReported = hasUserReportedFingerprint(scene, stashScene);
+  const isReportedWrong = alreadyReported || pendingReport;
 
   function showPerformerModal(t: GQL.ScrapedPerformer) {
     createPerformerModal(t, (toCreate) => {
@@ -985,8 +985,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             {scene.remote_site_id && !isReportedWrong && (
               <OperationButton
                 className="mr-2"
-                operation={handleMarkWrong}
-                variant="outline-danger"
+                operation={handleReportWrong}
+                variant="danger"
                 disabled={alreadyReported}
               >
                 <Icon icon={faXmark} />
@@ -999,7 +999,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 </span>
               </OperationButton>
             )}
-            {scene.remote_site_id && isReportedWrong && (
+            {scene.remote_site_id && pendingReport && (
               <OperationButton
                 className="mr-2"
                 operation={handleRemoveReport}
@@ -1015,20 +1015,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               <FormattedMessage id="actions.save" />
             </OperationButton>
           </div>
-        </div>
-      )}
-      {!isActive && scene.remote_site_id && isReportedWrong && (
-        <div className="col-lg-6">
-            <div className="ml-auto d-flex align-items-center">
-              <OperationButton
-                operation={handleRemoveReport}
-                variant="danger"
-                size="sm"
-                title={intl.formatMessage({ id: "component_tagger.undo_report" })}
-              >
-                <Icon icon={faUndo} />
-              </OperationButton>
-            </div>
         </div>
       )}
     </>
