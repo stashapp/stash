@@ -402,7 +402,7 @@ fmt-ui-quick:
 	cd ui/v2.5 && \
 	files=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
 	if [ -n "$$files" ]; then \
-	  npm run prettier -- --write $$files; \
+	  npm run biome -- format --write $$files; \
 	fi
 
 # does not run tsc checks, as they are slow
@@ -411,9 +411,9 @@ validate-ui-quick:
 	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
 	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
 	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
-	if [ -n "$$tsfiles" ]; then npm run eslint -- $$tsfiles; fi && \
+	if [ -n "$$tsfiles" ]; then npm run biome -- check $$tsfiles; fi && \
 	if [ -n "$$scssfiles" ]; then npm run stylelint -- $$scssfiles; fi && \
-	if [ -n "$$prettyfiles" ]; then npm run prettier -- --check $$prettyfiles; fi
+	if [ -n "$$prettyfiles" ]; then npm run biome -- format --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
