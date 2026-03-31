@@ -12,6 +12,7 @@
     "plugin:import/recommended",
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
+    "plugin:deprecation/recommended",
     "airbnb/hooks",
     "prettier"
   ],
