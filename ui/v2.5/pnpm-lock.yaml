@@ -63,7 +63,7 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2(jquery@3.7.1)(popper.js@1.16.1)
       classnames:
-        specifier: ^2.3.2
+        specifier: ^2.5.1
         version: 2.5.1
       crypto-js:
         specifier: ^4.2.0
@@ -78,8 +78,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       formik:
-        specifier: ^2.4.5
-        version: 2.4.6(@types/react@17.0.89)(react@17.0.2)
+        specifier: ^2.4.9
+        version: 2.4.9(@types/react@17.0.89)(react@17.0.2)
       graphql:
         specifier: ^16.8.1
         version: 16.11.0
@@ -90,7 +90,7 @@ importers:
         specifier: ^5.14.3
         version: 5.16.2(graphql@16.11.0)
       i18n-iso-countries:
-        specifier: ^7.5.0
+        specifier: ^7.14.0
         version: 7.14.0
       localforage:
         specifier: ^1.10.0
@@ -3144,8 +3144,8 @@ packages:
     resolution: {integrity: sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==}
     engines: {node: '>=12.20.0'}
 
-  formik@2.4.6:
-    resolution: {integrity: sha512-A+2EI7U7aG296q2TLGvNapDNTZp1khVt5Vk0Q/fyfSROss0V/V6+txt2aJnwEos44IxTCW/LYAi/zgWzlevj+g==}
+  formik@2.4.9:
+    resolution: {integrity: sha512-5nI94BMnlFDdQRBY4Sz39WkhxajZJ57Fzs8wVbtsQlm5ScKIR1QLYqv/ultBnobObtlUyxpxoLodpixrsf36Og==}
     peerDependencies:
       react: '>=16.8.0'
 
@@ -8951,7 +8951,7 @@ snapshots:
     dependencies:
       fetch-blob: 3.2.0
 
-  formik@2.4.6(@types/react@17.0.89)(react@17.0.2):
+  formik@2.4.9(@types/react@17.0.89)(react@17.0.2):
     dependencies:
       '@types/hoist-non-react-statics': 3.3.7(@types/react@17.0.89)
       deepmerge: 2.2.1
