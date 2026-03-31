@@ -35,7 +35,7 @@ import {
   CustomFieldsInput,
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
-import { cloneDeep } from "@apollo/client/utilities";
+import cloneDeep from "lodash-es/cloneDeep";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
