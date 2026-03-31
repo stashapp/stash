@@ -85,18 +85,6 @@ func (qb *FingerprintSubmissionStore) Delete(ctx context.Context, endpoint strin
 	return nil
 }
 
-func (qb *FingerprintSubmissionStore) DeleteByEndpoint(ctx context.Context, endpoint string) error {
-	q := dialect.Delete(qb.table()).Where(
-		qb.table().Col("endpoint").Eq(endpoint),
-	)
-
-	if _, err := exec(ctx, q); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (qb *FingerprintSubmissionStore) FindByEndpoint(ctx context.Context, endpoint string) ([]*models.FingerprintSubmission, error) {
 	q := qb.selectDataset().Where(
 		qb.table().Col("endpoint").Eq(endpoint),

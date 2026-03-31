@@ -39,7 +39,6 @@ type FingerprintSubmissionReader interface {
 type FingerprintSubmissionWriter interface {
 	Create(ctx context.Context, newObject *FingerprintSubmission) error
 	Delete(ctx context.Context, endpoint string, stashID string) error
-	DeleteByEndpoint(ctx context.Context, endpoint string) error
 }
 
 type FingerprintSubmissionReaderWriter interface {
