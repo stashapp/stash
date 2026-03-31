@@ -1,4 +1,4 @@
-import UAParser from "ua-parser-js";
+import { UAParser } from 'ua-parser-js';
 
 export function isPlatformUniquelyRenderedByApple() {
   // OS name on iPads show up as iOS or Max OS depending on the browser.
