@@ -73,7 +73,7 @@
     "slick-carousel": "^1.8.1",
     "thehandy": "^1.1.0",
     "ua-parser-js": "^1.0.34",
-    "universal-cookie": "^4.0.4",
+    "universal-cookie": "^8.1.0",
     "video.js": "^7.21.3",
     "videojs-abloop": "^1.2.0",
     "videojs-contrib-dash": "^5.1.1",
