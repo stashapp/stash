@@ -43,7 +43,7 @@
     "classnames": "^2.5.1",
     "crypto-js": "^4.2.0",
     "event-target-polyfill": "^0.0.4",
-    "flag-icons": "^6.6.6",
+    "flag-icons": "^7.5.0",
     "flexbin": "^0.2.0",
     "formik": "^2.4.9",
     "graphql": "^16.8.1",
