@@ -52,7 +52,7 @@ declare module "@blaineam/videojs-vr" {
       x: number;
       y: number;
       z: number;
-    }
+    };
 
     // options are taken verbaitum from the README
     interface Options {
@@ -75,8 +75,8 @@ declare module "@blaineam/videojs-vr" {
       disableTogglePlay?: boolean = false; // Disable click-to-play
 
       // Spatial audio (requires Omnitone library)
-      omnitone?: Object = null, // Pass Omnitone library object
-      omnitoneOptions?: Record<string, unknown> = {}, // Omnitone configuration
+      omnitone?: Object = null; // Pass Omnitone library object
+      omnitoneOptions?: Record<string, unknown> = {}; // Omnitone configuration
 
       // Media gallery items
       mediaItems?: mediaItems = []; // Array of media items for gallery
@@ -96,7 +96,7 @@ declare module "@blaineam/videojs-vr" {
       reset(): void;
 
       // VR HUD
-      showHUD(): void;// Show the VR HUD
+      showHUD(): void; // Show the VR HUD
       hideHUD(): void; // Hide the VR HUD
       toggleHUD(): void; // Toggle HUD visibility
 
@@ -112,7 +112,7 @@ declare module "@blaineam/videojs-vr" {
 
       // Orientation
       setOrientationOffset(orientationOffset): void; // Tilt view
-      resetOrientationOffset(): void;// Reset to default orientation
+      resetOrientationOffset(): void; // Reset to default orientation
       recenter(): void; // Recenter VR view
 
       // Status
