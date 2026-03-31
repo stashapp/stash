@@ -239,6 +239,10 @@ func (r *mutationResolver) QueueFingerprintSubmission(ctx context.Context, input
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		// Remove any existing submission for this stash ID before creating a new one
+		if err := r.repository.FingerprintSubmission.Delete(ctx, input.Endpoint, input.StashID); err != nil {
+			return err
+		}
 		return r.repository.FingerprintSubmission.Create(ctx, submission)
 	}); err != nil {
 		return false, err

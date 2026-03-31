@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   initialConfig,
   ITaggerConfig,
@@ -27,7 +27,7 @@ import { errorToString } from "src/utils";
 import { mergeStudioStashIDs } from "./utils";
 import { useTaggerConfig } from "./config";
 
-interface PendingSubmission {
+interface IPendingSubmission {
   sceneId: string;
   stashId: string;
   vote: GQL.FingerprintVote;
@@ -75,7 +75,7 @@ export interface ITaggerContextState {
     scene: IScrapedScene
   ) => Promise<void>;
   submitFingerprints: () => Promise<void>;
-  pendingFingerprints: PendingSubmission[];
+  pendingFingerprints: IPendingSubmission[];
   saveScene: (
     sceneCreateInput: GQL.SceneUpdateInput,
     queueFingerprint: boolean,
@@ -249,7 +249,7 @@ export const TaggerContext: React.FC = ({ children }) => {
     skip: !endpoint,
   });
 
-  const pendingFingerprints = useMemo((): PendingSubmission[] => {
+  const pendingFingerprints = useMemo((): IPendingSubmission[] => {
     if (!pendingData?.pendingFingerprintSubmissions) return [];
 
     return pendingData.pendingFingerprintSubmissions.map((s) => ({
@@ -295,23 +295,6 @@ export const TaggerContext: React.FC = ({ children }) => {
     if (!endpoint) return;
 
     try {
-      // If queueing an INVALID vote, first remove any existing submission for this stash ID
-      if (vote === GQL.FingerprintVote.Invalid) {
-        const existingSubmission = pendingFingerprints.find(
-          (fp) => fp.stashId === stashBoxSceneId
-        );
-        if (existingSubmission) {
-          await removeFingerprintMutation({
-            variables: {
-              input: {
-                endpoint,
-                stash_id: stashBoxSceneId,
-              },
-            },
-          });
-        }
-      }
-
       await queueFingerprintMutation({
         variables: {
           input: {

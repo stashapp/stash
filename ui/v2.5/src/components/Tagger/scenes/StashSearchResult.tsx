@@ -99,7 +99,7 @@ const getDurationStatus = (
   );
 };
 
-interface PhashMatch {
+interface IPhashMatch {
   hash: string;
   distance: number;
   reports: number;
@@ -110,10 +110,10 @@ interface PhashMatch {
 function matchPhashes(
   scenePhashes: Pick<GQL.Fingerprint, "type" | "value">[],
   fingerprints: GQL.StashBoxFingerprint[]
-): PhashMatch[] {
+): IPhashMatch[] {
   const phashes = fingerprints.filter((f) => f.algorithm === "PHASH");
 
-  const matches: PhashMatch[] = [];
+  const matches: IPhashMatch[] = [];
   phashes.forEach((p) => {
     let bestMatch = -1;
     scenePhashes.forEach((fp) => {
@@ -141,7 +141,7 @@ function matchPhashes(
   return matches;
 }
 
-interface ChecksumMatch {
+interface IChecksumMatch {
   hash: string;
   reports: number;
   userSubmitted: boolean;
@@ -151,8 +151,8 @@ interface ChecksumMatch {
 function matchChecksums(
   stashScene: GQL.SlimSceneDataFragment,
   fingerprints: GQL.StashBoxFingerprint[]
-): ChecksumMatch[] {
-  const matches: ChecksumMatch[] = [];
+): IChecksumMatch[] {
+  const matches: IChecksumMatch[] = [];
 
   fingerprints.forEach((f) => {
     if (f.algorithm !== "OSHASH" && f.algorithm !== "MD5") return;
@@ -317,7 +317,7 @@ interface IStashSearchResultProps {
   stashScene: GQL.SlimSceneDataFragment;
   index: number;
   isActive: boolean;
-  onMarkWrong?: () => void;
+  onReportWrong?: () => void;
 }
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
@@ -325,7 +325,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   stashScene,
   index,
   isActive,
-  onMarkWrong,
+  onReportWrong,
 }) => {
   const intl = useIntl();
 
@@ -541,7 +541,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   async function handleMarkWrong() {
     if (!scene.remote_site_id) return;
     await queueFingerprintSubmission(stashScene.id, scene.remote_site_id, GQL.FingerprintVote.Invalid);
-    onMarkWrong?.();
+    onReportWrong?.();
   }
 
   async function handleRemoveReport() {
@@ -1088,7 +1088,7 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
             isActive={i === selectedResult}
             scene={s}
             stashScene={target}
-            onMarkWrong={
+            onReportWrong={
               i === selectedResult ? () => setSelectedResult(undefined) : undefined
             }
           />
