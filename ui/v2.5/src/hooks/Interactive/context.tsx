@@ -125,7 +125,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     if (!config?.serverOffset || shouldResync) {
       setState(ConnectionState.Syncing);
-      const offset = await interactive.sync();
+      const offset = interactive.sync();
       setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
     }
 
@@ -196,7 +196,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     }
 
     setState(ConnectionState.Syncing);
-    const offset = await interactive.sync();
+    const offset = interactive.sync();
     setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
     setState(ConnectionState.Ready);
   }, [interactive, state, setConfig, initialised]);
