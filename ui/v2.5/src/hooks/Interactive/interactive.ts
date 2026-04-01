@@ -75,7 +75,7 @@ export class Interactive {
 
   sync() {
     // only function that handles offset is updateConfig
-    return this._handyDevice.api.getServerTimeOffset()
+    return this._handyDevice.api.getServerTimeOffset();
   }
 
   async configure(config: Partial<IDeviceSettings>) {
