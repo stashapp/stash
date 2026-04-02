@@ -36,6 +36,10 @@ func post84(ctx context.Context, db *sqlx.DB) error {
 		return fmt.Errorf("fixing incorrect parent folders: %w", err)
 	}
 
+	if err := m.deduplicateFolders(ctx); err != nil {
+		return fmt.Errorf("deduplicating folders: %w", err)
+	}
+
 	if err := m.migrateFolders(ctx); err != nil {
 		return fmt.Errorf("migrating folders: %w", err)
 	}
@@ -304,6 +308,116 @@ func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []
 
 	if fixed > 0 {
 		logger.Infof("Fixed %d folders with incorrect parent assignments", fixed)
+	}
+
+	return nil
+}
+
+// deduplicateFolders finds folders that would have the same (parent_folder_id, basename) after
+// migrateFolders sets basename = filepath.Base(path), and merges the duplicates.
+// This can happen when the database contains entries for the same physical folder with different
+// path representations (e.g., mixed separators like "\data/movies" vs "\data\movies" on Windows).
+func (m *schema84Migrator) deduplicateFolders(ctx context.Context) error {
+	for {
+		n, err := m.deduplicateFoldersPass(ctx)
+		if err != nil {
+			return err
+		}
+		// repeat until no more duplicates are found, since merging child folders
+		// from a duplicate parent into the canonical parent may create new conflicts
+		if n == 0 {
+			break
+		}
+	}
+	return nil
+}
+
+func (m *schema84Migrator) deduplicateFoldersPass(ctx context.Context) (int, error) {
+	type folderRow struct {
+		ID             int    `db:"id"`
+		Path           string `db:"path"`
+		ParentFolderID int    `db:"parent_folder_id"`
+	}
+
+	var folders []folderRow
+	if err := m.db.SelectContext(ctx, &folders,
+		"SELECT id, path, parent_folder_id FROM folders WHERE parent_folder_id IS NOT NULL ORDER BY id"); err != nil {
+		return 0, fmt.Errorf("loading folders: %w", err)
+	}
+
+	// group by (parent_folder_id, computed basename)
+	type groupKey struct {
+		parentID int
+		basename string
+	}
+	groups := make(map[groupKey][]folderRow)
+	for _, f := range folders {
+		key := groupKey{
+			parentID: f.ParentFolderID,
+			basename: filepath.Base(f.Path),
+		}
+		groups[key] = append(groups[key], f)
+	}
+
+	deduped := 0
+	for _, group := range groups {
+		if len(group) <= 1 {
+			continue
+		}
+
+		if deduped == 0 {
+			logger.Info("Deduplicating folders with conflicting basenames...")
+		}
+
+		// prefer the folder whose path is already normalized for the current OS,
+		// falling back to the newest entry (highest ID) since it's most likely
+		// from the current filesystem
+		keep := group[len(group)-1]
+		for _, f := range group {
+			if f.Path == filepath.Clean(f.Path) {
+				keep = f
+				break
+			}
+		}
+
+		for _, dup := range group {
+			if dup.ID == keep.ID {
+				continue
+			}
+
+			logger.Infof("Merging duplicate folder %d %q into folder %d %q", dup.ID, dup.Path, keep.ID, keep.Path)
+
+			if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+				return m.mergeFolder(tx, keep.ID, dup.ID)
+			}); err != nil {
+				return 0, fmt.Errorf("merging folder %d into %d: %w", dup.ID, keep.ID, err)
+			}
+
+			deduped++
+		}
+	}
+
+	if deduped > 0 {
+		logger.Infof("Deduplicated %d folder entries", deduped)
+	}
+
+	return deduped, nil
+}
+
+func (m *schema84Migrator) mergeFolder(tx *sqlx.Tx, keepID, dupID int) error {
+	// Re-parent child folders from the duplicate to the canonical folder.
+	// At this point basenames are still full paths (unique), so this won't cause
+	// UNIQUE constraint violations on (parent_folder_id, basename).
+	if _, err := tx.Exec("UPDATE folders SET parent_folder_id = ? WHERE parent_folder_id = ?", keepID, dupID); err != nil {
+		return fmt.Errorf("re-parenting child folders: %w", err)
+	}
+
+	// Orphan the stale duplicate folder by clearing its parent so the UNIQUE
+	// constraint on (parent_folder_id, basename) won't be violated when
+	// migrateFolders sets basenames. Any stale file entries under it are left
+	// untouched — the clean task will handle them on the next scan.
+	if _, err := tx.Exec("UPDATE folders SET parent_folder_id = NULL WHERE id = ?", dupID); err != nil {
+		return fmt.Errorf("orphaning duplicate folder: %w", err)
 	}
 
 	return nil
