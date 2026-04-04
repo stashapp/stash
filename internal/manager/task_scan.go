@@ -81,6 +81,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	j.runJob(ctx, paths, nTasks, progress)
 
 	taskQueue.Close()
+	j.releaseScanResources()
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
@@ -129,6 +130,11 @@ func (j *ScanJob) runJob(ctx context.Context, paths []string, nTasks int, progre
 }
 
 const scanQueueSize = 200000
+
+func (j *ScanJob) releaseScanResources() {
+	j.fileQueue = nil
+	j.scanner = nil
+}
 
 func (j *ScanJob) queueFiles(ctx context.Context, paths []string, progress *job.Progress) error {
 	fs := &file.OsFS{}
@@ -283,8 +289,10 @@ func (j *ScanJob) processQueue(ctx context.Context, parallelTasks int, progress 
 
 		for f := range j.fileQueue {
 			logger.Tracef("Processing queued file %s", f.Path)
-			if err := ctx.Err(); err != nil {
-				return
+			if ctx.Err() != nil {
+				// Keep receiving until queueFiles closes the channel; otherwise
+				// the walker can block on send (full buffer) and never finish.
+				continue
 			}
 
 			wg.Add()
