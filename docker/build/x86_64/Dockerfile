@@ -30,15 +30,33 @@ COPY ./internal /stash/internal/
 # needed for generate-login-locale
 COPY ./ui /stash/ui/
 RUN make generate-backend generate-login-locale
-COPY --from=frontend /stash /stash/
+COPY --from=frontend /stash/stash/ /stash/
 ARG GITHASH
 ARG STASH_VERSION
 RUN make flags-release flags-pie stash
 
 # Final Runnable Image
+# Build arguments for custom UID/GID (default: 9999)
+ARG PUID=9999
+ARG PGID=9999
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates vips-tools ffmpeg
+RUN apk add --no-cache ca-certificates vips-tools ffmpeg gosu
+
+# Create a non-root user with configurable UID/GID.
+# Default: PUID=9999 PGID=9999
+# To run as a different UID/GID, rebuild with:
+#   docker build --build-arg PUID=<uid> --build-arg PGID=<gid> .
+RUN addgroup -g ${PGID} stash && \
+    adduser -u ${PUID} -G stash -h /home/stash -s /bin/sh -D stash && \
+    mkdir -p /root/.stash && chown stash:stash /root/.stash
+
 COPY --from=backend /stash/stash /usr/bin/
+COPY --from=backend --chmod=755 /stash/docker/entrypoint.sh /entrypoint.sh
+
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
-ENTRYPOINT ["stash"]
+
+# Use an entrypoint script that drops privileges to the non-root user.
+# The entrypoint script uses gosu to switch to the stash user.
+# For custom UID/GID, rebuild with --build-arg PUID=<uid> --build-arg PGID=<gid>.
+ENTRYPOINT ["/entrypoint.sh"]
