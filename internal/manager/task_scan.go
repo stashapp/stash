@@ -81,7 +81,6 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	j.runJob(ctx, paths, nTasks, progress)
 
 	taskQueue.Close()
-	j.releaseScanResources()
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
@@ -130,11 +129,6 @@ func (j *ScanJob) runJob(ctx context.Context, paths []string, nTasks int, progre
 }
 
 const scanQueueSize = 200000
-
-func (j *ScanJob) releaseScanResources() {
-	j.fileQueue = nil
-	j.scanner = nil
-}
 
 func (j *ScanJob) queueFiles(ctx context.Context, paths []string, progress *job.Progress) error {
 	fs := &file.OsFS{}

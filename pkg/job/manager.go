@@ -232,7 +232,9 @@ func (m *Manager) removeJob(job *Job) {
 		return
 	}
 
-	// clear any subtasks
+	// release the executor and subtask details so they can be GC'd
+	// while the job remains in the graveyard for status reporting
+	job.exec = nil
 	job.Details = nil
 
 	m.queue = append(m.queue[:index], m.queue[index+1:]...)
