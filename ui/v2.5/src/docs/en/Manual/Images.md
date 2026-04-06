@@ -1,4 +1,4 @@
-# Images and Galleries
+# Images and galleries
 
 Images are the parts which make up galleries, but you can also have them be scanned independently. To declare an image part of a gallery, there are four ways:
 
@@ -28,4 +28,3 @@ A clip/gif will be a stillframe in the wall and grid view by default. To view th
 
 If you want the loop to be used as a preview on the wall and grid view, you will have to generate them. 
 You can do this as you scan for the new clip file by activating **Generate previews for image clips** on the scan settings, or do it after by going to the **Generated Content** section in the task section of your settings, activating **Image clip previews** and clicking generate. This takes a while, as the files are transcoded.
-
