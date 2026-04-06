@@ -1,4 +1,4 @@
-# Dupe Checker
+# Dupe checker
 
 [The dupe checker](/sceneDuplicateChecker) searches your collection for scenes that are perceptually similar. This means that the files don't need to be identical, and will be identified even with different bitrates, resolutions, and intros/outros.
 
