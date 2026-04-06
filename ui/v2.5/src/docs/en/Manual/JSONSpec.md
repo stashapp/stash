@@ -1,4 +1,4 @@
-# Import/Export JSON Specification
+# Import/export JSON specification
 
 The metadata given to Stash can be exported into the JSON format. This structure can be modified, or replicated by other means. The resulting data can then be imported again, giving the possibility for automatic scraping of all kinds. The format of this metadata bulk is a folder structure, containing the following folders:
   
@@ -26,7 +26,7 @@ When exported, files are named with different formats depending on the object ty
 
 > **⚠️ Note:** The file naming is not significant when importing. All json files will be read from the subdirectories.
   
-## Content of the json files
+## Content of the JSON files
 
 In the following, the values of the according jsons will be shown. If the value should be a number, it is written with after comma values (like `29.98` or `50.0`), but still as a string. The meaning from most of them should be obvious due to the previous explanation or from the possible values stash offers when editing, otherwise a short comment will be added.
 
@@ -43,6 +43,7 @@ Example:
 ```
 
 ### Performer
+
 ```
 name  
 url  
@@ -69,6 +70,7 @@ details
 ```
 
 ### Studio
+
 ```
 name  
 url  
@@ -80,6 +82,7 @@ details
 ```
 
 ### Scene
+
 ```
 title  
 studio  
@@ -111,6 +114,7 @@ updated_at
 
 
 ### Image
+
 ```
 title  
 studio  
@@ -127,6 +131,7 @@ updated_at
 ```
 
 ### Gallery
+
 ```
 title  
 studio  
@@ -145,6 +150,7 @@ updated_at
 ## Files
 
 ### Folder
+
 ```
 zip_file (path to containing zip file)
 mod_time
@@ -155,6 +161,7 @@ updated_at
 ```
 
 ### Video file
+
 ```
 zip_file (path to containing zip file)
 mod_time
@@ -179,6 +186,7 @@ updated_at
 ```
 
 ### Image file
+
 ```
 zip_file (path to containing zip file)
 mod_time
@@ -196,6 +204,7 @@ updated_at
 ```
 
 ### Other files
+
 ```
 zip_file (path to containing zip file)
 mod_time
