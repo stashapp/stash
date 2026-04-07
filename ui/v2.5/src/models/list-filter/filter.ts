@@ -510,6 +510,7 @@ export class ListFilterModel {
   public setCriteria(criteria: Criterion[]) {
     const ret = this.clone();
     ret.criteria = criteria;
+    ret.currentPage = 1; // reset to first page
     return ret;
   }
 

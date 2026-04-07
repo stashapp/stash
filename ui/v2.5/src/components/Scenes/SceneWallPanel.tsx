@@ -70,7 +70,7 @@ export const SceneWallItem: React.FC<
     divStyle.top = props.top;
   }
 
-  var handleClick = function handleClick(event: React.MouseEvent) {
+  const handleClick = function (event: React.MouseEvent) {
     if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, event.shiftKey);
       event.preventDefault();
@@ -96,7 +96,8 @@ export const SceneWallItem: React.FC<
     alt: props.photo.alt,
     onMouseEnter: () => setActive(true),
     onMouseLeave: () => setActive(false),
-    onClick: handleClick,
+    // having a click handler here results in multiple calls to handleClick
+    // due to having the same click handler on the parent div
     onError: () => {
       props.photo.onError?.(props.photo);
     },

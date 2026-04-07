@@ -103,7 +103,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
   const [modalTag, setModalTag] = useState<
     | {
         existingTag: GQL.TagListDataFragment;
-        scrapedTag: GQL.ScrapedSceneTagDataFragment;
+        scrapedTag: GQL.ScrapedTag;
       }
     | undefined
   >();
