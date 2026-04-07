@@ -5,14 +5,18 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faExclamationTriangle,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { excludeFields } from "src/utils/data";
 import { StashIDPill } from "src/components/Shared/StashID";
 
 interface ITagModalProps {
-  tag: GQL.ScrapedSceneTagDataFragment;
+  tag: GQL.ScrapedTag;
   modalVisible: boolean;
   closeModal: () => void;
   onSave: (input: GQL.TagCreateInput, parentInput?: GQL.TagCreateInput) => void;
@@ -178,6 +182,15 @@ const TagModal: React.FC<ITagModalProps> = ({
     // force create if there is no current parent tag and parent tag is not excluded
     const mustCreateParent = true;
 
+    // warn the user if the parent tag does not have a remote_site_id,
+    // which means it won't be automatically linked to the source tag
+    const missingStashIDWarning = !tag.parent.remote_site_id && (
+      <p className="lead">
+        <Icon icon={faExclamationTriangle} className="text-warning" />
+        <FormattedMessage id="tag_tagger.parent_tag_no_remote_site_id_warning" />
+      </p>
+    );
+
     return (
       <div>
         <div className="mb-4 mt-4">
@@ -192,6 +205,7 @@ const TagModal: React.FC<ITagModalProps> = ({
           />
         </div>
         {maybeRenderParentTagDetails()}
+        {missingStashIDWarning}
       </div>
     );
   }
