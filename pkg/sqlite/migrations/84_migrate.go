@@ -425,12 +425,32 @@ func (m *schema84Migrator) mergeFolder(tx *sqlx.Tx, keepID, dupID int) error {
 		return fmt.Errorf("re-parenting child folders: %w", err)
 	}
 
-	// Orphan the stale duplicate folder by clearing its parent so the UNIQUE
-	// constraint on (parent_folder_id, basename) won't be violated when
-	// migrateFolders sets basenames. Any stale file entries under it are left
-	// untouched — the clean task will handle them on the next scan.
-	if _, err := tx.Exec("UPDATE folders SET parent_folder_id = NULL WHERE id = ?", dupID); err != nil {
-		return fmt.Errorf("orphaning duplicate folder: %w", err)
+	// re-parent any files under the duplicate folder to the canonical folder.
+	if _, err := tx.Exec("UPDATE files SET parent_folder_id = ? WHERE parent_folder_id = ?", keepID, dupID); err != nil {
+		return fmt.Errorf("re-parenting files: %w", err)
+	}
+
+	// delete the duplicate folder entry only if it is not referenced by any galleries
+	var count int
+	if err := tx.Get(&count, "SELECT COUNT(*) FROM galleries WHERE folder_id = ?", dupID); err != nil {
+		return fmt.Errorf("checking for gallery references: %w", err)
+	}
+
+	if count > 0 {
+		logger.Warnf("Duplicate folder %d is still referenced by %d galleries. Orphaning instead of deleting.", dupID, count)
+
+		// Orphan the stale duplicate folder by clearing its parent so the UNIQUE
+		// constraint on (parent_folder_id, basename) won't be violated when
+		// migrateFolders sets basenames. Any stale file entries under it are left
+		// untouched — the clean task will handle them on the next scan.
+		if _, err := tx.Exec("UPDATE folders SET parent_folder_id = NULL WHERE id = ?", dupID); err != nil {
+			return fmt.Errorf("orphaning duplicate folder: %w", err)
+		}
+	} else {
+		// delete the duplicate folder entry
+		if _, err := tx.Exec("DELETE FROM folders WHERE id = ?", dupID); err != nil {
+			return fmt.Errorf("deleting duplicate folder: %w", err)
+		}
 	}
 
 	return nil
