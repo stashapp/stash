@@ -16,8 +16,8 @@ import (
 	"gopkg.in/guregu/null.v4"
 )
 
-func post84(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 84")
+func pre84(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running pre-migration for schema version 84")
 
 	m := schema84Migrator{
 		migrator: migrator{
@@ -38,6 +38,19 @@ func post84(ctx context.Context, db *sqlx.DB) error {
 
 	if err := m.deduplicateFolders(ctx); err != nil {
 		return fmt.Errorf("deduplicating folders: %w", err)
+	}
+
+	return nil
+}
+
+func post84(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running post-migration for schema version 84")
+
+	m := schema84Migrator{
+		migrator: migrator{
+			db: db,
+		},
+		folderCache: make(map[string]folderInfo),
 	}
 
 	if err := m.migrateFolders(ctx); err != nil {
@@ -192,7 +205,7 @@ func (m *schema84Migrator) getOrCreateFolderHierarchy(tx *sqlx.Tx, path string, 
 		logger.Debugf("%s doesn't exist. Creating new folder entry...", path)
 
 		// we need to set basename to path, which will be addressed in the next step
-		const insertSQL = "INSERT INTO `folders` (`path`,`basename`,`parent_folder_id`,`mod_time`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?)"
+		const insertSQL = "INSERT INTO `folders` (`path`,`parent_folder_id`,`mod_time`,`created_at`,`updated_at`) VALUES (?,?,?,?,?)"
 
 		var parentFolderID null.Int
 		if parentID != nil {
@@ -200,7 +213,7 @@ func (m *schema84Migrator) getOrCreateFolderHierarchy(tx *sqlx.Tx, path string, 
 		}
 
 		now := time.Now()
-		result, err := tx.Exec(insertSQL, path, path, parentFolderID, time.Time{}, now, now)
+		result, err := tx.Exec(insertSQL, path, parentFolderID, time.Time{}, now, now)
 		if err != nil {
 			return nil, fmt.Errorf("creating folder %s: %w", path, err)
 		}
@@ -268,11 +281,6 @@ func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []
 					continue
 				}
 
-				if !logged {
-					logger.Info("Fixing folders with incorrect parent folder assignments...")
-					logged = true
-				}
-
 				correctParentID, err := m.getOrCreateFolderHierarchy(tx, expectedParent, rootPaths)
 				if err != nil {
 					return fmt.Errorf("error getting/creating correct parent for folder %d %q: %w", id, p, err)
@@ -280,6 +288,11 @@ func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []
 
 				if correctParentID == nil {
 					continue
+				}
+
+				if !logged {
+					logger.Info("Fixing folders with incorrect parent folder assignments...")
+					logged = true
 				}
 
 				logger.Debugf("Fixing folder %d %q: changing parent_folder_id from %d to %d", id, p, parentFolderID, *correctParentID)
@@ -495,5 +508,6 @@ func (m *schema84Migrator) migrateFolders(ctx context.Context) error {
 }
 
 func init() {
+	sqlite.RegisterPreMigration(84, pre84)
 	sqlite.RegisterPostMigration(84, post84)
 }
