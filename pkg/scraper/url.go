@@ -17,6 +17,8 @@ import (
 	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+	"github.com/enetx/g"
+	"github.com/enetx/surf"
 	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/net/html/charset"
 
@@ -27,9 +29,14 @@ const scrapeDefaultSleep = time.Second * 2
 
 func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := def.DriverOptions
-	if driverOptions != nil && driverOptions.UseCDP {
-		// get the page using chrome dp
-		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
+	if driverOptions != nil {
+		if driverOptions.UseCDP {
+			// get the page using chrome dp
+			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
+		} else if driverOptions.UseSurf {
+			// get the page using surf
+			return urlFromSurf(ctx, loadURL, def, globalConfig)
+		}
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
@@ -71,6 +78,60 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyReader := bytes.NewReader(body)
+	printCookies(jar, def, "Jar cookies found for scraper urls")
+	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
+}
+
+// func urlFromSurf uses enetx/surf with TLS browser emulation to bypass fingerprint-based blocking.
+// this is a step down from CDP but faster and more lightweight and can succeed where CDP might fail
+func urlFromSurf(ctx context.Context, loadURL string, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
+	// get cookies
+	jar, err := def.jar()
+	if err != nil {
+		return nil, fmt.Errorf("error creating cookie jar: %w", err)
+	}
+
+	// create client
+	builder := surf.NewClient().
+		Builder().
+		Impersonate().Chrome()
+
+	// get global proxy
+	proxyURL := globalConfig.GetProxy()
+	if proxyURL != "" {
+		builder = builder.Proxy(g.String(proxyURL))
+	}
+
+	client := builder.
+		Build().
+		Unwrap().
+		Std() // use stdlib adapter
+
+	// pass in jar directly
+	client.Jar = jar
+
+	// try to mimic normal method above
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
