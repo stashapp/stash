@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager"
@@ -33,7 +34,7 @@ func logEntriesFromLogItems(logItems []log.LogItem) []*LogEntry {
 		ret[i] = &LogEntry{
 			Time:    entry.Time,
 			Level:   getLogLevel(entry.Type),
-			Message: entry.Message,
+			Message: strings.ToValidUTF8(entry.Message, "\uFFFD"),
 		}
 	}
 
