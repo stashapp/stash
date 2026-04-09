@@ -58,8 +58,9 @@ release: pre-ui generate ui build-release
 
 # targets to set various build flags
 # use combinations on the make command-line to configure a build, e.g.:
-# for a static-pie release build: `make flags-static-pie flags-release stash`
 # for a static windows debug build: `make flags-static-windows stash`
+# NOTE: do not combine flags-static-pie or flags-static with build-release, as
+# build-release already applies flags-pie; use build-release-static-pie instead
 
 # $(NOOP) prevents "nothing to be done" warnings
 
@@ -134,6 +135,10 @@ build: stash
 # builds dynamically-linked PIE release binaries
 .PHONY: build-release
 build-release: flags-release flags-pie build
+
+# builds statically-linked PIE release binaries
+.PHONY: build-release-static-pie
+build-release-static-pie: flags-release flags-static-pie build
 
 # compile and bundle into Stash.app
 # for when on macOS itself
