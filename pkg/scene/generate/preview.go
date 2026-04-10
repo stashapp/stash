@@ -173,6 +173,12 @@ type previewChunkOptions struct {
 }
 
 func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, options previewChunkOptions, fallback bool, useVsync2 bool) error {
+	if !fallback {
+		if hwCodec := g.Encoder.HWCodecPreviewSupport(); hwCodec != nil {
+			return g.previewVideoChunkQSV(lockCtx, fn, options, *hwCodec, useVsync2)
+		}
+	}
+
 	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
 
@@ -203,6 +209,58 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 		VideoArgs:  videoArgs,
 
 		ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+		ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
+	}
+
+	if options.Audio {
+		var audioArgs ffmpeg.Args
+		audioArgs = audioArgs.AudioBitrate(scenePreviewAudioBitrate)
+
+		trimOptions.AudioCodec = ffmpeg.AudioCodecAAC
+		trimOptions.AudioArgs = audioArgs
+	}
+
+	args := transcoder.Transcode(fn, trimOptions)
+
+	return g.generate(lockCtx, args)
+}
+
+// previewVideoChunkQSV encodes a preview chunk using hevc_qsv. It uses a
+// software scale to the target width before uploading to QSV memory, which
+// avoids scale_qsv's restriction on negative dimension values.
+func (g Generator) previewVideoChunkQSV(lockCtx *fsutil.LockContext, fn string, options previewChunkOptions, codec ffmpeg.VideoCodec, useVsync2 bool) error {
+	// Software scale first, then upload to QSV memory.
+	var videoFilter ffmpeg.VideoFilter
+	videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
+	videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
+	videoFilter = videoFilter.Append("format=qsv")
+
+	var videoArgs ffmpeg.Args
+	videoArgs = videoArgs.VideoFilter(videoFilter)
+
+	videoArgs = append(videoArgs,
+		"-global_quality", "26",
+		"-look_ahead", "1",
+		"-preset", options.Preset,
+	)
+
+	if useVsync2 {
+		videoArgs = append(videoArgs, "-vsync", "2")
+	}
+
+	hwInputArgs := ffmpeg.Args{"-init_hw_device", "qsv=hw", "-filter_hw_device", "hw"}
+	hwInputArgs = append(hwInputArgs, g.FFMpegConfig.GetTranscodeInputArgs()...)
+
+	trimOptions := transcoder.TranscodeOptions{
+		OutputPath: options.OutputPath,
+		StartTime:  options.StartTime,
+		Duration:   options.Duration,
+
+		XError: true,
+
+		VideoCodec:      codec,
+		VideoArgs:       videoArgs,
+		ExtraInputArgs:  hwInputArgs,
 		ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 	}
 
