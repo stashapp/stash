@@ -8,6 +8,13 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 )
 
+// sanitiseWebsocketString is used to ensure that any strings sent over the websocket are valid UTF-8.
+// Any invalid UTF-8 sequences will be replaced with the Unicode replacement character (U+FFFD).
+// Invalid UTF-8 sequences can cause the websocket connection to be closed.
+func sanitiseWebsocketString(s string) string {
+	return strings.ToValidUTF8(s, "\uFFFD")
+}
+
 func getLogLevel(logType string) LogLevel {
 	switch logType {
 	case "progress":
@@ -34,7 +41,7 @@ func logEntriesFromLogItems(logItems []log.LogItem) []*LogEntry {
 		ret[i] = &LogEntry{
 			Time:    entry.Time,
 			Level:   getLogLevel(entry.Type),
-			Message: strings.ToValidUTF8(entry.Message, "\uFFFD"),
+			Message: sanitiseWebsocketString(entry.Message),
 		}
 	}
 
