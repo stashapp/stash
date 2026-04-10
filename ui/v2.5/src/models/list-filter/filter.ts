@@ -37,7 +37,7 @@ const DEFAULT_PARAMS = {
   sortDirection: SortDirectionEnum.Asc,
   displayMode: DisplayMode.Grid,
   currentPage: 1,
-  itemsPerPage: 40,
+  itemsPerPage: window.matchMedia("(max-width: 768px)").matches ? 15 : 40,
 };
 
 // TODO: handle customCriteria
