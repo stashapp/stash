@@ -242,10 +242,10 @@
             "build_time": "Ehituse aeg:",
             "check_for_new_version": "Kontrolli värskendusi",
             "latest_version": "Uusim Versioon",
-            "latest_version_build_hash": "Uusima Versiooni Ehituse Räsi:",
+            "latest_version_build_hash": "Uusima versiooni ehituse räsi:",
             "new_version_notice": "[UUS]",
             "release_date": "Väljalaskekuupäev:",
-            "stash_home": "Stashi kodu {url}-is",
+            "stash_home": "Külasta Stashi lehel {url}.",
             "stash_wiki": "Stashi {url} leht",
             "version": "Versioon"
         },
