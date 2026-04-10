@@ -2,6 +2,8 @@
 # Go
 ####
 
+/.plocal*
+
 # Vendored dependencies
 vendor
 
@@ -64,3 +66,4 @@ node_modules
 dist
 .DS_Store
 /.local*
+.gitignore
