@@ -52,9 +52,14 @@ import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
 import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
 import { PerformerListFilterOptions } from "src/models/list-filter/performers";
-import { Button } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
-import { FavoritePerformerCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "../Shared/Icon";
+import {
+  FavoritePerformerCriterion,
+  FavoritePerformerCriterionOption,
+} from "src/models/list-filter/criteria/favorite";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { SidebarOptionFilter } from "../List/Filters/OptionFilter";
 import { GenderCriterionOption } from "src/models/list-filter/criteria/gender";
@@ -424,6 +429,28 @@ export const FilteredPerformerList = PatchComponent(
       setFilter,
     });
 
+    const favoritesActive =
+      (
+        filter.criteriaFor(
+          FavoritePerformerCriterionOption.type
+        ) as FavoritePerformerCriterion[]
+      ).find((c) => c.value === "true") !== undefined;
+
+    function toggleFavorites() {
+      if (favoritesActive) {
+        setFilter(filter.removeCriterion(FavoritePerformerCriterionOption.type));
+      } else {
+        const criterion =
+          FavoritePerformerCriterionOption.makeCriterion() as FavoritePerformerCriterion;
+        criterion.value = "true";
+        setFilter(
+          filter.replaceCriteria(FavoritePerformerCriterionOption.type, [
+            criterion,
+          ])
+        );
+      }
+    }
+
     useAddKeybinds(effectiveFilter, totalCount);
     useFilteredSidebarKeybinds({
       showSidebar,
@@ -606,6 +633,19 @@ export const FilteredPerformerList = PatchComponent(
                 view={view}
                 zoomable
               />
+
+              <div className="quick-filters">
+                <ButtonGroup>
+                  <Button
+                    variant={favoritesActive ? "primary" : "secondary"}
+                    className="minimal"
+                    onClick={toggleFavorites}
+                    title={intl.formatMessage({ id: "favourite" })}
+                  >
+                    <Icon icon={faHeart} />
+                  </Button>
+                </ButtonGroup>
+              </div>
 
               <FilterTags
                 criteria={filter.criteria}
