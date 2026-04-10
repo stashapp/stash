@@ -1694,7 +1694,8 @@
             "create_parent_desc": "Crear etiquetas principales que falten a partir de las categorías de stash-box, o etiquetar las etiquetas principales existentes con nombres que coincidan exactamente",
             "create_parent_label": "Crear etiquetas principales"
         },
-        "create_or_tag_parent_tags": "Crear las etiquetas principales que falten o etiquetar las ya existentes"
+        "create_or_tag_parent_tags": "Crear las etiquetas principales que falten o etiquetar las ya existentes",
+        "parent_tag_no_remote_site_id_warning": "La etiqueta principal no tiene un ID de sitio remoto y no se vinculará a la instancia de stash-box."
     },
     "tagger": {
         "config": {
