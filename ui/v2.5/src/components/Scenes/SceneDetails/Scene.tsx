@@ -31,6 +31,8 @@ import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
+import { WatchQueueButton } from "./WatchQueueButton";
+import { useWatchQueue } from "src/hooks/useWatchQueue";
 import { useConfigurationContext } from "src/hooks/Config";
 import {
   getAbLoopPlugin,
@@ -209,6 +211,28 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   }
 
   const [organizedLoading, setOrganizedLoading] = useState(false);
+
+  const { tagId: watchQueueTagId, isInQueue, addToQueue, removeFromQueue } =
+    useWatchQueue();
+  const [watchQueueLoading, setWatchQueueLoading] = useState(false);
+
+  const inQueue = isInQueue(scene);
+
+  const onWatchQueueClick = async () => {
+    const currentTagIds = scene.tags.map((t) => t.id);
+    try {
+      setWatchQueueLoading(true);
+      if (inQueue) {
+        await removeFromQueue(scene.id, currentTagIds);
+      } else {
+        await addToQueue(scene.id, currentTagIds);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setWatchQueueLoading(false);
+    }
+  };
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
@@ -718,6 +742,13 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
                 <OCounterButton
                   value={scene.o_counter ?? 0}
                   onIncrement={() => onIncrementOClick()}
+                />
+              </span>
+              <span>
+                <WatchQueueButton
+                  loading={watchQueueLoading || !watchQueueTagId}
+                  inQueue={inQueue}
+                  onClick={onWatchQueueClick}
                 />
               </span>
               <span>

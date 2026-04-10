@@ -31,6 +31,10 @@ import {
   useSceneIncrementPlayCount,
   useConfigureInterface,
 } from "src/core/StashService";
+import {
+  useWatchQueue,
+  WATCH_QUEUE_REMOVE_PERCENT,
+} from "src/hooks/useWatchQueue";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -270,6 +274,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     const started = useRef(false);
     const auto = useRef(false);
+
+    const { tagId: watchQueueTagId, removeFromQueue } = useWatchQueue();
+    const watchQueueRemovedRef = useRef(false);
     const interactiveReady = useRef(false);
     const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
     const trackActivity = uiConfig?.trackActivity ?? true;
@@ -926,6 +933,29 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       return () => player.off("ended");
     }, [getPlayer, onComplete]);
+
+    // Reset auto-remove flag when scene changes
+    useEffect(() => {
+      watchQueueRemovedRef.current = false;
+    }, [scene.id]);
+
+    // Auto-remove from watch queue after watching enough of the scene
+    useEffect(() => {
+      if (!watchQueueTagId || watchQueueRemovedRef.current) return;
+      if (!file?.duration || time <= 0) return;
+      if (!scene.tags.some((t) => t.id === watchQueueTagId)) {
+        watchQueueRemovedRef.current = true;
+        return;
+      }
+      const percentWatched = (time / file.duration) * 100;
+      if (percentWatched >= WATCH_QUEUE_REMOVE_PERCENT) {
+        watchQueueRemovedRef.current = true;
+        removeFromQueue(
+          scene.id,
+          scene.tags.map((t) => t.id)
+        );
+      }
+    }, [time, scene, file, watchQueueTagId, removeFromQueue]);
 
     // set up mediaSession plugin
     useEffect(() => {

@@ -19,6 +19,7 @@ import { SceneCardGrid } from "./SceneCardGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { useConfigurationContext } from "src/hooks/Config";
+import { useWatchQueue } from "src/hooks/useWatchQueue";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
@@ -486,6 +487,7 @@ export const FilteredSceneList = PatchComponent(
     const playRandom = usePlayRandom(effectiveFilter, totalCount);
     const playSelected = usePlaySelected(selectedIds);
     const playFirst = usePlayFirst();
+    const { bulkAddToQueue, bulkRemoveFromQueue } = useWatchQueue();
 
     function onCreateNew() {
       let queryParam = new URLSearchParams(location.search).get("q");
@@ -610,6 +612,16 @@ export const FilteredSceneList = PatchComponent(
       {
         text: `${intl.formatMessage({ id: "actions.merge" })}…`,
         onClick: () => onMerge(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.add_to_watch_queue" }),
+        onClick: () => bulkAddToQueue(Array.from(selectedIds.values())),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.remove_from_watch_queue" }),
+        onClick: () => bulkRemoveFromQueue(Array.from(selectedIds.values())),
         isDisplayed: () => hasSelection,
       },
       {

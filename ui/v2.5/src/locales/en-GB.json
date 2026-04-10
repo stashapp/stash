@@ -77,6 +77,8 @@
     "load_filter": "Load filter",
     "logout": "Log out",
     "make_primary": "Make Primary",
+    "add_to_watch_queue": "Add to Watch Queue",
+    "remove_from_watch_queue": "Remove from Watch Queue",
     "merge": "Merge",
     "migrate_blobs": "Migrate blobs",
     "migrate_scene_screenshots": "Migrate scene screenshots",
