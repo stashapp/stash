@@ -23,7 +23,13 @@ $sceneTabWidth: 450px;
   }
 }
 
+.video-scale-wrapper {
+  position: relative;
+}
+
 .video-wrapper {
+  // Fallback height for browsers that don't support aspect-ratio, or when
+  // file dimensions aren't available. Overridden by inline aspect-ratio style.
   height: 56.25vw;
   overflow: hidden;
   position: relative;
@@ -31,6 +37,33 @@ $sceneTabWidth: 450px;
 
   @media (min-width: 1200px) {
     height: 100%;
+  }
+}
+
+.player-scale-control {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.2rem 0.5rem;
+
+  input[type="range"] {
+    flex: 1;
+  }
+
+  .player-scale-value {
+    font-size: 0.8rem;
+    min-width: 3rem;
+    text-align: right;
+  }
+
+  .player-scale-reset {
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0.1rem 0.3rem;
   }
 }
 

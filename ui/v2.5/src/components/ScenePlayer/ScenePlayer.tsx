@@ -42,6 +42,7 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
+import { useLocalForage } from "src/hooks/LocalForage";
 
 // @ts-ignore
 import airplay from "@silvermine/videojs-airplay";
@@ -283,6 +284,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       () => (scene.files.length > 0 ? scene.files[0] : undefined),
       [scene]
     );
+
+    const [scaleStorage, setScaleStorage] = useLocalForage<{
+      scale: number | null;
+    }>("video-player-scale", { scale: null });
+
+    const autoScale = useMemo(() => {
+      if (!file?.width) return 1.0;
+      return Math.min(1.0, file.width / window.innerWidth);
+    }, [file]);
+
+    const videoScale = scaleStorage.data?.scale ?? autoScale;
 
     const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
     const looping = useMemo(
@@ -976,18 +988,31 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const isPortrait =
       file && file.height && file.width && file.height > file.width;
 
+    const videoWrapperStyle: React.CSSProperties = file?.width && file?.height
+      ? { aspectRatio: `${file.width}/${file.height}`, height: "auto" }
+      : {};
+
     return (
       <div
         className={cx("VideoPlayer", {
           portrait: isPortrait,
           "no-file": !file,
         })}
+        style={{ height: "auto" }}
         onKeyDownCapture={onKeyDown}
       >
-        <div className="video-wrapper" ref={videoRef} />
-        {scene.interactive &&
-          (interactiveState !== ConnectionState.Ready ||
-            getPlayer()?.paused()) && <SceneInteractiveStatus />}
+        <div
+          className="video-scale-wrapper"
+          style={{
+            width: `${videoScale * 100}%`,
+            margin: "0 auto",
+          }}
+        >
+          <div className="video-wrapper" ref={videoRef} style={videoWrapperStyle} />
+          {scene.interactive &&
+            (interactiveState !== ConnectionState.Ready ||
+              getPlayer()?.paused()) && <SceneInteractiveStatus />}
+        </div>
         {file && showScrubber && (
           <ScenePlayerScrubber
             file={file}
@@ -996,6 +1021,32 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             onSeek={onScrubberSeek}
             onScroll={onScrubberScroll}
           />
+        )}
+        {!fullscreen && (
+          <div className="player-scale-control">
+            <input
+              type="range"
+              min={10}
+              max={100}
+              step={1}
+              value={Math.round(videoScale * 100)}
+              onChange={(e) =>
+                setScaleStorage({ scale: Number(e.target.value) / 100 })
+              }
+              title={`Video scale: ${Math.round(videoScale * 100)}%`}
+            />
+            <span className="player-scale-value">
+              {Math.round(videoScale * 100)}%
+            </span>
+            <button
+              type="button"
+              className="player-scale-reset"
+              onClick={() => setScaleStorage({ scale: null })}
+              title="Reset to native resolution scale"
+            >
+              ↺
+            </button>
+          </div>
         )}
       </div>
     );
