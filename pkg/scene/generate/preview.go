@@ -181,10 +181,8 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 
 	videoArgs = append(videoArgs,
 		"-pix_fmt", "yuv420p",
-		"-profile:v", "high",
-		"-level", "4.2",
 		"-preset", options.Preset,
-		"-crf", "21",
+		"-crf", "26",
 		"-threads", "4",
 		"-strict", "-2",
 	)
@@ -201,7 +199,7 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 		XError:   !fallback,
 		SlowSeek: fallback,
 
-		VideoCodec: ffmpeg.VideoCodecLibX264,
+		VideoCodec: ffmpeg.VideoCodecLibX265,
 		VideoArgs:  videoArgs,
 
 		ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
