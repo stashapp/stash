@@ -1694,7 +1694,8 @@
             "create_parent_desc": "Créer les étiquettes parentes manquantes à partir des catégories de Stash-Box, ou attribuer des étiquettes parentes existantes dont le nom correspond exactement",
             "create_parent_label": "Créer des étiquettes parentes"
         },
-        "create_or_tag_parent_tags": "Créer les étiquettes parentes manquantes ou les associer aux étiquettes existantes"
+        "create_or_tag_parent_tags": "Créer les étiquettes parentes manquantes ou les associer aux étiquettes existantes",
+        "parent_tag_no_remote_site_id_warning": "L'étiquette parente n'a pas d'identifiant de site distant et ne sera pas associée à l'instance Stash-Box."
     },
     "tagger": {
         "config": {
