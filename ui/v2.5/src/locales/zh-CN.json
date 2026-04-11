@@ -250,9 +250,11 @@
             "latest_version_build_hash": "最新版本识别码:",
             "new_version_notice": "[新版本]",
             "release_date": "发布日期：",
-            "stash_home": "Stash 主页在 {url}",
-            "stash_wiki": "Stash {url} 页面",
-            "version": "版本"
+            "stash_home": "访问 Stash 在 {url}",
+            "stash_wiki": "查看Stash {url} 网站",
+            "version": "版本",
+            "stash_community": "加入我们的 {forumUrl} 或{discordUrl} 论坛服务器。",
+            "support_us": "通过 {openCollectiveUrl} 或 {githubSponsorsUrl}支持我们。"
         },
         "application_paths": {
             "heading": "程序路径"
@@ -610,7 +612,9 @@
                 "zip": "SQLite 数据库文件和 blob 文件将被压缩到一个文件中，文件名格式为 {filename_format}"
             },
             "clean_ignore_zip_contents": "忽略 zip 文件内容",
-            "clean_ignore_zip_contents_desc": "速度更快，但会遗漏在 zip 压缩文件中删除的文件。如果不在压缩文件中删除文件，启用它是安全的。"
+            "clean_ignore_zip_contents_desc": "速度更快，但会遗漏在 zip 压缩文件中删除的文件。如果不在压缩文件中删除文件，启用它是安全的。",
+            "auto_tag_confirm": "这将尝试将你的内容与现有元数据进行匹配。",
+            "auto_tag_warning": "这一过程无法逆转，可能导致错误匹配。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -772,7 +776,8 @@
             "scene_list": {
                 "heading": "网格视图",
                 "options": {
-                    "show_studio_as_text": "文本形式展示工作室名称覆层"
+                    "show_studio_as_text": "文本形式展示工作室名称覆层",
+                    "show_studio_as_text_desc": "默认情况下，工作室标志会显示在网格中的卡片上。启用这个选项，让工作室名称始终以文本形式显示。"
                 }
             },
             "scene_player": {
@@ -851,6 +856,10 @@
                 "enable_background_image": {
                     "heading": "启用背景图像",
                     "description": "在详情页面上显示背景图片。"
+                },
+                "show_studio_text": {
+                    "description": "在详细信息视图中，总是以文字形式显示工作室名称，而不是图标。",
+                    "heading": "将工作室显示为文本"
                 }
             },
             "use_stash_hosted_funscript": {
@@ -1685,7 +1694,8 @@
             "create_parent_desc": "从 stash-box 类别中创建缺失的父母标签，或用完全匹配的名称为现有的父母标签添加标签",
             "create_parent_label": "创建父母标签"
         },
-        "create_or_tag_parent_tags": "创建缺失或标记已存在的父母标签"
+        "create_or_tag_parent_tags": "创建缺失或标记已存在的父母标签",
+        "parent_tag_no_remote_site_id_warning": "双亲标签没有远程站点 ID，也不会与stash-box实例关联。"
     },
     "tagger": {
         "config": {
