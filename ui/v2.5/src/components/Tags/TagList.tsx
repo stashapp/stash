@@ -290,7 +290,7 @@ export const FilteredTagList = PatchComponent(
       showModal(
         <ExportDialog
           exportInput={{
-            studios: {
+            tags: {
               ids: Array.from(selectedIds.values()),
               all: all,
             },
