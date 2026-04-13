@@ -185,6 +185,12 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, codec VideoCodec, vf 
 
 // Prepend input for hardware encoding only
 func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
+	// check for custom /dev/dri device #6435
+	driDevice := os.Getenv("STASH_HW_DRI_DEVICE")
+	if driDevice == "" {
+		driDevice = "/dev/dri/renderD128"
+	}
+
 	switch toCodec {
 	case VideoCodecN264,
 		VideoCodecN264H:
@@ -201,7 +207,7 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 	case VideoCodecV264,
 		VideoCodecVVP9:
 		args = append(args, "-vaapi_device")
-		args = append(args, "/dev/dri/renderD128")
+		args = append(args, driDevice)
 		if fullhw {
 			args = append(args, "-hwaccel")
 			args = append(args, "vaapi")

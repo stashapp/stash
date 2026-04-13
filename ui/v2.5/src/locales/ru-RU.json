@@ -227,9 +227,7 @@
             "latest_version": "Последняя версия",
             "latest_version_build_hash": "Контрольная сумма последний версии сборки:",
             "new_version_notice": "[НОВЫЙ]",
-            "stash_discord": "Присоединяйтесь к нашему {url} серверу",
             "stash_home": "Stash страница на {url}",
-            "stash_open_collective": "Поддержи нас через {url}",
             "stash_wiki": "Stash {url} страница",
             "version": "Версия",
             "release_date": "Дата выхода:"

@@ -127,10 +127,14 @@
 .folder-list {
   list-style-type: none;
   margin: 0;
-  max-height: 30vw;
+  max-height: 300px;
   overflow-x: auto;
   padding-bottom: 0.5rem;
   padding-top: 1rem;
+
+  &:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 
   &-item {
     white-space: nowrap;
@@ -1251,4 +1255,16 @@ input[type="range"].double-range-slider-max {
 // general styling for appended minimal button to input group
 .text-input + .input-group-append .btn.minimal {
   background-color: $textfield-bg;
+}
+
+.studio-logo a:hover {
+  color: inherit;
+}
+
+.studio-logo .studio-name {
+  color: $text-color;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
 }

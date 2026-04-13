@@ -251,13 +251,13 @@
       "build_time": "Build time:",
       "check_for_new_version": "Check for new version",
       "latest_version": "Latest Version",
-      "latest_version_build_hash": "Latest Version Build Hash:",
+      "latest_version_build_hash": "Latest version build hash:",
       "new_version_notice": "[NEW]",
       "release_date": "Release date:",
-      "stash_discord": "Join our {url} channel",
-      "stash_home": "Stash home at {url}",
-      "stash_open_collective": "Support us through {url}",
-      "stash_wiki": "Stash {url} page",
+      "stash_home": "Visit Stash on {url}.",
+      "stash_wiki": "Check out Stash {url} website.",
+      "stash_community": "Join our {forumUrl} or {discordUrl} community server.",
+      "support_us": "Support us through {openCollectiveUrl} or {githubSponsorsUrl}.",
       "version": "Version"
     },
     "advanced_mode": "Advanced mode",
@@ -512,6 +512,8 @@
         "auto_tagging_paths": "Auto tagging the following paths"
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
+      "auto_tag_confirm": "This will attempt to match your content against existing metadata.",
+      "auto_tag_warning": "This process cannot be undone and may produce incorrect matches.",
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
@@ -710,6 +712,10 @@
         "show_all_details": {
           "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column.",
           "heading": "Show all details"
+        },
+        "show_studio_text": {
+          "description": "Always display studio name as text on details views instead of an icon.",
+          "heading": "Show studio as text"
         }
       },
       "editing": {
@@ -815,7 +821,8 @@
       "scene_list": {
         "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Display studio overlay as text"
+          "show_studio_as_text": "Display studio overlay as text",
+          "show_studio_as_text_desc": "By default, the studio logo is shown on cards in the grid. Enable this option to always show the studio name as text instead."
         }
       },
       "scene_player": {
@@ -1631,6 +1638,7 @@
     "network_error": "Network Error",
     "no_results_found": "No results found.",
     "number_of_tags_will_be_processed": "{tag_count} tags will be processed",
+    "parent_tag_no_remote_site_id_warning": "Parent tag does not have a remote site ID, and will not be linked to the stash-box instance.",
     "query_all_tags_in_the_database": "All tags in the database",
     "refresh_tagged_tags": "Refresh tagged tags",
     "refreshing_will_update_the_data": "Refreshing will update the data of any tagged tags from the stash-box instance.",

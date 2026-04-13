@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
     - name: Setup Go
       uses: actions/setup-go@v6
 
@@ -152,7 +155,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       with:
-        fetch-depth: 1
+        fetch-depth: 0
         fetch-tags: true
 
     - name: Download generated artifacts
@@ -243,6 +246,14 @@ jobs:
       with:
         name: stash-macos
         path: dist/stash-macos
+
+    - name: Upload macOS bundle
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v7
+      with:
+        name: Stash.app.zip
+        path: dist/Stash.app.zip
 
     - name: Upload Linux binary
       # only upload binaries for pull requests

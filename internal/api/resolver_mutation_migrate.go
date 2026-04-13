@@ -47,6 +47,10 @@ func (r *mutationResolver) Migrate(ctx context.Context, input manager.MigrateInp
 		Database:   mgr.Database,
 	}
 
+	if err := t.PreExecute(); err != nil {
+		return "", err
+	}
+
 	jobID := mgr.JobManager.Add(ctx, "Migrating database...", t)
 
 	return strconv.Itoa(jobID), nil

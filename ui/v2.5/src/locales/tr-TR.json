@@ -1,7 +1,7 @@
 {
     "actions": {
         "add": "Ekle",
-        "add_directory": "Dizin Ekle",
+        "add_directory": "Dizin ekle",
         "add_entity": "{entityType} Ekle",
         "add_to_entity": "Buraya Ekle: {entityType}",
         "allow": "İzin Ver",
@@ -148,7 +148,8 @@
         "show_results": "Sonuçları göster",
         "show_count_results": "{count} sonucu göster",
         "load": "Yükle",
-        "load_filter": "Filtre yükle"
+        "load_filter": "Filtre yükle",
+        "select_directory": "Dizin seç"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -215,9 +216,7 @@
             "latest_version": "Son Sürüm",
             "latest_version_build_hash": "Son Sürüm İmzası:",
             "new_version_notice": "[YENİ]",
-            "stash_discord": "{url} kanalımıza katılın",
             "stash_home": "{url} üzerinde Stash sayfası",
-            "stash_open_collective": "Bizi {url} aracılığıyla destekleyin",
             "stash_wiki": "Stash {url} sayfası",
             "version": "Sürüm",
             "release_date": "Yayın tarihi:"
@@ -253,8 +252,8 @@
             "until_restart": "yeniden başlatana kadar",
             "disallowed_ip": "İzin verilmeyen IP",
             "successfully_cancelled_temporary_behaviour": "Geçici davranış başarıyla iptal edildi",
-            "video_sort_order": "Varsayılan Video Sıralama Düzeni",
-            "server_port": "Sunucu Bağlantı Noktası",
+            "video_sort_order": "Varsayılan video sıralama düzeni",
+            "server_port": "Sunucu bağlantı noktası",
             "disabled_dlna_temporarily": "DLNA geçici olarak devre dışı bırakıldı",
             "enabled_dlna_temporarily": "DLNA geçici olarak etkinleştirildi",
             "video_sort_order_desc": "Videoları varsayılan olarak sıralayın.",
@@ -262,7 +261,7 @@
         },
         "general": {
             "auth": {
-                "api_key": "API Anahtarı",
+                "api_key": "API anahtarı",
                 "api_key_desc": "Harici sistemler için API anahtarı. Yalnızca kullanıcı adı ya da şifre yapılandırıldığında gereklidir. API anahtarı oluşturulmadan önce kullanıcı adı kaydedilmelidir.",
                 "authentication": "Kimlik Doğrulama",
                 "clear_api_key": "API anahtarını temizle",
@@ -286,7 +285,7 @@
                 "username_desc": "Stash'e erişim için kullanıcı adı. Kullanıcı kimlik doğrulamasını devre dışı bırakmak için boş bırakın"
             },
             "cache_location": "Önbellek dizininin konumudur. HLS (Apple cihazlarında olduğu gibi) veya DASH kullanılarak akış yapılıyorsa gereklidir.",
-            "cache_path_head": "Önbellek Yolu",
+            "cache_path_head": "Önbellek yolu",
             "calculate_md5_and_ohash_desc": "oshash'in yanısıra MD5 checksum'ı da hesapla. Bu özelliği etkinleştirmek tarama işlemini yavaşlatacaktır. MD5 hesaplamasını devre dışı bırakmak için dosya adı imzası (hash) oshash olarak ayarlanmalıdır.",
             "calculate_md5_and_ohash_label": "Videolar için MD5 hesapla",
             "check_for_insecure_certificates": "Güvensiz sertifikaları kontrol et",
@@ -295,7 +294,7 @@
             "chrome_cdp_path_desc": "Chrome yürütülebilir dosyasının dosya yolu veya bir Chrome örneğinin uzak adresi (http:// veya https:// ile başlayan, örneğin http://localhost:9222/json/version).",
             "create_galleries_from_folders_desc": "Seçili ise resim içeren dizinlerden galeriler oluşturur.",
             "create_galleries_from_folders_label": "Resim içeren dizinlerden galeri oluştur",
-            "db_path_head": "Veritabanı Yolu",
+            "db_path_head": "Veritabanı yolu",
             "directory_locations_to_your_content": "İçeriğiniz için dizin konumları",
             "excluded_image_gallery_patterns_desc": "Tarama ve Temizleme işlemine eklenmeyecek Resim ve Galeri dosyaları/dosya konumları için kurallı ifadeler (Regexp)",
             "excluded_image_gallery_patterns_head": "Dışta tutulan Resim/Galeri Kuralları",
@@ -389,8 +388,8 @@
             },
             "gallery_cover_regex_desc": "Regexp, bir resmi galeri kapağı olarak tanımlamak için kullanılır",
             "backup_directory_path": {
-                "heading": "Yedek Dizin Yolu",
-                "description": "SQLite veritabanı dosya yedekleri için dizin konumu"
+                "heading": "Yedek dizin yolu",
+                "description": "SQLite veritabanı dosya yedekleri için dizin konumu."
             },
             "python_path": {
                 "heading": "Python Yürütülebilir Yolu",

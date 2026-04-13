@@ -49,6 +49,8 @@ export interface IUIConfig {
   showLinksOnPerformerCard?: boolean;
   showTagCardOnHover?: boolean;
 
+  showStudioText?: boolean;
+
   previewVolume?: number;
 
   abbreviateCounters?: boolean;

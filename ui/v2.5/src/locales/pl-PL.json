@@ -138,7 +138,7 @@
         "set_cover": "Ustaw jako okładkę",
         "remove_from_containing_group": "Usuń z grupy",
         "reset_cover": "Przywróć domyślną okładkę",
-        "add_sub_groups": "Dodaj podgrupy",
+        "add_sub_groups": "Dodaj podgrupę",
         "view_history": "Zobacz historię",
         "play": "Odtwarzaj",
         "show_results": "Pokaż wyniki",
@@ -150,7 +150,13 @@
             "close": "Zamknij pasek boczny",
             "open": "Otwórz pasek boczny",
             "toggle": "Przełącz pasek boczny"
-        }
+        },
+        "exclude_lowercase": "wyklucz",
+        "from_clipboard": "Ze schowka",
+        "reveal_in_file_manager": "Pokaż w Menedżerze plików",
+        "select_directory": "Wybierz katalog",
+        "invert_selection": "Odwróć zaznaczenie",
+        "selective_generate": "Generowanie selektywne"
     },
     "actions_name": "Działania",
     "age": "Wiek",
@@ -228,7 +234,8 @@
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} niedopasowane sceny",
         "verb_add_as_alias": "Dodaj zebraną nazwę jako alias",
-        "verb_link_existing": "Połącz z istniejącym"
+        "verb_link_existing": "Połącz z istniejącym",
+        "verb_match_tag": "Dopasuj tag"
     },
     "config": {
         "about": {
@@ -239,9 +246,7 @@
             "latest_version_build_hash": "Hash kompilacji najnowszej wersji:",
             "new_version_notice": "[NOWA]",
             "release_date": "Data wydania:",
-            "stash_discord": "Dołącz do naszego kanału {url}",
             "stash_home": "Dom Stasha na stronie {url}",
-            "stash_open_collective": "Wesprzyj nas poprzez {url}",
             "stash_wiki": "Strona Stash {url}",
             "version": "Wersja"
         },
@@ -297,8 +302,8 @@
                 "generate_api_key": "Wygeneruj klucz API",
                 "log_file": "Plik dziennika",
                 "log_file_desc": "Ścieżka do pliku, do którego mają być zapisywane logi. Puste, aby wyłączyć zapisywanie do pliku. Wymaga ponownego uruchomienia.",
-                "log_http": "Logi dostępu http",
-                "log_http_desc": "Loguje dostęp http do terminala. Wymaga ponownego uruchomienia.",
+                "log_http": "Logi dostępu HTTP",
+                "log_http_desc": "Loguje dostęp HTTP do terminala. Wymaga ponownego uruchomienia.",
                 "log_to_terminal": "Logi do terminala",
                 "log_to_terminal_desc": "Przekazuje logi do terminala oprócz logów do pliku. Zawsze prawdziwe, jeśli logowanie do pliku jest wyłączone. Wymaga ponownego uruchomienia.",
                 "maximum_session_age": "Maksymalny czas trwania sesji",
@@ -531,7 +536,9 @@
                 "skip_single_name_performers": "Pomiń wykonawców z jedną nazwą bez dodatkowego rozróżnienia",
                 "tag_skipped_matches": "Otaguj pominięte dopasowania",
                 "tag_skipped_performers": "Otaguj pominiętych wykonawców",
-                "skip_single_name_performers_tooltip": "Bez włączenia tej opcji wykonawcy o popularnych imionach (np. Samantha, Olga) będą dopasowywani"
+                "skip_single_name_performers_tooltip": "Bez włączenia tej opcji wykonawcy o popularnych imionach (np. Samantha, Olga) będą dopasowywani",
+                "performer_genders": "Płeć wykonawcy",
+                "performer_genders_desc": "Wykonawcy o wybranych płciach zostaną uwzględnieni podczas identyfikacji."
             },
             "import_from_exported_json": "Import z wyeksportowanego pliku JSON w katalogu metadanych. Wymazuje istniejącą bazę danych.",
             "incremental_import": "Import przyrostowy z dostarczonego wyeksportowanego pliku zip.",
@@ -570,7 +577,18 @@
             "generate_sprites_during_scan_tooltip": "Obrazy wyświetlane pod odtwarzaczem wideo ułatwiające nawigację.",
             "optimise_database": "Popraw wydajność, analizując i przebudowując całą bazę danych.",
             "rescan": "Przeskanuj pliki ponownie",
-            "rescan_tooltip": "Przeskanuj ponownie każdy plik w ścieżce. Używane do wymuszenia aktualizacji metadanych plików i ponownego skanowania plików ZIP."
+            "rescan_tooltip": "Przeskanuj ponownie każdy plik w ścieżce. Używane do wymuszenia aktualizacji metadanych plików i ponownego skanowania plików ZIP.",
+            "auto_tag_warning": "Tego procesu nie można cofnąć i może on powodować wygenerowanie nieprawidłowych wyników.",
+            "backup_database": {
+                "destination": "Miejsce docelowe",
+                "download": "Pobierz kopię zapasową",
+                "include_blobs": "Uwzględnij bloby w kopii zapasowej",
+                "to_directory": "Do {katalog}"
+            },
+            "clean_ignore_zip_contents": "Ignoruj zawartość pliku zip",
+            "generate_image_phashes_during_scan": "Wygeneruj skróty percepcyjne obrazów",
+            "generate_image_phashes_during_scan_tooltip": "Do deduplikacji i identyfikacji.",
+            "optimise_database_warning": "**Ostrzeżenie:** podczas wykonywania tego zadania wszelkie operacje modyfikujące bazę danych nie powiodą się. W zależności od rozmiaru bazy danych proces może potrwać kilka minut. Wymagane jest co najmniej tyle wolnego miejsca na dysku, ile wynosi rozmiar bazy danych, jednak zalecane jest 1,5 razy więcej."
         },
         "tools": {
             "scene_duplicate_checker": "Sprawdzacz duplikatów scen",
@@ -820,9 +838,22 @@
             },
             "sfw_mode": {
                 "heading": "Tryb treści SFW"
+            },
+            "troubleshooting_mode": {
+                "button": "Tryb rozwiązywania problemów",
+                "dialog_title": "Włącz tryb rozwiązywania problemów",
+                "dialog_description": "To tymczasowo wyłączy wszystkie dostosowania, aby ułatwić diagnozowanie problemów:",
+                "dialog_item_plugins": "Wszystkie wtyczki",
+                "dialog_item_css": "Własny CSS",
+                "dialog_item_js": "Własny JavaScript",
+                "dialog_reload_note": "Strona zostanie automatycznie odświeżona.",
+                "enable": "Włącz i odśwież"
             }
         },
-        "advanced_mode": "Tryb zaawansowany"
+        "advanced_mode": "Tryb zaawansowany",
+        "changelog": {
+            "header": "Lista zmian"
+        }
     },
     "configuration": "Konfiguracja",
     "countables": {
@@ -1016,7 +1047,7 @@
         "only_select_matching_codecs": "Zaznacz tylko wtedy, gdy wszystkie kodeki w grupie duplikatów się zgadzają",
         "select_oldest": "Zaznacz najstarszy plik w grupie duplikatów",
         "select_none": "Odznacz wszystko",
-        "select_options": "Ustawienia zaznaczania…",
+        "select_options": "Wybierz opcje…",
         "select_youngest": "Zaznacz najmłodszy plik w grupie duplikatów"
     },
     "duplicated_phash": "Duplikaty (phash)",
@@ -1523,5 +1554,7 @@
     },
     "include_sub_studio_content": "Uwzględnij zawartość podstudia",
     "include_sub_tag_content": "Uwzględnij zawartość podtaga",
-    "odate_recorded_no_sfw": "Nie zarejestrowano polubień"
+    "odate_recorded_no_sfw": "Nie zarejestrowano polubień",
+    "career_end": "Koniec kariery",
+    "career_start": "Początek kariery"
 }

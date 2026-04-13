@@ -64,6 +64,7 @@
 | `,` | Hide/Show sidebar |
 | `.` | Hide/Show scene scrubber |
 | `o` | Increment O-Counter |
+| `d d` | Delete scene |
 | Ratings ||
 | `r {1-5}` | Set rating (stars) |
 | `r 0` | Unset rating (stars) |

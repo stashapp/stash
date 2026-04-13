@@ -1,6 +1,7 @@
 import { Form } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { StashBox } from "src/core/generated-graphql";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IStashBoxSelectorProps {
   stashBoxes: StashBox[];
@@ -13,6 +14,15 @@ export const StashBoxSelector: React.FC<IStashBoxSelectorProps> = ({
   selectedEndpoint,
   onEndpointChange,
 }) => {
+  const { configuration } = useConfigurationContext();
+
+  function stashboxNameForEndpoint(endpoint: string) {
+    let box = configuration?.general.stashBoxes.find(
+      (sb) => sb.endpoint === endpoint
+    );
+    return `stash-box: ${box?.name ?? endpoint}`;
+  }
+
   return (
     <Form.Control
       as="select"
@@ -28,7 +38,7 @@ export const StashBoxSelector: React.FC<IStashBoxSelectorProps> = ({
       )}
       {stashBoxes.map((i) => (
         <option value={i.endpoint} key={i.endpoint}>
-          {i.endpoint}
+          {stashboxNameForEndpoint(i.endpoint)}
         </option>
       ))}
     </Form.Control>

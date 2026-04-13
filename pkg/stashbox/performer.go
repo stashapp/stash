@@ -242,11 +242,11 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	if p.BirthDate != nil {
-		sp.Birthdate = padFuzzyDate(p.BirthDate)
+		sp.Birthdate = p.BirthDate
 	}
 
 	if p.DeathDate != nil {
-		sp.DeathDate = padFuzzyDate(p.DeathDate)
+		sp.DeathDate = p.DeathDate
 	}
 
 	if p.Gender != nil {
@@ -288,23 +288,6 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	return sp
-}
-
-func padFuzzyDate(date *string) *string {
-	if date == nil {
-		return nil
-	}
-
-	var paddedDate string
-	switch len(*date) {
-	case 10:
-		paddedDate = *date
-	case 7:
-		paddedDate = fmt.Sprintf("%s-01", *date)
-	case 4:
-		paddedDate = fmt.Sprintf("%s-01-01", *date)
-	}
-	return &paddedDate
 }
 
 // FindPerformerByID queries stash-box for a performer by ID.

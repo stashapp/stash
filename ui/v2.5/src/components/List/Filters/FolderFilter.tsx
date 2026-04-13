@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  CriterionModifier,
+  FilterMode,
   FolderDataFragment,
+  MultiCriterionInput,
+  useFindFolderHierarchyForIDsQuery,
   useFindFoldersForQueryQuery,
   useFindRootFoldersForSelectQuery,
 } from "src/core/generated-graphql";
@@ -141,15 +145,71 @@ function replaceFolder(folder: IFolder): (f: IFolder) => IFolder {
   };
 }
 
-function useFolderMap(query: string, skip?: boolean) {
+function mergeFolderMaps(base: IFolder[], update: IFolder[]): IFolder[] {
+  const ret = [...base];
+
+  update.forEach((updateFolder) => {
+    const existingIndex = ret.findIndex((f) => f.id === updateFolder.id);
+    if (existingIndex === -1) {
+      // not found, add to the end
+      ret.push(updateFolder);
+    } else {
+      // found, replace
+      ret[existingIndex] = updateFolder;
+    }
+  });
+
+  return ret;
+}
+
+function useFolderMap(props: {
+  query: string;
+  skip?: boolean;
+  initialSelected?: string[];
+  mode?: FilterMode;
+}) {
+  const { query, skip = false, initialSelected, mode } = props;
+
+  const [cachedInitialSelected] = useState<string[]>(initialSelected ?? []);
+
+  // exclude zip folders for scenes and galleries
+  const excludeZipFolders =
+    mode === FilterMode.Scenes || mode === FilterMode.Galleries;
+
+  const zipFileFilter: MultiCriterionInput | undefined = useMemo(
+    () =>
+      excludeZipFolders
+        ? {
+            modifier: CriterionModifier.IsNull,
+          }
+        : undefined,
+    [excludeZipFolders]
+  );
+
+  const folderFilterForQuery = useMemo(
+    () => (zipFileFilter ? { zip_file: zipFileFilter } : undefined),
+    [zipFileFilter]
+  );
+
   const { data: rootFoldersResult } = useFindRootFoldersForSelectQuery({
     skip,
+    variables: {
+      zip_file_filter: zipFileFilter,
+    },
   });
 
   const { data: queryFoldersResult } = useFindFoldersForQueryQuery({
     skip: !query,
     variables: {
       filter: { q: query, per_page: 200 },
+      folder_filter: folderFilterForQuery,
+    },
+  });
+
+  const { data: initialSelectedResult } = useFindFolderHierarchyForIDsQuery({
+    skip: !initialSelected || cachedInitialSelected.length === 0,
+    variables: {
+      ids: cachedInitialSelected ?? [],
     },
   });
 
@@ -157,6 +217,88 @@ function useFolderMap(query: string, skip?: boolean) {
     const ret = rootFoldersResult?.findFolders.folders ?? [];
     return ret.map((f) => ({ ...f, expanded: false, children: undefined }));
   }, [rootFoldersResult]);
+
+  const initialSelectedFolders: IFolder[] = useMemo(() => {
+    const ret: IFolder[] = [];
+    (initialSelectedResult?.findFolders.folders ?? []).forEach((folder) => {
+      if (!folder.parent_folders.length) {
+        // add root folder if not present
+        if (!ret.find((f) => f.id === folder.id)) {
+          ret.push({ ...folder, expanded: true, children: [] });
+        }
+        return;
+      }
+
+      let currentParent: IFolder | undefined;
+
+      for (let i = folder.parent_folders.length - 1; i >= 0; i--) {
+        const thisFolder = folder.parent_folders[i];
+        let existing: IFolder | undefined;
+
+        if (i === folder.parent_folders.length - 1) {
+          // last parent, add the folder as root if not present
+          existing = ret.find((f) => f.id === thisFolder.id);
+          if (!existing) {
+            existing = {
+              ...folder.parent_folders[i],
+              expanded: true,
+              children: folder.parent_folders[i].sub_folders
+                // filter out zip folders if needed
+                .filter((f) => f.zip_file === null || !excludeZipFolders)
+                .map((f) => ({
+                  ...f,
+                  expanded: false,
+                  children: undefined,
+                })),
+            };
+            ret.push(existing);
+          }
+          currentParent = existing;
+          continue;
+        }
+
+        const existingIndex =
+          currentParent!.children?.findIndex((f) => f.id === thisFolder.id) ??
+          -1;
+        if (existingIndex === -1) {
+          // should be guaranteed
+          throw new Error(
+            `Parent folder ${thisFolder.id} not found in children of ${
+              currentParent!.id
+            }`
+          );
+        }
+
+        existing = currentParent!.children![existingIndex];
+
+        // replace children
+        existing = {
+          ...existing,
+          expanded: true,
+          // filter out zip folders if needed
+          children: thisFolder.sub_folders
+            .filter((f) => f.zip_file === null || !excludeZipFolders)
+            .map((f) => ({
+              ...f,
+              expanded: false,
+              children: undefined,
+            })),
+        };
+
+        currentParent!.children![existingIndex] = existing;
+        currentParent = existing;
+      }
+    });
+    return ret;
+  }, [initialSelectedResult, excludeZipFolders]);
+
+  const mergedRootFolders = useMemo(() => {
+    if (query) {
+      return rootFolders;
+    }
+
+    return mergeFolderMaps(rootFolders, initialSelectedFolders);
+  }, [rootFolders, initialSelectedFolders, query]);
 
   const queryFolders: IFolder[] = useMemo(() => {
     // construct the folder list from the query result
@@ -229,18 +371,21 @@ function useFolderMap(query: string, skip?: boolean) {
 
   useEffect(() => {
     if (!query) {
-      setFolderMap(rootFolders);
+      setFolderMap(mergedRootFolders);
     } else {
       setFolderMap(queryFolders);
     }
-  }, [query, rootFolders, queryFolders]);
+  }, [query, mergedRootFolders, queryFolders]);
 
   async function onToggleExpanded(folder: IFolder) {
     setFolderMap(folderMap.map(toggleExpandedFn(folder)));
 
     // query children folders if not already loaded
     if (folder.children === undefined) {
-      const subFolderResult = await queryFindSubFolders(folder.id);
+      const subFolderResult = await queryFindSubFolders(
+        folder.id,
+        excludeZipFolders
+      );
       setFolderMap((current) =>
         current.map(
           replaceFolder({
@@ -312,17 +457,19 @@ export const FolderSelector: React.FC<{
 interface IInputFilterProps {
   criterion: FolderCriterion;
   setCriterion: (c: FolderCriterion) => void;
+  mode?: FilterMode;
 }
 
 export const FolderFilter: React.FC<IInputFilterProps> = ({
   criterion,
   setCriterion,
+  mode,
 }) => {
   const intl = useIntl();
   const [query, setQuery] = useState("");
   const [displayQuery, onQueryChange] = useDebouncedState(query, setQuery, 250);
 
-  const { folderMap, onToggleExpanded } = useFolderMap(query);
+  const { folderMap, onToggleExpanded } = useFolderMap({ query, mode });
 
   const messages = defineMessages({
     sub_folder_depth: {
@@ -472,8 +619,6 @@ export const SidebarFolderFilter: React.FC<
     props.onOpen?.();
   }
 
-  const { folderMap, onToggleExpanded } = useFolderMap(query, skip);
-
   const option = props.criterionOption ?? FolderCriterionOption;
   const { filter, setFilter } = props;
 
@@ -487,16 +632,28 @@ export const SidebarFolderFilter: React.FC<
     return newCriterion;
   }, [option.type, filter]);
 
+  const subDirsSelected = criterion.value?.depth === -1;
+
   // if there are multiple values or excluded values, then we show none of the
   // current values
   const multipleSelected =
     criterion.value.items.length > 1 || criterion.value.excluded.length > 0;
 
+  const { folderMap, onToggleExpanded } = useFolderMap({
+    query,
+    skip,
+    initialSelected: criterion.value.items.map((i) => i.id),
+    mode: filter.mode,
+  });
+
   function onSelect(folder: IFolder) {
+    // maintain sub-folder select if present
+    const depth = subDirsSelected ? -1 : 0;
+
     const c = criterion.clone() as FolderCriterion;
     c.value = {
       items: [{ id: folder.id, label: folder.path }],
-      depth: 0,
+      depth,
       excluded: [],
     };
 
@@ -549,8 +706,6 @@ export const SidebarFolderFilter: React.FC<
       onSelect(matchingFolders[0]);
     }
   }
-
-  const subDirsSelected = criterion.value?.depth === -1;
 
   const selectedList = useMemo(() => {
     if (multipleSelected) {

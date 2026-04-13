@@ -232,8 +232,6 @@
             "latest_version": "Phiên bản mới nhất",
             "latest_version_build_hash": "Mã bản dựng mới nhất:",
             "release_date": "Ngày phát hành:",
-            "stash_discord": "Tham gia vào kênh {url} của chúng tôi",
-            "stash_open_collective": "Giúp đỡ chúng tôi qua {url}",
             "version": "Phiên bản",
             "build_time": "Thời điểm tạo:",
             "stash_wiki": "Trang {url} của Stash",

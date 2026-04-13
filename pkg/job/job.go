@@ -66,6 +66,23 @@ type Job struct {
 	cancelFunc context.CancelFunc
 }
 
+// statusCopy returns a copy of the Job with only the fields needed for
+// status reporting. Internal fields (exec, cancelFunc, outerCtx) are
+// excluded so that subscription channels don't retain heavy resources.
+func (j *Job) statusCopy() Job {
+	return Job{
+		ID:          j.ID,
+		Status:      j.Status,
+		Details:     j.Details,
+		Description: j.Description,
+		Progress:    j.Progress,
+		StartTime:   j.StartTime,
+		EndTime:     j.EndTime,
+		AddTime:     j.AddTime,
+		Error:       j.Error,
+	}
+}
+
 // TimeElapsed returns the total time elapsed for the job.
 // If the EndTime is set, then it uses this to calculate the elapsed time, otherwise it uses time.Now.
 func (j *Job) TimeElapsed() time.Duration {

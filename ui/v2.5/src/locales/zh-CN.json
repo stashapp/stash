@@ -158,7 +158,8 @@
         "reveal_in_file_manager": "在文件管理器中显示",
         "exclude_lowercase": "排除",
         "from_clipboard": "来自剪贴板",
-        "selective_generate": "选择性生成"
+        "selective_generate": "选择性生成",
+        "create_parent_tag": "创建上级标签"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -249,9 +250,7 @@
             "latest_version_build_hash": "最新版本识别码:",
             "new_version_notice": "[新版本]",
             "release_date": "发布日期：",
-            "stash_discord": "加入我们的 {url} 频道",
             "stash_home": "Stash 主页在 {url}",
-            "stash_open_collective": "通过 {url} 支持我们",
             "stash_wiki": "Stash {url} 页面",
             "version": "版本"
         },
@@ -609,7 +608,9 @@
                 "to_directory": "到 {directory}",
                 "warning_blobs": "备份中不会包含 Blob 文件。这意味着，要成功从备份中恢复，Blob 文件必须存在于 Blob 存储位置。",
                 "zip": "SQLite 数据库文件和 blob 文件将被压缩到一个文件中，文件名格式为 {filename_format}"
-            }
+            },
+            "clean_ignore_zip_contents": "忽略 zip 文件内容",
+            "clean_ignore_zip_contents_desc": "速度更快，但会遗漏在 zip 压缩文件中删除的文件。如果不在压缩文件中删除文件，启用它是安全的。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -803,7 +804,7 @@
                 "heading": "短片/标记 预览墙",
                 "options": {
                     "display_title": "显示标题和标签",
-                    "toggle_sound": "播放声音"
+                    "toggle_sound": "预览悬停时播放声音"
                 }
             },
             "scroll_attempts_before_change": {
@@ -885,6 +886,15 @@
                 "enable": "启用并刷新",
                 "overlay_message": "故障排查模式已激活——所有自定义功能均被禁用",
                 "exit": "退出"
+            },
+            "scene_view": {
+                "heading": "场景视图",
+                "options": {
+                    "preview_volume": {
+                        "description": "当鼠标悬停在场景上时预览的音量。设置为0以静音。",
+                        "heading": "预览音量"
+                    }
+                }
             }
         },
         "advanced_mode": "高级模式",
@@ -993,7 +1003,8 @@
         "merge": {
             "destination": "目标",
             "empty_results": "目标字段值将不变。",
-            "source": "源"
+            "source": "源",
+            "combined": "已合并"
         },
         "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} 其它 {Reassign {pluralEntity}}}",
         "reassign_files": {
@@ -1057,7 +1068,8 @@
         "stashid_exists_warning": "此stash-box已存在的stash编号将会被取代。",
         "studios_found": "找到{count} 个工作室",
         "tags_found": "找到{count} 个标签",
-        "scrape_results_missing": "丢失"
+        "scrape_results_missing": "丢失",
+        "edit_entity_count_title": "编辑{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -1668,7 +1680,12 @@
         "to_use_the_tag_tagger": "使用标记标签的功能，需要配置一个stash-box实例。",
         "untagged_tags": "未标记的标签",
         "update_tags": "更新标签",
-        "updating_untagged_tags_description": "更新未标记的标签时，会尝试匹配那些没有 stashid 的标签并更新元数据。"
+        "updating_untagged_tags_description": "更新未标记的标签时，会尝试匹配那些没有 stashid 的标签并更新元数据。",
+        "config": {
+            "create_parent_desc": "从 stash-box 类别中创建缺失的父母标签，或用完全匹配的名称为现有的父母标签添加标签",
+            "create_parent_label": "创建父母标签"
+        },
+        "create_or_tag_parent_tags": "创建缺失或标记已存在的父母标签"
     },
     "tagger": {
         "config": {
@@ -1684,5 +1701,8 @@
     "include_sub_folders": "包含自文件夹",
     "parent_folder": "父母文件夹",
     "sub_folder_depth": "子文件夹深度(留空为全部)",
-    "sub_folders": "子文件夹"
+    "sub_folders": "子文件夹",
+    "empty_value": "空的",
+    "refer_to": "请看 {link}。",
+    "scenes_size": "场景大小"
 }

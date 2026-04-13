@@ -251,11 +251,11 @@
             "latest_version_build_hash": "Empreinte de construction de la dernière version :",
             "new_version_notice": "[Nouveautés]",
             "release_date": "Date de sortie :",
-            "stash_discord": "Rejoignez notre chaine {url}",
-            "stash_home": "Accueil de Stash sur {url}",
-            "stash_open_collective": "Soutenez-nous via {url}",
-            "stash_wiki": "{url} de Stash",
-            "version": "Version actuelle"
+            "stash_home": "Découvrez Stash sur {url}.",
+            "stash_wiki": "Consultez le site web de Stash {url}.",
+            "version": "Version actuelle",
+            "stash_community": "Rejoignez notre forum {forumUrl} ou notre serveur communautaire {discordUrl}.",
+            "support_us": "Soutenez-nous via {openCollectiveUrl} ou {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Chemins de l'application"
@@ -611,7 +611,11 @@
                 "to_directory": "Vers {directory}",
                 "warning_blobs": "Les fichiers blob ne seront pas inclus dans la sauvegarde. Cela signifie que pour réussir une restauration à partir de sauvegarde, les fichiers blob doivent être présents dans l'emplacement de stockage blob.",
                 "zip": "Les fichiers de base de données SQLite et les fichiers blob seront compressés en un seul fichier, avec comme nom de fichier {filename_format}"
-            }
+            },
+            "clean_ignore_zip_contents": "Ignorer le contenu du fichier zip",
+            "clean_ignore_zip_contents_desc": "Plus rapide, mais les fichiers supprimés à l'intérieur des archives zip seront ignorés. Vous pouvez l'activer sans risque si vous ne supprimez pas de fichiers dans les archives zip.",
+            "auto_tag_confirm": "Cela permettra de faire correspondre votre contenu aux métadonnées existantes.",
+            "auto_tag_warning": "Cette opération est irréversible et peut produire des correspondances erronées."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -683,6 +687,10 @@
                 "show_all_details": {
                     "description": "Activée, tous les détails du contenu seront affichés par défaut et chaque élément détaillé tiendra dans une seule colonne.",
                     "heading": "Montrer tous les détails"
+                },
+                "show_studio_text": {
+                    "description": "Toujours afficher le nom du studio au format texte dans les vues détaillées, plutôt qu'une icône.",
+                    "heading": "Afficher le studio au format texte"
                 }
             },
             "editing": {
@@ -788,7 +796,8 @@
             "scene_list": {
                 "heading": "Vue en grille",
                 "options": {
-                    "show_studio_as_text": "Afficher en texte la superposition du studio"
+                    "show_studio_as_text": "Afficher en texte la superposition du studio",
+                    "show_studio_as_text_desc": "Par défaut, le logo du studio apparaît sur les fiches de la grille. Activez cette option pour toujours afficher le nom du studio au format texte à la place."
                 }
             },
             "scene_player": {
@@ -820,7 +829,7 @@
                 "heading": "Mur de scènes et marqueurs",
                 "options": {
                     "display_title": "Afficher le titre et étiquettes",
-                    "toggle_sound": "Activer le son"
+                    "toggle_sound": "Activer le son lors du survol de l'aperçu"
                 }
             },
             "scroll_attempts_before_change": {
@@ -887,6 +896,15 @@
                 "enable": "Activer et actualiser",
                 "overlay_message": "Le mode dépannage est actif. Toutes les personnalisations sont désactivées.",
                 "exit": "Sortir"
+            },
+            "scene_view": {
+                "heading": "Vu de la scène",
+                "options": {
+                    "preview_volume": {
+                        "description": "Volume de l'aperçu lorsque vous passez la souris sur une scène. Définir sur 0 pour couper le son.",
+                        "heading": "Volume des aperçus"
+                    }
+                }
             }
         },
         "advanced_mode": "Mode avancé",
@@ -995,7 +1013,8 @@
         "merge": {
             "destination": "Destination",
             "empty_results": "Les valeurs des champs de destination seront inchangées.",
-            "source": "Source"
+            "source": "Source",
+            "combined": "Combiné"
         },
         "performers_found": "{count} performeurs trouvés",
         "reassign_entity_title": "{count, plural, one {Réaffecté {singularEntity}} other {Réaffectés {pluralEntity}}}",
@@ -1692,5 +1711,7 @@
     "parent_folder": "Répertoire parent",
     "sub_folder_depth": "Profondeur des sous-répertoires (vide pour tous)",
     "sub_folders": "Sous-répertoires",
-    "empty_value": "vide"
+    "empty_value": "vide",
+    "scenes_size": "Taille de la scène",
+    "refer_to": "Merci de consulter {link}."
 }

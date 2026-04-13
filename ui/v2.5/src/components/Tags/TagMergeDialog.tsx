@@ -433,6 +433,9 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
     id: "actions.merge",
   });
 
+  const srcIDs = useMemo(() => src.map((s) => s.id), [src]);
+  const destID = useMemo(() => (dest ? [dest.id] : []), [dest]);
+
   useEffect(() => {
     if (tags.length > 0) {
       setDest(tags[0]);
@@ -544,6 +547,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                 creatable={false}
                 onSelect={(items) => setSrc(items)}
                 values={src}
+                excludeIds={destID}
                 menuPortalTarget={document.body}
               />
             </Col>
@@ -579,6 +583,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                 creatable={false}
                 onSelect={(items) => setDest(items[0])}
                 values={dest ? [dest] : undefined}
+                excludeIds={srcIDs}
                 menuPortalTarget={document.body}
               />
             </Col>

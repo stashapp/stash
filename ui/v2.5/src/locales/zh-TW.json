@@ -226,9 +226,7 @@
             "latest_version_build_hash": "最新版本的雜湊值：",
             "new_version_notice": "[新版本]",
             "release_date": "發布日期：",
-            "stash_discord": "加入我們的 {url} 頻道",
             "stash_home": "Stash 的 {url} 專案",
-            "stash_open_collective": "透過 {url} 來支持本計畫的開發",
             "stash_wiki": "Stash 的 {url} 頁面",
             "version": "版本"
         },

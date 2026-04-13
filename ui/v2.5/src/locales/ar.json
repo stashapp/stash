@@ -253,12 +253,12 @@
             "latest_version": "أحدث إصدار",
             "latest_version_build_hash": "أحدث إصدار من رقم البناء:",
             "release_date": "تاريخ الاصدار:",
-            "stash_discord": "انضم إلى {url} قناتنا",
             "stash_home": "صفحة ستاش {url}",
-            "stash_open_collective": "ادعمونا من خلال {url}",
             "stash_wiki": "موقع ستاش {url}",
             "version": "إصدار",
-            "new_version_notice": "[NEW]"
+            "new_version_notice": "[NEW]",
+            "stash_community": "انضم إلى سيرفر مجتمعنا {forumUrl} أو {discordUrl}.",
+            "support_us": "ادعمونا من خلال {openCollectiveUrl} أو {githubSponsorsUrl}."
         },
         "advanced_mode": "الوضع المتقدم",
         "application_paths": {
@@ -267,7 +267,7 @@
         "categories": {
             "about": "حول",
             "changelog": "سجل التغييرات",
-            "interface": "واجهة المستخدم",
+            "interface": "الواجهة",
             "logs": "سجلات",
             "metadata_providers": "موفرو البيانات الوصفية",
             "plugins": "الإضافات",
@@ -618,7 +618,11 @@
                 "scanning_paths": "مسح المسارات التالية"
             },
             "scan_for_content_desc": "قم بمسح المحتوى الجديد وإضافته إلى قاعدة البيانات.",
-            "set_name_date_details_from_metadata_if_present": "قم بتعيين الاسم والتاريخ والتفاصيل من بيانات تعريف الملف المضمنة"
+            "set_name_date_details_from_metadata_if_present": "قم بتعيين الاسم والتاريخ والتفاصيل من بيانات تعريف الملف المضمنة",
+            "auto_tag_confirm": "سيحاول هذا مطابقة المحتوى الخاص بك مع البيانات الوصفية الموجودة.",
+            "auto_tag_warning": "لا يمكن التراجع عن هذه العملية وقد ينتج عنها تطابقات غير صحيحة.",
+            "clean_ignore_zip_contents": "تجاهل محتويات ملف zip",
+            "clean_ignore_zip_contents_desc": "أسرع، لكنه قد لا يتعرف على الملفات المحذوفة داخل ملفات zip. يُنصح بتفعيله إذا لم تقم بحذف الملفات داخل ملفات zip."
         },
         "tools": {
             "graphql_playground": "بيئة اختبار GraphQL",
@@ -653,8 +657,414 @@
                 "option_label": "تم تفعيل CSS المخصص"
             },
             "troubleshooting_mode": {
-                "button": "وضع استكشاف الأخطاء وإصلاحها"
+                "button": "وضع استكشاف الأخطاء وإصلاحها",
+                "dialog_title": "تفعيل وضع استكشاف الأخطاء وإصلاحها",
+                "dialog_description": "سيؤدي هذا إلى تعطيل جميع التخصيصات مؤقتًا للمساعدة في تشخيص المشكلات:",
+                "dialog_item_plugins": "جميع الإضافات",
+                "dialog_item_css": "CSS مخصص",
+                "dialog_item_js": "جافا سكريبت مخصصة",
+                "dialog_item_locales": "لغات مخصصة",
+                "dialog_log_level": "سيتم ضبط مستوى التسجيل على وضع التصحيح لإجراء تشخيصات مفصلة.",
+                "dialog_reload_note": "ستتم إعادة تحميل الصفحة تلقائيًا.",
+                "enable": "تفعيل وإعادة تحميل",
+                "overlay_message": "وضع استكشاف الأخطاء وإصلاحها مُفعّل - جميع التخصيصات مُعطّلة",
+                "exit": "خروج"
+            },
+            "custom_javascript": {
+                "description": "يجب إعادة تحميل الصفحة لتطبيق التغييرات. لا يوجد ضمان للتوافق بين جافا سكريبت المخصصة والإصدارات المستقبلية من Stash.",
+                "heading": "جافا سكريبت مخصصة",
+                "option_label": "تم تفعيل جافا سكريبت المخصصة"
+            },
+            "custom_locales": {
+                "description": "يمكنك تجاوز سلاسل اللغة الفردية. راجع https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json للاطلاع على القائمة الرئيسية. يجب إعادة تحميل الصفحة لتطبيق التغييرات.",
+                "heading": "توطين مخصص",
+                "option_label": "تم تفعيل التوطين المخصص"
+            },
+            "custom_title": {
+                "description": "نص مخصص يُضاف إلى عنوان الصفحة. إذا كان فارغًا، فسيتم استخدام كلمة 'Stash' افتراضيًا.",
+                "heading": "عنوان مخصص"
+            },
+            "delete_options": {
+                "description": "الإعدادات الافتراضية عند حذف الصور والمعارض والمشاهد.",
+                "heading": "حذف الخيارات",
+                "options": {
+                    "delete_file": "حذف الملف افتراضيًا",
+                    "delete_generated_supporting_files": "حذف الملفات الداعمة التي تم إنشاؤها افتراضيًا"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "تكامل سطح المكتب",
+                "notifications_enabled": "تفعيل الإشعارات",
+                "send_desktop_notifications_for_events": "إرسال إشعارات سطح المكتب للأحداث.",
+                "skip_opening_browser": "تخطَّ فتح المتصفح",
+                "skip_opening_browser_on_startup": "تخطّي فتح المتصفح تلقائيًا أثناء بدء التشغيل."
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "عند تفعيل هذا الخيار، سيتم عرض تفاصيل موسعة مع الحفاظ على عرض موجز.",
+                    "heading": "تفاصيل موسعة مختصرة"
+                },
+                "enable_background_image": {
+                    "description": "عرض صورة الخلفية في صفحة التفاصيل.",
+                    "heading": "تفعيل صورة الخلفية"
+                },
+                "heading": "صفحة التفاصيل",
+                "show_all_details": {
+                    "description": "عند التفعيل، ستظهر جميع تفاصيل المحتوى بشكل افتراضي، وسيتم وضع كل عنصر من عناصر التفاصيل تحت عمود واحد.",
+                    "heading": "عرض جميع التفاصيل"
+                },
+                "show_studio_text": {
+                    "description": "اعرض اسم الاستوديو دائمًا كنص في صفحات التفاصيل بدلاً من رمز.",
+                    "heading": "عرض الاستوديو كنص"
+                }
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "قم بإزالة إمكانية إنشاء كائنات جديدة من محددات القائمة المنسدلة.",
+                    "heading": "تعطيل إنشاء القائمة المنسدلة"
+                },
+                "heading": "تحرير",
+                "max_options_shown": {
+                    "label": "الحد الأقصى لعدد العناصر التي ستظهر في القوائم المنسدلة المختارة"
+                },
+                "rating_system": {
+                    "star_precision": {
+                        "label": "دقة تصنيف النجوم",
+                        "options": {
+                            "full": "كامل",
+                            "half": "نصف",
+                            "quarter": "ربع",
+                            "tenth": "عشر"
+                        }
+                    },
+                    "type": {
+                        "label": "نوع نظام التصنيف",
+                        "options": {
+                            "decimal": "عشري",
+                            "stars": "النجوم"
+                        }
+                    }
+                }
+            },
+            "funscript_offset": {
+                "description": "إزاحة زمنية بالمللي ثانية لتشغيل النصوص التفاعلية.",
+                "heading": "إزاحة Funscript (مللي ثانية)"
+            },
+            "handy_connection": {
+                "connect": "اتصل",
+                "server_offset": {
+                    "heading": "إزاحة الخادم"
+                },
+                "status": {
+                    "heading": "حالة اتصال سهلة الاستخدام"
+                },
+                "sync": "مزامنة"
+            },
+            "handy_connection_key": {
+                "description": "مفتاح اتصال عملي يُستخدم للمشاهد التفاعلية. سيسمح ضبط هذا المفتاح لبرنامج Stash بمشاركة معلومات المشهد الحالي مع موقع handyfeeling.com.",
+                "heading": "مفتاح توصيل عملي"
+            },
+            "image_lightbox": {
+                "heading": "معرض الصور"
+            },
+            "image_wall": {
+                "direction": "اتجاه",
+                "heading": "جدار الصور",
+                "margin": "الهامش (بالبكسل)"
+            },
+            "images": {
+                "heading": "صور",
+                "options": {
+                    "create_image_clips_from_videos": {
+                        "description": "عندما تكون مقاطع الفيديو معطلة في مكتبة ما، سيتم فحص ملفات الفيديو (انظر ملحقات الفيديو) كمقاطع صور.",
+                        "heading": "قم بمسح امتدادات الفيديو كمقاطع صور"
+                    },
+                    "write_image_thumbnails": {
+                        "description": "كتابة الصور المصغرة على القرص عند إنشائها أثناء التشغيل.",
+                        "heading": "اكتب صورًا مصغرة"
+                    }
+                }
+            },
+            "interactive_options": "خيارات تفاعلية",
+            "language": {
+                "heading": "الغة"
+            },
+            "max_loop_duration": {
+                "description": "أقصى مدة عرض للمشهد حيث يقوم مشغل المشهد بتكرار الفيديو. اضبط القيمة على 0 لتعطيل هذه الخاصية.",
+                "heading": "أقصى مدة للتكرار"
+            },
+            "menu_items": {
+                "description": "إظهار أو إخفاء أنواع مختلفة من المحتوى على شريط التنقل.",
+                "heading": "أصناف القائمة"
+            },
+            "minimum_play_percent": {
+                "description": "النسبة المئوية للوقت الذي يجب فيه تشغيل مشهد ما قبل زيادة عدد مرات تشغيله.",
+                "heading": "الحد الأدنى لنسبة التشغيل"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "مسار مخصص لصور المؤدي الافتراضية. اتركه فارغًا لاستخدام الإعدادات الافتراضية المدمجة.",
+                        "heading": "مسار صورة المؤدي المخصص"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "الخيار الافتراضي هو معاينات الفيديو (mp4). لتقليل استهلاك وحدة المعالجة المركزية أثناء التصفح، يمكنك استخدام معاينات الصور المتحركة (webp). مع ذلك، يجب إنشاء هذه المعاينات بشكل منفصل عن معاينات الفيديو، وهي ملفات أكبر حجمًا.",
+                "heading": "نوع المعاينة",
+                "options": {
+                    "animated": "صورة متحركة",
+                    "static": "صورة ثابتة",
+                    "video": "فيديو"
+                }
+            },
+            "scene_list": {
+                "heading": "عرض شبكي",
+                "options": {
+                    "show_studio_as_text": "عرض طبقة الاستوديو كنص",
+                    "show_studio_as_text_desc": "يظهر شعار الاستوديو افتراضيًا على البطاقات في العرض الشبكي. فعّل هذا الخيار لعرض اسم الاستوديو كنص دائمًا."
+                }
+            },
+            "scene_player": {
+                "heading": "مشغل المشهد",
+                "options": {
+                    "always_start_from_beginning": "ابدأ تشغيل الفيديو دائمًا من البداية",
+                    "auto_start_video": "تشغيل الفيديو تلقائيًا",
+                    "auto_start_video_on_play_selected": {
+                        "description": "تشغيل مقاطع الفيديو تلقائيًا عند التشغيل من قائمة الانتظار، أو عند تشغيل مقاطع فيديو محددة أو عشوائية من صفحة المشاهد.",
+                        "heading": "بدء تشغيل الفيديو تلقائيًا عند تشغيل الفيديو المحدد"
+                    },
+                    "continue_playlist_default": {
+                        "description": "قم بتشغيل المشهد التالي في قائمة الانتظار عند انتهاء الفيديو.",
+                        "heading": "متابعة قائمة التشغيل افتراضيًا"
+                    },
+                    "disable_mobile_media_auto_rotate": "تعطيل خاصية التدوير التلقائي للوسائط بملء الشاشة على الهاتف المحمول",
+                    "enable_chromecast": "تفعيل Chromecast",
+                    "show_ab_loop_controls": "عرض عناصر التحكم في حلقة AB",
+                    "show_scrubber": "اظهر مستخرج البيانات",
+                    "show_range_markers": "إظهار علامات المدى",
+                    "track_activity": "تفعيل سجل تشغيل المشهد",
+                    "vr_tag": {
+                        "description": "لن يظهر زر الواقع الافتراضي إلا للمشاهد التي تحمل هذه العلامة.",
+                        "heading": "علامة الواقع الافتراضي"
+                    }
+                }
+            },
+            "scene_view": {
+                "heading": "عرض المشهد",
+                "options": {
+                    "preview_volume": {
+                        "description": "مستوى صوت المعاينة عند تمرير المؤشر فوق المشهد. اضبطه على 0 لكتم الصوت.",
+                        "heading": "مستوى صوت المعاينة"
+                    }
+                }
+            },
+            "scene_wall": {
+                "heading": "جدار مشهد / العلامات",
+                "options": {
+                    "display_title": "عرض العنوان والوسوم",
+                    "toggle_sound": "تفعيل الصوت عند تمرير المؤشر فوق المعاينة"
+                }
+            },
+            "scroll_attempts_before_change": {
+                "description": "عدد مرات محاولة التمرير قبل الانتقال إلى العنصر التالي/السابق. ينطبق هذا فقط على وضع التمرير Pan Y.",
+                "heading": "محاولات التمرير قبل الانتقال"
+            },
+            "sfw_mode": {
+                "description": "فعّل هذا الخيار إذا كنت تستخدم خاصية التخزين المؤقت لحفظ المحتوى المناسب لجميع الأعمار. يُخفي هذا الخيار أو يُغيّر بعض جوانب واجهة المستخدم المتعلقة بالمحتوى المخصص للبالغين.",
+                "heading": "وضع المحتوى الآمن للعمل"
+            },
+            "show_tag_card_on_hover": {
+                "description": "أظهر بطاقة التعريف عند تمرير مؤشر الماوس فوق شارات التعريف.",
+                "heading": "تلميحات أدوات بطاقة العلامة"
+            },
+            "slideshow_delay": {
+                "description": "تتوفر خاصية عرض الشرائح في المعارض عند استخدام وضع عرض الحائط.",
+                "heading": "تأخير عرض الشرائح (بالثواني)"
+            },
+            "studio_panel": {
+                "heading": "عرض الاستوديو",
+                "options": {
+                    "show_child_studio_content": {
+                        "description": "في عرض الاستوديو، اعرض المحتوى من الاستوديوهات الفرعية أيضًا.",
+                        "heading": "عرض محتوى الاستوديوهات الفرعية"
+                    }
+                }
+            },
+            "performer_list": {
+                "heading": "قائمة المؤدين",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "عرض الروابط على بطاقات شبكة المؤدي"
+                    }
+                }
+            },
+            "tag_panel": {
+                "heading": "عرض الوسوم",
+                "options": {
+                    "show_child_tagged_content": {
+                        "description": "في عرض الوسوم، اعرض المحتوى من الوسوم الفرعية أيضًا.",
+                        "heading": "عرض محتوى العلامات الفرعية"
+                    }
+                }
+            },
+            "title": "واجهة المستخدم",
+            "use_stash_hosted_funscript": {
+                "description": "عند تفعيل هذه الميزة، سيتم تقديم البرامج النصية مباشرةً من Stash إلى جهاز Handy الخاص بك دون استخدام خادم Handy تابع لجهة خارجية. يتطلب ذلك إمكانية الوصول إلى Stash من جهاز Handy الخاص بك، وإنشاء مفتاح API إذا كانت بيانات اعتماد Stash مُهيأة.",
+                "heading": "قم بتشغيل البرامج النصية الوظيفية مباشرة"
             }
+        }
+    },
+    "configuration": "إعدادات",
+    "connection_monitor": {
+        "websocket_connection_failed": "تعذر إنشاء اتصال WebSocket: راجع وحدة تحكم المتصفح لمزيد من التفاصيل",
+        "websocket_connection_reestablished": "تمت إعادة إنشاء اتصال Websocket"
+    },
+    "containing_group": "مجموعة احتواء",
+    "containing_group_count": "عدد المجموعات المحتوية",
+    "containing_groups": "مجموعات تحتوي",
+    "country": "دولة",
+    "cover_image": "صورة الغلاف",
+    "created_at": "تم الإنشاء في",
+    "criterion": {
+        "greater_than": "أكبر من",
+        "less_than": "أقل من",
+        "value": "قيمة"
+    },
+    "criterion_modifier": {
+        "between": "بين",
+        "equals": "يكون",
+        "excludes": "استبعد",
+        "greater_than": "يكون أكبر من",
+        "includes": "يشمل",
+        "includes_all": "يشمل كل شيء",
+        "is_null": "يكون فارغ",
+        "less_than": "يكون أقل من",
+        "matches_regex": "يطابق التعبير النمطي",
+        "not_between": "ليس بين",
+        "not_equals": "ليس",
+        "not_matches_regex": "لا يتطابق مع التعبير النمطي",
+        "not_null": "ليس فارغًا"
+    },
+    "criterion_modifier_values": {
+        "any": "أي",
+        "any_of": "أي من",
+        "none": "لا شيء",
+        "only": "فقط"
+    },
+    "custom": "مخصص",
+    "custom_fields": {
+        "field": "حقل",
+        "title": "الحقول المخصصة",
+        "value": "قيمة"
+    },
+    "date": "تاريخ",
+    "date_format": "سنة-شهر-يوم",
+    "datetime_format": "سنة-شهر-يوم ساعة:دقيقة",
+    "death_date": "تاريخ الوفاة",
+    "death_year": "سنة الوفاة",
+    "descending": "تنازلي",
+    "description": "وصف",
+    "detail": "التفاصيل",
+    "details": "تفاصيل",
+    "developmentVersion": "نسخة التطوير",
+    "dialogs": {
+        "clear_o_history_confirm": "هل أنت متأكد من رغبتك في مسح سجل الاستمناء؟",
+        "clear_o_history_confirm_sfw": "هل أنت متأكد من رغبتك في مسح سجل الإعجابات؟",
+        "clear_play_history_confirm": "هل أنت متأكد من رغبتك في مسح سجل التشغيل؟",
+        "create_new_entity": "إنشاء كيان جديد {entity}",
+        "delete_alert": "سيتم حذف {count, plural, one {{singularEntity}} other {{pluralEntity}}} نهائياً:",
+        "delete_alert_to_trash": "سيتم نقل {count, plural, one {{singularEntity}} other {{pluralEntity}}} إلى سلة المهملات:",
+        "delete_confirm": "هل أنت متأكد من رغبتك في حذف {entityName}؟",
+        "delete_galleries_extra": "...بالإضافة إلى أي ملفات صور غير مرفقة بأي معرض آخر.",
+        "delete_gallery_files": "احذف مجلد المعرض/ملف zip وأي صور غير مرفقة بأي معرض آخر.",
+        "delete_object_desc": "هل أنت متأكد من رغبتك في حذف {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}؟",
+        "delete_object_overflow": "…و {count} غير {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+        "delete_object_title": "حذف {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_until_updated": "لا يظهر حتى التحديث التالي",
+        "edit_entity_title": "تعديل {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "edit_entity_count_title": "تعديل {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "export_include_related_objects": "قم بتضمين الكائنات ذات الصلة في عملية التصدير",
+        "export_title": "تصدير",
+        "imagewall": {
+            "direction": {
+                "column": "عمود",
+                "description": "تخطيط قائم على الأعمدة أو الصفوف.",
+                "row": "صف"
+            },
+            "margin_desc": "عدد وحدات البكسل الهامشية حول كل صورة بالكامل."
+        },
+        "lightbox": {
+            "delay": "التأخير (ثانية)",
+            "disable_animation": "تعطيل حركة الانتقال بين الصور",
+            "display_mode": {
+                "fit_horizontally": "مناسب أفقيا",
+                "fit_to_screen": "مناسب للشاشة",
+                "label": "وضع العرض",
+                "original": "أصلي"
+            },
+            "options": "خيارات",
+            "page_header": "الصفحة {page} / {total}",
+            "reset_zoom_on_nav": "أعد ضبط مستوى التكبير عند تغيير الصورة",
+            "scale_up": {
+                "description": "قم بتكبير الصور الصغيرة لملء الشاشة.",
+                "label": "قم بتكبيره ليناسب"
+            },
+            "scroll_mode": {
+                "description": "اضغط باستمرار على مفتاح Shift لاستخدام وضع آخر مؤقتًا.",
+                "label": "وضع التمرير",
+                "zoom": "تكبير"
+            }
+        },
+        "merge": {
+            "combined": "مركب",
+            "destination": "وجهة",
+            "empty_results": "ستبقى قيم حقل الوجهة دون تغيير.",
+            "source": "مصدر"
+        },
+        "overwrite_filter_warning": "سيتم استبدال عامل التصفية المحفوظ \"{entityName}\".",
+        "performers_found": "تم العثور على {count} مؤدي",
+        "stashid_exists_warning": "سيتم استبدال معرف لهذا stash-box.",
+        "reassign_files": {
+            "destination": "إعادة التعيين إلى"
+        },
+        "scene_gen": {
+            "clip_previews": "معاينات مقاطع الصور",
+            "covers": "مشاهد الغلاف",
+            "force_transcodes": "توليد رمز التحويل القسري",
+            "force_transcodes_tooltip": "افتراضياً، لا يتم إنشاء عمليات إعادة الترميز إلا عندما يكون ملف الفيديو غير مدعوم في المتصفح. عند التفعيل، سيتم إنشاء عمليات إعادة الترميز حتى عندما يبدو أن ملف الفيديو مدعوم في المتصفح.",
+            "image_phash": "تجزئات الإدراك البصري للصور",
+            "image_phash_tooltip": "لأغراض إزالة التكرار والتعرف على البيانات",
+            "image_previews": "معاينات الصور المتحركة",
+            "image_previews_tooltip": "كما يُمكن إنشاء معاينات متحركة (webp)، وهي مطلوبة فقط عند ضبط نوع معاينة المشهد/جدار العلامة على صورة متحركة. تستهلك هذه المعاينات موارد أقل من وحدة المعالجة المركزية مقارنةً بمعاينات الفيديو أثناء التصفح، ولكنها تُنشأ بالإضافة إليها وتكون ملفاتها أكبر حجمًا.",
+            "image_thumbnails": "صور مصغرة",
+            "interactive_heatmap_speed": "إنشاء خرائط حرارية وسرعات للمشاهد التفاعلية",
+            "marker_image_previews": "معاينات الصور المتحركة باستخدام العلامات",
+            "marker_image_previews_tooltip": "كما يُمكن إنشاء معاينات متحركة (webp)، وهي مطلوبة فقط عند ضبط نوع معاينة المشهد/جدار العلامة على صورة متحركة. تستهلك هذه المعاينات موارد أقل من وحدة المعالجة المركزية مقارنةً بمعاينات الفيديو أثناء التصفح، ولكنها تُنشأ بالإضافة إليها وتكون ملفاتها أكبر حجمًا.",
+            "marker_screenshots": "لقطات شاشة العلامات",
+            "marker_screenshots_tooltip": "صور JPG ثابتة للعلامات",
+            "markers": "معاينات العلامات",
+            "markers_tooltip": "مقاطع فيديو مدتها 20 ثانية تبدأ عند رمز الوقت المحدد.",
+            "override_preview_generation_options": "تجاوز خيارات إنشاء المعاينة",
+            "override_preview_generation_options_desc": "يمكنك تجاوز خيارات إنشاء المعاينة لهذه العملية. يتم تعيين الإعدادات الافتراضية في النظام -> إنشاء المعاينة.",
+            "overwrite": "استبدال الملفات الموجودة",
+            "phash": "التجزئة الإدراكية للفيديو",
+            "phash_tooltip": "لإزالة التكرارات وتحديد المشهد",
+            "preview_exclude_end_time_desc": "استبعد آخر x ثانية من معاينات المشاهد. يمكن أن تكون هذه القيمة بالثواني، أو نسبة مئوية (مثلاً 2%) من إجمالي مدة المشهد.",
+            "preview_exclude_end_time_head": "استبعاد وقت الانتهاء",
+            "preview_exclude_start_time_desc": "استبعد أول x ثانية من معاينات المشاهد. يمكن أن تكون هذه القيمة بالثواني، أو نسبة مئوية (مثلاً 2%) من إجمالي مدة المشهد.",
+            "preview_exclude_start_time_head": "استبعاد وقت البدء",
+            "preview_generation_options": "خيارات إنشاء المعاينة",
+            "preview_options": "خيارات المعاينة",
+            "preview_preset_desc": "يتحكم الإعداد المسبق في حجم وجودة ووقت ترميز معاينة الصور. أما الإعدادات المسبقة التي تتجاوز \"البطيء\" فتؤدي إلى نتائج متناقصة، لذا لا يُنصح باستخدامها.",
+            "preview_preset_head": "معاينة إعدادات الترميز المسبقة",
+            "preview_seg_count_desc": "عدد المقاطع في ملفات المعاينة.",
+            "preview_seg_count_head": "عدد المقاطع في المعاينة",
+            "preview_seg_duration_desc": "مدة كل مقطع معاينة، بالثواني.",
+            "preview_seg_duration_head": "مدة مقطع المعاينة",
+            "sprites": "رسومات مستخرج البيانات المشهد",
+            "sprites_tooltip": "مجموعة الصور المعروضة أسفل مشغل الفيديو لتسهيل التصفح.",
+            "transcodes": "محولات الترميز"
         }
     }
 }

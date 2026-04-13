@@ -13,10 +13,10 @@
 
 ![Screenshot of Stash web application interface](docs/readme_assets/demo_image.png)
 
-* Stash gathers information about videos in your collection from the internet, and is extensible through the use of community-built plugins for a large number of content producers and sites.
-* Stash supports a wide variety of both video and image formats.
-* You can tag videos and find them later.
-* Stash provides statistics about performers, tags, studios and more.
+- Stash gathers information about videos in your collection from the internet, and is extensible through the use of community-built plugins for a large number of content producers and sites.
+- Stash supports a wide variety of both video and image formats.
+- You can tag videos and find them later.
+- Stash provides statistics about performers, tags, studios and more.
 
 You can [watch a SFW demo video](https://vimeo.com/545323354) to see it in action.
 
@@ -24,17 +24,19 @@ For further information you can consult the [documentation](https://docs.stashap
 
 # Installing Stash
 
+> [!tip]
 Step-by-step instructions are available at [docs.stashapp.cc/installation](https://docs.stashapp.cc/installation/).
 
-#### Windows Users:
-
-As of version 0.27.0, Stash no longer supports _Windows 7, 8, Server 2008 and Server 2012._  
-At least Windows 10 or Server 2016 is required.
-
-#### Mac Users:
-
-As of version 0.29.0, Stash requires _macOS 11 Big Sur_ or later.  
-Stash can still be run through docker on older versions of macOS.
+> [!important]
+>**Windows Users**
+>
+>As of version 0.27.0, Stash no longer supports _Windows 7, 8, Server 2008 and Server 2012._  
+>At least Windows 10 or Server 2016 is required.
+>
+>**macOS Users**
+>
+> As of version 0.29.0, Stash requires _macOS 11 Big Sur_ or later.  
+> Stash can still be run through docker on older versions of macOS.
 
 <img src="docs/readme_assets/windows_logo.svg" width="100%" height="75"> Windows | <img src="docs/readme_assets/mac_logo.svg" width="100%" height="75"> macOS | <img src="docs/readme_assets/linux_logo.svg" width="100%" height="75"> Linux | <img src="docs/readme_assets/docker_logo.svg" width="100%" height="75"> Docker
 :---:|:---:|:---:|:---:
@@ -85,23 +87,23 @@ The badge below shows the current translation status of Stash across all support
 
 Need help or want to get involved? Start with the documentation, then reach out to the community if you need further assistance.
 
-- Documentation
-  - Official docs: https://docs.stashapp.cc - official guides guides and troubleshooting.
-  - In-app manual: press <kbd>Shift</kbd> + <kbd>?</kbd> in the app or view the manual online: https://docs.stashapp.cc/in-app-manual.
-  - FAQ: https://discourse.stashapp.cc/c/support/faq/28 - common questions and answers.
-  - Community wiki: https://discourse.stashapp.cc/tags/c/community-wiki/22/stash - guides, how-to’s and tips.
+### Documentation
+- [Official documentation](https://docs.stashapp.cc) - official guides guides and troubleshooting.
+- [In-app manual](https://docs.stashapp.cc/in-app-manual) press <kbd>Shift</kbd> + <kbd>?</kbd> in the app or view the manual online.
+- [FAQ](https://discourse.stashapp.cc/c/support/faq/28) - common questions and answers.
+- [Community wiki](https://discourse.stashapp.cc/tags/c/community-wiki/22/stash) - guides, how-to’s and tips.
   
-- Community & discussion
-  - Community forum: https://discourse.stashapp.cc - community support, feature requests and discussions.
-  - Discord: https://discord.gg/2TsNFKt - real-time chat and community support.
-  - GitHub discussions: https://github.com/stashapp/stash/discussions - community support and feature discussions.
-  - Lemmy community: https://discuss.online/c/stashapp - Reddit-style community space.
+### Community & discussion
+- [Community forum](https://discourse.stashapp.cc) - community support, feature requests and discussions.
+- [Discord](https://discord.gg/2TsNFKt) - real-time chat and community support.
+- [GitHub discussions](https://github.com/stashapp/stash/discussions) - community support and feature discussions.
+- [Lemmy community](https://discuss.online/c/stashapp) - board-style community space.
 
-- Community scrapers & plugins
-  - Metadata sources: https://docs.stashapp.cc/metadata-sources/
-  - Plugins: https://docs.stashapp.cc/plugins/
-  - Themes: https://docs.stashapp.cc/themes/
-  - Other projects: https://docs.stashapp.cc/other-projects/
+### Community scrapers & plugins
+- [Metadata sources](https://docs.stashapp.cc/metadata-sources/)
+- [Plugins](https://docs.stashapp.cc/plugins/)
+- [Themes](https://docs.stashapp.cc/themes/)
+- [Other projects](https://docs.stashapp.cc/other-projects/)
 
 # For Developers
 

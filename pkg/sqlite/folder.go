@@ -409,6 +409,42 @@ func (qb *FolderStore) GetManyParentFolderIDs(ctx context.Context, folderIDs []m
 	return ret, nil
 }
 
+func (qb *FolderStore) GetManySubFolderIDs(ctx context.Context, parentFolderIDs []models.FolderID) ([][]models.FolderID, error) {
+	table := qb.table()
+	q := dialect.From(table).Select(
+		table.Col(idColumn),
+		table.Col("parent_folder_id"),
+	).Where(qb.table().Col("parent_folder_id").In(parentFolderIDs))
+
+	sql, args, err := q.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %w", err)
+	}
+
+	var results []struct {
+		FolderID       int             `db:"id"`
+		ParentFolderID models.FolderID `db:"parent_folder_id"`
+	}
+
+	if err := querySelect(ctx, sql, args, &results); err != nil {
+		return nil, fmt.Errorf("getting folders by parent folder ids %v: %w", parentFolderIDs, err)
+	}
+
+	retMap := make(map[models.FolderID][]models.FolderID)
+
+	for _, v := range results {
+		retMap[v.ParentFolderID] = append(retMap[v.ParentFolderID], models.FolderID(v.FolderID))
+	}
+
+	ret := make([][]models.FolderID, len(parentFolderIDs))
+
+	for i, parentID := range parentFolderIDs {
+		ret[i] = retMap[parentID]
+	}
+
+	return ret, nil
+}
+
 func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectDataset {
 	table := qb.table()
 

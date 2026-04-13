@@ -7,7 +7,7 @@
         "allow": "Povolit",
         "allow_temporarily": "Povolit dočasně",
         "apply": "Použít",
-        "auto_tag": "Auto Tag",
+        "auto_tag": "Auto tag",
         "backup": "Záloha",
         "browse_for_image": "Vybrat obrázek…",
         "cancel": "Zrušit",
@@ -87,9 +87,9 @@
         "select_entity": "Vybrat {entityType}",
         "select_folders": "Vybrat složky",
         "select_none": "Vybrat nic",
-        "selective_auto_tag": "Selektivní Auto Tag",
+        "selective_auto_tag": "Selektivní auto tag",
         "selective_clean": "Selektivní čištění",
-        "selective_scan": "Selektivní Scan",
+        "selective_scan": "Selektivní scan",
         "set_as_default": "Nastavit jako výchozí",
         "set_back_image": "Zadní obrázek…",
         "set_front_image": "Přední obrázek…",
@@ -153,7 +153,13 @@
         "add_stash_id": "Přidat Stash ID",
         "create_new": "Vytvořit nový",
         "save_and_new": "Ulož & Nový",
-        "invert_selection": "Obrátit výběr"
+        "invert_selection": "Obrátit výběr",
+        "create_parent_tag": "Vytvořit nadřazený tag",
+        "exclude_lowercase": "vyloučit",
+        "from_clipboard": "Ze schránky",
+        "reveal_in_file_manager": "Zobrazit ve Správci souborů",
+        "select_directory": "Vyberte adresář",
+        "selective_generate": "Selektivní generování"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -232,12 +238,12 @@
             "latest_version": "Nejnovější verze",
             "latest_version_build_hash": "Hash sestavení poslední verze:",
             "new_version_notice": "[NOVÝ]",
-            "stash_discord": "Připojte se na náš {url} kanál",
-            "stash_home": "Stash domovská stránka na {url}",
-            "stash_open_collective": "Podpořte nás skrze {url}",
-            "stash_wiki": "Stash {url} stránka",
+            "stash_home": "Navštivte Stash na {url}.",
+            "stash_wiki": "Podívejte se na webové stránky Stash {url}.",
             "version": "Verze",
-            "release_date": "Datum vydání:"
+            "release_date": "Datum vydání:",
+            "stash_community": "Připojte se k našemu komunitnímu serveru {forumUrl} nebo {discordUrl}.",
+            "support_us": "Podpořte nás prostřednictvím {openCollectiveUrl} nebo {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Cesta k aplikaci"
@@ -291,11 +297,11 @@
                 "generate_api_key": "Generovat API klíč",
                 "log_file": "Log soubor",
                 "log_file_desc": "Ceska k log souboru. Nechte prázdné pro zakázání logování. Vyžaduje restart.",
-                "log_http": "Zaznamenávat http přístup",
-                "log_http_desc": "Zaznamenávat http přístup do příkazové řádky. Vyžaduje restart.",
+                "log_http": "Zaznamenávat HTTP přístup",
+                "log_http_desc": "Zaznamenávat HTTP přístup do příkazové řádky. Vyžaduje restart.",
                 "log_to_terminal": "Logovat do příkazové řádky",
                 "log_to_terminal_desc": "Logovat do příkazové řádky kromě logování do terminálu. Vždy zapnuto pokud logování do souboru je zakázané. Vyžaduje restart.",
-                "maximum_session_age": "Maximální věk relace",
+                "maximum_session_age": "Maximální doba relace",
                 "maximum_session_age_desc": "Maximální doba nečinnosti před vypršením relace přihlášení, v sekundách. Vyžaduje restart.",
                 "password": "Heslo",
                 "password_desc": "Heslo pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace",
@@ -306,7 +312,7 @@
                 "log_file_max_size_desc": "Maximální velikost logu v megabytech před kompresí. 0MB pro deaktivaci. Vyžaduje restart."
             },
             "backup_directory_path": {
-                "description": "Adresář umístění záloh databáze SQLite",
+                "description": "Adresář umístění záloh databáze SQLite.",
                 "heading": "Cesta k adresáři záloh"
             },
             "cache_location": "Umístění adresáře mezipaměti. Vyžaduje se při streamování pomocí HLS (například na zařízeních Apple) nebo DASH.",
@@ -314,22 +320,22 @@
             "calculate_md5_and_ohash_desc": "Spočítat MD5 kontrolní součet kromě oshashe. Zapnutí zpomalí následující skenování. Hash dle názvu souboru musí být nastaven na oshash pro zrušení výpočtu MD5.",
             "calculate_md5_and_ohash_label": "Spočíst MD5 pro videa",
             "check_for_insecure_certificates": "Zkontrolujte nezabezpečené certifikáty",
-            "check_for_insecure_certificates_desc": "Některé weby používají nezabezpečené ssl certifikáty. Pokud není zaškrtnuto, scraper přeskočí kontrolu nezabezpečených certifikátů a povolí scraping těchto stránek. Pokud je při scrapingu zobrazena chyba certifikátu, zrušte zaškrtnutí.",
+            "check_for_insecure_certificates_desc": "Některé weby používají nezabezpečené SSL certifikáty. Pokud není zaškrtnuto, scraper přeskočí kontrolu nezabezpečených certifikátů a povolí scraping těchto stránek. Pokud je při scrapingu zobrazena chyba certifikátu, zrušte zaškrtnutí.",
             "chrome_cdp_path": "Cesta k Chrome CDP",
             "chrome_cdp_path_desc": "Cesta k exe souboru aplikace Chrome nebo vzdálená adresa (začínající http:// nebo https://, například http://localhost:9222/json/version) k instanci Chrome.",
             "create_galleries_from_folders_desc": "Je-li vybráno, budou vytvořeny galerie ze složek obsahující obrázky.",
             "create_galleries_from_folders_label": "Vytvářet galerie ze složek obsahující obrázky",
             "db_path_head": "Cesta k databázi",
             "directory_locations_to_your_content": "Adresa k Vašemu obsahu",
-            "excluded_image_gallery_patterns_desc": "Regulární výrazy obrázků a galerií (souborů / cest) pro výjimku ze skenování a přidání k čištění",
+            "excluded_image_gallery_patterns_desc": "Regexps souborů/cest obrázků a galerií pro výjimku ze skenování a přidání do úloh čištění.",
             "excluded_image_gallery_patterns_head": "Vyloučené vzory obrázků/galerií",
-            "excluded_video_patterns_desc": "Regulární výrazy video (souborů / cest) pro výjimku ze skenování a přidání k čištění",
+            "excluded_video_patterns_desc": "Regexps souborů/cest videí pro výjimku ze skenování a přidání do úloh čištění.",
             "excluded_video_patterns_head": "Vyloučené video patterny",
-            "gallery_ext_desc": "Seznam souborových koncovek, oddělených čárkou, definující zip soubory galerií.",
-            "gallery_ext_head": "Koncovky zip souborů galerií",
+            "gallery_ext_desc": "Seznam souborových koncovek, oddělených čárkou, definující ZIP soubory galerií.",
+            "gallery_ext_head": "Koncovky ZIP souborů galerií",
             "generated_file_naming_hash_desc": "Použít MD5 nebo oshash pro pojmenování generovaných souborů. Úprava tohoto nastavení vyžaduje aby všechny scény měly vyplněnou hodnotu MD5/oshash. Po úpravě této hodnoty je nezbytné přemigrovat nebo přegenerovat existující generované soubory. Navštivte stránku Úlohy pro migraci.",
             "generated_file_naming_hash_head": "Typ hashe používaný pro pojmenování generovaných souborů",
-            "generated_files_location": "Umístění adresáře pro generované soubory (značky scén, náhledy scén, sprajty atd.)",
+            "generated_files_location": "Umístění adresáře pro generované soubory (značky scén, náhledy scén, sprajty atd.).",
             "generated_path_head": "Generovaná cesta",
             "hashing": "Hashování",
             "image_ext_desc": "Seznam koncovek souborů, oddělený čárkou, které budou identifikovány jako obrázky.",
@@ -337,12 +343,12 @@
             "include_audio_desc": "Zahrnout zvuk při generování náhledů.",
             "include_audio_head": "Zahrnout zvuk",
             "logging": "Logování",
-            "maximum_streaming_transcode_size_desc": "Maximální velikost překódovaných streamů",
+            "maximum_streaming_transcode_size_desc": "Maximální velikost překódovaných streamů.",
             "maximum_streaming_transcode_size_head": "Maximální velikost streamovaného překódovaného souboru",
-            "maximum_transcode_size_desc": "Maximální velikost pro generované překódované soubory",
+            "maximum_transcode_size_desc": "Maximální velikost pro generované překódované soubory.",
             "maximum_transcode_size_head": "Maximální velikost překódovaného souboru",
             "metadata_path": {
-                "description": "Složka použita při kompletním exportu / importu",
+                "description": "Složka použita při kompletním exportu / importu.",
                 "heading": "Cesta k metadatům"
             },
             "number_of_parallel_task_for_scan_generation_desc": "Nastavte na 0 pro autodetekci. Upozornění: běh vícero úloh než je vyžadováno pro dosažení 100% využítí CPU snižuje výkon a může potenciálně způsobit další problémy.",
@@ -350,13 +356,13 @@
             "parallel_scan_head": "Paralelní skenování / generování",
             "preview_generation": "Generování náhledů",
             "python_path": {
-                "description": "Cesta ke spustitelnému souboru pythonu (nejen ke složce). Používá se pro script scrappery a pluginy. Pokud je prázdné, python bude vyřešen z prostředí",
+                "description": "Cesta ke spustitelnému souboru pythonu (nejen ke složce). Používá se pro script scrappery a pluginy. Pokud je prázdné, Python bude vyřešen z prostředí.",
                 "heading": "Cesta k Pythonu"
             },
-            "scraper_user_agent": "User Agent Scraperu",
-            "scraper_user_agent_desc": "User-Agent řetězec používaný při scrapování http požadavků",
+            "scraper_user_agent": "User-Agent Scraperu",
+            "scraper_user_agent_desc": "User-Agent řetězec používaný při scrapování HTTP požadavků.",
             "scrapers_path": {
-                "description": "Adresář konfiguračních souborů scraperů",
+                "description": "Adresář konfiguračních souborů scraperů.",
                 "heading": "Cesta ke scraperům"
             },
             "scraping": "Scrapování",
@@ -386,7 +392,7 @@
                 },
                 "ffprobe_path": {
                     "heading": "Cesta ke spustitelnému souboru FFprobe",
-                    "description": "Cesta ke spustitelnému souboru ffprobe (nejen ke složce). Pokud je prázdný, ffprobe bude použit ze složky přes $PATH, konfigurační adresář nebo z $HOME/.stash"
+                    "description": "Cesta ke spustitelnému souboru ffprobe (nejen ke složce). Pokud je prázdný, ffprobe bude použit ze složky přes $PATH, konfigurační adresář nebo z $HOME/.stash."
                 },
                 "live_transcode": {
                     "input_args": {
@@ -399,14 +405,14 @@
                     }
                 },
                 "ffmpeg_path": {
-                    "description": "Cesta ke spustitelnému souboru ffmpeg (nejen ke složce). Pokud je prázdný, ffmpeg bude použit ze složky přes $PATH, konfiguračního adresáře nebo z $HOME/.stash",
+                    "description": "Cesta ke spustitelnému souboru ffmpeg (nejen ke složce). Pokud je prázdný, ffmpeg bude použit ze složky přes $PATH, konfiguračního adresáře nebo z $HOME/.stash.",
                     "heading": "Cesta ke spustitelnému souboru FFmpeg"
                 }
             },
-            "gallery_cover_regex_desc": "Regexp používaný k identifikaci obrázku jako obalu galerie",
+            "gallery_cover_regex_desc": "Regexp používaný k identifikaci obrázku jako obalu galerie.",
             "plugins_path": {
                 "heading": "Cesty pluginů",
-                "description": "Umístění adresáře konfiguračních souborů pluginu"
+                "description": "Umístění adresáře konfiguračních souborů pluginu."
             },
             "funscript_heatmap_draw_range": "Zahrnout rozsah do vygenerovaných heatmap",
             "funscript_heatmap_draw_range_desc": "Nakreslete rozsah pohybu na ose y vygenerované heatmapy. Stávající heatmapy bude nutné po změně zregenerovat.",
@@ -423,7 +429,18 @@
             "delete_trash_path": {
                 "description": "Cesta, kam budou smazané soubory přesunuty, místo aby byly trvale smazány. Pro trvalé smazání souborů ponechte pole prázdné.",
                 "heading": "Cesta koše"
-            }
+            },
+            "sprite_generation_head": "Generování spritů",
+            "sprite_interval_desc": "Čas mezi jednotlivými vygenerovanými sprity v sekundách.",
+            "sprite_interval_head": "Interval spritů",
+            "sprite_maximum_desc": "Maximální počet spritů, které lze pro scénu vygenerovat. Nastavením na 0 limit deaktivujete.",
+            "sprite_maximum_head": "Maximální počet spritů",
+            "sprite_minimum_desc": "Minimální počet spritů, které mají být vygenerovány pro scénu",
+            "sprite_minimum_head": "Minimální počet spritů",
+            "sprite_screenshot_size_desc": "Požadovaná velikost každého spritu v pixelech.",
+            "sprite_screenshot_size_head": "Velikost spritu",
+            "use_custom_sprite_interval_head": "Použít vlastní interval spritu",
+            "use_custom_sprite_interval_desc": "Povolte vlastní interval spritu podle níže uvedených nastavení."
         },
         "library": {
             "exclusions": "Výjimky",
@@ -442,7 +459,7 @@
         "scraping": {
             "entity_metadata": "{entityType} Metadata",
             "entity_scrapers": "{entityType} scrapery",
-            "excluded_tag_patterns_desc": "Regulární výrazy názvu tagů vyjmutých z výsledků scrapování",
+            "excluded_tag_patterns_desc": "Regulární výrazy názvu tagů vyjmutých z výsledků scrapování.",
             "excluded_tag_patterns_head": "Vyjmuté tag patterny",
             "scraper": "Scraper",
             "scrapers": "Scrapery",
@@ -490,7 +507,7 @@
             "generate_phashes_during_scan": "Generovat percepční hashe (phash) videa",
             "generate_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci scén.",
             "generate_previews_during_scan": "Generovat animované náhledy",
-            "generate_previews_during_scan_tooltip": "Vytvářet také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení nevytěžují tolik procesor než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
+            "generate_previews_during_scan_tooltip": "Vytvářet také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení nevytěžují tolik procesor než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
             "generate_sprites_during_scan": "Generovat sprity scrubberu",
             "generate_thumbnails_during_scan": "Generovat náhledy obrázků",
             "generate_video_previews_during_scan": "Generovat náhledy videí",
@@ -522,7 +539,9 @@
                 "skip_multiple_matches_tooltip": "Pokud toto není povoleno a vrátí se více než jeden výsledek, bude náhodně jeden vybrán ke shodě",
                 "tag_skipped_matches": "Označte přeskočené shody pomocí",
                 "skip_single_name_performers_tooltip": "Pokud toto není povoleno, budou přiřazeni účinkující, kteří jsou často generičtí jako Samantha nebo Olga",
-                "tag_skipped_matches_tooltip": "Vytvořte značku jako „Identifikuj: Více shod“, kterou můžete filtrovat taggeru scén a ručně vybrat správnou shodu"
+                "tag_skipped_matches_tooltip": "Vytvořte značku jako „Identifikuj: Více shod“, kterou můžete filtrovat taggeru scén a ručně vybrat správnou shodu",
+                "performer_genders": "Pohlaví účinkujících",
+                "performer_genders_desc": "Účinkující s vybraným pohlavím budou zahrnuti během identifikace."
             },
             "import_from_exported_json": "Importovat z exportovaného JSONu z metadata složky. Přemaže existující databázi.",
             "incremental_import": "Inkrementální import z dodaného exportního zip souboru.",
@@ -554,8 +573,8 @@
                 "description": "Odstraní vygenerované soubory bez odpovídající položky databáze.",
                 "image_thumbnails": "Náhledy obrázků",
                 "image_thumbnails_desc": "Náhledy obrázků a klipy",
-                "markers": "Náhledy Značek",
-                "previews": "Náhledy Scén",
+                "markers": "Náhledy značek",
+                "previews": "Náhledy scén",
                 "previews_desc": "Náhledy scén a miniatury",
                 "sprites": "Sprity scén",
                 "transcodes": "Transkódy scén"
@@ -569,7 +588,22 @@
             "rescan": "Znovu skenovat soubory",
             "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů.",
             "generate_image_phashes_during_scan": "Generovat percepční hashe (phash) obrazu",
-            "generate_image_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci."
+            "generate_image_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci.",
+            "auto_tag_confirm": "Toto se pokusí porovnat váš obsah s existujícími metadaty.",
+            "auto_tag_warning": "Tento proces nelze vrátit zpět a může vést k nesprávným shodám.",
+            "backup_database": {
+                "description": "Provede zálohu databáze a souborů s bloby.",
+                "destination": "Cíl",
+                "download": "Stáhnout zálohu",
+                "include_blobs": "Zahrnout bloby do zálohy",
+                "include_blobs_desc": "Zakažte pro pouhou zálohu souboru databáze SQLite.",
+                "sqlite": "Záložní soubor bude kopií souboru databáze SQLite s názvem souboru {filename_format}",
+                "to_directory": "Do {directory}",
+                "warning_blobs": "Soubory blob nebudou zahrnuty do zálohy. To znamená, že pro úspěšné obnovení ze zálohy musí být soubory blob přítomny ve složce pro ukládání blobů.",
+                "zip": "Soubor databáze SQLite a soubory blob budou zazipovány do jednoho souboru s názvem {filename_format}"
+            },
+            "clean_ignore_zip_contents": "Ignorovat obsah zip souborů",
+            "clean_ignore_zip_contents_desc": "Rychlejší, ale přehlédne soubory odstraněné uvnitř zip souborů. Zapnutí je bezpečné, pokud soubory uvnitř zipů nemažete."
         },
         "tools": {
             "scene_duplicate_checker": "Detektor duplicitních scén",
@@ -605,8 +639,8 @@
             },
             "custom_javascript": {
                 "description": "Stránka musí být znovu načtena, aby byly viditelné změny.",
-                "heading": "Vlastní Javascript",
-                "option_label": "Vlastní Javascript povolen"
+                "heading": "Vlastní JavaScript",
+                "option_label": "Vlastní JavaScript povolen"
             },
             "custom_locales": {
                 "description": "Přepsat individuální jazykovou lokalizaci. Navštivte https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json pro zobrazení seznamu. Stránka musí být obnovena, aby byly změny viditelné.",
@@ -624,13 +658,13 @@
             "desktop_integration": {
                 "desktop_integration": "Integrace na plochu",
                 "notifications_enabled": "Aktivovat upozornění / notifikace",
-                "send_desktop_notifications_for_events": "Zasílat notifikace na plochu pro události",
+                "send_desktop_notifications_for_events": "Zasílat notifikace na plochu pro události.",
                 "skip_opening_browser": "Přeskočit otevření prohlížeče",
-                "skip_opening_browser_on_startup": "Přeskočit automatické otevření prohlížeče při spuštění"
+                "skip_opening_browser_on_startup": "Přeskočit automatické otevření prohlížeče při spuštění."
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "Zakázat funkčnost tvorby nových objektů z rozbalovacích seznamů",
+                    "description": "Zakázat funkčnost tvorby nových objektů z rozbalovacích seznamů.",
                     "heading": "Zakázat vytvoření z rozbalovacího seznamu"
                 },
                 "heading": "Editace",
@@ -671,8 +705,8 @@
                 "sync": "Synchronizovat"
             },
             "handy_connection_key": {
-                "description": "Connection Key k Handy pro použití v interaktivních scénách. Nastavení tohoto klíče umožní Stash ke sdílení aktuální scény s handyfeeling.com",
-                "heading": "Handy Connection klíč"
+                "description": "Connection Key k Handy pro použití v interaktivních scénách. Nastavení tohoto klíče umožní Stash ke sdílení aktuální scény s handyfeeling.com.",
+                "heading": "Handy connection klíč"
             },
             "image_lightbox": {
                 "heading": "Lightbox pro obrázek"
@@ -681,12 +715,12 @@
                 "heading": "Obrázky",
                 "options": {
                     "write_image_thumbnails": {
-                        "description": "Zapsat miniatury obrázků na disk, když jsou generovány za běhu",
+                        "description": "Zapsat miniatury obrázků na disk, když jsou generovány za běhu.",
                         "heading": "Zapsat miniatury obrázků"
                     },
                     "create_image_clips_from_videos": {
-                        "description": "Když má knihovna vypnutá videa, soubory videa (soubory končící s video příponou) budou naskenovány jako obrázkový klip.",
-                        "heading": "Skenujte rozšíření videa jako obrázkový klip"
+                        "description": "Pokud je v knihovně zakázána možnost Videa, budou videosoubory (viz přípony videa) naskenovány jako obrazové klipy.",
+                        "heading": "Skenujte videa jako obrázkové klipy"
                     }
                 }
             },
@@ -695,11 +729,11 @@
                 "heading": "Jazyk"
             },
             "max_loop_duration": {
-                "description": "Maximální doba trvání scény, při které bude přehrávač scén opakovat video – 0 pro deaktivaci",
+                "description": "Maximální doba trvání scény, při které bude přehrávač scén opakovat video - Nastavením 0 fuknci zakážete.",
                 "heading": "Maximální doba trvání smyčky"
             },
             "menu_items": {
-                "description": "Zobrazit nebo skrýt různé typy obsahu na navigační liště",
+                "description": "Zobrazit nebo skrýt různé typy obsahu na navigační liště.",
                 "heading": "Menu položky"
             },
             "minimum_play_percent": {
@@ -709,7 +743,7 @@
             "performers": {
                 "options": {
                     "image_location": {
-                        "description": "Vlastní cesta pro výchozí obrázky účinkujících. Chcete-li použít vestavěné výchozí hodnoty, ponechte prázdné",
+                        "description": "Vlastní cesta pro výchozí obrázky účinkujících. Chcete-li použít vestavěné výchozí hodnoty, ponechte prázdné.",
                         "heading": "Cesta pro výchozí obrázky účinkujících"
                     }
                 }
@@ -726,7 +760,8 @@
             "scene_list": {
                 "heading": "Zobrazení v mřížce",
                 "options": {
-                    "show_studio_as_text": "Zobrazit studiové překrytí jako text"
+                    "show_studio_as_text": "Zobrazit studiové překrytí jako text",
+                    "show_studio_as_text_desc": "Ve výchozím nastavení se na kartách v mřížce zobrazuje logo studia. Povolte tuto možnost, pokud chcete, aby se název studia vždy zobrazoval jako text."
                 }
             },
             "scene_player": {
@@ -735,21 +770,21 @@
                     "always_start_from_beginning": "Vždy spustit video od začátku",
                     "auto_start_video": "Automaticky spustit video",
                     "auto_start_video_on_play_selected": {
-                        "description": "Automaticky spustit video pokud je přehráváno vybrané nebo náhodné video ze stránky scén",
+                        "description": "Automaticky spustit video pokud je přehráváno vybrané nebo náhodné video ze stránky scén.",
                         "heading": "Automaticky spustit video při přehrávání vybraného"
                     },
                     "continue_playlist_default": {
-                        "description": "Přehrát následující scénu na seznamu při skončení videa",
+                        "description": "Přehrát následující scénu na seznamu při skončení videa.",
                         "heading": "(Výchozí nastavení) Pokračovat v playlistu"
                     },
-                    "show_scrubber": "Zobrazit Scrubber",
+                    "show_scrubber": "Zobrazit scrubber",
                     "track_activity": "Povolit historii přehrávání scén",
                     "disable_mobile_media_auto_rotate": "Zakázat automatické otáčení médií na celou obrazovku v mobilu",
                     "enable_chromecast": "Povolit Chromecast",
-                    "show_ab_loop_controls": "Zobrazit ovládací prvky pluginu AB Loop",
+                    "show_ab_loop_controls": "Zobrazit ovládací prvky smyčky AB",
                     "vr_tag": {
                         "description": "Tlačítko VR se zobrazí pouze u scén s tímto tagem.",
-                        "heading": "VR Tag"
+                        "heading": "VR tag"
                     },
                     "show_range_markers": "Zobrazit značky s rozsahem"
                 }
@@ -758,7 +793,7 @@
                 "heading": "Scéna / Marker zeď",
                 "options": {
                     "display_title": "Zobrazit titul a tagy",
-                    "toggle_sound": "Povolit zvuk"
+                    "toggle_sound": "Povolit zvuk při najetí myší na náhled"
                 }
             },
             "scroll_attempts_before_change": {
@@ -766,19 +801,19 @@
                 "heading": "Počet pokusů o rolování před přechodem"
             },
             "show_tag_card_on_hover": {
-                "description": "Zobrazit přehledku tagu při přejetí přes štítek tagu",
+                "description": "Zobrazit přehledku tagu při přejetí přes štítek tagu.",
                 "heading": "Popisky tagových štítků"
             },
             "slideshow_delay": {
-                "description": "Slideshow je k dispozici v galeriích v režimu zobrazení stěny",
+                "description": "Slideshow je k dispozici v galeriích v režimu zobrazení stěny.",
                 "heading": "Zpoždění prezentace (sekundy)"
             },
             "studio_panel": {
-                "heading": "Pohled studií",
+                "heading": "Pohled Studií",
                 "options": {
                     "show_child_studio_content": {
                         "heading": "Zobrazit obsah dílčích studií",
-                        "description": "V zobrazení studia zobrazte také obsah z dílčích studií"
+                        "description": "V zobrazení studia zobrazte také obsah z dílčích studií."
                     }
                 }
             },
@@ -791,11 +826,15 @@
                 "heading": "Stránka s podrobnostmi",
                 "compact_expanded_details": {
                     "heading": "Rozšířené kompaktní detaily",
-                    "description": "Pokud je tato možnost povolena, zobrazí rozšířené detaily a přitom zachovává kompaktní prezentaci"
+                    "description": "Pokud je tato možnost povolena, zobrazí rozšířené detaily a přitom zachovává kompaktní prezentaci."
                 },
                 "show_all_details": {
-                    "description": "Když je tato možnost povolena, všechny detaily obsahu budou zobrazeny s výchozím nastavením a detail každé položky bude pod jedním sloupcem",
+                    "description": "Když je tato možnost povolena, všechny detaily obsahu budou zobrazeny s výchozím nastavením a detail každé položky bude pod jedním sloupcem.",
                     "heading": "Zobrazit všechny detaily"
+                },
+                "show_studio_text": {
+                    "description": "V detailních zobrazeních vždy zobrazovat název studia jako text, nikoli jako ikonu.",
+                    "heading": "Zobrazit studio jako text"
                 }
             },
             "image_wall": {
@@ -806,14 +845,14 @@
             "tag_panel": {
                 "options": {
                     "show_child_tagged_content": {
-                        "heading": "Zobrazit obsah dílčích tagů",
-                        "description": "V zobrazení tagů, zobraz obsah také obsah z dílčích tagů"
+                        "heading": "Zobrazit obsah pod-tagů",
+                        "description": "V zobrazení tagů, zobraz obsah také obsah z pod-tagů."
                     }
                 },
-                "heading": "Zobrazení tagů"
+                "heading": "Zobrazení Tagů"
             },
             "use_stash_hosted_funscript": {
-                "description": "Je-li povoleno, budou funscripty poskytovány přímo ze Stash do vašeho zařízení Handy bez použití serveru Handy třetí strany. Vyžaduje, aby byl Stash dostupný z vašeho zařízení Handy a vygenerovaný API klíč, pokud má stash nakonfigurované údaje.",
+                "description": "Je-li povoleno, budou funscripty poskytovány přímo ze Stash do vašeho zařízení Handy bez použití serveru Handy třetí strany. Vyžaduje, aby byl Stash dostupný z vašeho zařízení Handy a vygenerovaný API klíč, pokud má Stash nakonfigurované údaje.",
                 "heading": "Funscripty podávejte přímo"
             },
             "sfw_mode": {
@@ -845,9 +884,21 @@
             "custom_title": {
                 "description": "Vlastní text, který se přidá k názvu stránky. Pokud je prázdný, výchozí nastavení je 'Stash'.",
                 "heading": "Vlastní název"
+            },
+            "scene_view": {
+                "heading": "Zobrazení scény",
+                "options": {
+                    "preview_volume": {
+                        "description": "Hlasitost náhledu při najetí myší na scénu. Nastavením na 0 ztlumíte zvuk.",
+                        "heading": "Hlasitost náhledu"
+                    }
+                }
             }
         },
-        "advanced_mode": "Pokročilý mód"
+        "advanced_mode": "Pokročilý mód",
+        "changelog": {
+            "header": "Seznam změn"
+        }
     },
     "configuration": "Konfigurace",
     "countables": {
@@ -867,7 +918,8 @@
     "criterion": {
         "greater_than": "Větší než",
         "less_than": "Méně než",
-        "value": "Hodnota"
+        "value": "Hodnota",
+        "unsupported": "{type} (unsupported)"
     },
     "criterion_modifier": {
         "between": "mezi",
@@ -922,12 +974,12 @@
             "options": "Možnosti",
             "reset_zoom_on_nav": "Resetovat zoom po změně obrázku",
             "scale_up": {
-                "description": "Škálovat menší obrázky tak, aby vyplnily obrazovku",
+                "description": "Škálovat menší obrázky tak, aby vyplnily obrazovku.",
                 "label": "Zvětšit, aby se vešly"
             },
             "scroll_mode": {
                 "description": "Držet shift pro dočasné použití druhého módu.",
-                "label": "Rolovací mód",
+                "label": "Režim posouvání",
                 "pan_y": "Náklon Y",
                 "zoom": "Zvětšit"
             },
@@ -938,11 +990,11 @@
             "force_transcodes": "Vynutit generování Transkódu",
             "force_transcodes_tooltip": "Ve výchozím nastavení, transkódy jsou generovány pouze tehdy, když video soubor není podporován prohlížečem. V případě aktivování, transkódy budou generovány i v ostatních případech.",
             "image_previews": "Animované náhledy obrázků",
-            "image_previews_tooltip": "Vytvářejte také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení využívají zatěžují procesor méně než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
+            "image_previews_tooltip": "Vytvářejte také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je typ náhledu scény/značky nastaven na Animovaný Obrázek. Při procházení využívají zatěžují procesor méně než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
             "interactive_heatmap_speed": "Generovat heatmapy a rychlosti pro interaktivní scény",
-            "marker_image_previews": "Animované náhledy markerů",
-            "marker_image_previews_tooltip": "Vytvářejte také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení využívají zatěžují procesor méně než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
-            "marker_screenshots": "Screenshoty markerů",
+            "marker_image_previews": "Animované náhledy značek",
+            "marker_image_previews_tooltip": "Vytvářejte také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je typ náhledu scény/značky nastaven na Animovaný Obrázek. Při procházení využívají zatěžují procesor méně než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
+            "marker_screenshots": "Screenshoty značek",
             "preview_exclude_start_time_desc": "Vyloučit prvních x sekund z náhledů scén. Může to být hodnota v sekundách nebo procentech (např. 2 %) z celkové doby trvání scény.",
             "preview_exclude_start_time_head": "Vyloučit čas zahájení",
             "preview_generation_options": "Možnosti generování náhledů",
@@ -985,7 +1037,8 @@
         "merge": {
             "destination": "Destinace",
             "source": "Zdroj",
-            "empty_results": "Hodnoty cílového pole zůstanou nezměněny."
+            "empty_results": "Hodnoty cílového pole zůstanou nezměněny.",
+            "combined": "Kombinovaný"
         },
         "create_new_entity": "Vytvořit novou {entity}",
         "imagewall": {
@@ -1011,7 +1064,8 @@
         "stashid_exists_warning": "Stávající stash id pro tento stash-box bude nahrazeno.",
         "studios_found": "{count} studií nalezeno",
         "tags_found": "{count} tagů nalezeno",
-        "scrape_results_missing": "Chybějící"
+        "scrape_results_missing": "Chybějící",
+        "edit_entity_count_title": "Upravit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
     },
     "chapters": "Kapitoly",
     "circumcised": "Obřezán",
@@ -1035,7 +1089,10 @@
         "removed_entity": "Odebráno {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "image_index_too_large": "Chyba: Index obrázku je větší než počet obrázků v galerii",
         "reassign_past_tense": "Soubor byl znovu přidělen",
-        "merged_performers": "Sloučení účinkující"
+        "merged_performers": "Sloučení účinkující",
+        "clipboard_access_denied": "Přístup ke schránce byl zamítnut. Zkontrolujte oprávnění prohlížeče",
+        "clipboard_image_pasted": "Obrázek vložen ze schránky",
+        "clipboard_no_image": "Ve schránce nebyl nalezen žádný obrázek"
     },
     "urls": "Odkazy",
     "url": "Odkaz",
@@ -1351,7 +1408,11 @@
         "interactive_speed": "Interaktivní rychlost",
         "phash": "PHash",
         "play_count": "Počet přehrání",
-        "o_count": "Počet O"
+        "o_count": "Počet O",
+        "md5": "Kontrolní součet MD5",
+        "oshash": "oshash",
+        "oshash_meaning": "Hash OpenSubtitles",
+        "phash_meaning": "Percepční hash"
     },
     "megabits_per_second": "{value} mbps",
     "none": "Žádný",
@@ -1598,5 +1659,59 @@
         "select_stashbox": "Vybrat StashBox..."
     },
     "latest_scene": "Nejnovější scéna",
-    "stash_id_count": "Počet Stash ID"
+    "stash_id_count": "Počet Stash ID",
+    "career_end": "Konec kariéry",
+    "career_start": "Začátek kariéry",
+    "duplicated": "Duplikovaný",
+    "duplicated_stash_id": "Duplikováno (Stash ID)",
+    "duplicated_title": "Duplikováno (Title)",
+    "empty_value": "prázdný",
+    "include_sub_folders": "Zahrnout podsložky",
+    "parent_folder": "Nadřazená složka",
+    "refer_to": "Viz {odkaz}.",
+    "scenes_size": "Velikost scény",
+    "sub_folder_depth": "Hloubka podsložky (empty for all)",
+    "sub_folders": "Podsložky",
+    "tag_tagger": {
+        "add_new_tags": "Přidat nové tagy",
+        "any_names_entered_will_be_queried": "Všechna zadaná jména budou hledána ze vzdálené instance Stash-Box a v případě nalezení budou přidána. Za shodu budou považovány pouze přesné shody.",
+        "batch_add_tags": "Hromadné přidání tagů",
+        "batch_update_tags": "Hromadné aktualizování tagů",
+        "config": {
+            "create_parent_desc": "Vytvořte chybějící nadřazené tagy z kategorií stash-box nebo označte existující nadřazené štítky přesnými shodami názvů",
+            "create_parent_label": "Vytvořit nadřazené tagy"
+        },
+        "create_or_tag_parent_tags": "Vytvořit chybějící nebo označit existující nadřazené tagy",
+        "current_page": "Aktuální stránka",
+        "failed_to_save_tag": "Nepodařilo se uložit tag „{tag}“",
+        "name_already_exists": "Jméno již existuje",
+        "network_error": "Chyba sítě",
+        "no_results_found": "Nebyly nalezeny žádné výsledky.",
+        "number_of_tags_will_be_processed": "Bude zpracováno {tag_count} tagů",
+        "query_all_tags_in_the_database": "Všechny tagy v databázi",
+        "refresh_tagged_tags": "Obnovit označené tagy",
+        "refreshing_will_update_the_data": "Obnovením se aktualizují data všech označených tagů z instance stash-box.",
+        "status_tagging_job_queued": "Stav: Úloha tagování je zařazena do fronty",
+        "status_tagging_tags": "Stav: Označování tagů",
+        "tag_already_tagged": "Tag již označen",
+        "tag_names_or_stashids_separated_by_comma": "Názvy tagů nebo StashID oddělené čárkou",
+        "tag_selection": "Výběr tagů",
+        "tag_successfully_tagged": "Tag byl úspěšně označen",
+        "tag_status": "Stav tagu",
+        "to_use_the_tag_tagger": "Pro použití tag taggeru je nutné nakonfigurovat instanci stash-box.",
+        "untagged_tags": "Neoznačené tagy",
+        "update_tags": "Aktualizovat tagy",
+        "updating_untagged_tags_description": "Aktualizace neoznačených tagů se pokusí najít všechny tagy, které nemají stashid, a aktualizovat metadata."
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "Aktivní instance stash-box:",
+            "edit_excluded_fields": "Upravit vyloučená pole",
+            "excluded_fields": "Vyloučená pole:",
+            "fields_will_not_be_changed": "Tato pole nebudou změněna při aktualizaci {entity}.",
+            "no_fields_are_excluded": "Žádná pole nejsou vyloučena",
+            "no_instances_found": "Nenalezeny žádné instance"
+        }
+    },
+    "unsupported_criteria": "Nepodporovaná kritéria: {criteria}"
 }

@@ -232,9 +232,7 @@
             "latest_version_build_hash": "Хеш на билда на Последна Версия:",
             "new_version_notice": "[НОВО]",
             "release_date": "Дана за издаване:",
-            "stash_discord": "Присъедини се към нашият {url} канал",
             "stash_home": "Stash home на {url}",
-            "stash_open_collective": "Подкрепи ни чрез {url}",
             "stash_wiki": "Stash {url} страница",
             "version": "Версия"
         },
