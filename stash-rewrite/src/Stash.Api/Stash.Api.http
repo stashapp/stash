@@ -1,0 +1,6 @@
+@Stash.Api_HostAddress = http://localhost:5032
+
+GET {{Stash.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

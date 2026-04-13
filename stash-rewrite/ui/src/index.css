@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  /* Stash dark theme */
+  --color-plex-bg: #202b33;
+  --color-plex-surface: #283540;
+  --color-plex-card: #30404d;
+  --color-plex-card-hover: #394b59;
+  --color-plex-border: #394b59;
+  --color-plex-input: rgba(16, 22, 26, 0.3);
+  --color-plex-text: #f5f8fa;
+  --color-plex-text-secondary: #bfccd6;
+  --color-plex-text-muted: #8a9ba8;
+  --color-plex-accent: #137cbd;
+  --color-plex-accent-hover: #48aff0;
+  --color-plex-overlay: rgba(0, 0, 0, 0.6);
+  --color-plex-nav: #1a2329;
+  --color-plex-nav-active: #137cbd;
+}
+
+/* Base */
+body {
+  background-color: var(--color-plex-bg);
+  color: var(--color-plex-text);
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsla(0, 0%, 100%, 0.15); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsla(0, 0%, 100%, 0.25); }
+* { scrollbar-color: hsla(0, 0%, 100%, 0.15) transparent; scrollbar-width: thin; }
+
+/* Selection */
+::selection { background: rgba(204, 123, 25, 0.4); }
+
+/* Transitions */
+a, button { transition: color 0.15s, background-color 0.15s, box-shadow 0.15s, opacity 0.15s; }
+
+/* Theater mode */
+html.theater-mode nav.stash-navbar { display: none; }
+html.theater-mode main { max-width: none !important; padding: 0 !important; }
+
+/* Hide scrollbar for horizontal carousels */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Scene card preview video — CSS-driven hover: hidden off-screen by default, shown on hover via position change.
+   IntersectionObserver in JS detects when video becomes visible and calls play(). */
+.scene-card-preview-video {
+  position: absolute;
+  top: -9999px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: top 0s;
+  transition-delay: 0s;
+}
+.scene-card:hover .scene-card-preview-video,
+.scene-card:active .scene-card-preview-video {
+  top: 0;
+  transition-delay: 0.2s;
+}
+
+/* Hide extra scene info (filesize, file path) by default — matches original Stash */
+.extra-scene-info {
+  display: none;
+}
+
+/* Scene specs overlay — fade out on hover to avoid cluttering the preview */
+.scene-card:hover .scene-specs-overlay {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+/* Card zoom levels */
+.scene-card { --card-min-width: 240px; }

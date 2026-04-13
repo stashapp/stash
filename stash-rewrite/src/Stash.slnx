@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Stash.Api/Stash.Api.csproj" />
+  <Project Path="Stash.Core/Stash.Core.csproj" />
+  <Project Path="Stash.Data/Stash.Data.csproj" />
+  <Project Path="Stash.Media/Stash.Media.csproj" />
+  <Project Path="Stash.Plugins/Stash.Plugins.csproj" />
+</Solution>

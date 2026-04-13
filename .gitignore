@@ -64,3 +64,10 @@ node_modules
 dist
 .DS_Store
 /.local*
+/stash-rewrite/.validation*
+/.playwright-mcp*
+/stash-rewrite/src/.buildverify*
+**/bin/
+**/obj/
+**/generated/
+**/wwwroot/
