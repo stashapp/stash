@@ -1,3 +1,5 @@
+# TODO(audio): add findAudio, findAudios, audioCreate, audioUpdate, audioDestroy, audiosDestroy
+
 "The query root for this schema"
 type Query {
   # Filters

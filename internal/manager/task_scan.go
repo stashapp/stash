@@ -1,3 +1,6 @@
+// TODO(audio): update this file to add Audio scanner, audioFileFilter, new file.FilteredHandler for audio.ScanHandler,
+// TODO(audio): [con't] Add audio to extensionConfig, useAsAudio(), newExtensionConfig
+
 package manager
 
 import (
@@ -18,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
