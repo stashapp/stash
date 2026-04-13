@@ -590,7 +590,7 @@
             "generate_sprites_during_scan_tooltip": "El conjunto de imágenes que se muestra bajo el reproductor de vídeo para facilitar la navegación.",
             "optimise_database_warning": "Advertencia: mientras se esté ejecutando esta tarea, cualquier operación que modifique la base de datos fallará, y dependiendo del tamaño de su base de datos, podría tardar varios minutos en completarse. También requiere como mínimo tanto espacio libre en disco como grande sea su base de datos, pero se recomienda 1.5 veces más.",
             "optimise_database": "Intentar mejorar el rendimiento mediante el análisis y posterior reconstrucción del archivo de base de datos completo.",
-            "rescan_tooltip": "Volver a escanear cada archivo en la ruta.  Se utiliza para forzar la actualización de los metadatos de los archivos y volver a escanear los archivos zip.",
+            "rescan_tooltip": "Volver a escanear cada archivo en la ruta. Se utiliza para forzar la actualización de los metadatos de los archivos y volver a escanear los archivos zip.",
             "rescan": "Reanalizar archivos",
             "generate_image_phashes_during_scan": "Generar hash perceptuales de imágenes",
             "generate_image_phashes_during_scan_tooltip": "Para la deduplicación y la identificación.",
