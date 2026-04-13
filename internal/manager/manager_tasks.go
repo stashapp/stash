@@ -314,6 +314,8 @@ type CleanMetadataInput struct {
 	Paths []string `json:"paths"`
 	// Do a dry run. Don't delete any files
 	DryRun bool `json:"dryRun"`
+
+	IgnoreZipFileContents bool `json:"ignoreZipFileContents"`
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
@@ -431,7 +433,7 @@ type StashBoxBatchTagInput struct {
 	ExcludeFields []string `json:"exclude_fields"`
 	// Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false
 	Refresh bool `json:"refresh"`
-	// If batch adding studios, should their parent studios also be created?
+	// If batch adding studios or tags, should their parent entities also be created?
 	CreateParent bool `json:"createParent"`
 	// IDs in stash of the items to update.
 	// If set, names and stash_ids fields will be ignored.
@@ -749,6 +751,7 @@ func (s *Manager) batchTagTagsByIds(ctx context.Context, input StashBoxBatchTagI
 				if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
 					tasks = append(tasks, &stashBoxBatchTagTagTask{
 						tag:            t,
+						createParent:   input.CreateParent,
 						box:            box,
 						excludedFields: input.ExcludeFields,
 					})
@@ -769,6 +772,7 @@ func (s *Manager) batchTagTagsByNamesOrStashIds(input StashBoxBatchTagInput, box
 		if len(stashID) > 0 {
 			tasks = append(tasks, &stashBoxBatchTagTagTask{
 				stashID:        &stashID,
+				createParent:   input.CreateParent,
 				box:            box,
 				excludedFields: input.ExcludeFields,
 			})
@@ -780,6 +784,7 @@ func (s *Manager) batchTagTagsByNamesOrStashIds(input StashBoxBatchTagInput, box
 		if len(name) > 0 {
 			tasks = append(tasks, &stashBoxBatchTagTagTask{
 				name:           &name,
+				createParent:   input.CreateParent,
 				box:            box,
 				excludedFields: input.ExcludeFields,
 			})
@@ -806,6 +811,7 @@ func (s *Manager) batchTagAllTags(ctx context.Context, input StashBoxBatchTagInp
 		for _, t := range tags {
 			tasks = append(tasks, &stashBoxBatchTagTagTask{
 				tag:            t,
+				createParent:   input.CreateParent,
 				box:            box,
 				excludedFields: input.ExcludeFields,
 			})

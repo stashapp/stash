@@ -2,7 +2,6 @@ package file
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 
@@ -88,6 +87,11 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 
 	r := s.Repository
 
+	zipFilePath := ""
+	if file.ZipFile != nil {
+		zipFilePath = file.ZipFile.Base().Path
+	}
+
 	if err := SymWalk(file.FS, file.Path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// don't let errors prevent scanning
@@ -111,7 +115,7 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 			return nil
 		}
 
-		if !s.AcceptEntry(ctx, path, info) {
+		if !s.AcceptEntry(ctx, path, info, zipFilePath) {
 			return nil
 		}
 
@@ -161,9 +165,7 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 					continue
 				}
 
-				if !errors.Is(err, fs.ErrNotExist) {
-					return fmt.Errorf("checking for parent folder %q: %w", pf.Path, err)
-				}
+				// treat any error as missing folder
 
 				// parent folder is missing, possible candidate
 				// count the total number of files in the existing folder

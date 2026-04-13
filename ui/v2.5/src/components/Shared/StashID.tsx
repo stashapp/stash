@@ -31,3 +31,21 @@ export const StashIDPill: React.FC<{
     </span>
   );
 };
+
+interface IStashIDsField {
+  values: StashId[];
+}
+
+export const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
+  if (!values.length) return null;
+
+  return (
+    <ul className="pl-0 mw-100">
+      {values.map((v) => (
+        <li key={v.stash_id} className="row no-gutters">
+          <StashIDPill linkType="scenes" stashID={v} />
+        </li>
+      ))}
+    </ul>
+  );
+};

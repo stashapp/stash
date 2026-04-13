@@ -33,7 +33,7 @@ function getLabelProps(labelProps?: FormLabelProps) {
 }
 
 export function renderLabel(options: {
-  title: string;
+  title: React.ReactNode;
   labelProps?: FormLabelProps;
 }) {
   return (

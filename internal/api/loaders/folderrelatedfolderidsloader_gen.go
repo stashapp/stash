@@ -22,16 +22,16 @@ type FolderParentFolderIDsLoaderConfig struct {
 }
 
 // NewFolderParentFolderIDsLoader creates a new FolderParentFolderIDsLoader given a fetch, wait, and maxBatch
-func NewFolderParentFolderIDsLoader(config FolderParentFolderIDsLoaderConfig) *FolderParentFolderIDsLoader {
-	return &FolderParentFolderIDsLoader{
+func NewFolderParentFolderIDsLoader(config FolderParentFolderIDsLoaderConfig) *FolderRelatedFolderIDsLoader {
+	return &FolderRelatedFolderIDsLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// FolderParentFolderIDsLoader batches and caches requests
-type FolderParentFolderIDsLoader struct {
+// FolderRelatedFolderIDsLoader batches and caches requests
+type FolderRelatedFolderIDsLoader struct {
 	// this method provides the data for the loader
 	fetch func(keys []models.FolderID) ([][]models.FolderID, []error)
 
@@ -63,14 +63,14 @@ type folderParentFolderIDsLoaderBatch struct {
 }
 
 // Load a FolderID by key, batching and caching will be applied automatically
-func (l *FolderParentFolderIDsLoader) Load(key models.FolderID) ([]models.FolderID, error) {
+func (l *FolderRelatedFolderIDsLoader) Load(key models.FolderID) ([]models.FolderID, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a FolderID.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *FolderParentFolderIDsLoader) LoadThunk(key models.FolderID) func() ([]models.FolderID, error) {
+func (l *FolderRelatedFolderIDsLoader) LoadThunk(key models.FolderID) func() ([]models.FolderID, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
@@ -113,7 +113,7 @@ func (l *FolderParentFolderIDsLoader) LoadThunk(key models.FolderID) func() ([]m
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *FolderParentFolderIDsLoader) LoadAll(keys []models.FolderID) ([][]models.FolderID, []error) {
+func (l *FolderRelatedFolderIDsLoader) LoadAll(keys []models.FolderID) ([][]models.FolderID, []error) {
 	results := make([]func() ([]models.FolderID, error), len(keys))
 
 	for i, key := range keys {
@@ -131,7 +131,7 @@ func (l *FolderParentFolderIDsLoader) LoadAll(keys []models.FolderID) ([][]model
 // LoadAllThunk returns a function that when called will block waiting for a FolderIDs.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *FolderParentFolderIDsLoader) LoadAllThunk(keys []models.FolderID) func() ([][]models.FolderID, []error) {
+func (l *FolderRelatedFolderIDsLoader) LoadAllThunk(keys []models.FolderID) func() ([][]models.FolderID, []error) {
 	results := make([]func() ([]models.FolderID, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
@@ -149,7 +149,7 @@ func (l *FolderParentFolderIDsLoader) LoadAllThunk(keys []models.FolderID) func(
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *FolderParentFolderIDsLoader) Prime(key models.FolderID, value []models.FolderID) bool {
+func (l *FolderRelatedFolderIDsLoader) Prime(key models.FolderID, value []models.FolderID) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -164,13 +164,13 @@ func (l *FolderParentFolderIDsLoader) Prime(key models.FolderID, value []models.
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *FolderParentFolderIDsLoader) Clear(key models.FolderID) {
+func (l *FolderRelatedFolderIDsLoader) Clear(key models.FolderID) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *FolderParentFolderIDsLoader) unsafeSet(key models.FolderID, value []models.FolderID) {
+func (l *FolderRelatedFolderIDsLoader) unsafeSet(key models.FolderID, value []models.FolderID) {
 	if l.cache == nil {
 		l.cache = map[models.FolderID][]models.FolderID{}
 	}
@@ -179,7 +179,7 @@ func (l *FolderParentFolderIDsLoader) unsafeSet(key models.FolderID, value []mod
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *folderParentFolderIDsLoaderBatch) keyIndex(l *FolderParentFolderIDsLoader, key models.FolderID) int {
+func (b *folderParentFolderIDsLoaderBatch) keyIndex(l *FolderRelatedFolderIDsLoader, key models.FolderID) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -203,7 +203,7 @@ func (b *folderParentFolderIDsLoaderBatch) keyIndex(l *FolderParentFolderIDsLoad
 	return pos
 }
 
-func (b *folderParentFolderIDsLoaderBatch) startTimer(l *FolderParentFolderIDsLoader) {
+func (b *folderParentFolderIDsLoaderBatch) startTimer(l *FolderRelatedFolderIDsLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -219,7 +219,7 @@ func (b *folderParentFolderIDsLoaderBatch) startTimer(l *FolderParentFolderIDsLo
 	b.end(l)
 }
 
-func (b *folderParentFolderIDsLoaderBatch) end(l *FolderParentFolderIDsLoader) {
+func (b *folderParentFolderIDsLoaderBatch) end(l *FolderRelatedFolderIDsLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }

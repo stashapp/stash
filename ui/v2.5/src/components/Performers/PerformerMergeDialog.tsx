@@ -20,13 +20,14 @@ import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import {
   ScrapedCustomFieldRows,
+  ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ModalComponent } from "../Shared/Modal";
-import { sortStoredIdObjects } from "src/utils/data";
+import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -40,6 +41,7 @@ import {
 } from "./PerformerDetails/PerformerScrapeDialog";
 import { PerformerSelect } from "./PerformerSelect";
 import { uniq } from "lodash-es";
+import { StashIDsField } from "../Shared/StashID";
 
 type MergeOptions = {
   values: GQL.PerformerUpdateInput;
@@ -132,6 +134,8 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     )
   );
 
+  const [stashIDs, setStashIDs] = useState(new ScrapeResult<GQL.StashId[]>([]));
+
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.image_path)
   );
@@ -165,6 +169,10 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
 
       setLoading(false);
     }
+
+    // append dest to all so that if dest has stash_ids with the same
+    // endpoint, then it will be excluded first
+    const all = sources.concat(dest);
 
     setName(
       new ScrapeResult(dest.name, sources.find((s) => s.name)?.name, !dest.name)
@@ -297,9 +305,8 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     );
     setURLs(
       new ScrapeResult(
-        dest.urls,
-        sources.find((s) => s.urls)?.urls,
-        !dest.urls?.length
+        dest.urls ?? [],
+        uniq(all.map((s) => s.urls ?? []).flat())
       )
     );
     setGender(
@@ -327,6 +334,25 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
         !dest.details
       )
     );
+    setTags(
+      new ObjectListScrapeResult<GQL.ScrapedTag>(
+        sortStoredIdObjects(dest.tags.map(idToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
+      )
+    );
+    setStashIDs(
+      new ScrapeResult(
+        dest.stash_ids,
+        all
+          .map((s) => s.stash_ids)
+          .flat()
+          .filter((s, index, a) => {
+            // remove entries with duplicate endpoints
+            return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
+          })
+      )
+    );
+
     setImage(
       new ScrapeResult(
         dest.image_path,
@@ -583,6 +609,19 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           result={details}
           onChange={(value) => setDetails(value)}
         />
+        <ScrapeDialogRow
+          field="stash_ids"
+          title={intl.formatMessage({ id: "stash_id" })}
+          result={stashIDs}
+          originalField={
+            <StashIDsField values={stashIDs?.originalValue ?? []} />
+          }
+          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
+          onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
+        />
         <ScrapedImageRow
           field="image"
           title={intl.formatMessage({ id: "performer_image" })}
@@ -630,12 +669,8 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           : undefined,
         measurements: measurements.getNewValue(),
         fake_tits: fakeTits.getNewValue(),
-        career_start: careerStart.getNewValue()
-          ? parseInt(careerStart.getNewValue()!)
-          : undefined,
-        career_end: careerEnd.getNewValue()
-          ? parseInt(careerEnd.getNewValue()!)
-          : undefined,
+        career_start: careerStart.getNewValue(),
+        career_end: careerEnd.getNewValue(),
         tattoos: tattoos.getNewValue(),
         piercings: piercings.getNewValue(),
         urls: urls.getNewValue(),
@@ -643,6 +678,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
         circumcised: stringToCircumcised(circumcised.getNewValue()),
         tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
         details: details.getNewValue(),
+        stash_ids: stashIDs.getNewValue(),
         image: coverImage,
         custom_fields: {
           partial: Object.fromEntries(
@@ -664,7 +700,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     : intl.formatMessage({ id: "dialogs.merge.destination" });
   const sourceLabel = !hasValues
     ? ""
-    : intl.formatMessage({ id: "dialogs.merge.source" });
+    : intl.formatMessage({ id: "dialogs.merge.combined" });
 
   return (
     <ScrapeDialog
@@ -717,6 +753,15 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
   const title = intl.formatMessage({
     id: "actions.merge",
   });
+
+  const srcIDs = useMemo(
+    () => sourcePerformers.map((s) => s.id),
+    [sourcePerformers]
+  );
+  const destID = useMemo(
+    () => (destPerformer[0] ? [destPerformer[0].id] : []),
+    [destPerformer]
+  );
 
   useEffect(() => {
     if (performers.length > 0) {
@@ -826,6 +871,7 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
                 onSelect={(items) => setSourcePerformers(items)}
                 values={sourcePerformers}
                 menuPortalTarget={document.body}
+                excludeIds={destID}
               />
             </Col>
           </Form.Group>
@@ -859,6 +905,7 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
                 onSelect={(items) => setDestPerformer(items)}
                 values={destPerformer}
                 menuPortalTarget={document.body}
+                excludeIds={srcIDs}
               />
             </Col>
           </Form.Group>

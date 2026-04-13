@@ -52,7 +52,7 @@ func (qb *performerFilterHandler) validate() error {
 		careerLength := filter.CareerLength
 		switch careerLength.Modifier {
 		case models.CriterionModifierEquals:
-			start, end, err := utils.ParseYearRangeString(careerLength.Value)
+			start, end, err := models.ParseYearRangeString(careerLength.Value)
 			if err != nil {
 				return fmt.Errorf("invalid career length value: %s", careerLength.Value)
 			}
@@ -67,6 +67,28 @@ func (qb *performerFilterHandler) validate() error {
 			// valid modifiers, no value parsing needed
 		default:
 			return fmt.Errorf("invalid career length modifier: %s", careerLength.Modifier)
+		}
+	}
+
+	// validate date formats
+	if filter.Birthdate != nil && filter.Birthdate.Value != "" {
+		if _, err := models.ParseDate(filter.Birthdate.Value); err != nil {
+			return fmt.Errorf("invalid birthdate value: %s", filter.Birthdate.Value)
+		}
+	}
+	if filter.DeathDate != nil && filter.DeathDate.Value != "" {
+		if _, err := models.ParseDate(filter.DeathDate.Value); err != nil {
+			return fmt.Errorf("invalid death date value: %s", filter.DeathDate.Value)
+		}
+	}
+	if filter.CareerStart != nil && filter.CareerStart.Value != "" {
+		if _, err := models.ParseDate(filter.CareerStart.Value); err != nil {
+			return fmt.Errorf("invalid career start value: %s", filter.CareerStart.Value)
+		}
+	}
+	if filter.CareerEnd != nil && filter.CareerEnd.Value != "" {
+		if _, err := models.ParseDate(filter.CareerEnd.Value); err != nil {
+			return fmt.Errorf("invalid career end value: %s", filter.CareerEnd.Value)
 		}
 	}
 
@@ -156,8 +178,8 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		}),
 
 		// CareerLength filter is deprecated and non-functional (column removed in schema 78)
-		intCriterionHandler(filter.CareerStart, tableName+".career_start", nil),
-		intCriterionHandler(filter.CareerEnd, tableName+".career_end", nil),
+		&dateCriterionHandler{filter.CareerStart, tableName + ".career_start", nil},
+		&dateCriterionHandler{filter.CareerEnd, tableName + ".career_end", nil},
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
@@ -266,31 +288,39 @@ func convertLegacyCareerLengthFilter(filter *models.PerformerFilterType) {
 		careerLength := filter.CareerLength
 		switch careerLength.Modifier {
 		case models.CriterionModifierEquals:
-			start, end, _ := utils.ParseYearRangeString(careerLength.Value)
+			start, end, _ := models.ParseYearRangeString(careerLength.Value)
 			if start != nil {
-				filter.CareerStart = &models.IntCriterionInput{
-					Value:    (*start) - 1, // minus one to make it exclusive
+				start = &models.Date{
+					Time:      start.AddDate(0, 0, -1), // make exclusive
+					Precision: models.DatePrecisionDay,
+				}
+				filter.CareerStart = &models.DateCriterionInput{
+					Value:    start.String(),
 					Modifier: models.CriterionModifierGreaterThan,
 				}
 			}
 			if end != nil {
-				filter.CareerEnd = &models.IntCriterionInput{
-					Value:    (*end) + 1, // plus one to make it exclusive
+				end = &models.Date{
+					Time:      end.AddDate(1, 0, 0), // make exclusive
+					Precision: models.DatePrecisionDay,
+				}
+				filter.CareerEnd = &models.DateCriterionInput{
+					Value:    end.String(), // plus one to make it exclusive
 					Modifier: models.CriterionModifierLessThan,
 				}
 			}
 		case models.CriterionModifierIsNull:
-			filter.CareerStart = &models.IntCriterionInput{
+			filter.CareerStart = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierIsNull,
 			}
-			filter.CareerEnd = &models.IntCriterionInput{
+			filter.CareerEnd = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierIsNull,
 			}
 		case models.CriterionModifierNotNull:
-			filter.CareerStart = &models.IntCriterionInput{
+			filter.CareerStart = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierNotNull,
 			}
-			filter.CareerEnd = &models.IntCriterionInput{
+			filter.CareerEnd = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierNotNull,
 			}
 		}

@@ -118,8 +118,8 @@ This project uses a modification of the [CI-GoReleaser](https://github.com/bep/d
 To cross-compile the app yourself:
 
 1. Run `make pre-ui`, `make generate` and `make ui` outside the container, to generate files and build the UI.
-2. Pull the latest compiler image from Docker Hub: `docker pull stashapp/compiler`
-3. Run `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -it stashapp/compiler /bin/bash` to open a shell inside the container.
+2. Pull the latest compiler image from GHCR: `docker pull ghcr.io/stashapp/compiler`
+3. Run `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -it ghcr.io/stashapp/compiler /bin/bash` to open a shell inside the container.
 4. From inside the container, run `make build-cc-all` to build for all platforms, or run `make build-cc-{platform}` to build for a specific platform (have a look at the `Makefile` for the list of targets).
 5. You will find the compiled binaries in `dist/`.
 

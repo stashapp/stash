@@ -58,8 +58,6 @@
         "logout": "Выйти",
         "make_primary": "Сделать основным",
         "merge": "Слияние",
-        "merge_from": "Слияние из",
-        "merge_into": "Слияние в",
         "migrate_blobs": "Перенос блоков",
         "migrate_scene_screenshots": "Перенос скриншотов сцены",
         "next_action": "Вперёд",
@@ -151,7 +149,9 @@
         "show_count_results": "Показать {count} результат(ов)",
         "play": "Воспроизвести",
         "load": "Загрузить",
-        "load_filter": "Загрузить фильтр"
+        "load_filter": "Загрузить фильтр",
+        "add_stash_id": "Добавить Stash ID",
+        "create_new": "Создать новый"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -227,9 +227,7 @@
             "latest_version": "Последняя версия",
             "latest_version_build_hash": "Контрольная сумма последний версии сборки:",
             "new_version_notice": "[НОВЫЙ]",
-            "stash_discord": "Присоединяйтесь к нашему {url} серверу",
             "stash_home": "Stash страница на {url}",
-            "stash_open_collective": "Поддержи нас через {url}",
             "stash_wiki": "Stash {url} страница",
             "version": "Версия",
             "release_date": "Дата выхода:"
@@ -465,7 +463,6 @@
             "auto_tagging": "Автоматическая расстановка тегов",
             "backing_up_database": "Резервное копирование базы данных",
             "backup_and_download": "Создает резервную копию базы данных, и скачивает файл.",
-            "backup_database": "Выполняет резервное копирование базы данных в каталог резервных копий , в формате {filename_format}",
             "cleanup_desc": "Проверить наличие отсутствующих файлов и удалить их из базы данных. Данное действие безвозвратно.",
             "data_management": "Управление данными",
             "defaults_set": "Значения по умолчанию установлены и будут использоваться при нажатии кнопки {action} на странице Задач.",
@@ -898,10 +895,6 @@
             "empty_results": "Значения в полях целевого файла останутся без изменений.",
             "source": "Источник"
         },
-        "merge_tags": {
-            "destination": "Назначение",
-            "source": "Источник"
-        },
         "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",
         "reassign_files": {
             "destination": "Переназначить на"
@@ -1099,9 +1092,7 @@
     "measurements": "Размеры",
     "media_info": {
         "audio_codec": "Аудио кодек",
-        "checksum": "Контрольная сумма",
         "downloaded_from": "Скачан с",
-        "hash": "Хэш",
         "interactive_speed": "Интерактивная скорость",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1145,14 +1136,6 @@
         "any_names_entered_will_be_queried": "Любые введенные имена будут проверены при помощи Stash-Box и позже добавлены, если они будут найдены точные совпадения.",
         "batch_add_performers": "Пакетное добавление участников",
         "batch_update_performers": "Пакетное обновление участников",
-        "config": {
-            "active_stash-box_instance": "Активный stash-box экземпляр:",
-            "edit_excluded_fields": "Редактировать исключенные поля",
-            "excluded_fields": "Исключенные поля:",
-            "no_fields_are_excluded": "Нет исключенных полей",
-            "no_instances_found": "Экземпляры не обнаружены",
-            "these_fields_will_not_be_changed_when_updating_performers": "Эти поля не будут изменены при обновлении актеров."
-        },
         "current_page": "Текущая страница",
         "failed_to_save_performer": "Ошибка сохранения актера \"{performer}\"",
         "name_already_exists": "Такое имя уже существует",
@@ -1377,13 +1360,7 @@
         "batch_add_studios": "Пакетное добавление студий",
         "add_new_studios": "Добавить новую студию",
         "config": {
-            "no_fields_are_excluded": "Нет исключенных полей",
             "create_parent_label": "Создать родительские студии",
-            "no_instances_found": "Инсталляции не найдены",
-            "these_fields_will_not_be_changed_when_updating_studios": "Эти поля не изменятся при обновлении студий.",
-            "edit_excluded_fields": "Изменить исключенные поля",
-            "excluded_fields": "Исключенные поля:",
-            "active_stash-box_instance": "Активная инсталляция stash-box:",
             "create_parent_desc": "Создать отсутствующие родительские студии или связать и обновить данные\\логотипы текущих студий с точным совпадением имени"
         },
         "create_or_tag_parent_studios": "Создать отсутствующие или связать существующие родительские студии",

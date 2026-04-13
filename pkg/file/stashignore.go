@@ -53,7 +53,9 @@ func NewStashIgnoreFilter() *StashIgnoreFilter {
 // applies gitignore-style pattern matching.
 // The libraryRoot parameter bounds the search for .stashignore files -
 // only directories within the library root are checked.
-func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.FileInfo, libraryRoot string) bool {
+// zipFilepath is the path of the zip file if the file is inside a zip.
+// .stashignore files will not be read within zip files.
+func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.FileInfo, libraryRoot string, zipFilePath string) bool {
 	// If no library root provided, accept the file (safety fallback).
 	if libraryRoot == "" {
 		return true
@@ -61,6 +63,11 @@ func (f *StashIgnoreFilter) Accept(ctx context.Context, path string, info fs.Fil
 
 	// Get the directory containing this path.
 	dir := filepath.Dir(path)
+
+	// If the file is inside a zip, use the zip file's directory as the base for .stashignore lookup.
+	if zipFilePath != "" {
+		dir = filepath.Dir(zipFilePath)
+	}
 
 	// Collect all applicable ignore entries from library root to this directory.
 	entries := f.collectIgnoreEntries(dir, libraryRoot)

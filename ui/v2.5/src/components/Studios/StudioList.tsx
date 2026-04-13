@@ -56,7 +56,7 @@ const StudioList: React.FC<{
 }> = PatchComponent(
   "StudioList",
   ({ studios, filter, selectedIds, onSelectChange, fromParent }) => {
-    if (studios.length === 0) {
+    if (studios.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
 

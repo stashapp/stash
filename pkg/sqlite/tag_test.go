@@ -100,6 +100,24 @@ func TestTagFindByName(t *testing.T) {
 	})
 }
 
+func TestTagFindByAlias(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		tqb := db.Tag
+
+		alias := getTagStringValue(tagIdxWithScene, "Alias")
+
+		tag, err := tqb.FindByAlias(ctx, alias, false)
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Equal(t, tagIDs[tagIdxWithScene], tag.ID)
+
+		return nil
+	})
+}
+
 func TestTagQueryIgnoreAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		ignoreAutoTag := true

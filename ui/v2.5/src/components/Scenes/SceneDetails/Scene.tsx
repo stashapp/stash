@@ -7,7 +7,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory, Link, RouteComponentProps } from "react-router-dom";
+import { useHistory, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -56,6 +56,7 @@ import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { SceneMergeModal } from "../SceneMergeDialog";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
+import { StudioLogo } from "src/components/Shared/StudioLogo";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -190,6 +191,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
 
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
@@ -254,6 +256,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind("d d", () => setIsDeleteAlertOpen(true));
     Mousetrap.bind("c c", () => {
       onGenerateScreenshot(getPlayerPosition());
     });
@@ -269,6 +272,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       Mousetrap.unbind("i");
       Mousetrap.unbind("h");
       Mousetrap.unbind("o");
+      Mousetrap.unbind("d d");
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
@@ -674,17 +678,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       >
         <div>
           <div className="scene-header-container">
-            {scene.studio && (
-              <h1 className="text-center scene-studio-image">
-                <Link to={`/studios/${scene.studio.id}`}>
-                  <img
-                    src={scene.studio.image_path ?? ""}
-                    alt={`${scene.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
-            )}
+            <StudioLogo studio={scene.studio} showText={showStudioText} />
             <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
               <TruncatedText lineCount={2} text={title} />
             </h3>

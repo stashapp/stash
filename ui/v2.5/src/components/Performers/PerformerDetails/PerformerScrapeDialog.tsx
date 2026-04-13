@@ -8,7 +8,6 @@ import {
   ScrapedTextAreaRow,
   ScrapedCountryRow,
   ScrapedStringListRow,
-  ScrapedNumberRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { Form } from "react-bootstrap";
@@ -191,7 +190,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       return;
     }
 
-    let retEnum: GQL.CircumisedEnum | undefined;
+    let retEnum: GQL.CircumcisedEnum | undefined;
 
     // try to translate from enum values first
     const upperCircumcised = scrapedCircumcised.toUpperCase();
@@ -273,14 +272,14 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [fakeTits, setFakeTits] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.fake_tits, props.scraped.fake_tits)
   );
-  const [careerStart, setCareerStart] = useState<ScrapeResult<number>>(
-    new ScrapeResult<number>(
+  const [careerStart, setCareerStart] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
       props.performer.career_start,
       props.scraped.career_start
     )
   );
-  const [careerEnd, setCareerEnd] = useState<ScrapeResult<number>>(
-    new ScrapeResult<number>(
+  const [careerEnd, setCareerEnd] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
       props.performer.career_end,
       props.scraped.career_end
     )
@@ -502,13 +501,13 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
         />
-        <ScrapedNumberRow
+        <ScrapedInputGroupRow
           field="career_start"
           title={intl.formatMessage({ id: "career_start" })}
           result={careerStart}
           onChange={(value) => setCareerStart(value)}
         />
-        <ScrapedNumberRow
+        <ScrapedInputGroupRow
           field="career_end"
           title={intl.formatMessage({ id: "career_end" })}
           result={careerEnd}

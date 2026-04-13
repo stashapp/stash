@@ -100,10 +100,8 @@
         "encoding_image": "Kép kódolása…",
         "hash_migration": "hash-migráció",
         "make_primary": "Beállítás elsődlegesnek",
-        "merge_into": "Összefűzés a",
         "migrate_blobs": "Blobok migrálása",
         "migrate_scene_screenshots": "Jelenet képernyőképek migrálása",
-        "merge_from": "Összefűzés innen",
         "optimise_database": "Adatbázis optimalizálása",
         "reassign": "Átcsoportosítás",
         "remove_from_gallery": "Eltávolítás a galériából",
@@ -189,8 +187,7 @@
             "latest_version_build_hash": "Legújabb verzió build hash-e:",
             "check_for_new_version": "Új verzió keresése",
             "new_version_notice": "[ÚJ]",
-            "release_date": "Megjelenés dátuma:",
-            "stash_discord": "Csatlakozz a csatornához {url}"
+            "release_date": "Megjelenés dátuma:"
         },
         "categories": {
             "logs": "Logok",
@@ -398,10 +395,6 @@
                 "zoom": "Nagyítás"
             }
         },
-        "merge_tags": {
-            "destination": "Cél",
-            "source": "Forrás"
-        },
         "scene_gen": {
             "preview_exclude_end_time_desc": "Az utolsó x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva.",
             "preview_exclude_start_time_desc": "Az első x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva.",
@@ -518,9 +511,6 @@
     "performer_favorite": "Szereplő Kedvencek Közt",
     "performer_image": "Szereplő Képe",
     "performer_tagger": {
-        "config": {
-            "excluded_fields": "Kihagyott mezők:"
-        },
         "current_page": "Jelenlegi oldal",
         "network_error": "Hálózati Hiba",
         "tag_status": "Címke Státusza",

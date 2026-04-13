@@ -1209,6 +1209,14 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 	return nil
 }
 
+func querySelect(ctx context.Context, query string, args []interface{}, dest interface{}) error {
+	if err := dbWrapper.Select(ctx, dest, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("running query: %s [%v]: %w", query, args, err)
+	}
+
+	return nil
+}
+
 // func cols(table exp.IdentifierExpression, cols []string) []interface{} {
 // 	var ret []interface{}
 // 	for _, c := range cols {

@@ -238,22 +238,32 @@ func (qb *fileFilterHandler) hashesCriterionHandler(hashes []*models.Fingerprint
 			t := fmt.Sprintf("file_fingerprints_%d", i)
 			f.addLeftJoin(fingerprintTable, t, fmt.Sprintf("files.id = %s.file_id AND %s.type = ?", t, t), hash.Type)
 
-			value, _ := utils.StringToPhash(hash.Value)
 			distance := 0
 			if hash.Distance != nil {
 				distance = *hash.Distance
 			}
 
-			if distance > 0 {
-				// needed to avoid a type mismatch
-				f.addWhere(fmt.Sprintf("typeof(%s.fingerprint) = 'integer'", t))
-				f.addWhere(fmt.Sprintf("phash_distance(%s.fingerprint, ?) < ?", t), value, distance)
+			// Only phash supports distance matching and is stored as integer
+			if hash.Type == models.FingerprintTypePhash {
+				value, err := utils.StringToPhash(hash.Value)
+				if err != nil {
+					f.setError(fmt.Errorf("invalid phash value: %w", err))
+					return
+				}
+				if distance > 0 {
+					// needed to avoid a type mismatch
+					f.addWhere(fmt.Sprintf("typeof(%s.fingerprint) = 'integer'", t))
+					f.addWhere(fmt.Sprintf("phash_distance(%s.fingerprint, ?) < ?", t), value, distance)
+				} else {
+					intCriterionHandler(&models.IntCriterionInput{
+						Value:    int(value),
+						Modifier: models.CriterionModifierEquals,
+					}, t+".fingerprint", nil)(ctx, f)
+				}
 			} else {
-				// use the default handler
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: models.CriterionModifierEquals,
-				}, t+".fingerprint", nil)(ctx, f)
+				// All other fingerprint types (md5, oshash, sha1, etc.) are stored as strings
+				// Use exact match for string-based fingerprints
+				f.addWhere(fmt.Sprintf("%s.fingerprint = ?", t), hash.Value)
 			}
 		}
 	}

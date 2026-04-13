@@ -36,6 +36,7 @@
     "create_marker": "Create Marker",
     "create_new": "Create new",
     "create_parent_studio": "Create parent studio",
+    "create_parent_tag": "Create parent tag",
     "created_entity": "Created {entity_type}: {entity_name}",
     "customise": "Customise",
     "delete": "Delete",
@@ -250,13 +251,13 @@
       "build_time": "Build time:",
       "check_for_new_version": "Check for new version",
       "latest_version": "Latest Version",
-      "latest_version_build_hash": "Latest Version Build Hash:",
+      "latest_version_build_hash": "Latest version build hash:",
       "new_version_notice": "[NEW]",
       "release_date": "Release date:",
-      "stash_discord": "Join our {url} channel",
-      "stash_home": "Stash home at {url}",
-      "stash_open_collective": "Support us through {url}",
-      "stash_wiki": "Stash {url} page",
+      "stash_home": "Visit Stash on {url}.",
+      "stash_wiki": "Check out Stash {url} website.",
+      "stash_community": "Join our {forumUrl} or {discordUrl} community server.",
+      "support_us": "Support us through {openCollectiveUrl} or {githubSponsorsUrl}.",
       "version": "Version"
     },
     "advanced_mode": "Advanced mode",
@@ -511,6 +512,8 @@
         "auto_tagging_paths": "Auto tagging the following paths"
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
+      "auto_tag_confirm": "This will attempt to match your content against existing metadata.",
+      "auto_tag_warning": "This process cannot be undone and may produce incorrect matches.",
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
@@ -526,6 +529,8 @@
         "zip": "SQLite database file and blob files will be zipped into a single file, with the filename {filename_format}"
       },
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
+      "clean_ignore_zip_contents": "Ignore zip file contents",
+      "clean_ignore_zip_contents_desc": "Faster but will miss files removed inside zip files. Safe to enable if you don't delete files within zips.",
       "clean_generated": {
         "blob_files": "Blob files",
         "description": "Removes generated files without a corresponding database entry.",
@@ -707,6 +712,10 @@
         "show_all_details": {
           "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column.",
           "heading": "Show all details"
+        },
+        "show_studio_text": {
+          "description": "Always display studio name as text on details views instead of an icon.",
+          "heading": "Show studio as text"
         }
       },
       "editing": {
@@ -812,7 +821,8 @@
       "scene_list": {
         "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Display studio overlay as text"
+          "show_studio_as_text": "Display studio overlay as text",
+          "show_studio_as_text_desc": "By default, the studio logo is shown on cards in the grid. Enable this option to always show the studio name as text instead."
         }
       },
       "scene_player": {
@@ -840,11 +850,20 @@
           }
         }
       },
+      "scene_view": {
+        "heading": "Scene View",
+        "options": {
+          "preview_volume": {
+            "description": "Volume of the preview when hovering over a scene. Set to 0 to mute.",
+            "heading": "Preview volume"
+          }
+        }
+      },
       "scene_wall": {
         "heading": "Scene / Marker Wall",
         "options": {
           "display_title": "Display title and tags",
-          "toggle_sound": "Enable sound"
+          "toggle_sound": "Enable sound on preview hover"
         }
       },
       "scroll_attempts_before_change": {
@@ -985,6 +1004,7 @@
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "edit_entity_count_title": "Edit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
     "imagewall": {
@@ -1019,6 +1039,7 @@
       }
     },
     "merge": {
+      "combined": "Combined",
       "destination": "Destination",
       "empty_results": "Destination field values will be unchanged.",
       "source": "Source"
@@ -1147,6 +1168,7 @@
     "warmth": "Warmth"
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
+  "empty_value": "empty",
   "errors": {
     "custom_fields": {
       "duplicate_field": "Field name must be unique",
@@ -1389,6 +1411,7 @@
   "rating": "Rating",
   "recently_added_objects": "Recently Added {objects}",
   "recently_released_objects": "Recently Released {objects}",
+  "refer_to": "Please see {link}.",
   "release_notes": "Release Notes",
   "resolution": "Resolution",
   "resume_time": "Resume Time",
@@ -1397,6 +1420,7 @@
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
   "scenes_duration": "Scene Duration",
+  "scenes_size": "Scene Size",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",
@@ -1603,12 +1627,18 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_tags": "Batch Add Tags",
     "batch_update_tags": "Batch Update Tags",
+    "config": {
+      "create_parent_desc": "Create missing parent tags from stash-box categories, or tag existing parent tags with exact name matches",
+      "create_parent_label": "Create parent tags"
+    },
+    "create_or_tag_parent_tags": "Create missing or tag existing parent tags",
     "current_page": "Current page",
     "failed_to_save_tag": "Failed to save tag \"{tag}\"",
     "name_already_exists": "Name already exists",
     "network_error": "Network Error",
     "no_results_found": "No results found.",
     "number_of_tags_will_be_processed": "{tag_count} tags will be processed",
+    "parent_tag_no_remote_site_id_warning": "Parent tag does not have a remote site ID, and will not be linked to the stash-box instance.",
     "query_all_tags_in_the_database": "All tags in the database",
     "refresh_tagged_tags": "Refresh tagged tags",
     "refreshing_will_update_the_data": "Refreshing will update the data of any tagged tags from the stash-box instance.",

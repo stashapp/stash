@@ -214,6 +214,7 @@ For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also
 
 * `{checksum}` - the MD5 checksum of the scene
 * `{oshash}` - the oshash of the scene
+* `{phash}` - the phash of the scene
 * `{filename}` - the base filename of the scene
 * `{title}` - the title of the scene
 * `{url}` - the url of the scene

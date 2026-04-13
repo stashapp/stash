@@ -306,6 +306,7 @@ const (
 	pathField            = "Path"
 	checksumField        = "Checksum"
 	titleField           = "Title"
+	detailsField         = "Details"
 	urlField             = "URL"
 	zipPath              = "zipPath.zip"
 	firstSavedFilterName = "firstSavedFilterName"
@@ -865,15 +866,23 @@ func getFileModTime(index int) time.Time {
 	return getFolderModTime(index)
 }
 
+func getFilePhash(index int) int64 {
+	return int64(index * 567)
+}
+
 func getFileFingerprints(index int) []models.Fingerprint {
 	return []models.Fingerprint{
 		{
-			Type:        "MD5",
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: getPrefixedStringValue("file", index, "md5"),
 		},
 		{
-			Type:        "OSHASH",
+			Type:        models.FingerprintTypeOshash,
 			Fingerprint: getPrefixedStringValue("file", index, "oshash"),
+		},
+		{
+			Type:        models.FingerprintTypePhash,
+			Fingerprint: getFilePhash(index),
 		},
 	}
 }
@@ -1297,9 +1306,10 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Title:  title,
-		Rating: getIntPtr(getRating(i)),
-		Date:   getObjectDate(i),
+		Title:   title,
+		Details: getImageStringValue(i, detailsField),
+		Rating:  getIntPtr(getRating(i)),
+		Date:    getObjectDate(i),
 		URLs: models.NewRelatedStrings([]string{
 			getImageEmptyString(i, urlField),
 		}),
@@ -1587,24 +1597,24 @@ func getPerformerDeathDate(index int) *models.Date {
 	return &ret
 }
 
-func getPerformerCareerStart(index int) *int {
+func getPerformerCareerStart(index int) *models.Date {
 	if index%5 == 0 {
 		return nil
 	}
 
-	ret := 2000 + index
-	return &ret
+	date := models.DateFromYear(2000 + index)
+	return &date
 }
 
-func getPerformerCareerEnd(index int) *int {
+func getPerformerCareerEnd(index int) *models.Date {
 	if index%5 == 0 {
 		return nil
 	}
 
 	// only set career_end for even indices
 	if index%2 == 0 {
-		ret := 2010 + index
-		return &ret
+		date := models.DateFromYear(2010 + index)
+		return &date
 	}
 	return nil
 }
@@ -1618,15 +1628,15 @@ func getPerformerPenisLength(index int) *float64 {
 	return &ret
 }
 
-func getPerformerCircumcised(index int) *models.CircumisedEnum {
-	var ret models.CircumisedEnum
+func getPerformerCircumcised(index int) *models.CircumcisedEnum {
+	var ret models.CircumcisedEnum
 	switch {
 	case index%3 == 0:
 		return nil
 	case index%3 == 1:
-		ret = models.CircumisedEnumCut
+		ret = models.CircumcisedEnumCut
 	default:
-		ret = models.CircumisedEnumUncut
+		ret = models.CircumcisedEnumUncut
 	}
 
 	return &ret

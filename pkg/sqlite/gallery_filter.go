@@ -285,7 +285,7 @@ func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.Hier
 			return
 		}
 
-		galleryRepository.addFoldersTable(f)
+		galleryRepository.addFilesTable(f)
 		f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
 
 		criterion := *folder
@@ -320,7 +320,7 @@ func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.Hier
 			}
 
 			// combine clauses with OR to handle zip file or folder
-			c1 := makeClause(fmt.Sprintf("folders.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			c1 := makeClause(fmt.Sprintf("files.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
 			c2 := makeClause(fmt.Sprintf("gallery_folder.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
 			f.whereClauses = append(f.whereClauses, orClauses(c1, c2))
 		}
@@ -332,7 +332,7 @@ func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.Hier
 				return
 			}
 
-			f.addWhere(fmt.Sprintf("folders.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR folders.parent_folder_id IS NULL", valuesClause))
+			f.addWhere(fmt.Sprintf("files.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR folders.parent_folder_id IS NULL", valuesClause))
 			f.addWhere(fmt.Sprintf("gallery_folder.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR gallery_folder.parent_folder_id IS NULL", valuesClause))
 		}
 	}

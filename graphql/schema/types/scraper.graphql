@@ -73,6 +73,7 @@ type ScrapedTag {
   name: String!
   description: String
   alias_list: [String!]
+  parent: ScrapedTag
   "Remote site ID, if applicable"
   remote_site_id: String
 }

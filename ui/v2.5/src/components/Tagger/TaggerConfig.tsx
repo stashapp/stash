@@ -1,15 +1,12 @@
-import React, { Dispatch, useState } from "react";
+import React, { useState } from "react";
 import { Badge, Button, Card, Collapse, Form } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
-import { useConfigurationContext } from "src/hooks/Config";
-
-import { ITaggerConfig } from "./constants";
+import { FormattedMessage, useIntl } from "react-intl";
 import FieldSelector from "./FieldSelector";
+import { Icon } from "../Shared/Icon";
+import { faCog } from "@fortawesome/free-solid-svg-icons";
 
 interface ITaggerConfigProps {
   show: boolean;
-  config: ITaggerConfig;
-  setConfig: Dispatch<ITaggerConfig>;
   excludedFields: string[];
   onFieldsChange: (fields: string[]) => void;
   fields: string[];
@@ -19,26 +16,13 @@ interface ITaggerConfigProps {
 
 const TaggerConfig: React.FC<ITaggerConfigProps> = ({
   show,
-  config,
-  setConfig,
   excludedFields,
   onFieldsChange,
   fields,
   entityName,
   extraConfig,
 }) => {
-  const { configuration: stashConfig } = useConfigurationContext();
   const [showExclusionModal, setShowExclusionModal] = useState(false);
-
-  const handleInstanceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedEndpoint = e.currentTarget.value;
-    setConfig({
-      ...config,
-      selectedEndpoint,
-    });
-  };
-
-  const stashBoxes = stashConfig?.general.stashBoxes ?? [];
 
   const handleFieldSelect = (selectedFields: string[]) => {
     onFieldsChange(selectedFields);
@@ -84,32 +68,6 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
                   <FormattedMessage id="tagger.config.edit_excluded_fields" />
                 </Button>
               </Form.Group>
-              <Form.Group
-                controlId="stash-box-endpoint"
-                className="align-items-center row no-gutters mt-4"
-              >
-                <Form.Label className="mr-4">
-                  <FormattedMessage id="tagger.config.active_stash-box_instance" />
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  value={config.selectedEndpoint}
-                  className="col-md-4 col-6 input-control"
-                  disabled={!stashBoxes.length}
-                  onChange={handleInstanceSelect}
-                >
-                  {!stashBoxes.length && (
-                    <option>
-                      <FormattedMessage id="tagger.config.no_instances_found" />
-                    </option>
-                  )}
-                  {stashConfig?.general.stashBoxes.map((i) => (
-                    <option value={i.endpoint} key={i.endpoint}>
-                      {i.endpoint}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
             </div>
           </div>
         </Card>
@@ -125,3 +83,23 @@ const TaggerConfig: React.FC<ITaggerConfigProps> = ({
 };
 
 export default TaggerConfig;
+
+export const ConfigButton: React.FC<{
+  onClick: () => void;
+  showConfig: boolean;
+}> = ({ onClick, showConfig }) => {
+  const intl = useIntl();
+
+  const showHideConfigId = showConfig
+    ? "actions.hide_configuration"
+    : "actions.show_configuration";
+
+  return (
+    <Button
+      onClick={onClick}
+      title={intl.formatMessage({ id: showHideConfigId })}
+    >
+      <Icon className="fa-fw" icon={faCog} />
+    </Button>
+  );
+};

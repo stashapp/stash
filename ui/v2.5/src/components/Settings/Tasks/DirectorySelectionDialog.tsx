@@ -20,7 +20,13 @@ interface IDirectorySelectionDialogProps {
 
 export const DirectorySelectionDialog: React.FC<
   IDirectorySelectionDialogProps
-> = ({ animation, allowEmpty = false, initialPaths = [], onClose }) => {
+> = ({
+  animation,
+  allowEmpty = false,
+  initialPaths = [],
+  onClose,
+  children,
+}) => {
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
 
@@ -91,6 +97,8 @@ export const DirectorySelectionDialog: React.FC<
             </Button>
           }
         />
+
+        {children}
       </div>
     </ModalComponent>
   );

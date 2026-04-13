@@ -116,11 +116,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
     penis_length: yupInputNumber().positive().nullable().defined(),
-    circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
+    circumcised: yupInputEnum(GQL.CircumcisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
-    career_start: yupInputNumber().positive().nullable().defined(),
-    career_end: yupInputNumber().positive().nullable().defined(),
+    career_start: yupDateString(intl),
+    career_end: yupDateString(intl),
     urls: yupUniqueStringList(intl),
     details: yup.string().ensure(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -149,8 +149,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     circumcised: performer.circumcised ?? null,
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
-    career_start: performer.career_start ?? null,
-    career_end: performer.career_end ?? null,
+    career_start: performer.career_start ?? "",
+    career_end: performer.career_end ?? "",
     urls: performer.urls ?? [],
     details: performer.details ?? "",
     tag_ids: (performer.tags ?? []).map((t) => t.id),
@@ -745,8 +745,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("tattoos", "textarea")}
         {renderInputField("piercings", "textarea")}
 
-        {renderInputField("career_start", "number")}
-        {renderInputField("career_end", "number")}
+        {renderDateField("career_start")}
+        {renderDateField("career_end")}
 
         {renderURLListField("urls", onScrapePerformerURL, urlScrapable)}
 

@@ -58,8 +58,6 @@
         "logout": "Kirjaudu ulos",
         "make_primary": "Tee ensisijaikseksi",
         "merge": "Yhdistä",
-        "merge_from": "Yhdistä kohteesta",
-        "merge_into": "Yhdistä kohteeseen",
         "next_action": "Seuraava",
         "not_running": "ei käynnissä",
         "open_in_external_player": "Avaa ulkoisessa soittimessa",
@@ -151,7 +149,9 @@
             "close": "Sulje sivupalkki",
             "open": "Avaa sivupalkki",
             "toggle": "näytä/piilota sivupalkki"
-        }
+        },
+        "add_stash_id": "Lisää Stash ID",
+        "create_new": "Lisää uusi"
     },
     "actions_name": "Toiminnot",
     "age": "Ikä",
@@ -202,6 +202,10 @@
             "mark_organized_desc": "Merkitsee kohtauksen järjestellyksi hetki kun Tallenna -painiketta on painettu.",
             "errors": {
                 "blacklist_duplicate": "Monista musta lista -kohde"
+            },
+            "performer_genders": {
+                "heading": "Esiintyjien sukupuolet",
+                "description": "Esiintyjät näillä sukupuolilla näytetään lisättäessä tunnisteita kohtauksille."
             }
         },
         "noun_query": "Haku",
@@ -223,7 +227,9 @@
         "verb_scrape_all": "Kaavi kaikki",
         "verb_submit_fp": "Lähetä {fpCount, plural, one{# sormenjäki} other{# sormenjälkeä}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} täsmäämättömät kohtaukset"
+        "verb_toggle_unmatched": "{toggle} täsmäämättömät kohtaukset",
+        "verb_add_as_alias": "Lisää kaavittu nimi aliaksena",
+        "verb_link_existing": "Linkitä olemassaolevaan"
     },
     "config": {
         "about": {
@@ -234,9 +240,7 @@
             "latest_version_build_hash": "Uusimman version tiiviste:",
             "new_version_notice": "[UUSI]",
             "release_date": "Julkaisupäivä:",
-            "stash_discord": "Liity {url} kanavallemme",
             "stash_home": "Stashin kotisivut {url}",
-            "stash_open_collective": "Tue meitä {url}",
             "stash_wiki": "Stashin {url} -sivu",
             "version": "Versio"
         },
@@ -302,7 +306,9 @@
                 "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
                 "stash-box_integration": "Stash-box integraatio",
                 "username": "Käyttäjätunnus",
-                "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
+                "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
+                "log_file_max_size": "Lokin maksimikoko",
+                "log_file_max_size_desc": "Lokin maksimikoko megatavuina ennen pakkaamista. 0MB laittaa pois käytöstä. Vaatii uudelleenkäynnistyksen."
             },
             "backup_directory_path": {
                 "description": "SQLite -tietokannan varmuuskopiokansion sijainti",
@@ -418,7 +424,11 @@
             "funscript_heatmap_draw_range": "Sisällytä alue luotuihin lämpökarttoihin",
             "gallery_cover_regex_desc": "Regexp käytetään kuvaamaan gallerian kansikuvaa",
             "gallery_cover_regex_label": "Gallerian kansikuvio",
-            "heatmap_generation": "Funscript-lämpökarttageneraattori﻿"
+            "heatmap_generation": "Funscript-lämpökarttageneraattori﻿",
+            "delete_trash_path": {
+                "description": "Polku johon poistetut tiedostot siirretään sen sijaan, että ne poistettaisiin lopullisesti. Jätä tyhjäksi poistaaksesi tiedostot lopullisesti.",
+                "heading": "Roskakorin polku"
+            }
         },
         "library": {
             "exclusions": "Poisjättäminen",
@@ -466,7 +476,6 @@
             "auto_tagging": "Automaattinen tunnisteiden asetus",
             "backing_up_database": "Varmuuskopioidaan tietokantaa",
             "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
-            "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston varmuuskopiokansioon",
             "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
             "data_management": "Datan hallinta",
             "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
@@ -754,6 +763,12 @@
                     "description": "Kun tämä on otettu käyttöön, kaikki sisällön tiedot näytetään oletuksena ja jokainen tietoelementti mahtuu yhden sarakkeen alle.",
                     "heading": "Näytä kaikki tiedot"
                 }
+            },
+            "sfw_mode": {
+                "heading": "SFW -sisältötila"
+            },
+            "performer_list": {
+                "heading": "Esiintyjälista"
             }
         },
         "advanced_mode": "Edistynyt tila",
@@ -848,10 +863,6 @@
             "destination": "Kohde",
             "source": "Lähde"
         },
-        "merge_tags": {
-            "destination": "Kohde",
-            "source": "Lähde"
-        },
         "scene_gen": {
             "force_transcodes": "Pakota transkoodaus",
             "force_transcodes_tooltip": "Oletuksena transkoodaus tehdään vain, mikäli selain ei tue videotiedostoa. Jos tämä valinta on päällä, transkoodaus tehdään vaikka selain näyttäisi tukevan videotiedostoa.",
@@ -885,7 +896,9 @@
         "scrape_results_existing": "Olemassaoleva",
         "scrape_results_scraped": "Kaavittu",
         "set_image_url_title": "Kuvan URL",
-        "unsaved_changes": "Tallentamattomia muutoksia. Haluatko varmasti poistua?"
+        "unsaved_changes": "Tallentamattomia muutoksia. Haluatko varmasti poistua?",
+        "scrape_results_missing": "Puuttuu",
+        "stashid_exists_warning": "Olemassaoleva stash ID tälle stash-boxille korvataan."
     },
     "dimensions": "Mitat",
     "director": "Ohjaaja",
@@ -979,7 +992,7 @@
         "syncing": "Synkronoidaan palvelimelle",
         "uploading": "Ladataan skriptiä"
     },
-    "hasMarkers": "On merkki",
+    "hasMarkers": "Merkit",
     "height": "Pituus",
     "height_cm": "Pituus (cm)",
     "help": "Apua",
@@ -1003,9 +1016,7 @@
     "measurements": "Mitat",
     "media_info": {
         "audio_codec": "Audiokodekki",
-        "checksum": "Tarkistussumma",
         "downloaded_from": "Ladattu kohteesta",
-        "hash": "Tiiviste",
         "interactive_speed": "Interaktiivinen nopeus",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1046,13 +1057,6 @@
         "add_new_performers": "Lisää uusia esiintyjiä",
         "batch_add_performers": "Lisää joukko esiintyjiä",
         "batch_update_performers": "Päivitä joukko esiintyjiä",
-        "config": {
-            "active_stash-box_instance": "Aktiivinen stash-box instanssi:",
-            "edit_excluded_fields": "Muokkaa poisjätettyjä kenttiä",
-            "excluded_fields": "Poisjätetyt kentät:",
-            "no_fields_are_excluded": "Ei poisjätettyjä kenttiä",
-            "these_fields_will_not_be_changed_when_updating_performers": "Näitä kenttiä ei muokata kun päivitetään esiintyjiä."
-        },
         "current_page": "Nykyinen sivu",
         "failed_to_save_performer": "Esiintyjän \"{performer}\" tallentaminen ei onnistunut",
         "name_already_exists": "Nimi on jo olemassa",
@@ -1133,15 +1137,15 @@
         },
         "paths": {
             "database_filename_empty_for_default": "tietokannan tiedostonimi (oletus jos tyhjä)",
-            "description": "Seuraavaksi meidän pitää tietää mistä etsiä pornokokoelmaasi ja mihin tallennetaan tietokanta, välimuisti ja generoidut tiedostot. Nämä asetukset ovat muutettavissa myöhemmin.",
+            "description": "Seuraavaksi meidän pitää tietää mistä etsiä sisältösi ja mihin tallennetaa tietokanta, välimuisti ja generoidut tiedostot. Nämä asetukset ovat muutettavissa myöhemmin.",
             "path_to_generated_directory_empty_for_default": "polku generated -kansioon (käytetään oletussijaintia jos tyhjä)",
             "set_up_your_paths": "Aseta polut",
             "stash_alert": "Et ole valinnut yhtään polkua kirjastoon. Mediaa ei voida skannata Stashiin. Oletko aivan varma?",
             "where_can_stash_store_its_database": "Mihin Stash voi tallentaa tietokantansa?",
-            "where_can_stash_store_its_database_description": "Stash käyttää SQLite -tietokantaa tallentaaksesi pornosi metadatan. Oletuksena <code>stash-go.sqlite</code> luodaan samaan kansioon konfiguraatiotiedoston kanssa. Jos haluat muuttaa tätä, anna absoluuttinen tai relatiivinen tiedostonimi.",
+            "where_can_stash_store_its_database_description": "Stash käyttää SQLite -tietokantaa sisällön metadatan tallennukseen. Oletuksena <code>stash-go.sqlite</code> luodaan samaan kansioon konfiguraatiotiedoston kanssa. Jos haluat muuttaa tätä, anna absoluuttinen tai relatiivinen tiedostonimi.",
             "where_can_stash_store_its_generated_content": "Mihin Stash voi tallentaa generoimansa sisällön?",
-            "where_is_your_porn_located": "Missä pornosi on?",
-            "where_is_your_porn_located_description": "Lisää hakemistoja jotka sisältävät pornovideosi ja -kuvasi. Stash käyttää näitä hakemistoja etsiessään videoita ja kuvia."
+            "where_is_your_porn_located": "Missä sisältösi on?",
+            "where_is_your_porn_located_description": "Lisää hakemistoja joissa videot ja kuvat sijaitsevat. Stash käyttää näitä hakemistoja etsiessään videoita ja kuvia."
         },
         "stash_setup_wizard": "Stashin asetusvelho",
         "success": {
@@ -1253,5 +1257,9 @@
     "type": "Tyyppi",
     "studio_and_parent": "Studio ja vanhempi",
     "studio_count": "Studion määrä",
-    "age_on_date": "{age} tuotannossa"
+    "age_on_date": "{age} tuotannossa",
+    "stashbox_search": {
+        "no_results": "Ei tuloksia.",
+        "header": "Etsi {entityType} StashBoxista"
+    }
 }

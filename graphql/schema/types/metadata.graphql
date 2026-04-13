@@ -131,6 +131,14 @@ type ScanMetadataOptions {
 input CleanMetadataInput {
   paths: [String!]
 
+  """
+  Don't check zip file contents when determining whether to clean a file.
+  This can significantly speed up the clean process, but will potentially miss removed files within zip files.
+  Where users do not modify zip files contents directly, this should be safe to use.
+  Defaults to false.
+  """
+  ignoreZipFileContents: Boolean
+
   "Do a dry run. Don't delete any files"
   dryRun: Boolean!
 }

@@ -269,8 +269,11 @@ func getDateWhereClause(column string, modifier models.CriterionModifier, value 
 		upper = &u
 	}
 
-	args := []interface{}{value}
-	betweenArgs := []interface{}{value, *upper}
+	valueDate, _ := models.ParseDate(value)
+	date := Date{Date: valueDate.Time}
+
+	args := []interface{}{date}
+	betweenArgs := []interface{}{date, *upper}
 
 	switch modifier {
 	case models.CriterionModifierIsNull:
