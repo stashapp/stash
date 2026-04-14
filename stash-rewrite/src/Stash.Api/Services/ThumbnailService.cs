@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Stash.Core.Entities.Galleries.Zip;
 using Stash.Core.Interfaces;
 using Stash.Data;
 
@@ -10,6 +11,7 @@ public interface IThumbnailService
 {
     Task<string?> GetSceneThumbnailPathAsync(int sceneId, CancellationToken ct = default);
     Task<string?> GetImageFilePathAsync(int imageId, CancellationToken ct = default);
+    Task<(Stream stream, string contentType, bool supportsRangeRequests)?> GetImageStreamAsync(int imageId, CancellationToken ct = default);
     Task GenerateSceneThumbnailAsync(int sceneId, double? atSeconds = null, CancellationToken ct = default);
     Task GenerateScenePreviewAsync(int sceneId, CancellationToken ct = default);
     Task GenerateSceneSpriteAsync(int sceneId, CancellationToken ct = default);
@@ -25,6 +27,7 @@ public class ThumbnailService(
     IServiceScopeFactory scopeFactory,
     IJobService jobService,
     StashConfiguration config,
+    IZipFileReader zipFileReader,
     ILogger<ThumbnailService> logger) : IThumbnailService
 {
     private string ThumbnailDir => Path.Combine(config.GeneratedPath, "screenshots");
@@ -35,6 +38,13 @@ public class ThumbnailService(
     private bool _ffmpegSearched;
     private string? _hwEncoder;
     private bool _hwEncoderSearched;
+
+    private static readonly Dictionary<string, string> ImageMimeTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".jpg"] = "image/jpeg", [".jpeg"] = "image/jpeg", [".png"] = "image/png",
+        [".gif"] = "image/gif", [".webp"] = "image/webp", [".bmp"] = "image/bmp",
+        [".tiff"] = "image/tiff", [".tif"] = "image/tiff", [".svg"] = "image/svg+xml",
+    };
 
     // Preview generation defaults (matching original Stash)
     private const int PreviewSegments = 12;
@@ -73,6 +83,55 @@ public class ThumbnailService(
             : imageFile.Basename;
 
         return File.Exists(filePath) ? filePath : null;
+    }
+
+    public async Task<(Stream stream, string contentType, bool supportsRangeRequests)?> GetImageStreamAsync(int imageId, CancellationToken ct)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<StashContext>();
+
+        var imageFile = await db.ImageFiles
+            .Include(f => f.ParentFolder)
+            .FirstOrDefaultAsync(f => f.ImageId == imageId, ct);
+
+        if (imageFile == null) return null;
+
+        // Check if this image is stored in a zip archive
+        if (imageFile.ZipFileId.HasValue)
+        {
+            // Get the parent zip file
+            var zipFile = await db.GalleryFiles
+                .Include(gf => gf.ParentFolder)
+                .FirstOrDefaultAsync(gf => gf.Id == imageFile.ZipFileId.Value, ct);
+
+            if (zipFile == null) return null;
+
+            var zipFilePath = Path.Combine(zipFile.ParentFolder?.Path ?? "", zipFile.Basename);
+
+            // Extract the image from the zip
+            var stream = await zipFileReader.ExtractEntryAsync(zipFilePath, imageFile.Basename, ct);
+            var ext = Path.GetExtension(imageFile.Basename);
+            var contentType = ImageMimeTypes.GetValueOrDefault(ext, "application/octet-stream");
+
+            // Zip-based streams don't support range requests (they're already in memory)
+            return (stream, contentType, false);
+        }
+        else
+        {
+            // Regular file-based image
+            var filePath = imageFile.ParentFolder != null
+                ? Path.Combine(imageFile.ParentFolder.Path, imageFile.Basename)
+                : imageFile.Basename;
+
+            if (!File.Exists(filePath)) return null;
+
+            var ext = Path.GetExtension(filePath);
+            var contentType = ImageMimeTypes.GetValueOrDefault(ext, "application/octet-stream");
+            var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+
+            // File-based streams support range requests
+            return (stream, contentType, true);
+        }
     }
 
     public async Task GenerateSceneThumbnailAsync(int sceneId, double? atSeconds, CancellationToken ct)

@@ -8,13 +8,6 @@ namespace Stash.Api.Controllers;
 [Route("api/[controller]")]
 public class StreamController(IStreamService streamService, IThumbnailService thumbnailService) : ControllerBase
 {
-    private static readonly Dictionary<string, string> ImageMimeTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        [".jpg"] = "image/jpeg", [".jpeg"] = "image/jpeg", [".png"] = "image/png",
-        [".gif"] = "image/gif", [".webp"] = "image/webp", [".bmp"] = "image/bmp",
-        [".tiff"] = "image/tiff", [".tif"] = "image/tiff", [".svg"] = "image/svg+xml",
-    };
-
     [HttpGet("scene/{sceneId:int}")]
     public async Task<IActionResult> StreamScene(int sceneId, CancellationToken ct)
     {
@@ -78,17 +71,20 @@ public class StreamController(IStreamService streamService, IThumbnailService th
     [HttpGet("image/{imageId:int}")]
     public async Task<IActionResult> GetImage(int imageId, CancellationToken ct)
     {
-        var filePath = await thumbnailService.GetImageFilePathAsync(imageId, ct);
-        if (filePath == null) return NotFound();
+        var result = await thumbnailService.GetImageStreamAsync(imageId, ct);
+        if (result == null) return NotFound();
 
-        var ext = Path.GetExtension(filePath);
-        var contentType = ImageMimeTypes.GetValueOrDefault(ext, "application/octet-stream");
-        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
-        var fileInfo = new FileInfo(filePath);
+        var (stream, contentType, supportsRangeRequests) = result.Value;
 
-        Response.Headers["Accept-Ranges"] = "bytes";
         Response.Headers["Cache-Control"] = "public, max-age=86400";
-        return File(stream, contentType, enableRangeProcessing: true);
+
+        if (supportsRangeRequests)
+        {
+            Response.Headers["Accept-Ranges"] = "bytes";
+            return File(stream, contentType, enableRangeProcessing: true);
+        }
+
+        return File(stream, contentType);
     }
 
     [HttpGet("image/{imageId:int}/thumbnail")]

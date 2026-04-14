@@ -334,14 +334,26 @@ public class ScanService(
 
             logger.LogDebug("Found {Count} images in gallery: {Path}", imageEntries.Count, path);
 
+            // Create a virtual folder for this zip's contents
+            // This ensures images from different zips don't conflict on the unique constraint (ParentFolderId + Basename)
+            var virtualFolderPath = $"{path}#virtual";
+            var virtualFolder = await db.Folders.FirstOrDefaultAsync(f => f.Path == virtualFolderPath, ct);
+            if (virtualFolder == null)
+            {
+                virtualFolder = new Folder { Path = virtualFolderPath };
+                db.Folders.Add(virtualFolder);
+                await db.SaveChangesAsync(ct);
+            }
+
             // Create Image entities for each image in the zip
             foreach (var entry in imageEntries)
             {
                 // Create ImageFile record representing the image within the zip
+                // Use FullName to preserve the internal zip path structure and avoid duplicate basenames
                 var imageFile = new ImageFile
                 {
-                    Basename = entry.Name,
-                    ParentFolderId = folder.Id,
+                    Basename = entry.FullName,  // Use full internal path to avoid collisions
+                    ParentFolderId = virtualFolder.Id,  // Use virtual folder specific to this zip
                     ZipFileId = galleryFile.Id,  // Link to parent zip file
                     Size = entry.Length,
                     ModTime = entry.LastWriteTime.UtcDateTime,
