@@ -924,7 +924,8 @@ URLs
 ```
 Aliases
 Birthdate
-CareerLength
+CareerEnd
+CareerStart
 Circumcised
 Country
 DeathDate
