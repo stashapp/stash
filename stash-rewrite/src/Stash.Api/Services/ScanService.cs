@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stash.Core.Entities;
+using Stash.Core.Entities.Galleries.Zip;
 using Stash.Core.Events;
 using Stash.Core.Interfaces;
 using Stash.Data;
@@ -14,6 +15,7 @@ public class ScanService(
     StashConfiguration config,
     IEventBus eventBus,
     IFingerprintService fingerprintService,
+    ZipGalleryReader zipGalleryReader,
     ILogger<ScanService> logger) : IScanService
 {
     public string StartScan(bool scanGenerators = false)
@@ -271,26 +273,119 @@ public class ScanService(
 
         var basename = Path.GetFileName(path);
         var existing = await db.Set<GalleryFile>()
+            .Include(gf => gf.Gallery)
+            .ThenInclude(g => g!.ImageGalleries)
             .FirstOrDefaultAsync(f => f.ParentFolderId == folder.Id && f.Basename == basename, ct);
 
-        if (existing != null) return;
-
-        var galleryFile = new GalleryFile
+        // If gallery exists and already has images, skip re-processing
+        if (existing?.Gallery?.ImageGalleries.Count > 0)
         {
-            Basename = basename,
-            ParentFolderId = folder.Id,
-            Size = fileInfo.Length,
-            ModTime = fileInfo.LastWriteTimeUtc
-        };
+            logger.LogDebug("Gallery already processed with {Count} images: {Path}",
+                existing.Gallery.ImageGalleries.Count, path);
+            return;
+        }
 
-        var gallery = new Gallery
+        // Create or update the gallery file entry
+        GalleryFile galleryFile;
+        Gallery gallery;
+
+        if (existing != null)
         {
-            Title = Path.GetFileNameWithoutExtension(path),
-            Files = [galleryFile]
-        };
+            // Update existing file metadata
+            galleryFile = existing;
+            galleryFile.Size = fileInfo.Length;
+            galleryFile.ModTime = fileInfo.LastWriteTimeUtc;
+            gallery = existing.Gallery!;
+        }
+        else
+        {
+            // Create new gallery file and gallery
+            galleryFile = new GalleryFile
+            {
+                Basename = basename,
+                ParentFolderId = folder.Id,
+                Size = fileInfo.Length,
+                ModTime = fileInfo.LastWriteTimeUtc
+            };
 
-        db.Galleries.Add(gallery);
-        logger.LogDebug("Added gallery for: {Path}", path);
+            gallery = new Gallery
+            {
+                Title = Path.GetFileNameWithoutExtension(path),
+                Files = [galleryFile]
+            };
+
+            db.Galleries.Add(gallery);
+        }
+
+        // Save to get the GalleryFile ID (needed for ZipFileId on images)
+        await db.SaveChangesAsync(ct);
+
+        // Now extract images from the zip file
+        try
+        {
+            // Get all images from the zip, sorted by path
+            var imageEntries = await zipGalleryReader.GetImageEntriesAsync(path, ct);
+
+            if (imageEntries.Count == 0)
+            {
+                logger.LogWarning("No images found in gallery zip: {Path}", path);
+                return;
+            }
+
+            logger.LogDebug("Found {Count} images in gallery: {Path}", imageEntries.Count, path);
+
+            // Create Image entities for each image in the zip
+            foreach (var entry in imageEntries)
+            {
+                // Create ImageFile record representing the image within the zip
+                var imageFile = new ImageFile
+                {
+                    Basename = entry.Name,
+                    ParentFolderId = folder.Id,
+                    ZipFileId = galleryFile.Id,  // Link to parent zip file
+                    Size = entry.Length,
+                    ModTime = entry.LastWriteTime.UtcDateTime,
+                    Format = Path.GetExtension(entry.Name).TrimStart('.').ToLowerInvariant(),
+                    // TODO: Extract dimensions using image processing library
+                    Width = 0,
+                    Height = 0
+                };
+
+                // Create Image entity
+                var image = new Image
+                {
+                    Title = Path.GetFileNameWithoutExtension(entry.Name),
+                    Files = [imageFile]
+                };
+
+                db.Images.Add(image);
+
+                // Link image to gallery via junction table
+                // Note: We'll add this after the image is saved and has an ID
+                gallery.ImageGalleries.Add(new ImageGallery
+                {
+                    Image = image,
+                    Gallery = gallery
+                });
+            }
+
+            // Save all images and their gallery associations
+            await db.SaveChangesAsync(ct);
+
+            logger.LogDebug("Added gallery with {Count} images: {Path}", imageEntries.Count, path);
+        }
+        catch (FileNotFoundException)
+        {
+            logger.LogError("Zip file not found (may have been moved/deleted): {Path}", path);
+        }
+        catch (InvalidDataException ex)
+        {
+            logger.LogError("Invalid or corrupt zip file: {Path} - {Error}", path, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error processing gallery zip file: {Path}", path);
+        }
     }
 
     /// <summary>

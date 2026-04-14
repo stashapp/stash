@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Stash.Api.Hubs;
 using Stash.Api.Services;
+using Stash.Core.Entities.Galleries;
 using Stash.Core.Events;
 using Stash.Core.Interfaces;
 using Stash.Data;
@@ -64,6 +65,9 @@ try
     builder.Services.AddSingleton<JobService>();
     builder.Services.AddSingleton<IJobService>(sp => sp.GetRequiredService<JobService>());
     builder.Services.AddHostedService(sp => sp.GetRequiredService<JobService>());
+
+    // Gallery services (zip reading, gallery parsing, etc.)
+    builder.Services.AddGalleryServices();
 
     // Application services
     builder.Services.AddSingleton<IThumbnailService, ThumbnailService>();
