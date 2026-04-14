@@ -9,7 +9,7 @@ The text field allows you to search using keywords. Keyword searching matches on
 | Type | Fields searched |
 |------|-----------------|
 | Scene | Title, Details, Path, OSHash, Checksum, Marker titles |
-| Image | Title, Path, Checksum |
+| Image | Title, Details, Path, Checksum |
 | Group | Title |
 | Marker | Title, Scene title |
 | Gallery | Title, Path, Checksum |
