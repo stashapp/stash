@@ -626,3 +626,8 @@ type StashBoxValidationResult {
   valid: Boolean!
   status: String!
 }
+
+type CDPValidationResult {
+  valid: Boolean!
+  status: String!
+}
