@@ -23,7 +23,7 @@ public class SceneRepository : ISceneRepository
             .Include(s => s.Files).ThenInclude(f => f.Fingerprints)
             .Include(s => s.SceneMarkers)
             .Include(s => s.StashIds)
-            .AsSplitQuery()
+            .AsSingleQuery()
             .FirstOrDefaultAsync(s => s.Id == id, ct);
 
     public async Task<IReadOnlyList<Scene>> GetAllAsync(CancellationToken ct = default)
@@ -57,7 +57,38 @@ public class SceneRepository : ISceneRepository
 
     public async Task<(IReadOnlyList<Scene> Items, int TotalCount)> FindAsync(SceneFilter? filter, FindFilter? findFilter, CancellationToken ct = default)
     {
-        var query = _db.Scenes
+        // Build a lightweight filter-only query (no Includes) for COUNT and filter predicates
+        var filterQuery = _db.Scenes.AsQueryable();
+
+        // Apply all filters to the lightweight query
+        filterQuery = ApplyFilters(filterQuery, filter);
+
+        // Apply text search
+        if (findFilter != null && !string.IsNullOrEmpty(findFilter.Q))
+        {
+            var q = findFilter.Q;
+            filterQuery = filterQuery.Where(s =>
+                (s.Title != null && EF.Functions.ILike(s.Title, $"%{q}%")) ||
+                (s.Details != null && EF.Functions.ILike(s.Details, $"%{q}%")) ||
+                (s.Code != null && EF.Functions.ILike(s.Code, $"%{q}%")) ||
+                s.Files.Any(f => EF.Functions.ILike(f.Basename, $"%{q}%")));
+        }
+
+        // COUNT runs on the lightweight query — no JOINs from Includes
+        var perPage = findFilter?.PerPage ?? 25;
+
+        // Short-circuit for count-only requests (perPage <= 0)
+        if (perPage <= 0)
+        {
+            var count = await filterQuery.CountAsync(ct);
+            return (Array.Empty<Scene>(), count);
+        }
+
+        // Run COUNT first on the lightweight query (no Includes = faster)
+        var totalCount = await filterQuery.CountAsync(ct);
+
+        // Build the data query with Includes
+        var dataQuery = _db.Scenes
             .Include(s => s.Studio)
             .Include(s => s.SceneTags).ThenInclude(st => st.Tag)
             .Include(s => s.ScenePerformers).ThenInclude(sp => sp.Performer)
@@ -68,9 +99,33 @@ public class SceneRepository : ISceneRepository
             .AsSplitQuery()
             .AsQueryable();
 
-        // Apply basic filters (backward compat)
-        if (filter != null)
+        // Re-apply filters to data query
+        dataQuery = ApplyFilters(dataQuery, filter);
+        if (findFilter != null && !string.IsNullOrEmpty(findFilter.Q))
         {
+            var q = findFilter.Q;
+            dataQuery = dataQuery.Where(s =>
+                (s.Title != null && EF.Functions.ILike(s.Title, $"%{q}%")) ||
+                (s.Details != null && EF.Functions.ILike(s.Details, $"%{q}%")) ||
+                (s.Code != null && EF.Functions.ILike(s.Code, $"%{q}%")) ||
+                s.Files.Any(f => EF.Functions.ILike(f.Basename, $"%{q}%")));
+        }
+
+        // Apply sorting
+        var sort = findFilter?.Sort ?? "updated_at";
+        var desc = findFilter?.Direction == Core.Enums.SortDirection.Desc;
+        dataQuery = ApplySorting(dataQuery, sort, desc);
+
+        // Apply pagination
+        var page = findFilter?.Page ?? 1;
+        var items = await dataQuery.Skip((page - 1) * perPage).Take(perPage).AsNoTracking().ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
+    private static IQueryable<Scene> ApplyFilters(IQueryable<Scene> query, SceneFilter? filter)
+    {
+        if (filter == null) return query;
             if (!string.IsNullOrEmpty(filter.Title))
                 query = query.Where(s => s.Title != null && EF.Functions.ILike(s.Title, $"%{filter.Title}%"));
             if (filter.Rating.HasValue)
@@ -288,71 +343,49 @@ public class SceneRepository : ISceneRepository
             // Galleries criterion
             if (filter.GalleriesCriterion != null)
                 query = ApplyMultiIdCriterion(query, filter.GalleriesCriterion, s => s.SceneGalleries.Select(sg => sg.GalleryId));
-        }
 
-        // Apply text search
-        if (findFilter != null && !string.IsNullOrEmpty(findFilter.Q))
-        {
-            var q = findFilter.Q;
-            query = query.Where(s =>
-                (s.Title != null && EF.Functions.ILike(s.Title, $"%{q}%")) ||
-                (s.Details != null && EF.Functions.ILike(s.Details, $"%{q}%")) ||
-                (s.Code != null && EF.Functions.ILike(s.Code, $"%{q}%")) ||
-                s.Files.Any(f => EF.Functions.ILike(f.Basename, $"%{q}%")));
-        }
-
-        var totalCount = await query.CountAsync(ct);
-
-        // Apply sorting
-        var sort = findFilter?.Sort ?? "updated_at";
-        var desc = findFilter?.Direction == Core.Enums.SortDirection.Desc;
-        query = sort switch
-        {
-            "title" => desc ? query.OrderByDescending(s => s.Title) : query.OrderBy(s => s.Title),
-            "date" => desc ? query.OrderByDescending(s => s.Date) : query.OrderBy(s => s.Date),
-            "rating" => desc ? query.OrderByDescending(s => s.Rating) : query.OrderBy(s => s.Rating),
-            "play_count" => desc ? query.OrderByDescending(s => s.PlayCount) : query.OrderBy(s => s.PlayCount),
-            "o_counter" => desc ? query.OrderByDescending(s => s.OCounter) : query.OrderBy(s => s.OCounter),
-            "organized" => desc ? query.OrderByDescending(s => s.Organized) : query.OrderBy(s => s.Organized),
-            "last_played_at" => desc ? query.OrderByDescending(s => s.LastPlayedAt) : query.OrderBy(s => s.LastPlayedAt),
-            "play_duration" => desc ? query.OrderByDescending(s => s.PlayDuration) : query.OrderBy(s => s.PlayDuration),
-            "resume_time" => desc ? query.OrderByDescending(s => s.ResumeTime) : query.OrderBy(s => s.ResumeTime),
-            "random" => query.OrderBy(_ => EF.Functions.Random()),
-            "duration" => desc
-                ? query.OrderByDescending(s => s.Files.Select(file => (double?)file.Duration).Max() ?? 0)
-                : query.OrderBy(s => s.Files.Select(file => (double?)file.Duration).Max() ?? 0),
-            "file_size" => desc
-                ? query.OrderByDescending(s => s.Files.Select(file => (long?)file.Size).Max() ?? 0)
-                : query.OrderBy(s => s.Files.Select(file => (long?)file.Size).Max() ?? 0),
-            "file_count" => desc
-                ? query.OrderByDescending(s => s.Files.Count)
-                : query.OrderBy(s => s.Files.Count),
-            "resolution" => desc
-                ? query.OrderByDescending(s => s.Files.Select(file => file.Height).Max())
-                : query.OrderBy(s => s.Files.Select(file => file.Height).Max()),
-            "framerate" => desc
-                ? query.OrderByDescending(s => s.Files.Select(file => file.FrameRate).Max())
-                : query.OrderBy(s => s.Files.Select(file => file.FrameRate).Max()),
-            "bitrate" => desc
-                ? query.OrderByDescending(s => s.Files.Select(file => file.BitRate).Max())
-                : query.OrderBy(s => s.Files.Select(file => file.BitRate).Max()),
-            "tag_count" => desc
-                ? query.OrderByDescending(s => s.SceneTags.Count)
-                : query.OrderBy(s => s.SceneTags.Count),
-            "performer_count" => desc
-                ? query.OrderByDescending(s => s.ScenePerformers.Count)
-                : query.OrderBy(s => s.ScenePerformers.Count),
-            "created_at" => desc ? query.OrderByDescending(s => s.CreatedAt) : query.OrderBy(s => s.CreatedAt),
-            _ => desc ? query.OrderByDescending(s => s.UpdatedAt) : query.OrderBy(s => s.UpdatedAt),
-        };
-
-        // Apply pagination
-        var page = findFilter?.Page ?? 1;
-        var perPage = findFilter?.PerPage ?? 25;
-        var items = await query.Skip((page - 1) * perPage).Take(perPage).AsNoTracking().ToListAsync(ct);
-
-        return (items, totalCount);
+        return query;
     }
+
+    private static IQueryable<Scene> ApplySorting(IQueryable<Scene> query, string sort, bool desc) => sort switch
+    {
+        "title" => desc ? query.OrderByDescending(s => s.Title) : query.OrderBy(s => s.Title),
+        "date" => desc ? query.OrderByDescending(s => s.Date) : query.OrderBy(s => s.Date),
+        "rating" => desc ? query.OrderByDescending(s => s.Rating) : query.OrderBy(s => s.Rating),
+        "play_count" => desc ? query.OrderByDescending(s => s.PlayCount) : query.OrderBy(s => s.PlayCount),
+        "o_counter" => desc ? query.OrderByDescending(s => s.OCounter) : query.OrderBy(s => s.OCounter),
+        "organized" => desc ? query.OrderByDescending(s => s.Organized) : query.OrderBy(s => s.Organized),
+        "last_played_at" => desc ? query.OrderByDescending(s => s.LastPlayedAt) : query.OrderBy(s => s.LastPlayedAt),
+        "play_duration" => desc ? query.OrderByDescending(s => s.PlayDuration) : query.OrderBy(s => s.PlayDuration),
+        "resume_time" => desc ? query.OrderByDescending(s => s.ResumeTime) : query.OrderBy(s => s.ResumeTime),
+        "random" => query.OrderBy(_ => EF.Functions.Random()),
+        "duration" => desc
+            ? query.OrderByDescending(s => s.Files.Select(file => (double?)file.Duration).Max() ?? 0)
+            : query.OrderBy(s => s.Files.Select(file => (double?)file.Duration).Max() ?? 0),
+        "file_size" => desc
+            ? query.OrderByDescending(s => s.Files.Select(file => (long?)file.Size).Max() ?? 0)
+            : query.OrderBy(s => s.Files.Select(file => (long?)file.Size).Max() ?? 0),
+        "file_count" => desc
+            ? query.OrderByDescending(s => s.Files.Count)
+            : query.OrderBy(s => s.Files.Count),
+        "resolution" => desc
+            ? query.OrderByDescending(s => s.Files.Select(file => file.Height).Max())
+            : query.OrderBy(s => s.Files.Select(file => file.Height).Max()),
+        "framerate" => desc
+            ? query.OrderByDescending(s => s.Files.Select(file => file.FrameRate).Max())
+            : query.OrderBy(s => s.Files.Select(file => file.FrameRate).Max()),
+        "bitrate" => desc
+            ? query.OrderByDescending(s => s.Files.Select(file => file.BitRate).Max())
+            : query.OrderBy(s => s.Files.Select(file => file.BitRate).Max()),
+        "tag_count" => desc
+            ? query.OrderByDescending(s => s.SceneTags.Count)
+            : query.OrderBy(s => s.SceneTags.Count),
+        "performer_count" => desc
+            ? query.OrderByDescending(s => s.ScenePerformers.Count)
+            : query.OrderBy(s => s.ScenePerformers.Count),
+        "created_at" => desc ? query.OrderByDescending(s => s.CreatedAt) : query.OrderBy(s => s.CreatedAt),
+        _ => desc ? query.OrderByDescending(s => s.UpdatedAt) : query.OrderBy(s => s.UpdatedAt),
+    };
 
     // Helper methods for criterion-based filtering
     private static IQueryable<Scene> ApplyIntCriterion(IQueryable<Scene> query, IntCriterion? criterion, System.Linq.Expressions.Expression<Func<Scene, int>> selector)

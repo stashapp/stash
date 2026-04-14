@@ -5,6 +5,7 @@ import type { Group, GroupUpdate, Tag } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, NumberInput, SaveButton } from "../components/EditModal";
 import { ImageInput } from "../components/ImageInput";
 import { RatingField } from "../components/Rating";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface Props {
   group: Group;
@@ -28,6 +29,9 @@ export function GroupEditModal({ group, open, onClose }: Props) {
 
   // Tag search
   const [tagSearch, setTagSearch] = useState("");
+  const [customFields, setCustomFields] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(group.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")]))
+  );
   const { data: allTags } = useQuery({
     queryKey: ["tags-all"],
     queryFn: () => tagsApi.find({ perPage: 500, sort: "name", direction: "asc" }),
@@ -50,6 +54,7 @@ export function GroupEditModal({ group, open, onClose }: Props) {
     setSynopsis(group.synopsis ?? "");
     setUrls(group.urls.join("\n"));
     setSelectedTagIds(group.tags.map((t) => t.id));
+    setCustomFields(Object.fromEntries(Object.entries(group.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")])));
   }, [group]);
 
   const mutation = useMutation({
@@ -74,6 +79,7 @@ export function GroupEditModal({ group, open, onClose }: Props) {
       synopsis: synopsis || undefined,
       urls: urlList,
       tagIds: selectedTagIds,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   };
 
@@ -185,6 +191,10 @@ export function GroupEditModal({ group, open, onClose }: Props) {
             ))}
           </div>
         )}
+      </Field>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={customFields} onChange={setCustomFields} />
       </Field>
 
       <div className="flex justify-end gap-3 mt-4">

@@ -1,5 +1,8 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Stash.Api.Services;
 using Stash.Core.DTOs;
 using Stash.Core.Entities;
@@ -9,9 +12,10 @@ namespace Stash.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, StashBoxService stashBoxService) : ControllerBase
+public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, StashBoxService stashBoxService, IThumbnailService thumbnailService, IScanService scanService, IMemoryCache memoryCache) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<SceneDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -38,16 +42,35 @@ public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, 
 
     /// <summary>POST-based filtered query supporting advanced criteria (JSON body).</summary>
     [HttpPost("find")]
-    public async Task<ActionResult<PaginatedResponse<SceneDto>>> FindPost([FromBody] FilteredQueryRequest<SceneFilter> req, CancellationToken ct)
+    public async Task<IActionResult> FindPost([FromBody] FilteredQueryRequest<SceneFilter> req, CancellationToken ct)
     {
+        // Cache serialized JSON bytes to avoid double serialization on cache hit
+        var cacheKey = $"scenes_find_{JsonSerializer.Serialize(req)}";
+        if (memoryCache.TryGetValue(cacheKey, out byte[]? cachedBytes))
+        {
+            Response.ContentType = "application/json";
+            Response.StatusCode = 200;
+            await Response.Body.WriteAsync(cachedBytes, ct);
+            return new EmptyResult();
+        }
+
         var findFilter = req.FindFilter ?? new FindFilter();
         var filter = req.ObjectFilter ?? new SceneFilter();
         var (items, totalCount) = await sceneRepo.FindAsync(filter, findFilter, ct);
         var dtos = items.Select(MapToDto).ToList();
-        return Ok(new PaginatedResponse<SceneDto>(dtos, totalCount, findFilter.Page, findFilter.PerPage));
+        var result = new PaginatedResponse<SceneDto>(dtos, totalCount, findFilter.Page, findFilter.PerPage);
+
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(result);
+        memoryCache.Set(cacheKey, bytes, TimeSpan.FromSeconds(1));
+
+        Response.ContentType = "application/json";
+        Response.StatusCode = 200;
+        await Response.Body.WriteAsync(bytes, ct);
+        return new EmptyResult();
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<SceneDto>> GetById(int id, CancellationToken ct)
     {
         var scene = await sceneRepo.GetByIdWithRelationsAsync(id, ct);
@@ -117,6 +140,7 @@ public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, 
             scene.SceneGroups.Clear();
             scene.SceneGroups = dto.Groups.Select(g => new SceneGroup { GroupId = g.GroupId, SceneIndex = g.SceneIndex, SceneId = id }).ToList();
         }
+        if (dto.CustomFields != null) scene.CustomFields = dto.CustomFields;
 
         await sceneRepo.UpdateAsync(scene, ct);
         var updated = await sceneRepo.GetByIdWithRelationsAsync(id, ct);
@@ -169,6 +193,7 @@ public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, 
         s.SceneGroups.Where(sg => sg.Group != null).Select(sg => new GroupSummaryDto(sg.Group!.Id, sg.Group.Name, sg.SceneIndex)).ToList(),
         s.SceneGalleries.Where(sg => sg.Gallery != null).Select(sg => new GallerySummaryDto(sg.Gallery!.Id, sg.Gallery.Title, sg.Gallery.Date?.ToString("yyyy-MM-dd"))).ToList(),
         s.StashIds.Select(stashId => new SceneStashIdDto(stashId.Endpoint, stashId.StashId)).ToList(),
+        s.CustomFields,
         s.CreatedAt.ToString("o"), s.UpdatedAt.ToString("o")
     );
 
@@ -319,6 +344,22 @@ public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, 
         db.Set<SceneOHistory>().RemoveRange(db.Set<SceneOHistory>().Where(h => h.SceneId == id));
         await sceneRepo.UpdateAsync(scene, ct);
         return NoContent();
+    }
+
+    [HttpGet("{id:int}/history")]
+    public async Task<ActionResult<SceneHistoryDto>> GetHistory(int id, CancellationToken ct)
+    {
+        var scene = await sceneRepo.GetByIdAsync(id, ct);
+        if (scene == null) return NotFound();
+
+        var playHistory = await db.Set<ScenePlayHistory>()
+            .Where(h => h.SceneId == id).OrderByDescending(h => h.PlayedAt)
+            .Select(h => h.PlayedAt.ToString("o")).ToListAsync(ct);
+        var oHistory = await db.Set<SceneOHistory>()
+            .Where(h => h.SceneId == id).OrderByDescending(h => h.OccurredAt)
+            .Select(h => h.OccurredAt.ToString("o")).ToListAsync(ct);
+
+        return Ok(new SceneHistoryDto(playHistory, oHistory));
     }
 
     [HttpPost("{id:int}/activity")]
@@ -495,6 +536,38 @@ public class ScenesController(ISceneRepository sceneRepo, Data.StashContext db, 
         return Ok(MapToDto(result!));
     }
 
+    // ===== Generate Screenshot =====
+
+    [HttpPost("{id:int}/generate-screenshot")]
+    public async Task<IActionResult> GenerateScreenshot(int id, [FromBody] GenerateScreenshotDto? dto, CancellationToken ct)
+    {
+        var scene = await sceneRepo.GetByIdAsync(id, ct);
+        if (scene == null) return NotFound();
+
+        await thumbnailService.GenerateSceneThumbnailAsync(id, dto?.AtSeconds, ct);
+        return Ok(new { success = true });
+    }
+
+    // ===== Rescan =====
+
+    [HttpPost("{id:int}/rescan")]
+    public async Task<IActionResult> Rescan(int id, CancellationToken ct)
+    {
+        var scene = await db.Scenes.Include(s => s.Files).FirstOrDefaultAsync(s => s.Id == id, ct);
+        if (scene == null) return NotFound();
+
+        var filePath = scene.Files.FirstOrDefault()?.ParentFolder != null 
+            ? Path.Combine(scene.Files.First().ParentFolder!.Path, scene.Files.First().Basename)
+            : scene.Files.FirstOrDefault()?.Basename;
+        
+        if (string.IsNullOrEmpty(filePath)) return BadRequest("Scene has no files");
+
+        var jobId = scanService.StartScan(false);
+        return Ok(new { jobId });
+    }
+
     private static DateOnly? ParseDate(string? date) => DateOnly.TryParse(date, out var d) ? d : null;
     private static List<int>? ParseIntList(string? csv) => string.IsNullOrEmpty(csv) ? null : csv.Split(',').Select(int.Parse).ToList();
 }
+
+public record GenerateScreenshotDto(double? AtSeconds = null);

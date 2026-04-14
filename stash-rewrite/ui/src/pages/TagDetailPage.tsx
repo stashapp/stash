@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { galleries, groups, images, markers, metadata, performers, scenes, studios, tags, entityImages } from "../api/client";
 import type { FindFilter, Gallery, Group, Image, Performer, Scene, SceneMarkerWall, Studio } from "../api/types";
-import { formatDate, formatDuration, getResolutionLabel, TagBadge } from "../components/shared";
-import { ArrowLeft, Bookmark, Building2, Film, FolderOpen, GitMerge, Heart, ImageIcon, Layers, Pencil, Tag as TagIcon, Trash2, UserRound, Wand2 } from "lucide-react";
+import { formatDate, formatDuration, getResolutionLabel, TagBadge, CustomFieldsDisplay } from "../components/shared";
+import { ArrowLeft, Bookmark, Building2, Film, FolderOpen, GitMerge, Heart, ImageIcon, Layers, Loader2, Pencil, Tag as TagIcon, Trash2, UserRound, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { TagEditModal } from "./TagEditModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { MergeDialog } from "../components/MergeDialog";
+import { DetailMergeDialog } from "../components/DetailMergeDialog";
 import { ExtensionSlot } from "../router/RouteRegistry";
 
 interface Props {
@@ -65,6 +65,13 @@ export function TagDetailPage({ id, onNavigate }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tag", id] }),
   });
 
+  const autoTagMut = useMutation({
+    mutationFn: () => {
+      if (!tag) throw new Error("Tag not loaded");
+      return metadata.autoTag({ tags: [tag.name] });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -99,11 +106,11 @@ export function TagDetailPage({ id, onNavigate }: Props) {
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </button>
               <button
-                onClick={() => metadata.autoTag({ tags: [tag.name] })}
+                onClick={() => autoTagMut.mutate()}
                 className="flex items-center gap-1.5 rounded border border-plex-border bg-plex-card px-3 py-1.5 text-sm text-plex-text-secondary hover:text-plex-text"
-                disabled={tag.ignoreAutoTag}
+                disabled={tag.ignoreAutoTag || autoTagMut.isPending}
               >
-                <Wand2 className="h-3.5 w-3.5" /> Auto Tag
+                {autoTagMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Auto Tag
               </button>
               <button
                 onClick={() => setMergeOpen(true)}
@@ -164,6 +171,10 @@ export function TagDetailPage({ id, onNavigate }: Props) {
                 <p className="max-w-4xl whitespace-pre-wrap text-sm leading-6 text-plex-text-secondary">{tag.description}</p>
               )}
 
+              {autoTagMut.isSuccess && (
+                <p className="mt-3 text-sm text-emerald-300">Auto-tag job queued.</p>
+              )}
+
               <div className="mt-4 flex flex-wrap gap-3">
                 <CountCard label="Scenes" value={tag.sceneCount} icon={<Film className="h-4 w-4" />} />
                 <CountCard label="Performers" value={tag.performerCount} icon={<UserRound className="h-4 w-4" />} />
@@ -186,13 +197,21 @@ export function TagDetailPage({ id, onNavigate }: Props) {
         onConfirm={() => deleteMut.mutate()}
         onCancel={() => setConfirmDelete(false)}
       />
-      <MergeDialog
+      <DetailMergeDialog
         open={mergeOpen}
         onClose={() => setMergeOpen(false)}
         entityType="tag"
-        items={[{ id: tag.id, name: tag.name }]}
+        targetItem={{ id: tag.id, name: tag.name, imagePath: tagImageUrl, subtitle: tag.sortName && tag.sortName !== tag.name ? tag.sortName : undefined }}
+        searchItems={async (term) => {
+          const response = await tags.find({ page: 1, perPage: 20, sort: "name", direction: "asc", q: term || undefined });
+          return response.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            imagePath: item.imagePath,
+          }));
+        }}
         onMerge={(targetId, sourceIds) => tags.merge(targetId, sourceIds)}
-        queryKey={["tags"]}
+        invalidateQueryKeys={[["tag", id], ["tags"]]}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6">
@@ -299,6 +318,7 @@ export function TagDetailPage({ id, onNavigate }: Props) {
                 </div>
               </dl>
             </div>
+            <CustomFieldsDisplay customFields={tag.customFields} />
             <ExtensionSlot slot="tag-detail-sidebar-bottom" context={{ tag, onNavigate }} />
           </aside>
         </div>

@@ -9,16 +9,12 @@ import {
   Loader2,
   Check,
   X,
-  ChevronDown,
-  ChevronUp,
   AlertCircle,
   CloudDownload,
   Fingerprint,
   Settings2,
   EyeOff,
   Eye,
-  Plus,
-  Ban,
 } from "lucide-react";
 
 interface SceneTaggerProps {
@@ -517,8 +513,6 @@ function TaggerSceneRow({
 }: TaggerSceneRowProps) {
   const file = scene.files[0];
   const screenshotUrl = scenes.screenshotUrl(scene.id);
-  const [showDetails, setShowDetails] = useState(false);
-
   const selectedResult = state?.results?.[state.selectedIndex ?? 0];
 
   const importMut = useMutation({
@@ -547,10 +541,10 @@ function TaggerSceneRow({
   });
 
   return (
-    <div className={`px-4 py-3 ${state?.saved ? "opacity-50" : ""}`}>
-      <div className="flex gap-4">
-        {/* Scene preview */}
-        <div className="flex-shrink-0 w-40">
+    <div className={`px-3 py-2 ${state?.saved ? "opacity-50" : ""}`}>
+      <div className="flex gap-3">
+        {/* Scene preview — compact */}
+        <div className="flex-shrink-0 w-32">
           <div className="relative aspect-video bg-plex-card rounded overflow-hidden">
             <img
               src={screenshotUrl}
@@ -562,97 +556,47 @@ function TaggerSceneRow({
               }}
             />
             {file && file.duration > 0 && (
-              <span className="absolute bottom-1 right-1 text-[9px] text-white bg-black/70 px-1 rounded">
+              <span className="absolute bottom-0.5 right-0.5 text-[8px] text-white bg-black/70 px-0.5 rounded">
                 {formatDuration(file.duration)}
               </span>
             )}
           </div>
-          <p className="text-xs text-plex-text mt-1 truncate font-medium">
+          <p className="text-[11px] text-plex-text mt-0.5 truncate font-medium leading-snug">
             {scene.title || file?.basename || "Untitled"}
           </p>
-          {scene.studioName && (
-            <p className="text-[10px] text-plex-text-muted truncate">{scene.studioName}</p>
-          )}
-          {file && (
-            <p className="text-[10px] text-plex-text-muted">
-              {getResolutionLabel(file.width, file.height)} · {formatDuration(file.duration)}
-            </p>
-          )}
-          {/* Existing stash IDs */}
-          {scene.stashIds && scene.stashIds.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1">
-              {scene.stashIds.map((sid) => (
-                <span
-                  key={`${sid.endpoint}-${sid.stashId}`}
-                  className="text-[9px] px-1.5 py-0.5 rounded bg-green-600/20 text-green-300"
-                  title={sid.endpoint}
-                >
-                  <Fingerprint className="w-2.5 h-2.5 inline mr-0.5" />
-                  {sid.stashId.substring(0, 8)}…
-                </span>
-              ))}
-            </div>
-          )}
+          <p className="text-[9px] text-plex-text-muted truncate leading-snug">
+            {[scene.studioName, file && getResolutionLabel(file.width, file.height)].filter(Boolean).join(" · ")}
+          </p>
         </div>
 
         {/* Search + Results */}
         <div className="flex-1 min-w-0">
-          {/* Search input */}
-          <div className="flex gap-2 mb-2">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => onQueryChange(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && onSearch()}
-                placeholder="Search query..."
-                className="w-full bg-plex-input border border-plex-border rounded pl-3 pr-3 py-1.5 text-xs text-plex-text focus:outline-none focus:border-plex-accent placeholder:text-plex-text-muted"
-              />
-            </div>
+          {/* Search input — inline and compact */}
+          <div className="flex gap-1.5 mb-1.5">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => onQueryChange(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && onSearch()}
+              placeholder="Search query..."
+              className="flex-1 min-w-0 bg-plex-input border border-plex-border rounded pl-2 pr-2 py-1 text-xs text-plex-text focus:outline-none focus:border-plex-accent placeholder:text-plex-text-muted"
+            />
             <button
               onClick={onSearch}
               disabled={state?.loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-plex-accent text-white hover:bg-plex-accent-hover disabled:opacity-60"
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-plex-accent text-white hover:bg-plex-accent-hover disabled:opacity-60"
             >
-              {state?.loading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Search className="w-3.5 h-3.5" />
-              )}
-              Search
+              {state?.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
             </button>
             <button
               onClick={onSearchFingerprints}
               disabled={state?.loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-plex-surface border border-plex-border text-plex-text hover:bg-plex-card disabled:opacity-60"
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-plex-surface border border-plex-border text-plex-text-muted hover:text-plex-text disabled:opacity-60"
               title="Search by fingerprint only"
             >
-              <Fingerprint className="w-3.5 h-3.5" />
-              Fingerprint
+              <Fingerprint className="w-3 h-3" />
             </button>
           </div>
-
-          {/* Current scene details (collapsible) */}
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1 text-[10px] text-plex-text-muted hover:text-plex-text mb-2"
-          >
-            {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            Scene Details
-          </button>
-          {showDetails && (
-            <div className="bg-plex-surface rounded p-2 mb-2 text-[10px] text-plex-text-muted space-y-0.5">
-              {scene.date && <p>Date: {scene.date}</p>}
-              {scene.details && <p className="line-clamp-3">Details: {scene.details}</p>}
-              {scene.performers.length > 0 && (
-                <p>Performers: {scene.performers.map((p) => p.name).join(", ")}</p>
-              )}
-              {scene.tags.length > 0 && (
-                <p>Tags: {scene.tags.map((t) => t.name).join(", ")}</p>
-              )}
-              {file?.path && <p className="truncate">File: {file.path}</p>}
-            </div>
-          )}
 
           {/* Error */}
           {state?.error && (
@@ -860,184 +804,89 @@ function TaggerResultRow({
         </div>
       </div>
 
-      {/* Expanded view */}
+      {/* Expanded view — compact inline layout */}
       {isSelected && (
-        <div className="border-t border-plex-border p-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Left: Metadata fields */}
-            <div className="space-y-1.5 text-xs">
-              {result.title && (
-                <FieldRow label="Title" value={result.title} />
-              )}
-              {result.code && (
-                <FieldRow label="Code" value={result.code} />
-              )}
-              {result.date && (
-                <FieldRow label="Date" value={result.date} />
-              )}
-              {result.director && (
-                <FieldRow label="Director" value={result.director} />
-              )}
-              {result.duration != null && (
-                <FieldRow
-                  label="Duration"
-                  value={`${formatDuration(result.duration)}${
-                    durationDiff != null
-                      ? ` (${durationConfidence?.toLowerCase()} match, ${Math.round(durationDiff)}s difference)`
-                      : ""
-                  }`}
-                />
-              )}
-              {result.urls.length > 0 && (
-                <FieldRow label="URLs" value={result.urls.join(", ")} />
-              )}
-              {result.stashBoxName && (
-                <FieldRow label="Source" value={result.stashBoxName} />
-              )}
-            </div>
-
-            {/* Right: Studio + Performers + Tags with Create/Skip */}
-            <div className="space-y-2">
-              {/* Studio with Create/Skip */}
-              {result.studioName && taggerConfig.setStudio && (
-                <div>
-                  <p className="text-[10px] text-plex-text-muted mb-1">Studio</p>
-                  <div className="flex items-center gap-1">
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded border ${
-                        skipStudio
-                          ? "bg-red-600/10 text-red-400 border-red-600/30 line-through"
-                          : "bg-purple-600/20 text-purple-300 border-purple-600/30"
-                      }`}
-                    >
-                      {result.studioName}
-                    </span>
-                    {onToggleStudio && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onToggleStudio(); }}
-                        className={`p-0.5 rounded text-[10px] ${
-                          skipStudio
-                            ? "text-green-400 hover:bg-green-600/20"
-                            : "text-red-400 hover:bg-red-600/20"
-                        }`}
-                        title={skipStudio ? "Include studio" : "Skip studio"}
-                      >
-                        {skipStudio ? <Plus className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Performers with Create/Skip */}
-              {result.performerNames.length > 0 && taggerConfig.setPerformers && (
-                <div>
-                  <p className="text-[10px] text-plex-text-muted mb-1">Performers</p>
-                  <div className="flex flex-wrap gap-1">
-                    {result.performerNames.map((name) => {
-                      const excluded = excludedPerformers.has(name);
-                      return (
-                        <span key={name} className="inline-flex items-center gap-0.5">
-                          <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded ${
-                              excluded
-                                ? "bg-red-600/10 text-red-400 line-through"
-                                : "bg-blue-600/20 text-blue-300"
-                            }`}
-                          >
-                            {name}
-                          </span>
-                          {onTogglePerformer && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onTogglePerformer(name); }}
-                              className={`p-0.5 rounded ${
-                                excluded
-                                  ? "text-green-400 hover:bg-green-600/20"
-                                  : "text-red-400 hover:bg-red-600/20"
-                              }`}
-                              title={excluded ? "Include performer" : "Skip performer"}
-                            >
-                              {excluded ? <Plus className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
-                            </button>
-                          )}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Tags with include/exclude */}
-              {result.tagNames.length > 0 && taggerConfig.setTags && (
-                <div>
-                  <p className="text-[10px] text-plex-text-muted mb-1">Tags</p>
-                  <div className="flex flex-wrap gap-1">
-                    {result.tagNames.map((name) => {
-                      const excluded = excludedTags.has(name);
-                      return (
-                        <span key={name} className="inline-flex items-center gap-0.5">
-                          <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded border ${
-                              excluded
-                                ? "bg-red-600/10 text-red-400 border-red-600/30 line-through"
-                                : "bg-plex-card text-plex-text-muted border-plex-border"
-                            }`}
-                          >
-                            {name}
-                          </span>
-                          {onToggleTag && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onToggleTag(name); }}
-                              className={`p-0.5 rounded ${
-                                excluded
-                                  ? "text-green-400 hover:bg-green-600/20"
-                                  : "text-red-400 hover:bg-red-600/20"
-                              }`}
-                              title={excluded ? "Include tag" : "Exclude tag"}
-                            >
-                              {excluded ? <Plus className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
-                            </button>
-                          )}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
+        <div className="border-t border-plex-border px-2 py-2 space-y-1.5">
+          {/* Key metadata inline */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-plex-text-muted">
+            {result.date && <span>Date: <span className="text-plex-text">{result.date}</span></span>}
+            {result.director && <span>Director: <span className="text-plex-text">{result.director}</span></span>}
+            {result.duration != null && (
+              <span>
+                Duration: <span className="text-plex-text">{formatDuration(result.duration)}</span>
+                {durationDiff != null && (
+                  <span className={durationMatch ? " text-green-400" : durationDiff < 30 ? " text-yellow-400" : " text-red-400"}>
+                    {" "}({Math.round(durationDiff)}s diff)
+                  </span>
+                )}
+              </span>
+            )}
           </div>
 
+          {/* Studio + Performers + Tags in a compact flow */}
+          <div className="flex flex-wrap items-center gap-1">
+            {result.studioName && taggerConfig.setStudio && (
+              <span
+                onClick={(e) => { e.stopPropagation(); onToggleStudio?.(); }}
+                className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded cursor-pointer ${
+                  skipStudio
+                    ? "bg-red-600/10 text-red-400 line-through"
+                    : "bg-purple-600/20 text-purple-300"
+                }`}
+                title={skipStudio ? "Click to include studio" : "Click to skip studio"}
+              >
+                {result.studioName}
+              </span>
+            )}
+            {result.performerNames.length > 0 && taggerConfig.setPerformers && result.performerNames.map((name) => {
+              const excluded = excludedPerformers.has(name);
+              return (
+                <span
+                  key={name}
+                  onClick={(e) => { e.stopPropagation(); onTogglePerformer?.(name); }}
+                  className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer ${
+                    excluded ? "bg-red-600/10 text-red-400 line-through" : "bg-blue-600/20 text-blue-300"
+                  }`}
+                  title={excluded ? "Click to include" : "Click to skip"}
+                >
+                  {name}
+                </span>
+              );
+            })}
+            {result.tagNames.length > 0 && taggerConfig.setTags && result.tagNames.map((name) => {
+              const excluded = excludedTags.has(name);
+              return (
+                <span
+                  key={name}
+                  onClick={(e) => { e.stopPropagation(); onToggleTag?.(name); }}
+                  className={`text-[10px] px-1 py-0.5 rounded cursor-pointer ${
+                    excluded ? "bg-red-600/10 text-red-400 line-through" : "bg-plex-card text-plex-text-muted"
+                  }`}
+                  title={excluded ? "Click to include" : "Click to skip"}
+                >
+                  {name}
+                </span>
+              );
+            })}
+          </div>
           {/* Save button */}
           {onSave && !saved && (
-            <div className="flex justify-end mt-3">
+            <div className="flex justify-end mt-1.5">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onSave();
                 }}
                 disabled={saving}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded text-xs font-medium bg-green-600 text-white hover:bg-green-500 disabled:opacity-60"
+                className="flex items-center gap-1 px-3 py-1 rounded text-xs font-medium bg-green-600 text-white hover:bg-green-500 disabled:opacity-60"
               >
-                {saving ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Check className="w-3.5 h-3.5" />
-                )}
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                 Save
               </button>
             </div>
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function FieldRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-2">
-      <span className="text-plex-text-muted w-16 flex-shrink-0 text-right">{label}:</span>
-      <span className="text-plex-text truncate">{value}</span>
     </div>
   );
 }

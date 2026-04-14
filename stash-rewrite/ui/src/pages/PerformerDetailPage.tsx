@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { galleries, images, metadata, performers, scenes, entityImages } from "../api/client";
 import type { FindFilter, Gallery, Image, Performer as PerformerModel, Scene, StashBox, StashBoxPerformerMatch } from "../api/types";
-import { formatDate, formatDuration, getResolutionLabel, TagBadge } from "../components/shared";
+import { formatDate, formatDuration, getResolutionLabel, TagBadge, CustomFieldsDisplay } from "../components/shared";
 import { ArrowLeft, Calendar, CloudDownload, ExternalLink, Film, FolderOpen, GitMerge, Heart, ImageIcon, Layers, Link2, Loader2, MapPin, MoreVertical, Pencil, Ruler, Scale, Search, Trash2, Users, UserRound, Wand2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PerformerEditModal } from "./PerformerEditModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { MergeDialog } from "../components/MergeDialog";
+import { DetailMergeDialog } from "../components/DetailMergeDialog";
 import { ExtensionSlot } from "../router/RouteRegistry";
 import { InteractiveRating } from "../components/Rating";
 import { useAppConfig } from "../state/AppConfigContext";
@@ -48,6 +48,13 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
   const updateMut = useMutation({
     mutationFn: (data: { favorite?: boolean; rating?: number }) => performers.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["performer", id] }),
+  });
+
+  const autoTagMut = useMutation({
+    mutationFn: () => {
+      if (!performer) throw new Error("Performer not loaded");
+      return metadata.autoTag({ performers: [performer.name] });
+    },
   });
 
   useEffect(() => {
@@ -99,7 +106,15 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
   return (
     <div className="min-h-screen">
       <div className="relative overflow-hidden border-b border-plex-border bg-[radial-gradient(circle_at_top_right,_rgba(204,123,25,0.18),_transparent_30%),linear-gradient(180deg,_rgba(50,54,57,0.95),_rgba(31,35,38,1))]">
-        <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* Background performer image */}
+        <img
+          src={entityImages.performerImageUrl(performer.id)}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-10 blur-md scale-110"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-plex-bg via-plex-bg/70 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 py-8">
           <div className="mb-5 flex items-center justify-between gap-4">
             <button
               onClick={() => onNavigate({ page: "performers" })}
@@ -122,8 +137,8 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
                     <button onClick={() => { setEditing(true); setShowOpsMenu(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-plex-text hover:bg-plex-surface">
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
-                    <button onClick={() => { metadata.autoTag({ performers: [performer.name] }); setShowOpsMenu(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-plex-text hover:bg-plex-surface">
-                      <Wand2 className="h-3.5 w-3.5" /> Auto Tag
+                    <button onClick={() => { autoTagMut.mutate(); setShowOpsMenu(false); }} disabled={autoTagMut.isPending} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-plex-text hover:bg-plex-surface disabled:opacity-60">
+                      {autoTagMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Auto Tag
                     </button>
                     <button onClick={() => { setMergeOpen(true); setShowOpsMenu(false); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-plex-text hover:bg-plex-surface">
                       <GitMerge className="h-3.5 w-3.5" /> Merge...
@@ -185,15 +200,30 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
                 <CountCard label="Scenes" value={performer.sceneCount} icon={<Film className="h-4 w-4" />} />
                 <CountCard label="Galleries" value={performer.galleryCount} icon={<FolderOpen className="h-4 w-4" />} />
                 <CountCard label="Images" value={performer.imageCount} icon={<ImageIcon className="h-4 w-4" />} />
+                <CountCard label="Groups" value={performer.groupCount} icon={<Layers className="h-4 w-4" />} />
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {performer.gender && <InfoItem icon={<UserRound className="h-4 w-4" />} label="Gender" value={performer.gender} />}
                 {performer.birthdate && (
                   <InfoItem icon={<Calendar className="h-4 w-4" />} label="Born" value={`${formatDate(performer.birthdate)}${age ? ` (${age})` : ""}`} />
                 )}
+                {performer.deathDate && (
+                  <InfoItem icon={<Calendar className="h-4 w-4" />} label="Died" value={formatDate(performer.deathDate)} />
+                )}
                 {performer.country && <InfoItem icon={<MapPin className="h-4 w-4" />} label="Country" value={performer.country} />}
+                {performer.ethnicity && <InfoItem label="Ethnicity" value={performer.ethnicity} />}
                 {performer.heightCm && <InfoItem icon={<Ruler className="h-4 w-4" />} label="Height" value={`${performer.heightCm} cm`} />}
                 {performer.weight && <InfoItem icon={<Scale className="h-4 w-4" />} label="Weight" value={`${performer.weight} kg`} />}
+                {performer.measurements && <InfoItem label="Measurements" value={performer.measurements} />}
+                {performer.eyeColor && <InfoItem label="Eye Color" value={performer.eyeColor} />}
+                {performer.hairColor && <InfoItem label="Hair Color" value={performer.hairColor} />}
+                {performer.fakeTits && <InfoItem label="Fake Tits" value={performer.fakeTits} />}
+                {performer.penisLength != null && <InfoItem label="Penis Length" value={`${performer.penisLength} cm`} />}
+                {performer.circumcised && <InfoItem label="Circumcised" value={performer.circumcised} />}
+                {performer.tattoos && <InfoItem label="Tattoos" value={performer.tattoos} />}
+                {performer.piercings && <InfoItem label="Piercings" value={performer.piercings} />}
+                {performer.careerStart && <InfoItem label="Career" value={`${performer.careerStart}${performer.careerEnd ? ` – ${performer.careerEnd}` : " – present"}`} />}
               </div>
 
               {performer.urls.length > 0 && (
@@ -213,6 +243,10 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
                 </div>
               )}
 
+              {autoTagMut.isSuccess && (
+                <p className="mt-4 text-sm text-emerald-300">Auto-tag job queued.</p>
+              )}
+
               {performer.tags.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {performer.tags.map((tag) => (
@@ -224,6 +258,7 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
               {performer.details && (
                 <p className="mt-4 max-w-4xl whitespace-pre-wrap text-sm leading-6 text-plex-text-secondary">{performer.details}</p>
               )}
+              <CustomFieldsDisplay customFields={performer.customFields} />
             </div>
           </div>
         </div>
@@ -237,13 +272,22 @@ export function PerformerDetailPage({ id, onNavigate }: Props) {
         onConfirm={() => deleteMut.mutate()}
         onCancel={() => setConfirmDelete(false)}
       />
-      <MergeDialog
+      <DetailMergeDialog
         open={mergeOpen}
         onClose={() => setMergeOpen(false)}
         entityType="performer"
-        items={[{ id: performer.id, name: performer.name }]}
+        targetItem={{ id: performer.id, name: performer.name, imagePath: performer.imagePath || entityImages.performerImageUrl(performer.id), subtitle: performer.disambiguation }}
+        searchItems={async (term) => {
+          const response = await performers.find({ page: 1, perPage: 20, sort: "name", direction: "asc", q: term || undefined });
+          return response.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            imagePath: item.imagePath,
+            subtitle: item.disambiguation,
+          }));
+        }}
         onMerge={(targetId, sourceIds) => performers.merge(targetId, sourceIds)}
-        queryKey={["performers"]}
+        invalidateQueryKeys={[["performer", id], ["performers"]]}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6">
@@ -499,10 +543,10 @@ function CountCard({ label, value, icon }: { label: string; value: number; icon:
   );
 }
 
-function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function InfoItem({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="text-plex-text-muted">{icon}</span>
+      {icon && <span className="text-plex-text-muted">{icon}</span>}
       <div>
         <div className="text-xs text-plex-text-muted">{label}</div>
         <div className="text-plex-text">{value}</div>

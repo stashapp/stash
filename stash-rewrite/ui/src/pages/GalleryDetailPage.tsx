@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { galleries, images, scenes, entityImages } from "../api/client";
 import type { FindFilter, GalleryChapter } from "../api/types";
-import { formatDate, formatDuration, getResolutionLabel, TagBadge } from "../components/shared";
-import { ArrowLeft, BookOpen, Film, FolderOpen, ImageIcon, Link as LinkIcon, Pencil, Plus, Trash2, UserRound, Check, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { formatDate, formatDuration, formatFileSize, getResolutionLabel, TagBadge, CustomFieldsDisplay } from "../components/shared";
+import { ArrowLeft, BookOpen, Film, FolderOpen, HardDrive, ImageIcon, Link as LinkIcon, Pencil, Plus, Trash2, UserRound, Check, Loader2, MoreVertical, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GalleryEditModal } from "./GalleryEditModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ExtensionSlot } from "../router/RouteRegistry";
@@ -15,7 +15,7 @@ interface Props {
   onNavigate: (r: any) => void;
 }
 
-type TabKey = "images" | "scenes" | "chapters";
+type TabKey = "images" | "scenes" | "chapters" | "fileinfo";
 
 export function GalleryDetailPage({ id, onNavigate }: Props) {
   const { data: gallery, isLoading } = useQuery({
@@ -41,12 +41,23 @@ export function GalleryDetailPage({ id, onNavigate }: Props) {
   const [imageSelectMode, setImageSelectMode] = useState(false);
   const [selectedImageIds, setSelectedImageIds] = useState<Set<number>>(new Set());
   const [showAddImages, setShowAddImages] = useState(false);
+  const [showOpsMenu, setShowOpsMenu] = useState(false);
+  const opsMenuRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (gallery) document.title = `${gallery.title || `Gallery ${id}`} | Stash`;
     return () => { document.title = "Stash"; };
   }, [gallery, id]);
+
+  // Close ops menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (opsMenuRef.current && !opsMenuRef.current.contains(e.target as Node)) setShowOpsMenu(false);
+    };
+    if (showOpsMenu) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showOpsMenu]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -57,6 +68,7 @@ export function GalleryDetailPage({ id, onNavigate }: Props) {
         case "e": setEditing((v) => !v); break;
         case "a": setActiveTab("images"); break;
         case "c": setActiveTab("chapters"); break;
+        case "f": setActiveTab("fileinfo"); break;
       }
     };
     window.addEventListener("keydown", handler);
@@ -145,12 +157,23 @@ export function GalleryDetailPage({ id, onNavigate }: Props) {
               >
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </button>
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-1.5 rounded border border-plex-border bg-plex-card px-3 py-1.5 text-sm text-plex-text-secondary hover:border-red-500 hover:text-red-300"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
+              <div className="relative" ref={opsMenuRef}>
+                <button
+                  onClick={() => setShowOpsMenu(!showOpsMenu)}
+                  className="p-1.5 rounded text-plex-text-secondary hover:text-plex-text hover:bg-plex-card"
+                  title="Operations"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+                {showOpsMenu && (
+                  <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] bg-plex-card border border-plex-border rounded shadow-lg py-1">
+                    <button onClick={() => { setEditing(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> Edit</button>
+                    <button onClick={() => { setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><RefreshCw className="w-3.5 h-3.5" /> Rescan</button>
+                    <div className="border-t border-plex-border my-1" />
+                    <button onClick={() => { setConfirmDelete(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-red-400 hover:bg-plex-surface flex items-center gap-2"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -204,6 +227,7 @@ export function GalleryDetailPage({ id, onNavigate }: Props) {
               { key: "images" as TabKey, label: "Images", count: gallery.imageCount },
               { key: "scenes" as TabKey, label: "Scenes" },
               { key: "chapters" as TabKey, label: "Chapters", count: chaptersData?.length ?? 0 },
+              { key: "fileinfo" as TabKey, label: "File Info" },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -258,6 +282,8 @@ export function GalleryDetailPage({ id, onNavigate }: Props) {
                 )}
               </dl>
             </div>
+
+            <CustomFieldsDisplay customFields={gallery.customFields} />
 
             {gallery.performers.length > 0 && (
               <div className="mb-6 rounded-xl border border-plex-border bg-plex-card p-4">
@@ -349,6 +375,10 @@ export function GalleryDetailPage({ id, onNavigate }: Props) {
 
             {activeTab === "chapters" && (
               <GalleryChaptersPanel galleryId={id} chapters={chaptersData ?? []} />
+            )}
+
+            {activeTab === "fileinfo" && (
+              <GalleryFileInfo gallery={gallery} />
             )}
 
             <ExtensionSlot slot="gallery-detail-main-bottom" context={{ gallery, onNavigate }} />
@@ -742,6 +772,61 @@ function EmptyPanel({ icon, message }: { icon: React.ReactNode; message: string 
     <div className="rounded-xl border border-dashed border-plex-border bg-plex-card/40 py-12 text-center text-plex-text-muted">
       <div className="mx-auto mb-3 flex justify-center opacity-60">{icon}</div>
       <p>{message}</p>
+    </div>
+  );
+}
+
+function GalleryFileInfo({ gallery }: { gallery: { folderPath?: string; files: { id: number; path: string; size: number; modTime: string; fingerprints: { type: string; value: string }[] }[] } }) {
+  const hasFolder = !!gallery.folderPath;
+  const hasFiles = gallery.files.length > 0;
+
+  if (!hasFolder && !hasFiles) {
+    return <EmptyPanel icon={<HardDrive className="h-8 w-8" />} message="No file information available" />;
+  }
+
+  return (
+    <div className="space-y-4">
+      {hasFolder && (
+        <div className="rounded-xl border border-plex-border bg-plex-card p-4">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-plex-text-muted">Folder</h3>
+          <dl className="space-y-2 text-sm">
+            <div>
+              <dt className="text-plex-text-muted">Path</dt>
+              <dd className="font-mono text-xs text-plex-text break-all">{gallery.folderPath}</dd>
+            </div>
+          </dl>
+        </div>
+      )}
+      {gallery.files.map((file) => (
+        <div key={file.id} className="rounded-xl border border-plex-border bg-plex-card p-4">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-plex-text-muted">File</h3>
+          <dl className="space-y-2 text-sm">
+            <div>
+              <dt className="text-plex-text-muted">Path</dt>
+              <dd className="font-mono text-xs text-plex-text break-all">{file.path}</dd>
+            </div>
+            <div>
+              <dt className="text-plex-text-muted">Size</dt>
+              <dd className="text-plex-text">{formatFileSize(file.size)}</dd>
+            </div>
+            <div>
+              <dt className="text-plex-text-muted">Modified</dt>
+              <dd className="text-plex-text">{formatDate(file.modTime)}</dd>
+            </div>
+            {file.fingerprints.length > 0 && (
+              <div>
+                <dt className="text-plex-text-muted mb-1">Fingerprints</dt>
+                {file.fingerprints.map((fp, i) => (
+                  <dd key={i} className="text-plex-text">
+                    <span className="text-plex-text-muted text-xs uppercase">{fp.type}:</span>{" "}
+                    <span className="font-mono text-xs break-all">{fp.value}</span>
+                  </dd>
+                ))}
+              </div>
+            )}
+          </dl>
+        </div>
+      ))}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { scenes, tags as tagsApi, performers as performersApi, studios as studio
 import type { Scene, SceneUpdate, Tag, Performer, Studio } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { RatingField } from "../components/Rating";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface Props {
   scene: Scene;
@@ -28,6 +29,9 @@ export function SceneEditModal({ scene, open, onClose }: Props) {
   const [selectedGalleryIds, setSelectedGalleryIds] = useState<number[]>(scene.galleries.map((g) => g.id));
   const [selectedGroups, setSelectedGroups] = useState<{ groupId: number; sceneIndex: number }[]>(
     scene.groups.map((g) => ({ groupId: g.id, sceneIndex: g.sceneIndex }))
+  );
+  const [customFields, setCustomFields] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(scene.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")]))
   );
 
   // Tag search
@@ -78,6 +82,7 @@ export function SceneEditModal({ scene, open, onClose }: Props) {
     setSelectedPerformerIds(scene.performers.map((p) => p.id));
     setSelectedGalleryIds(scene.galleries.map((g) => g.id));
     setSelectedGroups(scene.groups.map((g) => ({ groupId: g.id, sceneIndex: g.sceneIndex })));
+    setCustomFields(Object.fromEntries(Object.entries(scene.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")])));
   }, [scene]);
 
   const mutation = useMutation({
@@ -105,6 +110,7 @@ export function SceneEditModal({ scene, open, onClose }: Props) {
       performerIds: selectedPerformerIds,
       galleryIds: selectedGalleryIds,
       groups: selectedGroups,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   };
 
@@ -334,6 +340,10 @@ export function SceneEditModal({ scene, open, onClose }: Props) {
         <input type="checkbox" checked={organized} onChange={(e) => setOrganized(e.target.checked)} className="rounded border-gray-600 bg-gray-800" />
         Organized
       </label>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={customFields} onChange={setCustomFields} />
+      </Field>
 
       {mutation.error && (
         <div className="bg-red-900/50 border border-red-700 text-red-300 rounded p-2 mb-4 text-sm">

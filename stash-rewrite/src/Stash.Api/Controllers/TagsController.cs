@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Stash.Core.DTOs;
 using Stash.Core.Entities;
@@ -12,6 +13,7 @@ namespace Stash.Api.Controllers;
 public class TagsController(ITagRepository tagRepo, Data.StashContext db) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<TagListDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -41,6 +43,7 @@ public class TagsController(ITagRepository tagRepo, Data.StashContext db) : Cont
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<TagDetailDto>> GetById(int id, CancellationToken ct)
     {
         var tag = await tagRepo.GetByIdWithRelationsAsync(id, ct);
@@ -101,6 +104,7 @@ public class TagsController(ITagRepository tagRepo, Data.StashContext db) : Cont
             tag.ChildRelations.Clear();
             tag.ChildRelations = dto.ChildIds.Select(cid => new TagParent { ParentId = id, ChildId = cid }).ToList();
         }
+        if (dto.CustomFields != null) tag.CustomFields = dto.CustomFields;
 
         await tagRepo.UpdateAsync(tag, ct);
         var updated = await tagRepo.GetByIdWithRelationsAsync(id, ct);
@@ -123,6 +127,7 @@ public class TagsController(ITagRepository tagRepo, Data.StashContext db) : Cont
         t.ChildRelations.Where(cr => cr.Child != null).Select(cr => new TagDto(cr.Child!.Id, cr.Child.Name, cr.Child.Description, cr.Child.Favorite, cr.Child.IgnoreAutoTag, [])).ToList(),
         t.SceneTags?.Count ?? 0, t.PerformerTags?.Count ?? 0, t.ImageTags?.Count ?? 0, t.GalleryTags?.Count ?? 0,
         studioCount, groupCount, markerCount,
+        t.CustomFields,
         t.CreatedAt.ToString("o"), t.UpdatedAt.ToString("o")
     );
 
@@ -218,6 +223,7 @@ public class TagsController(ITagRepository tagRepo, Data.StashContext db) : Cont
     // ===== Marker Wall =====
 
     [HttpGet("marker-strings")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<List<string>>> GetMarkerStrings([FromQuery] string? q, [FromQuery] string? sort, CancellationToken ct)
     {
         var query = db.SceneMarkers.AsNoTracking().Select(m => m.Title).Distinct();

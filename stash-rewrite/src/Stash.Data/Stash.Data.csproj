@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Stash.Core\Stash.Core.csproj" />
+    <ProjectReference Include="..\Stash.Plugins\Stash.Plugins.csproj" />
   </ItemGroup>
 
   <ItemGroup>

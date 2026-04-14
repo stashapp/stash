@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { galleries, groups, images, metadata, performers, scenes, studios, entityImages } from "../api/client";
 import type { FindFilter, Gallery, Group, Image, Performer, Scene, StashBox, StashBoxStudioMatch, Studio } from "../api/types";
-import { formatDate, formatDuration, getResolutionLabel, TagBadge } from "../components/shared";
+import { formatDate, formatDuration, getResolutionLabel, TagBadge, CustomFieldsDisplay } from "../components/shared";
 import { ArrowLeft, Building2, CloudDownload, Film, FolderOpen, GitMerge, Heart, ImageIcon, Layers, Link as LinkIcon, Link2, Loader2, Pencil, Search, Trash2, UserRound, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StudioEditModal } from "./StudioEditModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { MergeDialog } from "../components/MergeDialog";
+import { DetailMergeDialog } from "../components/DetailMergeDialog";
 import { ExtensionSlot } from "../router/RouteRegistry";
 import { InteractiveRating } from "../components/Rating";
 import { useAppConfig } from "../state/AppConfigContext";
@@ -68,6 +68,13 @@ export function StudioDetailPage({ id, onNavigate }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["studio", id] }),
   });
 
+  const autoTagMut = useMutation({
+    mutationFn: () => {
+      if (!studio) throw new Error("Studio not loaded");
+      return metadata.autoTag({ studios: [studio.name] });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -85,7 +92,15 @@ export function StudioDetailPage({ id, onNavigate }: Props) {
   return (
     <div className="min-h-screen">
       <div className="relative overflow-hidden border-b border-plex-border bg-[radial-gradient(circle_at_top_right,_rgba(204,123,25,0.16),_transparent_30%),linear-gradient(180deg,_rgba(50,54,57,0.95),_rgba(31,35,38,1))]">
-        <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* Background studio image */}
+        <img
+          src={entityImages.studioImageUrl(studio.id)}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-10 blur-md scale-110"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-plex-bg via-plex-bg/70 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 py-8">
           <div className="mb-5 flex items-center justify-between gap-4">
             <button
               onClick={() => onNavigate({ page: "studios" })}
@@ -102,10 +117,11 @@ export function StudioDetailPage({ id, onNavigate }: Props) {
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </button>
               <button
-                onClick={() => metadata.autoTag({ studios: [studio.name] })}
+                onClick={() => autoTagMut.mutate()}
+                disabled={autoTagMut.isPending}
                 className="flex items-center gap-1.5 rounded border border-plex-border bg-plex-card px-3 py-1.5 text-sm text-plex-text-secondary hover:text-plex-text"
               >
-                <Wand2 className="h-3.5 w-3.5" /> Auto Tag
+                {autoTagMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Auto Tag
               </button>
               <button
                 onClick={() => setMergeOpen(true)}
@@ -180,6 +196,9 @@ export function StudioDetailPage({ id, onNavigate }: Props) {
               {studio.details && (
                 <p className="max-w-4xl whitespace-pre-wrap text-sm leading-6 text-plex-text-secondary">{studio.details}</p>
               )}
+              {autoTagMut.isSuccess && (
+                <p className="mt-3 text-sm text-emerald-300">Auto-tag job queued.</p>
+              )}
             </div>
           </div>
         </div>
@@ -193,13 +212,22 @@ export function StudioDetailPage({ id, onNavigate }: Props) {
         onConfirm={() => deleteMut.mutate()}
         onCancel={() => setConfirmDelete(false)}
       />
-      <MergeDialog
+      <DetailMergeDialog
         open={mergeOpen}
         onClose={() => setMergeOpen(false)}
         entityType="studio"
-        items={[{ id: studio.id, name: studio.name }]}
+        targetItem={{ id: studio.id, name: studio.name, imagePath: studioImageUrl, subtitle: studio.parentName }}
+        searchItems={async (term) => {
+          const response = await studios.find({ page: 1, perPage: 20, sort: "name", direction: "asc", q: term || undefined });
+          return response.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            imagePath: item.imagePath,
+            subtitle: item.parentName,
+          }));
+        }}
         onMerge={(targetId, sourceIds) => studios.merge(targetId, sourceIds)}
-        queryKey={["studios"]}
+        invalidateQueryKeys={[["studio", id], ["studios"]]}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6">
@@ -301,6 +329,7 @@ export function StudioDetailPage({ id, onNavigate }: Props) {
               </div>
             )}
 
+            <CustomFieldsDisplay customFields={studio.customFields} />
             <ExtensionSlot slot="studio-detail-sidebar-bottom" context={{ studio, onNavigate }} />
           </aside>
         </div>

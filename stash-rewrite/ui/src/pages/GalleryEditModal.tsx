@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { galleries, studios, tags, performers } from "../api/client";
+import { galleries, studios, tags, performers, scenes as scenesApi } from "../api/client";
 import type { Gallery, GalleryUpdate, Studio, Tag, Performer } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { Search, X } from "lucide-react";
 import { RatingField } from "../components/Rating";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface Props {
   gallery: Gallery;
@@ -26,14 +27,20 @@ export function GalleryEditModal({ gallery, open, onClose }: Props) {
     urls: gallery.urls.join("\n"),
     tagIds: gallery.tags.map((t) => t.id),
     performerIds: gallery.performers.map((p) => p.id),
+    sceneIds: gallery.sceneIds ?? [],
   });
+  const [customFields, setCustomFields] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(gallery.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")]))
+  );
 
   const [tagSearch, setTagSearch] = useState("");
   const [performerSearch, setPerformerSearch] = useState("");
+  const [sceneSearch, setSceneSearch] = useState("");
 
   const { data: studioList } = useQuery({ queryKey: ["studios-all"], queryFn: () => studios.find({ perPage: 200 }) });
   const { data: tagResults } = useQuery({ queryKey: ["tags-search", tagSearch], queryFn: () => tags.find({ q: tagSearch, perPage: 20 }), enabled: tagSearch.length > 0 });
   const { data: performerResults } = useQuery({ queryKey: ["performers-search", performerSearch], queryFn: () => performers.find({ q: performerSearch, perPage: 20 }), enabled: performerSearch.length > 0 });
+  const { data: sceneResults } = useQuery({ queryKey: ["scenes-search", sceneSearch], queryFn: () => scenesApi.find({ q: sceneSearch, perPage: 20 }), enabled: sceneSearch.length > 0 });
 
   const selectedTags = gallery.tags.filter((t) => form.tagIds.includes(t.id));
   const selectedPerformers = gallery.performers.filter((p) => form.performerIds.includes(p.id));
@@ -60,6 +67,8 @@ export function GalleryEditModal({ gallery, open, onClose }: Props) {
       urls: form.urls ? form.urls.split("\n").map((u) => u.trim()).filter(Boolean) : [],
       tagIds: form.tagIds,
       performerIds: form.performerIds,
+      sceneIds: form.sceneIds,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   };
 
@@ -157,6 +166,40 @@ export function GalleryEditModal({ gallery, open, onClose }: Props) {
             </div>
           )}
         </div>
+      </Field>
+
+      {/* Scenes */}
+      <Field label="Scenes">
+        <div className="flex flex-wrap gap-1 mb-2">
+          {form.sceneIds.map((sid) => {
+            const s = sceneResults?.items.find((sc) => sc.id === sid);
+            return (
+              <span key={sid} className="bg-teal-600/30 text-teal-300 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                {s?.title || `Scene #${sid}`}
+                <X className="w-3 h-3 cursor-pointer" onClick={() => setForm({ ...form, sceneIds: form.sceneIds.filter((id) => id !== sid) })} />
+              </span>
+            );
+          })}
+        </div>
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-2 top-2.5 text-gray-500" />
+          <input
+            type="text" value={sceneSearch} onChange={(e) => setSceneSearch(e.target.value)} placeholder="Search scenes..."
+            className="w-full bg-gray-800 border border-gray-700 rounded pl-8 pr-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+          />
+          {sceneSearch && sceneResults && (
+            <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded max-h-32 overflow-y-auto">
+              {sceneResults.items.filter((sc) => !form.sceneIds.includes(sc.id)).map((sc) => (
+                <div key={sc.id} onClick={() => { setForm({ ...form, sceneIds: [...form.sceneIds, sc.id] }); setSceneSearch(""); }}
+                  className="px-3 py-1.5 text-sm hover:bg-gray-700 cursor-pointer">{sc.title || sc.files?.[0]?.basename || `Scene #${sc.id}`}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Field>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={customFields} onChange={setCustomFields} />
       </Field>
 
       <div className="flex justify-end mt-4">

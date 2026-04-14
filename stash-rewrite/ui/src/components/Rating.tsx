@@ -214,13 +214,52 @@ export function RatingBanner({ rating }: { rating?: number }) {
   const displayText = showStars ? "★".repeat(Math.round(displayValue)) : (label ?? "");
   if (!displayText) return null;
 
+  // Color gradient from gray (low) through gold to red (high), matching original Stash
+  const bannerColor = getRatingBannerColor(rating, options);
+
   return (
-    <div className="absolute top-0 left-0 overflow-hidden w-16 h-16 pointer-events-none">
-      <div className="absolute -left-6 top-2 -rotate-45 bg-plex-accent text-white text-[9px] font-bold px-6 py-0.5 text-center shadow-md">
+    <div className="rating-banner-container absolute top-0 left-0 overflow-hidden pointer-events-none" style={{ width: 80, height: 80 }}>
+      <div
+        className="absolute text-white font-bold text-center tracking-wide shadow-md"
+        style={{
+          left: -48,
+          top: 14,
+          transform: "rotate(-36deg)",
+          padding: "6px 45px",
+          fontSize: "1rem",
+          lineHeight: "1.6rem",
+          letterSpacing: 1,
+          background: bannerColor,
+        }}
+      >
         {displayText}
       </div>
     </div>
   );
+}
+
+export function getRatingBannerColor(rating: number | undefined, options?: RatingSystemOptions): string {
+  if (rating == null) return "#939393";
+  // Normalize to 0-100 scale
+  const normalized = normalizeRatingOptions(options);
+  let pct: number;
+  if (normalized.type === "stars") {
+    const display = convertToRatingFormat(rating, options) ?? 0;
+    pct = (display / 5) * 100;
+  } else {
+    pct = rating;
+  }
+  // Color gradient matching original Stash: gray → gold → orange → red
+  const colors: [number, string][] = [
+    [0, "#939393"], [10, "#9b8c7d"], [20, "#9e8974"], [30, "#a7805b"],
+    [40, "#af7944"], [50, "#b47435"], [60, "#c39f2b"], [70, "#d2ca20"],
+    [80, "#e7a811"], [85, "#ff8000"], [90, "#ff6a07"], [95, "#ff4812"],
+    [100, "#ff0000"],
+  ];
+  for (let i = colors.length - 1; i >= 0; i--) {
+    if (pct >= colors[i][0]) return colors[i][1];
+  }
+  return "#939393";
 }
 
 export function RatingField({ value, onChange }: { value?: number; onChange: (value: number | undefined) => void }) {

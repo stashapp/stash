@@ -24,6 +24,7 @@ export interface Scene {
   groups: GroupSummary[];
   galleries: GallerySummary[];
   stashIds: SceneStashId[];
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +48,7 @@ export interface SceneCreate {
   performerIds?: number[];
   galleryIds?: number[];
   groups?: { groupId: number; sceneIndex: number }[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface SceneUpdate extends Partial<SceneCreate> {}
@@ -85,6 +87,7 @@ export interface Performer {
   imageCount: number;
   galleryCount: number;
   groupCount: number;
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -130,6 +133,7 @@ export interface PerformerCreate {
   urls?: string[];
   aliases?: string[];
   tagIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface PerformerUpdate extends Partial<PerformerCreate> {}
@@ -162,6 +166,7 @@ export interface TagDetail extends Tag {
   studioCount: number;
   groupCount: number;
   markerCount: number;
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -175,6 +180,7 @@ export interface TagCreate {
   aliases?: string[];
   parentIds?: number[];
   childIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface TagUpdate extends Partial<TagCreate> {}
@@ -200,6 +206,7 @@ export interface Studio {
   groupCount: number;
   performerCount: number;
   childStudioCount: number;
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -220,6 +227,7 @@ export interface StudioCreate {
   urls?: string[];
   aliases?: string[];
   tagIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface StudioUpdate extends Partial<StudioCreate> {}
@@ -241,8 +249,20 @@ export interface Gallery {
   performers: PerformerSummary[];
   imageCount: number;
   sceneCount: number;
+  sceneIds: number[];
+  folderPath?: string;
+  files: GalleryFileInfo[];
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GalleryFileInfo {
+  id: number;
+  path: string;
+  size: number;
+  modTime: string;
+  fingerprints: { type: string; value: string }[];
 }
 
 export interface GalleryChapter {
@@ -276,6 +296,8 @@ export interface GalleryCreate {
   urls?: string[];
   tagIds?: number[];
   performerIds?: number[];
+  sceneIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface GalleryUpdate extends Partial<GalleryCreate> {}
@@ -296,6 +318,8 @@ export interface Image {
   tags: Tag[];
   performers: PerformerSummary[];
   galleryCount: number;
+  galleryIds: number[];
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -312,6 +336,8 @@ export interface ImageCreate {
   urls?: string[];
   tagIds?: number[];
   performerIds?: number[];
+  galleryIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface ImageUpdate {
@@ -326,6 +352,8 @@ export interface ImageUpdate {
   urls?: string[];
   tagIds?: number[];
   performerIds?: number[];
+  galleryIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface Group {
@@ -346,6 +374,7 @@ export interface Group {
   sceneCount: number;
   subGroupCount: number;
   containingGroupCount: number;
+  customFields?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -373,6 +402,7 @@ export interface GroupCreate {
   synopsis?: string;
   urls?: string[];
   tagIds?: number[];
+  customFields?: Record<string, unknown>;
 }
 
 export interface GroupUpdate extends Partial<GroupCreate> {}
@@ -677,6 +707,20 @@ export interface StashBoxStudioImportRequest {
   studioId: string;
 }
 
+export interface StashBoxEntityCandidate {
+  remoteId: string;
+  name: string;
+  existsLocally: boolean;
+  localId?: number;
+}
+
+export interface StashBoxSceneEntityOverride {
+  remoteId: string;
+  name: string;
+  action: string;
+  localId?: number;
+}
+
 export interface StashBoxSceneMatch {
   endpoint: string;
   stashBoxName: string;
@@ -694,6 +738,9 @@ export interface StashBoxSceneMatch {
   urls: string[];
   fingerprintAlgorithms: string[];
   fingerprints: StashBoxFingerprint[];
+  studioCandidate?: StashBoxEntityCandidate;
+  performerCandidates: StashBoxEntityCandidate[];
+  tagCandidates: StashBoxEntityCandidate[];
 }
 
 export interface StashBoxFingerprint {
@@ -715,6 +762,9 @@ export interface StashBoxSceneImportRequest {
   markOrganized?: boolean;
   excludedTagNames?: string[];
   excludedPerformerNames?: string[];
+  studioOverride?: StashBoxSceneEntityOverride;
+  performerOverrides?: StashBoxSceneEntityOverride[];
+  tagOverrides?: StashBoxSceneEntityOverride[];
 }
 
 // ===== Filter Criteria =====
@@ -1038,4 +1088,94 @@ export interface Package {
   type: string;
   installed: boolean;
   installedVersion?: string;
+}
+
+// ===== Extension System Types =====
+export interface ExtensionManifest {
+  pages: ExtensionPageDef[];
+  slots: ExtensionSlotContribution[];
+  tabs: ExtensionTabContribution[];
+  themes: ExtensionThemeDef[];
+  settingsPanels: ExtensionSettingsPanel[];
+  pageOverrides: ExtensionPageOverride[];
+  dialogOverrides: ExtensionDialogOverride[];
+  jsBundleUrl?: string;
+  cssBundleUrl?: string;
+}
+
+export interface ExtensionPageDef {
+  route: string;
+  label: string;
+  icon?: string;
+  detailRoute?: string;
+  showInNav: boolean;
+  navOrder: number;
+  requiredPermission?: string;
+  componentName?: string;
+  extensionId?: string;
+}
+
+export interface ExtensionSlotContribution {
+  id: string;
+  slot: string;
+  extensionId: string;
+  contentType: "component" | "html";
+  componentName?: string;
+  html?: string;
+  order: number;
+}
+
+export interface ExtensionTabContribution {
+  key: string;
+  label: string;
+  pageType: string;
+  extensionId: string;
+  componentName: string;
+  order: number;
+}
+
+export interface ExtensionThemeDef {
+  id: string;
+  name: string;
+  description?: string;
+  cssVariables?: Record<string, string>;
+  cssUrl?: string;
+}
+
+export interface ExtensionSettingsPanel {
+  id: string;
+  label: string;
+  extensionId: string;
+  componentName: string;
+  order: number;
+}
+
+export interface ExtensionPageOverride {
+  targetPage: string;
+  extensionId: string;
+  componentName: string;
+  priority: number;
+}
+
+export interface ExtensionDialogOverride {
+  dialogId: string;
+  extensionId: string;
+  componentName: string;
+  priority: number;
+}
+
+export interface ExtensionInfo {
+  id: string;
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  iconUrl?: string;
+  enabled: boolean;
+  hasUI: boolean;
+  hasApi: boolean;
+  hasState: boolean;
+  hasJobs: boolean;
+  hasEvents: boolean;
+  jobs: { id: string; name: string; description?: string }[];
 }

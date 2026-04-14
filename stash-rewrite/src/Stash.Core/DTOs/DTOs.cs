@@ -18,7 +18,7 @@ public record SceneDto(
     int OCounter, List<string> Urls, List<TagDto> Tags, List<PerformerSummaryDto> Performers,
     List<VideoFileDto> Files, List<SceneMarkerSummaryDto> Markers,
     List<GroupSummaryDto> Groups, List<GallerySummaryDto> Galleries,
-    List<SceneStashIdDto> StashIds, string CreatedAt, string UpdatedAt);
+    List<SceneStashIdDto> StashIds, Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
 
 public record SceneStashIdDto(string Endpoint, string StashId);
 
@@ -34,7 +34,7 @@ public record SceneUpdateDto(
     string? Title, string? Code, string? Details, string? Director,
     string? Date, int? Rating, bool? Organized, int? StudioId,
     List<string>? Urls, List<int>? TagIds, List<int>? PerformerIds, List<int>? GalleryIds,
-    List<SceneGroupInputDto>? Groups);
+    List<SceneGroupInputDto>? Groups, Dictionary<string, object>? CustomFields);
 
 // ===== PERFORMER DTOs =====
 public record PerformerDto(
@@ -47,7 +47,7 @@ public record PerformerDto(
     List<string> Urls, List<string> Aliases, List<TagDto> Tags,
     List<PerformerStashIdDto> StashIds,
     int SceneCount, int ImageCount, int GalleryCount, int GroupCount,
-    string? ImagePath, string CreatedAt, string UpdatedAt);
+    string? ImagePath, Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
 
 public record PerformerStashIdDto(string Endpoint, string StashId);
 
@@ -71,7 +71,7 @@ public record PerformerUpdateDto(
     string? Measurements, string? FakeTits, double? PenisLength, string? Circumcised,
     string? CareerStart, string? CareerEnd, string? Tattoos, string? Piercings,
     bool? Favorite, int? Rating, string? Details, bool? IgnoreAutoTag,
-    List<string>? Urls, List<string>? Aliases, List<int>? TagIds);
+    List<string>? Urls, List<string>? Aliases, List<int>? TagIds, Dictionary<string, object>? CustomFields);
 
 // ===== TAG DTOs =====
 public record TagDto(int Id, string Name, string? Description, bool Favorite, bool IgnoreAutoTag, List<string> Aliases);
@@ -84,16 +84,16 @@ public record TagDetailDto(
     List<string> Aliases, List<TagDto> Parents, List<TagDto> Children,
     int SceneCount, int PerformerCount, int ImageCount, int GalleryCount,
     int StudioCount, int GroupCount, int MarkerCount,
-    string CreatedAt, string UpdatedAt);
+    Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
 
 public record TagCreateDto(string Name, string? SortName, string? Description, bool Favorite, bool IgnoreAutoTag, List<string>? Aliases, List<int>? ParentIds, List<int>? ChildIds);
-public record TagUpdateDto(string? Name, string? SortName, string? Description, bool? Favorite, bool? IgnoreAutoTag, List<string>? Aliases, List<int>? ParentIds, List<int>? ChildIds);
+public record TagUpdateDto(string? Name, string? SortName, string? Description, bool? Favorite, bool? IgnoreAutoTag, List<string>? Aliases, List<int>? ParentIds, List<int>? ChildIds, Dictionary<string, object>? CustomFields);
 
 // ===== STUDIO DTOs =====
 public record StudioDto(int Id, string Name, int? ParentId, string? ParentName, int? Rating, bool Favorite, string? Details, bool IgnoreAutoTag, bool Organized,
     List<string> Urls, List<string> Aliases, List<TagDto> Tags, List<StudioStashIdDto> StashIds,
     int SceneCount, int ImageCount, int GalleryCount, int GroupCount, int PerformerCount, int ChildStudioCount,
-    string? ImagePath, string CreatedAt, string UpdatedAt);
+    string? ImagePath, Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
 
 public record StudioStashIdDto(string Endpoint, string StashId);
 
@@ -101,25 +101,28 @@ public record StudioCreateDto(string Name, int? ParentId, int? Rating, bool Favo
     List<string>? Urls, List<string>? Aliases, List<int>? TagIds);
 
 public record StudioUpdateDto(string? Name, int? ParentId, int? Rating, bool? Favorite, string? Details, bool? IgnoreAutoTag, bool? Organized,
-    List<string>? Urls, List<string>? Aliases, List<int>? TagIds);
+    List<string>? Urls, List<string>? Aliases, List<int>? TagIds, Dictionary<string, object>? CustomFields);
 
 // ===== GALLERY DTOs =====
 public record GalleryDto(int Id, string? Title, string? Code, string? Date, string? Details, string? Photographer,
     int? Rating, bool Organized, int? StudioId, string? StudioName,
     List<string> Urls, List<TagDto> Tags, List<PerformerSummaryDto> Performers,
-    int ImageCount, int SceneCount, string CreatedAt, string UpdatedAt);
+    int ImageCount, int SceneCount, List<int> SceneIds, string? FolderPath, List<GalleryFileInfoDto> Files,
+    Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
+
+public record GalleryFileInfoDto(int Id, string Path, long Size, string ModTime, List<FingerprintDto> Fingerprints);
 
 public record GalleryCreateDto(string? Title, string? Code, string? Date, string? Details, string? Photographer,
     int? Rating, bool Organized, int? StudioId, List<string>? Urls, List<int>? TagIds, List<int>? PerformerIds);
 
 public record GalleryUpdateDto(string? Title, string? Code, string? Date, string? Details, string? Photographer,
-    int? Rating, bool? Organized, int? StudioId, List<string>? Urls, List<int>? TagIds, List<int>? PerformerIds);
+    int? Rating, bool? Organized, int? StudioId, List<string>? Urls, List<int>? TagIds, List<int>? PerformerIds, List<int>? SceneIds, Dictionary<string, object>? CustomFields);
 
 // ===== IMAGE DTOs =====
 public record ImageDto(int Id, string? Title, string? Code, string? Details, string? Photographer,
     int? Rating, bool Organized, int OCounter, int? StudioId, string? StudioName, string? Date,
     List<string> Urls, List<TagDto> Tags, List<PerformerSummaryDto> Performers,
-    int GalleryCount, string CreatedAt, string UpdatedAt);
+    int GalleryCount, List<int> GalleryIds, Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
 
 public record ImageCreateDto(string? Title, string? Code, string? Details, string? Photographer,
     int? Rating, bool Organized, int? StudioId, string? Date,
@@ -127,13 +130,13 @@ public record ImageCreateDto(string? Title, string? Code, string? Details, strin
 
 public record ImageUpdateDto(string? Title, string? Code, string? Details, string? Photographer,
     int? Rating, bool? Organized, int? StudioId, string? Date,
-    List<string>? Urls, List<int>? TagIds, List<int>? PerformerIds);
+    List<string>? Urls, List<int>? TagIds, List<int>? PerformerIds, List<int>? GalleryIds, Dictionary<string, object>? CustomFields);
 
 // ===== GROUP DTOs =====
 public record GroupDto(int Id, string Name, string? Aliases, int? Duration, string? Date,
     int? Rating, int? StudioId, string? StudioName, string? Director, string? Synopsis,
     List<string> Urls, List<TagDto> Tags, int SceneCount, int SubGroupCount, int ContainingGroupCount,
-    string CreatedAt, string UpdatedAt);
+    Dictionary<string, object>? CustomFields, string CreatedAt, string UpdatedAt);
 
 public record GroupSummaryDto(int Id, string Name, int SceneIndex);
 
@@ -143,7 +146,7 @@ public record GroupCreateDto(string Name, string? Aliases, int? Duration, string
 
 public record GroupUpdateDto(string? Name, string? Aliases, int? Duration, string? Date,
     int? Rating, int? StudioId, string? Director, string? Synopsis,
-    List<string>? Urls, List<int>? TagIds);
+    List<string>? Urls, List<int>? TagIds, Dictionary<string, object>? CustomFields);
 
 // ===== SHARED DTOs =====
 public record VideoFileDto(int Id, string Path, string Basename, string Format,
@@ -288,6 +291,21 @@ public record StashBoxStudioMatchDto(
 
 public record StashBoxStudioImportRequestDto(string Endpoint, string StudioId);
 
+public record StashBoxEntityCandidateDto(
+    string RemoteId,
+    string Name,
+    bool ExistsLocally,
+    int? LocalId
+);
+
+public record StashBoxSceneEntityOverrideDto
+{
+    public string RemoteId { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string Action { get; init; } = string.Empty;
+    public int? LocalId { get; init; }
+}
+
 public record StashBoxSceneMatchDto(
     string Endpoint,
     string StashBoxName,
@@ -304,7 +322,10 @@ public record StashBoxSceneMatchDto(
     List<string> TagNames,
     List<string> Urls,
     List<string> FingerprintAlgorithms,
-    List<StashBoxFingerprintDto> Fingerprints
+    List<StashBoxFingerprintDto> Fingerprints,
+    StashBoxEntityCandidateDto? StudioCandidate,
+    List<StashBoxEntityCandidateDto> PerformerCandidates,
+    List<StashBoxEntityCandidateDto> TagCandidates
 );
 
 public record StashBoxFingerprintDto(string Algorithm, string Hash, int? Duration);
@@ -323,6 +344,9 @@ public record StashBoxSceneImportRequestDto
     public bool MarkOrganized { get; init; }
     public List<string>? ExcludedTagNames { get; init; }
     public List<string>? ExcludedPerformerNames { get; init; }
+    public StashBoxSceneEntityOverrideDto? StudioOverride { get; init; }
+    public List<StashBoxSceneEntityOverrideDto>? PerformerOverrides { get; init; }
+    public List<StashBoxSceneEntityOverrideDto>? TagOverrides { get; init; }
 }
 
 public record ScraperSummaryDto(
@@ -336,6 +360,8 @@ public record ScraperSummaryDto(
 
 // ===== ACTIVITY DTOs =====
 public record SceneActivityDto(double? ResumeTime, double? PlayDuration);
+
+public record SceneHistoryDto(List<string> PlayHistory, List<string> OHistory);
 
 // ===== BULK UPDATE DTOs =====
 public enum BulkUpdateMode { Set, Add, Remove }

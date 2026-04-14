@@ -4,6 +4,7 @@ import { tags, entityImages } from "../api/client";
 import type { TagDetail, TagUpdate, Tag } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { ImageInput } from "../components/ImageInput";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface Props {
   tag: TagDetail;
@@ -15,6 +16,7 @@ export function TagEditModal({ tag, open, onClose }: Props) {
   const queryClient = useQueryClient();
 
   const [name, setName] = useState(tag.name);
+  const [sortName, setSortName] = useState(tag.sortName ?? "");
   const [description, setDescription] = useState(tag.description ?? "");
   const [favorite, setFavorite] = useState(tag.favorite);
   const [ignoreAutoTag, setIgnoreAutoTag] = useState(tag.ignoreAutoTag);
@@ -26,6 +28,9 @@ export function TagEditModal({ tag, open, onClose }: Props) {
   const [parentSearch, setParentSearch] = useState("");
   // Tag search for children
   const [childSearch, setChildSearch] = useState("");
+  const [customFields, setCustomFields] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(tag.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")]))
+  );
 
   const { data: allTags } = useQuery({
     queryKey: ["tags-all"],
@@ -34,12 +39,14 @@ export function TagEditModal({ tag, open, onClose }: Props) {
 
   useEffect(() => {
     setName(tag.name);
+    setSortName(tag.sortName ?? "");
     setDescription(tag.description ?? "");
     setFavorite(tag.favorite);
     setIgnoreAutoTag(tag.ignoreAutoTag);
     setAliases(tag.aliases.join("\n"));
     setSelectedParentIds(tag.parents.map((t) => t.id));
     setSelectedChildIds(tag.children.map((t) => t.id));
+    setCustomFields(Object.fromEntries(Object.entries(tag.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")])));
   }, [tag]);
 
   const mutation = useMutation({
@@ -55,12 +62,14 @@ export function TagEditModal({ tag, open, onClose }: Props) {
     const aliasList = aliases.split("\n").map((a) => a.trim()).filter(Boolean);
     mutation.mutate({
       name,
+      sortName: sortName || undefined,
       description: description || undefined,
       favorite,
       ignoreAutoTag,
       aliases: aliasList,
       parentIds: selectedParentIds,
       childIds: selectedChildIds,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   };
 
@@ -92,6 +101,10 @@ export function TagEditModal({ tag, open, onClose }: Props) {
         <TextInput value={name} onChange={setName} placeholder="Tag name" />
       </Field>
 
+      <Field label="Sort Name">
+        <TextInput value={sortName} onChange={setSortName} placeholder="Custom sort name (optional)" />
+      </Field>
+
       <Field label="Description">
         <TextArea value={description} onChange={setDescription} placeholder="Tag description" rows={3} />
       </Field>
@@ -110,6 +123,10 @@ export function TagEditModal({ tag, open, onClose }: Props) {
           Ignore Auto Tag
         </label>
       </div>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={customFields} onChange={setCustomFields} />
+      </Field>
 
       {/* Parent Tags */}
       <Field label="Parent Tags">

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Stash.Core.DTOs;
 using Stash.Core.Entities;
@@ -12,6 +13,7 @@ namespace Stash.Api.Controllers;
 public class GroupsController(IGroupRepository groupRepo, Data.StashContext db) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<GroupDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -42,6 +44,7 @@ public class GroupsController(IGroupRepository groupRepo, Data.StashContext db) 
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<GroupDto>> GetById(int id, CancellationToken ct)
     {
         var group = await groupRepo.GetByIdWithRelationsAsync(id, ct);
@@ -91,6 +94,7 @@ public class GroupsController(IGroupRepository groupRepo, Data.StashContext db) 
             group.GroupTags.Clear();
             group.GroupTags = dto.TagIds.Select(tid => new GroupTag { TagId = tid, GroupId = id }).ToList();
         }
+        if (dto.CustomFields != null) group.CustomFields = dto.CustomFields;
 
         await groupRepo.UpdateAsync(group, ct);
         var updated = await groupRepo.GetByIdWithRelationsAsync(id, ct);
@@ -107,6 +111,7 @@ public class GroupsController(IGroupRepository groupRepo, Data.StashContext db) 
     }
 
     [HttpGet("{id:int}/subgroups")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<List<GroupDto>>> GetSubGroups(int id, CancellationToken ct)
     {
         var relations = await db.Set<GroupRelation>()
@@ -120,6 +125,7 @@ public class GroupsController(IGroupRepository groupRepo, Data.StashContext db) 
     }
 
     [HttpGet("{id:int}/containinggroups")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<List<GroupDto>>> GetContainingGroups(int id, CancellationToken ct)
     {
         var relations = await db.Set<GroupRelation>()
@@ -192,6 +198,7 @@ public class GroupsController(IGroupRepository groupRepo, Data.StashContext db) 
         g.SceneGroups?.Count ?? 0,
         g.SubGroupRelations?.Count ?? 0,
         g.ContainingGroupRelations?.Count ?? 0,
+        g.CustomFields,
         g.CreatedAt.ToString("o"), g.UpdatedAt.ToString("o")
     );
 

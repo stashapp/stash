@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Stash.Core.DTOs;
 using Stash.Core.Entities;
@@ -12,6 +13,7 @@ namespace Stash.Api.Controllers;
 public class GalleriesController(IGalleryRepository galleryRepo, Data.StashContext db) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<GalleryDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -47,6 +49,7 @@ public class GalleriesController(IGalleryRepository galleryRepo, Data.StashConte
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<GalleryDto>> GetById(int id, CancellationToken ct)
     {
         var gallery = await galleryRepo.GetByIdWithRelationsAsync(id, ct);
@@ -102,6 +105,12 @@ public class GalleriesController(IGalleryRepository galleryRepo, Data.StashConte
             gallery.GalleryPerformers.Clear();
             gallery.GalleryPerformers = dto.PerformerIds.Select(pid => new GalleryPerformer { PerformerId = pid, GalleryId = id }).ToList();
         }
+        if (dto.SceneIds != null)
+        {
+            gallery.SceneGalleries.Clear();
+            gallery.SceneGalleries = dto.SceneIds.Select(sid => new SceneGallery { SceneId = sid, GalleryId = id }).ToList();
+        }
+        if (dto.CustomFields != null) gallery.CustomFields = dto.CustomFields;
 
         await galleryRepo.UpdateAsync(gallery, ct);
         var updated = await galleryRepo.GetByIdWithRelationsAsync(id, ct);
@@ -125,6 +134,11 @@ public class GalleriesController(IGalleryRepository galleryRepo, Data.StashConte
         g.GalleryPerformers.Where(gp => gp.Performer != null).Select(gp => new PerformerSummaryDto(gp.Performer!.Id, gp.Performer.Name, gp.Performer.Disambiguation, gp.Performer.Gender?.ToString(), gp.Performer.Favorite, gp.Performer.ImageBlobId != null ? $"/api/performers/{gp.Performer.Id}/image" : null)).ToList(),
         imageCount ?? g.ImageGalleries?.Count ?? 0,
         sceneCount ?? g.SceneGalleries?.Count ?? 0,
+        g.SceneGalleries?.Select(sg => sg.SceneId).ToList() ?? [],
+        g.Folder?.Path,
+        g.Files?.Select(f => new GalleryFileInfoDto(f.Id, f.Path, f.Size, f.ModTime.ToString("o"),
+            f.Fingerprints?.Select(fp => new FingerprintDto(fp.Type, fp.Value)).ToList() ?? [])).ToList() ?? [],
+        g.CustomFields,
         g.CreatedAt.ToString("o"), g.UpdatedAt.ToString("o")
     );
 
@@ -176,6 +190,7 @@ public class GalleriesController(IGalleryRepository galleryRepo, Data.StashConte
     // ===== Chapters =====
 
     [HttpGet("{id:int}/chapters")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<List<GalleryChapterDto>>> GetChapters(int id, CancellationToken ct)
     {
         var chapters = await db.GalleryChapters

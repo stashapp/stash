@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Stash.Core.DTOs;
 using Stash.Core.Entities;
@@ -12,6 +13,7 @@ namespace Stash.Api.Controllers;
 public class ImagesController(IImageRepository imageRepo, Data.StashContext db) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<ImageDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -49,6 +51,7 @@ public class ImagesController(IImageRepository imageRepo, Data.StashContext db) 
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<ImageDto>> GetById(int id, CancellationToken ct)
     {
         var image = await imageRepo.GetByIdWithRelationsAsync(id, ct);
@@ -113,6 +116,12 @@ public class ImagesController(IImageRepository imageRepo, Data.StashContext db) 
             image.ImagePerformers.Clear();
             image.ImagePerformers = dto.PerformerIds.Select(pid => new ImagePerformer { PerformerId = pid, ImageId = id }).ToList();
         }
+        if (dto.GalleryIds != null)
+        {
+            image.ImageGalleries.Clear();
+            image.ImageGalleries = dto.GalleryIds.Select(gid => new ImageGallery { GalleryId = gid, ImageId = id }).ToList();
+        }
+        if (dto.CustomFields != null) image.CustomFields = dto.CustomFields;
 
         await imageRepo.UpdateAsync(image, ct);
         var updated = await imageRepo.GetByIdWithRelationsAsync(id, ct);
@@ -136,6 +145,8 @@ public class ImagesController(IImageRepository imageRepo, Data.StashContext db) 
         i.ImageTags.Where(it => it.Tag != null).Select(it => new TagDto(it.Tag!.Id, it.Tag.Name, it.Tag.Description, it.Tag.Favorite, it.Tag.IgnoreAutoTag, [])).ToList(),
         i.ImagePerformers.Where(ip => ip.Performer != null).Select(ip => new PerformerSummaryDto(ip.Performer!.Id, ip.Performer.Name, ip.Performer.Disambiguation, ip.Performer.Gender?.ToString(), ip.Performer.Favorite, ip.Performer.ImageBlobId != null ? $"/api/performers/{ip.Performer.Id}/image" : null)).ToList(),
         galleryCount ?? i.ImageGalleries?.Count ?? 0,
+        i.ImageGalleries?.Select(ig => ig.GalleryId).ToList() ?? [],
+        i.CustomFields,
         i.CreatedAt.ToString("o"), i.UpdatedAt.ToString("o")
     );
 

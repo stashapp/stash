@@ -390,3 +390,16 @@ public class BaseFileEntityConfiguration : IEntityTypeConfiguration<BaseFileEnti
         builder.HasIndex(f => new { f.ParentFolderId, f.Basename }).IsUnique();
     }
 }
+
+public class ExtensionDataConfiguration : IEntityTypeConfiguration<ExtensionData>
+{
+    public void Configure(EntityTypeBuilder<ExtensionData> builder)
+    {
+        builder.ToTable("extension_data");
+        builder.HasKey(e => new { e.ExtensionId, e.Key });
+        builder.Property(e => e.ExtensionId).HasMaxLength(256);
+        builder.Property(e => e.Key).HasMaxLength(512);
+        builder.Property(e => e.Value).IsRequired();
+        builder.HasIndex(e => e.ExtensionId);
+    }
+}

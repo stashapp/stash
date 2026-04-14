@@ -70,9 +70,13 @@ html.theater-mode main { max-width: none !important; padding: 0 !important; }
 }
 
 /* Scene specs overlay — fade out on hover to avoid cluttering the preview */
-.scene-card:hover .scene-specs-overlay {
+.scene-card:hover .scene-specs-overlay,
+.scene-card:hover .rating-banner-container {
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.5s;
+}
+.rating-banner-container {
+  transition: opacity 0.5s;
 }
 
 /* Card zoom levels */

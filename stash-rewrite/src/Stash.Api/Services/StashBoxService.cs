@@ -429,7 +429,10 @@ query Me {
                             new { fingerprints = new[] { fingerprintQuery } },
                             ct);
 
-                        results.AddRange(fingerprintResponse.FindScenesBySceneFingerprints.SelectMany(batch => batch).Select(remote => ToSceneMatchDto(box, remote)));
+                        foreach (var remote in fingerprintResponse.FindScenesBySceneFingerprints.SelectMany(batch => batch))
+                        {
+                            results.Add(await ToSceneMatchDtoAsync(box, remote, ct));
+                        }
                         if (fingerprintResponse.FindScenesBySceneFingerprints.Any(batch => batch.Count > 0))
                             continue;
                     }
@@ -440,7 +443,10 @@ query Me {
                     continue;
 
                 var searchResponse = await SendQueryAsync<StashBoxSearchSceneResponse>(box, SearchSceneQuery, new { term = effectiveTerm }, ct);
-                results.AddRange(searchResponse.SearchScene.Select(remote => ToSceneMatchDto(box, remote)));
+                foreach (var remote in searchResponse.SearchScene)
+                {
+                    results.Add(await ToSceneMatchDtoAsync(box, remote, ct));
+                }
             }
             catch (Exception ex) when (!strictEndpoint)
             {
@@ -462,7 +468,7 @@ query Me {
     {
         var box = ResolveBox(endpoint);
         var scene = await GetRemoteSceneAsync(box, sceneId, ct);
-        return scene == null ? null : ToSceneMatchDto(box, scene);
+        return scene == null ? null : await ToSceneMatchDtoAsync(box, scene, ct);
     }
 
     public async Task<bool> MergeSceneAsync(Scene scene, string endpoint, string sceneId, StashBoxSceneImportRequestDto? importConfig, CancellationToken ct)
@@ -500,6 +506,9 @@ query Me {
         var markOrganized = importConfig?.MarkOrganized ?? false;
         var excludedTagNames = importConfig?.ExcludedTagNames?.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var excludedPerformerNames = importConfig?.ExcludedPerformerNames?.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var studioOverride = MatchSceneEntityOverride(importConfig?.StudioOverride, remote.Studio?.Id, remote.Studio?.Name);
+        var performerOverrides = importConfig?.PerformerOverrides;
+        var tagOverrides = importConfig?.TagOverrides;
 
         scene.Title = Coalesce(scene.Title, remote.Title) ?? scene.Title;
         scene.Code = Coalesce(scene.Code, remote.Code) ?? scene.Code;
@@ -512,7 +521,7 @@ query Me {
 
         if (setStudio && remote.Studio != null)
         {
-            var studio = await FindOrCreateStudioAsync(remote.Studio, endpoint, ct, allowCreate: !onlyExistingStudio);
+            var studio = await ResolveSceneStudioAsync(remote.Studio, endpoint, studioOverride, ct, allowCreate: !onlyExistingStudio);
             if (studio != null)
             {
                 scene.Studio = studio;
@@ -524,9 +533,12 @@ query Me {
         {
             foreach (var remoteTag in remote.Tags)
             {
-                if (excludedTagNames != null && excludedTagNames.Contains(remoteTag.Name))
+                var tagOverride = MatchSceneEntityOverride(tagOverrides, remoteTag.Id, remoteTag.Name);
+                if (GetSceneEntityOverrideAction(tagOverride) == SceneEntityOverrideAction.Skip)
                     continue;
-                var tag = await FindOrCreateTagAsync(remoteTag, endpoint, ct, allowCreate: !onlyExistingTags);
+                if (tagOverride == null && excludedTagNames != null && excludedTagNames.Contains(remoteTag.Name))
+                    continue;
+                var tag = await ResolveSceneTagAsync(remoteTag, endpoint, tagOverride, ct, allowCreate: !onlyExistingTags);
                 if (tag == null)
                     continue;
                 if (!scene.SceneTags.Any(link => link.TagId == tag.Id))
@@ -540,9 +552,12 @@ query Me {
         {
             foreach (var remotePerformer in remote.Performers.Select(appearance => appearance.Performer).OfType<StashBoxRemotePerformer>())
             {
-                if (excludedPerformerNames != null && remotePerformer.Name != null && excludedPerformerNames.Contains(remotePerformer.Name))
+                var performerOverride = MatchSceneEntityOverride(performerOverrides, remotePerformer.Id, remotePerformer.Name);
+                if (GetSceneEntityOverrideAction(performerOverride) == SceneEntityOverrideAction.Skip)
                     continue;
-                var performer = await FindOrCreatePerformerAsync(remotePerformer, endpoint, ct, allowCreate: !onlyExistingPerformers);
+                if (performerOverride == null && excludedPerformerNames != null && remotePerformer.Name != null && excludedPerformerNames.Contains(remotePerformer.Name))
+                    continue;
+                var performer = await ResolveScenePerformerAsync(remotePerformer, endpoint, performerOverride, ct, allowCreate: !onlyExistingPerformers);
                 if (performer == null)
                     continue;
                 if (!scene.ScenePerformers.Any(link => link.PerformerId == performer.Id))
@@ -567,6 +582,97 @@ query Me {
         {
             stashId.StashId = remote.Id;
         }
+    }
+
+    private async Task<Performer?> ResolveScenePerformerAsync(
+        StashBoxRemotePerformer remote,
+        string endpoint,
+        StashBoxSceneEntityOverrideDto? entityOverride,
+        CancellationToken ct,
+        bool allowCreate)
+    {
+        return GetSceneEntityOverrideAction(entityOverride) switch
+        {
+            SceneEntityOverrideAction.Skip => null,
+            SceneEntityOverrideAction.Existing when entityOverride?.LocalId is int localId => await _db.Performers.FirstOrDefaultAsync(performer => performer.Id == localId, ct),
+            SceneEntityOverrideAction.Create => await FindOrCreatePerformerAsync(remote, endpoint, ct, allowCreate: true),
+            _ => await FindOrCreatePerformerAsync(remote, endpoint, ct, allowCreate: allowCreate),
+        };
+    }
+
+    private async Task<Studio?> ResolveSceneStudioAsync(
+        StashBoxRemoteStudio remote,
+        string endpoint,
+        StashBoxSceneEntityOverrideDto? entityOverride,
+        CancellationToken ct,
+        bool allowCreate)
+    {
+        return GetSceneEntityOverrideAction(entityOverride) switch
+        {
+            SceneEntityOverrideAction.Skip => null,
+            SceneEntityOverrideAction.Existing when entityOverride?.LocalId is int localId => await _db.Studios.FirstOrDefaultAsync(studio => studio.Id == localId, ct),
+            SceneEntityOverrideAction.Create => await FindOrCreateStudioAsync(remote, endpoint, ct, allowCreate: true),
+            _ => await FindOrCreateStudioAsync(remote, endpoint, ct, allowCreate: allowCreate),
+        };
+    }
+
+    private async Task<Tag?> ResolveSceneTagAsync(
+        StashBoxRemoteTag remote,
+        string endpoint,
+        StashBoxSceneEntityOverrideDto? entityOverride,
+        CancellationToken ct,
+        bool allowCreate)
+    {
+        return GetSceneEntityOverrideAction(entityOverride) switch
+        {
+            SceneEntityOverrideAction.Skip => null,
+            SceneEntityOverrideAction.Existing when entityOverride?.LocalId is int localId => await _db.Tags.FirstOrDefaultAsync(tag => tag.Id == localId, ct),
+            SceneEntityOverrideAction.Create => await FindOrCreateTagAsync(remote, endpoint, ct, allowCreate: true),
+            _ => await FindOrCreateTagAsync(remote, endpoint, ct, allowCreate: allowCreate),
+        };
+    }
+
+    private static StashBoxSceneEntityOverrideDto? MatchSceneEntityOverride(
+        IEnumerable<StashBoxSceneEntityOverrideDto>? overrides,
+        string? remoteId,
+        string? name)
+    {
+        if (overrides == null)
+            return null;
+
+        return overrides.FirstOrDefault(entityOverride =>
+            (!string.IsNullOrWhiteSpace(remoteId) && string.Equals(entityOverride.RemoteId, remoteId, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrWhiteSpace(name) && string.Equals(entityOverride.Name, name, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static StashBoxSceneEntityOverrideDto? MatchSceneEntityOverride(
+        StashBoxSceneEntityOverrideDto? entityOverride,
+        string? remoteId,
+        string? name)
+    {
+        if (entityOverride == null)
+            return null;
+
+        return MatchSceneEntityOverride(new[] { entityOverride }, remoteId, name);
+    }
+
+    private static SceneEntityOverrideAction GetSceneEntityOverrideAction(StashBoxSceneEntityOverrideDto? entityOverride)
+    {
+        return entityOverride?.Action.Trim().ToLowerInvariant() switch
+        {
+            "skip" => SceneEntityOverrideAction.Skip,
+            "create" => SceneEntityOverrideAction.Create,
+            "existing" => SceneEntityOverrideAction.Existing,
+            _ => SceneEntityOverrideAction.Auto,
+        };
+    }
+
+    private enum SceneEntityOverrideAction
+    {
+        Auto,
+        Skip,
+        Create,
+        Existing,
     }
 
     private void ApplyRemotePerformer(Performer performer, string endpoint, StashBoxRemotePerformer remote)
@@ -955,8 +1061,12 @@ query Me {
         );
     }
 
-    private static StashBoxSceneMatchDto ToSceneMatchDto(StashBoxInstance box, StashBoxRemoteScene scene)
+    private async Task<StashBoxSceneMatchDto> ToSceneMatchDtoAsync(StashBoxInstance box, StashBoxRemoteScene scene, CancellationToken ct)
     {
+        var studioCandidate = await BuildStudioCandidateAsync(box.Endpoint, scene.Studio, ct);
+        var performerCandidates = await BuildPerformerCandidatesAsync(box.Endpoint, scene, ct);
+        var tagCandidates = await BuildTagCandidatesAsync(box.Endpoint, scene, ct);
+
         return new StashBoxSceneMatchDto(
             Endpoint: box.Endpoint,
             StashBoxName: string.IsNullOrWhiteSpace(box.Name) ? box.Endpoint : box.Name,
@@ -969,16 +1079,128 @@ query Me {
             StudioName: scene.Studio?.Name,
             ImageUrl: scene.Images.FirstOrDefault()?.Url,
             Duration: scene.Duration,
-            PerformerNames: scene.Performers
-                .Select(appearance => appearance.Performer?.Name)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Select(name => name!)
-                .ToList(),
-            TagNames: scene.Tags.Select(tag => tag.Name).ToList(),
+            PerformerNames: performerCandidates.Select(candidate => candidate.Name).ToList(),
+            TagNames: tagCandidates.Select(candidate => candidate.Name).ToList(),
             Urls: scene.Urls.Select(url => url.Url).Where(url => !string.IsNullOrWhiteSpace(url)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
             FingerprintAlgorithms: scene.Fingerprints.Select(fingerprint => fingerprint.Algorithm).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
-            Fingerprints: scene.Fingerprints.Select(fp => new StashBoxFingerprintDto(fp.Algorithm, fp.Hash, fp.Duration)).ToList()
+            Fingerprints: scene.Fingerprints.Select(fp => new StashBoxFingerprintDto(fp.Algorithm, fp.Hash, fp.Duration)).ToList(),
+            StudioCandidate: studioCandidate,
+            PerformerCandidates: performerCandidates,
+            TagCandidates: tagCandidates
         );
+    }
+
+    private async Task<StashBoxEntityCandidateDto?> BuildStudioCandidateAsync(string endpoint, StashBoxRemoteStudio? remoteStudio, CancellationToken ct)
+    {
+        if (remoteStudio == null || string.IsNullOrWhiteSpace(remoteStudio.Name))
+            return null;
+
+        var localId = await _db.Studios
+            .Where(studio => studio.Name == remoteStudio.Name || studio.StashIds.Any(stashId => stashId.Endpoint == endpoint && stashId.StashId == remoteStudio.Id))
+            .Select(studio => (int?)studio.Id)
+            .FirstOrDefaultAsync(ct);
+
+        return new StashBoxEntityCandidateDto(remoteStudio.Id, remoteStudio.Name.Trim(), localId.HasValue, localId);
+    }
+
+    private async Task<List<StashBoxEntityCandidateDto>> BuildPerformerCandidatesAsync(string endpoint, StashBoxRemoteScene scene, CancellationToken ct)
+    {
+        var remotePerformers = scene.Performers
+            .Select(appearance => appearance.Performer)
+            .OfType<StashBoxRemotePerformer>()
+            .Where(performer => !string.IsNullOrWhiteSpace(performer.Name))
+            .GroupBy(performer => performer.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
+
+        if (remotePerformers.Count == 0)
+            return [];
+
+        var remoteIds = remotePerformers.Select(performer => performer.Id).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var remoteNames = remotePerformers.Select(performer => performer.Name.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        var matchedByStashId = remoteIds.Count == 0
+            ? []
+            : await _db.Performers
+                .SelectMany(performer => performer.StashIds
+                    .Where(stashId => stashId.Endpoint == endpoint && remoteIds.Contains(stashId.StashId))
+                    .Select(stashId => new { stashId.StashId, PerformerId = performer.Id }))
+                .ToListAsync(ct);
+
+        var matchedByName = remoteNames.Count == 0
+            ? []
+            : await _db.Performers
+                .Where(performer => remoteNames.Contains(performer.Name))
+                .Select(performer => new { performer.Name, performer.Id })
+                .ToListAsync(ct);
+
+        var idsByStashId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var match in matchedByStashId)
+        {
+            idsByStashId.TryAdd(match.StashId, match.PerformerId);
+        }
+
+        var idsByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var match in matchedByName)
+        {
+            idsByName.TryAdd(match.Name, match.Id);
+        }
+
+        return remotePerformers.Select(remotePerformer =>
+        {
+            var name = remotePerformer.Name.Trim();
+            var exists = idsByStashId.TryGetValue(remotePerformer.Id, out var localId) || idsByName.TryGetValue(name, out localId);
+            return new StashBoxEntityCandidateDto(remotePerformer.Id, name, exists, exists ? localId : null);
+        }).ToList();
+    }
+
+    private async Task<List<StashBoxEntityCandidateDto>> BuildTagCandidatesAsync(string endpoint, StashBoxRemoteScene scene, CancellationToken ct)
+    {
+        var remoteTags = scene.Tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag.Name))
+            .GroupBy(tag => tag.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
+
+        if (remoteTags.Count == 0)
+            return [];
+
+        var remoteIds = remoteTags.Select(tag => tag.Id).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var remoteNames = remoteTags.Select(tag => tag.Name.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        var matchedByStashId = remoteIds.Count == 0
+            ? []
+            : await _db.Tags
+                .SelectMany(tag => tag.StashIds
+                    .Where(stashId => stashId.Endpoint == endpoint && remoteIds.Contains(stashId.StashId))
+                    .Select(stashId => new { stashId.StashId, TagId = tag.Id }))
+                .ToListAsync(ct);
+
+        var matchedByName = remoteNames.Count == 0
+            ? []
+            : await _db.Tags
+                .Where(tag => remoteNames.Contains(tag.Name))
+                .Select(tag => new { tag.Name, tag.Id })
+                .ToListAsync(ct);
+
+        var idsByStashId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var match in matchedByStashId)
+        {
+            idsByStashId.TryAdd(match.StashId, match.TagId);
+        }
+
+        var idsByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var match in matchedByName)
+        {
+            idsByName.TryAdd(match.Name, match.Id);
+        }
+
+        return remoteTags.Select(remoteTag =>
+        {
+            var name = remoteTag.Name.Trim();
+            var exists = idsByStashId.TryGetValue(remoteTag.Id, out var localId) || idsByName.TryGetValue(name, out localId);
+            return new StashBoxEntityCandidateDto(remoteTag.Id, name, exists, exists ? localId : null);
+        }).ToList();
     }
 
     private static List<object> BuildFingerprintQuery(Scene scene)

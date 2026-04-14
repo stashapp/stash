@@ -237,11 +237,26 @@ function TagCard({ tag, onClick, selected, onSelect, selecting }: { tag: Tag; on
           <p className="text-xs text-plex-text-secondary mt-0.5 line-clamp-1">{tag.description}</p>
         )}
       </div>
-      {(tag.sceneCount || tag.sceneMarkerCount) && (
-        <div className="flex items-center justify-center gap-2 px-2 pb-2 border-t border-plex-border pt-1.5">
+      {(tag.sceneCount || tag.sceneMarkerCount || tag.imageCount || tag.galleryCount || tag.groupCount || tag.performerCount || tag.studioCount) ? (
+        <div className="flex items-center justify-center gap-2 px-2 pb-2 border-t border-plex-border pt-1.5 flex-wrap">
           {tag.sceneCount != null && tag.sceneCount > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Scenes">
               <Film className="w-3 h-3" /> {tag.sceneCount}
+            </span>
+          )}
+          {tag.imageCount != null && tag.imageCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Images">
+              <Image className="w-3 h-3" /> {tag.imageCount}
+            </span>
+          )}
+          {tag.galleryCount != null && tag.galleryCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Galleries">
+              <LayoutGrid className="w-3 h-3" /> {tag.galleryCount}
+            </span>
+          )}
+          {tag.groupCount != null && tag.groupCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Groups">
+              <Layers className="w-3 h-3" /> {tag.groupCount}
             </span>
           )}
           {tag.sceneMarkerCount != null && tag.sceneMarkerCount > 0 && (
@@ -249,8 +264,18 @@ function TagCard({ tag, onClick, selected, onSelect, selecting }: { tag: Tag; on
               <MapPin className="w-3 h-3" /> {tag.sceneMarkerCount}
             </span>
           )}
+          {tag.performerCount != null && tag.performerCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Performers">
+              <Users className="w-3 h-3" /> {tag.performerCount}
+            </span>
+          )}
+          {tag.studioCount != null && tag.studioCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Studios">
+              <Building2 className="w-3 h-3" /> {tag.studioCount}
+            </span>
+          )}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

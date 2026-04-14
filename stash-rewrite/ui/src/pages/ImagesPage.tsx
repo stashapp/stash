@@ -5,7 +5,7 @@ import type { FindFilter, Image, ImageFilterCriteria } from "../api/types";
 import { ListPage, type DisplayMode } from "../components/ListPage";
 import { RatingBanner } from "../components/Rating";
 import { useMultiSelect } from "../hooks/useMultiSelect";
-import { ImageIcon, Users, Tag, Trash2, Loader2, Check, Edit, Box, Heart } from "lucide-react";
+import { ImageIcon, Users, Tag, Trash2, Loader2, Check, Edit, Box, Heart, FolderOpen } from "lucide-react";
 import { IMAGE_CRITERIA } from "../components/FilterDialog";
 import { BulkEditDialog, IMAGE_BULK_FIELDS } from "../components/BulkEditDialog";
 import { Lightbox, type LightboxImage } from "../components/Lightbox";
@@ -208,21 +208,26 @@ function ImageCard({ image, onPreview, onDetails, selected, onSelect, selecting 
           {image.title || "Untitled"}
         </p>
       </div>
-      {(image.performers.length > 0 || image.tags.length > 0 || image.oCounter > 0 || image.organized) && (
+      {(image.performers.length > 0 || image.tags.length > 0 || image.oCounter > 0 || image.galleryCount > 0 || image.organized) && (
         <div className="flex items-center justify-center gap-1 px-1.5 pb-1.5 border-t border-plex-border pt-1">
-          {image.performers.length > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-plex-text-muted">
-              <Users className="w-2.5 h-2.5" /> {image.performers.length}
-            </span>
-          )}
           {image.tags.length > 0 && (
             <span className="flex items-center gap-0.5 text-[10px] text-plex-text-muted">
               <Tag className="w-2.5 h-2.5" /> {image.tags.length}
             </span>
           )}
+          {image.performers.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] text-plex-text-muted">
+              <Users className="w-2.5 h-2.5" /> {image.performers.length}
+            </span>
+          )}
           {image.oCounter > 0 && (
             <span className="flex items-center gap-0.5 text-[10px] text-plex-text-muted" title="O-counter">
               <Heart className="w-2.5 h-2.5" /> {image.oCounter}
+            </span>
+          )}
+          {image.galleryCount > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] text-plex-text-muted" title="Galleries">
+              <FolderOpen className="w-2.5 h-2.5" /> {image.galleryCount}
             </span>
           )}
           {image.organized && (

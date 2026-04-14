@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Stash.Api.Services;
 using Stash.Core.DTOs;
 using Stash.Core.Interfaces;
@@ -26,6 +27,7 @@ public class SystemController(
     }
 
     [HttpGet("stats")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<StatsDto>> GetStats(CancellationToken ct)
     {
         var sceneCt = await sceneRepo.CountAsync(ct);

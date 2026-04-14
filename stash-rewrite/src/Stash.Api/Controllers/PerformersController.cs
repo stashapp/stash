@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Stash.Api.Services;
 using Stash.Core.DTOs;
@@ -13,6 +14,7 @@ namespace Stash.Api.Controllers;
 public class PerformersController(IPerformerRepository performerRepo, StashBoxService stashBoxService, Data.StashContext db) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<PerformerDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -43,6 +45,7 @@ public class PerformersController(IPerformerRepository performerRepo, StashBoxSe
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PerformerDto>> GetById(int id, CancellationToken ct)
     {
         var performer = await performerRepo.GetByIdWithRelationsAsync(id, ct);
@@ -120,6 +123,7 @@ public class PerformersController(IPerformerRepository performerRepo, StashBoxSe
             p.PerformerTags.Clear();
             p.PerformerTags = dto.TagIds.Select(tid => new PerformerTag { TagId = tid, PerformerId = id }).ToList();
         }
+        if (dto.CustomFields != null) p.CustomFields = dto.CustomFields;
 
         await performerRepo.UpdateAsync(p, ct);
         var updated = await performerRepo.GetByIdWithRelationsAsync(id, ct);
@@ -127,6 +131,7 @@ public class PerformersController(IPerformerRepository performerRepo, StashBoxSe
     }
 
     [HttpGet("{id:int}/stash-box/search")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<IReadOnlyList<StashBoxPerformerMatchDto>>> SearchStashBox(int id, [FromQuery] string? term, [FromQuery] string? endpoint, CancellationToken ct)
     {
         var performer = await performerRepo.GetByIdWithRelationsAsync(id, ct);
@@ -187,6 +192,7 @@ public class PerformersController(IPerformerRepository performerRepo, StashBoxSe
         p.StashIds.Select(stashId => new PerformerStashIdDto(stashId.Endpoint, stashId.StashId)).ToList(),
         p.ScenePerformers?.Count ?? 0, p.ImagePerformers?.Count ?? 0, p.GalleryPerformers?.Count ?? 0, 0,
         p.ImageBlobId != null ? $"/api/performers/{p.Id}/image" : null,
+        p.CustomFields,
         p.CreatedAt.ToString("o"), p.UpdatedAt.ToString("o")
     );
 

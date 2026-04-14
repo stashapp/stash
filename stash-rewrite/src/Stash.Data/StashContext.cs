@@ -23,6 +23,9 @@ public class StashContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
 
+    // Extensions
+    public DbSet<ExtensionData> ExtensionData => Set<ExtensionData>();
+
     // Files & Folders
     public DbSet<Folder> Folders => Set<Folder>();
     public DbSet<VideoFile> VideoFiles => Set<VideoFile>();

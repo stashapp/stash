@@ -5,6 +5,7 @@ import type { Studio, StudioUpdate, Tag } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { ImageInput } from "../components/ImageInput";
 import { RatingField } from "../components/Rating";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface Props {
   studio: Studio;
@@ -28,6 +29,9 @@ export function StudioEditModal({ studio, open, onClose }: Props) {
 
   // Tag search
   const [tagSearch, setTagSearch] = useState("");
+  const [customFields, setCustomFields] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(studio.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")]))
+  );
   const { data: allTags } = useQuery({
     queryKey: ["tags-all"],
     queryFn: () => tagsApi.find({ perPage: 500, sort: "name", direction: "asc" }),
@@ -50,6 +54,7 @@ export function StudioEditModal({ studio, open, onClose }: Props) {
     setAliases(studio.aliases.join("\n"));
     setParentId(studio.parentId ?? undefined);
     setSelectedTagIds(studio.tags.map((t) => t.id));
+    setCustomFields(Object.fromEntries(Object.entries(studio.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")])));
   }, [studio]);
 
   const mutation = useMutation({
@@ -75,6 +80,7 @@ export function StudioEditModal({ studio, open, onClose }: Props) {
       urls: urlList,
       aliases: aliasList,
       tagIds: selectedTagIds,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   };
 
@@ -180,6 +186,10 @@ export function StudioEditModal({ studio, open, onClose }: Props) {
             ))}
           </div>
         )}
+      </Field>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={customFields} onChange={setCustomFields} />
       </Field>
 
       </div></div>

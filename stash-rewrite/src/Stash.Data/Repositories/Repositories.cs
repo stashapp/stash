@@ -284,7 +284,11 @@ public class GalleryRepository : IGalleryRepository
             .Include(g => g.Studio).Include(g => g.Urls)
             .Include(g => g.GalleryTags).ThenInclude(gt => gt.Tag)
             .Include(g => g.GalleryPerformers).ThenInclude(gp => gp.Performer)
-            .Include(g => g.Chapters).Include(g => g.Files)
+            .Include(g => g.Chapters)
+            .Include(g => g.Files).ThenInclude(f => f.ParentFolder)
+            .Include(g => g.Files).ThenInclude(f => f.Fingerprints)
+            .Include(g => g.Folder)
+            .Include(g => g.SceneGalleries)
             .AsSplitQuery()
             .FirstOrDefaultAsync(g => g.Id == id, ct);
 
@@ -353,6 +357,7 @@ public class ImageRepository : IImageRepository
             .Include(i => i.Studio).Include(i => i.Urls)
             .Include(i => i.ImageTags).ThenInclude(it => it.Tag)
             .Include(i => i.ImagePerformers).ThenInclude(ip => ip.Performer)
+            .Include(i => i.ImageGalleries)
             .Include(i => i.Files)
             .AsSplitQuery()
             .FirstOrDefaultAsync(i => i.Id == id, ct);

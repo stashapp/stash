@@ -4,6 +4,8 @@ import { Navbar } from "./components/Navbar";
 import { KeyboardShortcutsDialog } from "./components/KeyboardShortcutsDialog";
 import { RouteRegistryProvider, useRouteRegistry } from "./router/RouteRegistry";
 import { AppConfigProvider, useAppConfig } from "./state/AppConfigContext";
+import { ExtensionLoaderProvider, useExtensions } from "./extensions/ExtensionLoader";
+import { SceneQueueProvider } from "./state/SceneQueueContext";
 import { SetupWizardPage } from "./pages/SetupWizardPage";
 import { useKeySequence } from "./hooks/useKeySequence";
 
@@ -118,8 +120,12 @@ export default function App() {
   return (
     <RouteRegistryProvider>
       <AppConfigProvider>
-        <AppShell route={route} navigate={navigate} />
-        <KeyboardShortcutsDialog open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+        <ExtensionLoaderProvider>
+          <SceneQueueProvider>
+            <AppShell route={route} navigate={navigate} />
+            <KeyboardShortcutsDialog open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+          </SceneQueueProvider>
+        </ExtensionLoaderProvider>
       </AppConfigProvider>
     </RouteRegistryProvider>
   );
@@ -155,7 +161,7 @@ function AppShell({ route, navigate }: { route: Route; navigate: (r: Route) => v
   return (
     <div className="min-h-screen bg-plex-bg text-plex-text">
       <Navbar currentPage={route.page} navigate={navigate} />
-      <main className="max-w-[1800px] mx-auto px-6 py-5">
+      <main className="w-full px-6 py-5">
         <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-plex-accent"></div></div>}>
           <AppRoutes route={route} navigate={navigate} />
         </Suspense>
@@ -166,14 +172,32 @@ function AppShell({ route, navigate }: { route: Route; navigate: (r: Route) => v
 
 function AppRoutes({ route, navigate }: { route: Route; navigate: (r: Route) => void }) {
   const { routes } = useRouteRegistry();
+  const { getPageOverride, resolveComponent, manifest } = useExtensions();
 
-  // Check extension routes first (list view)
+  // 1. Check for page overrides (extension replaces a built-in page)
+  const override = getPageOverride(route.page);
+  if (override) {
+    const Component = resolveComponent(override.componentName);
+    if (Component) {
+      return <Component onNavigate={navigate} />;
+    }
+  }
+
+  // 2. Check extension-contributed pages (new pages via UIPageDefinition)
+  const extPage = manifest?.pages.find((p) => p.route === route.page);
+  if (extPage?.componentName) {
+    const Component = resolveComponent(extPage.componentName);
+    if (Component) {
+      return <Component onNavigate={navigate} />;
+    }
+  }
+
+  // 3. Check route registry (legacy extension routes)
   const extRoute = routes.find((r) => r.page === route.page);
   if (extRoute?.component) {
     const Comp = extRoute.component;
     return <Comp onNavigate={navigate} />;
   }
-  // Check extension detail routes
   if ("id" in route && route.id !== undefined) {
     const extDetail = routes.find((r) => r.page === route.page);
     if (extDetail?.detailComponent) {
@@ -182,6 +206,7 @@ function AppRoutes({ route, navigate }: { route: Route; navigate: (r: Route) => 
     }
   }
 
+  // 4. Built-in pages
   return (
     <>
       {route.page === "home" && <HomePage onNavigate={navigate} />}

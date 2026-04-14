@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { images, tags as tagsApi, performers as performersApi, studios as studiosApi } from "../api/client";
+import { images, tags as tagsApi, performers as performersApi, studios as studiosApi, galleries as galleriesApi } from "../api/client";
 import type { Image, ImageCreate } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { RatingField } from "../components/Rating";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface ImageEditProps {
   image: Image;
@@ -29,6 +30,8 @@ interface ImageFormState {
   studioId: number | undefined;
   selectedTagIds: number[];
   selectedPerformerIds: number[];
+  selectedGalleryIds: number[];
+  customFields: Record<string, string>;
 }
 
 interface ImageMetadataModalProps {
@@ -54,6 +57,8 @@ const EMPTY_FORM_STATE: ImageFormState = {
   studioId: undefined,
   selectedTagIds: [],
   selectedPerformerIds: [],
+  selectedGalleryIds: [],
+  customFields: {},
 };
 
 function toFormState(image?: Image): ImageFormState {
@@ -77,6 +82,8 @@ function toFormState(image?: Image): ImageFormState {
     studioId: image.studioId ?? undefined,
     selectedTagIds: image.tags.map((tag) => tag.id),
     selectedPerformerIds: image.performers.map((performer) => performer.id),
+    selectedGalleryIds: image.galleryIds ?? [],
+    customFields: Object.fromEntries(Object.entries(image.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")])),
   };
 }
 
@@ -85,6 +92,8 @@ function cloneFormState(state: ImageFormState): ImageFormState {
     ...state,
     selectedTagIds: [...state.selectedTagIds],
     selectedPerformerIds: [...state.selectedPerformerIds],
+    selectedGalleryIds: [...state.selectedGalleryIds],
+    customFields: { ...state.customFields },
   };
 }
 
@@ -92,6 +101,7 @@ function ImageMetadataModal({ title, open, onClose, initialState, onSubmit, isPe
   const [form, setForm] = useState<ImageFormState>(() => cloneFormState(initialState));
   const [tagSearch, setTagSearch] = useState("");
   const [perfSearch, setPerfSearch] = useState("");
+  const [gallerySearch, setGallerySearch] = useState("");
 
   const { data: allTags } = useQuery({
     queryKey: ["tags-all"],
@@ -111,11 +121,18 @@ function ImageMetadataModal({ title, open, onClose, initialState, onSubmit, isPe
     enabled: open,
   });
 
+  const { data: allGalleries } = useQuery({
+    queryKey: ["galleries-all"],
+    queryFn: () => galleriesApi.find({ perPage: 500, sort: "title", direction: "asc" }),
+    enabled: open,
+  });
+
   useEffect(() => {
     if (!open) return;
     setForm(cloneFormState(initialState));
     setTagSearch("");
     setPerfSearch("");
+    setGallerySearch("");
   }, [initialState, open]);
 
   const handleSave = () => {
@@ -132,6 +149,8 @@ function ImageMetadataModal({ title, open, onClose, initialState, onSubmit, isPe
       urls: urlList,
       tagIds: form.selectedTagIds,
       performerIds: form.selectedPerformerIds,
+      galleryIds: form.selectedGalleryIds,
+      customFields: Object.keys(form.customFields).length > 0 ? form.customFields : undefined,
     });
   };
 
@@ -255,10 +274,53 @@ function ImageMetadataModal({ title, open, onClose, initialState, onSubmit, isPe
         )}
       </Field>
 
+      {/* Galleries */}
+      <Field label="Galleries">
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {form.selectedGalleryIds.map((gid) => {
+            const g = allGalleries?.items.find((gal) => gal.id === gid);
+            return (
+              <span key={gid} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-300">
+                {g?.title || `Gallery #${gid}`}
+                <button onClick={() => setForm({ ...form, selectedGalleryIds: form.selectedGalleryIds.filter((id) => id !== gid) })} className="hover:text-white">×</button>
+              </span>
+            );
+          })}
+        </div>
+        <input
+          type="text"
+          value={gallerySearch}
+          onChange={(e) => setGallerySearch(e.target.value)}
+          placeholder="Search galleries..."
+          className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500 mb-1"
+        />
+        {gallerySearch && (allGalleries?.items.filter(
+          (g) => !form.selectedGalleryIds.includes(g.id) && (g.title || "").toLowerCase().includes(gallerySearch.toLowerCase())
+        ) ?? []).length > 0 && (
+          <div className="max-h-32 overflow-y-auto bg-gray-800 rounded border border-gray-700">
+            {(allGalleries?.items.filter(
+              (g) => !form.selectedGalleryIds.includes(g.id) && (g.title || "").toLowerCase().includes(gallerySearch.toLowerCase())
+            ) ?? []).slice(0, 10).map((g) => (
+              <button
+                key={g.id}
+                onClick={() => { setForm({ ...form, selectedGalleryIds: [...form.selectedGalleryIds, g.id] }); setGallerySearch(""); }}
+                className="block w-full text-left px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700"
+              >
+                {g.title || "Untitled"}
+              </button>
+            ))}
+          </div>
+        )}
+      </Field>
+
       <label className="flex items-center gap-2 text-sm text-gray-300 mb-4 cursor-pointer">
         <input type="checkbox" checked={form.organized} onChange={(e) => setForm({ ...form, organized: e.target.checked })} className="rounded border-gray-600 bg-gray-800" />
         Organized
       </label>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={form.customFields} onChange={(v) => setForm({ ...form, customFields: v })} />
+      </Field>
 
       {error && (
         <div className="bg-red-900/50 border border-red-700 text-red-300 rounded p-2 mb-4 text-sm">

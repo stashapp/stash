@@ -1,38 +1,48 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { scenes, tags, entityImages, performers as performersApi, studios as studiosApi, galleries as galleriesApi, groups as groupsApi } from "../api/client";
-import { formatDuration, formatFileSize, formatDate, TagBadge, getResolutionLabel } from "../components/shared";
+import { scenes, tags, entityImages, performers as performersApi, studios as studiosApi, galleries as galleriesApi, groups as groupsApi, metadata } from "../api/client";
+import { formatDuration, formatFileSize, formatDate, TagBadge, getResolutionLabel, CustomFieldsDisplay } from "../components/shared";
 import { 
   Pencil, Plus, Trash2, Search, Eye, Heart, 
   Check, ChevronLeft, ChevronRight, MoreVertical, PanelLeftClose, PanelLeft,
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
-  SkipBack, SkipForward, Gauge, Clapperboard, Monitor, FolderOpen, Layers
+  SkipBack, SkipForward, Gauge, Clapperboard, Monitor, FolderOpen, Layers,
+  RefreshCw, Camera, Image, Merge, Upload, ExternalLink,
+  PictureInPicture2, Repeat
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, Fragment, useMemo } from "react";
 import { SceneEditModal } from "./SceneEditModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { GenerateDialog } from "../components/GenerateDialog";
+import { DetailMergeDialog } from "../components/DetailMergeDialog";
 import type { Scene, SceneMarkerCreate, SceneUpdate } from "../api/types";
 import { ExtensionSlot } from "../router/RouteRegistry";
 import { InteractiveRating, RatingField } from "../components/Rating";
+import { useSceneQueue } from "../state/SceneQueueContext";
+import { useAppConfig } from "../state/AppConfigContext";
+import { useExtensions } from "../extensions/ExtensionLoader";
 
 interface Props {
   id: number;
   onNavigate: (r: any) => void;
 }
 
-type TabKey = "details" | "groups" | "galleries" | "markers" | "filters" | "file-info" | "edit" | "history";
+type TabKey = "details" | "groups" | "galleries" | "markers" | "filters" | "file-info" | "edit" | "history" | string;
 
 export function SceneDetailPage({ id, onNavigate }: Props) {
   const { data: scene, isLoading } = useQuery({
     queryKey: ["scene", id],
     queryFn: () => scenes.get(id),
   });
+  const { config } = useAppConfig();
+  const { hasPrev, hasNext, prevId, nextId, currentPosition, queueLength } = useSceneQueue();
+  const { getTabsForPage, resolveComponent: resolveExtComponent } = useExtensions();
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
   const [theaterMode, setTheaterMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showOpsMenu, setShowOpsMenu] = useState(false);
+  const [showMerge, setShowMerge] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("details");
   const queryClient = useQueryClient();
   const seekRef = useRef<((time: number) => void) | null>(null);
@@ -68,6 +78,8 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
         case "i": setActiveTab("file-info"); break;
         case "h": setActiveTab("history"); break;
         case "o": if (scene) incrementOMut.mutate(); break;
+        case "[": if (hasPrev && prevId != null) onNavigate({ page: "scene", id: prevId }); break;
+        case "]": if (hasNext && nextId != null) onNavigate({ page: "scene", id: nextId }); break;
       }
     };
     window.addEventListener("keydown", handler);
@@ -121,6 +133,15 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["scene", id] }),
   });
 
+  const generateScreenshotMut = useMutation({
+    mutationFn: (atSeconds?: number) => scenes.generateScreenshot(id, atSeconds),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["scene", id] }),
+  });
+
+  const rescanMut = useMutation({
+    mutationFn: () => scenes.rescan(id),
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -143,6 +164,8 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
     { key: "filters", label: "Filters" },
     { key: "file-info", label: `File Info${scene.files.length > 1 ? ` (${scene.files.length})` : ""}` },
     { key: "history", label: "History" },
+    // Extension-contributed tabs
+    ...getTabsForPage("scene").map((t) => ({ key: `ext:${t.key}` as TabKey, label: t.label })),
     { key: "edit", label: "Edit" },
   ];
 
@@ -164,14 +187,31 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
         sceneIds={[id]}
         title={`Generate for "${scene.title || "Untitled"}"`}
       />
+      <DetailMergeDialog
+        open={showMerge}
+        onClose={() => setShowMerge(false)}
+        entityType="scene"
+        targetItem={{ id: scene.id, name: scene.title || file?.basename || `Scene ${scene.id}`, imagePath: scenes.screenshotUrl(scene.id), subtitle: scene.studioName }}
+        searchItems={async (term) => {
+          const response = await scenes.find({ page: 1, perPage: 20, direction: "desc", q: term || undefined });
+          return response.items.map((item) => ({
+            id: item.id,
+            name: item.title || item.files[0]?.basename || `Scene ${item.id}`,
+            imagePath: scenes.screenshotUrl(item.id),
+            subtitle: item.studioName,
+          }));
+        }}
+        onMerge={(targetId, sourceIds) => scenes.merge(targetId, sourceIds)}
+        invalidateQueryKeys={[["scene", id], ["scenes"]]}
+      />
 
       {/* Stash-style layout: left sidebar + right video */}
       <div className={theaterMode ? "flex flex-col" : "flex flex-col xl:flex-row"} style={theaterMode ? undefined : { height: "calc(100vh - 48px)" }}>
         {/* Left sidebar: metadata, tabs, tab content */}
         {!theaterMode && !sidebarCollapsed && (
           <div
-            className="w-full xl:border-r border-b xl:border-b-0 border-plex-border overflow-y-auto"
-            style={{ flex: "0 0 450px", maxWidth: 450, maxHeight: "calc(100vh - 48px)" }}
+            className="w-full xl:w-[400px] 2xl:w-[450px] xl:min-w-[350px] xl:max-w-[500px] xl:border-r border-b xl:border-b-0 border-plex-border overflow-y-auto shrink-0"
+            style={{ maxHeight: "calc(100vh - 48px)" }}
           >
             <div className="px-4 pt-4 pb-2">
               {/* Studio logo */}
@@ -187,6 +227,29 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
                       className="max-h-[5rem] max-w-full object-contain"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
+                  </button>
+                </div>
+              )}
+
+              {/* Queue navigation */}
+              {queueLength > 1 && (
+                <div className="flex items-center gap-2 mb-2">
+                  <button
+                    onClick={() => prevId != null && onNavigate({ page: "scene", id: prevId })}
+                    disabled={!hasPrev}
+                    className="p-1 rounded text-plex-text-secondary hover:text-plex-text hover:bg-plex-card disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Previous scene"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs text-plex-text-muted">{currentPosition} / {queueLength}</span>
+                  <button
+                    onClick={() => nextId != null && onNavigate({ page: "scene", id: nextId })}
+                    disabled={!hasNext}
+                    className="p-1 rounded text-plex-text-secondary hover:text-plex-text hover:bg-plex-card disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Next scene"
+                  >
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -217,7 +280,9 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
 
               {/* Toolbar: rating left, counters + ops right — single row */}
               <div className="flex items-center justify-between mt-3 gap-2">
-                <InteractiveRating value={scene.rating} onChange={(value) => updateMut.mutate({ rating: value })} />
+                {activeTab !== "edit" && (
+                  <InteractiveRating value={scene.rating} onChange={(value) => updateMut.mutate({ rating: value })} />
+                )}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => incrementPlayMut.mutate()}
@@ -242,6 +307,17 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
                   >
                     <Check className="w-4 h-4" />
                   </button>
+                  {file && (
+                    <a
+                      href={streamUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 rounded text-plex-text-secondary hover:text-plex-text hover:bg-plex-card"
+                      title="Open in external player"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
                   {/* Operations dropdown */}
                   <div className="relative" ref={opsMenuRef}>
                     <button
@@ -252,9 +328,17 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
                       <MoreVertical className="w-4 h-4" />
                     </button>
                     {showOpsMenu && (
-                      <div className="absolute right-0 top-full mt-1 z-50 min-w-[160px] bg-plex-card border border-plex-border rounded shadow-lg py-1">
+                      <div className="absolute right-0 top-full mt-1 z-50 min-w-[220px] bg-plex-card border border-plex-border rounded shadow-lg py-1">
                         <button onClick={() => { setEditing(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> Edit</button>
+                        {file && (
+                          <button onClick={() => { rescanMut.mutate(); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><RefreshCw className="w-3.5 h-3.5" /> Rescan</button>
+                        )}
+                        <div className="border-t border-plex-border my-1" />
                         <button onClick={() => { setShowGenerate(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Clapperboard className="w-3.5 h-3.5" /> Generate…</button>
+                        <button onClick={() => { generateScreenshotMut.mutate(videoTime); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Camera className="w-3.5 h-3.5" /> Screenshot from Current</button>
+                        <button onClick={() => { generateScreenshotMut.mutate(undefined); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Image className="w-3.5 h-3.5" /> Screenshot Default</button>
+                        <div className="border-t border-plex-border my-1" />
+                        <button onClick={() => { setShowMerge(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Merge className="w-3.5 h-3.5" /> Merge…</button>
                         <button onClick={() => { setTheaterMode(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-plex-text hover:bg-plex-surface flex items-center gap-2"><Monitor className="w-3.5 h-3.5" /> Theater Mode</button>
                         <div className="border-t border-plex-border my-1" />
                         <button onClick={() => { setConfirmDelete(true); setShowOpsMenu(false); }} className="w-full px-3 py-1.5 text-left text-sm text-red-400 hover:bg-plex-surface flex items-center gap-2"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
@@ -311,6 +395,15 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
               {activeTab === "edit" && (
                 <SceneEditPanel scene={scene} onSaved={() => setActiveTab("details")} />
               )}
+              {/* Extension-contributed tab content */}
+              {activeTab.startsWith("ext:") && (() => {
+                const extTabKey = activeTab.replace("ext:", "");
+                const extTab = getTabsForPage("scene").find((t) => t.key === extTabKey);
+                if (!extTab) return null;
+                const Component = resolveExtComponent(extTab.componentName);
+                if (!Component) return <div className="p-4 text-plex-text-muted">Extension component not found: {extTab.componentName}</div>;
+                return <Component entityId={id} />;
+              })()}
             </div>
           </div>
         )}
@@ -319,8 +412,7 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
         {!theaterMode && (
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hidden xl:flex items-center justify-center bg-plex-surface/50 hover:bg-plex-surface border-r border-plex-border transition-colors"
-            style={{ flex: "0 0 15px", maxWidth: 15 }}
+            className="hidden xl:flex items-center justify-center bg-plex-surface/50 hover:bg-plex-surface border-r border-plex-border transition-colors w-[15px] shrink-0"
             title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
           >
             {sidebarCollapsed ? <ChevronRight className="w-4 h-4 text-plex-text-muted" /> : <ChevronLeft className="w-4 h-4 text-plex-text-muted" />}
@@ -328,8 +420,8 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
         )}
 
         {/* Right side: video player + scrubber */}
-        <div className="min-w-0 flex flex-col" style={{ flex: sidebarCollapsed ? "0 0 calc(100% - 15px)" : "0 0 calc(100% - 450px - 15px)", maxWidth: sidebarCollapsed ? "calc(100% - 15px)" : "calc(100% - 465px)" }}>
-          <div className="bg-black flex-1 flex flex-col">
+        <div className="min-w-0 flex flex-col flex-1 min-h-0">
+          <div className="bg-black flex-1 flex flex-col min-h-0">
             {file ? (
               <VideoPlayer
                 streamUrl={streamUrl}
@@ -341,6 +433,9 @@ export function SceneDetailPage({ id, onNavigate }: Props) {
                 markers={scene.markers}
                 onSeekRegister={(fn) => { seekRef.current = fn; }}
                 onTimeUpdate={setVideoTime}
+                autostart={config?.ui.autostartVideo}
+                showAbLoop={config?.ui.showAbLoopControls}
+                onEnded={() => { if (hasNext && nextId != null) onNavigate({ page: "scene", id: nextId }); }}
               />
             ) : (
               <div className="flex items-center justify-center h-48 text-plex-text-muted">No video file available</div>
@@ -388,7 +483,11 @@ function DetailsTab({ scene, onNavigate }: { scene: Scene; onNavigate: (r: any) 
         {scene.director && (
           <>
             <dt className="text-plex-text-muted pr-3">Director</dt>
-            <dd className="text-plex-accent">{scene.director}</dd>
+            <dd>
+              <button onClick={() => onNavigate({ page: "scenes", query: scene.director })} className="text-plex-accent hover:underline">
+                {scene.director}
+              </button>
+            </dd>
           </>
         )}
       </dl>
@@ -467,6 +566,7 @@ function DetailsTab({ scene, onNavigate }: { scene: Scene; onNavigate: (r: any) 
           </dl>
         </div>
       )}
+      <CustomFieldsDisplay customFields={scene.customFields} />
     </div>
   );
 }
@@ -631,51 +731,82 @@ function FileInfoTab({ file }: { file: any }) {
 }
 
 // History Tab
-function HistoryTab({ scene }: { scene: any }) {
+function HistoryTab({ scene }: { scene: Scene }) {
+  const queryClient = useQueryClient();
+  const { data: history } = useQuery({
+    queryKey: ["scene-history", scene.id],
+    queryFn: () => scenes.getHistory(scene.id),
+  });
+
+  const resetPlayMut = useMutation({
+    mutationFn: () => scenes.resetPlay(scene.id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["scene", scene.id] }); queryClient.invalidateQueries({ queryKey: ["scene-history", scene.id] }); },
+  });
+  const deletePlayMut = useMutation({
+    mutationFn: () => scenes.deletePlay(scene.id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["scene", scene.id] }); queryClient.invalidateQueries({ queryKey: ["scene-history", scene.id] }); },
+  });
+  const resetOMut = useMutation({
+    mutationFn: () => scenes.resetO(scene.id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["scene", scene.id] }); queryClient.invalidateQueries({ queryKey: ["scene-history", scene.id] }); },
+  });
+  const decrementOMut = useMutation({
+    mutationFn: () => scenes.decrementO(scene.id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["scene", scene.id] }); queryClient.invalidateQueries({ queryKey: ["scene-history", scene.id] }); },
+  });
+
+  const btnCls = "rounded border border-plex-border bg-plex-card px-2 py-0.5 text-xs text-plex-text-secondary hover:text-plex-text hover:bg-plex-card-hover";
+
   return (
-    <div className="space-y-3 text-sm">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <div className="text-plex-text-muted">Play Count</div>
-          <div className="text-plex-text">{scene.playCount}</div>
+    <div className="space-y-4 text-sm">
+      {/* Play History */}
+      <div className="rounded-xl border border-plex-border bg-plex-card p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-plex-text-muted uppercase tracking-wide">Play History</h3>
+          <div className="flex gap-1">
+            <button onClick={() => deletePlayMut.mutate()} className={btnCls} title="Remove last play">-1</button>
+            <button onClick={() => resetPlayMut.mutate()} className={btnCls} title="Reset play count">Reset</button>
+          </div>
         </div>
-        <div>
-          <div className="text-plex-text-muted">Play Duration</div>
-          <div className="text-plex-text">{formatDuration(scene.playDuration)}</div>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <div><span className="text-plex-text-muted">Play Count:</span> <span className="text-plex-text">{scene.playCount}</span></div>
+          <div><span className="text-plex-text-muted">Duration:</span> <span className="text-plex-text">{formatDuration(scene.playDuration)}</span></div>
         </div>
-        <div>
-          <div className="text-plex-text-muted">O-Counter</div>
-          <div className="text-plex-text">{scene.oCounter}</div>
-        </div>
-        <div>
-          <div className="text-plex-text-muted">Organized</div>
-          <div className="text-plex-text">{scene.organized ? "Yes" : "No"}</div>
-        </div>
+        {history?.playHistory && history.playHistory.length > 0 && (
+          <div className="max-h-40 overflow-y-auto space-y-0.5 border-t border-plex-border pt-2">
+            {history.playHistory.map((date, i) => (
+              <div key={i} className="text-xs text-plex-text-secondary">{new Date(date).toLocaleString()}</div>
+            ))}
+          </div>
+        )}
       </div>
-      <div>
-        <div className="text-plex-text-muted">Created</div>
-        <div className="text-plex-text">{formatDate(scene.createdAt)}</div>
-      </div>
-      <div>
-        <div className="text-plex-text-muted">Updated</div>
-        <div className="text-plex-text">{formatDate(scene.updatedAt)}</div>
-      </div>
-      {scene.urls && scene.urls.length > 0 && (
-        <div>
-          <div className="text-plex-text-muted mb-1">URLs</div>
-          {scene.urls.map((url: string, i: number) => (
-            <a
-              key={i}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-plex-accent hover:underline text-sm block truncate"
-            >
-              {url}
-            </a>
-          ))}
+
+      {/* O-Counter History */}
+      <div className="rounded-xl border border-plex-border bg-plex-card p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-plex-text-muted uppercase tracking-wide">O-Counter</h3>
+          <div className="flex gap-1">
+            <button onClick={() => decrementOMut.mutate()} className={btnCls} title="Decrement O-counter">-1</button>
+            <button onClick={() => resetOMut.mutate()} className={btnCls} title="Reset O-counter">Reset</button>
+          </div>
         </div>
-      )}
+        <div className="mb-2">
+          <span className="text-plex-text-muted">Count:</span> <span className="text-plex-text">{scene.oCounter}</span>
+        </div>
+        {history?.oHistory && history.oHistory.length > 0 && (
+          <div className="max-h-40 overflow-y-auto space-y-0.5 border-t border-plex-border pt-2">
+            {history.oHistory.map((date, i) => (
+              <div key={i} className="text-xs text-plex-text-secondary">{new Date(date).toLocaleString()}</div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Timestamps */}
+      <div className="grid grid-cols-2 gap-2">
+        <div><span className="text-plex-text-muted">Created:</span> <span className="text-plex-text">{formatDate(scene.createdAt)}</span></div>
+        <div><span className="text-plex-text-muted">Updated:</span> <span className="text-plex-text">{formatDate(scene.updatedAt)}</span></div>
+      </div>
     </div>
   );
 }
@@ -745,6 +876,9 @@ function VideoPlayer({
   markers,
   onSeekRegister,
   onTimeUpdate: onTimeUpdateProp,
+  autostart,
+  showAbLoop,
+  onEnded: onEndedProp,
 }: {
   streamUrl: string;
   format: string;
@@ -755,6 +889,9 @@ function VideoPlayer({
   markers: { id: number; title: string; seconds: number; primaryTagName: string }[];
   onSeekRegister?: (fn: (time: number) => void) => void;
   onTimeUpdate?: (time: number) => void;
+  autostart?: boolean;
+  showAbLoop?: boolean;
+  onEnded?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -770,6 +907,8 @@ function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [showSpeed, setShowSpeed] = useState(false);
   const [rate, setRate] = useState(1);
+  const [pip, setPip] = useState(false);
+  const [abLoop, setAbLoop] = useState<{ a: number | null; b: number | null }>({ a: null, b: null });
   const hideTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const playTriggered = useRef(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout>>(null);
@@ -802,6 +941,38 @@ function VideoPlayer({
       v.currentTime = resumeTime;
     }
   }, [resumeTime]);
+
+  // Autostart video
+  useEffect(() => {
+    if (autostart && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [autostart, streamUrl]);
+
+  // PiP change listener
+  useEffect(() => {
+    const handler = () => setPip(document.pictureInPictureElement === videoRef.current);
+    document.addEventListener("enterpictureinpicture", handler);
+    document.addEventListener("leavepictureinpicture", handler);
+    return () => {
+      document.removeEventListener("enterpictureinpicture", handler);
+      document.removeEventListener("leavepictureinpicture", handler);
+    };
+  }, []);
+
+  // A-B loop enforcement
+  useEffect(() => {
+    if (abLoop.a == null || abLoop.b == null) return;
+    const v = videoRef.current;
+    if (!v) return;
+    const handler = () => {
+      if (v.currentTime >= abLoop.b!) {
+        v.currentTime = abLoop.a!;
+      }
+    };
+    v.addEventListener("timeupdate", handler);
+    return () => v.removeEventListener("timeupdate", handler);
+  }, [abLoop]);
 
   // Save activity periodically
   useEffect(() => {
@@ -925,6 +1096,30 @@ function VideoPlayer({
     setShowSpeed(false);
   };
 
+  const togglePip = async () => {
+    const v = videoRef.current;
+    if (!v) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await v.requestPictureInPicture();
+      }
+    } catch { /* PiP not supported or denied */ }
+  };
+
+  const cycleAbLoop = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (abLoop.a == null) {
+      setAbLoop({ a: v.currentTime, b: null });
+    } else if (abLoop.b == null) {
+      setAbLoop({ a: abLoop.a, b: v.currentTime });
+    } else {
+      setAbLoop({ a: null, b: null });
+    }
+  };
+
   const fmtTime = (s: number) => {
     if (!isFinite(s)) return "0:00";
     const h = Math.floor(s / 3600);
@@ -936,14 +1131,14 @@ function VideoPlayer({
   return (
     <div
       ref={containerRef}
-      className="max-w-5xl mx-auto relative group"
+      className="relative group w-full h-full flex items-center justify-center bg-black"
       onMouseMove={resetHideTimer}
       onMouseLeave={() => playing && setShowControls(false)}
     >
       <video
         ref={videoRef}
         key={streamUrl}
-        className="w-full cursor-pointer"
+        className="w-full h-full object-contain cursor-pointer"
         preload="metadata"
         onClick={togglePlay}
         onDoubleClick={toggleFullscreen}
@@ -960,6 +1155,7 @@ function VideoPlayer({
         onEnded={() => {
           setPlaying(false);
           scenes.saveActivity(sceneId, { resumeTime: 0 }).catch(() => {});
+          onEndedProp?.();
         }}
       >
         <source src={streamUrl} type={`video/${format || "mp4"}`} />
@@ -994,6 +1190,16 @@ function VideoPlayer({
                   }}
                 />
               ))}
+              {/* A-B loop range indicator */}
+              {abLoop.a != null && (
+                <div
+                  className="absolute top-0 h-full bg-plex-accent/25 pointer-events-none"
+                  style={{
+                    left: `${(abLoop.a / (duration || 1)) * 100}%`,
+                    width: abLoop.b != null ? `${((abLoop.b - abLoop.a) / (duration || 1)) * 100}%` : "2px",
+                  }}
+                />
+              )}
             </div>
             {/* Seek thumb */}
             <div
@@ -1060,6 +1266,24 @@ function VideoPlayer({
                 </div>
               )}
             </div>
+
+            {/* A-B Loop */}
+            {showAbLoop && (
+              <button
+                onClick={cycleAbLoop}
+                className={`hover:text-plex-accent p-1 text-xs font-medium flex items-center gap-1 ${abLoop.a != null ? "text-plex-accent" : ""}`}
+                title={abLoop.a == null ? "Set loop start (A)" : abLoop.b == null ? "Set loop end (B)" : "Clear A-B loop"}
+              >
+                <Repeat className="w-4 h-4" />
+                {abLoop.a != null && abLoop.b == null && "A"}
+                {abLoop.a != null && abLoop.b != null && "A-B"}
+              </button>
+            )}
+
+            {/* Picture-in-Picture */}
+            <button onClick={togglePip} className={`hover:text-plex-accent p-1 ${pip ? "text-plex-accent" : ""}`} title="Picture-in-Picture">
+              <PictureInPicture2 className="w-4 h-4" />
+            </button>
 
             <button onClick={toggleFullscreen} className="hover:text-plex-accent p-1">
               {fullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}

@@ -57,3 +57,53 @@ export function getResolutionLabel(width: number, height: number): string | null
   if (number >= 144) return "144p";
   return null;
 }
+
+export function CustomFieldsDisplay({ customFields }: { customFields?: Record<string, unknown> }) {
+  if (!customFields || Object.keys(customFields).length === 0) return null;
+  return (
+    <div className="bg-plex-card rounded-xl p-4">
+      <h3 className="text-sm font-semibold text-plex-text-secondary mb-3">Custom Fields</h3>
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        {Object.entries(customFields).map(([key, value]) => (
+          <div key={key} className="flex flex-col">
+            <span className="text-plex-text-muted text-xs">{key}</span>
+            <span className="text-plex-text">{String(value ?? "")}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function CustomFieldsEditor({ value, onChange }: { value: Record<string, string>; onChange: (v: Record<string, string>) => void }) {
+  const entries = Object.entries(value);
+  const addField = () => onChange({ ...value, "": "" });
+  const removeField = (key: string) => {
+    const next = { ...value };
+    delete next[key];
+    onChange(next);
+  };
+  const updateKey = (oldKey: string, newKey: string) => {
+    const next: Record<string, string> = {};
+    for (const [k, v] of Object.entries(value)) {
+      next[k === oldKey ? newKey : k] = v;
+    }
+    onChange(next);
+  };
+  const updateValue = (key: string, newVal: string) => {
+    onChange({ ...value, [key]: newVal });
+  };
+
+  return (
+    <div className="space-y-2">
+      {entries.map(([key, val], i) => (
+        <div key={i} className="flex gap-2 items-center">
+          <input value={key} onChange={(e) => updateKey(key, e.target.value)} placeholder="Field name" className="flex-1 rounded border border-plex-border bg-plex-surface px-2 py-1 text-sm text-plex-text" />
+          <input value={val} onChange={(e) => updateValue(key, e.target.value)} placeholder="Value" className="flex-1 rounded border border-plex-border bg-plex-surface px-2 py-1 text-sm text-plex-text" />
+          <button type="button" onClick={() => removeField(key)} className="text-red-400 hover:text-red-300 text-sm px-1">×</button>
+        </div>
+      ))}
+      <button type="button" onClick={addField} className="text-xs text-plex-accent hover:underline">+ Add Field</button>
+    </div>
+  );
+}

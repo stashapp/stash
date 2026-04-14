@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -13,7 +13,6 @@ import {
   Plug,
   Plus,
   RefreshCw,
-  Save,
   SearchCode,
   Server,
   Shield,
@@ -23,6 +22,9 @@ import {
   ScrollText,
   Upload,
   Wrench,
+  FileText,
+  History,
+  Search,
 } from "lucide-react";
 import { system, jobs, metadata, database, plugins as pluginsApi, dlna as dlnaApi, logs as logsApi } from "../api/client";
 import type { ScanOptions, GenerateOptions, CleanGeneratedOptions, ExportOptions, LogEntry } from "../api/client";
@@ -38,9 +40,10 @@ import type {
   StashPathConfig,
   StashBoxValidationResult,
 } from "../api/types";
+import { useExtensions } from "../extensions/ExtensionLoader";
 import { useAppConfig } from "../state/AppConfigContext";
 
-type SettingsTab = "tasks" | "library" | "interface" | "security" | "metadata-providers" | "dlna" | "plugins" | "logs" | "system" | "about";
+type SettingsTab = "tasks" | "library" | "interface" | "security" | "metadata-providers" | "dlna" | "extensions" | "logs" | "system" | "tools" | "changelog" | "about";
 
 const tabs: { key: SettingsTab; label: string; icon: typeof FolderOpen }[] = [
   { key: "tasks", label: "Tasks", icon: PlayCircle },
@@ -49,9 +52,11 @@ const tabs: { key: SettingsTab; label: string; icon: typeof FolderOpen }[] = [
   { key: "security", label: "Security", icon: Shield },
   { key: "metadata-providers", label: "Metadata Providers", icon: SearchCode },
   { key: "dlna", label: "Services (DLNA)", icon: Radio },
-  { key: "plugins", label: "Plugins", icon: Plug },
+  { key: "extensions", label: "Extensions", icon: Plug },
   { key: "logs", label: "Logs", icon: ScrollText },
   { key: "system", label: "System", icon: Server },
+  { key: "tools", label: "Tools", icon: Wrench },
+  { key: "changelog", label: "Changelog", icon: History },
   { key: "about", label: "About", icon: Info },
 ];
 
@@ -163,10 +168,18 @@ export function SettingsPage() {
   const [draft, setDraft] = useState<StashConfig | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const initializedRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savingRef = useRef(false);
   const [stashBoxValidation, setStashBoxValidation] = useState<Record<string, StashBoxValidationResult>>({});
 
   useEffect(() => {
     if (!config) {
+      return;
+    }
+    // Skip re-init when config changed due to our own save
+    if (savingRef.current) {
+      savingRef.current = false;
       return;
     }
 
@@ -187,6 +200,7 @@ export function SettingsPage() {
   const saveMutation = useMutation({
     mutationFn: (nextConfig: StashConfig) => system.saveConfig(nextConfig),
     onSuccess: (savedConfig) => {
+      savingRef.current = true;
       queryClient.setQueryData(["system-config"], savedConfig);
       queryClient.invalidateQueries({ queryKey: ["system-scrapers"] });
       setSaved(true);
@@ -232,6 +246,23 @@ export function SettingsPage() {
     }, {});
   }, [scrapers]);
 
+  // Debounced auto-save: triggers 800ms after draft changes
+  useEffect(() => {
+    if (!draft) return;
+    // Skip the first render when draft is initialized from config
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      saveMutation.mutate(normalizeConfig(draft));
+    }, 800);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (configLoading || !draft) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -242,10 +273,6 @@ export function SettingsPage() {
 
   const updateDraft = (updater: (current: StashConfig) => StashConfig) => {
     setDraft((current) => (current ? updater(current) : current));
-  };
-
-  const handleSave = () => {
-    saveMutation.mutate(normalizeConfig(draft));
   };
 
   return (
@@ -285,22 +312,23 @@ export function SettingsPage() {
                 {activeTab === "security" && "Authentication and session settings. Password changes are persisted immediately."}
                 {activeTab === "metadata-providers" && "Scraper directories, package source URLs, configured StashBox endpoints, and discovered Stash-compatible scrapers."}
                 {activeTab === "dlna" && "DLNA media server for streaming to compatible devices on your local network."}
-                {activeTab === "plugins" && "Manage installed plugins and extensions."}
+                {activeTab === "extensions" && "Manage extensions, themes, and plugin settings."}
                 {activeTab === "system" && "Host, port, and task concurrency. Server changes take effect after restart."}
+                {activeTab === "tools" && "Utility tools for working with your library."}
+                {activeTab === "changelog" && "Release history and version information."}
                 {activeTab === "about" && "Runtime status and effective config locations."}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {error && <span className="text-sm text-red-300">{error}</span>}
-              {saved && <span className="text-sm text-emerald-300">Settings saved.</span>}
-              <button
-                onClick={handleSave}
-                disabled={saveMutation.isPending}
-                className="inline-flex items-center gap-2 rounded-xl bg-plex-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-plex-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {saveMutation.isPending ? "Saving..." : "Save Settings"}
-              </button>
+              {saveMutation.isPending && (
+                <span className="inline-flex items-center gap-1.5 text-sm text-plex-text-muted">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…
+                </span>
+              )}
+              {saved && !saveMutation.isPending && (
+                <span className="text-sm text-emerald-300">Saved</span>
+              )}
             </div>
           </div>
         </section>
@@ -658,6 +686,8 @@ export function SettingsPage() {
                 )}
               </div>
             </SectionCard>
+
+            <ThemeSelector />
           </>
         )}
 
@@ -1158,11 +1188,71 @@ export function SettingsPage() {
           </>
         )}
 
-        {activeTab === "plugins" && <PluginsPanel />}
+        {activeTab === "extensions" && <ExtensionsPanel />}
 
         {activeTab === "dlna" && <DlnaPanel />}
 
         {activeTab === "logs" && <LogsPanel />}
+
+        {activeTab === "tools" && (
+          <>
+            <SectionCard title="Developer Tools" description="API playground and utilities.">
+              <div className="space-y-3">
+                <a
+                  href="/api/graphql"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-plex-surface hover:bg-plex-surface/80 border border-plex-border transition group"
+                >
+                  <div className="w-10 h-10 rounded bg-plex-accent/20 flex items-center justify-center"><FileText className="w-5 h-5 text-plex-accent" /></div>
+                  <div>
+                    <div className="text-sm font-medium text-plex-text group-hover:text-plex-accent">API Documentation</div>
+                    <div className="text-xs text-plex-text-muted">Browse the REST API endpoints</div>
+                  </div>
+                </a>
+              </div>
+            </SectionCard>
+            <SectionCard title="Scene Tools" description="Utilities for managing scene files.">
+              <div className="space-y-3">
+                <button
+                  onClick={() => (window.location.hash = "#/scenes?mode=duplicates")}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-plex-surface hover:bg-plex-surface/80 border border-plex-border transition group text-left"
+                >
+                  <div className="w-10 h-10 rounded bg-yellow-500/20 flex items-center justify-center"><Search className="w-5 h-5 text-yellow-400" /></div>
+                  <div>
+                    <div className="text-sm font-medium text-plex-text group-hover:text-plex-accent">Scene Duplicate Checker</div>
+                    <div className="text-xs text-plex-text-muted">Find and manage duplicate scenes by file fingerprint</div>
+                  </div>
+                </button>
+              </div>
+            </SectionCard>
+          </>
+        )}
+
+        {activeTab === "changelog" && (
+          <>
+            <SectionCard title="Changelog" description="What's new in this version.">
+              <div className="space-y-6">
+                <div className="border-l-2 border-plex-accent pl-4">
+                  <h3 className="text-lg font-semibold text-plex-text">v1.0.0 — Stash Rewrite</h3>
+                  <p className="text-xs text-plex-text-muted mt-1">Complete rewrite of the Stash application</p>
+                  <ul className="mt-3 space-y-2 text-sm text-plex-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> New React 19 frontend with Tailwind CSS</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> .NET 10 backend with PostgreSQL + pgvector</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Extension system with theme support</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Real-time job tracking via SignalR</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Custom fields on all entity types</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Full StashBox integration for scene tagger</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Video filters (brightness, contrast, saturation)</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Gallery and image management</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Performer, studio, tag, and group management</li>
+                    <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">•</span> Scene markers with scrubber integration</li>
+                  </ul>
+                </div>
+              </div>
+            </SectionCard>
+          </>
+        )}
 
         {activeTab === "about" && (
           <>
@@ -1643,6 +1733,65 @@ function TaskCard({
         <div className="mt-3">{children}</div>
       )}
     </div>
+  );
+}
+
+function ThemeSelector() {
+  const { availableThemes, activeThemeId, setActiveTheme } = useExtensions();
+
+  return (
+    <SectionCard title="Theme" description="Choose a color theme. Themes are provided by extensions.">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {/* Default theme */}
+        <button
+          onClick={() => setActiveTheme(null)}
+          className={`rounded-xl border p-4 text-left transition-colors ${
+            !activeThemeId
+              ? "border-plex-accent bg-plex-accent/10"
+              : "border-plex-border bg-plex-card hover:border-plex-accent/50"
+          }`}
+        >
+          <div className="text-sm font-medium text-plex-text">Default</div>
+          <div className="text-xs text-plex-text-secondary mt-1">The default Stash dark theme</div>
+          <div className="flex gap-1 mt-2">
+            <div className="w-5 h-5 rounded" style={{ background: "#1a1a1a" }} />
+            <div className="w-5 h-5 rounded" style={{ background: "#e5a00d" }} />
+            <div className="w-5 h-5 rounded" style={{ background: "#2a2a2a" }} />
+          </div>
+        </button>
+
+        {/* Extension themes */}
+        {availableThemes.map((theme) => (
+          <button
+            key={theme.id}
+            onClick={() => setActiveTheme(theme.id)}
+            className={`rounded-xl border p-4 text-left transition-colors ${
+              activeThemeId === theme.id
+                ? "border-plex-accent bg-plex-accent/10"
+                : "border-plex-border bg-plex-card hover:border-plex-accent/50"
+            }`}
+          >
+            <div className="text-sm font-medium text-plex-text">{theme.name}</div>
+            {theme.description && (
+              <div className="text-xs text-plex-text-secondary mt-1">{theme.description}</div>
+            )}
+            {theme.cssVariables && (
+              <div className="flex gap-1 mt-2">
+                {Object.entries(theme.cssVariables).slice(0, 3).map(([key, val]) => (
+                  <div key={key} className="w-5 h-5 rounded border border-white/10" style={{ background: val }} />
+                ))}
+              </div>
+            )}
+          </button>
+        ))}
+
+        {availableThemes.length === 0 && (
+          <p className="text-sm text-plex-text-muted col-span-full">
+            No additional themes available. Install theme extensions to add more options.
+          </p>
+        )}
+      </div>
+    </SectionCard>
   );
 }
 
@@ -2303,5 +2452,112 @@ function PackageManagerSection() {
         </div>
       )}
     </SectionCard>
+  );
+}
+
+// ===== Extensions Panel — replaces "Plugins" tab =====
+function ExtensionsPanel() {
+  const { availableThemes, activeThemeId, setActiveTheme, settingsPanels, resolveComponent } = useExtensions();
+  const { data: extList } = useQuery({
+    queryKey: ["extensions-list"],
+    queryFn: () => import("../api/client").then(m => m.extensions.list()),
+  });
+
+  return (
+    <>
+      {/* Theme Selector */}
+      <SectionCard title="Theme" description="Select a visual theme. Themes are contributed by extensions via CSS variable overrides.">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {availableThemes.map((theme) => (
+            <button
+              key={theme.id}
+              onClick={() => setActiveTheme(theme.id === activeThemeId ? null : theme.id)}
+              className={`p-3 rounded-lg border text-left transition-all ${
+                theme.id === activeThemeId
+                  ? "border-plex-accent bg-plex-accent/10 ring-1 ring-plex-accent"
+                  : "border-plex-border bg-plex-surface hover:border-plex-text-muted"
+              }`}
+            >
+              <div className="font-medium text-sm text-plex-text">{theme.name}</div>
+              {theme.description && (
+                <div className="text-xs text-plex-text-muted mt-1">{theme.description}</div>
+              )}
+              {theme.id === activeThemeId && (
+                <div className="text-xs text-plex-accent mt-1.5 font-medium">✓ Active</div>
+              )}
+              {theme.cssVariables && (
+                <div className="flex gap-1 mt-2">
+                  {Object.values(theme.cssVariables).slice(0, 5).map((color, i) => (
+                    <div
+                      key={i}
+                      className="w-4 h-4 rounded-sm border border-white/10"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </SectionCard>
+
+      {/* Extension Registry */}
+      <SectionCard title="Registered Extensions" description="Extensions provide themes, pages, tabs, settings panels, and API endpoints.">
+        {extList && extList.length > 0 ? (
+          <div className="space-y-2">
+            {extList.map((ext) => (
+              <div key={ext.id} className="flex items-center justify-between bg-plex-surface rounded-lg px-4 py-3 border border-plex-border">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm text-plex-text">{ext.name}</span>
+                    <span className="text-xs text-plex-text-muted">v{ext.version}</span>
+                  </div>
+                  {ext.description && (
+                    <div className="text-xs text-plex-text-secondary mt-0.5">{ext.description}</div>
+                  )}
+                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                    {ext.hasUI && <ExtBadge label="UI" />}
+                    {ext.hasApi && <ExtBadge label="API" />}
+                    {ext.hasState && <ExtBadge label="Stateful" />}
+                    {ext.hasJobs && <ExtBadge label="Jobs" />}
+                    {ext.hasEvents && <ExtBadge label="Events" />}
+                  </div>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${ext.enabled ? "bg-green-500" : "bg-gray-500"}`} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-plex-text-muted py-4 text-center">Loading extensions...</div>
+        )}
+      </SectionCard>
+
+      {/* Extension-contributed settings panels */}
+      {settingsPanels.length > 0 &&
+        settingsPanels.map((panel) => {
+          const Component = resolveComponent(panel.componentName);
+          if (!Component) return null;
+          return (
+            <SectionCard
+              key={panel.id}
+              title={panel.label}
+              description={`Settings provided by the ${panel.extensionId} extension.`}
+            >
+              <Component />
+            </SectionCard>
+          );
+        })}
+
+      {/* Legacy Plugins */}
+      <PluginsPanel />
+    </>
+  );
+}
+
+function ExtBadge({ label }: { label: string }) {
+  return (
+    <span className="text-[10px] px-1.5 py-0.5 rounded bg-plex-accent/15 text-plex-accent border border-plex-accent/25">
+      {label}
+    </span>
   );
 }

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { groups, scenes } from "../api/client";
 import type { FindFilter, Group, Scene } from "../api/types";
-import { formatDate, formatDuration, getResolutionLabel, TagBadge } from "../components/shared";
+import { formatDate, formatDuration, getResolutionLabel, TagBadge, CustomFieldsDisplay } from "../components/shared";
 import { ArrowLeft, ChevronDown, ChevronUp, Clapperboard, Film, Layers, Link as LinkIcon, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GroupEditModal } from "./GroupEditModal";
@@ -228,6 +228,7 @@ export function GroupDetailPage({ id, onNavigate }: Props) {
               </div>
             )}
 
+            <CustomFieldsDisplay customFields={group.customFields} />
             <ExtensionSlot slot="group-detail-sidebar-bottom" context={{ group, onNavigate }} />
           </aside>
         </div>

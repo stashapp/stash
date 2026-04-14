@@ -44,7 +44,7 @@ export function StudioTagger({ studios: studioList }: StudioTaggerProps) {
 
   const [taggerConfig, setTaggerConfig] = useState<TaggerConfig>({
     selectedEndpoint: stashBoxes[0]?.endpoint ?? "",
-    showTagged: false,
+    showTagged: true,
   });
 
   const [searchStates, setSearchStates] = useState<Record<number, StudioSearchState>>({});
@@ -136,7 +136,7 @@ export function StudioTagger({ studios: studioList }: StudioTaggerProps) {
           className="flex items-center gap-1 px-2 py-1 rounded text-xs border border-plex-border bg-plex-input text-plex-text-secondary hover:text-plex-text"
         >
           {taggerConfig.showTagged ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-          {taggerConfig.showTagged ? "Hide Already Tagged" : "Show Already Tagged"}
+          {taggerConfig.showTagged ? "Hide Already Tagged" : "Show All Studios"}
         </button>
 
         {batchSearching ? (
@@ -164,6 +164,11 @@ export function StudioTagger({ studios: studioList }: StudioTaggerProps) {
 
       {/* Studio list */}
       <div className="divide-y divide-plex-border">
+        {visibleStudios.length === 0 && !taggerConfig.showTagged && (
+          <div className="px-4 py-10 text-center text-sm text-plex-text-secondary">
+            All visible studios already have Stash IDs. Use "Show All Studios" to tag or re-check matched studios.
+          </div>
+        )}
         {visibleStudios.map((studio) => (
           <StudioTaggerRow
             key={studio.id}

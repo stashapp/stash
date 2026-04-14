@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { images } from "../api/client";
-import { formatDate, TagBadge } from "../components/shared";
+import { formatDate, TagBadge, CustomFieldsDisplay } from "../components/shared";
 import { ArrowLeft, Pencil, Trash2, Link as LinkIcon, Heart, Check, Minus, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -199,6 +199,7 @@ export function ImageDetailPage({ id, onNavigate }: Props) {
             </div>
           )}
 
+          <CustomFieldsDisplay customFields={image.customFields} />
           <ExtensionSlot slot="image-detail-sidebar-bottom" context={{ image, onNavigate }} />
         </div>
       </div>

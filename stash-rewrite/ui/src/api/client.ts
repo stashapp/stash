@@ -43,6 +43,8 @@ import type {
   RunPluginTaskRequest,
   PluginSettings,
   Package,
+  ExtensionManifest,
+  ExtensionInfo,
 } from "./types";
 
 const API_BASE = "/api";
@@ -134,12 +136,19 @@ export const scenes = {
   incrementO: (id: number) => request<void>(`/scenes/${id}/o`, { method: "POST" }),
   decrementO: (id: number) => request<void>(`/scenes/${id}/o`, { method: "DELETE" }),
   resetO: (id: number) => request<void>(`/scenes/${id}/o/reset`, { method: "POST" }),
+  deletePlay: (id: number) => request<void>(`/scenes/${id}/play`, { method: "DELETE" }),
+  resetPlay: (id: number) => request<void>(`/scenes/${id}/play/reset`, { method: "POST" }),
+  getHistory: (id: number) => request<{ playHistory: string[]; oHistory: string[] }>(`/scenes/${id}/history`),
   saveActivity: (id: number, data: { resumeTime?: number; playDuration?: number }) =>
     request<void>(`/scenes/${id}/activity`, { method: "POST", body: JSON.stringify(data) }),
   searchStashBox: (id: number, term?: string, endpoint?: string) =>
     request<StashBoxSceneMatch[]>(`/scenes/${id}/stash-box/search${buildQuery(undefined, { term, endpoint })}`),
   importFromStashBox: (id: number, data: StashBoxSceneImportRequest) =>
     request<Scene>(`/scenes/${id}/stash-box/import`, { method: "POST", body: JSON.stringify(data) }),
+  generateScreenshot: (id: number, atSeconds?: number) =>
+    request<{ success: boolean }>(`/scenes/${id}/generate-screenshot`, { method: "POST", body: JSON.stringify({ atSeconds }) }),
+  rescan: (id: number) =>
+    request<{ jobId: string }>(`/scenes/${id}/rescan`, { method: "POST" }),
   streamUrl: (id: number) => `${API_BASE}/stream/scene/${id}`,
   screenshotUrl: (id: number) => `${API_BASE}/stream/scene/${id}/screenshot`,
   previewUrl: (id: number) => `${API_BASE}/stream/scene/${id}/preview`,
@@ -500,4 +509,24 @@ export const plugins = {
     request<{ jobId: string }>("/plugins/packages/install", { method: "POST", body: JSON.stringify({ packages }) }),
   uninstallPackages: (ids: string[]) =>
     request<{ uninstalled: string[] }>("/plugins/packages/uninstall", { method: "POST", body: JSON.stringify(ids) }),
+};
+
+// ===== Extensions =====
+export const extensions = {
+  getManifest: () => request<ExtensionManifest>("/extensions/manifest"),
+  list: () => request<ExtensionInfo[]>("/extensions"),
+  enable: (id: string) => request<void>(`/extensions/${encodeURIComponent(id)}/enable`, { method: "POST" }),
+  disable: (id: string) => request<void>(`/extensions/${encodeURIComponent(id)}/disable`, { method: "POST" }),
+  getData: (id: string) => request<Record<string, string>>(`/extensions/${encodeURIComponent(id)}/data`),
+  setData: (id: string, key: string, value: string) =>
+    request<void>(`/extensions/${encodeURIComponent(id)}/data/${encodeURIComponent(key)}`, {
+      method: "PUT",
+      body: JSON.stringify(value),
+    }),
+  runJob: (id: string, jobId: string, parameters?: Record<string, string>) =>
+    request<{ message: string }>(`/extensions/${encodeURIComponent(id)}/jobs/${encodeURIComponent(jobId)}/run`, {
+      method: "POST",
+      body: JSON.stringify(parameters ?? null),
+    }),
+  assetUrl: (extensionId: string, path: string) => `${API_BASE}/extensions/assets/${encodeURIComponent(extensionId)}/${path}`,
 };

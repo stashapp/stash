@@ -1,4 +1,4 @@
-import { Film, Users, Building2, Tags, Image, ImageIcon, Layers, Settings, BarChart3, Activity, Clapperboard, Bookmark, HelpCircle } from "lucide-react";
+import { Film, Users, Building2, Tags, Image, ImageIcon, Layers, Settings, BarChart3, Activity, Clapperboard, Bookmark, HelpCircle, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { JobDrawer, useJobCount } from "./JobDrawer";
 import { GlobalSearch } from "./GlobalSearch";
@@ -35,6 +35,7 @@ const DETAIL_PARENT_PAGE: Record<string, string> = {
 export function Navbar({ currentPage, navigate }: NavbarProps) {
   const [jobDrawerOpen, setJobDrawerOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const jobCount = useJobCount();
   const { routes } = useRouteRegistry();
   const { config } = useAppConfig();
@@ -53,7 +54,7 @@ export function Navbar({ currentPage, navigate }: NavbarProps) {
 
   return (
     <nav className="stash-navbar bg-plex-nav sticky top-0 z-50 shadow-lg shadow-black/30">
-      <div className="max-w-[1800px] mx-auto px-4">
+      <div className="w-full px-4">
         <div className="flex items-center h-12">
           {/* Logo */}
           <button
@@ -66,8 +67,16 @@ export function Navbar({ currentPage, navigate }: NavbarProps) {
             </span>
           </button>
 
-          {/* Nav items */}
-          <div className="flex items-center gap-0.5 overflow-x-auto">
+          {/* Hamburger button - mobile only */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded text-plex-text-secondary hover:text-plex-text mr-2"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          {/* Nav items - hidden on mobile */}
+          <div className="hidden md:flex items-center gap-0.5 overflow-x-auto">
             {allNavItems.map(({ page, label, icon: Icon }) => (
               <button
                 key={page}
@@ -133,6 +142,27 @@ export function Navbar({ currentPage, navigate }: NavbarProps) {
       </div>
       <JobDrawer open={jobDrawerOpen} onClose={() => setJobDrawerOpen(false)} />
       <KeyboardShortcutsDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-plex-nav border-t border-plex-border shadow-lg">
+          <div className="px-4 py-2 space-y-1">
+            {allNavItems.map(({ page, label, icon: Icon }) => (
+              <button
+                key={page}
+                onClick={() => { navigate({ page }); setMobileMenuOpen(false); }}
+                className={`flex items-center gap-2 w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
+                  activePage === page
+                    ? "text-plex-accent bg-plex-accent/10"
+                    : "text-plex-text-secondary hover:text-plex-text hover:bg-plex-surface"
+                }`}
+              >
+                {Icon && <Icon className="w-4 h-4" />}
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

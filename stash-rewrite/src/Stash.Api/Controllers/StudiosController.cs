@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Stash.Api.Services;
 using Stash.Core.DTOs;
@@ -13,6 +14,7 @@ namespace Stash.Api.Controllers;
 public class StudiosController(IStudioRepository studioRepo, StashBoxService stashBoxService, Data.StashContext db) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<PaginatedResponse<StudioDto>>> Find(
         [FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int perPage = 25,
         [FromQuery] string? sort = null, [FromQuery] string? direction = null,
@@ -43,6 +45,7 @@ public class StudiosController(IStudioRepository studioRepo, StashBoxService sta
     }
 
     [HttpGet("{id:int}")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<StudioDto>> GetById(int id, CancellationToken ct)
     {
         var studio = await studioRepo.GetByIdWithRelationsAsync(id, ct);
@@ -97,6 +100,7 @@ public class StudiosController(IStudioRepository studioRepo, StashBoxService sta
             studio.StudioTags.Clear();
             studio.StudioTags = dto.TagIds.Select(tid => new StudioTag { TagId = tid, StudioId = id }).ToList();
         }
+        if (dto.CustomFields != null) studio.CustomFields = dto.CustomFields;
 
         await studioRepo.UpdateAsync(studio, ct);
         var updated = await studioRepo.GetByIdWithRelationsAsync(id, ct);
@@ -125,6 +129,7 @@ public class StudiosController(IStudioRepository studioRepo, StashBoxService sta
         performerCount ?? 0,
         childStudioCount ?? s.Children?.Count ?? 0,
         s.ImageBlobId != null ? $"/api/studios/{s.Id}/image" : null,
+        s.CustomFields,
         s.CreatedAt.ToString("o"), s.UpdatedAt.ToString("o")
     );
 
@@ -210,6 +215,7 @@ public class StudiosController(IStudioRepository studioRepo, StashBoxService sta
     // ===== Stash-Box =====
 
     [HttpGet("{id:int}/stash-box/search")]
+    [OutputCache(PolicyName = "ShortCache")]
     public async Task<ActionResult<IReadOnlyList<StashBoxStudioMatchDto>>> SearchStashBox(int id, [FromQuery] string? term, [FromQuery] string? endpoint, CancellationToken ct)
     {
         var studio = await studioRepo.GetByIdWithRelationsAsync(id, ct);

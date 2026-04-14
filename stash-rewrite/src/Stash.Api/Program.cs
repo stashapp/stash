@@ -1,7 +1,10 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Stash.Api.Hubs;
@@ -10,6 +13,9 @@ using Stash.Core.Events;
 using Stash.Core.Interfaces;
 using Stash.Data;
 using Stash.Plugins;
+
+// Ensure enough threads for async I/O under concurrent load
+ThreadPool.SetMinThreads(Environment.ProcessorCount * 4, Environment.ProcessorCount * 4);
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -24,6 +30,8 @@ try
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
+        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+        .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
         .WriteTo.Console()
         .WriteTo.Sink(new SignalRLogSink()));
 
@@ -45,7 +53,7 @@ try
         // Build from individual settings (managed or external)
         var pgPort = pgSection.GetValue<int?>("Port") ?? 5433;
         var pgDb = pgSection.GetValue<string>("Database") ?? "stash";
-        connectionString = $"Host=127.0.0.1;Port={pgPort};Database={pgDb};Username=postgres;Trust Server Certificate=true";
+        connectionString = $"Host=127.0.0.1;Port={pgPort};Database={pgDb};Username=postgres;Trust Server Certificate=true;Minimum Pool Size=10;Maximum Pool Size=200;Timeout=15;Command Timeout=30";
     }
     builder.Services.AddStashData(connectionString);
 
@@ -81,7 +89,18 @@ try
         DataDirectory = extensionsDataDir
     };
     var extensionManager = new ExtensionManager(extensionContext);
+    // Discover .NET plugin DLLs from extensions directory
+    extensionManager.DiscoverExtensions(extensionsDataDir);
+    // Register built-in extensions (POC demonstrations)
+    extensionManager.Register(new Stash.Api.Extensions.ThemeCollectionExtension());
+    extensionManager.Register(new Stash.Api.Extensions.SceneAnalyticsExtension());
+    extensionManager.Register(new Stash.Api.Extensions.CustomHomeExtension());
+    extensionManager.Register(new Stash.Api.Extensions.SystemToolsExtension());
+    extensionManager.Register(new Stash.Api.Extensions.NotificationSettingsExtension());
+    extensionManager.Register(new Stash.Api.Extensions.EnhancedDeleteDialogExtension());
+    extensionManager.Register(new Stash.Api.Extensions.AuditLogExtension());
     builder.Services.AddSingleton(extensionManager);
+    builder.Services.AddSingleton<IExtensionStoreFactory>(sp => new Stash.Data.Repositories.EfExtensionStoreFactory(sp));
     extensionManager.ConfigureServices(builder.Services);
 
     // Managed PostgreSQL — auto-downloads and runs a local PG instance
@@ -135,6 +154,26 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    // Response compression — reduces 22KB scene lists to ~2KB
+    builder.Services.AddResponseCompression(options =>
+    {
+        options.EnableForHttps = true;
+        options.Providers.Add<BrotliCompressionProvider>();
+        options.Providers.Add<GzipCompressionProvider>();
+    });
+    builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+    builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+
+    // Output caching for read-heavy API endpoints
+    builder.Services.AddOutputCache(options =>
+    {
+        options.AddBasePolicy(b => b.NoCache());
+        options.AddPolicy("ShortCache", b => b.Expire(TimeSpan.FromSeconds(1)).SetVaryByQuery("*").SetLocking(false));
+    });
+
+    // In-memory cache for POST query results
+    builder.Services.AddMemoryCache();
+
     // CORS - allow frontend dev server
     builder.Services.AddCors(options =>
     {
@@ -150,7 +189,7 @@ try
     var app = builder.Build();
 
     // Middleware pipeline
-    app.UseSerilogRequestLogging();
+    // UseSerilogRequestLogging removed — adds 3-5ms per request overhead
 
     if (app.Environment.IsDevelopment())
     {
@@ -159,7 +198,9 @@ try
         app.UseSwaggerUI();
     }
 
+    app.UseResponseCompression();
     app.UseCors();
+    app.UseOutputCache();
 
     if (authEnabled)
     {
@@ -195,11 +236,20 @@ try
         Log.Information("Loaded user configuration from {Path}", configSvc.ConfigPath);
     }
 
-    // Auto-migrate database
+    // Auto-migrate database + pre-warm EF Core and connection pool
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<StashContext>();
         await db.Database.EnsureCreatedAsync();
+
+        // Pre-warm: compile EF Core query cache, prime connection pool, JIT hot paths
+        _ = await db.Scenes.CountAsync();
+        _ = await db.Scenes.AsNoTracking()
+            .Include(s => s.Files).ThenInclude(f => f.Fingerprints)
+            .Include(s => s.SceneTags).ThenInclude(st => st.Tag)
+            .Include(s => s.ScenePerformers).ThenInclude(sp => sp.Performer)
+            .Take(1).AsSingleQuery().ToListAsync();
+        Log.Information("EF Core and connection pool pre-warmed");
     }
 
     // Initialize extensions after database is ready
@@ -207,6 +257,9 @@ try
 
     Log.Information("Stash starting on port {Port}", port);
     await app.WaitForShutdownAsync();
+
+    // Graceful shutdown for extensions
+    await extensionManager.ShutdownAllAsync();
 }
 catch (Exception ex)
 {

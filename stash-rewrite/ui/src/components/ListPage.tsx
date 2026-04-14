@@ -128,7 +128,7 @@ export function ListPage({
   return (
     <div className="space-y-0">
       {/* Toolbar - matches Stash's FilteredListToolbar */}
-      <div className="flex flex-wrap items-center gap-2 bg-plex-surface border-b border-plex-border px-3 py-1.5">
+      <div className="flex flex-wrap items-center gap-2 bg-plex-surface border-b border-plex-border px-3 py-1.5 sticky top-0 z-30">
         {/* Title + count + byline */}
         <div className="flex items-center gap-2 mr-2">
           <h1 className="text-sm font-semibold text-plex-text whitespace-nowrap">{title}</h1>

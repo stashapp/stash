@@ -8,7 +8,7 @@ import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components
 import { useMultiSelect } from "../hooks/useMultiSelect";
 import { PERFORMER_CRITERIA } from "../components/FilterDialog";
 import { BulkEditDialog, PERFORMER_BULK_FIELDS } from "../components/BulkEditDialog";
-import { Users, Heart, Tag, Film, Image, LayoutGrid, Trash2, Loader2, Check, Edit, Merge } from "lucide-react";
+import { Users, Heart, Tag, Film, Image, LayoutGrid, Layers, Trash2, Loader2, Check, Edit, Merge } from "lucide-react";
 import { MergeDialog } from "../components/MergeDialog";
 import { PerformerTagger } from "../components/PerformerTagger";
 
@@ -305,7 +305,7 @@ function PerformerCardPopovers({ performer }: { performer: Performer }) {
       )}
       {performer.groupCount > 0 && (
         <span className="flex items-center gap-0.5 text-xs text-plex-text-muted px-1" title="Groups">
-          <Film className="w-3 h-3" /> {performer.groupCount}
+          <Layers className="w-3 h-3" /> {performer.groupCount}
         </span>
       )}
       {performer.tags.length > 0 && (

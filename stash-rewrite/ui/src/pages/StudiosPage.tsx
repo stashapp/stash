@@ -6,7 +6,7 @@ import { ListPage, type DisplayMode } from "../components/ListPage";
 import { RatingBanner, RatingField } from "../components/Rating";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { useMultiSelect } from "../hooks/useMultiSelect";
-import { Building2, Film, Image, LayoutGrid, Trash2, Loader2, Check, Edit, Merge, Heart, Box } from "lucide-react";
+import { Building2, Film, Image, LayoutGrid, Trash2, Loader2, Check, Edit, Merge, Heart, Box, Users, Layers, Tag as TagIcon } from "lucide-react";
 import { STUDIO_CRITERIA } from "../components/FilterDialog";
 import { BulkEditDialog } from "../components/BulkEditDialog";
 import { MergeDialog } from "../components/MergeDialog";
@@ -207,11 +207,16 @@ function StudioCard({ studio, onClick, selected, onSelect, selecting }: { studio
           <div className="text-xs text-plex-text-muted truncate">↑ {studio.parentName}</div>
         )}
       </div>
-      {(studio.sceneCount > 0 || studio.imageCount > 0 || studio.galleryCount > 0 || studio.groupCount > 0 || studio.tags.length > 0 || studio.organized) && (
+      {(studio.sceneCount > 0 || studio.imageCount > 0 || studio.galleryCount > 0 || studio.groupCount > 0 || studio.performerCount > 0 || studio.tags.length > 0 || studio.childStudioCount > 0 || studio.organized) && (
         <div className="flex items-center justify-center gap-1 px-2 pb-2 border-t border-plex-border pt-1.5 flex-wrap">
           {studio.sceneCount > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Scenes">
               <Film className="w-3 h-3" /> {studio.sceneCount}
+            </span>
+          )}
+          {studio.groupCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Groups">
+              <Layers className="w-3 h-3" /> {studio.groupCount}
             </span>
           )}
           {studio.imageCount > 0 && (
@@ -224,14 +229,19 @@ function StudioCard({ studio, onClick, selected, onSelect, selecting }: { studio
               <LayoutGrid className="w-3 h-3" /> {studio.galleryCount}
             </span>
           )}
-          {studio.groupCount > 0 && (
-            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Groups">
-              <Film className="w-3 h-3" /> {studio.groupCount}
+          {studio.performerCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Performers">
+              <Users className="w-3 h-3" /> {studio.performerCount}
             </span>
           )}
           {studio.tags.length > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Tags">
-              <Building2 className="w-3 h-3" /> {studio.tags.length}
+              <TagIcon className="w-3 h-3" /> {studio.tags.length}
+            </span>
+          )}
+          {studio.childStudioCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Sub-Studios">
+              <Building2 className="w-3 h-3" /> {studio.childStudioCount}
             </span>
           )}
           {studio.organized && (

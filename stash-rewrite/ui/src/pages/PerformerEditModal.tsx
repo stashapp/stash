@@ -5,6 +5,7 @@ import { ImageInput } from "../components/ImageInput";
 import type { Performer, PerformerUpdate } from "../api/types";
 import { EditModal, Field, TextInput, TextArea, NumberInput, SaveButton } from "../components/EditModal";
 import { RatingField } from "../components/Rating";
+import { CustomFieldsEditor } from "../components/shared";
 
 interface Props {
   performer: Performer;
@@ -56,6 +57,9 @@ export function PerformerEditModal({ performer, open, onClose }: Props) {
   const [aliases, setAliases] = useState(performer.aliases.join(", "));
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(performer.tags.map((t) => t.id));
   const [tagSearch, setTagSearch] = useState("");
+  const [customFields, setCustomFields] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(performer.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")]))
+  );
 
   const { data: allTags } = useQuery({
     queryKey: ["tags-all"],
@@ -89,6 +93,7 @@ export function PerformerEditModal({ performer, open, onClose }: Props) {
     setUrls(performer.urls.join("\n"));
     setAliases(performer.aliases.join(", "));
     setSelectedTagIds(performer.tags.map((t) => t.id));
+    setCustomFields(Object.fromEntries(Object.entries(performer.customFields ?? {}).map(([k, v]) => [k, String(v ?? "")])));
   }, [performer]);
 
   const mutation = useMutation({
@@ -130,6 +135,7 @@ export function PerformerEditModal({ performer, open, onClose }: Props) {
       urls: urlList,
       aliases: aliasList,
       tagIds: selectedTagIds,
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
     });
   };
 
@@ -321,6 +327,10 @@ export function PerformerEditModal({ performer, open, onClose }: Props) {
           Ignore Auto Tag
         </label>
       </div>
+
+      <Field label="Custom Fields">
+        <CustomFieldsEditor value={customFields} onChange={setCustomFields} />
+      </Field>
         </div>{/* end right column */}
       </div>{/* end grid */}
 

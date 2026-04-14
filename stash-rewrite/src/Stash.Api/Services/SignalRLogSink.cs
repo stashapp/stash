@@ -36,7 +36,8 @@ public class SignalRLogSink : ILogEventSink
         while (_recentLogs.Count > MaxLogs)
             _recentLogs.TryDequeue(out _);
 
-        _hubContext?.Clients.All.SendAsync("LogReceived", entry);
+        // Fire-and-forget: don't await, avoid blocking the logging pipeline
+        _ = _hubContext?.Clients.All.SendAsync("LogReceived", entry);
     }
 }
 

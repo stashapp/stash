@@ -13,6 +13,7 @@ import { BulkEditDialog, SCENE_BULK_FIELDS } from "../components/BulkEditDialog"
 import { EditModal, Field, TextArea, TextInput, SaveButton } from "../components/EditModal";
 import { Film, Tag, User, MapPin, Box, Eye, Trash2, Loader2, Edit, Merge, Search, Play, Images } from "lucide-react";
 import { MergeDialog } from "../components/MergeDialog";
+import { useSceneQueue } from "../state/SceneQueueContext";
 import { IdentifyDialog } from "../components/IdentifyDialog";
 import { SceneQueue } from "../components/SceneQueue";
 
@@ -53,6 +54,7 @@ export function ScenesPage({ onNavigate }: Props) {
   const [showIdentify, setShowIdentify] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const queryClient = useQueryClient();
+  const { setQueue } = useSceneQueue();
 
   const hasObjectFilter = Object.keys(objectFilter).length > 0;
 
@@ -67,6 +69,12 @@ export function ScenesPage({ onNavigate }: Props) {
   const items = data?.items ?? [];
   const { selectedIds, toggle, selectAll, selectNone } = useMultiSelect(items);
   const selecting = selectedIds.size > 0;
+
+  const navigateToScene = useCallback((sceneId: number) => {
+    const ids = items.map((s) => s.id);
+    if (ids.length > 0) setQueue(ids, sceneId);
+    onNavigate({ page: "scene", id: sceneId });
+  }, [items, setQueue, onNavigate]);
 
   // Bulk delete
   const bulkDeleteMut = useMutation({
@@ -175,7 +183,7 @@ export function ScenesPage({ onNavigate }: Props) {
             <SceneCard
               key={scene.id}
               scene={scene}
-              onClick={() => onNavigate({ page: "scene", id: scene.id })}
+              onClick={() => navigateToScene(scene.id)}
               onNavigate={onNavigate}
               selected={selectedIds.has(scene.id)}
               onSelect={() => toggle(scene.id)}
@@ -190,7 +198,7 @@ export function ScenesPage({ onNavigate }: Props) {
       {displayMode === "wall" && (
         <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-1 px-2">
           {items.map((scene) => (
-            <SceneWallCard key={scene.id} scene={scene} onClick={() => onNavigate({ page: "scene", id: scene.id })} />
+            <SceneWallCard key={scene.id} scene={scene} onClick={() => navigateToScene(scene.id)} />
           ))}
         </div>
       )}
@@ -631,35 +639,39 @@ function SceneCardPopovers({ scene, onNavigate }: { scene: Scene; onNavigate?: (
   return (
     <>
       <hr className="border-plex-border my-0" />
-      <div className="flex flex-wrap items-center justify-center gap-0.5 px-1.5 py-1 bg-plex-card rounded-b card-popovers">
+      <div className="flex flex-wrap items-center justify-center gap-1 px-2 py-1.5 bg-plex-card rounded-b card-popovers">
       {scene.performers.length > 0 && (
-        <PopoverButton icon={<User className="w-3 h-3" />} count={scene.performers.length} title="Performers">
-          <div className="flex flex-col gap-1">
+        <PopoverButton icon={<User className="w-3.5 h-3.5" />} count={scene.performers.length} title="Performers" wide>
+          <div className="grid grid-cols-2 gap-2">
             {scene.performers.map((p: any) => (
               <button
                 key={p.id}
                 onClick={(e) => { e.stopPropagation(); onNavigate?.({ page: "performer", id: p.id }); }}
-                className="flex items-center gap-1.5 text-[11px] text-plex-accent hover:underline cursor-pointer truncate text-left px-1 py-0.5 rounded hover:bg-plex-card"
+                className="flex flex-col items-center gap-1.5 text-center cursor-pointer rounded hover:bg-plex-card-hover p-1.5 group/perf transition-colors"
               >
-                {p.imagePath ? (
-                  <img src={p.imagePath} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <User className="w-4 h-4 text-plex-text-muted flex-shrink-0" />
-                )}
-                <span className="truncate">{p.name}</span>
+                <div className="w-20 h-28 rounded overflow-hidden bg-plex-surface flex-shrink-0">
+                  {p.imagePath ? (
+                    <img src={p.imagePath} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-8 h-8 text-plex-text-muted" />
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-plex-accent group-hover/perf:underline truncate w-full font-medium">{p.name}</span>
               </button>
             ))}
           </div>
         </PopoverButton>
       )}
       {scene.tags.length > 0 && (
-        <PopoverButton icon={<Tag className="w-3 h-3" />} count={scene.tags.length} title="Tags">
+        <PopoverButton icon={<Tag className="w-3.5 h-3.5" />} count={scene.tags.length} title="Tags">
           <div className="flex flex-col gap-0.5">
             {scene.tags.map((t: any) => (
               <button
                 key={t.id}
                 onClick={(e) => { e.stopPropagation(); onNavigate?.({ page: "tag", id: t.id }); }}
-                className="text-[11px] text-plex-accent hover:underline cursor-pointer truncate text-left px-1 py-0.5 rounded hover:bg-plex-card"
+                className="text-xs text-plex-accent hover:underline cursor-pointer truncate text-left px-2 py-1 rounded hover:bg-plex-card-hover transition-colors"
               >
                 {t.name}
               </button>
@@ -669,18 +681,18 @@ function SceneCardPopovers({ scene, onNavigate }: { scene: Scene; onNavigate?: (
       )}
       {scene.oCounter > 0 && (
         <span className="flex items-center gap-0.5 p-1 text-plex-text-muted" title={`O-Counter: ${scene.oCounter}`}>
-          <span className="text-[10px] font-bold">O</span>
-          <span className="text-[10px]">{scene.oCounter}</span>
+          <span className="text-xs font-bold">O</span>
+          <span className="text-xs">{scene.oCounter}</span>
         </span>
       )}
       {scene.groups.length > 0 && (
-        <PopoverButton icon={<Film className="w-3 h-3" />} count={scene.groups.length} title="Groups">
+        <PopoverButton icon={<Film className="w-3.5 h-3.5" />} count={scene.groups.length} title="Groups">
           <div className="flex flex-col gap-0.5">
             {scene.groups.map((g: any) => (
               <button
                 key={g.id}
                 onClick={(e) => { e.stopPropagation(); onNavigate?.({ page: "group", id: g.id }); }}
-                className="text-[11px] text-plex-accent hover:underline cursor-pointer truncate text-left px-1 py-0.5 rounded hover:bg-plex-card"
+                className="text-xs text-plex-accent hover:underline cursor-pointer truncate text-left px-2 py-1 rounded hover:bg-plex-card-hover transition-colors"
               >
                 {g.name}
               </button>
@@ -689,13 +701,13 @@ function SceneCardPopovers({ scene, onNavigate }: { scene: Scene; onNavigate?: (
         </PopoverButton>
       )}
       {scene.galleries.length > 0 && (
-        <PopoverButton icon={<Images className="w-3 h-3" />} count={scene.galleries.length} title="Galleries">
+        <PopoverButton icon={<Images className="w-3.5 h-3.5" />} count={scene.galleries.length} title="Galleries">
           <div className="flex flex-col gap-0.5">
             {scene.galleries.map((g: any) => (
               <button
                 key={g.id}
                 onClick={(e) => { e.stopPropagation(); onNavigate?.({ page: "gallery", id: g.id }); }}
-                className="text-[11px] text-plex-accent hover:underline cursor-pointer truncate text-left px-1 py-0.5 rounded hover:bg-plex-card"
+                className="text-xs text-plex-accent hover:underline cursor-pointer truncate text-left px-2 py-1 rounded hover:bg-plex-card-hover transition-colors"
               >
                 {g.title || "Untitled"}
               </button>
@@ -704,13 +716,13 @@ function SceneCardPopovers({ scene, onNavigate }: { scene: Scene; onNavigate?: (
         </PopoverButton>
       )}
       {scene.markers.length > 0 && (
-        <PopoverButton icon={<MapPin className="w-3 h-3" />} count={scene.markers.length} title="Markers">
+        <PopoverButton icon={<MapPin className="w-3.5 h-3.5" />} count={scene.markers.length} title="Markers">
           <div className="flex flex-col gap-0.5">
             {scene.markers.map((m: any) => (
               <button
                 key={m.id}
                 onClick={(e) => { e.stopPropagation(); onNavigate?.({ page: "scene", id: scene.id }); }}
-                className="text-[11px] text-plex-accent hover:underline cursor-pointer truncate text-left px-1 py-0.5 rounded hover:bg-plex-card"
+                className="text-xs text-plex-accent hover:underline cursor-pointer truncate text-left px-2 py-1 rounded hover:bg-plex-card-hover transition-colors"
               >
                 {m.title} ({formatDuration(m.seconds)})
               </button>
@@ -720,7 +732,7 @@ function SceneCardPopovers({ scene, onNavigate }: { scene: Scene; onNavigate?: (
       )}
       {scene.organized && (
         <span className="p-1 text-plex-text-muted" title="Organized">
-          <Box className="w-3 h-3" />
+          <Box className="w-3.5 h-3.5" />
         </span>
       )}
     </div>
@@ -728,7 +740,7 @@ function SceneCardPopovers({ scene, onNavigate }: { scene: Scene; onNavigate?: (
   );
 }
 
-function PopoverButton({ icon, count, title, children }: { icon: React.ReactNode; count: number; title: string; children?: React.ReactNode }) {
+function PopoverButton({ icon, count, title, children, wide }: { icon: React.ReactNode; count: number; title: string; children?: React.ReactNode; wide?: boolean }) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -754,7 +766,7 @@ function PopoverButton({ icon, count, title, children }: { icon: React.ReactNode
         }
         // Horizontal: try to center on button, clamp to viewport
         const centerX = rect.left + rect.width / 2;
-        const popWidth = 220; // approximate min width
+        const popWidth = wide ? 300 : 220; // approximate min width
         let left = centerX - popWidth / 2;
         if (left < 8) left = 8;
         if (left + popWidth > window.innerWidth - 8) left = window.innerWidth - 8 - popWidth;
@@ -775,22 +787,23 @@ function PopoverButton({ icon, count, title, children }: { icon: React.ReactNode
   return (
     <div className="relative" ref={buttonRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <button
-        className="flex items-center gap-0.5 px-1 py-0.5 text-plex-text-secondary hover:text-plex-text rounded text-[10px]"
+        className="flex items-center gap-1 px-1.5 py-1 text-plex-text-secondary hover:text-plex-accent rounded text-xs transition-colors"
         title={title}
         onClick={(e) => e.stopPropagation()}
       >
         {icon}
-        <span>{count}</span>
+        <span className="font-medium">{count}</span>
       </button>
       {open && children && createPortal(
         <div
           ref={popoverRef}
           style={popoverStyle}
-          className="bg-plex-surface border border-plex-border rounded-lg shadow-xl p-2 min-w-[160px] max-w-[min(280px,calc(100vw-1rem))] max-h-[280px] overflow-y-auto"
+          className={`bg-plex-surface border border-plex-border rounded-lg shadow-2xl shadow-black/40 p-2.5 ${wide ? "min-w-[280px] max-w-[360px]" : "min-w-[180px] max-w-[min(280px,calc(100vw-1rem))]"} max-h-[320px] overflow-y-auto`}
           onClick={(e) => e.stopPropagation()}
           onMouseEnter={() => { clearTimeout(leaveTimer.current); }}
           onMouseLeave={handleMouseLeave}
         >
+          <div className="text-[10px] uppercase tracking-wider text-plex-text-muted font-semibold mb-1.5 px-1">{title}</div>
           {children}
         </div>,
         document.body

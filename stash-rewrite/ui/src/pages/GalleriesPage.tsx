@@ -6,7 +6,7 @@ import { ListPage, type DisplayMode } from "../components/ListPage";
 import { RatingBanner, RatingField } from "../components/Rating";
 import { EditModal, Field, TextInput, TextArea, SaveButton } from "../components/EditModal";
 import { useMultiSelect } from "../hooks/useMultiSelect";
-import { FolderOpen, Image, Users, Tag, Trash2, Loader2, Edit, Box } from "lucide-react";
+import { FolderOpen, Image, Users, Tag, Trash2, Loader2, Edit, Box, Film } from "lucide-react";
 import { GALLERY_CRITERIA } from "../components/FilterDialog";
 import { BulkEditDialog, GALLERY_BULK_FIELDS } from "../components/BulkEditDialog";
 
@@ -174,7 +174,7 @@ function GalleryCard({ gallery, onClick, selected, onSelect, selecting }: { gall
 }
 
 function GalleryCardPopovers({ gallery }: { gallery: Gallery }) {
-  const hasAny = gallery.imageCount > 0 || gallery.performers.length > 0 || gallery.tags.length > 0 || gallery.organized;
+  const hasAny = gallery.imageCount > 0 || gallery.performers.length > 0 || gallery.tags.length > 0 || gallery.sceneCount > 0 || gallery.organized;
   if (!hasAny) return null;
 
   return (
@@ -184,14 +184,19 @@ function GalleryCardPopovers({ gallery }: { gallery: Gallery }) {
           <Image className="w-3 h-3" /> {gallery.imageCount}
         </span>
       )}
+      {gallery.tags.length > 0 && (
+        <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Tags">
+          <Tag className="w-3 h-3" /> {gallery.tags.length}
+        </span>
+      )}
       {gallery.performers.length > 0 && (
         <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Performers">
           <Users className="w-3 h-3" /> {gallery.performers.length}
         </span>
       )}
-      {gallery.tags.length > 0 && (
-        <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Tags">
-          <Tag className="w-3 h-3" /> {gallery.tags.length}
+      {gallery.sceneCount > 0 && (
+        <span className="flex items-center gap-0.5 text-xs text-plex-text-muted" title="Scenes">
+          <Film className="w-3 h-3" /> {gallery.sceneCount}
         </span>
       )}
       {gallery.organized && (
