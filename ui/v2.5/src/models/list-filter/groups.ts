@@ -17,6 +17,7 @@ import {
   ContainingGroupsCriterionOption,
   SubGroupsCriterionOption,
 } from "./criteria/groups";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
 
 const defaultSortBy = "name";
 
@@ -35,6 +36,11 @@ const sortByOptions = [
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "o_count",
+      value: "o_counter",
+      sfwMessageID: "o_count_sfw",
+    },
   ]);
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
@@ -49,14 +55,19 @@ const criterionOptions = [
   RatingCriterionOption,
   PerformersCriterionOption,
   createDateCriterionOption("date"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   ContainingGroupsCriterionOption,
   SubGroupsCriterionOption,
   createMandatoryNumberCriterionOption("containing_group_count"),
   createMandatoryNumberCriterionOption("sub_group_count"),
   TagsCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 
 export const GroupListFilterOptions = new ListFilterOptions(

@@ -22,7 +22,7 @@ fragment GalleryData on Gallery {
   folder {
     ...FolderData
   }
-
+  image_count
   chapters {
     ...GalleryChapterData
   }
@@ -39,6 +39,8 @@ fragment GalleryData on Gallery {
   scenes {
     ...SlimSceneData
   }
+
+  custom_fields
 }
 
 fragment SelectGalleryData on Gallery {

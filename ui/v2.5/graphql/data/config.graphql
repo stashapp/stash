@@ -6,6 +6,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   }
   databasePath
   backupDirectoryPath
+  deleteTrashPath
   generatedPath
   metadataPath
   scrapersPath
@@ -37,6 +38,12 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
+  logFileMaxSize
+  useCustomSpriteInterval
+  spriteInterval
+  minimumSprites
+  maximumSprites
+  spriteScreenshotSize
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
@@ -49,6 +56,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     name
     endpoint
     api_key
+    max_requests_per_minute
   }
   pythonPath
   transcodeInputArgs
@@ -70,6 +78,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
+  sfwContentMode
   menuItems
   soundOnPreview
   wallShowTitle
@@ -88,6 +97,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   javascriptEnabled
   customLocales
   customLocalesEnabled
+  disableCustomizations
   language
   imageLightbox {
     slideshowDelay
@@ -96,12 +106,14 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     resetZoomOnNav
     scrollMode
     scrollAttemptsBeforeChange
+    disableAnimation
   }
   disableDropdownCreate {
     performer
     tag
     studio
     movie
+    gallery
   }
   handyKey
   funscriptOffset
@@ -136,7 +148,7 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   }
   setCoverImage
   setOrganized
-  includeMalePerformers
+  performerGenders
   skipMultipleMatches
   skipMultipleMatchTag
   skipSingleNamePerformers

@@ -26,7 +26,6 @@ const (
 	performerName  = "testPerformer"
 	disambiguation = "disambiguation"
 	url            = "url"
-	careerLength   = "careerLength"
 	country        = "country"
 	ethnicity      = "ethnicity"
 	eyeColor       = "eyeColor"
@@ -49,8 +48,10 @@ var (
 	rating          = 5
 	height          = 123
 	weight          = 60
+	careerStart, _  = models.ParseDate("2005")
+	careerEnd, _    = models.ParseDate("2015")
 	penisLength     = 1.23
-	circumcisedEnum = models.CircumisedEnumCut
+	circumcisedEnum = models.CircumcisedEnumCut
 	circumcised     = circumcisedEnum.String()
 
 	emptyCustomFields = make(map[string]interface{})
@@ -87,7 +88,8 @@ func createFullPerformer(id int, name string) *models.Performer {
 		URLs:           models.NewRelatedStrings([]string{url, twitter, instagram}),
 		Aliases:        models.NewRelatedStrings(aliases),
 		Birthdate:      &birthDate,
-		CareerLength:   careerLength,
+		CareerStart:    &careerStart,
+		CareerEnd:      &careerEnd,
 		Country:        country,
 		Ethnicity:      ethnicity,
 		EyeColor:       eyeColor,
@@ -132,7 +134,8 @@ func createFullJSONPerformer(name string, image string, withCustomFields bool) *
 		URLs:           []string{url, twitter, instagram},
 		Aliases:        aliases,
 		Birthdate:      birthDate.String(),
-		CareerLength:   careerLength,
+		CareerStart:    careerStart.String(),
+		CareerEnd:      careerEnd.String(),
 		Country:        country,
 		Ethnicity:      ethnicity,
 		EyeColor:       eyeColor,

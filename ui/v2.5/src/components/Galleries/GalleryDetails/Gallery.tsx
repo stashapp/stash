@@ -1,12 +1,7 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import {
-  useHistory,
-  Link,
-  RouteComponentProps,
-  Redirect,
-} from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import React, { useEffect, useMemo, useState } from "react";
+import { useHistory, RouteComponentProps, Redirect } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -15,6 +10,11 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
+import { lazyComponent } from "src/utils/lazyComponent";
+
+const GenerateDialog = lazyComponent(
+  () => import("../../Dialogs/GenerateDialog")
+);
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
@@ -41,8 +41,11 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
+import { StudioLogo } from "src/components/Shared/StudioLogo";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -58,7 +61,8 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -163,11 +167,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.push("/galleries");
+      goBackOrReplace(history, "/galleries");
     }
   }
 
@@ -177,6 +182,18 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <DeleteGalleriesDialog
           selected={[{ ...gallery, image_count: NaN }]}
           onClose={onDeleteDialogClosed}
+        />
+      );
+    }
+  }
+
+  function maybeRenderGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={[gallery.id]}
+          onClose={() => setIsGenerateDialogOpen(false)}
+          type="gallery"
         />
       );
     }
@@ -207,6 +224,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             onClick={() => onResetCover()}
           >
             <FormattedMessage id="actions.reset_cover" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            {`${intl.formatMessage({ id: "actions.generate" })}…`}
           </Dropdown.Item>
           <Dropdown.Item
             className="bg-secondary text-white"
@@ -385,20 +408,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderDeleteDialog()}
+      {maybeRenderGenerateDialog()}
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div>
           <div className="gallery-header-container">
-            {gallery.studio && (
-              <h1 className="text-center gallery-studio-image">
-                <Link to={`/studios/${gallery.studio.id}`}>
-                  <img
-                    src={gallery.studio.image_path ?? ""}
-                    alt={`${gallery.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
-            )}
+            <StudioLogo studio={gallery.studio} showText={showStudioText} />
             <h3
               className={cx("gallery-header", { "no-studio": !gallery.studio })}
             >
@@ -409,11 +423,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           <div className="gallery-subheader">
             {!!gallery.date && (
               <span className="date" data-value={gallery.date}>
-                <FormattedDate
-                  value={gallery.date}
-                  format="long"
-                  timeZone="utc"
-                />
+                <FormattedDate value={gallery.date} />
               </span>
             )}
           </div>

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IStudio {
   id: string;
@@ -10,8 +10,9 @@ interface IStudio {
 
 export const StudioOverlay: React.FC<{
   studio: IStudio | null | undefined;
-}> = ({ studio }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  disabled?: boolean;
+}> = ({ studio, disabled }) => {
+  const { configuration } = useConfigurationContext();
 
   const configValue = configuration?.interface.showStudioAsText;
 
@@ -29,12 +30,18 @@ export const StudioOverlay: React.FC<{
     return false;
   }, [configValue, studio?.image_path]);
 
+  function onClick(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
+    if (disabled) {
+      e.preventDefault();
+    }
+  }
+
   if (!studio) return <></>;
 
   return (
     // this class name is incorrect
     <div className="studio-overlay">
-      <Link to={`/studios/${studio.id}`}>
+      <Link to={`/studios/${studio.id}`} onClick={onClick}>
         {showStudioAsText ? (
           studio.name
         ) : (

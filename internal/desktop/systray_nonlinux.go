@@ -3,6 +3,8 @@
 package desktop
 
 import (
+	"fmt"
+	"runtime"
 	"strings"
 
 	"github.com/kermieisinthehouse/systray"
@@ -20,7 +22,12 @@ func startSystray(exit chan int, faviconProvider FaviconProvider) {
 	// system is started from a non-terminal method, e.g. double-clicking an icon.
 	c := config.GetInstance()
 	if c.GetShowOneTimeMovedNotification() {
-		SendNotification("Stash has moved!", "Stash now runs in your tray, instead of a terminal window.")
+		// Use platform-appropriate terminology
+		location := "tray"
+		if runtime.GOOS == "darwin" {
+			location = "menu bar"
+		}
+		SendNotification("Stash has moved!", "Stash now runs in your "+location+", instead of a terminal window.")
 		c.SetBool(config.ShowOneTimeMovedNotification, false)
 		if err := c.Write(); err != nil {
 			logger.Errorf("Error while writing configuration file: %v", err)
@@ -52,12 +59,12 @@ func startSystray(exit chan int, faviconProvider FaviconProvider) {
 func systrayInitialize(exit chan<- int, faviconProvider FaviconProvider) {
 	favicon := faviconProvider.GetFavicon()
 	systray.SetTemplateIcon(favicon, favicon)
-	systray.SetTooltip("🟢 Stash is Running.")
+	c := config.GetInstance()
+	systray.SetTooltip(fmt.Sprintf("🟢 Stash is Running on port %d.", c.GetPort()))
 
 	openStashButton := systray.AddMenuItem("Open Stash", "Open a browser window to Stash")
 	var menuItems []string
 	systray.AddSeparator()
-	c := config.GetInstance()
 	if !c.IsNewSystem() {
 		menuItems = c.GetMenuItems()
 		for _, item := range menuItems {

@@ -18,6 +18,10 @@ func (s *sceneResolver) FindMany(ctx context.Context, ids []int) ([]*models.Scen
 	return s.scenes, nil
 }
 
+func (s *sceneResolver) FindByIDs(ctx context.Context, ids []int) ([]*models.Scene, error) {
+	return s.scenes, nil
+}
+
 func SceneQueryResult(scenes []*models.Scene, count int) *models.SceneQueryResult {
 	ret := models.NewSceneQueryResult(&sceneResolver{
 		scenes: scenes,

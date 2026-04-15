@@ -6,7 +6,7 @@ import {
   useLocation,
   useRouteMatch,
 } from "react-router-dom";
-import { IntlProvider, CustomFormats } from "react-intl";
+import { IntlProvider, CustomFormats, FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
@@ -31,7 +31,10 @@ import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
-import { ConfigurationProvider } from "./hooks/Config";
+import {
+  ConfigurationProvider,
+  useConfigurationContextOptional,
+} from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
@@ -46,9 +49,12 @@ import { PluginRoutes, PluginsLoader } from "./plugins";
 // import plugin_api to run code
 import "./pluginApi";
 import { ConnectionMonitor } from "./ConnectionMonitor";
+import { TroubleshootingModeOverlay } from "./components/TroubleshootingMode/TroubleshootingModeOverlay";
 import { PatchFunction } from "./patch";
 
 import moment from "moment/min/moment-with-locales";
+import { ErrorMessage } from "./components/Shared/ErrorMessage";
+import cx from "classnames";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -101,6 +107,23 @@ const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
     return <>{props.children}</>;
   }
 ) as React.FC;
+
+const MainContainer: React.FC = ({ children }) => {
+  // use optional here because the configuration may have be loading or errored
+  const { configuration } = useConfigurationContextOptional() || {};
+  const { sfwContentMode } = configuration?.interface || {};
+
+  return (
+    <div
+      className={cx("main container-fluid", {
+        apple: appleRendering,
+        "sfw-content-mode": sfwContentMode,
+      })}
+    >
+      {children}
+    </div>
+  );
+};
 
 function translateLanguageLocale(l: string) {
   // intl doesn't support all locales, so we need to map some to supported ones
@@ -315,48 +338,78 @@ export const App: React.FC = () => {
     );
   }
 
-  const titleProps = makeTitleProps();
+  const title = config.data?.configuration.ui.title || "Stash";
+  const titleProps = makeTitleProps(title);
+
+  if (!messages) {
+    return null;
+  }
+
+  function renderSimple(content: React.ReactNode) {
+    return (
+      <IntlProvider
+        locale={intlLanguage}
+        messages={messages}
+        formats={intlFormats}
+      >
+        <MainContainer>{content}</MainContainer>
+      </IntlProvider>
+    );
+  }
+
+  if (config.loading) {
+    return renderSimple(<LoadingIndicator />);
+  }
+
+  if (config.error) {
+    return renderSimple(
+      <ErrorMessage
+        message={
+          <FormattedMessage
+            id="errors.loading_type"
+            values={{ type: "configuration" }}
+          />
+        }
+        error={config.error.message}
+      />
+    );
+  }
 
   return (
     <ErrorBoundary>
-      {messages ? (
-        <IntlProvider
-          locale={intlLanguage}
-          messages={messages}
-          formats={intlFormats}
-        >
-          <PluginsLoader>
+      <IntlProvider
+        locale={intlLanguage}
+        messages={messages}
+        formats={intlFormats}
+      >
+        <ToastProvider>
+          <PluginsLoader
+            disableCustomizations={
+              config.data?.configuration?.interface?.disableCustomizations ??
+              false
+            }
+          >
             <AppContainer>
-              <ConfigurationProvider
-                configuration={config.data?.configuration}
-                loading={config.loading}
-              >
+              <ConfigurationProvider configuration={config.data!.configuration}>
                 {maybeRenderReleaseNotes()}
-                <ToastProvider>
-                  <ConnectionMonitor />
-                  <Suspense fallback={<LoadingIndicator />}>
-                    <LightboxProvider>
-                      <ManualProvider>
-                        <InteractiveProvider>
-                          <Helmet {...titleProps} />
-                          {maybeRenderNavbar()}
-                          <div
-                            className={`main container-fluid ${
-                              appleRendering ? "apple" : ""
-                            }`}
-                          >
-                            {renderContent()}
-                          </div>
-                        </InteractiveProvider>
-                      </ManualProvider>
-                    </LightboxProvider>
-                  </Suspense>
-                </ToastProvider>
+                <ConnectionMonitor />
+                <TroubleshootingModeOverlay />
+                <Suspense fallback={<LoadingIndicator />}>
+                  <LightboxProvider>
+                    <ManualProvider>
+                      <InteractiveProvider>
+                        <Helmet {...titleProps} />
+                        {maybeRenderNavbar()}
+                        <MainContainer>{renderContent()}</MainContainer>
+                      </InteractiveProvider>
+                    </ManualProvider>
+                  </LightboxProvider>
+                </Suspense>
               </ConfigurationProvider>
             </AppContainer>
           </PluginsLoader>
-        </IntlProvider>
-      ) : null}
+        </ToastProvider>
+      </IntlProvider>
     </ErrorBoundary>
   );
 };

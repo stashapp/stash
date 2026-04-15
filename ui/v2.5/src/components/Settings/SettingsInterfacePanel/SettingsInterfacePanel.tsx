@@ -42,7 +42,7 @@ import {
   defaultImageWallDirection,
   defaultImageWallMargin,
 } from "src/utils/imageWall";
-import { defaultMaxOptionsShown } from "src/core/config";
+import { defaultMaxOptionsShown, defaultPreviewVolume } from "src/core/config";
 import { PatchComponent } from "src/patch";
 
 const allMenuItems = [
@@ -200,6 +200,8 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ language: v })}
           >
             <option value="af-ZA">Afrikaans (Preview)</option>
+            <option value="ar">Arabic (Preview)</option>
+            <option value="bg-BG">Bulgarian (Preview)</option>
             <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
             <option value="ca-ES">Catalan (Preview)</option>
             <option value="cs-CZ">Čeština (Česko)</option>
@@ -219,7 +221,8 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <option value="ja-JP">日本語 (日本)</option>
             <option value="ko-KR">한국어 (대한민국)</option>
             <option value="lv-LV">Latviešu (Preview)</option>
-            <option value="nb-NO">Norsk bokmål (Preview)</option>
+            <option value="lt-LT">Lithuanian (Preview)</option>
+            <option value="nb-NO">Norsk bokmål</option>
             <option value="nn-NO">Nynorsk (Preview)</option>
             <option value="nl-NL">Nederlands (Nederland)</option>
             <option value="pl-PL">Polski</option>
@@ -232,10 +235,27 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <option value="tr-TR">Türkçe (Türkiye)</option>
             <option value="th-TH">ภาษาไทย (ไทย)</option>
             <option value="uk-UA">Ukrainian (Україна)</option>
+            <option value="ur-PK">Urdu (Preview)</option>
             <option value="vi-VN">Tiếng Việt (Preview)</option>
             <option value="zh-TW">繁體中文 (台灣)</option>
             <option value="zh-CN">简体中文 (中国)</option>
           </SelectSetting>
+
+          <BooleanSetting
+            id="sfw-content-mode"
+            headingID="config.ui.sfw_mode.heading"
+            subHeadingID="config.ui.sfw_mode.description"
+            checked={iface.sfwContentMode ?? undefined}
+            onChange={(v) => saveInterface({ sfwContentMode: v })}
+          />
+
+          <StringSetting
+            id="custom-title"
+            headingID="config.ui.custom_title.heading"
+            subHeadingID="config.ui.custom_title.description"
+            value={ui.title ?? ""}
+            onChange={(v) => saveUI({ title: v })}
+          />
 
           <div className="setting-group">
             <div className="setting">
@@ -289,6 +309,32 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           />
         </SettingSection>
 
+        <SettingSection headingID="config.ui.scene_view.heading">
+          <BooleanSetting
+            id="sound-on-hover"
+            headingID="config.ui.scene_wall.options.toggle_sound"
+            checked={iface.soundOnPreview ?? undefined}
+            onChange={(v) => saveInterface({ soundOnPreview: v })}
+          />
+          <ModalSetting<number>
+            id="preview-volume"
+            headingID="config.ui.scene_view.options.preview_volume.heading"
+            subHeadingID="config.ui.scene_view.options.preview_volume.description"
+            value={ui.previewVolume ?? defaultPreviewVolume}
+            onChange={(v) => saveUI({ previewVolume: v })}
+            disabled={!iface.soundOnPreview}
+            renderField={(value, setValue) => (
+              <PercentInput
+                numericValue={value}
+                onValueChange={(v) => setValue(v ?? 0)}
+              />
+            )}
+            renderValue={(v) => {
+              return <span>{v}%</span>;
+            }}
+          />
+        </SettingSection>
+
         <SettingSection headingID="config.ui.scene_wall.heading">
           <BooleanSetting
             id="wall-show-title"
@@ -296,13 +342,6 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             checked={iface.wallShowTitle ?? undefined}
             onChange={(v) => saveInterface({ wallShowTitle: v })}
           />
-          <BooleanSetting
-            id="wall-sound-enabled"
-            headingID="config.ui.scene_wall.options.toggle_sound"
-            checked={iface.soundOnPreview ?? undefined}
-            onChange={(v) => saveInterface({ soundOnPreview: v })}
-          />
-
           <SelectSetting
             advanced
             id="wall-preview"
@@ -333,6 +372,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           <BooleanSetting
             id="show-text-studios"
             headingID="config.ui.scene_list.options.show_studio_as_text"
+            subHeadingID="config.ui.scene_list.options.show_studio_as_text_desc"
             checked={iface.showStudioAsText ?? undefined}
             onChange={(v) => saveInterface({ showStudioAsText: v })}
           />
@@ -467,6 +507,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveUI({ showChildTagContent: v })}
           />
         </SettingSection>
+
         <SettingSection headingID="config.ui.studio_panel.heading">
           <BooleanSetting
             id="show-child-studio-content"
@@ -474,6 +515,15 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
             checked={ui.showChildStudioContent ?? undefined}
             onChange={(v) => saveUI({ showChildStudioContent: v })}
+          />
+        </SettingSection>
+
+        <SettingSection headingID="config.ui.performer_list.heading">
+          <BooleanSetting
+            id="show-links-on-grid-card"
+            headingID="config.ui.performer_list.options.show_links_on_grid_card.heading"
+            checked={ui.showLinksOnPerformerCard ?? undefined}
+            onChange={(v) => saveUI({ showLinksOnPerformerCard: v })}
           />
         </SettingSection>
 
@@ -578,6 +628,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               saveLightboxSettings({ scrollAttemptsBeforeChange: v })
             }
           />
+
+          <BooleanSetting
+            id="lightbox_disable_animation"
+            headingID="dialogs.lightbox.disable_animation"
+            checked={iface.imageLightbox?.disableAnimation ?? false}
+            onChange={(v) => saveLightboxSettings({ disableAnimation: v })}
+          />
         </SettingSection>
 
         <SettingSection headingID="config.ui.detail.heading">
@@ -635,6 +692,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             subHeadingID="config.ui.detail.compact_expanded_details.description"
             checked={ui.compactExpandedDetails ?? undefined}
             onChange={(v) => saveUI({ compactExpandedDetails: v })}
+          />
+          <BooleanSetting
+            id="show_studio_text"
+            headingID="config.ui.detail.show_studio_text.heading"
+            subHeadingID="config.ui.detail.show_studio_text.description"
+            checked={ui.showStudioText ?? false}
+            onChange={(v) => saveUI({ showStudioText: v })}
           />
         </SettingSection>
 
@@ -703,6 +767,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                   disableDropdownCreate: {
                     ...iface.disableDropdownCreate,
                     movie: v,
+                  },
+                })
+              }
+            />
+            <BooleanSetting
+              id="disableDropdownCreate_gallery"
+              headingID="gallery"
+              checked={iface.disableDropdownCreate?.gallery ?? undefined}
+              onChange={(v) =>
+                saveInterface({
+                  disableDropdownCreate: {
+                    ...iface.disableDropdownCreate,
+                    gallery: v,
                   },
                 })
               }

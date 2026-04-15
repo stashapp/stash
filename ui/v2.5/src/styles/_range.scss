@@ -15,7 +15,7 @@ input[type="range"] {
 
   &::-webkit-slider-runnable-track {
     animate: 0.2s;
-    background: #137cbd;
+    background: $primary;
     border: 0 solid #000101;
     border-radius: 25px;
     box-shadow: 0 0 0 #000;
@@ -28,12 +28,12 @@ input[type="range"] {
     -webkit-appearance: none;
     background: #394b59;
     border: 0 solid #000;
-    border-radius: 5px;
+    border-radius: 10px;
     box-shadow: 0 0 0 #000;
     cursor: pointer;
-    height: 16px;
-    margin-top: -5px;
-    width: 16px;
+    height: 15px;
+    margin-top: -4px;
+    width: 15px;
   }
 
   &:focus::-webkit-slider-runnable-track {
@@ -42,7 +42,7 @@ input[type="range"] {
 
   &::-moz-range-track {
     animate: 0.2s;
-    background: #137cbd;
+    background: $primary;
     border: 0 solid #000101;
     border-radius: 25px;
     box-shadow: 0 0 0 #000;
@@ -54,11 +54,11 @@ input[type="range"] {
   &::-moz-range-thumb {
     background: #394b59;
     border: 0 solid #000;
-    border-radius: 5px;
+    border-radius: 10px;
     box-shadow: 0 0 0 #000;
     cursor: pointer;
-    height: 16px;
-    width: 16px;
+    height: 15px;
+    width: 15px;
   }
 
   &::-ms-track {
@@ -72,14 +72,14 @@ input[type="range"] {
   }
 
   &::-ms-fill-lower {
-    background: #137cbd;
+    background: $primary;
     border: 0 solid #000101;
     border-radius: 50px;
     box-shadow: 0 0 0 #000;
   }
 
   &::-ms-fill-upper {
-    background: #137cbd;
+    background: $primary;
     border: 0 solid #000101;
     border-radius: 50px;
     box-shadow: 0 0 0 #000;
@@ -88,11 +88,11 @@ input[type="range"] {
   &::-ms-thumb {
     background: #394b59;
     border: 0 solid #000;
-    border-radius: 5px;
+    border-radius: 10px;
     box-shadow: 0 0 0 #000;
     cursor: pointer;
     height: 16px;
-    margin-top: 1px;
+    margin-top: 2px;
     width: 16px;
   }
 

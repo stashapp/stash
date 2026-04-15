@@ -219,8 +219,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		// paths since they must not be relative. The config file property is
 		// resolved to an absolute path when stash is run normally, so convert
 		// relative paths to absolute paths during setup.
-		configFile, _ := filepath.Abs(input.ConfigLocation)
-
+		// #6287 - this should no longer be necessary since the ffmpeg code
+		// converts to absolute paths. Converting the config location to
+		// absolute means that scraper and plugin paths default to absolute
+		// which we don't want.
+		configFile := input.ConfigLocation
 		configDir := filepath.Dir(configFile)
 
 		if exists, _ := fsutil.DirExists(configDir); !exists {
@@ -260,6 +263,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		cfg.SetString(config.Cache, input.CacheLocation)
+	}
+
+	if input.SFWContentMode {
+		cfg.SetBool(config.SFWContentMode, true)
 	}
 
 	if input.StoreBlobsInDatabase {
@@ -304,41 +311,6 @@ func (s *Manager) validateFFmpeg() error {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 	return nil
-}
-
-func (s *Manager) BackupDatabase(download bool) (string, string, error) {
-	var backupPath string
-	var backupName string
-	if download {
-		backupDir := s.Paths.Generated.Downloads
-		if err := fsutil.EnsureDir(backupDir); err != nil {
-			return "", "", fmt.Errorf("could not create backup directory %v: %w", backupDir, err)
-		}
-		f, err := os.CreateTemp(backupDir, "backup*.sqlite")
-		if err != nil {
-			return "", "", err
-		}
-
-		backupPath = f.Name()
-		backupName = s.Database.DatabaseBackupPath("")
-		f.Close()
-	} else {
-		backupDir := s.Config.GetBackupDirectoryPathOrDefault()
-		if backupDir != "" {
-			if err := fsutil.EnsureDir(backupDir); err != nil {
-				return "", "", fmt.Errorf("could not create backup directory %v: %w", backupDir, err)
-			}
-		}
-		backupPath = s.Database.DatabaseBackupPath(backupDir)
-		backupName = filepath.Base(backupPath)
-	}
-
-	err := s.Database.Backup(backupPath)
-	if err != nil {
-		return "", "", err
-	}
-
-	return backupPath, backupName, nil
 }
 
 func (s *Manager) AnonymiseDatabase(download bool) (string, string, error) {

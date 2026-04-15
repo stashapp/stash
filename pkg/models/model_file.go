@@ -79,6 +79,14 @@ func (i FileID) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(i.String()))
 }
 
+func FileIDsFromInts(ids []int) []FileID {
+	ret := make([]FileID, len(ids))
+	for i, id := range ids {
+		ret[i] = FileID(id)
+	}
+	return ret
+}
+
 // DirEntry represents a file or directory in the file system.
 type DirEntry struct {
 	ZipFileID *FileID `json:"zip_file_id"`
@@ -250,6 +258,10 @@ func (f ImageFile) GetWidth() int {
 
 func (f ImageFile) GetHeight() int {
 	return f.Height
+}
+
+func (f ImageFile) Megapixels() float64 {
+	return float64(f.Width*f.Height) / 1e6
 }
 
 func (f ImageFile) GetFormat() string {

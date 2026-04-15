@@ -18,22 +18,23 @@ type GalleryChapter struct {
 }
 
 type Gallery struct {
-	ZipFiles     []string         `json:"zip_files,omitempty"`
-	FolderPath   string           `json:"folder_path,omitempty"`
-	Title        string           `json:"title,omitempty"`
-	Code         string           `json:"code,omitempty"`
-	URLs         []string         `json:"urls,omitempty"`
-	Date         string           `json:"date,omitempty"`
-	Details      string           `json:"details,omitempty"`
-	Photographer string           `json:"photographer,omitempty"`
-	Rating       int              `json:"rating,omitempty"`
-	Organized    bool             `json:"organized,omitempty"`
-	Chapters     []GalleryChapter `json:"chapters,omitempty"`
-	Studio       string           `json:"studio,omitempty"`
-	Performers   []string         `json:"performers,omitempty"`
-	Tags         []string         `json:"tags,omitempty"`
-	CreatedAt    json.JSONTime    `json:"created_at,omitempty"`
-	UpdatedAt    json.JSONTime    `json:"updated_at,omitempty"`
+	ZipFiles     []string               `json:"zip_files,omitempty"`
+	FolderPath   string                 `json:"folder_path,omitempty"`
+	Title        string                 `json:"title,omitempty"`
+	Code         string                 `json:"code,omitempty"`
+	URLs         []string               `json:"urls,omitempty"`
+	Date         string                 `json:"date,omitempty"`
+	Details      string                 `json:"details,omitempty"`
+	Photographer string                 `json:"photographer,omitempty"`
+	Rating       int                    `json:"rating,omitempty"`
+	Organized    bool                   `json:"organized,omitempty"`
+	Chapters     []GalleryChapter       `json:"chapters,omitempty"`
+	Studio       string                 `json:"studio,omitempty"`
+	Performers   []string               `json:"performers,omitempty"`
+	Tags         []string               `json:"tags,omitempty"`
+	CreatedAt    json.JSONTime          `json:"created_at,omitempty"`
+	UpdatedAt    json.JSONTime          `json:"updated_at,omitempty"`
+	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 
 	// deprecated - for import only
 	URL string `json:"url,omitempty"`

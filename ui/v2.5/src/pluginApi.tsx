@@ -12,13 +12,17 @@ import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
+import * as ReactFontAwesome from "@fortawesome/react-fontawesome";
 import * as ReactSelect from "react-select";
+import * as ReactSlick from "@ant-design/react-slick";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
 import Event from "./hooks/event";
-import { before, instead, after, components, RegisterComponent } from "./patch";
+import { after, before, components, instead, RegisterComponent } from "./patch";
 import { useSettings } from "./components/Settings/context";
 import { useInteractive } from "./hooks/Interactive/context";
+import InteractiveUtils from "./hooks/Interactive/utils";
+import { useLightbox, useGalleryLightbox } from "./hooks/Lightbox/hooks";
 
 // due to code splitting, some components may not have been loaded when a plugin
 // page is loaded. This function will load all components passed to it.
@@ -76,7 +80,9 @@ export const PluginApi = {
     FontAwesomeBrands,
     Mousetrap,
     MousetrapPause,
+    ReactFontAwesome,
     ReactSelect,
+    ReactSlick,
   },
   register: {
     // register a route to be added to the main router
@@ -151,6 +157,7 @@ export const PluginApi = {
   },
   components,
   utils: {
+    InteractiveUtils,
     NavUtils,
     StashService,
     loadComponents,
@@ -161,6 +168,8 @@ export const PluginApi = {
     useToast,
     useSettings,
     useInteractive,
+    useLightbox,
+    useGalleryLightbox,
   },
   patch: {
     // intercept the arguments of supported functions

@@ -17,14 +17,13 @@ type ScanCreatorUpdater interface {
 	FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Gallery, error)
 	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
 
-	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []models.FileID) error
+	models.GalleryCreator
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
 
 type ScanSceneFinderUpdater interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
-	Update(ctx context.Context, updatedScene *models.Scene) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
@@ -80,7 +79,10 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 		logger.Infof("%s doesn't exist. Creating new gallery...", f.Base().Path)
 
-		if err := h.CreatorUpdater.Create(ctx, &newGallery, []models.FileID{baseFile.ID}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &models.CreateGalleryInput{
+			Gallery: &newGallery,
+			FileIDs: []models.FileID{baseFile.ID},
+		}); err != nil {
 			return fmt.Errorf("creating new gallery: %w", err)
 		}
 
@@ -132,13 +134,14 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.Base().ID); err != nil {
 				return fmt.Errorf("adding file to gallery: %w", err)
 			}
-			// update updated_at time
-			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.NewGalleryPartial()); err != nil {
-				return fmt.Errorf("updating gallery: %w", err)
-			}
 		}
 
 		if !found || updateExisting {
+			// update updated_at time when file association or content changes
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.NewGalleryPartial()); err != nil {
+				return fmt.Errorf("updating gallery: %w", err)
+			}
+
 			h.PluginCache.RegisterPostHooks(ctx, i.ID, hook.GalleryUpdatePost, nil, nil)
 		}
 	}

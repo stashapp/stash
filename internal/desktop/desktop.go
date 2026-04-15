@@ -2,6 +2,7 @@
 package desktop
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,16 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"golang.org/x/term"
 )
+
+var isDesktop bool
+
+// InitIsDesktop sets the value of isDesktop.
+// Changed IsDesktop to be evaluated once at startup because if it is
+// checked while there are open terminal sessions (such as the ffmpeg hardware
+// encoding checks), it may return false.
+func InitIsDesktop() {
+	isDesktop = isDesktopCheck()
+}
 
 type FaviconProvider interface {
 	GetFavicon() []byte
@@ -59,22 +70,33 @@ func SendNotification(title string, text string) {
 }
 
 func IsDesktop() bool {
+	return isDesktop
+}
+
+// isDesktop tries to determine if the application is running in a desktop environment
+// where desktop features like system tray and notifications should be enabled.
+func isDesktopCheck() bool {
 	if isDoubleClickLaunched() {
+		logger.Debug("Detected double-click launch")
 		return true
 	}
 
 	// Check if running under root
 	if os.Getuid() == 0 {
+		logger.Debug("Running as root, disabling desktop features")
 		return false
 	}
 	// Check if stdin is a terminal
 	if term.IsTerminal(int(os.Stdin.Fd())) {
+		logger.Debug("Running in terminal, disabling desktop features")
 		return false
 	}
 	if isService() {
+		logger.Debug("Running as a service, disabling desktop features")
 		return false
 	}
 	if IsServerDockerized() {
+		logger.Debug("Running in docker, disabling desktop features")
 		return false
 	}
 
@@ -134,15 +156,17 @@ func getIconPath() string {
 	return path.Join(config.GetInstance().GetConfigPath(), "icon.png")
 }
 
-func RevealInFileManager(path string) {
-	exists, err := fsutil.FileExists(path)
+func RevealInFileManager(path string) error {
+	info, err := os.Stat(path)
 	if err != nil {
-		logger.Errorf("Error checking file: %s", err)
-		return
+		return fmt.Errorf("error checking path: %w", err)
 	}
-	if exists && IsDesktop() {
-		revealInFileManager(path)
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("error getting absolute path: %w", err)
 	}
+	return revealInFileManager(absPath, info)
 }
 
 func getServerURL(path string) string {

@@ -1,15 +1,25 @@
 fragment ScrapedStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   parent {
     stored_id
     name
-    url
+    urls
     image
+    details
+    aliases
+    tags {
+      ...ScrapedSceneTagData
+    }
     remote_site_id
   }
   image
+  details
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
 }
 
@@ -28,7 +38,8 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   fake_tits
   penis_length
   circumcised
-  career_length
+  career_start
+  career_end
   tattoos
   piercings
   aliases
@@ -58,7 +69,8 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   fake_tits
   penis_length
   circumcised
-  career_length
+  career_start
+  career_end
   tattoos
   piercings
   aliases
@@ -76,7 +88,7 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
 fragment ScrapedGroupStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
 }
 
 fragment ScrapedGroupData on ScrapedGroup {
@@ -123,21 +135,39 @@ fragment ScrapedSceneGroupData on ScrapedGroup {
 fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   parent {
     stored_id
     name
-    url
+    urls
     image
+    details
+    aliases
+    tags {
+      ...ScrapedSceneTagData
+    }
     remote_site_id
   }
   image
+  details
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
 }
 
 fragment ScrapedSceneTagData on ScrapedTag {
   stored_id
   name
+  description
+  alias_list
+  parent {
+    stored_id
+    name
+    description
+  }
+  remote_site_id
 }
 
 fragment ScrapedSceneData on ScrapedScene {

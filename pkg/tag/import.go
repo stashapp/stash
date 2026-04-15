@@ -31,8 +31,9 @@ type Importer struct {
 	Input               jsonschema.Tag
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	tag       models.Tag
-	imageData []byte
+	tag          models.Tag
+	imageData    []byte
+	customFields map[string]interface{}
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -42,6 +43,7 @@ func (i *Importer) PreImport(ctx context.Context) error {
 		Description:   i.Input.Description,
 		Favorite:      i.Input.Favorite,
 		IgnoreAutoTag: i.Input.IgnoreAutoTag,
+		StashIDs:      models.NewRelatedStashIDs(i.Input.StashIDs),
 		CreatedAt:     i.Input.CreatedAt.GetTime(),
 		UpdatedAt:     i.Input.UpdatedAt.GetTime(),
 	}
@@ -53,6 +55,8 @@ func (i *Importer) PreImport(ctx context.Context) error {
 			return fmt.Errorf("invalid image: %v", err)
 		}
 	}
+
+	i.customFields = i.Input.CustomFields
 
 	return nil
 }
@@ -75,6 +79,14 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 
 	if err := i.ReaderWriter.UpdateParentTags(ctx, id, parents); err != nil {
 		return fmt.Errorf("error setting parents: %v", err)
+	}
+
+	if len(i.customFields) > 0 {
+		if err := i.ReaderWriter.SetCustomFields(ctx, id, models.CustomFieldsInput{
+			Full: i.customFields,
+		}); err != nil {
+			return fmt.Errorf("error setting tag custom fields: %v", err)
+		}
 	}
 
 	return nil
@@ -100,7 +112,10 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.tag)
+	err := i.ReaderWriter.Create(ctx, &models.CreateTagInput{
+		Tag:          &i.tag,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating tag: %v", err)
 	}
@@ -112,7 +127,12 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 func (i *Importer) Update(ctx context.Context, id int) error {
 	tag := i.tag
 	tag.ID = id
-	err := i.ReaderWriter.Update(ctx, &tag)
+	err := i.ReaderWriter.Update(ctx, &models.UpdateTagInput{
+		Tag: &tag,
+		CustomFields: models.CustomFieldsInput{
+			Full: i.customFields,
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("error updating existing tag: %v", err)
 	}
@@ -156,7 +176,9 @@ func (i *Importer) createParent(ctx context.Context, name string) (int, error) {
 	newTag := models.NewTag()
 	newTag.Name = name
 
-	err := i.ReaderWriter.Create(ctx, &newTag)
+	err := i.ReaderWriter.Create(ctx, &models.CreateTagInput{
+		Tag: &newTag,
+	})
 	if err != nil {
 		return 0, err
 	}

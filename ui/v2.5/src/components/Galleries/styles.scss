@@ -17,7 +17,7 @@
       order: 1;
     }
 
-    .gallery-studio-image {
+    .studio-logo {
       flex: 0 0 25%;
       order: 2;
     }
@@ -188,6 +188,11 @@ $galleryTabWidth: 450px;
   }
 }
 
+@media (min-width: 1200px) {
+  .gallery-container .image-list .filtered-list-toolbar.has-selection {
+    top: 0;
+  }
+}
 @media (min-width: 1200px), (max-width: 575px) {
   .gallery-performers {
     .performer-card {
@@ -210,13 +215,45 @@ $galleryTabWidth: 450px;
     font-size: 1.3em;
     height: calc(1.5em + 0.75rem + 2px);
   }
+
+  .form-group[data-field="urls"] .string-list-input input.form-control {
+    font-size: 0.85em;
+  }
+
+  @include media-breakpoint-up(xl) {
+    .custom-fields-input {
+      .custom-fields-field {
+        flex: 0 0 25%;
+        max-width: 25%;
+      }
+
+      .custom-fields-value {
+        flex: 0 0 75%;
+        max-width: 75%;
+      }
+    }
+  }
 }
 
-.GalleryWall {
+.gallery-cover {
+  aspect-ratio: 4 / 3;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.gallery-cover img {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
+}
+
+div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
   margin: 0 auto;
-  width: 96vw;
 
   /* Prevents last row from consuming all space and stretching images to oblivion */
   &::after {
@@ -371,6 +408,62 @@ $galleryTabWidth: 450px;
 
     .filled-star {
       filter: drop-shadow(1px 1px 1px #222);
+    }
+  }
+}
+
+div.GalleryWall {
+  @mixin galleryWidth($width) {
+    height: math.div($width, 3) * 2;
+
+    &-landscape {
+      width: $width;
+    }
+
+    &-portrait {
+      width: math.div($width, 2);
+    }
+  }
+
+  .GalleryWallCard {
+    @media (min-width: 576px) {
+      @include galleryWidth(96vw);
+    }
+  }
+
+  &.zoom-0 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(16vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(10vw);
+    }
+  }
+
+  &.zoom-1 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(24vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(16vw);
+    }
+  }
+
+  &.zoom-2 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(32vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(24vw);
+    }
+  }
+
+  &.zoom-3 .GalleryWallCard {
+    @media (min-width: 768px) {
+      @include galleryWidth(48vw);
+    }
+    @media (min-width: 1200px) {
+      @include galleryWidth(32vw);
     }
   }
 }

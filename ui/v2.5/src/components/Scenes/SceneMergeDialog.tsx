@@ -3,27 +3,32 @@ import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { StringListSelect, GallerySelect } from "../Shared/Select";
+import { GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
-import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
+import {
+  mutateSceneMerge,
+  queryFindFullScenesByID,
+} from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  ScrapeDialog,
   ScrapeDialogRow,
+  ScrapedCustomFieldRows,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-} from "../Shared/ScrapeDialog/ScrapeDialog";
+} from "../Shared/ScrapeDialog/ScrapeDialogRow";
+import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
-import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
 import {
+  CustomFieldScrapeResults,
   ObjectListScrapeResult,
   ScrapeResult,
   ZeroableScrapeResult,
@@ -36,14 +41,7 @@ import {
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
-
-interface IStashIDsField {
-  values: GQL.StashId[];
-}
-
-const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  return <StringListSelect value={values.map((v) => v.stash_id)} />;
-};
+import { StashIDsField } from "../Shared/StashID";
 
 type MergeOptions = {
   values: GQL.SceneUpdateInput;
@@ -52,8 +50,8 @@ type MergeOptions = {
 };
 
 interface ISceneMergeDetailsProps {
-  sources: GQL.SlimSceneDataFragment[];
-  dest: GQL.SlimSceneDataFragment;
+  sources: GQL.SceneDataFragment[];
+  dest: GQL.SceneDataFragment;
   onClose: (options?: MergeOptions) => void;
 }
 
@@ -127,12 +125,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return ret;
   }
 
-  function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
-    return objs.filter((o, i) => {
-      return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
-    });
-  }
-
   const [performers, setPerformers] = useState<
     ObjectListScrapeResult<GQL.ScrapedPerformer>
   >(
@@ -173,6 +165,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     new ScrapeResult<string>(dest.paths.screenshot)
   );
 
+  const [customFields, setCustomFields] = useState<CustomFieldScrapeResults>(
+    new Map()
+  );
+
   // calculate the values for everything
   // uses the first set value for single value fields, and combines all
   useEffect(() => {
@@ -206,13 +202,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setCode(
       new ScrapeResult(dest.code, sources.find((s) => s.code)?.code, !dest.code)
     );
-    setURL(
-      new ScrapeResult(
-        dest.urls,
-        sources.find((s) => s.urls)?.urls,
-        !dest.urls?.length
-      )
-    );
+    setURL(new ScrapeResult(dest.urls, uniq(all.map((s) => s.urls).flat())));
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
     );
@@ -311,33 +301,68 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
-          }),
-        !dest.stash_ids.length
+          })
+      )
+    );
+
+    const customFieldNames = new Set<string>(
+      Object.keys(dest.custom_fields ?? {})
+    );
+
+    for (const s of sources) {
+      for (const n of Object.keys(s.custom_fields ?? {})) {
+        customFieldNames.add(n);
+      }
+    }
+
+    setCustomFields(
+      new Map(
+        Array.from(customFieldNames)
+          .sort()
+          .map((field) => {
+            return [
+              field,
+              new ScrapeResult(
+                dest.custom_fields?.[field],
+                sources.find((s) => s.custom_fields?.[field])?.custom_fields?.[
+                  field
+                ],
+                dest.custom_fields?.[field] === undefined
+              ),
+            ];
+          })
       )
     );
 
     loadImages();
   }, [sources, dest]);
 
+  const hasCustomFieldValues = useMemo(() => {
+    return hasScrapedValues(Array.from(customFields.values()));
+  }, [customFields]);
+
   // ensure this is updated if fields are changed
   const hasValues = useMemo(() => {
-    return hasScrapedValues([
-      title,
-      code,
-      url,
-      date,
-      rating,
-      oCounter,
-      galleries,
-      studio,
-      performers,
-      groups,
-      tags,
-      details,
-      organized,
-      stashIDs,
-      image,
-    ]);
+    return (
+      hasCustomFieldValues ||
+      hasScrapedValues([
+        title,
+        code,
+        url,
+        date,
+        rating,
+        oCounter,
+        galleries,
+        studio,
+        performers,
+        groups,
+        tags,
+        details,
+        organized,
+        stashIDs,
+        image,
+      ])
+    );
   }, [
     title,
     code,
@@ -354,6 +379,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     organized,
     stashIDs,
     image,
+    hasCustomFieldValues,
   ]);
 
   function renderScrapeRows() {
@@ -379,83 +405,87 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return (
       <>
         <ScrapedInputGroupRow
+          field="title"
           title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
+          field="code"
           title={intl.formatMessage({ id: "scene_code" })}
           result={code}
           onChange={(value) => setCode(value)}
         />
         <ScrapedStringListRow
+          field="urls"
           title={intl.formatMessage({ id: "urls" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
+          field="date"
           title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         <ScrapeDialogRow
+          field="rating"
           title={intl.formatMessage({ id: "rating" })}
           result={rating}
-          renderOriginalField={() => (
-            <RatingSystem value={rating.originalValue} disabled />
-          )}
-          renderNewField={() => (
-            <RatingSystem value={rating.newValue} disabled />
-          )}
+          originalField={<RatingSystem value={rating.originalValue} disabled />}
+          newField={<RatingSystem value={rating.newValue} disabled />}
           onChange={(value) => setRating(value)}
         />
         <ScrapeDialogRow
+          field="o_count"
           title={intl.formatMessage({ id: "o_count" })}
           result={oCounter}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={oCounter.originalValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={oCounter.newValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setOCounter(value)}
         />
         <ScrapeDialogRow
+          field="play_count"
           title={intl.formatMessage({ id: "play_count" })}
           result={playCount}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={playCount.originalValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={playCount.newValue ?? 0}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setPlayCount(value)}
         />
         <ScrapeDialogRow
+          field="play_duration"
           title={intl.formatMessage({ id: "play_duration" })}
           result={playDuration}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={TextUtils.secondsToTimestamp(
                 playDuration.originalValue ?? 0
@@ -464,21 +494,22 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={TextUtils.secondsToTimestamp(playDuration.newValue ?? 0)}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setPlayDuration(value)}
         />
         <ScrapeDialogRow
+          field="galleries"
           title={intl.formatMessage({ id: "galleries" })}
           result={galleries}
-          renderOriginalField={() => (
+          originalField={
             <GallerySelect
               className="form-control react-select"
               ids={galleries.originalValue ?? []}
@@ -486,8 +517,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               isMulti
               isDisabled
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <GallerySelect
               className="form-control react-select"
               ids={galleries.newValue ?? []}
@@ -495,73 +526,88 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               isMulti
               isDisabled
             />
-          )}
+          }
           onChange={(value) => setGalleries(value)}
         />
         <ScrapedStudioRow
+          field="studio"
           title={intl.formatMessage({ id: "studios" })}
           result={studio}
           onChange={(value) => setStudio(value)}
         />
         <ScrapedPerformersRow
+          field="performers"
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
           ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         <ScrapedGroupsRow
+          field="groups"
           title={intl.formatMessage({ id: "groups" })}
           result={groups}
           onChange={(value) => setGroups(value)}
         />
         <ScrapedTagsRow
+          field="tags"
           title={intl.formatMessage({ id: "tags" })}
           result={tags}
           onChange={(value) => setTags(value)}
         />
         <ScrapedTextAreaRow
+          field="details"
           title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         <ScrapeDialogRow
+          field="organized"
           title={intl.formatMessage({ id: "organized" })}
           result={organized}
-          renderOriginalField={() => (
+          originalField={
             <FormControl
               value={organized.originalValue ? trueString : falseString}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
-          renderNewField={() => (
+          }
+          newField={
             <FormControl
               value={organized.newValue ? trueString : falseString}
               readOnly
               onChange={() => {}}
               className="bg-secondary text-white border-secondary"
             />
-          )}
+          }
           onChange={(value) => setOrganized(value)}
         />
         <ScrapeDialogRow
+          field="stash_ids"
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
-          renderOriginalField={() => (
+          originalField={
             <StashIDsField values={stashIDs?.originalValue ?? []} />
-          )}
-          renderNewField={() => (
-            <StashIDsField values={stashIDs?.newValue ?? []} />
-          )}
+          }
+          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
           onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
         />
         <ScrapedImageRow
+          field="cover_image"
           title={intl.formatMessage({ id: "cover_image" })}
           className="scene-cover"
           result={image}
           onChange={(value) => setImage(value)}
         />
+        {hasCustomFieldValues && (
+          <ScrapedCustomFieldRows
+            results={customFields}
+            onChange={(newCustomFields) => setCustomFields(newCustomFields)}
+          />
+        )}
       </>
     );
   }
@@ -602,6 +648,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         organized: organized.getNewValue(),
         stash_ids: stashIDs.getNewValue(),
         cover_image: coverImage,
+        custom_fields: {
+          partial: Object.fromEntries(
+            Array.from(customFields.entries()).flatMap(([field, v]) =>
+              v.useNewValue ? [[field, v.getNewValue()]] : []
+            )
+          ),
+        },
       },
       includeViewHistory: playCount.getNewValue() !== undefined,
       includeOHistory: oCounter.getNewValue() !== undefined,
@@ -617,14 +670,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     : intl.formatMessage({ id: "dialogs.merge.destination" });
   const sourceLabel = !hasValues
     ? ""
-    : intl.formatMessage({ id: "dialogs.merge.source" });
+    : intl.formatMessage({ id: "dialogs.merge.combined" });
 
   return (
     <ScrapeDialog
       title={dialogTitle}
       existingLabel={destinationLabel}
       scrapedLabel={sourceLabel}
-      renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         if (!apply) {
           onClose();
@@ -632,7 +684,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onClose(createValues());
         }
       }}
-    />
+    >
+      {renderScrapeRows()}
+    </ScrapeDialog>
   );
 };
 
@@ -650,10 +704,10 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   const [sourceScenes, setSourceScenes] = useState<Scene[]>([]);
   const [destScene, setDestScene] = useState<Scene[]>([]);
 
-  const [loadedSources, setLoadedSources] = useState<
-    GQL.SlimSceneDataFragment[]
-  >([]);
-  const [loadedDest, setLoadedDest] = useState<GQL.SlimSceneDataFragment>();
+  const [loadedSources, setLoadedSources] = useState<GQL.SceneDataFragment[]>(
+    []
+  );
+  const [loadedDest, setLoadedDest] = useState<GQL.SceneDataFragment>();
 
   const [running, setRunning] = useState(false);
   const [secondStep, setSecondStep] = useState(false);
@@ -664,6 +718,12 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   const title = intl.formatMessage({
     id: "actions.merge",
   });
+
+  const srcIDs = useMemo(() => sourceScenes.map((s) => s.id), [sourceScenes]);
+  const destID = useMemo(
+    () => (destScene[0] ? [destScene[0].id] : []),
+    [destScene]
+  );
 
   useEffect(() => {
     if (scenes.length > 0) {
@@ -679,7 +739,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   async function loadScenes() {
     const sceneIDs = sourceScenes.map((s) => parseInt(s.id));
     sceneIDs.push(parseInt(destScene[0].id));
-    const query = await queryFindScenesByID(sceneIDs);
+    const query = await queryFindFullScenesByID(sceneIDs);
     const { scenes: loadedScenes } = query.data.findScenes;
 
     setLoadedDest(loadedScenes.find((s) => s.id === destScene[0].id));
@@ -700,8 +760,6 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
       );
       if (result.data?.sceneMerge) {
         Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));
-        // refetch the scene
-        await queryFindScenesByID([parseInt(destScene[0].id)]);
         onClose(destScene[0].id);
       }
       onClose();
@@ -730,6 +788,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
         sources={loadedSources}
         dest={loadedDest!}
         onClose={(values) => {
+          setSecondStep(false);
           if (values) {
             onMerge(values);
           } else {
@@ -773,6 +832,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
                 onSelect={(items) => setSourceScenes(items)}
                 values={sourceScenes}
                 menuPortalTarget={document.body}
+                excludeIds={destID}
               />
             </Col>
           </Form.Group>
@@ -806,6 +866,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
                 onSelect={(items) => setDestScene(items)}
                 values={destScene}
                 menuPortalTarget={document.body}
+                excludeIds={srcIDs}
               />
             </Col>
           </Form.Group>

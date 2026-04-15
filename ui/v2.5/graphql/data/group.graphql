@@ -1,3 +1,4 @@
+# Full fragment for detail views - includes recursive counts
 fragment GroupData on Group {
   id
   name
@@ -28,8 +29,54 @@ fragment GroupData on Group {
   back_image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
+  performer_count
+  performer_count_all: performer_count(depth: -1)
   sub_group_count
   sub_group_count_all: sub_group_count(depth: -1)
+  o_counter
+
+  scenes {
+    id
+    title
+  }
+
+  custom_fields
+}
+
+# Lightweight fragment for list views - excludes expensive recursive counts
+# The _all fields (depth: -1) cause 10+ second queries on large databases
+fragment ListGroupData on Group {
+  id
+  name
+  aliases
+  duration
+  date
+  rating100
+  director
+
+  studio {
+    ...SlimStudioData
+  }
+
+  tags {
+    ...SlimTagData
+  }
+
+  containing_groups {
+    group {
+      ...SlimGroupData
+    }
+    description
+  }
+
+  synopsis
+  urls
+  front_image_path
+  back_image_path
+  scene_count
+  performer_count
+  sub_group_count
+  o_counter
 
   scenes {
     id

@@ -19,7 +19,7 @@
     "isolatedModules": true,
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node", "dom-screen-wake-lock"]
   },
   "include": ["src"]
 }

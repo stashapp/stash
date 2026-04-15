@@ -18,7 +18,8 @@ type Cleaner struct {
 	FS         models.FS
 	Repository Repository
 
-	Handlers []CleanHandler
+	Handlers  []CleanHandler
+	TrashPath string
 }
 
 type cleanJob struct {
@@ -31,6 +32,11 @@ type cleanJob struct {
 // CleanOptions provides options for scanning files.
 type CleanOptions struct {
 	Paths []string
+
+	// IgnoreZipFileContents will skip checking the contents of zip files when determining whether to clean a file.
+	// This can significantly speed up the clean process, but will potentially miss removed files within zip files.
+	// Where users do not modify zip files contents directly, this should be safe to use.
+	IgnoreZipFileContents bool
 
 	// Do a dry run. Don't delete any files
 	DryRun bool
@@ -173,13 +179,16 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 
 	more := true
 	r := j.Repository
+
+	includeZipContents := !j.options.IgnoreZipFileContents
+
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
 
-			files, err := r.File.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			files, err := r.File.FindAllInPaths(ctx, j.options.Paths, includeZipContents, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for files: %w", err)
 			}
@@ -257,6 +266,8 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 	offset := 0
 	progress := j.progress
 
+	includeZipContents := !j.options.IgnoreZipFileContents
+
 	more := true
 	r := j.Repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
@@ -265,7 +276,7 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 				return nil
 			}
 
-			folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, includeZipContents, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for folders: %w", err)
 			}
@@ -347,8 +358,14 @@ func (j *cleanJob) shouldClean(ctx context.Context, f models.File) bool {
 	// run through path filter, if returns false then the file should be cleaned
 	filter := j.options.PathFilter
 
+	// need to get the zip file path if present
+	zipFilePath := ""
+	if f.Base().ZipFile != nil {
+		zipFilePath = f.Base().ZipFile.Base().Path
+	}
+
 	// don't log anything - assume filter will have logged the reason
-	return !filter.Accept(ctx, path, info)
+	return !filter.Accept(ctx, path, info, zipFilePath)
 }
 
 func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool {
@@ -386,13 +403,19 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool
 	// run through path filter, if returns false then the file should be cleaned
 	filter := j.options.PathFilter
 
+	// need to get the zip file path if present
+	zipFilePath := ""
+	if f.ZipFile != nil {
+		zipFilePath = f.ZipFile.Base().Path
+	}
+
 	// don't log anything - assume filter will have logged the reason
-	return !filter.Accept(ctx, path, info)
+	return !filter.Accept(ctx, path, info, zipFilePath)
 }
 
 func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {
 	// delete associated objects
-	fileDeleter := NewDeleter()
+	fileDeleter := NewDeleterWithTrash(j.TrashPath)
 	r := j.Repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)
@@ -410,7 +433,7 @@ func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn stri
 
 func (j *cleanJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) {
 	// delete associated objects
-	fileDeleter := NewDeleter()
+	fileDeleter := NewDeleterWithTrash(j.TrashPath)
 	r := j.Repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)

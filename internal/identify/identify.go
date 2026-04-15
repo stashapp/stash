@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -32,7 +31,7 @@ func (e *MultipleMatchesFoundError) Error() string {
 }
 
 type SceneScraper interface {
-	ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error)
+	ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error)
 }
 
 type SceneUpdatePostHookExecutor interface {
@@ -96,7 +95,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, scene *models.Scene) err
 }
 
 type scrapeResult struct {
-	result *scraper.ScrapedScene
+	result *models.ScrapedScene
 	source ScraperSource
 }
 
@@ -147,6 +146,9 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 	}
 	if source.Options.IncludeMalePerformers != nil {
 		options.IncludeMalePerformers = source.Options.IncludeMalePerformers
+	}
+	if source.Options.PerformerGenders != nil {
+		options.PerformerGenders = source.Options.PerformerGenders
 	}
 	if source.Options.SkipMultipleMatches != nil {
 		options.SkipMultipleMatches = source.Options.SkipMultipleMatches
@@ -205,13 +207,23 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
 	}
 
-	includeMalePerformers := true
-	if options.IncludeMalePerformers != nil {
-		includeMalePerformers = *options.IncludeMalePerformers
+	// Determine allowed genders for performer filtering
+	var allowedGenders []models.GenderEnum
+	if options.PerformerGenders != nil {
+		// New field takes precedence
+		allowedGenders = options.PerformerGenders
+	} else if options.IncludeMalePerformers != nil && !*options.IncludeMalePerformers {
+		// Legacy: if includeMalePerformers is false, include all genders except male
+		for _, g := range models.AllGenderEnum {
+			if g != models.GenderEnumMale {
+				allowedGenders = append(allowedGenders, g)
+			}
+		}
 	}
+	// nil allowedGenders means include all performers
 
 	addSkipSingleNamePerformerTag := false
-	performerIDs, err := rel.performers(ctx, !includeMalePerformers)
+	performerIDs, err := rel.performers(ctx, allowedGenders)
 	if err != nil {
 		if errors.Is(err, ErrSkipSingleNamePerformer) {
 			addSkipSingleNamePerformerTag = true
@@ -374,7 +386,7 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	return ret
 }
 
-func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
+func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{}
 
 	if scraped.Title != nil && (scene.Title != *scraped.Title) {

@@ -23,7 +23,7 @@ import {
 import { GroupEditPanel } from "./GroupEditPanel";
 import { faRefresh, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
@@ -41,9 +41,11 @@ import {
 } from "src/components/Shared/DetailsPage/Tabs";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
+import { GroupPerformersPanel } from "./GroupPerformersPanel";
 import { Icon } from "src/components/Shared/Icon";
+import { goBackOrReplace } from "src/utils/history";
 
-const validTabs = ["default", "scenes", "subgroups"] as const;
+const validTabs = ["default", "scenes", "performers", "subgroups"] as const;
 type TabKey = (typeof validTabs)[number];
 
 function isTabKey(tab: string): tab is TabKey {
@@ -55,15 +57,23 @@ const GroupTabs: React.FC<{
   group: GQL.GroupDataFragment;
   abbreviateCounter: boolean;
 }> = ({ tabKey, group, abbreviateCounter }) => {
-  const { scene_count: sceneCount, sub_group_count: groupCount } = group;
+  const {
+    scene_count: sceneCount,
+    performer_count: performerCount,
+    sub_group_count: groupCount,
+  } = group;
 
   const populatedDefaultTab = useMemo(() => {
-    if (sceneCount == 0 && groupCount !== 0) {
-      return "subgroups";
+    if (sceneCount == 0) {
+      if (performerCount != 0) {
+        return "performers";
+      } else if (groupCount !== 0) {
+        return "subgroups";
+      }
     }
 
     return "scenes";
-  }, [sceneCount, groupCount]);
+  }, [sceneCount, performerCount, groupCount]);
 
   const { setTabKey } = useTabKey({
     tabKey,
@@ -91,6 +101,18 @@ const GroupTabs: React.FC<{
         }
       >
         <GroupScenesPanel active={tabKey === "scenes"} group={group} />
+      </Tab>
+      <Tab
+        eventKey="performers"
+        title={
+          <TabTitleCounter
+            messageID="performers"
+            count={performerCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <GroupPerformersPanel active={tabKey === "performers"} group={group} />
       </Tab>
       <Tab
         eventKey="subgroups"
@@ -124,7 +146,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const Toast = useToast();
 
   // Configuration settings
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const uiConfig = configuration?.ui;
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
@@ -252,10 +274,10 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
       await deleteGroup();
     } catch (e) {
       Toast.error(e);
+      return;
     }
 
-    // redirect to groups page
-    history.push(`/groups`);
+    goBackOrReplace(history, "/groups");
   }
 
   function toggleEditing(value?: boolean) {

@@ -1,11 +1,11 @@
 import videojs, { VideoJsPlayer } from "video.js";
-import "./markers.css";
 import CryptoJS from "crypto-js";
 
 export interface IMarker {
   title: string;
   seconds: number;
   end_seconds?: number | null;
+  primaryTag: { name: string };
 }
 
 interface IMarkersOptions {
@@ -67,14 +67,16 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       dot?: HTMLDivElement;
       range?: HTMLDivElement;
     } = {};
-    const seekBar = this.player.el().querySelector(".vjs-progress-control");
+    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
 
     markerSet.dot = videojs.dom.createEl("div") as HTMLDivElement;
-    markerSet.dot.className = "vjs-marker-dot";
+    markerSet.dot.className = "vjs-marker";
     if (duration) {
+      // marker is 6px wide - adjust by 3px to align to center not left side
       markerSet.dot.style.left = `calc(${
         (marker.seconds / duration) * 100
       }% - 3px)`;
+      markerSet.dot.style.visibility = "visible";
     }
 
     // Add event listeners to dot
@@ -84,8 +86,13 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markerSet.dot.toggleAttribute("marker-tooltip-shown", true);
 
     // Set background color based on tag (if available)
-    if (marker.title && this.tagColors[marker.title]) {
-      markerSet.dot.style.backgroundColor = this.tagColors[marker.title];
+    if (
+      marker.primaryTag &&
+      marker.primaryTag.name &&
+      this.tagColors[marker.primaryTag.name]
+    ) {
+      markerSet.dot.style.backgroundColor =
+        this.tagColors[marker.primaryTag.name];
     }
     markerSet.dot.addEventListener("mouseenter", () => {
       this.showMarkerTooltip(marker.title);
@@ -110,11 +117,12 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
   private renderRangeMarkers(markers: IMarker[], layer: number) {
     const duration = this.player.duration();
-    const seekBar = this.player.el().querySelector(".vjs-progress-control");
-    if (!seekBar || !duration) return;
+    const parent = this.player.el().querySelector(".vjs-progress-control");
+    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
+    if (!seekBar || !parent || !duration) return;
 
     markers.forEach((marker) => {
-      this.renderRangeMarker(marker, layer, duration, seekBar);
+      this.renderRangeMarker(marker, layer, duration, seekBar, parent);
     });
   }
 
@@ -122,7 +130,8 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     marker: IMarker,
     layer: number,
     duration: number,
-    seekBar: Element
+    seekBar: Element,
+    parent: Element
   ) {
     if (!marker.end_seconds) return;
 
@@ -133,22 +142,33 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const rangeDiv = videojs.dom.createEl("div") as HTMLDivElement;
     rangeDiv.className = "vjs-marker-range";
 
+    // Use percentage-based positioning for proper scaling in fullscreen mode
+    // The range marker is inside vjs-progress-control, but needs to align with
+    // vjs-progress-holder which has 15px margins on each side.
+    // We use calc() to combine percentage positioning with the fixed margin offset.
     const startPercent = (marker.seconds / duration) * 100;
-    const endPercent = (marker.end_seconds / duration) * 100;
-    let width = endPercent - startPercent;
-    // Ensure the width is at least 8px
-    const minWidth = (10 / seekBar.clientWidth) * 100; // Convert 8px to percentage
-    if (width < minWidth) {
-      width = minWidth;
-    }
-    rangeDiv.style.left = `${startPercent}%`;
-    rangeDiv.style.width = `${width}%`;
+    const widthPercent =
+      ((marker.end_seconds - marker.seconds) / duration) * 100;
+
+    // left: 15px margin + percentage of the progress holder width
+    // Since progress-holder has margin: 0 15px, we need calc(15px + X% of remaining width)
+    // The progress-holder width is (100% - 30px), so the actual left position is:
+    // 15px + startPercent% * (100% - 30px) = 15px + startPercent% * 100% - startPercent% * 30px
+    rangeDiv.style.left = `calc(15px + ${startPercent}% - ${
+      startPercent * 0.3
+    }px)`;
+
+    rangeDiv.style.width = `calc(${widthPercent}% - ${widthPercent * 0.3}px)`;
     rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
     rangeDiv.style.display = "none"; // Initially hidden
 
     // Set background color based on tag (if available)
-    if (marker.title && this.tagColors[marker.title]) {
-      rangeDiv.style.backgroundColor = this.tagColors[marker.title];
+    if (
+      marker.primaryTag &&
+      marker.primaryTag.name &&
+      this.tagColors[marker.primaryTag.name]
+    ) {
+      rangeDiv.style.backgroundColor = this.tagColors[marker.primaryTag.name];
     }
 
     markerSet.range = rangeDiv;
@@ -171,7 +191,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       this.hideMarkerTooltip();
       markerSet.range?.toggleAttribute("marker-tooltip-shown", false);
     });
-    seekBar.appendChild(rangeDiv);
+    parent.appendChild(rangeDiv);
     this.markers.push(marker);
     this.markerDivs.push(markerSet);
   }

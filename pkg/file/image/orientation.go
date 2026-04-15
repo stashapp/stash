@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/stashapp/stash/pkg/logger"
@@ -33,7 +34,7 @@ func areDimensionsFlipped(fs models.FS, path string) (bool, error) {
 
 	x, err := exif.Decode(r)
 	if err != nil {
-		if errors.Is(err, io.EOF) {
+		if errors.Is(err, io.EOF) || strings.Contains(err.Error(), "failed to find exif") {
 			// no exif data
 			return false, nil
 		}

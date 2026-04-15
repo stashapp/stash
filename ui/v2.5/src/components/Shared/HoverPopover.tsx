@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Overlay, Popover, OverlayProps } from "react-bootstrap";
 import { PatchComponent } from "src/patch";
+import { Icon } from "./Icon";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 interface IHoverPopover {
   enterDelay?: number;
@@ -84,4 +86,21 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
       </>
     );
   }
+);
+
+// convenience component to set the padding on popover content
+export const PopoverCard: React.FC<{ className?: string }> = ({
+  className,
+  children,
+}) => {
+  return <div className={`popover-card ${className}`}>{children}</div>;
+};
+
+export const WarningHoverPopover: React.FC<IHoverPopover> = PatchComponent(
+  "WarningHoverPopover",
+  ({ children, ...props }) => (
+    <HoverPopover {...props} className="warning-hover-popover">
+      <Icon icon={faExclamationTriangle} />
+    </HoverPopover>
+  )
 );

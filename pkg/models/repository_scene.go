@@ -10,6 +10,9 @@ type SceneGetter interface {
 	// TODO - rename this to Find and remove existing method
 	FindMany(ctx context.Context, ids []int) ([]*Scene, error)
 	Find(ctx context.Context, id int) (*Scene, error)
+	// FindByIDs works the same way as FindMany, but it ignores any scenes not found
+	// Scenes are not guaranteed to be in the same order as the input
+	FindByIDs(ctx context.Context, ids []int) ([]*Scene, error)
 }
 
 // SceneFinder provides methods to find scenes.
@@ -41,6 +44,8 @@ type SceneCounter interface {
 	CountMissingChecksum(ctx context.Context) (int, error)
 	CountMissingOSHash(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
+	OCountByGroupID(ctx context.Context, groupID int) (int, error)
+	OCountByStudioID(ctx context.Context, studioID int) (int, error)
 }
 
 // SceneCreator provides methods to create scenes.
@@ -99,6 +104,7 @@ type SceneReader interface {
 	SceneGroupLoader
 	StashIDLoader
 	VideoFileLoader
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Scene, error)
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
@@ -135,6 +141,7 @@ type SceneWriter interface {
 	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
 	ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error)
+	CustomFieldsWriter
 }
 
 // SceneReaderWriter provides all scene methods.

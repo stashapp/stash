@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GalleryList } from "src/components/Galleries/GalleryList";
+import { FilteredGalleryList } from "src/components/Galleries/GalleryList";
 import { useStudioFilterHook } from "src/core/studios";
 import { View } from "src/components/List/views";
 
@@ -17,7 +17,7 @@ export const StudioGalleriesPanel: React.FC<IStudioGalleriesPanel> = ({
 }) => {
   const filterHook = useStudioFilterHook(studio, showChildStudioContent);
   return (
-    <GalleryList
+    <FilteredGalleryList
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioGalleries}

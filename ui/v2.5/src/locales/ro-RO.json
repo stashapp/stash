@@ -88,7 +88,8 @@
         "submit_update": "Trimite actualizare",
         "tasks": {
             "clean_confirm_message": "Ești sigur că vrei să cureți? Acest lucru va șterge informațiile din baza de date și conținutul generat pentru toate scenele și galeriile care nu se mai găsesc în sistemul de fișiere.",
-            "import_warning": "Ești sigur că vrei să imporți? Asta va șterge baza de date si va reimporta din metadatele tale exporatate."
+            "import_warning": "Ești sigur că vrei să imporți? Asta va șterge baza de date si va reimporta din metadatele tale exporatate.",
+            "dry_mode_selected": "\"Modul uscat\" selectat. Nu se va șterge nimic, doar se va loga."
         },
         "temp_disable": "Dezactivează temporar…",
         "temp_enable": "Activează temporar…",
@@ -123,15 +124,24 @@
         "delete_generated_supporting_files": "Șterge fișierele suport generate",
         "hash_migration": "migrare hash",
         "make_primary": "Definește ca primar",
-        "merge_from": "Îmbină din",
-        "merge_into": "Îmbină în",
         "migrate_blobs": "Migrează obiect binar (blob)",
         "migrate_scene_screenshots": "Migrează Capturi Scene",
         "remove_date": "Șterge data",
         "reshuffle": "Reamestecă",
         "scrape_query": "Extrage date",
         "scrape_scene_fragment": "Extrage fragment cu fragment",
-        "scrape_with": "Extrage cu…"
+        "scrape_with": "Extrage cu…",
+        "selective_clean": "Curățare selectivă",
+        "selective_scan": "Scanare selectivă",
+        "set_cover": "Setează ca fundal",
+        "swap": "Schimbă",
+        "unset": "Nesetat",
+        "view_history": "Vezi istoric",
+        "sidebar": {
+            "close": "Închide bara laterală",
+            "open": "Deschide bara laterală"
+        },
+        "split": "Împarte"
     },
     "actions_name": "Acțiuni",
     "age": "Vârstă",
@@ -160,26 +170,33 @@
             "set_cover_label": "Setează imaginea de copertă a scenei",
             "set_tag_desc": "Atașați etichete scenei, fie prin suprascriere, fie prin fuziune cu etichetele existente pe scenă.",
             "set_tag_label": "Setați etichete",
-            "show_male_desc": "Comutați dacă interpreții de sex masculin vor fi disponibili pentru etichetare.",
-            "show_male_label": "Arată interpreți de sex masculin",
-            "source": "Sursă"
+            "source": "Sursă",
+            "query_mode_metadata": "Date meta",
+            "mark_organized_label": "Marchează ca Organizat la salvare",
+            "errors": {
+                "blacklist_duplicate": "Lucru de pe lista neagră duplicat"
+            },
+            "mark_organized_desc": "Marchează scena ca Organizată imediat după ce butonul de Salvare este apăsat.",
+            "query_mode_label": "Mod de căutare",
+            "blacklist_desc": "Lucrurile din lista neagră sunt excluse din căutări. De reținut, căutările sunt expresii si diferențiază între litere mari și mici. Înaintea anumitor caractere, trebuie pus caracterul backslash: {chars_require_escape}"
         },
         "results": {
             "duration_unknown": "Durată necunoscută",
             "match_failed_already_tagged": "Scena este deja etichetată",
             "match_failed_no_result": "Nu s-au găsit rezultate",
             "match_success": "Scena a fost etichetată cu succes",
-            "unnamed": "Fără denumire"
+            "unnamed": "Fără denumire",
+            "fp_matches": "Durația este aceeași",
+            "duration_off": "Durația diferă cu cel puțin {number}s"
         },
-        "verb_toggle_config": "{toggle} {configuration}"
+        "verb_toggle_config": "{toggle} {configuration}",
+        "noun_query": "Căutare"
     },
     "config": {
         "about": {
             "check_for_new_version": "Verifică pentru o versiune nouă",
             "latest_version": "Ultima Versiune",
             "new_version_notice": "[NOU]",
-            "stash_discord": "Alăturați-vă {url} canalului nostru",
-            "stash_open_collective": "Susține-ne prin {url}",
             "version": "Versiune"
         },
         "application_paths": {
@@ -253,7 +270,6 @@
     "created_at": "Creat La",
     "dialogs": {
         "delete_confirm": "Ești sigur ca vrei să ștergi {entityName}?",
-        "overwrite_filter_confirm": "Sunteți sigur că doriți să suprascrieți interogarea salvată existentă {entityName}?",
         "scene_gen": {
             "force_transcodes_tooltip": "În mod implicit, transcodurile sunt generate numai atunci când fișierul video nu este acceptat în browser. Atunci când este activată, transcodurile vor fi generate chiar și atunci când fișierul video pare a fi acceptat în browser.",
             "image_previews": "Imagini animate de previzualizare",
@@ -357,8 +373,6 @@
     "measurements": "Măsurători",
     "media_info": {
         "audio_codec": "Codec Audio",
-        "checksum": "Sumă de control",
-        "hash": "Hash",
         "interactive_speed": "Viteză Interactivă",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -372,7 +386,6 @@
     "metadata": "Metadate",
     "name": "Nume",
     "new": "Nou",
-    "o_counter": "O-Contor",
     "operations": "Operațiuni",
     "organized": "Organizat",
     "pagination": {
@@ -388,13 +401,6 @@
     "performer_image": "Imagine Interpret",
     "performer_tagger": {
         "add_new_performers": "Adaugă Interpreți Noi",
-        "config": {
-            "active_stash-box_instance": "Instață stash-box activă:",
-            "edit_excluded_fields": "Editați câmpurile excluse",
-            "no_fields_are_excluded": "Nu se exclude niciun câmp",
-            "no_instances_found": "Nicio instanță găsită",
-            "these_fields_will_not_be_changed_when_updating_performers": "Aceste câmpuri nu vor fi modificate la actualizarea artiștilor interpreți sau executanți."
-        },
         "current_page": "Pagina curentă",
         "failed_to_save_performer": "Nu s-a reușit salvarea interpretului \"{performer}\"",
         "name_already_exists": "Numele există deja",
@@ -495,5 +501,21 @@
     "view_all": "Vezi Toate",
     "weight": "Greutate",
     "years_old": "ani",
-    "containing_group": "Grup aparținător"
+    "containing_group": "Grup aparținător",
+    "aliases": "Porecle",
+    "appears_with": "Apare cu",
+    "audio_codec": "Codec Audio",
+    "between_and": "și",
+    "blobs_storage_type": {
+        "database": "Bază de date",
+        "filesystem": "Sistem de fișiere"
+    },
+    "captions": "Subtitrări",
+    "chapters": "Capitole",
+    "circumcised_types": {
+        "CUT": "Circumcis",
+        "UNCUT": "Necircumcis"
+    },
+    "circumcised": "Circumcizie",
+    "age_on_date": "{age} la producție"
 }

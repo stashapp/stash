@@ -9,7 +9,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/mock"
 )
@@ -28,7 +27,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	db.Studio.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
-		s := args.Get(1).(*models.Studio)
+		s := args.Get(1).(*models.CreateStudioInput)
 		s.ID = validStoredIDInt
 	}).Return(nil)
 
@@ -125,7 +124,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: "endpoint",
 				},
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Studio: tt.result,
 				},
 			}
@@ -184,13 +183,13 @@ func Test_sceneRelationships_performers(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		scene        *models.Scene
-		fieldOptions *FieldOptions
-		scraped      []*models.ScrapedPerformer
-		ignoreMale   bool
-		want         []int
-		wantErr      bool
+		name           string
+		scene          *models.Scene
+		fieldOptions   *FieldOptions
+		scraped        []*models.ScrapedPerformer
+		allowedGenders []models.GenderEnum
+		want           []int
+		wantErr        bool
 	}{
 		{
 			"ignore",
@@ -203,7 +202,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					StoredID: &validStoredID,
 				},
 			},
-			false,
+			nil,
 			nil,
 			false,
 		},
@@ -212,7 +211,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 			emptyScene,
 			defaultOptions,
 			[]*models.ScrapedPerformer{},
-			false,
+			nil,
 			nil,
 			false,
 		},
@@ -226,7 +225,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					StoredID: &existingPerformerStr,
 				},
 			},
-			false,
+			nil,
 			nil,
 			false,
 		},
@@ -240,7 +239,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					StoredID: &validStoredID,
 				},
 			},
-			false,
+			nil,
 			[]int{existingPerformerID, validStoredIDInt},
 			false,
 		},
@@ -255,7 +254,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					Gender:   &male,
 				},
 			},
-			true,
+			[]models.GenderEnum{models.GenderEnumFemale, models.GenderEnumTransgenderMale, models.GenderEnumTransgenderFemale, models.GenderEnumIntersex, models.GenderEnumNonBinary},
 			nil,
 			false,
 		},
@@ -271,7 +270,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					StoredID: &validStoredID,
 				},
 			},
-			false,
+			nil,
 			[]int{validStoredIDInt},
 			false,
 		},
@@ -288,7 +287,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					Gender:   &female,
 				},
 			},
-			true,
+			[]models.GenderEnum{models.GenderEnumFemale, models.GenderEnumTransgenderMale, models.GenderEnumTransgenderFemale, models.GenderEnumIntersex, models.GenderEnumNonBinary},
 			[]int{validStoredIDInt},
 			false,
 		},
@@ -305,7 +304,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 					StoredID: &invalidStoredID,
 				},
 			},
-			false,
+			nil,
 			nil,
 			true,
 		},
@@ -315,12 +314,12 @@ func Test_sceneRelationships_performers(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["performers"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Performers: tt.scraped,
 				},
 			}
 
-			got, err := tr.performers(testCtx, tt.ignoreMale)
+			got, err := tr.performers(testCtx, tt.allowedGenders)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.performers() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -369,14 +368,14 @@ func Test_sceneRelationships_tags(t *testing.T) {
 
 	db := mocks.NewDatabase()
 
-	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
-		return p.Name == validName
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.CreateTagInput) bool {
+		return p.Tag.Name == validName
 	})).Run(func(args mock.Arguments) {
-		t := args.Get(1).(*models.Tag)
-		t.ID = validStoredIDInt
+		t := args.Get(1).(*models.CreateTagInput)
+		t.Tag.ID = validStoredIDInt
 	}).Return(nil)
-	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
-		return p.Name == invalidName
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.CreateTagInput) bool {
+		return p.Tag.Name == invalidName
 	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
@@ -507,7 +506,7 @@ func Test_sceneRelationships_tags(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["tags"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Tags: tt.scraped,
 				},
 			}
@@ -727,7 +726,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: tt.endpoint,
 				},
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					RemoteSiteID: tt.remoteSiteID,
 				},
 			}
@@ -827,7 +826,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				ID: tt.sceneID,
 			}
 			tr.result = &scrapeResult{
-				result: &scraper.ScrapedScene{
+				result: &models.ScrapedScene{
 					Image: tt.image,
 				},
 			}

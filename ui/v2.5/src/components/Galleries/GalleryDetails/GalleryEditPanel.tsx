@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Prompt } from "react-router-dom";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import { Button, Dropdown, Form, Col, Row, SplitButton } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -31,11 +31,16 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { ScraperMenu } from "src/components/Shared/ScraperMenu";
+import {
+  CustomFieldsInput,
+  formatCustomFieldInput,
+} from "src/components/Shared/CustomFields";
+import { cloneDeep } from "@apollo/client/utilities";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
-  onSubmit: (input: GQL.GalleryCreateInput) => Promise<void>;
+  onSubmit: (input: GQL.GalleryCreateInput, andNew?: boolean) => Promise<void>;
   onDelete: () => void;
 }
 
@@ -76,6 +81,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     tag_ids: yup.array(yup.string().required()).defined(),
     scene_ids: yup.array(yup.string().required()).defined(),
     details: yup.string().ensure(),
+    custom_fields: yup.object().required().defined(),
   });
 
   const initialValues = {
@@ -89,15 +95,26 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     tag_ids: (gallery?.tags ?? []).map((t) => t.id),
     scene_ids: (gallery?.scenes ?? []).map((s) => s.id),
     details: gallery?.details ?? "",
+    custom_fields: cloneDeep(gallery?.custom_fields ?? {}),
   };
 
   type InputValues = yup.InferType<typeof schema>;
+
+  const [customFieldsError, setCustomFieldsError] = useState<string>();
+
+  function submit(values: InputValues) {
+    const input = {
+      ...schema.cast(values),
+      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
+    };
+    onSave(input);
+  }
 
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
     validate: yupFormikValidate(schema),
-    onSubmit: (values) => onSave(schema.cast(values)),
+    onSubmit: submit,
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
@@ -162,15 +179,38 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }, [scrapers]);
 
-  async function onSave(input: InputValues) {
+  const cover = useMemo(() => {
+    if (gallery?.paths?.cover) {
+      return (
+        <div className="gallery-cover">
+          <img
+            src={gallery.paths.cover}
+            alt={intl.formatMessage({ id: "cover_image" })}
+          />
+        </div>
+      );
+    }
+
+    return <div></div>;
+  }, [gallery?.paths?.cover, intl]);
+
+  async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input);
+      await onSubmit(input, andNew);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onSaveAndNewClick() {
+    const input = {
+      ...schema.cast(formik.values),
+      custom_fields: formatCustomFieldInput(isNew, formik.values.custom_fields),
+    };
+    onSave(input, true);
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
@@ -335,6 +375,19 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       xl: 12,
     },
   };
+  const urlProps = isNew
+    ? splitProps
+    : {
+        labelProps: {
+          column: true,
+          md: 3,
+          lg: 12,
+        },
+        fieldProps: {
+          md: 9,
+          lg: 12,
+        },
+      };
   const { renderField, renderInputField, renderDateField, renderURLListField } =
     formikUtils(intl, formik, splitProps);
 
@@ -417,16 +470,35 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
-            <Button
-              className="edit-button"
-              variant="primary"
-              disabled={
-                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
-              }
-              onClick={() => formik.submitForm()}
-            >
-              <FormattedMessage id="actions.save" />
-            </Button>
+            {isNew ? (
+              <SplitButton
+                id="gallery-save-split-button"
+                className="edit-button"
+                variant="primary"
+                disabled={
+                  !isEqual(formik.errors, {}) || customFieldsError !== undefined
+                }
+                title={intl.formatMessage({ id: "actions.save" })}
+                onClick={() => formik.submitForm()}
+              >
+                <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+                  <FormattedMessage id="actions.save_and_new" />
+                </Dropdown.Item>
+              </SplitButton>
+            ) : (
+              <Button
+                className="edit-button"
+                variant="primary"
+                disabled={
+                  (!isNew && !formik.dirty) ||
+                  !isEqual(formik.errors, {}) ||
+                  customFieldsError !== undefined
+                }
+                onClick={() => formik.submitForm()}
+              >
+                <FormattedMessage id="actions.save" />
+              </Button>
+            )}
             <Button
               className="edit-button"
               variant="danger"
@@ -451,7 +523,13 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", onScrapeGalleryURL, urlScrapable)}
+            {renderURLListField(
+              "urls",
+              onScrapeGalleryURL,
+              urlScrapable,
+              "urls",
+              urlProps
+            )}
 
             {renderDateField("date")}
             {renderInputField("photographer")}
@@ -463,6 +541,19 @@ export const GalleryEditPanel: React.FC<IProps> = ({
           </Col>
           <Col lg={5} xl={12}>
             {renderDetailsField()}
+            <Form.Group controlId="cover_image">
+              <Form.Label>
+                <FormattedMessage id="cover_image" />
+              </Form.Label>
+              {cover}
+            </Form.Group>
+
+            <CustomFieldsInput
+              values={formik.values.custom_fields}
+              onChange={(v) => formik.setFieldValue("custom_fields", v)}
+              error={customFieldsError}
+              setError={(e) => setCustomFieldsError(e)}
+            />
           </Col>
         </Row>
       </Form>

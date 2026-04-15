@@ -31,7 +31,8 @@ const (
 )
 
 const (
-	folderIdxWithSubFolder = iota
+	folderIdxRoot = iota
+	folderIdxWithSubFolder
 	folderIdxWithParentFolder
 	folderIdxWithFiles
 	folderIdxInZip
@@ -77,6 +78,8 @@ const (
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
+	sceneIdx1WithTwoStudioPerformer
+	sceneIdx2WithTwoStudioPerformer
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
@@ -138,6 +141,7 @@ const (
 	performerIdxWithSceneStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
+	performerIdxWithTwoSceneStudio
 	performerIdxWithParentTag
 	// new indexes above
 	// performers with dup names start from the end
@@ -257,6 +261,8 @@ const (
 	studioIdxWithScenePerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
+	studioIdx1WithTwoScenePerformer
+	studioIdx2WithTwoScenePerformer
 	studioIdxWithTag
 	studioIdx2WithTag
 	studioIdxWithTwoTags
@@ -300,6 +306,7 @@ const (
 	pathField            = "Path"
 	checksumField        = "Checksum"
 	titleField           = "Title"
+	detailsField         = "Details"
 	urlField             = "URL"
 	zipPath              = "zipPath.zip"
 	firstSavedFilterName = "firstSavedFilterName"
@@ -354,6 +361,8 @@ func (m linkMap) reverseLookup(idx int) []int {
 
 var (
 	folderParentFolders = map[int]int{
+		folderIdxWithSubFolder:    folderIdxRoot,
+		folderIdxForObjectFiles:   folderIdxRoot,
 		folderIdxWithParentFolder: folderIdxWithSubFolder,
 		folderIdxWithSceneFiles:   folderIdxForObjectFiles,
 		folderIdxWithImageFiles:   folderIdxForObjectFiles,
@@ -384,16 +393,18 @@ var (
 	}
 
 	scenePerformers = linkMap{
-		sceneIdxWithPerformer:          {performerIdxWithScene},
-		sceneIdxWithTwoPerformers:      {performerIdx1WithScene, performerIdx2WithScene},
-		sceneIdxWithThreePerformers:    {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
-		sceneIdxWithPerformerTag:       {performerIdxWithTag},
-		sceneIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
-		sceneIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
-		sceneIdx1WithPerformer:         {performerIdxWithTwoScenes},
-		sceneIdx2WithPerformer:         {performerIdxWithTwoScenes},
-		sceneIdxWithStudioPerformer:    {performerIdxWithSceneStudio},
-		sceneIdxWithPerformerParentTag: {performerIdxWithParentTag},
+		sceneIdxWithPerformer:           {performerIdxWithScene},
+		sceneIdxWithTwoPerformers:       {performerIdx1WithScene, performerIdx2WithScene},
+		sceneIdxWithThreePerformers:     {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
+		sceneIdxWithPerformerTag:        {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:     {performerIdxWithTag, performerIdx2WithTag},
+		sceneIdxWithPerformerTwoTags:    {performerIdxWithTwoTags},
+		sceneIdx1WithPerformer:          {performerIdxWithTwoScenes},
+		sceneIdx2WithPerformer:          {performerIdxWithTwoScenes},
+		sceneIdxWithStudioPerformer:     {performerIdxWithSceneStudio},
+		sceneIdx1WithTwoStudioPerformer: {performerIdxWithTwoSceneStudio},
+		sceneIdx2WithTwoStudioPerformer: {performerIdxWithTwoSceneStudio},
+		sceneIdxWithPerformerParentTag:  {performerIdxWithParentTag},
 	}
 
 	sceneGalleries = linkMap{
@@ -406,11 +417,13 @@ var (
 	}
 
 	sceneStudios = map[int]int{
-		sceneIdxWithStudio:           studioIdxWithScene,
-		sceneIdx1WithStudio:          studioIdxWithTwoScenes,
-		sceneIdx2WithStudio:          studioIdxWithTwoScenes,
-		sceneIdxWithStudioPerformer:  studioIdxWithScenePerformer,
-		sceneIdxWithGrandChildStudio: studioIdxWithGrandParent,
+		sceneIdxWithStudio:              studioIdxWithScene,
+		sceneIdx1WithStudio:             studioIdxWithTwoScenes,
+		sceneIdx2WithStudio:             studioIdxWithTwoScenes,
+		sceneIdxWithStudioPerformer:     studioIdxWithScenePerformer,
+		sceneIdx1WithTwoStudioPerformer: studioIdx1WithTwoScenePerformer,
+		sceneIdx2WithTwoStudioPerformer: studioIdx2WithTwoScenePerformer,
+		sceneIdxWithGrandChildStudio:    studioIdxWithGrandParent,
 	}
 )
 
@@ -578,6 +591,22 @@ func indexToID(ids []int, idx int) int {
 	return ids[idx]
 }
 
+func indexesToIDPtrs[T any](ids []T, indexes []int) []*T {
+	ret := make([]*T, len(indexes))
+	for i, idx := range indexes {
+		ret[i] = indexToIDPtr(ids, idx)
+	}
+
+	return ret
+}
+
+func indexToIDPtr[T any](ids []T, idx int) *T {
+	if idx < 0 {
+		return nil
+	}
+	return &ids[idx]
+}
+
 func indexFromID(ids []int, id int) int {
 	for i, v := range ids {
 		if v == id {
@@ -675,7 +704,9 @@ func populateDB() error {
 			return fmt.Errorf("creating files: %w", err)
 		}
 
-		// TODO - link folders to zip files
+		if err := linkFoldersToZip(ctx); err != nil {
+			return fmt.Errorf("linking folders to zip files: %w", err)
+		}
 
 		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
@@ -758,6 +789,10 @@ func getFolderPath(index int, parentFolderIdx *int) string {
 	return path
 }
 
+func getFolderBasename(index int, parentFolderIdx *int) string {
+	return filepath.Base(getFolderPath(index, parentFolderIdx))
+}
+
 func getFolderModTime(index int) time.Time {
 	return time.Date(2000, 1, (index%10)+1, 0, 0, 0, 0, time.UTC)
 }
@@ -798,6 +833,27 @@ func createFolders(ctx context.Context) error {
 	return nil
 }
 
+func linkFoldersToZip(ctx context.Context) error {
+	// link folders to zip files
+	for folderIdx, fileIdx := range folderZipFiles {
+		folderID := folderIDs[folderIdx]
+		fileID := fileIDs[fileIdx]
+
+		f, err := db.Folder.Find(ctx, folderID)
+		if err != nil {
+			return fmt.Errorf("Error finding folder [%d] to link to zip file [%d]", folderID, fileID)
+		}
+
+		f.ZipFileID = &fileID
+
+		if err := db.Folder.Update(ctx, f); err != nil {
+			return fmt.Errorf("Error linking folder [%d] to zip file [%d]: %s", folderIdx, fileIdx, err.Error())
+		}
+	}
+
+	return nil
+}
+
 func getFileBaseName(index int) string {
 	return getPrefixedStringValue("file", index, "basename")
 }
@@ -810,15 +866,23 @@ func getFileModTime(index int) time.Time {
 	return getFolderModTime(index)
 }
 
+func getFilePhash(index int) int64 {
+	return int64(index * 567)
+}
+
 func getFileFingerprints(index int) []models.Fingerprint {
 	return []models.Fingerprint{
 		{
-			Type:        "MD5",
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: getPrefixedStringValue("file", index, "md5"),
 		},
 		{
-			Type:        "OSHASH",
+			Type:        models.FingerprintTypeOshash,
 			Fingerprint: getPrefixedStringValue("file", index, "oshash"),
+		},
+		{
+			Type:        models.FingerprintTypePhash,
+			Fingerprint: getFilePhash(index),
 		},
 	}
 }
@@ -1028,10 +1092,17 @@ func getObjectDate(index int) *models.Date {
 	return &ret
 }
 
+func sceneStashIDs(i int) []models.StashID {
+	if i%5 == 0 {
+		return nil
+	}
+	return []models.StashID{sceneStashID(i)}
+}
+
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:   getSceneStringValue(i, "stashid"),
-		Endpoint:  getSceneStringValue(i, "endpoint"),
+		Endpoint:  getSceneStringValue(0, "endpoint"),
 		UpdatedAt: epochTime,
 	}
 }
@@ -1126,11 +1197,21 @@ func makeScene(i int) *models.Scene {
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
 		Groups:       models.NewRelatedGroups(groups),
-		StashIDs: models.NewRelatedStashIDs([]models.StashID{
-			sceneStashID(i),
-		}),
+		StashIDs:     models.NewRelatedStashIDs(sceneStashIDs(i)),
 		PlayDuration: getScenePlayDuration(i),
 		ResumeTime:   getSceneResumeTime(i),
+	}
+}
+
+func getSceneCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getSceneStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
 	}
 }
 
@@ -1149,6 +1230,10 @@ func createScenes(ctx context.Context, n int) error {
 
 		if err := sqb.Create(ctx, scene, []models.FileID{f.ID}); err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
+		}
+
+		if err := sqb.SetCustomFields(ctx, scene.ID, models.CustomFieldsInput{Full: getSceneCustomFields(i)}); err != nil {
+			return fmt.Errorf("Error setting custom fields for scene %d: %s", scene.ID, err.Error())
 		}
 
 		sceneIDs = append(sceneIDs, scene.ID)
@@ -1176,6 +1261,18 @@ func getImageEmptyString(index int, field string) string {
 
 func getImageBasename(index int) string {
 	return getImageStringValue(index, pathField)
+}
+
+func getImageCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getImageStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
 }
 
 func makeImageFile(i int) *models.ImageFile {
@@ -1209,9 +1306,10 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Title:  title,
-		Rating: getIntPtr(getRating(i)),
-		Date:   getObjectDate(i),
+		Title:   title,
+		Details: getImageStringValue(i, detailsField),
+		Rating:  getIntPtr(getRating(i)),
+		Date:    getObjectDate(i),
 		URLs: models.NewRelatedStrings([]string{
 			getImageEmptyString(i, urlField),
 		}),
@@ -1240,7 +1338,11 @@ func createImages(ctx context.Context, n int) error {
 
 		image := makeImage(i)
 
-		err := qb.Create(ctx, image, []models.FileID{f.ID})
+		err := qb.Create(ctx, &models.CreateImageInput{
+			Image:        image,
+			FileIDs:      []models.FileID{f.ID},
+			CustomFields: getImageCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
@@ -1320,6 +1422,18 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	return ret
 }
 
+func getGalleryCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getGalleryStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 func createGalleries(ctx context.Context, n int) error {
 	gqb := db.Gallery
 	fqb := db.File
@@ -1341,7 +1455,11 @@ func createGalleries(ctx context.Context, n int) error {
 		const includeScenes = false
 		gallery := makeGallery(i, includeScenes)
 
-		err := gqb.Create(ctx, gallery, fileIDs)
+		err := gqb.Create(ctx, &models.CreateGalleryInput{
+			Gallery:      gallery,
+			FileIDs:      fileIDs,
+			CustomFields: getGalleryCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())
@@ -1370,6 +1488,18 @@ func getGroupEmptyString(index int, field string) string {
 	}
 
 	return v.String
+}
+
+func getGroupCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getGroupStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
 }
 
 // createGroups creates n groups with plain Name and o groups with camel cased NaMe included
@@ -1402,6 +1532,13 @@ func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o in
 
 		if err != nil {
 			return fmt.Errorf("Error creating group [%d] %v+: %s", i, group, err.Error())
+		}
+
+		customFields := getGroupCustomFields(i)
+		if customFields != nil {
+			if err := mqb.SetCustomFields(ctx, group.ID, models.CustomFieldsInput{Full: customFields}); err != nil {
+				return fmt.Errorf("Error setting custom fields for group %d: %s", group.ID, err.Error())
+			}
 		}
 
 		groupIDs = append(groupIDs, group.ID)
@@ -1460,13 +1597,26 @@ func getPerformerDeathDate(index int) *models.Date {
 	return &ret
 }
 
-func getPerformerCareerLength(index int) *string {
+func getPerformerCareerStart(index int) *models.Date {
 	if index%5 == 0 {
 		return nil
 	}
 
-	ret := fmt.Sprintf("20%2d", index)
-	return &ret
+	date := models.DateFromYear(2000 + index)
+	return &date
+}
+
+func getPerformerCareerEnd(index int) *models.Date {
+	if index%5 == 0 {
+		return nil
+	}
+
+	// only set career_end for even indices
+	if index%2 == 0 {
+		date := models.DateFromYear(2010 + index)
+		return &date
+	}
+	return nil
 }
 
 func getPerformerPenisLength(index int) *float64 {
@@ -1478,15 +1628,15 @@ func getPerformerPenisLength(index int) *float64 {
 	return &ret
 }
 
-func getPerformerCircumcised(index int) *models.CircumisedEnum {
-	var ret models.CircumisedEnum
+func getPerformerCircumcised(index int) *models.CircumcisedEnum {
+	var ret models.CircumcisedEnum
 	switch {
 	case index%3 == 0:
 		return nil
 	case index%3 == 1:
-		ret = models.CircumisedEnumCut
+		ret = models.CircumcisedEnumCut
 	default:
-		ret = models.CircumisedEnumUncut
+		ret = models.CircumcisedEnumUncut
 	}
 
 	return &ret
@@ -1499,7 +1649,7 @@ func getIgnoreAutoTag(index int) bool {
 func performerStashID(i int) models.StashID {
 	return models.StashID{
 		StashID:  getPerformerStringValue(i, "stashid"),
-		Endpoint: getPerformerStringValue(i, "endpoint"),
+		Endpoint: getPerformerStringValue(0, "endpoint"),
 	}
 }
 
@@ -1562,10 +1712,8 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			TagIDs:        models.NewRelatedIDs(tids),
 		}
 
-		careerLength := getPerformerCareerLength(i)
-		if careerLength != nil {
-			performer.CareerLength = *careerLength
-		}
+		performer.CareerStart = getPerformerCareerStart(i)
+		performer.CareerEnd = getPerformerCareerEnd(i)
 
 		if (index+1)%5 != 0 {
 			performer.StashIDs = models.NewRelatedStashIDs([]models.StashID{
@@ -1649,6 +1797,25 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
+func tagStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getTagStringValue(i, "stashid"),
+		Endpoint: getTagStringValue(0, "endpoint"),
+	}
+}
+
+func getTagCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getTagStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 // createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1670,7 +1837,16 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
-		err := tqb.Create(ctx, &tag)
+		if (index+1)%5 != 0 {
+			tag.StashIDs = models.NewRelatedStashIDs([]models.StashID{
+				tagStashID(i),
+			})
+		}
+
+		err := tqb.Create(ctx, &models.CreateTagInput{
+			Tag:          &tag,
+			CustomFields: getTagCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -1699,7 +1875,19 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
+func getStudioCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getStudioStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
+func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int, customFields map[string]interface{}) (*models.Studio, error) {
 	studio := models.Studio{
 		Name: name,
 	}
@@ -1708,7 +1896,7 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 		studio.ParentID = parentID
 	}
 
-	err := createStudioFromModel(ctx, sqb, &studio)
+	err := createStudioFromModel(ctx, sqb, &studio, customFields)
 	if err != nil {
 		return nil, err
 	}
@@ -1716,8 +1904,11 @@ func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, par
 	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio) error {
-	err := sqb.Create(ctx, studio)
+func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio, customFields map[string]interface{}) error {
+	err := sqb.Create(ctx, &models.CreateStudioInput{
+		Studio:       studio,
+		CustomFields: customFields,
+	})
 
 	if err != nil {
 		return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
@@ -1729,6 +1920,24 @@ func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio 
 func getStudioBoolValue(index int) bool {
 	index = index % 2
 	return index == 1
+}
+
+func getStudioEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("studio", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
+}
+
+func getStudioStringList(index int, field string) []string {
+	v := getStudioEmptyString(index, field)
+	if v == "" {
+		return []string{}
+	}
+
+	return []string{v}
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
@@ -1751,7 +1960,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
 			Name:          name,
-			URL:           getStudioStringValue(index, urlField),
+			URLs:          models.NewRelatedStrings(getStudioStringList(i, urlField)),
 			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 			TagIDs:        models.NewRelatedIDs(tids),
@@ -1761,7 +1970,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 			alias := getStudioStringValue(i, "Alias")
 			studio.Aliases = models.NewRelatedStrings([]string{alias})
 		}
-		err := createStudioFromModel(ctx, sqb, &studio)
+		err := createStudioFromModel(ctx, sqb, &studio, getStudioCustomFields(i))
 
 		if err != nil {
 			return err

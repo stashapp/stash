@@ -4,7 +4,7 @@ This dockerfile is used to build a stash docker container using the current sour
 
 # Building the docker container
 
-From the top-level directory (should contain `main.go` file):
+From the top-level directory (should contain `tools.go` file):
 
 ```
 make docker-build

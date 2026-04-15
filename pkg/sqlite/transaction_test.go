@@ -197,13 +197,13 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 		_ = txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
 			// wait for first thread
 			if err := waitForOtherThread(c); err != nil {
-				t.Errorf(err.Error())
+				t.Error(err.Error())
 				return err
 			}
 
 			defer func() {
 				if err := signalOtherThread(c); err != nil {
-					t.Errorf(err.Error())
+					t.Error(err.Error())
 				}
 			}()
 

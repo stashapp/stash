@@ -7,7 +7,7 @@ import {
   mutateMetadataGenerate,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
@@ -19,6 +19,10 @@ import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  AutoTagConfirmDialog,
+  AutoTagWarning,
+} from "src/components/Shared/AutoTagConfirmDialog";
 import { useSettings } from "../context";
 
 interface IAutoTagOptions {
@@ -78,7 +82,9 @@ export const LibraryTasks: React.FC = () => {
   const [dialogOpen, setDialogOpenState] = useState({
     scan: false,
     autoTag: false,
+    autoTagAlert: false,
     identify: false,
+    generate: false,
   });
 
   function getDefaultScanOptions(): GQL.ScanMetadataInput {
@@ -123,7 +129,7 @@ export const LibraryTasks: React.FC = () => {
 
   type DialogOpenState = typeof dialogOpen;
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const [configRead, setConfigRead] = useState(false);
 
   useEffect(() => {
@@ -158,30 +164,6 @@ export const LibraryTasks: React.FC = () => {
       if (configuration?.defaults.generate) {
         const { generate } = configuration.defaults;
         setGenerateOptions(withoutTypename(generate));
-      }
-
-      if (configuration?.general) {
-        const { general } = configuration;
-        setGenerateOptions((existing) => ({
-          ...existing,
-          previewOptions: {
-            ...existing.previewOptions,
-            previewSegments:
-              general.previewSegments ??
-              existing.previewOptions?.previewSegments,
-            previewSegmentDuration:
-              general.previewSegmentDuration ??
-              existing.previewOptions?.previewSegmentDuration,
-            previewExcludeStart:
-              general.previewExcludeStart ??
-              existing.previewOptions?.previewExcludeStart,
-            previewExcludeEnd:
-              general.previewExcludeEnd ??
-              existing.previewOptions?.previewExcludeEnd,
-            previewPreset:
-              general.previewPreset ?? existing.previewOptions?.previewPreset,
-          },
-        }));
       }
 
       setConfigRead(true);
@@ -247,12 +229,29 @@ export const LibraryTasks: React.FC = () => {
     }
   }
 
+  function renderAutoTagAlert() {
+    return (
+      <AutoTagConfirmDialog
+        show={dialogOpen.autoTagAlert}
+        onConfirm={() => {
+          setDialogOpen({ autoTagAlert: false });
+          runAutoTag();
+        }}
+        onCancel={() => setDialogOpen({ autoTagAlert: false })}
+      />
+    );
+  }
+
   function renderAutoTagDialog() {
     if (!dialogOpen.autoTag) {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+    return (
+      <DirectorySelectionDialog onClose={onAutoTagDialogClosed}>
+        <AutoTagWarning />
+      </DirectorySelectionDialog>
+    );
   }
 
   function onAutoTagDialogClosed(paths?: string[]) {
@@ -289,9 +288,67 @@ export const LibraryTasks: React.FC = () => {
     );
   }
 
+  function renderGenerateDialog() {
+    if (!dialogOpen.generate) {
+      return;
+    }
+
+    return <DirectorySelectionDialog onClose={onGenerateDialogClosed} />;
+  }
+
+  function onGenerateDialogClosed(paths?: string[]) {
+    if (paths) {
+      runGenerate(paths);
+    }
+
+    setDialogOpen({ generate: false });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function runGenerate(paths?: string[]) {
+    try {
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        paths,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.generate" }) }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   async function onGenerateClicked() {
     try {
-      await mutateMetadataGenerate(generateOptions);
+      // insert preview options here instead of loading them
+      const general = configuration?.general;
+
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        previewOptions: {
+          ...generateOptions.previewOptions,
+          previewSegments:
+            general?.previewSegments ??
+            generateOptions.previewOptions?.previewSegments,
+          previewSegmentDuration:
+            general?.previewSegmentDuration ??
+            generateOptions.previewOptions?.previewSegmentDuration,
+          previewExcludeStart:
+            general?.previewExcludeStart ??
+            generateOptions.previewOptions?.previewExcludeStart,
+          previewExcludeEnd:
+            general?.previewExcludeEnd ??
+            generateOptions.previewOptions?.previewExcludeEnd,
+          previewPreset:
+            general?.previewPreset ??
+            generateOptions.previewOptions?.previewPreset,
+        },
+      });
       Toast.success(
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
@@ -306,8 +363,10 @@ export const LibraryTasks: React.FC = () => {
   return (
     <Form.Group>
       {renderScanDialog()}
+      {renderAutoTagAlert()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
+      {renderGenerateDialog()}
 
       <SettingSection headingID="library">
         <SettingGroup
@@ -390,9 +449,9 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => runAutoTag()}
+                onClick={() => setDialogOpen({ autoTagAlert: true })}
               >
-                <FormattedMessage id="actions.auto_tag" />
+                <FormattedMessage id="actions.auto_tag" />…
               </Button>
               <Button
                 variant="secondary"
@@ -426,13 +485,23 @@ export const LibraryTasks: React.FC = () => {
             subHeadingID: "config.tasks.generate_desc",
           }}
           topLevel={
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => onGenerateClicked()}
-            >
-              <FormattedMessage id="actions.generate" />
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onGenerateClicked()}
+              >
+                <FormattedMessage id="actions.generate" />
+              </Button>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => setDialogOpen({ generate: true })}
+              >
+                <FormattedMessage id="actions.selective_generate" />…
+              </Button>
+            </>
           }
           collapsible
         >

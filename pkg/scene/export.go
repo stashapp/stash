@@ -17,6 +17,7 @@ import (
 type ExportGetter interface {
 	models.ViewDateReader
 	models.ODateReader
+	models.CustomFieldsReader
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
@@ -90,6 +91,11 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, scene *models.Scene) 
 
 	for _, date := range odates {
 		newSceneJSON.OHistory = append(newSceneJSON.OHistory, json.JSONTime{Time: date})
+	}
+
+	newSceneJSON.CustomFields, err = reader.GetCustomFields(ctx, scene.ID)
+	if err != nil {
+		return nil, fmt.Errorf("getting scene custom fields: %v", err)
 	}
 
 	return &newSceneJSON, nil
@@ -233,6 +239,10 @@ func GetSceneMarkersJSON(ctx context.Context, markerReader models.SceneMarkerFin
 			Tags:       getTagNames(sceneMarkerTags),
 			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt},
 			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt},
+		}
+
+		if sceneMarker.EndSeconds != nil {
+			sceneMarkerJSON.EndSeconds = getDecimalString(*sceneMarker.EndSeconds)
 		}
 
 		results = append(results, sceneMarkerJSON)

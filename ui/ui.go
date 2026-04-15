@@ -1,3 +1,4 @@
+//go:generate go run -tags=dev ../scripts/generateLoginLocales.go
 package ui
 
 import (

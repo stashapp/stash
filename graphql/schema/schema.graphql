@@ -6,6 +6,26 @@ type Query {
   findDefaultFilter(mode: FilterMode!): SavedFilter
     @deprecated(reason: "default filter now stored in UI config")
 
+  "Find a file by its id or path"
+  findFile(id: ID, path: String): BaseFile!
+
+  "Queries for Files"
+  findFiles(
+    file_filter: FileFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindFilesResultType!
+
+  "Find a file by its id or path"
+  findFolder(id: ID, path: String): Folder!
+
+  "Queries for Files"
+  findFolders(
+    folder_filter: FolderFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindFoldersResultType!
+
   "Find a scene by ID or Checksum"
   findScene(id: ID, checksum: String): Scene
   findSceneByHash(input: SceneHashInput!): Scene
@@ -144,6 +164,12 @@ type Query {
     source: ScraperSourceInput!
     input: ScrapeSingleStudioInput!
   ): [ScrapedStudio!]!
+
+  "Scrape for a single tag"
+  scrapeSingleTag(
+    source: ScraperSourceInput!
+    input: ScrapeSingleTagInput!
+  ): [ScrapedTag!]!
 
   "Scrape for a single performer"
   scrapeSinglePerformer(
@@ -308,6 +334,7 @@ type Mutation {
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
+  bulkSceneMarkerUpdate(input: BulkSceneMarkerUpdateInput!): [SceneMarker!]
   sceneMarkerDestroy(id: ID!): Boolean!
   sceneMarkersDestroy(ids: [ID!]!): Boolean!
 
@@ -346,11 +373,13 @@ type Mutation {
   performerDestroy(input: PerformerDestroyInput!): Boolean!
   performersDestroy(ids: [ID!]!): Boolean!
   bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!]
+  performerMerge(input: PerformerMergeInput!): Performer!
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
   studiosDestroy(ids: [ID!]!): Boolean!
+  bulkStudioUpdate(input: BulkStudioUpdateInput!): [Studio!]
 
   movieCreate(input: MovieCreateInput!): Movie
     @deprecated(reason: "Use groupCreate instead")
@@ -393,8 +422,14 @@ type Mutation {
   """
   moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
+  "Deletes file entries from the database without deleting the files from the filesystem"
+  destroyFiles(ids: [ID!]!): Boolean!
 
   fileSetFingerprints(input: FileSetFingerprintsInput!): Boolean!
+  "Reveal the file in the system file manager"
+  revealFileInFileManager(id: ID!): Boolean!
+  "Reveal the folder in the system file manager"
+  revealFolderInFileManager(id: ID!): Boolean!
 
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter!
@@ -548,6 +583,8 @@ type Mutation {
   stashBoxBatchPerformerTag(input: StashBoxBatchTagInput!): String!
   "Run batch studio tag task. Returns the job ID."
   stashBoxBatchStudioTag(input: StashBoxBatchTagInput!): String!
+  "Run batch tag tag task. Returns the job ID."
+  stashBoxBatchTagTag(input: StashBoxBatchTagInput!): String!
 
   "Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"
   enableDLNA(input: EnableDLNAInput!): Boolean!

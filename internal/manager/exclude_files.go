@@ -60,6 +60,10 @@ func generateRegexps(patterns []string) []*regexp.Regexp {
 	var fileRegexps []*regexp.Regexp
 
 	for _, pattern := range patterns {
+		if pattern == "" || pattern == " " {
+			logger.Warnf("Skipping empty exclude pattern")
+			continue
+		}
 		if !strings.HasPrefix(pattern, "(?i)") {
 			pattern = "(?i)" + pattern
 		}

@@ -58,7 +58,7 @@ interface ITagRelationTuple {
 }
 
 export const tagRelationHook = (
-  tag: GQL.SlimTagDataFragment | GQL.TagDataFragment,
+  tag: GQL.SlimTagDataFragment | GQL.TagDataFragment | GQL.TagListDataFragment,
   old: ITagRelationTuple,
   updated: ITagRelationTuple
 ) => {

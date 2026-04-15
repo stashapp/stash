@@ -47,6 +47,13 @@ func NewImage() Image {
 	}
 }
 
+type CreateImageInput struct {
+	*Image
+
+	FileIDs      []FileID
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
 type ImagePartial struct {
 	Title OptionalString
 	Code  OptionalString
@@ -66,6 +73,7 @@ type ImagePartial struct {
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
 	PrimaryFileID *FileID
+	CustomFields  CustomFieldsInput
 }
 
 func NewImagePartial() ImagePartial {

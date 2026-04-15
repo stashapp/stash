@@ -1,13 +1,23 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import { isEqual, isFunction } from "lodash-es";
 import { QueryResult } from "@apollo/client";
 import { IHasID } from "src/utils/data";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
+import * as GQL from "src/core/generated-graphql";
+import { DisplayMode } from "src/models/list-filter/types";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+
+function locationEquals(
+  loc1: ReturnType<typeof useLocation> | undefined,
+  loc2: ReturnType<typeof useLocation>
+) {
+  return loc1 && loc1.pathname === loc2.pathname && loc1.search === loc2.search;
+}
 
 export function useFilterURL(
   filter: ListFilterModel,
@@ -21,6 +31,7 @@ export function useFilterURL(
 
   const history = useHistory();
   const location = useLocation();
+  const prevLocation = usePrevious(location);
 
   // when the filter changes, update the URL
   const updateFilter = useCallback(
@@ -44,7 +55,8 @@ export function useFilterURL(
   // and updates the filter accordingly.
   useEffect(() => {
     // don't apply if active is false
-    if (!active) return;
+    // also don't apply if location is unchanged
+    if (!active || locationEquals(prevLocation, location)) return;
 
     // re-init to load default filter on empty new query params
     if (!location.search) {
@@ -70,7 +82,8 @@ export function useFilterURL(
     });
   }, [
     active,
-    location.search,
+    prevLocation,
+    location,
     defaultFilter,
     setFilter,
     updateFilter,
@@ -81,7 +94,7 @@ export function useFilterURL(
 }
 
 export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
-  const { configuration: config, loading } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const defaultFilter = useMemo(() => {
     if (view && config?.ui.defaultFilters?.[view]) {
@@ -101,9 +114,123 @@ export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
     }
   }, [view, config?.ui.defaultFilters, emptyFilter]);
 
-  const retFilter = loading ? undefined : defaultFilter ?? emptyFilter;
+  const retFilter = defaultFilter ?? emptyFilter;
 
-  return { defaultFilter: retFilter, loading };
+  return { defaultFilter: retFilter };
+}
+
+function useEmptyFilter(props: {
+  filterMode: GQL.FilterMode;
+  defaultSort?: string;
+  config?: GQL.ConfigDataFragment;
+}) {
+  const { filterMode, defaultSort, config } = props;
+
+  const emptyFilter = useMemo(
+    () =>
+      new ListFilterModel(filterMode, config, {
+        defaultSortBy: defaultSort,
+      }),
+    [config, filterMode, defaultSort]
+  );
+
+  return emptyFilter;
+}
+
+export interface IFilterStateHook {
+  filterMode: GQL.FilterMode;
+  defaultFilter?: ListFilterModel;
+  defaultSort?: string;
+  view?: View;
+  useURL?: boolean;
+}
+
+export function useFilterState(
+  props: IFilterStateHook & {
+    config?: GQL.ConfigDataFragment;
+  }
+) {
+  const {
+    filterMode,
+    defaultSort,
+    config,
+    view,
+    useURL,
+    defaultFilter: propDefaultFilter,
+  } = props;
+
+  const [filter, setFilterState] = useState<ListFilterModel>(
+    () =>
+      new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
+  );
+
+  const emptyFilter = useEmptyFilter({ filterMode, defaultSort, config });
+
+  const { defaultFilter: defaultFilterFromConfig } = useDefaultFilter(
+    emptyFilter,
+    view
+  );
+
+  const { setFilter } = useFilterURL(filter, setFilterState, {
+    defaultFilter: propDefaultFilter ?? defaultFilterFromConfig,
+    active: useURL,
+  });
+
+  return { filter, setFilter };
+}
+
+export function useFilterOperations(props: {
+  filter: ListFilterModel;
+  setFilter: (
+    value: ListFilterModel | ((prevState: ListFilterModel) => ListFilterModel)
+  ) => void;
+}) {
+  const { setFilter } = props;
+
+  const setPage = useCallback(
+    (p: number) => {
+      setFilter((cv) => cv.changePage(p));
+    },
+    [setFilter]
+  );
+
+  const setDisplayMode = useCallback(
+    (displayMode: DisplayMode) => {
+      setFilter((cv) => cv.setDisplayMode(displayMode));
+    },
+    [setFilter]
+  );
+
+  const setZoom = useCallback(
+    (newZoomIndex: number) => {
+      setFilter((cv) => cv.setZoom(newZoomIndex));
+    },
+    [setFilter]
+  );
+
+  const removeCriterion = useCallback(
+    (removedCriterion: Criterion) => {
+      setFilter((cv) =>
+        cv.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    },
+    [setFilter]
+  );
+
+  const clearAllCriteria = useCallback(
+    (includeSearchTerm = false) => {
+      setFilter((cv) => cv.clearCriteria(includeSearchTerm));
+    },
+    [setFilter]
+  );
+
+  return {
+    setPage,
+    setDisplayMode,
+    setZoom,
+    removeCriterion,
+    clearAllCriteria,
+  };
 }
 
 export function useListKeyboardShortcuts(props: {
@@ -113,6 +240,7 @@ export function useListKeyboardShortcuts(props: {
   pages?: number;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  onInvertSelection?: () => void;
 }) {
   const {
     currentPage,
@@ -121,6 +249,7 @@ export function useListKeyboardShortcuts(props: {
     pages = 0,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
   } = props;
 
   // set up hotkeys
@@ -182,18 +311,21 @@ export function useListKeyboardShortcuts(props: {
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
+    Mousetrap.bind("s i", () => onInvertSelection?.());
 
     return () => {
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
+      Mousetrap.unbind("s i");
     };
-  }, [onSelectAll, onSelectNone]);
+  }, [onSelectAll, onSelectNone, onInvertSelection]);
 }
 
-export function useListSelect<T extends { id: string }>(items: T[]) {
+export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
   const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
 
+  // TODO - this doesn't get updated when items changes
   const selectedIds = useMemo(() => {
     const newSelectedIds = new Set<string>();
     itemsSelected.forEach((item) => {
@@ -303,18 +435,35 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
     setLastClickedId(undefined);
   }
 
+  function onInvertSelection() {
+    setItemsSelected((prevSelected) => {
+      const selectedSet = new Set(prevSelected.map((item) => item.id));
+      return items.filter((item) => !selectedSet.has(item.id));
+    });
+    setLastClickedId(undefined);
+  }
+
+  // TODO - this is for backwards compatibility
   const getSelected = useCallback(() => itemsSelected, [itemsSelected]);
 
+  // convenience state
+  const hasSelection = itemsSelected.length > 0;
+
   return {
+    selectedItems: itemsSelected,
     selectedIds,
     getSelected,
     onSelectChange,
     onSelectAll,
     onSelectNone,
+    onInvertSelection,
+    hasSelection,
   };
 }
 
-export type IListSelect<T extends IHasID> = ReturnType<typeof useListSelect<T>>;
+export type IListSelect<T extends IHasID = IHasID> = ReturnType<
+  typeof useListSelect<T>
+>;
 
 // returns true if the filter has changed in a way that impacts the total count
 function totalCountImpacted(
@@ -340,22 +489,109 @@ export function useCachedQueryResult<T extends QueryResult>(
   result: T
 ) {
   const [cachedResult, setCachedResult] = useState(result);
-  const [lastFilter, setLastFilter] = useState(filter);
+  const lastFilterRef = useRef(filter);
 
   // if we are only changing the page or sort, don't update the result count
   useEffect(() => {
     if (!result.loading) {
       setCachedResult(result);
     } else {
-      if (totalCountImpacted(lastFilter, filter)) {
+      if (totalCountImpacted(lastFilterRef.current, filter)) {
         setCachedResult(result);
       }
     }
 
-    setLastFilter(filter);
-  }, [filter, result, lastFilter]);
+    lastFilterRef.current = filter;
+  }, [filter, result]);
 
   return cachedResult;
+}
+
+export interface IQueryResultHook<
+  T extends QueryResult,
+  E extends IHasID = IHasID,
+  M = unknown
+> {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  useResult: (filter: ListFilterModel) => T;
+  useMetadataInfo?: (filter: ListFilterModel) => M;
+  getCount: (data: T) => number;
+  getItems: (data: T) => E[];
+}
+
+export function useQueryResult<
+  T extends QueryResult,
+  E extends IHasID = IHasID,
+  M = unknown
+>(
+  props: IQueryResultHook<T, E, M> & {
+    filter: ListFilterModel;
+  }
+) {
+  const { filter, filterHook, useResult, useMetadataInfo, getItems, getCount } =
+    props;
+
+  const effectiveFilter = useMemo(() => {
+    if (filterHook) {
+      return filterHook(filter.clone());
+    }
+    return filter;
+  }, [filter, filterHook]);
+
+  // metadata filter is the effective filter with the sort, page size and page number removed
+  const metadataFilter = useMemo(
+    () => effectiveFilter.metadataInfo(),
+    [effectiveFilter]
+  );
+
+  const result = useResult(effectiveFilter);
+  const metadataInfo = useMetadataInfo?.(metadataFilter);
+
+  // use cached query result for pagination and metadata rendering
+  const cachedResult = useCachedQueryResult(effectiveFilter, result);
+
+  const items = useMemo(() => getItems(result), [getItems, result]);
+  const totalCount = useMemo(
+    () => getCount(cachedResult),
+    [getCount, cachedResult]
+  );
+
+  const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+  return {
+    effectiveFilter,
+    metadataInfo,
+    result,
+    cachedResult,
+    items,
+    totalCount,
+    pages,
+  };
+}
+
+// this hook collects the common logic when closing the edit/delete dialog
+// if applied is true, then the list should be refetched and selection cleared
+export function useCloseEditDelete(props: {
+  onSelectNone: () => void;
+  closeModal: () => void;
+  result: QueryResult;
+}) {
+  const { onSelectNone, closeModal, result } = props;
+
+  const onCloseEditDelete = useCallback(
+    (applied?: boolean) => {
+      closeModal();
+      if (applied) {
+        onSelectNone();
+
+        // refetch
+        result.refetch();
+      }
+    },
+    [onSelectNone, closeModal, result]
+  );
+
+  return onCloseEditDelete;
 }
 
 export function useScrollToTopOnPageChange(

@@ -3,10 +3,7 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import { Icon } from "src/components/Shared/Icon";
-import { OperationButton } from "src/components/Shared/OperationButton";
 import { OptionalField } from "../IncludeButton";
-import { faSave } from "@fortawesome/free-solid-svg-icons";
 import {
   Performer,
   PerformerSelect,
@@ -14,6 +11,7 @@ import {
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
+import { LinkButton } from "../LinkButton";
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -148,22 +146,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     );
   }
 
-  function maybeRenderLinkButton() {
-    if (endpoint && onLink) {
-      return (
-        <OperationButton
-          variant="secondary"
-          disabled={selectedID === undefined}
-          operation={onLink}
-          hideChildrenWhenLoading
-        >
-          <Icon icon={faSave} />
-        </OperationButton>
-      );
-    }
-  }
-
   const selectedSource = !selectedID ? "skip" : "existing";
+
+  const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
+    return stashboxPerformerPrefix && id
+      ? `${stashboxPerformerPrefix}${id}`
+      : undefined;
+  };
 
   return (
     <div className="row no-gutters align-items-center mt-2">
@@ -172,7 +161,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <b className="ml-2">
           <PerformerLink
             performer={performer}
-            url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
+            url={safeBuildPerformerScraperLink(performer.remote_site_id)}
           />
         </b>
       </div>
@@ -193,7 +182,9 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           isClearable={false}
           ageFromDate={ageFromDate}
         />
-        {maybeRenderLinkButton()}
+        {endpoint && onLink && (
+          <LinkButton disabled={selectedID === undefined} onLink={onLink} />
+        )}
       </ButtonGroup>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, {
   MutableRefObject,
   PropsWithChildren,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,6 +14,8 @@ import useResizeObserver from "@react-hook/resize-observer";
 import { Icon } from "../Icon";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
+import { useDebounce } from "src/hooks/debounce";
+import { PatchComponent } from "src/patch";
 
 interface ICardProps {
   className?: string;
@@ -63,7 +66,7 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
     height: 0,
   });
 
-  useResizeObserver(target, (entry) => {
+  const debouncedSetDimension = useDebounce((entry: ResizeObserverEntry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
     let difference = Math.abs(dimension.width - width);
     // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
@@ -73,10 +76,44 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
     if (difference > sensitivityThreshold) {
       setDimension({ width, height });
     }
-  });
+  }, 50);
+
+  useResizeObserver(target, debouncedSetDimension);
 
   return [target, dimension];
 };
+
+export function useCardWidth(
+  containerWidth: number,
+  zoomIndex: number,
+  zoomWidths: number[]
+) {
+  return useMemo(() => {
+    if (ScreenUtils.isMobile()) {
+      return;
+    }
+
+    if (
+      zoomIndex === undefined ||
+      zoomIndex < 0 ||
+      zoomIndex >= zoomWidths.length
+    )
+      return;
+
+    // use a default card width if we don't have the container width yet
+    if (!containerWidth) {
+      return zoomWidths[zoomIndex];
+    }
+
+    let zoomValue = zoomIndex;
+    const preferredCardWidth = zoomWidths[zoomValue];
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    return fittedCardWidth;
+  }, [containerWidth, zoomIndex, zoomWidths]);
+}
 
 const Checkbox: React.FC<{
   selected?: boolean;
@@ -135,106 +172,113 @@ const MoveTarget: React.FC<{ dragSide: DragSide }> = ({ dragSide }) => {
   );
 };
 
-export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
-  const { setInHandle, moveTarget, dragProps } = useDragMoveSelect({
-    selecting: props.selecting || false,
-    selected: props.selected || false,
-    onSelectedChanged: props.onSelectedChanged,
-    objectId: props.objectId,
-    onMove: props.onMove,
-  });
+export const GridCard: React.FC<ICardProps> = PatchComponent(
+  "GridCard",
+  (props: ICardProps) => {
+    const { setInHandle, moveTarget, dragProps } = useDragMoveSelect({
+      selecting: props.selecting || false,
+      selected: props.selected || false,
+      onSelectedChanged: props.onSelectedChanged,
+      objectId: props.objectId,
+      onMove: props.onMove,
+    });
 
-  function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
-    const { shiftKey } = event;
-
-    if (!props.onSelectedChanged) {
-      return;
-    }
-
-    if (props.selecting) {
-      props.onSelectedChanged(!props.selected, shiftKey);
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  }
-
-  function maybeRenderInteractiveHeatmap() {
-    if (props.interactiveHeatmap) {
-      return (
-        <img
-          loading="lazy"
-          src={props.interactiveHeatmap}
-          alt="interactive heatmap"
-          className="interactive-heatmap"
-        />
-      );
-    }
-  }
-
-  function maybeRenderProgressBar() {
-    if (
-      props.resumeTime &&
-      props.duration &&
-      props.duration > props.resumeTime
+    function handleImageClick(
+      event: React.MouseEvent<HTMLElement, MouseEvent>
     ) {
-      const percentValue = (100 / props.duration) * props.resumeTime;
-      const percentStr = percentValue + "%";
-      return (
-        <div title={Math.round(percentValue) + "%"} className="progress-bar">
-          <div style={{ width: percentStr }} className="progress-indicator" />
-        </div>
-      );
-    }
-  }
+      const { shiftKey } = event;
 
-  return (
-    <Card
-      className={cx(props.className, "grid-card")}
-      onClick={handleImageClick}
-      {...dragProps}
-      style={
-        props.width && !ScreenUtils.isMobile()
-          ? { width: `${props.width}px` }
-          : {}
+      if (!props.onSelectedChanged) {
+        return;
       }
-    >
-      {moveTarget !== undefined && <MoveTarget dragSide={moveTarget} />}
-      <Controls>
-        {props.onSelectedChanged && (
-          <Checkbox
-            selected={props.selected}
-            onSelectedChanged={props.onSelectedChanged}
+
+      if (props.selecting) {
+        props.onSelectedChanged(!props.selected, shiftKey);
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
+
+    function maybeRenderInteractiveHeatmap() {
+      if (props.interactiveHeatmap) {
+        return (
+          <img
+            loading="lazy"
+            src={props.interactiveHeatmap}
+            alt="interactive heatmap"
+            className="interactive-heatmap"
           />
-        )}
+        );
+      }
+    }
 
-        {!!props.objectId && props.onMove && (
-          <DragHandle setInHandle={setInHandle} />
-        )}
-      </Controls>
+    function maybeRenderProgressBar() {
+      if (
+        props.resumeTime &&
+        props.duration &&
+        props.duration > props.resumeTime
+      ) {
+        const percentValue = (100 / props.duration) * props.resumeTime;
+        const percentStr = percentValue + "%";
+        return (
+          <div title={Math.round(percentValue) + "%"} className="progress-bar">
+            <div style={{ width: percentStr }} className="progress-indicator" />
+          </div>
+        );
+      }
+    }
 
-      <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>
-        <Link
-          to={props.url}
-          className={props.linkClassName}
-          onClick={handleImageClick}
+    return (
+      <Card
+        className={cx(props.className, "grid-card")}
+        onClick={handleImageClick}
+        {...dragProps}
+        style={
+          props.width && !ScreenUtils.isMobile()
+            ? { width: `${props.width}px` }
+            : {}
+        }
+      >
+        {moveTarget !== undefined && <MoveTarget dragSide={moveTarget} />}
+        <Controls>
+          {props.onSelectedChanged && (
+            <Checkbox
+              selected={props.selected}
+              onSelectedChanged={props.onSelectedChanged}
+            />
+          )}
+
+          {!!props.objectId && props.onMove && (
+            <DragHandle setInHandle={setInHandle} />
+          )}
+        </Controls>
+
+        <div
+          className={cx(props.thumbnailSectionClassName, "thumbnail-section")}
         >
-          {props.image}
-        </Link>
-        {props.overlays}
-        {maybeRenderProgressBar()}
-      </div>
-      {maybeRenderInteractiveHeatmap()}
-      <div className="card-section">
-        <Link to={props.url} onClick={handleImageClick}>
-          <h5 className="card-section-title flex-aligned">
-            {props.pretitleIcon}
-            <TruncatedText text={props.title} lineCount={2} />
-          </h5>
-        </Link>
-        {props.details}
-      </div>
+          <Link
+            to={props.url}
+            className={props.linkClassName}
+            onClick={handleImageClick}
+          >
+            {props.image}
+          </Link>
+          {props.overlays}
+          {maybeRenderProgressBar()}
+        </div>
+        {maybeRenderInteractiveHeatmap()}
+        <div className="card-section">
+          <Link to={props.url} onClick={handleImageClick}>
+            <h5 className="card-section-title flex-aligned">
+              {props.pretitleIcon}
+              <TruncatedText text={props.title} lineCount={2} />
+            </h5>
+          </Link>
+          {props.details}
+        </div>
 
-      {props.popovers}
-    </Card>
-  );
-};
+        {props.popovers}
+      </Card>
+    );
+  }
+);

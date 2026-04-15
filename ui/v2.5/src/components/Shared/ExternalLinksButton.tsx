@@ -12,9 +12,10 @@ export const ExternalLinksButton: React.FC<{
   icon?: IconDefinition;
   urls: string[];
   className?: string;
+  openIfSingle?: boolean;
 }> = PatchComponent(
   "ExternalLinksButton",
-  ({ urls, icon = faLink, className = "" }) => {
+  ({ urls, icon = faLink, className = "", openIfSingle = false }) => {
     if (!urls.length) {
       return null;
     }
@@ -36,14 +37,27 @@ export const ExternalLinksButton: React.FC<{
         document.body
       );
 
-    return (
-      <Dropdown className="external-links-button">
-        <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
+    if (openIfSingle && urls.length === 1) {
+      return (
+        <ExternalLink
+          className={`external-links-button-link minimal btn link ${className}`}
+          href={TextUtils.sanitiseURL(urls[0])}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <Icon icon={icon} />
-        </Dropdown.Toggle>
-        <Menu />
-      </Dropdown>
-    );
+        </ExternalLink>
+      );
+    } else {
+      return (
+        <Dropdown className="external-links-button">
+          <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
+            <Icon icon={icon} />
+          </Dropdown.Toggle>
+          <Menu />
+        </Dropdown>
+      );
+    }
   }
 );
 

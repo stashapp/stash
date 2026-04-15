@@ -12,6 +12,7 @@ import {
   FormatHeight,
   FormatPenisLength,
   FormatWeight,
+  formatYearRange,
 } from "../PerformerList";
 import { PatchComponent } from "src/patch";
 import { CustomFields } from "src/components/Shared/CustomFields";
@@ -29,7 +30,7 @@ const PerformerDetailGroup: React.FC<PropsWithChildren<IPerformerDetails>> =
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
   PatchComponent("PerformerDetailsPanel", (props) => {
-    const { performer, fullWidth } = props;
+    const { performer, fullWidth, collapsed } = props;
 
     // Network state
     const intl = useIntl();
@@ -89,12 +90,19 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           }
           title={
             !fullWidth
-              ? TextUtils.formatDate(intl, performer.birthdate ?? undefined)
+              ? TextUtils.formatFuzzyDate(
+                  intl,
+                  performer.birthdate ?? undefined
+                )
               : ""
           }
           fullWidth={fullWidth}
         />
-        <DetailItem id="death_date" value={performer.death_date} />
+        <DetailItem
+          id="death_date"
+          value={performer.death_date}
+          fullWidth={fullWidth}
+        />
         {performer.country ? (
           <DetailItem
             id="country"
@@ -167,7 +175,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
         />
         <DetailItem
           id="career_length"
-          value={performer?.career_length}
+          value={formatYearRange(
+            performer?.career_start,
+            performer?.career_end
+          )}
           fullWidth={fullWidth}
         />
         <DetailItem id="details" value={details} fullWidth={fullWidth} />
@@ -177,7 +188,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           value={renderStashIDs()}
           fullWidth={fullWidth}
         />
-        {fullWidth && <CustomFields values={performer.custom_fields} />}
+        {(fullWidth || !collapsed) && (
+          <CustomFields values={performer.custom_fields} />
+        )}
       </PerformerDetailGroup>
     );
   });
@@ -212,7 +225,7 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> =
               <span className="detail-divider">/</span>
               <span
                 className="performer-age"
-                title={TextUtils.formatDate(
+                title={TextUtils.formatFuzzyDate(
                   intl,
                   performer.birthdate ?? undefined
                 )}

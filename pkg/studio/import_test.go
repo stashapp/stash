@@ -49,6 +49,7 @@ func TestImporterPreImport(t *testing.T) {
 			Name:          studioName,
 			Image:         invalidImage,
 			IgnoreAutoTag: autoTagIgnored,
+			Organized:     studioOrganized,
 		},
 	}
 
@@ -62,7 +63,7 @@ func TestImporterPreImport(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"})
+	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"}, customFields)
 	i.Input.ParentStudio = ""
 
 	err = i.PreImport(testCtx)
@@ -71,6 +72,7 @@ func TestImporterPreImport(t *testing.T) {
 	expectedStudio := createFullStudio(0, 0)
 	expectedStudio.ParentID = nil
 	assert.Equal(t, expectedStudio, i.studio)
+	assert.Equal(t, models.CustomFieldMap(customFields), i.customFields)
 }
 
 func TestImporterPreImportWithTag(t *testing.T) {
@@ -121,9 +123,9 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	}
 
 	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
-	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
-		t := args.Get(1).(*models.Tag)
-		t.ID = existingTagID
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.CreateTagInput")).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.CreateTagInput)
+		t.Tag.ID = existingTagID
 	}).Return(nil)
 
 	err := i.PreImport(testCtx)
@@ -156,7 +158,7 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 	}
 
 	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
-	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Return(errors.New("Create error"))
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.CreateTagInput")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -206,9 +208,9 @@ func TestImporterPreImportWithMissingParent(t *testing.T) {
 	}
 
 	db.Studio.On("FindByName", testCtx, missingParentStudioName, false).Return(nil, nil).Times(3)
-	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
-		s := args.Get(1).(*models.Studio)
-		s.ID = existingStudioID
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.CreateStudioInput")).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.CreateStudioInput)
+		s.Studio.ID = existingStudioID
 	}).Return(nil)
 
 	err := i.PreImport(testCtx)
@@ -240,7 +242,7 @@ func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
 	}
 
 	db.Studio.On("FindByName", testCtx, missingParentStudioName, false).Return(nil, nil).Once()
-	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.CreateStudioInput")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -327,11 +329,11 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	db.Studio.On("Create", testCtx, &studio).Run(func(args mock.Arguments) {
-		s := args.Get(1).(*models.Studio)
+	db.Studio.On("Create", testCtx, &models.CreateStudioInput{Studio: &studio}).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.CreateStudioInput)
 		s.ID = studioID
 	}).Return(nil).Once()
-	db.Studio.On("Create", testCtx, &studioErr).Return(errCreate).Once()
+	db.Studio.On("Create", testCtx, &models.CreateStudioInput{Studio: &studioErr}).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, studioID, *id)
@@ -366,7 +368,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	studio.ID = studioID
-	db.Studio.On("Update", testCtx, &studio).Return(nil).Once()
+	db.Studio.On("Update", testCtx, &models.UpdateStudioInput{Studio: &studio}).Return(nil).Once()
 
 	err := i.Update(testCtx, studioID)
 	assert.Nil(t, err)
@@ -375,7 +377,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	studioErr.ID = errImageID
-	db.Studio.On("Update", testCtx, &studioErr).Return(errUpdate).Once()
+	db.Studio.On("Update", testCtx, &models.UpdateStudioInput{Studio: &studioErr}).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

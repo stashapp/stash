@@ -16,7 +16,7 @@ type ImageFinder interface {
 }
 
 type ImageService interface {
-	Destroy(ctx context.Context, i *models.Image, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) error
+	Destroy(ctx context.Context, i *models.Image, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error
 	DestroyZipImages(ctx context.Context, zipFile models.File, fileDeleter *image.FileDeleter, deleteGenerated bool) ([]*models.Image, error)
 	DestroyFolderImages(ctx context.Context, folderID models.FolderID, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error)
 }

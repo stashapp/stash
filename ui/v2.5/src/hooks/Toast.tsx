@@ -28,7 +28,9 @@ const errorDelay = 5000;
 
 let toastID = 0;
 
-const ToastContext = createContext<(item: IToast) => void>(() => {});
+type ToastFn = (item: IToast) => void;
+
+const ToastContext = createContext<ToastFn | null>(null);
 
 export const ToastProvider: React.FC = ({ children }) => {
   const [toast, setToast] = useState<IActiveToast>();
@@ -121,6 +123,10 @@ export const ToastProvider: React.FC = ({ children }) => {
 export const useToast = () => {
   const addToast = useContext(ToastContext);
 
+  if (!addToast) {
+    throw new Error("useToast must be used within a ToastProvider");
+  }
+
   return useMemo(
     () => ({
       toast: addToast,
@@ -144,3 +150,21 @@ export const useToast = () => {
     [addToast]
   );
 };
+
+export function toastOperation(
+  toast: ReturnType<typeof useToast>,
+  o: () => Promise<void>,
+  successMessage: string
+) {
+  async function operation() {
+    try {
+      await o();
+
+      toast.success(successMessage);
+    } catch (e) {
+      toast.error(e);
+    }
+  }
+
+  return operation;
+}

@@ -14,15 +14,13 @@ import (
 )
 
 type stashScraper struct {
-	scraper      scraperTypeConfig
-	config       config
+	config       Definition
 	globalConfig GlobalConfig
 	client       *http.Client
 }
 
-func newStashScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *stashScraper {
+func newStashScraper(client *http.Client, config Definition, globalConfig GlobalConfig) *stashScraper {
 	return &stashScraper{
-		scraper:      scraper,
 		config:       config,
 		client:       client,
 		globalConfig: globalConfig,
@@ -170,7 +168,7 @@ func (s *stashScraper) scrapeByPerformerFragment(ctx context.Context, scrapedPer
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeBySceneFragment(ctx context.Context, scrapedScene ScrapedSceneInput) (ScrapedContent, error) {
+func (s *stashScraper) scrapeBySceneFragment(ctx context.Context, scrapedScene models.ScrapedSceneInput) (ScrapedContent, error) {
 	client := s.getStashClient()
 
 	var q struct {
@@ -219,8 +217,8 @@ type stashFindSceneNamesResultType struct {
 	Scenes []*scrapedSceneStash `graphql:"scenes"`
 }
 
-func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*ScrapedScene, error) {
-	ret := ScrapedScene{}
+func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*models.ScrapedScene, error) {
+	ret := models.ScrapedScene{}
 	err := copier.Copy(&ret, scene)
 	if err != nil {
 		return nil, err
@@ -341,7 +339,7 @@ type scrapedSceneStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// query by MD5
 	var q struct {
 		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
@@ -401,7 +399,7 @@ type scrapedGalleryStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	var q struct {
 		FindGallery *scrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
 	}
@@ -425,7 +423,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 
 	// need to copy back to a scraped scene
-	ret := ScrapedGallery{}
+	ret := models.ScrapedGallery{}
 	if err := copier.Copy(&ret, q.FindGallery); err != nil {
 		return nil, err
 	}
@@ -433,7 +431,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	return nil, ErrNotSupported
 }
 

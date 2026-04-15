@@ -15,9 +15,10 @@ type Tag struct {
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 
-	Aliases   RelatedStrings `json:"aliases"`
-	ParentIDs RelatedIDs     `json:"parent_ids"`
-	ChildIDs  RelatedIDs     `json:"tag_ids"`
+	Aliases   RelatedStrings  `json:"aliases"`
+	ParentIDs RelatedIDs      `json:"parent_ids"`
+	ChildIDs  RelatedIDs      `json:"tag_ids"`
+	StashIDs  RelatedStashIDs `json:"stash_ids"`
 }
 
 func NewTag() Tag {
@@ -26,6 +27,18 @@ func NewTag() Tag {
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
+}
+
+type CreateTagInput struct {
+	*Tag
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdateTagInput struct {
+	*Tag
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }
 
 func (s *Tag) LoadAliases(ctx context.Context, l AliasLoader) error {
@@ -46,6 +59,12 @@ func (s *Tag) LoadChildIDs(ctx context.Context, l TagRelationLoader) error {
 	})
 }
 
+func (s *Tag) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
+	return s.StashIDs.load(func() ([]StashID, error) {
+		return l.GetStashIDs(ctx, s.ID)
+	})
+}
+
 type TagPartial struct {
 	Name          OptionalString
 	SortName      OptionalString
@@ -58,6 +77,9 @@ type TagPartial struct {
 	Aliases   *UpdateStrings
 	ParentIDs *UpdateIDs
 	ChildIDs  *UpdateIDs
+	StashIDs  *UpdateStashIDs
+
+	CustomFields CustomFieldsInput
 }
 
 func NewTagPartial() TagPartial {

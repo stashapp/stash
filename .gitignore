@@ -21,6 +21,9 @@ vendor
 # GraphQL generated output
 internal/api/generated_*.go
 
+# Generated locale files
+ui/login/locales/*
+
 ####
 # Visual Studio
 ####

@@ -551,7 +551,7 @@ func Test_FileStore_FindByPath(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			got, err := qb.FindByPath(ctx, tt.path)
+			got, err := qb.FindByPath(ctx, tt.path, true)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FileStore.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -572,7 +572,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		{
 			"by MD5",
 			models.Fingerprint{
-				Type:        "MD5",
+				Type:        models.FingerprintTypeMD5,
 				Fingerprint: getPrefixedStringValue("file", fileIdxZip, "md5"),
 			},
 			[]models.File{makeFileWithID(fileIdxZip)},
@@ -581,7 +581,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		{
 			"by OSHASH",
 			models.Fingerprint{
-				Type:        "OSHASH",
+				Type:        models.FingerprintTypeOshash,
 				Fingerprint: getPrefixedStringValue("file", fileIdxZip, "oshash"),
 			},
 			[]models.File{makeFileWithID(fileIdxZip)},
@@ -590,7 +590,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		{
 			"non-existing",
 			models.Fingerprint{
-				Type:        "OSHASH",
+				Type:        models.FingerprintTypeOshash,
 				Fingerprint: "foo",
 			},
 			nil,

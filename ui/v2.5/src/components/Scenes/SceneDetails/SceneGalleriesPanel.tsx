@@ -10,7 +10,12 @@ export const SceneGalleriesPanel: React.FC<ISceneGalleriesPanelProps> = ({
   galleries,
 }) => {
   const cards = galleries.map((gallery) => (
-    <GalleryCard key={gallery.id} gallery={gallery} selecting={false} />
+    <GalleryCard
+      key={gallery.id}
+      gallery={gallery}
+      selecting={false}
+      zoomIndex={2}
+    />
   ));
 
   return <div className="container scene-galleries">{cards}</div>;

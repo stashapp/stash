@@ -81,8 +81,8 @@ func walkSym(f models.FS, filename string, linkDirname string, walkFn fs.WalkDir
 	return fsWalk(f, filename, symWalkFunc)
 }
 
-// symWalk extends filepath.Walk to also follow symlinks
-func symWalk(fs models.FS, path string, walkFn fs.WalkDirFunc) error {
+// SymWalk extends filepath.Walk to also follow symlinks
+func SymWalk(fs models.FS, path string, walkFn fs.WalkDirFunc) error {
 	return walkSym(fs, path, path, walkFn)
 }
 

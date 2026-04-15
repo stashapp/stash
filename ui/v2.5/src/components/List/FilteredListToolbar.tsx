@@ -2,17 +2,53 @@ import React from "react";
 import { QueryResult } from "@apollo/client";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { ListFilter } from "./ListFilter";
-import { ListViewOptions } from "./ListViewOptions";
+import { PageSizeSelector, SearchTermInput, SortBySelect } from "./ListFilter";
+import { ListViewButtonGroup } from "./ListViewOptions";
 import {
   IListFilterOperation,
   ListOperationButtons,
 } from "./ListOperationButtons";
-import { DisplayMode } from "src/models/list-filter/types";
-import { ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
-import { useListContext } from "./ListProvider";
-import { useFilter } from "./FilterProvider";
+import { IListSelect, useFilterOperations } from "./util";
+import { SavedFilterDropdown } from "./SavedFilterList";
+import { FilterButton } from "./Filters/FilterButton";
+import { Icon } from "../Shared/Icon";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faSquareCheck } from "@fortawesome/free-regular-svg-icons";
+import { useIntl } from "react-intl";
+import cx from "classnames";
+
+const SelectionSection: React.FC<{
+  filter: ListFilterModel;
+  selected: number;
+  onSelectAll: () => void;
+  onSelectNone: () => void;
+}> = ({ selected, onSelectAll, onSelectNone }) => {
+  const intl = useIntl();
+
+  return (
+    <div className="selected-items-info">
+      <Button
+        variant="secondary"
+        className="minimal"
+        onClick={() => onSelectNone()}
+        title={intl.formatMessage({ id: "actions.select_none" })}
+      >
+        <Icon icon={faTimes} />
+      </Button>
+      <span className="selected-count">{selected}</span>
+      <Button
+        variant="secondary"
+        className="minimal"
+        onClick={() => onSelectAll()}
+        title={intl.formatMessage({ id: "actions.select_all" })}
+      >
+        <Icon icon={faSquareCheck} />
+      </Button>
+    </div>
+  );
+};
 
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
@@ -32,59 +68,120 @@ export interface IItemListOperation<T extends QueryResult> {
 }
 
 export interface IFilteredListToolbar {
-  showEditFilter?: (editingCriterion?: string) => void;
+  filter: ListFilterModel;
+  setFilter: (
+    value: ListFilterModel | ((prevState: ListFilterModel) => ListFilterModel)
+  ) => void;
+  showEditFilter: () => void;
   view?: View;
+  listSelect: IListSelect;
   onEdit?: () => void;
   onDelete?: () => void;
   operations?: IListFilterOperation[];
+  operationComponent?: React.ReactNode;
   zoomable?: boolean;
+  filterable?: boolean;
+  sortable?: boolean;
 }
 
 export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
+  filter,
+  setFilter,
   showEditFilter,
   view,
+  listSelect,
   onEdit,
   onDelete,
   operations,
+  operationComponent,
   zoomable = false,
+  filterable = true,
+  sortable = true,
 }) => {
-  const { getSelected, onSelectAll, onSelectNone } = useListContext();
-  const { filter, setFilter } = useFilter();
-
   const filterOptions = filter.options;
+  const { setDisplayMode, setZoom } = useFilterOperations({
+    filter,
+    setFilter,
+  });
+  const { selectedIds, onSelectAll, onSelectNone, onInvertSelection } =
+    listSelect;
+  const hasSelection = selectedIds.size > 0;
 
-  function onChangeDisplayMode(displayMode: DisplayMode) {
-    setFilter(filter.setDisplayMode(displayMode));
-  }
-
-  function onChangeZoom(newZoomIndex: number) {
-    setFilter(filter.setZoom(newZoomIndex));
-  }
+  const renderOperations = operationComponent ?? (
+    <ListOperationButtons
+      onSelectAll={onSelectAll}
+      onSelectNone={onSelectNone}
+      onInvertSelection={onInvertSelection}
+      otherOperations={operations}
+      itemsSelected={selectedIds.size > 0}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
+  );
 
   return (
-    <ButtonToolbar className="filtered-list-toolbar">
-      {showEditFilter && (
-        <ListFilter
-          onFilterUpdate={setFilter}
+    <ButtonToolbar
+      className={cx("filtered-list-toolbar", { "has-selection": hasSelection })}
+    >
+      {hasSelection ? (
+        <SelectionSection
           filter={filter}
-          openFilterDialog={() => showEditFilter()}
-          view={view}
+          selected={selectedIds.size}
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
         />
+      ) : (
+        <>
+          {filterable && (
+            <SearchTermInput filter={filter} onFilterUpdate={setFilter} />
+          )}
+
+          {filterable && (
+            <ButtonGroup>
+              <SavedFilterDropdown
+                filter={filter}
+                onSetFilter={setFilter}
+                view={view}
+              />
+              <FilterButton
+                onClick={() => showEditFilter()}
+                count={filter.count()}
+              />
+            </ButtonGroup>
+          )}
+
+          {sortable && (
+            <SortBySelect
+              sortBy={filter.sortBy}
+              sortDirection={filter.sortDirection}
+              options={filterOptions.sortByOptions}
+              onChangeSortBy={(e) =>
+                setFilter(filter.setSortBy(e ?? undefined))
+              }
+              onChangeSortDirection={() =>
+                setFilter(filter.toggleSortDirection())
+              }
+              onReshuffleRandomSort={() =>
+                setFilter(filter.reshuffleRandomSort())
+              }
+            />
+          )}
+
+          <PageSizeSelector
+            pageSize={filter.itemsPerPage}
+            setPageSize={(size) => setFilter(filter.setPageSize(size))}
+          />
+        </>
       )}
-      <ListOperationButtons
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        otherOperations={operations}
-        itemsSelected={getSelected().length > 0}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-      <ListViewOptions
+
+      {renderOperations}
+
+      <ListViewButtonGroup
         displayMode={filter.displayMode}
         displayModeOptions={filterOptions.displayModeOptions}
-        onSetDisplayMode={onChangeDisplayMode}
+        onSetDisplayMode={setDisplayMode}
         zoomIndex={zoomable ? filter.zoomIndex : undefined}
-        onSetZoom={zoomable ? onChangeZoom : undefined}
+        onSetZoom={zoomable ? setZoom : undefined}
       />
     </ButtonToolbar>
   );

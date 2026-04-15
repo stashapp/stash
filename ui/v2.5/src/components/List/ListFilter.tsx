@@ -1,4 +1,3 @@
-import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
   useEffect,
@@ -23,19 +22,18 @@ import {
 import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
-import { FormattedMessage, useIntl } from "react-intl";
-import { SavedFilterDropdown } from "./SavedFilterList";
+import { useIntl } from "react-intl";
 import {
   faCaretDown,
   faCaretUp,
   faCheck,
   faRandom,
 } from "@fortawesome/free-solid-svg-icons";
-import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
-import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { useStopWheelScroll } from "src/utils/form";
+import { ISortByOption } from "src/models/list-filter/filter-options";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
@@ -61,11 +59,13 @@ export function useDebouncedSearchInput(
 export const SearchTermInput: React.FC<{
   filter: ListFilterModel;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
-}> = ({ filter, onFilterUpdate }) => {
+  focus?: ReturnType<typeof useFocus>;
+}> = ({ filter, onFilterUpdate, focus: providedFocus }) => {
   const intl = useIntl();
   const [localInput, setLocalInput] = useState(filter.searchTerm);
 
-  const focus = useFocus();
+  const localFocus = useFocus();
+  const focus = providedFocus ?? localFocus;
   const [, setQueryFocus] = focus;
 
   useEffect(() => {
@@ -228,68 +228,42 @@ export const PageSizeSelector: React.FC<{
   );
 };
 
-interface IListFilterProps {
-  onFilterUpdate: (newFilter: ListFilterModel) => void;
-  filter: ListFilterModel;
-  view?: View;
-  openFilterDialog: () => void;
-}
-
-export const ListFilter: React.FC<IListFilterProps> = ({
-  onFilterUpdate,
-  filter,
-  openFilterDialog,
-  view,
+export const SortBySelect: React.FC<{
+  className?: string;
+  sortBy: string | undefined;
+  sortDirection: SortDirectionEnum;
+  options: ISortByOption[];
+  onChangeSortBy: (eventKey: string | null) => void;
+  onChangeSortDirection: () => void;
+  onReshuffleRandomSort: () => void;
+}> = ({
+  className,
+  sortBy,
+  sortDirection,
+  options,
+  onChangeSortBy,
+  onChangeSortDirection,
+  onReshuffleRandomSort,
 }) => {
-  const filterOptions = filter.options;
-
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+  const { sfwContentMode } = configuration.interface;
 
-  useEffect(() => {
-    Mousetrap.bind("r", () => onReshuffleRandomSort());
-
-    return () => {
-      Mousetrap.unbind("r");
-    };
-  });
-
-  function onChangePageSize(pp: number) {
-    const newFilter = cloneDeep(filter);
-    newFilter.itemsPerPage = pp;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }
-
-  function onChangeSortDirection() {
-    const newFilter = cloneDeep(filter);
-    if (filter.sortDirection === SortDirectionEnum.Asc) {
-      newFilter.sortDirection = SortDirectionEnum.Desc;
-    } else {
-      newFilter.sortDirection = SortDirectionEnum.Asc;
-    }
-
-    onFilterUpdate(newFilter);
-  }
-
-  function onChangeSortBy(eventKey: string | null) {
-    const newFilter = cloneDeep(filter);
-    newFilter.sortBy = eventKey ?? undefined;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }
-
-  function onReshuffleRandomSort() {
-    const newFilter = cloneDeep(filter);
-    newFilter.currentPage = 1;
-    newFilter.randomSeed = -1;
-    onFilterUpdate(newFilter);
-  }
+  const currentSortBy = options.find((o) => o.value === sortBy);
+  const currentSortByMessageID = currentSortBy
+    ? !sfwContentMode
+      ? currentSortBy.messageID
+      : currentSortBy.sfwMessageID ?? currentSortBy.messageID
+    : "";
 
   function renderSortByOptions() {
-    return filterOptions.sortByOptions
+    return options
       .map((o) => {
+        const messageID = !sfwContentMode
+          ? o.messageID
+          : o.sfwMessageID ?? o.messageID;
         return {
-          message: intl.formatMessage({ id: o.messageID }),
+          message: intl.formatMessage({ id: messageID }),
           value: o.value,
         };
       })
@@ -300,95 +274,55 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           key={option.value}
           className="bg-secondary text-white"
           eventKey={option.value}
+          data-value={option.value}
         >
           {option.message}
         </Dropdown.Item>
       ));
   }
 
-  function render() {
-    const currentSortBy = filterOptions.sortByOptions.find(
-      (o) => o.value === filter.sortBy
-    );
-
-    return (
-      <>
-        <div className="mb-2 d-flex">
-          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
-        </div>
-
-        <ButtonGroup className="mr-2 mb-2">
-          <SavedFilterDropdown
-            filter={filter}
-            onSetFilter={(f) => {
-              onFilterUpdate(f);
-            }}
-            view={view}
+  return (
+    <Dropdown as={ButtonGroup} className={`${className ?? ""} sort-by-select`}>
+      <InputGroup.Prepend>
+        <Dropdown.Toggle variant="secondary">
+          {currentSortBy
+            ? intl.formatMessage({ id: currentSortByMessageID })
+            : ""}
+        </Dropdown.Toggle>
+      </InputGroup.Prepend>
+      <Dropdown.Menu className="bg-secondary text-white">
+        {renderSortByOptions()}
+      </Dropdown.Menu>
+      <OverlayTrigger
+        overlay={
+          <Tooltip id="sort-direction-tooltip">
+            {sortDirection === SortDirectionEnum.Asc
+              ? intl.formatMessage({ id: "ascending" })
+              : intl.formatMessage({ id: "descending" })}
+          </Tooltip>
+        }
+      >
+        <Button variant="secondary" onClick={onChangeSortDirection}>
+          <Icon
+            icon={
+              sortDirection === SortDirectionEnum.Asc ? faCaretUp : faCaretDown
+            }
           />
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="filter-tooltip">
-                <FormattedMessage id="search_filter.name" />
-              </Tooltip>
-            }
-          >
-            <FilterButton onClick={() => openFilterDialog()} filter={filter} />
-          </OverlayTrigger>
-        </ButtonGroup>
-
-        <Dropdown as={ButtonGroup} className="mr-2 mb-2">
-          <InputGroup.Prepend>
-            <Dropdown.Toggle variant="secondary">
-              {currentSortBy
-                ? intl.formatMessage({ id: currentSortBy.messageID })
-                : ""}
-            </Dropdown.Toggle>
-          </InputGroup.Prepend>
-          <Dropdown.Menu className="bg-secondary text-white">
-            {renderSortByOptions()}
-          </Dropdown.Menu>
-          <OverlayTrigger
-            overlay={
-              <Tooltip id="sort-direction-tooltip">
-                {filter.sortDirection === SortDirectionEnum.Asc
-                  ? intl.formatMessage({ id: "ascending" })
-                  : intl.formatMessage({ id: "descending" })}
-              </Tooltip>
-            }
-          >
-            <Button variant="secondary" onClick={onChangeSortDirection}>
-              <Icon
-                icon={
-                  filter.sortDirection === SortDirectionEnum.Asc
-                    ? faCaretUp
-                    : faCaretDown
-                }
-              />
-            </Button>
-          </OverlayTrigger>
-          {filter.sortBy === "random" && (
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="sort-reshuffle-tooltip">
-                  {intl.formatMessage({ id: "actions.reshuffle" })}
-                </Tooltip>
-              }
-            >
-              <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                <Icon icon={faRandom} />
-              </Button>
-            </OverlayTrigger>
-          )}
-        </Dropdown>
-
-        <PageSizeSelector
-          pageSize={filter.itemsPerPage}
-          setPageSize={onChangePageSize}
-        />
-      </>
-    );
-  }
-
-  return render();
+        </Button>
+      </OverlayTrigger>
+      {sortBy === "random" && (
+        <OverlayTrigger
+          overlay={
+            <Tooltip id="sort-reshuffle-tooltip">
+              {intl.formatMessage({ id: "actions.reshuffle" })}
+            </Tooltip>
+          }
+        >
+          <Button variant="secondary" onClick={onReshuffleRandomSort}>
+            <Icon icon={faRandom} />
+          </Button>
+        </OverlayTrigger>
+      )}
+    </Dropdown>
+  );
 };

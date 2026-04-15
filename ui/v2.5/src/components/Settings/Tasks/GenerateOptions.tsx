@@ -7,7 +7,7 @@ import {
 } from "../GeneratePreviewOptions";
 
 interface IGenerateOptions {
-  type?: "scene" | "image";
+  type?: "scene" | "image" | "gallery";
   selection?: boolean;
   options: GQL.GenerateMetadataInput;
   setOptions: (s: GQL.GenerateMetadataInput) => void;
@@ -27,7 +27,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
   }
 
   const showSceneOptions = !type || type === "scene";
-  const showImageOptions = !type || type === "image";
+  const showImageOptions = !type || type === "image" || type === "gallery";
 
   return (
     <>
@@ -100,7 +100,6 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             id="marker-image-preview-task"
             className="sub-setting"
             checked={options.markerImagePreviews ?? false}
-            disabled={!options.markers}
             headingID="dialogs.scene_gen.marker_image_previews"
             tooltipID="dialogs.scene_gen.marker_image_previews_tooltip"
             onChange={(v) =>
@@ -112,7 +111,6 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
           <BooleanSetting
             id="marker-screenshot-task"
             checked={options.markerScreenshots ?? false}
-            disabled={!options.markers}
             headingID="dialogs.scene_gen.marker_screenshots"
             tooltipID="dialogs.scene_gen.marker_screenshots_tooltip"
             onChange={(v) => setOptions({ markerScreenshots: v })}
@@ -168,6 +166,13 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             checked={options.imageThumbnails ?? false}
             headingID="dialogs.scene_gen.image_thumbnails"
             onChange={(v) => setOptions({ imageThumbnails: v })}
+          />
+          <BooleanSetting
+            id="image-phash-task"
+            checked={options.imagePhashes ?? false}
+            headingID="dialogs.scene_gen.image_phash"
+            tooltipID="dialogs.scene_gen.image_phash_tooltip"
+            onChange={(v) => setOptions({ imagePhashes: v })}
           />
         </>
       )}

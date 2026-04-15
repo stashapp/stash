@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import {
   convertToRatingFormat,
@@ -6,14 +6,14 @@ import {
   RatingStarPrecision,
   RatingSystemType,
 } from "src/utils/rating";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
   rating?: number | null;
 }
 
 export const RatingBanner: React.FC<IProps> = ({ rating }) => {
-  const { configuration: config } = useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const ratingSystemOptions =
     config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
   const isLegacy =

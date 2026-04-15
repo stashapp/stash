@@ -109,6 +109,31 @@ func (r *performerResolver) HeightCm(ctx context.Context, obj *models.Performer)
 	return obj.Height, nil
 }
 
+func (r *performerResolver) CareerStart(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.CareerStart != nil {
+		ret := obj.CareerStart.String()
+		return &ret, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) CareerEnd(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.CareerEnd != nil {
+		ret := obj.CareerEnd.String()
+		return &ret, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) CareerLength(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.CareerStart == nil && obj.CareerEnd == nil {
+		return nil, nil
+	}
+
+	ret := models.FormatYearRange(obj.CareerStart, obj.CareerEnd)
+	return &ret, nil
+}
+
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Birthdate != nil {
 		ret := obj.Birthdate.String()

@@ -6,6 +6,8 @@ import { stashboxDisplayName } from "src/utils/stashbox";
 import { ScraperSourceInput, StashBox } from "src/core/generated-graphql";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { ClearableInput } from "./ClearableInput";
+import useFocus from "src/utils/focus";
+import ScreenUtils from "src/utils/screen";
 
 export const ScraperMenu: React.FC<{
   toggle: React.ReactNode;
@@ -24,6 +26,10 @@ export const ScraperMenu: React.FC<{
 }) => {
   const intl = useIntl();
   const [filter, setFilter] = useState("");
+
+  const focusOnOpen = !ScreenUtils.isTouch();
+  const focusRef = useFocus();
+  const [, setFocus] = focusRef;
 
   const filteredStashboxes = useMemo(() => {
     if (!stashBoxes) return [];
@@ -48,25 +54,27 @@ export const ScraperMenu: React.FC<{
     <Dropdown
       className="scraper-menu"
       title={intl.formatMessage({ id: "actions.scrape_query" })}
+      onToggle={(v) => {
+        if (focusOnOpen && v) setTimeout(() => setFocus(true), 0);
+      }}
     >
       <Dropdown.Toggle variant={variant}>{toggle}</Dropdown.Toggle>
 
       <Dropdown.Menu>
         <div className="scraper-filter-container">
-          <div className="btn-group">
-            <ClearableInput
-              placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-              value={filter}
-              setValue={setFilter}
-            />
-            <Button
-              onClick={onReloadScrapers}
-              className="reload-button"
-              title={intl.formatMessage({ id: "actions.reload_scrapers" })}
-            >
-              <Icon icon={faSyncAlt} />
-            </Button>
-          </div>
+          <ClearableInput
+            placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+            value={filter}
+            setValue={setFilter}
+            focus={focusRef}
+          />
+          <Button
+            onClick={onReloadScrapers}
+            className="reload-button"
+            title={intl.formatMessage({ id: "actions.reload_scrapers" })}
+          >
+            <Icon icon={faSyncAlt} />
+          </Button>
         </div>
 
         {filteredStashboxes.map((s, index) => (

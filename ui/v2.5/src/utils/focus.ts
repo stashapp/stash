@@ -1,13 +1,17 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 
 const useFocus = () => {
   const htmlElRef = useRef<HTMLInputElement | null>(null);
-  const setFocus = () => {
+  const setFocus = useCallback((selectAll?: boolean) => {
     const currentEl = htmlElRef.current;
     if (currentEl) {
-      currentEl.focus();
+      if (selectAll) {
+        currentEl.select();
+      } else {
+        currentEl.focus();
+      }
     }
-  };
+  }, []);
 
   // eslint-disable-next-line no-undef
   return [htmlElRef, setFocus] as const;

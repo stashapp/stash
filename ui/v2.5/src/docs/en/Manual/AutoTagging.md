@@ -1,18 +1,50 @@
-# Auto Tagging
+# Auto Tag
 
-When media filepaths or filenames contain a Performer, Studio, or Tag name, it is assigned those Performers, Studios, and Tags. It will **only** tag based on Performer, Studio, and Tag names that exist in your database.
+Auto tag automatically assigns Performers, Studios, and Tags to your media based on their names found in file paths or filenames. This task works for scenes, images, and galleries.
 
-When the Performer/Studio/Tag name has multiple words, the search will include paths/filenames where the Performer/Studio/Tag name is separated with `.`, `-`, `_`, and whitespace characters.
+This task is part of the advanced settings mode.
 
-For example, auto tagging for performer `Jane Doe` will match the following filenames:
+## Rules
 
-* `Jane.Doe.1.mp4`
-* `Jane_Doe.2.mp4`
-* `Jane-Doe.3.mp4`
-* `Jane Doe.4.mp4`
+> **⚠️ Important:** Auto tag only works for names that already exist in your Stash database. It does not create new Performers, Studios, or Tags.
 
-Matching is case insensitive, and should only match exact wording within word boundaries. For example, the tag `Jane Doe` will not match `Maryjane-Doe` or `Jane-Doen`, but will match `Mary-Jane-Doe`, `Jane-Doe_n`, and `[OF]jane doe`.
+ - Multi-word names are matched when words appear in order and are separated by any of these characters: `.`, `-`, `_`, or whitespace. These separators are treated as word boundaries.
+ - Matching is case-insensitive but requires complete words within word boundaries. Partial words or misspelled words will not match.
+ - Auto tag does not match performer aliases. Aliases will not be considered during matching.
 
-Auto tagging for specific Performers, Studios, and Tags can be performed from the individual Performer/Studio/Tag page.
+### Examples (performer "Jane Doe")
 
-> **Note:** Performer autotagging does not currently match on performer aliases.
+**Matches:**
+
+| Example | Explanation |
+|---|---|
+| `Jane.Doe.1.mp4` | Dot as separator. |
+| `Jane_Doe.2.mp4` | Underscore as separator. |
+| `Jane-Doe.3.mp4` | Hyphen as separator. |
+| `Jane Doe.4.mp4` | Whitespace as separator. |
+| `Mary-Jane-Doe` | Extra characters around word boundaries are allowed. |
+| `Jane-Doe_n` | Extra characters around word boundaries are allowed. |
+| `[OF]jane doe` | Extra characters around word boundaries are allowed. |
+
+**Does not match:**
+
+| Example | Explanation |
+|---|---|
+| `Maryjane-Doe` | Combined words without separator. |
+| `Jane-Doen` | Spelling mismatch. |
+
+### Organized flag
+
+Scenes, images, and galleries that have the Organized flag added to them will not be modified by Auto tag. You can also use Organized flag status as a filter.
+
+Studios also support the Organized flag, however it is purely informational. It serves as a front-end indicator for the user to mark that a studio's collection is complete and does not affect Auto tag behavior. The Ignore Auto tag flag should be used to exclude a studio from Auto tag.
+
+### Ignore Auto tag flag
+
+Performers or Tags that have Ignore Auto tag flag added to them will be skipped by the Auto tag task.
+
+## Running task
+
+- **Auto tag:** You can run the Auto tag task on your entire library from the Tasks page.
+- **Selective auto tag:** You can run the Auto tag task on specific directories from the Tasks page.
+- **Individual pages:** You can run Auto tag tasks for specific Performers, Studios, and Tags from their respective pages.

@@ -43,6 +43,9 @@ func (gp *generatedPaths) GetTmpPath(fileName string) string {
 // TempFile creates a temporary file using os.CreateTemp.
 // It is the equivalent of calling os.CreateTemp using Tmp and pattern.
 func (gp *generatedPaths) TempFile(pattern string) (*os.File, error) {
+	if err := gp.EnsureTmpDir(); err != nil {
+		logger.Warnf("Could not ensure existence of a temporary directory: %v", err)
+	}
 	return os.CreateTemp(gp.Tmp, pattern)
 }
 

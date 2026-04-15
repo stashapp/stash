@@ -42,7 +42,7 @@ func (e *InvalidTagHierarchyError) Error() string {
 
 // EnsureTagNameUnique returns an error if the tag name provided
 // is used as a name or alias of another existing tag.
-func EnsureTagNameUnique(ctx context.Context, id int, name string, qb models.TagQueryer) error {
+func EnsureTagNameUnique(ctx context.Context, id int, name string, qb models.TagNameFinder) error {
 	// ensure name is unique
 	sameNameTag, err := ByName(ctx, qb, name)
 	if err != nil {
@@ -71,7 +71,7 @@ func EnsureTagNameUnique(ctx context.Context, id int, name string, qb models.Tag
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.TagQueryer) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.TagNameFinder) error {
 	for _, a := range aliases {
 		if err := EnsureTagNameUnique(ctx, id, a, qb); err != nil {
 			return err
@@ -219,50 +219,4 @@ func ValidateHierarchyExisting(ctx context.Context, tag *models.Tag, parentIDs, 
 	}
 
 	return nil
-}
-
-func MergeHierarchy(ctx context.Context, destination int, sources []int, qb RelationshipFinder) ([]int, []int, error) {
-	var mergedParents, mergedChildren []int
-	allIds := append([]int{destination}, sources...)
-
-	addTo := func(mergedItems []int, tagIDs []int) []int {
-	Tags:
-		for _, tagID := range tagIDs {
-			// Ignore tags which are already set
-			for _, existingItem := range mergedItems {
-				if tagID == existingItem {
-					continue Tags
-				}
-			}
-
-			// Ignore tags which are being merged, as these are rolled up anyway (if A is merged into B any direct link between them can be ignored)
-			for _, id := range allIds {
-				if tagID == id {
-					continue Tags
-				}
-			}
-
-			mergedItems = append(mergedItems, tagID)
-		}
-
-		return mergedItems
-	}
-
-	for _, id := range allIds {
-		parents, err := qb.GetParentIDs(ctx, id)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		mergedParents = addTo(mergedParents, parents)
-
-		children, err := qb.GetChildIDs(ctx, id)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		mergedChildren = addTo(mergedChildren, children)
-	}
-
-	return mergedParents, mergedChildren, nil
 }

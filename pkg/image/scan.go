@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -27,7 +28,7 @@ type ScanCreatorUpdater interface {
 	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
 	GetGalleryIDs(ctx context.Context, relatedID int) ([]int, error)
 
-	Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error
+	Create(ctx context.Context, newImage *models.CreateImageInput) error
 	UpdatePartial(ctx context.Context, id int, updatedImage models.ImagePartial) (*models.Image, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
@@ -35,8 +36,13 @@ type ScanCreatorUpdater interface {
 type GalleryFinderCreator interface {
 	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
 	FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error)
-	Create(ctx context.Context, newObject *models.Gallery, fileIDs []models.FileID) error
+	models.GalleryCreator
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
+}
+
+type ScanSceneFinderUpdater interface {
+	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
+	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
 type ScanConfig interface {
@@ -48,8 +54,9 @@ type ScanGenerator interface {
 }
 
 type ScanHandler struct {
-	CreatorUpdater ScanCreatorUpdater
-	GalleryFinder  GalleryFinderCreator
+	CreatorUpdater     ScanCreatorUpdater
+	GalleryFinder      GalleryFinderCreator
+	SceneFinderUpdater ScanSceneFinderUpdater
 
 	ScanGenerator ScanGenerator
 
@@ -124,7 +131,10 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			logger.Infof("Adding %s to gallery %s", f.Base().Path, g.Path)
 		}
 
-		if err := h.CreatorUpdater.Create(ctx, &newImage, []models.FileID{imageFile.ID}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &models.CreateImageInput{
+			Image:   &newImage,
+			FileIDs: []models.FileID{imageFile.ID},
+		}); err != nil {
 			return fmt.Errorf("creating new image: %w", err)
 		}
 
@@ -207,8 +217,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			changed = true
 		}
 
-		if changed {
-			// always update updated_at time
+		if changed || updateExisting {
+			// update updated_at time when file association or content changes
 			imagePartial := models.NewImagePartial()
 			imagePartial.GalleryIDs = galleryIDs
 
@@ -226,9 +236,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 					return fmt.Errorf("updating gallery updated at timestamp: %w", err)
 				}
 			}
-		}
 
-		if changed || updateExisting {
 			h.PluginCache.RegisterPostHooks(ctx, i.ID, hook.ImageUpdatePost, nil, nil)
 		}
 	}
@@ -252,9 +260,13 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f model
 	newGallery := models.NewGallery()
 	newGallery.FolderID = &folderID
 
+	input := models.CreateGalleryInput{
+		Gallery: &newGallery,
+	}
+
 	logger.Infof("Creating folder-based gallery for %s", filepath.Dir(f.Base().Path))
 
-	if err := h.GalleryFinder.Create(ctx, &newGallery, nil); err != nil {
+	if err := h.GalleryFinder.Create(ctx, &input); err != nil {
 		return nil, fmt.Errorf("creating folder based gallery: %w", err)
 	}
 
@@ -308,13 +320,46 @@ func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile mo
 
 	logger.Infof("%s doesn't exist. Creating new gallery...", zipFile.Base().Path)
 
-	if err := h.GalleryFinder.Create(ctx, &newGallery, []models.FileID{zipFile.Base().ID}); err != nil {
+	input := models.CreateGalleryInput{
+		Gallery: &newGallery,
+		FileIDs: []models.FileID{zipFile.Base().ID},
+	}
+
+	if err := h.GalleryFinder.Create(ctx, &input); err != nil {
 		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
+	}
+
+	// try to associate with scene
+	if err := h.associateScene(ctx, &newGallery, zipFile); err != nil {
+		return nil, fmt.Errorf("associating scene: %w", err)
 	}
 
 	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, hook.GalleryCreatePost, nil, nil)
 
 	return &newGallery, nil
+}
+
+func (h *ScanHandler) associateScene(ctx context.Context, existing *models.Gallery, zipFile models.File) error {
+	galleryIDs := []int{existing.ID}
+
+	path := zipFile.Base().Path
+	withoutExt := strings.TrimSuffix(path, filepath.Ext(path)) + ".*"
+
+	// find scenes with a file that matches
+	scenes, err := h.SceneFinderUpdater.FindByPath(ctx, withoutExt)
+	if err != nil {
+		return err
+	}
+
+	for _, scene := range scenes {
+		// found related Scene
+		logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
+		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, scene.ID, galleryIDs); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f models.File) (*models.Gallery, error) {

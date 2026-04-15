@@ -5,9 +5,11 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -37,12 +39,39 @@ var (
 	VideoCodecVVPX  = makeVideoCodec("VP8 VAAPI", "vp8_vaapi")
 	VideoCodecR264  = makeVideoCodec("H264 V4L2M2M", "h264_v4l2m2m")
 	VideoCodecO264  = makeVideoCodec("H264 OMX", "h264_omx")
+	VideoCodecRK264 = makeVideoCodec("H264 Rockchip MPP (rkmpp)", "h264_rkmpp")
 )
 
 const minHeight int = 480
 
 // Tests all (given) hardware codec's
 func (f *FFMpeg) InitHWSupport(ctx context.Context) {
+	// do the hardware codec tests in a separate goroutine to avoid blocking
+	done := make(chan struct{})
+	go func() {
+		f.initHWSupport(ctx)
+		close(done)
+	}()
+
+	// log if the initialization takes too long
+	const hwInitLogTimeoutSecondsDefault = 5
+	hwInitLogTimeoutSeconds := hwInitLogTimeoutSecondsDefault * time.Second
+	timer := time.NewTimer(hwInitLogTimeoutSeconds)
+
+	go func() {
+		select {
+		case <-timer.C:
+			logger.Warnf("[InitHWSupport] Hardware codec initialization is taking longer than %s...", hwInitLogTimeoutSeconds)
+			logger.Info("[InitHWSupport] Hardware encoding will not be available until initialization is complete.")
+		case <-done:
+			if !timer.Stop() {
+				<-timer.C
+			}
+		}
+	}()
+}
+
+func (f *FFMpeg) initHWSupport(ctx context.Context) {
 	var hwCodecSupport []VideoCodec
 
 	// Note that the first compatible codec is returned, so order is important
@@ -79,6 +108,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		// Other legacy codecs
 		VideoCodecR264,
 		VideoCodecO264,
+		VideoCodecRK264,
 		VideoCodecVVPX,
 		VideoCodecIVP9,
 	} {
@@ -99,12 +129,33 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		args = args.Format("null")
 		args = args.Output("-")
 
-		cmd := f.Command(ctx, args)
+		// #6064 - add timeout to context to prevent hangs
+		const hwTestTimeoutSecondsDefault = 10
+		hwTestTimeoutSeconds := hwTestTimeoutSecondsDefault * time.Second
+
+		// allow timeout to be overridden with environment variable
+		if timeout := os.Getenv("STASH_HW_TEST_TIMEOUT"); timeout != "" {
+			if seconds, err := strconv.Atoi(timeout); err == nil {
+				hwTestTimeoutSeconds = time.Duration(seconds) * time.Second
+			}
+		}
+
+		testCtx, cancel := context.WithTimeout(ctx, hwTestTimeoutSeconds)
+		defer cancel()
+
+		cmd := f.Command(testCtx, args)
+		cmd.WaitDelay = time.Second
+		logger.Tracef("[InitHWSupport] Testing codec %s: %v", codec, cmd.Args)
 
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 
 		if err := cmd.Run(); err != nil {
+			if testCtx.Err() != nil {
+				logger.Debugf("[InitHWSupport] Codec %s test timed out after %s", codec, hwTestTimeoutSeconds)
+				continue
+			}
+
 			errOutput := stderr.String()
 
 			if len(errOutput) == 0 {
@@ -123,6 +174,8 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 	}
 	logger.Info(outstr)
 
+	f.hwCodecSupportMutex.Lock()
+	defer f.hwCodecSupportMutex.Unlock()
 	f.hwCodecSupport = hwCodecSupport
 }
 
@@ -172,6 +225,12 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, codec VideoCodec, vf 
 
 // Prepend input for hardware encoding only
 func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
+	// check for custom /dev/dri device #6435
+	driDevice := os.Getenv("STASH_HW_DRI_DEVICE")
+	if driDevice == "" {
+		driDevice = "/dev/dri/renderD128"
+	}
+
 	switch toCodec {
 	// NVIDIA codecs
 	case VideoCodecN264,
@@ -196,7 +255,7 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 		VideoCodecVVP9,
 		VideoCodecVVPX:
 		args = append(args, "-vaapi_device")
-		args = append(args, "/dev/dri/renderD128")
+		args = append(args, driDevice)
 		if fullhw {
 			args = append(args, "-hwaccel")
 			args = append(args, "vaapi")
@@ -251,6 +310,20 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 	case VideoCodecR264,
 		VideoCodecO264:
 		// V4L2M2M and OMX don't require special hardware initialization
+
+	case VideoCodecRK264:
+		// Rockchip: always create rkmpp device and make it the filter device, so
+		// scale_rkrga and subsequent hwupload/hwmap operate in the right context.
+		args = append(args, "-init_hw_device")
+		args = append(args, "rkmpp=rk")
+		args = append(args, "-filter_hw_device")
+		args = append(args, "rk")
+		if fullhw {
+			args = append(args, "-hwaccel")
+			args = append(args, "rkmpp")
+			args = append(args, "-hwaccel_output_format")
+			args = append(args, "drm_prime")
+		}
 	}
 
 	return args
@@ -310,6 +383,15 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 	case VideoCodecR264,
 		VideoCodecO264:
 		// V4L2M2M and OMX don't require special filter initialization
+
+	case VideoCodecRK264:
+		// For Rockchip full-hw, do NOT pre-map to rkrga here. scale_rkrga can
+		// consume DRM_PRIME frames directly when filter_hw_device is set.
+		// For non-fullhw, keep a sane software format.
+		if !fullhw {
+			videoFilter = videoFilter.Append("format=nv12")
+			videoFilter = videoFilter.Append("hwupload")
+		}
 	}
 
 	return videoFilter
@@ -404,6 +486,13 @@ func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw 
 
 	// AMD AMF codecs - typically don't support full hardware scaling
 	// Legacy codecs - no hardware scaling support
+
+	case VideoCodecRK264:
+		// Full-hw decode on 10-bit sources often produces DRM_PRIME with sw_pix_fmt=nv15.
+		// h264_rkmpp does NOT accept nv15, so we must force a conversion to nv12
+		if fullhw {
+			args = args.Append("scale_rkrga=w=iw:h=ih:format=nv12")
+		}
 	}
 
 	return args
@@ -442,6 +531,15 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 	case VideoCodecM264, VideoCodecMHEVC, VideoCodecMAV1:
 		template = "scale_vt=$value"
 
+	case VideoCodecRK264:
+		// The original filter chain is a fallback for maximum compatibility:
+		// "scale_rkrga=$value:format=nv12,hwdownload,format=nv12,hwupload"
+		// It avoids hwmap(rkrga→rkmpp) failures (-38/-12) seen on some builds
+		// by downloading the scaled frame to system RAM and re-uploading it.
+		// The filter chain below uses a zero-copy approach, passing the hardware-scaled
+		// frame directly to the encoder. This is more efficient but may be less stable.
+		template = "scale_rkrga=$value:format=nv12"
+
 	// AMD AMF and legacy codecs - use software scaling
 	default:
 		return VideoFilter(sargs)
@@ -452,6 +550,7 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 		codec == VideoCodecIHEVC || codec == VideoCodecIAV1
 	// BUG: scale_vt doesn't call ff_scale_adjust_dimensions, thus cant accept negative size values
 	isApple := codec == VideoCodecM264 || codec == VideoCodecMHEVC || codec == VideoCodecMAV1
+	// Rockchip's scale_rkrga supports -1/-2; don't apply minus-one hack here.
 	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple))
 }
 
@@ -463,7 +562,8 @@ func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec) (int, int) {
 		VideoCodecIHEVC, VideoCodecIAV1,
 		VideoCodecVHEVC, VideoCodecVAV1,
 		VideoCodecAHEVC, VideoCodecAAV1,
-		VideoCodecMHEVC, VideoCodecMAV1:
+		VideoCodecMHEVC, VideoCodecMAV1,
+		VideoCodecRK264:
 		return 8192, 8192 // 8K support
 
 	// Legacy codecs with 4K support
@@ -492,7 +592,7 @@ func (f *FFMpeg) hwMaxResFilter(toCodec VideoCodec, vf *models.VideoFile, reqHei
 
 // Return if a hardware accelerated for HLS is available
 func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
-	for _, element := range f.hwCodecSupport {
+	for _, element := range f.getHWCodecSupport() {
 		switch element {
 		// H.264 codecs (best compatibility for HLS)
 		case VideoCodecN264,
@@ -502,7 +602,8 @@ func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
 			VideoCodecV264,
 			VideoCodecR264,
 			VideoCodecA264,
-			VideoCodecM264: // Note that the Apple encoder sucks at startup, thus HLS quality is crap
+			VideoCodecM264, // Note that the Apple encoder sucks at startup, thus HLS quality is crap
+			VideoCodecRK264:
 			return &element
 
 		// HEVC codecs (modern HLS support)
@@ -519,7 +620,7 @@ func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
 
 // Return if a hardware accelerated codec for MP4 is available
 func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
-	for _, element := range f.hwCodecSupport {
+	for _, element := range f.getHWCodecSupport() {
 		switch element {
 		// H.264 codecs (best MP4 compatibility)
 		case VideoCodecN264,
@@ -527,7 +628,8 @@ func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
 			VideoCodecI264,
 			VideoCodecI264C,
 			VideoCodecA264,
-			VideoCodecM264:
+			VideoCodecM264,
+			VideoCodecRK264:
 			return &element
 
 		// HEVC codecs (modern MP4 support)
@@ -550,7 +652,7 @@ func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
 
 // Return if a hardware accelerated codec for WebM is available
 func (f *FFMpeg) hwCodecWEBMCompatible() *VideoCodec {
-	for _, element := range f.hwCodecSupport {
+	for _, element := range f.getHWCodecSupport() {
 		switch element {
 		// VP9 codecs (native WebM support)
 		case VideoCodecIVP9,

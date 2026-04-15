@@ -1,7 +1,9 @@
 import React from "react";
 import { TagLink } from "src/components/Shared/TagLink";
 import { DetailItem } from "src/components/Shared/DetailItem";
+import { StashIDPill } from "src/components/Shared/StashID";
 import * as GQL from "src/core/generated-graphql";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
@@ -51,6 +53,22 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     );
   }
 
+  function renderStashIDs() {
+    if (!tag.stash_ids?.length) {
+      return;
+    }
+
+    return (
+      <ul className="pl-0">
+        {tag.stash_ids.map((stashID) => (
+          <li key={stashID.stash_id} className="row no-gutters">
+            <StashIDPill stashID={stashID} linkType="tags" />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <div className="detail-group">
       <DetailItem
@@ -68,6 +86,12 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
         value={renderChildrenField()}
         fullWidth={fullWidth}
       />
+      <DetailItem
+        id="stash_ids"
+        value={renderStashIDs()}
+        fullWidth={fullWidth}
+      />
+      <CustomFields values={tag.custom_fields} />
     </div>
   );
 };

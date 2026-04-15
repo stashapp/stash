@@ -25,12 +25,14 @@ const GroupCreate: React.FC = () => {
 
   const [createGroup] = useGroupCreate();
 
-  async function onSave(input: GQL.GroupCreateInput) {
+  async function onSave(input: GQL.GroupCreateInput, andNew?: boolean) {
     const result = await createGroup({
       variables: { input },
     });
     if (result.data?.groupCreate?.id) {
-      history.push(`/groups/${result.data.groupCreate.id}`);
+      if (!andNew) {
+        history.push(`/groups/${result.data.groupCreate.id}`);
+      }
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },

@@ -11,11 +11,12 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
-func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) (ret []*models.ScrapedTag, err error) {
+func postProcessTags(ctx context.Context, tqb models.TagNameFinder, scrapedTags []*models.ScrapedTag) (ret []*models.ScrapedTag, err error) {
 	ret = make([]*models.ScrapedTag, 0, len(scrapedTags))
 
 	for _, t := range scrapedTags {
-		err := match.ScrapedTag(ctx, tqb, t)
+		// Pass empty string for endpoint since this is used by general scrapers, not just stash-box
+		err := match.ScrapedTag(ctx, tqb, t, "")
 		if err != nil {
 			return nil, err
 		}
@@ -31,6 +32,8 @@ func FilterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (new
 	if len(excludeRegexps) == 0 {
 		return tags, nil
 	}
+
+	newTags = make([]*models.ScrapedTag, 0, len(tags))
 
 	for _, t := range tags {
 		ignore := false

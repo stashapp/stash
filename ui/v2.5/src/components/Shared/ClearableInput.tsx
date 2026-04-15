@@ -10,6 +10,7 @@ interface IClearableInput {
   className?: string;
   value: string;
   setValue: (value: string) => void;
+  onEnter?: () => void;
   focus?: ReturnType<typeof useFocus>;
   placeholder?: string;
 }
@@ -18,6 +19,7 @@ export const ClearableInput: React.FC<IClearableInput> = ({
   className,
   value,
   setValue,
+  onEnter,
   focus,
   placeholder,
 }) => {
@@ -39,6 +41,15 @@ export const ClearableInput: React.FC<IClearableInput> = ({
     setQueryFocus();
   }
 
+  function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") {
+      queryRef.current?.blur();
+    }
+    if (e.key === "Enter" && onEnter) {
+      onEnter();
+    }
+  }
+
   return (
     <div className={cx("clearable-input-group", className)}>
       <FormControl
@@ -46,6 +57,7 @@ export const ClearableInput: React.FC<IClearableInput> = ({
         placeholder={placeholder}
         value={value}
         onInput={onChangeQuery}
+        onKeyDown={onInputKeyDown}
         className="clearable-text-field"
       />
       {queryClearShowing && (

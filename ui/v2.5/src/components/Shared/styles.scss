@@ -62,9 +62,22 @@
   padding: 0;
   row-gap: 0.5rem;
 
-  .btn {
+  > .btn {
     margin-right: 0.5rem;
     white-space: nowrap;
+  }
+
+  > .btn-group {
+    margin-right: 0.5rem;
+
+    .btn {
+      margin-right: 0;
+    }
+
+    // Show caret on split button dropdown toggle
+    .dropdown-toggle-split::after {
+      content: "";
+    }
   }
 }
 
@@ -114,10 +127,14 @@
 .folder-list {
   list-style-type: none;
   margin: 0;
-  max-height: 30vw;
+  max-height: 300px;
   overflow-x: auto;
   padding-bottom: 0.5rem;
   padding-top: 1rem;
+
+  &:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 
   &-item {
     white-space: nowrap;
@@ -155,6 +172,15 @@
 }
 
 .scrape-dialog {
+  .column-label {
+    color: $muted-gray;
+    font-size: 0.85em;
+  }
+
+  .string-list-input {
+    width: 100%;
+  }
+
   .modal-content .dialog-container {
     max-height: calc(100vh - 14rem);
     overflow-y: auto;
@@ -211,15 +237,44 @@ button.collapse-button {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+
+  .popover-card {
+    padding: 0.5rem;
+  }
+}
+
+.warning-hover-popover {
+  display: inline-flex;
+  margin: 0 0.25rem;
+
+  .fa-icon {
+    color: $warning;
+  }
+}
+
+.ErrorMessage-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .ErrorMessage {
-  align-items: center;
-  height: 20rem;
-  justify-content: center;
+  .fa-icon {
+    color: $warning;
+    font-size: 1.5em;
+    margin-right: 0.3em;
+    vertical-align: middle;
+  }
 
-  &-content {
-    display: inline-block;
+  background-color: initial;
+  border-color: $danger;
+  color: $text-color;
+  margin: 1rem;
+  text-align: left;
+  width: 500px;
+
+  @include media-breakpoint-down(xs) {
+    width: 100%;
   }
 }
 
@@ -259,6 +314,10 @@ button.collapse-button {
     opacity: 0;
     width: 1.2rem;
 
+    &:checked {
+      opacity: 0.75;
+    }
+
     @media (hover: none), (pointer: coarse) {
       // always show card controls when hovering not supported
       opacity: 0.25;
@@ -272,10 +331,6 @@ button.collapse-button {
   .card-check {
     padding-left: 15px;
 
-    &:checked {
-      opacity: 0.75;
-    }
-
     @media (hover: none), (pointer: coarse) {
       // and make it bigger when hovering not supported
       width: 1.5rem;
@@ -287,6 +342,34 @@ button.collapse-button {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
+}
+
+.search-item-check,
+.wall-item-check {
+  height: 1.2rem;
+  width: 1.2rem;
+}
+
+// Wall item checkbox styles
+.wall-item-check {
+  left: 0.5rem;
+  opacity: 0;
+  position: absolute;
+  top: 0.5rem;
+  z-index: 10;
+
+  &:checked {
+    opacity: 0.75;
+  }
+
+  @media (hover: none) {
+    opacity: 0.25;
+  }
+}
+
+.wall-item:hover .wall-item-check {
+  opacity: 0.75;
+  transition: opacity 0.5s;
 }
 
 .TruncatedText {
@@ -302,6 +385,12 @@ button.collapse-button {
 
   .file-info-panel a > & {
     word-break: break-all;
+  }
+
+  &.inline {
+    display: inline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -361,6 +450,13 @@ button.collapse-button {
   }
 }
 
+.input-group-append {
+  .btn {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+}
+
 .ModalComponent .modal-footer {
   justify-content: space-between;
 }
@@ -369,34 +465,43 @@ button.collapse-button {
   opacity: 0.5;
 }
 
-.string-list-input .input-group {
-  margin-bottom: 0.35rem;
-}
+.string-list-input {
+  .form-group {
+    margin-bottom: 0;
+  }
 
-.bulk-update-text-input {
-  button {
-    background-color: $secondary;
-    color: $text-muted;
-    font-size: $btn-font-size-sm;
-    margin: $btn-padding-y $btn-padding-x;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    z-index: 4;
+  .input-group {
+    margin-bottom: 0.35rem;
 
-    &:hover,
-    &:focus,
-    &:active,
-    &:not(:disabled):not(.disabled):active,
-    &:not(:disabled):not(.disabled):active:focus {
-      background-color: $secondary;
-      border-color: transparent;
-      box-shadow: none;
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 
-  &.unset button {
-    visibility: hidden;
+  .btn.drag-handle {
+    display: inline-block;
+    margin: -0.25em 0.25em -0.25em -0.25em;
+    padding: 0.25em 0.5em 0.25em;
+
+    &:not(:disabled):not(.disabled) {
+      cursor: move;
+    }
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:focus:active {
+      background-color: initial;
+      border-color: initial;
+      box-shadow: initial;
+    }
+  }
+}
+
+.bulk-update-date-input {
+  .react-datepicker-wrapper .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
   }
 }
 
@@ -545,10 +650,11 @@ div.react-datepicker {
 }
 
 .stash-id-pill {
-  display: inline-block;
+  display: inline-flex;
   font-size: 90%;
   font-weight: 700;
   line-height: 1;
+  max-width: 100%;
   padding-bottom: 0.25em;
   padding-top: 0.25em;
   text-align: center;
@@ -564,12 +670,15 @@ div.react-datepicker {
   span {
     background-color: $primary;
     border-radius: 0.25rem 0 0 0.25rem;
+    flex-shrink: 0;
     min-width: 5em;
   }
 
   a {
     background-color: $secondary;
     border-radius: 0 0.25rem 0.25rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -661,15 +770,14 @@ button.btn.favorite-button {
   .scraper-filter-container {
     background-color: $secondary;
     border-bottom: solid 1px $textfield-bg;
+    display: flex;
     padding: 5px;
     position: sticky;
     top: 0;
     z-index: 1;
 
-    .btn-group {
-      border: solid 1px $textfield-bg;
-      border-radius: 5px;
-      width: 100%;
+    .clearable-input-group {
+      flex-grow: 1;
     }
 
     .clearable-text-field {
@@ -688,6 +796,19 @@ button.btn.favorite-button {
   }
 }
 
+.custom-fields {
+  width: 100%;
+
+  .detail-item {
+    max-width: 100%;
+  }
+
+  .detail-item-title,
+  .detail-item-value {
+    font-family: "Courier New", Courier, monospace;
+  }
+}
+
 .custom-fields .detail-item .detail-item-title {
   max-width: 130px;
   overflow: hidden;
@@ -695,8 +816,46 @@ button.btn.favorite-button {
   white-space: nowrap;
 }
 
+.custom-fields .detail-item .detail-item-value {
+  word-break: break-word;
+
+  .TruncatedText {
+    white-space: pre-line;
+  }
+}
+
 .custom-fields-input > .collapse-button {
   font-weight: 700;
+}
+
+.custom-fields-input {
+  .custom-fields-field {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 16.667%;
+      max-width: 16.667%;
+    }
+  }
+
+  .custom-fields-value {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 75%;
+      max-width: 75%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 58.33%;
+      max-width: 58.33%;
+    }
+  }
 }
 
 .custom-fields-row {
@@ -727,4 +886,385 @@ button.btn.favorite-button {
   &.custom-fields-new > div:not(:last-child) {
     padding-right: 0;
   }
+}
+
+.sidebar-pane {
+  display: flex;
+
+  .sidebar {
+    // TODO - use different colours for sidebar and toolbar
+    background-color: $body-bg;
+    border-right: 1px solid $secondary;
+    flex: $sidebar-width;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-left: 15px;
+    transition: margin-left 0.1s;
+  }
+
+  .sidebar {
+    bottom: 0;
+    left: 0;
+    margin-top: $navbar-height;
+    overflow-y: auto;
+    padding-top: 0.5rem;
+    position: fixed;
+    scrollbar-gutter: stable;
+    top: 0;
+    width: $sidebar-width;
+    z-index: 100;
+  }
+
+  &.hide-sidebar .sidebar {
+    margin-left: -$sidebar-width;
+  }
+
+  &.hide-sidebar .sidebar + div {
+    width: 100%;
+  }
+
+  &:not(.hide-sidebar) .sidebar + div {
+    width: calc(100% - $sidebar-width);
+  }
+
+  > :nth-child(2) {
+    flex-grow: 1;
+    padding-left: 0.5rem;
+  }
+
+  &.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 0;
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    transition: margin-left 0.1s;
+
+    &:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: calc($sidebar-width - 15px);
+      }
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar {
+      margin-top: 0;
+    }
+  }
+}
+
+.sidebar-toggle-button-container {
+  height: 100%;
+  position: absolute;
+
+  .sidebar-toggle-button {
+    border-bottom: 1px solid $secondary;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 10px;
+    border-right: 1px solid $secondary;
+    border-top: 1px solid $secondary;
+    border-top-left-radius: 0;
+    border-top-right-radius: 10px;
+    margin-left: -15px;
+    opacity: 0.5;
+    position: sticky;
+    top: calc($navbar-height + 0.5rem);
+    z-index: 10;
+
+    @include media-breakpoint-down(sm) {
+      top: 0.5rem;
+    }
+  }
+}
+
+.sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+  .sidebar-toggle-button {
+    margin-left: -0.5rem;
+  }
+}
+
+.sidebar-toolbar {
+  // TODO - use different colours for sidebar and toolbar
+  background-color: $body-bg;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+@include media-breakpoint-down(xs) {
+  .sidebar-toolbar {
+    padding-top: 1rem;
+  }
+}
+
+.sidebar-section {
+  border-bottom: 1px solid $secondary;
+
+  .collapse-header {
+    // background-color: $secondary;
+
+    padding: 0.25rem;
+
+    .collapse-button {
+      font-weight: bold;
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  .collapse,
+  // include collapsing to allow for the transition
+  .collapsing {
+    padding-top: 0.25rem;
+  }
+}
+
+.sidebar-section:first-child .collapse-header {
+  border-top: 1px solid $secondary;
+}
+
+$sticky-header-height: calc(50px + 3.3rem);
+
+// special case for sidebar in details view
+.detail-body .sidebar-toggle-button-container .sidebar-toggle-button {
+  top: calc($sticky-header-height + 0.5rem);
+
+  @include media-breakpoint-down(sm) {
+    top: 0.5rem;
+  }
+}
+
+.detail-body {
+  .sidebar-pane {
+    position: sticky;
+    top: calc($sticky-detail-header-height + $navbar-height);
+  }
+
+  .sidebar {
+    // required for sticky to work
+    align-self: flex-start;
+
+    // take a further 15px padding to match the detail body
+    margin-top: -15px;
+    max-height: calc(100vh - $sticky-header-height - 15px);
+    overflow-y: auto;
+    padding-left: 0;
+    position: sticky;
+
+    top: calc($sticky-detail-header-height + $navbar-height);
+
+    .sidebar-toolbar {
+      padding-top: 15px;
+    }
+  }
+
+  .sidebar-pane:not(.hide-sidebar) .sidebar {
+    height: calc(100vh - $sticky-header-height - 15px);
+  }
+
+  .sidebar-pane.hide-sidebar .sidebar {
+    left: -$sidebar-width;
+    margin-left: calc(-15px - $sidebar-width);
+  }
+
+  // on smaller viewports we want the sidebar to overlap content
+  @include media-breakpoint-down(sm) {
+    .sidebar-pane:not(.hide-sidebar) .sidebar {
+      margin-right: -$sidebar-width;
+    }
+
+    .sidebar-pane > .sidebar-pane-content {
+      transition: none;
+    }
+  }
+  @include media-breakpoint-down(xs) {
+    .sidebar-pane {
+      top: 0;
+    }
+
+    .sidebar {
+      // flex: 100% 0 0;
+      height: calc(100vh - $navbar-height);
+      max-height: calc(100vh - $navbar-height);
+      top: 0;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    .sidebar-pane:not(.hide-sidebar) {
+      > :nth-child(2) {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .sidebar-pane.hide-sidebar {
+    > :nth-child(2) {
+      padding-left: 15px;
+    }
+  }
+}
+
+// Duration slider styles
+.duration-slider-container {
+  padding: 0.5rem 0 1rem;
+  width: 100%;
+}
+
+.double-range-input-labels {
+  color: $text-color;
+  display: flex;
+  font-size: 0.875rem;
+  font-weight: 500;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+
+  input[type="text"] {
+    &:first-child {
+      text-align: left;
+    }
+
+    &:last-child {
+      text-align: right;
+    }
+  }
+}
+
+.double-range-sliders {
+  height: 22px;
+  position: relative;
+}
+
+.double-range-slider {
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-moz-range-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+
+  &::-ms-thumb {
+    appearance: none;
+    background-color: $primary;
+    border: 2px solid $primary;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    height: 18px;
+    pointer-events: all;
+    position: relative;
+    width: 18px;
+  }
+}
+
+.double-range-slider-min {
+  z-index: 1;
+}
+
+input[type="range"].double-range-slider-max {
+  z-index: 2;
+
+  // combining these into one rule doesn't work for some reason
+  &::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+
+  &::-moz-range-track {
+    background: transparent;
+  }
+
+  &::-ms-track {
+    background: transparent;
+  }
+}
+
+// Label offset for buttons that need to align with form fields
+.ml-label {
+  @include media-breakpoint-up(sm) {
+    // sm: label is 3 of 12 columns = 25%, plus partial gutter
+    margin-left: calc(25% + 7.5px);
+  }
+  @include media-breakpoint-up(xl) {
+    // xl: label is 2 of 12 columns = 16.667%, plus partial gutter
+    margin-left: calc(16.667% + 7.5px);
+  }
+}
+
+// StashBox Search Modal
+.StashBoxSearchModal {
+  &-list {
+    list-style: none;
+    padding: 0;
+
+    li {
+      border-radius: 0.25rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(138, 155, 168, 0.1);
+      }
+
+      &.selected {
+        background-color: #e7f3ff;
+      }
+    }
+  }
+
+  &-list-container {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
+.reveal-in-filesystem-button {
+  margin-left: 0.25rem;
+  padding: 0 0.25rem;
+}
+
+// general styling for appended minimal button to input group
+.text-input + .input-group-append .btn.minimal {
+  background-color: $textfield-bg;
+}
+
+.studio-logo a:hover {
+  color: inherit;
+}
+
+.studio-logo .studio-name {
+  color: $text-color;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PatchFunction } from "./patch";
 import { usePlugins } from "./core/StashService";
 import { useMemoOnce } from "./hooks/state";
@@ -7,6 +7,7 @@ import useScript, { useCSS } from "./hooks/useScript";
 import { PluginsQuery } from "./core/generated-graphql";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 import { FormattedMessage } from "react-intl";
+import { useToast } from "./hooks/Toast";
 
 type PluginList = NonNullable<Required<PluginsQuery["plugins"]>>;
 
@@ -58,7 +59,8 @@ function sortPlugins(plugins: PluginList) {
 
 // load all plugins and their dependencies
 // returns true when all plugins are loaded, regardess of success or failure
-function useLoadPlugins() {
+// if disableCustomizations is true, skip loading plugins entirely
+function useLoadPlugins(disableCustomizations?: boolean) {
   const {
     data: plugins,
     loading: pluginsLoading,
@@ -73,6 +75,12 @@ function useLoadPlugins() {
   }, [plugins?.plugins, pluginsLoading, pluginsError]);
 
   const pluginJavascripts = useMemoOnce(() => {
+    // Skip loading plugin JS if customizations are disabled.
+    // Note: We check inside useMemoOnce rather than early-returning from useLoadPlugins
+    // to comply with React's rules of hooks - hooks must be called unconditionally.
+    if (disableCustomizations) {
+      return [[], true];
+    }
     return [
       uniq(
         sortedPlugins
@@ -82,9 +90,12 @@ function useLoadPlugins() {
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
-  }, [sortedPlugins, pluginsLoading, pluginsError]);
+  }, [sortedPlugins, pluginsLoading, pluginsError, disableCustomizations]);
 
   const pluginCSS = useMemoOnce(() => {
+    if (disableCustomizations) {
+      return [[], true];
+    }
     return [
       uniq(
         sortedPlugins
@@ -94,7 +105,7 @@ function useLoadPlugins() {
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
-  }, [sortedPlugins, pluginsLoading, pluginsError]);
+  }, [sortedPlugins, pluginsLoading, pluginsError, disableCustomizations]);
 
   const pluginJavascriptLoaded = useScript(
     pluginJavascripts ?? [],
@@ -102,15 +113,29 @@ function useLoadPlugins() {
   );
   useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
 
-  return !pluginsLoading && !!pluginJavascripts && pluginJavascriptLoaded;
+  return {
+    loading: !pluginsLoading && !!pluginJavascripts && pluginJavascriptLoaded,
+    error: pluginsError,
+  };
 }
 
-export const PluginsLoader: React.FC<React.PropsWithChildren<{}>> = ({
-  children,
-}) => {
-  const loaded = useLoadPlugins();
+interface IPluginsLoaderProps {
+  disableCustomizations?: boolean;
+}
 
-  if (!loaded)
+export const PluginsLoader: React.FC<
+  React.PropsWithChildren<IPluginsLoaderProps>
+> = ({ disableCustomizations, children }) => {
+  const Toast = useToast();
+  const { loading: loaded, error } = useLoadPlugins(disableCustomizations);
+
+  useEffect(() => {
+    if (error) {
+      Toast.error(`Error loading plugins: ${error.message}`);
+    }
+  }, [Toast, error]);
+
+  if (!loaded && !error)
     return (
       <LoadingIndicator message={<FormattedMessage id="loading.plugins" />} />
     );

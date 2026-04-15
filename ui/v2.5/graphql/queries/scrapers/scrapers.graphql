@@ -62,6 +62,15 @@ query ScrapeSingleStudio(
   }
 }
 
+query ScrapeSingleTag(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleTagInput!
+) {
+  scrapeSingleTag(source: $source, input: $input) {
+    ...ScrapedSceneTagData
+  }
+}
+
 query ScrapeSinglePerformer(
   $source: ScraperSourceInput!
   $input: ScrapeSinglePerformerInput!

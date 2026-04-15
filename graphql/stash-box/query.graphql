@@ -13,6 +13,7 @@ fragment ImageFragment on Image {
 fragment StudioFragment on Studio {
   name
   id
+  aliases
   urls {
     ...URLFragment
   }
@@ -28,6 +29,13 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
   name
   id
+  description
+  aliases
+  category {
+    id
+    name
+    description
+  }
 }
 
 fragment MeasurementsFragment on Measurements {
@@ -119,18 +127,6 @@ fragment SceneFragment on Scene {
   }
 }
 
-query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
-  findSceneByFingerprint(fingerprint: $fingerprint) {
-    ...SceneFragment
-  }
-}
-
-query FindScenesByFullFingerprints($fingerprints: [FingerprintQueryInput!]!) {
-  findScenesByFullFingerprints(fingerprints: $fingerprints) {
-    ...SceneFragment
-  }
-}
-
 query FindScenesBySceneFingerprints(
   $fingerprints: [[FingerprintQueryInput!]!]!
 ) {
@@ -166,6 +162,21 @@ query FindSceneByID($id: ID!) {
 query FindStudio($id: ID, $name: String) {
   findStudio(id: $id, name: $name) {
     ...StudioFragment
+  }
+}
+
+query FindTag($id: ID, $name: String) {
+  findTag(id: $id, name: $name) {
+    ...TagFragment
+  }
+}
+
+query QueryTags($input: TagQueryInput!) {
+  queryTags(input: $input) {
+    count
+    tags {
+      ...TagFragment
+    }
   }
 }
 

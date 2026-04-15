@@ -9,9 +9,16 @@ type TagGetter interface {
 	Find(ctx context.Context, id int) (*Tag, error)
 }
 
+type TagNameFinder interface {
+	FindByName(ctx context.Context, name string, nocase bool) (*Tag, error)
+	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Tag, error)
+	FindByAlias(ctx context.Context, alias string, nocase bool) (*Tag, error)
+}
+
 // TagFinder provides methods to find tags.
 type TagFinder interface {
 	TagGetter
+	TagNameFinder
 	FindAllAncestors(ctx context.Context, tagID int, excludeIDs []int) ([]*TagPath, error)
 	FindAllDescendants(ctx context.Context, tagID int, excludeIDs []int) ([]*TagPath, error)
 	FindByParentTagID(ctx context.Context, parentID int) ([]*Tag, error)
@@ -23,8 +30,8 @@ type TagFinder interface {
 	FindByGroupID(ctx context.Context, groupID int) ([]*Tag, error)
 	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*Tag, error)
 	FindByStudioID(ctx context.Context, studioID int) ([]*Tag, error)
-	FindByName(ctx context.Context, name string, nocase bool) (*Tag, error)
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Tag, error)
+	FindByStashID(ctx context.Context, stashID StashID) ([]*Tag, error)
+	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Tag, error)
 }
 
 // TagQueryer provides methods to query tags.
@@ -50,12 +57,12 @@ type TagCounter interface {
 
 // TagCreator provides methods to create tags.
 type TagCreator interface {
-	Create(ctx context.Context, newTag *Tag) error
+	Create(ctx context.Context, newTag *CreateTagInput) error
 }
 
 // TagUpdater provides methods to update tags.
 type TagUpdater interface {
-	Update(ctx context.Context, updatedTag *Tag) error
+	Update(ctx context.Context, updatedTag *UpdateTagInput) error
 	UpdatePartial(ctx context.Context, id int, updateTag TagPartial) (*Tag, error)
 	UpdateAliases(ctx context.Context, tagID int, aliases []string) error
 	UpdateImage(ctx context.Context, tagID int, image []byte) error
@@ -76,6 +83,7 @@ type TagFinderCreator interface {
 type TagCreatorUpdater interface {
 	TagCreator
 	TagUpdater
+	CustomFieldsWriter
 }
 
 // TagReader provides all methods to read tags.
@@ -87,6 +95,8 @@ type TagReader interface {
 
 	AliasLoader
 	TagRelationLoader
+	StashIDLoader
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Tag, error)
 	GetImage(ctx context.Context, tagID int) ([]byte, error)
@@ -98,6 +108,7 @@ type TagWriter interface {
 	TagCreator
 	TagUpdater
 	TagDestroyer
+	CustomFieldsWriter
 
 	Merge(ctx context.Context, source []int, destination int) error
 }

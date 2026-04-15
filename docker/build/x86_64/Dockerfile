@@ -1,33 +1,38 @@
 # This dockerfile should be built with `make docker-build` from the stash root.
 
 # Build Frontend
-FROM node:alpine as frontend
+FROM node:24-alpine AS frontend
 RUN apk add --no-cache make git tzdata
 ENV TZ=Asia/Shanghai
 ## cache node_modules separately
-COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
+COPY ./ui/v2.5/package.json ./ui/v2.5/pnpm-lock.yaml /stash/ui/v2.5/
 WORKDIR /stash
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
+# pnpm install with npm
+RUN npm install -g pnpm
 RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH
 ARG STASH_VERSION
-RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
+RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui-only
 
 # Build Backend
-FROM golang:1.22-alpine as backend
+FROM golang:1.24.3-alpine AS backend
 RUN apk add --no-cache make alpine-sdk tzdata
 ENV TZ=Asia/Shanghai
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
+COPY ./graphql /stash/graphql/
 COPY ./scripts /stash/scripts/
 COPY ./pkg /stash/pkg/
-COPY ./cmd /stash/cmd
-COPY ./internal /stash/internal
+COPY ./cmd /stash/cmd/
+COPY ./internal /stash/internal/
+# needed for generate-login-locale
+COPY ./ui /stash/ui/
+RUN make generate-backend generate-login-locale
 COPY --from=frontend /stash /stash/
-RUN make generate-backend
 ARG GITHASH
 ARG STASH_VERSION
 RUN make flags-release flags-pie stash
