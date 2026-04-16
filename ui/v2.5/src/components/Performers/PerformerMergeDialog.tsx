@@ -614,9 +614,17 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
           originalField={
-            <StashIDsField values={stashIDs?.originalValue ?? []} />
+            <StashIDsField
+              values={stashIDs?.originalValue ?? []}
+              linkType="performers"
+            />
           }
-          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
+          newField={
+            <StashIDsField
+              values={stashIDs?.newValue ?? []}
+              linkType="performers"
+            />
+          }
           onChange={(value) => setStashIDs(value)}
           alwaysShow={
             !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
