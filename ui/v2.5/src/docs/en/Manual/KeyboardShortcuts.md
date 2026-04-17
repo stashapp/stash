@@ -1,4 +1,4 @@
-# Keyboard Shortcuts
+# Keyboard shortcuts
 
 ## Global shortcuts
 
@@ -6,7 +6,7 @@
 |-------------------|--------|
 | `?` | Display manual |
 
-### Global Navigation
+### Global navigation
 
 | Keyboard sequence | Target page |
 |-------------------|--------|
@@ -94,13 +94,13 @@
 | `l` | A/B looping toggle. Press once to set start point. Press again to set end point. Press again to disable loop. |
 | `Shift + l` | Toggle looping of scene when it's over |
 
-### Scene Markers tab shortcuts
+### Scene markers tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `n` | Display Create Markers dialog |
 
-### Scene Edit tab shortcuts
+### Scene edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
@@ -115,7 +115,7 @@
 [//]: # "(| `v` | Focus Groups selector |)"
 [//]: # "(| `t` | Focus Tags selector |)"
 
-## Image Page shortcuts
+## Image page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
@@ -127,20 +127,20 @@
 | `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
 | ``r ` `` | Unset rating (decimal) |
 
-### Image Edit tab shortcuts
+### Image edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `s s` | Save Scene |
 | `d d` | Delete Scene |
 
-## Groups Page shortcuts
+## Groups page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `n` | New Group |
 
-## Group Page shortcuts
+## Group page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
@@ -158,20 +158,20 @@
 [//]: # "Commented until implementation is dealt with"
 [//]: # "(| `u` | Focus Studio selector (in edit mode) |)"
 
-## Markers Page shortcuts
+## Markers page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `p r` | Play random marker |
 
-## Performers Page shortcuts
+## Performers page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `n` | New Performer |
 | `p r` | Open random Performer |
 
-## Performer Page shortcuts
+## Performer page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
@@ -181,7 +181,7 @@
 | `f` | Toggle favourite |
 | `,` | Expand/Collapse Details |
 
-### Performer Edit tab shortcuts
+### Performer edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
@@ -189,13 +189,13 @@
 | `d d` | Delete Performer |
 | `Ctrl + v` | Paste Performer image |
 
-## Studios Page shortcuts
+## Studios page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `n` | New Studio |
 
-## Studio Page shortcuts
+## Studio page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
@@ -205,13 +205,13 @@
 | `,` | Expand/Collapse Details |
 | `Ctrl + v` | Paste Studio image |
 
-## Tags Page shortcuts
+## Tags page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `n` | New Tag |
 
-## Tag Page shortcuts
+## Tag page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
