@@ -327,10 +327,7 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
             />
           }
           newField={
-            <StashIDsField
-              values={stashIDs?.newValue ?? []}
-              linkType="tags"
-            />
+            <StashIDsField values={stashIDs?.newValue ?? []} linkType="tags" />
           }
           onChange={(value) => setStashIDs(value)}
           alwaysShow={
