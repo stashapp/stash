@@ -1,0 +1,2 @@
+ALTER TABLE scenes ADD COLUMN start REAL;
+ALTER TABLE scenes ADD COLUMN "end" REAL;
