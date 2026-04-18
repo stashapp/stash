@@ -90,6 +90,11 @@ func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAuto
 }
 
 func (s autotagScraper) viaImage(ctx context.Context, _client *http.Client, image *models.Image) (*models.ScrapedImage, error) {
+	path := image.Path
+	if path == "" {
+		return nil, nil
+	}
+
 	var ret *models.ScrapedImage
 
 	// only trim extension if image is file-based
@@ -97,11 +102,6 @@ func (s autotagScraper) viaImage(ctx context.Context, _client *http.Client, imag
 
 	// populate performers, studio and tags based on image path
 	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
-		path := image.Path
-		if path == "" {
-			return nil
-		}
-
 		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaImage: %w", err)
