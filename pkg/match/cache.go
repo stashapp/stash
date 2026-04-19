@@ -6,16 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-// regexpCacheSize bounds the compiled-regexp LRU. Sized generously so that
-// for realistic libraries (up to ~100 k performers/studios/tags combined,
-// each optionally with a unicode and ASCII variant) the cache never evicts
-// during one auto-tag job. LRU is used for consistency with
-// pkg/sqlite/regex.go; eviction only kicks in for libraries far past that.
-const regexpCacheSize = 200_000
 
 const singleFirstCharacterRegex = `^[\p{L}][.\-_ ]`
 
@@ -145,8 +137,12 @@ type Cache struct {
 	tagByPrefix          map[string][]cachedTag
 	tagAlwaysCheck       []cachedTag
 
-	regexpCacheOnce sync.Once
-	regexpCache     *lru.Cache[regexpCacheKey, *regexp.Regexp]
+	// regexpCache maps regexpCacheKey → *regexp.Regexp. sync.Map rather
+	// than the hashicorp LRU used in pkg/sqlite/regex.go: this cache is
+	// job-scoped (so LRU's eviction buys us nothing) and is hit by every
+	// worker on every candidate (so a single-mutex Get becomes the
+	// bottleneck). sync.Map's read-optimised path sidesteps that.
+	regexpCache sync.Map
 }
 
 // cachedStudio bundles a studio with its aliases so PathToStudio can match
@@ -347,17 +343,13 @@ func (c *Cache) nameRegexp(name string, useUnicode bool) *regexp.Regexp {
 		return nameToRegexp(name, useUnicode)
 	}
 
-	c.regexpCacheOnce.Do(func() {
-		c.regexpCache, _ = lru.New[regexpCacheKey, *regexp.Regexp](regexpCacheSize)
-	})
-
 	key := regexpCacheKey{name: name, useUnicode: useUnicode}
-	if r, ok := c.regexpCache.Get(key); ok {
-		return r
+	if r, ok := c.regexpCache.Load(key); ok {
+		return r.(*regexp.Regexp)
 	}
 	r := nameToRegexp(name, useUnicode)
-	c.regexpCache.Add(key, r)
-	return r
+	actual, _ := c.regexpCache.LoadOrStore(key, r)
+	return actual.(*regexp.Regexp)
 }
 
 // getSingleLetterPerformers returns all performers with names that start with single character words.
