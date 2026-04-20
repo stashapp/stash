@@ -354,7 +354,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       Mousetrap.unbind(",");
       Mousetrap.unbind("f");
     };
-  });
+  }, []);
 
   useRatingKeybinds(
     true,

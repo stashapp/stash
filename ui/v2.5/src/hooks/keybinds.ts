@@ -81,5 +81,5 @@ export function useRatingKeybinds(
     return () => {
       Mousetrap.unbind("r");
     };
-  });
+  }, [isVisible]);
 }

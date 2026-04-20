@@ -30,7 +30,7 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = ({
     return () => {
       Mousetrap.unbind("n");
     };
-  });
+  }, [isVisible]);
 
   function onOpenEditor(chapter?: GQL.GalleryChapterDataFragment) {
     setIsEditorOpen(true);

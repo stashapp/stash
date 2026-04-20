@@ -243,7 +243,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
     };
-  });
+  }, []);
 
   useRatingKeybinds(
     true,

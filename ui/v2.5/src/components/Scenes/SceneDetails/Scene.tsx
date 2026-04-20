@@ -280,7 +280,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       Mousetrap.unbind("c c");
       Mousetrap.unbind("c d");
     };
-  });
+  }, []);
 
   async function onSave(input: GQL.SceneCreateInput) {
     await updateScene({

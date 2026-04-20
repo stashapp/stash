@@ -359,7 +359,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     return () => {
       Mousetrap.unbind("/");
     };
-  });
+  }, []);
 
   async function updatePinnedFilters(filters: string[]) {
     const configKey = filterModeToConfigKey(currentFilter.mode);

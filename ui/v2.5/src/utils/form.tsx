@@ -67,7 +67,7 @@ export function useStopWheelScroll(ref: React.RefObject<HTMLElement>) {
         current.removeEventListener("wheel", stopWheelScroll);
       }
     };
-  });
+  }, []);
 }
 
 // NumberField is a wrapper around Form.Control that prevents wheel events from scrolling the window.

@@ -274,7 +274,7 @@ export const FilteredStudioList = PatchComponent(
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
       };
-    });
+    }, []);
 
     const onCloseEditDelete = useCloseEditDelete({
       closeModal,

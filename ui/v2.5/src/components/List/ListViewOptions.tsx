@@ -105,7 +105,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
       Mousetrap.unbind("v w");
       Mousetrap.unbind("v t");
     };
-  });
+  }, []);
 
   function onChangeZoom(v: number) {
     if (onSetZoom) {

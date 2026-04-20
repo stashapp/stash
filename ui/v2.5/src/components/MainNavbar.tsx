@@ -276,7 +276,7 @@ export const MainNavbar: React.FC = () => {
         Mousetrap.unbind("n");
       }
     };
-  });
+  }, []);
 
   function maybeRenderLogout() {
     if (SessionUtils.isLoggedIn()) {

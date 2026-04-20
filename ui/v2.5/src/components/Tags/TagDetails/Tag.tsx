@@ -359,7 +359,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       Mousetrap.unbind(",");
       Mousetrap.unbind("f");
     };
-  });
+  }, []);
 
   async function onSave(input: GQL.TagCreateInput) {
     const oldRelations = {

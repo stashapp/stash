@@ -36,7 +36,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = ({
     return () => {
       Mousetrap.unbind("n");
     };
-  });
+  }, []);
 
   if (loading) return null;
 

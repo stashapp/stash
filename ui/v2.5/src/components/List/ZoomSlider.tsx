@@ -26,7 +26,7 @@ export function useZoomKeybinds(props: {
       Mousetrap.unbind("+");
       Mousetrap.unbind("-");
     };
-  });
+  }, []);
 }
 
 export interface IZoomSelectProps {

@@ -86,7 +86,7 @@ export const SearchTermInput: React.FC<{
     return () => {
       Mousetrap.unbind("/");
     };
-  });
+  }, []);
 
   function onSetQuery(value: string) {
     setLocalInput(value);

@@ -112,7 +112,7 @@ const PerformerTabs: React.FC<{
       Mousetrap.unbind("g");
       Mousetrap.unbind("m");
     };
-  });
+  }, []);
 
   return (
     <Tabs
@@ -331,7 +331,7 @@ const PerformerPage: React.FC<IProps> = PatchComponent(
         Mousetrap.unbind("f");
         Mousetrap.unbind(",");
       };
-    });
+    }, []);
 
     async function onSave(input: GQL.PerformerCreateInput) {
       await updatePerformer({

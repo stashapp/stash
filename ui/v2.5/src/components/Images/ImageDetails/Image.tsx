@@ -298,7 +298,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       Mousetrap.unbind("f");
       Mousetrap.unbind("o");
     };
-  });
+  }, []);
 
   const file = useMemo(
     () => (image.visual_files.length > 0 ? image.visual_files[0] : undefined),

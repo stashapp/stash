@@ -177,7 +177,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
         Mousetrap.unbind("d d");
       };
     }
-  });
+  }, []);
 
   const fragmentScrapers = useMemo(() => {
     return (scrapers?.data?.listScrapers ?? []).filter((s) =>

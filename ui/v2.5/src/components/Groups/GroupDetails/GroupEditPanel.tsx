@@ -172,7 +172,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       // Mousetrap.unbind("u");
       Mousetrap.unbind("s s");
     };
-  });
+  }, []);
 
   function updateGroupEditStateFromScraper(
     state: Partial<GQL.ScrapedGroupDataFragment>

@@ -147,7 +147,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return () => {
       Mousetrap.unbind("s s");
     };
-  });
+  }, []);
 
   async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
