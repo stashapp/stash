@@ -257,7 +257,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         Mousetrap.unbind("d d");
       };
     }
-  }, []);
+  }, [isVisible]);
 
   useEffect(() => {
     const toFilter = Scrapers?.data?.listScrapers ?? [];
