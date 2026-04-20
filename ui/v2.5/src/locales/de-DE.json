@@ -157,7 +157,8 @@
         "select_directory": "Ordner Auswählen",
         "from_clipboard": "Aus Zwischenablage",
         "reveal_in_file_manager": "Im Dateimanager anzeigen",
-        "selective_generate": "Selektives Generieren"
+        "selective_generate": "Selektives Generieren",
+        "create_parent_tag": "Übergeordneten Tag erstellen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
