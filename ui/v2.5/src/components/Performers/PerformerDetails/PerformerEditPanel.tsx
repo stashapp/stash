@@ -383,7 +383,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         }
       };
     }
-  }, []);
+  }, [isVisible]);
 
   useEffect(() => {
     const newQueryableScrapers = (Scrapers?.data?.listScrapers ?? []).filter(
