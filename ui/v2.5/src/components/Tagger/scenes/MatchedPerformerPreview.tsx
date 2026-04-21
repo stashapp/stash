@@ -1,9 +1,11 @@
+import { ReactNode } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 
 interface IMatchedPerformerPreviewProps {
   performerID?: string | null;
   placement?: Placement;
+  children?: ReactNode;
 }
 
 export const MatchedPerformerPreview = ({
