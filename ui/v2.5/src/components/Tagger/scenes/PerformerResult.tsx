@@ -35,7 +35,7 @@ const pushDeltaIfDifferent = (
   rows: IPerformerDeltaRow[],
   label: string,
   remoteValue: unknown,
-  localValue: unknown,
+  localValue: unknown
 ) => {
   const remoteText = toStringOrNull(remoteValue);
   if (!remoteText) return;
@@ -46,7 +46,7 @@ const pushDeltaIfDifferent = (
 
 const buildPerformerDeltaRows = (
   remote: GQL.ScrapedPerformer,
-  local: GQL.PerformerDataFragment,
+  local: GQL.PerformerDataFragment
 ): IPerformerDeltaRow[] => {
   const rows: IPerformerDeltaRow[] = [];
 
@@ -61,19 +61,19 @@ const buildPerformerDeltaRows = (
     rows,
     "Penis Length",
     remote.penis_length,
-    local.penis_length,
+    local.penis_length
   );
   pushDeltaIfDifferent(
     rows,
     "Circumcised",
     remote.circumcised,
-    local.circumcised,
+    local.circumcised
   );
   pushDeltaIfDifferent(
     rows,
     "Measurements",
     remote.measurements,
-    local.measurements,
+    local.measurements
   );
   pushDeltaIfDifferent(rows, "Fake Tits", remote.fake_tits, local.fake_tits);
   pushDeltaIfDifferent(rows, "Tattoos", remote.tattoos, local.tattoos);
@@ -82,7 +82,7 @@ const buildPerformerDeltaRows = (
     rows,
     "Career Start",
     remote.career_start,
-    local.career_start,
+    local.career_start
   );
   pushDeltaIfDifferent(rows, "Career End", remote.career_end, local.career_end);
 
@@ -164,7 +164,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   const matchedStashID = matchedPerformer?.stash_ids.some(
     (stashID) =>
       stashID.endpoint === endpoint &&
-      stashID.stash_id === performer.remote_site_id,
+      stashID.stash_id === performer.remote_site_id
   );
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
   const { data: selectedPerformerData, loading: selectedPerformerLoading } =
@@ -253,7 +253,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       ? selectedPerformerDetails.stash_ids.find(
           (stashID) =>
             stashID.endpoint === endpoint &&
-            stashID.stash_id !== performer.remote_site_id,
+            stashID.stash_id !== performer.remote_site_id
         )
       : undefined;
   const selectedPerformerDeltaRows = selectedPerformerDetails

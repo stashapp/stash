@@ -23,7 +23,9 @@ const toPerformerCardData = (performer: GQL.ScrapedPerformer) => {
     id:
       performer.stored_id ??
       performer.remote_site_id ??
-      `scraped-${performer.name?.replace(/\s+/g, "-").toLowerCase() ?? "performer"}`,
+      `scraped-${
+        performer.name?.replace(/\s+/g, "-").toLowerCase() ?? "performer"
+      }`,
     name: performer.name ?? "Unknown performer",
     alias_list: aliasList,
     disambiguation: performer.disambiguation ?? null,
