@@ -260,13 +260,13 @@ const SceneWall: React.FC<ISceneWallProps> = ({
 
   // Guard against duplicate clicks - react-photo-gallery can dispatch
   // the onClick handler twice for a single click event
-  const lastClickTime = useRef(0);
   const onClick = useCallback(
     (event, { index }) => {
-      const now = Date.now();
-      if (now - lastClickTime.current < 100) return;
-      lastClickTime.current = now;
-      history.push(photos[index].link);
+      const link = photos[index].link;
+      const current = history.location.pathname + history.location.search;
+      if (current !== link) {
+        history.push(link);
+      }
     },
     [history, photos]
   );

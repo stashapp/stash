@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import Gallery, {
@@ -245,13 +245,13 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
   // Guard against duplicate clicks - react-photo-gallery can dispatch
   // the onClick handler twice for a single click event
-  const lastClickTime = useRef(0);
   const onClick = useCallback(
     (event, { index }) => {
-      const now = Date.now();
-      if (now - lastClickTime.current < 100) return;
-      lastClickTime.current = now;
-      history.push(photos[index].link);
+      const link = photos[index].link;
+      const current = history.location.pathname + history.location.search;
+      if (current !== link) {
+        history.push(link);
+      }
     },
     [history, photos]
   );
