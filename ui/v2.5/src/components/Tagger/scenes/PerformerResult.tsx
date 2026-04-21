@@ -4,10 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { OptionalField } from "../IncludeButton";
-import {
-  Performer,
-  PerformerSelect,
-} from "src/components/Performers/PerformerSelect";
+import { Performer, PerformerSelect } from "src/components/Performers/PerformerSelect";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";

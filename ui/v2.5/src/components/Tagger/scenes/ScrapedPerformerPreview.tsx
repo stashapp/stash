@@ -13,19 +13,21 @@ interface IScrapedPerformerPreviewProps {
 
 const toPerformerCardData = (
   performer: GQL.ScrapedPerformer
-): GQL.PerformerDataFragment =>
-  ({
+): GQL.PerformerDataFragment => {
+  const aliasList = performer.aliases
+    ? performer.aliases
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean)
+    : [];
+
+  return {
     id:
       performer.stored_id ??
       performer.remote_site_id ??
       `scraped-${performer.name?.replace(/\s+/g, "-").toLowerCase() ?? "performer"}`,
     name: performer.name ?? "Unknown performer",
-    alias_list: performer.aliases
-      ? performer.aliases
-          .split(",")
-          .map((a) => a.trim())
-          .filter(Boolean)
-      : [],
+    alias_list: aliasList,
     disambiguation: performer.disambiguation ?? null,
     gender: performer.gender ?? null,
     birthdate: performer.birthdate ?? null,
@@ -45,7 +47,8 @@ const toPerformerCardData = (
     o_counter: null,
     rating100: null,
     urls: performer.urls ?? [],
-  }) as unknown as GQL.PerformerDataFragment;
+  } as unknown as GQL.PerformerDataFragment;
+};
 
 const ScrapedPerformerCard = ({
   performer,
