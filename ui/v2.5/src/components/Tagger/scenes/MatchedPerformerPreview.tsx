@@ -7,9 +7,11 @@ interface IMatchedPerformerPreviewProps {
   placement?: Placement;
 }
 
-export const MatchedPerformerPreview: React.FC<
-  IMatchedPerformerPreviewProps
-> = ({ performerID, placement = "right", children }) => {
+export const MatchedPerformerPreview = ({
+  performerID,
+  placement = "right",
+  children,
+}: IMatchedPerformerPreviewProps) => {
   if (!performerID) {
     return <>{children}</>;
   }
