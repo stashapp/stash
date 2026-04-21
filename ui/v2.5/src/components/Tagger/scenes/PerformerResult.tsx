@@ -4,7 +4,10 @@ import { FormattedMessage } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { OptionalField } from "../IncludeButton";
-import { Performer, PerformerSelect } from "src/components/Performers/PerformerSelect";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
@@ -154,13 +157,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
-  const {
-    data: selectedPerformerData,
-    loading: selectedPerformerLoading,
-  } = GQL.useFindPerformerQuery({
-    variables: { id: selectedID ?? "" },
-    skip: !selectedID,
-  });
+  const { data: selectedPerformerData, loading: selectedPerformerLoading } =
+    GQL.useFindPerformerQuery({
+      variables: { id: selectedID ?? "" },
+      skip: !selectedID,
+    });
   const selectedPerformerDetails = selectedPerformerData?.findPerformer;
 
   const stashboxPerformerPrefix = endpoint
@@ -194,9 +195,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     selectPerformer(undefined);
   };
 
-  if (stashLoading || selectedPerformerLoading) {
-    return <div>Loading performer</div>;
-  }
+  if (stashLoading || selectedPerformerLoading) return <div>Loading performer</div>;
 
   if (matchedPerformer && matchedStashID) {
     return (
