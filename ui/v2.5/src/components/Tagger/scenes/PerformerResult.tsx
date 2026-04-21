@@ -134,13 +134,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
               <b className="col-3 text-right">
-                <MatchedPerformerPreview performerID={matchedPerformer.id}>
-                  <PerformerLink
-                    performer={matchedPerformer}
-                    url={`${performerURLPrefix}${matchedPerformer.id}`}
-                    internal
-                  />
-                </MatchedPerformerPreview>
+                <PerformerLink
+                  performer={matchedPerformer}
+                  url={`${performerURLPrefix}${matchedPerformer.id}`}
+                  internal
+                />
               </b>
             </div>
           </OptionalField>
@@ -178,13 +176,15 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         >
           <FormattedMessage id="actions.skip" />
         </Button>
-        <PerformerSelect
-          values={selectedPerformer ? [selectedPerformer] : []}
-          onSelect={handleSelect}
-          active={selectedSource === "existing"}
-          isClearable={false}
-          ageFromDate={ageFromDate}
-        />
+        <MatchedPerformerPreview performerID={selectedPerformer?.id}>
+          <PerformerSelect
+            values={selectedPerformer ? [selectedPerformer] : []}
+            onSelect={handleSelect}
+            active={selectedSource === "existing"}
+            isClearable={false}
+            ageFromDate={ageFromDate}
+          />
+        </MatchedPerformerPreview>
         {endpoint && onLink && (
           <LinkButton disabled={selectedID === undefined} onLink={onLink} />
         )}
