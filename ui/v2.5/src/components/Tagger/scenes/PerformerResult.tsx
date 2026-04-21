@@ -83,13 +83,13 @@ const buildPerformerDeltaRows = (
         .filter(Boolean).length
     : 0;
   const localAliasesCount = local.alias_list?.length ?? 0;
-  if (remoteAliasesCount > 0 && remoteAliasesCount !== localAliasesCount) {
+  if (remoteAliasesCount > localAliasesCount) {
     rows.push({ label: "Aliases", value: String(remoteAliasesCount) });
   }
 
   const remoteUrlsCount = remote.urls?.length ?? 0;
   const localUrlsCount = local.urls?.length ?? 0;
-  if (remoteUrlsCount > 0 && remoteUrlsCount !== localUrlsCount) {
+  if (remoteUrlsCount > localUrlsCount) {
     rows.push({ label: "URLs", value: String(remoteUrlsCount) });
   }
 
