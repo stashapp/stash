@@ -13,6 +13,88 @@ import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
 import { MatchedPerformerPreview } from "./MatchedPerformerPreview";
+import { ScrapedPerformerPreview } from "./ScrapedPerformerPreview";
+
+interface IPerformerDeltaRow {
+  label: string;
+  value: string;
+}
+
+const normalizeValue = (value: unknown) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase();
+
+const toStringOrNull = (value: unknown) => {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text.length > 0 ? text : null;
+};
+
+const pushDeltaIfDifferent = (
+  rows: IPerformerDeltaRow[],
+  label: string,
+  remoteValue: unknown,
+  localValue: unknown
+) => {
+  const remoteText = toStringOrNull(remoteValue);
+  if (!remoteText) return;
+
+  if (normalizeValue(remoteText) === normalizeValue(localValue)) return;
+  rows.push({ label, value: remoteText });
+};
+
+const buildPerformerDeltaRows = (
+  remote: GQL.ScrapedPerformer,
+  local: Performer
+): IPerformerDeltaRow[] => {
+  const rows: IPerformerDeltaRow[] = [];
+
+  pushDeltaIfDifferent(rows, "Birthdate", remote.birthdate, local.birthdate);
+  pushDeltaIfDifferent(rows, "Death Date", remote.death_date, local.death_date);
+  pushDeltaIfDifferent(rows, "Ethnicity", remote.ethnicity, local.ethnicity);
+  pushDeltaIfDifferent(rows, "Hair Color", remote.hair_color, local.hair_color);
+  pushDeltaIfDifferent(rows, "Eye Color", remote.eye_color, local.eye_color);
+  pushDeltaIfDifferent(rows, "Height", remote.height, local.height_cm);
+  pushDeltaIfDifferent(rows, "Weight", remote.weight, local.weight);
+  pushDeltaIfDifferent(
+    rows,
+    "Penis Length",
+    remote.penis_length,
+    local.penis_length
+  );
+  pushDeltaIfDifferent(rows, "Circumcised", remote.circumcised, local.circumcised);
+  pushDeltaIfDifferent(
+    rows,
+    "Measurements",
+    remote.measurements,
+    local.measurements
+  );
+  pushDeltaIfDifferent(rows, "Fake Tits", remote.fake_tits, local.fake_tits);
+  pushDeltaIfDifferent(rows, "Tattoos", remote.tattoos, local.tattoos);
+  pushDeltaIfDifferent(rows, "Piercings", remote.piercings, local.piercings);
+  pushDeltaIfDifferent(rows, "Career Start", remote.career_start, local.career_start);
+  pushDeltaIfDifferent(rows, "Career End", remote.career_end, local.career_end);
+
+  const remoteAliasesCount = remote.aliases
+    ? remote.aliases
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean).length
+    : 0;
+  const localAliasesCount = local.alias_list?.length ?? 0;
+  if (remoteAliasesCount > 0 && remoteAliasesCount !== localAliasesCount) {
+    rows.push({ label: "Aliases", value: String(remoteAliasesCount) });
+  }
+
+  const remoteUrlsCount = remote.urls?.length ?? 0;
+  const localUrlsCount = local.urls?.length ?? 0;
+  if (remoteUrlsCount > 0 && remoteUrlsCount !== localUrlsCount) {
+    rows.push({ label: "URLs", value: String(remoteUrlsCount) });
+  }
+
+  return rows;
+};
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -74,7 +156,6 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.endpoint === endpoint &&
       stashID.stash_id === performer.remote_site_id
   );
-
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
 
   const stashboxPerformerPrefix = endpoint
@@ -116,10 +197,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
           <b className="ml-2">
-            <PerformerLink
-              performer={performer}
-              url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
-            />
+            <ScrapedPerformerPreview performer={performer}>
+              <PerformerLink
+                performer={performer}
+                url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
+              />
+            </ScrapedPerformerPreview>
           </b>
         </div>
         <span className="ml-auto">
@@ -148,6 +231,17 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   }
 
   const selectedSource = !selectedID ? "skip" : "existing";
+  const selectedPerformerConflictStashID =
+    endpoint && performer.remote_site_id && selectedPerformer
+      ? selectedPerformer.stash_ids.find(
+          (stashID) =>
+            stashID.endpoint === endpoint &&
+            stashID.stash_id !== performer.remote_site_id
+        )
+      : undefined;
+  const selectedPerformerDeltaRows = selectedPerformer
+    ? buildPerformerDeltaRows(performer, selectedPerformer)
+    : [];
 
   const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
     return stashboxPerformerPrefix && id
@@ -160,10 +254,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
         <b className="ml-2">
-          <PerformerLink
-            performer={performer}
-            url={safeBuildPerformerScraperLink(performer.remote_site_id)}
-          />
+          <ScrapedPerformerPreview performer={performer}>
+            <PerformerLink
+              performer={performer}
+              url={safeBuildPerformerScraperLink(performer.remote_site_id)}
+            />
+          </ScrapedPerformerPreview>
         </b>
       </div>
       <ButtonGroup>
@@ -176,7 +272,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         >
           <FormattedMessage id="actions.skip" />
         </Button>
-        <MatchedPerformerPreview performerID={selectedPerformer?.id}>
+        <MatchedPerformerPreview
+          performerID={selectedPerformer?.id}
+          performer={selectedPerformer}
+          warningStashID={selectedPerformerConflictStashID}
+          deltaRows={selectedPerformerDeltaRows}
+        >
           <PerformerSelect
             values={selectedPerformer ? [selectedPerformer] : []}
             onSelect={handleSelect}

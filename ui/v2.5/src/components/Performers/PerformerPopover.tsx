@@ -43,6 +43,7 @@ interface IPeroformerPopoverProps {
   placement?: Placement;
   target?: React.RefObject<HTMLElement>;
   cardClassName?: string;
+  triggerClassName?: string;
 }
 
 export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
@@ -52,6 +53,7 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   placement = "top",
   target,
   cardClassName,
+  triggerClassName,
 }) => {
   const { configuration: config } = useConfigurationContext();
 
@@ -63,6 +65,7 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
 
   return (
     <HoverPopover
+      className={triggerClassName}
       target={target}
       placement={placement}
       enterDelay={500}

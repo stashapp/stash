@@ -105,6 +105,39 @@
   }
 }
 
+.tagger-matched-performer-popover-extra {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.tagger-scraped-performer-popover {
+  .card {
+    width: 200px;
+  }
+
+  .performer-card-image {
+    max-height: 300px;
+  }
+}
+
+.tagger-performer-delta-rows {
+  font-size: 0.875rem;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.tagger-performer-stashid-warning {
+  text-align: left;
+
+  .tagger-performer-stashid-warning-chip {
+    background-color: $danger;
+    border-radius: 0.25rem;
+    color: $white;
+    min-width: auto;
+  }
+}
+
 .selected-result {
   background-color: hsl(204, 20%, 30%);
   border-radius: 3px;
