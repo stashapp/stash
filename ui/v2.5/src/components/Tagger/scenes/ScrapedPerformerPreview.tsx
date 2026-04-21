@@ -45,13 +45,15 @@ const toPerformerCardData = (performer: GQL.ScrapedPerformer) =>
     urls: performer.urls ?? [],
   } as unknown as GQL.PerformerDataFragment);
 
-const ScrapedPerformerCard = ({ performer }: { performer: GQL.ScrapedPerformer }) => {
-  return (
-    <div className="tag-popover-card tagger-scraped-performer-popover">
-      <PerformerCard performer={toPerformerCardData(performer)} zoomIndex={0} />
-    </div>
-  );
-};
+const ScrapedPerformerCard = ({
+  performer,
+}: {
+  performer: GQL.ScrapedPerformer;
+}) => (
+  <div className="tag-popover-card tagger-scraped-performer-popover">
+    <PerformerCard performer={toPerformerCardData(performer)} zoomIndex={0} />
+  </div>
+);
 
 export const ScrapedPerformerPreview = ({
   performer,

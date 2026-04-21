@@ -30,8 +30,9 @@ export const MatchedPerformerPreview = ({
   const { configuration: config } = useConfigurationContext();
   const showPerformerCardOnHover = config?.ui.showTagCardOnHover ?? true;
   const warningEndpointName = warningStashID
-    ? config?.general.stashBoxes.find((sb) => sb.endpoint === warningStashID.endpoint)
-        ?.name ?? warningStashID.endpoint
+    ? config?.general.stashBoxes.find(
+        (sb) => sb.endpoint === warningStashID.endpoint
+      )?.name ?? warningStashID.endpoint
     : null;
 
   if (!performerID || !performer || !showPerformerCardOnHover) {

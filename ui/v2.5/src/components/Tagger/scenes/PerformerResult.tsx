@@ -195,7 +195,9 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     selectPerformer(undefined);
   };
 
-  if (stashLoading || selectedPerformerLoading) return <div>Loading performer</div>;
+  if (stashLoading || selectedPerformerLoading) {
+    return <div>Loading performer</div>;
+  }
 
   if (matchedPerformer && matchedStashID) {
     return (
@@ -280,7 +282,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </Button>
         <MatchedPerformerPreview
           performerID={selectedPerformer?.id}
-            performer={selectedPerformerDetails}
+          performer={selectedPerformerDetails}
           warningStashID={selectedPerformerConflictStashID}
           deltaRows={selectedPerformerDeltaRows}
         >
