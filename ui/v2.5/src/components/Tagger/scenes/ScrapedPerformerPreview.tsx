@@ -18,23 +18,32 @@ const toPerformerCardData = (performer: GQL.ScrapedPerformer) =>
       performer.remote_site_id ??
       `scraped-${performer.name?.replace(/\s+/g, "-").toLowerCase() ?? "performer"}`,
     name: performer.name ?? "Unknown performer",
+    alias_list: performer.aliases
+      ? performer.aliases
+          .split(",")
+          .map((a) => a.trim())
+          .filter(Boolean)
+      : [],
     disambiguation: performer.disambiguation ?? null,
     gender: performer.gender ?? null,
     birthdate: performer.birthdate ?? null,
     death_date: performer.death_date ?? null,
     country: performer.country ?? null,
-    image_path: performer.images?.[0] ?? performer.image_path ?? null,
+    image_path: performer.images?.[0] ?? null,
     tags: [],
+    custom_fields: [],
     stash_ids: [],
     favorite: false,
+    ignore_auto_tag: false,
     scene_count: null,
     image_count: null,
     gallery_count: null,
     group_count: null,
+    performer_count: null,
     o_counter: null,
     rating100: null,
     urls: performer.urls ?? [],
-  }) as GQL.PerformerDataFragment;
+  } as unknown as GQL.PerformerDataFragment);
 
 const ScrapedPerformerCard = ({ performer }: { performer: GQL.ScrapedPerformer }) => {
   return (

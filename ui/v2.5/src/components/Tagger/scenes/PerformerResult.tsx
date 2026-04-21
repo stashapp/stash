@@ -46,7 +46,7 @@ const pushDeltaIfDifferent = (
 
 const buildPerformerDeltaRows = (
   remote: GQL.ScrapedPerformer,
-  local: Performer
+  local: GQL.PerformerDataFragment
 ): IPerformerDeltaRow[] => {
   const rows: IPerformerDeltaRow[] = [];
 
@@ -157,6 +157,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+  const { data: selectedPerformerData, loading: selectedPerformerLoading } =
+    GQL.useFindPerformerQuery({
+      variables: { id: selectedID ?? "" },
+      skip: !selectedID,
+    });
+  const selectedPerformerDetails = selectedPerformerData?.findPerformer;
 
   const stashboxPerformerPrefix = endpoint
     ? `${getStashboxBase(endpoint)}performers/`
@@ -189,7 +195,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     selectPerformer(undefined);
   };
 
-  if (stashLoading) return <div>Loading performer</div>;
+  if (stashLoading || selectedPerformerLoading) return <div>Loading performer</div>;
 
   if (matchedPerformer && matchedStashID) {
     return (
@@ -232,15 +238,15 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
 
   const selectedSource = !selectedID ? "skip" : "existing";
   const selectedPerformerConflictStashID =
-    endpoint && performer.remote_site_id && selectedPerformer
-      ? selectedPerformer.stash_ids.find(
+    endpoint && performer.remote_site_id && selectedPerformerDetails
+      ? selectedPerformerDetails.stash_ids.find(
           (stashID) =>
             stashID.endpoint === endpoint &&
             stashID.stash_id !== performer.remote_site_id
         )
       : undefined;
-  const selectedPerformerDeltaRows = selectedPerformer
-    ? buildPerformerDeltaRows(performer, selectedPerformer)
+  const selectedPerformerDeltaRows = selectedPerformerDetails
+    ? buildPerformerDeltaRows(performer, selectedPerformerDetails)
     : [];
 
   const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
@@ -274,7 +280,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </Button>
         <MatchedPerformerPreview
           performerID={selectedPerformer?.id}
-          performer={selectedPerformer}
+            performer={selectedPerformerDetails}
           warningStashID={selectedPerformerConflictStashID}
           deltaRows={selectedPerformerDeltaRows}
         >
