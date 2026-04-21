@@ -95,6 +95,16 @@
   }
 }
 
+.tagger-matched-performer-popover {
+  .card {
+    width: 200px;
+  }
+
+  .performer-card-image {
+    max-height: 300px;
+  }
+}
+
 .selected-result {
   background-color: hsl(204, 20%, 30%);
   border-radius: 3px;

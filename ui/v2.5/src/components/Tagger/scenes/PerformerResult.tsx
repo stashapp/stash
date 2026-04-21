@@ -12,6 +12,7 @@ import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
+import { MatchedPerformerPreview } from "./MatchedPerformerPreview";
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -133,11 +134,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
               <b className="col-3 text-right">
-                <PerformerLink
-                  performer={matchedPerformer}
-                  url={`${performerURLPrefix}${matchedPerformer.id}`}
-                  internal
-                />
+                <MatchedPerformerPreview performerID={matchedPerformer.id}>
+                  <PerformerLink
+                    performer={matchedPerformer}
+                    url={`${performerURLPrefix}${matchedPerformer.id}`}
+                    internal
+                  />
+                </MatchedPerformerPreview>
               </b>
             </div>
           </OptionalField>
