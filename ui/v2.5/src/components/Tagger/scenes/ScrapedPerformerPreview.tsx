@@ -11,7 +11,9 @@ interface IScrapedPerformerPreviewProps {
   children?: ReactNode;
 }
 
-const toPerformerCardData = (performer: GQL.ScrapedPerformer) =>
+const toPerformerCardData = (
+  performer: GQL.ScrapedPerformer
+): GQL.PerformerDataFragment =>
   ({
     id:
       performer.stored_id ??
@@ -43,7 +45,7 @@ const toPerformerCardData = (performer: GQL.ScrapedPerformer) =>
     o_counter: null,
     rating100: null,
     urls: performer.urls ?? [],
-  } as unknown as GQL.PerformerDataFragment);
+  }) as unknown as GQL.PerformerDataFragment;
 
 const ScrapedPerformerCard = ({
   performer,

@@ -157,11 +157,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
-  const { data: selectedPerformerData, loading: selectedPerformerLoading } =
-    GQL.useFindPerformerQuery({
-      variables: { id: selectedID ?? "" },
-      skip: !selectedID,
-    });
+  const {
+    data: selectedPerformerData,
+    loading: selectedPerformerLoading,
+  } = GQL.useFindPerformerQuery({
+    variables: { id: selectedID ?? "" },
+    skip: !selectedID,
+  });
   const selectedPerformerDetails = selectedPerformerData?.findPerformer;
 
   const stashboxPerformerPrefix = endpoint
