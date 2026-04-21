@@ -1,4 +1,3 @@
-import React from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 
