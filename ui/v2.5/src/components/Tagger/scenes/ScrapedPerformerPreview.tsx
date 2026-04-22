@@ -1,10 +1,13 @@
 import { ReactNode } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
-import { IntlShape, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useConfigurationContext } from "src/hooks/Config";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
+import GenderIcon from "src/components/Performers/GenderIcon";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
+import TextUtils from "src/utils/text";
 
 interface IScrapedPerformerPreviewProps {
   performer: GQL.ScrapedPerformer;
@@ -12,61 +15,70 @@ interface IScrapedPerformerPreviewProps {
   children?: ReactNode;
 }
 
-const toPerformerCardData = (
-  performer: GQL.ScrapedPerformer,
-  intl: IntlShape
-) => {
-  const aliasList = performer.aliases
-    ? performer.aliases
-        .split(",")
-        .map((a) => a.trim())
-        .filter(Boolean)
-    : [];
-  const unknownPerformerName = intl.formatMessage({
-    id: "component_tagger.results.unnamed",
-    defaultMessage: "Unnamed",
-  });
-  return {
-    id:
-      performer.stored_id ??
-      performer.remote_site_id ??
-      null,
-    name: performer.name ?? unknownPerformerName,
-    alias_list: aliasList,
-    disambiguation: performer.disambiguation ?? null,
-    gender: performer.gender ?? null,
-    birthdate: performer.birthdate ?? null,
-    death_date: performer.death_date ?? null,
-    country: performer.country ?? null,
-    image_path: performer.images?.[0] ?? null,
-    tags: [],
-    custom_fields: [],
-    stash_ids: [],
-    favorite: false,
-    ignore_auto_tag: false,
-    scene_count: null,
-    image_count: null,
-    gallery_count: null,
-    group_count: null,
-    performer_count: null,
-    o_counter: null,
-    rating100: null,
-    urls: performer.urls ?? [],
-  } as unknown as GQL.PerformerDataFragment;
-};
+export const LocalPerformerCard = ({
+  performer,
+}: {
+  performer: GQL.PerformerDataFragment;
+}) => (
+  <div className="tag-popover-card tagger-matched-performer-popover">
+    <PerformerCard performer={performer} zoomIndex={0} />
+  </div>
+);
 
-const ScrapedPerformerCard = ({
+export const RemotePerformerCard = ({
   performer,
 }: {
   performer: GQL.ScrapedPerformer;
 }) => {
   const intl = useIntl();
+  const unknownPerformerName = intl.formatMessage({
+    id: "component_tagger.results.unnamed",
+    defaultMessage: "Unnamed",
+  });
+  const name = performer.name ?? unknownPerformerName;
+  const age = TextUtils.age(performer.birthdate, performer.death_date);
+  const ageString = intl.formatMessage(
+    { id: "media_info.performer_card.age" },
+    {
+      age,
+      years_old: intl.formatMessage({
+        id: "years_old",
+        defaultMessage: "years old",
+      }),
+    }
+  );
+
   return (
     <div className="tag-popover-card tagger-scraped-performer-popover">
-      <PerformerCard
-        performer={toPerformerCardData(performer, intl)}
-        zoomIndex={0}
-      />
+      <div className="card performer-card zoom-0">
+        <div className="thumbnail-section">
+          <img
+            loading="lazy"
+            className="performer-card-image"
+            alt={name}
+            src={performer.images?.[0] ?? ""}
+          />
+          {performer.country && (
+            <CountryFlag
+              className="performer-card__country-flag"
+              country={performer.country}
+              includeOverlay
+            />
+          )}
+        </div>
+        <div className="card-section">
+          <div className="performer-card__title">
+            <GenderIcon className="gender-icon" gender={performer.gender} />
+            <span className="performer-name">{name}</span>
+            {performer.disambiguation && (
+              <span className="performer-disambiguation">
+                {` (${performer.disambiguation})`}
+              </span>
+            )}
+          </div>
+          {age !== 0 && <div className="performer-card__age">{ageString}</div>}
+        </div>
+      </div>
     </div>
   );
 };
@@ -89,7 +101,7 @@ export const ScrapedPerformerPreview = ({
       placement={placement}
       enterDelay={500}
       leaveDelay={100}
-      content={<ScrapedPerformerCard performer={performer} />}
+      content={<RemotePerformerCard performer={performer} />}
     >
       {children}
     </HoverPopover>

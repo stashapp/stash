@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import * as GQL from "src/core/generated-graphql";
-import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { useConfigurationContext } from "src/hooks/Config";
+import { LocalPerformerCard } from "./ScrapedPerformerPreview";
 
 interface IPerformerDeltaRow {
   label: string;
@@ -46,8 +46,8 @@ export const MatchedPerformerPreview = ({
       enterDelay={500}
       leaveDelay={100}
       content={
-        <div className="tag-popover-card tagger-matched-performer-popover">
-          <PerformerCard performer={performer} zoomIndex={0} />
+        <div>
+          <LocalPerformerCard performer={performer} />
           {(warningStashID || deltaRows.length > 0) && (
             <div className="tagger-matched-performer-popover-extra">
               {warningStashID && (
