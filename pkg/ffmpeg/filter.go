@@ -36,6 +36,12 @@ func (f VideoFilter) ScaleMaxSize(maxDimensions int) VideoFilter {
 	return f.Append(fmt.Sprintf("scale=%v:%v:force_original_aspect_ratio=decrease", maxDimensions, maxDimensions))
 }
 
+// ScaledHeight returns the height a source would have if scaled to targetWidth
+// with preserved aspect ratio, rounded down to an even value.
+func ScaledHeight(width, height, targetWidth int) int {
+	return (targetWidth * height / width) &^ 1
+}
+
 // ScaleMax scales to reqHeight (0 = source height), optionally clamped to a
 // maxWidth x maxHeight rect. Aspect ratio is preserved.
 func (f VideoFilter) ScaleMax(width, height, reqHeight, maxWidth, maxHeight int) VideoFilter {

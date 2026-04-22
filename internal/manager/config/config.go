@@ -98,8 +98,9 @@ const (
 	SpriteScreenshotSize        = "sprite_screenshot_width"
 	spriteScreenshotSizeDefault = 160
 
-	PreviewPreset                 = "preview_preset"
-	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
+	PreviewPreset                  = "preview_preset"
+	TranscodeHardwareAcceleration  = "ffmpeg.hardware_acceleration"
+	GenerationHardwareAcceleration = "ffmpeg.hardware_acceleration_generate"
 
 	SequentialScanning        = "sequential_scanning"
 	SequentialScanningDefault = false
@@ -1077,6 +1078,10 @@ func (i *Config) GetPreviewPreset() models.PreviewPreset {
 
 func (i *Config) GetTranscodeHardwareAcceleration() bool {
 	return i.getBool(TranscodeHardwareAcceleration)
+}
+
+func (i *Config) GetGenerationHardwareAcceleration() bool {
+	return i.getBool(GenerationHardwareAcceleration)
 }
 
 func (i *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {

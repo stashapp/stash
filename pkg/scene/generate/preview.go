@@ -21,6 +21,8 @@ const (
 
 	scenePreviewImageFPS = 12
 
+	scenePreviewCRF = 21
+
 	minSegmentDuration = 0.75
 )
 
@@ -68,8 +70,8 @@ func (g PreviewOptions) getStepSizeAndOffset(videoDuration float64) (stepSize fl
 	return
 }
 
-func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration float64, hash string, options PreviewOptions, fallback bool, useVsync2 bool) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) PreviewVideo(ctx context.Context, path string, width, height int, videoStreamDuration float64, hash string, options PreviewOptions, fallback bool, useVsync2 bool) error {
+	lockCtx := g.LockManager.ReadLock(ctx, path)
 	defer lockCtx.Cancel()
 
 	output := g.ScenePaths.GetVideoPreviewPath(hash)
@@ -79,9 +81,9 @@ func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration
 		}
 	}
 
-	logger.Infof("[generator] generating video preview for %s", input)
+	logger.Infof("[generator] generating video preview for %s", path)
 
-	if err := g.generateFile(lockCtx, g.ScenePaths, mp4Pattern, output, g.previewVideo(input, videoDuration, options, fallback, useVsync2)); err != nil {
+	if err := g.generateFile(lockCtx, g.ScenePaths, mp4Pattern, output, g.previewVideo(path, width, height, videoStreamDuration, options, fallback, useVsync2)); err != nil {
 		return err
 	}
 
@@ -90,10 +92,10 @@ func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration
 	return nil
 }
 
-func (g *Generator) previewVideo(input string, videoDuration float64, options PreviewOptions, fallback bool, useVsync2 bool) generateFn {
+func (g *Generator) previewVideo(path string, width, height int, videoStreamDuration float64, options PreviewOptions, fallback bool, useVsync2 bool) generateFn {
 	// #2496 - generate a single preview video for videos shorter than segments * segment duration
-	if videoDuration < options.SegmentDuration*float64(options.Segments) {
-		return g.previewVideoSingle(input, videoDuration, options, fallback, useVsync2)
+	if videoStreamDuration < options.SegmentDuration*float64(options.Segments) {
+		return g.previewVideoSingle(path, width, height, videoStreamDuration, options, fallback, useVsync2)
 	}
 
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
@@ -103,7 +105,10 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 		// remove tmpFiles when done
 		defer func() { removeFiles(tmpFiles) }()
 
-		stepSize, offset := options.getStepSizeAndOffset(videoDuration)
+		stepSize, offset := options.getStepSizeAndOffset(videoStreamDuration)
+
+		targetHeight := ffmpeg.ScaledHeight(width, height, scenePreviewWidth)
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, path, width, height, targetHeight)
 
 		segmentDuration := options.SegmentDuration
 		// TODO - move this out into calling function
@@ -131,7 +136,7 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 				Preset:     options.Preset,
 			}
 
-			if err := g.previewVideoChunk(lockCtx, input, chunkOptions, fallback, useVsync2); err != nil {
+			if err := g.previewVideoChunk(lockCtx, path, width, height, chunkOptions, fallback, useVsync2, codec, fullhw); err != nil {
 				return err
 			}
 		}
@@ -150,17 +155,20 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 	}
 }
 
-func (g *Generator) previewVideoSingle(input string, videoDuration float64, options PreviewOptions, fallback bool, useVsync2 bool) generateFn {
+func (g *Generator) previewVideoSingle(path string, width, height int, videoStreamDuration float64, options PreviewOptions, fallback bool, useVsync2 bool) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
+		targetHeight := ffmpeg.ScaledHeight(width, height, scenePreviewWidth)
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, path, width, height, targetHeight)
+
 		chunkOptions := previewChunkOptions{
 			StartTime:  0,
-			Duration:   videoDuration,
+			Duration:   videoStreamDuration,
 			OutputPath: tmpFn,
 			Audio:      options.Audio,
 			Preset:     options.Preset,
 		}
 
-		return g.previewVideoChunk(lockCtx, input, chunkOptions, fallback, useVsync2)
+		return g.previewVideoChunk(lockCtx, path, width, height, chunkOptions, fallback, useVsync2, codec, fullhw)
 	}
 }
 
@@ -172,22 +180,16 @@ type previewChunkOptions struct {
 	Preset     string
 }
 
-func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, options previewChunkOptions, fallback bool, useVsync2 bool) error {
-	var videoFilter ffmpeg.VideoFilter
-	videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
+func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, path string, width, height int, options previewChunkOptions, fallback bool, useVsync2 bool, codec ffmpeg.VideoCodec, fullhw bool) error {
+	targetHeight := ffmpeg.ScaledHeight(width, height, scenePreviewWidth)
 
-	var videoArgs ffmpeg.Args
+	videoFilter := g.Encoder.HWMaxResFilter(codec, width, height, targetHeight, fullhw)
+
+	videoArgs := codec.ExtraArgsHQ(options.Preset, scenePreviewCRF)
 	videoArgs = videoArgs.VideoFilter(videoFilter)
+	videoArgs = append(videoArgs, "-strict", "-2")
 
-	videoArgs = append(videoArgs,
-		"-pix_fmt", "yuv420p",
-		"-profile:v", "high",
-		"-level", "4.2",
-		"-preset", options.Preset,
-		"-crf", "21",
-		"-threads", "4",
-		"-strict", "-2",
-	)
+	extraInputArgs := g.Encoder.HWDeviceInit(g.FFMpegConfig.GetTranscodeInputArgs(), codec, fullhw)
 
 	if useVsync2 {
 		videoArgs = append(videoArgs, "-vsync", "2")
@@ -201,10 +203,10 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 		XError:   !fallback,
 		SlowSeek: fallback,
 
-		VideoCodec: ffmpeg.VideoCodecLibX264,
+		VideoCodec: codec,
 		VideoArgs:  videoArgs,
 
-		ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+		ExtraInputArgs:  extraInputArgs,
 		ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 	}
 
@@ -216,7 +218,7 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 		trimOptions.AudioArgs = audioArgs
 	}
 
-	args := transcoder.Transcode(fn, trimOptions)
+	args := transcoder.Transcode(path, trimOptions)
 
 	return g.generate(lockCtx, args)
 }

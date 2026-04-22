@@ -31,6 +31,7 @@ func (t *GenerateClipPreviewTask) Start(ctx context.Context) {
 		InputArgs:  GetInstance().Config.GetTranscodeInputArgs(),
 		OutputArgs: GetInstance().Config.GetTranscodeOutputArgs(),
 		Preset:     GetInstance().Config.GetPreviewPreset().String(),
+		HWAccel:    GetInstance().Config.GetGenerationHardwareAcceleration(),
 	}
 
 	encoder := image.NewThumbnailEncoder(GetInstance().FFMpeg, GetInstance().FFProbe, clipPreviewOptions)
