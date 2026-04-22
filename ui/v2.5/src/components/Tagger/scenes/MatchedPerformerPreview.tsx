@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { useConfigurationContext } from "src/hooks/Config";
@@ -12,30 +13,206 @@ interface IPerformerDeltaRow {
 
 interface IMatchedPerformerPreviewProps {
   performerID?: string | null;
-  performer?: GQL.PerformerDataFragment | null;
+  scrapedPerformer: GQL.ScrapedPerformer;
+  endpoint?: string;
   placement?: Placement;
-  deltaRows?: IPerformerDeltaRow[];
-  warningStashID?: Pick<GQL.StashId, "endpoint" | "stash_id">;
   children?: ReactNode;
 }
 
+const normalizeValue = (value: unknown) =>
+  (() => {
+    const text = String(value ?? "").trim();
+    if (!text) return "";
+
+    const isNumericLike = /^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(text);
+    if (isNumericLike) {
+      const numeric = Number(text);
+      if (!Number.isNaN(numeric)) {
+        return String(numeric);
+      }
+    }
+
+    return text.toLowerCase();
+  })();
+
+const toStringOrNull = (value: unknown) => {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text.length > 0 ? text : null;
+};
+
+const pushDeltaIfDifferent = (
+  rows: IPerformerDeltaRow[],
+  label: string,
+  remoteValue: unknown,
+  localValue: unknown
+) => {
+  const remoteText = toStringOrNull(remoteValue);
+  if (!remoteText) return;
+
+  if (normalizeValue(remoteText) === normalizeValue(localValue)) return;
+  rows.push({ label, value: remoteText });
+};
+
+const buildPerformerDeltaRows = (
+  remote: GQL.ScrapedPerformer,
+  local: GQL.PerformerDataFragment,
+  intl: IntlShape
+): IPerformerDeltaRow[] => {
+  const rows: IPerformerDeltaRow[] = [];
+
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "birthdate", defaultMessage: "Birthdate" }),
+    remote.birthdate,
+    local.birthdate
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "death_date", defaultMessage: "Death Date" }),
+    remote.death_date,
+    local.death_date
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "ethnicity", defaultMessage: "Ethnicity" }),
+    remote.ethnicity,
+    local.ethnicity
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "hair_color", defaultMessage: "Hair Color" }),
+    remote.hair_color,
+    local.hair_color
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "eye_color", defaultMessage: "Eye Color" }),
+    remote.eye_color,
+    local.eye_color
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "height", defaultMessage: "Height" }),
+    remote.height,
+    local.height_cm
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "weight", defaultMessage: "Weight" }),
+    remote.weight,
+    local.weight
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "penis_length", defaultMessage: "Penis Length" }),
+    remote.penis_length,
+    local.penis_length
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "circumcised", defaultMessage: "Circumcised" }),
+    remote.circumcised,
+    local.circumcised
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "measurements", defaultMessage: "Measurements" }),
+    remote.measurements,
+    local.measurements
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "fake_tits", defaultMessage: "Fake Tits" }),
+    remote.fake_tits,
+    local.fake_tits
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "tattoos", defaultMessage: "Tattoos" }),
+    remote.tattoos,
+    local.tattoos
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "piercings", defaultMessage: "Piercings" }),
+    remote.piercings,
+    local.piercings
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "career_start", defaultMessage: "Career Start" }),
+    remote.career_start,
+    local.career_start
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "career_end", defaultMessage: "Career End" }),
+    remote.career_end,
+    local.career_end
+  );
+
+  const remoteAliasesCount = remote.aliases
+    ? remote.aliases
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean).length
+    : 0;
+  const localAliasesCount = local.alias_list?.length ?? 0;
+  if (remoteAliasesCount > localAliasesCount) {
+    rows.push({
+      label: intl.formatMessage({ id: "aliases", defaultMessage: "Aliases" }),
+      value: String(remoteAliasesCount),
+    });
+  }
+
+  const remoteUrlsCount = remote.urls?.length ?? 0;
+  const localUrlsCount = local.urls?.length ?? 0;
+  if (remoteUrlsCount > localUrlsCount) {
+    rows.push({
+      label: intl.formatMessage({ id: "urls", defaultMessage: "URLs" }),
+      value: String(remoteUrlsCount),
+    });
+  }
+
+  return rows;
+};
+
 export const MatchedPerformerPreview = ({
   performerID,
-  performer,
+  scrapedPerformer,
+  endpoint,
   placement = "bottom",
-  deltaRows = [],
-  warningStashID,
   children,
 }: IMatchedPerformerPreviewProps) => {
+  const intl = useIntl();
   const { configuration: config } = useConfigurationContext();
   const showPerformerCardOnHover = config?.ui.showTagCardOnHover ?? true;
+  const [isOpened, setIsOpened] = useState(false);
+  const { data: selectedPerformerData, loading: selectedPerformerLoading } =
+    GQL.useFindPerformerQuery({
+      variables: { id: performerID ?? "" },
+      skip: !performerID || !isOpened,
+    });
+  const performer = selectedPerformerData?.findPerformer;
+  const warningStashID =
+    endpoint && scrapedPerformer.remote_site_id && performer
+      ? performer.stash_ids.find(
+          (stashID) =>
+            stashID.endpoint === endpoint &&
+            stashID.stash_id !== scrapedPerformer.remote_site_id
+        )
+      : undefined;
+  const deltaRows = performer
+    ? buildPerformerDeltaRows(scrapedPerformer, performer, intl)
+    : [];
   const warningEndpointName = warningStashID
     ? config?.general.stashBoxes.find(
         (sb) => sb.endpoint === warningStashID.endpoint
       )?.name ?? warningStashID.endpoint
     : null;
 
-  if (!performerID || !performer || !showPerformerCardOnHover) {
+  if (!performerID || !showPerformerCardOnHover) {
     return <>{children}</>;
   }
 
@@ -45,9 +222,21 @@ export const MatchedPerformerPreview = ({
       placement={placement}
       enterDelay={500}
       leaveDelay={100}
+      onOpen={() => setIsOpened(true)}
       content={
         <div>
-          <LocalPerformerCard performer={performer} />
+          {performer ? (
+            <LocalPerformerCard performer={performer} />
+          ) : (
+            <div className="tag-popover-card tagger-matched-performer-popover p-3">
+              {selectedPerformerLoading ? (
+                <FormattedMessage
+                  id="ui.loading.generic"
+                  defaultMessage="Loading..."
+                />
+              ) : null}
+            </div>
+          )}
           {(warningStashID || deltaRows.length > 0) && (
             <div className="tagger-matched-performer-popover-extra">
               {warningStashID && (

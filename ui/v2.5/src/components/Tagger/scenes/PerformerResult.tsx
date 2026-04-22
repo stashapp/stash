@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { FormattedMessage, IntlShape, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { OptionalField } from "../IncludeButton";
@@ -14,170 +14,6 @@ import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
 import { MatchedPerformerPreview } from "./MatchedPerformerPreview";
 import { ScrapedPerformerPreview } from "./ScrapedPerformerPreview";
-
-interface IPerformerDeltaRow {
-  label: string;
-  value: string;
-}
-
-const normalizeValue = (value: unknown) =>
-  (() => {
-    const text = String(value ?? "").trim();
-    if (!text) return "";
-
-    const isNumericLike = /^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(text);
-    if (isNumericLike) {
-      const numeric = Number(text);
-      if (!Number.isNaN(numeric)) {
-        return String(numeric);
-      }
-    }
-
-    return text.toLowerCase();
-  })();
-
-const toStringOrNull = (value: unknown) => {
-  if (value === null || value === undefined) return null;
-  const text = String(value).trim();
-  return text.length > 0 ? text : null;
-};
-
-const pushDeltaIfDifferent = (
-  rows: IPerformerDeltaRow[],
-  label: string,
-  remoteValue: unknown,
-  localValue: unknown
-) => {
-  const remoteText = toStringOrNull(remoteValue);
-  if (!remoteText) return;
-
-  if (normalizeValue(remoteText) === normalizeValue(localValue)) return;
-  rows.push({ label, value: remoteText });
-};
-
-const buildPerformerDeltaRows = (
-  remote: GQL.ScrapedPerformer,
-  local: GQL.PerformerDataFragment,
-  intl: IntlShape
-): IPerformerDeltaRow[] => {
-  const rows: IPerformerDeltaRow[] = [];
-
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "birthdate", defaultMessage: "Birthdate" }),
-    remote.birthdate,
-    local.birthdate
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "death_date", defaultMessage: "Death Date" }),
-    remote.death_date,
-    local.death_date
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "ethnicity", defaultMessage: "Ethnicity" }),
-    remote.ethnicity,
-    local.ethnicity
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "hair_color", defaultMessage: "Hair Color" }),
-    remote.hair_color,
-    local.hair_color
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "eye_color", defaultMessage: "Eye Color" }),
-    remote.eye_color,
-    local.eye_color
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "height", defaultMessage: "Height" }),
-    remote.height,
-    local.height_cm
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "weight", defaultMessage: "Weight" }),
-    remote.weight,
-    local.weight
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "penis_length", defaultMessage: "Penis Length" }),
-    remote.penis_length,
-    local.penis_length
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "circumcised", defaultMessage: "Circumcised" }),
-    remote.circumcised,
-    local.circumcised
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "measurements", defaultMessage: "Measurements" }),
-    remote.measurements,
-    local.measurements
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "fake_tits", defaultMessage: "Fake Tits" }),
-    remote.fake_tits,
-    local.fake_tits
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "tattoos", defaultMessage: "Tattoos" }),
-    remote.tattoos,
-    local.tattoos
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "piercings", defaultMessage: "Piercings" }),
-    remote.piercings,
-    local.piercings
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "career_start", defaultMessage: "Career Start" }),
-    remote.career_start,
-    local.career_start
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "career_end", defaultMessage: "Career End" }),
-    remote.career_end,
-    local.career_end
-  );
-
-  const remoteAliasesCount = remote.aliases
-    ? remote.aliases
-        .split(",")
-        .map((a) => a.trim())
-        .filter(Boolean).length
-    : 0;
-  const localAliasesCount = local.alias_list?.length ?? 0;
-  if (remoteAliasesCount > localAliasesCount) {
-    rows.push({
-      label: intl.formatMessage({ id: "aliases", defaultMessage: "Aliases" }),
-      value: String(remoteAliasesCount),
-    });
-  }
-
-  const remoteUrlsCount = remote.urls?.length ?? 0;
-  const localUrlsCount = local.urls?.length ?? 0;
-  if (remoteUrlsCount > localUrlsCount) {
-    rows.push({
-      label: intl.formatMessage({ id: "urls", defaultMessage: "URLs" }),
-      value: String(remoteUrlsCount),
-    });
-  }
-
-  return rows;
-};
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -227,7 +63,6 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   endpoint,
   ageFromDate,
 }) => {
-  const intl = useIntl();
   const { data: performerData, loading: stashLoading } =
     GQL.useFindPerformerQuery({
       variables: { id: performer.stored_id ?? "" },
@@ -241,12 +76,6 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
-  const { data: selectedPerformerData, loading: selectedPerformerLoading } =
-    GQL.useFindPerformerQuery({
-      variables: { id: selectedID ?? "" },
-      skip: !selectedID,
-    });
-  const selectedPerformerDetails = selectedPerformerData?.findPerformer;
 
   const stashboxPerformerPrefix = endpoint
     ? `${getStashboxBase(endpoint)}performers/`
@@ -279,13 +108,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     selectPerformer(undefined);
   };
 
-  if (stashLoading || selectedPerformerLoading) {
-    return (
-      <div>
-        <FormattedMessage id="loading" defaultMessage="Loading..." />
-      </div>
-    );
-  }
+  if (stashLoading) return <div>Loading performer</div>;
 
   if (matchedPerformer && matchedStashID) {
     return (
@@ -327,17 +150,6 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   }
 
   const selectedSource = !selectedID ? "skip" : "existing";
-  const selectedPerformerConflictStashID =
-    endpoint && performer.remote_site_id && selectedPerformerDetails
-      ? selectedPerformerDetails.stash_ids.find(
-          (stashID) =>
-            stashID.endpoint === endpoint &&
-            stashID.stash_id !== performer.remote_site_id
-        )
-      : undefined;
-  const selectedPerformerDeltaRows = selectedPerformerDetails
-    ? buildPerformerDeltaRows(performer, selectedPerformerDetails, intl)
-    : [];
 
   const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
     return stashboxPerformerPrefix && id
@@ -370,9 +182,8 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </Button>
         <MatchedPerformerPreview
           performerID={selectedPerformer?.id}
-          performer={selectedPerformerDetails}
-          warningStashID={selectedPerformerConflictStashID}
-          deltaRows={selectedPerformerDeltaRows}
+          scrapedPerformer={performer}
+          endpoint={endpoint}
         >
           <PerformerSelect
             values={selectedPerformer ? [selectedPerformer] : []}
