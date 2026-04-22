@@ -11,8 +11,12 @@ import (
 
 const (
 	markerPreviewWidth        = 640
-	maxMarkerPreviewDuration  = 20
 	markerPreviewAudioBitrate = "64k"
+
+	// Fallback duration for markers that lack a usable explicit end time
+	// (nil EndSeconds, or EndSeconds <= start). Not user-configurable;
+	// markers wanting a specific duration should set an end time.
+	markerPreviewDefaultDuration = 20
 
 	markerImageDuration = 5
 	markerWebpFPS       = 12
@@ -20,7 +24,7 @@ const (
 	markerScreenshotQuality = 2
 )
 
-func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool) error {
+func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool, maxDuration int) error {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
@@ -31,11 +35,21 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	duration := float64(maxMarkerPreviewDuration)
+	duration := float64(markerPreviewDefaultDuration)
 
-	// don't allow preview to exceed max duration
-	if endSeconds != nil && *endSeconds-seconds < maxMarkerPreviewDuration {
-		duration = float64(*endSeconds) - seconds
+	// Honor the marker's explicit interval when present and positive, capped
+	// by the configured safety ceiling. maxDuration <= 0 disables the ceiling.
+	if endSeconds != nil {
+		interval := *endSeconds - seconds
+		if interval > 0 {
+			if maxDuration <= 0 || interval <= float64(maxDuration) {
+				duration = interval
+			} else {
+				duration = float64(maxDuration)
+			}
+		} else {
+			logger.Warnf("[generator] marker at %.2fs has non-positive interval (end=%.2f); falling back to %ds default", seconds, *endSeconds, markerPreviewDefaultDuration)
+		}
 	}
 
 	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{

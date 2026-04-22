@@ -101,6 +101,8 @@ input ConfigGeneralInput {
   previewSegments: Int
   "Preview segment duration, in seconds"
   previewSegmentDuration: Float
+  "Maximum duration (in seconds) for generated marker preview videos. 0 disables the ceiling."
+  maxMarkerPreviewDuration: Int
   "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String
   "Duration of end of video to exclude when generating previews"
@@ -239,6 +241,8 @@ type ConfigGeneralResult {
   previewSegments: Int!
   "Preview segment duration, in seconds"
   previewSegmentDuration: Float!
+  "Maximum duration (in seconds) for generated marker preview videos. 0 disables the ceiling."
+  maxMarkerPreviewDuration: Int!
   "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String!
   "Duration of end of video to exclude when generating previews"

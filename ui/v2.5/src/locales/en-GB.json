@@ -418,6 +418,8 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
+      "max_marker_preview_duration_desc": "Ceiling (in seconds) applied to generated marker preview videos when the marker has an explicit end time. Protects against unexpectedly long previews from imports or data entry mistakes. Set to 0 to disable the ceiling and honor the marker's end time verbatim.",
+      "max_marker_preview_duration_head": "Max marker preview duration",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams.",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes.",
