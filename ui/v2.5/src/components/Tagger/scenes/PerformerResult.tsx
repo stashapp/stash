@@ -21,9 +21,20 @@ interface IPerformerDeltaRow {
 }
 
 const normalizeValue = (value: unknown) =>
-  String(value ?? "")
-    .trim()
-    .toLowerCase();
+  (() => {
+    const text = String(value ?? "").trim();
+    if (!text) return "";
+
+    const isNumericLike = /^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(text);
+    if (isNumericLike) {
+      const numeric = Number(text);
+      if (!Number.isNaN(numeric)) {
+        return String(numeric);
+      }
+    }
+
+    return text.toLowerCase();
+  })();
 
 const toStringOrNull = (value: unknown) => {
   if (value === null || value === undefined) return null;
