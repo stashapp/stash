@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useConfigurationContext } from "src/hooks/Config";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
@@ -11,22 +12,26 @@ interface IScrapedPerformerPreviewProps {
   children?: ReactNode;
 }
 
-const toPerformerCardData = (performer: GQL.ScrapedPerformer) => {
+const toPerformerCardData = (
+  performer: GQL.ScrapedPerformer,
+  intl: IntlShape
+) => {
   const aliasList = performer.aliases
     ? performer.aliases
         .split(",")
         .map((a) => a.trim())
         .filter(Boolean)
     : [];
-
+  const unknownPerformerName = intl.formatMessage({
+    id: "component_tagger.results.unnamed",
+    defaultMessage: "Unnamed",
+  });
   return {
     id:
       performer.stored_id ??
       performer.remote_site_id ??
-      `scraped-${
-        performer.name?.replace(/\s+/g, "-").toLowerCase() ?? "performer"
-      }`,
-    name: performer.name ?? "Unknown performer",
+      null,
+    name: performer.name ?? unknownPerformerName,
     alias_list: aliasList,
     disambiguation: performer.disambiguation ?? null,
     gender: performer.gender ?? null,
@@ -55,9 +60,13 @@ const ScrapedPerformerCard = ({
 }: {
   performer: GQL.ScrapedPerformer;
 }) => {
+  const intl = useIntl();
   return (
     <div className="tag-popover-card tagger-scraped-performer-popover">
-      <PerformerCard performer={toPerformerCardData(performer)} zoomIndex={0} />
+      <PerformerCard
+        performer={toPerformerCardData(performer, intl)}
+        zoomIndex={0}
+      />
     </div>
   );
 };
