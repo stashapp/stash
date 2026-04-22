@@ -459,5 +459,6 @@ func imageToUpdateInput(gallery *models.Image) models.ImageUpdateInput {
 		Details: &gallery.Details,
 		Urls:    urls,
 		Date:    dateToStringPtr(gallery.Date),
+		Path:    &gallery.Path,
 	}
 }
