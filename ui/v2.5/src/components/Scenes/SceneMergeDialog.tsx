@@ -587,9 +587,17 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
           originalField={
-            <StashIDsField values={stashIDs?.originalValue ?? []} />
+            <StashIDsField
+              values={stashIDs?.originalValue ?? []}
+              linkType="scenes"
+            />
           }
-          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
+          newField={
+            <StashIDsField
+              values={stashIDs?.newValue ?? []}
+              linkType="scenes"
+            />
+          }
           onChange={(value) => setStashIDs(value)}
           alwaysShow={
             !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
