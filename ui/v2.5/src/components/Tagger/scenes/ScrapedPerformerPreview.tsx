@@ -8,6 +8,7 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import GenderIcon from "src/components/Performers/GenderIcon";
 import { CountryFlag } from "src/components/Shared/CountryFlag";
 import TextUtils from "src/utils/text";
+import { stringToGender } from "src/utils/gender";
 
 interface IScrapedPerformerPreviewProps {
   performer: GQL.ScrapedPerformer;
@@ -68,7 +69,10 @@ export const RemotePerformerCard = ({
         </div>
         <div className="card-section">
           <div className="performer-card__title">
-            <GenderIcon className="gender-icon" gender={performer.gender} />
+            <GenderIcon
+              className="gender-icon"
+              gender={stringToGender(performer.gender, true)}
+            />
             <span className="performer-name">{name}</span>
             {performer.disambiguation && (
               <span className="performer-disambiguation">
