@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { OptionalField } from "../IncludeButton";
@@ -46,45 +46,101 @@ const pushDeltaIfDifferent = (
 
 const buildPerformerDeltaRows = (
   remote: GQL.ScrapedPerformer,
-  local: GQL.PerformerDataFragment
+  local: GQL.PerformerDataFragment,
+  intl: IntlShape
 ): IPerformerDeltaRow[] => {
   const rows: IPerformerDeltaRow[] = [];
 
-  pushDeltaIfDifferent(rows, "Birthdate", remote.birthdate, local.birthdate);
-  pushDeltaIfDifferent(rows, "Death Date", remote.death_date, local.death_date);
-  pushDeltaIfDifferent(rows, "Ethnicity", remote.ethnicity, local.ethnicity);
-  pushDeltaIfDifferent(rows, "Hair Color", remote.hair_color, local.hair_color);
-  pushDeltaIfDifferent(rows, "Eye Color", remote.eye_color, local.eye_color);
-  pushDeltaIfDifferent(rows, "Height", remote.height, local.height_cm);
-  pushDeltaIfDifferent(rows, "Weight", remote.weight, local.weight);
   pushDeltaIfDifferent(
     rows,
-    "Penis Length",
+    intl.formatMessage({ id: "birthdate", defaultMessage: "Birthdate" }),
+    remote.birthdate,
+    local.birthdate
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "death_date", defaultMessage: "Death Date" }),
+    remote.death_date,
+    local.death_date
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "ethnicity", defaultMessage: "Ethnicity" }),
+    remote.ethnicity,
+    local.ethnicity
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "hair_color", defaultMessage: "Hair Color" }),
+    remote.hair_color,
+    local.hair_color
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "eye_color", defaultMessage: "Eye Color" }),
+    remote.eye_color,
+    local.eye_color
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "height", defaultMessage: "Height" }),
+    remote.height,
+    local.height_cm
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "weight", defaultMessage: "Weight" }),
+    remote.weight,
+    local.weight
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "penis_length", defaultMessage: "Penis Length" }),
     remote.penis_length,
     local.penis_length
   );
   pushDeltaIfDifferent(
     rows,
-    "Circumcised",
+    intl.formatMessage({ id: "circumcised", defaultMessage: "Circumcised" }),
     remote.circumcised,
     local.circumcised
   );
   pushDeltaIfDifferent(
     rows,
-    "Measurements",
+    intl.formatMessage({ id: "measurements", defaultMessage: "Measurements" }),
     remote.measurements,
     local.measurements
   );
-  pushDeltaIfDifferent(rows, "Fake Tits", remote.fake_tits, local.fake_tits);
-  pushDeltaIfDifferent(rows, "Tattoos", remote.tattoos, local.tattoos);
-  pushDeltaIfDifferent(rows, "Piercings", remote.piercings, local.piercings);
   pushDeltaIfDifferent(
     rows,
-    "Career Start",
+    intl.formatMessage({ id: "fake_tits", defaultMessage: "Fake Tits" }),
+    remote.fake_tits,
+    local.fake_tits
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "tattoos", defaultMessage: "Tattoos" }),
+    remote.tattoos,
+    local.tattoos
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "piercings", defaultMessage: "Piercings" }),
+    remote.piercings,
+    local.piercings
+  );
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "career_start", defaultMessage: "Career Start" }),
     remote.career_start,
     local.career_start
   );
-  pushDeltaIfDifferent(rows, "Career End", remote.career_end, local.career_end);
+  pushDeltaIfDifferent(
+    rows,
+    intl.formatMessage({ id: "career_end", defaultMessage: "Career End" }),
+    remote.career_end,
+    local.career_end
+  );
 
   const remoteAliasesCount = remote.aliases
     ? remote.aliases
@@ -94,13 +150,19 @@ const buildPerformerDeltaRows = (
     : 0;
   const localAliasesCount = local.alias_list?.length ?? 0;
   if (remoteAliasesCount > localAliasesCount) {
-    rows.push({ label: "Aliases", value: String(remoteAliasesCount) });
+    rows.push({
+      label: intl.formatMessage({ id: "aliases", defaultMessage: "Aliases" }),
+      value: String(remoteAliasesCount),
+    });
   }
 
   const remoteUrlsCount = remote.urls?.length ?? 0;
   const localUrlsCount = local.urls?.length ?? 0;
   if (remoteUrlsCount > localUrlsCount) {
-    rows.push({ label: "URLs", value: String(remoteUrlsCount) });
+    rows.push({
+      label: intl.formatMessage({ id: "urls", defaultMessage: "URLs" }),
+      value: String(remoteUrlsCount),
+    });
   }
 
   return rows;
@@ -154,6 +216,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   endpoint,
   ageFromDate,
 }) => {
+  const intl = useIntl();
   const { data: performerData, loading: stashLoading } =
     GQL.useFindPerformerQuery({
       variables: { id: performer.stored_id ?? "" },
@@ -205,8 +268,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     selectPerformer(undefined);
   };
 
-  if (stashLoading || selectedPerformerLoading)
-    return <div>Loading performer</div>;
+  if (stashLoading || selectedPerformerLoading) {
+    return (
+      <div>
+        <FormattedMessage id="loading" defaultMessage="Loading..." />
+      </div>
+    );
+  }
 
   if (matchedPerformer && matchedStashID) {
     return (
@@ -257,7 +325,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         )
       : undefined;
   const selectedPerformerDeltaRows = selectedPerformerDetails
-    ? buildPerformerDeltaRows(performer, selectedPerformerDetails)
+    ? buildPerformerDeltaRows(performer, selectedPerformerDetails, intl)
     : [];
 
   const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
