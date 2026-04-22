@@ -120,7 +120,7 @@ const (
 	previewExcludeEndDefault = "0"
 
 	MaxMarkerPreviewDuration        = "max_marker_preview_duration"
-	maxMarkerPreviewDurationDefault = 20
+	maxMarkerPreviewDurationDefault = 0
 
 	WriteImageThumbnails        = "write_image_thumbnails"
 	writeImageThumbnailsDefault = true
