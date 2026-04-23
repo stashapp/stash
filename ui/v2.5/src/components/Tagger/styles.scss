@@ -95,7 +95,7 @@
   }
 }
 
-.tagger-matched-performer-popover {
+.tagger-performer-popover {
   .card {
     width: 200px;
   }
@@ -106,19 +106,9 @@
 }
 
 .tagger-matched-performer-popover-extra {
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid $secondary;
   margin-top: 0.4rem;
   padding-top: 0.5rem;
-}
-
-.tagger-scraped-performer-popover {
-  .card {
-    width: 200px;
-  }
-
-  .performer-card-image {
-    max-height: 300px;
-  }
 }
 
 .tagger-performer-delta-rows {

@@ -1,10 +1,11 @@
 import { ReactNode, useState } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
-import { FormattedMessage, IntlShape, useIntl } from "react-intl";
+import { IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { HoverPopover } from "src/components/Shared/HoverPopover";
+import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import { useConfigurationContext } from "src/hooks/Config";
-import { LocalPerformerCard } from "./ScrapedPerformerPreview";
+import TextUtils from "src/utils/text";
+import { localPerformerToPreviewData } from "./ScrapedPerformerPreview";
 
 interface IPerformerDeltaRow {
   label: string;
@@ -63,91 +64,91 @@ const buildPerformerDeltaRows = (
 
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "birthdate", defaultMessage: "Birthdate" }),
+    intl.formatMessage({ id: "birthdate" }),
     remote.birthdate,
     local.birthdate
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "death_date", defaultMessage: "Death Date" }),
+    intl.formatMessage({ id: "death_date" }),
     remote.death_date,
     local.death_date
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "ethnicity", defaultMessage: "Ethnicity" }),
+    intl.formatMessage({ id: "ethnicity" }),
     remote.ethnicity,
     local.ethnicity
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "hair_color", defaultMessage: "Hair Color" }),
+    intl.formatMessage({ id: "hair_color" }),
     remote.hair_color,
     local.hair_color
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "eye_color", defaultMessage: "Eye Color" }),
+    intl.formatMessage({ id: "eye_color" }),
     remote.eye_color,
     local.eye_color
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "height", defaultMessage: "Height" }),
+    intl.formatMessage({ id: "height" }),
     remote.height,
     local.height_cm
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "weight", defaultMessage: "Weight" }),
+    intl.formatMessage({ id: "weight" }),
     remote.weight,
     local.weight
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "penis_length", defaultMessage: "Penis Length" }),
+    intl.formatMessage({ id: "penis_length" }),
     remote.penis_length,
     local.penis_length
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "circumcised", defaultMessage: "Circumcised" }),
+    intl.formatMessage({ id: "circumcised" }),
     remote.circumcised,
     local.circumcised
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "measurements", defaultMessage: "Measurements" }),
+    intl.formatMessage({ id: "measurements" }),
     remote.measurements,
     local.measurements
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "fake_tits", defaultMessage: "Fake Tits" }),
+    intl.formatMessage({ id: "fake_tits" }),
     remote.fake_tits,
     local.fake_tits
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "tattoos", defaultMessage: "Tattoos" }),
+    intl.formatMessage({ id: "tattoos" }),
     remote.tattoos,
     local.tattoos
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "piercings", defaultMessage: "Piercings" }),
+    intl.formatMessage({ id: "piercings" }),
     remote.piercings,
     local.piercings
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "career_start", defaultMessage: "Career Start" }),
+    intl.formatMessage({ id: "career_start" }),
     remote.career_start,
     local.career_start
   );
   pushDeltaIfDifferent(
     rows,
-    intl.formatMessage({ id: "career_end", defaultMessage: "Career End" }),
+    intl.formatMessage({ id: "career_end" }),
     remote.career_end,
     local.career_end
   );
@@ -161,7 +162,7 @@ const buildPerformerDeltaRows = (
   const localAliasesCount = local.alias_list?.length ?? 0;
   if (remoteAliasesCount > localAliasesCount) {
     rows.push({
-      label: intl.formatMessage({ id: "aliases", defaultMessage: "Aliases" }),
+      label: intl.formatMessage({ id: "aliases" }),
       value: String(remoteAliasesCount),
     });
   }
@@ -170,7 +171,7 @@ const buildPerformerDeltaRows = (
   const localUrlsCount = local.urls?.length ?? 0;
   if (remoteUrlsCount > localUrlsCount) {
     rows.push({
-      label: intl.formatMessage({ id: "urls", defaultMessage: "URLs" }),
+      label: intl.formatMessage({ id: "urls" }),
       value: String(remoteUrlsCount),
     });
   }
@@ -186,6 +187,10 @@ export const MatchedPerformerPreview = ({
   children,
 }: IMatchedPerformerPreviewProps) => {
   const intl = useIntl();
+  const loadingText = intl.formatMessage({
+    id: "loading.generic",
+    defaultMessage: "Loading...",
+  });
   const { configuration: config } = useConfigurationContext();
   const showPerformerCardOnHover = config?.ui.showTagCardOnHover ?? true;
   const [isOpened, setIsOpened] = useState(false);
@@ -206,6 +211,22 @@ export const MatchedPerformerPreview = ({
   const deltaRows = performer
     ? buildPerformerDeltaRows(scrapedPerformer, performer, intl)
     : [];
+  const matchedAge = performer
+    ? TextUtils.age(performer.birthdate, performer.death_date)
+    : 0;
+  const matchedAgeString =
+    performer && matchedAge !== 0
+      ? intl.formatMessage(
+          { id: "media_info.performer_card.age" },
+          {
+            age: matchedAge,
+            years_old: intl.formatMessage({
+              id: "years_old",
+              defaultMessage: "years old",
+            }),
+          }
+        )
+      : null;
   const warningEndpointName = warningStashID
     ? config?.general.stashBoxes.find(
         (sb) => sb.endpoint === warningStashID.endpoint
@@ -217,55 +238,47 @@ export const MatchedPerformerPreview = ({
   }
 
   return (
-    <HoverPopover
-      className="d-inline-block"
-      placement={placement}
-      enterDelay={500}
-      leaveDelay={100}
-      onOpen={() => setIsOpened(true)}
-      content={
-        <div>
-          {performer ? (
-            <LocalPerformerCard performer={performer} />
-          ) : (
-            <div className="tag-popover-card tagger-matched-performer-popover p-3">
-              {selectedPerformerLoading ? (
-                <FormattedMessage
-                  id="ui.loading.generic"
-                  defaultMessage="Loading..."
-                />
-              ) : null}
-            </div>
-          )}
-          {(warningStashID || deltaRows.length > 0) && (
-            <div className="tagger-matched-performer-popover-extra">
-              {warningStashID && (
-                <div className="tagger-performer-stashid-warning">
-                  <span className="stash-id-pill">
-                    <span
-                      className="tagger-performer-stashid-warning-chip"
-                      title={warningStashID.stash_id}
-                    >
-                      {warningEndpointName}
-                    </span>
-                  </span>
-                </div>
-              )}
-              {deltaRows.length > 0 && (
-                <div className="tagger-performer-delta-rows mt-2">
-                  {deltaRows.map((row) => (
-                    <div key={row.label}>
-                      <span>{row.label}:</span> <span>{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+    <PerformerPopover
+      previewData={
+        performer
+          ? localPerformerToPreviewData(performer, matchedAgeString)
+          : undefined
       }
+      loading={selectedPerformerLoading}
+      loadingText={loadingText}
+      cardExtras={
+        warningStashID || deltaRows.length > 0 ? (
+          <div className="tagger-matched-performer-popover-extra">
+            {warningStashID && (
+              <div className="tagger-performer-stashid-warning">
+                <span className="stash-id-pill">
+                  <span
+                    className="tagger-performer-stashid-warning-chip"
+                    title={warningStashID.stash_id}
+                  >
+                    {warningEndpointName}
+                  </span>
+                </span>
+              </div>
+            )}
+            {deltaRows.length > 0 && (
+              <div className="tagger-performer-delta-rows mt-2">
+                {deltaRows.map((row) => (
+                  <div key={row.label}>
+                    <span>{row.label}:</span> <span>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null
+      }
+      triggerClassName="d-inline-block"
+      placement={placement}
+      onOpen={() => setIsOpened(true)}
+      onClose={() => setIsOpened(false)}
     >
       {children}
-    </HoverPopover>
+    </PerformerPopover>
   );
 };

@@ -2,11 +2,10 @@ import { ReactNode } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { useConfigurationContext } from "src/hooks/Config";
-import { HoverPopover } from "src/components/Shared/HoverPopover";
-import { PerformerCard } from "src/components/Performers/PerformerCard";
-import GenderIcon from "src/components/Performers/GenderIcon";
-import { CountryFlag } from "src/components/Shared/CountryFlag";
+import {
+  IPerformerPreviewData,
+} from "src/components/Performers/PerformerPreviewCard";
+import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import TextUtils from "src/utils/text";
 import { stringToGender } from "src/utils/gender";
 
@@ -16,21 +15,36 @@ interface IScrapedPerformerPreviewProps {
   children?: ReactNode;
 }
 
-export const LocalPerformerCard = ({
-  performer,
-}: {
-  performer: GQL.PerformerDataFragment;
-}) => (
-  <div className="tag-popover-card tagger-matched-performer-popover">
-    <PerformerCard performer={performer} zoomIndex={0} />
-  </div>
-);
+export const localPerformerToPreviewData = (
+  performer: GQL.PerformerDataFragment,
+  ageString: string | null
+): IPerformerPreviewData => ({
+  name: performer.name,
+  image: performer.image_path,
+  country: performer.country,
+  gender: performer.gender,
+  disambiguation: performer.disambiguation,
+  ageString,
+});
 
-export const RemotePerformerCard = ({
+export const scrapedPerformerToPreviewData = (
+  performer: GQL.ScrapedPerformer,
+  name: string,
+  ageString: string | null
+): IPerformerPreviewData => ({
+  name,
+  image: performer.images?.[0],
+  country: performer.country,
+  gender: stringToGender(performer.gender, true),
+  disambiguation: performer.disambiguation,
+  ageString,
+});
+
+export const ScrapedPerformerPreview = ({
   performer,
-}: {
-  performer: GQL.ScrapedPerformer;
-}) => {
+  placement = "bottom",
+  children,
+}: IScrapedPerformerPreviewProps) => {
   const intl = useIntl();
   const unknownPerformerName = intl.formatMessage({
     id: "component_tagger.results.unnamed",
@@ -48,66 +62,19 @@ export const RemotePerformerCard = ({
       }),
     }
   );
-
-  return (
-    <div className="tag-popover-card tagger-scraped-performer-popover">
-      <div className="card performer-card zoom-0">
-        <div className="thumbnail-section">
-          <img
-            loading="lazy"
-            className="performer-card-image"
-            alt={name}
-            src={performer.images?.[0] ?? ""}
-          />
-          {performer.country && (
-            <CountryFlag
-              className="performer-card__country-flag"
-              country={performer.country}
-              includeOverlay
-            />
-          )}
-        </div>
-        <div className="card-section">
-          <div className="performer-card__title">
-            <GenderIcon
-              className="gender-icon"
-              gender={stringToGender(performer.gender, true)}
-            />
-            <span className="performer-name">{name}</span>
-            {performer.disambiguation && (
-              <span className="performer-disambiguation">
-                {` (${performer.disambiguation})`}
-              </span>
-            )}
-          </div>
-          {age !== 0 && <div className="performer-card__age">{ageString}</div>}
-        </div>
-      </div>
-    </div>
+  const previewData = scrapedPerformerToPreviewData(
+    performer,
+    name,
+    age !== 0 ? ageString : null
   );
-};
-
-export const ScrapedPerformerPreview = ({
-  performer,
-  placement = "bottom",
-  children,
-}: IScrapedPerformerPreviewProps) => {
-  const { configuration: config } = useConfigurationContext();
-  const showPerformerCardOnHover = config?.ui.showTagCardOnHover ?? true;
-
-  if (!showPerformerCardOnHover) {
-    return <>{children}</>;
-  }
 
   return (
-    <HoverPopover
-      className="d-inline-block"
+    <PerformerPopover
+      previewData={previewData}
       placement={placement}
-      enterDelay={500}
-      leaveDelay={100}
-      content={<RemotePerformerCard performer={performer} />}
+      triggerClassName="d-inline-block"
     >
       {children}
-    </HoverPopover>
+    </PerformerPopover>
   );
 };
