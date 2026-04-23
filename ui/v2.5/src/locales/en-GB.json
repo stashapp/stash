@@ -509,7 +509,11 @@
       "anonymising_database": "Anonymising database",
       "auto_tag": {
         "auto_tagging_all_paths": "Auto tagging all paths",
-        "auto_tagging_paths": "Auto tagging the following paths"
+        "auto_tagging_paths": "Auto tagging the following paths",
+        "skip_warning": {
+          "description": "Skip the confirmation warning shown before running auto tag.",
+          "heading": "Skip auto tag warning"
+        }
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
       "auto_tag_confirm": "This will attempt to match your content against existing metadata.",
@@ -1002,6 +1006,7 @@
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_again": "Don't show this warning again",
     "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_count_title": "Edit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",

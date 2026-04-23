@@ -428,6 +428,9 @@ input ConfigInterfaceInput {
   "Set to true to disable creating new objects via the dropdown menus"
   disableDropdownCreate: ConfigDisableDropdownCreateInput
 
+  "Set to true to skip the auto tag confirmation warning"
+  disableAutoTagWarning: Boolean
+
   "Handy Connection Key"
   handyKey: String
   "Funscript Time Offset"
@@ -504,6 +507,9 @@ type ConfigInterfaceResult {
 
   "Fields are true if creating via dropdown menus are disabled"
   disableDropdownCreate: ConfigDisableDropdownCreate!
+
+  "True if the auto tag confirmation warning should be skipped"
+  disableAutoTagWarning: Boolean
 
   "Handy Connection Key"
   handyKey: String

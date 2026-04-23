@@ -168,6 +168,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	useStashHostedFunscript := config.GetUseStashHostedFunscript()
 	imageLightboxOptions := config.GetImageLightboxOptions()
 	disableDropdownCreate := config.GetDisableDropdownCreate()
+	disableAutoTagWarning := config.GetDisableAutoTagWarning()
 
 	return &ConfigInterfaceResult{
 		SfwContentMode:               config.GetSFWContentMode(),
@@ -195,6 +196,8 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		ImageLightbox: &imageLightboxOptions,
 
 		DisableDropdownCreate: disableDropdownCreate,
+
+		DisableAutoTagWarning: &disableAutoTagWarning,
 
 		HandyKey:                &handyKey,
 		FunscriptOffset:         &scriptOffset,

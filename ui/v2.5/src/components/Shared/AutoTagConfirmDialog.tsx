@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { useConfigureInterface } from "src/core/StashService";
+import { SettingStateContext } from "src/components/Settings/context";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
 
@@ -31,6 +34,34 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   onCancel,
 }) => {
   const intl = useIntl();
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [configureInterface] = useConfigureInterface();
+
+  useEffect(() => {
+    if (show) {
+      setDontShowAgain(false);
+    }
+  }, [show]);
+  // route through SettingsContext when available so the Settings panel's
+  // local state reflects the change without a page refresh
+  const settingsContext = useContext(SettingStateContext);
+
+  async function handleConfirm() {
+    if (dontShowAgain) {
+      try {
+        if (settingsContext) {
+          settingsContext.saveInterface({ disableAutoTagWarning: true });
+        } else {
+          await configureInterface({
+            variables: { input: { disableAutoTagWarning: true } },
+          });
+        }
+      } catch (e) {
+        // preference persistence failure must not block the confirmed action
+      }
+    }
+    onConfirm();
+  }
 
   return (
     <ModalComponent
@@ -40,13 +71,21 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
       accept={{
         text: intl.formatMessage({ id: "actions.confirm" }),
         variant: "danger",
-        onClick: onConfirm,
+        onClick: handleConfirm,
       }}
       cancel={{
         onClick: onCancel,
       }}
     >
       <AutoTagWarning />
+      <Form.Check
+        id="auto-tag-dont-show-again"
+        checked={dontShowAgain}
+        onChange={(e) => setDontShowAgain(e.currentTarget.checked)}
+        label={intl.formatMessage({
+          id: "dialogs.dont_show_again",
+        })}
+      />
     </ModalComponent>
   );
 };

@@ -1,6 +1,7 @@
 import { Button, Dropdown, Modal, SplitButton } from "react-bootstrap";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ImageInput } from "./ImageInput";
 import { AutoTagConfirmDialog } from "./AutoTagConfirmDialog";
 import cx from "classnames";
@@ -30,8 +31,22 @@ interface IProps {
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isAutoTagAlertOpen, setIsAutoTagAlertOpen] = useState<boolean>(false);
+
+  const skipAutoTagWarning =
+    configuration?.interface.disableAutoTagWarning ?? false;
+
+  function onAutoTagClick() {
+    if (skipAutoTagWarning) {
+      if (props.onAutoTag) {
+        props.onAutoTag();
+      }
+      return;
+    }
+    setIsAutoTagAlertOpen(true);
+  }
 
   function renderEditButton() {
     if (props.isNew) return;
@@ -116,7 +131,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
           <Button
             variant="secondary"
             disabled={props.autoTagDisabled}
-            onClick={() => setIsAutoTagAlertOpen(true)}
+            onClick={onAutoTagClick}
           >
             <FormattedMessage id="actions.auto_tag" />…
           </Button>

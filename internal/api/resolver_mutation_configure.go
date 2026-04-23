@@ -538,6 +538,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		r.setConfigBool(config.DisableDropdownCreateGallery, ddc.Gallery)
 	}
 
+	r.setConfigBool(config.DisableAutoTagWarning, input.DisableAutoTagWarning)
+
 	r.setConfigString(config.HandyKey, input.HandyKey)
 	r.setConfigInt(config.FunscriptOffset, input.FunscriptOffset)
 	r.setConfigBool(config.UseStashHostedFunscript, input.UseStashHostedFunscript)

@@ -75,7 +75,13 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
-  const { ui, saveUI, loading } = useSettings();
+  const {
+    ui,
+    saveUI,
+    interface: iface,
+    saveInterface,
+    loading,
+  } = useSettings();
 
   const { taskDefaults } = ui;
 
@@ -193,6 +199,14 @@ export const LibraryTasks: React.FC = () => {
     setDialogOpenState((v) => {
       return { ...v, ...s };
     });
+  }
+
+  function onAutoTagClick() {
+    if (configuration?.interface.disableAutoTagWarning) {
+      runAutoTag();
+      return;
+    }
+    setDialogOpen({ autoTagAlert: true });
   }
 
   function renderScanDialog() {
@@ -449,7 +463,7 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => setDialogOpen({ autoTagAlert: true })}
+                onClick={onAutoTagClick}
               >
                 <FormattedMessage id="actions.auto_tag" />…
               </Button>
@@ -467,6 +481,13 @@ export const LibraryTasks: React.FC = () => {
           <AutoTagOptions
             options={autoTagOptions}
             setOptions={onSetAutoTagOptions}
+          />
+          <BooleanSetting
+            id="disable_auto_tag_warning"
+            headingID="config.tasks.auto_tag.skip_warning.heading"
+            subHeadingID="config.tasks.auto_tag.skip_warning.description"
+            checked={iface.disableAutoTagWarning ?? undefined}
+            onChange={(v) => saveInterface({ disableAutoTagWarning: v })}
           />
         </SettingGroup>
       </SettingSection>
