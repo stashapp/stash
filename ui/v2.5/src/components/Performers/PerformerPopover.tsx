@@ -6,7 +6,10 @@ import { useFindPerformer } from "../../core/StashService";
 import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerCard } from "./PerformerCard";
-import { IPerformerPreviewData, PerformerPreviewCard } from "./PerformerPreviewCard";
+import {
+  IPerformerPreviewData,
+  PerformerPreviewCard,
+} from "./PerformerPreviewCard";
 
 interface IPeromerPopoverCardProps {
   id?: string;

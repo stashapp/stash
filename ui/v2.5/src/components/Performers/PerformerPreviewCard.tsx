@@ -41,10 +41,14 @@ export const PerformerPreviewCard = ({
           <GenderIcon className="gender-icon" gender={gender} />
           <span className="performer-name">{name}</span>
           {disambiguation && (
-            <span className="performer-disambiguation">{` (${disambiguation})`}</span>
+            <span className="performer-disambiguation">
+              {` (${disambiguation})`}
+            </span>
           )}
         </div>
-        {ageString ? <div className="performer-card__age">{ageString}</div> : null}
+        {ageString ? (
+          <div className="performer-card__age">{ageString}</div>
+        ) : null}
       </div>
     </div>
   </div>
