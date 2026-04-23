@@ -5,6 +5,7 @@ import { HoverPopover } from "../Shared/HoverPopover";
 import { useFindPerformer } from "../../core/StashService";
 import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { PerformerCard } from "./PerformerCard";
 import { IPerformerPreviewData, PerformerPreviewCard } from "./PerformerPreviewCard";
 
 interface IPeromerPopoverCardProps {
@@ -35,13 +36,9 @@ const PerformerPopoverCardByID: React.FC<{
 
   return (
     <>
-      <PerformerPreviewCard
-        name={performer.name}
-        image={performer.image_path}
-        country={performer.country}
-        gender={performer.gender}
-        disambiguation={performer.disambiguation}
-      />
+      <div className="tag-popover-card">
+        <PerformerCard performer={performer} zoomIndex={0} />
+      </div>
       {cardExtras}
     </>
   );

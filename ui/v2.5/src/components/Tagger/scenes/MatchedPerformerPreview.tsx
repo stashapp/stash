@@ -4,8 +4,6 @@ import { IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import { useConfigurationContext } from "src/hooks/Config";
-import TextUtils from "src/utils/text";
-import { localPerformerToPreviewData } from "./ScrapedPerformerPreview";
 
 interface IPerformerDeltaRow {
   label: string;
@@ -187,18 +185,13 @@ export const MatchedPerformerPreview = ({
   children,
 }: IMatchedPerformerPreviewProps) => {
   const intl = useIntl();
-  const loadingText = intl.formatMessage({
-    id: "loading.generic",
-    defaultMessage: "Loading...",
-  });
   const { configuration: config } = useConfigurationContext();
   const showPerformerCardOnHover = config?.ui.showTagCardOnHover ?? true;
   const [isOpened, setIsOpened] = useState(false);
-  const { data: selectedPerformerData, loading: selectedPerformerLoading } =
-    GQL.useFindPerformerQuery({
-      variables: { id: performerID ?? "" },
-      skip: !performerID || !isOpened,
-    });
+  const { data: selectedPerformerData } = GQL.useFindPerformerQuery({
+    variables: { id: performerID ?? "" },
+    skip: !performerID || !isOpened,
+  });
   const performer = selectedPerformerData?.findPerformer;
   const warningStashID =
     endpoint && scrapedPerformer.remote_site_id && performer
@@ -211,22 +204,6 @@ export const MatchedPerformerPreview = ({
   const deltaRows = performer
     ? buildPerformerDeltaRows(scrapedPerformer, performer, intl)
     : [];
-  const matchedAge = performer
-    ? TextUtils.age(performer.birthdate, performer.death_date)
-    : 0;
-  const matchedAgeString =
-    performer && matchedAge !== 0
-      ? intl.formatMessage(
-          { id: "media_info.performer_card.age" },
-          {
-            age: matchedAge,
-            years_old: intl.formatMessage({
-              id: "years_old",
-              defaultMessage: "years old",
-            }),
-          }
-        )
-      : null;
   const warningEndpointName = warningStashID
     ? config?.general.stashBoxes.find(
         (sb) => sb.endpoint === warningStashID.endpoint
@@ -239,13 +216,7 @@ export const MatchedPerformerPreview = ({
 
   return (
     <PerformerPopover
-      previewData={
-        performer
-          ? localPerformerToPreviewData(performer, matchedAgeString)
-          : undefined
-      }
-      loading={selectedPerformerLoading}
-      loadingText={loadingText}
+      id={performerID ?? undefined}
       cardExtras={
         warningStashID || deltaRows.length > 0 ? (
           <div className="tagger-matched-performer-popover-extra">
