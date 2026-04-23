@@ -511,7 +511,7 @@
         "auto_tagging_all_paths": "Auto tagging all paths",
         "auto_tagging_paths": "Auto tagging the following paths",
         "disable_warning": {
-          "description": "Skip the confirmation warning shown before running auto tag.",
+          "description": "Disable the confirmation warning shown before running auto tag.",
           "heading": "Disable auto tag warning"
         }
       },
