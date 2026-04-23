@@ -2,9 +2,7 @@ import { ReactNode } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import {
-  IPerformerPreviewData,
-} from "src/components/Performers/PerformerPreviewCard";
+import { IPerformerPreviewData } from "src/components/Performers/PerformerPreviewCard";
 import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import TextUtils from "src/utils/text";
 import { stringToGender } from "src/utils/gender";
