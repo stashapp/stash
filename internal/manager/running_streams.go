@@ -30,6 +30,19 @@ func KillRunningStreams(scene *models.Scene, fileNamingAlgo models.HashAlgorithm
 	instance.ReadLockManager.Cancel(transcodePath)
 }
 
+func KillRunningStreamsAudio(audio *models.Audio, fileNamingAlgo models.HashAlgorithm) {
+	instance.ReadLockManager.Cancel(audio.Path)
+
+	audioHash := audio.GetHash(fileNamingAlgo)
+
+	if audioHash == "" {
+		return
+	}
+
+	transcodePath := GetInstance().Paths.Audio.GetTranscodePath(audioHash)
+	instance.ReadLockManager.Cancel(transcodePath)
+}
+
 type SceneCoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }

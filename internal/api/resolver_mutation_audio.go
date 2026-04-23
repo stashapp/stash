@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
-	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -50,10 +50,8 @@ func (r *mutationResolver) AudioCreate(ctx context.Context, input models.AudioCr
 	newAudio.Title = translator.string(input.Title)
 	newAudio.Code = translator.string(input.Code)
 	newAudio.Details = translator.string(input.Details)
-	newAudio.Director = translator.string(input.Director)
 	newAudio.Rating = input.Rating100
 	newAudio.Organized = translator.bool(input.Organized)
-	newAudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	newAudio.Date, err = translator.datePtr(input.Date)
 	if err != nil {
@@ -78,21 +76,11 @@ func (r *mutationResolver) AudioCreate(ctx context.Context, input models.AudioCr
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-	newAudio.GalleryIDs, err = translator.relatedIds(input.GalleryIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting gallery ids: %w", err)
-	}
 
-	// prefer groups over movies
 	if len(input.Groups) > 0 {
-		newAudio.Groups, err = translator.relatedGroups(input.Groups)
+		newAudio.Groups, err = translator.relatedGroupsAudio(input.Groups)
 		if err != nil {
 			return nil, fmt.Errorf("converting groups: %w", err)
-		}
-	} else if len(input.Movies) > 0 {
-		newAudio.Groups, err = translator.relatedGroupsFromMovies(input.Movies)
-		if err != nil {
-			return nil, fmt.Errorf("converting movies: %w", err)
 		}
 	}
 
@@ -188,7 +176,6 @@ func audioPartialFromInput(input models.AudioUpdateInput, translator changesetTr
 	updatedAudio.Title = translator.optionalString(input.Title, "title")
 	updatedAudio.Code = translator.optionalString(input.Code, "code")
 	updatedAudio.Details = translator.optionalString(input.Details, "details")
-	updatedAudio.Director = translator.optionalString(input.Director, "director")
 	updatedAudio.Rating = translator.optionalInt(input.Rating100, "rating100")
 
 	if input.OCounter != nil {
@@ -201,7 +188,6 @@ func audioPartialFromInput(input models.AudioUpdateInput, translator changesetTr
 
 	updatedAudio.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	updatedAudio.Organized = translator.optionalBool(input.Organized, "organized")
-	updatedAudio.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
 
 	var err error
 
@@ -229,20 +215,11 @@ func audioPartialFromInput(input models.AudioUpdateInput, translator changesetTr
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-	updatedAudio.GalleryIDs, err = translator.updateIds(input.GalleryIds, "gallery_ids")
-	if err != nil {
-		return nil, fmt.Errorf("converting gallery ids: %w", err)
-	}
 
 	if translator.hasField("groups") {
-		updatedAudio.GroupIDs, err = translator.updateGroupIDs(input.Groups, "groups")
+		updatedAudio.GroupIDs, err = translator.updateGroupIDsAudio(input.Groups, "groups")
 		if err != nil {
 			return nil, fmt.Errorf("converting groups: %w", err)
-		}
-	} else if translator.hasField("movies") {
-		updatedAudio.GroupIDs, err = translator.updateGroupIDsFromMovies(input.Movies, "movies")
-		if err != nil {
-			return nil, fmt.Errorf("converting movies: %w", err)
 		}
 	}
 
@@ -293,7 +270,7 @@ func (r *mutationResolver) audioUpdate(ctx context.Context, input models.AudioUp
 		}
 
 		// ensure that new primary file is associated with audio
-		var f *models.VideoFile
+		var f *models.AudioFile
 		for _, ff := range originalAudio.Files.List() {
 			if ff.ID == newPrimaryFileID {
 				f = ff
@@ -371,7 +348,6 @@ func (r *mutationResolver) BulkAudioUpdate(ctx context.Context, input BulkAudioU
 	updatedAudio.Title = translator.optionalString(input.Title, "title")
 	updatedAudio.Code = translator.optionalString(input.Code, "code")
 	updatedAudio.Details = translator.optionalString(input.Details, "details")
-	updatedAudio.Director = translator.optionalString(input.Director, "director")
 	updatedAudio.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedAudio.Organized = translator.optionalBool(input.Organized, "organized")
 
@@ -394,20 +370,11 @@ func (r *mutationResolver) BulkAudioUpdate(ctx context.Context, input BulkAudioU
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-	updatedAudio.GalleryIDs, err = translator.updateIdsBulk(input.GalleryIds, "gallery_ids")
-	if err != nil {
-		return nil, fmt.Errorf("converting gallery ids: %w", err)
-	}
 
 	if translator.hasField("group_ids") {
-		updatedAudio.GroupIDs, err = translator.updateGroupIDsBulk(input.GroupIds, "group_ids")
+		updatedAudio.GroupIDs, err = translator.updateGroupIDsBulkAudio(input.GroupIds, "group_ids")
 		if err != nil {
 			return nil, fmt.Errorf("converting group ids: %w", err)
-		}
-	} else if translator.hasField("movie_ids") {
-		updatedAudio.GroupIDs, err = translator.updateGroupIDsBulk(input.MovieIds, "movie_ids")
-		if err != nil {
-			return nil, fmt.Errorf("converting movie ids: %w", err)
 		}
 	}
 
@@ -465,7 +432,7 @@ func (r *mutationResolver) AudioDestroy(ctx context.Context, input models.AudioD
 		return false, fmt.Errorf("converting id: %w", err)
 	}
 
-	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	fileNamingAlgo := manager.GetInstance().Config.GetAudioFileNamingAlgorithm()
 	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	var s *models.Audio
@@ -492,7 +459,7 @@ func (r *mutationResolver) AudioDestroy(ctx context.Context, input models.AudioD
 		}
 
 		// kill any running encoders
-		manager.KillRunningStreams(s, fileNamingAlgo)
+		manager.KillRunningStreamsAudio(s, fileNamingAlgo)
 
 		return r.audioService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
 	}); err != nil {
@@ -521,7 +488,7 @@ func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.Audio
 	}
 
 	var audios []*models.Audio
-	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+	fileNamingAlgo := manager.GetInstance().Config.GetAudioFileNamingAlgorithm()
 	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	fileDeleter := &audio.FileDeleter{
@@ -549,7 +516,7 @@ func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.Audio
 			audios = append(audios, audio)
 
 			// kill any running encoders
-			manager.KillRunningStreams(audio, fileNamingAlgo)
+			manager.KillRunningStreamsAudio(audio, fileNamingAlgo)
 
 			if err := r.audioService.Destroy(ctx, audio, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 				return err
@@ -644,7 +611,7 @@ func (r *mutationResolver) AudioMerge(ctx context.Context, input AudioMergeInput
 	trashPath := mgr.Config.GetDeleteTrashPath()
 	fileDeleter := &audio.FileDeleter{
 		Deleter:        file.NewDeleterWithTrash(trashPath),
-		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
+		FileNamingAlgo: mgr.Config.GetAudioFileNamingAlgorithm(),
 		Paths:          mgr.Paths,
 	}
 
@@ -685,386 +652,6 @@ func (r *mutationResolver) AudioMerge(ctx context.Context, input AudioMergeInput
 	}
 
 	return ret, nil
-}
-
-func (r *mutationResolver) getAudioMarker(ctx context.Context, id int) (ret *models.AudioMarker, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.AudioMarker.Find(ctx, id)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
-func (r *mutationResolver) AudioMarkerCreate(ctx context.Context, input AudioMarkerCreateInput) (*models.AudioMarker, error) {
-	audioID, err := strconv.Atoi(input.AudioID)
-	if err != nil {
-		return nil, fmt.Errorf("converting audio id: %w", err)
-	}
-
-	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
-	if err != nil {
-		return nil, fmt.Errorf("converting primary tag id: %w", err)
-	}
-
-	// Populate a new audio marker from the input
-	newMarker := models.NewAudioMarker()
-
-	newMarker.Title = strings.TrimSpace(input.Title)
-	newMarker.Seconds = input.Seconds
-	newMarker.PrimaryTagID = primaryTagID
-	newMarker.AudioID = audioID
-
-	if input.EndSeconds != nil {
-		if err := validateAudioMarkerEndSeconds(newMarker.Seconds, *input.EndSeconds); err != nil {
-			return nil, err
-		}
-		newMarker.EndSeconds = input.EndSeconds
-	}
-
-	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.AudioMarker
-
-		err := qb.Create(ctx, &newMarker)
-		if err != nil {
-			return err
-		}
-
-		// Save the marker tags
-		// If this tag is the primary tag, then let's not add it.
-		tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
-		return qb.UpdateTags(ctx, newMarker.ID, tagIDs)
-	}); err != nil {
-		return nil, err
-	}
-
-	r.hookExecutor.ExecutePostHooks(ctx, newMarker.ID, hook.AudioMarkerCreatePost, input, nil)
-	return r.getAudioMarker(ctx, newMarker.ID)
-}
-
-func validateAudioMarkerEndSeconds(seconds, endSeconds float64) error {
-	if endSeconds < seconds {
-		return fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", endSeconds, seconds)
-	}
-	return nil
-}
-
-func float64OrZero(f *float64) float64 {
-	if f == nil {
-		return 0
-	}
-	return *f
-}
-
-func (r *mutationResolver) AudioMarkerUpdate(ctx context.Context, input AudioMarkerUpdateInput) (*models.AudioMarker, error) {
-	markerID, err := strconv.Atoi(input.ID)
-	if err != nil {
-		return nil, fmt.Errorf("converting id: %w", err)
-	}
-
-	translator := changesetTranslator{
-		inputMap: getUpdateInputMap(ctx),
-	}
-
-	// Populate audio marker from the input
-	updatedMarker := models.NewAudioMarkerPartial()
-
-	updatedMarker.Title = translator.optionalString(input.Title, "title")
-	updatedMarker.Seconds = translator.optionalFloat64(input.Seconds, "seconds")
-	updatedMarker.EndSeconds = translator.optionalFloat64(input.EndSeconds, "end_seconds")
-	updatedMarker.AudioID, err = translator.optionalIntFromString(input.AudioID, "audio_id")
-	if err != nil {
-		return nil, fmt.Errorf("converting audio id: %w", err)
-	}
-	updatedMarker.PrimaryTagID, err = translator.optionalIntFromString(input.PrimaryTagID, "primary_tag_id")
-	if err != nil {
-		return nil, fmt.Errorf("converting primary tag id: %w", err)
-	}
-
-	var tagIDs []int
-	tagIdsIncluded := translator.hasField("tag_ids")
-	if input.TagIds != nil {
-		tagIDs, err = stringslice.StringSliceToIntSlice(input.TagIds)
-		if err != nil {
-			return nil, fmt.Errorf("converting tag ids: %w", err)
-		}
-	}
-
-	mgr := manager.GetInstance()
-	trashPath := mgr.Config.GetDeleteTrashPath()
-
-	fileDeleter := &audio.FileDeleter{
-		Deleter:        file.NewDeleterWithTrash(trashPath),
-		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
-		Paths:          mgr.Paths,
-	}
-
-	// Start the transaction and save the audio marker
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.AudioMarker
-		sqb := r.repository.Audio
-
-		// check to see if timestamp was changed
-		existingMarker, err := qb.Find(ctx, markerID)
-		if err != nil {
-			return err
-		}
-		if existingMarker == nil {
-			return fmt.Errorf("audio marker with id %d not found", markerID)
-		}
-
-		// Validate end_seconds
-		shouldValidateEndSeconds := (updatedMarker.Seconds.Set || updatedMarker.EndSeconds.Set) && !updatedMarker.EndSeconds.Null
-		if shouldValidateEndSeconds {
-			seconds := existingMarker.Seconds
-			if updatedMarker.Seconds.Set {
-				seconds = updatedMarker.Seconds.Value
-			}
-
-			endSeconds := existingMarker.EndSeconds
-			if updatedMarker.EndSeconds.Set {
-				endSeconds = &updatedMarker.EndSeconds.Value
-			}
-
-			if endSeconds != nil {
-				if err := validateAudioMarkerEndSeconds(seconds, *endSeconds); err != nil {
-					return err
-				}
-			}
-		}
-
-		newMarker, err := qb.UpdatePartial(ctx, markerID, updatedMarker)
-		if err != nil {
-			return err
-		}
-
-		existingAudio, err := sqb.Find(ctx, existingMarker.AudioID)
-		if err != nil {
-			return err
-		}
-		if existingAudio == nil {
-			return fmt.Errorf("audio with id %d not found", existingMarker.AudioID)
-		}
-
-		// remove the marker preview if the audio changed or if the timestamp was changed
-		if existingMarker.AudioID != newMarker.AudioID || existingMarker.Seconds != newMarker.Seconds || float64OrZero(existingMarker.EndSeconds) != float64OrZero(newMarker.EndSeconds) {
-			seconds := int(existingMarker.Seconds)
-			if err := fileDeleter.MarkMarkerFiles(existingAudio, seconds); err != nil {
-				return err
-			}
-		}
-
-		if tagIdsIncluded {
-			// Save the marker tags
-			// If this tag is the primary tag, then let's not add it.
-			tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
-			if err := qb.UpdateTags(ctx, markerID, tagIDs); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		fileDeleter.Rollback()
-		return nil, err
-	}
-
-	// perform the post-commit actions
-	fileDeleter.Commit()
-
-	r.hookExecutor.ExecutePostHooks(ctx, markerID, hook.AudioMarkerUpdatePost, input, translator.getFields())
-	return r.getAudioMarker(ctx, markerID)
-}
-
-func (r *mutationResolver) BulkAudioMarkerUpdate(ctx context.Context, input BulkAudioMarkerUpdateInput) ([]*models.AudioMarker, error) {
-	ids, err := stringslice.StringSliceToIntSlice(input.Ids)
-	if err != nil {
-		return nil, fmt.Errorf("converting ids: %w", err)
-	}
-
-	translator := changesetTranslator{
-		inputMap: getUpdateInputMap(ctx),
-	}
-
-	// Populate performer from the input
-	partial := models.NewAudioMarkerPartial()
-
-	partial.Title = translator.optionalString(input.Title, "title")
-
-	partial.PrimaryTagID, err = translator.optionalIntFromString(input.PrimaryTagID, "primary_tag_id")
-	if err != nil {
-		return nil, fmt.Errorf("converting primary tag id: %w", err)
-	}
-
-	partial.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
-	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-
-	ret := []*models.AudioMarker{}
-
-	// Start the transaction and save the performers
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.AudioMarker
-
-		for _, id := range ids {
-			l := partial
-
-			if err := adjustMarkerPartialForTagExclusion(ctx, r.repository.AudioMarker, id, &l); err != nil {
-				return err
-			}
-
-			updated, err := qb.UpdatePartial(ctx, id, l)
-			if err != nil {
-				return err
-			}
-
-			ret = append(ret, updated)
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	// execute post hooks outside of txn
-	var newRet []*models.AudioMarker
-	for _, m := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, m.ID, hook.AudioMarkerUpdatePost, input, translator.getFields())
-
-		m, err = r.getAudioMarker(ctx, m.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		newRet = append(newRet, m)
-	}
-
-	return newRet, nil
-}
-
-// adjustMarkerPartialForTagExclusion adjusts the AudioMarkerPartial to exclude the primary tag from tag updates.
-func adjustMarkerPartialForTagExclusion(ctx context.Context, r models.AudioMarkerReader, id int, partial *models.AudioMarkerPartial) error {
-	if partial.TagIDs == nil && !partial.PrimaryTagID.Set {
-		return nil
-	}
-
-	// exclude primary tag from tag updates
-	var primaryTagID int
-	if partial.PrimaryTagID.Set {
-		primaryTagID = partial.PrimaryTagID.Value
-	} else {
-		existing, err := r.Find(ctx, id)
-		if err != nil {
-			return fmt.Errorf("finding existing primary tag id: %w", err)
-		}
-
-		primaryTagID = existing.PrimaryTagID
-	}
-
-	existingTagIDs, err := r.GetTagIDs(ctx, id)
-	if err != nil {
-		return fmt.Errorf("getting existing tag ids: %w", err)
-	}
-
-	tagIDAttr := partial.TagIDs
-
-	if tagIDAttr == nil {
-		tagIDAttr = &models.UpdateIDs{
-			IDs:  existingTagIDs,
-			Mode: models.RelationshipUpdateModeSet,
-		}
-	}
-
-	newTagIDs := tagIDAttr.Apply(existingTagIDs)
-	// Remove primary tag from newTagIDs if present
-	newTagIDs = sliceutil.Exclude(newTagIDs, []int{primaryTagID})
-
-	if len(existingTagIDs) != len(newTagIDs) {
-		partial.TagIDs = &models.UpdateIDs{
-			IDs:  newTagIDs,
-			Mode: models.RelationshipUpdateModeSet,
-		}
-	} else {
-		// no change to tags required
-		partial.TagIDs = nil
-	}
-
-	return nil
-}
-
-func (r *mutationResolver) AudioMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	return r.AudioMarkersDestroy(ctx, []string{id})
-}
-
-func (r *mutationResolver) AudioMarkersDestroy(ctx context.Context, markerIDs []string) (bool, error) {
-	ids, err := stringslice.StringSliceToIntSlice(markerIDs)
-	if err != nil {
-		return false, fmt.Errorf("converting ids: %w", err)
-	}
-
-	var markers []*models.AudioMarker
-	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
-	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
-
-	fileDeleter := &audio.FileDeleter{
-		Deleter:        file.NewDeleterWithTrash(trashPath),
-		FileNamingAlgo: fileNamingAlgo,
-		Paths:          manager.GetInstance().Paths,
-	}
-
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.AudioMarker
-		sqb := r.repository.Audio
-
-		for _, markerID := range ids {
-			marker, err := qb.Find(ctx, markerID)
-
-			if err != nil {
-				return err
-			}
-
-			if marker == nil {
-				return fmt.Errorf("audio marker with id %d not found", markerID)
-			}
-
-			s, err := sqb.Find(ctx, marker.AudioID)
-
-			if err != nil {
-				return err
-			}
-
-			if s == nil {
-				return fmt.Errorf("audio with id %d not found", marker.AudioID)
-			}
-
-			markers = append(markers, marker)
-
-			if err := audio.DestroyMarker(ctx, s, marker, qb, fileDeleter); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		fileDeleter.Rollback()
-		return false, err
-	}
-
-	fileDeleter.Commit()
-
-	for _, marker := range markers {
-		r.hookExecutor.ExecutePostHooks(ctx, marker.ID, hook.AudioMarkerDestroyPost, markerIDs, nil)
-	}
-
-	return true, nil
 }
 
 func (r *mutationResolver) AudioSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {

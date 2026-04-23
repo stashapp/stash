@@ -24,7 +24,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 - Audio File metadata:
     - duration
     - audio codec
-    - OPTIONAL (can be added now or later)
+    - FUTURE (to be considered at a later date)
         - channels (mono, stereo, 5.1, 7.1)
         - bitrate
         - sample rate

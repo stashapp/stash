@@ -4,37 +4,12 @@ package models
 
 import "context"
 
-type DuplicationCriterionInput struct {
-	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
-	Duplicated *bool `json:"duplicated"`
-	// Currently unimplemented. Intended for phash distance matching.
-	Distance *int `json:"distance"`
-	// Filter by phash duplication
-	Phash *bool `json:"phash"`
-	// Filter by URL duplication
-	URL *bool `json:"url"`
-	// Filter by Stash ID duplication
-	StashID *bool `json:"stash_id"`
-	// Filter by title duplication
-	Title *bool `json:"title"`
-}
-
-type FileDuplicationCriterionInput struct {
-	// Deprecated: Use Phash field instead. Kept for backwards compatibility.
-	Duplicated *bool `json:"duplicated"`
-	// Currently unimplemented. Intended for phash distance matching.
-	Distance *int `json:"distance"`
-	// Filter by phash duplication
-	Phash *bool `json:"phash"`
-}
-
 type AudioFilterType struct {
 	OperatorFilter[AudioFilterType]
-	ID       *IntCriterionInput    `json:"id"`
-	Title    *StringCriterionInput `json:"title"`
-	Code     *StringCriterionInput `json:"code"`
-	Details  *StringCriterionInput `json:"details"`
-	Director *StringCriterionInput `json:"director"`
+	ID      *IntCriterionInput    `json:"id"`
+	Title   *StringCriterionInput `json:"title"`
+	Code    *StringCriterionInput `json:"code"`
+	Details *StringCriterionInput `json:"details"`
 	// Filter by file oshash
 	Oshash *StringCriterionInput `json:"oshash"`
 	// Filter by file checksum
@@ -59,12 +34,10 @@ type AudioFilterType struct {
 	Resolution *ResolutionCriterionInput `json:"resolution"`
 	// Filter by orientation
 	Orientation *OrientationCriterionInput `json:"orientation"`
-	// Filter by framerate
-	Framerate *IntCriterionInput `json:"framerate"`
+	// Filter by samplerate
+	Samplerate *IntCriterionInput `json:"samplerate"`
 	// Filter by bitrate
 	Bitrate *IntCriterionInput `json:"bitrate"`
-	// Filter by video codec
-	VideoCodec *StringCriterionInput `json:"video_codec"`
 	// Filter by audio codec
 	AudioCodec *StringCriterionInput `json:"audio_codec"`
 	// Filter by duration (in seconds)
@@ -95,20 +68,8 @@ type AudioFilterType struct {
 	Performers *MultiCriterionInput `json:"performers"`
 	// Filter by performer count
 	PerformerCount *IntCriterionInput `json:"performer_count"`
-	// Filter by StashID
-	StashID *StringCriterionInput `json:"stash_id"`
-	// Filter by StashID Endpoint
-	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
-	// Filter by StashIDs Endpoint
-	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
-	// Filter by StashID count
-	StashIDCount *IntCriterionInput `json:"stash_id_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
-	// Filter by interactive
-	Interactive *bool `json:"interactive"`
-	// Filter by InteractiveSpeed
-	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
 	// Filter by captions
 	Captions *StringCriterionInput `json:"captions"`
 	// Filter by resume time
@@ -131,10 +92,6 @@ type AudioFilterType struct {
 	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by related groups that meet this criteria
 	GroupsFilter *GroupFilterType `json:"groups_filter"`
-	// Filter by related movies that meet this criteria
-	MoviesFilter *GroupFilterType `json:"movies_filter"`
-	// Filter by related markers that meet this criteria
-	MarkersFilter *AudioMarkerFilterType `json:"markers_filter"`
 	// Filter by related files that meet this criteria
 	FilesFilter *FileFilterType `json:"files_filter"`
 	// Filter by created at
@@ -164,12 +121,6 @@ type AudioQueryResult struct {
 	resolveErr error
 }
 
-// AudioMovieInput is used for groups and movies
-type AudioMovieInput struct {
-	MovieID    string `json:"movie_id"`
-	AudioIndex *int   `json:"audio_index"`
-}
-
 type AudioGroupInput struct {
 	GroupID    string `json:"group_id"`
 	AudioIndex *int   `json:"audio_index"`
@@ -179,7 +130,6 @@ type AudioCreateInput struct {
 	Title        *string           `json:"title"`
 	Code         *string           `json:"code"`
 	Details      *string           `json:"details"`
-	Director     *string           `json:"director"`
 	URL          *string           `json:"url"`
 	Urls         []string          `json:"urls"`
 	Date         *string           `json:"date"`
@@ -188,12 +138,10 @@ type AudioCreateInput struct {
 	StudioID     *string           `json:"studio_id"`
 	GalleryIds   []string          `json:"gallery_ids"`
 	PerformerIds []string          `json:"performer_ids"`
-	Movies       []AudioMovieInput `json:"movies"`
 	Groups       []AudioGroupInput `json:"groups"`
 	TagIds       []string          `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string        `json:"cover_image"`
-	StashIds   []StashIDInput `json:"stash_ids"`
+	CoverImage *string `json:"cover_image"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing audios if applicable.
 	// Files must not already be primary for another audio.
@@ -207,7 +155,6 @@ type AudioUpdateInput struct {
 	Title            *string           `json:"title"`
 	Code             *string           `json:"code"`
 	Details          *string           `json:"details"`
-	Director         *string           `json:"director"`
 	URL              *string           `json:"url"`
 	Urls             []string          `json:"urls"`
 	Date             *string           `json:"date"`
@@ -217,16 +164,14 @@ type AudioUpdateInput struct {
 	StudioID         *string           `json:"studio_id"`
 	GalleryIds       []string          `json:"gallery_ids"`
 	PerformerIds     []string          `json:"performer_ids"`
-	Movies           []AudioMovieInput `json:"movies"`
 	Groups           []AudioGroupInput `json:"groups"`
 	TagIds           []string          `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage    *string        `json:"cover_image"`
-	StashIds      []StashIDInput `json:"stash_ids"`
-	ResumeTime    *float64       `json:"resume_time"`
-	PlayDuration  *float64       `json:"play_duration"`
-	PlayCount     *int           `json:"play_count"`
-	PrimaryFileID *string        `json:"primary_file_id"`
+	CoverImage    *string  `json:"cover_image"`
+	ResumeTime    *float64 `json:"resume_time"`
+	PlayDuration  *float64 `json:"play_duration"`
+	PlayCount     *int     `json:"play_count"`
+	PrimaryFileID *string  `json:"primary_file_id"`
 	CustomFields  *CustomFieldsInput
 }
 

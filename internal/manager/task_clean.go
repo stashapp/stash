@@ -27,6 +27,7 @@ type cleanJob struct {
 	cleaner      cleaner
 	repository   models.Repository
 	input        CleanMetadataInput
+	audioService AudioService
 	sceneService SceneService
 	imageService ImageService
 	scanSubs     *subscriptionManager

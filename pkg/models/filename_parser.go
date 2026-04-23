@@ -28,3 +28,32 @@ type SceneMovieID struct {
 	MovieID    string  `json:"movie_id"`
 	SceneIndex *string `json:"scene_index"`
 }
+
+// Audio
+
+type AudioParserInput struct {
+	IgnoreWords          []string `json:"ignoreWords"`
+	WhitespaceCharacters *string  `json:"whitespaceCharacters"`
+	CapitalizeTitle      *bool    `json:"capitalizeTitle"`
+	IgnoreOrganized      *bool    `json:"ignoreOrganized"`
+}
+
+type AudioParserResult struct {
+	Audio        *Audio          `json:"scene"`
+	Title        *string         `json:"title"`
+	Code         *string         `json:"code"`
+	Details      *string         `json:"details"`
+	URL          *string         `json:"url"`
+	Date         *string         `json:"date"`
+	Rating       *int            `json:"rating"`
+	Rating100    *int            `json:"rating100"`
+	StudioID     *string         `json:"studio_id"`
+	PerformerIds []string        `json:"performer_ids"`
+	Groups       []*AudioGroupID `json:"groups"`
+	TagIds       []string        `json:"tag_ids"`
+}
+
+type AudioGroupID struct {
+	GroupID    string  `json:"group_id"`
+	AudioIndex *string `json:"scene_index"`
+}

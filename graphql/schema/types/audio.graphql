@@ -3,11 +3,8 @@
 type AudioFileType {
   size: String
   duration: Float
-  video_codec: String
   audio_codec: String
-  width: Int
-  height: Int
-  framerate: Float
+  samplerate: Float
   bitrate: Int
 }
 
@@ -19,13 +16,7 @@ type AudioPathsType {
   vtt: String # Resolver
   sprite: String # Resolver
   funscript: String # Resolver
-  interactive_heatmap: String # Resolver
   caption: String # Resolver
-}
-
-type AudioMovie {
-  movie: Movie!
-  audio_index: Int
 }
 
 type AudioGroup {
@@ -33,17 +24,17 @@ type AudioGroup {
   audio_index: Int
 }
 
-type VideoCaption {
-  language_code: String!
-  caption_type: String!
-}
+# TODO(audio|AudioCaption): need to update IF AudioCaption required
+# type AudioCaption {
+#   language_code: String!
+#   caption_type: String!
+# }
 
 type Audio {
   id: ID!
   title: String
   code: String
   details: String
-  director: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
@@ -51,8 +42,8 @@ type Audio {
   rating100: Int
   organized: Boolean!
   o_counter: Int
-  interactive: Boolean!
-  interactive_speed: Int
+  # TODO(audio|AudioCaption): need to update IF AudioCaption required
+  # captions: [AudioCaption!]
   captions: [VideoCaption!]
   created_at: Time!
   updated_at: Time!
@@ -70,26 +61,19 @@ type Audio {
   "Times the o counter was incremented"
   o_history: [Time!]!
 
-  files: [VideoFile!]!
+  files: [AudioFile!]!
   paths: AudioPathsType! # Resolver
-  audio_markers: [AudioMarker!]!
-  galleries: [Gallery!]!
+  # TODO(future|audio_markers): add in audio markers
+  #  audio_markers: [AudioMarker!]!
   studio: Studio
   groups: [AudioGroup!]!
-  movies: [AudioMovie!]! @deprecated(reason: "Use groups")
   tags: [Tag!]!
   performers: [Performer!]!
-  stash_ids: [StashID!]!
 
   custom_fields: Map!
 
   "Return valid stream paths"
   audioStreams: [AudioStreamEndpoint!]!
-}
-
-input AudioMovieInput {
-  movie_id: ID!
-  audio_index: Int
 }
 
 input AudioGroupInput {
@@ -101,7 +85,6 @@ input AudioCreateInput {
   title: String
   code: String
   details: String
-  director: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
@@ -109,14 +92,11 @@ input AudioCreateInput {
   rating100: Int
   organized: Boolean
   studio_id: ID
-  gallery_ids: [ID!]
   performer_ids: [ID!]
   groups: [AudioGroupInput!]
-  movies: [AudioMovieInput!] @deprecated(reason: "Use groups")
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
-  stash_ids: [StashIDInput!]
 
   """
   The first id will be assigned as primary.
@@ -134,7 +114,6 @@ input AudioUpdateInput {
   title: String
   code: String
   details: String
-  director: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
@@ -144,14 +123,11 @@ input AudioUpdateInput {
     @deprecated(reason: "Unsupported - Use audioIncrementO/audioDecrementO")
   organized: Boolean
   studio_id: ID
-  gallery_ids: [ID!]
   performer_ids: [ID!]
   groups: [AudioGroupInput!]
-  movies: [AudioMovieInput!] @deprecated(reason: "Use groups")
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
-  stash_ids: [StashIDInput!]
 
   "The time index a audio was left at"
   resume_time: Float
@@ -168,24 +144,12 @@ input AudioUpdateInput {
   custom_fields: CustomFieldsInput
 }
 
-enum BulkUpdateIdMode {
-  SET
-  ADD
-  REMOVE
-}
-
-input BulkUpdateIds {
-  ids: [ID!]
-  mode: BulkUpdateIdMode!
-}
-
 input BulkAudioUpdateInput {
   clientMutationId: String
   ids: [ID!]
   title: String
   code: String
   details: String
-  director: String
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
@@ -193,11 +157,9 @@ input BulkAudioUpdateInput {
   rating100: Int
   organized: Boolean
   studio_id: ID
-  gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
   group_ids: BulkUpdateIds
-  movie_ids: BulkUpdateIds @deprecated(reason: "Use group_ids")
 
   custom_fields: CustomFieldsInput
 }
@@ -234,27 +196,17 @@ input AudioParserInput {
   ignoreOrganized: Boolean
 }
 
-type AudioMovieID {
-  movie_id: ID!
-  audio_index: String
-}
-
 type AudioParserResult {
   audio: Audio!
   title: String
   code: String
   details: String
-  director: String
   url: String
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   studio_id: ID
-  gallery_ids: [ID!]
   performer_ids: [ID!]
-  movies: [AudioMovieID!]
   tag_ids: [ID!]
 }
 
@@ -292,9 +244,4 @@ input AudioMergeInput {
   # if true, the source history will be combined with the destination
   play_history: Boolean
   o_history: Boolean
-}
-
-type HistoryMutationResult {
-  count: Int!
-  history: [Time!]!
 }

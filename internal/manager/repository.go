@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/audio"
 )
 
 type SceneService interface {
@@ -17,6 +18,16 @@ type SceneService interface {
 
 	FindByIDs(ctx context.Context, ids []int, load ...scene.LoadRelationshipOption) ([]*models.Scene, error)
 	sceneFingerprintGetter
+}
+
+type AudioService interface {
+	Create(ctx context.Context, input models.CreateAudioInput) (*models.Audio, error)
+	AssignFile(ctx context.Context, audioID int, fileID models.FileID) error
+	Merge(ctx context.Context, sourceIDs []int, destinationID int, fileDeleter *audio.FileDeleter, options audio.MergeOptions) error
+	Destroy(ctx context.Context, audio *models.Audio, fileDeleter *audio.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error
+
+	FindByIDs(ctx context.Context, ids []int, load ...audio.LoadRelationshipOption) ([]*models.Audio, error)
+	audioFingerprintGetter
 }
 
 type ImageService interface {

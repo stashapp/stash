@@ -182,8 +182,6 @@ type audioRepositoryType struct {
 	groups     repository
 
 	files filesRepository
-
-	stashIDs stashIDRepository
 }
 
 var (
@@ -222,12 +220,6 @@ var (
 		files: filesRepository{
 			repository: repository{
 				tableName: audiosFilesTable,
-				idColumn:  audioIDColumn,
-			},
-		},
-		stashIDs: stashIDRepository{
-			repository{
-				tableName: "audio_stash_ids",
 				idColumn:  audioIDColumn,
 			},
 		},
@@ -348,12 +340,6 @@ func (qb *AudioStore) Create(ctx context.Context, newObject *models.Audio, fileI
 		}
 	}
 
-	if newObject.StashIDs.Loaded() {
-		if err := audiosStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
-			return err
-		}
-	}
-
 	if newObject.Groups.Loaded() {
 		if err := audiosGroupsTableMgr.insertJoins(ctx, id, newObject.Groups.List()); err != nil {
 			return err
@@ -405,11 +391,6 @@ func (qb *AudioStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
-	if partial.StashIDs != nil {
-		if err := audiosStashIDsTableMgr.modifyJoins(ctx, id, partial.StashIDs.StashIDs, partial.StashIDs.Mode); err != nil {
-			return nil, err
-		}
-	}
 	if partial.GroupIDs != nil {
 		if err := audiosGroupsTableMgr.modifyJoins(ctx, id, partial.GroupIDs.Groups, partial.GroupIDs.Mode); err != nil {
 			return nil, err
@@ -452,12 +433,6 @@ func (qb *AudioStore) Update(ctx context.Context, updatedObject *models.Audio) e
 
 	if updatedObject.GalleryIDs.Loaded() {
 		if err := audiosGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
-			return err
-		}
-	}
-
-	if updatedObject.StashIDs.Loaded() {
-		if err := audiosStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -612,7 +587,7 @@ func (qb *AudioStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
-func (qb *AudioStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile, error) {
+func (qb *AudioStore) GetFiles(ctx context.Context, id int) ([]*models.AudioFile, error) {
 	fileIDs, err := audioRepository.files.get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -624,12 +599,12 @@ func (qb *AudioStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile
 		return nil, err
 	}
 
-	ret := make([]*models.VideoFile, len(files))
+	ret := make([]*models.AudioFile, len(files))
 	for i, f := range files {
 		var ok bool
-		ret[i], ok = f.(*models.VideoFile)
+		ret[i], ok = f.(*models.AudioFile)
 		if !ok {
-			return nil, fmt.Errorf("expected file to be *file.VideoFile not %T", f)
+			return nil, fmt.Errorf("expected file to be *file.AudioFile not %T", f)
 		}
 	}
 
@@ -885,16 +860,16 @@ func (qb *AudioStore) Size(ctx context.Context) (float64, error) {
 
 func (qb *AudioStore) Duration(ctx context.Context) (float64, error) {
 	table := qb.table()
-	videoFileTable := videoFileTableMgr.table
+	AudioFileTable := AudioFileTableMgr.table
 
 	q := dialect.Select(
-		goqu.COALESCE(goqu.SUM(videoFileTable.Col("duration")), 0),
+		goqu.COALESCE(goqu.SUM(AudioFileTable.Col("duration")), 0),
 	).From(table).InnerJoin(
 		audiosFilesJoinTable,
 		goqu.On(audiosFilesJoinTable.Col("audio_id").Eq(table.Col(idColumn))),
 	).InnerJoin(
-		videoFileTable,
-		goqu.On(videoFileTable.Col("file_id").Eq(audiosFilesJoinTable.Col("file_id"))),
+		AudioFileTable,
+		goqu.On(AudioFileTable.Col("file_id").Eq(audiosFilesJoinTable.Col("file_id"))),
 	)
 
 	var ret float64
@@ -1068,7 +1043,7 @@ func (qb *AudioStore) queryGroupedFields(ctx context.Context, options models.Aud
 				onClause: "audios_files.audio_id = audios.id",
 			},
 			join{
-				table:    videoFileTable,
+				table:    AudioFileTable,
 				onClause: "audios_files.file_id = audio_files.file_id",
 			},
 		)
@@ -1128,14 +1103,11 @@ var audioSortOptions = sortOptions{
 	"filesize",
 	"duration",
 	"file_mod_time",
-	"framerate",
+	"samplerate",
 	"group_audio_number",
 	"id",
-	"interactive",
-	"interactive_speed",
 	"last_o_at",
 	"last_played_at",
-	"movie_audio_number",
 	"o_counter",
 	"organized",
 	"performer_count",
@@ -1143,7 +1115,6 @@ var audioSortOptions = sortOptions{
 	"play_duration",
 	"resume_time",
 	"path",
-	"perceptual_similarity",
 	"random",
 	"rating",
 	"resolution",
@@ -1180,12 +1151,12 @@ func (qb *AudioStore) setAudioSort(query *queryBuilder, findFilter *models.FindF
 		)
 	}
 
-	addVideoFileTable := func() {
+	addAudioFileTable := func() {
 		addFileTable()
 		query.addJoins(
 			join{
 				sort:     true,
-				table:    videoFileTable,
+				table:    audioFileTable,
 				onClause: "audio_files.file_id = audios_files.file_id",
 			},
 		)
@@ -1203,9 +1174,6 @@ func (qb *AudioStore) setAudioSort(query *queryBuilder, findFilter *models.FindF
 
 	direction := findFilter.GetDirection()
 	switch sort {
-	case "movie_audio_number":
-		query.joinSort(groupsAudiosTable, "", "audios.id = groups_audios.audio_id")
-		query.sortAndPagination += getSort("audio_index", direction, groupsAudiosTable)
 	case "group_audio_number":
 		query.joinSort(groupsAudiosTable, "audio_group", "audios.id = audio_group.audio_id")
 		query.sortAndPagination += getSort("audio_index", direction, "audio_group")
@@ -1220,43 +1188,27 @@ func (qb *AudioStore) setAudioSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		addFolderTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
-	case "perceptual_similarity":
-		// special handling for phash
-		addFileTable()
-		query.addJoins(
-			join{
-				sort:     true,
-				table:    fingerprintTable,
-				as:       "fingerprints_phash",
-				onClause: "audios_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
-			},
-		)
-
-		query.sortAndPagination += " ORDER BY fingerprints_phash.fingerprint " + direction + ", files.size DESC"
 	case "bitrate":
 		sort = "bit_rate"
-		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+		addAudioFileTable()
+		query.sortAndPagination += getSort(sort, direction, audioFileTable)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
-	case "framerate":
-		sort = "frame_rate"
-		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "samplerate":
+		sort = "sample_rate"
+		addAudioFileTable()
+		query.sortAndPagination += getSort(sort, direction, audioFileTable)
 	case "resolution":
-		addVideoFileTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", videoFileTable, videoFileTable, getSortDirection(direction))
+		addAudioFileTable()
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", audioFileTable, audioFileTable, getSortDirection(direction))
 	case "filesize":
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
 	case "duration":
-		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
-	case "interactive", "interactive_speed":
-		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+		addAudioFileTable()
+		query.sortAndPagination += getSort(sort, direction, audioFileTable)
 	case "title":
 		addFileTable()
 		addFolderTable()
@@ -1426,10 +1378,6 @@ func (qb *AudioStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) 
 
 func (qb *AudioStore) AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error {
 	return audiosGalleriesTableMgr.addJoins(ctx, audioID, galleryIDs)
-}
-
-func (qb *AudioStore) GetStashIDs(ctx context.Context, audioID int) ([]models.StashID, error) {
-	return audioRepository.stashIDs.get(ctx, audioID)
 }
 
 func (qb *AudioStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Audio, error) {

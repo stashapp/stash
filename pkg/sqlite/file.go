@@ -1,3 +1,4 @@
+// TODO(audio): update this file
 package sqlite
 
 import (
@@ -20,10 +21,12 @@ import (
 const (
 	fileTable      = "files"
 	videoFileTable = "video_files"
+	audioFileTable = "audio_files"
 	imageFileTable = "image_files"
 	fileIDColumn   = "file_id"
 
 	videoCaptionsTable    = "video_captions"
+	audioCaptionsTable    = "audio_captions"
 	captionCodeColumn     = "language_code"
 	captionFilenameColumn = "filename"
 	captionTypeColumn     = "caption_type"

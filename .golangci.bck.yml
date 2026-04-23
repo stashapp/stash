@@ -1,0 +1,87 @@
+# options for analysis running
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  enable:
+    # Default set of linters from golangci-lint
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    # Linters added by the stash project.
+    # - contextcheck
+    - copyloopvar
+    - dogsled
+    - errchkjson
+    - errorlint
+    # - exhaustive
+    - gocritic
+    # - goerr113
+    - gofmt
+    # - gomnd
+    # - ifshort
+    - misspell
+    # - nakedret
+    - noctx
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+
+# Project-specific linter overrides
+linters-settings:
+  gofmt:
+    simplify: false
+
+  errorlint:
+    # Disable errorf because there are false positives, where you don't want to wrap
+    #  an error.
+    errorf: false
+    asserts: true
+    comparison: true
+
+  revive:
+    ignore-generated-header: true
+    severity: error
+    confidence: 0.8
+    rules:
+      - name: blank-imports
+        disabled: true
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+        disabled: true
+      - name: if-return
+        disabled: true
+      - name: increment-decrement
+      - name: var-naming
+        disabled: true
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+        disabled: true
+      - name: indent-error-flow
+        disabled: true
+      - name: errorf
+      - name: empty-block
+        disabled: true
+      - name: superfluous-else
+      - name: unused-parameter
+        disabled: true
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+  rowserrcheck:
+    packages:
+      - github.com/jmoiron/sqlx

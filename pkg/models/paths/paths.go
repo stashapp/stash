@@ -11,6 +11,7 @@ type Paths struct {
 	Generated *generatedPaths
 
 	Scene        *scenePaths
+	Audio        *audioPaths
 	SceneMarkers *sceneMarkerPaths
 	Blobs        string
 }

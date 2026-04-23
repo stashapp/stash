@@ -28,6 +28,10 @@ func (r *videoFileResolver) Fingerprint(ctx context.Context, obj *VideoFile, typ
 	return fingerprintResolver(obj.VideoFile.Fingerprints, type_)
 }
 
+func (r *audioFileResolver) Fingerprint(ctx context.Context, obj *AudioFile, type_ string) (*string, error) {
+	return fingerprintResolver(obj.AudioFile.Fingerprints, type_)
+}
+
 func (r *basicFileResolver) Fingerprint(ctx context.Context, obj *BasicFile, type_ string) (*string, error) {
 	return fingerprintResolver(obj.BaseFile.Fingerprints, type_)
 }
@@ -41,6 +45,9 @@ func (r *imageFileResolver) ParentFolder(ctx context.Context, obj *ImageFile) (*
 }
 
 func (r *videoFileResolver) ParentFolder(ctx context.Context, obj *VideoFile) (*models.Folder, error) {
+	return loaders.From(ctx).FolderByID.Load(obj.ParentFolderID)
+}
+func (r *audioFileResolver) ParentFolder(ctx context.Context, obj *AudioFile) (*models.Folder, error) {
 	return loaders.From(ctx).FolderByID.Load(obj.ParentFolderID)
 }
 
@@ -72,6 +79,9 @@ func (r *imageFileResolver) ZipFile(ctx context.Context, obj *ImageFile) (*Basic
 }
 
 func (r *videoFileResolver) ZipFile(ctx context.Context, obj *VideoFile) (*BasicFile, error) {
+	return zipFileResolver(ctx, obj.ZipFileID)
+}
+func (r *audioFileResolver) ZipFile(ctx context.Context, obj *AudioFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
 

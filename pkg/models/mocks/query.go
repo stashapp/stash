@@ -31,6 +31,31 @@ func SceneQueryResult(scenes []*models.Scene, count int) *models.SceneQueryResul
 	return ret
 }
 
+type audioResolver struct {
+	audios []*models.Audio
+}
+
+func (s *audioResolver) Find(ctx context.Context, id int) (*models.Audio, error) {
+	panic("not implemented")
+}
+
+func (s *audioResolver) FindMany(ctx context.Context, ids []int) ([]*models.Audio, error) {
+	return s.audios, nil
+}
+
+func (s *audioResolver) FindByIDs(ctx context.Context, ids []int) ([]*models.Audio, error) {
+	return s.audios, nil
+}
+
+func AudioQueryResult(audios []*models.Audio, count int) *models.AudioQueryResult {
+	ret := models.NewAudioQueryResult(&audioResolver{
+		audios: audios,
+	})
+
+	ret.Count = count
+	return ret
+}
+
 type imageResolver struct {
 	images []*models.Image
 }

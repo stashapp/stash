@@ -6,16 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"slices"
 	"time"
 
-	"github.com/stashapp/stash/pkg/fsutil"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type MergeOptions struct {
@@ -54,10 +49,6 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 
 		for _, f := range src.Files.List() {
 			fileIDs = append(fileIDs, f.Base().ID)
-		}
-
-		if err := s.mergeAudioMarkers(ctx, dest, src); err != nil {
-			return err
 		}
 	}
 
@@ -126,73 +117,6 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		if err := s.Destroy(ctx, src, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
 			return fmt.Errorf("deleting audio %d: %w", src.ID, err)
 		}
-	}
-
-	return nil
-}
-
-func (s *Service) mergeAudioMarkers(ctx context.Context, dest *models.Audio, src *models.Audio) error {
-	markers, err := s.MarkerRepository.FindByAudioID(ctx, src.ID)
-	if err != nil {
-		return fmt.Errorf("finding audio markers: %w", err)
-	}
-
-	type rename struct {
-		src  string
-		dest string
-	}
-
-	var toRename []rename
-
-	destHash := dest.GetHash(s.Config.GetVideoFileNamingAlgorithm())
-
-	for _, m := range markers {
-		srcHash := src.GetHash(s.Config.GetVideoFileNamingAlgorithm())
-
-		// updated the audio id
-		m.AudioID = dest.ID
-
-		if err := s.MarkerRepository.Update(ctx, m); err != nil {
-			return fmt.Errorf("updating audio marker %d: %w", m.ID, err)
-		}
-
-		// move generated files to new location
-		toRename = append(toRename, []rename{
-			{
-				src:  s.Paths.AudioMarkers.GetScreenshotPath(srcHash, int(m.Seconds)),
-				dest: s.Paths.AudioMarkers.GetScreenshotPath(destHash, int(m.Seconds)),
-			},
-			{
-				src:  s.Paths.AudioMarkers.GetThumbnailPath(srcHash, int(m.Seconds)),
-				dest: s.Paths.AudioMarkers.GetThumbnailPath(destHash, int(m.Seconds)),
-			},
-			{
-				src:  s.Paths.AudioMarkers.GetWebpPreviewPath(srcHash, int(m.Seconds)),
-				dest: s.Paths.AudioMarkers.GetWebpPreviewPath(destHash, int(m.Seconds)),
-			},
-		}...)
-	}
-
-	if len(toRename) > 0 {
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
-			// rename the files if they exist
-			for _, e := range toRename {
-				srcExists, _ := fsutil.FileExists(e.src)
-				destExists, _ := fsutil.FileExists(e.dest)
-
-				if srcExists && !destExists {
-					destDir := filepath.Dir(e.dest)
-					if err := fsutil.EnsureDir(destDir); err != nil {
-						logger.Errorf("Error creating generated marker folder %s: %v", destDir, err)
-						continue
-					}
-
-					if err := os.Rename(e.src, e.dest); err != nil {
-						logger.Errorf("Error renaming generated marker file from %s to %s: %v", e.src, e.dest, err)
-					}
-				}
-			}
-		})
 	}
 
 	return nil

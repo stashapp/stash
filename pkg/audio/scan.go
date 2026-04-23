@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file/video"
+	"github.com/stashapp/stash/pkg/file/audio"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	ErrNotVideoFile = errors.New("not a video file")
+	ErrNotAudioFile = errors.New("not a audio file")
 
 	// fingerprint types to match with
 	// only try to match by data fingerprints, _not_ perceptual fingerprints
@@ -29,7 +29,7 @@ var (
 type ScanCreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Audio, error)
 	FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Audio, error)
-	GetFiles(ctx context.Context, relatedID int) ([]*models.VideoFile, error)
+	GetFiles(ctx context.Context, relatedID int) ([]*models.AudioFile, error)
 
 	Create(ctx context.Context, newAudio *models.Audio, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedAudio models.AudioPartial) (*models.Audio, error)
@@ -42,7 +42,7 @@ type ScanGalleryFinderUpdater interface {
 }
 
 type ScanGenerator interface {
-	Generate(ctx context.Context, s *models.Audio, f *models.VideoFile) error
+	Generate(ctx context.Context, s *models.Audio, f *models.AudioFile) error
 }
 
 type ScanHandler struct {
@@ -50,7 +50,7 @@ type ScanHandler struct {
 	GalleryFinderUpdater ScanGalleryFinderUpdater
 
 	ScanGenerator  ScanGenerator
-	CaptionUpdater video.CaptionUpdater
+	CaptionUpdater audio.CaptionUpdater
 	PluginCache    *plugin.Cache
 
 	FileNamingAlgorithm models.HashAlgorithm
@@ -82,13 +82,13 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		return err
 	}
 
-	videoFile, ok := f.(*models.VideoFile)
+	AudioFile, ok := f.(*models.AudioFile)
 	if !ok {
-		return ErrNotVideoFile
+		return ErrNotAudioFile
 	}
 
 	if oldFile != nil {
-		if err := video.CleanCaptions(ctx, videoFile, nil, h.CaptionUpdater); err != nil {
+		if err := audio.CleanCaptions(ctx, AudioFile, nil, h.CaptionUpdater); err != nil {
 			return fmt.Errorf("cleaning captions: %w", err)
 		}
 	}
@@ -101,7 +101,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 	if len(existing) == 0 {
 		// try also to match file by fingerprints
-		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints.Filter(matchableFingerprintTypes...))
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, AudioFile.Fingerprints.Filter(matchableFingerprintTypes...))
 		if err != nil {
 			return fmt.Errorf("finding existing audio by fingerprints: %w", err)
 		}
@@ -109,7 +109,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 	if len(existing) > 0 {
 		updateExisting := oldFile != nil
-		if err := h.associateExisting(ctx, existing, videoFile, updateExisting); err != nil {
+		if err := h.associateExisting(ctx, existing, AudioFile, updateExisting); err != nil {
 			return err
 		}
 	} else {
@@ -118,7 +118,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 		logger.Infof("%s doesn't exist. Creating new audio...", f.Base().Path)
 
-		if err := h.CreatorUpdater.Create(ctx, &newAudio, []models.FileID{videoFile.ID}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &newAudio, []models.FileID{AudioFile.ID}); err != nil {
 			return fmt.Errorf("creating new audio: %w", err)
 		}
 
@@ -144,9 +144,9 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 	// do this after the commit so that cover generation doesn't hold up the transaction
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		for _, s := range existing {
-			if err := h.ScanGenerator.Generate(ctx, s, videoFile); err != nil {
+			if err := h.ScanGenerator.Generate(ctx, s, AudioFile); err != nil {
 				// just log if cover generation fails. We can try again on rescan
-				logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
+				logger.Errorf("Error generating content for %s: %v", AudioFile.Path, err)
 			}
 		}
 	})
@@ -154,7 +154,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Audio, f *models.VideoFile, updateExisting bool) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Audio, f *models.AudioFile, updateExisting bool) error {
 	for _, s := range existing {
 		if err := s.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err

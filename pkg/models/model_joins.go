@@ -73,3 +73,49 @@ type GroupIDDescription struct {
 	GroupID     int    `json:"group_id"`
 	Description string `json:"description"`
 }
+
+// Audio
+type GroupsAudios struct {
+	GroupID    int  `json:"group_id"`
+	AudioIndex *int `json:"audio_index"`
+}
+
+func (s GroupsAudios) AudioGroupInput() AudioGroupInput {
+	return AudioGroupInput{
+		GroupID:    strconv.Itoa(s.GroupID),
+		AudioIndex: s.AudioIndex,
+	}
+}
+
+func (s GroupsAudios) Equal(o GroupsAudios) bool {
+	return o.GroupID == s.GroupID && ((o.AudioIndex == nil && s.AudioIndex == nil) ||
+		(o.AudioIndex != nil && s.AudioIndex != nil && *o.AudioIndex == *s.AudioIndex))
+}
+
+type UpdateGroupIDsAudio struct {
+	Groups []GroupsAudios         `json:"groups"`
+	Mode   RelationshipUpdateMode `json:"mode"`
+}
+
+func (u *UpdateGroupIDsAudio) GroupInputs() []AudioGroupInput {
+	if u == nil {
+		return nil
+	}
+
+	ret := make([]AudioGroupInput, 0, len(u.Groups))
+	for _, id := range u.Groups {
+		ret = append(ret, id.AudioGroupInput())
+	}
+
+	return ret
+}
+
+func (u *UpdateGroupIDsAudio) AddUnique(v GroupsAudios) {
+	for _, vv := range u.Groups {
+		if vv.GroupID == v.GroupID {
+			return
+		}
+	}
+
+	u.Groups = append(u.Groups, v)
+}

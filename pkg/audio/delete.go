@@ -72,40 +72,6 @@ func (d *FileDeleter) MarkGeneratedFiles(audio *models.Audio) error {
 		files = append(files, vttPath)
 	}
 
-	heatmapPath := d.Paths.Audio.GetInteractiveHeatmapPath(audioHash)
-	exists, _ = fsutil.FileExists(heatmapPath)
-	if exists {
-		files = append(files, heatmapPath)
-	}
-
-	return d.FilesWithoutTrash(files)
-}
-
-// MarkMarkerFiles deletes generated files for a audio marker with the
-// provided audio and timestamp.
-// Generated files bypass trash and are permanently deleted since they can be regenerated.
-func (d *FileDeleter) MarkMarkerFiles(audio *models.Audio, seconds int) error {
-	videoPath := d.Paths.AudioMarkers.GetVideoPreviewPath(audio.GetHash(d.FileNamingAlgo), seconds)
-	imagePath := d.Paths.AudioMarkers.GetWebpPreviewPath(audio.GetHash(d.FileNamingAlgo), seconds)
-	screenshotPath := d.Paths.AudioMarkers.GetScreenshotPath(audio.GetHash(d.FileNamingAlgo), seconds)
-
-	var files []string
-
-	exists, _ := fsutil.FileExists(videoPath)
-	if exists {
-		files = append(files, videoPath)
-	}
-
-	exists, _ = fsutil.FileExists(imagePath)
-	if exists {
-		files = append(files, imagePath)
-	}
-
-	exists, _ = fsutil.FileExists(screenshotPath)
-	if exists {
-		files = append(files, screenshotPath)
-	}
-
 	return d.FilesWithoutTrash(files)
 }
 

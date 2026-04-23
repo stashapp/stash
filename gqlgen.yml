@@ -44,6 +44,13 @@ models:
         fieldName: DurationFinite
       frame_rate:
         fieldName: FrameRateFinite
+  AudioFile:
+    fields:
+      # override float fields - #1572
+      duration:
+        fieldName: DurationFinite
+      sample_rate:
+        fieldName: SampleRateFinite
   # movie is group under the hood
   Movie:
     model: github.com/stashapp/stash/pkg/models.Group
@@ -96,6 +103,8 @@ models:
     model: github.com/stashapp/stash/internal/manager.StashBoxBatchTagInput
   SceneStreamEndpoint:
     model: github.com/stashapp/stash/internal/manager.SceneStreamEndpoint
+  AudioStreamEndpoint:
+    model: github.com/stashapp/stash/internal/manager.AudioStreamEndpoint
   ExportObjectTypeInput:
     model: github.com/stashapp/stash/internal/manager.ExportObjectTypeInput
   ExportObjectsInput:

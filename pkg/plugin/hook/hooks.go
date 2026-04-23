@@ -14,6 +14,10 @@ const (
 	SceneUpdatePost  TriggerEnum = "Scene.Update.Post"
 	SceneDestroyPost TriggerEnum = "Scene.Destroy.Post"
 
+	AudioCreatePost  TriggerEnum = "Audio.Create.Post"
+	AudioUpdatePost  TriggerEnum = "Audio.Update.Post"
+	AudioDestroyPost TriggerEnum = "Audio.Destroy.Post"
+
 	ImageCreatePost  TriggerEnum = "Image.Create.Post"
 	ImageUpdatePost  TriggerEnum = "Image.Update.Post"
 	ImageDestroyPost TriggerEnum = "Image.Destroy.Post"

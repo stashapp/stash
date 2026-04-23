@@ -13,22 +13,22 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func convertVideoFile(f models.File) (*models.VideoFile, error) {
-	vf, ok := f.(*models.VideoFile)
+func convertAudioFile(f models.File) (*models.AudioFile, error) {
+	vf, ok := f.(*models.AudioFile)
 	if !ok {
 		return nil, fmt.Errorf("file %T is not a video file", f)
 	}
 	return vf, nil
 }
 
-func (r *audioResolver) getPrimaryFile(ctx context.Context, obj *models.Audio) (*models.VideoFile, error) {
+func (r *audioResolver) getPrimaryFile(ctx context.Context, obj *models.Audio) (*models.AudioFile, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
 		if err != nil {
 			return nil, err
 		}
 
-		ret, err := convertVideoFile(f)
+		ret, err := convertAudioFile(f)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +43,7 @@ func (r *audioResolver) getPrimaryFile(ctx context.Context, obj *models.Audio) (
 	return nil, nil
 }
 
-func (r *audioResolver) getFiles(ctx context.Context, obj *models.Audio) ([]*models.VideoFile, error) {
+func (r *audioResolver) getFiles(ctx context.Context, obj *models.Audio) ([]*models.AudioFile, error) {
 	fileIDs, err := loaders.From(ctx).AudioFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
@@ -55,9 +55,9 @@ func (r *audioResolver) getFiles(ctx context.Context, obj *models.Audio) ([]*mod
 		return nil, err
 	}
 
-	ret := make([]*models.VideoFile, len(files))
+	ret := make([]*models.AudioFile, len(files))
 	for i, f := range files {
-		ret[i], err = convertVideoFile(f)
+		ret[i], err = convertAudioFile(f)
 		if err != nil {
 			return nil, err
 		}
@@ -76,17 +76,17 @@ func (r *audioResolver) Date(ctx context.Context, obj *models.Audio) (*string, e
 	return nil, nil
 }
 
-func (r *audioResolver) Files(ctx context.Context, obj *models.Audio) ([]*VideoFile, error) {
+func (r *audioResolver) Files(ctx context.Context, obj *models.Audio) ([]*AudioFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make([]*VideoFile, len(files))
+	ret := make([]*AudioFile, len(files))
 
 	for i, f := range files {
-		ret[i] = &VideoFile{
-			VideoFile: f,
+		ret[i] = &AudioFile{
+			AudioFile: f,
 		}
 	}
 
@@ -113,37 +113,25 @@ func (r *audioResolver) Paths(ctx context.Context, obj *models.Audio) (*AudioPat
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
 	webpPath := builder.GetStreamPreviewImageURL()
-	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
+	objHash := obj.GetHash(config.GetAudioFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
 	spritePath := builder.GetSpriteURL(objHash)
 	funscriptPath := builder.GetFunscriptURL()
 	captionBasePath := builder.GetCaptionURL()
-	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &AudioPathsType{
-		Screenshot:         &screenshotPath,
-		Preview:            &previewPath,
-		Stream:             &streamPath,
-		Webp:               &webpPath,
-		Vtt:                &vttPath,
-		Sprite:             &spritePath,
-		Funscript:          &funscriptPath,
-		InteractiveHeatmap: &interactiveHeatmap,
-		Caption:            &captionBasePath,
+		Screenshot: &screenshotPath,
+		Preview:    &previewPath,
+		Stream:     &streamPath,
+		Webp:       &webpPath,
+		Vtt:        &vttPath,
+		Sprite:     &spritePath,
+		Funscript:  &funscriptPath,
+		Caption:    &captionBasePath,
 	}, nil
 }
 
-func (r *audioResolver) AudioMarkers(ctx context.Context, obj *models.Audio) (ret []*models.AudioMarker, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.AudioMarker.FindByAudioID(ctx, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
+// TODO(audio|AudioCaption): need to update IF AudioCaption required
 func (r *audioResolver) Captions(ctx context.Context, obj *models.Audio) (ret []*models.VideoCaption, err error) {
 	primaryFile, err := r.getPrimaryFile(ctx, obj)
 	if err != nil {
@@ -183,37 +171,6 @@ func (r *audioResolver) Studio(ctx context.Context, obj *models.Audio) (ret *mod
 	}
 
 	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
-}
-
-func (r *audioResolver) Movies(ctx context.Context, obj *models.Audio) (ret []*AudioMovie, err error) {
-	if !obj.Groups.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			qb := r.repository.Audio
-
-			return obj.LoadGroups(ctx, qb)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	loader := loaders.From(ctx).GroupByID
-
-	for _, sm := range obj.Groups.List() {
-		movie, err := loader.Load(sm.GroupID)
-		if err != nil {
-			return nil, err
-		}
-
-		audioIdx := sm.AudioIndex
-		audioMovie := &AudioMovie{
-			Movie:      movie,
-			AudioIndex: audioIdx,
-		}
-
-		ret = append(ret, audioMovie)
-	}
-
-	return ret, nil
 }
 
 func (r *audioResolver) Groups(ctx context.Context, obj *models.Audio) (ret []*AudioGroup, err error) {
@@ -275,16 +232,6 @@ func (r *audioResolver) Performers(ctx context.Context, obj *models.Audio) (ret 
 	return ret, firstError(errs)
 }
 
-func (r *audioResolver) StashIds(ctx context.Context, obj *models.Audio) (ret []*models.StashID, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		return obj.LoadStashIDs(ctx, r.repository.Audio)
-	}); err != nil {
-		return nil, err
-	}
-
-	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
-}
-
 func (r *audioResolver) AudioStreams(ctx context.Context, obj *models.Audio) ([]*manager.AudioStreamEndpoint, error) {
 	// load the primary file into the audio
 	_, err := r.getPrimaryFile(ctx, obj)
@@ -299,30 +246,6 @@ func (r *audioResolver) AudioStreams(ctx context.Context, obj *models.Audio) ([]
 	apiKey := config.GetAPIKey()
 
 	return manager.GetAudioStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
-}
-
-func (r *audioResolver) Interactive(ctx context.Context, obj *models.Audio) (bool, error) {
-	primaryFile, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return false, err
-	}
-	if primaryFile == nil {
-		return false, nil
-	}
-
-	return primaryFile.Interactive, nil
-}
-
-func (r *audioResolver) InteractiveSpeed(ctx context.Context, obj *models.Audio) (*int, error) {
-	primaryFile, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-	if primaryFile == nil {
-		return nil, nil
-	}
-
-	return primaryFile.InteractiveSpeed, nil
 }
 
 func (r *audioResolver) URL(ctx context.Context, obj *models.Audio) (*string, error) {

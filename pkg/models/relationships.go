@@ -35,6 +35,10 @@ type FileIDLoader interface {
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]FileID, error)
 }
 
+type AudioGroupLoader interface {
+	GetGroups(ctx context.Context, id int) ([]GroupsAudios, error)
+}
+
 type SceneGroupLoader interface {
 	GetGroups(ctx context.Context, id int) ([]GroupsScenes, error)
 }
@@ -53,6 +57,9 @@ type StashIDLoader interface {
 
 type VideoFileLoader interface {
 	GetFiles(ctx context.Context, relatedID int) ([]*VideoFile, error)
+}
+type AudioFileLoader interface {
+	GetFiles(ctx context.Context, relatedID int) ([]*AudioFile, error)
 }
 
 type FileLoader interface {
@@ -188,6 +195,77 @@ func (r *RelatedGroups) load(fn func() ([]GroupsScenes, error)) error {
 
 	if ids == nil {
 		ids = []GroupsScenes{}
+	}
+
+	r.list = ids
+
+	return nil
+}
+
+// Audio
+// RelatedGroupsAudio represents a list of related Groups.
+type RelatedGroupsAudio struct {
+	list []GroupsAudios
+}
+
+// NewRelatedGroups returns a loaded RelateGroups object with the provided groups.
+// Loaded will return true when called on the returned object if the provided slice is not nil.
+func NewRelatedGroupsAudio(list []GroupsAudios) RelatedGroupsAudio {
+	return RelatedGroupsAudio{
+		list: list,
+	}
+}
+
+// Loaded returns true if the relationship has been loaded.
+func (r RelatedGroupsAudio) Loaded() bool {
+	return r.list != nil
+}
+
+func (r RelatedGroupsAudio) mustLoaded() {
+	if !r.Loaded() {
+		panic("list has not been loaded")
+	}
+}
+
+// List returns the related Groups. Panics if the relationship has not been loaded.
+func (r RelatedGroupsAudio) List() []GroupsAudios {
+	r.mustLoaded()
+
+	return r.list
+}
+
+// Add adds the provided ids to the list. Panics if the relationship has not been loaded.
+func (r *RelatedGroupsAudio) Add(groups ...GroupsAudios) {
+	r.mustLoaded()
+
+	r.list = append(r.list, groups...)
+}
+
+// ForID returns the GroupsAudios object for the given group ID. Returns nil if not found.
+func (r *RelatedGroupsAudio) ForID(id int) *GroupsAudios {
+	r.mustLoaded()
+
+	for _, v := range r.list {
+		if v.GroupID == id {
+			return &v
+		}
+	}
+
+	return nil
+}
+
+func (r *RelatedGroupsAudio) load(fn func() ([]GroupsAudios, error)) error {
+	if r.Loaded() {
+		return nil
+	}
+
+	ids, err := fn()
+	if err != nil {
+		return err
+	}
+
+	if ids == nil {
+		ids = []GroupsAudios{}
 	}
 
 	r.list = ids
@@ -415,6 +493,105 @@ func (r *RelatedVideoFiles) load(fn func() ([]*VideoFile, error)) error {
 }
 
 func (r *RelatedVideoFiles) loadPrimary(fn func() (*VideoFile, error)) error {
+	if r.PrimaryLoaded() {
+		return nil
+	}
+
+	var err error
+	r.primaryFile, err = fn()
+	if err != nil {
+		return err
+	}
+
+	r.primaryLoaded = true
+
+	return nil
+}
+
+// Audio
+
+type RelatedAudioFiles struct {
+	primaryFile   *AudioFile
+	files         []*AudioFile
+	primaryLoaded bool
+}
+
+func NewRelatedAudioFiles(files []*AudioFile) RelatedAudioFiles {
+	ret := RelatedAudioFiles{
+		files:         files,
+		primaryLoaded: true,
+	}
+
+	if len(files) > 0 {
+		ret.primaryFile = files[0]
+	}
+
+	return ret
+}
+
+func (r *RelatedAudioFiles) SetPrimary(f *AudioFile) {
+	r.primaryFile = f
+	r.primaryLoaded = true
+}
+
+func (r *RelatedAudioFiles) Set(f []*AudioFile) {
+	r.files = f
+	if len(r.files) > 0 {
+		r.primaryFile = r.files[0]
+	}
+
+	r.primaryLoaded = true
+}
+
+// Loaded returns true if the relationship has been loaded.
+func (r RelatedAudioFiles) Loaded() bool {
+	return r.files != nil
+}
+
+// Loaded returns true if the primary file relationship has been loaded.
+func (r RelatedAudioFiles) PrimaryLoaded() bool {
+	return r.primaryLoaded
+}
+
+// List returns the related files. Panics if the relationship has not been loaded.
+func (r RelatedAudioFiles) List() []*AudioFile {
+	if !r.Loaded() {
+		panic("relationship has not been loaded")
+	}
+
+	return r.files
+}
+
+// Primary returns the primary file. Panics if the relationship has not been loaded.
+func (r RelatedAudioFiles) Primary() *AudioFile {
+	if !r.PrimaryLoaded() {
+		panic("relationship has not been loaded")
+	}
+
+	return r.primaryFile
+}
+
+func (r *RelatedAudioFiles) load(fn func() ([]*AudioFile, error)) error {
+	if r.Loaded() {
+		return nil
+	}
+
+	var err error
+	r.files, err = fn()
+	if err != nil {
+		return err
+	}
+
+	if len(r.files) > 0 {
+		r.primaryFile = r.files[0]
+	}
+
+	r.primaryLoaded = true
+
+	return nil
+}
+
+func (r *RelatedAudioFiles) loadPrimary(fn func() (*AudioFile, error)) error {
 	if r.PrimaryLoaded() {
 		return nil
 	}

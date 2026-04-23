@@ -18,6 +18,7 @@ type Database struct {
 	Image          *ImageReaderWriter
 	Group          *GroupReaderWriter
 	Performer      *PerformerReaderWriter
+	Audio          *AudioReaderWriter
 	Scene          *SceneReaderWriter
 	SceneMarker    *SceneMarkerReaderWriter
 	Studio         *StudioReaderWriter
@@ -67,6 +68,7 @@ func NewDatabase() *Database {
 		Image:          &ImageReaderWriter{},
 		Group:          &GroupReaderWriter{},
 		Performer:      &PerformerReaderWriter{},
+		Audio:          &AudioReaderWriter{},
 		Scene:          &SceneReaderWriter{},
 		SceneMarker:    &SceneMarkerReaderWriter{},
 		Studio:         &StudioReaderWriter{},
@@ -83,6 +85,7 @@ func (db *Database) AssertExpectations(t mock.TestingT) {
 	db.Image.AssertExpectations(t)
 	db.Group.AssertExpectations(t)
 	db.Performer.AssertExpectations(t)
+	db.Audio.AssertExpectations(t)
 	db.Scene.AssertExpectations(t)
 	db.SceneMarker.AssertExpectations(t)
 	db.Studio.AssertExpectations(t)
@@ -110,6 +113,7 @@ func (db *Database) Repository() models.Repository {
 		Image:          db.Image,
 		Group:          db.Group,
 		Performer:      db.Performer,
+		Audio:          db.Audio,
 		Scene:          db.Scene,
 		SceneMarker:    db.SceneMarker,
 		Studio:         db.Studio,

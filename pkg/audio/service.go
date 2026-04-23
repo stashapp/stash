@@ -11,7 +11,7 @@ import (
 )
 
 type Config interface {
-	GetVideoFileNamingAlgorithm() models.HashAlgorithm
+	GetAudioFileNamingAlgorithm() models.HashAlgorithm
 }
 
 type Service struct {

@@ -331,6 +331,7 @@ func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
 		cleaner:      cleaner,
 		repository:   s.Repository,
+		audioService: s.AudioService,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,
 		input:        input,

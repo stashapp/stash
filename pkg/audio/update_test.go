@@ -6,7 +6,6 @@ import (
 	"errors"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -18,9 +17,6 @@ import (
 func TestUpdater_IsEmpty(t *testing.T) {
 	organized := true
 	ids := []int{1}
-	stashIDs := []models.StashID{
-		{},
-	}
 	cover := []byte{1}
 
 	tests := []struct {
@@ -67,18 +63,6 @@ func TestUpdater_IsEmpty(t *testing.T) {
 			false,
 		},
 		{
-			"performer set",
-			&UpdateSet{
-				Partial: models.AudioPartial{
-					StashIDs: &models.UpdateStashIDs{
-						StashIDs: stashIDs,
-						Mode:     models.RelationshipUpdateModeSet,
-					},
-				},
-			},
-			false,
-		},
-		{
 			"cover set",
 			&UpdateSet{
 				CoverImage: cover,
@@ -101,7 +85,6 @@ func TestUpdater_Update(t *testing.T) {
 		badUpdateID
 		badPerformersID
 		badTagsID
-		badStashIDsID
 		badCoverID
 		performerID
 		tagID
@@ -109,8 +92,6 @@ func TestUpdater_Update(t *testing.T) {
 
 	performerIDs := []int{performerID}
 	tagIDs := []int{tagID}
-	stashID := "stashID"
-	endpoint := "endpoint"
 
 	title := "title"
 	cover := []byte("cover")
@@ -154,15 +135,6 @@ func TestUpdater_Update(t *testing.T) {
 					},
 					TagIDs: &models.UpdateIDs{
 						IDs:  tagIDs,
-						Mode: models.RelationshipUpdateModeSet,
-					},
-					StashIDs: &models.UpdateStashIDs{
-						StashIDs: []models.StashID{
-							{
-								StashID:  stashID,
-								Endpoint: endpoint,
-							},
-						},
 						Mode: models.RelationshipUpdateModeSet,
 					},
 				},
@@ -225,7 +197,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 		badUpdateID
 		badPerformersID
 		badTagsID
-		badStashIDsID
 		badCoverID
 		performerID
 		tagID
@@ -237,23 +208,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	performerIDStrs := intslice.IntSliceToStringSlice(performerIDs)
 	tagIDs := []int{tagID}
 	tagIDStrs := intslice.IntSliceToStringSlice(tagIDs)
-	stashID := "stashID"
-	endpoint := "endpoint"
-	updatedAt := time.Now()
-	stashIDs := []models.StashID{
-		{
-			StashID:   stashID,
-			Endpoint:  endpoint,
-			UpdatedAt: updatedAt,
-		},
-	}
-	stashIDInputs := []models.StashIDInput{
-		{
-			StashID:   stashID,
-			Endpoint:  endpoint,
-			UpdatedAt: &updatedAt,
-		},
-	}
 
 	title := "title"
 	cover := []byte("cover")
@@ -286,10 +240,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 						IDs:  tagIDs,
 						Mode: models.RelationshipUpdateModeSet,
 					},
-					StashIDs: &models.UpdateStashIDs{
-						StashIDs: stashIDs,
-						Mode:     models.RelationshipUpdateModeSet,
-					},
 				},
 				CoverImage: cover,
 			},
@@ -297,7 +247,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 				ID:           audioIDStr,
 				PerformerIds: performerIDStrs,
 				TagIds:       tagIDStrs,
-				StashIds:     stashIDInputs,
 				CoverImage:   &coverB64,
 			},
 		},

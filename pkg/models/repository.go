@@ -22,6 +22,7 @@ type Repository struct {
 	Image          ImageReaderWriter
 	Group          GroupReaderWriter
 	Performer      PerformerReaderWriter
+	Audio          AudioReaderWriter
 	Scene          SceneReaderWriter
 	SceneMarker    SceneMarkerReaderWriter
 	Studio         StudioReaderWriter

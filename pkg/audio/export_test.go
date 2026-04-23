@@ -109,9 +109,6 @@ func createFullAudio(id int) models.Audio {
 				},
 			},
 		}),
-		StashIDs: models.NewRelatedStashIDs([]models.StashID{
-			stashID,
-		}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -128,7 +125,6 @@ func createEmptyAudio(id int) models.Audio {
 			},
 		}),
 		URLs:      models.NewRelatedStrings([]string{}),
-		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -149,10 +145,7 @@ func createFullJSONAudio(image string, customFields map[string]interface{}) *jso
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
-		Cover: image,
-		StashIDs: []models.StashID{
-			stashID,
-		},
+		Cover:        image,
 		CustomFields: customFields,
 	}
 }
@@ -441,180 +434,6 @@ func TestGetAudioGroupsJSON(t *testing.T) {
 	for i, s := range getAudioGroupsJSONScenarios {
 		audio := s.input
 		json, err := GetAudioGroupsJSON(testCtx, db.Group, &audio)
-
-		switch {
-		case !s.err && err != nil:
-			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		case s.err && err == nil:
-			t.Errorf("[%d] expected error not returned", i)
-		default:
-			assert.Equal(t, s.expected, json, "[%d]", i)
-		}
-	}
-
-	db.AssertExpectations(t)
-}
-
-const (
-	validMarkerID1 = 1
-	validMarkerID2 = 2
-
-	invalidMarkerID1 = 3
-	invalidMarkerID2 = 4
-
-	validTagID1 = 1
-	validTagID2 = 2
-
-	validTagName1 = "validTagName1"
-	validTagName2 = "validTagName2"
-
-	invalidTagID = 3
-
-	markerTitle1 = "markerTitle1"
-	markerTitle2 = "markerTitle2"
-
-	markerSeconds1 = 1.0
-	markerSeconds2 = 2.3
-
-	markerSeconds1Str = "1.0"
-	markerSeconds2Str = "2.3"
-)
-
-type audioMarkersTestScenario struct {
-	input    models.Audio
-	expected []jsonschema.AudioMarker
-	err      bool
-}
-
-var getAudioMarkersJSONScenarios = []audioMarkersTestScenario{
-	{
-		createEmptyAudio(audioID),
-		[]jsonschema.AudioMarker{
-			{
-				Title:      markerTitle1,
-				PrimaryTag: validTagName1,
-				Seconds:    markerSeconds1Str,
-				Tags: []string{
-					validTagName1,
-					validTagName2,
-				},
-				CreatedAt: json.JSONTime{
-					Time: createTime,
-				},
-				UpdatedAt: json.JSONTime{
-					Time: updateTime,
-				},
-			},
-			{
-				Title:      markerTitle2,
-				PrimaryTag: validTagName2,
-				Seconds:    markerSeconds2Str,
-				Tags: []string{
-					validTagName2,
-				},
-				CreatedAt: json.JSONTime{
-					Time: createTime,
-				},
-				UpdatedAt: json.JSONTime{
-					Time: updateTime,
-				},
-			},
-		},
-		false,
-	},
-	{
-		createEmptyAudio(noMarkersID),
-		nil,
-		false,
-	},
-	{
-		createEmptyAudio(errMarkersID),
-		nil,
-		true,
-	},
-	{
-		createEmptyAudio(errFindPrimaryTagID),
-		nil,
-		true,
-	},
-	{
-		createEmptyAudio(errFindByMarkerID),
-		nil,
-		true,
-	},
-}
-
-var validMarkers = []*models.AudioMarker{
-	{
-		ID:           validMarkerID1,
-		Title:        markerTitle1,
-		PrimaryTagID: validTagID1,
-		Seconds:      markerSeconds1,
-		CreatedAt:    createTime,
-		UpdatedAt:    updateTime,
-	},
-	{
-		ID:           validMarkerID2,
-		Title:        markerTitle2,
-		PrimaryTagID: validTagID2,
-		Seconds:      markerSeconds2,
-		CreatedAt:    createTime,
-		UpdatedAt:    updateTime,
-	},
-}
-
-var invalidMarkers1 = []*models.AudioMarker{
-	{
-		ID:           invalidMarkerID1,
-		PrimaryTagID: invalidTagID,
-	},
-}
-
-var invalidMarkers2 = []*models.AudioMarker{
-	{
-		ID:           invalidMarkerID2,
-		PrimaryTagID: validTagID1,
-	},
-}
-
-func TestGetAudioMarkersJSON(t *testing.T) {
-	db := mocks.NewDatabase()
-
-	markersErr := errors.New("error getting audio markers")
-	tagErr := errors.New("error getting tags")
-
-	db.AudioMarker.On("FindByAudioID", testCtx, audioID).Return(validMarkers, nil).Once()
-	db.AudioMarker.On("FindByAudioID", testCtx, noMarkersID).Return(nil, nil).Once()
-	db.AudioMarker.On("FindByAudioID", testCtx, errMarkersID).Return(nil, markersErr).Once()
-	db.AudioMarker.On("FindByAudioID", testCtx, errFindPrimaryTagID).Return(invalidMarkers1, nil).Once()
-	db.AudioMarker.On("FindByAudioID", testCtx, errFindByMarkerID).Return(invalidMarkers2, nil).Once()
-
-	db.Tag.On("Find", testCtx, validTagID1).Return(&models.Tag{
-		Name: validTagName1,
-	}, nil)
-	db.Tag.On("Find", testCtx, validTagID2).Return(&models.Tag{
-		Name: validTagName2,
-	}, nil)
-	db.Tag.On("Find", testCtx, invalidTagID).Return(nil, tagErr)
-
-	db.Tag.On("FindByAudioMarkerID", testCtx, validMarkerID1).Return([]*models.Tag{
-		{
-			Name: validTagName1,
-		},
-		{
-			Name: validTagName2,
-		},
-	}, nil)
-	db.Tag.On("FindByAudioMarkerID", testCtx, validMarkerID2).Return([]*models.Tag{
-		{
-			Name: validTagName2,
-		},
-	}, nil)
-	db.Tag.On("FindByAudioMarkerID", testCtx, invalidMarkerID2).Return(nil, tagErr).Once()
-
-	for i, s := range getAudioMarkersJSONScenarios {
-		audio := s.input
-		json, err := GetAudioMarkersJSON(testCtx, db.AudioMarker, db.Tag, &audio)
 
 		switch {
 		case !s.err && err != nil:

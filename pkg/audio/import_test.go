@@ -49,11 +49,6 @@ func TestImporterPreImport(t *testing.T) {
 		title     = "title"
 		code      = "code"
 		details   = "details"
-		director  = "director"
-		endpoint1 = "endpoint1"
-		stashID1  = "stashID1"
-		endpoint2 = "endpoint2"
-		stashID2  = "stashID2"
 		url1      = "url1"
 		url2      = "url2"
 		rating    = 3
@@ -73,14 +68,9 @@ func TestImporterPreImport(t *testing.T) {
 		{
 			"basic",
 			jsonschema.Audio{
-				Title:    title,
-				Code:     code,
-				Details:  details,
-				Director: director,
-				StashIDs: []models.StashID{
-					{Endpoint: endpoint1, StashID: stashID1},
-					{Endpoint: endpoint2, StashID: stashID2},
-				},
+				Title:        title,
+				Code:         code,
+				Details:      details,
 				URLs:         []string{url1, url2},
 				Rating:       rating,
 				Organized:    organized,
@@ -90,14 +80,9 @@ func TestImporterPreImport(t *testing.T) {
 				PlayDuration: playDuration,
 			},
 			models.Audio{
-				Title:    title,
-				Code:     code,
-				Details:  details,
-				Director: director,
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{
-					{Endpoint: endpoint1, StashID: stashID1},
-					{Endpoint: endpoint2, StashID: stashID2},
-				}),
+				Title:        title,
+				Code:         code,
+				Details:      details,
 				URLs:         models.NewRelatedStrings([]string{url1, url2}),
 				Rating:       &rating,
 				Organized:    organized,

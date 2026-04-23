@@ -19,14 +19,6 @@ func LoadURLs(ctx context.Context, audio *models.Audio, r models.AudioReader) er
 	return nil
 }
 
-func LoadStashIDs(ctx context.Context, audio *models.Audio, r models.AudioReader) error {
-	if err := audio.LoadStashIDs(ctx, r); err != nil {
-		return fmt.Errorf("failed to load stash IDs for audio %d: %w", audio.ID, err)
-	}
-
-	return nil
-}
-
 func LoadFiles(ctx context.Context, audio *models.Audio, r models.AudioReader) error {
 	if err := audio.LoadFiles(ctx, r); err != nil {
 		return fmt.Errorf("failed to load files for audio %d: %w", audio.ID, err)

@@ -33,6 +33,7 @@ type FileFilterType struct {
 	SceneCount      *IntCriterionInput               `json:"scene_count"`
 	ImageCount      *IntCriterionInput               `json:"image_count"`
 	GalleryCount    *IntCriterionInput               `json:"gallery_count"`
+	AudioFilter     *AudioFilterType                 `json:"audio_filter"`
 	ScenesFilter    *SceneFilterType                 `json:"scenes_filter"`
 	ImagesFilter    *ImageFilterType                 `json:"images_filter"`
 	GalleriesFilter *GalleryFilterType               `json:"galleries_filter"`

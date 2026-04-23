@@ -4,7 +4,7 @@ package models
 
 import (
 	"context"
-	"time"
+	// "time"
 )
 
 // AudioGetter provides methods to get audios by ID.
@@ -72,24 +72,6 @@ type AudioCreatorUpdater interface {
 	AudioUpdater
 }
 
-type ViewDateReader interface {
-	CountViews(ctx context.Context, id int) (int, error)
-	CountAllViews(ctx context.Context) (int, error)
-	CountUniqueViews(ctx context.Context) (int, error)
-	GetManyViewCount(ctx context.Context, ids []int) ([]int, error)
-	GetViewDates(ctx context.Context, relatedID int) ([]time.Time, error)
-	GetManyViewDates(ctx context.Context, ids []int) ([][]time.Time, error)
-	GetManyLastViewed(ctx context.Context, ids []int) ([]*time.Time, error)
-}
-
-type ODateReader interface {
-	GetOCount(ctx context.Context, id int) (int, error)
-	GetManyOCount(ctx context.Context, ids []int) ([]int, error)
-	GetAllOCount(ctx context.Context) (int, error)
-	GetODates(ctx context.Context, relatedID int) ([]time.Time, error)
-	GetManyODates(ctx context.Context, ids []int) ([][]time.Time, error)
-}
-
 // AudioReader provides all methods to read audios.
 type AudioReader interface {
 	AudioFinder
@@ -104,8 +86,7 @@ type AudioReader interface {
 	PerformerIDLoader
 	TagIDLoader
 	AudioGroupLoader
-	StashIDLoader
-	VideoFileLoader
+	AudioFileLoader
 	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Audio, error)
@@ -115,18 +96,6 @@ type AudioReader interface {
 	PlayDuration(ctx context.Context) (float64, error)
 	GetCover(ctx context.Context, audioID int) ([]byte, error)
 	HasCover(ctx context.Context, audioID int) (bool, error)
-}
-
-type OHistoryWriter interface {
-	AddO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
-	DeleteO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
-	ResetO(ctx context.Context, id int) (int, error)
-}
-
-type ViewHistoryWriter interface {
-	AddViews(ctx context.Context, audioID int, dates []time.Time) ([]time.Time, error)
-	DeleteViews(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
-	DeleteAllViews(ctx context.Context, id int) (int, error)
 }
 
 // AudioWriter provides all methods to modify audios.

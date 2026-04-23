@@ -21,7 +21,8 @@ import (
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
-	"github.com/stashapp/stash/pkg/audio"
+	// TODO(audio): uncomment
+	// "github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -685,6 +686,28 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				Paths:       instance.Paths,
 			},
 		},
+		// &file.FilteredHandler{
+		// 	Filter: file.FilterFunc(audioFileFilter),
+		// 	Handler: &audio.ScanHandler{
+		// 		CreatorUpdater:     r.Audio,
+		// 		GalleryFinder:      r.Gallery,
+		// 		SceneFinderUpdater: r.Scene,
+		// 		// ScanGenerator: &audioGenerators{
+		// 		// 	input:              options,
+		// 		// 	taskQueue:          taskQueue,
+		// 		// 	progress:           progress,
+		// 		// 	paths:              mgr.Paths,
+		// 		// 	sequentialScanning: c.GetSequentialScanning(),
+		// 		// },
+		// 		// ScanConfig: &scanConfig{
+		// 		// 	isGenerateThumbnails:       options.ScanGenerateThumbnails,
+		// 		// 	isGenerateClipPreviews:     options.ScanGenerateClipPreviews,
+		// 		// 	createGalleriesFromFolders: c.GetCreateGalleriesFromFolders(),
+		// 		// },
+		// 		PluginCache: pluginCache,
+		// 		Paths:       instance.Paths,
+		// 	},
+		// },
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(galleryFileFilter),
 			Handler: &gallery.ScanHandler{

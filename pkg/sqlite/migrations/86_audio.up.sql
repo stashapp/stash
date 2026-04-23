@@ -12,8 +12,6 @@ CREATE TABLE "audios" (
     `created_at` datetime not null,
     `updated_at` datetime not null,
     `code` text,
-    `artists` text,
-    `album` text,
     `resume_time` float not null default 0,
     `play_duration` float not null default 0,
     "date_precision" TINYINT,
@@ -61,7 +59,7 @@ CREATE TABLE "groups_audios" (
     foreign key(`audio_id`) references `audios`(`id`) on delete cascade,
     PRIMARY KEY("group_id", `audio_id`)
 );
-CREATE INDEX `index_movies_audios_on_movie_id` on "groups_audios" ("group_id");
+CREATE INDEX `index_group_audios_on_group_id` on "groups_audios" ("group_id");
 --------------------------------------------
 -- performers_audios definition
 --

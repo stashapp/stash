@@ -675,8 +675,8 @@ func (p *FilenameParser) setGroups(ctx context.Context, qb GroupNameFinder, h au
 			group := p.queryGroup(ctx, qb, groupName)
 			if group != nil {
 				if _, found := groupsSet[group.ID]; !found {
-					result.Movies = append(result.Movies, &models.AudioMovieID{
-						MovieID: strconv.Itoa(group.ID),
+					result.Groups = append(result.Groups, &models.AudioGroupID{
+						GroupID: strconv.Itoa(group.ID),
 					})
 					groupsSet[group.ID] = true
 				}

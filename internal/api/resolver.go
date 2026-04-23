@@ -35,6 +35,7 @@ type hookExecutor interface {
 type Resolver struct {
 	repository     models.Repository
 	sceneService   manager.SceneService
+	audioService   manager.AudioService
 	imageService   manager.ImageService
 	galleryService manager.GalleryService
 	groupService   manager.GroupService
@@ -63,6 +64,9 @@ func (r *Resolver) Query() QueryResolver {
 }
 func (r *Resolver) Scene() SceneResolver {
 	return &sceneResolver{r}
+}
+func (r *Resolver) Audio() AudioResolver {
+	return &audioResolver{r}
 }
 func (r *Resolver) Image() ImageResolver {
 	return &imageResolver{r}
@@ -93,6 +97,9 @@ func (r *Resolver) GalleryFile() GalleryFileResolver {
 func (r *Resolver) VideoFile() VideoFileResolver {
 	return &videoFileResolver{r}
 }
+func (r *Resolver) AudioFile() AudioFileResolver {
+	return &audioFileResolver{r}
+}
 func (r *Resolver) ImageFile() ImageFileResolver {
 	return &imageFileResolver{r}
 }
@@ -121,6 +128,7 @@ type galleryChapterResolver struct{ *Resolver }
 type performerResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
+type audioResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 
@@ -131,6 +139,7 @@ type movieResolver struct{ *groupResolver }
 type tagResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
+type audioFileResolver struct{ *Resolver }
 type imageFileResolver struct{ *Resolver }
 type basicFileResolver struct{ *Resolver }
 type folderResolver struct{ *Resolver }

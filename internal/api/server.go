@@ -159,12 +159,14 @@ func Initialize() (*Server, error) {
 
 	pluginCache := mgr.PluginCache
 	sceneService := mgr.SceneService
+	audioService := mgr.AudioService
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
 	groupService := mgr.GroupService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
+		audioService:   audioService,
 		imageService:   imageService,
 		galleryService: galleryService,
 		groupService:   groupService,

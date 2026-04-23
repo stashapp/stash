@@ -395,8 +395,35 @@ func (t changesetTranslator) relatedGroups(value []models.SceneGroupInput) (mode
 	if err != nil {
 		return models.RelatedGroups{}, err
 	}
-
+	
 	return models.NewRelatedGroups(groupsScenes), nil
+}
+
+func groupsAudioFromGroupInput(input []models.AudioGroupInput) ([]models.GroupsAudios, error) {
+	ret := make([]models.GroupsAudios, len(input))
+
+	for i, v := range input {
+		mID, err := strconv.Atoi(v.GroupID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid group ID: %s", v.GroupID)
+		}
+
+		ret[i] = models.GroupsAudios{
+			GroupID:    mID,
+			AudioIndex: v.AudioIndex,
+		}
+	}
+
+	return ret, nil
+}
+
+func (t changesetTranslator) relatedGroupsAudio(value []models.AudioGroupInput) (models.RelatedGroupsAudio, error) {
+	groupsAudios, err := groupsAudioFromGroupInput(value)
+	if err != nil {
+		return models.RelatedGroupsAudio{}, err
+	}
+
+	return models.NewRelatedGroupsAudio(groupsAudios), nil
 }
 
 func (t changesetTranslator) updateGroupIDsFromMovies(value []models.SceneMovieInput, field string) (*models.UpdateGroupIDs, error) {
@@ -451,6 +478,44 @@ func (t changesetTranslator) updateGroupIDsBulk(value *BulkUpdateIds, field stri
 		Mode:   value.Mode,
 	}, nil
 }
+
+func (t changesetTranslator) updateGroupIDsAudio(value []models.AudioGroupInput, field string) (*models.UpdateGroupIDsAudio, error) {
+	if !t.hasField(field) {
+		return nil, nil
+	}
+
+	groupsAudios, err := groupsAudioFromGroupInput(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UpdateGroupIDsAudio{
+		Groups: groupsAudios,
+		Mode:   models.RelationshipUpdateModeSet,
+	}, nil
+}
+
+func (t changesetTranslator) updateGroupIDsBulkAudio(value *BulkUpdateIds, field string) (*models.UpdateGroupIDsAudio, error) {
+	if !t.hasField(field) || value == nil {
+		return nil, nil
+	}
+
+	ids, err := stringslice.StringSliceToIntSlice(value.Ids)
+	if err != nil {
+		return nil, fmt.Errorf("converting ids [%v]: %w", value.Ids, err)
+	}
+
+	groups := make([]models.GroupsAudios, len(ids))
+	for i, id := range ids {
+		groups[i] = models.GroupsAudios{GroupID: id}
+	}
+
+	return &models.UpdateGroupIDsAudio{
+		Groups: groups,
+		Mode:   value.Mode,
+	}, nil
+}
+
 
 func groupsDescriptionsFromGroupInput(input []*GroupDescriptionInput) ([]models.GroupIDDescription, error) {
 	ret := make([]models.GroupIDDescription, len(input))

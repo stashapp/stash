@@ -55,6 +55,14 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		Config:           cfg,
 	}
 
+	audioService := &audio.Service{
+		File:             db.File,
+		Repository:       db.Audio,
+		PluginCache:      pluginCache,
+		Paths:            mgrPaths,
+		Config:           cfg,
+	}
+
 	imageService := &image.Service{
 		File:       db.File,
 		Repository: db.Image,
@@ -102,6 +110,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		Repository: repo,
 
 		SceneService:   sceneService,
+		AudioService:   audioService,
 		ImageService:   imageService,
 		GalleryService: galleryService,
 		GroupService:   groupService,

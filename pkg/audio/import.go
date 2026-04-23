@@ -92,12 +92,10 @@ func (i *Importer) audioJSONToAudio(audioJSON jsonschema.Audio) models.Audio {
 		Title:        audioJSON.Title,
 		Code:         audioJSON.Code,
 		Details:      audioJSON.Details,
-		Director:     audioJSON.Director,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
 		Groups:       models.NewRelatedGroups([]models.GroupsAudios{}),
-		StashIDs:     models.NewRelatedStashIDs(audioJSON.StashIDs),
 	}
 
 	if len(audioJSON.URLs) > 0 {
@@ -166,7 +164,7 @@ func (i *Importer) populateOHistory() {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	files := make([]*models.VideoFile, 0)
+	files := make([]*models.AudioFile, 0)
 
 	for _, ref := range i.Input.Files {
 		path := ref
@@ -178,11 +176,11 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("audio file '%s' not found", path)
 		} else {
-			files = append(files, f.(*models.VideoFile))
+			files = append(files, f.(*models.AudioFile))
 		}
 	}
 
-	i.audio.Files = models.NewRelatedVideoFiles(files)
+	i.audio.Files = models.NewRelatedAudioFiles(files)
 
 	return nil
 }

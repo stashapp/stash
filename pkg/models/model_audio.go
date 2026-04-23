@@ -1,3 +1,5 @@
+// TODO(audio): update this file
+
 package models
 
 import (
@@ -10,19 +12,19 @@ import (
 
 // Audio stores the metadata for a single video audio.
 type Audio struct {
-	ID       int    `json:"id"`
-	Title    string `json:"title"`
-	Code     string `json:"code"`
-	Details  string `json:"details"`
-	Artists  string `json:"artists"`
-	Date     *Date  `json:"date"`
+	ID      int    `json:"id"`
+	Title   string `json:"title"`
+	Code    string `json:"code"`
+	Details string `json:"details"`
+	Artists string `json:"artists"`
+	Date    *Date  `json:"date"`
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
 	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
-	Files         RelatedVideoFiles
+	Files         RelatedAudioFiles
 	PrimaryFileID *FileID
 	// transient - path of primary file - empty if no files
 	Path string
@@ -37,12 +39,11 @@ type Audio struct {
 	ResumeTime   float64 `json:"resume_time"`
 	PlayDuration float64 `json:"play_duration"`
 
-	URLs         RelatedStrings  `json:"urls"`
-	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
-	TagIDs       RelatedIDs      `json:"tag_ids"`
-	PerformerIDs RelatedIDs      `json:"performer_ids"`
-	Groups       RelatedGroups   `json:"groups"`
-	StashIDs     RelatedStashIDs `json:"stash_ids"`
+	URLs         RelatedStrings     `json:"urls"`
+	GalleryIDs   RelatedIDs         `json:"gallery_ids"`
+	TagIDs       RelatedIDs         `json:"tag_ids"`
+	PerformerIDs RelatedIDs         `json:"performer_ids"`
+	Groups       RelatedGroupsAudio `json:"groups"`
 }
 
 func NewAudio() Audio {
@@ -70,11 +71,10 @@ type UpdateAudioInput struct {
 // AudioPartial represents part of a Audio object. It is used to update
 // the database entry.
 type AudioPartial struct {
-	Title    OptionalString
-	Code     OptionalString
-	Details  OptionalString
-	Director OptionalString
-	Date     OptionalDate
+	Title   OptionalString
+	Code    OptionalString
+	Details OptionalString
+	Date    OptionalDate
 	// Rating expressed in 1-100 scale
 	Rating       OptionalInt
 	Organized    OptionalBool
@@ -88,8 +88,7 @@ type AudioPartial struct {
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
-	GroupIDs      *UpdateGroupIDs
-	StashIDs      *UpdateStashIDs
+	GroupIDs      *UpdateGroupIDsAudio
 	PrimaryFileID *FileID
 }
 
@@ -106,14 +105,14 @@ func (s *Audio) LoadURLs(ctx context.Context, l URLLoader) error {
 	})
 }
 
-func (s *Audio) LoadFiles(ctx context.Context, l VideoFileLoader) error {
-	return s.Files.load(func() ([]*VideoFile, error) {
+func (s *Audio) LoadFiles(ctx context.Context, l AudioFileLoader) error {
+	return s.Files.load(func() ([]*AudioFile, error) {
 		return l.GetFiles(ctx, s.ID)
 	})
 }
 
 func (s *Audio) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
-	return s.Files.loadPrimary(func() (*VideoFile, error) {
+	return s.Files.loadPrimary(func() (*AudioFile, error) {
 		if s.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -123,10 +122,10 @@ func (s *Audio) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 			return nil, err
 		}
 
-		var vf *VideoFile
+		var vf *AudioFile
 		if len(f) > 0 {
 			var ok bool
-			vf, ok = f[0].(*VideoFile)
+			vf, ok = f[0].(*AudioFile)
 			if !ok {
 				return nil, errors.New("not a video file")
 			}
@@ -159,12 +158,6 @@ func (s *Audio) LoadGroups(ctx context.Context, l AudioGroupLoader) error {
 	})
 }
 
-func (s *Audio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
-	return s.StashIDs.load(func() ([]StashID, error) {
-		return l.GetStashIDs(ctx, s.ID)
-	})
-}
-
 func (s *Audio) LoadRelationships(ctx context.Context, l AudioReader) error {
 	if err := s.LoadURLs(ctx, l); err != nil {
 		return err
@@ -186,10 +179,6 @@ func (s *Audio) LoadRelationships(ctx context.Context, l AudioReader) error {
 		return err
 	}
 
-	if err := s.LoadStashIDs(ctx, l); err != nil {
-		return err
-	}
-
 	if err := s.LoadFiles(ctx, l); err != nil {
 		return err
 	}
@@ -206,27 +195,19 @@ func (s AudioPartial) UpdateInput(id int) AudioUpdateInput {
 		dateStr = &v
 	}
 
-	var stashIDs StashIDs
-	if s.StashIDs != nil {
-		stashIDs = StashIDs(s.StashIDs.StashIDs)
-	}
-
 	ret := AudioUpdateInput{
 		ID:           strconv.Itoa(id),
 		Title:        s.Title.Ptr(),
 		Code:         s.Code.Ptr(),
 		Details:      s.Details.Ptr(),
-		Director:     s.Director.Ptr(),
 		Urls:         s.URLs.Strings(),
 		Date:         dateStr,
 		Rating100:    s.Rating.Ptr(),
 		Organized:    s.Organized.Ptr(),
 		StudioID:     s.StudioID.StringPtr(),
-		GalleryIds:   s.GalleryIDs.IDStrings(),
 		PerformerIds: s.PerformerIDs.IDStrings(),
-		Movies:       s.GroupIDs.AudioMovieInputs(),
+		Groups:       s.GroupIDs.GroupInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
-		StashIds:     stashIDs.ToStashIDInputs(),
 	}
 
 	return ret
@@ -269,20 +250,18 @@ func (s Audio) GetHash(hashAlgorithm HashAlgorithm) string {
 type AudioFileType struct {
 	Size       *string  `graphql:"size" json:"size"`
 	Duration   *float64 `graphql:"duration" json:"duration"`
-	VideoCodec *string  `graphql:"video_codec" json:"video_codec"`
 	AudioCodec *string  `graphql:"audio_codec" json:"audio_codec"`
-	Width      *int     `graphql:"width" json:"width"`
-	Height     *int     `graphql:"height" json:"height"`
-	Framerate  *float64 `graphql:"framerate" json:"framerate"`
+	Samplerate *float64 `graphql:"samplerate" json:"samplerate"`
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
 }
 
-type VideoCaption struct {
-	LanguageCode string `json:"language_code"`
-	Filename     string `json:"filename"`
-	CaptionType  string `json:"caption_type"`
-}
+// TODO(audio): don't know if we need this, using VideoCaption for now due to `pkg/models/repository_file.go` and `FileReader` using
+// type AudioCaption struct {
+// 	LanguageCode string `json:"language_code"`
+// 	Filename     string `json:"filename"`
+// 	CaptionType  string `json:"caption_type"`
+// }
 
-func (c VideoCaption) Path(filePath string) string {
-	return filepath.Join(filepath.Dir(filePath), c.Filename)
-}
+// func (c AudioCaption) Path(filePath string) string {
+// 	return filepath.Join(filepath.Dir(filePath), c.Filename)
+// }

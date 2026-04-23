@@ -64,6 +64,7 @@ type Manager struct {
 	Repository models.Repository
 
 	SceneService   SceneService
+	AudioService   AudioService
 	ImageService   ImageService
 	GalleryService GalleryService
 	GroupService   GroupService

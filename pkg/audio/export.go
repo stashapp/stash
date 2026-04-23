@@ -38,7 +38,6 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, audio *models.Audio) 
 		Code:      audio.Code,
 		URLs:      audio.URLs.List(),
 		Details:   audio.Details,
-		Director:  audio.Director,
 		CreatedAt: json.JSONTime{Time: audio.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: audio.UpdatedAt},
 	}
@@ -65,17 +64,6 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, audio *models.Audio) 
 	if len(cover) > 0 {
 		newAudioJSON.Cover = utils.GetBase64StringFromData(cover)
 	}
-
-	var ret []models.StashID
-	for _, stashID := range audio.StashIDs.List() {
-		newJoin := models.StashID{
-			StashID:  stashID.StashID,
-			Endpoint: stashID.Endpoint,
-		}
-		ret = append(ret, newJoin)
-	}
-
-	newAudioJSON.StashIDs = ret
 
 	dates, err := reader.GetViewDates(ctx, audio.ID)
 	if err != nil {

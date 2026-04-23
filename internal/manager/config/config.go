@@ -836,6 +836,20 @@ func (i *Config) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	return models.HashAlgorithm(ret)
 }
 
+// GetAudioFileNamingAlgorithm returns what hash algorithm should be used for
+// naming generated audio files.
+func (i *Config) GetAudioFileNamingAlgorithm() models.HashAlgorithm {
+	// TODO(audio): update this to AudioFileNamingAlgorithm?
+	ret := i.getString(VideoFileNamingAlgorithm)
+
+	// default to oshash
+	if ret == "" {
+		return models.HashAlgorithmOshash
+	}
+
+	return models.HashAlgorithm(ret)
+}
+
 func (i *Config) GetSequentialScanning() bool {
 	return i.getBool(SequentialScanning)
 }
