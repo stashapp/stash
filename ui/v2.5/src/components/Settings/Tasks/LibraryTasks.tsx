@@ -8,6 +8,7 @@ import {
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
 import { useConfigurationContext } from "src/hooks/Config";
+import { useAutoTagTrigger } from "src/hooks/useAutoTagTrigger";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
@@ -201,13 +202,10 @@ export const LibraryTasks: React.FC = () => {
     });
   }
 
-  function onAutoTagClick() {
-    if (configuration?.interface.disableAutoTagWarning) {
-      runAutoTag();
-      return;
-    }
-    setDialogOpen({ autoTagAlert: true });
-  }
+  const onAutoTagClick = useAutoTagTrigger(
+    () => runAutoTag(),
+    () => setDialogOpen({ autoTagAlert: true })
+  );
 
   function renderScanDialog() {
     if (!dialogOpen.scan) {
@@ -484,8 +482,8 @@ export const LibraryTasks: React.FC = () => {
           />
           <BooleanSetting
             id="disable_auto_tag_warning"
-            headingID="config.tasks.auto_tag.skip_warning.heading"
-            subHeadingID="config.tasks.auto_tag.skip_warning.description"
+            headingID="config.tasks.auto_tag.disable_warning.heading"
+            subHeadingID="config.tasks.auto_tag.disable_warning.description"
             checked={iface.disableAutoTagWarning ?? undefined}
             onChange={(v) => saveInterface({ disableAutoTagWarning: v })}
           />

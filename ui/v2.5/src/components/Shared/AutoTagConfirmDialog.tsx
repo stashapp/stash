@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useConfigureInterface } from "src/core/StashService";
 import { SettingStateContext } from "src/components/Settings/context";
+import { useToast } from "src/hooks/Toast";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
 
@@ -34,30 +35,28 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   onCancel,
 }) => {
   const intl = useIntl();
+  const Toast = useToast();
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [configureInterface] = useConfigureInterface();
+  // route through SettingsContext when available so the Settings panel's
+  // local state reflects the change without a page refresh
+  const settingsContext = useContext(SettingStateContext);
 
   useEffect(() => {
     if (show) {
       setDontShowAgain(false);
     }
   }, [show]);
-  // route through SettingsContext when available so the Settings panel's
-  // local state reflects the change without a page refresh
-  const settingsContext = useContext(SettingStateContext);
 
-  async function handleConfirm() {
+  function handleConfirm() {
     if (dontShowAgain) {
-      try {
-        if (settingsContext) {
-          settingsContext.saveInterface({ disableAutoTagWarning: true });
-        } else {
-          await configureInterface({
-            variables: { input: { disableAutoTagWarning: true } },
-          });
-        }
-      } catch (e) {
-        // preference persistence failure must not block the confirmed action
+      if (settingsContext) {
+        // context's saveInterface already surfaces errors via its own toast
+        settingsContext.saveInterface({ disableAutoTagWarning: true });
+      } else {
+        configureInterface({
+          variables: { input: { disableAutoTagWarning: true } },
+        }).catch((e) => Toast.error(e));
       }
     }
     onConfirm();

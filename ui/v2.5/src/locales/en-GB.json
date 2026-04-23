@@ -510,9 +510,9 @@
       "auto_tag": {
         "auto_tagging_all_paths": "Auto tagging all paths",
         "auto_tagging_paths": "Auto tagging the following paths",
-        "skip_warning": {
+        "disable_warning": {
           "description": "Skip the confirmation warning shown before running auto tag.",
-          "heading": "Skip auto tag warning"
+          "heading": "Disable auto tag warning"
         }
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",

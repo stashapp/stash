@@ -51,4 +51,4 @@ Performers or Tags that have Ignore Auto tag flag added to them will be skipped 
 
 ### Skip the confirmation warning
 
-A confirmation warning is shown before Auto tag runs. If you use Auto tag frequently you can bypass this warning by ticking the **Don't show this warning again** checkbox on the warning dialog, or by enabling **Settings → Tasks → Auto Tag → Skip auto tag warning**.
+A confirmation warning is shown before Auto tag runs. If you use Auto tag frequently you can bypass this warning by ticking the **Don't show this warning again** checkbox on the warning dialog, or by enabling **Settings → Tasks → Auto Tag → Disable auto tag warning**.
