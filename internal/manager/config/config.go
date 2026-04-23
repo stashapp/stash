@@ -237,7 +237,7 @@ const (
 	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
 	DisableDropdownCreateGallery   = "disable_dropdown_create.gallery"
 
-	DisableAutoTagWarning = "disable_auto_tag_warning"
+	DisableAutoTagWarning = "auto_tag.disable_warning"
 
 	HandyKey                       = "handy_key"
 	FunscriptOffset                = "funscript_offset"

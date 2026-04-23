@@ -1,17 +1,19 @@
+import { useCallback } from "react";
 import { useConfigurationContext } from "./Config";
 
-// Centralises the "skip warning" check so every entry point to auto tag
-// consults the same interface flag.
 export function useAutoTagTrigger(
   onRun: () => void,
-  onOpenConfirm: () => void
+  onOpenConfirm: () => void,
+  override?: boolean | null
 ) {
   const { configuration } = useConfigurationContext();
-  return () => {
-    if (configuration?.interface.disableAutoTagWarning) {
+  const disabled =
+    override ?? configuration?.interface.disableAutoTagWarning ?? false;
+  return useCallback(() => {
+    if (disabled) {
       onRun();
       return;
     }
     onOpenConfirm();
-  };
+  }, [disabled, onRun, onOpenConfirm]);
 }

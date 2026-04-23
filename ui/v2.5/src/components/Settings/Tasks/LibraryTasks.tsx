@@ -204,7 +204,8 @@ export const LibraryTasks: React.FC = () => {
 
   const onAutoTagClick = useAutoTagTrigger(
     () => runAutoTag(),
-    () => setDialogOpen({ autoTagAlert: true })
+    () => setDialogOpen({ autoTagAlert: true }),
+    iface.disableAutoTagWarning
   );
 
   function renderScanDialog() {
