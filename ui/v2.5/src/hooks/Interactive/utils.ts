@@ -27,7 +27,7 @@ export interface IInteractiveClient {
   connect(): Promise<void>;
   handyKey: string;
   uploadScript: (funscriptPath: string, apiKey?: string) => Promise<void>;
-  sync(): Promise<number>;
+  sync(): number;
   configure(config: Partial<IDeviceSettings>): Promise<void>;
   play(position: number): Promise<void>;
   pause(): Promise<void>;

@@ -92,6 +92,9 @@ importers:
       i18n-iso-countries:
         specifier: ^7.5.0
         version: 7.14.0
+      ive-connect:
+        specifier: ^1.1.0
+        version: 1.1.0
       localforage:
         specifier: ^1.10.0
         version: 1.10.0
@@ -158,9 +161,6 @@ importers:
       string.prototype.replaceall:
         specifier: ^1.0.7
         version: 1.0.11
-      thehandy:
-        specifier: ^1.0.3
-        version: 1.1.0
       ua-parser-js:
         specifier: ^1.0.34
         version: 1.0.41
@@ -2182,6 +2182,9 @@ packages:
     resolution: {integrity: sha512-cQzWCtO6C8TQiYl1ruKNn2U6Ao4o4WBBcbL61yJl84x+j5sOWWFU9X7DpND8XZG3daDppSsigMdfAIl2upQBRw==}
     engines: {node: '>=10.0.0'}
 
+  '@xsense/autoblow-sdk@2.1.1':
+    resolution: {integrity: sha512-l0zGxuM/IFLQsS9Gi5BKHYwky6k2kvL5MxAqavxRajWf3ALwnXzij0T72T9uwSoRDUZIjjX0tbgSgwfrxQ0pnw==}
+
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -2981,6 +2984,14 @@ packages:
   event-target-polyfill@0.0.4:
     resolution: {integrity: sha512-Gs6RLjzlLRdT8X9ZipJdIZI/Y6/HhRLyq9RdDlCsnpxr/+Nn6bU2EFGuC94GjxqhM+Nmij2Vcq98yoHrU8uNFQ==}
 
+  eventsource-parser@3.0.6:
+    resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
+    engines: {node: '>=18.0.0'}
+
+  eventsource@4.1.0:
+    resolution: {integrity: sha512-2GuF51iuHX6A9xdTccMTsNb7VO0lHZihApxhvQzJB5A03DvHDd2FQepodbMaztPBmBcE/ox7o2gqaxGhYB9LhQ==}
+    engines: {node: '>=20.0.0'}
+
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
@@ -3597,6 +3608,10 @@ packages:
   iterator.prototype@1.1.5:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
+
+  ive-connect@1.1.0:
+    resolution: {integrity: sha512-LazXseSSWoBxHehpowbCt3LSMhUvMfHDrMr6K6lISlZ6sw78R0EZIm5L0mjwkelL3IPBZsNvHwvbn6ukG6Gs0Q==}
+    engines: {node: '>=22.0.0'}
 
   jiti@1.21.7:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
@@ -4854,9 +4869,6 @@ packages:
 
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
-
-  thehandy@1.1.0:
-    resolution: {integrity: sha512-ZifUw47kq6cKNiKLNgrnVPkBFbG+yR6tScgWy2INDnGT4XePhjRaQNni67rWn52nAOkotq9VyaK20OZoorHqTA==}
 
   three@0.93.0:
     resolution: {integrity: sha512-Ys9+UBBsd6FxTZZl4BH7B4b2F+B2uR0cOwY7OQ/aCzU/VgO4Wmmr1LbWPH1fsTvSVik9KAuwxwOHlSC4IMGOLA==}
@@ -7661,6 +7673,10 @@ snapshots:
 
   '@xmldom/xmldom@0.8.11': {}
 
+  '@xsense/autoblow-sdk@2.1.1':
+    dependencies:
+      eventsource: 4.1.0
+
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
@@ -8682,6 +8698,12 @@ snapshots:
 
   event-target-polyfill@0.0.4: {}
 
+  eventsource-parser@3.0.6: {}
+
+  eventsource@4.1.0:
+    dependencies:
+      eventsource-parser: 3.0.6
+
   extend@3.0.2: {}
 
   extract-files@13.0.0:
@@ -9350,6 +9372,10 @@ snapshots:
       get-proto: 1.0.1
       has-symbols: 1.1.0
       set-function-name: 2.0.2
+
+  ive-connect@1.1.0:
+    dependencies:
+      '@xsense/autoblow-sdk': 2.1.1
 
   jiti@1.21.7: {}
 
@@ -10865,8 +10891,6 @@ snapshots:
       source-map-support: 0.5.21
 
   text-table@0.2.0: {}
-
-  thehandy@1.1.0: {}
 
   three@0.93.0: {}
 
