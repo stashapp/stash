@@ -19,7 +19,7 @@ export const PerformerPreviewCard = ({
   disambiguation,
   ageString,
 }: IPerformerPreviewData) => (
-  <div className="tag-popover-card tagger-performer-popover">
+  <div className="tag-popover-card performer-preview-popover">
     <div className="card performer-card zoom-0">
       <div className="thumbnail-section">
         <img

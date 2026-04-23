@@ -57,7 +57,7 @@ export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
         {previewData ? (
           <PerformerPreviewCard {...previewData} />
         ) : (
-          <div className="tag-popover-card tagger-performer-popover p-3">
+          <div className="tag-popover-card performer-preview-popover p-3">
             {loading ? loadingText : null}
           </div>
         )}

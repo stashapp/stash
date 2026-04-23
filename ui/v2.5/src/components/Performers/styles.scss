@@ -158,6 +158,16 @@
   }
 }
 
+.performer-preview-popover {
+  .card {
+    width: 200px;
+  }
+
+  .performer-card-image {
+    max-height: 300px;
+  }
+}
+
 .scrape-dialog .performer-image {
   display: block;
   margin-bottom: 10px;
