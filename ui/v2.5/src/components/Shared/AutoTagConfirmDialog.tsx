@@ -38,8 +38,6 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   const Toast = useToast();
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [configureInterface] = useConfigureInterface();
-  // route through SettingsContext when available so the Settings panel's
-  // local state reflects the change without a page refresh
   const settingsContext = useContext(SettingStateContext);
 
   useEffect(() => {
@@ -51,7 +49,6 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   function handleConfirm() {
     if (dontShowAgain) {
       if (settingsContext) {
-        // context's saveInterface already surfaces errors via its own toast
         settingsContext.saveInterface({ disableAutoTagWarning: true });
       } else {
         configureInterface({
