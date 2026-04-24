@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -485,6 +486,12 @@ func (c Client) SubmitFingerprintsWithVote(ctx context.Context, scene *models.Sc
 	for _, fingerprint := range fingerprints {
 		_, err := c.client.SubmitFingerprint(ctx, fingerprint)
 		if err != nil {
+			// When voting INVALID, stash-box returns "fingerprint has no submissions" if the
+			// fingerprint hasn't been associated with that scene yet. There's nothing to
+			// invalidate in that case, so skip it rather than failing the whole submission.
+			if vote == models.FingerprintVoteInvalid && strings.Contains(err.Error(), "fingerprint has no submissions") {
+				continue
+			}
 			return err
 		}
 	}
