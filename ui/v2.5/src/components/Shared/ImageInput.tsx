@@ -10,7 +10,13 @@ import {
 import { useIntl } from "react-intl";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
-import { faClipboard, faFile, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsRotate,
+  faCameraRotate,
+  faClipboard,
+  faFile,
+  faLink,
+} from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 import ImageUtils from "src/utils/image";
 import { useToast } from "src/hooks/Toast";
@@ -22,6 +28,8 @@ interface IImageInput {
   onImageURL?: (url: string) => void;
   onReset?: () => void;
   acceptSVG?: boolean;
+  onGenerateDefault?: () => void;
+  onGenerateCurrent?: () => void;
 }
 
 function acceptExtensions(acceptSVG: boolean = false) {
@@ -37,12 +45,13 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
     onImageURL,
     onReset,
     acceptSVG = false,
+    onGenerateDefault,
+    onGenerateCurrent,
   }) => {
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [url, setURL] = useState("");
     const intl = useIntl();
     const Toast = useToast();
-
     if (!isEditing) return <div />;
 
     if (!onImageURL) {
@@ -158,6 +167,30 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                   <Icon icon={faClipboard} className="fa-fw" />
                   <span>
                     {intl.formatMessage({ id: "actions.from_clipboard" })}
+                  </span>
+                </Button>
+              </div>
+            )}
+            {onGenerateDefault && (
+              <div>
+                <Button className="minimal" onClick={onGenerateDefault}>
+                  <Icon icon={faArrowsRotate} className="fa-fw" />
+                  <span>
+                    {intl.formatMessage({
+                      id: "actions.generate_thumb_default",
+                    })}
+                  </span>
+                </Button>
+              </div>
+            )}
+            {onGenerateCurrent && (
+              <div>
+                <Button className="minimal" onClick={onGenerateCurrent}>
+                  <Icon icon={faCameraRotate} className="fa-fw" />
+                  <span>
+                    {intl.formatMessage({
+                      id: "actions.generate_thumb_from_current",
+                    })}
                   </span>
                 </Button>
               </div>

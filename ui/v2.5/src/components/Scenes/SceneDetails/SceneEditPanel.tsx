@@ -64,6 +64,8 @@ interface IProps {
   initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
+  onGenerateThumbFromCurrent?: () => Promise<void>;
+  onGenerateThumbDefault?: () => Promise<void>;
   onSubmit: (input: GQL.SceneCreateInput, andNew?: boolean) => Promise<void>;
   onDelete?: () => void;
 }
@@ -73,6 +75,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   initialCoverImage,
   isNew = false,
   isVisible,
+  onGenerateThumbFromCurrent,
+  onGenerateThumbDefault,
   onSubmit,
   onDelete,
 }) => {
@@ -877,15 +881,25 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {renderDetailsField()}
             <Form.Group controlId="cover_image">
               <Form.Label>
-                <FormattedMessage id="cover_image" />
+                {intl.formatMessage({ id: "cover_image" })}
               </Form.Label>
               {image}
-              <ImageInput
-                isEditing
-                onImageChange={onCoverImageChange}
-                onImageURL={onImageLoad}
-                onReset={scene.id ? onResetCover : undefined}
-              />
+              <div className="mt-2 d-flex align-items-center">
+                {!isNew && (
+                  <ImageInput
+                    isEditing
+                    onImageChange={onCoverImageChange}
+                    onImageURL={onImageLoad}
+                    onGenerateDefault={onGenerateThumbDefault}
+                    onGenerateCurrent={onGenerateThumbFromCurrent}
+                  />
+                )}
+                {scene.id && (
+                  <Button variant="danger" onClick={() => onResetCover()}>
+                    {intl.formatMessage({ id: "actions.clear_image" })}
+                  </Button>
+                )}
+              </div>
             </Form.Group>
 
             <CustomFieldsInput
