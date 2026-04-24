@@ -468,20 +468,6 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
         >
           <FormattedMessage id="actions.generate" />…
         </Dropdown.Item>
-        <Dropdown.Item
-          key="generate-screenshot"
-          className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot(getPlayerPosition())}
-        >
-          <FormattedMessage id="actions.generate_thumb_from_current" />
-        </Dropdown.Item>
-        <Dropdown.Item
-          key="generate-default"
-          className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot()}
-        >
-          <FormattedMessage id="actions.generate_thumb_default" />
-        </Dropdown.Item>
         {boxes.length > 0 && (
           <Dropdown.Item
             key="submit"
@@ -640,6 +626,10 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
             <SceneEditPanel
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
+              onGenerateThumbFromCurrent={() =>
+                onGenerateScreenshot(getPlayerPosition())
+              }
+              onGenerateThumbDefault={() => onGenerateScreenshot()}
               onSubmit={onSave}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
