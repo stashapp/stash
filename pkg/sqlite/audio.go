@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
@@ -20,8 +18,6 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -31,7 +27,6 @@ const (
 	audioDateColumn       = "date"
 	performersAudiosTable = "performers_audios"
 	audiosTagsTable       = "audios_tags"
-	audiosGalleriesTable  = "audios_galleries"
 	groupsAudiosTable     = "groups_audios"
 	audiosURLsTable       = "audio_urls"
 	audioURLColumn        = "url"
@@ -39,51 +34,13 @@ const (
 	audioViewDateColumn   = "view_date"
 	audiosODatesTable     = "audios_o_dates"
 	audioODateColumn      = "o_date"
-
-	audioCoverBlobColumn = "cover_blob"
 )
-
-var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(DISTINCT audio_id) as ids
-FROM (
-	SELECT audios.id as audio_id
-		, audio_files.duration as file_duration
-		, files.size as file_size
-		, files_fingerprints.fingerprint as phash
-		, abs(max(audio_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - audio_files.duration) as durationDiff
-	FROM audios
-	INNER JOIN audios_files ON (audios.id = audios_files.audio_id)
-	INNER JOIN files ON (audios_files.file_id = files.id)
-	INNER JOIN files_fingerprints ON (audios_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-	INNER JOIN audio_files ON (files.id == audio_files.file_id)
-)
-WHERE durationDiff <= ?1
-    OR ?1 < 0   --  Always TRUE if the parameter is negative.
-                --  That will disable the durationDiff checking.
-GROUP BY phash
-HAVING COUNT(phash) > 1
-	AND COUNT(DISTINCT audio_id) > 1
-ORDER BY SUM(file_size) DESC;
-`
-
-var findAllPhashesQuery = `
-SELECT audios.id as id
-    , files_fingerprints.fingerprint as phash
-    , audio_files.duration as duration
-FROM audios
-INNER JOIN audios_files ON (audios.id = audios_files.audio_id)
-INNER JOIN files ON (audios_files.file_id = files.id)
-INNER JOIN files_fingerprints ON (audios_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-INNER JOIN audio_files ON (files.id == audio_files.file_id)
-ORDER BY files.size DESC;
-`
 
 type audioRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Title         zero.String `db:"title"`
 	Code          zero.String `db:"code"`
 	Details       zero.String `db:"details"`
-	Director      zero.String `db:"director"`
 	Date          NullDate    `db:"date"`
 	DatePrecision null.Int    `db:"date_precision"`
 	// expressed as 1-100
@@ -94,9 +51,6 @@ type audioRow struct {
 	UpdatedAt    Timestamp `db:"updated_at"`
 	ResumeTime   float64   `db:"resume_time"`
 	PlayDuration float64   `db:"play_duration"`
-
-	// not used in resolutions or updates
-	CoverBlob zero.String `db:"cover_blob"`
 }
 
 func (r *audioRow) fromAudio(o models.Audio) {
@@ -104,7 +58,6 @@ func (r *audioRow) fromAudio(o models.Audio) {
 	r.Title = zero.StringFrom(o.Title)
 	r.Code = zero.StringFrom(o.Code)
 	r.Details = zero.StringFrom(o.Details)
-	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
@@ -131,7 +84,6 @@ func (r *audioQueryRow) resolve() *models.Audio {
 		Title:     r.Title.String,
 		Code:      r.Code.String,
 		Details:   r.Details.String,
-		Director:  r.Director.String,
 		Date:      r.Date.DatePtr(r.DatePrecision),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
@@ -163,7 +115,6 @@ func (r *audioRowRecord) fromPartial(o models.AudioPartial) {
 	r.setNullString("title", o.Title)
 	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
-	r.setNullString("director", o.Director)
 	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
@@ -176,7 +127,6 @@ func (r *audioRowRecord) fromPartial(o models.AudioPartial) {
 
 type audioRepositoryType struct {
 	repository
-	galleries  joinRepository
 	tags       joinRepository
 	performers joinRepository
 	groups     repository
@@ -189,13 +139,6 @@ var (
 		repository: repository{
 			tableName: audioTable,
 			idColumn:  idColumn,
-		},
-		galleries: joinRepository{
-			repository: repository{
-				tableName: audiosGalleriesTable,
-				idColumn:  audioIDColumn,
-			},
-			fkColumn: galleryIDColumn,
 		},
 		tags: joinRepository{
 			repository: repository{
@@ -227,7 +170,6 @@ var (
 )
 
 type AudioStore struct {
-	blobJoinQueryBuilder
 	customFieldsStore
 
 	tableMgr *table
@@ -237,12 +179,8 @@ type AudioStore struct {
 	repo *storeRepository
 }
 
-func NewAudioStore(r *storeRepository, blobStore *BlobStore) *AudioStore {
+func NewAudioStore(r *storeRepository) *AudioStore {
 	return &AudioStore{
-		blobJoinQueryBuilder: blobJoinQueryBuilder{
-			blobStore: blobStore,
-			joinTable: audioTable,
-		},
 		customFieldsStore: customFieldsStore{
 			table: audiosCustomFieldsTable,
 			fk:    audiosCustomFieldsTable.Col(audioIDColumn),
@@ -334,12 +272,6 @@ func (qb *AudioStore) Create(ctx context.Context, newObject *models.Audio, fileI
 		}
 	}
 
-	if newObject.GalleryIDs.Loaded() {
-		if err := audiosGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
-			return err
-		}
-	}
-
 	if newObject.Groups.Loaded() {
 		if err := audiosGroupsTableMgr.insertJoins(ctx, id, newObject.Groups.List()); err != nil {
 			return err
@@ -386,11 +318,6 @@ func (qb *AudioStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
-	if partial.GalleryIDs != nil {
-		if err := audiosGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
-			return nil, err
-		}
-	}
 	if partial.GroupIDs != nil {
 		if err := audiosGroupsTableMgr.modifyJoins(ctx, id, partial.GroupIDs.Groups, partial.GroupIDs.Mode); err != nil {
 			return nil, err
@@ -431,12 +358,6 @@ func (qb *AudioStore) Update(ctx context.Context, updatedObject *models.Audio) e
 		}
 	}
 
-	if updatedObject.GalleryIDs.Loaded() {
-		if err := audiosGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
-			return err
-		}
-	}
-
 	if updatedObject.Groups.Loaded() {
 		if err := audiosGroupsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Groups.List()); err != nil {
 			return err
@@ -458,11 +379,6 @@ func (qb *AudioStore) Update(ctx context.Context, updatedObject *models.Audio) e
 }
 
 func (qb *AudioStore) Destroy(ctx context.Context, id int) error {
-	// must handle image checksums manually
-	if err := qb.destroyCover(ctx, id); err != nil {
-		return err
-	}
-
 	// audio markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -737,19 +653,6 @@ func (qb *AudioStore) FindByPerformerID(ctx context.Context, performerID int) ([
 	return ret, nil
 }
 
-func (qb *AudioStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Audio, error) {
-	sq := dialect.From(galleriesAudiosJoinTable).Select(galleriesAudiosJoinTable.Col(audioIDColumn)).Where(
-		galleriesAudiosJoinTable.Col(galleryIDColumn).Eq(galleryID),
-	)
-	ret, err := qb.findBySubquery(ctx, sq)
-
-	if err != nil {
-		return nil, fmt.Errorf("getting audios for gallery %d: %w", galleryID, err)
-	}
-
-	return ret, nil
-}
-
 func (qb *AudioStore) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	joinTable := audiosPerformersJoinTable
 
@@ -860,7 +763,7 @@ func (qb *AudioStore) Size(ctx context.Context) (float64, error) {
 
 func (qb *AudioStore) Duration(ctx context.Context) (float64, error) {
 	table := qb.table()
-	AudioFileTable := AudioFileTableMgr.table
+	AudioFileTable := audioFileTableMgr.table
 
 	q := dialect.Select(
 		goqu.COALESCE(goqu.SUM(AudioFileTable.Col("duration")), 0),
@@ -977,10 +880,6 @@ func (qb *AudioStore) makeQuery(ctx context.Context, audioFilter *models.AudioFi
 				table:    fingerprintTable,
 				onClause: "files_fingerprints.file_id = audios_files.file_id",
 			},
-			join{
-				table:    audioMarkerTable,
-				onClause: "audio_markers.audio_id = audios.id",
-			},
 		)
 
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
@@ -1043,7 +942,7 @@ func (qb *AudioStore) queryGroupedFields(ctx context.Context, options models.Aud
 				onClause: "audios_files.audio_id = audios.id",
 			},
 			join{
-				table:    AudioFileTable,
+				table:    audioFileTable,
 				onClause: "audios_files.file_id = audio_files.file_id",
 			},
 		)
@@ -1103,7 +1002,7 @@ var audioSortOptions = sortOptions{
 	"filesize",
 	"duration",
 	"file_mod_time",
-	"samplerate",
+	"sample_rate",
 	"group_audio_number",
 	"id",
 	"last_o_at",
@@ -1117,7 +1016,6 @@ var audioSortOptions = sortOptions{
 	"path",
 	"random",
 	"rating",
-	"resolution",
 	"studio",
 	"tag_count",
 	"title",
@@ -1196,13 +1094,10 @@ func (qb *AudioStore) setAudioSort(query *queryBuilder, findFilter *models.FindF
 		sort = "mod_time"
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
-	case "samplerate":
+	case "sample_rate":
 		sort = "sample_rate"
 		addAudioFileTable()
 		query.sortAndPagination += getSort(sort, direction, audioFileTable)
-	case "resolution":
-		addAudioFileTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", audioFileTable, audioFileTable, getSortDirection(direction))
 	case "filesize":
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
@@ -1309,22 +1204,6 @@ func (qb *AudioStore) GetURLs(ctx context.Context, audioID int) ([]string, error
 	return audiosURLsTableMgr.get(ctx, audioID)
 }
 
-func (qb *AudioStore) GetCover(ctx context.Context, audioID int) ([]byte, error) {
-	return qb.GetImage(ctx, audioID, audioCoverBlobColumn)
-}
-
-func (qb *AudioStore) HasCover(ctx context.Context, audioID int) (bool, error) {
-	return qb.HasImage(ctx, audioID, audioCoverBlobColumn)
-}
-
-func (qb *AudioStore) UpdateCover(ctx context.Context, audioID int, image []byte) error {
-	return qb.UpdateImage(ctx, audioID, audioCoverBlobColumn, image)
-}
-
-func (qb *AudioStore) destroyCover(ctx context.Context, audioID int) error {
-	return qb.DestroyImage(ctx, audioID, audioCoverBlobColumn)
-}
-
 func (qb *AudioStore) AssignFiles(ctx context.Context, audioID int, fileIDs []models.FileID) error {
 	// assuming a file can only be assigned to a single audio
 	if err := audiosFilesTableMgr.destroyJoins(ctx, fileIDs); err != nil {
@@ -1370,85 +1249,4 @@ func (qb *AudioStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error
 
 func (qb *AudioStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
 	return audioRepository.tags.getIDs(ctx, id)
-}
-
-func (qb *AudioStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {
-	return audioRepository.galleries.getIDs(ctx, id)
-}
-
-func (qb *AudioStore) AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error {
-	return audiosGalleriesTableMgr.addJoins(ctx, audioID, galleryIDs)
-}
-
-func (qb *AudioStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Audio, error) {
-	var dupeIds [][]int
-	if distance == 0 {
-		var ids []string
-		if err := dbWrapper.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
-			return nil, err
-		}
-
-		for _, id := range ids {
-			strIds := strings.Split(id, ",")
-			var audioIds []int
-			for _, strId := range strIds {
-				if intId, err := strconv.Atoi(strId); err == nil {
-					audioIds = sliceutil.AppendUnique(audioIds, intId)
-				}
-			}
-			// filter out
-			if len(audioIds) > 1 {
-				dupeIds = append(dupeIds, audioIds)
-			}
-		}
-	} else {
-		var hashes []*utils.Phash
-
-		if err := audioRepository.queryFunc(ctx, findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
-			phash := utils.Phash{
-				Bucket:   -1,
-				Duration: -1,
-			}
-			if err := rows.StructScan(&phash); err != nil {
-				return err
-			}
-
-			hashes = append(hashes, &phash)
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		dupeIds = utils.FindDuplicates(hashes, distance, durationDiff)
-	}
-
-	var duplicates [][]*models.Audio
-	for _, audioIds := range dupeIds {
-		if audios, err := qb.FindMany(ctx, audioIds); err == nil {
-			duplicates = append(duplicates, audios)
-		}
-	}
-
-	sortByPath(duplicates)
-
-	return duplicates, nil
-}
-
-func sortByPath(audios [][]*models.Audio) {
-	lessFunc := func(i int, j int) bool {
-		firstPathI := getFirstPath(audios[i])
-		firstPathJ := getFirstPath(audios[j])
-		return firstPathI < firstPathJ
-	}
-	sort.SliceStable(audios, lessFunc)
-}
-
-func getFirstPath(audios []*models.Audio) string {
-	var firstPath string
-	for i, audio := range audios {
-		if i == 0 || audio.Path < firstPath {
-			firstPath = audio.Path
-		}
-	}
-	return firstPath
 }

@@ -24,6 +24,7 @@ type TagFinder interface {
 	FindByParentTagID(ctx context.Context, parentID int) ([]*Tag, error)
 	FindByChildTagID(ctx context.Context, childID int) ([]*Tag, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Tag, error)
+	FindByAudioID(ctx context.Context, audioID int) ([]*Tag, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Tag, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Tag, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Tag, error)

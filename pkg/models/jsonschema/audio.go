@@ -16,9 +16,7 @@ type AudioFile struct {
 	Duration   string        `json:"duration"`
 	AudioCodec string        `json:"audio_codec"`
 	Format     string        `json:"format"`
-	Width      int           `json:"width"`
-	Height     int           `json:"height"`
-	Samplerate string        `json:"samplerate"`
+	SampleRate string        `json:"sample_rate"`
 	Bitrate    int           `json:"bitrate"`
 }
 

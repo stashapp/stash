@@ -14,10 +14,6 @@ type AudioFilterType struct {
 	Oshash *StringCriterionInput `json:"oshash"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`
-	// Filter by file phash
-	Phash *StringCriterionInput `json:"phash"`
-	// Filter by phash distance
-	PhashDistance *PhashDistanceCriterionInput `json:"phash_distance"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
@@ -28,32 +24,20 @@ type AudioFilterType struct {
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
 	OCounter *IntCriterionInput `json:"o_counter"`
-	// Filter Audios by duplication criteria
-	Duplicated *DuplicationCriterionInput `json:"duplicated"`
-	// Filter by resolution
-	Resolution *ResolutionCriterionInput `json:"resolution"`
-	// Filter by orientation
-	Orientation *OrientationCriterionInput `json:"orientation"`
-	// Filter by samplerate
-	Samplerate *IntCriterionInput `json:"samplerate"`
+	// Filter by sample_rate
+	SampleRate *IntCriterionInput `json:"sample_rate"`
 	// Filter by bitrate
 	Bitrate *IntCriterionInput `json:"bitrate"`
 	// Filter by audio codec
 	AudioCodec *StringCriterionInput `json:"audio_codec"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
-	// Filter to only include audios which have markers. `true` or `false`
-	HasMarkers *string `json:"has_markers"`
 	// Filter to only include audios missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter to only include audios with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter to only include audios with this group
 	Groups *HierarchicalMultiCriterionInput `json:"groups"`
-	// Filter to only include audios with this movie
-	Movies *MultiCriterionInput `json:"movies"`
-	// Filter to only include audios with this gallery
-	Galleries *MultiCriterionInput `json:"galleries"`
 	// Filter to only include audios with these tags
 	Tags *HierarchicalMultiCriterionInput `json:"tags"`
 	// Filter by tag count
@@ -82,8 +66,6 @@ type AudioFilterType struct {
 	LastPlayedAt *TimestampCriterionInput `json:"last_played_at"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
-	// Filter by related galleries that meet this criteria
-	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
 	// Filter by related performers that meet this criteria
 	PerformersFilter *PerformerFilterType `json:"performers_filter"`
 	// Filter by related studios that meet this criteria
@@ -136,12 +118,9 @@ type AudioCreateInput struct {
 	Rating100    *int              `json:"rating100"`
 	Organized    *bool             `json:"organized"`
 	StudioID     *string           `json:"studio_id"`
-	GalleryIds   []string          `json:"gallery_ids"`
 	PerformerIds []string          `json:"performer_ids"`
 	Groups       []AudioGroupInput `json:"groups"`
 	TagIds       []string          `json:"tag_ids"`
-	// This should be a URL or a base64 encoded data URL
-	CoverImage *string `json:"cover_image"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing audios if applicable.
 	// Files must not already be primary for another audio.
@@ -162,17 +141,14 @@ type AudioUpdateInput struct {
 	OCounter         *int              `json:"o_counter"`
 	Organized        *bool             `json:"organized"`
 	StudioID         *string           `json:"studio_id"`
-	GalleryIds       []string          `json:"gallery_ids"`
 	PerformerIds     []string          `json:"performer_ids"`
 	Groups           []AudioGroupInput `json:"groups"`
 	TagIds           []string          `json:"tag_ids"`
-	// This should be a URL or a base64 encoded data URL
-	CoverImage    *string  `json:"cover_image"`
-	ResumeTime    *float64 `json:"resume_time"`
-	PlayDuration  *float64 `json:"play_duration"`
-	PlayCount     *int     `json:"play_count"`
-	PrimaryFileID *string  `json:"primary_file_id"`
-	CustomFields  *CustomFieldsInput
+	ResumeTime       *float64          `json:"resume_time"`
+	PlayDuration     *float64          `json:"play_duration"`
+	PlayCount        *int              `json:"play_count"`
+	PrimaryFileID    *string           `json:"primary_file_id"`
+	CustomFields     *CustomFieldsInput
 }
 
 type AudioDestroyInput struct {

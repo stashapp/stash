@@ -69,13 +69,6 @@ var names = []string{
 	"name2",
 }
 
-var imageBytes = []byte("imageBytes")
-
-var stashID = models.StashID{
-	StashID:  "StashID",
-	Endpoint: "Endpoint",
-}
-
 const (
 	path        = "path"
 	imageBase64 = "aW1hZ2VCeXRlcw=="
@@ -102,7 +95,7 @@ func createFullAudio(id int) models.Audio {
 		Rating:    &rating,
 		Organized: organized,
 		URLs:      models.NewRelatedStrings([]string{url}),
-		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
+		Files: models.NewRelatedAudioFiles([]*models.AudioFile{
 			{
 				BaseFile: &models.BaseFile{
 					Path: path,
@@ -117,7 +110,7 @@ func createFullAudio(id int) models.Audio {
 func createEmptyAudio(id int) models.Audio {
 	return models.Audio{
 		ID: id,
-		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
+		Files: models.NewRelatedAudioFiles([]*models.AudioFile{
 			{
 				BaseFile: &models.BaseFile{
 					Path: path,
@@ -208,12 +201,6 @@ var scenarios = []basicTestScenario{
 func TestToJSON(t *testing.T) {
 	db := mocks.NewDatabase()
 
-	imageErr := errors.New("error getting image")
-
-	db.Audio.On("GetCover", testCtx, audioID).Return(imageBytes, nil).Once()
-	db.Audio.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
-	db.Audio.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
-	db.Audio.On("GetCover", testCtx, mock.Anything).Return(nil, nil)
 	db.Audio.On("GetViewDates", testCtx, mock.Anything).Return(nil, nil)
 	db.Audio.On("GetODates", testCtx, mock.Anything).Return(nil, nil)
 	db.Audio.On("GetCustomFields", testCtx, customFieldsID).Return(customFields, nil).Once()
@@ -364,7 +351,7 @@ type audioGroupsTestScenario struct {
 	err      bool
 }
 
-var validGroups = models.NewRelatedGroups([]models.GroupsAudios{
+var validGroups = models.NewRelatedGroupsAudio([]models.GroupsAudios{
 	{
 		GroupID:    validGroup1,
 		AudioIndex: &group1Audio,
@@ -375,7 +362,7 @@ var validGroups = models.NewRelatedGroups([]models.GroupsAudios{
 	},
 })
 
-var invalidGroups = models.NewRelatedGroups([]models.GroupsAudios{
+var invalidGroups = models.NewRelatedGroupsAudio([]models.GroupsAudios{
 	{
 		GroupID:    invalidGroup,
 		AudioIndex: &group1Audio,
@@ -403,7 +390,7 @@ var getAudioGroupsJSONScenarios = []audioGroupsTestScenario{
 	{
 		models.Audio{
 			ID:     noGroupsID,
-			Groups: models.NewRelatedGroups([]models.GroupsAudios{}),
+			Groups: models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
 		},
 		nil,
 		false,

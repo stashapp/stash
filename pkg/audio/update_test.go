@@ -17,7 +17,6 @@ import (
 func TestUpdater_IsEmpty(t *testing.T) {
 	organized := true
 	ids := []int{1}
-	cover := []byte{1}
 
 	tests := []struct {
 		name string
@@ -59,13 +58,6 @@ func TestUpdater_IsEmpty(t *testing.T) {
 						Mode: models.RelationshipUpdateModeSet,
 					},
 				},
-			},
-			false,
-		},
-		{
-			"cover set",
-			&UpdateSet{
-				CoverImage: cover,
 			},
 			false,
 		},
@@ -138,7 +130,6 @@ func TestUpdater_Update(t *testing.T) {
 						Mode: models.RelationshipUpdateModeSet,
 					},
 				},
-				CoverImage: cover,
 			},
 			false,
 			false,
@@ -161,15 +152,6 @@ func TestUpdater_Update(t *testing.T) {
 				Partial: models.AudioPartial{
 					Title: models.NewOptionalString(title),
 				},
-			},
-			true,
-			true,
-		},
-		{
-			"error updating cover",
-			&UpdateSet{
-				ID:         badCoverID,
-				CoverImage: cover,
 			},
 			true,
 			true,
@@ -210,8 +192,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	tagIDStrs := intslice.IntSliceToStringSlice(tagIDs)
 
 	title := "title"
-	cover := []byte("cover")
-	coverB64 := "Y292ZXI="
 
 	tests := []struct {
 		name string
@@ -241,13 +221,11 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 						Mode: models.RelationshipUpdateModeSet,
 					},
 				},
-				CoverImage: cover,
 			},
 			models.AudioUpdateInput{
 				ID:           audioIDStr,
 				PerformerIds: performerIDStrs,
 				TagIds:       tagIDStrs,
-				CoverImage:   &coverB64,
 			},
 		},
 		{

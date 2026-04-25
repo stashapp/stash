@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImporterReaderWriter interface {
@@ -28,7 +27,6 @@ type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	FileFinder          models.FileFinder
 	StudioWriter        models.StudioFinderCreator
-	GalleryFinder       models.GalleryFinder
 	PerformerWriter     models.PerformerFinderCreator
 	GroupWriter         models.GroupFinderCreator
 	TagWriter           models.TagFinderCreator
@@ -36,12 +34,11 @@ type Importer struct {
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
 
-	ID             int
-	audio          models.Audio
-	customFields   map[string]interface{}
-	coverImageData []byte
-	viewHistory    []time.Time
-	oHistory       []time.Time
+	ID           int
+	audio        models.Audio
+	customFields map[string]interface{}
+	viewHistory  []time.Time
+	oHistory     []time.Time
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -55,10 +52,6 @@ func (i *Importer) PreImport(ctx context.Context) error {
 		return err
 	}
 
-	if err := i.populateGalleries(ctx); err != nil {
-		return err
-	}
-
 	if err := i.populatePerformers(ctx); err != nil {
 		return err
 	}
@@ -69,14 +62,6 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 	if err := i.populateGroups(ctx); err != nil {
 		return err
-	}
-
-	var err error
-	if len(i.Input.Cover) > 0 {
-		i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
-		if err != nil {
-			return fmt.Errorf("invalid cover image: %v", err)
-		}
 	}
 
 	i.customFields = i.Input.CustomFields
@@ -95,7 +80,7 @@ func (i *Importer) audioJSONToAudio(audioJSON jsonschema.Audio) models.Audio {
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
-		Groups:       models.NewRelatedGroups([]models.GroupsAudios{}),
+		Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
 	}
 
 	if len(audioJSON.URLs) > 0 {
@@ -226,56 +211,6 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	}
 
 	return newStudio.ID, nil
-}
-
-func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
-	var galleries []*models.Gallery
-	var err error
-	switch {
-	case ref.FolderPath != "":
-		galleries, err = i.GalleryFinder.FindByPath(ctx, ref.FolderPath)
-	case len(ref.ZipFiles) > 0:
-		for _, p := range ref.ZipFiles {
-			galleries, err = i.GalleryFinder.FindByPath(ctx, p)
-			if err != nil {
-				break
-			}
-
-			if len(galleries) > 0 {
-				break
-			}
-		}
-	case ref.Title != "":
-		galleries, err = i.GalleryFinder.FindUserGalleryByTitle(ctx, ref.Title)
-	}
-
-	var ret *models.Gallery
-	if len(galleries) > 0 {
-		ret = galleries[0]
-	}
-
-	return ret, err
-}
-
-func (i *Importer) populateGalleries(ctx context.Context) error {
-	for _, ref := range i.Input.Galleries {
-		gallery, err := i.locateGallery(ctx, ref)
-		if err != nil {
-			return err
-		}
-
-		if gallery == nil {
-			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("audio gallery '%s' not found", ref.String())
-			}
-
-			// we don't create galleries - just ignore
-		} else {
-			i.audio.GalleryIDs.Add(gallery.ID)
-		}
-	}
-
-	return nil
 }
 
 func (i *Importer) populatePerformers(ctx context.Context) error {
@@ -438,12 +373,6 @@ func (i *Importer) addOHistory(ctx context.Context) error {
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
-	if len(i.coverImageData) > 0 {
-		if err := i.ReaderWriter.UpdateCover(ctx, id, i.coverImageData); err != nil {
-			return fmt.Errorf("error setting audio images: %v", err)
-		}
-	}
-
 	// add histories
 	if err := i.addViewHistory(ctx); err != nil {
 		return err

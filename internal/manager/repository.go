@@ -3,11 +3,11 @@ package manager
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/audio"
 )
 
 type SceneService interface {
@@ -27,7 +27,8 @@ type AudioService interface {
 	Destroy(ctx context.Context, audio *models.Audio, fileDeleter *audio.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error
 
 	FindByIDs(ctx context.Context, ids []int, load ...audio.LoadRelationshipOption) ([]*models.Audio, error)
-	audioFingerprintGetter
+	// TODO(audio): is this only used for stashbox?
+	// audioFingerprintGetter
 }
 
 type ImageService interface {

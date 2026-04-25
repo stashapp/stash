@@ -56,6 +56,11 @@ type SceneFinder interface {
 	models.SceneQueryer
 }
 
+type AudioFinder interface {
+	models.AudioGetter
+	models.AudioQueryer
+}
+
 type StudioFinder interface {
 	All(ctx context.Context) ([]*models.Studio, error)
 }

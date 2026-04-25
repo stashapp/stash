@@ -84,22 +84,12 @@ func (r *mutationResolver) AudioCreate(ctx context.Context, input models.AudioCr
 		}
 	}
 
-	var coverImageData []byte
-	if input.CoverImage != nil {
-		var err error
-		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
-		if err != nil {
-			return nil, fmt.Errorf("processing cover image: %w", err)
-		}
-	}
-
 	customFields := convertMapJSONNumbers(input.CustomFields)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.Resolver.audioService.Create(ctx, models.CreateAudioInput{
 			Audio:        &newAudio,
 			FileIDs:      fileIDs,
-			CoverImage:   coverImageData,
 			CustomFields: customFields,
 		})
 		return err
@@ -282,16 +272,6 @@ func (r *mutationResolver) audioUpdate(ctx context.Context, input models.AudioUp
 		}
 	}
 
-	var coverImageData []byte
-	coverImageIncluded := translator.hasField("cover_image")
-	if input.CoverImage != nil {
-		var err error
-		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
-		if err != nil {
-			return nil, fmt.Errorf("processing cover image: %w", err)
-		}
-	}
-
 	var customFields *models.CustomFieldsInput
 	if input.CustomFields != nil {
 		cfCopy := *input.CustomFields
@@ -306,12 +286,6 @@ func (r *mutationResolver) audioUpdate(ctx context.Context, input models.AudioUp
 		return nil, err
 	}
 
-	if coverImageIncluded {
-		if err := r.audioUpdateCoverImage(ctx, audio, coverImageData); err != nil {
-			return nil, err
-		}
-	}
-
 	if customFields != nil {
 		if err := qb.SetCustomFields(ctx, audio.ID, *customFields); err != nil {
 			return nil, err
@@ -319,17 +293,6 @@ func (r *mutationResolver) audioUpdate(ctx context.Context, input models.AudioUp
 	}
 
 	return audio, nil
-}
-
-func (r *mutationResolver) audioUpdateCoverImage(ctx context.Context, s *models.Audio, coverImageData []byte) error {
-	qb := r.repository.Audio
-
-	// update cover table - empty data will clear the cover
-	if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (r *mutationResolver) BulkAudioUpdate(ctx context.Context, input BulkAudioUpdateInput) ([]*models.Audio, error) {
@@ -577,7 +540,6 @@ func (r *mutationResolver) AudioMerge(ctx context.Context, input AudioMergeInput
 	}
 
 	var values *models.AudioPartial
-	var coverImageData []byte
 	var customFields *models.CustomFieldsInput
 
 	if input.Values != nil {
@@ -588,14 +550,6 @@ func (r *mutationResolver) AudioMerge(ctx context.Context, input AudioMergeInput
 		values, err = audioPartialFromInput(*input.Values, translator)
 		if err != nil {
 			return nil, err
-		}
-
-		if input.Values.CoverImage != nil {
-			var err error
-			coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
-			if err != nil {
-				return nil, fmt.Errorf("processing cover image: %w", err)
-			}
 		}
 
 		if input.Values.CustomFields != nil {
@@ -631,13 +585,6 @@ func (r *mutationResolver) AudioMerge(ctx context.Context, input AudioMergeInput
 		}
 		if ret == nil {
 			return fmt.Errorf("audio with id %d not found", destID)
-		}
-
-		// only update cover image if one was provided
-		if len(coverImageData) > 0 {
-			if err := r.audioUpdateCoverImage(ctx, ret, coverImageData); err != nil {
-				return err
-			}
 		}
 
 		if customFields != nil {

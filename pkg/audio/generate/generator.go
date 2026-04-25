@@ -1,4 +1,4 @@
-// TODO(audio): update this file
+// TODO(audio): this file is currently not used, DELETE when you know it isn't needed
 
 // Package generate provides functions to generate media assets from audios.
 package generate
@@ -16,33 +16,17 @@ import (
 )
 
 const (
-	mp4Pattern  = "*.mp4"
-	webpPattern = "*.webp"
-	jpgPattern  = "*.jpg"
-	txtPattern  = "*.txt"
-	vttPattern  = "*.vtt"
+	mp3Pattern = "*.mp3"
+	jpgPattern = "*.jpg"
+	txtPattern = "*.txt"
 )
 
 type Paths interface {
 	TempFile(pattern string) (*os.File, error)
 }
 
-type MarkerPaths interface {
-	Paths
-
-	GetVideoPreviewPath(checksum string, seconds int) string
-	GetWebpPreviewPath(checksum string, seconds int) string
-	GetScreenshotPath(checksum string, seconds int) string
-}
-
 type AudioPaths interface {
 	Paths
-
-	GetVideoPreviewPath(checksum string) string
-	GetWebpPreviewPath(checksum string) string
-
-	GetSpriteImageFilePath(checksum string) string
-	GetSpriteVttFilePath(checksum string) string
 
 	GetTranscodePath(checksum string) string
 }
@@ -56,7 +40,6 @@ type Generator struct {
 	Encoder      *ffmpeg.FFMpeg
 	FFMpegConfig FFMpegConfig
 	LockManager  *fsutil.ReadLockManager
-	MarkerPaths  MarkerPaths
 	AudioPaths   AudioPaths
 	Overwrite    bool
 }

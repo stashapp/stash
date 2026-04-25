@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -56,11 +57,11 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	}
 
 	audioService := &audio.Service{
-		File:             db.File,
-		Repository:       db.Audio,
-		PluginCache:      pluginCache,
-		Paths:            mgrPaths,
-		Config:           cfg,
+		File:        db.File,
+		Repository:  db.Audio,
+		PluginCache: pluginCache,
+		Paths:       mgrPaths,
+		Config:      cfg,
 	}
 
 	imageService := &image.Service{

@@ -25,8 +25,9 @@ const (
 	imageFileTable = "image_files"
 	fileIDColumn   = "file_id"
 
+	// TODO(audio|AudioCaption): need to update IF AudioCaption required
+	// audioCaptionsTable    = "audio_captions"
 	videoCaptionsTable    = "video_captions"
-	audioCaptionsTable    = "audio_captions"
 	captionCodeColumn     = "language_code"
 	captionFilenameColumn = "filename"
 	captionTypeColumn     = "caption_type"
@@ -799,6 +800,7 @@ func (qb *FileStore) CountByFolderID(ctx context.Context, folderID models.Folder
 func (qb *FileStore) IsPrimary(ctx context.Context, fileID models.FileID) (bool, error) {
 	joinTables := []exp.IdentifierExpression{
 		scenesFilesJoinTable,
+		audiosFilesJoinTable,
 		galleriesFilesJoinTable,
 		imagesFilesJoinTable,
 	}

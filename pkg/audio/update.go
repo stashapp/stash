@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrEmptyUpdater = errors.New("no fields have been set")
@@ -22,17 +21,13 @@ type UpdateSet struct {
 
 	// in future these could be moved into a separate struct and reused
 	// for a Creator struct
-
-	// Not set if nil. Set to []byte{} to clear existing
-	CoverImage []byte
 }
 
 // IsEmpty returns true if there is nothing to update.
 func (u *UpdateSet) IsEmpty() bool {
 	withoutID := u.Partial
 
-	return withoutID == models.AudioPartial{} &&
-		u.CoverImage == nil
+	return withoutID == models.AudioPartial{}
 }
 
 // Update updates a audio by updating the fields in the Partial field, then
@@ -52,12 +47,6 @@ func (u *UpdateSet) Update(ctx context.Context, qb models.AudioUpdater) (*models
 		return nil, fmt.Errorf("error updating audio: %w", err)
 	}
 
-	if u.CoverImage != nil {
-		if err := qb.UpdateCover(ctx, u.ID, u.CoverImage); err != nil {
-			return nil, fmt.Errorf("error updating audio cover: %w", err)
-		}
-	}
-
 	return ret, nil
 }
 
@@ -65,12 +54,6 @@ func (u *UpdateSet) Update(ctx context.Context, qb models.AudioUpdater) (*models
 func (u UpdateSet) UpdateInput() models.AudioUpdateInput {
 	// ensure the partial ID is set
 	ret := u.Partial.UpdateInput(u.ID)
-
-	if u.CoverImage != nil {
-		// convert back to base64
-		data := utils.GetBase64StringFromData(u.CoverImage)
-		ret.CoverImage = &data
-	}
 
 	return ret
 }

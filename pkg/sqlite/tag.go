@@ -105,6 +105,7 @@ type tagRepositoryType struct {
 	stashIDs stashIDRepository
 
 	scenes     joinRepository
+	audios     joinRepository
 	images     joinRepository
 	galleries  joinRepository
 	groups     joinRepository
@@ -138,6 +139,14 @@ var (
 			},
 			fkColumn:     sceneIDColumn,
 			foreignTable: sceneTable,
+		},
+		audios: joinRepository{
+			repository: repository{
+				tableName: audiosTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     audioIDColumn,
+			foreignTable: audioTable,
 		},
 		images: joinRepository{
 			repository: repository{
@@ -474,6 +483,18 @@ func (qb *TagStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.T
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) FindByAudioID(ctx context.Context, audioID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN audios_tags as audios_join on audios_join.tag_id = tags.id
+		WHERE audios_join.audio_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{audioID}
+	return qb.queryTags(ctx, query, args)
+}
+
 func (qb *TagStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
@@ -794,6 +815,7 @@ var tagSortOptions = sortOptions{
 	"galleries_count",
 	"groups_count",
 	"id",
+	"audios_count",
 	"images_count",
 	"movies_count",
 	"studios_count",
@@ -863,6 +885,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 	case "images_count":
 		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
+	case "audios_count":
+		sortQuery += getCountSort(tagTable, audiosTagsTable, tagIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 	case "performers_count":
@@ -974,6 +998,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		scenesTagsTable:      sceneIDColumn,
 		"scene_markers_tags": "scene_marker_id",
 		galleriesTagsTable:   galleryIDColumn,
+		audiosTagsTable:      audioIDColumn,
 		imagesTagsTable:      imageIDColumn,
 		"performers_tags":    "performer_id",
 		"studios_tags":       "studio_id",

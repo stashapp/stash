@@ -335,7 +335,7 @@ type AudioFile struct {
 	Format     string  `json:"format"`
 	Duration   float64 `json:"duration"`
 	AudioCodec string  `json:"audio_codec"`
-	SampleRate float64 `json:"sample_rate"`
+	SampleRate int64   `json:"sample_rate"`
 	BitRate    int64   `json:"bitrate"`
 }
 
@@ -355,14 +355,6 @@ func (f AudioFile) Clone() (ret File) {
 
 func (f AudioFile) DurationFinite() float64 {
 	ret := f.Duration
-	if math.IsInf(ret, 0) || math.IsNaN(ret) {
-		return 0
-	}
-	return ret
-}
-
-func (f AudioFile) SampleRateFinite() float64 {
-	ret := f.SampleRate
 	if math.IsInf(ret, 0) || math.IsNaN(ret) {
 		return 0
 	}

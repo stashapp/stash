@@ -49,8 +49,6 @@ models:
       # override float fields - #1572
       duration:
         fieldName: DurationFinite
-      sample_rate:
-        fieldName: SampleRateFinite
   # movie is group under the hood
   Movie:
     model: github.com/stashapp/stash/pkg/models.Group

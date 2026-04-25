@@ -151,20 +151,6 @@ func (r *audioResolver) Captions(ctx context.Context, obj *models.Audio) (ret []
 	return ret, err
 }
 
-func (r *audioResolver) Galleries(ctx context.Context, obj *models.Audio) (ret []*models.Gallery, err error) {
-	if !obj.GalleryIDs.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadGalleryIDs(ctx, r.repository.Audio)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	var errs []error
-	ret, errs = loaders.From(ctx).GalleryByID.LoadAll(obj.GalleryIDs.List())
-	return ret, firstError(errs)
-}
-
 func (r *audioResolver) Studio(ctx context.Context, obj *models.Audio) (ret *models.Studio, err error) {
 	if obj.StudioID == nil {
 		return nil, nil

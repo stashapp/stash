@@ -10,12 +10,14 @@ import (
 type StashConfigInput struct {
 	Path         string `json:"path"`
 	ExcludeVideo bool   `json:"excludeVideo"`
+	ExcludeAudio bool   `json:"excludeAudio"`
 	ExcludeImage bool   `json:"excludeImage"`
 }
 
 type StashConfig struct {
 	Path         string `json:"path"`
 	ExcludeVideo bool   `json:"excludeVideo"`
+	ExcludeAudio bool   `json:"excludeAudio"`
 	ExcludeImage bool   `json:"excludeImage"`
 }
 

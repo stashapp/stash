@@ -4,7 +4,6 @@ package models
 
 import (
 	"context"
-	// "time"
 )
 
 // AudioGetter provides methods to get audios by ID.
@@ -27,9 +26,7 @@ type AudioFinder interface {
 	FindByFileID(ctx context.Context, fileID FileID) ([]*Audio, error)
 	FindByPrimaryFileID(ctx context.Context, fileID FileID) ([]*Audio, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Audio, error)
-	FindByGalleryID(ctx context.Context, performerID int) ([]*Audio, error)
 	FindByGroupID(ctx context.Context, groupID int) ([]*Audio, error)
-	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Audio, error)
 }
 
 // AudioQueryer provides methods to query audios.
@@ -59,7 +56,6 @@ type AudioCreator interface {
 type AudioUpdater interface {
 	Update(ctx context.Context, updatedAudio *Audio) error
 	UpdatePartial(ctx context.Context, id int, updatedAudio AudioPartial) (*Audio, error)
-	UpdateCover(ctx context.Context, audioID int, cover []byte) error
 }
 
 // AudioDestroyer provides methods to destroy audios.
@@ -82,7 +78,6 @@ type AudioReader interface {
 	ViewDateReader
 	ODateReader
 	FileIDLoader
-	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader
 	AudioGroupLoader
@@ -94,8 +89,6 @@ type AudioReader interface {
 	Size(ctx context.Context) (float64, error)
 	Duration(ctx context.Context) (float64, error)
 	PlayDuration(ctx context.Context) (float64, error)
-	GetCover(ctx context.Context, audioID int) ([]byte, error)
-	HasCover(ctx context.Context, audioID int) (bool, error)
 }
 
 // AudioWriter provides all methods to modify audios.
@@ -105,7 +98,6 @@ type AudioWriter interface {
 	AudioDestroyer
 
 	AddFileID(ctx context.Context, id int, fileID FileID) error
-	AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error
 	AssignFiles(ctx context.Context, audioID int, fileID []FileID) error
 
 	OHistoryWriter

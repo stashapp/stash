@@ -113,3 +113,29 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 
 	utils.ServeImage(w, r, cover)
 }
+
+type AudioServer struct {
+	TxnManager txn.Manager
+}
+
+func (s *AudioServer) StreamAudioDirect(audio *models.Audio, w http.ResponseWriter, r *http.Request) {
+	// #3526 - return 404 if the audio does not have any files
+	if audio.Path == "" {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
+	audioHash := audio.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+
+	fp := GetInstance().Paths.Audio.GetStreamPath(audio.Path, audioHash)
+	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)
+
+	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari
+	// We trust that the request context will be closed, so we don't need to call Cancel on the
+	// returned context here.
+	_ = GetInstance().ReadLockManager.ReadLock(streamRequestCtx, fp)
+	_, filename := filepath.Split(fp)
+	contentDisposition := mime.FormatMediaType("inline", map[string]string{"filename": filename})
+	w.Header().Set("Content-Disposition", contentDisposition)
+	http.ServeFile(w, r, fp)
+}

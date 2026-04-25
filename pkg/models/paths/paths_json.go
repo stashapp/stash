@@ -14,6 +14,7 @@ type JSONPaths struct {
 
 	Performers   string
 	Scenes       string
+	Audios       string
 	Images       string
 	Galleries    string
 	Studios      string
@@ -29,6 +30,7 @@ func newJSONPaths(baseDir string) *JSONPaths {
 	jp.ScrapedFile = filepath.Join(baseDir, "scraped.json")
 	jp.Performers = filepath.Join(baseDir, "performers")
 	jp.Scenes = filepath.Join(baseDir, "scenes")
+	jp.Audios = filepath.Join(baseDir, "audios")
 	jp.Images = filepath.Join(baseDir, "images")
 	jp.Galleries = filepath.Join(baseDir, "galleries")
 	jp.Studios = filepath.Join(baseDir, "studios")
@@ -47,6 +49,7 @@ func GetJSONPaths(baseDir string) *JSONPaths {
 func EmptyJSONDirs(baseDir string) {
 	jsonPaths := GetJSONPaths(baseDir)
 	_ = fsutil.EmptyDir(jsonPaths.Scenes)
+	_ = fsutil.EmptyDir(jsonPaths.Audios)
 	_ = fsutil.EmptyDir(jsonPaths.Images)
 	_ = fsutil.EmptyDir(jsonPaths.Galleries)
 	_ = fsutil.EmptyDir(jsonPaths.Performers)
@@ -64,6 +67,9 @@ func EnsureJSONDirs(baseDir string) {
 	}
 	if err := fsutil.EnsureDir(jsonPaths.Scenes); err != nil {
 		logger.Warnf("couldn't create directories for Scenes: %v", err)
+	}
+	if err := fsutil.EnsureDir(jsonPaths.Audios); err != nil {
+		logger.Warnf("couldn't create directories for Audios: %v", err)
 	}
 	if err := fsutil.EnsureDir(jsonPaths.Images); err != nil {
 		logger.Warnf("couldn't create directories for Images: %v", err)

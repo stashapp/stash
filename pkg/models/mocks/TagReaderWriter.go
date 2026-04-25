@@ -427,6 +427,29 @@ func (_m *TagReaderWriter) FindBySceneID(ctx context.Context, sceneID int) ([]*m
 	return r0, r1
 }
 
+// FindByAudioID provides a mock function with given fields: ctx, audioID
+func (_m *TagReaderWriter) FindByAudioID(ctx context.Context, audioID int) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, audioID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Tag); ok {
+		r0 = rf(ctx, audioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, audioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindBySceneMarkerID provides a mock function with given fields: ctx, sceneMarkerID
 func (_m *TagReaderWriter) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, sceneMarkerID)

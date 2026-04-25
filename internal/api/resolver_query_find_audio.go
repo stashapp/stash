@@ -9,8 +9,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/audio"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *queryResolver) FindAudio(ctx context.Context, id *string, checksum *string) (*models.Audio, error) {
@@ -117,6 +118,14 @@ func (r *queryResolver) FindAudios(
 				}
 			}
 		} else {
+			logger.Infof(
+				"FindAudios debug:\n audioFilter=%+v\n filter=%+v\n fields=%v\n repo=%+v\n repo.Audio=%T",
+				audioFilter,
+				filter,
+				fields,
+				r.repository,
+				r.repository.Audio,
+			)
 			result, err = r.repository.Audio.Query(ctx, models.AudioQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
@@ -222,25 +231,6 @@ func (r *queryResolver) ParseAudioFilenames(ctx context.Context, filter *models.
 		}
 
 		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
-func (r *queryResolver) FindDuplicateAudios(ctx context.Context, distance *int, durationDiff *float64) (ret [][]*models.Audio, err error) {
-	dist := 0
-	durDiff := -1.
-	if distance != nil {
-		dist = *distance
-	}
-	if durationDiff != nil {
-		durDiff = *durationDiff
-	}
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Audio.FindDuplicates(ctx, dist, durDiff)
-		return err
 	}); err != nil {
 		return nil, err
 	}

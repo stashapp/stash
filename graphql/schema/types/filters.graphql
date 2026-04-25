@@ -1,5 +1,3 @@
-# TODO(audio): add AudioFilterType
-
 enum SortDirectionEnum {
   ASC
   DESC
@@ -793,10 +791,6 @@ input AudioFilterType {
   oshash: StringCriterionInput
   "Filter by file checksum"
   checksum: StringCriterionInput
-  "Filter by file phash"
-  phash: StringCriterionInput @deprecated(reason: "Use phash_distance instead")
-  "Filter by file phash distance"
-  phash_distance: PhashDistanceCriterionInput
   "Filter by path"
   path: StringCriterionInput
   "Filter by file count"
@@ -807,10 +801,8 @@ input AudioFilterType {
   organized: Boolean
   "Filter by o-counter"
   o_counter: IntCriterionInput
-  "Filter Scenes by duplication criteria"
-  duplicated: DuplicationCriterionInput
   "Filter by sample rate"
-  samplerate: IntCriterionInput
+  sample_rate: IntCriterionInput
   "Filter by bit rate"
   bitrate: IntCriterionInput
   "Filter by audio codec"
@@ -956,7 +948,7 @@ input VideoFileFilterInput {
   interactive_speed: IntCriterionInput
 }
 input AudioFileFilterInput {
-  samplerate: IntCriterionInput
+  sample_rate: IntCriterionInput
   bitrate: IntCriterionInput
   format: StringCriterionInput
   audio_codec: StringCriterionInput

@@ -111,13 +111,13 @@ WHERE `primary` = 1;
 -- audio_files definition
 --
 
--- TODO: think of better name for this, too close to `audios_files`
+-- TODO(audio): think of better name for this, too close to `audios_files`
 CREATE TABLE `audio_files` (
     `file_id` integer NOT NULL primary key,
     `duration` float NOT NULL,
     `format` varchar(255) NOT NULL,
     `audio_codec` varchar(255) NOT NULL,
-    `sample_rate` float NOT NULL,
+    `sample_rate` integer NOT NULL,
     `bit_rate` integer NOT NULL,
     foreign key(`file_id`) references `files`(`id`) on delete CASCADE
 );

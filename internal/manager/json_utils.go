@@ -31,6 +31,10 @@ func (jp *jsonUtils) saveScene(fn string, scene *jsonschema.Scene) error {
 	return jsonschema.SaveSceneFile(filepath.Join(jp.json.Scenes, fn), scene)
 }
 
+func (jp *jsonUtils) saveAudio(fn string, audio *jsonschema.Audio) error {
+	return jsonschema.SaveAudioFile(filepath.Join(jp.json.Audios, fn), audio)
+}
+
 func (jp *jsonUtils) saveImage(fn string, image *jsonschema.Image) error {
 	return jsonschema.SaveImageFile(filepath.Join(jp.json.Images, fn), image)
 }

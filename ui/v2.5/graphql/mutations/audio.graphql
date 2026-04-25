@@ -1,0 +1,121 @@
+mutation AudioCreate($input: AudioCreateInput!) {
+  audioCreate(input: $input) {
+    ...AudioData
+  }
+}
+
+mutation AudioUpdate($input: AudioUpdateInput!) {
+  audioUpdate(input: $input) {
+    ...AudioData
+  }
+}
+
+mutation BulkAudioUpdate($input: BulkAudioUpdateInput!) {
+  bulkAudioUpdate(input: $input) {
+    ...AudioData
+  }
+}
+
+mutation AudiosUpdate($input: [AudioUpdateInput!]!) {
+  audiosUpdate(input: $input) {
+    ...AudioData
+  }
+}
+
+mutation AudioSaveActivity(
+  $id: ID!
+  $resume_time: Float
+  $playDuration: Float
+) {
+  audioSaveActivity(
+    id: $id
+    resume_time: $resume_time
+    playDuration: $playDuration
+  )
+}
+
+mutation AudioResetActivity(
+  $id: ID!
+  $reset_resume: Boolean!
+  $reset_duration: Boolean!
+) {
+  audioResetActivity(
+    id: $id
+    reset_resume: $reset_resume
+    reset_duration: $reset_duration
+  )
+}
+
+mutation AudioAddPlay($id: ID!, $times: [Timestamp!]) {
+  audioAddPlay(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation AudioDeletePlay($id: ID!, $times: [Timestamp!]) {
+  audioDeletePlay(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation AudioResetPlayCount($id: ID!) {
+  audioResetPlayCount(id: $id)
+}
+
+mutation AudioAddO($id: ID!, $times: [Timestamp!]) {
+  audioAddO(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation AudioDeleteO($id: ID!, $times: [Timestamp!]) {
+  audioDeleteO(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation AudioResetO($id: ID!) {
+  audioResetO(id: $id)
+}
+
+mutation AudioDestroy(
+  $id: ID!
+  $delete_file: Boolean
+  $delete_generated: Boolean
+) {
+  audioDestroy(
+    input: {
+      id: $id
+      delete_file: $delete_file
+      delete_generated: $delete_generated
+    }
+  )
+}
+
+mutation AudiosDestroy(
+  $ids: [ID!]!
+  $delete_file: Boolean
+  $delete_generated: Boolean
+) {
+  audiosDestroy(
+    input: {
+      ids: $ids
+      delete_file: $delete_file
+      delete_generated: $delete_generated
+    }
+  )
+}
+
+mutation AudioAssignFile($input: AssignAudioFileInput!) {
+  audioAssignFile(input: $input)
+}
+
+mutation AudioMerge($input: AudioMergeInput!) {
+  audioMerge(input: $input) {
+    id
+  }
+}

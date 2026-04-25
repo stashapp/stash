@@ -126,6 +126,7 @@ func (db *Database) Repository() models.Repository {
 		Image:          db.Image,
 		Group:          db.Group,
 		Performer:      db.Performer,
+		Audio:          db.Audio,
 		Scene:          db.Scene,
 		SceneMarker:    db.SceneMarker,
 		Studio:         db.Studio,

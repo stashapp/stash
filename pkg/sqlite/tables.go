@@ -33,6 +33,13 @@ var (
 
 	sceneMarkersTagsJoinTable = goqu.T(sceneMarkersTagsTable)
 
+	audiosFilesJoinTable      = goqu.T(audiosFilesTable)
+	audiosTagsJoinTable       = goqu.T(audiosTagsTable)
+	audiosPerformersJoinTable = goqu.T(performersAudiosTable)
+	audiosGroupsJoinTable     = goqu.T(groupsAudiosTable)
+	audiosURLsJoinTable       = goqu.T(audiosURLsTable)
+	audiosCustomFieldsTable   = goqu.T("audio_custom_fields")
+
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersURLsJoinTable     = goqu.T(performerURLsTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
@@ -243,6 +250,71 @@ var (
 			idColumn: goqu.T(scenesODatesTable).Col(sceneIDColumn),
 		},
 		dateColumn: goqu.T(scenesODatesTable).Col(sceneODateColumn),
+	}
+)
+
+var (
+	audioTableMgr = &table{
+		table:    goqu.T(audioTable),
+		idColumn: goqu.T(audioTable).Col(idColumn),
+	}
+
+	audiosFilesTableMgr = &relatedFilesTable{
+		table: table{
+			table:    audiosFilesJoinTable,
+			idColumn: audiosFilesJoinTable.Col(audioIDColumn),
+		},
+	}
+
+	audiosTagsTableMgr = &joinTable{
+		table: table{
+			table:    audiosTagsJoinTable,
+			idColumn: audiosTagsJoinTable.Col(audioIDColumn),
+		},
+		fkColumn:     audiosTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableSort,
+	}
+
+	audiosPerformersTableMgr = &joinTable{
+		table: table{
+			table:    audiosPerformersJoinTable,
+			idColumn: audiosPerformersJoinTable.Col(audioIDColumn),
+		},
+		fkColumn: audiosPerformersJoinTable.Col(performerIDColumn),
+	}
+
+	audiosGalleriesTableMgr = galleriesScenesTableMgr.invert()
+
+	audiosGroupsTableMgr = &audiosGroupsTable{
+		table: table{
+			table:    audiosGroupsJoinTable,
+			idColumn: audiosGroupsJoinTable.Col(audioIDColumn),
+		},
+	}
+
+	audiosURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    audiosURLsJoinTable,
+			idColumn: audiosURLsJoinTable.Col(audioIDColumn),
+		},
+		valueColumn: audiosURLsJoinTable.Col(audioURLColumn),
+	}
+
+	audiosViewTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(audiosViewDatesTable),
+			idColumn: goqu.T(audiosViewDatesTable).Col(audioIDColumn),
+		},
+		dateColumn: goqu.T(audiosViewDatesTable).Col(audioViewDateColumn),
+	}
+
+	audiosOTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(audiosODatesTable),
+			idColumn: goqu.T(audiosODatesTable).Col(audioIDColumn),
+		},
+		dateColumn: goqu.T(audiosODatesTable).Col(audioODateColumn),
 	}
 )
 

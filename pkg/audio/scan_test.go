@@ -19,14 +19,14 @@ func TestAssociateExisting_UpdatePartialOnContentChange(t *testing.T) {
 		testFileID  = 100
 	)
 
-	existingFile := &models.VideoFile{
+	existingFile := &models.AudioFile{
 		BaseFile: &models.BaseFile{ID: models.FileID(testFileID), Path: "test.mp4"},
 	}
 
 	makeAudio := func() *models.Audio {
 		return &models.Audio{
 			ID:    testAudioID,
-			Files: models.NewRelatedVideoFiles([]*models.VideoFile{existingFile}),
+			Files: models.NewRelatedAudioFiles([]*models.AudioFile{existingFile}),
 		}
 	}
 
@@ -50,7 +50,7 @@ func TestAssociateExisting_UpdatePartialOnContentChange(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db := mocks.NewDatabase()
-			db.Audio.On("GetFiles", mock.Anything, testAudioID).Return([]*models.VideoFile{existingFile}, nil)
+			db.Audio.On("GetFiles", mock.Anything, testAudioID).Return([]*models.AudioFile{existingFile}, nil)
 
 			if tt.expectUpdate {
 				db.Audio.On("UpdatePartial", mock.Anything, testAudioID, mock.Anything).
@@ -83,20 +83,20 @@ func TestAssociateExisting_UpdatePartialOnNewFile(t *testing.T) {
 		newFileID   = 200
 	)
 
-	existingFile := &models.VideoFile{
+	existingFile := &models.AudioFile{
 		BaseFile: &models.BaseFile{ID: models.FileID(existFileID), Path: "existing.mp4"},
 	}
-	newFile := &models.VideoFile{
+	newFile := &models.AudioFile{
 		BaseFile: &models.BaseFile{ID: models.FileID(newFileID), Path: "new.mp4"},
 	}
 
 	audio := &models.Audio{
 		ID:    testAudioID,
-		Files: models.NewRelatedVideoFiles([]*models.VideoFile{existingFile}),
+		Files: models.NewRelatedAudioFiles([]*models.AudioFile{existingFile}),
 	}
 
 	db := mocks.NewDatabase()
-	db.Audio.On("GetFiles", mock.Anything, testAudioID).Return([]*models.VideoFile{existingFile}, nil)
+	db.Audio.On("GetFiles", mock.Anything, testAudioID).Return([]*models.AudioFile{existingFile}, nil)
 	db.Audio.On("AddFileID", mock.Anything, testAudioID, models.FileID(newFileID)).Return(nil)
 	db.Audio.On("UpdatePartial", mock.Anything, testAudioID, mock.Anything).
 		Return(&models.Audio{ID: testAudioID}, nil)

@@ -30,20 +30,6 @@ func (_m *AudioReaderWriter) AddFileID(ctx context.Context, id int, fileID model
 	return r0
 }
 
-// AddGalleryIDs provides a mock function with given fields: ctx, audioID, galleryIDs
-func (_m *AudioReaderWriter) AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error {
-	ret := _m.Called(ctx, audioID, galleryIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, audioID, galleryIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // AddO provides a mock function with given fields: ctx, id, dates
 func (_m *AudioReaderWriter) AddO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	ret := _m.Called(ctx, id, dates)
@@ -664,29 +650,6 @@ func (_m *AudioReaderWriter) FindByPrimaryFileID(ctx context.Context, fileID mod
 	return r0, r1
 }
 
-// FindDuplicates provides a mock function with given fields: ctx, distance, durationDiff
-func (_m *AudioReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Audio, error) {
-	ret := _m.Called(ctx, distance, durationDiff)
-
-	var r0 [][]*models.Audio
-	if rf, ok := ret.Get(0).(func(context.Context, int, float64) [][]*models.Audio); ok {
-		r0 = rf(ctx, distance, durationDiff)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([][]*models.Audio)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, float64) error); ok {
-		r1 = rf(ctx, distance, durationDiff)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FindMany provides a mock function with given fields: ctx, ids
 func (_m *AudioReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Audio, error) {
 	ret := _m.Called(ctx, ids)
@@ -724,29 +687,6 @@ func (_m *AudioReaderWriter) GetAllOCount(ctx context.Context) (int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetCover provides a mock function with given fields: ctx, audioID
-func (_m *AudioReaderWriter) GetCover(ctx context.Context, audioID int) ([]byte, error) {
-	ret := _m.Called(ctx, audioID)
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(context.Context, int) []byte); ok {
-		r0 = rf(ctx, audioID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, audioID)
 	} else {
 		r1 = ret.Error(1)
 	}

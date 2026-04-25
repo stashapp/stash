@@ -22,6 +22,21 @@ fragment VideoFileData on VideoFile {
   }
 }
 
+fragment AudioFileData on AudioFile {
+  id
+  path
+  size
+  mod_time
+  duration
+  audio_codec
+  sample_rate
+  bit_rate
+  fingerprints {
+    type
+    value
+  }
+}
+
 fragment ImageFileData on ImageFile {
   id
   path

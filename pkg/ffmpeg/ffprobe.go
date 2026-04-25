@@ -118,11 +118,11 @@ type VideoFile struct {
 // TranscodeScale calculates the dimension scaling for a transcode, where maxSize is the maximum size of the longest dimension of the input video.
 // If no scaling is required, then returns 0, 0.
 // Returns -2 for the dimension that will scale to maintain aspect ratio.
-func (a *VideoFile) TranscodeScale(maxSize int) (int, int) {
+func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
 	// get the smaller dimension of the video file
-	videoSize := a.Height
-	if a.Width < videoSize {
-		videoSize = a.Width
+	videoSize := v.Height
+	if v.Width < videoSize {
+		videoSize = v.Width
 	}
 
 	// if our streaming resolution is larger than the video dimension
@@ -134,7 +134,7 @@ func (a *VideoFile) TranscodeScale(maxSize int) (int, int) {
 
 	// we're setting either the width or height
 	// we'll set the smaller dimesion
-	if a.Width > a.Height {
+	if v.Width > v.Height {
 		// set the height
 		return -2, maxSize
 	}
@@ -365,23 +365,23 @@ func isRotated(s *FFProbeStream) bool {
 	return false
 }
 
-func (a *VideoFile) getAudioStream() *FFProbeStream {
-	index := a.getStreamIndex("audio", a.JSON)
+func (v *VideoFile) getAudioStream() *FFProbeStream {
+	index := v.getStreamIndex("audio", v.JSON)
 	if index != -1 {
-		return &a.JSON.Streams[index]
+		return &v.JSON.Streams[index]
 	}
 	return nil
 }
 
-func (a *VideoFile) getVideoStream() *FFProbeStream {
-	index := a.getStreamIndex("video", a.JSON)
+func (v *VideoFile) getVideoStream() *FFProbeStream {
+	index := v.getStreamIndex("video", v.JSON)
 	if index != -1 {
-		return &a.JSON.Streams[index]
+		return &v.JSON.Streams[index]
 	}
 	return nil
 }
 
-func (a *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
+func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	ret := -1
 	for i, stream := range probeJSON.Streams {
 		// skip cover art/thumbnails
@@ -424,7 +424,7 @@ type AudioFile struct {
 	CreationTime        time.Time
 
 	AudioCodec string
-	SampleRate float64
+	SampleRate int64
 }
 
 // NewAudioFile runs ffprobe on the given path and returns a AudioFile.
@@ -494,6 +494,7 @@ func parseAudio(filePath string, probeJSON *FFProbeJSON) (*AudioFile, error) {
 	audioStream := result.getAudioStream()
 	if audioStream != nil {
 		result.AudioCodec = audioStream.CodecName
+		result.SampleRate, _ = strconv.ParseInt(audioStream.SampleRate, 10, 64)
 		result.AudioStream = audioStream
 	}
 

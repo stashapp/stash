@@ -517,6 +517,19 @@ func (qb *PerformerStore) FindBySceneID(ctx context.Context, sceneID int) ([]*mo
 	return ret, nil
 }
 
+func (qb *PerformerStore) FindByAudioID(ctx context.Context, audioID int) ([]*models.Performer, error) {
+	sq := dialect.From(audiosPerformersJoinTable).Select(audiosPerformersJoinTable.Col(performerIDColumn)).Where(
+		audiosPerformersJoinTable.Col(audioIDColumn).Eq(audioID),
+	)
+	ret, err := qb.findBySubquery(ctx, sq)
+
+	if err != nil {
+		return nil, fmt.Errorf("getting performers for audio %d: %w", audioID, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *PerformerStore) FindByImageID(ctx context.Context, imageID int) ([]*models.Performer, error) {
 	sq := dialect.From(performersImagesJoinTable).Select(performersImagesJoinTable.Col(performerIDColumn)).Where(
 		performersImagesJoinTable.Col(imageIDColumn).Eq(imageID),

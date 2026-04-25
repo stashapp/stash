@@ -15,10 +15,9 @@ type Config interface {
 }
 
 type Service struct {
-	File             models.FileReaderWriter
-	Repository       models.AudioReaderWriter
-	MarkerRepository models.AudioMarkerReaderWriter
-	PluginCache      *plugin.Cache
+	File        models.FileReaderWriter
+	Repository  models.AudioReaderWriter
+	PluginCache *plugin.Cache
 
 	Paths  *paths.Paths
 	Config Config

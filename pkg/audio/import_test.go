@@ -91,11 +91,11 @@ func TestImporterPreImport(t *testing.T) {
 				ResumeTime:   resumeTime,
 				PlayDuration: playDuration,
 
-				Files:        models.NewRelatedVideoFiles([]*models.VideoFile{}),
+				Files:        models.NewRelatedAudioFiles([]*models.AudioFile{}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
-				Groups:       models.NewRelatedGroups([]models.GroupsAudios{}),
+				Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
 			},
 		},
 	}
@@ -547,12 +547,10 @@ func TestImporterPostImport(t *testing.T) {
 		okID              = 1
 		errViewHistoryID  = 2
 		errOHistoryID     = 3
-		errImageID        = 4
-		errCustomFieldsID = 5
+		errCustomFieldsID = 4
 	)
 
 	var (
-		errImage        = errors.New("error updating cover image")
 		errViewHistory  = errors.New("error updating view history")
 		errOHistory     = errors.New("error updating o history")
 		errCustomFields = errors.New("error updating custom fields")
@@ -566,21 +564,12 @@ func TestImporterPostImport(t *testing.T) {
 		{
 			name: "all set successfully",
 			importer: Importer{
-				ID:             okID,
-				coverImageData: []byte(imageBase64),
-				viewHistory:    []time.Time{vt},
-				oHistory:       []time.Time{ot},
-				customFields:   customFields,
+				ID:           okID,
+				viewHistory:  []time.Time{vt},
+				oHistory:     []time.Time{ot},
+				customFields: customFields,
 			},
 			err: false,
-		},
-		{
-			name: "cover image set with error",
-			importer: Importer{
-				ID:             errImageID,
-				coverImageData: []byte(invalidImage),
-			},
-			err: true,
 		},
 		{
 			name: "view history set with error",
@@ -608,8 +597,6 @@ func TestImporterPostImport(t *testing.T) {
 		},
 	}
 
-	db.Audio.On("UpdateCover", testCtx, okID, []byte(imageBase64)).Return(nil).Once()
-	db.Audio.On("UpdateCover", testCtx, errImageID, []byte(invalidImage)).Return(errImage).Once()
 	db.Audio.On("AddViews", testCtx, okID, []time.Time{vt}).Return([]time.Time{vt}, nil).Once()
 	db.Audio.On("AddViews", testCtx, errViewHistoryID, []time.Time{vt}).Return(nil, errViewHistory).Once()
 	db.Audio.On("AddO", testCtx, okID, []time.Time{ot}).Return([]time.Time{ot}, nil).Once()

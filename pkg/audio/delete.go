@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/file/video"
+	file_audio "github.com/stashapp/stash/pkg/file/audio"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -42,35 +42,7 @@ func (d *FileDeleter) MarkGeneratedFiles(audio *models.Audio) error {
 
 	var files []string
 
-	streamPreviewPath := d.Paths.Audio.GetVideoPreviewPath(audioHash)
-	exists, _ = fsutil.FileExists(streamPreviewPath)
-	if exists {
-		files = append(files, streamPreviewPath)
-	}
-
-	streamPreviewImagePath := d.Paths.Audio.GetWebpPreviewPath(audioHash)
-	exists, _ = fsutil.FileExists(streamPreviewImagePath)
-	if exists {
-		files = append(files, streamPreviewImagePath)
-	}
-
-	transcodePath := d.Paths.Audio.GetTranscodePath(audioHash)
-	exists, _ = fsutil.FileExists(transcodePath)
-	if exists {
-		files = append(files, transcodePath)
-	}
-
-	spritePath := d.Paths.Audio.GetSpriteImageFilePath(audioHash)
-	exists, _ = fsutil.FileExists(spritePath)
-	if exists {
-		files = append(files, spritePath)
-	}
-
-	vttPath := d.Paths.Audio.GetSpriteVttFilePath(audioHash)
-	exists, _ = fsutil.FileExists(vttPath)
-	if exists {
-		files = append(files, vttPath)
-	}
+	// TODO(future|audio generated files): add paths here
 
 	return d.FilesWithoutTrash(files)
 }
@@ -78,18 +50,6 @@ func (d *FileDeleter) MarkGeneratedFiles(audio *models.Audio) error {
 // Destroy deletes a audio and its associated relationships from the
 // database.
 func (s *Service) Destroy(ctx context.Context, audio *models.Audio, fileDeleter *FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error {
-	mqb := s.MarkerRepository
-	markers, err := mqb.FindByAudioID(ctx, audio.ID)
-	if err != nil {
-		return err
-	}
-
-	for _, m := range markers {
-		if err := DestroyMarker(ctx, audio, m, mqb, fileDeleter); err != nil {
-			return err
-		}
-	}
-
 	if deleteFile {
 		if err := s.deleteFiles(ctx, audio, fileDeleter); err != nil {
 			return err
@@ -139,7 +99,7 @@ func (s *Service) deleteFiles(ctx context.Context, audio *models.Audio, fileDele
 
 		// don't delete files in zip archives
 		if f.ZipFileID == nil {
-			funscriptPath := video.GetFunscriptPath(f.Path)
+			funscriptPath := file_audio.GetFunscriptPath(f.Path)
 			funscriptExists, _ := fsutil.FileExists(funscriptPath)
 			if funscriptExists {
 				if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
@@ -179,17 +139,4 @@ func (s *Service) destroyFileEntries(ctx context.Context, audio *models.Audio) e
 	}
 
 	return nil
-}
-
-// DestroyMarker deletes the audio marker from the database and returns a
-// function that removes the generated files, to be executed after the
-// transaction is successfully committed.
-func DestroyMarker(ctx context.Context, audio *models.Audio, audioMarker *models.AudioMarker, qb models.AudioMarkerDestroyer, fileDeleter *FileDeleter) error {
-	if err := qb.Destroy(ctx, audioMarker.ID); err != nil {
-		return err
-	}
-
-	// delete the preview for the marker
-	seconds := int(audioMarker.Seconds)
-	return fileDeleter.MarkMarkerFiles(audio, seconds)
 }
