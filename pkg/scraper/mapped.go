@@ -184,12 +184,14 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(ctx, q, s.Common, urlsIsMulti)
 
-	// Initialize ret to a non-nil empty scene so that processSceneRelationships
-	// can safely populate relationship fields even when no direct results were found.
+	// Ensure ret is non-nil before calling processSceneRelationships so it can
+	// safely populate relationship fields even when no direct results were found.
 	// This preserves the intent of #3953: returning a scene with only relationships.
-	ret := &models.ScrapedScene{}
+	var ret *models.ScrapedScene
 	if len(results) > 0 {
 		ret = results[0].scrapedScene()
+	} else {
+		ret = &models.ScrapedScene{}
 	}
 	hasRelationships := s.processSceneRelationships(ctx, q, 0, ret)
 
