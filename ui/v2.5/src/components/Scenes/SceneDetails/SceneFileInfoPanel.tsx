@@ -66,7 +66,7 @@ interface IFileInfoPanelProps {
   loading?: boolean;
 }
 
-interface CoverSourceData {
+interface ICoverSourceData {
   icon?: FontAwesomeIconProps["icon"];
   value: string;
   url?: string | null;
@@ -91,16 +91,16 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   const phash = props.file.fingerprints.find((f) => f.type === "phash");
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
-  const getCoverSourceTooltip = (id: string) =>
-    intl.formatMessage({ id }, { image: coverImageLabel });
-
   const coverSourceField = useMemo(() => {
+    const getCoverSourceTooltip = (id: string) =>
+      intl.formatMessage({ id }, { image: coverImageLabel });
+
     const source = props.coverImageSource;
     if (!source) {
       return null;
     }
 
-    let coverSourceData: CoverSourceData;
+    let coverSourceData: ICoverSourceData;
 
     if (source === "default") {
       coverSourceData = {
@@ -430,7 +430,7 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         ))}
       </Accordion>
     );
-  }, [props.scene, loading, Toast, deletingFile, reassigningFile]);
+  }, [props.scene, loading, Toast, deletingFile, reassigningFile, coverImageSource]);
 
   return (
     <>

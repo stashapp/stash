@@ -93,7 +93,7 @@ type sceneRow struct {
 	UpdatedAt    Timestamp `db:"updated_at"`
 	ResumeTime   float64   `db:"resume_time"`
 	PlayDuration float64   `db:"play_duration"`
-	
+
 	// not used in resolutions or updates
 	CoverBlob zero.String `db:"cover_blob"`
 }
