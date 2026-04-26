@@ -237,8 +237,6 @@ const (
 	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
 	DisableDropdownCreateGallery   = "disable_dropdown_create.gallery"
 
-	DisableAutoTagWarning = "auto_tag.disable_warning"
-
 	HandyKey                       = "handy_key"
 	FunscriptOffset                = "funscript_offset"
 	UseStashHostedFunscript        = "use_stash_hosted_funscript"
@@ -1311,10 +1309,6 @@ func (i *Config) GetContinuePlaylistDefault() bool {
 
 func (i *Config) GetShowStudioAsText() bool {
 	return i.getBool(ShowStudioAsText)
-}
-
-func (i *Config) GetDisableAutoTagWarning() bool {
-	return i.getBool(DisableAutoTagWarning)
 }
 
 func (i *Config) getSlideshowDelay() int {

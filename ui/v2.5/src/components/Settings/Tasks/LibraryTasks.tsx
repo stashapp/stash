@@ -76,13 +76,7 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
-  const {
-    ui,
-    saveUI,
-    interface: iface,
-    saveInterface,
-    loading,
-  } = useSettings();
+  const { ui, saveUI, loading } = useSettings();
 
   const { taskDefaults } = ui;
 
@@ -205,7 +199,7 @@ export const LibraryTasks: React.FC = () => {
   const onAutoTagClick = useAutoTagTrigger(
     () => runAutoTag(),
     () => setDialogOpen({ autoTagAlert: true }),
-    iface.disableAutoTagWarning
+    ui.disableAutoTagWarning
   );
 
   function renderScanDialog() {
@@ -485,8 +479,8 @@ export const LibraryTasks: React.FC = () => {
             id="disable_auto_tag_warning"
             headingID="config.tasks.auto_tag.disable_warning.heading"
             subHeadingID="config.tasks.auto_tag.disable_warning.description"
-            checked={iface.disableAutoTagWarning ?? undefined}
-            onChange={(v) => saveInterface({ disableAutoTagWarning: v })}
+            checked={ui.disableAutoTagWarning ?? undefined}
+            onChange={(v) => saveUI({ disableAutoTagWarning: v })}
           />
         </SettingGroup>
       </SettingSection>

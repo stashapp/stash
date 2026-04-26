@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { IUIConfig } from "src/core/config";
 import { useConfigurationContext } from "./Config";
 
 export function useAutoTagTrigger(
@@ -7,8 +8,8 @@ export function useAutoTagTrigger(
   override?: boolean | null
 ) {
   const { configuration } = useConfigurationContext();
-  const disabled =
-    override ?? configuration?.interface.disableAutoTagWarning ?? false;
+  const ui = configuration?.ui as IUIConfig | undefined;
+  const disabled = override ?? ui?.disableAutoTagWarning ?? false;
   return useCallback(() => {
     if (disabled) {
       onRun();

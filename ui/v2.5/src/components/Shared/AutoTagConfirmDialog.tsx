@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { useConfigureInterface } from "src/core/StashService";
+import { useConfigureUISetting } from "src/core/StashService";
 import { SettingStateContext } from "src/components/Settings/context";
 import { useToast } from "src/hooks/Toast";
 import { ModalComponent } from "./Modal";
@@ -37,7 +37,7 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   const intl = useIntl();
   const Toast = useToast();
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [configureInterface] = useConfigureInterface();
+  const [saveUISetting] = useConfigureUISetting();
   const settingsContext = useContext(SettingStateContext);
 
   useEffect(() => {
@@ -49,11 +49,11 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   function handleConfirm() {
     if (dontShowAgain) {
       if (settingsContext) {
-        settingsContext.saveInterface({ disableAutoTagWarning: true });
+        settingsContext.saveUI({ disableAutoTagWarning: true });
       } else {
-        configureInterface({
-          variables: { input: { disableAutoTagWarning: true } },
-        }).catch((e) => Toast.error(e));
+        saveUISetting({
+          variables: { key: "disableAutoTagWarning", value: true },
+        }).catch((e: unknown) => Toast.error(e));
       }
     }
     onConfirm();

@@ -115,7 +115,6 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     movie
     gallery
   }
-  disableAutoTagWarning
   handyKey
   funscriptOffset
   useStashHostedFunscript
