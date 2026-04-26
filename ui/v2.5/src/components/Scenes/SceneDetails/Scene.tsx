@@ -391,7 +391,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   async function onGenerateScreenshot(at?: number) {
     const input: SceneUpdateInputWithCoverSource = {
       id: scene.id,
-      cover_image_source: typeof at === "number" ? `timestamp:${at}` : "default",
+      cover_image_source:
+        typeof at === "number" ? `timestamp:${at}` : "default",
     };
 
     await generateScreenshot({

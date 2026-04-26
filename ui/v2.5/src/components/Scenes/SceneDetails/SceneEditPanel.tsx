@@ -190,7 +190,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
     if (!coverImageSourceDirty) {
-      delete (input as { cover_image_source?: string | null }).cover_image_source;
+      delete (input as { cover_image_source?: string | null })
+        .cover_image_source;
     }
     onSave(input);
   }
@@ -224,7 +225,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
       return formImage;
     }
     return sceneImage;
-  }, [coverImageRefreshToken, formik.values.cover_image, scene.paths?.screenshot]);
+  }, [
+    coverImageRefreshToken,
+    formik.values.cover_image,
+    scene.paths?.screenshot,
+  ]);
 
   const groupEntries = useMemo(() => {
     return formik.values.groups
@@ -353,10 +358,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  function onImageURLSource(
-    source: "url" | "clipboard",
-    value?: string
-  ) {
+  function onImageURLSource(source: "url" | "clipboard", value?: string) {
     if (source === "clipboard") {
       setCoverImageSource("clipboard");
       return;

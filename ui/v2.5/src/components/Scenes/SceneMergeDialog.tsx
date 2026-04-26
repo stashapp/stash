@@ -632,7 +632,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     )?.cover_image_source;
     const coverImageSource = image.useNewValue
       ? coverImage
-        ? (sourceCoverImageSource ?? null)
+        ? sourceCoverImageSource ?? null
         : null
       : undefined;
 

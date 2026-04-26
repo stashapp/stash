@@ -176,13 +176,17 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 </Button>
               </div>
             )}
-            {(onGenerateDefault || onGenerateCurrent) && <hr className="my-2" />}
+            {(onGenerateDefault || onGenerateCurrent) && (
+              <hr className="my-2" />
+            )}
             {onGenerateDefault && (
               <div>
                 <Button className="minimal" onClick={onGenerateDefault}>
                   <Icon icon={faPhotoFilm} className="fa-fw" />
                   <span>
-                    {intl.formatMessage({ id: "actions.generate_thumb_default" })}
+                    {intl.formatMessage({
+                      id: "actions.generate_thumb_default",
+                    })}
                   </span>
                 </Button>
               </div>
@@ -205,7 +209,9 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 <div>
                   <Button className="minimal" onClick={onReset}>
                     <Icon icon={faCirclePlay} className="fa-solid" />
-                    <span>{intl.formatMessage({ id: "actions.clear_image" })}</span>
+                    <span>
+                      {intl.formatMessage({ id: "actions.clear_image" })}
+                    </span>
                   </Button>
                 </div>
               </>

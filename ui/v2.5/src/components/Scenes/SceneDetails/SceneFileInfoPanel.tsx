@@ -310,8 +310,8 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 ) => {
   const Toast = useToast();
   const coverImageSource =
-    (props.scene as { cover_image_source?: string | null }).cover_image_source ??
-    null;
+    (props.scene as { cover_image_source?: string | null })
+      .cover_image_source ?? null;
 
   const [loading, setLoading] = useState(false);
   const [deletingFile, setDeletingFile] = useState<GQL.VideoFileDataFragment>();
@@ -430,7 +430,14 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         ))}
       </Accordion>
     );
-  }, [props.scene, loading, Toast, deletingFile, reassigningFile, coverImageSource]);
+  }, [
+    props.scene,
+    loading,
+    Toast,
+    deletingFile,
+    reassigningFile,
+    coverImageSource,
+  ]);
 
   return (
     <>
