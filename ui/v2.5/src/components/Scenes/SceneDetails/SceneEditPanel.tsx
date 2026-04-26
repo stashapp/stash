@@ -149,6 +149,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     details: yup.string().ensure(),
     cover_image: yup.string().nullable().optional(),
+    cover_image_source: yup.string().nullable().optional(),
     custom_fields: yup.object().required().defined(),
   });
 
@@ -169,6 +170,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
       stash_ids: getStashIDs(scene.stash_ids),
       details: scene.details ?? "",
       cover_image: initialCoverImage,
+      cover_image_source:
+        (scene as { cover_image_source?: string | null }).cover_image_source ??
+        null,
       custom_fields: cloneDeep(scene.custom_fields ?? {}),
     }),
     [scene, initialCoverImage]
@@ -177,12 +181,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
   type InputValues = yup.InferType<typeof schema>;
 
   const [customFieldsError, setCustomFieldsError] = useState<string>();
+  const [coverImageSourceDirty, setCoverImageSourceDirty] = useState(false);
+  const [coverImageRefreshToken, setCoverImageRefreshToken] = useState(0);
 
   function submit(values: InputValues) {
     const input = {
       ...schema.cast(values),
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
+    if (!coverImageSourceDirty) {
+      delete (input as { cover_image_source?: string | null }).cover_image_source;
+    }
     onSave(input);
   }
 
@@ -204,12 +213,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (formImage === null && sceneImage) {
       const sceneImageURL = new URL(sceneImage);
       sceneImageURL.searchParams.set("default", "true");
+      if (coverImageRefreshToken > 0) {
+        sceneImageURL.searchParams.set(
+          "refresh",
+          coverImageRefreshToken.toString()
+        );
+      }
       return sceneImageURL.toString();
     } else if (formImage) {
       return formImage;
     }
     return sceneImage;
-  }, [formik.values.cover_image, scene.paths?.screenshot]);
+  }, [coverImageRefreshToken, formik.values.cover_image, scene.paths?.screenshot]);
 
   const groupEntries = useMemo(() => {
     return formik.values.groups
@@ -264,6 +279,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   useEffect(() => {
+    setCoverImageSourceDirty(false);
+    setCoverImageRefreshToken(0);
+  }, [scene.id]);
+
+  useEffect(() => {
     const toFilter = Scrapers?.data?.listScrapers ?? [];
 
     const newFragmentScrapers = toFilter.filter((s) =>
@@ -302,6 +322,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      setCoverImageSourceDirty(false);
     } catch (e) {
       Toast.error(e);
     }
@@ -316,18 +337,57 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSave(input, true);
   }
 
-  const encodingImage = ImageUtils.usePasteImage(onImageLoad);
+  const encodingImage = ImageUtils.usePasteImage((imageData) =>
+    onImageLoad(imageData, "clipboard")
+  );
 
-  function onImageLoad(imageData: string) {
+  function setCoverImageSource(source: string | null) {
+    formik.setFieldValue("cover_image_source", source);
+    setCoverImageSourceDirty(true);
+  }
+
+  function onImageLoad(imageData: string, source?: string) {
     formik.setFieldValue("cover_image", imageData);
+    if (source) {
+      setCoverImageSource(source);
+    }
+  }
+
+  function onImageURLSource(
+    source: "url" | "clipboard",
+    value?: string
+  ) {
+    if (source === "clipboard") {
+      setCoverImageSource("clipboard");
+      return;
+    }
+
+    if (source === "url") {
+      setCoverImageSource(`url:${(value ?? "").trim()}`);
+    }
   }
 
   function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onImageLoad);
+    const input = event.currentTarget as HTMLInputElement;
+    const fileName = input.files?.[0]?.name?.trim() ?? "";
+    setCoverImageSource(`file:${fileName}`);
+    ImageUtils.onImageChange(event, (imageData) => onImageLoad(imageData));
   }
 
   function onResetCover() {
     formik.setFieldValue("cover_image", null);
+    setCoverImageSource(null);
+  }
+
+  async function onGenerateDefaultCoverImage() {
+    if (!onGenerateThumbDefault) {
+      return;
+    }
+
+    await onGenerateThumbDefault();
+    formik.setFieldValue("cover_image", null);
+    setCoverImageSource("default");
+    setCoverImageRefreshToken(Date.now());
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
@@ -540,6 +600,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (updatedScene.image) {
       // image is a base64 string
       formik.setFieldValue("cover_image", updatedScene.image);
+      setCoverImageSource(endpoint ? `stash:${endpoint}` : "url:scraper");
     }
 
     if (updatedScene.remote_site_id && endpoint) {
@@ -890,14 +951,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
                     isEditing
                     onImageChange={onCoverImageChange}
                     onImageURL={onImageLoad}
-                    onGenerateDefault={onGenerateThumbDefault}
+                    onImageURLSource={onImageURLSource}
+                    onReset={onResetCover}
+                    onGenerateDefault={onGenerateDefaultCoverImage}
                     onGenerateCurrent={onGenerateThumbFromCurrent}
                   />
-                )}
-                {scene.id && (
-                  <Button variant="danger" onClick={() => onResetCover()}>
-                    {intl.formatMessage({ id: "actions.clear_image" })}
-                  </Button>
                 )}
               </div>
             </Form.Group>

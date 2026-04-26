@@ -14,16 +14,50 @@ import { ReassignFilesDialog } from "src/components/Shared/ReassignFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateSceneSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { useConfigurationContext } from "src/hooks/Config";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { TextField, URLField, URLsField } from "src/utils/field";
+import { IconField, TextField, URLField, URLsField } from "src/utils/field";
 import { StashIDPill } from "src/components/Shared/StashID";
 import { PatchComponent } from "../../../patch";
 import { FileSize } from "src/components/Shared/FileSize";
+import {
+  faCameraRotate,
+  faClipboard,
+  faFileCode,
+  faFile,
+  faLink,
+  faPhotoFilm,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
+
+const pad2 = (value: number) => value.toString().padStart(2, "0");
+
+function formatCoverTimestamp(seconds: number, frameRate?: number | null) {
+  const fps = frameRate ?? 0;
+  const roundedSeconds =
+    Number.isFinite(fps) && fps > 0
+      ? Math.round(seconds * fps) / fps
+      : Math.round(seconds * 100) / 100;
+
+  const centiseconds = Math.round(roundedSeconds * 100);
+  const totalSeconds = Math.floor(centiseconds / 100);
+  const cs = centiseconds % 100;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${pad2(minutes)}:${pad2(secs)}.${pad2(cs)}`;
+  }
+
+  return `${minutes}:${pad2(secs)}.${pad2(cs)}`;
+}
 
 interface IFileInfoPanelProps {
   sceneID: string;
   file: GQL.VideoFileDataFragment;
+  coverImageSource?: string | null;
   primary?: boolean;
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
@@ -32,16 +66,119 @@ interface IFileInfoPanelProps {
   loading?: boolean;
 }
 
+interface CoverSourceData {
+  icon?: FontAwesomeIconProps["icon"];
+  value: string;
+  url?: string | null;
+  stashEndpoint?: string | null;
+  tooltip?: string;
+}
+
 const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
   const intl = useIntl();
   const history = useHistory();
+  const { configuration } = useConfigurationContext();
+  const coverImageLabel = intl.formatMessage({ id: "scene_cover.image" });
+  const coverSourceLabel = intl.formatMessage(
+    { id: "scene_cover.source" },
+    { image: coverImageLabel }
+  );
 
   // TODO - generalise fingerprints
   const oshash = props.file.fingerprints.find((f) => f.type === "oshash");
   const phash = props.file.fingerprints.find((f) => f.type === "phash");
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
+
+  const getCoverSourceTooltip = (id: string) =>
+    intl.formatMessage({ id }, { image: coverImageLabel });
+
+  const coverSourceField = useMemo(() => {
+    const source = props.coverImageSource;
+    if (!source) {
+      return null;
+    }
+
+    let coverSourceData: CoverSourceData;
+
+    if (source === "default") {
+      coverSourceData = {
+        icon: faPhotoFilm,
+        value: intl.formatMessage({ id: "scene_cover.default" }),
+        tooltip: getCoverSourceTooltip("scene_cover.default_tooltip"),
+      };
+    } else if (source === "clipboard") {
+      coverSourceData = {
+        icon: faClipboard,
+        value: intl.formatMessage({ id: "scene_cover.clipboard" }),
+        tooltip: getCoverSourceTooltip("scene_cover.clipboard_tooltip"),
+      };
+    } else if (source === "userscript") {
+      coverSourceData = {
+        icon: faFileCode,
+        value: intl.formatMessage({ id: "scene_cover.userscript" }),
+        tooltip: getCoverSourceTooltip("scene_cover.userscript_tooltip"),
+      };
+    } else if (source.startsWith("file:")) {
+      const fileName = source.slice("file:".length);
+      coverSourceData = {
+        icon: faFile,
+        value: fileName || intl.formatMessage({ id: "scene_cover.file" }),
+        tooltip: getCoverSourceTooltip("scene_cover.file_tooltip"),
+      };
+    } else if (source.startsWith("url:")) {
+      const urlValue = source.slice("url:".length).trim();
+      coverSourceData = {
+        icon: faLink,
+        value: urlValue || intl.formatMessage({ id: "actions.from_url" }),
+        url: urlValue || null,
+        tooltip: getCoverSourceTooltip("scene_cover.url_tooltip"),
+      };
+    } else if (source.startsWith("timestamp:")) {
+      const rawTimestamp = source.slice("timestamp:".length).trim();
+      const parsedTimestamp = Number.parseFloat(rawTimestamp);
+      const timestampLabel = Number.isFinite(parsedTimestamp)
+        ? formatCoverTimestamp(parsedTimestamp, props.file.frame_rate)
+        : rawTimestamp;
+      coverSourceData = {
+        icon: faCameraRotate,
+        value: timestampLabel,
+        tooltip: getCoverSourceTooltip("scene_cover.timestamp_tooltip"),
+      };
+    } else if (source.startsWith("stash:")) {
+      const endpoint = source.slice("stash:".length).trim();
+      const endpointName =
+        configuration?.general.stashBoxes.find((sb) => sb.endpoint === endpoint)
+          ?.name ?? endpoint;
+      coverSourceData = {
+        value: endpointName,
+        stashEndpoint: endpointName,
+        tooltip: getCoverSourceTooltip("scene_cover.stash_tooltip"),
+      };
+    } else {
+      coverSourceData = { value: source };
+    }
+
+    return (
+      <IconField
+        name={coverSourceLabel}
+        icon={coverSourceData.icon}
+        value={coverSourceData.value}
+        url={coverSourceData.url}
+        stashEndpoint={coverSourceData.stashEndpoint}
+        truncate={Boolean(coverSourceData.url)}
+        tooltip={coverSourceData.tooltip}
+      />
+    );
+  }, [
+    configuration?.general.stashBoxes,
+    coverImageLabel,
+    coverSourceLabel,
+    intl,
+    props.coverImageSource,
+    props.file.frame_rate,
+  ]);
 
   function onSplit() {
     history.push(
@@ -76,6 +213,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
           internal
         />
+        {coverSourceField}
         <TextField id="path">
           <span className="d-flex align-items-center">
             <TruncatedText text={props.file.path} />
@@ -171,6 +309,9 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
   const Toast = useToast();
+  const coverImageSource =
+    (props.scene as { cover_image_source?: string | null }).cover_image_source ??
+    null;
 
   const [loading, setLoading] = useState(false);
   const [deletingFile, setDeletingFile] = useState<GQL.VideoFileDataFragment>();
@@ -232,7 +373,11 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     if (props.scene.files.length === 1) {
       return (
-        <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />
+        <FileInfoPanel
+          sceneID={props.scene.id}
+          file={props.scene.files[0]}
+          coverImageSource={coverImageSource}
+        />
       );
     }
 
@@ -271,6 +416,7 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                 <FileInfoPanel
                   sceneID={props.scene.id}
                   file={file}
+                  coverImageSource={coverImageSource}
                   primary={index === 0}
                   ofMany
                   onSetPrimaryFile={() => onSetPrimaryFile(file.id)}

@@ -62,6 +62,18 @@ type Scene {
   play_duration: Float
   "The number ot times a scene has been played"
   play_count: Int
+  """
+  Describes where the current cover image came from.
+  NULL        | unknown/no-cover/legacy.
+  default     | "Generate default thumbnail"
+  clipboard   | "From clipboard"
+  userscript  | set via GraphQL outside UI
+  url:*       | "From URL..."
+  stash:*     | StashBox imported image
+  timestamp:* | "Generate thumbnail from Current"
+  file:*      | "From file..."
+  """
+  cover_image_source: String
 
   "Times a scene was played"
   play_history: [Time!]!
@@ -114,6 +126,18 @@ input SceneCreateInput {
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
+  """
+  Describes where the current cover image came from.
+  NULL        | unknown/no-cover/legacy.
+  default     | "Generate default thumbnail"
+  clipboard   | "From clipboard"
+  userscript  | set via GraphQL outside UI
+  url:*       | "From URL..."
+  stash:*     | StashBox imported image
+  timestamp:* | "Generate thumbnail from Current"
+  file:*      | "From file..."
+  """
+  cover_image_source: String
   stash_ids: [StashIDInput!]
 
   """
@@ -149,6 +173,18 @@ input SceneUpdateInput {
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
+  """
+  Describes where the current cover image came from.
+  NULL        | unknown/no-cover/legacy.
+  default     | "Generate default thumbnail"
+  clipboard   | "From clipboard"
+  userscript  | set via GraphQL outside UI
+  url:*       | "From URL..."
+  stash:*     | StashBox imported image
+  timestamp:* | "Generate thumbnail from Current"
+  file:*      | "From file..."
+  """
+  cover_image_source: String
   stash_ids: [StashIDInput!]
 
   "The time index a scene was left at"

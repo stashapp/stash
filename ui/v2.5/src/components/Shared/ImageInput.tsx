@@ -10,7 +10,14 @@ import {
 import { useIntl } from "react-intl";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
-import { faArrowsRotate, faCameraRotate, faClipboard, faFile, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCameraRotate,
+  faClipboard,
+  faFile,
+  faLink,
+  faPhotoFilm,
+  faCirclePlay
+} from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 import ImageUtils from "src/utils/image";
 import { useToast } from "src/hooks/Toast";
@@ -20,6 +27,7 @@ interface IImageInput {
   text?: string;
   onImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onImageURL?: (url: string) => void;
+  onImageURLSource?: (source: "url" | "clipboard", value?: string) => void;
   onReset?: () => void;
   acceptSVG?: boolean;
   onGenerateDefault?: () => void;
@@ -37,6 +45,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
     text,
     onImageChange,
     onImageURL,
+    onImageURLSource,
     onReset,
     acceptSVG = false,
     onGenerateDefault,
@@ -69,6 +78,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
         const data = await ImageUtils.readClipboardImage();
         if (data && onImageURL) {
           onImageURL(data);
+          onImageURLSource?.("clipboard");
           Toast.success(
             intl.formatMessage({ id: "toast.clipboard_image_pasted" })
           );
@@ -98,6 +108,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
 
       setIsShowDialog(false);
       onImageURL(url);
+      onImageURLSource?.("url", url);
     }
 
     function renderDialog() {
@@ -165,10 +176,11 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 </Button>
               </div>
             )}
+            {(onGenerateDefault || onGenerateCurrent) && <hr className="my-2" />}
             {onGenerateDefault && (
               <div>
                 <Button className="minimal" onClick={onGenerateDefault}>
-                  <Icon icon={faArrowsRotate} className="fa-fw" />
+                  <Icon icon={faPhotoFilm} className="fa-fw" />
                   <span>
                     {intl.formatMessage({ id: "actions.generate_thumb_default" })}
                   </span>
@@ -186,6 +198,17 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                   </span>
                 </Button>
               </div>
+            )}
+            {onReset && (
+              <>
+                <hr className="my-2" />
+                <div>
+                  <Button className="minimal" onClick={onReset}>
+                    <Icon icon={faCirclePlay} className="fa-solid" />
+                    <span>{intl.formatMessage({ id: "actions.clear_image" })}</span>
+                  </Button>
+                </div>
+              </>
             )}
           </>
         </Popover.Content>
@@ -205,11 +228,6 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
             {text ?? intl.formatMessage({ id: "actions.set_image" })}
           </Button>
         </OverlayTrigger>
-        {onReset && (
-          <Button variant="danger" className="mr-2" onClick={onReset}>
-            {intl.formatMessage({ id: "actions.clear_image" })}
-          </Button>
-        )}
       </>
     );
   }

@@ -2,7 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Icon } from "src/components/Shared/Icon";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 
 interface ITextField {
   id?: string;
@@ -151,6 +153,88 @@ export const URLsField: React.FC<IURLsField> = ({
       <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
       <dd>
         <dl>{renderUrls()}</dl>
+      </dd>
+    </>
+  );
+};
+
+interface IIconField {
+  id?: string;
+  name?: string;
+  abbr?: string | null;
+  icon?: FontAwesomeIconProps["icon"];
+  tooltip?: string;
+  value?: string | null;
+  url?: string | null;
+  stashEndpoint?: string | null;
+  truncate?: boolean | null;
+  target?: string;
+}
+
+export const IconField: React.FC<IIconField> = ({
+  id,
+  name,
+  abbr,
+  icon,
+  tooltip,
+  value,
+  url,
+  stashEndpoint,
+  truncate,
+  target = "_blank",
+}) => {
+  if (!value && !url && !stashEndpoint) {
+    return null;
+  }
+
+  const message = (
+    <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
+  );
+
+  const displayValue = value ?? url ?? stashEndpoint ?? "";
+
+  function renderValue() {
+    if (stashEndpoint) {
+      return (
+        <span className="stash-id-pill" data-endpoint={stashEndpoint}>
+          <span>{displayValue}</span>
+        </span>
+      );
+    }
+
+    if (url) {
+      const children = truncate ? (
+        <TruncatedText
+          text={displayValue}
+          className="d-inline-block align-middle"
+        />
+      ) : (
+        displayValue
+      );
+      return (
+        <ExternalLink href={url} target={target} title={url} className="flex-grow-1">
+          {children}
+        </ExternalLink>
+      );
+    }
+
+    return displayValue;
+  }
+
+  return (
+    <>
+      <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
+      <dd>
+        <span
+          title={tooltip}
+          className={
+            url ? "d-inline-flex align-items-center w-100" : "d-inline-flex align-items-center"
+          }
+          style={url ? { minWidth: 0 } : undefined}
+        >
+          {icon && <Icon icon={icon} className={url ? "mr-1 flex-shrink-0" : "mr-1"} />}
+          {renderValue()}
+        </span>
       </dd>
     </>
   );

@@ -190,8 +190,9 @@ type SceneCreateInput struct {
 	Groups       []SceneGroupInput `json:"groups"`
 	TagIds       []string          `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string        `json:"cover_image"`
-	StashIds   []StashIDInput `json:"stash_ids"`
+	CoverImage       *string        `json:"cover_image"`
+	CoverImageSource *string        `json:"cover_image_source"`
+	StashIds         []StashIDInput `json:"stash_ids"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
@@ -219,13 +220,14 @@ type SceneUpdateInput struct {
 	Groups           []SceneGroupInput `json:"groups"`
 	TagIds           []string          `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage    *string        `json:"cover_image"`
-	StashIds      []StashIDInput `json:"stash_ids"`
-	ResumeTime    *float64       `json:"resume_time"`
-	PlayDuration  *float64       `json:"play_duration"`
-	PlayCount     *int           `json:"play_count"`
-	PrimaryFileID *string        `json:"primary_file_id"`
-	CustomFields  *CustomFieldsInput
+	CoverImage       *string        `json:"cover_image"`
+	CoverImageSource *string        `json:"cover_image_source"`
+	StashIds         []StashIDInput `json:"stash_ids"`
+	ResumeTime       *float64       `json:"resume_time"`
+	PlayDuration     *float64       `json:"play_duration"`
+	PlayCount        *int           `json:"play_count"`
+	PrimaryFileID    *string        `json:"primary_file_id"`
+	CustomFields     *CustomFieldsInput
 }
 
 type SceneDestroyInput struct {

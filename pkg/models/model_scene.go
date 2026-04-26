@@ -10,12 +10,13 @@ import (
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID       int    `json:"id"`
-	Title    string `json:"title"`
-	Code     string `json:"code"`
-	Details  string `json:"details"`
-	Director string `json:"director"`
-	Date     *Date  `json:"date"`
+	ID               int     `json:"id"`
+	Title            string  `json:"title"`
+	Code             string  `json:"code"`
+	Details          string  `json:"details"`
+	Director         string  `json:"director"`
+	CoverImageSource *string `json:"cover_image_source"`
+	Date             *Date   `json:"date"`
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
@@ -70,11 +71,12 @@ type UpdateSceneInput struct {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {
-	Title    OptionalString
-	Code     OptionalString
-	Details  OptionalString
-	Director OptionalString
-	Date     OptionalDate
+	Title            OptionalString
+	Code             OptionalString
+	Details          OptionalString
+	Director         OptionalString
+	CoverImageSource OptionalString
+	Date             OptionalDate
 	// Rating expressed in 1-100 scale
 	Rating       OptionalInt
 	Organized    OptionalBool
@@ -212,21 +214,22 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	}
 
 	ret := SceneUpdateInput{
-		ID:           strconv.Itoa(id),
-		Title:        s.Title.Ptr(),
-		Code:         s.Code.Ptr(),
-		Details:      s.Details.Ptr(),
-		Director:     s.Director.Ptr(),
-		Urls:         s.URLs.Strings(),
-		Date:         dateStr,
-		Rating100:    s.Rating.Ptr(),
-		Organized:    s.Organized.Ptr(),
-		StudioID:     s.StudioID.StringPtr(),
-		GalleryIds:   s.GalleryIDs.IDStrings(),
-		PerformerIds: s.PerformerIDs.IDStrings(),
-		Movies:       s.GroupIDs.SceneMovieInputs(),
-		TagIds:       s.TagIDs.IDStrings(),
-		StashIds:     stashIDs.ToStashIDInputs(),
+		ID:               strconv.Itoa(id),
+		Title:            s.Title.Ptr(),
+		Code:             s.Code.Ptr(),
+		Details:          s.Details.Ptr(),
+		Director:         s.Director.Ptr(),
+		CoverImageSource: s.CoverImageSource.Ptr(),
+		Urls:             s.URLs.Strings(),
+		Date:             dateStr,
+		Rating100:        s.Rating.Ptr(),
+		Organized:        s.Organized.Ptr(),
+		StudioID:         s.StudioID.StringPtr(),
+		GalleryIds:       s.GalleryIDs.IDStrings(),
+		PerformerIds:     s.PerformerIDs.IDStrings(),
+		Movies:           s.GroupIDs.SceneMovieInputs(),
+		TagIds:           s.TagIDs.IDStrings(),
+		StashIds:         stashIDs.ToStashIDInputs(),
 	}
 
 	return ret

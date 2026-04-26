@@ -20,6 +20,24 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// defaults to 'userscript when image is provided and source is not provided
+// returns nil if source null and image is not provided
+// otherwise returns the source trimmed
+func applyDefaultCoverSource(
+	coverImageSource *string,
+	coverImageData []byte,
+) *string {
+	if len(coverImageData) > 0 && coverImageSource == nil {
+		defaultSource := "userscript"
+		return &defaultSource
+	}
+	if coverImageSource == nil {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*coverImageSource)
+	return &trimmed
+}
+
 // used to refetch scene after hooks run
 func (r *mutationResolver) getScene(ctx context.Context, id int) (ret *models.Scene, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -102,6 +120,11 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 			return nil, fmt.Errorf("processing cover image: %w", err)
 		}
 	}
+
+	newScene.CoverImageSource = applyDefaultCoverSource(
+		input.CoverImageSource,
+		coverImageData,
+	)
 
 	customFields := convertMapJSONNumbers(input.CustomFields)
 
@@ -187,6 +210,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
+	updatedScene.CoverImageSource = translator.optionalString(input.CoverImageSource, "cover_image_source")
 	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 
 	if input.OCounter != nil {
@@ -310,6 +334,10 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
 			return nil, fmt.Errorf("processing cover image: %w", err)
+		}
+
+		if len(coverImageData) > 0 && !updatedScene.CoverImageSource.Set {
+			updatedScene.CoverImageSource = models.NewOptionalString("userscript")
 		}
 	}
 
@@ -626,6 +654,9 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 			coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
 			if err != nil {
 				return nil, fmt.Errorf("processing cover image: %w", err)
+			}
+			if len(coverImageData) > 0 && !values.CoverImageSource.Set {
+				values.CoverImageSource = models.NewOptionalString("userscript")
 			}
 		}
 

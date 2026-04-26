@@ -160,6 +160,10 @@ interface ISceneParams {
   id: string;
 }
 
+type SceneUpdateInputWithCoverSource = GQL.SceneUpdateInput & {
+  cover_image_source?: string | null;
+};
+
 const ScenePageTabs = PatchContainerComponent<IProps>("ScenePage.Tabs");
 const ScenePageTabContent = PatchContainerComponent<IProps>(
   "ScenePage.TabContent"
@@ -385,10 +389,20 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   }
 
   async function onGenerateScreenshot(at?: number) {
+    const input: SceneUpdateInputWithCoverSource = {
+      id: scene.id,
+      cover_image_source: typeof at === "number" ? `timestamp:${at}` : "default",
+    };
+
     await generateScreenshot({
       variables: {
         id: scene.id,
         at,
+      },
+    });
+    await updateScene({
+      variables: {
+        input,
       },
     });
     Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));

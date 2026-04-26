@@ -625,45 +625,63 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
     // only set the cover image if it's different from the existing cover image
     const coverImage = image.useNewValue ? image.getNewValue() : undefined;
+    const sourceCoverImageSource = (
+      sources.find((s) => s.paths.screenshot) as unknown as
+        | { cover_image_source?: string | null }
+        | undefined
+    )?.cover_image_source;
+    const coverImageSource = image.useNewValue
+      ? coverImage
+        ? (sourceCoverImageSource ?? null)
+        : null
+      : undefined;
+
+    const values: GQL.SceneUpdateInput = {
+      id: dest.id,
+      title: title.getNewValue(),
+      code: code.getNewValue(),
+      urls: url.getNewValue(),
+      date: date.getNewValue(),
+      rating100: rating.getNewValue(),
+      o_counter: oCounter.getNewValue(),
+      play_count: playCount.getNewValue(),
+      play_duration: playDuration.getNewValue(),
+      gallery_ids: galleries.getNewValue(),
+      studio_id: studio.getNewValue()?.stored_id,
+      performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
+      groups: groups.getNewValue()?.map((m) => {
+        // find the equivalent group in the original scenes
+        const found = all
+          .map((s) => s.groups)
+          .flat()
+          .find((mm) => mm.group.id === m.stored_id);
+        return {
+          group_id: m.stored_id!,
+          scene_index: found!.scene_index,
+        };
+      }),
+      tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
+      details: details.getNewValue(),
+      organized: organized.getNewValue(),
+      stash_ids: stashIDs.getNewValue(),
+      cover_image: coverImage,
+      custom_fields: {
+        partial: Object.fromEntries(
+          Array.from(customFields.entries()).flatMap(([field, v]) =>
+            v.useNewValue ? [[field, v.getNewValue()]] : []
+          )
+        ),
+      },
+    };
+
+    if (coverImageSource !== undefined) {
+      (
+        values as unknown as { cover_image_source?: string | null }
+      ).cover_image_source = coverImageSource;
+    }
 
     return {
-      values: {
-        id: dest.id,
-        title: title.getNewValue(),
-        code: code.getNewValue(),
-        urls: url.getNewValue(),
-        date: date.getNewValue(),
-        rating100: rating.getNewValue(),
-        o_counter: oCounter.getNewValue(),
-        play_count: playCount.getNewValue(),
-        play_duration: playDuration.getNewValue(),
-        gallery_ids: galleries.getNewValue(),
-        studio_id: studio.getNewValue()?.stored_id,
-        performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
-        groups: groups.getNewValue()?.map((m) => {
-          // find the equivalent group in the original scenes
-          const found = all
-            .map((s) => s.groups)
-            .flat()
-            .find((mm) => mm.group.id === m.stored_id);
-          return {
-            group_id: m.stored_id!,
-            scene_index: found!.scene_index,
-          };
-        }),
-        tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
-        details: details.getNewValue(),
-        organized: organized.getNewValue(),
-        stash_ids: stashIDs.getNewValue(),
-        cover_image: coverImage,
-        custom_fields: {
-          partial: Object.fromEntries(
-            Array.from(customFields.entries()).flatMap(([field, v]) =>
-              v.useNewValue ? [[field, v.getNewValue()]] : []
-            )
-          ),
-        },
-      },
+      values,
       includeViewHistory: playCount.getNewValue() !== undefined,
       includeOHistory: oCounter.getNewValue() !== undefined,
     };

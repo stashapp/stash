@@ -21,6 +21,7 @@ fragment SceneData on Scene {
   last_played_at
   play_duration
   play_count
+  cover_image_source
 
   play_history
   o_history

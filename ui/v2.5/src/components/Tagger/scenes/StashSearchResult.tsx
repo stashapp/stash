@@ -383,6 +383,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       director: resolveField("director", stashScene.director, scene.director),
     };
 
+    if (imgData) {
+      (
+        sceneCreateInput as unknown as { cover_image_source?: string }
+      ).cover_image_source = currentSource?.sourceInput.stash_box_endpoint
+        ? `stash:${currentSource.sourceInput.stash_box_endpoint}`
+        : "url:scraper";
+    }
+
     const includeUrl = !excludedFieldList.includes("url");
     if (includeUrl && scene.urls) {
       sceneCreateInput.urls = uniq(stashScene.urls.concat(scene.urls));
