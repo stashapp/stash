@@ -83,6 +83,21 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
+	UseCustomSpriteInterval        = "use_custom_sprite_interval"
+	UseCustomSpriteIntervalDefault = false
+
+	SpriteInterval        = "sprite_interval"
+	SpriteIntervalDefault = 30
+
+	MinimumSprites        = "minimum_sprites"
+	MinimumSpritesDefault = 10
+
+	MaximumSprites        = "maximum_sprites"
+	MaximumSpritesDefault = 500
+
+	SpriteScreenshotSize        = "sprite_screenshot_width"
+	spriteScreenshotSizeDefault = 160
+
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
 
@@ -975,6 +990,50 @@ func (i *Config) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
+// GetUseCustomSpriteInterval returns true if the sprite minimum, maximum, and interval settings
+// should be used instead of the default
+func (i *Config) GetUseCustomSpriteInterval() bool {
+	value := i.getBool(UseCustomSpriteInterval)
+	return value
+}
+
+// GetSpriteInterval returns the time (in seconds) to be between each scrubber sprite
+// A value of 0 indicates that the sprite interval should be automatically determined
+// based on the minimum sprite setting.
+func (i *Config) GetSpriteInterval() float64 {
+	value := i.getFloat64(SpriteInterval)
+	return value
+}
+
+// GetMinimumSprites returns the minimum number of sprites that have to be generated
+// A value of 0 will be overridden with the default of 10.
+func (i *Config) GetMinimumSprites() int {
+	value := i.getInt(MinimumSprites)
+	if value <= 0 {
+		return MinimumSpritesDefault
+	}
+	return value
+}
+
+// GetMaximumSprites returns the maximum number of sprites that can be generated
+// A value of 0 indicates no maximum.
+func (i *Config) GetMaximumSprites() int {
+	value := i.getInt(MaximumSprites)
+	return value
+}
+
+// GetSpriteScreenshotSize returns the required size of the screenshots to be taken
+// during sprite generation in pixels. This will be the width for landscape scenes
+// and the height for portrait scenes, with the other dimension being scaled to maintain
+// the aspect ratio. If the value is less than or equal to 0, the default will be used.
+func (i *Config) GetSpriteScreenshotSize() int {
+	value := i.getInt(SpriteScreenshotSize)
+	if value <= 0 {
+		return spriteScreenshotSizeDefault
+	}
+	return value
+}
+
 func (i *Config) GetPreviewAudio() bool {
 	return i.getBool(PreviewAudio)
 }
@@ -1860,6 +1919,12 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.setDefault(PreviewAudio, previewAudioDefault)
 	i.setDefault(SoundOnPreview, false)
+
+	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
+	i.setDefault(SpriteInterval, SpriteIntervalDefault)
+	i.setDefault(MinimumSprites, MinimumSpritesDefault)
+	i.setDefault(MaximumSprites, MaximumSpritesDefault)
+	i.setDefault(SpriteScreenshotSize, spriteScreenshotSizeDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
 

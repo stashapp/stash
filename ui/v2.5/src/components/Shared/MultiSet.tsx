@@ -12,9 +12,10 @@ import { PerformerIDSelect } from "../Performers/PerformerSelect";
 import { StudioIDSelect } from "../Studios/StudioSelect";
 import { TagIDSelect } from "../Tags/TagSelect";
 import { GroupIDSelect } from "../Groups/GroupSelect";
+import { SceneIDSelect } from "../Scenes/SceneSelect";
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "groups" | "galleries";
+  type: "performers" | "studios" | "tags" | "groups" | "galleries" | "scenes";
   existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;
@@ -86,6 +87,17 @@ const Select: React.FC<IMultiSetProps> = (props) => {
           ids={props.ids ?? []}
           // exclude file-based galleries when setting galleries
           extraCriteria={excludeFileBasedGalleries}
+          menuPortalTarget={props.menuPortalTarget}
+        />
+      );
+    case "scenes":
+      return (
+        <SceneIDSelect
+          isDisabled={disabled}
+          isMulti
+          isClearable={false}
+          onSelect={onUpdate}
+          ids={props.ids ?? []}
           menuPortalTarget={props.menuPortalTarget}
         />
       );

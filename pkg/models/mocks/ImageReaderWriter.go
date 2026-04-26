@@ -137,13 +137,13 @@ func (_m *ImageReaderWriter) CoverByGalleryID(ctx context.Context, galleryId int
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, newImage, fileIDs
-func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error {
-	ret := _m.Called(ctx, newImage, fileIDs)
+// Create provides a mock function with given fields: ctx, newImage
+func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.CreateImageInput) error {
+	ret := _m.Called(ctx, newImage)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Image, []models.FileID) error); ok {
-		r0 = rf(ctx, newImage, fileIDs)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.CreateImageInput) error); ok {
+		r0 = rf(ctx, newImage)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -380,6 +380,52 @@ func (_m *ImageReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFields provides a mock function with given fields: ctx, id
+func (_m *ImageReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, int) map[string]interface{}); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFieldsBulk provides a mock function with given fields: ctx, ids
+func (_m *ImageReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []models.CustomFieldMap
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []models.CustomFieldMap); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.CustomFieldMap)
 		}
 	}
 
@@ -692,6 +738,20 @@ func (_m *ImageReaderWriter) ResetOCounter(ctx context.Context, id int) (int, er
 	}
 
 	return r0, r1
+}
+
+// SetCustomFields provides a mock function with given fields: ctx, id, fields
+func (_m *ImageReaderWriter) SetCustomFields(ctx context.Context, id int, fields models.CustomFieldsInput) error {
+	ret := _m.Called(ctx, id, fields)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.CustomFieldsInput) error); ok {
+		r0 = rf(ctx, id, fields)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Size provides a mock function with given fields: ctx

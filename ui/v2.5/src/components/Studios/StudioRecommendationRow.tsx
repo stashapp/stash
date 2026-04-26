@@ -1,13 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useFindStudios } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { StudioCard } from "./StudioCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
 import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -19,40 +15,29 @@ export const StudioRecommendationRow: React.FC<IProps> = PatchComponent(
   "StudioRecommendationRow",
   (props) => {
     const result = useFindStudios(props.filter);
-    const cardCount = result.data?.findStudios.count;
-
-    if (!result.loading && !cardCount) {
-      return null;
-    }
+    const count = result.data?.findStudios.count ?? 0;
 
     return (
-      <RecommendationRow
+      <FilteredRecommendationRow
         className="studio-recommendations"
-        header={props.header}
-        link={
-          <Link to={`/studios?${props.filter.makeQueryParameters()}`}>
-            <FormattedMessage id="view_all" />
-          </Link>
-        }
+        heading={props.header}
+        url={`/studios?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
-        <Slider
-          {...getSlickSliderSettings(
-            cardCount ? cardCount : props.filter.itemsPerPage,
-            props.isTouch
-          )}
-        >
-          {result.loading
-            ? [...Array(props.filter.itemsPerPage)].map((i) => (
-                <div
-                  key={`_${i}`}
-                  className="studio-skeleton skeleton-card"
-                ></div>
-              ))
-            : result.data?.findStudios.studios.map((s) => (
-                <StudioCard key={s.id} studio={s} hideParent={true} />
-              ))}
-        </Slider>
-      </RecommendationRow>
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div
+                key={`_${i}`}
+                className="studio-skeleton skeleton-card"
+              ></div>
+            ))
+          : result.data?.findStudios.studios.map((s) => (
+              <StudioCard key={s.id} studio={s} hideParent={true} />
+            ))}
+      </FilteredRecommendationRow>
     );
   }
 );

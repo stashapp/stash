@@ -74,6 +74,28 @@ func getScanPaths(inputPaths []string) []*config.StashConfig {
 	return ret
 }
 
+// Filters the input array for paths that are within the paths managed by stash
+func filterStashPaths(inputPaths []string) []string {
+	if len(inputPaths) == 0 {
+		return inputPaths
+	}
+
+	stashPaths := config.GetInstance().GetStashPaths()
+
+	var ret []string
+	for _, p := range inputPaths {
+		s := stashPaths.GetStashFromDirPath(p)
+		if s == nil {
+			logger.Warnf("%s is not in the configured stash paths", p)
+			continue
+		}
+
+		ret = append(ret, p)
+	}
+
+	return ret
+}
+
 // ScanSubscribe subscribes to a notification that is triggered when a
 // scan or clean is complete.
 func (s *Manager) ScanSubscribe(ctx context.Context) <-chan bool {
@@ -123,7 +145,8 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		ZipFileExtensions:     cfg.GetGalleryExtensions(),
 		// ScanFilters is set in ScanJob.Execute
 		// HandlerRequiredFilters is set in ScanJob.Execute
-		Rescan: input.Rescan,
+		RootPaths: cfg.GetStashPaths().Paths(),
+		Rescan:    input.Rescan,
 	}
 
 	scanJob := ScanJob{
@@ -291,6 +314,8 @@ type CleanMetadataInput struct {
 	Paths []string `json:"paths"`
 	// Do a dry run. Don't delete any files
 	DryRun bool `json:"dryRun"`
+
+	IgnoreZipFileContents bool `json:"ignoreZipFileContents"`
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
@@ -408,7 +433,7 @@ type StashBoxBatchTagInput struct {
 	ExcludeFields []string `json:"exclude_fields"`
 	// Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false
 	Refresh bool `json:"refresh"`
-	// If batch adding studios, should their parent studios also be created?
+	// If batch adding studios or tags, should their parent entities also be created?
 	CreateParent bool `json:"createParent"`
 	// IDs in stash of the items to update.
 	// If set, names and stash_ids fields will be ignored.
@@ -703,4 +728,138 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashB
 	})
 
 	return s.JobManager.Add(ctx, "Batch stash-box studio tag...", j)
+}
+
+func (s *Manager) batchTagTagsByIds(ctx context.Context, input StashBoxBatchTagInput, box *models.StashBox) ([]Task, error) {
+	var tasks []Task
+
+	err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+		tagQuery := s.Repository.Tag
+
+		for _, tagID := range input.Ids {
+			if id, err := strconv.Atoi(tagID); err == nil {
+				t, err := tagQuery.Find(ctx, id)
+				if err != nil {
+					return err
+				}
+
+				if err := t.LoadStashIDs(ctx, tagQuery); err != nil {
+					return fmt.Errorf("loading tag stash ids: %w", err)
+				}
+
+				hasStashID := t.StashIDs.ForEndpoint(box.Endpoint) != nil
+				if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
+					tasks = append(tasks, &stashBoxBatchTagTagTask{
+						tag:            t,
+						createParent:   input.CreateParent,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+					})
+				}
+			}
+		}
+		return nil
+	})
+
+	return tasks, err
+}
+
+func (s *Manager) batchTagTagsByNamesOrStashIds(input StashBoxBatchTagInput, box *models.StashBox) []Task {
+	var tasks []Task
+
+	for i := range input.StashIDs {
+		stashID := input.StashIDs[i]
+		if len(stashID) > 0 {
+			tasks = append(tasks, &stashBoxBatchTagTagTask{
+				stashID:        &stashID,
+				createParent:   input.CreateParent,
+				box:            box,
+				excludedFields: input.ExcludeFields,
+			})
+		}
+	}
+
+	for i := range input.Names {
+		name := input.Names[i]
+		if len(name) > 0 {
+			tasks = append(tasks, &stashBoxBatchTagTagTask{
+				name:           &name,
+				createParent:   input.CreateParent,
+				box:            box,
+				excludedFields: input.ExcludeFields,
+			})
+		}
+	}
+
+	return tasks
+}
+
+func (s *Manager) batchTagAllTags(ctx context.Context, input StashBoxBatchTagInput, box *models.StashBox) ([]Task, error) {
+	var tasks []Task
+
+	err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+		tagQuery := s.Repository.Tag
+		var tags []*models.Tag
+		var err error
+
+		tags, err = tagQuery.FindByStashIDStatus(ctx, input.Refresh, box.Endpoint)
+
+		if err != nil {
+			return fmt.Errorf("error querying tags: %v", err)
+		}
+
+		for _, t := range tags {
+			tasks = append(tasks, &stashBoxBatchTagTagTask{
+				tag:            t,
+				createParent:   input.CreateParent,
+				box:            box,
+				excludedFields: input.ExcludeFields,
+			})
+		}
+		return nil
+	})
+
+	return tasks, err
+}
+
+func (s *Manager) StashBoxBatchTagTag(ctx context.Context, box *models.StashBox, input StashBoxBatchTagInput) int {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
+		logger.Infof("Initiating stash-box batch tag tag")
+
+		var tasks []Task
+		var err error
+
+		switch input.getBatchTagType(false) {
+		case batchTagByIds:
+			tasks, err = s.batchTagTagsByIds(ctx, input, box)
+		case batchTagByNamesOrStashIds:
+			tasks = s.batchTagTagsByNamesOrStashIds(input, box)
+		case batchTagAll:
+			tasks, err = s.batchTagAllTags(ctx, input, box)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		if len(tasks) == 0 {
+			return nil
+		}
+
+		progress.SetTotal(len(tasks))
+
+		logger.Infof("Starting stash-box batch operation for %d tags", len(tasks))
+
+		for _, task := range tasks {
+			progress.ExecuteTask(task.GetDescription(), func() {
+				task.Start(ctx)
+			})
+
+			progress.Increment()
+		}
+
+		return nil
+	})
+
+	return s.JobManager.Add(ctx, "Batch stash-box tag tag...", j)
 }

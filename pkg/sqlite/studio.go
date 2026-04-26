@@ -44,6 +44,7 @@ type studioRow struct {
 	Favorite      bool        `db:"favorite"`
 	Details       zero.String `db:"details"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	Organized     bool        `db:"organized"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -59,6 +60,7 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Favorite = o.Favorite
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
+	r.Organized = o.Organized
 }
 
 func (r *studioRow) resolve() *models.Studio {
@@ -72,6 +74,7 @@ func (r *studioRow) resolve() *models.Studio {
 		Favorite:      r.Favorite,
 		Details:       r.Details.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
+		Organized:     r.Organized,
 	}
 
 	return ret
@@ -90,6 +93,7 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setBool("favorite", o.Favorite)
 	r.setNullString("details", o.Details)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
+	r.setBool("organized", o.Organized)
 }
 
 type studioRepositoryType struct {
@@ -101,6 +105,7 @@ type studioRepositoryType struct {
 	scenes    repository
 	images    repository
 	galleries repository
+	groups    repository
 }
 
 var (
@@ -125,6 +130,10 @@ var (
 		},
 		galleries: repository{
 			tableName: galleryTable,
+			idColumn:  studioIDColumn,
+		},
+		groups: repository{
+			tableName: groupTable,
 			idColumn:  studioIDColumn,
 		},
 		tags: joinRepository{
@@ -620,6 +629,16 @@ func (qb *StudioStore) sortByScenesDuration(direction string) string {
 	) %s`, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 }
 
+func (qb *StudioStore) sortByScenesSize(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(%s.size), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN %s ON %s.id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, fileTable, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, fileTable, fileTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
+}
+
 // used for sorting on performer latest scene
 var selectStudioLatestSceneSQL = utils.StrFormat(
 	"SELECT MAX(date) FROM ("+
@@ -649,6 +668,7 @@ var studioSortOptions = sortOptions{
 	"name",
 	"scenes_count",
 	"scenes_duration",
+	"scenes_size",
 	"random",
 	"rating",
 	"tag_count",
@@ -679,6 +699,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "scenes_duration":
 		sortQuery += qb.sortByScenesDuration(direction)
+	case "scenes_size":
+		sortQuery += qb.sortByScenesSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":

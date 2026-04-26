@@ -10,27 +10,64 @@ Stash currently identifies files by performing a quick file hash. This means tha
 
 Stash currently ignores duplicate files. If two files contain identical content, only the first one it comes across is used.
 
+### Ignoring files with `.stashignore`
+
+You can create `.stashignore` files to exclude specific files or directories from being scanned. These files use gitignore-style pattern matching syntax.
+
+Place a `.stashignore` file in any directory within your library. The patterns in that file will apply to all files and subdirectories within that directory. You can have multiple `.stashignore` files at different levels of your directory hierarchy - patterns from parent directories cascade down to child directories.
+
+`.stashignore` files are not read inside zip files.
+
+**Supported patterns:**
+
+| Pattern | Description |
+|---------|-------------|
+| `filename.mp4` | Ignore a specific file. |
+| `*.tmp` | Ignore all files with a specific extension. |
+| `temp/` | Ignore a directory and all its contents. |
+| `**/cache/` | Ignore directories named "cache" at any level. |
+| `!important.mp4` | Negation - do not ignore this file even if it matches a previous pattern. |
+| `# comment` | Lines starting with # are comments. |
+| `\#filename` | Use backslash to match a literal # character. |
+
+**Example `.stashignore` file:**
+
+```
+# Ignore temporary files
+*.tmp
+*.log
+
+# Ignore specific directories
+temp/
+.thumbnails/
+
+# But keep this specific file
+!important.tmp
+```
+
 The scan task accepts the following options:
 
 | Option | Description |
 |--------|-------------|
 | Generate scene covers | Generates scene covers for video files. |
 | Generate previews | Generates video previews (mp4) which play when hovering over a scene. |
-| Generate animated image previews* | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.|
+| Generate animated image previews | *Accessible in Advanced mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview type is set to Animated image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.|
 | Generate scrubber sprites | The set of images displayed below the video player for easy navigation. |
 | Generate video perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
 | Generate image perceptual hashes | Generates perceptual hashes for image deduplication and identification. |
 | Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
-| Rescan | By default, Stash will only rescan existing files if the file's modified date has been updated since its previous scan. Stash will rescan files in the path when this option is enabled, regardless of the file modification time. Only required if Stash needs to recalculate video/image metadata, or to rescan gallery zips. |
+| Rescan files | By default, Stash will only rescan existing files if the file's modified date has been updated since its previous scan. Stash will rescan files in the path when this option is enabled, regardless of the file modification time. Only required if Stash needs to recalculate video/image metadata, or to rescan gallery zips. |
 
-## Auto Tagging
-See the [Auto Tagging](/help/AutoTagging.md) page.
+## Auto tagging
 
-## Scene Filename Parser
-See the [Scene Filename Parser](/help/SceneFilenameParser.md) page.
+See the [Auto tagging](/help/AutoTagging.md) page.
 
-## Generated Content
+## Scene filename parser
+
+See the [Scene filename parser](/help/SceneFilenameParser.md) page.
+
+## Generated content
 
 The generated content provides the following:
 
@@ -49,18 +86,18 @@ The generate task accepts the following options:
 |--------|-------------|
 | Scene covers | Generates scene covers for video files. |
 | Previews | Generates video previews (mp4) which play when hovering over a scene. |
-| Animated image previews | *Accessible in Advanced Mode* - Generates animated previews (webp). Only required if the Preview Type is set to Animated Image. Requires Generate previews to be enabled. |
-| Scene Scrubber Sprites | The set of images displayed below the video player for easy navigation. |
-| Markers Previews | Generates 20 second video previews (mp4) which begin at the marker timecode. |
-| Marker Animated Image Previews | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
-| Marker Screenshots | Generates static JPG images for markers. Only required if Preview Type is set to Static Image. Requires Marker Previews to be enabled. | 
-| Transcodes | *Accessible in Advanced Mode* - MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
-| Video Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |
+| Animated image previews | *Accessible in Advanced mode* - Generates animated previews (webp). Only required if the Preview type is set to Animated image. Requires Generate previews to be enabled. |
+| Scene scrubber sprites | The set of images displayed below the video player for easy navigation. |
+| Marker previews | Generates 20 second video previews (mp4) which begin at the marker timecode. |
+| Marker animated image previews | *Accessible in Advanced mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview type is set to Animated image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
+| Marker screenshots | Generates static JPG images for markers. Only required if Preview type is set to Static image. Requires marker previews to be enabled. | 
+| Transcodes | *Accessible in Advanced mode* - MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
+| Video perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate heatmaps and speeds for interactive scenes | Generates heatmaps and speeds for interactive scenes. |
-| Image Clip Previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
-| Image Thumbnails | Generates thumbnails for image files. |
-| Image Perceptual hashes (for deduplication) | Generates perceptual hashes for image deduplication and identification. |
-| Overwrite existing generated files | By default, where a generated file exists, it is not regenerated. When this flag is enabled, then the generated files are regenerated. |
+| Image clip previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
+| Image thumbnails | Generates thumbnails for image files. |
+| Image perceptual hashes | Generates perceptual hashes for image deduplication and identification. |
+| Overwrite existing files | By default, where a generated file exists, it is not regenerated. When this flag is enabled, then the generated files are regenerated. |
 
 ### Transcodes
 
@@ -78,10 +115,26 @@ This task will walk through your configured media directories and remove any sce
 
 Care should be taken with this task, especially where the configured media directories may be inaccessible due to network issues.
 
-## Exporting and Importing
+## Exporting and importing
 
 The import and export tasks read and write JSON files to the configured metadata directory. Import from file will merge your database with a file.
 
 > **⚠️ Note:** The full import task wipes the current database completely before importing.
 
 See the [JSON Specification](/help/JSONSpec.md) page for details on the exported JSON format.
+
+## Backing up
+
+The backup task creates a backup of the stash database and (optionally) blob files. The backup can either be downloaded or output into the backup directory (under `Settings > Paths`) or the database directory if the backup directory is not configured.
+
+For a full backup, the database file and all blob files must be copied. The backup is stored as a zip file, with the database file at the root of the zip and the blob files in a `blobs` directory.
+
+> **⚠️ Note:** generated files are not included in the backup, so these will need to be regenerated when restoring with an empty system from backup.
+
+For database-only backups, only the database file is copied into the destination. This is useful for quick backups before performing risky operations, or for users who do not use filesystem blob storage.
+
+## Restoring from backup
+
+Restoring from backup is currently a manual process. The database backup zip file must be unzipped, and the database file and blob files (if applicable) copied into the database and blob directories respectively. Stash should then be restarted to load the restored database.
+
+> **⚠️ Note:** the filename for a database-only backup is not the same as the original database file, so the database file from the backup must be renamed to match the original database filename before copying it into the database directory. The original database filename can be found in `Settings > Paths > Database path`.

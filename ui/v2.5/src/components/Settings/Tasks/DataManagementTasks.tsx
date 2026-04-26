@@ -25,6 +25,8 @@ import { Icon } from "src/components/Shared/Icon";
 import { useConfigurationContext } from "src/hooks/Config";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import {
+  faBoxArchive,
+  faExclamationTriangle,
   faMinus,
   faPlus,
   faQuestionCircle,
@@ -144,12 +146,138 @@ const CleanOptions: React.FC<ICleanOptions> = ({
   return (
     <>
       <BooleanSetting
+        id="clean-ignore-zip-contents"
+        checked={options.ignoreZipFileContents ?? false}
+        headingID="config.tasks.clean_ignore_zip_contents"
+        subHeadingID="config.tasks.clean_ignore_zip_contents_desc"
+        onChange={(v) => setOptions({ ignoreZipFileContents: v })}
+      />
+      <BooleanSetting
         id="clean-dryrun"
         checked={options.dryRun}
         headingID="config.tasks.only_dry_run"
         onChange={(v) => setOptions({ dryRun: v })}
       />
     </>
+  );
+};
+
+const BackupDialog: React.FC<{
+  onClose: (
+    confirmed?: boolean,
+    download?: boolean,
+    includeBlobs?: boolean
+  ) => void;
+}> = ({ onClose }) => {
+  const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+
+  const includeBlobsDefault =
+    configuration?.general.blobsStorage === GQL.BlobsStorageType.Filesystem;
+  const backupDir =
+    configuration.general.backupDirectoryPath ||
+    `<${intl.formatMessage({
+      id: "config.general.backup_directory_path.heading",
+    })}>`;
+
+  const [download, setDownload] = useState(false);
+  const [includeBlobs, setIncludeBlobs] = useState(includeBlobsDefault);
+
+  let msg;
+  if (!includeBlobs) {
+    msg = intl.formatMessage(
+      { id: "config.tasks.backup_database.sqlite" },
+      {
+        filename_format: (
+          <code>[origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]</code>
+        ),
+      }
+    );
+  } else {
+    msg = intl.formatMessage(
+      { id: "config.tasks.backup_database.zip" },
+      {
+        filename_format: (
+          <code>
+            [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS].zip
+          </code>
+        ),
+      }
+    );
+  }
+
+  const warning =
+    includeBlobs !== includeBlobsDefault ? (
+      <p className="lead">
+        <Icon icon={faExclamationTriangle} className="text-warning" />
+        <FormattedMessage id="config.tasks.backup_database.warning_blobs" />
+      </p>
+    ) : null;
+
+  const acceptID = download
+    ? "config.tasks.backup_database.download"
+    : "actions.backup";
+
+  return (
+    <ModalComponent
+      show
+      icon={faBoxArchive}
+      accept={{
+        text: intl.formatMessage({ id: acceptID }),
+        onClick: () => onClose(true, download, includeBlobs),
+      }}
+      cancel={{
+        onClick: () => onClose(),
+        variant: "secondary",
+      }}
+    >
+      <div className="dialog-container">
+        <Form.Group>
+          <h5>
+            <FormattedMessage id="config.tasks.backup_database.destination" />
+          </h5>
+          <Form.Check
+            type="radio"
+            id="backup-directory"
+            checked={!download}
+            onChange={() => setDownload(false)}
+            label={intl.formatMessage(
+              {
+                id: "config.tasks.backup_database.to_directory",
+              },
+              {
+                directory: <code>{backupDir}</code>,
+              }
+            )}
+          />
+
+          <Form.Check
+            type="radio"
+            id="backup-download"
+            checked={download}
+            onChange={() => setDownload(true)}
+            label={intl.formatMessage({
+              id: "config.tasks.backup_database.download",
+            })}
+          />
+        </Form.Group>
+
+        <SettingSection>
+          <BooleanSetting
+            id="backup-include-blobs"
+            // if includeBlobsDefault is false, then blobs are in the database, so we check the box and disable it
+            checked={includeBlobs || !includeBlobsDefault}
+            headingID="config.tasks.backup_database.include_blobs"
+            onChange={(v) => setIncludeBlobs(v)}
+            // if includeBlobsDefault is false, then blobs are in the database
+            disabled={!includeBlobsDefault}
+          />
+        </SettingSection>
+
+        <p>{msg}</p>
+        {warning}
+      </div>
+    </ModalComponent>
   );
 };
 
@@ -167,6 +295,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   const [dialogOpen, setDialogOpenState] = useState({
     importAlert: false,
     import: false,
+    backup: false,
     clean: false,
     cleanAlert: false,
     cleanGenerated: false,
@@ -344,11 +473,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     }
   }
 
-  async function onBackup(download?: boolean) {
+  async function onBackup(download?: boolean, includeBlobs?: boolean) {
     try {
       setIsBackupRunning(true);
       const ret = await mutateBackupDatabase({
         download,
+        includeBlobs,
       });
 
       // download the result
@@ -436,6 +566,17 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             }
 
             setDialogOpen({ cleanGenerated: false });
+          }}
+        />
+      )}
+      {dialogOpen.backup && (
+        <BackupDialog
+          onClose={(confirmed, download, includeBlobs) => {
+            if (confirmed) {
+              onBackup(download, includeBlobs);
+            }
+
+            setDialogOpen({ backup: false });
           }}
         />
       )}
@@ -555,39 +696,25 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
 
       <SettingSection headingID="actions.backup">
         <Setting
-          headingID="actions.backup"
-          subHeading={intl.formatMessage(
-            { id: "config.tasks.backup_database" },
-            {
-              filename_format: (
-                <code>
-                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
-                </code>
-              ),
-            }
-          )}
+          heading={
+            <>
+              <FormattedMessage id="actions.backup" />
+              <ManualLink tab="Tasks">
+                <Icon icon={faQuestionCircle} />
+              </ManualLink>
+            </>
+          }
+          subHeading={intl.formatMessage({
+            id: "config.tasks.backup_database.description",
+          })}
         >
           <Button
             id="backup"
             variant="secondary"
             type="submit"
-            onClick={() => onBackup()}
+            onClick={() => setDialogOpen({ backup: true })}
           >
-            <FormattedMessage id="actions.backup" />
-          </Button>
-        </Setting>
-
-        <Setting
-          headingID="actions.download_backup"
-          subHeadingID="config.tasks.backup_and_download"
-        >
-          <Button
-            id="backupDownload"
-            variant="secondary"
-            type="submit"
-            onClick={() => onBackup(true)}
-          >
-            <FormattedMessage id="actions.download_backup" />
+            <FormattedMessage id="actions.backup" />…
           </Button>
         </Setting>
       </SettingSection>

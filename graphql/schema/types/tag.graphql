@@ -78,6 +78,8 @@ type FindTagsResultType {
 input TagsMergeInput {
   source: [ID!]!
   destination: ID!
+  # values defined here will override values in the destination
+  values: TagUpdateInput
 }
 
 input BulkTagUpdateInput {

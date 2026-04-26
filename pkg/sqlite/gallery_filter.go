@@ -84,6 +84,7 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		}),
 
 		qb.pathCriterionHandler(filter.Path),
+		qb.parentFolderCriterionHandler(filter.ParentFolder),
 		qb.fileCountCriterionHandler(filter.FileCount),
 		intCriterionHandler(filter.Rating100, "galleries.rating", nil),
 		qb.urlsCriterionHandler(filter.URL),
@@ -104,6 +105,13 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		&dateCriterionHandler{filter.Date, "galleries.date", nil},
 		&timestampCriterionHandler{filter.CreatedAt, "galleries.created_at", nil},
 		&timestampCriterionHandler{filter.UpdatedAt, "galleries.updated_at", nil},
+
+		&customFieldsFilterHandler{
+			table: galleriesCustomFieldsTable.GetTable(),
+			fkCol: galleryIDColumn,
+			c:     filter.CustomFields,
+			idCol: "galleries.id",
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.scene_id",
@@ -185,15 +193,15 @@ func (qb *galleryFilterHandler) urlsCriterionHandler(url *models.StringCriterion
 		primaryFK:    galleryIDColumn,
 		joinTable:    galleriesURLsTable,
 		stringColumn: galleriesURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			galleriesURLsTableMgr.join(f, "", "galleries.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			galleriesURLsTableMgr.join(f, joinType, "", "galleries.id")
 		},
 	}
 
 	return h.handler(url)
 }
 
-func (qb *galleryFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *galleryFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: galleryTable,
 		foreignTable: foreignTable,
@@ -271,6 +279,65 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 	}
 }
 
+func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if folder == nil {
+			return
+		}
+
+		galleryRepository.addFilesTable(f)
+		f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
+
+		criterion := *folder
+		switch criterion.Modifier {
+		case models.CriterionModifierEquals:
+			criterion.Modifier = models.CriterionModifierIncludes
+		case models.CriterionModifierNotEquals:
+			criterion.Modifier = models.CriterionModifierExcludes
+		}
+
+		// only allow includes or excludes filters
+		if criterion.Modifier != models.CriterionModifierIncludes && criterion.Modifier != models.CriterionModifierExcludes {
+			f.setError(fmt.Errorf("invalid modifier for parent folder criterion: %s", criterion.Modifier))
+		}
+
+		if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
+			return
+		}
+
+		// combine excludes if excludes modifier is selected
+		if criterion.Modifier == models.CriterionModifierExcludes {
+			criterion.Modifier = models.CriterionModifierIncludes
+			criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+			criterion.Value = nil
+		}
+
+		if len(criterion.Value) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Value, "folders", "", "parent_folder_id", "parent_folder_id", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			// combine clauses with OR to handle zip file or folder
+			c1 := makeClause(fmt.Sprintf("files.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			c2 := makeClause(fmt.Sprintf("gallery_folder.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			f.whereClauses = append(f.whereClauses, orClauses(c1, c2))
+		}
+
+		if len(criterion.Excludes) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, "folders", "", "parent_folder_id", "parent_folder_id", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			f.addWhere(fmt.Sprintf("files.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR folders.parent_folder_id IS NULL", valuesClause))
+			f.addWhere(fmt.Sprintf("gallery_folder.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR gallery_folder.parent_folder_id IS NULL", valuesClause))
+		}
+	}
+}
+
 func (qb *galleryFilterHandler) fileCountCriterionHandler(fileCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: galleryTable,
@@ -286,7 +353,7 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				galleriesURLsTableMgr.join(f, "", "galleries.id")
+				galleriesURLsTableMgr.leftJoin(f, "", "galleries.id")
 				f.addWhere("gallery_urls.url IS NULL")
 			case "scenes":
 				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
@@ -294,14 +361,23 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 			case "studio":
 				f.addWhere("galleries.studio_id IS NULL")
 			case "performers":
-				galleryRepository.performers.join(f, "performers_join", "galleries.id")
+				galleryRepository.performers.leftJoin(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
 				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\"")
 			case "tags":
-				galleryRepository.tags.join(f, "tags_join", "galleries.id")
+				galleryRepository.tags.leftJoin(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
+			case "cover":
+				f.addLeftJoin("galleries_images", "cover_join", "cover_join.gallery_id = galleries.id AND cover_join.cover = 1")
+				f.addWhere("cover_join.image_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "code", "rating", "details", "photographer",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(galleries." + *isMissing + " IS NULL OR TRIM(galleries." + *isMissing + ") = '')")
 			}
 		}
@@ -334,9 +410,9 @@ func (qb *galleryFilterHandler) tagCountCriterionHandler(tagCount *models.IntCri
 }
 
 func (qb *galleryFilterHandler) scenesCriterionHandler(scenes *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		galleryRepository.scenes.join(f, "", "galleries.id")
-		f.addLeftJoin("scenes", "", "scenes_galleries.scene_id = scenes.id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		galleryRepository.scenes.join(f, joinType, "", "galleries.id")
+		f.addJoin(joinType, "scenes", "", "scenes_galleries.scene_id = scenes.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(sceneTable, galleriesScenesTable, "scene_id", addJoinsFunc)
 	return h.handler(scenes)
@@ -350,8 +426,8 @@ func (qb *galleryFilterHandler) performersCriterionHandler(performers *models.Mu
 		primaryFK:    galleryIDColumn,
 		foreignFK:    performerIDColumn,
 
-		addJoinTable: func(f *filterBuilder) {
-			galleryRepository.performers.join(f, "performers_join", "galleries.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			galleryRepository.performers.join(f, joinType, "performers_join", "galleries.id")
 		},
 	}
 
@@ -439,7 +515,7 @@ func (qb *galleryFilterHandler) performerAgeCriterionHandler(performerAge *model
 func (qb *galleryFilterHandler) averageResolutionCriterionHandler(resolution *models.ResolutionCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if resolution != nil && resolution.Value.IsValid() {
-			galleryRepository.images.join(f, "images_join", "galleries.id")
+			galleryRepository.images.leftJoin(f, "images_join", "galleries.id")
 			f.addLeftJoin("images", "", "images_join.image_id = images.id")
 			f.addLeftJoin("images_files", "", "images.id = images_files.image_id")
 			f.addLeftJoin("image_files", "", "images_files.file_id = image_files.file_id")

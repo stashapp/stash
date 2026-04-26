@@ -74,7 +74,7 @@
       order: 1;
     }
 
-    .scene-studio-image {
+    .studio-logo {
       flex: 0 0 25%;
       order: 2;
     }
@@ -190,6 +190,10 @@ textarea.scene-description {
   right: 0.7rem;
 }
 
+.scene-specs-overlay > span:not(:last-child) {
+  margin-right: 0.3rem;
+}
+
 .scene-interactive-speed-overlay {
   left: 0.7rem;
 }
@@ -200,7 +204,6 @@ textarea.scene-description {
 
 .overlay-resolution {
   font-weight: 900;
-  margin-right: 0.3rem;
   text-transform: uppercase;
 }
 
@@ -561,6 +564,20 @@ input[type="range"].blue-slider {
 
   .form-group[data-field="urls"] .string-list-input input.form-control {
     font-size: 0.85em;
+  }
+
+  @include media-breakpoint-up(xl) {
+    .custom-fields-input {
+      .custom-fields-field {
+        flex: 0 0 25%;
+        max-width: 25%;
+      }
+
+      .custom-fields-value {
+        flex: 0 0 75%;
+        max-width: 75%;
+      }
+    }
   }
 }
 

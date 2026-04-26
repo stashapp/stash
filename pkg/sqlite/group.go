@@ -131,6 +131,7 @@ var (
 
 type GroupStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 	tagRelationshipStore
 	groupRelationshipStore
 
@@ -142,6 +143,10 @@ func NewGroupStore(blobStore *BlobStore) *GroupStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: groupTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: groupsCustomFieldsTable,
+			fk:    groupsCustomFieldsTable.Col(groupIDColumn),
 		},
 		tagRelationshipStore: tagRelationshipStore{
 			idRelationshipStore: idRelationshipStore{
@@ -232,6 +237,10 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 	}
 
 	if err := qb.groupRelationshipStore.modifySubRelationships(ctx, id, partial.SubGroups); err != nil {
+		return nil, err
+	}
+
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
 		return nil, err
 	}
 

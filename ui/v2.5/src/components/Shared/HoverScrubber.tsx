@@ -9,6 +9,7 @@ interface IHoverScrubber {
   activeIndex: number | undefined;
   setActiveIndex: (index: number | undefined) => void;
   onClick?: (index: number) => void;
+  disabled?: boolean;
 }
 
 export const HoverScrubber: React.FC<IHoverScrubber> = ({
@@ -16,6 +17,7 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
   activeIndex,
   setActiveIndex,
   onClick,
+  disabled,
 }) => {
   function getActiveIndex(
     e:
@@ -69,6 +71,11 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
       | React.TouchEvent<HTMLDivElement>
   ) {
     if (!onClick) return;
+    if (disabled) {
+      // allow propagation up so that selection still works
+      e.preventDefault();
+      return;
+    }
 
     const relatedTarget = e.currentTarget;
 

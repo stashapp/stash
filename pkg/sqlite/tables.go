@@ -14,12 +14,14 @@ var (
 	performersImagesJoinTable = goqu.T(performersImagesTable)
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
 	imagesURLsJoinTable       = goqu.T(imagesURLsTable)
+	imagesCustomFieldsTable   = goqu.T("image_custom_fields")
 
 	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
 	galleriesURLsJoinTable       = goqu.T(galleriesURLsTable)
+	galleriesCustomFieldsTable   = goqu.T("gallery_custom_fields")
 
 	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
@@ -27,6 +29,7 @@ var (
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesGroupsJoinTable     = goqu.T(groupsScenesTable)
 	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
+	scenesCustomFieldsTable   = goqu.T("scene_custom_fields")
 
 	sceneMarkersTagsJoinTable = goqu.T(sceneMarkersTagsTable)
 
@@ -45,6 +48,7 @@ var (
 	groupsURLsJoinTable     = goqu.T(groupURLsTable)
 	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
 	groupRelationsJoinTable = goqu.T(groupRelationsTable)
+	groupsCustomFieldsTable = goqu.T("group_custom_fields")
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)

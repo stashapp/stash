@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -363,7 +364,8 @@ func (r *queryResolver) ScrapeSingleTag(ctx context.Context, source scraper.Sour
 		client := r.newStashBoxClient(*b)
 
 		var ret []*models.ScrapedTag
-		out, err := client.QueryTag(ctx, *input.Query)
+		query := *input.Query
+		out, err := client.QueryTag(ctx, query)
 
 		if err != nil {
 			return nil, err
@@ -383,6 +385,22 @@ func (r *queryResolver) ScrapeSingleTag(ctx context.Context, source scraper.Sour
 			}); err != nil {
 				return nil, err
 			}
+
+			// tag name query returns results that may not match the query exactly.
+			// if there is an exact match, it should be first
+			if query != "" {
+				for i, result := range ret {
+					if strings.EqualFold(result.Name, query) {
+						// prepend exact match to the front of the slice
+						if i != 0 {
+							ret = append([]*models.ScrapedTag{result}, append(ret[:i], ret[i+1:]...)...)
+						}
+
+						break
+					}
+				}
+			}
+
 			return ret, nil
 		}
 

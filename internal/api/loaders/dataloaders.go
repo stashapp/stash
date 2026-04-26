@@ -11,6 +11,7 @@
 //go:generate go run github.com/vektah/dataloaden GroupLoader int *github.com/stashapp/stash/pkg/models.Group
 //go:generate go run github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/models.FileID github.com/stashapp/stash/pkg/models.File
 //go:generate go run github.com/vektah/dataloaden FolderLoader github.com/stashapp/stash/pkg/models.FolderID *github.com/stashapp/stash/pkg/models.Folder
+//go:generate go run github.com/vektah/dataloaden FolderRelatedFolderIDsLoader github.com/stashapp/stash/pkg/models.FolderID []github.com/stashapp/stash/pkg/models.FolderID
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
@@ -42,19 +43,22 @@ const (
 )
 
 type Loaders struct {
-	SceneByID        *SceneLoader
-	SceneFiles       *SceneFileIDsLoader
-	ScenePlayCount   *ScenePlayCountLoader
-	SceneOCount      *SceneOCountLoader
-	ScenePlayHistory *ScenePlayHistoryLoader
-	SceneOHistory    *SceneOHistoryLoader
-	SceneLastPlayed  *SceneLastPlayedLoader
+	SceneByID         *SceneLoader
+	SceneFiles        *SceneFileIDsLoader
+	ScenePlayCount    *ScenePlayCountLoader
+	SceneOCount       *SceneOCountLoader
+	ScenePlayHistory  *ScenePlayHistoryLoader
+	SceneOHistory     *SceneOHistoryLoader
+	SceneLastPlayed   *SceneLastPlayedLoader
+	SceneCustomFields *CustomFieldsLoader
 
 	ImageFiles   *ImageFileIDsLoader
 	GalleryFiles *GalleryFileIDsLoader
 
-	GalleryByID *GalleryLoader
-	ImageByID   *ImageLoader
+	GalleryByID         *GalleryLoader
+	GalleryCustomFields *CustomFieldsLoader
+	ImageByID           *ImageLoader
+	ImageCustomFields   *CustomFieldsLoader
 
 	PerformerByID         *PerformerLoader
 	PerformerCustomFields *CustomFieldsLoader
@@ -64,9 +68,15 @@ type Loaders struct {
 
 	TagByID         *TagLoader
 	TagCustomFields *CustomFieldsLoader
-	GroupByID       *GroupLoader
-	FileByID        *FileLoader
-	FolderByID      *FolderLoader
+
+	GroupByID         *GroupLoader
+	GroupCustomFields *CustomFieldsLoader
+
+	FileByID *FileLoader
+
+	FolderByID            *FolderLoader
+	FolderParentFolderIDs *FolderRelatedFolderIDsLoader
+	FolderSubFolderIDs    *FolderRelatedFolderIDsLoader
 }
 
 type Middleware struct {
@@ -87,10 +97,20 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchGalleries(ctx),
 			},
+			GalleryCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchGalleryCustomFields(ctx),
+			},
 			ImageByID: &ImageLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchImages(ctx),
+			},
+			ImageCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchImageCustomFields(ctx),
 			},
 			PerformerByID: &PerformerLoader{
 				wait:     wait,
@@ -106,6 +126,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchStudioCustomFields(ctx),
+			},
+			SceneCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchSceneCustomFields(ctx),
 			},
 			StudioByID: &StudioLoader{
 				wait:     wait,
@@ -127,6 +152,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchGroups(ctx),
 			},
+			GroupCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchGroupCustomFields(ctx),
+			},
 			FileByID: &FileLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
@@ -136,6 +166,16 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchFolders(ctx),
+			},
+			FolderParentFolderIDs: &FolderRelatedFolderIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchFoldersParentFolderIDs(ctx),
+			},
+			FolderSubFolderIDs: &FolderRelatedFolderIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchFoldersSubFolderIDs(ctx),
 			},
 			SceneFiles: &SceneFileIDsLoader{
 				wait:     wait,
@@ -207,11 +247,35 @@ func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models
 	}
 }
 
+func (m Middleware) fetchSceneCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
 func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models.Image, []error) {
 	return func(keys []int) (ret []*models.Image, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.FindMany(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchImageCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Image.GetCustomFieldsBulk(ctx, keys)
 			return err
 		})
 
@@ -301,6 +365,30 @@ func (m Middleware) fetchTagCustomFields(ctx context.Context) func(keys []int) (
 	}
 }
 
+func (m Middleware) fetchGroupCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Group.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchGalleryCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Gallery.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
 func (m Middleware) fetchGroups(ctx context.Context) func(keys []int) ([]*models.Group, []error) {
 	return func(keys []int) (ret []*models.Group, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
@@ -328,6 +416,28 @@ func (m Middleware) fetchFolders(ctx context.Context) func(keys []models.FolderI
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Folder.FindMany(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchFoldersParentFolderIDs(ctx context.Context) func(keys []models.FolderID) ([][]models.FolderID, []error) {
+	return func(keys []models.FolderID) (ret [][]models.FolderID, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Folder.GetManyParentFolderIDs(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchFoldersSubFolderIDs(ctx context.Context) func(keys []models.FolderID) ([][]models.FolderID, []error) {
+	return func(keys []models.FolderID) (ret [][]models.FolderID, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Folder.GetManySubFolderIDs(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

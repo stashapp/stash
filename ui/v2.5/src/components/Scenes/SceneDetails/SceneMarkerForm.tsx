@@ -72,7 +72,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       const end = opts?.end;
       const hasAbLoop = Number.isFinite(start);
 
-      if (hasAbLoop) {
+      if (opts?.enabled && hasAbLoop) {
         const current = Math.round(getPlayerPosition() ?? 0);
         const rawEnd =
           Number.isFinite(end) && (end as number) > 0 ? (end as number) : null;

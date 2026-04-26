@@ -6,6 +6,7 @@ import { DetailItem } from "src/components/Shared/DetailItem";
 import { Link } from "react-router-dom";
 import { DirectorLink } from "src/components/Shared/Link";
 import { GroupLink, TagLink } from "src/components/Shared/TagLink";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface IGroupDescription {
   group: GQL.SlimGroupDataFragment;
@@ -101,6 +102,7 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
           fullWidth={fullWidth}
         />
       )}
+      <CustomFields values={group.custom_fields} />
     </div>
   );
 };

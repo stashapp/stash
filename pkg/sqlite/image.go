@@ -123,23 +123,23 @@ type imageRepositoryType struct {
 	files      filesRepository
 }
 
-func (r *imageRepositoryType) addImagesFilesTable(f *filterBuilder) {
-	f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
+func (r *imageRepositoryType) addImagesFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, imagesFilesTable, "", "images_files.image_id = images.id")
 }
 
-func (r *imageRepositoryType) addFilesTable(f *filterBuilder) {
-	r.addImagesFilesTable(f)
-	f.addLeftJoin(fileTable, "", "images_files.file_id = files.id")
+func (r *imageRepositoryType) addFilesTable(f *filterBuilder, joinType joinType) {
+	r.addImagesFilesTable(f, joinType)
+	f.addJoin(joinType, fileTable, "", "images_files.file_id = files.id")
 }
 
-func (r *imageRepositoryType) addFoldersTable(f *filterBuilder) {
-	r.addFilesTable(f)
-	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+func (r *imageRepositoryType) addFoldersTable(f *filterBuilder, joinType joinType) {
+	r.addFilesTable(f, joinType)
+	f.addJoin(joinType, folderTable, "", "files.parent_folder_id = folders.id")
 }
 
-func (r *imageRepositoryType) addImageFilesTable(f *filterBuilder) {
-	r.addImagesFilesTable(f)
-	f.addLeftJoin(imageFileTable, "", "image_files.file_id = images_files.file_id")
+func (r *imageRepositoryType) addImageFilesTable(f *filterBuilder, joinType joinType) {
+	r.addImagesFilesTable(f, joinType)
+	f.addJoin(joinType, imageFileTable, "", "image_files.file_id = images_files.file_id")
 }
 
 var (
@@ -185,6 +185,8 @@ var (
 )
 
 type ImageStore struct {
+	customFieldsStore
+
 	tableMgr *table
 	oCounterManager
 
@@ -193,6 +195,10 @@ type ImageStore struct {
 
 func NewImageStore(r *storeRepository) *ImageStore {
 	return &ImageStore{
+		customFieldsStore: customFieldsStore{
+			table: imagesCustomFieldsTable,
+			fk:    imagesCustomFieldsTable.Col(imageIDColumn),
+		},
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
 		repo:            r,
@@ -236,18 +242,18 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileIDs []models.FileID) error {
+func (qb *ImageStore) Create(ctx context.Context, newObject *models.CreateImageInput) error {
 	var r imageRow
-	r.fromImage(*newObject)
+	r.fromImage(*newObject.Image)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(fileIDs) > 0 {
+	if len(newObject.FileIDs) > 0 {
 		const firstPrimary = true
-		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
 			return err
 		}
 	}
@@ -276,12 +282,18 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 		}
 	}
 
+	if err := qb.SetCustomFields(ctx, id, models.CustomFieldsInput{
+		Full: newObject.CustomFields,
+	}); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Image = *updated
 
 	return nil
 }
@@ -327,6 +339,10 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		if err := imagesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
 			return nil, err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
 	}
 
 	return qb.find(ctx, id)
@@ -821,7 +837,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		)
 
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
-		searchColumns := []string{"images.title", filepathColumn, "files_fingerprints.fingerprint"}
+		searchColumns := []string{"images.title", "images.details", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -910,7 +926,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		Megapixels null.Float
 		Size       null.Float
 	}{}
-	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 

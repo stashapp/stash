@@ -12,6 +12,7 @@ import {
 import TextUtils from "src/utils/text";
 import {
   CriterionType,
+  IDuplicationValue,
   IHierarchicalLabelValue,
   ILabeledId,
   INumberValue,
@@ -36,7 +37,8 @@ export type CriterionValue =
   | IStashIDValue
   | IDateValue
   | ITimestampValue
-  | IPhashDistanceValue;
+  | IPhashDistanceValue
+  | IDuplicationValue;
 
 export interface ISavedCriterion<T> {
   modifier: CriterionModifier;
@@ -249,6 +251,7 @@ export type InputType =
   | "scene_tags"
   | "groups"
   | "galleries"
+  | "folders"
   | undefined;
 
 type MakeCriterionFn = (
@@ -1217,5 +1220,56 @@ export class TimestampCriterion extends ModifierCriterion<ITimestampValue> {
     }
 
     return true;
+  }
+}
+
+export class UnsupportedCriterionOption extends StringCriterionOption {
+  constructor(type: string) {
+    super({
+      messageID: "unsupported_criterion",
+      type: type as CriterionType,
+      makeCriterion: () => new UnsupportedCriterion(this),
+    });
+  }
+}
+
+export class UnsupportedCriterion extends StringCriterion {
+  public getLabel(intl: IntlShape): string {
+    const modifierString = ModifierCriterion.getModifierLabel(
+      intl,
+      this.modifier
+    );
+    let valueString = "";
+
+    if (
+      this.modifier !== CriterionModifier.IsNull &&
+      this.modifier !== CriterionModifier.NotNull
+    ) {
+      valueString = this.getLabelValue(intl);
+    }
+
+    return intl.formatMessage(
+      { id: "criterion_modifier.format_string" },
+      {
+        criterion: intl.formatMessage(
+          { id: "criterion.unsupported" },
+          { type: this.criterionOption.type }
+        ),
+        modifierString,
+        valueString,
+      }
+    );
+  }
+
+  public applyToCriterionInput(): void {
+    // do nothing
+  }
+
+  public applyToSavedCriterion(): void {
+    // do nothing
+  }
+
+  public setFromSavedCriterion(): void {
+    // do nothing
   }
 }

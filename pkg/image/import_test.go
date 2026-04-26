@@ -45,7 +45,8 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 	i := Importer{
 		StudioWriter: db.Studio,
 		Input: jsonschema.Image{
-			Studio: existingStudioName,
+			Studio:       existingStudioName,
+			CustomFields: customFields,
 		},
 	}
 
@@ -57,6 +58,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingStudioID, *i.image.StudioID)
+	assert.Equal(t, customFields, i.customFields)
 
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport(testCtx)

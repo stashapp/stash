@@ -41,7 +41,7 @@ func (t *GenerateImagePhashTask) Start(ctx context.Context) {
 	}
 
 	if !set {
-		generated, err := imagephash.Generate(t.File)
+		generated, err := imagephash.Generate(instance.FFMpeg, t.File)
 		if err != nil {
 			logger.Errorf("Error generating phash for %q: %v", t.File.Path, err)
 			logErrorOutput(err)

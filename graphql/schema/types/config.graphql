@@ -184,6 +184,18 @@ input ConfigGeneralInput {
   scraperPackageSources: [PackageSourceInput!]
   "Source of plugin packages"
   pluginPackageSources: [PackageSourceInput!]
+
+  "Size of the longest dimension for each sprite in pixels"
+  spriteScreenshotSize: Int
+
+  "True if sprite generation should use the sprite interval and min/max sprites settings instead of the default"
+  useCustomSpriteInterval: Boolean
+  "Time between two different scrubber sprites in seconds - only used if useCustomSpriteInterval is true"
+  spriteInterval: Float
+  "Minimum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  minimumSprites: Int
+  "Minimum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  maximumSprites: Int
 }
 
 type ConfigGeneralResult {
@@ -287,6 +299,16 @@ type ConfigGeneralResult {
   logAccess: Boolean!
   "Maximum log size"
   logFileMaxSize: Int!
+  "True if sprite generation should use the sprite interval and min/max sprites settings instead of the default"
+  useCustomSpriteInterval: Boolean!
+  "Time between two different scrubber sprites in seconds - only used if useCustomSpriteInterval is true"
+  spriteInterval: Float!
+  "Minimum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  minimumSprites: Int!
+  "Maximum number of sprites to be generated - only used if useCustomSpriteInterval is true"
+  maximumSprites: Int!
+  "Size of the longest dimension for each sprite in pixels"
+  spriteScreenshotSize: Int!
   "Array of video file extensions"
   videoExtensions: [String!]!
   "Array of image file extensions"

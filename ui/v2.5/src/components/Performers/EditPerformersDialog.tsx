@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Col, Form, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
@@ -23,12 +23,13 @@ import {
   stringToCircumcised,
 } from "src/utils/circumcised";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import * as FormUtils from "src/utils/form";
 import { CountrySelect } from "../Shared/CountrySelect";
 import { useConfigurationContext } from "src/hooks/Config";
 import cx from "classnames";
+import { BulkUpdateDateInput } from "../Shared/DateInput";
+import { getDateError } from "src/utils/yup";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -42,7 +43,8 @@ const performerFields = [
   "gender",
   "birthdate",
   "death_date",
-  "career_length",
+  "career_start",
+  "career_end",
   "country",
   "ethnicity",
   "eye_color",
@@ -74,16 +76,41 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [aggregateState, setAggregateState] =
     useState<GQL.BulkPerformerUpdateInput>({});
   // height and weight needs conversion to/from number
-  const [height, setHeight] = useState<string | undefined>();
-  const [weight, setWeight] = useState<string | undefined>();
-  const [penis_length, setPenisLength] = useState<string | undefined>();
+  const [height, setHeight] = useState<string | undefined | null>();
+  const [weight, setWeight] = useState<string | undefined | null>();
+  const [penis_length, setPenisLength] = useState<string | undefined | null>();
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
     {}
   );
   const genderOptions = [""].concat(genderStrings);
   const circumcisedOptions = [""].concat(circumcisedStrings);
 
+  const unsetDisabled = props.selected.length < 2;
+
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
+
+  const [birthdateError, setBirthdateError] = useState<string | undefined>();
+  const [deathDateError, setDeathDateError] = useState<string | undefined>();
+  const [careerStartError, setCareerStartError] = useState<
+    string | undefined
+  >();
+  const [careerEndError, setCareerEndError] = useState<string | undefined>();
+
+  useEffect(() => {
+    setBirthdateError(getDateError(updateInput.birthdate ?? "", intl));
+  }, [updateInput.birthdate, intl]);
+
+  useEffect(() => {
+    setDeathDateError(getDateError(updateInput.death_date ?? "", intl));
+  }, [updateInput.death_date, intl]);
+
+  useEffect(() => {
+    setCareerStartError(getDateError(updateInput.career_start ?? "", intl));
+  }, [updateInput.career_start, intl]);
+
+  useEffect(() => {
+    setCareerEndError(getDateError(updateInput.career_end ?? "", intl));
+  }, [updateInput.career_end, intl]);
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
@@ -120,14 +147,14 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     );
 
     if (height !== undefined) {
-      performerInput.height_cm = parseFloat(height);
+      performerInput.height_cm = height === null ? null : parseFloat(height);
     }
     if (weight !== undefined) {
-      performerInput.weight = parseFloat(weight);
+      performerInput.weight = weight === null ? null : parseFloat(weight);
     }
-
     if (penis_length !== undefined) {
-      performerInput.penis_length = parseFloat(penis_length);
+      performerInput.penis_length =
+        penis_length === null ? null : parseFloat(penis_length);
     }
 
     return performerInput;
@@ -204,25 +231,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setUpdateInput(updateState);
   }, [props.selected]);
 
-  function renderTextField(
-    name: string,
-    value: string | undefined | null,
-    setter: (newValue: string | undefined) => void
-  ) {
-    return (
-      <Form.Group controlId={name} data-field={name}>
-        <Form.Label>
-          <FormattedMessage id={name} />
-        </Form.Label>
-        <BulkUpdateTextInput
-          value={value === null ? "" : value ?? undefined}
-          valueChanged={(newValue) => setter(newValue)}
-          unsetDisabled={props.selected.length < 2}
-        />
-      </Form.Group>
-    );
-  }
-
   function render() {
     // sfw class needs to be set because it is outside body
 
@@ -234,13 +242,18 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
-          { id: "actions.edit_entity" },
-          { entityType: intl.formatMessage({ id: "performers" }) }
+          { id: "dialogs.edit_entity_count_title" },
+          {
+            count: props?.selected?.length ?? 1,
+            singularEntity: intl.formatMessage({ id: "performer" }),
+            pluralEntity: intl.formatMessage({ id: "performers" }),
+          }
         )}
         accept={{
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
         }}
+        disabled={isUpdating || !!birthdateError || !!deathDateError}
         cancel={{
           onClick: () => props.onClose(false),
           text: intl.formatMessage({ id: "actions.cancel" }),
@@ -248,11 +261,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
-        <Form.Group controlId="rating" as={Row} data-field={name}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
+        <Form>
+          <BulkUpdateFormGroup name="rating">
             <RatingSystem
               value={updateInput.rating100}
               onSetRating={(value) =>
@@ -260,9 +270,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               }
               disabled={isUpdating}
             />
-          </Col>
-        </Form.Group>
-        <Form>
+          </BulkUpdateFormGroup>
+
           <Form.Group controlId="favorite">
             <IndeterminateCheckbox
               setChecked={(checked) => setUpdateField({ favorite: checked })}
@@ -271,10 +280,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group>
-            <Form.Label>
-              <FormattedMessage id="gender" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="gender">
             <Form.Control
               as="select"
               className="input-control"
@@ -291,51 +297,105 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
                 </option>
               ))}
             </Form.Control>
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          {renderTextField("disambiguation", updateInput.disambiguation, (v) =>
-            setUpdateField({ disambiguation: v })
-          )}
-          {renderTextField("birthdate", updateInput.birthdate, (v) =>
-            setUpdateField({ birthdate: v })
-          )}
-          {renderTextField("death_date", updateInput.death_date, (v) =>
-            setUpdateField({ death_date: v })
-          )}
+          <BulkUpdateFormGroup name="disambiguation">
+            <BulkUpdateTextInput
+              value={updateInput.disambiguation}
+              valueChanged={(newValue) =>
+                setUpdateField({ disambiguation: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
 
-          <Form.Group>
-            <Form.Label>
-              <FormattedMessage id="country" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="birthdate">
+            <BulkUpdateDateInput
+              value={updateInput.birthdate}
+              valueChanged={(newValue) =>
+                setUpdateField({ birthdate: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+              error={birthdateError}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="death_date">
+            <BulkUpdateDateInput
+              value={updateInput.death_date}
+              valueChanged={(newValue) =>
+                setUpdateField({ death_date: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+              error={deathDateError}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="country">
             <CountrySelect
               value={updateInput.country ?? ""}
               onChange={(v) => setUpdateField({ country: v })}
               showFlag
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
-            setUpdateField({ ethnicity: v })
-          )}
-          {renderTextField("hair_color", updateInput.hair_color, (v) =>
-            setUpdateField({ hair_color: v })
-          )}
-          {renderTextField("eye_color", updateInput.eye_color, (v) =>
-            setUpdateField({ eye_color: v })
-          )}
-          {renderTextField("height", height, (v) => setHeight(v))}
-          {renderTextField("weight", weight, (v) => setWeight(v))}
-          {renderTextField("measurements", updateInput.measurements, (v) =>
-            setUpdateField({ measurements: v })
-          )}
-          {renderTextField("penis_length", penis_length, (v) =>
-            setPenisLength(v)
-          )}
+          <BulkUpdateFormGroup name="ethnicity">
+            <BulkUpdateTextInput
+              value={updateInput.ethnicity}
+              valueChanged={(newValue) =>
+                setUpdateField({ ethnicity: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="hair_color">
+            <BulkUpdateTextInput
+              value={updateInput.hair_color}
+              valueChanged={(newValue) =>
+                setUpdateField({ hair_color: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="eye_color">
+            <BulkUpdateTextInput
+              value={updateInput.eye_color}
+              valueChanged={(newValue) =>
+                setUpdateField({ eye_color: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="height">
+            <BulkUpdateTextInput
+              value={height}
+              valueChanged={(newValue) => setHeight(newValue)}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="weight">
+            <BulkUpdateTextInput
+              value={weight}
+              valueChanged={(newValue) => setWeight(newValue)}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="measurements">
+            <BulkUpdateTextInput
+              value={updateInput.measurements}
+              valueChanged={(newValue) =>
+                setUpdateField({ measurements: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="penis_length">
+            <BulkUpdateTextInput
+              value={penis_length}
+              valueChanged={(newValue) => setPenisLength(newValue)}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
 
-          <Form.Group data-field="circumcised">
-            <Form.Label>
-              <FormattedMessage id="circumcised" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="circumcised">
             <Form.Control
               as="select"
               className="input-control"
@@ -352,36 +412,70 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
                 </option>
               ))}
             </Form.Control>
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
-            setUpdateField({ fake_tits: v })
-          )}
-          {renderTextField("tattoos", updateInput.tattoos, (v) =>
-            setUpdateField({ tattoos: v })
-          )}
-          {renderTextField("piercings", updateInput.piercings, (v) =>
-            setUpdateField({ piercings: v })
-          )}
-          {renderTextField("career_length", updateInput.career_length, (v) =>
-            setUpdateField({ career_length: v })
-          )}
+          <BulkUpdateFormGroup name="fake_tits">
+            <BulkUpdateTextInput
+              value={updateInput.fake_tits}
+              valueChanged={(newValue) =>
+                setUpdateField({ fake_tits: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="tattoos">
+            <BulkUpdateTextInput
+              value={updateInput.tattoos}
+              valueChanged={(newValue) => setUpdateField({ tattoos: newValue })}
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="piercings">
+            <BulkUpdateTextInput
+              value={updateInput.piercings}
+              valueChanged={(newValue) =>
+                setUpdateField({ piercings: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="career_start">
+            <BulkUpdateDateInput
+              value={updateInput.career_start}
+              valueChanged={(newValue) =>
+                setUpdateField({ career_start: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+              error={careerStartError}
+            />
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="career_end">
+            <BulkUpdateDateInput
+              value={updateInput.career_end}
+              valueChanged={(newValue) =>
+                setUpdateField({ career_end: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+              error={careerEndError}
+            />
+          </BulkUpdateFormGroup>
 
-          <Form.Group controlId="tags">
-            <Form.Label>
-              <FormattedMessage id="tags" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="tags" inline={false}>
             <MultiSet
-              type="tags"
+              type={"tags"}
               disabled={isUpdating}
-              onUpdate={(itemIDs) => setTagIds({ ...tagIds, ids: itemIDs })}
-              onSetMode={(newMode) => setTagIds({ ...tagIds, mode: newMode })}
-              existingIds={existingTagIds ?? []}
+              onUpdate={(itemIDs) => {
+                setTagIds((c) => ({ ...c, ids: itemIDs }));
+              }}
+              onSetMode={(newMode) => {
+                setTagIds((c) => ({ ...c, mode: newMode }));
+              }}
               ids={tagIds.ids ?? []}
+              existingIds={existingTagIds}
               mode={tagIds.mode}
               menuPortalTarget={document.body}
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
           <Form.Group controlId="ignore-auto-tags">
             <IndeterminateCheckbox

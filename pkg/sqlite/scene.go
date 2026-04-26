@@ -240,6 +240,7 @@ var (
 
 type SceneStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 
 	tableMgr *table
 	oDateManager
@@ -253,6 +254,10 @@ func NewSceneStore(r *storeRepository, blobStore *BlobStore) *SceneStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: sceneTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: scenesCustomFieldsTable,
+			fk:    scenesCustomFieldsTable.Col(sceneIDColumn),
 		},
 
 		tableMgr:        sceneTableMgr,
@@ -1098,7 +1103,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		Duration null.Float
 		Size     null.Float
 	}{}
-	if err := sceneRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := sceneRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 

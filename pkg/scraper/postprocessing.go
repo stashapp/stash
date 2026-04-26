@@ -125,7 +125,62 @@ func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedP
 		}
 	}
 
+	c.postProcessCareerLength(&p)
+
 	return p, nil
+}
+
+func (c *postScraper) postProcessCareerLength(p *models.ScrapedPerformer) {
+	isEmptyStr := func(s *string) bool { return s == nil || *s == "" }
+
+	// populate career start/end from career length and vice versa
+	if !isEmptyStr(p.CareerLength) && isEmptyStr(p.CareerStart) && isEmptyStr(p.CareerEnd) {
+		start, end, err := models.ParseYearRangeString(*p.CareerLength)
+		if err != nil {
+			logger.Warnf("Could not parse career length %s: %v", *p.CareerLength, err)
+			return
+		}
+
+		if start != nil {
+			startStr := start.String()
+			p.CareerStart = &startStr
+		}
+		if end != nil {
+			endStr := end.String()
+			p.CareerEnd = &endStr
+		}
+
+		return
+	}
+
+	// populate career length from career start/end if career length is missing
+	if isEmptyStr(p.CareerLength) {
+		var (
+			start *models.Date
+			end   *models.Date
+		)
+
+		if !isEmptyStr(p.CareerStart) {
+			date, err := models.ParseDate(*p.CareerStart)
+			if err != nil {
+				logger.Warnf("Could not parse career start %s: %v", *p.CareerStart, err)
+				return
+			}
+			start = &date
+		}
+
+		if !isEmptyStr(p.CareerEnd) {
+			date, err := models.ParseDate(*p.CareerEnd)
+			if err != nil {
+				logger.Warnf("Could not parse career end %s: %v", *p.CareerEnd, err)
+				return
+			}
+			end = &date
+		}
+
+		v := models.FormatYearRange(start, end)
+		p.CareerLength = &v
+	}
 }
 
 func (c *postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, related bool) (_ ScrapedContent, err error) {

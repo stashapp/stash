@@ -11,10 +11,12 @@ type FolderGetter interface {
 // FolderFinder provides methods to find folders.
 type FolderFinder interface {
 	FolderGetter
-	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*Folder, error)
+	FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit, offset int) ([]*Folder, error)
 	FindByPath(ctx context.Context, path string, caseSensitive bool) (*Folder, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Folder, error)
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
+	GetManyParentFolderIDs(ctx context.Context, folderIDs []FolderID) ([][]FolderID, error)
+	GetManySubFolderIDs(ctx context.Context, folderIDs []FolderID) ([][]FolderID, error)
 }
 
 type FolderQueryer interface {

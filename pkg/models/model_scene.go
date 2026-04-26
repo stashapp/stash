@@ -54,6 +54,20 @@ func NewScene() Scene {
 	}
 }
 
+type CreateSceneInput struct {
+	*Scene
+
+	FileIDs      []FileID
+	CoverImage   []byte
+	CustomFields CustomFieldMap `json:"custom_fields"`
+}
+
+type UpdateSceneInput struct {
+	*Scene
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {

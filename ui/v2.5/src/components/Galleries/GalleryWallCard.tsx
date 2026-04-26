@@ -132,7 +132,13 @@ const GalleryWallCard: React.FC<IProps> = ({
           <footer className={CLASSNAME_FOOTER}>
             <Link
               to={`/galleries/${gallery.id}`}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                if (selecting) {
+                  e.preventDefault();
+                  handleCardClick(e);
+                }
+                e.stopPropagation();
+              }}
             >
               {title && (
                 <TruncatedText

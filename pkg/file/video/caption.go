@@ -90,11 +90,20 @@ type CaptionUpdater interface {
 	UpdateCaptions(ctx context.Context, fileID models.FileID, captions []*models.VideoCaption) error
 }
 
+// MatchesCaption returns true if the caption file matches the video file based on the filename
+func MatchesCaption(videoPath, captionPath string) bool {
+	captionPrefix := getCaptionPrefix(captionPath)
+	videoPrefix := strings.TrimSuffix(videoPath, filepath.Ext(videoPath)) + "."
+	return captionPrefix == videoPrefix
+}
+
 // associates captions to scene/s with the same basename
-func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb models.FileFinder, w CaptionUpdater) {
+// returns true if the caption file was matched to a video file and processed, false otherwise
+func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb models.FileFinder, w CaptionUpdater) bool {
 	captionLang := getCaptionsLangFromPath(captionPath)
 
 	captionPrefix := getCaptionPrefix(captionPath)
+	matched := false
 	if err := txn.WithTxn(ctx, txnMgr, func(ctx context.Context) error {
 		var err error
 		files, er := fqb.FindAllByPath(ctx, captionPrefix+"*", true)
@@ -117,28 +126,36 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 			path := f.Base().Path
 
 			logger.Debugf("Matched captions to file %s", path)
+			matched = true
+
 			captions, er := w.GetCaptions(ctx, fileID)
-			if er == nil {
-				fileExt := filepath.Ext(captionPath)
-				ext := fileExt[1:]
-				if !IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
-					newCaption := &models.VideoCaption{
-						LanguageCode: captionLang,
-						Filename:     filepath.Base(captionPath),
-						CaptionType:  ext,
-					}
-					captions = append(captions, newCaption)
-					er = w.UpdateCaptions(ctx, fileID, captions)
-					if er == nil {
-						logger.Debugf("Updated captions for file %s. Added %s", path, captionLang)
-					}
+			if er != nil {
+				return fmt.Errorf("getting captions for file %s: %w", path, er)
+			}
+
+			fileExt := filepath.Ext(captionPath)
+			ext := fileExt[1:]
+			if !IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
+				newCaption := &models.VideoCaption{
+					LanguageCode: captionLang,
+					Filename:     filepath.Base(captionPath),
+					CaptionType:  ext,
 				}
+				captions = append(captions, newCaption)
+				er = w.UpdateCaptions(ctx, fileID, captions)
+				if er != nil {
+					return fmt.Errorf("updating captions for file %s: %w", path, er)
+				}
+
+				logger.Debugf("Updated captions for file %s. Added %s", path, captionLang)
 			}
 		}
 		return err
 	}); err != nil {
 		logger.Error(err.Error())
 	}
+
+	return matched
 }
 
 // CleanCaptions removes non existent/accessible language codes from captions

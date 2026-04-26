@@ -82,7 +82,7 @@ func (qb *fileFilterHandler) criterionHandler() criterionHandler {
 
 		qb.hashesCriterionHandler(fileFilter.Hashes),
 
-		qb.phashDuplicatedCriterionHandler(fileFilter.Duplicated),
+		qb.duplicatedCriterionHandler(fileFilter.Duplicated),
 		&timestampCriterionHandler{fileFilter.CreatedAt, "files.created_at", nil},
 		&timestampCriterionHandler{fileFilter.UpdatedAt, "files.updated_at", nil},
 
@@ -205,17 +205,27 @@ func (qb *fileFilterHandler) galleryCountCriterionHandler(c *models.IntCriterion
 	return h.handler(c)
 }
 
-func (qb *fileFilterHandler) phashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {
+func (qb *fileFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models.FileDuplicationCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		// TODO: Wishlist item: Implement Distance matching
-		if duplicatedFilter != nil {
-			var v string
-			if *duplicatedFilter.Duplicated {
-				v = ">"
-			} else {
-				v = "="
-			}
+		// For files, only phash duplication applies
+		if duplicatedFilter == nil {
+			return
+		}
 
+		var phashValue *bool
+
+		// Handle legacy 'duplicated' field for backwards compatibility
+		//nolint:staticcheck
+		if duplicatedFilter.Duplicated != nil && duplicatedFilter.Phash == nil {
+			//nolint:staticcheck
+			phashValue = duplicatedFilter.Duplicated
+		} else if duplicatedFilter.Phash != nil {
+			phashValue = duplicatedFilter.Phash
+		}
+
+		if phashValue != nil {
+			v := getCountOperator(*phashValue)
 			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "files.id = scph.file_id")
 		}
 	}
@@ -228,22 +238,32 @@ func (qb *fileFilterHandler) hashesCriterionHandler(hashes []*models.Fingerprint
 			t := fmt.Sprintf("file_fingerprints_%d", i)
 			f.addLeftJoin(fingerprintTable, t, fmt.Sprintf("files.id = %s.file_id AND %s.type = ?", t, t), hash.Type)
 
-			value, _ := utils.StringToPhash(hash.Value)
 			distance := 0
 			if hash.Distance != nil {
 				distance = *hash.Distance
 			}
 
-			if distance > 0 {
-				// needed to avoid a type mismatch
-				f.addWhere(fmt.Sprintf("typeof(%s.fingerprint) = 'integer'", t))
-				f.addWhere(fmt.Sprintf("phash_distance(%s.fingerprint, ?) < ?", t), value, distance)
+			// Only phash supports distance matching and is stored as integer
+			if hash.Type == models.FingerprintTypePhash {
+				value, err := utils.StringToPhash(hash.Value)
+				if err != nil {
+					f.setError(fmt.Errorf("invalid phash value: %w", err))
+					return
+				}
+				if distance > 0 {
+					// needed to avoid a type mismatch
+					f.addWhere(fmt.Sprintf("typeof(%s.fingerprint) = 'integer'", t))
+					f.addWhere(fmt.Sprintf("phash_distance(%s.fingerprint, ?) < ?", t), value, distance)
+				} else {
+					intCriterionHandler(&models.IntCriterionInput{
+						Value:    int(value),
+						Modifier: models.CriterionModifierEquals,
+					}, t+".fingerprint", nil)(ctx, f)
+				}
 			} else {
-				// use the default handler
-				intCriterionHandler(&models.IntCriterionInput{
-					Value:    int(value),
-					Modifier: models.CriterionModifierEquals,
-				}, t+".fingerprint", nil)(ctx, f)
+				// All other fingerprint types (md5, oshash, sha1, etc.) are stored as strings
+				// Use exact match for string-based fingerprints
+				f.addWhere(fmt.Sprintf("%s.fingerprint = ?", t), hash.Value)
 			}
 		}
 	}
@@ -280,15 +300,19 @@ func (qb *videoFileFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *videoFileFilterHandler) addVideoFilesTable(f *filterBuilder) {
-	f.addLeftJoin(videoFileTable, "", "video_files.file_id = files.id")
+func (qb *videoFileFilterHandler) addVideoFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, videoFileTable, "", "video_files.file_id = files.id")
 }
 
-func (qb *videoFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *videoFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder, joinType joinType)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if codec != nil {
 			if addJoinFn != nil {
-				addJoinFn(f)
+				joinType := joinTypeInner
+				if codec.Modifier == models.CriterionModifierIsNull || codec.Modifier == models.CriterionModifierNotMatchesRegex {
+					joinType = joinTypeLeft
+				}
+				addJoinFn(f, joinType)
 			}
 
 			stringCriterionHandler(codec, codecColumn)(ctx, f)
@@ -302,8 +326,8 @@ func (qb *videoFileFilterHandler) captionCriterionHandler(captions *models.Strin
 		primaryFK:    sceneIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = files.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = files.id")
 		},
 		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
 			excludeClause := `files.id NOT IN (
@@ -341,6 +365,6 @@ func (qb *imageFileFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *imageFileFilterHandler) addImageFilesTable(f *filterBuilder) {
-	f.addLeftJoin(imageFileTable, "", "image_files.file_id = files.id")
+func (qb *imageFileFilterHandler) addImageFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, imageFileTable, "", "image_files.file_id = files.id")
 }

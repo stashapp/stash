@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: 
+    branches:
       - develop
       - master
       - 'releases/**'
@@ -15,50 +15,163 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:12
+  COMPILER_IMAGE: ghcr.io/stashapp/compiler:13
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  # Job 1: Generate code and build UI
+  # Runs natively (no Docker) — go generate/gqlgen and node don't need cross-compilers.
+  # Produces artifacts (generated Go files + UI build) consumed by test and build jobs.
+  generate:
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+    - name: Setup Go
+      uses: actions/setup-go@v6
 
-    - name: Checkout
-      run: git fetch --prune --unshallow --tags
+    # pnpm version is read from the packageManager field in package.json
+    # very broken (4.3, 4.4)
+    - name: Install pnpm
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+      with:
+        package_json_file: ui/v2.5/package.json
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+        cache-dependency-path: ui/v2.5/pnpm-lock.yaml
+
+    - name: Install UI dependencies
+      run: cd ui/v2.5 && pnpm install --frozen-lockfile
+
+    - name: Generate
+      run: make generate
+
+    - name: Cache UI build
+      uses: actions/cache@v5
+      id: cache-ui
+      with:
+        path: ui/v2.5/build
+        key: ${{ runner.os }}-ui-build-${{ hashFiles('ui/v2.5/pnpm-lock.yaml', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+
+    - name: Validate UI
+      # skip UI validation for pull requests if UI is unchanged
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: make validate-ui
+
+    - name: Build UI
+      # skip UI build for pull requests if UI is unchanged (UI was cached)
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: make ui
+
+    # Bundle generated Go files + UI build for downstream jobs (test + build)
+    - name: Upload generated artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: generated
+        retention-days: 1
+        path: |
+          internal/api/generated_exec.go
+          internal/api/generated_models.go
+          ui/v2.5/build/
+          ui/login/locales/
+
+  # Job 2: Integration tests
+  # Runs natively (no Docker) — only needs Go + GCC (for CGO/SQLite), both on ubuntu-22.04.
+  # Runs in parallel with the build matrix jobs.
+  test:
+    needs: generate
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
 
     - name: Setup Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version-file: 'go.mod'
 
-    - name: Pull compiler image
-      run: docker pull $COMPILER_IMAGE
-
-    - name: Cache node modules
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-node_modules
+    # Places generated Go files + UI build into the working tree so the build compiles
+    - name: Download generated artifacts
+      uses: actions/download-artifact@v8
       with:
-        path: ui/v2.5/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/pnpm-lock.yaml') }}
+        name: generated
 
-    - name: Cache UI build
-      uses: actions/cache@v3
-      id: cache-ui
-      env:
-        cache-name: cache-ui
+    - name: Test Backend
+      run: make it
+
+  # Job 3: Cross-compile for all platforms
+  # Each platform gets its own runner and Docker container (ghcr.io/stashapp/compiler:13).
+  # Each build-cc-* make target is self-contained (sets its own GOOS/GOARCH/CC),
+  # so running them in separate containers is functionally identical to one container.
+  # Runs in parallel with the test job.
+  build:
+    needs: generate
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - platform: windows
+          make-target: build-cc-windows
+          artifact-paths: |
+            dist/stash-win.exe
+          tag: win
+        - platform: macos
+          make-target: build-cc-macos
+          artifact-paths: |
+            dist/stash-macos
+            dist/Stash.app.zip
+          tag: osx
+        - platform: linux
+          make-target: build-cc-linux
+          artifact-paths: |
+            dist/stash-linux
+          tag: linux
+        - platform: linux-arm64v8
+          make-target: build-cc-linux-arm64v8
+          artifact-paths: |
+            dist/stash-linux-arm64v8
+          tag: arm
+        - platform: linux-arm32v7
+          make-target: build-cc-linux-arm32v7
+          artifact-paths: |
+            dist/stash-linux-arm32v7
+          tag: arm
+        - platform: linux-arm32v6
+          make-target: build-cc-linux-arm32v6
+          artifact-paths: |
+            dist/stash-linux-arm32v6
+          tag: arm
+        - platform: freebsd
+          make-target: build-cc-freebsd
+          artifact-paths: |
+            dist/stash-freebsd
+          tag: freebsd
+
+    steps:
+    - uses: actions/checkout@v6
       with:
-        path: ui/v2.5/build
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/pnpm-lock.yaml', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+        fetch-depth: 0
+        fetch-tags: true
 
-    - name: Cache go build
-      uses: actions/cache@v3
-      env:
-        # increment the number suffix to bump the cache
-        cache-name: cache-go-cache-1
+    - name: Download generated artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: generated
+
+    - name: Cache Go build
+      uses: actions/cache@v5
       with:
         path: .go-cache
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
+        key: ${{ runner.os }}-go-cache-${{ matrix.platform }}-${{ hashFiles('go.mod', '**/go.sum') }}
+
+    # kept seperate to test timings
+    - name: pull compiler image
+      run: docker pull $COMPILER_IMAGE
 
     - name: Start build container
       env:
@@ -67,44 +180,49 @@ jobs:
         mkdir -p .go-cache
         docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
 
-    - name: Pre-install
-      run: docker exec -t build /bin/bash -c "make CI=1 pre-ui"
-
-    - name: Generate
-      run: docker exec -t build /bin/bash -c "make generate"
-
-    - name: Validate UI
-      # skip UI validation for pull requests if UI is unchanged
-      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make validate-ui"
-
-    # Static validation happens in the linter workflow in parallel to this workflow
-    # Run Dynamic validation here, to make sure we pass all the projects integration tests
-    - name: Test Backend
-      run: docker exec -t build /bin/bash -c "make it"
-
-    - name: Build UI
-      # skip UI build for pull requests if UI is unchanged (UI was cached)
-      # this means that the build version/time may be incorrect if the UI is
-      # not changed in a pull request
-      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make ui"
-
-    - name: Compile for all supported platforms
-      run: |
-        docker exec -t build /bin/bash -c "make build-cc-windows"
-        docker exec -t build /bin/bash -c "make build-cc-macos"
-        docker exec -t build /bin/bash -c "make build-cc-linux"
-        docker exec -t build /bin/bash -c "make build-cc-linux-arm64v8"
-        docker exec -t build /bin/bash -c "make build-cc-linux-arm32v7"
-        docker exec -t build /bin/bash -c "make build-cc-linux-arm32v6"
-        docker exec -t build /bin/bash -c "make build-cc-freebsd"
-
-    - name: Zip UI
-      run: docker exec -t build /bin/bash -c "make zip-ui"
+    - name: Build (${{ matrix.platform }})
+      run: docker exec -t build /bin/bash -c "make ${{ matrix.make-target }}"
 
     - name: Cleanup build container
       run: docker rm -f -v build
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-${{ matrix.platform }}
+        retention-days: 1
+        path: ${{ matrix.artifact-paths }}
+
+  # Job 4: Release
+  # Waits for both test and build to pass, then collects all platform artifacts
+  # into dist/ for checksums, GitHub releases, and multi-arch Docker push.
+  release:
+    needs: [test, build]
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    # Downloads all artifacts (generated + 7 platform builds) into artifacts/ subdirectories
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v8
+      with:
+        path: artifacts
+
+    # Reassemble platform binaries from matrix job artifacts into a single dist/ directory
+    # make sure that artifacts have executable bit set
+    # upload-artifact@v4 strips the common path prefix (dist/), so files are at the artifact root
+    - name: Collect binaries
+      run: |
+        mkdir -p dist
+        cp artifacts/build-*/* dist/
+        chmod +x dist/*
+
+    - name: Zip UI
+      run: |
+        cd artifacts/generated/ui/v2.5/build && zip -r ../../../../../dist/stash-ui.zip .
 
     - name: Generate checksums
       run: |
@@ -116,7 +234,7 @@ jobs:
     - name: Upload Windows binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: stash-win.exe
         path: dist/stash-win.exe
@@ -124,15 +242,23 @@ jobs:
     - name: Upload macOS binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: stash-macos
         path: dist/stash-macos
 
+    - name: Upload macOS bundle
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v7
+      with:
+        name: Stash.app.zip
+        path: dist/Stash.app.zip
+
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: stash-linux
         path: dist/stash-linux
@@ -140,14 +266,14 @@ jobs:
     - name: Upload UI
       # only upload for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: stash-ui.zip
         path: dist/stash-ui.zip
 
     - name: Update latest_develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-      run : git tag -f latest_develop; git push -f --tags
+      run: git tag -f latest_develop; git push -f --tags
 
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -197,7 +323,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+        docker run --rm --privileged tonistiigi/binfmt
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
@@ -213,7 +339,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+        docker run --rm --privileged tonistiigi/binfmt
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap

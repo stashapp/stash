@@ -14,6 +14,7 @@ import (
 
 type ImporterReaderWriter interface {
 	models.GroupCreatorUpdater
+	models.CustomFieldsWriter
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
@@ -230,6 +231,14 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 			},
 		}); err != nil {
 			return fmt.Errorf("error setting parents: %v", err)
+		}
+	}
+
+	if len(i.Input.CustomFields) > 0 {
+		if err := i.ReaderWriter.SetCustomFields(ctx, id, models.CustomFieldsInput{
+			Full: i.Input.CustomFields,
+		}); err != nil {
+			return fmt.Errorf("error setting custom fields: %v", err)
 		}
 	}
 

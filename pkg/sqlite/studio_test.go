@@ -81,6 +81,7 @@ func Test_StudioStore_Create(t *testing.T) {
 		rating        = 3
 		aliases       = []string{"alias1", "alias2"}
 		ignoreAutoTag = true
+		organized     = true
 		favorite      = true
 		endpoint1     = "endpoint1"
 		endpoint2     = "endpoint2"
@@ -105,6 +106,7 @@ func Test_StudioStore_Create(t *testing.T) {
 					Rating:        &rating,
 					Details:       details,
 					IgnoreAutoTag: ignoreAutoTag,
+					Organized:     organized,
 					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]}),
 					Aliases:       models.NewRelatedStrings(aliases),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
@@ -206,6 +208,7 @@ func Test_StudioStore_Update(t *testing.T) {
 		rating        = 3
 		aliases       = []string{"aliasX", "aliasY"}
 		ignoreAutoTag = true
+		organized     = true
 		favorite      = true
 		endpoint1     = "endpoint1"
 		endpoint2     = "endpoint2"
@@ -231,6 +234,7 @@ func Test_StudioStore_Update(t *testing.T) {
 					Rating:        &rating,
 					Details:       details,
 					IgnoreAutoTag: ignoreAutoTag,
+					Organized:     organized,
 					Aliases:       models.NewRelatedStrings(aliases),
 					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
@@ -380,6 +384,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 		aliases       = []string{"aliasX", "aliasY"}
 		rating        = 3
 		ignoreAutoTag = true
+		organized     = true
 		favorite      = true
 		endpoint1     = "endpoint1"
 		endpoint2     = "endpoint2"
@@ -413,6 +418,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				Rating:        models.NewOptionalInt(rating),
 				Details:       models.NewOptionalString(details),
 				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
+				Organized:     models.NewOptionalBool(organized),
 				TagIDs: &models.UpdateIDs{
 					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]},
 					Mode: models.RelationshipUpdateModeSet,
@@ -444,6 +450,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				Rating:        &rating,
 				Details:       details,
 				IgnoreAutoTag: ignoreAutoTag,
+				Organized:     organized,
 				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{

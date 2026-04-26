@@ -1,16 +1,22 @@
+host=ghcr.io
 user=stashapp
 repo=compiler
-version=12
+version=13
+
+VERSION_IMAGE = ${host}/${user}/${repo}:${version}
+LATEST_IMAGE = ${host}/${user}/${repo}:latest
 
 latest:
-	docker build -t ${user}/${repo}:latest .
+	docker build -t ${LATEST_IMAGE} .
 
 build:
-	docker build -t ${user}/${repo}:${version} -t ${user}/${repo}:latest .
+	docker build -t ${VERSION_IMAGE} -t ${LATEST_IMAGE} .
 
 build-no-cache:
-	docker build --no-cache -t ${user}/${repo}:${version} -t ${user}/${repo}:latest .
+	docker build --no-cache -t ${VERSION_IMAGE} -t ${LATEST_IMAGE} .
 
-install: build
-	docker push ${user}/${repo}:${version}
-	docker push ${user}/${repo}:latest
+# requires docker login ghcr.io
+# echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+push:
+	docker push ${VERSION_IMAGE}
+	docker push ${LATEST_IMAGE}

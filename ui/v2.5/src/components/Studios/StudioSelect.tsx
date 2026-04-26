@@ -23,11 +23,14 @@ import {
   IFilterProps,
   IFilterValueProps,
   Option as SelectOption,
+  toOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
+import { isUUID } from "src/utils/stashIds";
+import { filterByStashID } from "src/models/list-filter/utils";
 
 export type SelectObject = {
   id: string;
@@ -74,24 +77,40 @@ const _StudioSelect: React.FC<
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
+  function filterExcluded(studio: Studio) {
+    // HACK - we should probably exclude these in the backend query, but
+    // this will do in the short-term
+    return !exclude.includes(studio.id.toString());
+  }
+
   async function loadStudios(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Studios);
-    filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindStudiosForSelect(filter);
-    let ret = query.data.findStudios.studios.filter((studio) => {
-      // HACK - we should probably exclude these in the backend query, but
-      // this will do in the short-term
-      return !exclude.includes(studio.id.toString());
-    });
 
-    return studioSelectSort(input, ret).map((studio) => ({
-      value: studio.id,
-      object: studio,
-    }));
+    if (isUUID(input)) {
+      filterByStashID(filter, input);
+
+      const query = await queryFindStudiosForSelect(filter);
+      const matches = query.data.findStudios.studios.filter(filterExcluded);
+
+      if (matches.length > 0) {
+        // Matches found, return them immediately.
+        return matches.map(toOption);
+      }
+
+      // If no stash_id matches found, continue with standard name/alias search.
+      filter.criteria = []; // Clear stash_id criterion to search by name/alias below.
+    }
+
+    filter.searchTerm = input;
+
+    const query = await queryFindStudiosForSelect(filter);
+    const ret = query.data.findStudios.studios.filter(filterExcluded);
+
+    return studioSelectSort(input, ret).map(toOption);
   }
 
   const StudioOption: React.FC<OptionProps<Option, boolean>> = (

@@ -4,11 +4,11 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Group from "./GroupDetails/Group";
 import GroupCreate from "./GroupDetails/GroupCreate";
-import { GroupList } from "./GroupList";
+import { FilteredGroupList } from "./GroupList";
 import { View } from "../List/views";
 
 const Groups: React.FC = () => {
-  return <GroupList view={View.Groups} />;
+  return <FilteredGroupList view={View.Groups} />;
 };
 
 const GroupRoutes: React.FC = () => {

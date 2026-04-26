@@ -22,6 +22,7 @@ import {
   IFilterProps,
   IFilterValueProps,
   Option as SelectOption,
+  toOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
@@ -33,6 +34,8 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { TruncatedText } from "../Shared/TruncatedText";
+import { isUUID } from "src/utils/stashIds";
+import { filterByStashID } from "src/models/list-filter/utils";
 
 export type Scene = Pick<GQL.Scene, "id" | "title" | "date" | "code"> & {
   studio?: Pick<GQL.Studio, "name"> | null;
@@ -73,29 +76,44 @@ const _SceneSelect: React.FC<
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
+  function filterExcluded(scene: Scene) {
+    // HACK - we should probably exclude these in the backend query, but
+    // this will do in the short-term
+    return !exclude.includes(scene.id.toString());
+  }
+
   async function loadScenes(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Scenes);
-    filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "title";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
 
-    if (props.extraCriteria) {
-      filter.criteria = [...props.extraCriteria];
+    filter.criteria = [...(props.extraCriteria ?? [])];
+
+    if (isUUID(input)) {
+      const oldCriteria = filter.criteria;
+
+      filterByStashID(filter, input);
+
+      const query = await queryFindScenesForSelect(filter);
+      const matches = query.data.findScenes.scenes.filter(filterExcluded);
+
+      if (matches.length > 0) {
+        // Matches found, return them immediately.
+        return matches.map(toOption);
+      }
+
+      // If no stash_id matches found, continue with standard name/alias search.
+      filter.criteria = oldCriteria; // Clear stash_id criterion to search by name/alias below.
     }
 
-    const query = await queryFindScenesForSelect(filter);
-    let ret = query.data.findScenes.scenes.filter((scene) => {
-      // HACK - we should probably exclude these in the backend query, but
-      // this will do in the short-term
-      return !exclude.includes(scene.id.toString());
-    });
+    filter.searchTerm = input;
 
-    return sceneSelectSort(input, ret).map((scene) => ({
-      value: scene.id,
-      object: scene,
-    }));
+    const query = await queryFindScenesForSelect(filter);
+    const ret = query.data.findScenes.scenes.filter(filterExcluded);
+
+    return sceneSelectSort(input, ret).map(toOption);
   }
 
   const SceneOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {

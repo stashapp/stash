@@ -39,6 +39,8 @@ fragment GroupData on Group {
     id
     title
   }
+
+  custom_fields
 }
 
 # Lightweight fragment for list views - excludes expensive recursive counts

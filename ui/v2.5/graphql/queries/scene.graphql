@@ -40,6 +40,14 @@ query FindScene($id: ID!, $checksum: String) {
   }
 }
 
+query FindFullScenes($ids: [Int!]) {
+  findScenes(scene_ids: $ids) {
+    scenes {
+      ...SceneData
+    }
+  }
+}
+
 query FindSceneMarkerTags($id: ID!) {
   sceneMarkerTags(scene_id: $id) {
     tag {

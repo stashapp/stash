@@ -39,6 +39,11 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logLevel
   logAccess
   logFileMaxSize
+  useCustomSpriteInterval
+  spriteInterval
+  minimumSprites
+  maximumSprites
+  spriteScreenshotSize
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
@@ -143,7 +148,7 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   }
   setCoverImage
   setOrganized
-  includeMalePerformers
+  performerGenders
   skipMultipleMatches
   skipMultipleMatchTag
   skipSingleNamePerformers

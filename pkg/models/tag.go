@@ -50,10 +50,14 @@ type TagFilterType struct {
 	ImagesFilter *ImageFilterType `json:"images_filter"`
 	// Filter by related galleries that meet this criteria
 	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related groups	that meet this criteria
+	GroupsFilter *GroupFilterType `json:"groups_filter"`
 	// Filter by related performers that meet this criteria
 	PerformersFilter *PerformerFilterType `json:"performers_filter"`
 	// Filter by related studios that meet this criteria
 	StudiosFilter *StudioFilterType `json:"studios_filter"`
+	// Filter by related scene markers that meet this criteria
+	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at

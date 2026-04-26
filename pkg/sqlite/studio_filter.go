@@ -59,10 +59,11 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil),
 		boolCriterionHandler(studioFilter.Favorite, studioTable+".favorite", nil),
 		boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil),
+		boolCriterionHandler(studioFilter.Organized, studioTable+".organized", nil),
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if studioFilter.StashID != nil {
-				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
+				studioRepository.stashIDs.leftJoin(f, "studio_stash_ids", "studios.id")
 				stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 			}
 		}),
@@ -84,6 +85,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		qb.sceneCountCriterionHandler(studioFilter.SceneCount),
 		qb.imageCountCriterionHandler(studioFilter.ImageCount),
 		qb.galleryCountCriterionHandler(studioFilter.GalleryCount),
+		qb.groupCountCriterionHandler(studioFilter.GroupCount),
 		qb.parentCriterionHandler(studioFilter.Parents),
 		qb.aliasCriterionHandler(studioFilter.Aliases),
 		qb.tagsCriterionHandler(studioFilter.Tags),
@@ -118,6 +120,15 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 			},
 		},
 
+		&relatedFilterHandler{
+			relatedIDCol:   "groups.id",
+			relatedRepo:    groupRepository.repository,
+			relatedHandler: &groupFilterHandler{studioFilter.GroupsFilter},
+			joinFn: func(f *filterBuilder) {
+				studioRepository.groups.innerJoin(f, "", "studios.id")
+			},
+		},
+
 		&customFieldsFilterHandler{
 			table: studiosCustomFieldsTable.GetTable(),
 			fkCol: studioIDColumn,
@@ -132,14 +143,26 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				studiosURLsTableMgr.join(f, "", "studios.id")
+				studiosURLsTableMgr.leftJoin(f, "", "studios.id")
 				f.addWhere("studio_urls.url IS NULL")
 			case "image":
 				f.addWhere("studios.image_blob IS NULL")
 			case "stash_id":
-				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
+				studioRepository.stashIDs.leftJoin(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
+			case "aliases":
+				studiosAliasesTableMgr.leftJoin(f, "", "studios.id")
+				f.addWhere("studio_aliases.alias IS NULL")
+			case "tags":
+				f.addLeftJoin(studiosTagsTable, "tags_join", "tags_join.studio_id = studios.id")
+				f.addWhere("tags_join.studio_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"details", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
 			}
 		}
@@ -179,6 +202,17 @@ func (qb *studioFilterHandler) galleryCountCriterionHandler(galleryCount *models
 	}
 }
 
+func (qb *studioFilterHandler) groupCountCriterionHandler(groupCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if groupCount != nil {
+			f.addLeftJoin("groups", "", "groups.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct groups.id)", *groupCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
 func (qb *studioFilterHandler) tagCountCriterionHandler(tagCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: studioTable,
@@ -190,8 +224,8 @@ func (qb *studioFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrit
 }
 
 func (qb *studioFilterHandler) parentCriterionHandler(parents *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		f.addJoin(joinType, "studios", "parent_studio", "parent_studio.id = studios.parent_id")
 	}
 	h := multiCriterionHandlerBuilder{
 		primaryTable: studioTable,
@@ -210,8 +244,8 @@ func (qb *studioFilterHandler) aliasCriterionHandler(alias *models.StringCriteri
 		primaryFK:    studioIDColumn,
 		joinTable:    studioAliasesTable,
 		stringColumn: studioAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			studiosAliasesTableMgr.join(f, "", "studios.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			studiosAliasesTableMgr.join(f, joinType, "", "studios.id")
 		},
 	}
 
@@ -224,8 +258,8 @@ func (qb *studioFilterHandler) urlsCriterionHandler(url *models.StringCriterionI
 		primaryFK:    studioIDColumn,
 		joinTable:    studioURLsTable,
 		stringColumn: studioURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			studiosURLsTableMgr.join(f, "", "studios.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			studiosURLsTableMgr.join(f, joinType, "", "studios.id")
 		},
 	}
 

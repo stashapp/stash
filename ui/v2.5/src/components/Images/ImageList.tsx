@@ -1,5 +1,11 @@
-import React, { useCallback, useState, useMemo, MouseEvent } from "react";
-import { FormattedNumber, useIntl } from "react-intl";
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  MouseEvent,
+  useEffect,
+} from "react";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -9,11 +15,10 @@ import {
   useFindImages,
   useFindImagesMetadata,
 } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import { useFilteredItemList } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-
 import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -24,11 +29,44 @@ import { objectTitle } from "src/core/files";
 import { useConfigurationContext } from "src/hooks/Config";
 import { ImageCardGrid } from "./ImageCardGrid";
 import { View } from "../List/views";
-import { IItemListOperation } from "../List/FilteredListToolbar";
+import {
+  FilteredListToolbar,
+  IItemListOperation,
+} from "../List/FilteredListToolbar";
 import { FileSize } from "../Shared/FileSize";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
-import { useModal } from "src/hooks/modal";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
+import { useCloseEditDelete, useFilterOperations } from "../List/util";
+import {
+  FilteredSidebarHeader,
+  useFilteredSidebarKeybinds,
+} from "../List/Filters/FilterSidebar";
+import {
+  IListFilterOperation,
+  ListOperations,
+} from "../List/ListOperationButtons";
+import { FilterTags } from "../List/FilterTags";
+import { Pagination, PaginationIndex } from "../List/Pagination";
+import { LoadedContent } from "../List/PagedList";
+import useFocus from "src/utils/focus";
+import cx from "classnames";
+import { SidebarStudiosFilter } from "../List/Filters/StudiosFilter";
+import { SidebarPerformersFilter } from "../List/Filters/PerformersFilter";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { Button } from "react-bootstrap";
+import { OrganizedCriterionOption } from "src/models/list-filter/criteria/organized";
+import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
+import { PerformerAgeCriterionOption } from "src/models/list-filter/images";
+import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -180,131 +218,125 @@ interface IImageListImages {
   chapters?: GQL.GalleryChapterDataFragment[];
 }
 
-const ImageListImages: React.FC<IImageListImages> = ({
-  images,
-  filter,
-  selectedIds,
-  onChangePage,
-  pageCount,
-  onSelectChange,
-  slideshowRunning,
-  setSlideshowRunning,
-  chapters = [],
-}) => {
-  const handleLightBoxPage = useCallback(
-    (props: { direction?: number; page?: number }) => {
-      const { direction, page: newPage } = props;
-
-      if (direction !== undefined) {
-        if (direction < 0) {
-          if (filter.currentPage === 1) {
-            onChangePage(pageCount);
-          } else {
-            onChangePage(filter.currentPage + direction);
-          }
-        } else if (direction > 0) {
-          if (filter.currentPage === pageCount) {
-            // return to the first page
-            onChangePage(1);
-          } else {
-            onChangePage(filter.currentPage + direction);
-          }
-        }
-      } else if (newPage !== undefined) {
-        onChangePage(newPage);
-      }
-    },
-    [onChangePage, filter.currentPage, pageCount]
-  );
-
-  const handleClose = useCallback(() => {
-    setSlideshowRunning(false);
-  }, [setSlideshowRunning]);
-
-  const lightboxState = useMemo(() => {
-    return {
-      images,
-      showNavigation: false,
-      pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-      page: filter.currentPage,
-      pages: pageCount,
-      pageSize: filter.itemsPerPage,
-      slideshowEnabled: slideshowRunning,
-      onClose: handleClose,
-    };
-  }, [
+const ImageList: React.FC<IImageListImages> = PatchComponent(
+  "ImageList",
+  ({
     images,
+    filter,
+    selectedIds,
+    onChangePage,
     pageCount,
-    filter.currentPage,
-    filter.itemsPerPage,
+    onSelectChange,
     slideshowRunning,
-    handleClose,
-    handleLightBoxPage,
-  ]);
+    setSlideshowRunning,
+    chapters = [],
+  }) => {
+    const handleLightBoxPage = useCallback(
+      (props: { direction?: number; page?: number }) => {
+        const { direction, page: newPage } = props;
 
-  const showLightbox = useLightbox(
-    lightboxState,
-    filter.sortBy === "path" &&
-      filter.sortDirection === GQL.SortDirectionEnum.Asc
-      ? chapters
-      : []
-  );
-
-  const handleImageOpen = useCallback(
-    (index) => {
-      setSlideshowRunning(true);
-      showLightbox({ initialIndex: index, slideshowEnabled: true });
-    },
-    [showLightbox, setSlideshowRunning]
-  );
-
-  function onPreview(index: number, ev: MouseEvent) {
-    handleImageOpen(index);
-    ev.preventDefault();
-  }
-
-  if (filter.displayMode === DisplayMode.Grid) {
-    return (
-      <ImageCardGrid
-        images={images}
-        selectedIds={selectedIds}
-        zoomIndex={filter.zoomIndex}
-        onSelectChange={onSelectChange}
-        onPreview={onPreview}
-      />
+        if (direction !== undefined) {
+          if (direction < 0) {
+            if (filter.currentPage === 1) {
+              onChangePage(pageCount);
+            } else {
+              onChangePage(filter.currentPage + direction);
+            }
+          } else if (direction > 0) {
+            if (filter.currentPage === pageCount) {
+              // return to the first page
+              onChangePage(1);
+            } else {
+              onChangePage(filter.currentPage + direction);
+            }
+          }
+        } else if (newPage !== undefined) {
+          onChangePage(newPage);
+        }
+      },
+      [onChangePage, filter.currentPage, pageCount]
     );
-  }
-  if (filter.displayMode === DisplayMode.Wall) {
-    return (
-      <ImageWall
-        images={images}
-        onChangePage={onChangePage}
-        currentPage={filter.currentPage}
-        pageCount={pageCount}
-        handleImageOpen={handleImageOpen}
-        zoomIndex={filter.zoomIndex}
-        selectedIds={selectedIds}
-        onSelectChange={onSelectChange}
-        selecting={!!selectedIds && selectedIds.size > 0}
-      />
+
+    const handleClose = useCallback(() => {
+      setSlideshowRunning(false);
+    }, [setSlideshowRunning]);
+
+    const lightboxState = useMemo(() => {
+      return {
+        images,
+        showNavigation: false,
+        pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
+        page: filter.currentPage,
+        pages: pageCount,
+        pageSize: filter.itemsPerPage,
+        slideshowEnabled: slideshowRunning,
+        onClose: handleClose,
+      };
+    }, [
+      images,
+      pageCount,
+      filter.currentPage,
+      filter.itemsPerPage,
+      slideshowRunning,
+      handleClose,
+      handleLightBoxPage,
+    ]);
+
+    const showLightbox = useLightbox(
+      lightboxState,
+      filter.sortBy === "path" &&
+        filter.sortDirection === GQL.SortDirectionEnum.Asc
+        ? chapters
+        : []
     );
+
+    const handleImageOpen = useCallback(
+      (index) => {
+        setSlideshowRunning(true);
+        showLightbox({ initialIndex: index, slideshowEnabled: true });
+      },
+      [showLightbox, setSlideshowRunning]
+    );
+
+    function onPreview(index: number, ev: MouseEvent) {
+      handleImageOpen(index);
+      ev.preventDefault();
+    }
+
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <ImageCardGrid
+          images={images}
+          selectedIds={selectedIds}
+          zoomIndex={filter.zoomIndex}
+          onSelectChange={onSelectChange}
+          onPreview={onPreview}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.Wall) {
+      return (
+        <ImageWall
+          images={images}
+          onChangePage={onChangePage}
+          currentPage={filter.currentPage}
+          pageCount={pageCount}
+          handleImageOpen={handleImageOpen}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+          selecting={!!selectedIds && selectedIds.size > 0}
+        />
+      );
+    }
+
+    // should not happen
+    return <></>;
   }
-
-  // should not happen
-  return <></>;
-};
-
-function getItems(result: GQL.FindImagesQueryResult) {
-  return result?.data?.findImages?.images ?? [];
-}
-
-function getCount(result: GQL.FindImagesQueryResult) {
-  return result?.data?.findImages?.count ?? 0;
-}
+);
 
 function renderMetadataByline(
-  result: GQL.FindImagesQueryResult,
-  metadataInfo?: GQL.FindImagesMetadataQueryResult
+  metadataInfo: GQL.FindImagesMetadataQueryResult | undefined
 ) {
   const megapixels = metadataInfo?.data?.findImages?.megapixels;
   const size = metadataInfo?.data?.findImages?.filesize;
@@ -339,6 +371,136 @@ function renderMetadataByline(
   );
 }
 
+const ImageFilterSidebarSections = PatchContainerComponent(
+  "FilteredImageList.SidebarSections"
+);
+
+const SidebarContent: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
+  sidebarOpen: boolean;
+  onClose?: () => void;
+  showEditFilter: (editingCriterion?: string) => void;
+  count?: number;
+  focus?: ReturnType<typeof useFocus>;
+}> = ({
+  filter,
+  setFilter,
+  filterHook,
+  view,
+  showEditFilter,
+  sidebarOpen,
+  onClose,
+  count,
+  focus,
+}) => {
+  const showResultsId =
+    count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
+  const hideStudios = view === View.StudioScenes;
+
+  return (
+    <>
+      <FilteredSidebarHeader
+        sidebarOpen={sidebarOpen}
+        showEditFilter={showEditFilter}
+        filter={filter}
+        setFilter={setFilter}
+        view={view}
+        focus={focus}
+      />
+
+      <ImageFilterSidebarSections>
+        {!hideStudios && (
+          <SidebarStudiosFilter
+            filter={filter}
+            setFilter={setFilter}
+            filterHook={filterHook}
+          />
+        )}
+        <SidebarPerformersFilter
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
+        <SidebarTagsFilter
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
+        <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarFolderFilter
+          text={<FormattedMessage id="folder" />}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="folder"
+        />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="organized" />}
+          data-type={OrganizedCriterionOption.type}
+          option={OrganizedCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="organized"
+        />
+        <SidebarAgeFilter
+          title={<FormattedMessage id="performer_age" />}
+          option={PerformerAgeCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="performer_age"
+        />
+      </ImageFilterSidebarSections>
+
+      <div className="sidebar-footer">
+        <Button className="sidebar-close-button" onClick={onClose}>
+          <FormattedMessage id={showResultsId} values={{ count }} />
+        </Button>
+      </div>
+    </>
+  );
+};
+
+function useViewRandom(filter: ListFilterModel, count: number) {
+  const history = useHistory();
+
+  const viewRandom = useCallback(async () => {
+    // query for a random image
+    if (count === 0) {
+      return;
+    }
+
+    const index = Math.floor(Math.random() * count);
+    const filterCopy = cloneDeep(filter);
+    filterCopy.itemsPerPage = 1;
+    filterCopy.currentPage = index + 1;
+    const singleResult = await queryFindImages(filterCopy);
+    if (singleResult.data.findImages.images.length === 1) {
+      const { id } = singleResult.data.findImages.images[0];
+      // navigate to the image player page
+      history.push(`/images/${id}`);
+    }
+  }, [history, filter, count]);
+
+  return viewRandom;
+}
+
+function useAddKeybinds(filter: ListFilterModel, count: number) {
+  const viewRandom = useViewRandom(filter, count);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      viewRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [viewRandom]);
+}
+
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
@@ -347,28 +509,185 @@ interface IImageList {
   chapters?: GQL.GalleryChapterDataFragment[];
 }
 
-export const ImageList: React.FC<IImageList> = PatchComponent(
-  "ImageList",
-  ({ filterHook, view, alterQuery, extraOperations = [], chapters = [] }) => {
+export const FilteredImageList = PatchComponent(
+  "FilteredImageList",
+  (props: IImageList) => {
     const intl = useIntl();
-    const history = useHistory();
-    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-    const [isExportAll, setIsExportAll] = useState(false);
+
     const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
 
-    const filterMode = GQL.FilterMode.Images;
+    const searchFocus = useFocus();
 
-    const { modal, showModal, closeModal } = useModal();
+    const withSidebar = props.view !== View.GalleryImages;
 
-    const otherOperations: IItemListOperation<GQL.FindImagesQueryResult>[] = [
-      ...extraOperations,
+    const {
+      filterHook,
+      view,
+      alterQuery,
+      extraOperations: providedOperations = [],
+      chapters,
+    } = props;
+
+    // States
+    const {
+      showSidebar,
+      setShowSidebar,
+      sectionOpen,
+      setSectionOpen,
+      loading: sidebarStateLoading,
+    } = useSidebarState(view);
+
+    const {
+      filterState,
+      queryResult,
+      metadataInfo,
+      modalState,
+      listSelect,
+      showEditFilter,
+    } = useFilteredItemList({
+      filterStateProps: {
+        filterMode: GQL.FilterMode.Images,
+        view,
+        useURL: alterQuery,
+      },
+      queryResultProps: {
+        useResult: useFindImages,
+        useMetadataInfo: useFindImagesMetadata,
+        getCount: (r) => r.data?.findImages.count ?? 0,
+        getItems: (r) => r.data?.findImages.images ?? [],
+        filterHook,
+      },
+    });
+
+    const { filter, setFilter } = filterState;
+
+    const { effectiveFilter, result, cachedResult, items, totalCount } =
+      queryResult;
+
+    const metadataByline = useMemo(() => {
+      if (cachedResult.loading) return null;
+
+      return renderMetadataByline(metadataInfo) ?? null;
+    }, [cachedResult.loading, metadataInfo]);
+
+    const {
+      selectedIds,
+      selectedItems,
+      onSelectChange,
+      onSelectAll,
+      onSelectNone,
+      onInvertSelection,
+      hasSelection,
+    } = listSelect;
+
+    const { modal, showModal, closeModal } = modalState;
+
+    // Utility hooks
+    const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+      filter,
+      setFilter,
+    });
+
+    useAddKeybinds(filter, totalCount);
+    useFilteredSidebarKeybinds({
+      showSidebar,
+      setShowSidebar,
+    });
+
+    const onCloseEditDelete = useCloseEditDelete({
+      closeModal,
+      onSelectNone,
+      result,
+    });
+
+    const viewRandom = useViewRandom(effectiveFilter, totalCount);
+
+    function onExport(all: boolean) {
+      showModal(
+        <ExportDialog
+          exportInput={{
+            images: {
+              ids: Array.from(selectedIds.values()),
+              all: all,
+            },
+          }}
+          onClose={() => closeModal()}
+        />
+      );
+    }
+
+    const onEdit = useCallback(() => {
+      showModal(
+        <EditImagesDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
+    }, [showModal, selectedItems, onCloseEditDelete]);
+
+    const onDelete = useCallback(() => {
+      showModal(
+        <DeleteImagesDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
+    }, [showModal, selectedItems, onCloseEditDelete]);
+
+    useEffect(() => {
+      Mousetrap.bind("e", () => {
+        if (hasSelection) {
+          onEdit?.();
+        }
+      });
+
+      Mousetrap.bind("d d", () => {
+        if (hasSelection) {
+          onDelete?.();
+        }
+      });
+
+      return () => {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      };
+    }, [hasSelection, onEdit, onDelete]);
+
+    const convertedExtraOperations: IListFilterOperation[] =
+      providedOperations.map((o) => ({
+        ...o,
+        isDisplayed: o.isDisplayed
+          ? () => o.isDisplayed!(result, filter, selectedIds)
+          : undefined,
+        onClick: () => {
+          o.onClick(result, filter, selectedIds);
+        },
+      }));
+
+    const otherOperations: IListFilterOperation[] = [
+      ...convertedExtraOperations,
+      {
+        text: intl.formatMessage({ id: "actions.select_all" }),
+        onClick: () => onSelectAll(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.select_none" }),
+        onClick: () => onSelectNone(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.invert_selection" }),
+        onClick: () => onInvertSelection(),
+        isDisplayed: () => totalCount > 0,
+      },
       {
         text: intl.formatMessage({ id: "actions.view_random" }),
         onClick: viewRandom,
       },
       {
         text: `${intl.formatMessage({ id: "actions.generate" })}…`,
-        onClick: (result, filter, selectedIds) => {
+        onClick: () => {
           showModal(
             <GenerateDialog
               type="image"
@@ -376,101 +695,78 @@ export const ImageList: React.FC<IImageList> = PatchComponent(
               onClose={() => closeModal()}
             />
           );
-          return Promise.resolve();
         },
-        isDisplayed: showWhenSelected,
+        isDisplayed: () => hasSelection,
       },
       {
         text: intl.formatMessage({ id: "actions.export" }),
-        onClick: onExport,
-        isDisplayed: showWhenSelected,
+        onClick: () => onExport(false),
+        isDisplayed: () => hasSelection,
       },
       {
         text: intl.formatMessage({ id: "actions.export_all" }),
-        onClick: onExportAll,
+        onClick: () => onExport(true),
       },
     ];
 
-    function addKeybinds(
-      result: GQL.FindImagesQueryResult,
-      filter: ListFilterModel
-    ) {
-      Mousetrap.bind("p r", () => {
-        viewRandom(result, filter);
-      });
+    // render
+    if (sidebarStateLoading) return null;
 
-      return () => {
-        Mousetrap.unbind("p r");
-      };
-    }
+    const operations = (
+      <ListOperations
+        items={items.length}
+        hasSelection={hasSelection}
+        operations={otherOperations}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        operationsMenuClassName="image-list-operations-dropdown"
+      />
+    );
 
-    async function viewRandom(
-      result: GQL.FindImagesQueryResult,
-      filter: ListFilterModel
-    ) {
-      // query for a random image
-      if (result.data?.findImages) {
-        const { count } = result.data.findImages;
+    const pageCount = Math.ceil(totalCount / filter.itemsPerPage);
 
-        const index = Math.floor(Math.random() * count);
-        const filterCopy = cloneDeep(filter);
-        filterCopy.itemsPerPage = 1;
-        filterCopy.currentPage = index + 1;
-        const singleResult = await queryFindImages(filterCopy);
-        if (singleResult.data.findImages.images.length === 1) {
-          const { id } = singleResult.data.findImages.images[0];
-          // navigate to the image player page
-          history.push(`/images/${id}`);
-        }
-      }
-    }
+    const content = (
+      <>
+        <FilteredListToolbar
+          filter={filter}
+          listSelect={listSelect}
+          setFilter={setFilter}
+          showEditFilter={showEditFilter}
+          onDelete={onDelete}
+          onEdit={onEdit}
+          operationComponent={operations}
+          view={view}
+          zoomable
+        />
 
-    async function onExport() {
-      setIsExportAll(false);
-      setIsExportDialogOpen(true);
-    }
+        <FilterTags
+          criteria={filter.criteria}
+          onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+          onRemoveCriterion={removeCriterion}
+          onRemoveAll={clearAllCriteria}
+        />
 
-    async function onExportAll() {
-      setIsExportAll(true);
-      setIsExportDialogOpen(true);
-    }
+        <div className="pagination-index-container">
+          <Pagination
+            currentPage={filter.currentPage}
+            itemsPerPage={filter.itemsPerPage}
+            totalItems={totalCount}
+            onChangePage={setPage}
+          />
+          <PaginationIndex
+            loading={cachedResult.loading}
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+            metadataByline={metadataByline}
+          />
+        </div>
 
-    function renderContent(
-      result: GQL.FindImagesQueryResult,
-      filter: ListFilterModel,
-      selectedIds: Set<string>,
-      onSelectChange: (
-        id: string,
-        selected: boolean,
-        shiftKey: boolean
-      ) => void,
-      onChangePage: (page: number) => void,
-      pageCount: number
-    ) {
-      function maybeRenderImageExportDialog() {
-        if (isExportDialogOpen) {
-          return (
-            <ExportDialog
-              exportInput={{
-                images: {
-                  ids: Array.from(selectedIds.values()),
-                  all: isExportAll,
-                },
-              }}
-              onClose={() => setIsExportDialogOpen(false)}
-            />
-          );
-        }
-      }
-
-      function renderImages() {
-        if (!result.data?.findImages) return;
-
-        return (
-          <ImageListImages
+        <LoadedContent loading={result.loading} error={result.error}>
+          <ImageList
             filter={filter}
-            images={result.data.findImages.images}
-            onChangePage={onChangePage}
+            images={items}
+            onChangePage={setPage}
             onSelectChange={onSelectChange}
             pageCount={pageCount}
             selectedIds={selectedIds}
@@ -478,54 +774,66 @@ export const ImageList: React.FC<IImageList> = PatchComponent(
             setSlideshowRunning={setSlideshowRunning}
             chapters={chapters}
           />
-        );
-      }
+        </LoadedContent>
 
-      return (
-        <>
-          {maybeRenderImageExportDialog()}
-          {renderImages()}
-        </>
-      );
-    }
-
-    function renderEditDialog(
-      selectedImages: GQL.SlimImageDataFragment[],
-      onClose: (applied: boolean) => void
-    ) {
-      return <EditImagesDialog selected={selectedImages} onClose={onClose} />;
-    }
-
-    function renderDeleteDialog(
-      selectedImages: GQL.SlimImageDataFragment[],
-      onClose: (confirmed: boolean) => void
-    ) {
-      return <DeleteImagesDialog selected={selectedImages} onClose={onClose} />;
-    }
+        {totalCount > filter.itemsPerPage && (
+          <div className="pagination-footer-container">
+            <div className="pagination-footer">
+              <Pagination
+                itemsPerPage={filter.itemsPerPage}
+                currentPage={filter.currentPage}
+                totalItems={totalCount}
+                onChangePage={setPage}
+                pagePopupPlacement="top"
+                metadataByline={metadataByline}
+              />
+            </div>
+          </div>
+        )}
+      </>
+    );
 
     return (
-      <ItemListContext
-        filterMode={filterMode}
-        useResult={useFindImages}
-        useMetadataInfo={useFindImagesMetadata}
-        getItems={getItems}
-        getCount={getCount}
-        alterQuery={alterQuery}
-        filterHook={filterHook}
-        view={view}
-        selectable
-      >
+      <>
         {modal}
-        <ItemList
-          view={view}
-          otherOperations={otherOperations}
-          addKeybinds={addKeybinds}
-          renderContent={renderContent}
-          renderEditDialog={renderEditDialog}
-          renderDeleteDialog={renderDeleteDialog}
-          renderMetadataByline={renderMetadataByline}
-        />
-      </ItemListContext>
+        {!withSidebar ? (
+          <div className="item-list-container image-list">{content}</div>
+        ) : (
+          <div
+            className={cx("item-list-container image-list", {
+              "hide-sidebar": !showSidebar,
+            })}
+          >
+            <SidebarStateContext.Provider
+              value={{ sectionOpen, setSectionOpen }}
+            >
+              <SidebarPane hideSidebar={!showSidebar}>
+                <Sidebar
+                  hide={!showSidebar}
+                  onHide={() => setShowSidebar(false)}
+                >
+                  <SidebarContent
+                    filter={filter}
+                    setFilter={setFilter}
+                    filterHook={filterHook}
+                    showEditFilter={showEditFilter}
+                    view={view}
+                    sidebarOpen={showSidebar}
+                    onClose={() => setShowSidebar(false)}
+                    count={cachedResult.loading ? undefined : totalCount}
+                    focus={searchFocus}
+                  />
+                </Sidebar>
+                <SidebarPaneContent
+                  onSidebarToggle={() => setShowSidebar(!showSidebar)}
+                >
+                  {content}
+                </SidebarPaneContent>
+              </SidebarPane>
+            </SidebarStateContext.Provider>
+          </div>
+        )}
+      </>
     );
   }
 );

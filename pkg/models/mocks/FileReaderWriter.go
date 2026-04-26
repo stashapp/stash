@@ -153,13 +153,13 @@ func (_m *FileReaderWriter) FindAllByPath(ctx context.Context, path string, case
 	return r0, r1
 }
 
-// FindAllInPaths provides a mock function with given fields: ctx, p, limit, offset
-func (_m *FileReaderWriter) FindAllInPaths(ctx context.Context, p []string, limit int, offset int) ([]models.File, error) {
-	ret := _m.Called(ctx, p, limit, offset)
+// FindAllInPaths provides a mock function with given fields: ctx, p, includeZipContents, limit, offset
+func (_m *FileReaderWriter) FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit int, offset int) ([]models.File, error) {
+	ret := _m.Called(ctx, p, includeZipContents, limit, offset)
 
 	var r0 []models.File
-	if rf, ok := ret.Get(0).(func(context.Context, []string, int, int) []models.File); ok {
-		r0 = rf(ctx, p, limit, offset)
+	if rf, ok := ret.Get(0).(func(context.Context, []string, bool, int, int) []models.File); ok {
+		r0 = rf(ctx, p, includeZipContents, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.File)
@@ -167,8 +167,8 @@ func (_m *FileReaderWriter) FindAllInPaths(ctx context.Context, p []string, limi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, []string, int, int) error); ok {
-		r1 = rf(ctx, p, limit, offset)
+	if rf, ok := ret.Get(1).(func(context.Context, []string, bool, int, int) error); ok {
+		r1 = rf(ctx, p, includeZipContents, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}

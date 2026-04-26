@@ -32,6 +32,7 @@ type Gallery {
   cover: Image
 
   paths: GalleryPathsType! # Resolver
+  custom_fields: Map!
   image(index: Int!): Image!
 }
 
@@ -50,6 +51,8 @@ input GalleryCreateInput {
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
+
+  custom_fields: Map
 }
 
 input GalleryUpdateInput {
@@ -71,6 +74,8 @@ input GalleryUpdateInput {
   performer_ids: [ID!]
 
   primary_file_id: ID
+
+  custom_fields: CustomFieldsInput
 }
 
 input BulkGalleryUpdateInput {
@@ -89,6 +94,8 @@ input BulkGalleryUpdateInput {
   studio_id: ID
   tag_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
+
+  custom_fields: CustomFieldsInput
 }
 
 input GalleryDestroyInput {

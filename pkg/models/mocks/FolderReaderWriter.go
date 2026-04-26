@@ -86,13 +86,13 @@ func (_m *FolderReaderWriter) Find(ctx context.Context, id models.FolderID) (*mo
 	return r0, r1
 }
 
-// FindAllInPaths provides a mock function with given fields: ctx, p, limit, offset
-func (_m *FolderReaderWriter) FindAllInPaths(ctx context.Context, p []string, limit int, offset int) ([]*models.Folder, error) {
-	ret := _m.Called(ctx, p, limit, offset)
+// FindAllInPaths provides a mock function with given fields: ctx, p, includeZipContents, limit, offset
+func (_m *FolderReaderWriter) FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit int, offset int) ([]*models.Folder, error) {
+	ret := _m.Called(ctx, p, includeZipContents, limit, offset)
 
 	var r0 []*models.Folder
-	if rf, ok := ret.Get(0).(func(context.Context, []string, int, int) []*models.Folder); ok {
-		r0 = rf(ctx, p, limit, offset)
+	if rf, ok := ret.Get(0).(func(context.Context, []string, bool, int, int) []*models.Folder); ok {
+		r0 = rf(ctx, p, includeZipContents, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Folder)
@@ -100,8 +100,8 @@ func (_m *FolderReaderWriter) FindAllInPaths(ctx context.Context, p []string, li
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, []string, int, int) error); ok {
-		r1 = rf(ctx, p, limit, offset)
+	if rf, ok := ret.Get(1).(func(context.Context, []string, bool, int, int) error); ok {
+		r1 = rf(ctx, p, includeZipContents, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -194,6 +194,52 @@ func (_m *FolderReaderWriter) FindMany(ctx context.Context, id []models.FolderID
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, []models.FolderID) error); ok {
 		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyParentFolderIDs provides a mock function with given fields: ctx, folderIDs
+func (_m *FolderReaderWriter) GetManyParentFolderIDs(ctx context.Context, folderIDs []models.FolderID) ([][]models.FolderID, error) {
+	ret := _m.Called(ctx, folderIDs)
+
+	var r0 [][]models.FolderID
+	if rf, ok := ret.Get(0).(func(context.Context, []models.FolderID) [][]models.FolderID); ok {
+		r0 = rf(ctx, folderIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]models.FolderID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.FolderID) error); ok {
+		r1 = rf(ctx, folderIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManySubFolderIDs provides a mock function with given fields: ctx, folderIDs
+func (_m *FolderReaderWriter) GetManySubFolderIDs(ctx context.Context, folderIDs []models.FolderID) ([][]models.FolderID, error) {
+	ret := _m.Called(ctx, folderIDs)
+
+	var r0 [][]models.FolderID
+	if rf, ok := ret.Get(0).(func(context.Context, []models.FolderID) [][]models.FolderID); ok {
+		r0 = rf(ctx, folderIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]models.FolderID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.FolderID) error); ok {
+		r1 = rf(ctx, folderIDs)
 	} else {
 		r1 = ret.Error(1)
 	}

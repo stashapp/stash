@@ -32,6 +32,7 @@ var (
 	details           = "details"
 	parentStudioName  = "parentStudio"
 	autoTagIgnored    = true
+	studioOrganized   = true
 	emptyCustomFields = make(map[string]interface{})
 	customFields      = map[string]interface{}{
 		"customField1": "customValue1",
@@ -73,6 +74,7 @@ func createFullStudio(id int, parentID int) models.Studio {
 		UpdatedAt:     updateTime,
 		Rating:        &rating,
 		IgnoreAutoTag: autoTagIgnored,
+		Organized:     studioOrganized,
 		Aliases:       models.NewRelatedStrings(aliases),
 		TagIDs:        models.NewRelatedIDs([]int{}),
 		StashIDs:      models.NewRelatedStashIDs(stashIDs),
@@ -115,6 +117,7 @@ func createFullJSONStudio(parentStudio, image string, aliases []string, customFi
 		Aliases:       aliases,
 		StashIDs:      stashIDs,
 		IgnoreAutoTag: autoTagIgnored,
+		Organized:     studioOrganized,
 		CustomFields:  customFields,
 	}
 }

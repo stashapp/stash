@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"sync"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -31,13 +32,14 @@ type Manager struct {
 
 	Client *http.Client
 
-	cache *repositoryCache
+	cacheOnce sync.Once
+	cache     *repositoryCache
 }
 
 func (m *Manager) getCache() *repositoryCache {
-	if m.cache == nil {
+	m.cacheOnce.Do(func() {
 		m.cache = &repositoryCache{}
-	}
+	})
 
 	return m.cache
 }

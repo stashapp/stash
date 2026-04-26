@@ -1,5 +1,6 @@
 fragment FolderData on Folder {
   id
+  basename
   path
 }
 
@@ -84,5 +85,19 @@ fragment VisualFileData on VisualFile {
       type
       value
     }
+  }
+}
+
+fragment SelectFolderData on Folder {
+  id
+  path
+  basename
+}
+
+fragment RecursiveFolderData on Folder {
+  ...SelectFolderData
+
+  parent_folders {
+    ...SelectFolderData
   }
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -60,6 +61,10 @@ type Scanner struct {
 	// handlers are called after a file has been scanned.
 	FileHandlers []Handler
 
+	// RootPaths form the top-level paths for the library.
+	// Used to determine the root of the folder hierarchy when creating folders.
+	RootPaths []string
+
 	// Rescan indicates whether files should be rescanned even if they haven't changed.
 	Rescan bool
 
@@ -106,12 +111,12 @@ type ScannedFile struct {
 }
 
 // AcceptEntry determines if the file entry should be accepted for scanning
-func (s *Scanner) AcceptEntry(ctx context.Context, path string, info fs.FileInfo) bool {
+func (s *Scanner) AcceptEntry(ctx context.Context, path string, info fs.FileInfo, zipFilePath string) bool {
 	// always accept if there's no filters
 	accept := len(s.ScanFilters) == 0
 	for _, filter := range s.ScanFilters {
 		// accept if any filter accepts the file
-		if filter.Accept(ctx, path, info) {
+		if filter.Accept(ctx, path, info, zipFilePath) {
 			accept = true
 			break
 		}
@@ -193,6 +198,10 @@ func (s *Scanner) ScanFolder(ctx context.Context, file ScannedFile) (*models.Fol
 	return f, err
 }
 
+func (s *Scanner) isRootPath(path string) bool {
+	return path == "." || slices.Contains(s.RootPaths, path)
+}
+
 func (s *Scanner) onNewFolder(ctx context.Context, file ScannedFile) (*models.Folder, error) {
 	renamed, err := s.handleFolderRename(ctx, file)
 	if err != nil {
@@ -212,18 +221,16 @@ func (s *Scanner) onNewFolder(ctx context.Context, file ScannedFile) (*models.Fo
 		UpdatedAt: now,
 	}
 
-	dir := filepath.Dir(file.Path)
-	if dir != "." {
-		parentFolderID, err := s.getFolderID(ctx, dir)
+	if !s.isRootPath(file.Path) {
+		dir := filepath.Dir(file.Path)
+
+		// create full folder hierarchy if parent folder doesn't exist, and set parent folder ID
+		parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, dir, s.RootPaths)
 		if err != nil {
 			return nil, fmt.Errorf("getting parent folder %q: %w", dir, err)
 		}
 
-		// if parent folder doesn't exist, assume it's a top-level folder
-		// this may not be true if we're using multiple goroutines
-		if parentFolderID != nil {
-			toCreate.ParentFolderID = parentFolderID
-		}
+		toCreate.ParentFolderID = &parentFolder.ID
 	}
 
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
@@ -312,6 +319,19 @@ func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing 
 		}
 	}
 
+	// handle case where parent folder was not previously set
+	if existing.ParentFolderID == nil && !s.isRootPath(existing.Path) {
+		logger.Infof("Existing folder entry %q has no parent folder. Creating folder hierarchy and setting parent ID...", existing.Path)
+
+		// create full folder hierarchy if parent folder doesn't exist, and set parent folder ID
+		parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, filepath.Dir(f.Path), s.RootPaths)
+		if err != nil {
+			return nil, fmt.Errorf("getting parent folder for %q: %w", f.Path, err)
+		}
+		existing.ParentFolderID = &parentFolder.ID
+		update = true
+	}
+
 	if update {
 		var err error
 		if err = s.Repository.Folder.Update(ctx, existing); err != nil {
@@ -323,10 +343,15 @@ func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing 
 }
 
 type ScanFileResult struct {
-	File    models.File
-	New     bool
-	Renamed bool
-	Updated bool
+	File               models.File
+	New                bool
+	Renamed            bool
+	Updated            bool
+	FingerprintChanged bool
+}
+
+func (r ScanFileResult) IsUnchanged() bool {
+	return !r.New && !r.Renamed && !r.Updated
 }
 
 // ScanFile scans the provided file into the database, returning the scan result.
@@ -393,13 +418,31 @@ func (s *Scanner) onNewFile(ctx context.Context, f ScannedFile) (*ScanFileResult
 	baseFile.UpdatedAt = now
 
 	// find the parent folder
-	parentFolderID, err := s.getFolderID(ctx, filepath.Dir(path))
+	folderPath := filepath.Dir(path)
+	parentFolderID, err := s.getFolderID(ctx, folderPath)
 	if err != nil {
 		return nil, fmt.Errorf("getting parent folder for %q: %w", path, err)
 	}
 
 	if parentFolderID == nil {
-		return nil, fmt.Errorf("parent folder for %q doesn't exist", path)
+		// parent folders should have been created before scanning this file in a recursive scan
+		// assume that we are scanning specifically and only this file,
+		// so we should create the parent folder hierarchy if it doesn't exist
+		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+			parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, folderPath, s.RootPaths)
+			if err != nil {
+				return fmt.Errorf("getting parent folder for %q: %w", f.Path, err)
+			}
+
+			parentFolderID = &parentFolder.ID
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if parentFolderID == nil {
+		// shouldn't happen
+		return nil, fmt.Errorf("parent folder ID is nil for %q", path)
 	}
 
 	baseFile.ParentFolderID = *parentFolderID
@@ -419,7 +462,11 @@ func (s *Scanner) onNewFile(ctx context.Context, f ScannedFile) (*ScanFileResult
 
 	// determine if the file is renamed from an existing file in the store
 	// do this after decoration so that missing fields can be populated
-	renamed, err := s.handleRename(ctx, file, fp)
+	zipFilePath := ""
+	if f.ZipFile != nil {
+		zipFilePath = f.ZipFile.Base().Path
+	}
+	renamed, err := s.handleRename(ctx, file, fp, zipFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -529,7 +576,7 @@ func (s *Scanner) getFileFS(f *models.BaseFile) (models.FS, error) {
 	return fs.OpenZip(zipPath, zipSize)
 }
 
-func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {
+func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint, zipFilePath string) (models.File, error) {
 	var others []models.File
 
 	for _, tfp := range fp {
@@ -571,7 +618,7 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 				// treat as a move
 				missing = append(missing, other)
 			}
-		case !s.AcceptEntry(ctx, other.Base().Path, info):
+		case !s.AcceptEntry(ctx, other.Base().Path, info, zipFilePath):
 			// #4393 - if the file is no longer in the configured library paths, treat it as a move
 			logger.Debugf("File %q no longer in library paths. Treating as a move.", other.Base().Path)
 			missing = append(missing, other)
@@ -604,13 +651,19 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 	fBaseCopy.Fingerprints = updatedBase.Fingerprints
 	*updatedBase = fBaseCopy
 
+	zipMover := zipHierarchyMover{
+		folderStore: s.Repository.Folder,
+		files:       s.Repository.File,
+		rootPaths:   s.RootPaths,
+	}
+
 	if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.File.Update(ctx, updated); err != nil {
 			return fmt.Errorf("updating file for rename %q: %w", newPath, err)
 		}
 
 		if s.IsZipFile(updatedBase.Basename) {
-			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, updatedBase.ID, oldPath, newPath); err != nil {
+			if err := zipMover.transferZipHierarchy(ctx, updatedBase.ID, oldPath, newPath); err != nil {
 				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", newPath, err)
 			}
 		}
@@ -743,6 +796,9 @@ func (s *Scanner) onExistingFile(ctx context.Context, f ScannedFile, existing mo
 		return nil, err
 	}
 
+	oldFingerprints := existing.Base().Fingerprints
+	fingerprintChanged := fp.ContentsChanged(oldFingerprints)
+
 	s.removeOutdatedFingerprints(existing, fp)
 	existing.SetFingerprints(fp)
 
@@ -766,8 +822,9 @@ func (s *Scanner) onExistingFile(ctx context.Context, f ScannedFile, existing mo
 		return nil, err
 	}
 	return &ScanFileResult{
-		File:    existing,
-		Updated: true,
+		File:               existing,
+		Updated:            true,
+		FingerprintChanged: fingerprintChanged,
 	}, nil
 }
 
