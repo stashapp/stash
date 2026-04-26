@@ -43,10 +43,7 @@ import {
   defaultImageWallMargin,
 } from "src/utils/imageWall";
 import { genderList } from "src/utils/gender";
-import {
-  defaultMaxOptionsShown,
-  defaultPreviewVolume,
-} from "src/core/config";
+import { defaultMaxOptionsShown, defaultPreviewVolume } from "src/core/config";
 import { PatchComponent } from "src/patch";
 
 const allMenuItems = [
@@ -536,8 +533,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             value={iface.defaultPerformerGender ?? ""}
             onChange={(v) =>
               saveInterface({
-                defaultPerformerGender:
-                  v === "" ? null : (v as GQL.GenderEnum),
+                defaultPerformerGender: v === "" ? null : (v as GQL.GenderEnum),
               })
             }
           >
