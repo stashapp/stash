@@ -542,7 +542,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             {genderList.map((gender) => (
               <option key={gender} value={gender}>
                 {intl.formatMessage({
-                  id: `gender_types.${gender.toLowerCase()}`,
+                  id: `gender_types.${gender}`,
                 })}
               </option>
             ))}
