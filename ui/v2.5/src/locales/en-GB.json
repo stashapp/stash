@@ -894,6 +894,10 @@
       "performer_list": {
         "heading": "Performer List",
         "options": {
+          "default_gender": {
+            "description": "Sets the default gender for new performers when the scraper does not provide a gender.",
+            "heading": "Default performer gender"
+          },
           "show_links_on_grid_card": {
             "heading": "Display links on performer grid cards"
           }

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/plugin/hook"
@@ -20,6 +21,14 @@ const (
 	twitterURL   = "https://twitter.com"
 	instagramURL = "https://instagram.com"
 )
+
+func performerGenderOrDefault(gender *models.GenderEnum) *models.GenderEnum {
+	if gender != nil {
+		return gender
+	}
+
+	return config.GetInstance().GetDefaultPerformerGender()
+}
 
 // used to refetch performer after hooks run
 func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
@@ -44,7 +53,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.Name = strings.TrimSpace(input.Name)
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
 	newPerformer.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.AliasList), newPerformer.Name))
-	newPerformer.Gender = input.Gender
+	newPerformer.Gender = performerGenderOrDefault(input.Gender)
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
 	newPerformer.EyeColor = translator.string(input.EyeColor)

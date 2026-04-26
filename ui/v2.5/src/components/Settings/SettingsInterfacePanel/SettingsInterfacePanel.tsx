@@ -42,6 +42,7 @@ import {
   defaultImageWallDirection,
   defaultImageWallMargin,
 } from "src/utils/imageWall";
+import { genderList } from "src/utils/gender";
 import { defaultMaxOptionsShown, defaultPreviewVolume } from "src/core/config";
 import { PatchComponent } from "src/patch";
 
@@ -525,6 +526,27 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             checked={ui.showLinksOnPerformerCard ?? undefined}
             onChange={(v) => saveUI({ showLinksOnPerformerCard: v })}
           />
+          <SelectSetting
+            id="default-performer-gender"
+            headingID="config.ui.performer_list.options.default_gender.heading"
+            subHeadingID="config.ui.performer_list.options.default_gender.description"
+            value={iface.defaultPerformerGender ?? ""}
+            onChange={(v) =>
+              saveInterface({
+                defaultPerformerGender:
+                  v === "" ? null : (v as GQL.GenderEnum),
+              })
+            }
+          >
+            <option value="">{intl.formatMessage({ id: "none" })}</option>
+            {genderList.map((gender) => (
+              <option key={gender} value={gender}>
+                {intl.formatMessage({
+                  id: `gender_types.${gender.toLowerCase()}`,
+                })}
+              </option>
+            ))}
+          </SelectSetting>
         </SettingSection>
 
         <SettingSection headingID="config.ui.image_wall.heading">

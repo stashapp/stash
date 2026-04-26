@@ -206,6 +206,7 @@ const (
 	autostartVideoOnPlaySelectedDefault = true
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
+	DefaultPerformerGender              = "default_performer_gender"
 	CSSEnabled                          = "cssenabled"
 	JavascriptEnabled                   = "javascriptenabled"
 	CustomLocalesEnabled                = "customlocalesenabled"
@@ -1309,6 +1310,15 @@ func (i *Config) GetContinuePlaylistDefault() bool {
 
 func (i *Config) GetShowStudioAsText() bool {
 	return i.getBool(ShowStudioAsText)
+}
+
+func (i *Config) GetDefaultPerformerGender() *models.GenderEnum {
+	g := models.GenderEnum(i.getString(DefaultPerformerGender))
+	if !g.IsValid() {
+		return nil
+	}
+
+	return &g
 }
 
 func (i *Config) getSlideshowDelay() int {

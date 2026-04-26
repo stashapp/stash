@@ -162,6 +162,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	customLocales := config.GetCustomLocales()
 	customLocalesEnabled := config.GetCustomLocalesEnabled()
 	disableCustomizations := config.GetDisableCustomizations()
+	defaultPerformerGender := config.GetDefaultPerformerGender()
 	language := config.GetLanguage()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
@@ -190,6 +191,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		CustomLocales:                &customLocales,
 		CustomLocalesEnabled:         &customLocalesEnabled,
 		DisableCustomizations:        &disableCustomizations,
+		DefaultPerformerGender:       defaultPerformerGender,
 		Language:                     &language,
 
 		ImageLightbox: &imageLightboxOptions,

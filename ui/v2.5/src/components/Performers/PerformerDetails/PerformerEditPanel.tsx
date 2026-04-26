@@ -97,6 +97,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [scrapedPerformer, setScrapedPerformer] =
     useState<GQL.ScrapedPerformer>();
   const { configuration: stashConfig } = useConfigurationContext();
+  const defaultPerformerGender =
+    stashConfig?.interface.defaultPerformerGender ?? null;
 
   const intl = useIntl();
 
@@ -134,7 +136,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     name: performer.name ?? "",
     disambiguation: performer.disambiguation ?? "",
     alias_list: performer.alias_list ?? [],
-    gender: performer.gender ?? null,
+    gender: performer.gender ?? (isNew ? defaultPerformerGender : null),
     birthdate: performer.birthdate ?? "",
     death_date: performer.death_date ?? "",
     country: performer.country ?? "",
@@ -424,16 +426,23 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       const result = await queryScrapePerformer(selectedScraper.id, ret);
       if (!result?.data?.scrapeSinglePerformer?.length) return;
+      const withDefaultGender = (
+        scrapedPerformerData: GQL.ScrapedPerformerDataFragment
+      ) =>
+        !scrapedPerformerData.gender && defaultPerformerGender
+          ? { ...scrapedPerformerData, gender: defaultPerformerGender }
+          : scrapedPerformerData;
+      const scrapedResult = withDefaultGender(
+        result.data.scrapeSinglePerformer[0]
+      );
 
       // assume one result
       // if this is a new performer, just dump the data
       if (isNew) {
-        updatePerformerEditStateFromScraper(
-          result.data.scrapeSinglePerformer[0]
-        );
+        updatePerformerEditStateFromScraper(scrapedResult);
         setScraper(undefined);
       } else {
-        setScrapedPerformer(result.data.scrapeSinglePerformer[0]);
+        setScrapedPerformer(scrapedResult);
       }
     } catch (e) {
       Toast.error(e);
@@ -451,11 +460,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         return;
       }
 
+      const scrapedResult =
+        !result.data.scrapePerformerURL.gender && defaultPerformerGender
+          ? {
+              ...result.data.scrapePerformerURL,
+              gender: defaultPerformerGender,
+            }
+          : result.data.scrapePerformerURL;
+
       // if this is a new performer, just dump the data
       if (isNew) {
-        updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
+        updatePerformerEditStateFromScraper(scrapedResult);
       } else {
-        setScrapedPerformer(result.data.scrapePerformerURL);
+        setScrapedPerformer(scrapedResult);
       }
     } catch (e) {
       Toast.error(e);

@@ -528,6 +528,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	r.setConfigBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
 
 	r.setConfigBool(config.DisableCustomizations, input.DisableCustomizations)
+	r.setConfigString(config.DefaultPerformerGender, (*string)(input.DefaultPerformerGender))
 
 	if input.DisableDropdownCreate != nil {
 		ddc := input.DisableDropdownCreate
