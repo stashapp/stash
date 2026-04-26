@@ -1,10 +1,10 @@
 import React from "react";
+import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Icon } from "src/components/Shared/Icon";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 
 interface ITextField {
   id?: string;
@@ -212,7 +212,12 @@ export const IconField: React.FC<IIconField> = ({
         displayValue
       );
       return (
-        <ExternalLink href={url} target={target} title={url} className="flex-grow-1">
+        <ExternalLink
+          href={url}
+          target={target}
+          title={url}
+          className="flex-grow-1"
+        >
           {children}
         </ExternalLink>
       );
@@ -228,11 +233,15 @@ export const IconField: React.FC<IIconField> = ({
         <span
           title={tooltip}
           className={
-            url ? "d-inline-flex align-items-center w-100" : "d-inline-flex align-items-center"
+            url
+              ? "d-inline-flex align-items-center w-100"
+              : "d-inline-flex align-items-center"
           }
           style={url ? { minWidth: 0 } : undefined}
         >
-          {icon && <Icon icon={icon} className={url ? "mr-1 flex-shrink-0" : "mr-1"} />}
+          {icon && (
+            <Icon icon={icon} className={url ? "mr-1 flex-shrink-0" : "mr-1"} />
+          )}
           {renderValue()}
         </span>
       </dd>

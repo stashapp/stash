@@ -12,11 +12,11 @@ import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
 import {
   faCameraRotate,
+  faCirclePlay,
   faClipboard,
   faFile,
   faLink,
   faPhotoFilm,
-  faCirclePlay
 } from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 import ImageUtils from "src/utils/image";
