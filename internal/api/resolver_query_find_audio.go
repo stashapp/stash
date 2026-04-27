@@ -10,7 +10,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 
 	"github.com/stashapp/stash/pkg/audio"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -118,14 +117,6 @@ func (r *queryResolver) FindAudios(
 				}
 			}
 		} else {
-			logger.Infof(
-				"FindAudios debug:\n audioFilter=%+v\n filter=%+v\n fields=%v\n repo=%+v\n repo.Audio=%T",
-				audioFilter,
-				filter,
-				fields,
-				r.repository,
-				r.repository.Audio,
-			)
 			result, err = r.repository.Audio.Query(ctx, models.AudioQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,

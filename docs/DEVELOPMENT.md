@@ -5,6 +5,7 @@
 * [Go](https://golang.org/dl/)
 * [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
   * To install, follow the [local installation instructions](https://golangci-lint.run/welcome/install/#local-installation)
+  * Install v1, NOT v2
 * [nodejs](https://nodejs.org/en/download) - nodejs runtime
   * corepack/[pnpm](https://pnpm.io/installation) - nodejs package manager (included with nodejs)
 

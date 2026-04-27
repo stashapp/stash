@@ -23,6 +23,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - O History
     - Play History
     - Groups
+    - Captions
 - Audio File metadata:
     - duration
     - audio codec
@@ -61,3 +62,92 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 
 ## Last Steps
 - [ ] Delete this file upon completion of the feature
+
+
+## Manual Tests
+
+### Setup
+
+1. Copy `.mp3` files into `.local-data`
+2. `make server-clean`
+3. `make server-start` OR run go debugger (VSCode F5)
+4. Create new instance with library at `./.local-data/`
+5. go to <http://127.0.0.1:9999/playground>
+    - Perform manual tests here
+
+### Check Query
+
+This is a manual test with all fields. The test ensures that the Querying is setup correctly.
+
+Later you can reuse this to ensure that mutations correctly updated the database.
+
+```graphql
+query {
+  findAudios(filter:{sort:"title" direction:DESC}){
+    count
+    audios {
+			id title code details urls date rating100 organized o_counter created_at updated_at last_played_at resume_time play_duration play_count play_history o_history custom_fields
+
+      files{
+          id path basename mod_time size format duration audio_codec sample_rate bit_rate created_at updated_at
+          parent_folder{id}
+          zip_file{id}
+          fingerprints{type value}
+      }
+      captions{language_code caption_type}
+      paths{caption stream}
+      studio{id}
+      groups{group{id} audio_index}
+      tags{id}
+      performers{id}
+      audioStreams{url mime_type label}
+    }
+  }
+  # findScenes(filter:{sort:"title" direction:DESC}){
+  #   count
+  #   scenes {
+  #     id sceneStreams{url mime_type label}
+  #     files{id path fingerprints{type value}}
+  #   }
+  # }
+}
+```
+
+### Check Mutations
+
+TODO
+
+### Check Streams
+
+Currently only direct streams are implemented. Use the following to get the Stream URL.
+
+1. Execute this GraphQL
+2. Paste the `Direct stream` url into the browser, ensure that the audio plays
+
+```graphql
+query {
+  findAudios(filter:{sort:"title" direction:DESC}){
+    count
+    audios {id audioStreams{url mime_type label}
+    }
+  }
+}
+```
+
+### HTML Confirmation
+
+```html
+<audio controls>
+  <source src="http://127.0.0.1:9999/audio/1/stream" type="audio/mp3">
+Your browser does not support the audio element.
+</audio>
+```
+
+You can also listen to audio using VIDEO tag
+
+```html
+<video controls>
+  <source src="http://127.0.0.1:9999/audio/1/stream" type="audio/mp3">
+Your browser does not support the video element.
+</video>
+```

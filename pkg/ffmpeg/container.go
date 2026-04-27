@@ -14,6 +14,9 @@ const (
 	Flv      Container = "flv"
 	Mpegts   Container = "mpegts"
 
+	// TODO(audio): better way to do this, without suffic this clashes with `Mp3 ProbeAudioCodec`
+	Mp3Container Container = "mp3"
+
 	Aac                ProbeAudioCodec = "aac"
 	Mp3                ProbeAudioCodec = "mp3"
 	Opus               ProbeAudioCodec = "opus"

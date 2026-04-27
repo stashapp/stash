@@ -18,10 +18,6 @@ var validForVp9 = []Container{Webm}
 var validForHevcMkv = []Container{Mp4, Matroska}
 var validForHevc = []Container{Mp4}
 
-var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
-var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
-var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3, Opus}
-
 var (
 	// ErrUnsupportedVideoCodecForBrowser is returned when the video codec is not supported for browser streaming.
 	ErrUnsupportedVideoCodecForBrowser = errors.New("unsupported video codec for browser")
@@ -81,12 +77,10 @@ func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
 // IsValidAudioForContainer returns true if the audio codec is valid for the container.
 func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
 	switch format {
-	case Matroska:
-		return isValidAudio(audio, validAudioForMkv)
-	case Webm:
-		return isValidAudio(audio, validAudioForWebm)
-	case Mp4:
-		return isValidAudio(audio, validAudioForMp4)
+	case Mp3Container:
+		return true
+		// TODO(audio): do we need to check ProbeAudioCodec for audio containers?
+		// return isValidAudio(audio, validAudioForMp3)
 	}
 	return false
 }

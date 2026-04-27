@@ -108,6 +108,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenes(ctx),
 			},
+			AudioByID: &AudioLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchAudios(ctx),
+			},
 			GalleryByID: &GalleryLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
@@ -147,6 +152,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchSceneCustomFields(ctx),
+			},
+			AudioCustomFields: &CustomFieldsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchAudioCustomFields(ctx),
 			},
 			StudioByID: &StudioLoader{
 				wait:     wait,
@@ -197,6 +207,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesFileIDs(ctx),
+			},
+			AudioFiles: &AudioFileIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchAudiosFileIDs(ctx),
 			},
 			ImageFiles: &ImageFileIDsLoader{
 				wait:     wait,
@@ -289,11 +304,34 @@ func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models
 	}
 }
 
+func (m Middleware) fetchAudios(ctx context.Context) func(keys []int) ([]*models.Audio, []error) {
+	return func(keys []int) (ret []*models.Audio, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Audio.FindMany(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
 func (m Middleware) fetchSceneCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
 	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.GetCustomFieldsBulk(ctx, keys)
+			return err
+		})
+
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchAudioCustomFields(ctx context.Context) func(keys []int) ([]models.CustomFieldMap, []error) {
+	return func(keys []int) (ret []models.CustomFieldMap, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Audio.GetCustomFieldsBulk(ctx, keys)
 			return err
 		})
 
@@ -491,6 +529,17 @@ func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([]
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.GetManyFileIDs(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchAudiosFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
+	return func(keys []int) (ret [][]models.FileID, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Audio.GetManyFileIDs(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

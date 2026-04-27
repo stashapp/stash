@@ -28,7 +28,6 @@ fragment AudioData on Audio {
 
   paths {
     stream
-    funscript
     caption
   }
 

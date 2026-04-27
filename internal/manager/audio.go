@@ -1,4 +1,3 @@
-// TODO(audio): update this file
 package manager
 
 import (
@@ -18,16 +17,10 @@ type AudioStreamEndpoint struct {
 }
 
 var (
-	// TODO(audio): figure out what stream types we need, and what we can support
 	directAudioEndpointType = endpointType{
 		label:     "Direct stream",
 		mimeType:  ffmpeg.MimeMp3Audio,
 		extension: "",
-	}
-	mp3AudioEndpointType = endpointType{
-		label:     "MP3",
-		mimeType:  ffmpeg.MimeMp3Audio,
-		extension: ".mp3",
 	}
 )
 
@@ -88,18 +81,7 @@ func GetAudioStreamPaths(audio *models.Audio, directStreamURL *url.URL, maxStrea
 		endpoints = append(endpoints, makeStreamEndpoint(directAudioEndpointType))
 	}
 
-	mp3Streams := []*AudioStreamEndpoint{}
-	hlsStreams := []*AudioStreamEndpoint{}
-	dashStreams := []*AudioStreamEndpoint{}
-
-	// TODO(audio): do we need the `if includeAudioStreamPath() {`?
-	mp3Streams = append(mp3Streams, makeStreamEndpoint(mp3AudioEndpointType))
-	hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType))
-	dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType))
-
-	endpoints = append(endpoints, mp3Streams...)
-	endpoints = append(endpoints, hlsStreams...)
-	endpoints = append(endpoints, dashStreams...)
+	// TODO(audio): can we return no urls?
 
 	return endpoints, nil
 }

@@ -39,13 +39,6 @@ func (rs audioRoutes) Routes() chi.Router {
 
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
-		// TODO(audio): slightly difficult to support StreamHLS/StreamDASH...do last
-		// r.Get("/stream.m3u8", rs.StreamHLS)
-		// r.Get("/stream.m3u8/{segment}.ts", rs.StreamHLSSegment)
-		// r.Get("/stream.mpd", rs.StreamDASH)
-		// r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
-
-		r.Get("/funscript", rs.Funscript)
 		r.Get("/caption", rs.CaptionLang)
 	})
 
@@ -58,87 +51,6 @@ func (rs audioRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 		TxnManager: rs.txnManager,
 	}
 	ss.StreamAudioDirect(audio, w, r)
-}
-
-// func (rs audioRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
-// 	rs.streamManifest(w, r, ffmpeg.StreamTypeHLS, "HLS")
-// }
-
-// func (rs audioRoutes) StreamDASH(w http.ResponseWriter, r *http.Request) {
-// 	rs.streamManifest(w, r, ffmpeg.StreamTypeDASHAudio, "DASH")
-// }
-
-// func (rs audioRoutes) streamManifest(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType, logName string) {
-// 	audio := r.Context().Value(audioKey).(*models.Audio)
-
-// 	streamManager := manager.GetInstance().StreamManager
-// 	if streamManager == nil {
-// 		http.Error(w, "Live transcoding disabled", http.StatusServiceUnavailable)
-// 		return
-// 	}
-
-// 	f := audio.Files.Primary()
-// 	if f == nil {
-// 		return
-// 	}
-
-// 	if err := r.ParseForm(); err != nil {
-// 		logger.Warnf("[transcode] error parsing query form: %v", err)
-// 	}
-
-// 	resolution := r.Form.Get("resolution")
-
-// 	logger.Debugf("[transcode] returning %s manifest for audio %d", logName, audio.ID)
-// 	streamManager.ServeManifest(w, r, streamType, f, resolution)
-// }
-
-// func (rs audioRoutes) StreamHLSSegment(w http.ResponseWriter, r *http.Request) {
-// 	rs.streamSegment(w, r, ffmpeg.StreamTypeHLS)
-// }
-
-// func (rs audioRoutes) StreamDASHAudioSegment(w http.ResponseWriter, r *http.Request) {
-// 	rs.streamSegment(w, r, ffmpeg.StreamTypeDASHAudio)
-// }
-
-// func (rs audioRoutes) streamSegment(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType) {
-// 	audio := r.Context().Value(audioKey).(*models.Audio)
-
-// 	streamManager := manager.GetInstance().StreamManager
-// 	if streamManager == nil {
-// 		http.Error(w, "Live transcoding disabled", http.StatusServiceUnavailable)
-// 		return
-// 	}
-
-// 	f := audio.Files.Primary()
-// 	if f == nil {
-// 		return
-// 	}
-
-// 	if err := r.ParseForm(); err != nil {
-// 		logger.Warnf("[transcode] error parsing query form: %v", err)
-// 	}
-
-// 	audioHash := audio.GetHash(config.GetInstance().GetAudioFileNamingAlgorithm())
-
-// 	segment := chi.URLParam(r, "segment")
-// 	resolution := r.Form.Get("resolution")
-
-// 	options := ffmpeg.StreamOptions{
-// 		StreamType: streamType,
-// 		AudioFile:  f,
-// 		Resolution: resolution,
-// 		Hash:       audioHash,
-// 		Segment:    segment,
-// 	}
-
-// 	streamManager.ServeSegment(w, r, options)
-// }
-
-func (rs audioRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(audioKey).(*models.Audio)
-	filepath := video.GetFunscriptPath(s.Path)
-
-	utils.ServeStaticFile(w, r, filepath)
 }
 
 func (rs audioRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {

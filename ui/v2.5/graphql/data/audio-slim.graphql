@@ -18,7 +18,6 @@ fragment SlimAudioData on Audio {
 
   paths {
     stream
-    funscript
     caption
   }
 

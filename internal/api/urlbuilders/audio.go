@@ -1,5 +1,3 @@
-// TODO(audio): updaqte this file
-
 package urlbuilders
 
 import (
@@ -37,30 +35,6 @@ func (b AudioURLBuilder) GetStreamURL(apiKey string) *url.URL {
 		u.RawQuery = v.Encode()
 	}
 	return u
-}
-
-func (b AudioURLBuilder) GetStreamPreviewURL() string {
-	return b.BaseURL + "/audio/" + b.AudioID + "/preview"
-}
-
-func (b AudioURLBuilder) GetStreamPreviewImageURL() string {
-	return b.BaseURL + "/audio/" + b.AudioID + "/webp"
-}
-
-func (b AudioURLBuilder) GetSpriteVTTURL(checksum string) string {
-	return b.BaseURL + "/audio/" + checksum + "_thumbs.vtt"
-}
-
-func (b AudioURLBuilder) GetSpriteURL(checksum string) string {
-	return b.BaseURL + "/audio/" + checksum + "_sprite.jpg"
-}
-
-func (b AudioURLBuilder) GetScreenshotURL() string {
-	return b.BaseURL + "/audio/" + b.AudioID + "/screenshot?t=" + b.UpdatedAt
-}
-
-func (b AudioURLBuilder) GetFunscriptURL() string {
-	return b.BaseURL + "/audio/" + b.AudioID + "/funscript"
 }
 
 func (b AudioURLBuilder) GetCaptionURL() string {

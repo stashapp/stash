@@ -20,7 +20,7 @@ func TestAssociateExisting_UpdatePartialOnContentChange(t *testing.T) {
 	)
 
 	existingFile := &models.AudioFile{
-		BaseFile: &models.BaseFile{ID: models.FileID(testFileID), Path: "test.mp4"},
+		BaseFile: &models.BaseFile{ID: models.FileID(testFileID), Path: "test.mp3"},
 	}
 
 	makeAudio := func() *models.Audio {
@@ -84,10 +84,10 @@ func TestAssociateExisting_UpdatePartialOnNewFile(t *testing.T) {
 	)
 
 	existingFile := &models.AudioFile{
-		BaseFile: &models.BaseFile{ID: models.FileID(existFileID), Path: "existing.mp4"},
+		BaseFile: &models.BaseFile{ID: models.FileID(existFileID), Path: "existing.mp3"},
 	}
 	newFile := &models.AudioFile{
-		BaseFile: &models.BaseFile{ID: models.FileID(newFileID), Path: "new.mp4"},
+		BaseFile: &models.BaseFile{ID: models.FileID(newFileID), Path: "new.mp3"},
 	}
 
 	audio := &models.Audio{

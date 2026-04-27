@@ -21,6 +21,7 @@ func NewPaths(generatedPath string, blobsPath string) Paths {
 	p.Generated = newGeneratedPaths(generatedPath)
 
 	p.Scene = newScenePaths(p)
+	p.Audio = newAudioPaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
 	p.Blobs = blobsPath
 

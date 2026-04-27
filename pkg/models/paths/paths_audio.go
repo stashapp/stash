@@ -19,7 +19,7 @@ func newAudioPaths(p Paths) *audioPaths {
 }
 
 func (sp *audioPaths) GetTranscodePath(checksum string) string {
-	return filepath.Join(sp.Transcodes, checksum+".mp4")
+	return filepath.Join(sp.Transcodes, checksum+".mp3")
 }
 
 func (sp *audioPaths) GetStreamPath(audioPath string, checksum string) string {

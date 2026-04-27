@@ -242,15 +242,6 @@ func (s Audio) GetHash(hashAlgorithm HashAlgorithm) string {
 	return ""
 }
 
-// AudioFileType represents the file metadata for a audio.
-// type AudioFileType struct {
-// 	Size       *string  `graphql:"size" json:"size"`
-// 	Duration   *float64 `graphql:"duration" json:"duration"`
-// 	AudioCodec *string  `graphql:"audio_codec" json:"audio_codec"`
-// 	Samplerate *float64 `graphql:"sample_rate" json:"sample_rate"`
-// 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
-// }
-
 // TODO(audio): don't know if we need this, using VideoCaption for now due to `pkg/models/repository_file.go` and `FileReader` using
 // type AudioCaption struct {
 // 	LanguageCode string `json:"language_code"`

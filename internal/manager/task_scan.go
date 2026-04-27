@@ -1,6 +1,3 @@
-// TODO(audio): update this file to add Audio scanner, audioFileFilter, new file.FilteredHandler for audio.ScanHandler,
-// TODO(audio): [con't] Add audio to extensionConfig, useAsAudio(), newExtensionConfig
-
 package manager
 
 import (
@@ -17,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -708,28 +706,16 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				Paths:       instance.Paths,
 			},
 		},
-		// &file.FilteredHandler{
-		// 	Filter: file.FilterFunc(audioFileFilter),
-		// 	Handler: &audio.ScanHandler{
-		// 		CreatorUpdater:     r.Audio,
-		// 		GalleryFinder:      r.Gallery,
-		// 		SceneFinderUpdater: r.Scene,
-		// 		// ScanGenerator: &audioGenerators{
-		// 		// 	input:              options,
-		// 		// 	taskQueue:          taskQueue,
-		// 		// 	progress:           progress,
-		// 		// 	paths:              mgr.Paths,
-		// 		// 	sequentialScanning: c.GetSequentialScanning(),
-		// 		// },
-		// 		// ScanConfig: &scanConfig{
-		// 		// 	isGenerateThumbnails:       options.ScanGenerateThumbnails,
-		// 		// 	isGenerateClipPreviews:     options.ScanGenerateClipPreviews,
-		// 		// 	createGalleriesFromFolders: c.GetCreateGalleriesFromFolders(),
-		// 		// },
-		// 		PluginCache: pluginCache,
-		// 		Paths:       instance.Paths,
-		// 	},
-		// },
+		&file.FilteredHandler{
+			Filter: file.FilterFunc(audioFileFilter),
+			Handler: &audio.ScanHandler{
+				CreatorUpdater:      r.Audio,
+				CaptionUpdater:      r.File,
+				PluginCache:         pluginCache,
+				FileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
+				Paths:               mgr.Paths,
+			},
+		},
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(galleryFileFilter),
 			Handler: &gallery.ScanHandler{

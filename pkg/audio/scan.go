@@ -1,13 +1,9 @@
-// TODO(audio): update this file
-
 package audio
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/file/audio"
 	"github.com/stashapp/stash/pkg/logger"
@@ -15,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 var (
@@ -46,10 +41,10 @@ type ScanGenerator interface {
 }
 
 type ScanHandler struct {
-	CreatorUpdater       ScanCreatorUpdater
-	GalleryFinderUpdater ScanGalleryFinderUpdater
+	CreatorUpdater ScanCreatorUpdater
 
-	ScanGenerator  ScanGenerator
+	// TODO(audio): this PR has no generation
+	// ScanGenerator  ScanGenerator
 	CaptionUpdater audio.CaptionUpdater
 	PluginCache    *plugin.Cache
 
@@ -61,9 +56,9 @@ func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
 		return errors.New("CreatorUpdater is required")
 	}
-	if h.ScanGenerator == nil {
-		return errors.New("ScanGenerator is required")
-	}
+	// if h.ScanGenerator == nil {
+	// 	return errors.New("ScanGenerator is required")
+	// }
 	if h.CaptionUpdater == nil {
 		return errors.New("CaptionUpdater is required")
 	}
@@ -137,19 +132,15 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		}
 	}
 
-	if err := h.associateGallery(ctx, existing, f); err != nil {
-		return err
-	}
-
 	// do this after the commit so that cover generation doesn't hold up the transaction
-	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
-		for _, s := range existing {
-			if err := h.ScanGenerator.Generate(ctx, s, AudioFile); err != nil {
-				// just log if cover generation fails. We can try again on rescan
-				logger.Errorf("Error generating content for %s: %v", AudioFile.Path, err)
-			}
-		}
-	})
+	// txn.AddPostCommitHook(ctx, func(ctx context.Context) {
+	// 	for _, s := range existing {
+	// 		if err := h.ScanGenerator.Generate(ctx, s, AudioFile); err != nil {
+	// 			// just log if cover generation fails. We can try again on rescan
+	// 			logger.Errorf("Error generating content for %s: %v", AudioFile.Path, err)
+	// 		}
+	// 	}
+	// })
 
 	return nil
 }
@@ -184,32 +175,6 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			}
 
 			h.PluginCache.RegisterPostHooks(ctx, s.ID, hook.AudioUpdatePost, nil, nil)
-		}
-	}
-
-	return nil
-}
-
-func (h *ScanHandler) associateGallery(ctx context.Context, existing []*models.Audio, f models.File) error {
-	audioIDs := make([]int, len(existing))
-	for i, s := range existing {
-		audioIDs[i] = s.ID
-	}
-
-	path := f.Base().Path
-	zipPath := strings.TrimSuffix(path, filepath.Ext(path)) + ".zip"
-
-	// find galleries with a file that matches
-	galleries, err := h.GalleryFinderUpdater.FindByPath(ctx, zipPath)
-	if err != nil {
-		return err
-	}
-
-	for _, gallery := range galleries {
-		// found related Audio
-		logger.Infof("associate: Audio %s is related to gallery: %d", path, gallery.ID)
-		if err := h.GalleryFinderUpdater.AddAudioIDs(ctx, gallery.ID, audioIDs); err != nil {
-			return err
 		}
 	}
 

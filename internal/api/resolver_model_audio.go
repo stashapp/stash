@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 package api
 
 import (
@@ -16,7 +14,7 @@ import (
 func convertAudioFile(f models.File) (*models.AudioFile, error) {
 	vf, ok := f.(*models.AudioFile)
 	if !ok {
-		return nil, fmt.Errorf("file %T is not a video file", f)
+		return nil, fmt.Errorf("file %T is not a audio file", f)
 	}
 	return vf, nil
 }
@@ -109,25 +107,12 @@ func (r *audioResolver) Paths(ctx context.Context, obj *models.Audio) (*AudioPat
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewAudioURLBuilder(baseURL, obj)
-	screenshotPath := builder.GetScreenshotURL()
-	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
-	webpPath := builder.GetStreamPreviewImageURL()
-	objHash := obj.GetHash(config.GetAudioFileNamingAlgorithm())
-	vttPath := builder.GetSpriteVTTURL(objHash)
-	spritePath := builder.GetSpriteURL(objHash)
-	funscriptPath := builder.GetFunscriptURL()
 	captionBasePath := builder.GetCaptionURL()
 
 	return &AudioPathsType{
-		Screenshot: &screenshotPath,
-		Preview:    &previewPath,
-		Stream:     &streamPath,
-		Webp:       &webpPath,
-		Vtt:        &vttPath,
-		Sprite:     &spritePath,
-		Funscript:  &funscriptPath,
-		Caption:    &captionBasePath,
+		Stream:  &streamPath,
+		Caption: &captionBasePath,
 	}, nil
 }
 
