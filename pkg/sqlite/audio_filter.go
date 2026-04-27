@@ -82,10 +82,10 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		qb.oCountCriterionHandler(audioFilter.OCounter),
 		boolCriterionHandler(audioFilter.Organized, "audios.organized", nil),
 
-		floatIntCriterionHandler(audioFilter.Duration, "audio_files.duration", qb.addVideoFilesTable),
-		floatIntCriterionHandler(audioFilter.SampleRate, "ROUND(audio_files.frame_rate)", qb.addVideoFilesTable),
-		intCriterionHandler(audioFilter.Bitrate, "audio_files.bit_rate", qb.addVideoFilesTable),
-		qb.codecCriterionHandler(audioFilter.AudioCodec, "audio_files.audio_codec", qb.addVideoFilesTable),
+		floatIntCriterionHandler(audioFilter.Duration, "audio_files.duration", qb.addAudioFilesTable),
+		floatIntCriterionHandler(audioFilter.SampleRate, "ROUND(audio_files.frame_rate)", qb.addAudioFilesTable),
+		intCriterionHandler(audioFilter.Bitrate, "audio_files.bit_rate", qb.addAudioFilesTable),
+		qb.codecCriterionHandler(audioFilter.AudioCodec, "audio_files.audio_codec", qb.addAudioFilesTable),
 
 		qb.isMissingCriterionHandler(audioFilter.IsMissing),
 		qb.urlsCriterionHandler(audioFilter.URL),
@@ -187,11 +187,6 @@ func (qb *audioFilterHandler) addFoldersTable(f *filterBuilder) {
 	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
 }
 
-func (qb *audioFilterHandler) addVideoFilesTable(f *filterBuilder) {
-	qb.addAudioFilesTable(f)
-	f.addLeftJoin(videoFileTable, "", "audio_files.file_id = audios_files.file_id")
-}
-
 func (qb *audioFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: audioTable,
@@ -220,35 +215,6 @@ func (qb *audioFilterHandler) fileCountCriterionHandler(fileCount *models.IntCri
 	}
 
 	return h.handler(fileCount)
-}
-
-func (qb *audioFilterHandler) duplicatedCriterionHandler(duplicatedFilter *models.DuplicationCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if duplicatedFilter == nil {
-			return
-		}
-
-		// Handle explicit fields
-		if duplicatedFilter.Title != nil {
-			qb.applyTitleDuplication(f, *duplicatedFilter.Title)
-		}
-
-		if duplicatedFilter.URL != nil {
-			qb.applyURLDuplication(f, *duplicatedFilter.URL)
-		}
-	}
-}
-
-func (qb *audioFilterHandler) applyTitleDuplication(f *filterBuilder, duplicated bool) {
-	v := getCountOperator(duplicated)
-	// Find titles that appear on more than one audio (excluding empty titles)
-	f.addInnerJoin("(SELECT id FROM audios WHERE title != '' AND title IS NOT NULL AND title IN (SELECT title FROM audios WHERE title != '' AND title IS NOT NULL GROUP BY title HAVING COUNT(*) "+v+" 1))", "sctitle", "audios.id = sctitle.id")
-}
-
-func (qb *audioFilterHandler) applyURLDuplication(f *filterBuilder, duplicated bool) {
-	v := getCountOperator(duplicated)
-	// Find URLs that appear on more than one audio
-	f.addInnerJoin("(SELECT audio_id FROM audio_urls INNER JOIN (SELECT url FROM audio_urls GROUP BY url HAVING COUNT(DISTINCT audio_id) "+v+" 1) dupes ON audio_urls.url = dupes.url)", "scurl", "audios.id = scurl.audio_id")
 }
 
 func (qb *audioFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
@@ -308,17 +274,6 @@ func (qb *audioFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 	}
 
 	return h.handler(url)
-}
-
-func (qb *audioFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
-	return multiCriterionHandlerBuilder{
-		primaryTable: audioTable,
-		foreignTable: foreignTable,
-		joinTable:    joinTable,
-		primaryFK:    audioIDColumn,
-		foreignFK:    foreignFK,
-		addJoinsFunc: addJoinsFunc,
-	}
 }
 
 func (qb *audioFilterHandler) captionCriterionHandler(captions *models.StringCriterionInput) criterionHandlerFunc {
