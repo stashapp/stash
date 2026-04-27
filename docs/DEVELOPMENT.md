@@ -3,6 +3,7 @@
 ## Pre-requisites
 
 * [Go](https://golang.org/dl/)
+  * Version 1.24.* (v1.26.x is unable to run the linter)
 * [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
   * To install, follow the [local installation instructions](https://golangci-lint.run/welcome/install/#local-installation)
   * Install v1, NOT v2

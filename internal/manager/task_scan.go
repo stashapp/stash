@@ -636,13 +636,14 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 		return false
 	}
 
-	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
+	switch {
+	case isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)):
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
-	} else if isAudioFile && (s.ExcludeAudio || matchFileRegex(path, f.audioExcludeRegex)) {
+	case isAudioFile && (s.ExcludeAudio || matchFileRegex(path, f.audioExcludeRegex)):
 		logger.Debugf("Skipping %s as it matches audio exclusion patterns", path)
 		return false
-	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
+	case (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)):
 		logger.Debugf("Skipping %s as it matches image exclusion patterns", path)
 		return false
 	}

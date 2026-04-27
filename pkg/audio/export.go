@@ -5,7 +5,6 @@ package audio
 import (
 	"context"
 	"fmt"
-	"math"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
@@ -168,18 +167,4 @@ func GetDependentGroupIDs(ctx context.Context, audio *models.Audio) ([]int, erro
 	}
 
 	return ret, nil
-}
-
-func getPrecision(num float64) int {
-	if num == 0 {
-		return 0
-	}
-
-	e := 1.0
-	p := 0
-	for (math.Round(num*e) / e) != num {
-		e *= 10
-		p++
-	}
-	return p
 }

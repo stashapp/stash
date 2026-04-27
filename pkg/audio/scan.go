@@ -119,7 +119,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 		h.PluginCache.RegisterPostHooks(ctx, newAudio.ID, hook.AudioCreatePost, nil, nil)
 
-		existing = []*models.Audio{&newAudio}
+		// existing = []*models.Audio{&newAudio}
 	}
 
 	if oldFile != nil {

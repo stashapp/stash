@@ -284,8 +284,6 @@ var (
 		fkColumn: audiosPerformersJoinTable.Col(performerIDColumn),
 	}
 
-	audiosGalleriesTableMgr = galleriesScenesTableMgr.invert()
-
 	audiosGroupsTableMgr = &audiosGroupsTable{
 		table: table{
 			table:    audiosGroupsJoinTable,

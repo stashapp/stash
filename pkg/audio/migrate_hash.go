@@ -37,18 +37,3 @@ func migrateAudioFiles(oldName, newName string) {
 		}
 	}
 }
-
-func migrateAudioFolder(oldName, newName string) {
-	oldExists, err := fsutil.DirExists(oldName)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
-		return
-	}
-
-	if oldExists {
-		logger.Infof("renaming %s to %s", oldName, newName)
-		if err := os.Rename(oldName, newName); err != nil {
-			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
-		}
-	}
-}
