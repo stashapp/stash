@@ -125,7 +125,6 @@ type ImageFile implements BaseFile {
 union VisualFile = VideoFile | ImageFile
 
 type AudioFile implements BaseFile {
-  # TODO(audio): edit this
   id: ID!
   path: String!
   basename: String!

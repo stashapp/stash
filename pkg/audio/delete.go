@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
-	file_audio "github.com/stashapp/stash/pkg/file/audio"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -95,17 +94,6 @@ func (s *Service) deleteFiles(ctx context.Context, audio *models.Audio, fileDele
 		logger.Info("Deleting audio file: ", f.Path)
 		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 			return err
-		}
-
-		// don't delete files in zip archives
-		if f.ZipFileID == nil {
-			funscriptPath := file_audio.GetFunscriptPath(f.Path)
-			funscriptExists, _ := fsutil.FileExists(funscriptPath)
-			if funscriptExists {
-				if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
-					return err
-				}
-			}
 		}
 	}
 

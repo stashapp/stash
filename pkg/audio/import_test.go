@@ -92,7 +92,6 @@ func TestImporterPreImport(t *testing.T) {
 				PlayDuration: playDuration,
 
 				Files:        models.NewRelatedAudioFiles([]*models.AudioFile{}),
-				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),

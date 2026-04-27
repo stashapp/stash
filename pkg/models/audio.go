@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 package models
 
 import "context"

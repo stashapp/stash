@@ -712,7 +712,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				CreatorUpdater:      r.Audio,
 				CaptionUpdater:      r.File,
 				PluginCache:         pluginCache,
-				FileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
+				FileNamingAlgorithm: c.GetAudioFileNamingAlgorithm(),
 				Paths:               mgr.Paths,
 			},
 		},

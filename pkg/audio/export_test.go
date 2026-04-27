@@ -32,11 +32,7 @@ const (
 	noGroupsID     = 13
 	errFindGroupID = 15
 
-	noMarkersID         = 16
-	errMarkersID        = 17
-	errFindPrimaryTagID = 18
-	errFindByMarkerID   = 19
-	errCustomFieldsID   = 20
+	errCustomFieldsID = 20
 )
 
 var (

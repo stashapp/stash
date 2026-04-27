@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 // Package audio provides the application logic for audio functionality.
 // Most functionality is provided by [Service].
 package audio

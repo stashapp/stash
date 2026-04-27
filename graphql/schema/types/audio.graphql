@@ -47,8 +47,6 @@ type Audio {
 
   files: [AudioFile!]!
   paths: AudioPathsType! # Resolver
-  # TODO(future|audio_markers): add in audio markers
-  #  audio_markers: [AudioMarker!]!
   studio: Studio
   groups: [AudioGroup!]!
   tags: [Tag!]!

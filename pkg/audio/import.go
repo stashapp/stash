@@ -79,7 +79,6 @@ func (i *Importer) audioJSONToAudio(audioJSON jsonschema.Audio) models.Audio {
 		Details:      audioJSON.Details,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
-		GalleryIDs:   models.NewRelatedIDs([]int{}),
 		Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
 	}
 

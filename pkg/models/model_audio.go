@@ -16,7 +16,6 @@ type Audio struct {
 	Title   string `json:"title"`
 	Code    string `json:"code"`
 	Details string `json:"details"`
-	Artists string `json:"artists"`
 	Date    *Date  `json:"date"`
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
@@ -40,7 +39,6 @@ type Audio struct {
 	PlayDuration float64 `json:"play_duration"`
 
 	URLs         RelatedStrings     `json:"urls"`
-	GalleryIDs   RelatedIDs         `json:"gallery_ids"`
 	TagIDs       RelatedIDs         `json:"tag_ids"`
 	PerformerIDs RelatedIDs         `json:"performer_ids"`
 	Groups       RelatedGroupsAudio `json:"groups"`
@@ -131,12 +129,6 @@ func (s *Audio) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 			}
 		}
 		return vf, nil
-	})
-}
-
-func (s *Audio) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
-	return s.GalleryIDs.load(func() ([]int, error) {
-		return l.GetGalleryIDs(ctx, s.ID)
 	})
 }
 

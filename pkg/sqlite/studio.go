@@ -653,6 +653,8 @@ var selectStudioLatestSceneSQL = utils.StrFormat(
 	},
 )
 
+// TODO(audio): duplicate above for Audio
+
 func (qb *StudioStore) sortByLatestScene(direction string) string {
 	// need to get the latest date from scenes
 	return " ORDER BY (" + selectStudioLatestSceneSQL + ") " + direction

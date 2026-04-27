@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
@@ -169,18 +168,6 @@ func GetDependentGroupIDs(ctx context.Context, audio *models.Audio) ([]int, erro
 	}
 
 	return ret, nil
-}
-
-func getDecimalString(num float64) string {
-	if num == 0 {
-		return ""
-	}
-
-	precision := getPrecision(num)
-	if precision == 0 {
-		precision = 1
-	}
-	return fmt.Sprintf("%."+strconv.Itoa(precision)+"f", num)
 }
 
 func getPrecision(num float64) int {
