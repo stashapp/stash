@@ -395,7 +395,7 @@ func (t changesetTranslator) relatedGroups(value []models.SceneGroupInput) (mode
 	if err != nil {
 		return models.RelatedGroups{}, err
 	}
-	
+
 	return models.NewRelatedGroups(groupsScenes), nil
 }
 
@@ -515,7 +515,6 @@ func (t changesetTranslator) updateGroupIDsBulkAudio(value *BulkUpdateIds, field
 		Mode:   value.Mode,
 	}, nil
 }
-
 
 func groupsDescriptionsFromGroupInput(input []*GroupDescriptionInput) ([]models.GroupIDDescription, error) {
 	ret := make([]models.GroupIDDescription, len(input))
