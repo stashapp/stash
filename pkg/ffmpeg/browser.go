@@ -58,6 +58,7 @@ func isValidCodec(codecName string, supportedCodecs []string) bool {
 	return false
 }
 
+// TODO(audio): do we need to check ProbeAudioCodec for audio containers?
 // func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
 // 	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
 // 	// report it as valid so that the file can at least be streamed directly if the video codec is supported

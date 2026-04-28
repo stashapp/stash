@@ -183,6 +183,9 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 					if err := tagger.PerformerScenes(ctx, performer, paths, r.Scene); err != nil {
 						return fmt.Errorf("processing scenes: %w", err)
 					}
+					if err := tagger.PerformerAudios(ctx, performer, paths, r.Audio); err != nil {
+						return fmt.Errorf("processing audios: %w", err)
+					}
 					if err := tagger.PerformerImages(ctx, performer, paths, r.Image); err != nil {
 						return fmt.Errorf("processing images: %w", err)
 					}
@@ -281,6 +284,9 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 					if err := tagger.StudioScenes(ctx, studio, paths, aliases, r.Scene); err != nil {
 						return fmt.Errorf("processing scenes: %w", err)
 					}
+					if err := tagger.StudioAudios(ctx, studio, paths, aliases, r.Audio); err != nil {
+						return fmt.Errorf("processing audios: %w", err)
+					}
 					if err := tagger.StudioImages(ctx, studio, paths, aliases, r.Image); err != nil {
 						return fmt.Errorf("processing images: %w", err)
 					}
@@ -377,6 +383,9 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 
 					if err := tagger.TagScenes(ctx, tag, paths, aliases, r.Scene); err != nil {
 						return fmt.Errorf("processing scenes: %w", err)
+					}
+					if err := tagger.TagAudios(ctx, tag, paths, aliases, r.Audio); err != nil {
+						return fmt.Errorf("processing audios: %w", err)
 					}
 					if err := tagger.TagImages(ctx, tag, paths, aliases, r.Image); err != nil {
 						return fmt.Errorf("processing images: %w", err)

@@ -181,6 +181,16 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 
 	return ret, nil
 }
+func (r *performerResolver) AudioCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Audio.CountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
 
 func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
@@ -252,6 +262,17 @@ func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer)
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.FindByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *performerResolver) Audios(ctx context.Context, obj *models.Performer) (ret []*models.Audio, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Audio.FindByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

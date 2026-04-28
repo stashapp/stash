@@ -815,7 +815,6 @@ var tagSortOptions = sortOptions{
 	"galleries_count",
 	"groups_count",
 	"id",
-	"audios_count",
 	"images_count",
 	"movies_count",
 	"studios_count",
@@ -826,6 +825,9 @@ var tagSortOptions = sortOptions{
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",
+	"audios_count",
+	"audios_duration",
+	"audios_size",
 	"updated_at",
 }
 
@@ -849,6 +851,28 @@ func (qb *TagStore) sortByScenesSize(direction string) string {
 		LEFT JOIN %s ON %s.id = %s.file_id
 		WHERE %s.%s = %s.id
 	) %s`, fileTable, scenesTagsTable, sceneTable, sceneTable, scenesTagsTable, sceneIDColumn, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, fileTable, fileTable, scenesFilesTable, scenesTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
+}
+
+func (qb *TagStore) sortByAudiosDuration(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(audio_files.duration), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.id = %s.%s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN audio_files ON audio_files.file_id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, audiosTagsTable, audioTable, audioTable, audiosTagsTable, audioIDColumn, audiosFilesTable, audiosFilesTable, audioIDColumn, audioTable, audiosFilesTable, audiosTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
+}
+
+func (qb *TagStore) sortByAudiosSize(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(%s.size), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.id = %s.%s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN %s ON %s.id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, fileTable, audiosTagsTable, audioTable, audioTable, audiosTagsTable, audioIDColumn, audiosFilesTable, audiosFilesTable, audioIDColumn, audioTable, fileTable, fileTable, audiosFilesTable, audiosTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
 }
 
 func (qb *TagStore) getDefaultTagSort() string {
@@ -887,6 +911,10 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 	case "audios_count":
 		sortQuery += getCountSort(tagTable, audiosTagsTable, tagIDColumn, direction)
+	case "audios_duration":
+		sortQuery += qb.sortByAudiosDuration(direction)
+	case "audios_size":
+		sortQuery += qb.sortByAudiosSize(direction)
 	case "galleries_count":
 		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 	case "performers_count":

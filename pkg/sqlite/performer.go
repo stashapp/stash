@@ -184,6 +184,7 @@ type performerRepositoryType struct {
 	stashIDs stashIDRepository
 
 	scenes    joinRepository
+	audios    joinRepository
 	images    joinRepository
 	galleries joinRepository
 }
@@ -216,6 +217,14 @@ var (
 			},
 			fkColumn:     sceneIDColumn,
 			foreignTable: sceneTable,
+		},
+		audios: joinRepository{
+			repository: repository{
+				tableName: performersAudiosTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     audioIDColumn,
+			foreignTable: audioTable,
 		},
 		images: joinRepository{
 			repository: repository{
@@ -744,8 +753,6 @@ var selectPerformerLatestSceneSQL = utils.StrFormat(
 	},
 )
 
-// TODO(audio): duplicate above for Audio
-
 func (qb *PerformerStore) sortByLatestScene(direction string) string {
 	// need to get the latest date from scenes
 	return " ORDER BY (" + selectPerformerLatestSceneSQL + ") " + direction
@@ -819,6 +826,73 @@ func (qb *PerformerStore) sortByScenesSize(direction string) string {
 	return " ORDER BY (" + selectPerformerScenesSizeSQL + ") " + direction
 }
 
+// Audio
+// used for sorting on performer latest audio
+var selectPerformerLatestAudioSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {performers_audios} s "+
+		"LEFT JOIN {audios} ON {audios}.id = s.{audio_id} "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_audios": performersAudiosTable,
+		"audios":            audioTable,
+		"audio_id":          audioIDColumn,
+		"date":              audioDateColumn,
+	},
+)
+
+func (qb *PerformerStore) sortByLatestAudio(direction string) string {
+	// need to get the latest date from audios
+	return " ORDER BY (" + selectPerformerLatestAudioSQL + ") " + direction
+}
+
+// used for sorting by total audio duration
+var selectPerformerAudiosDurationSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM(video_files.duration), 0) FROM {performers_audios} s "+
+		"LEFT JOIN {audios} ON {audios}.id = s.{audio_id} "+
+		"LEFT JOIN {audios_files} ON {audios_files}.{audio_id} = {audios}.id "+
+		"LEFT JOIN video_files ON video_files.file_id = {audios_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_audios": performersAudiosTable,
+		"audios":            audioTable,
+		"audio_id":          audioIDColumn,
+		"audios_files":      audiosFilesTable,
+	},
+)
+
+func (qb *PerformerStore) sortByAudiosDuration(direction string) string {
+	// need to sum duration from all audios for this performer
+	return " ORDER BY (" + selectPerformerAudiosDurationSQL + ") " + direction
+}
+
+// used for sorting by total audio file size
+var selectPerformerAudiosSizeSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM({files}.size), 0) FROM {performers_audios} s "+
+		"LEFT JOIN {audios} ON {audios}.id = s.{audio_id} "+
+		"LEFT JOIN {audios_files} ON {audios_files}.{audio_id} = {audios}.id "+
+		"LEFT JOIN {files} ON {files}.id = {audios_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_audios": performersAudiosTable,
+		"audios":            audioTable,
+		"audio_id":          audioIDColumn,
+		"audios_files":      audiosFilesTable,
+		"files":             fileTable,
+	},
+)
+
+func (qb *PerformerStore) sortByAudiosSize(direction string) string {
+	return " ORDER BY (" + selectPerformerAudiosSizeSQL + ") " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
 	"career_start",
@@ -831,6 +905,7 @@ var performerSortOptions = sortOptions{
 	"last_o_at",
 	"last_played_at",
 	"latest_scene",
+	"latest_audio",
 	"measurements",
 	"name",
 	"o_counter",
@@ -841,6 +916,9 @@ var performerSortOptions = sortOptions{
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",
+	"audios_count",
+	"audios_duration",
+	"audios_size",
 	"tag_count",
 	"updated_at",
 	"weight",
@@ -872,6 +950,12 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByScenesDuration(direction)
 	case "scenes_size":
 		sortQuery += qb.sortByScenesSize(direction)
+	case "audios_count":
+		sortQuery += getCountSort(performerTable, performersAudiosTable, performerIDColumn, direction)
+	case "audios_duration":
+		sortQuery += qb.sortByAudiosDuration(direction)
+	case "audios_size":
+		sortQuery += qb.sortByAudiosSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
@@ -886,6 +970,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByLastOAt(direction)
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
+	case "latest_audio":
+		sortQuery += qb.sortByLatestAudio(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}

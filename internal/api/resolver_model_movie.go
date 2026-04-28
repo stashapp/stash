@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
@@ -182,6 +183,17 @@ func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group, depth
 	return ret, nil
 }
 
+func (r *groupResolver) AudioCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = audio.CountByGroupID(ctx, r.repository.Audio, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *groupResolver) PerformerCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = performer.CountByGroupID(ctx, r.repository.Performer, obj.ID, depth)
@@ -197,6 +209,18 @@ func (r *groupResolver) Scenes(ctx context.Context, obj *models.Group) (ret []*m
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		ret, err = r.repository.Scene.FindByGroupID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *groupResolver) Audios(ctx context.Context, obj *models.Group) (ret []*models.Audio, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		ret, err = r.repository.Audio.FindByGroupID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

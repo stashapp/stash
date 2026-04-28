@@ -1,4 +1,3 @@
-// TODO(audio): update this file
 package sqlite
 
 import (
@@ -340,6 +339,7 @@ func (r fileQueryRows) resolve() []models.File {
 type fileRepositoryType struct {
 	repository
 	scenes    joinRepository
+	audios    joinRepository
 	images    joinRepository
 	galleries joinRepository
 }
@@ -353,6 +353,13 @@ var (
 		scenes: joinRepository{
 			repository: repository{
 				tableName: scenesFilesTable,
+				idColumn:  fileIDColumn,
+			},
+			fkColumn: sceneIDColumn,
+		},
+		audios: joinRepository{
+			repository: repository{
+				tableName: audiosFilesTable,
 				idColumn:  fileIDColumn,
 			},
 			fkColumn: sceneIDColumn,

@@ -10,6 +10,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -334,6 +335,65 @@ func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReade
 		}
 
 		lastID = scenes[len(scenes)-1].ID
+	}
+
+	return nil
+}
+
+func PathToAudiosFn(ctx context.Context, name string, paths []string, audioReader models.AudioQueryer, fn func(ctx context.Context, audio *models.Audio) error) error {
+	regex := getPathQueryRegex(name)
+	organized := false
+	filter := models.AudioFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    "(?i)" + regex,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+		Organized: &organized,
+	}
+
+	filter.And = audio.PathsFilter(paths)
+
+	// do in batches
+	pp := 1000
+	sort := "id"
+	sortDir := models.SortDirectionEnumAsc
+	lastID := 0
+
+	for {
+		if lastID != 0 {
+			filter.ID = &models.IntCriterionInput{
+				Value:    lastID,
+				Modifier: models.CriterionModifierGreaterThan,
+			}
+		}
+
+		audios, err := audio.Query(ctx, audioReader, &filter, &models.FindFilterType{
+			PerPage:   &pp,
+			Sort:      &sort,
+			Direction: &sortDir,
+		})
+
+		if err != nil {
+			return fmt.Errorf("error querying audios with regex '%s': %s", regex, err.Error())
+		}
+
+		// paths may have unicode characters
+		const useUnicode = true
+
+		r := nameToRegexp(name, useUnicode)
+		for _, p := range audios {
+			if regexpMatchesPath(r, p.Path) != -1 {
+				if err := fn(ctx, p); err != nil {
+					return fmt.Errorf("processing audio %s: %w", p.GetTitle(), err)
+				}
+			}
+		}
+
+		if len(audios) < pp {
+			break
+		}
+
+		lastID = audios[len(audios)-1].ID
 	}
 
 	return nil

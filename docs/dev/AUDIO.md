@@ -36,6 +36,12 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 - Should Legacy/Deprecate features be copied over?
     - Since Audio's is NEW, it doesn't have to support deprecated features/naming/etc
     - I suggest removing them if easy to do, and for the more complicated ones to defer to a separate ticket
+- What should be done for `sortByOCounter`/`sortByPlayCount`?
+    - These assume SCENES
+    - I see 3 options
+        - ignore
+        - add `audios` into the calculation
+        - split into `sortBySceneOCounter` and `sortByAudioOCounter`
 
 ## Future Tickets
 
@@ -47,10 +53,11 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 ## General TODO
 
 - [x] Setup Database
-- [ ] Scanner to scan Audio Files and create Audios
-    - [ ] FFProbe for Audio Files
-- [ ] Graphql to return Audios (queries)
-- [ ] Graphql to update Audios (mutations)
+- [x] Scanner to scan Audio Files and create Audios
+    - [x] FFProbe for Audio Files
+- [x] Graphql to return Audios (queries)
+- [x] Graphql to update Audios (mutations)
+- [ ] Update test files
 
 
 ## Notes
@@ -115,7 +122,13 @@ query {
 
 ### Check Mutations
 
-TODO
+```graphql
+mutation audio_mut {
+  audioAddO(id:1){count history}
+  audioUpdate(input:{id:1 title:"testing 1"}){id title o_history}
+  audiosUpdate(input:[{id:1 details:"details 1"}]){id title details}
+}
+```
 
 ### Check Streams
 

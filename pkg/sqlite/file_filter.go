@@ -64,6 +64,9 @@ func (qb *fileFilterHandler) criterionHandler() criterionHandler {
 		&videoFileFilterHandler{
 			filter: fileFilter.VideoFileFilter,
 		},
+		&audioFileFilterHandler{
+			filter: fileFilter.AudioFileFilter,
+		},
 		&imageFileFilterHandler{
 			filter: fileFilter.ImageFileFilter,
 		},
@@ -92,6 +95,14 @@ func (qb *fileFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &sceneFilterHandler{fileFilter.ScenesFilter},
 			joinFn: func(f *filterBuilder) {
 				fileRepository.scenes.innerJoin(f, "", "files.id")
+			},
+		},
+		&relatedFilterHandler{
+			relatedIDCol:   "audios_files.audio_id",
+			relatedRepo:    audioRepository.repository,
+			relatedHandler: &audioFilterHandler{fileFilter.AudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				fileRepository.audios.innerJoin(f, "", "files.id")
 			},
 		},
 		&relatedFilterHandler{
@@ -330,6 +341,73 @@ func (qb *videoFileFilterHandler) captionCriterionHandler(captions *models.Strin
 				SELECT files.id from files 
 				INNER JOIN video_captions on video_captions.file_id = files.id 
 				WHERE video_captions.language_code LIKE ?
+			)`
+			f.addWhere(excludeClause, criterion.Value)
+
+			// TODO - should we also exclude null values?
+		},
+	}
+
+	return h.handler(captions)
+}
+
+// audio
+
+type audioFileFilterHandler struct {
+	filter *models.AudioFileFilterInput
+}
+
+func (qb *audioFileFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	audioFileFilter := qb.filter
+	if audioFileFilter == nil {
+		return
+	}
+	f.handleCriterion(ctx, qb.criterionHandler())
+}
+
+func (qb *audioFileFilterHandler) criterionHandler() criterionHandler {
+	audioFileFilter := qb.filter
+	return compoundHandler{
+		joinedStringCriterionHandler(audioFileFilter.Format, "audio_files.format", qb.addAudioFilesTable),
+		floatIntCriterionHandler(audioFileFilter.Duration, "audio_files.duration", qb.addAudioFilesTable),
+		intCriterionHandler(audioFileFilter.SampleRate, "audio_files.sample_rate", qb.addAudioFilesTable),
+		intCriterionHandler(audioFileFilter.Bitrate, "audio_files.bit_rate", qb.addAudioFilesTable),
+		qb.codecCriterionHandler(audioFileFilter.AudioCodec, "audio_files.audio_codec", qb.addAudioFilesTable),
+
+		qb.captionCriterionHandler(audioFileFilter.Captions),
+	}
+}
+
+func (qb *audioFileFilterHandler) addAudioFilesTable(f *filterBuilder) {
+	f.addLeftJoin(audioFileTable, "", "audio_files.file_id = files.id")
+}
+
+func (qb *audioFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if codec != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
+			stringCriterionHandler(codec, codecColumn)(ctx, f)
+		}
+	}
+}
+
+func (qb *audioFileFilterHandler) captionCriterionHandler(captions *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		primaryFK:    sceneIDColumn,
+		joinTable:    videoCaptionsTable,
+		stringColumn: captionCodeColumn,
+		addJoinTable: func(f *filterBuilder) {
+			f.addLeftJoin(videoCaptionsTable, "", "audio_captions.file_id = files.id")
+		},
+		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
+			excludeClause := `files.id NOT IN (
+				SELECT files.id from files 
+				INNER JOIN audio_captions on audio_captions.file_id = files.id 
+				WHERE audio_captions.language_code LIKE ?
 			)`
 			f.addWhere(excludeClause, criterion.Value)
 

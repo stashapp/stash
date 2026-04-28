@@ -1,4 +1,4 @@
-// TODO(audio): update this file
+// TODO(audio): Can this file be deleted if we utilize VideoCaptions?
 package audio
 
 import (
@@ -64,7 +64,7 @@ func IsLangInCaptions(lang string, ext string, captions []*models.VideoCaption) 
 func getCaptionPrefix(captionPath string) string {
 	basename := strings.TrimSuffix(captionPath, filepath.Ext(captionPath)) // caption filename without the extension
 
-	// a caption file can be something like scene_filename.srt or scene_filename.en.srt
+	// a caption file can be something like audio_filename.srt or audio_filename.en.srt
 	// if a language code is present and valid remove it from the basename
 	languageExt := filepath.Ext(basename)
 	if len(languageExt) > 2 && IsValidLanguage(languageExt[1:]) {
@@ -98,7 +98,7 @@ func MatchesCaption(audioPath, captionPath string) bool {
 	return captionPrefix == audioPrefix
 }
 
-// associates captions to scene/s with the same basename
+// associates captions to audio/s with the same basename
 // returns true if the caption file was matched to a audio file and processed, false otherwise
 func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb models.FileFinder, w CaptionUpdater) bool {
 	captionLang := getCaptionsLangFromPath(captionPath)
@@ -110,7 +110,7 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 		files, er := fqb.FindAllByPath(ctx, captionPrefix+"*", true)
 
 		if er != nil {
-			return fmt.Errorf("searching for scene %s: %w", captionPrefix, er)
+			return fmt.Errorf("searching for audio %s: %w", captionPrefix, er)
 		}
 
 		for _, f := range files {

@@ -83,7 +83,7 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		boolCriterionHandler(audioFilter.Organized, "audios.organized", nil),
 
 		floatIntCriterionHandler(audioFilter.Duration, "audio_files.duration", qb.addAudioFilesTable),
-		floatIntCriterionHandler(audioFilter.SampleRate, "ROUND(audio_files.frame_rate)", qb.addAudioFilesTable),
+		intCriterionHandler(audioFilter.SampleRate, "audio_files.sample_rate", qb.addAudioFilesTable),
 		intCriterionHandler(audioFilter.Bitrate, "audio_files.bit_rate", qb.addAudioFilesTable),
 		qb.codecCriterionHandler(audioFilter.AudioCodec, "audio_files.audio_codec", qb.addAudioFilesTable),
 
@@ -251,7 +251,7 @@ func (qb *audioFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("tags_join.audio_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "code", "details", "director", "rating",
+					"title", "code", "details", "rating",
 				}); err != nil {
 					f.setError(err)
 					return

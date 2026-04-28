@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 package api
 
 import (
@@ -852,14 +850,4 @@ func (r *mutationResolver) AudioDeleteO(ctx context.Context, id string, t []*tim
 		Count:   len(updatedTimes),
 		History: sliceutil.ValuesToPtrs(updatedTimes),
 	}, nil
-}
-
-func (r *mutationResolver) AudioGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
-	if at != nil {
-		manager.GetInstance().GenerateScreenshot(ctx, id, *at)
-	} else {
-		manager.GetInstance().GenerateDefaultScreenshot(ctx, id)
-	}
-
-	return "todo", nil
 }

@@ -29,12 +29,14 @@ type FileFilterType struct {
 	Duplicated      *FileDuplicationCriterionInput   `json:"duplicated"`
 	Hashes          []*FingerprintFilterInput        `json:"hashes"`
 	VideoFileFilter *VideoFileFilterInput            `json:"video_file_filter"`
+	AudioFileFilter *AudioFileFilterInput            `json:"audio_file_filter"`
 	ImageFileFilter *ImageFileFilterInput            `json:"image_file_filter"`
 	SceneCount      *IntCriterionInput               `json:"scene_count"`
+	AudioCount      *IntCriterionInput               `json:"audio_count"`
 	ImageCount      *IntCriterionInput               `json:"image_count"`
 	GalleryCount    *IntCriterionInput               `json:"gallery_count"`
-	AudioFilter     *AudioFilterType                 `json:"audio_filter"`
 	ScenesFilter    *SceneFilterType                 `json:"scenes_filter"`
+	AudiosFilter    *AudioFilterType                 `json:"audios_filter"`
 	ImagesFilter    *ImageFilterType                 `json:"images_filter"`
 	GalleriesFilter *GalleryFilterType               `json:"galleries_filter"`
 	CreatedAt       *TimestampCriterionInput         `json:"created_at"`
