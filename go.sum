@@ -188,8 +188,6 @@ github.com/envoyproxy/protoc-gen-validate v0.6.2/go.mod h1:2t7qjJNvHPx8IjnBOzl9E
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
-github.com/feederbox826/gosx-notifier v0.2.1 h1:47FdsdfVQUOkAlHdp9qevviVaGnNT152uMcgY91MiGs=
-github.com/feederbox826/gosx-notifier v0.2.1/go.mod h1:R6rqw7VuwuiCuvsr7EOONmWq++CRA5Ijmkmx75/C3Fs=
 github.com/feederbox826/gosx-notifier v0.2.2 h1:26NkaJZ8Wzptx82R46c9pkVAcFwGSU7kxWrOKmRWlC0=
 github.com/feederbox826/gosx-notifier v0.2.2/go.mod h1:R6rqw7VuwuiCuvsr7EOONmWq++CRA5Ijmkmx75/C3Fs=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
