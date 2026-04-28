@@ -148,12 +148,12 @@ func makeGithubRequest(ctx context.Context, url string, output interface{}) erro
 	response, err := client.Do(req)
 
 	if err != nil {
-		//lint:ignore ST1005 Github is a proper capitalized noun
+		//nolint:staticcheck // ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API request failed: %w", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
-		//lint:ignore ST1005 Github is a proper capitalized noun
+		//nolint:staticcheck // ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API request failed: %s", response.Status)
 	}
 
@@ -161,7 +161,7 @@ func makeGithubRequest(ctx context.Context, url string, output interface{}) erro
 
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
-		//lint:ignore ST1005 Github is a proper capitalized noun
+		//nolint:staticcheck // ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API read response failed: %w", err)
 	}
 
