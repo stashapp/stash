@@ -62,8 +62,12 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(audioFilter.Details, "audios.details"),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if audioFilter.Oshash != nil {
-				qb.addAudioFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "audios_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
+				joinType := joinTypeInner
+				if audioFilter.Oshash.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				qb.addAudioFilesTable(f, joinType)
+				f.addJoin(joinType, fingerprintTable, "fingerprints_oshash", "audios_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
 			}
 
 			stringCriterionHandler(audioFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
@@ -71,8 +75,12 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if audioFilter.Checksum != nil {
-				qb.addAudioFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_md5", "audios_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+				joinType := joinTypeInner
+				if audioFilter.Checksum.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				qb.addAudioFilesTable(f, joinType)
+				f.addJoin(joinType, fingerprintTable, "fingerprints_md5", "audios_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 			}
 
 			stringCriterionHandler(audioFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
@@ -139,6 +147,12 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
+			relatedIDCol:   "audios.studio_id",
+			relatedRepo:    studioRepository.repository,
+			relatedHandler: &studioFilterHandler{audioFilter.StudiosFilter},
+		},
+
+		&relatedFilterHandler{
 			relatedIDCol:   "audio_tag.tag_id",
 			relatedRepo:    tagRepository.repository,
 			relatedHandler: &tagFilterHandler{audioFilter.TagsFilter},
@@ -164,8 +178,8 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 				isRelated:  true,
 			},
 			joinFn: func(f *filterBuilder) {
-				qb.addFilesTable(f)
-				qb.addFoldersTable(f)
+				qb.addFilesTable(f, joinTypeInner)
+				qb.addFoldersTable(f, joinTypeInner)
 			},
 			// don't use a subquery; join directly
 			directJoin: true,
@@ -173,18 +187,18 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *audioFilterHandler) addAudioFilesTable(f *filterBuilder) {
-	f.addLeftJoin(audiosFilesTable, "", "audios_files.audio_id = audios.id")
+func (qb *audioFilterHandler) addAudioFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, audiosFilesTable, "", "audios_files.audio_id = audios.id")
 }
 
-func (qb *audioFilterHandler) addFilesTable(f *filterBuilder) {
-	qb.addAudioFilesTable(f)
-	f.addLeftJoin(fileTable, "", "audios_files.file_id = files.id")
+func (qb *audioFilterHandler) addFilesTable(f *filterBuilder, joinType joinType) {
+	qb.addAudioFilesTable(f, joinType)
+	f.addJoin(joinType, fileTable, "", "audios_files.file_id = files.id")
 }
 
-func (qb *audioFilterHandler) addFoldersTable(f *filterBuilder) {
-	qb.addFilesTable(f)
-	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+func (qb *audioFilterHandler) addFoldersTable(f *filterBuilder, joinType joinType) {
+	qb.addFilesTable(f, joinType)
+	f.addJoin(joinType, folderTable, "", "files.parent_folder_id = folders.id")
 }
 
 func (qb *audioFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
@@ -217,11 +231,15 @@ func (qb *audioFilterHandler) fileCountCriterionHandler(fileCount *models.IntCri
 	return h.handler(fileCount)
 }
 
-func (qb *audioFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *audioFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder, joinType joinType)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if codec != nil {
 			if addJoinFn != nil {
-				addJoinFn(f)
+				joinType := joinTypeInner
+				if codec.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				addJoinFn(f, joinType)
 			}
 
 			stringCriterionHandler(codec, codecColumn)(ctx, f)
@@ -234,20 +252,20 @@ func (qb *audioFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				audiosURLsTableMgr.join(f, "", "audios.id")
+				audiosURLsTableMgr.leftJoin(f, "", "audios.id")
 				f.addWhere("audio_urls.url IS NULL")
 			case "studio":
 				f.addWhere("audios.studio_id IS NULL")
 			case "movie", "group":
-				audioRepository.groups.join(f, "groups_join", "audios.id")
+				audioRepository.groups.leftJoin(f, "groups_join", "audios.id")
 				f.addWhere("groups_join.audio_id IS NULL")
 			case "performers":
-				audioRepository.performers.join(f, "performers_join", "audios.id")
+				audioRepository.performers.leftJoin(f, "performers_join", "audios.id")
 				f.addWhere("performers_join.audio_id IS NULL")
 			case "date":
 				f.addWhere(`audios.date IS NULL OR audios.date IS ""`)
 			case "tags":
-				audioRepository.tags.join(f, "tags_join", "audios.id")
+				audioRepository.tags.leftJoin(f, "tags_join", "audios.id")
 				f.addWhere("tags_join.audio_id IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
@@ -268,8 +286,8 @@ func (qb *audioFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		primaryFK:    audioIDColumn,
 		joinTable:    audiosURLsTable,
 		stringColumn: audioURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			audiosURLsTableMgr.join(f, "", "audios.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			audiosURLsTableMgr.join(f, joinType, "", "audios.id")
 		},
 	}
 
@@ -282,9 +300,9 @@ func (qb *audioFilterHandler) captionCriterionHandler(captions *models.StringCri
 		primaryFK:    audioIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder) {
-			qb.addAudioFilesTable(f)
-			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = audios_files.file_id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			qb.addAudioFilesTable(f, joinTypeLeft)
+			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = audios_files.file_id")
 		},
 		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
 			excludeClause := `audios.id NOT IN (
@@ -334,8 +352,8 @@ func (qb *audioFilterHandler) performersCriterionHandler(performers *models.Mult
 		primaryFK:    audioIDColumn,
 		foreignFK:    performerIDColumn,
 
-		addJoinTable: func(f *filterBuilder) {
-			audioRepository.performers.join(f, "performers_join", "audios.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			audioRepository.performers.join(f, joinType, "performers_join", "audios.id")
 		},
 	}
 

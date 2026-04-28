@@ -377,20 +377,25 @@ func (qb *audioFileFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(audioFileFilter.SampleRate, "audio_files.sample_rate", qb.addAudioFilesTable),
 		intCriterionHandler(audioFileFilter.Bitrate, "audio_files.bit_rate", qb.addAudioFilesTable),
 		qb.codecCriterionHandler(audioFileFilter.AudioCodec, "audio_files.audio_codec", qb.addAudioFilesTable),
+		qb.codecCriterionHandler(audioFileFilter.AudioCodec, "audio_files.audio_codec", qb.addAudioFilesTable),
 
 		qb.captionCriterionHandler(audioFileFilter.Captions),
 	}
 }
 
-func (qb *audioFileFilterHandler) addAudioFilesTable(f *filterBuilder) {
-	f.addLeftJoin(audioFileTable, "", "audio_files.file_id = files.id")
+func (qb *audioFileFilterHandler) addAudioFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, audioFileTable, "", "audio_files.file_id = files.id")
 }
 
-func (qb *audioFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *audioFileFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder, joinType joinType)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if codec != nil {
 			if addJoinFn != nil {
-				addJoinFn(f)
+				joinType := joinTypeInner
+				if codec.Modifier == models.CriterionModifierIsNull || codec.Modifier == models.CriterionModifierNotMatchesRegex {
+					joinType = joinTypeLeft
+				}
+				addJoinFn(f, joinType)
 			}
 
 			stringCriterionHandler(codec, codecColumn)(ctx, f)
@@ -404,14 +409,14 @@ func (qb *audioFileFilterHandler) captionCriterionHandler(captions *models.Strin
 		primaryFK:    sceneIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(videoCaptionsTable, "", "audio_captions.file_id = files.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = files.id")
 		},
 		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
 			excludeClause := `files.id NOT IN (
 				SELECT files.id from files 
-				INNER JOIN audio_captions on audio_captions.file_id = files.id 
-				WHERE audio_captions.language_code LIKE ?
+				INNER JOIN video_captions on video_captions.file_id = files.id 
+				WHERE video_captions.language_code LIKE ?
 			)`
 			f.addWhere(excludeClause, criterion.Value)
 
