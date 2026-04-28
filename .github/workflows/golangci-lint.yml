@@ -27,4 +27,6 @@ jobs:
       ## WARN
       ## using v1, update in a later PR
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: 2.11.4
