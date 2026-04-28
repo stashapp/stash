@@ -295,10 +295,10 @@ func printLatestVersion(ctx context.Context) {
 		logger.Errorf("Couldn't retrieve latest version: %v", err)
 	} else {
 		_, githash, _ := build.Version()
-		switch {
-		case githash == "":
+		switch githash {
+		case "":
 			logger.Infof("Latest version: %s (%s)", latestRelease.Version, latestRelease.ShortHash)
-		case githash == latestRelease.ShortHash:
+		case latestRelease.ShortHash:
 			logger.Infof("Version %s (%s) is already the latest released", latestRelease.Version, latestRelease.ShortHash)
 		default:
 			logger.Infof("New version available: %s (%s)", latestRelease.Version, latestRelease.ShortHash)
