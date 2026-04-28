@@ -9,7 +9,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash?logo=github)](https://github.com/stashapp/stash/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash/bounty)](https://github.com/stashapp/stash/labels/bounty)
 
-### **Stash is a self-hosted webapp written in Go which organizes and serves your diverse content collection, catering to both your SFW and NSFW needs.**
+<h3>Stash is a self-hosted webapp written in Go which organizes and serves your diverse content collection, catering to both your SFW and NSFW needs.</h3>
 
 ![Screenshot of Stash web application interface](docs/readme_assets/demo_image.png)
 
@@ -28,12 +28,12 @@ For further information you can consult the [documentation](https://docs.stashap
 Step-by-step instructions are available at [docs.stashapp.cc/installation](https://docs.stashapp.cc/installation/).
 
 > [!important]
->**Windows Users**
+> **Windows Users**
 >
->As of version 0.27.0, Stash no longer supports _Windows 7, 8, Server 2008 and Server 2012._  
->At least Windows 10 or Server 2016 is required.
+> As of version 0.27.0, Stash no longer supports _Windows 7, 8, Server 2008 and Server 2012._  
+> At least Windows 10 or Server 2016 is required.
 >
->**macOS Users**
+> **macOS Users**
 >
 > As of version 0.29.0, Stash requires _macOS 11 Big Sur_ or later.  
 > Stash can still be run through docker on older versions of macOS.
@@ -104,6 +104,19 @@ Need help or want to get involved? Start with the documentation, then reach out 
 - [Plugins](https://docs.stashapp.cc/plugins/)
 - [Themes](https://docs.stashapp.cc/themes/)
 - [Other projects](https://docs.stashapp.cc/other-projects/)
+
+# Architecture
+
+## Backend
+
+- Go
+- GraphQL API
+- SQLite
+
+## Frontend
+
+- React
+- TypeScript
 
 # For Developers
 

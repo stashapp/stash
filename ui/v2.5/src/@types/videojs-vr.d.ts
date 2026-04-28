@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-declare module "videojs-vr" {
+declare module "@blaineam/videojs-vr" {
   import videojs from "video.js";
   // we don't want to depend on THREE.js directly, these are just typedefs for videojs-vr
   // eslint-disable-next-line import/no-extraneous-dependencies
@@ -36,61 +36,50 @@ declare module "videojs-vr" {
       // Used for Equi-Angular Cubemap videos
       | "EAC"
       // Used for side-by-side Equi-Angular Cubemap videos
-      | "EAC_LR";
+      | "EAC_LR"
+      // flat screen side-by-side
+      | "SBS_MONO";
 
+    interface mediaItem {
+      title: string;
+      thumbnail: string;
+      url: string;
+      duration?: number;
+    }
+    type mediaItems = mediaItem[];
+
+    type orientationOffset = {
+      x: number;
+      y: number;
+      z: number;
+    };
+
+    // options are taken verbaitum from the README
     interface Options {
-      /**
-       * Force the cardboard button to display on all devices even if we don't think they support it.
-       *
-       * @default false
-       */
-      forceCardboard?: boolean;
+      // Projection mode
+      projection?: ProjectionType; // see ProjectionType
+      sphereDetails?: number; // Sphere mesh detail (higher = smoother)
 
-      /**
-       * Whether motion/gyro controls should be enabled.
-       *
-       * @default true on iOS and Android
-       */
-      motionControls?: boolean;
+      // VR HUD options
+      enableVRHud?: boolean; // Enable in-VR controls
+      enableVRGallery?: boolean; // Enable in-VR video gallery
+      showHUDOnStart?: boolean; // Show HUD when entering VR
+      hudAutoHideDelay?: number; // Auto-hide HUD after ms (0 to disable)
+      hudDistance?: number; // Distance of HUD from viewer
+      hudHeight?: number; // Height of HUD
+      hudScale?: number; // Scale of HUD elements
 
-      /**
-       * Defines the projection type.
-       *
-       * @default "AUTO"
-       */
-      projection?: ProjectionType;
+      // Behavior options
+      forceCardboard?: boolean; // Force cardboard button on all devices
+      motionControls?: boolean; // Enable gyroscope/device orientation
+      disableTogglePlay?: boolean; // Disable click-to-play
 
-      /**
-       * This alters the number of segments in the spherical mesh onto which equirectangular videos are projected.
-       * The default is 32 but in some circumstances you may notice artifacts and need to increase this number.
-       *
-       * @default 32
-       */
-      sphereDetail?: number;
+      // Spatial audio (requires Omnitone library)
+      omnitone?: Object; // Pass Omnitone library object
+      omnitoneOptions?: Record<string, unknown>; // Omnitone configuration
 
-      /**
-       * Enable debug logging for this plugin
-       *
-       * @default false
-       */
-      debug?: boolean;
-
-      /**
-       * Use this property to pass the Omnitone library object to the plugin. Please be aware of, the Omnitone library is not included in the build files.
-       */
-      omnitone?: object;
-
-      /**
-       * Default options for the Omnitone library. Please check available options on https://github.com/GoogleChrome/omnitone
-       */
-      omnitoneOptions?: object;
-
-      /**
-       * Feature to disable the togglePlay manually. This functionality is useful in live events so that users cannot stop the live, but still have a controlBar available.
-       *
-       * @default false
-       */
-      disableTogglePlay?: boolean;
+      // Media gallery items
+      mediaItems?: mediaItems; // Array of media items for gallery
     }
 
     interface PlayerMediaInfo {
@@ -106,11 +95,33 @@ declare module "videojs-vr" {
       init(): void;
       reset(): void;
 
-      cameraVector: THREE.Vector3;
+      // VR HUD
+      showHUD(): void; // Show the VR HUD
+      hideHUD(): void; // Hide the VR HUD
+      toggleHUD(): void; // Toggle HUD visibility
+
+      // VR Gallery
+      showGallery(): void; // Show the gallery panel
+      hideGallery(): void; // Hide the gallery panel
+      toggleGallery(): void; // Toggle gallery visibility
+      setGalleryItems(mediaItems): void; // Update gallery media items
+
+      // Favorite state
+      setFavoriteState(boolean): void; // Set favorite button state
+      getFavoriteState(): boolean; // Get current favorite state
+
+      // Orientation
+      setOrientationOffset(orientationOffset): void; // Tilt view
+      resetOrientationOffset(): void; // Reset to default orientation
+      recenter(): void; // Recenter VR view
+
+      // Status
+      isPresenting(): boolean; // Check if currently in VR mode
 
       camera: THREE.Camera;
       scene: THREE.Scene;
       renderer: THREE.Renderer;
+      cameraVector: THREE.Vector3;
     }
   }
 
