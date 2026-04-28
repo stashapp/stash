@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: ghcr.io/stashapp/compiler:13
+  COMPILER_IMAGE: ghcr.io/stashapp/compiler:14
 
 jobs:
   # Job 1: Generate code and build UI
