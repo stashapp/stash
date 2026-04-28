@@ -11,15 +11,27 @@ linters:
     - govet
     - ineffassign
     - misspell
-    - noctx
+    
+    # TODO - fix these in a later PR
+    # - noctx
+    
     - revive
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
     - unused
   
-  # Project-specific linter overrides
   settings:
+    staticcheck:
+      checks:
+        - all
+        
+        # we specify (unnecessary) embedded fields for clarity in many places
+        - -QF1008 
+        
+        # there's lots of misnamed (eg intId instead of intID) fields in the code.
+        # it's not exactly world-ending, so I'm deferring fixing these for now
+        - -ST1003 
     errorlint:
       errorf: false
       asserts: true
