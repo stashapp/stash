@@ -30,6 +30,8 @@ jobs:
         fetch-tags: true
     - name: Setup Go
       uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
 
     # pnpm version is read from the packageManager field in package.json
     # very broken (4.3, 4.4)
