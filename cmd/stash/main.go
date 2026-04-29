@@ -148,7 +148,7 @@ func recoverPanic() {
 		exitCode = 1
 		logger.Errorf("panic: %v\n%s", err, debug.Stack())
 		if desktop.IsDesktop() {
-			desktop.FatalError(fmt.Errorf("Panic: %v", err))
+			desktop.FatalError(fmt.Errorf("panic: %v", err))
 		}
 	}
 }
